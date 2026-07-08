@@ -39,6 +39,11 @@ final class SendDetailsViewModel {
     let vault: Vault
     let hasPreselectedCoin: Bool
 
+    /// XRP-only Destination Tag concern (field state, X-address autofill/lock
+    /// lifecycle, RequireDest gate). Read/bound through the parent so `@Observable`
+    /// tracks its nested state.
+    let rippleTag: RippleDestinationTagViewModel
+
     // MARK: - UI state (merged from the deleted UI-only SendDetailsViewModel)
     var selectedChain: Chain? = nil
     private(set) var selectedTab: SendDetailsFocusedTab?
@@ -57,6 +62,13 @@ final class SendDetailsViewModel {
     var amount: String = ""
     var amountInFiat: String = ""
     var memo: String = ""
+
+    /// Records the user's "Continue anyway" on the unverified-RequireDest
+    /// confirm for the current destination. Forwards the parent-owned
+    /// `toAddress` to the tag sub-VM that owns the acknowledgment.
+    func acknowledgeUnverifiedDestinationTag() {
+        rippleTag.acknowledge(toAddress: toAddress)
+    }
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
     var isStakingOperation: Bool = false
@@ -124,6 +136,7 @@ final class SendDetailsViewModel {
         hasPreselectedCoin: Bool = false,
         interactor: SendInteractor = DefaultSendInteractor.live,
         addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
+        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil,
         rippleService: RippleService = .shared
     ) {
         self.coin = coin
@@ -132,6 +145,7 @@ final class SendDetailsViewModel {
         self.fromAddress = coin.address
         self.interactor = interactor
         self.addressResolver = addressResolver
+        self.rippleTag = RippleDestinationTagViewModel(requirementProvider: destinationTagRequirementProvider)
         self.rippleService = rippleService
     }
 
@@ -357,8 +371,49 @@ final class SendDetailsViewModel {
         isAddressResolved = nil
     }
 
+    /// XRP address seam: when the destination input is a mainnet X-address,
+    /// replace it with the embedded classic r-address (keeping the original
+    /// X string visible as the label, ENS-style) and autofill + lock the
+    /// Destination Tag if one is embedded. Runs on both the sync
+    /// format-validation path and the async resolution path, so paste, QR
+    /// scan, address book, and deeplinks are all covered. The classic
+    /// address is what reaches `SendTransaction`/`KeysignPayload` — verify,
+    /// the security scanner, and tx history all agree with what is signed,
+    /// and the signer's X-address/tag conflict error becomes unreachable.
+    private func normalizeRippleXAddressIfNeeded() {
+        guard coin.chain == .ripple else { return }
+        guard let decoded = try? RippleXAddress.decode(toAddress) else {
+            // The input is no longer the X-address that locked the tag —
+            // the derived tag belonged to the old destination, drop it.
+            rippleTag.handleAddressChangedAway(isStillResolved: toAddress == lastResolvedAddress)
+            return
+        }
+
+        // Address fields are the parent's (shared with the ENS/name path); the
+        // tag/lock decision belongs to the XRP-only sub-VM.
+        let original = toAddress
+        toAddress = decoded.classicAddress
+        toAddressLabel = original
+        lastResolvedAddress = decoded.classicAddress
+
+        rippleTag.applyDecodedTag(decoded.tag)
+    }
+
+    /// Called when the destination field is cleared. Drops the resolution
+    /// bookkeeping and any X-address-derived tag so a stale locked tag
+    /// can't ride onto the next address the user enters — the empty-field
+    /// path never reaches `normalizeRippleXAddressIfNeeded()`, which is
+    /// where edits-away normally release the lock.
+    func onToAddressCleared() {
+        addressSetupDone = false
+        toAddressLabel = nil
+        lastResolvedAddress = nil
+        rippleTag.releaseLockedTag()
+    }
+
     func validateToAddress() async -> Bool {
         guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
         do {
             let originalInput = toAddress
             let resolvedAddress = try await addressResolver(originalInput, coin.chain)
@@ -380,6 +435,7 @@ final class SendDetailsViewModel {
 
     func isValidAddressFormat() -> Bool {
         guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
         let isValid = AddressService.validateAddress(address: toAddress, chain: coin.chain)
         if isValid {
             showAddressAlert = false
@@ -787,6 +843,55 @@ final class SendDetailsViewModel {
         return validateERC20GasBalance()
     }
 
+    /// XRP tag/memo contract, resolved at the form seam so the failure is
+    /// actionable while the fields are still on screen:
+    /// - the Destination Tag field must be empty or a canonical uint32 decimal;
+    /// - a TEXT memo is accepted again (restored on-chain memo support) — on its
+    ///   own, or riding alongside a tag as the tag+memo combo;
+    /// - a numeric memo alongside a DIFFERENT tag is a conflict (the wire would
+    ///   read two tags).
+    func validateRippleTagAndMemo() -> Bool {
+        guard coin.chain == .ripple else { return true }
+
+        guard let errorKey = rippleTag.validateTagAndMemo(memo: memo).errorKey else {
+            return true
+        }
+        setGeneralError(message: errorKey)
+        return false
+    }
+
+    /// Effective XRP destination tag: the dedicated field wins; a canonical
+    /// numeric memo (legacy workaround) is honored when the field is empty.
+    /// Only meaningful after `validateRippleTagAndMemo()` passed.
+    var resolvedDestinationTag: UInt32? {
+        guard coin.chain == .ripple else { return nil }
+        return rippleTag.resolvedTag(memo: memo)
+    }
+
+    /// RequireDest gate: a tagless XRP send to a destination whose
+    /// AccountRoot sets `lsfRequireDestTag` would be rejected by the ledger
+    /// (or worse, credited to nobody if the flag is off but the tag was
+    /// still needed by the exchange) — hard-block it here where the tag
+    /// field is still on screen. Lookup failure fails OPEN behind an
+    /// explicit per-address acknowledgment: XRPL public-RPC availability
+    /// must not become a hard dependency for every XRP send (the fee lookup
+    /// deliberately fails open on the same RPC), and the cohort this gate
+    /// protects — exchange deposit addresses — are funded, high-availability
+    /// accounts that resolve on the happy path.
+    func validateRippleRequireDest() async -> Bool {
+        guard coin.chain == .ripple else { return true }
+
+        switch await rippleTag.validateRequireDest(toAddress: toAddress, memo: memo) {
+        case .satisfied:
+            return true
+        case .required:
+            setGeneralError(message: "destinationTagRequiredError")
+            return false
+        case .unverified:
+            return false
+        }
+    }
+
     /// For ERC20-style non-native sends, gas is paid in the chain's native
     /// sibling. Reject if the vault doesn't hold enough of it.
     func validateERC20GasBalance() -> Bool {
@@ -813,7 +918,14 @@ final class SendDetailsViewModel {
 
         guard validatePendingTransaction() else { return false }
         guard validateAmountNonZero() else { return false }
+        // Address resolution runs BEFORE the XRP tag/memo rule: it hosts the
+        // X-address normalization seam, which can autofill the tag field —
+        // validating the tag first would let an autofilled value (e.g. an
+        // embedded tag 0) skip validation on prefill paths that never went
+        // through the screen's format check.
         guard await validateAddressResolved() else { return false }
+        guard validateRippleTagAndMemo() else { return false }
+        guard await validateRippleRequireDest() else { return false }
         guard validateBalance() else { return false }
         return await validateDestinationReserve()
     }
@@ -837,6 +949,16 @@ final class SendDetailsViewModel {
         guard amount.isValidDecimal(), !toAddress.isEmpty, !amountDecimal.isZero else {
             throw MakeTransactionError.invalidForm
         }
+        // XRP: keep only a genuine TEXT memo (the tag+memo combo, or a
+        // memo-only send). A numeric memo was either consumed as the tag
+        // (legacy "type the tag into the memo" workaround) or echoes the tag
+        // field, so it must NOT also ride as an on-chain memo — blank it so the
+        // tag is the single source of truth and Verify shows one honest row.
+        let resolvedTag = resolvedDestinationTag
+        let effectiveMemo: String = {
+            guard coin.chain == .ripple else { return memo }
+            return RippleDestinationTag.parseCanonical(memo) != nil ? "" : memo
+        }()
         return SendTransaction(
             coin: coin,
             vault: vault,
@@ -845,7 +967,8 @@ final class SendDetailsViewModel {
             toAddressLabel: toAddressLabel,
             amount: amount,
             amountInFiat: amountInFiat,
-            memo: memo,
+            memo: effectiveMemo,
+            destinationTag: resolvedTag,
             gas: gas,
             fee: fee,
             feeMode: feeMode,
@@ -888,6 +1011,7 @@ final class SendDetailsViewModel {
         amount = ""
         amountInFiat = ""
         memo = ""
+        rippleTag.reset()
         feeMode = .default
         sendMaxAmount = false
         isStakingOperation = false

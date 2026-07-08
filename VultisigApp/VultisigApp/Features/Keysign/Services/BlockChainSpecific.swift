@@ -30,7 +30,13 @@ enum BlockChainSpecific: Codable, Hashable {
     case Sui(referenceGasPrice: BigInt, coins: [[String: String]], gasBudget: BigInt)
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool, jettonAddress: String = "", isActiveDestination: Bool = false)
-    case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64)
+    /// `destinationTag` carries the first-class XRPL DestinationTag
+    /// (`RippleSpecific.destination_tag`). It is populated at the payload-build
+    /// seam alongside the legacy memo carrier (dual-write): the signer prefers
+    /// this field and falls back to parsing the memo, so a co-signer that does
+    /// not read the field still rebuilds a byte-identical signing input from
+    /// the memo. `nil` means "no field present — use the memo".
+    case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64, destinationTag: UInt32? = nil)
 
     case Tron(
         timestamp: UInt64,
@@ -90,7 +96,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return dynamicGas
         case .Ton:
             return TonHelper.defaultFee
-        case .Ripple(_, let gas, _):
+        case .Ripple(_, let gas, _, _):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
             return gasFeeEstimation.description.toBigInt()

@@ -171,6 +171,12 @@ struct SendTransaction: Hashable {
     let amountInFiat: String
     let memo: String
 
+    /// XRP destination tag (nil elsewhere / when absent). Carried separately
+    /// from `memo` so the Verify screen can show an honest "Destination Tag"
+    /// row; the keysign payload encodes it into the memo slot as a canonical
+    /// uint32 decimal — the cross-platform wire contract (`RippleDestinationTag`).
+    let destinationTag: UInt32?
+
     // Fee / gas
     let gas: BigInt
     let fee: BigInt
@@ -222,6 +228,7 @@ extension SendTransaction {
             lhs.amount == rhs.amount &&
             lhs.amountInFiat == rhs.amountInFiat &&
             lhs.memo == rhs.memo &&
+            lhs.destinationTag == rhs.destinationTag &&
             lhs.gas == rhs.gas &&
             lhs.fee == rhs.fee &&
             lhs.feeMode == rhs.feeMode &&
@@ -247,6 +254,7 @@ extension SendTransaction {
         hasher.combine(amount)
         hasher.combine(amountInFiat)
         hasher.combine(memo)
+        hasher.combine(destinationTag)
         hasher.combine(gas)
         hasher.combine(fee)
         hasher.combine(feeMode)
@@ -274,6 +282,7 @@ extension SendTransaction {
         amount: String,
         amountInFiat: String,
         memo: String,
+        destinationTag: UInt32? = nil,
         gas: BigInt,
         fee: BigInt,
         feeMode: FeeMode,
@@ -299,6 +308,7 @@ extension SendTransaction {
         self.amount = amount
         self.amountInFiat = amountInFiat
         self.memo = memo
+        self.destinationTag = destinationTag
         self.gas = gas
         self.fee = fee
         self.feeMode = feeMode
@@ -369,6 +379,7 @@ extension SendTransaction {
         amount: String? = nil,
         amountInFiat: String? = nil,
         memo: String? = nil,
+        destinationTag: SendTransactionUpdate<UInt32?>? = nil,
         gas: BigInt? = nil,
         fee: BigInt? = nil,
         feeMode: FeeMode? = nil,
@@ -414,6 +425,10 @@ extension SendTransaction {
             guard let solanaStakingPayload else { return self.solanaStakingPayload }
             return solanaStakingPayload.value
         }()
+        let resolvedDestinationTag: UInt32? = {
+            guard let destinationTag else { return self.destinationTag }
+            return destinationTag.value
+        }()
         return SendTransaction(
             coin: resolvedCoin,
             vault: resolvedVault,
@@ -423,6 +438,7 @@ extension SendTransaction {
             amount: amount ?? self.amount,
             amountInFiat: amountInFiat ?? self.amountInFiat,
             memo: memo ?? self.memo,
+            destinationTag: resolvedDestinationTag,
             gas: gas ?? self.gas,
             fee: fee ?? self.fee,
             feeMode: feeMode ?? self.feeMode,

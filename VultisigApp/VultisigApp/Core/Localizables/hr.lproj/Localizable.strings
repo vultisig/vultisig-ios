@@ -11,6 +11,7 @@
 "addChain" = "Dodajte lanac";
 "addCoinLP" = "Dodaj %@ LP";
 "addCustomChains" = "Dodaj prilagođene chainove";
+"addDestinationTag" = "Dodaj oznaku odredišta";
 "addFolder" = "Dodaj mapu";
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
 "addingToken" = "Dodavanje tokena";
@@ -223,6 +224,7 @@
 "connected" = "Povezano";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "continue" = "Nastavi";
+"continueAnyway" = "Svejedno nastavi";
 "continueThresholdOfTotal" = "Nastavi (%d-od-%d)";
 "copyAddress" = "Kopiraj adresu";
 "correctAmountCheck" = "Iznos je točan";
@@ -321,6 +323,13 @@
 "deleteVaultTitle" = "Izbriši sef";
 "dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
+"destinationTag" = "Oznaka odredišta";
+"destinationTagFromXAddress" = "Uključena u X-adresu";
+"destinationTagInvalidError" = "Oznaka odredišta mora biti cijeli broj između 1 i 4294967295.";
+"destinationTagMemoConflictError" = "Bilješka i oznaka odredišta se ne podudaraju. XRP transakcije mogu nositi samo jednu oznaku odredišta.";
+"destinationTagRequiredError" = "Ova adresa zahtijeva oznaku odredišta (uobičajeno za uplate na mjenjačnice). Unesite oznaku iz uputa za uplatu ili sredstva možda neće biti evidentirana.";
+"destinationTagUnverifiedTitle" = "Odredište nije moguće provjeriti";
+"destinationTagUnverifiedWarning" = "Nije moguće provjeriti zahtijeva li ova adresa oznaku odredišta. Ako uplaćujete na mjenjačnicu, dodajte oznaku prije nastavka.";
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";
@@ -380,6 +389,7 @@
 "enterAddressHere" = "Unesite adresu ovdje";
 "enterAmount" = "Unesite iznos";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Unesite oznaku odredišta";
 "enterHint" = "Unesite savjet";
 "enterMemo" = "Unesite bilješku";
 "enterPassword" = "Unesite lozinku";
