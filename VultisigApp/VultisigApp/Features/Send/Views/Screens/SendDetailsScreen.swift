@@ -64,12 +64,18 @@ struct SendDetailsScreen: View {
                 if !newValue.chain.supportsMemo {
                     viewModel.memo = ""
                 }
+                // Re-evaluate (or clear, for non-XRP) the inline reserve warning
+                // when the selected coin changes.
+                viewModel.debouncedValidateDestinationReserve()
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.cancelAddressResolution()
 
                 guard !viewModel.toAddress.isEmpty else {
                     viewModel.addressSetupDone = false
+                    // Clear any stale XRP reserve warning now the destination
+                    // is gone (this branch returns before the trigger below).
+                    viewModel.debouncedValidateDestinationReserve()
                     return
                 }
 
@@ -79,6 +85,12 @@ struct SendDetailsScreen: View {
                 } else {
                     viewModel.debouncedResolveAddress()
                 }
+                // Destination changed → re-run the XRP inline base-reserve
+                // check (no-op / clears for non-XRP or an unready address).
+                viewModel.debouncedValidateDestinationReserve()
+            }
+            .onChange(of: viewModel.amount) { _, _ in
+                viewModel.debouncedValidateDestinationReserve()
             }
             .onChange(of: viewModel.isAddressResolved) { _, resolved in
                 guard let resolved else { return }
@@ -88,6 +100,7 @@ struct SendDetailsScreen: View {
                 } else if viewModel.selectedTab == .amount {
                     viewModel.onSelect(tab: .address)
                 }
+                viewModel.debouncedValidateDestinationReserve()
             }
             .onDisappear {
                 viewModel.stopMediator()
