@@ -195,11 +195,15 @@ struct SwapVerifyScreen: View {
     var limitTargetPriceRow: some View {
         if let limit = currentTransaction.limitContext {
             HStack(spacing: 4) {
+                // LIM = sourceAmount(fromCoin) × targetPrice, so targetPrice is
+                // toCoin-per-1-fromCoin. The row MUST read "1 <fromCoin> = <price>
+                // <toCoin>" — passing toCoin first would confirm the reciprocal
+                // pair against the signed memo (fund-safety).
                 Text(String(
                     format: "limitSwap.verify.targetPrice".localized,
-                    currentTransaction.toCoin.ticker,
+                    currentTransaction.fromCoin.ticker,
                     limit.targetPrice.formatForDisplay(),
-                    currentTransaction.fromCoin.ticker
+                    currentTransaction.toCoin.ticker
                 ))
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)

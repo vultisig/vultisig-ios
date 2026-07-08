@@ -13,6 +13,12 @@ enum LimitSwapAssemblyError: Error, Equatable {
     /// to parse back into a `BigInt`. Fail loud rather than sign a `0`-amount
     /// deposit — a silent `?? 0` would broadcast an empty transfer.
     case invalidSourceAmount(String)
+    /// The `EnableAdvSwapQueue` mimir was not confirmed enabled at SIGN time.
+    /// The entry screen gates placement, but the user may have lingered on the
+    /// Verify screen while the queue was disabled — re-check live and fail closed
+    /// so a `=<` order is never signed onto a network that would treat it as a
+    /// market swap.
+    case advancedSwapQueueDisabled
 }
 
 /// Assembles the `KeysignPayload` for a placed limit swap.
@@ -56,6 +62,16 @@ func buildLimitSwapKeysignPayload(
     memo: String,
     vault: Vault
 ) async throws -> KeysignPayload {
+
+    // Sign-time fail-closed availability re-check. Placement was gated on the
+    // `EnableAdvSwapQueue` mimir at the entry screen, but the mimir can flip
+    // while the user sits on the Verify screen. Re-confirm live before building
+    // anything signable — a `=<` order on a network with the queue disabled can
+    // be treated as a market swap and execute at the wrong price. Mirrors the
+    // market path's sign-time halt re-check.
+    guard await ThorchainService.shared.isAdvancedSwapQueueEnabled() else {
+        throw LimitSwapAssemblyError.advancedSwapQueueDisabled
+    }
 
     // Native RUNE settles via `MsgDeposit` on THORChain itself — no Asgard
     // inbound vault, no destination address. The Cosmos signer ignores

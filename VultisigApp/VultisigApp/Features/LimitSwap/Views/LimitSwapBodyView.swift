@@ -535,14 +535,12 @@ private struct LimitAssetSwapForm: View {
         }
     }
 
-    /// Buy amount = sourceAmount × targetPrice (when target is set).
+    /// Buy amount preview — the VM derives it from the signed `computeLim`
+    /// path so it can't diverge from the memo's truncated LIM. `nil` when not
+    /// yet computable (row shows "0").
     private var buyAmountDecimal: Decimal? {
-        let sourceAmount = vm.draft.sourceAmount
-        let targetPrice = vm.draft.targetPrice
-        guard sourceAmount > 0, targetPrice > 0 else { return nil }
-        let sourceDecimal = Decimal(string: sourceAmount.description) ?? 0
-        let sourceNatural = sourceDecimal / pow(10, vm.draft.fromAsset.decimals)
-        return sourceNatural * targetPrice
+        let amount = vm.expectedBuyAmount
+        return amount > 0 ? amount : nil
     }
 
     private var formattedBuyAmount: String {

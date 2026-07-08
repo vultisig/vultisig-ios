@@ -372,6 +372,19 @@ final class LimitSwapFormViewModel {
 
     // MARK: - Computed UI state
 
+    /// Expected buy (target) amount for the current draft, derived from the SAME
+    /// truncated `computeLim` the signed memo's LIM uses — so the Asset-section
+    /// preview can never diverge (higher) from what the order actually
+    /// guarantees. `0` when not yet computable. Business math stays out of the
+    /// view.
+    var expectedBuyAmount: Decimal {
+        limitOrderExpectedOutput(
+            sourceAmount: draft.sourceAmount,
+            sourceDecimals: draft.fromAsset.decimals,
+            targetPrice: draft.targetPrice
+        )
+    }
+
     /// Percentage above (positive) or below (negative) the current market.
     /// Returns 0 when the market reference is unset.
     var pctFromMarket: Decimal {
