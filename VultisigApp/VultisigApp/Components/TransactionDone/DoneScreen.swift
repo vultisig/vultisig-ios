@@ -9,9 +9,9 @@
 //  flow-supplied slots:
 //
 //    - `tokenContent`  — hero card. Default = coin display.
-//    - `detailContent` — hash row + "Transaction details" disclosure
-//                        by default; Swap supplies `EmptyView()` since
-//                        the summary card above covers it.
+//    - `detailContent` — hash row + an expandable "Transaction details"
+//                        section by default; Swap supplies `EmptyView()`
+//                        since the summary card above covers it.
 //    - `bottomBar`     — default = single "Done" CTA; Swap supplies
 //                        "Track" + "Done".
 //
@@ -169,12 +169,12 @@ struct DoneTokenContent: View {
     }
 }
 
-/// Default detail slot — renders the tx hash row + "Transaction details"
-/// disclosure that routes into `SendCryptoSecondaryDoneView`.
+/// Default detail slot — renders the tx hash row + a "Transaction
+/// details" section that expands the full detail rows in place.
 struct DoneDetailContent: View {
     let input: TransactionDonePayload
 
-    @Environment(\.router) var router
+    @State private var isTransactionDetailsExpanded = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -189,7 +189,7 @@ struct DoneDetailContent: View {
             }
             .showIf(input.hash.isNotEmpty)
 
-            transactionDetailsButton
+            transactionDetailsSection
         }
         .font(Theme.fonts.bodySMedium)
         .padding(.horizontal, 24)
@@ -203,18 +203,28 @@ struct DoneDetailContent: View {
         )
     }
 
-    private var transactionDetailsButton: some View {
-        Button {
-            router.navigate(to: SendRoute.transactionDetails(input: input))
-        } label: {
-            HStack {
-                Text("transactionDetails".localized)
-                Spacer()
-                Image(systemName: "chevron.right")
+    private var transactionDetailsSection: some View {
+        VStack(spacing: 18) {
+            Button {
+                withAnimation {
+                    isTransactionDetailsExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Text("transactionDetails".localized)
+                    Spacer()
+                    Icon(named: "chevron-down", color: Theme.colors.textSecondary, size: 16)
+                        .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
+                }
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+
+            if isTransactionDetailsExpanded {
+                TransactionDetailsCard(input: input)
+                    .transition(.verticalGrowAndFade)
+            }
         }
-        .buttonStyle(.plain)
     }
 }
 
