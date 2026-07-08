@@ -47,22 +47,4 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
 
         return expectedTargetNatural / sourceNatural
     }
-
-    func fetchInboundAddress(forChainSymbol chainSymbol: String) async throws -> String? {
-        let inbounds = await fetchThorchainInboundAddress()
-        let normalized = chainSymbol.uppercased()
-        return inbounds.first(where: { entry in
-            guard entry.chain.uppercased() == normalized else { return false }
-            // Reject halted or paused chains — limit orders can't be placed
-            // to a destination THORChain currently refuses to ingest.
-            // Missing pause flags read as "not paused" — same convention as
-            // `SwapHaltGate.isHalted(chain:in:)` on the market path.
-            guard !entry.halted,
-                  !(entry.global_trading_paused ?? false),
-                  !(entry.chain_trading_paused ?? false) else {
-                return false
-            }
-            return true
-        })?.address
-    }
 }

@@ -34,10 +34,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         ))
 
         quoteService = MockLimitSwapQuoteService()
-        interactor = DefaultLimitSwapInteractor(
-            quoteService: quoteService,
-            storage: LimitOrderStorageService()
-        )
+        interactor = DefaultLimitSwapInteractor(quoteService: quoteService)
     }
 
     override func tearDown() async throws {
@@ -238,6 +235,77 @@ final class LimitSwapFormViewModelTests: XCTestCase {
     func testDestinationAddressFindsMatchingVaultCoin() {
         let vm = makeViewModel()
         XCTAssertEqual(vm.destinationAddress(), "0xethdestaddress00000000000000000000000000")
+    }
+
+    // MARK: - preparePlaceableOrder (the live place-order gate)
+
+    func testPreparePlaceableOrderBuildsRecordAndMemoForValidDraft() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.draft.targetPrice = 16
+        vm.draft.expiryHours = 24
+
+        guard let prepared = vm.preparePlaceableOrder() else {
+            return XCTFail("Expected a prepared order for a valid draft")
+        }
+
+        XCTAssertNil(vm.placeOrderError)
+        // Memo prefix / affiliate are stable regardless of LIM encoding.
+        XCTAssertTrue(prepared.memo.hasPrefix("=<:ETH.ETH:0xethdestaddress00000000000000000000000000:"))
+        XCTAssertTrue(prepared.memo.contains(":\(THORChainSwaps.affiliateFeeAddress):"))
+
+        let record = prepared.record
+        XCTAssertEqual(record.sourceAsset, "BTC.BTC")
+        XCTAssertEqual(record.targetAsset, "ETH.ETH")
+        XCTAssertEqual(record.destAddress, "0xethdestaddress00000000000000000000000000")
+        XCTAssertEqual(record.targetPrice, 16)
+        XCTAssertEqual(record.expiryHours, 24)
+        XCTAssertEqual(record.expiryBlocks, 14_400)
+        XCTAssertEqual(record.sourceAmount, "100000000")
+        XCTAssertEqual(record.status, .pending)
+        XCTAssertTrue(record.inboundTxHash.isEmpty, "Inbound hash is spliced in later on the Done screen")
+        XCTAssertEqual(record.memo, prepared.memo)
+    }
+
+    func testPreparePlaceableOrderRejectsNonNativeSource() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.draft.fromAsset = LimitSwapAsset(
+            chain: .ethereum, ticker: "USDC", decimals: 6,
+            contractAddress: "0x1234567890abcdefEC7", isNativeToken: false
+        )
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .bitcoin, ticker: "BTC", decimals: 8,
+            contractAddress: "", isNativeToken: true
+        )
+        // Vault needs a BTC coin as the destination for the .bitcoin target.
+        vault.coins.append(Coin(
+            asset: CoinMeta.make(chain: .bitcoin, ticker: "BTC", decimals: 8),
+            address: "bc1qdest0000000000000000000000000000000000",
+            hexPublicKey: "btc-dest-pubkey"
+        ))
+        vm.draft.targetPrice = Decimal(string: "0.00002")!
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .nonNativeSourceUnsupported)
+    }
+
+    func testPreparePlaceableOrderRejectsUnsupportedExpiryViaValidation() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.draft.targetPrice = 16
+        vm.draft.expiryHours = 99  // not in {12, 24, 72}
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        guard case .invalidInputs(let errors)? = vm.placeOrderError else {
+            return XCTFail("Expected .invalidInputs, got \(String(describing: vm.placeOrderError))")
+        }
+        XCTAssertTrue(errors.contains(.expiryHoursUnsupported(99)))
+    }
+
+    func testPreparePlaceableOrderReturnsNilSilentlyWhenAmountIsZero() {
+        let vm = makeViewModel(sourceAmount: 0)
+        vm.draft.targetPrice = 16
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertNil(vm.placeOrderError, "A not-ready draft returns nil without raising a user-facing error")
     }
 
     // MARK: - fixtures

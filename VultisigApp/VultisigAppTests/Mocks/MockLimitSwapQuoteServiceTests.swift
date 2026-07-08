@@ -98,42 +98,4 @@ final class MockLimitSwapQuoteServiceTests: XCTestCase {
         XCTAssertEqual(mock.marketPriceQueries[0].sourceAsset, "BTC.BTC")
         XCTAssertEqual(mock.marketPriceQueries[1].sourceAsset, "ETH.ETH")
     }
-
-    // MARK: - inbound address
-
-    func testInboundAddressReturnsStubbedValue() async throws {
-        let mock = MockLimitSwapQuoteService()
-        mock.inboundAddressResult = .success("bc1qexampleinboundaddress00000000000000000")
-
-        let addr = try await mock.fetchInboundAddress(forChainSymbol: "BTC")
-
-        XCTAssertEqual(addr, "bc1qexampleinboundaddress00000000000000000")
-        XCTAssertEqual(mock.inboundAddressCallCount, 1)
-        XCTAssertEqual(mock.inboundAddressChainSymbols, ["BTC"])
-    }
-
-    func testInboundAddressNilStubReturnsNil() async throws {
-        let mock = MockLimitSwapQuoteService()
-        mock.inboundAddressResult = .success(nil)
-
-        let addr = try await mock.fetchInboundAddress(forChainSymbol: "LTC")
-
-        XCTAssertNil(addr)
-    }
-
-    func testInboundAddressThrowsConfiguredError() async {
-        struct CustomError: Error, Equatable {}
-
-        let mock = MockLimitSwapQuoteService()
-        mock.inboundAddressResult = .failure(CustomError())
-
-        do {
-            _ = try await mock.fetchInboundAddress(forChainSymbol: "BTC")
-            XCTFail("Expected throw")
-        } catch let error as CustomError {
-            XCTAssertEqual(error, CustomError())
-        } catch {
-            XCTFail("Expected CustomError, got \(error)")
-        }
-    }
 }

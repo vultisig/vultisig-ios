@@ -205,6 +205,116 @@ final class LimitSwapFormViewModel {
         }
     }
 
+    // MARK: - Place flow
+
+    /// Assemble a placeable limit order from the current draft: run the shared
+    /// input validation, build + byte-cap the memo, and construct the persisted
+    /// `LimitOrderRecord`. Returns `nil` when the order can't be placed; for
+    /// user-actionable failures it also sets `placeOrderError` so the view can
+    /// surface an alert. The view turns a non-nil result into a
+    /// `SwapTransaction` and routes to the shared Verify screen.
+    ///
+    /// Business logic lives here (not in the view) so it is unit-testable: the
+    /// previous live path built the memo inline in the entry view and never ran
+    /// `validateLimitSwapInputs`, so validation only executed in dead code.
+    func preparePlaceableOrder() -> (memo: String, record: LimitOrderRecord)? {
+        // Prerequisites that mean "not ready yet" rather than a user-actionable
+        // error: the CTA is disabled while amount/price are 0, and unroutable
+        // chains are filtered out by the picker (so `memoSymbol` is non-nil).
+        // Return silently — no alert.
+        guard let sourceAsset = draft.fromAsset.memoSymbol,
+              let targetAsset = draft.toAsset.memoSymbol,
+              let destAddress = destinationAddress(),
+              draft.sourceAmount > 0,
+              draft.targetPrice > 0 else {
+            return nil
+        }
+
+        // Phase 1 routes only native source assets. A non-native (ERC20-style)
+        // source would set `toAddress = router` with `approvePayload: nil` and
+        // no approve-first keysign, which the THORChain router rejects. The
+        // picker filters by chain, not token type, so ETH.USDC is still
+        // pickable — guard loudly here. (ERC20 approve-first flow is Phase 2.)
+        guard draft.fromAsset.isNativeToken else {
+            logger.error("Place order rejected: non-native source \(self.draft.fromAsset.ticker, privacy: .public) not supported in Phase 1")
+            placeOrderError = .nonNativeSourceUnsupported
+            return nil
+        }
+
+        // Real affiliate config: read the vault's referral code (if any) and
+        // compute the affiliate fragment via the same helper the market path
+        // uses. Vault-tier discount defaults to 0 for Phase 1.
+        let referralCode = vault.referralCode?.code ?? ""
+        let (affiliate, affiliateBps) = ThorchainService.affiliateParams(
+            referredCode: referralCode,
+            discountBps: 0
+        )
+
+        let inputs = LimitSwapInputs(
+            sourceAsset: sourceAsset,
+            sourceAmount: draft.sourceAmount,
+            sourceDecimals: draft.fromAsset.decimals,
+            targetAsset: targetAsset,
+            destAddress: destAddress,
+            targetPrice: draft.targetPrice,
+            expiryHours: draft.expiryHours,
+            affiliate: affiliate ?? THORChainSwaps.affiliateFeeAddress,
+            affiliateBps: affiliateBps ?? String(THORChainSwaps.affiliateFeeRateBp)
+        )
+
+        // Run the shared input validation in production. Previously the live
+        // path built the memo directly and skipped this gate entirely.
+        let validationErrors = validateLimitSwapInputs(inputs)
+        guard validationErrors.isEmpty else {
+            logger.error("Place order rejected: validation failed \(String(describing: validationErrors), privacy: .public)")
+            placeOrderError = .invalidInputs(validationErrors)
+            return nil
+        }
+
+        // Memo assembly + byte-cap pre-flight. Both can fail for genuinely
+        // user-actionable reasons (a target price that overflows the LIM
+        // fixed-point, or a memo that overflows the source chain's per-tx byte
+        // budget). These must surface via an alert, not be swallowed silently.
+        let memo: String
+        do {
+            memo = try buildLimitSwapMemo(inputs)
+            try assertMemoByteLength(memo, sourceChainKind: draft.fromAsset.chain.chainType)
+        } catch let error as LimitSwapMemoError {
+            switch error {
+            case let .memoExceedsByteLimit(actual, limit):
+                logger.error("Place order rejected: memo \(actual) bytes exceeds \(limit)-byte cap")
+                placeOrderError = .memoTooLong(actual: actual, limit: limit)
+            case .targetPriceOverflow:
+                logger.error("Place order rejected: target price overflowed LIM fixed-point")
+                placeOrderError = .targetPriceOverflow
+            case .limitAmountTooSmall:
+                logger.error("Place order rejected: LIM truncated to zero (amount/price too small)")
+                placeOrderError = .limitAmountTooSmall
+            }
+            return nil
+        } catch {
+            logger.error("Place order rejected: \(error.localizedDescription, privacy: .public)")
+            placeOrderError = .targetPriceOverflow
+            return nil
+        }
+
+        let record = LimitOrderRecord(
+            inboundTxHash: "",  // Filled in by the Done screen after broadcast.
+            sourceAsset: sourceAsset,
+            sourceAmount: draft.sourceAmount.description,
+            sourceDecimals: draft.fromAsset.decimals,
+            targetAsset: targetAsset,
+            destAddress: destAddress,
+            targetPrice: draft.targetPrice,
+            expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
+            createdAt: Date(),
+            status: .pending,
+            memo: memo,
+            expiryHours: draft.expiryHours
+        )
+        return (memo, record)
+    }
+
     // MARK: - Computed UI state
 
     /// Percentage above (positive) or below (negative) the current market.

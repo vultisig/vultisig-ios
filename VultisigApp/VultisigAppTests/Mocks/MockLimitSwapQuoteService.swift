@@ -22,10 +22,6 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
     private(set) var marketPriceCallCount = 0
     private(set) var marketPriceQueries: [(sourceAsset: String, targetAsset: String)] = []
 
-    var inboundAddressResult: Result<String?, Error> = .failure(StubError.notStubbed)
-    private(set) var inboundAddressCallCount = 0
-    private(set) var inboundAddressChainSymbols: [String] = []
-
     func fetchCurrentMarketPrice(
         sourceAsset: String,
         sourceAmount: BigInt,
@@ -37,12 +33,6 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
         marketPriceCallCount += 1
         marketPriceQueries.append((sourceAsset, targetAsset))
         return try marketPriceResult.get()
-    }
-
-    func fetchInboundAddress(forChainSymbol chainSymbol: String) async throws -> String? {
-        inboundAddressCallCount += 1
-        inboundAddressChainSymbols.append(chainSymbol)
-        return try inboundAddressResult.get()
     }
 }
 

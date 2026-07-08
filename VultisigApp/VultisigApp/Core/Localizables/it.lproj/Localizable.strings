@@ -644,6 +644,8 @@
 "limitSwap.confirmation.title" = "Inserisci ordine limite";
 "limitSwap.done.bannerDetail" = "Tracciali nella Cronologia Transazioni alla scheda Ordini Limite.";
 "limitSwap.done.bannerTitle" = "Ordini Limite";
+"limitSwap.error.advancedSwapQueueDisabled" = "Gli ordini limite non sono temporaneamente disponibili su THORChain. Riprova più tardi o usa uno swap di mercato.";
+"limitSwap.error.invalidInputs" = "Alcuni dettagli dell'ordine non sono validi. Controlla importo, prezzo e scadenza e riprova.";
 "limitSwap.error.limitAmountTooSmall" = "Questo ordine è troppo piccolo per un prezzo limite. Aumenta l'importo o modifica il prezzo e riprova.";
 "limitSwap.error.nonNativeSource" = "Gli ordini limite supportano attualmente solo asset di origine nativi. Scegli la moneta nativa della chain e riprova.";
 "limitSwap.error.targetPriceOverflow" = "Il prezzo obiettivo è troppo alto. Inserisci un prezzo più basso e riprova.";

@@ -644,6 +644,8 @@
 "limitSwap.confirmation.title" = "Postavi limit nalog";
 "limitSwap.done.bannerDetail" = "Prati ih u povijesti transakcija pod karticom Limit nalozi.";
 "limitSwap.done.bannerTitle" = "Limit nalozi";
+"limitSwap.error.advancedSwapQueueDisabled" = "Limit nalozi trenutačno nisu dostupni na THORChainu. Pokušajte kasnije ili upotrijebite tržišni swap.";
+"limitSwap.error.invalidInputs" = "Neki podaci naloga nisu valjani. Provjerite iznos, cijenu i istek pa pokušajte ponovno.";
 "limitSwap.error.limitAmountTooSmall" = "Ovaj nalog je premalen za limitiranu cijenu. Povećaj iznos ili prilagodi cijenu i pokušaj ponovno.";
 "limitSwap.error.nonNativeSource" = "Limit nalozi trenutno podržavaju samo izvorne izvorne imovine. Odaberi izvorni novčić lanca i pokušaj ponovno.";
 "limitSwap.error.targetPriceOverflow" = "Ciljana cijena je previsoka. Unesi manju cijenu i pokušaj ponovno.";

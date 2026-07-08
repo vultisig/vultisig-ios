@@ -26,9 +26,4 @@ protocol LimitSwapQuoteServiceProtocol {
         targetDecimals: Int,
         destinationAddress: String
     ) async throws -> Decimal
-
-    /// Fetches the THORChain inbound vault address for a given source chain
-    /// (e.g. `BTC`, `ETH`, `LTC`). Returns `nil` if no inbound address is
-    /// currently published (chain halted, paused, etc.).
-    func fetchInboundAddress(forChainSymbol chainSymbol: String) async throws -> String?
 }

@@ -3,11 +3,7 @@
 //  VultisigApp
 //
 
-import BigInt
-import OSLog
 import SwiftUI
-
-private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-swap-entry")
 
 /// Wrapper that owns the `LimitSwapFormViewModel` lifecycle plus Limit's
 /// **independent** coin selection state. The initial from/to coins seed
@@ -62,10 +58,7 @@ struct LimitSwapEntryView: View {
             fromAsset: LimitSwapAsset(coin: initialFromCoin),
             toAsset: LimitSwapAsset(coin: initialToCoin)
         )
-        let interactor = DefaultLimitSwapInteractor(
-            quoteService: ThorchainService.shared,
-            storage: LimitOrderStorageService()
-        )
+        let interactor = DefaultLimitSwapInteractor(quoteService: ThorchainService.shared)
         let model = LimitSwapFormViewModel(
             initialDraft: draft,
             vault: vault,
@@ -194,101 +187,17 @@ struct LimitSwapEntryView: View {
     // MARK: - Place flow
 
     private func handlePlaceOrder() {
-        guard let fromMemo = vm.draft.fromAsset.memoSymbol,
-              let toMemo = vm.draft.toAsset.memoSymbol,
-              let destAddress = vm.destinationAddress(),
-              vm.draft.sourceAmount > 0,
-              vm.draft.targetPrice > 0
-        else {
-            return
-        }
-
-        // Phase 1 routes only native source assets. A non-native (ERC20-style)
-        // source would set `toAddress = router` with `approvePayload: nil` and
-        // no approve-first keysign, which the THORChain router rejects. The
-        // picker filters by chain, not token type, so ETH.USDC is still
-        // pickable — guard loudly here so the user gets feedback instead of a
-        // failed on-chain tx. (ERC20 approve-first flow is Phase 2.)
-        guard limitFromCoin.isNativeToken else {
-            logger.error("Place order rejected: non-native source \(limitFromCoin.ticker, privacy: .public) not supported in Phase 1")
-            vm.placeOrderError = .nonNativeSourceUnsupported
-            return
-        }
-
-        // Real affiliate config: read the vault's referral code (if any)
-        // and compute the affiliate fragment via the same helper the market
-        // path uses. Vault-tier discount defaults to 0 for Phase 1; the
-        // tier-discount lookup ride-along arrives in a follow-up.
-        let referralCode = vault.referralCode?.code ?? ""
-        let (affiliate, affiliateBps) = ThorchainService.affiliateParams(
-            referredCode: referralCode,
-            discountBps: 0
-        )
-
-        let inputs = LimitSwapInputs(
-            sourceAsset: fromMemo,
-            sourceAmount: vm.draft.sourceAmount,
-            sourceDecimals: vm.draft.fromAsset.decimals,
-            targetAsset: toMemo,
-            destAddress: destAddress,
-            targetPrice: vm.draft.targetPrice,
-            expiryHours: vm.draft.expiryHours,
-            affiliate: affiliate ?? THORChainSwaps.affiliateFeeAddress,
-            affiliateBps: affiliateBps ?? String(THORChainSwaps.affiliateFeeRateBp)
-        )
-
-        let chainKind = vm.draft.fromAsset.chain.chainType
-
-        // Memo assembly + byte-cap pre-flight. Both can fail for genuinely
-        // user-actionable reasons (a target price that overflows the LIM
-        // fixed-point, or a memo that overflows the source chain's per-tx
-        // byte budget — realistic on UTXO source + token destination). These
-        // must surface to the user via an alert, NOT be swallowed silently:
-        // tapping "Place Order" and having nothing happen is a confusing UX,
-        // and an overflowed LIM is a fund-safety hazard.
-        let memo: String
-        do {
-            memo = try buildLimitSwapMemo(inputs)
-            try assertMemoByteLength(memo, sourceChainKind: chainKind)
-        } catch let error as LimitSwapMemoError {
-            switch error {
-            case let .memoExceedsByteLimit(actual, limit):
-                logger.error("Place order rejected: memo \(actual) bytes exceeds \(limit)-byte cap")
-                vm.placeOrderError = .memoTooLong(actual: actual, limit: limit)
-            case .targetPriceOverflow:
-                logger.error("Place order rejected: target price overflowed LIM fixed-point")
-                vm.placeOrderError = .targetPriceOverflow
-            case .limitAmountTooSmall:
-                logger.error("Place order rejected: LIM truncated to zero (amount/price too small)")
-                vm.placeOrderError = .limitAmountTooSmall
-            }
-            return
-        } catch {
-            logger.error("Place order rejected: \(error.localizedDescription, privacy: .public)")
-            vm.placeOrderError = .targetPriceOverflow
-            return
-        }
-
-        let draft = vm.draft
-        let record = LimitOrderRecord(
-            inboundTxHash: "",  // Filled in by the Done screen after broadcast.
-            sourceAsset: fromMemo,
-            sourceAmount: draft.sourceAmount.description,
-            sourceDecimals: draft.fromAsset.decimals,
-            targetAsset: toMemo,
-            destAddress: destAddress,
-            targetPrice: draft.targetPrice,
-            expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
-            createdAt: Date(),
-            status: .pending,
-            memo: memo,
-            expiryHours: draft.expiryHours
-        )
+        // All validation / memo-assembly / byte-cap / record construction lives
+        // in the VM (`preparePlaceableOrder`) so it is unit-testable and runs
+        // the shared `validateLimitSwapInputs` gate in production. The view only
+        // turns a prepared order into a `SwapTransaction` and navigates.
+        guard let prepared = vm.preparePlaceableOrder() else { return }
+        let record = prepared.record
 
         let transaction = SwapTransaction(
             fromCoin: limitFromCoin,
             toCoin: limitToCoin,
-            fromAmount: limitFromCoin.decimal(for: draft.sourceAmount),
+            fromAmount: limitFromCoin.decimal(for: vm.draft.sourceAmount),
             quote: nil,
             gas: 0,
             thorchainFee: 0,

@@ -62,6 +62,16 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
     /// router without an approve-first keysign, which the router would reject.
     /// Fail loud at "Place Order" rather than broadcasting a doomed tx.
     case nonNativeSourceUnsupported
+    /// The shared input validation (`validateLimitSwapInputs`) rejected the
+    /// draft before the memo was built. The live "Place Order" path runs this
+    /// gate in production so malformed inputs surface as an alert instead of
+    /// building a memo from bad data.
+    case invalidInputs([LimitSwapValidationError])
+    /// The `EnableAdvSwapQueue` THORChain mimir is not confirmed enabled, so
+    /// resting limit orders (`=<`) are not currently accepted by the network.
+    /// Fail CLOSED — placing anyway risks the order being treated as a market
+    /// swap or rejected on-chain.
+    case advancedSwapQueueDisabled
 
     var id: String {
         switch self {
@@ -73,6 +83,10 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "limitAmountTooSmall"
         case .nonNativeSourceUnsupported:
             return "nonNativeSourceUnsupported"
+        case let .invalidInputs(errors):
+            return "invalidInputs-\(errors.map(String.init(describing:)).joined(separator: ","))"
+        case .advancedSwapQueueDisabled:
+            return "advancedSwapQueueDisabled"
         }
     }
 
@@ -91,6 +105,10 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "limitSwap.error.limitAmountTooSmall".localized
         case .nonNativeSourceUnsupported:
             return "limitSwap.error.nonNativeSource".localized
+        case .invalidInputs:
+            return "limitSwap.error.invalidInputs".localized
+        case .advancedSwapQueueDisabled:
+            return "limitSwap.error.advancedSwapQueueDisabled".localized
         }
     }
 }
