@@ -15,6 +15,20 @@ struct KeysignMessageConfirmView: View {
             VStack(spacing: 24) {
                 let fees = viewModel.getCalculatedNetworkFee()
                 let lpDictionary = lpMemoDictionary(for: viewModel.keysignPayload)
+                // XRP destination tag the joiner will actually sign (field-
+                // preferred, else the canonical memo carrier). It owns a labeled
+                // row; the numeric memo CARRIER is never shown as a memo. A
+                // genuine text memo (tag+memo combo, or memo-only) still shows in
+                // the memo row alongside the tag, so the joiner sees everything
+                // it is about to sign.
+                let ripplePayload = viewModel.keysignPayload
+                let rippleDestinationTag = ripplePayload.flatMap { RippleDestinationTag.displayTag(for: $0) }
+                let rippleMemo = ripplePayload.flatMap { RippleDestinationTag.displayMemo(for: $0) }
+                // Only a PLAIN XRP payment routes its memo through the tag-aware
+                // display: the numeric tag carrier is suppressed (shown as the
+                // tag row) while a genuine text memo (combo / memo-only) shows.
+                // XRP SWAPS keep the raw memo (their on-chain routing memo).
+                let isRipplePlainPayment = ripplePayload?.coin.chain == .ripple && ripplePayload?.swapPayload == nil
                 SendCryptoVerifySummaryView(
                     input: SendCryptoVerifySummary(
                         fromName: viewModel.vault.name,
@@ -22,7 +36,8 @@ struct KeysignMessageConfirmView: View {
                         toAddress: viewModel.keysignPayload?.toAddress ?? .empty,
                         network: viewModel.keysignPayload?.coin.chain.name ?? .empty,
                         networkImage: viewModel.keysignPayload?.coin.chain.logo ?? .empty,
-                        memo: viewModel.memo ?? .empty,
+                        memo: isRipplePlainPayment ? (rippleMemo ?? .empty) : (viewModel.memo ?? .empty),
+                        destinationTag: rippleDestinationTag.map(String.init),
                         decodedFunctionSignature: viewModel.decodedFunctionSignature,
                         decodedFunctionArguments: viewModel.decodedFunctionArguments,
                         memoFunctionDictionary: lpDictionary,

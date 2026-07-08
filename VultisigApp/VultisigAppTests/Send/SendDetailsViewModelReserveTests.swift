@@ -142,7 +142,11 @@ final class SendDetailsViewModelReserveTests: XCTestCase {
         SendFormFixture.make(
             coin: SendFormFixture.makeXRP(rawBalance: "20000000"), // 20 XRP
             addressResolver: { input, _ in input },
-            amountValidators: [RippleDestinationReserveValidator(service: service)]
+            amountValidators: [RippleDestinationReserveValidator(service: service)],
+            // Isolate the reserve rule: satisfy the RequireDest gate so
+            // validateForm() reaches the reserve check. RequireDest is covered
+            // on its own in RippleRequireDestGateTests.
+            destinationTagRequirementProvider: { _ in .notRequired }
         )
     }
 
