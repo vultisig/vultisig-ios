@@ -108,7 +108,18 @@ struct SettingsCustomMessageView: View {
 
     var keysign: some View {
         ZStack {
-            if let keysignView = keysignView {
+            if let fastPassword = fastVaultPassword.nilIfEmpty {
+                // Fast vaults skip the pair screen: the off-screen
+                // bootstrap runs here and then drives KeysignView, showing
+                // the signing animation throughout.
+                FastKeysignBootstrapView(
+                    vault: vault,
+                    keysignPayload: nil,
+                    customMessagePayload: customMessagePayload,
+                    fastVaultPassword: fastPassword,
+                    transferViewModel: viewModel
+                )
+            } else if let keysignView = keysignView {
                 keysignView
             } else {
                 signingErrorView
@@ -226,5 +237,13 @@ struct SettingsCustomMessageView: View {
 
     func onSignPress() {
         viewModel.moveToNextView()
+        // Fast vaults have no peer to pair with, so skip the pair state and
+        // land on keysign, where the off-screen bootstrap runs. A present
+        // fast password is the fast-sign signal; paired-sign (empty
+        // password) keeps the pair state and its QR screen. Advancing to
+        // keysign also hides the back button during signing (canGoBack()).
+        if fastVaultPassword.nilIfEmpty != nil {
+            viewModel.moveToNextView()
+        }
     }
 }
