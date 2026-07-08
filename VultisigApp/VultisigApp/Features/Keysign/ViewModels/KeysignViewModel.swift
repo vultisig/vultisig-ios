@@ -11,6 +11,12 @@ import Tss
 import WalletCore
 
 enum KeysignStatus {
+    /// Pre-ceremony wait for the fast-vault flow: the relay session is being
+    /// bootstrapped (Vultiserver woken + awaited) before any message is
+    /// signed. Rendered with the "connecting" animation (`connected=false`,
+    /// progress 0). Non-terminal, and deliberately NOT part of the
+    /// "isSigning" scene-phase set — nothing is being signed yet.
+    case connectingToFastServer
     case CreatingInstance
     case KeysignECDSA
     case KeysignEdDSA
@@ -118,6 +124,8 @@ class KeysignViewModel: ObservableObject {
     /// binds the property.
     var signingProgress: Float {
         switch status {
+        case .connectingToFastServer:
+            return 0
         case .CreatingInstance:
             return 0
         case .KeysignECDSA:
@@ -318,7 +326,7 @@ class KeysignViewModel: ObservableObject {
         case .KeysignFinished, .KeysignFailed, .KeysignVaultMismatch,
              .KeysignRetryRequested, .KeysignBroadcastUnconfirmed:
             return true
-        case .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA:
+        case .connectingToFastServer, .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA:
             return false
         }
     }

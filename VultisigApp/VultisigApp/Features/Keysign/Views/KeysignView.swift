@@ -73,11 +73,21 @@ struct KeysignView: View {
     var content: some View {
         ZStack {
             switch viewModel.status {
-            case .CreatingInstance,
+            case .connectingToFastServer,
+                    .CreatingInstance,
                     .KeysignECDSA,
                     .KeysignEdDSA,
                     .KeysignMLDSA:
-                SendCryptoKeysignView(coinLogo: keysignPayload?.coin.logo, progress: viewModel.signingProgress)
+                // One animation host across connecting -> signing: keeping these
+                // in a single switch branch preserves the view's structural
+                // identity, so the Rive animation isn't torn down and recreated
+                // mid-transition. `connected` flips false -> true through the
+                // binding (searching -> signing visual) instead of restarting.
+                SendCryptoKeysignView(
+                    connected: viewModel.status != .connectingToFastServer,
+                    coinLogo: keysignPayload?.coin.logo,
+                    progress: viewModel.signingProgress
+                )
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
