@@ -31,18 +31,19 @@ final class LimitSwapByteCapTests: XCTestCase {
     }
 
     func testUtxoSourceRejectsRealisticReferredMemo() {
-        // Same memo asserted in LimitSwapMemoBuilderTests for the 24h-referred BTC→ETH case.
-        // 87 bytes — exceeds the 80B Bitcoin OP_RETURN cap.
-        let memo = "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/14400/0:myref/vi:10/35"
-        XCTAssertEqual(memo.utf8.count, 87)
+        // Same memo emitted by LimitSwapMemoBuilder for the 24h-referred BTC→ETH
+        // case, with the sci-notation LIM (16e8). Even 6 bytes shorter than the
+        // plain 1600000000 form (81 vs 87), it still exceeds the 80B cap.
+        let memo = "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/14400/0:myref/vi:10/35"
+        XCTAssertEqual(memo.utf8.count, 81)
         XCTAssertThrowsError(try assertMemoByteLength(memo, sourceChainKind: .UTXO))
     }
 
     func testUtxoSourceRejectsTokenTargetWithReferredAffiliate() {
-        // Token target (ETH.USDC-EC7) on a referred user pushes the memo well past 80B even
-        // with a non-Vultisig destination chain. This is the canonical "fitness check" case
-        // from vultisig/vultisig-sdk#312 acceptance.
-        let memo = "=<:ETH.USDC-EC7:0x1234567890abcdef1234567890abcdef12345678:1600000000/14400/0:myref/vi:10/35"
+        // Token target (ETH.USDC-EC7) on a referred user pushes the memo past 80B
+        // even with the sci-notation LIM and a non-Vultisig destination chain.
+        // This is the canonical "fitness check" case from vultisig-sdk#312.
+        let memo = "=<:ETH.USDC-EC7:0x1234567890abcdef1234567890abcdef12345678:16e8/14400/0:myref/vi:10/35"
         XCTAssertGreaterThan(memo.utf8.count, 80)
         XCTAssertThrowsError(try assertMemoByteLength(memo, sourceChainKind: .UTXO))
     }

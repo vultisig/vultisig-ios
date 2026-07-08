@@ -13,7 +13,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/7200/0:vi:50"
+      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/7200/0:vi:50"
     },
     {
       "name": "btc_to_eth_24h_non_referred",
@@ -28,7 +28,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/14400/0:vi:50"
+      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/14400/0:vi:50"
     },
     {
       "name": "btc_to_eth_3d_non_referred",
@@ -43,7 +43,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/43200/0:vi:50"
+      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/43200/0:vi:50"
     },
     {
       "name": "btc_to_eth_12h_referred",
@@ -58,7 +58,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/7200/0:myref/vi:10/35"
+      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/7200/0:myref/vi:10/35"
     },
     {
       "name": "btc_to_eth_24h_referred",
@@ -73,7 +73,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/14400/0:myref/vi:10/35"
+      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/14400/0:myref/vi:10/35"
     },
     {
       "name": "btc_to_eth_3d_referred",
@@ -88,7 +88,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:1600000000/43200/0:myref/vi:10/35"
+      "expected_memo": "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/43200/0:myref/vi:10/35"
     },
     {
       "name": "eth_to_btc_12h_non_referred",
@@ -103,7 +103,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:6250000/7200/0:vi:50"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:625e4/7200/0:vi:50"
     },
     {
       "name": "eth_to_btc_24h_non_referred",
@@ -118,7 +118,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:6250000/14400/0:vi:50"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:625e4/14400/0:vi:50"
     },
     {
       "name": "eth_to_btc_3d_non_referred",
@@ -133,7 +133,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:6250000/43200/0:vi:50"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:625e4/43200/0:vi:50"
     },
     {
       "name": "eth_to_btc_12h_referred",
@@ -148,7 +148,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:6250000/7200/0:myref/vi:10/35"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:625e4/7200/0:myref/vi:10/35"
     },
     {
       "name": "eth_to_btc_24h_referred",
@@ -163,7 +163,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:6250000/14400/0:myref/vi:10/35"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:625e4/14400/0:myref/vi:10/35"
     },
     {
       "name": "eth_to_btc_3d_referred",
@@ -178,7 +178,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:6250000/43200/0:myref/vi:10/35"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:625e4/43200/0:myref/vi:10/35"
     },
     {
       "name": "usdt_to_btc_12h_non_referred",
@@ -193,7 +193,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:50000000/7200/0:vi:50"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:5e7/7200/0:vi:50"
     },
     {
       "name": "usdt_to_btc_24h_non_referred",
@@ -208,7 +208,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:50000000/14400/0:vi:50"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:5e7/14400/0:vi:50"
     },
     {
       "name": "usdt_to_btc_3d_non_referred",
@@ -223,7 +223,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:50000000/43200/0:vi:50"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:5e7/43200/0:vi:50"
     },
     {
       "name": "usdt_to_btc_12h_referred",
@@ -238,7 +238,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:50000000/7200/0:myref/vi:10/35"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:5e7/7200/0:myref/vi:10/35"
     },
     {
       "name": "usdt_to_btc_24h_referred",
@@ -253,7 +253,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:50000000/14400/0:myref/vi:10/35"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:5e7/14400/0:myref/vi:10/35"
     },
     {
       "name": "usdt_to_btc_3d_referred",
@@ -268,7 +268,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:50000000/43200/0:myref/vi:10/35"
+      "expected_memo": "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:5e7/43200/0:myref/vi:10/35"
     },
     {
       "name": "btc_to_rune_12h_non_referred",
@@ -283,7 +283,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:600000000000/7200/0:vi:50"
+      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:6e11/7200/0:vi:50"
     },
     {
       "name": "btc_to_rune_24h_non_referred",
@@ -298,7 +298,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:600000000000/14400/0:vi:50"
+      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:6e11/14400/0:vi:50"
     },
     {
       "name": "btc_to_rune_3d_non_referred",
@@ -313,7 +313,7 @@
         "affiliate": "vi",
         "affiliate_bps": "50"
       },
-      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:600000000000/43200/0:vi:50"
+      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:6e11/43200/0:vi:50"
     },
     {
       "name": "btc_to_rune_12h_referred",
@@ -328,7 +328,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:600000000000/7200/0:myref/vi:10/35"
+      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:6e11/7200/0:myref/vi:10/35"
     },
     {
       "name": "btc_to_rune_24h_referred",
@@ -343,7 +343,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:600000000000/14400/0:myref/vi:10/35"
+      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:6e11/14400/0:myref/vi:10/35"
     },
     {
       "name": "btc_to_rune_3d_referred",
@@ -358,7 +358,7 @@
         "affiliate": "myref/vi",
         "affiliate_bps": "10/35"
       },
-      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:600000000000/43200/0:myref/vi:10/35"
+      "expected_memo": "=<:THOR.RUNE:thor1xyzabcdefghijklmnopqrstuvwxyz0123456789a:6e11/43200/0:myref/vi:10/35"
     }
   ]
 }

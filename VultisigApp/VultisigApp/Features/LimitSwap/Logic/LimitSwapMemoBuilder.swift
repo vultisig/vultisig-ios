@@ -17,7 +17,39 @@ func buildLimitSwapMemo(_ inputs: LimitSwapInputs) throws -> String {
     )
     let interval = computeExpiryBlocks(hours: inputs.expiryHours)
 
-    return "=<:\(inputs.targetAsset):\(inputs.destAddress):\(lim)/\(interval)/0:\(inputs.affiliate):\(inputs.affiliateBps)"
+    return "=<:\(inputs.targetAsset):\(inputs.destAddress):\(compressLim(lim))/\(interval)/0:\(inputs.affiliate):\(inputs.affiliateBps)"
+}
+
+/// Encode a LIM integer using THORChain's `<mantissa>e<exponent>` shorthand
+/// (base-10: `mantissa` followed by `exponent` trailing zeros) when that is
+/// **strictly shorter** than the plain decimal — otherwise the plain decimal.
+/// This shrinks the signed memo to better fit tight budgets, most importantly
+/// the 80-byte UTXO `OP_RETURN` cap.
+///
+/// **LOSSLESS.** The exponent is exactly the trailing-zero count, so the encoded
+/// value equals the plain integer bit-for-bit. It never rounds, so it can never
+/// round UP and never overstate the minimum-output guarantee (`compressLim(x)`
+/// always decodes back to `x`). Verified against the protocol's own examples:
+/// `1e8`=100000000, `51e7`=510000000, `544e6`=544000000.
+///
+/// Non-positive / trailing-zero-free LIMs (nothing to compress) return the plain
+/// decimal unchanged, as does any value whose sci-form isn't strictly shorter
+/// (e.g. `X00` → `Xe2` is the same length, so the plain form wins).
+func compressLim(_ lim: BigInt) -> String {
+    let plain = lim.description
+    guard lim > 0 else { return plain }
+
+    var mantissa = lim
+    var exponent = 0
+    let ten = BigInt(10)
+    while mantissa % ten == 0 {
+        mantissa /= ten
+        exponent += 1
+    }
+    guard exponent > 0 else { return plain }
+
+    let sci = "\(mantissa)e\(exponent)"
+    return sci.count < plain.count ? sci : plain
 }
 
 /// Assert that a limit-swap memo fits the byte budget for its source chain.

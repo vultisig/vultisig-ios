@@ -42,6 +42,53 @@ final class LimitSwapMemoBuilderTests: XCTestCase {
         }
     }
 
+    // MARK: - compressLim (sci-notation) — spec-anchored, NOT tautological
+    //
+    // These vectors come from THORChain's own memo-length-reduction docs, not
+    // from re-running the builder against itself, so they pin the encoding to an
+    // external oracle. `<mantissa>e<exp>` = mantissa followed by `exp` zeros.
+
+    func testCompressLimMatchesProtocolSpecExamples() {
+        XCTAssertEqual(compressLim(BigInt(100_000_000)), "1e8")   // 1e8 = 100000000
+        XCTAssertEqual(compressLim(BigInt(510_000_000)), "51e7")  // 51e7 = 510000000
+        XCTAssertEqual(compressLim(BigInt(544_000_000)), "544e6") // 544e6 = 544000000
+    }
+
+    func testCompressLimIsLosslessAndNeverRoundsUp() {
+        // Every compressed form must decode back to EXACTLY the input — it must
+        // never exceed the plain LIM (which would overstate the guarantee).
+        for value in ["1", "10", "100", "6250000", "1600000000", "600000000000",
+                      "123456789", "999999999", "1000000000000000000"] {
+            let lim = BigInt(value)!
+            let encoded = compressLim(lim)
+            XCTAssertEqual(decodeSci(encoded), lim, "compressLim(\(value)) = \(encoded) must be lossless")
+            XCTAssertLessThanOrEqual(decodeSci(encoded), lim, "compressed LIM must never exceed the plain LIM")
+        }
+    }
+
+    func testCompressLimOnlyUsesSciWhenStrictlyShorter() {
+        // No trailing zeros → plain form.
+        XCTAssertEqual(compressLim(BigInt(123)), "123")
+        // `X00` (`Xe2`) is the same length → plain form wins.
+        XCTAssertEqual(compressLim(BigInt(700)), "700")
+        // `X000` (`Xe3`) is one shorter → sci form.
+        XCTAssertEqual(compressLim(BigInt(7000)), "7e3")
+        // Non-positive → plain.
+        XCTAssertEqual(compressLim(BigInt(0)), "0")
+    }
+
+    /// Decode `<mantissa>e<exp>` (or a plain integer) back to a BigInt, for the
+    /// lossless round-trip assertions above.
+    private func decodeSci(_ encoded: String) -> BigInt {
+        guard let eIndex = encoded.firstIndex(of: "e") else {
+            return BigInt(encoded) ?? -1
+        }
+        let mantissa = String(encoded[encoded.startIndex..<eIndex])
+        let expString = String(encoded[encoded.index(after: eIndex)...])
+        guard let m = BigInt(mantissa), let exp = Int(expString) else { return -1 }
+        return m * BigInt(10).power(exp)
+    }
+
     // MARK: - Fixture loading
 
     private func loadMemoFixture() throws -> MemoFixture {
