@@ -51,6 +51,16 @@ final class LimitSwapFormViewModel {
     var isLoadingMarketPrice = false
     var marketPriceError: Error?
 
+    /// Whether THORChain's Advanced Swap Queue (`EnableAdvSwapQueue` mimir) is
+    /// live, so resting `=<` limit orders are actually accepted on-chain.
+    /// `nil` while the gate hasn't been resolved yet. **Fail-closed:** placement
+    /// is blocked until this is confirmed `true` (see `preparePlaceableOrder`);
+    /// `nil`/`false` both block. Refreshed via `refreshAdvancedSwapQueueGate()`.
+    var advancedSwapQueueEnabled: Bool?
+
+    /// Convenience for the view: `true` only when the queue is confirmed live.
+    var isAdvancedSwapQueueEnabled: Bool { advancedSwapQueueEnabled == true }
+
     /// User-facing error raised while assembling / pre-flighting the order in
     /// "Place Order" (memo byte-cap overflow, target-price overflow). Drives an
     /// alert in `LimitSwapEntryView`. `nil` clears the alert. Previously these
@@ -157,6 +167,16 @@ final class LimitSwapFormViewModel {
         logger.info("refreshSupportedChains: \(chains.count, privacy: .public) routable chains")
     }
 
+    /// Resolve THORChain's Advanced Swap Queue availability (`EnableAdvSwapQueue`
+    /// mimir) and cache it into `advancedSwapQueueEnabled`. Fail-closed: the
+    /// interactor returns `false` on any fetch/parse failure, so a network blip
+    /// leaves placement blocked rather than letting a `=<` order through on a
+    /// network that would treat it as a market swap.
+    func refreshAdvancedSwapQueueGate() async {
+        advancedSwapQueueEnabled = await interactor.isAdvancedSwapQueueEnabled()
+        logger.info("EnableAdvSwapQueue gate resolved: \(self.advancedSwapQueueEnabled == true, privacy: .public)")
+    }
+
     func refreshMarketPrice() async {
         let requestID = UUID()
         marketPriceRequestID = requestID
@@ -227,6 +247,19 @@ final class LimitSwapFormViewModel {
               let destAddress = destinationAddress(),
               draft.sourceAmount > 0,
               draft.targetPrice > 0 else {
+            return nil
+        }
+
+        // Availability gate (FAIL-CLOSED): THORChain's Advanced Swap Queue must
+        // be confirmed live before a resting `=<` order can be placed. When the
+        // `EnableAdvSwapQueue` mimir isn't a confirmed `1` — including while the
+        // gate is still unresolved (`nil`) or the fetch failed — block placement.
+        // A `=<` order on a network with the queue disabled can be treated as a
+        // market swap and execute immediately at the wrong price (fund-safety),
+        // so silently allowing it is not acceptable.
+        guard advancedSwapQueueEnabled == true else {
+            logger.error("Place order rejected: EnableAdvSwapQueue mimir not confirmed enabled (value: \(String(describing: self.advancedSwapQueueEnabled), privacy: .public))")
+            placeOrderError = .advancedSwapQueueDisabled
             return nil
         }
 

@@ -25,6 +25,10 @@ protocol LimitSwapInteractor {
         targetDecimals: Int,
         destinationAddress: String
     ) async throws -> Decimal
+
+    /// Whether THORChain currently accepts resting limit orders (`EnableAdvSwapQueue`
+    /// mimir). Fails CLOSED. Gates the Place-Order flow.
+    func isAdvancedSwapQueueEnabled() async -> Bool
 }
 
 struct DefaultLimitSwapInteractor: LimitSwapInteractor {
@@ -51,5 +55,9 @@ struct DefaultLimitSwapInteractor: LimitSwapInteractor {
             targetDecimals: targetDecimals,
             destinationAddress: destinationAddress
         )
+    }
+
+    func isAdvancedSwapQueueEnabled() async -> Bool {
+        await quoteService.isAdvancedSwapQueueEnabled()
     }
 }

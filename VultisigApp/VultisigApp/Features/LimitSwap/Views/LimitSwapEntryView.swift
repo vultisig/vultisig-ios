@@ -81,7 +81,8 @@ struct LimitSwapEntryView: View {
         .task {
             async let supportedChains: () = vm.refreshSupportedChains()
             async let marketPrice: () = vm.refreshMarketPrice()
-            _ = await (supportedChains, marketPrice)
+            async let queueGate: () = vm.refreshAdvancedSwapQueueGate()
+            _ = await (supportedChains, marketPrice, queueGate)
             vm.selectPresetPct(0)
         }
         .onChange(of: limitFromCoin) { _, newCoin in

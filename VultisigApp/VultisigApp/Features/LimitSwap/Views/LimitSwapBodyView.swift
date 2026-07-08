@@ -48,6 +48,10 @@ struct LimitSwapBodyView: View {
 
                     LimitExpiryCard(vm: vm)
 
+                    if vm.advancedSwapQueueEnabled == false {
+                        LimitUnavailableRow()
+                    }
+
                     if let warning = vm.displayedWarning {
                         LimitWarningRow(warning: warning)
                     }
@@ -81,7 +85,9 @@ struct LimitSwapBodyView: View {
     }
 
     private var isPlaceable: Bool {
-        vm.draft.targetPrice > 0 && vm.draft.sourceAmount > 0
+        vm.draft.targetPrice > 0
+            && vm.draft.sourceAmount > 0
+            && vm.isAdvancedSwapQueueEnabled
     }
 
     private func parseAmount(_ text: String, decimals: Int) -> BigInt {
@@ -685,6 +691,38 @@ private struct LimitExecuteWhenTitle: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
+    }
+}
+
+// MARK: - Advanced Swap Queue unavailable row
+//
+// Shown when the `EnableAdvSwapQueue` mimir is resolved-disabled: THORChain
+// isn't accepting resting `=<` limit orders right now, so placement is blocked
+// (fail-closed). Distinct from the price warnings — this is a hard availability
+// gate, not advice.
+
+private struct LimitUnavailableRow: View {
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.octagon.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.colors.alertWarning)
+
+            Text("limitSwap.error.advancedSwapQueueDisabled".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .multilineTextAlignment(.leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Theme.colors.bgSurface1)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

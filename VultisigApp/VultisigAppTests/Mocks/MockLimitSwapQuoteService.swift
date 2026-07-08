@@ -22,6 +22,11 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
     private(set) var marketPriceCallCount = 0
     private(set) var marketPriceQueries: [(sourceAsset: String, targetAsset: String)] = []
 
+    /// Stubbed Advanced Swap Queue gate. Defaults to `false` (fail-closed) so a
+    /// test must opt in to the "feature available" path explicitly.
+    var advancedSwapQueueEnabledResult = false
+    private(set) var advancedSwapQueueCallCount = 0
+
     func fetchCurrentMarketPrice(
         sourceAsset: String,
         sourceAmount: BigInt,
@@ -33,6 +38,11 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
         marketPriceCallCount += 1
         marketPriceQueries.append((sourceAsset, targetAsset))
         return try marketPriceResult.get()
+    }
+
+    func isAdvancedSwapQueueEnabled() async -> Bool {
+        advancedSwapQueueCallCount += 1
+        return advancedSwapQueueEnabledResult
     }
 }
 

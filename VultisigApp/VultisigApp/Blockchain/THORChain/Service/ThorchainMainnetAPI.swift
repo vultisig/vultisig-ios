@@ -43,6 +43,10 @@ struct ThorchainMainnetAPI: TargetType {
         // MARK: THORChain-specific endpoints (thornode)
         case networkInfo
         case inboundAddresses
+        /// `/thorchain/mimir/key/<KEY>` — a single network mimir value as a bare
+        /// integer body (e.g. the `EnableAdvSwapQueue` limit-swap availability
+        /// gate). Parsed from raw bytes by the caller, not JSON-decoded.
+        case mimir(key: String)
         case poolInfo(asset: String)
         case pools
         case poolLiquidityProvider(asset: String, address: String)
@@ -75,7 +79,7 @@ struct ThorchainMainnetAPI: TargetType {
     var baseURL: URL {
         switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
-             .networkInfo, .inboundAddresses, .poolInfo, .pools,
+             .networkInfo, .inboundAddresses, .mimir, .poolInfo, .pools,
              .poolLiquidityProvider, .swapQuote, .tcyStaker,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
@@ -113,6 +117,10 @@ struct ThorchainMainnetAPI: TargetType {
             return "/thorchain/network"
         case .inboundAddresses:
             return "/thorchain/inbound_addresses"
+        case .mimir(let key):
+            // Mimir keys are stored uppercase on THORNode (matching the
+            // CHURNINTERVAL convention). Uppercase defensively.
+            return "/thorchain/mimir/key/\(key.uppercased())"
         case .poolInfo(let asset):
             return "/thorchain/pool/\(asset)"
         case .pools:
@@ -147,7 +155,7 @@ struct ThorchainMainnetAPI: TargetType {
     var task: HTTPTask {
         switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
-             .inboundAddresses, .poolInfo, .pools, .poolLiquidityProvider,
+             .inboundAddresses, .mimir, .poolInfo, .pools, .poolLiquidityProvider,
              .tcyStaker, .networkStatus, .tcyAutoCompoundStatus, .resolveTNS:
             return .requestPlain
 
@@ -177,7 +185,7 @@ struct ThorchainMainnetAPI: TargetType {
         var base: [String: String] = ["Content-Type": "application/json"]
         switch endpoint {
         case .balances, .accountNumber, .swapQuote, .poolInfo, .pools,
-             .poolLiquidityProvider, .inboundAddresses:
+             .poolLiquidityProvider, .inboundAddresses, .mimir:
             // Endpoints that the legacy code marked with X-Client-ID via
             // get9RRequest(). Kept for 9Realms partner attribution.
             base["X-Client-ID"] = "vultisig"

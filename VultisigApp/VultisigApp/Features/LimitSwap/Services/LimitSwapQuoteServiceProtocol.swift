@@ -26,4 +26,8 @@ protocol LimitSwapQuoteServiceProtocol {
         targetDecimals: Int,
         destinationAddress: String
     ) async throws -> Decimal
+
+    /// Whether THORChain currently accepts resting limit orders (`=<`), gated by
+    /// the `EnableAdvSwapQueue` mimir. Fails CLOSED (`false`) on any failure.
+    func isAdvancedSwapQueueEnabled() async -> Bool
 }

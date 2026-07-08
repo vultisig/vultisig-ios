@@ -241,6 +241,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     func testPreparePlaceableOrderBuildsRecordAndMemoForValidDraft() {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
         vm.draft.expiryHours = 24
 
@@ -268,6 +269,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     func testPreparePlaceableOrderRejectsNonNativeSource() {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
         vm.draft.fromAsset = LimitSwapAsset(
             chain: .ethereum, ticker: "USDC", decimals: 6,
             contractAddress: "0x1234567890abcdefEC7", isNativeToken: false
@@ -290,6 +292,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     func testPreparePlaceableOrderRejectsUnsupportedExpiryViaValidation() {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
         vm.draft.expiryHours = 99  // not in {12, 24, 72}
 
@@ -306,6 +309,49 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
         XCTAssertNil(vm.preparePlaceableOrder())
         XCTAssertNil(vm.placeOrderError, "A not-ready draft returns nil without raising a user-facing error")
+    }
+
+    // MARK: - Advanced Swap Queue mimir gate (fail-closed)
+
+    func testPreparePlaceableOrderBlocksWhenQueueGateUnresolved() {
+        // Fail-closed default: the mimir gate hasn't resolved (nil) yet, so a
+        // fully valid draft must NOT be placeable.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.draft.targetPrice = 16
+        XCTAssertNil(vm.advancedSwapQueueEnabled)
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .advancedSwapQueueDisabled)
+    }
+
+    func testPreparePlaceableOrderBlocksWhenQueueGateDisabled() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = false
+        vm.draft.targetPrice = 16
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .advancedSwapQueueDisabled)
+    }
+
+    func testRefreshAdvancedSwapQueueGateStoresEnabledResult() async {
+        quoteService.advancedSwapQueueEnabledResult = true
+        let vm = makeViewModel()
+
+        await vm.refreshAdvancedSwapQueueGate()
+
+        XCTAssertEqual(vm.advancedSwapQueueEnabled, true)
+        XCTAssertTrue(vm.isAdvancedSwapQueueEnabled)
+        XCTAssertEqual(quoteService.advancedSwapQueueCallCount, 1)
+    }
+
+    func testRefreshAdvancedSwapQueueGateStoresDisabledResult() async {
+        quoteService.advancedSwapQueueEnabledResult = false
+        let vm = makeViewModel()
+
+        await vm.refreshAdvancedSwapQueueGate()
+
+        XCTAssertEqual(vm.advancedSwapQueueEnabled, false)
+        XCTAssertFalse(vm.isAdvancedSwapQueueEnabled)
     }
 
     // MARK: - fixtures
