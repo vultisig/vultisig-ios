@@ -339,6 +339,68 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNil(vm.placeOrderError, "A not-ready draft returns nil without raising a user-facing error")
     }
 
+    func testPreparePlaceableOrderWiresReferredAffiliateFragment() {
+        // A vault with a referral code produces the referred affiliate fragment
+        // `<code>/vi` — verified via the same helper the market path uses.
+        // Use an ETH (non-UTXO, 250B cap) source so the referred memo isn't
+        // rejected by the 80B UTXO cap.
+        vault.referralCode = ReferralCode(code: "myref", vault: vault)
+        let vm = makeViewModel(sourceAmount: BigInt("1000000000000000000"))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.fromAsset = LimitSwapAsset(
+            chain: .ethereum, ticker: "ETH", decimals: 18,
+            contractAddress: "ETH-contract", isNativeToken: true
+        )
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .bitcoin, ticker: "BTC", decimals: 8,
+            contractAddress: "BTC-contract", isNativeToken: true
+        )
+        vm.draft.targetPrice = Decimal(string: "0.0625")!
+
+        guard let prepared = vm.preparePlaceableOrder() else {
+            return XCTFail("Expected a prepared order")
+        }
+        XCTAssertTrue(
+            prepared.memo.hasSuffix(":myref/\(THORChainSwaps.affiliateFeeAddress):\(THORChainSwaps.referredUserFeeRateBp)/\(THORChainSwaps.referredAffiliateFeeRateBp)"),
+            "Referred affiliate fragment must be wired; got: \(prepared.memo)"
+        )
+    }
+
+    func testPreparePlaceableOrderMapsByteCapOverflowToMemoTooLong() {
+        // BTC (UTXO, 80B cap) source + a token target with a referred affiliate
+        // overflows the 80-byte cap → user-facing .memoTooLong.
+        vault.referralCode = ReferralCode(code: "myref", vault: vault)
+        // Target the vault's ETH address via a token asset with a long contract.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .ethereum, ticker: "USDC", decimals: 6,
+            contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false
+        )
+        vm.draft.targetPrice = Decimal(string: "0.00002")!
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        guard case .memoTooLong(let actual, let limit)? = vm.placeOrderError else {
+            return XCTFail("Expected .memoTooLong, got \(String(describing: vm.placeOrderError))")
+        }
+        XCTAssertGreaterThan(actual, limit)
+        XCTAssertEqual(limit, 80)
+    }
+
+    func testSelectPresetPctRoundsToEightDecimalsForRoundTripStability() {
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.123456789")!  // 9-dp base
+        vm.selectPresetPct(1)  // ×1.01 → more than 8 dp before rounding
+
+        // The stored price must already be rounded to ≤ 8 dp so the text↔draft
+        // round-trip (formatter caps at 8) is stable and doesn't clobber the preset.
+        var rounded = Decimal()
+        var value = vm.draft.targetPrice
+        NSDecimalRound(&rounded, &value, 8, .plain)
+        XCTAssertEqual(vm.draft.targetPrice, rounded, "Preset price must be pre-rounded to 8 dp")
+        XCTAssertEqual(vm.lastPresetPct, 1)
+    }
+
     // MARK: - Advanced Swap Queue mimir gate (fail-closed)
 
     func testPreparePlaceableOrderBlocksWhenQueueGateUnresolved() {

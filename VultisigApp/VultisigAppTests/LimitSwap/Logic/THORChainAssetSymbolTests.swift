@@ -165,4 +165,44 @@ final class THORChainAssetSymbolTests: XCTestCase {
             thorchainMemoAsset(chain: .cardano, ticker: "ADA", contractAddress: "", isNativeToken: true)
         )
     }
+
+    // MARK: - Malformed input is rejected
+
+    func testEmptyOrWhitespaceTickerReturnsNil() {
+        XCTAssertNil(thorchainMemoAsset(chain: .bitcoin, ticker: "", contractAddress: "", isNativeToken: true))
+        XCTAssertNil(thorchainMemoAsset(chain: .bitcoin, ticker: "   ", contractAddress: "", isNativeToken: true))
+    }
+
+    func testTokenWithShortContractReturnsNil() {
+        // A contract shorter than 6 chars can't form a valid 6-char suffix.
+        XCTAssertNil(
+            thorchainMemoAsset(chain: .ethereum, ticker: "X", contractAddress: "0xabc", isNativeToken: false)
+        )
+    }
+
+    // MARK: - Reverse lookup: chainFromThorchainSymbol
+
+    func testChainFromSymbolResolvesKnownChains() {
+        XCTAssertEqual(chainFromThorchainSymbol("BTC"), .bitcoin)
+        XCTAssertEqual(chainFromThorchainSymbol("ETH"), .ethereum)
+        XCTAssertEqual(chainFromThorchainSymbol("eth"), .ethereum, "Case-insensitive")
+        XCTAssertEqual(chainFromThorchainSymbol(" LTC "), .litecoin, "Trims whitespace")
+    }
+
+    func testChainFromSymbolThorPinsToMainnet() {
+        // "THOR" matches three Chain cases; it must resolve to canonical mainnet.
+        XCTAssertEqual(chainFromThorchainSymbol("THOR"), .thorChain)
+    }
+
+    func testChainFromSymbolUnknownOrEmptyReturnsNil() {
+        XCTAssertNil(chainFromThorchainSymbol("XRP"))
+        XCTAssertNil(chainFromThorchainSymbol(""))
+        XCTAssertNil(chainFromThorchainSymbol("   "))
+    }
+
+    func testIsThorchainRoutable() {
+        XCTAssertTrue(isThorchainRoutable(chain: .bitcoin))
+        XCTAssertTrue(isThorchainRoutable(chain: .thorChain))
+        XCTAssertFalse(isThorchainRoutable(chain: .solana))
+    }
 }

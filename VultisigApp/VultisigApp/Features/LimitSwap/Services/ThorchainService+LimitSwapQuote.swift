@@ -30,11 +30,26 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
             vultTierDiscount: 0
         )
 
-        guard let expectedRaw = Decimal(string: quote.expectedAmountOut) else {
-            throw LimitSwapQuoteError.invalidExpectedAmount(quote.expectedAmountOut)
+        return try Self.marketPrice(
+            expectedAmountOut: quote.expectedAmountOut,
+            sourceAmount: sourceAmount,
+            sourceDecimals: sourceDecimals
+        )
+    }
+
+    /// Derive the market price (target natural units per source natural unit)
+    /// from a quote's `expected_amount_out`. THORChain reports that in 1e8
+    /// fixed-point regardless of the target chain's natural decimals. Pure +
+    /// static so the 1e8 math and its three throw paths are unit-testable
+    /// without a network round-trip.
+    static func marketPrice(
+        expectedAmountOut: String,
+        sourceAmount: BigInt,
+        sourceDecimals: Int
+    ) throws -> Decimal {
+        guard let expectedRaw = Decimal(string: expectedAmountOut) else {
+            throw LimitSwapQuoteError.invalidExpectedAmount(expectedAmountOut)
         }
-        // THORChain returns expected_amount_out in 1e8 fixed-point regardless
-        // of the target chain's natural decimals.
         let expectedTargetNatural = expectedRaw / pow(10, 8)
 
         guard let sourceRaw = Decimal(string: sourceAmount.description) else {
