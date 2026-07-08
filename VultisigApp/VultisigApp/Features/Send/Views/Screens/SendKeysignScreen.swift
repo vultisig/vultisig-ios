@@ -53,9 +53,7 @@ struct SendKeysignScreen: View {
             guard let reason else { return }
             retrySignal.pendingRetryReason = reason
             viewModel.pendingRetryReason = nil
-            // Stack: details -> verify -> pairing -> keysign. Pop pairing + keysign.
-            let popCount = min(2, router.navPath.count)
-            router.navPath.removeLast(popCount)
+            router.navigateBackToKeysignVerify()
         }
     }
 }

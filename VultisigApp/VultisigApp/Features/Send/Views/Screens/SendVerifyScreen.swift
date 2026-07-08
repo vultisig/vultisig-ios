@@ -155,13 +155,28 @@ struct SendVerifyScreen: View {
             do {
                 let result = try await sendCryptoVerifyViewModel.validateForm()
                 await MainActor.run {
-                    router.navigate(to: SendRoute.pairing(
-                        vault: vault,
-                        tx: sendCryptoVerifyViewModel.transaction,
-                        retrySignal: retrySignal,
-                        keysignPayload: result,
-                        fastVaultPassword: sendCryptoVerifyViewModel.fastVaultPassword.nilIfEmpty
-                    ))
+                    // Fast vaults sign server-side with no peer to pair with,
+                    // so route straight into keysign (the bootstrap runs there)
+                    // and never mount the pairing screen. A present fast
+                    // password is the fast-sign signal; an empty one means the
+                    // user chose paired-sign, which keeps the QR pairing screen.
+                    if let fastPassword = sendCryptoVerifyViewModel.fastVaultPassword.nilIfEmpty {
+                        router.navigate(to: SendRoute.fastKeysign(
+                            vault: vault,
+                            keysignPayload: result,
+                            tx: sendCryptoVerifyViewModel.transaction,
+                            retrySignal: retrySignal,
+                            fastVaultPassword: fastPassword
+                        ))
+                    } else {
+                        router.navigate(to: SendRoute.pairing(
+                            vault: vault,
+                            tx: sendCryptoVerifyViewModel.transaction,
+                            retrySignal: retrySignal,
+                            keysignPayload: result,
+                            fastVaultPassword: nil
+                        ))
+                    }
                 }
             } catch {
                 await MainActor.run {

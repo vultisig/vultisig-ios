@@ -31,6 +31,14 @@ struct SendRouter {
                 keysignPayload: keysignPayload,
                 fastVaultPassword: fastVaultPassword
             )
+        case .fastKeysign(let vault, let keysignPayload, let tx, let retrySignal, let fastVaultPassword):
+            viewBuilder.buildFastKeysignScreen(
+                vault: vault,
+                keysignPayload: keysignPayload,
+                tx: tx,
+                retrySignal: retrySignal,
+                fastVaultPassword: fastVaultPassword
+            )
         case .keysign(let input, let tx, let retrySignal):
             viewBuilder.buildKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
         case .done(let vault, let hash, let chain, let tx, let keysignPayload):

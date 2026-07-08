@@ -54,6 +54,23 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
+    func buildFastKeysignScreen(
+        vault: Vault,
+        keysignPayload: KeysignPayload,
+        tx: SendTransaction,
+        retrySignal: SendRetrySignal,
+        fastVaultPassword: String
+    ) -> some View {
+        SendFastKeysignScreen(
+            vault: vault,
+            keysignPayload: keysignPayload,
+            tx: tx,
+            retrySignal: retrySignal,
+            fastVaultPassword: fastVaultPassword
+        )
+    }
+
+    @ViewBuilder
     func buildKeysignScreen(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal) -> some View {
         SendKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
     }
