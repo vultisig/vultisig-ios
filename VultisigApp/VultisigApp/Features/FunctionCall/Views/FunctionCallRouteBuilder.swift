@@ -26,45 +26,6 @@ struct FunctionCallRouteBuilder {
     }
 
     @ViewBuilder
-    func buildPairScreen(
-        vault: Vault,
-        tx: SendTransaction,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String?
-    ) -> some View {
-        FunctionCallPairScreen(
-            vault: vault,
-            tx: tx,
-            keysignPayload: keysignPayload,
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildFastKeysignScreen(
-        vault: Vault,
-        tx: SendTransaction,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String
-    ) -> some View {
-        // Reuses the Send fast keysign screen (like the paired path reuses
-        // SendKeysignScreen). The retry signal isn't consumed by
-        // FunctionCall's verify screen, so a fresh one is fine.
-        SendFastKeysignScreen(
-            vault: vault,
-            keysignPayload: keysignPayload,
-            tx: tx,
-            retrySignal: SendRetrySignal(),
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal) -> some View {
-        SendKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
-    }
-
-    @ViewBuilder
     func buildFunctionTransactionScreen(
         vault: Vault,
         transactionType: FunctionTransactionType

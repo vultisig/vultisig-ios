@@ -20,22 +20,6 @@ struct FunctionCallRouter {
             )
         case .verify(let tx, let vault):
             viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
-        case .pair(let vault, let tx, let keysignPayload, let fastVaultPassword):
-            viewBuilder.buildPairScreen(
-                vault: vault,
-                tx: tx,
-                keysignPayload: keysignPayload,
-                fastVaultPassword: fastVaultPassword
-            )
-        case .fastKeysign(let vault, let tx, let keysignPayload, let fastVaultPassword):
-            viewBuilder.buildFastKeysignScreen(
-                vault: vault,
-                tx: tx,
-                keysignPayload: keysignPayload,
-                fastVaultPassword: fastVaultPassword
-            )
-        case .keysign(let input, let tx, let retrySignal):
-            viewBuilder.buildKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
         case .functionTransaction(let vault, let transactionType):
             viewBuilder.buildFunctionTransactionScreen(
                 vault: vault,

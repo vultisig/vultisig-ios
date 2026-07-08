@@ -147,17 +147,20 @@ struct FunctionCallVerifyScreen: View {
                     // and skip the pairing screen. A present fast password is
                     // the fast-sign signal; an empty one means paired-sign,
                     // which keeps the QR pairing screen.
+                    let context = SigningTxContext.functionCall(
+                        vault: vault,
+                        tx: transaction,
+                        retry: SendRetrySignal()
+                    )
                     if let fastPassword = fastVaultPassword.nilIfEmpty {
-                        router.navigate(to: FunctionCallRoute.fastKeysign(
-                            vault: vault,
-                            tx: transaction,
+                        router.navigate(to: SigningRoute.fastKeysign(
+                            context: context,
                             keysignPayload: result,
                             fastVaultPassword: fastPassword
                         ))
                     } else {
-                        router.navigate(to: FunctionCallRoute.pair(
-                            vault: vault,
-                            tx: transaction,
+                        router.navigate(to: SigningRoute.pair(
+                            context: context,
                             keysignPayload: result,
                             fastVaultPassword: nil
                         ))
