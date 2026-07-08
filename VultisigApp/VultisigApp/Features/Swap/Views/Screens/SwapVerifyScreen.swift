@@ -306,19 +306,20 @@ struct SwapVerifyScreen: View {
                     // and skip the pairing screen. A present fast password is
                     // the fast-sign signal; an empty one means paired-sign,
                     // which keeps the QR pairing screen.
+                    let context = SigningTxContext.swap(
+                        vaultPubKeyECDSA: vault.pubKeyECDSA,
+                        transaction: currentTransaction,
+                        retry: retrySignal
+                    )
                     if let fastPassword = fastVaultPassword.nilIfEmpty {
-                        router.navigate(to: SwapRoute.fastKeysign(
-                            vaultPubKeyECDSA: vault.pubKeyECDSA,
+                        router.navigate(to: SigningRoute.fastKeysign(
+                            context: context,
                             keysignPayload: payload,
-                            transaction: currentTransaction,
-                            retrySignal: retrySignal,
                             fastVaultPassword: fastPassword
                         ))
                     } else {
-                        router.navigate(to: SwapRoute.pair(
-                            vaultPubKeyECDSA: vault.pubKeyECDSA,
-                            transaction: currentTransaction,
-                            retrySignal: retrySignal,
+                        router.navigate(to: SigningRoute.pair(
+                            context: context,
                             keysignPayload: payload,
                             fastVaultPassword: nil
                         ))

@@ -22,39 +22,6 @@ struct SwapRouter {
             if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
                 buildVerifyScreen(transaction: transaction, retrySignal: retrySignal, vault: vault)
             }
-        case .pair(let vaultPubKeyECDSA, let transaction, let retrySignal, let keysignPayload, let fastVaultPassword):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                buildPairScreen(
-                    vault: vault,
-                    transaction: transaction,
-                    retrySignal: retrySignal,
-                    keysignPayload: keysignPayload,
-                    fastVaultPassword: fastVaultPassword
-                )
-            }
-        case .fastKeysign(let vaultPubKeyECDSA, let keysignPayload, let transaction, let retrySignal, let fastVaultPassword):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                buildFastKeysignScreen(
-                    vault: vault,
-                    keysignPayload: keysignPayload,
-                    transaction: transaction,
-                    retrySignal: retrySignal,
-                    fastVaultPassword: fastVaultPassword
-                )
-            }
-        case .keysign(let input, let transaction, let retrySignal):
-            buildKeysignScreen(input: input, transaction: transaction, retrySignal: retrySignal)
-        case .done(let vaultPubKeyECDSA, let hash, let approveHash, let chain, let transaction, let progressLink):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                buildDoneScreen(
-                    vault: vault,
-                    hash: hash,
-                    approveHash: approveHash,
-                    chain: chain,
-                    transaction: transaction,
-                    progressLink: progressLink
-                )
-            }
         }
     }
 
@@ -66,64 +33,6 @@ struct SwapRouter {
     @ViewBuilder
     func buildVerifyScreen(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vault: Vault) -> some View {
         SwapVerifyScreen(transaction: transaction, retrySignal: retrySignal, vault: vault)
-    }
-
-    @ViewBuilder
-    func buildPairScreen(
-        vault: Vault,
-        transaction: SwapTransaction,
-        retrySignal: SwapRetrySignal,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String?
-    ) -> some View {
-        SwapPairScreen(
-            vault: vault,
-            transaction: transaction,
-            retrySignal: retrySignal,
-            keysignPayload: keysignPayload,
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildFastKeysignScreen(
-        vault: Vault,
-        keysignPayload: KeysignPayload,
-        transaction: SwapTransaction,
-        retrySignal: SwapRetrySignal,
-        fastVaultPassword: String
-    ) -> some View {
-        SwapFastKeysignScreen(
-            vault: vault,
-            keysignPayload: keysignPayload,
-            transaction: transaction,
-            retrySignal: retrySignal,
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal) -> some View {
-        SwapKeysignScreen(input: input, transaction: transaction, retrySignal: retrySignal)
-    }
-
-    @ViewBuilder
-    func buildDoneScreen(
-        vault: Vault,
-        hash: String,
-        approveHash: String?,
-        chain: Chain,
-        transaction: SwapTransaction,
-        progressLink: String?
-    ) -> some View {
-        SwapDoneScreen(
-            vault: vault,
-            hash: hash,
-            approveHash: approveHash,
-            chain: chain,
-            transaction: transaction,
-            progressLink: progressLink
-        )
     }
 
     // MARK: - SwiftData lookups

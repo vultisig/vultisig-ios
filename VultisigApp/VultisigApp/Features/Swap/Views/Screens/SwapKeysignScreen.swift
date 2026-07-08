@@ -43,14 +43,14 @@ struct SwapKeysignScreen: View {
             guard let hash = viewModel.hash else { return }
 
             let chain = transaction.fromCoin.chain
-            router.navigate(to: SwapRoute.done(
+            router.navigate(to: SigningRoute.done(.swap(
                 vaultPubKeyECDSA: input.vault.pubKeyECDSA,
                 hash: hash,
                 approveHash: viewModel.approveHash,
                 chain: chain,
                 transaction: transaction,
                 progressLink: transaction.progressLink(hash: hash)
-            ))
+            )))
         }
         .onChange(of: retrySignal.pendingRetryReason) { _, reason in
             guard reason != nil else { return }
