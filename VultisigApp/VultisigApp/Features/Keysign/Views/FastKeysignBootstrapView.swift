@@ -22,6 +22,12 @@ struct FastKeysignBootstrapView: View {
     let customMessagePayload: CustomMessagePayload?
     let fastVaultPassword: String
     let transferViewModel: TransferViewModel?
+    /// Fires once the bootstrap has assembled the `KeysignInput`. Callers
+    /// that navigate on completion (Send/FunctionCall done screens) use it
+    /// to read the actually-signed payload — the bootstrap can replace the
+    /// input payload before signing (e.g. Solana blockhash refresh), so the
+    /// original route payload can diverge from what was signed.
+    var onKeysignInputResolved: ((KeysignInput) -> Void)?
 
     @State private var input: KeysignInput?
     @State private var errorMessage: String?
@@ -63,12 +69,14 @@ struct FastKeysignBootstrapView: View {
         errorMessage = nil
         do {
             let bootstrap = FastVaultKeysignBootstrap()
-            input = try await bootstrap.makeKeysignInput(
+            let resolved = try await bootstrap.makeKeysignInput(
                 vault: vault,
                 keysignPayload: keysignPayload,
                 customMessagePayload: customMessagePayload,
                 fastVaultPassword: fastVaultPassword
             )
+            input = resolved
+            onKeysignInputResolved?(resolved)
         } catch {
             input = nil
             errorMessage = error.localizedDescription

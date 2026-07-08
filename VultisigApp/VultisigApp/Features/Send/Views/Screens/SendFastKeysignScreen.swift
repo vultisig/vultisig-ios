@@ -21,6 +21,10 @@ struct SendFastKeysignScreen: View {
     let retrySignal: SendRetrySignal
     let fastVaultPassword: String
     @StateObject var viewModel = SendKeysignViewModel()
+    /// The payload the bootstrap actually signed. It can differ from the
+    /// route's `keysignPayload` (e.g. Solana blockhash refresh), so the
+    /// done screen shows the signed payload, matching the paired path.
+    @State private var signedPayload: KeysignPayload?
 
     var body: some View {
         Screen {
@@ -29,19 +33,21 @@ struct SendFastKeysignScreen: View {
                 keysignPayload: keysignPayload,
                 customMessagePayload: nil,
                 fastVaultPassword: fastVaultPassword,
-                transferViewModel: viewModel
+                transferViewModel: viewModel,
+                onKeysignInputResolved: { signedPayload = $0.keysignPayload }
             )
         }
         .screenNavigationBarHidden()
         .screenEdgeInsets(.zero)
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished, let hash = viewModel.hash else { return }
+            let payload = signedPayload ?? keysignPayload
             router.navigate(to: SendRoute.done(
                 vault: vault,
                 hash: hash,
-                chain: keysignPayload.coin.chain,
+                chain: payload.coin.chain,
                 tx: tx,
-                keysignPayload: keysignPayload
+                keysignPayload: payload
             ))
         }
         .onChange(of: viewModel.pendingRetryReason) { _, reason in
