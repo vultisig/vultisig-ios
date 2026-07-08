@@ -54,14 +54,15 @@ struct LimitSwapBodyView: View {
                         focusedFieldEquals: .executeWhen,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .executeWhen : nil
+                        },
+                        content: {
+                            LimitExecuteWhenContent(
+                                vm: vm,
+                                priceText: $priceText,
+                                onPickToAsset: onPickToAsset
+                            )
                         }
-                    ) {
-                        LimitExecuteWhenContent(
-                            vm: vm,
-                            priceText: $priceText,
-                            onPickToAsset: onPickToAsset
-                        )
-                    }
+                    )
 
                     FormExpandableSection(
                         title: "limitSwap.asset".localized,
@@ -71,23 +72,25 @@ struct LimitSwapBodyView: View {
                         focusedFieldEquals: .asset,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .asset : nil
+                        },
+                        content: {
+                            LimitAssetSwapForm(
+                                vm: vm,
+                                fromCoin: fromCoin,
+                                toCoin: toCoin,
+                                sourceAmountText: $sourceAmountText,
+                                onPickFromAsset: onPickFromAsset,
+                                onPickToAsset: onPickToAsset,
+                                onSwapAssets: onSwapAssets
+                            )
+                        },
+                        valueView: {
+                            LimitAssetCompactValue(
+                                fromAsset: vm.draft.fromAsset,
+                                toAsset: vm.draft.toAsset
+                            )
                         }
-                    ) {
-                        LimitAssetSwapForm(
-                            vm: vm,
-                            fromCoin: fromCoin,
-                            toCoin: toCoin,
-                            sourceAmountText: $sourceAmountText,
-                            onPickFromAsset: onPickFromAsset,
-                            onPickToAsset: onPickToAsset,
-                            onSwapAssets: onSwapAssets
-                        )
-                    } valueView: {
-                        LimitAssetCompactValue(
-                            fromAsset: vm.draft.fromAsset,
-                            toAsset: vm.draft.toAsset
-                        )
-                    }
+                    )
 
                     if vm.advancedSwapQueueEnabled == false {
                         LimitUnavailableRow()
@@ -822,7 +825,7 @@ private struct LimitPillFlow: Layout {
         self.spacing = spacing
     }
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
         let width = proposal.width ?? .infinity
         let lines = arrange(subviews: subviews, in: width)
         let totalHeight = lines.map(\.height).reduce(0, +)
@@ -831,7 +834,7 @@ private struct LimitPillFlow: Layout {
         return CGSize(width: widestLine, height: totalHeight)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
         let lines = arrange(subviews: subviews, in: bounds.width)
         var y = bounds.minY
         for line in lines {

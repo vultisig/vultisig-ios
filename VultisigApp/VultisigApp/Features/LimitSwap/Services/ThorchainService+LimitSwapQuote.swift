@@ -13,7 +13,9 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
         sourceAmount: BigInt,
         sourceDecimals: Int,
         targetAsset: String,
-        targetDecimals: Int,
+        // THORChain returns `expected_amount_out` already in 1e8 units, so the
+        // target's natural decimals aren't needed here (kept for protocol parity).
+        targetDecimals _: Int,
         destinationAddress: String
     ) async throws -> Decimal {
         let quote = try await fetchSwapQuotes(
