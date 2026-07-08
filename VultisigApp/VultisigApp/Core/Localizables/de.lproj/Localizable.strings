@@ -11,6 +11,7 @@
 "addChain" = "Kette hinzufügen";
 "addCoinLP" = "%@ LP hinzufügen";
 "addCustomChains" = "Benutzerdefinierte Chains hinzufügen";
+"addDestinationTag" = "Destination Tag hinzufügen";
 "addFolder" = "Ordner hinzufügen";
 "addFriendsReferral" = "Freunde-Empfehlung hinzufügen";
 "addingToken" = "Token wird hinzugefügt...";
@@ -223,6 +224,7 @@
 "connected" = "Verbunden";
 "connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
 "continue" = "Fortfahren";
+"continueAnyway" = "Trotzdem fortfahren";
 "continueThresholdOfTotal" = "Weiter (%d-von-%d)";
 "copyAddress" = "Adresse kopieren";
 "correctAmountCheck" = "Die Menge ist korrekt";
@@ -321,6 +323,13 @@
 "deleteVaultTitle" = "Tresor löschen";
 "dependencies" = "Abhängigkeiten";
 "destinationAddress" = "Zieladresse";
+"destinationTag" = "Destination Tag";
+"destinationTagFromXAddress" = "In der X-Adresse enthalten";
+"destinationTagInvalidError" = "Das Destination Tag muss eine ganze Zahl zwischen 1 und 4294967295 sein.";
+"destinationTagMemoConflictError" = "Memo und Destination Tag stimmen nicht überein. XRP-Transaktionen können nur ein Destination Tag enthalten.";
+"destinationTagRequiredError" = "Diese Adresse erfordert ein Destination Tag (üblich bei Börseneinzahlungen). Geben Sie das Tag aus Ihren Einzahlungsanweisungen ein, sonst werden die Gelder möglicherweise nicht gutgeschrieben.";
+"destinationTagUnverifiedTitle" = "Ziel konnte nicht überprüft werden";
+"destinationTagUnverifiedWarning" = "Es konnte nicht überprüft werden, ob diese Adresse ein Destination Tag erfordert. Bei einer Einzahlung an eine Börse fügen Sie das Tag hinzu, bevor Sie fortfahren.";
 "destinationValidator" = "Ziel-Validator";
 "device" = "Gerät";
 "deviceBackupDescription" = "Speichern Sie die Gewölbeanteil dieses Geräts.";
@@ -380,6 +389,7 @@
 "enterAddressHere" = "Adresse hier eingeben";
 "enterAmount" = "Menge eingeben";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Destination Tag eingeben";
 "enterHint" = "Hinweis eingeben";
 "enterMemo" = "Memo eingeben";
 "enterPassword" = "Passwort eingeben";

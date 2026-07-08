@@ -11,6 +11,7 @@
 "addChain" = "Agregar cadena";
 "addCoinLP" = "Agregar %@ LP";
 "addCustomChains" = "Agregar chains personalizadas";
+"addDestinationTag" = "Agregar etiqueta de destino";
 "addFolder" = "Agregar carpeta";
 "addFriendsReferral" = "Agregar una referencia de amigos";
 "addingToken" = "Agregando token";
@@ -223,6 +224,7 @@
 "connected" = "Conectado";
 "connectingWithServer..." = "Conectando con el servidor...";
 "continue" = "Continuar";
+"continueAnyway" = "Continuar de todos modos";
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
 "copyAddress" = "Copiar dirección";
 "correctAmountCheck" = "La cantidad es correcta";
@@ -321,6 +323,13 @@
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
 "dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
+"destinationTag" = "Etiqueta de destino";
+"destinationTagFromXAddress" = "Incluida en la dirección X";
+"destinationTagInvalidError" = "La etiqueta de destino debe ser un número entero entre 1 y 4294967295.";
+"destinationTagMemoConflictError" = "El memorándum y la etiqueta de destino no coinciden. Las transacciones XRP solo pueden llevar una etiqueta de destino.";
+"destinationTagRequiredError" = "Esta dirección requiere una etiqueta de destino (habitual en depósitos a exchanges). Introduce la etiqueta de tus instrucciones de depósito o los fondos podrían no acreditarse.";
+"destinationTagUnverifiedTitle" = "No se pudo verificar el destino";
+"destinationTagUnverifiedWarning" = "No se pudo verificar si esta dirección requiere una etiqueta de destino. Si estás depositando en un exchange, añade la etiqueta antes de continuar.";
 "destinationValidator" = "Validador destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Almacene la parte de la bóveda de este dispositivo.";
@@ -380,6 +389,7 @@
 "enterAddressHere" = "Ingresa la dirección aquí";
 "enterAmount" = "Ingresar Cantidad";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Introduce la etiqueta de destino";
 "enterHint" = "Introduce una pista";
 "enterMemo" = "Introduce el memo";
 "enterPassword" = "Introduce la contraseña";
