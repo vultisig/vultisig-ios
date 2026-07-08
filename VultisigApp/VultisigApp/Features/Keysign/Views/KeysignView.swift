@@ -223,9 +223,8 @@ struct KeysignView: View {
     }
 
     /// Fast-vault bootstrap failure surface. Reuses the shared keysign error
-    /// view (as `FastKeysignBootstrapView` did) with a retry that re-runs the
-    /// bootstrap in place — distinct from the broadcast-failure retry, which
-    /// pops to verify.
+    /// view with a retry that re-runs the bootstrap in place — distinct from
+    /// the broadcast-failure retry, which pops to verify.
     var fastBootstrapErrorView: some View {
         SendCryptoKeysignView(
             title: viewModel.keysignError,

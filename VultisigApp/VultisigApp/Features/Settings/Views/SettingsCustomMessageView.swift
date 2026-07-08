@@ -109,14 +109,16 @@ struct SettingsCustomMessageView: View {
     var keysign: some View {
         ZStack {
             if let fastPassword = fastVaultPassword.nilIfEmpty {
-                // Fast vaults skip the pair screen: the off-screen
-                // bootstrap runs here and then drives KeysignView, showing
-                // the signing animation throughout.
-                FastKeysignBootstrapView(
-                    vault: vault,
-                    keysignPayload: nil,
-                    customMessagePayload: customMessagePayload,
-                    fastVaultPassword: fastPassword,
+                // Fast vaults skip the pair screen: KeysignView runs the
+                // off-screen relay bootstrap itself (connecting animation) and
+                // then drives the signing ceremony.
+                KeysignView(
+                    source: .fast(
+                        vault: vault,
+                        keysignPayload: nil,
+                        customMessagePayload: customMessagePayload,
+                        fastVaultPassword: fastPassword
+                    ),
                     transferViewModel: viewModel
                 )
             } else if let keysignView = keysignView {
