@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct ReshareScreen: View {
     @Environment(\.router) var router
@@ -14,18 +15,24 @@ struct ReshareScreen: View {
     @State private var showJoinReshare = false
     @State private var shouldJoinKeygen = false
     @State private var showBeforeYouReshareSheet = false
+    @State private var animationVM: RiveViewModel?
 
     var body: some View {
         Screen {
             VStack(spacing: 0) {
                 header
                 Spacer()
-                illustration
+                animation
                 Spacer()
                 optionCards
             }
         }
         .screenTitle("")
+        .onAppear {
+            guard animationVM == nil else { return }
+            animationVM = RiveViewModel(fileName: "review_devices", autoPlay: true)
+            animationVM?.fit = .fitWidth
+        }
         .bottomSheet(isPresented: $showBeforeYouReshareSheet) {
             BeforeYouReshareBottomSheet {
                 showBeforeYouReshareSheet = false
@@ -68,24 +75,33 @@ struct ReshareScreen: View {
         .padding(.top, 16)
     }
 
-    var illustration: some View {
-        Image("reshare-devices")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(maxWidth: 300)
-            .background(glow)
-    }
-
-    var glow: some View {
-        EllipticalGradient(
-            stops: [
-                Gradient.Stop(color: Theme.colors.devicesSelectionGlow.opacity(0.5), location: 0.00),
-                Gradient.Stop(color: Theme.colors.devicesSelectionGlow.opacity(0), location: 1.00)
-            ],
-            center: UnitPoint(x: 0.5, y: 0.5)
+    var animation: some View {
+        ZStack(alignment: .top) {
+            animationVM?.view()
+                .if(isMacOS) {
+                    $0.frame(idealWidth: 395, maxWidth: 395, alignment: .center)
+                }
+                .scaleEffect(x: 1.2, y: 1.2)
+                .offset(y: -50)
+            LinearGradient(
+                colors: [Theme.colors.bgPrimary, Theme.colors.bgPrimary, .clear],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 180)
+        }
+        .background(
+            EllipticalGradient(
+                 stops: [
+                     Gradient.Stop(color: Theme.colors.devicesSelectionGlow.opacity(0.5), location: 0.00),
+                     Gradient.Stop(color: Theme.colors.devicesSelectionGlow.opacity(0), location: 1.00)
+                 ],
+                 center: UnitPoint(x: 0.5, y: 0.5)
+             )
+             .frame(width: 360, height: 360)
+             .blur(radius: 50)
+             .opacity(0.2)
         )
-        .frame(width: 360, height: 360)
-        .blur(radius: 36)
     }
 
     var optionCards: some View {
