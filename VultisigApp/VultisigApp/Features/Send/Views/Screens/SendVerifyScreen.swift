@@ -110,6 +110,7 @@ struct SendVerifyScreen: View {
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
+                destinationTag: tx.destinationTag.map(String.init),
                 feeCrypto: sendCryptoVerifyViewModel.isCalculatingFee ? "loading".localized : tx.gasInReadable,
                 feeFiat: sendCryptoVerifyViewModel.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx),
                 isCalculatingFee: sendCryptoVerifyViewModel.isCalculatingFee,

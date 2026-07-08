@@ -11,6 +11,7 @@
 "addChain" = "Adicione a corrente";
 "addCoinLP" = "Adicionar %@ LP";
 "addCustomChains" = "Adicionar chains personalizadas";
+"addDestinationTag" = "Adicionar tag de destino";
 "addFolder" = "Adicionar pasta";
 "addFriendsReferral" = "Adicione uma referência de amigos";
 "addingToken" = "Adicionando token";
@@ -223,6 +224,7 @@
 "connected" = "Conectado";
 "connectingWithServer..." = "Conectando-se ao servidor...";
 "continue" = "Continuar";
+"continueAnyway" = "Continuar mesmo assim";
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
 "copyAddress" = "Copiar endereço";
 "correctAmountCheck" = "A quantidade está correta";
@@ -321,6 +323,13 @@
 "deleteVaultTitle" = "Deletar Cofre";
 "dependencies" = "Dependências";
 "destinationAddress" = "Endereço de destino";
+"destinationTag" = "Tag de Destino";
+"destinationTagFromXAddress" = "Incluída no endereço X";
+"destinationTagInvalidError" = "A tag de destino deve ser um número inteiro entre 1 e 4294967295.";
+"destinationTagMemoConflictError" = "O memorando e a tag de destino não coincidem. Transações XRP só podem levar uma tag de destino.";
+"destinationTagRequiredError" = "Este endereço exige uma tag de destino (comum em depósitos em exchanges). Insira a tag das suas instruções de depósito ou os fundos podem não ser creditados.";
+"destinationTagUnverifiedTitle" = "Não foi possível verificar o destino";
+"destinationTagUnverifiedWarning" = "Não foi possível verificar se este endereço exige uma tag de destino. Se estiver depositando em uma exchange, adicione a tag antes de continuar.";
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Armazene a participação do Vault deste dispositivo.";
@@ -380,6 +389,7 @@
 "enterAddressHere" = "Digite o endereço aqui";
 "enterAmount" = "Inserir Quantidade";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Insira a tag de destino";
 "enterHint" = "Insira uma dica";
 "enterMemo" = "Insira o memo";
 "enterPassword" = "Digite a senha";
