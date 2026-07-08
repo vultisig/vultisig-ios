@@ -41,8 +41,6 @@ struct SendRouter {
                 tx: tx,
                 keysignPayload: keysignPayload
             )
-        case .transactionDetails(let input):
-            viewBuilder.buildTransactionDetailsScreen(input: input)
         }
     }
 }
