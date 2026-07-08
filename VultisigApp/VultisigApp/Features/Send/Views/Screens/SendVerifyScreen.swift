@@ -160,19 +160,20 @@ struct SendVerifyScreen: View {
                     // and never mount the pairing screen. A present fast
                     // password is the fast-sign signal; an empty one means the
                     // user chose paired-sign, which keeps the QR pairing screen.
+                    let context = SigningTxContext.send(
+                        vault: vault,
+                        tx: sendCryptoVerifyViewModel.transaction,
+                        retry: retrySignal
+                    )
                     if let fastPassword = sendCryptoVerifyViewModel.fastVaultPassword.nilIfEmpty {
-                        router.navigate(to: SendRoute.fastKeysign(
-                            vault: vault,
+                        router.navigate(to: SigningRoute.fastKeysign(
+                            context: context,
                             keysignPayload: result,
-                            tx: sendCryptoVerifyViewModel.transaction,
-                            retrySignal: retrySignal,
                             fastVaultPassword: fastPassword
                         ))
                     } else {
-                        router.navigate(to: SendRoute.pairing(
-                            vault: vault,
-                            tx: sendCryptoVerifyViewModel.transaction,
-                            retrySignal: retrySignal,
+                        router.navigate(to: SigningRoute.pair(
+                            context: context,
                             keysignPayload: result,
                             fastVaultPassword: nil
                         ))

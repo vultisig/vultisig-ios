@@ -41,13 +41,13 @@ struct SendKeysignScreen: View {
                   let chain = input.keysignPayload?.coin.chain
             else { return }
 
-            router.navigate(to: SendRoute.done(
+            router.navigate(to: SigningRoute.done(.send(
                 vault: input.vault,
                 hash: hash,
                 chain: chain,
                 tx: tx,
                 keysignPayload: input.keysignPayload
-            ))
+            )))
         }
         .onChange(of: viewModel.pendingRetryReason) { _, reason in
             guard let reason else { return }

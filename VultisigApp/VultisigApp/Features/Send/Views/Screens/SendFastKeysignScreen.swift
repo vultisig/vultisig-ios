@@ -42,13 +42,13 @@ struct SendFastKeysignScreen: View {
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished, let hash = viewModel.hash else { return }
             let payload = signedPayload ?? keysignPayload
-            router.navigate(to: SendRoute.done(
+            router.navigate(to: SigningRoute.done(.send(
                 vault: vault,
                 hash: hash,
                 chain: payload.coin.chain,
                 tx: tx,
                 keysignPayload: payload
-            ))
+            )))
         }
         .onChange(of: viewModel.pendingRetryReason) { _, reason in
             guard let reason else { return }

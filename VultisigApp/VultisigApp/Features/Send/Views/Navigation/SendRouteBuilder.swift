@@ -37,56 +37,6 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildPairScreen(
-        vault: Vault,
-        tx: SendTransaction,
-        retrySignal: SendRetrySignal,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String?
-    ) -> some View {
-        SendPairScreen(
-            vault: vault,
-            tx: tx,
-            retrySignal: retrySignal,
-            keysignPayload: keysignPayload,
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildFastKeysignScreen(
-        vault: Vault,
-        keysignPayload: KeysignPayload,
-        tx: SendTransaction,
-        retrySignal: SendRetrySignal,
-        fastVaultPassword: String
-    ) -> some View {
-        SendFastKeysignScreen(
-            vault: vault,
-            keysignPayload: keysignPayload,
-            tx: tx,
-            retrySignal: retrySignal,
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal) -> some View {
-        SendKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
-    }
-
-    @ViewBuilder
-    func buildDoneScreen(
-        vault: Vault,
-        hash: String,
-        chain: Chain,
-        tx: SendTransaction?,
-        keysignPayload: KeysignPayload?
-    ) -> some View {
-        SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx, keysignPayload: keysignPayload)
-    }
-
-    @ViewBuilder
     func buildTransactionDetailsScreen(input: TransactionDonePayload) -> some View {
         SendCryptoSecondaryDoneView(input: input)
     }
