@@ -27,12 +27,12 @@ struct LimitSwapBodyView: View {
     let fromCoin: Coin
     let toCoin: Coin
 
-    /// Which section is open on first launch. The Figma first-launch state
-    /// (screen 1) is the Asset section expanded; tapping "Execute when"
-    /// collapses Asset into its compact summary and expands the price card.
-    /// The section is actually opened by `.onLoad` committing this into
-    /// `focusedSection` (see below).
-    var initialFocusedSection: FocusedSection = .asset
+    /// Which section is open on first launch. Defaults to Execute-when (the
+    /// price card) so the user lands on the field they most likely want to set;
+    /// tapping "Asset" collapses this into its compact summary and expands the
+    /// asset picker. The section is actually opened by `.onLoad` committing this
+    /// into `focusedSection` (see below).
+    var initialFocusedSection: FocusedSection = .executeWhen
 
     /// `nil` on frame 0, then seeded from `initialFocusedSection` in `.onLoad`.
     /// Starting at `nil` (rather than a fixed section) is what lets each
@@ -50,8 +50,6 @@ struct LimitSwapBodyView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            QuoteRefreshTimerRow(vm: vm)
-
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
                     FormExpandableSection(
@@ -62,6 +60,7 @@ struct LimitSwapBodyView: View {
                         focusedField: $focusedSection,
                         focusedFieldEquals: .executeWhen,
                         cornerRadius: 24,
+                        plainSeparator: true,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .executeWhen : nil
                         },
@@ -81,6 +80,7 @@ struct LimitSwapBodyView: View {
                         focusedField: $focusedSection,
                         focusedFieldEquals: .asset,
                         cornerRadius: 24,
+                        plainSeparator: true,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .asset : nil
                         },
@@ -120,6 +120,9 @@ struct LimitSwapBodyView: View {
             .disabled(!isPlaceable)
             .padding(.bottom, 16)
         }
+        // Surface the countdown up to the host so the shared badge can render in
+        // the Market/Limit tab row (the tab row is owned by SwapDetailsScreen).
+        .preference(key: LimitQuoteCountdownKey.self, value: vm.quoteRefreshCountdown)
         .task {
             // Drive the quote-refresh countdown ring once the view is on screen.
             while !Task.isCancelled {
@@ -203,38 +206,6 @@ struct LimitSwapBodyView: View {
     }
 }
 
-// MARK: - Quote-refresh countdown ring
-//
-// Right-aligned "0:36" + progress ring in the Limit header, tied to the
-// market-price refresh cadence (`LimitSwapFormViewModel.quoteRefreshCountdown`).
-// The market Verify screen uses the same 60s ticker pattern.
-
-private struct QuoteRefreshTimerRow: View {
-
-    @Bindable var vm: LimitSwapFormViewModel
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Spacer()
-            Text(vm.quoteRefreshCountdownLabel)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .monospacedDigit()
-
-            ZStack {
-                Circle()
-                    .stroke(Theme.colors.borderLight, lineWidth: 2)
-                Circle()
-                    .trim(from: 0, to: max(0.001, vm.quoteRefreshProgress))
-                    .stroke(Theme.colors.primaryAccent3, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-            }
-            .frame(width: 16, height: 16)
-        }
-        .padding(.horizontal, 4)
-    }
-}
-
 // MARK: - Execute-when content (price display + toggle + presets + expiry)
 
 private struct LimitExecuteWhenContent: View {
@@ -245,13 +216,19 @@ private struct LimitExecuteWhenContent: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            ZStack(alignment: .trailing) {
-                LimitPriceDisplay(vm: vm, priceText: $priceText, onPickToAsset: onPickToAsset)
-                LimitPriceToggle(vm: vm)
-                    .padding(.trailing, 4)
-            }
+            // Price + presets sit together (Figma gap-10) with the price box's
+            // 12pt bottom padding; the expiry sub-box follows with the 6pt
+            // content gap (→ ~18pt between the presets row and the expiry box).
+            VStack(spacing: 10) {
+                ZStack(alignment: .trailing) {
+                    LimitPriceDisplay(vm: vm, priceText: $priceText, onPickToAsset: onPickToAsset)
+                    LimitPriceToggle(vm: vm)
+                        .padding(.trailing, 4)
+                }
 
-            LimitPresetPills(vm: vm)
+                LimitPresetPills(vm: vm)
+            }
+            .padding(.bottom, 12)
 
             LimitExpiryRow(vm: vm)
         }
@@ -283,6 +260,21 @@ private struct LimitPriceDisplay: View {
 
             unitChip
 
+            // The primary/secondary representations swap on toggle; a new identity
+            // per unit + an opacity transition crossfades them (the toggle wraps
+            // the mutation in withAnimation). Storage of draft.targetPrice is
+            // unchanged — only which representation is emphasised.
+            priceValues
+                .id(vm.draft.displayUnit)
+                .transition(.opacity)
+        }
+        .frame(maxWidth: .infinity, minHeight: 180)
+        .padding(.vertical, 8)
+    }
+
+    @ViewBuilder
+    private var priceValues: some View {
+        VStack(spacing: 6) {
             if vm.draft.displayUnit == .usd {
                 Text(usdString)
                     .font(Theme.fonts.priceTitle1)
@@ -298,8 +290,6 @@ private struct LimitPriceDisplay: View {
                     .lineLimit(1)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 180)
-        .padding(.vertical, 8)
     }
 
     @ViewBuilder
@@ -388,6 +378,7 @@ private struct LimitPriceDisplay: View {
 private struct LimitPriceToggle: View {
 
     @Bindable var vm: LimitSwapFormViewModel
+    @Namespace private var thumb
 
     var body: some View {
         VStack(spacing: 2) {
@@ -404,7 +395,10 @@ private struct LimitPriceToggle: View {
     private func toggleButton(unit: PriceDisplayUnit, systemImage: String) -> some View {
         let isActive = vm.draft.displayUnit == unit
         return Button {
-            if vm.draft.displayUnit != unit {
+            guard vm.draft.displayUnit != unit else { return }
+            // Animate the crossfade (price block) + the thumb slide together.
+            // Storage of draft.targetPrice is untouched — behaviour identical.
+            withAnimation(.easeInOut(duration: 0.2)) {
                 vm.toggleDisplayUnit()
             }
         } label: {
@@ -412,8 +406,15 @@ private struct LimitPriceToggle: View {
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(isActive ? Theme.colors.textPrimary : Theme.colors.textSecondary)
                 .frame(width: 32, height: 32)
-                .background(isActive ? Theme.colors.primaryAccent3 : Color.clear)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .background {
+                    // The selected indicator is a single matched-geometry thumb, so
+                    // it slides between the two chips instead of hard-switching.
+                    if isActive {
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Theme.colors.primaryAccent3)
+                            .matchedGeometryEffect(id: "thumb", in: thumb)
+                    }
+                }
         }
         .buttonStyle(.plain)
     }
@@ -440,7 +441,9 @@ private struct LimitExpiryRow: View {
             }
         }
         .padding(14)
-        .background(Theme.colors.bgSurface1)
+        // Figma "backgrounds/disabled" (#0b1a3a80) — the design-system token
+        // with that exact base hex is bgButtonDisabled (#0b1a3a), at 50%.
+        .background(Theme.colors.bgButtonDisabled.opacity(0.5))
         .clipShape(UnevenRoundedRectangle(cornerRadii: Self.corners))
         .overlay(
             UnevenRoundedRectangle(cornerRadii: Self.corners)
@@ -553,22 +556,10 @@ private struct LimitAssetSwapForm: View {
                 )
             }
 
-            Button(action: onSwapAssets) {
-                Image(systemName: "arrow.up.arrow.down")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .frame(width: 32, height: 32)
-                    .background(Theme.colors.primaryAccent3)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .padding(7)
-                    .background(Theme.colors.bgPrimary)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 25.5)
-                            .stroke(Theme.colors.borderLight, lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 25.5))
+            // Shared with the market swap form: same visual + spring flip.
+            SwapAssetsButton {
+                onSwapAssets()
             }
-            .buttonStyle(.plain)
         }
     }
 
