@@ -178,10 +178,15 @@ final class SwapVerifyViewModel {
                 // gate and fails closed if a future change ever attaches an
                 // external recipient without a verifiable output target.
                 try SwapRecipientVerifier.verify(transaction: transaction)
+                // Fail loud on an unparseable persisted amount rather than a
+                // silent `?? 0`, which would sign a 0-amount deposit.
+                guard let sourceAmount = BigInt(limitContext.sourceAmount) else {
+                    throw LimitSwapAssemblyError.invalidSourceAmount(limitContext.sourceAmount)
+                }
                 return try await buildLimitSwapKeysignPayload(
                     sourceCoin: transaction.fromCoin,
                     targetCoin: transaction.toCoin,
-                    sourceAmount: BigInt(limitContext.sourceAmount) ?? 0,
+                    sourceAmount: sourceAmount,
                     memo: limitContext.memo,
                     vault: vault
                 )

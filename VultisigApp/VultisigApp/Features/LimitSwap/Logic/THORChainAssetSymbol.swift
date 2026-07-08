@@ -79,6 +79,36 @@ func thorchainChainPrefix(for chain: Chain) -> String? {
     }
 }
 
+/// Compute the set of chains routable through THORChain for the limit-swap
+/// picker, from a live `inbound_addresses` list. Always includes `.thorChain`
+/// (RUNE deposits settle via `MsgDeposit`, no inbound vault) plus every
+/// non-halted / non-paused inbound whose chain symbol we can encode. Falls back
+/// to the static prefix-table set when the inbound fetch returned nothing
+/// useful, so the picker is never artificially empty rather than silently
+/// allowing every chain.
+///
+/// Pure — the fetch is the caller's concern — so the halt-filtering + fallback
+/// logic is unit-testable without hitting `ThorchainService.shared`.
+func computeSupportedChains(from inbounds: [InboundAddress]) -> Set<Chain> {
+    var chains: Set<Chain> = [.thorChain]
+    for entry in inbounds {
+        // Missing pause flags read as "not paused" — same convention as
+        // `SwapHaltGate.isHalted(chain:in:)` on the market path.
+        guard !entry.halted,
+              !(entry.global_trading_paused ?? false),
+              !(entry.chain_trading_paused ?? false) else { continue }
+        if let chain = chainFromThorchainSymbol(entry.chain) {
+            chains.insert(chain)
+        }
+    }
+    if chains.count <= 1 {
+        // Inbound fetch didn't return useful data — fall back to the static
+        // routable set so the picker isn't artificially empty.
+        return Set(Chain.allCases.filter { isThorchainRoutable(chain: $0) })
+    }
+    return chains
+}
+
 /// Whether a given chain is THORChain-routable per our static prefix table.
 /// Used by the limit-swap picker to filter out chains the memo builder
 /// can't encode (so the user can't pick e.g. SOL and hit a silent failure

@@ -29,6 +29,9 @@ protocol LimitSwapInteractor {
     /// Whether THORChain currently accepts resting limit orders (`EnableAdvSwapQueue`
     /// mimir). Fails CLOSED. Gates the Place-Order flow.
     func isAdvancedSwapQueueEnabled() async -> Bool
+
+    /// Live THORChain inbound addresses, for the picker's routable-chain set.
+    func fetchInboundAddresses() async -> [InboundAddress]
 }
 
 struct DefaultLimitSwapInteractor: LimitSwapInteractor {
@@ -59,5 +62,9 @@ struct DefaultLimitSwapInteractor: LimitSwapInteractor {
 
     func isAdvancedSwapQueueEnabled() async -> Bool {
         await quoteService.isAdvancedSwapQueueEnabled()
+    }
+
+    func fetchInboundAddresses() async -> [InboundAddress] {
+        await quoteService.fetchInboundAddresses()
     }
 }

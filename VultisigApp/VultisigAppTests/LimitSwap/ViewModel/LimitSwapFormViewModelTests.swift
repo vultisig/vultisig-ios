@@ -230,6 +230,34 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNil(vm.marketPriceRef)
     }
 
+    // MARK: - refreshSupportedChains (routed through the injected interactor)
+
+    func testRefreshSupportedChainsUsesInjectedInteractor() async {
+        quoteService.inboundAddressesResult = [
+            InboundAddress(
+                chain: "BTC", address: "a", router: nil, halted: false,
+                global_trading_paused: false, chain_trading_paused: false,
+                chain_lp_actions_paused: false, gas_rate: "0", gas_rate_units: "u",
+                dust_threshold: nil, outbound_fee: nil, outbound_tx_size: nil
+            ),
+            InboundAddress(
+                chain: "ETH", address: "b", router: nil, halted: false,
+                global_trading_paused: false, chain_trading_paused: false,
+                chain_lp_actions_paused: false, gas_rate: "0", gas_rate_units: "u",
+                dust_threshold: nil, outbound_fee: nil, outbound_tx_size: nil
+            )
+        ]
+        let vm = makeViewModel()
+
+        await vm.refreshSupportedChains()
+
+        XCTAssertEqual(quoteService.inboundAddressesCallCount, 1)
+        let supported = vm.supportedChains ?? []
+        XCTAssertTrue(supported.contains(.thorChain))
+        XCTAssertTrue(supported.contains(.bitcoin))
+        XCTAssertTrue(supported.contains(.ethereum))
+    }
+
     // MARK: - destinationAddress lookup
 
     func testDestinationAddressFindsMatchingVaultCoin() {

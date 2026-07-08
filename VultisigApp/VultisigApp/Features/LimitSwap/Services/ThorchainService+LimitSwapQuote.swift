@@ -48,6 +48,10 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
         return expectedTargetNatural / sourceNatural
     }
 
+    func fetchInboundAddresses() async -> [InboundAddress] {
+        await fetchThorchainInboundAddress()
+    }
+
     /// The mimir key gating THORChain's Advanced Swap Queue — the on-chain
     /// feature that makes `=<` a real resting limit order.
     static let advancedSwapQueueMimirKey = "EnableAdvSwapQueue"

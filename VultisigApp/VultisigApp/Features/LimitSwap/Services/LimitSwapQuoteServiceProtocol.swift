@@ -30,4 +30,9 @@ protocol LimitSwapQuoteServiceProtocol {
     /// Whether THORChain currently accepts resting limit orders (`=<`), gated by
     /// the `EnableAdvSwapQueue` mimir. Fails CLOSED (`false`) on any failure.
     func isAdvancedSwapQueueEnabled() async -> Bool
+
+    /// The live THORChain `inbound_addresses` list, used to compute the picker's
+    /// routable-chain set. Fail-soft: returns `[]` on failure (the caller falls
+    /// back to the static routable set).
+    func fetchInboundAddresses() async -> [InboundAddress]
 }

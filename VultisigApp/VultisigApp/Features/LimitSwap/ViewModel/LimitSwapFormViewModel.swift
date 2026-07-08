@@ -146,23 +146,11 @@ final class LimitSwapFormViewModel {
     /// derived from our prefix table — so the picker always has *some*
     /// non-empty filter rather than silently allowing every chain.
     func refreshSupportedChains() async {
-        let inbounds = await ThorchainService.shared.fetchThorchainInboundAddress()
-        var chains: Set<Chain> = [.thorChain]
-        for entry in inbounds {
-            // Missing pause flags read as "not paused" — same convention as
-            // `SwapHaltGate.isHalted(chain:in:)` on the market path.
-            guard !entry.halted,
-                  !(entry.global_trading_paused ?? false),
-                  !(entry.chain_trading_paused ?? false) else { continue }
-            if let chain = chainFromThorchainSymbol(entry.chain) {
-                chains.insert(chain)
-            }
-        }
-        if chains.count <= 1 {
-            // Inbound fetch didn't return useful data — fall back to the
-            // static routable set so the picker isn't artificially empty.
-            chains = Set(Chain.allCases.filter { isThorchainRoutable(chain: $0) })
-        }
+        // Route the fetch through the injected interactor (not
+        // `ThorchainService.shared`) so this is unit-testable, and delegate the
+        // halt-filtering + fallback to the pure `computeSupportedChains`.
+        let inbounds = await interactor.fetchInboundAddresses()
+        let chains = computeSupportedChains(from: inbounds)
         supportedChains = chains
         logger.info("refreshSupportedChains: \(chains.count, privacy: .public) routable chains")
     }

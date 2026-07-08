@@ -27,6 +27,9 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
     var advancedSwapQueueEnabledResult = false
     private(set) var advancedSwapQueueCallCount = 0
 
+    var inboundAddressesResult: [InboundAddress] = []
+    private(set) var inboundAddressesCallCount = 0
+
     func fetchCurrentMarketPrice(
         sourceAsset: String,
         sourceAmount: BigInt,
@@ -43,6 +46,11 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
     func isAdvancedSwapQueueEnabled() async -> Bool {
         advancedSwapQueueCallCount += 1
         return advancedSwapQueueEnabledResult
+    }
+
+    func fetchInboundAddresses() async -> [InboundAddress] {
+        inboundAddressesCallCount += 1
+        return inboundAddressesResult
     }
 }
 

@@ -9,6 +9,10 @@ import Foundation
 enum LimitSwapAssemblyError: Error, Equatable {
     case sourceChainNotRoutable(Chain)
     case noInboundAddressForChain(String)
+    /// The persisted `LimitOrderRecord.sourceAmount` (a BigInt-as-string) failed
+    /// to parse back into a `BigInt`. Fail loud rather than sign a `0`-amount
+    /// deposit — a silent `?? 0` would broadcast an empty transfer.
+    case invalidSourceAmount(String)
 }
 
 /// Assembles the `KeysignPayload` for a placed limit swap.
