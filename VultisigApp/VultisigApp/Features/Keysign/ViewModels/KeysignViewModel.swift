@@ -17,6 +17,11 @@ enum KeysignStatus {
     /// progress 0). Non-terminal, and deliberately NOT part of the
     /// "isSigning" scene-phase set — nothing is being signed yet.
     case connectingToFastServer
+    /// The fast-vault relay bootstrap failed (a wrong password surfaces as a
+    /// peer timeout). Rendered with the shared keysign error surface whose
+    /// retry re-runs the bootstrap in place — distinct from `.KeysignFailed`
+    /// (a confirmed signing failure) and from the broadcast-failure retry.
+    case connectingToFastServerFailed
     case CreatingInstance
     case KeysignECDSA
     case KeysignEdDSA
@@ -124,7 +129,7 @@ class KeysignViewModel: ObservableObject {
     /// binds the property.
     var signingProgress: Float {
         switch status {
-        case .connectingToFastServer:
+        case .connectingToFastServer, .connectingToFastServerFailed:
             return 0
         case .CreatingInstance:
             return 0
@@ -259,6 +264,87 @@ class KeysignViewModel: ObservableObject {
         ExplorerLinkBuilder.progressLink(swapPayload: keysignPayload?.swapPayload, txHash: txid)
     }
 
+    /// Single entry point for a keysign run, replacing the view's former
+    /// `setData()` + `startKeysign()` sequence.
+    ///
+    /// `.ready` (paired / joining) drives the ceremony directly. `.fast` runs
+    /// the relay-session bootstrap first — rendered as the `connectingToFastServer`
+    /// "connecting" animation — reusing `FastVaultKeysignBootstrap.makeKeysignInput`
+    /// VERBATIM (byte-parity: Solana blockhash refresh -> messages -> register ->
+    /// wake -> await -> kickoff), then drives the same ceremony. On a bootstrap
+    /// failure it lands on `connectingToFastServerFailed`, whose retry action
+    /// re-invokes this method (re-running the bootstrap in place).
+    func start(source: KeysignStartInput, decoded: KeysignDecodedMetadata) async {
+        switch source {
+        case .ready(let input):
+            await beginKeysign(input: input, decoded: decoded)
+        case let .fast(vault, keysignPayload, customMessagePayload, fastVaultPassword):
+            setStatus(.connectingToFastServer)
+            keysignError = .empty
+            do {
+                let input = try await FastVaultKeysignBootstrap().makeKeysignInput(
+                    vault: vault,
+                    keysignPayload: keysignPayload,
+                    customMessagePayload: customMessagePayload,
+                    fastVaultPassword: fastVaultPassword
+                )
+                // Backing out (or a retry supersede) cancels this task: do NOT
+                // proceed into the ceremony off-screen after a cancellation.
+                guard !Task.isCancelled else { return }
+                await beginKeysign(input: input, decoded: decoded)
+            } catch {
+                // A cancelled / superseded run (view torn down, or a retry
+                // replaced it) must NOT surface a failure or clobber the new
+                // attempt — regardless of whether the thrown error reads as a
+                // cancellation. Only a genuine, still-current failure shows the
+                // error surface, and it never proceeds to sign.
+                if Task.isCancelled || Self.isCancellation(error) {
+                    logger.info("fast-vault keysign bootstrap cancelled/superseded")
+                    return
+                }
+                logger.error("fast-vault keysign bootstrap failed: \(error.localizedDescription, privacy: .public)")
+                keysignError = error.localizedDescription
+                setStatus(.connectingToFastServerFailed)
+            }
+        }
+    }
+
+    /// Shared tail once a committee is known: the vault-mismatch guard, then
+    /// `setData` + decode hints, then the ceremony. Mirrors the former
+    /// `KeysignView.setData()` exactly (same order, same guard).
+    private func beginKeysign(input: KeysignInput, decoded: KeysignDecodedMetadata) async {
+        if let keysignPayload = input.keysignPayload,
+           keysignPayload.vaultPubKeyECDSA != input.vault.pubKeyECDSA {
+            setStatus(.KeysignVaultMismatch)
+            return
+        }
+
+        await setData(
+            keysignCommittee: input.keysignCommittee,
+            mediatorURL: input.mediatorURL,
+            sessionID: input.sessionID,
+            keysignType: input.keysignType,
+            messagesToSign: input.messsageToSign,
+            vault: input.vault,
+            keysignPayload: input.keysignPayload,
+            customMessagePayload: input.customMessagePayload,
+            encryptionKeyHex: input.encryptionKeyHex,
+            isInitiateDevice: input.isInitiateDevice
+        )
+        decodedFunctionName = decoded.functionName
+        decodedTokenAmount = decoded.tokenAmount
+        decodedTokenTicker = decoded.tokenTicker
+        decodedTokenLogo = decoded.tokenLogo
+        decodedTokenDisplay = decoded.tokenDisplay
+        decodedTokenIsUnlimited = decoded.tokenIsUnlimited
+        decodedFunctionSignature = decoded.functionSignature
+        decodedFunctionArguments = decoded.functionArguments
+
+        // Don't enter the ceremony if the run was cancelled during setup.
+        guard !Task.isCancelled else { return }
+        await startKeysign()
+    }
+
     func startKeysign() async {
         // Snapshot the (message-count-scaled) budget before entering the group
         // so the non-isolated sleeper closure stays Sendable-clean.
@@ -324,7 +410,13 @@ class KeysignViewModel: ObservableObject {
     static func isTerminalStatus(_ status: KeysignStatus) -> Bool {
         switch status {
         case .KeysignFinished, .KeysignFailed, .KeysignVaultMismatch,
-             .KeysignRetryRequested, .KeysignBroadcastUnconfirmed:
+             .KeysignRetryRequested, .KeysignBroadcastUnconfirmed,
+             // A failed fast-vault bootstrap is terminal for that attempt: a
+             // stale/superseded ceremony task must NOT slip past the broadcast/
+             // finish guards and sign while the failure surface is shown. The
+             // retry flips status back to `.connectingToFastServer` first, so
+             // this does not block a fresh attempt.
+             .connectingToFastServerFailed:
             return true
         case .connectingToFastServer, .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA:
             return false

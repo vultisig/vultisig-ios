@@ -8,17 +8,8 @@ import SwiftUI
 private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-view")
 
 struct KeysignView: View {
-    let vault: Vault
-    let keysignCommittee: [String]
-    let mediatorURL: String
-    let sessionID: String
-    let keysignType: KeyType
-    let messsageToSign: [String]
-    let keysignPayload: KeysignPayload? // need to pass it along to the next view
-    let customMessagePayload: CustomMessagePayload?
+    let source: KeysignStartInput
     let transferViewModel: TransferViewModel?
-    let encryptionKeyHex: String
-    let isInitiateDevice: Bool
     var decodedFunctionName: String? = nil
     var decodedTokenAmount: String? = nil
     var decodedTokenTicker: String? = nil
@@ -31,12 +22,121 @@ struct KeysignView: View {
 
     @State var showDoneText = false
     @State var showError = false
+    /// The in-flight keysign run (fast bootstrap + ceremony). Tracked so it can
+    /// be cancelled on teardown / superseded on retry — an untracked task would
+    /// let a fast-vault bootstrap keep waking Vultiserver and sign off-screen
+    /// after the user backs out.
+    @State private var startTask: Task<Void, Never>?
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     @EnvironmentObject var appViewModel: AppViewModel
+
+    /// The keysign payload supplied up front — used only for the connecting/
+    /// signing coin logo and the finished-branch selection. The view-model
+    /// holds the authoritative (possibly bootstrap-refreshed) payload once the
+    /// ceremony starts.
+    private var sourceKeysignPayload: KeysignPayload? {
+        switch source {
+        case .ready(let input): return input.keysignPayload
+        case .fast(_, let keysignPayload, _, _): return keysignPayload
+        }
+    }
+
+    private var sourceVault: Vault {
+        switch source {
+        case .ready(let input): return input.vault
+        case .fast(let vault, _, _, _): return vault
+        }
+    }
+
+    private var decodedMetadata: KeysignDecodedMetadata {
+        KeysignDecodedMetadata(
+            functionName: decodedFunctionName,
+            tokenAmount: decodedTokenAmount,
+            tokenTicker: decodedTokenTicker,
+            tokenLogo: decodedTokenLogo,
+            tokenDisplay: decodedTokenDisplay,
+            tokenIsUnlimited: decodedTokenIsUnlimited,
+            functionSignature: decodedFunctionSignature,
+            functionArguments: decodedFunctionArguments
+        )
+    }
+
+    init(
+        source: KeysignStartInput,
+        transferViewModel: TransferViewModel?,
+        decodedFunctionName: String? = nil,
+        decodedTokenAmount: String? = nil,
+        decodedTokenTicker: String? = nil,
+        decodedTokenLogo: String? = nil,
+        decodedTokenDisplay: String? = nil,
+        decodedTokenIsUnlimited: Bool = false,
+        decodedFunctionSignature: String? = nil,
+        decodedFunctionArguments: String? = nil
+    ) {
+        self.source = source
+        self.transferViewModel = transferViewModel
+        self.decodedFunctionName = decodedFunctionName
+        self.decodedTokenAmount = decodedTokenAmount
+        self.decodedTokenTicker = decodedTokenTicker
+        self.decodedTokenLogo = decodedTokenLogo
+        self.decodedTokenDisplay = decodedTokenDisplay
+        self.decodedTokenIsUnlimited = decodedTokenIsUnlimited
+        self.decodedFunctionSignature = decodedFunctionSignature
+        self.decodedFunctionArguments = decodedFunctionArguments
+    }
+
+    /// Legacy convenience for callers that already hold a complete committee (a
+    /// joining cosigner, the paired custom-message path): packs the fields into
+    /// a `.ready` source.
+    init(
+        vault: Vault,
+        keysignCommittee: [String],
+        mediatorURL: String,
+        sessionID: String,
+        keysignType: KeyType,
+        messsageToSign: [String],
+        keysignPayload: KeysignPayload?,
+        customMessagePayload: CustomMessagePayload?,
+        transferViewModel: TransferViewModel?,
+        encryptionKeyHex: String,
+        isInitiateDevice: Bool,
+        decodedFunctionName: String? = nil,
+        decodedTokenAmount: String? = nil,
+        decodedTokenTicker: String? = nil,
+        decodedTokenLogo: String? = nil,
+        decodedTokenDisplay: String? = nil,
+        decodedTokenIsUnlimited: Bool = false,
+        decodedFunctionSignature: String? = nil,
+        decodedFunctionArguments: String? = nil
+    ) {
+        self.init(
+            source: .ready(KeysignInput(
+                vault: vault,
+                keysignCommittee: keysignCommittee,
+                mediatorURL: mediatorURL,
+                sessionID: sessionID,
+                keysignType: keysignType,
+                messsageToSign: messsageToSign,
+                keysignPayload: keysignPayload,
+                customMessagePayload: customMessagePayload,
+                encryptionKeyHex: encryptionKeyHex,
+                isInitiateDevice: isInitiateDevice
+            )),
+            transferViewModel: transferViewModel,
+            decodedFunctionName: decodedFunctionName,
+            decodedTokenAmount: decodedTokenAmount,
+            decodedTokenTicker: decodedTokenTicker,
+            decodedTokenLogo: decodedTokenLogo,
+            decodedTokenDisplay: decodedTokenDisplay,
+            decodedTokenIsUnlimited: decodedTokenIsUnlimited,
+            decodedFunctionSignature: decodedFunctionSignature,
+            decodedFunctionArguments: decodedFunctionArguments
+        )
+    }
 
     var body: some View {
         content
@@ -58,12 +158,14 @@ struct KeysignView: View {
                 UIApplication.shared.isIdleTimerDisabled = true
             }
             .onDisappear {
+                startTask?.cancel()
                 viewModel.stopMessagePuller()
                 UIApplication.shared.isIdleTimerDisabled = false
             }
             .navigationBarBackButtonHidden(viewModel.status == .KeysignFinished ? true : false)
         #else
             .onDisappear {
+                startTask?.cancel()
                 viewModel.stopMessagePuller()
             }
         #endif
@@ -85,9 +187,11 @@ struct KeysignView: View {
                 // binding (searching -> signing visual) instead of restarting.
                 SendCryptoKeysignView(
                     connected: viewModel.status != .connectingToFastServer,
-                    coinLogo: keysignPayload?.coin.logo,
+                    coinLogo: sourceKeysignPayload?.coin.logo,
                     progress: viewModel.signingProgress
                 )
+            case .connectingToFastServerFailed:
+                fastBootstrapErrorView
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
@@ -104,19 +208,42 @@ struct KeysignView: View {
             }
         }
         .onLoad {
-            Task {
-                await setData()
-                await viewModel.startKeysign()
-            }
+            startKeysignFlow()
         }
         .onChange(of: viewModel.txid) {
             movetoDoneView()
         }
     }
 
+    /// Starts (or retries) the keysign run, tracking the task so teardown can
+    /// cancel it and a retry supersedes the previous attempt.
+    private func startKeysignFlow() {
+        startTask?.cancel()
+        startTask = Task { await viewModel.start(source: source, decoded: decodedMetadata) }
+    }
+
+    /// Fast-vault bootstrap failure surface. Reuses the shared keysign error
+    /// view (as `FastKeysignBootstrapView` did) with a retry that re-runs the
+    /// bootstrap in place — distinct from the broadcast-failure retry, which
+    /// pops to verify.
+    var fastBootstrapErrorView: some View {
+        SendCryptoKeysignView(
+            title: viewModel.keysignError,
+            showError: true,
+            coinLogo: sourceKeysignPayload?.coin.logo,
+            errorButtonTitle: "tryAgain".localized,
+            errorAction: {
+                startKeysignFlow()
+            }
+        )
+        .onAppear {
+            showError = true
+        }
+    }
+
     var keysignFinished: some View {
         ZStack {
-            if transferViewModel != nil, keysignPayload != nil {
+            if transferViewModel != nil, sourceKeysignPayload != nil {
                 forStartKeysign
             } else {
                 forJoinKeysign
@@ -132,7 +259,7 @@ struct KeysignView: View {
     }
 
     var forJoinKeysign: some View {
-        JoinKeysignDoneView(vault: vault, viewModel: viewModel)
+        JoinKeysignDoneView(vault: sourceVault, viewModel: viewModel)
             .onAppear {
                 globalStateViewModel.showKeysignDoneView = true
             }
@@ -199,34 +326,6 @@ struct KeysignView: View {
         .onAppear {
             showError = true
         }
-    }
-
-    func setData() async {
-        if let keysignPayload, keysignPayload.vaultPubKeyECDSA != vault.pubKeyECDSA {
-            viewModel.status = .KeysignVaultMismatch
-            return
-        }
-
-        await viewModel.setData(
-            keysignCommittee: self.keysignCommittee,
-            mediatorURL: self.mediatorURL,
-            sessionID: self.sessionID,
-            keysignType: self.keysignType,
-            messagesToSign: self.messsageToSign,
-            vault: self.vault,
-            keysignPayload: keysignPayload,
-            customMessagePayload: customMessagePayload,
-            encryptionKeyHex: encryptionKeyHex,
-            isInitiateDevice: self.isInitiateDevice
-        )
-        viewModel.decodedFunctionName = decodedFunctionName
-        viewModel.decodedTokenAmount = decodedTokenAmount
-        viewModel.decodedTokenTicker = decodedTokenTicker
-        viewModel.decodedTokenLogo = decodedTokenLogo
-        viewModel.decodedTokenDisplay = decodedTokenDisplay
-        viewModel.decodedTokenIsUnlimited = decodedTokenIsUnlimited
-        viewModel.decodedFunctionSignature = decodedFunctionSignature
-        viewModel.decodedFunctionArguments = decodedFunctionArguments
     }
 
     private func movetoDoneView() {
