@@ -18,7 +18,7 @@ import SwiftUI
 /// stored, so the memo math is never at risk.
 struct LimitSwapBodyView: View {
 
-    private enum FocusedSection: Hashable {
+    enum FocusedSection: Hashable {
         case executeWhen
         case asset
     }
@@ -27,10 +27,19 @@ struct LimitSwapBodyView: View {
     let fromCoin: Coin
     let toCoin: Coin
 
-    /// Default to the Asset section expanded — the Figma first-launch state
-    /// (screen 1). Tapping "Execute when" collapses Asset into its compact
-    /// summary and expands the price card.
-    @State private var focusedSection: FocusedSection? = .asset
+    /// Which section is open on first launch. The Figma first-launch state
+    /// (screen 1) is the Asset section expanded; tapping "Execute when"
+    /// collapses Asset into its compact summary and expands the price card.
+    /// The section is actually opened by `.onLoad` committing this into
+    /// `focusedSection` (see below).
+    var initialFocusedSection: FocusedSection = .asset
+
+    /// `nil` on frame 0, then seeded from `initialFocusedSection` in `.onLoad`.
+    /// Starting at `nil` (rather than a fixed section) is what lets each
+    /// `FormExpandableSection`'s `onChange(of: focusedField)` observe the
+    /// transition and drive its open animation — the same nil→onLoad focus
+    /// pattern the Send/Bond expandable forms use.
+    @State private var focusedSection: FocusedSection?
     @State private var sourceAmountText: String = ""
     @State private var priceText: String = ""
 
@@ -52,6 +61,7 @@ struct LimitSwapBodyView: View {
                         showValue: false,
                         focusedField: $focusedSection,
                         focusedFieldEquals: .executeWhen,
+                        cornerRadius: 24,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .executeWhen : nil
                         },
@@ -70,6 +80,7 @@ struct LimitSwapBodyView: View {
                         showValue: focusedSection != .asset,
                         focusedField: $focusedSection,
                         focusedFieldEquals: .asset,
+                        cornerRadius: 24,
                         onExpand: { isExpanded in
                             focusedSection = isExpanded ? .asset : nil
                         },
@@ -115,6 +126,23 @@ struct LimitSwapBodyView: View {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
                 if Task.isCancelled { break }
                 await vm.tickQuoteCountdown()
+            }
+        }
+        .onLoad {
+            // Commit the initial focus so each FormExpandableSection's onChange
+            // fires and animates the default section open (both start collapsed
+            // on frame 0).
+            if focusedSection == nil {
+                focusedSection = initialFocusedSection
+            }
+            // Reflect an already-populated draft in the editable fields on first
+            // appear — otherwise they only sync via onChange and read empty
+            // until the user edits them.
+            if priceText.isEmpty, vm.draft.targetPrice > 0 {
+                priceText = formatPrice(vm.draft.targetPrice)
+            }
+            if sourceAmountText.isEmpty, vm.draft.sourceAmount > 0 {
+                sourceAmountText = formatPrice(fromCoin.decimal(for: vm.draft.sourceAmount))
             }
         }
         .onChange(of: sourceAmountText) { _, newText in
@@ -216,10 +244,11 @@ private struct LimitExecuteWhenContent: View {
     let onPickToAsset: () -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack(alignment: .topTrailing) {
+        VStack(spacing: 6) {
+            ZStack(alignment: .trailing) {
                 LimitPriceDisplay(vm: vm, priceText: $priceText, onPickToAsset: onPickToAsset)
                 LimitPriceToggle(vm: vm)
+                    .padding(.trailing, 4)
             }
 
             LimitPresetPills(vm: vm)
@@ -269,7 +298,7 @@ private struct LimitPriceDisplay: View {
                     .lineLimit(1)
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 180)
         .padding(.vertical, 8)
     }
 
@@ -362,7 +391,9 @@ private struct LimitPriceToggle: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            toggleButton(unit: .asset, systemImage: "circle.grid.2x2")
+            // Top: the asset-terms view (Figma "circles" glyph — two interlocking
+            // rings). Bottom: the USD toggle ($, blue-filled when active).
+            toggleButton(unit: .asset, systemImage: "circlebadge.2")
             toggleButton(unit: .usd, systemImage: "dollarsign.circle")
         }
         .padding(3)
@@ -378,8 +409,8 @@ private struct LimitPriceToggle: View {
             }
         } label: {
             Image(systemName: systemImage)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(isActive ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(isActive ? Theme.colors.textPrimary : Theme.colors.textSecondary)
                 .frame(width: 32, height: 32)
                 .background(isActive ? Theme.colors.primaryAccent3 : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
@@ -410,12 +441,18 @@ private struct LimitExpiryRow: View {
         }
         .padding(14)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(UnevenRoundedRectangle(cornerRadii: Self.corners))
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            UnevenRoundedRectangle(cornerRadii: Self.corners)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }
+
+    // Nests under the price area: small top corners, larger bottom corners that
+    // echo the enclosing card (Figma top-12 / bottom-16).
+    private static let corners = RectangleCornerRadii(
+        topLeading: 12, bottomLeading: 16, bottomTrailing: 16, topTrailing: 12
+    )
 
     private func pill(titleKey: String, hours: Int) -> some View {
         let isSelected = vm.draft.expiryHours == hours
@@ -719,7 +756,8 @@ private struct LimitPresetPills: View {
     @Bindable var vm: LimitSwapFormViewModel
 
     var body: some View {
-        LimitPillFlow(spacing: 6) {
+        // Figma lays the four presets out as equal-width pills filling the row.
+        HStack(spacing: 6) {
             marketPill
             staticPill(titleKey: "limitSwap.preset.plus1", pct: 1)
             staticPill(titleKey: "limitSwap.preset.plus5", pct: 5)
@@ -750,13 +788,8 @@ private struct LimitPresetPills: View {
                 }
             }
             .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .overlay(
-                RoundedRectangle(cornerRadius: 100)
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
-            )
+            .minimumScaleFactor(0.85)
+            .pillShape()
         }
         .buttonStyle(.plain)
         .disabled(vm.marketPriceRef == nil)
@@ -771,13 +804,7 @@ private struct LimitPresetPills: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 100)
-                        .stroke(Theme.colors.borderLight, lineWidth: 1)
-                )
+                .pillShape()
         }
         .buttonStyle(.plain)
         .disabled(vm.marketPriceRef == nil)
@@ -811,70 +838,21 @@ private struct LimitPresetPills: View {
     }
 }
 
-// MARK: - Pill flow layout
+// MARK: - Preset pill shape
 //
-// Wraps subviews to a second row when content overflows the available width.
+// Equal-width rounded outline used by every Execute-when preset pill so the row
+// distributes them evenly (Figma lays them out flex-1).
 
-private struct LimitPillFlow: Layout {
-
-    let spacing: CGFloat
-
-    init(spacing: CGFloat = 6) {
-        self.spacing = spacing
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
-        let lines = arrange(subviews: subviews, in: width)
-        let totalHeight = lines.map(\.height).reduce(0, +)
-            + CGFloat(max(0, lines.count - 1)) * spacing
-        let widestLine = lines.map(\.width).max() ?? 0
-        return CGSize(width: widestLine, height: totalHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
-        let lines = arrange(subviews: subviews, in: bounds.width)
-        var y = bounds.minY
-        for line in lines {
-            var x = bounds.minX
-            for index in line.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
-                subviews[index].place(
-                    at: CGPoint(x: x, y: y),
-                    anchor: .topLeading,
-                    proposal: ProposedViewSize(size)
-                )
-                x += size.width + spacing
-            }
-            y += line.height + spacing
-        }
-    }
-
-    private struct Line {
-        var indices: [Int] = []
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-    }
-
-    private func arrange(subviews: Subviews, in maxWidth: CGFloat) -> [Line] {
-        var lines: [Line] = [Line()]
-        for (i, sub) in subviews.enumerated() {
-            let size = sub.sizeThatFits(.unspecified)
-            let extraSpacing: CGFloat = lines[lines.count - 1].indices.isEmpty ? 0 : spacing
-            let prospectiveWidth = lines[lines.count - 1].width + extraSpacing + size.width
-            if prospectiveWidth > maxWidth, !lines[lines.count - 1].indices.isEmpty {
-                var newLine = Line()
-                newLine.indices = [i]
-                newLine.width = size.width
-                newLine.height = size.height
-                lines.append(newLine)
-            } else {
-                lines[lines.count - 1].indices.append(i)
-                lines[lines.count - 1].width = prospectiveWidth
-                lines[lines.count - 1].height = max(lines[lines.count - 1].height, size.height)
-            }
-        }
-        return lines
+private extension View {
+    func pillShape() -> some View {
+        self
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity)
+            .overlay(
+                RoundedRectangle(cornerRadius: 100)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
     }
 }
 
