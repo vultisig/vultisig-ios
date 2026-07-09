@@ -3,18 +3,18 @@
 //  VultisigApp
 //
 //  Shared tail-end signing route for every keysign-side flow (Send, Swap,
-//  FunctionCall). The signing screens (`PairScreen`, `KeysignView`,
-//  `DoneScreen`) are already single shared components; this collapses the
-//  `pair → keysign → done` ROUTING that each flow used to re-declare in its own
-//  `*Route` enum + builder + router. Each flow's per-flow `verify` screen
-//  navigates INTO these cases. The former `.fastKeysign` + `.keysign(input:)`
-//  routes are merged into one `.keysign(SigningKeysignRoute)`.
+//  FunctionCall). The signing screens (`PairScreen`, `KeysignView`) are already
+//  single shared components; this collapses the `pair → keysign` ROUTING that
+//  each flow used to re-declare in its own `*Route` enum + builder + router.
+//  Each flow's per-flow `verify` screen navigates INTO these cases. The former
+//  `.fastKeysign` + `.keysign(input:)` routes are merged into one
+//  `.keysign(SigningKeysignRoute)`. The done/overview is no longer a route:
+//  `SigningKeysignScreen` crossfades to it in place once keysign finishes.
 //
-//  The flow-specific variance is folded behind two value enums so no flow
-//  loses any data:
-//    - `SigningTxContext` threads the transaction identity + retry signal
-//      from verify through pair/keysign so the done route can be rebuilt.
-//    - `DoneKind` carries each flow's done-screen inputs.
+//  The flow-specific variance is folded behind `SigningTxContext`, which
+//  threads the transaction identity + retry signal from verify through
+//  pair/keysign so the keysign screen can build the overview inline and pop
+//  back to verify on a retryable failure.
 //
 //  Vault convention: Send/FunctionCall carry the live `Vault` (as their
 //  routes always have). Swap deliberately carries `Vault.pubKeyECDSA` and
@@ -26,7 +26,6 @@
 enum SigningRoute: Hashable {
     case pair(context: SigningTxContext, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(SigningKeysignRoute)
-    case done(DoneKind)
 }
 
 /// The two keysign entry modes, merged from the former `.fastKeysign` +
@@ -45,10 +44,11 @@ enum SigningKeysignRoute: Hashable {
 }
 
 /// Flow-specific transaction identity threaded from `verify` through
-/// `pair`/`fastKeysign` into `keysign`, so the keysign screen can rebuild
-/// the `done` route and pop back to `verify` on a retryable broadcast
-/// failure. Keeps each flow's existing vault convention (Send/FunctionCall
-/// carry the live `Vault`; Swap carries `pubKeyECDSA` and re-fetches).
+/// `pair`/`fastKeysign` into `keysign`, so the keysign screen can render the
+/// inline overview/done surface and pop back to `verify` on a retryable
+/// broadcast failure. Keeps each flow's existing vault convention
+/// (Send/FunctionCall carry the live `Vault`; Swap carries `pubKeyECDSA` and
+/// re-fetches).
 enum SigningTxContext: Hashable {
     case send(vault: Vault, tx: SendTransaction, retry: SendRetrySignal)
     case functionCall(vault: Vault, tx: SendTransaction, retry: SendRetrySignal)
@@ -86,13 +86,4 @@ extension SigningTxContext {
         }
         return nil
     }
-}
-
-/// Done-screen inputs, folded per flow so the shared `done` route carries
-/// every field each flow needs (Send's `tx`/`keysignPayload`; Swap's
-/// `approveHash`/`progressLink`). FunctionCall reuses `.send`, as it always
-/// piggybacked on the Send done screen.
-enum DoneKind: Hashable {
-    case send(vault: Vault, hash: String, chain: Chain, tx: SendTransaction?, keysignPayload: KeysignPayload?)
-    case swap(vaultPubKeyECDSA: String, hash: String, approveHash: String?, chain: Chain, transaction: SwapTransaction, progressLink: String?)
 }

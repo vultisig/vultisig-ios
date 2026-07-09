@@ -14,6 +14,10 @@ struct SettingsCustomMessageView: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     @StateObject var viewModel = SettingsCustomMessageViewModel()
+    /// The keysign ceremony view-model, owned here so this host can crossfade
+    /// the shared KeysignView animation to the signed-message done surface once
+    /// signing finishes — the same pattern as the initiator and cosigner.
+    @StateObject private var keysignVM = KeysignViewModel()
 
     @State var keysignView: KeysignView?
     @State var method: String = .empty
@@ -108,18 +112,38 @@ struct SettingsCustomMessageView: View {
 
     var keysign: some View {
         ZStack {
+            if keysignVM.status == .KeysignFinished {
+                JoinKeysignDoneView(vault: vault, viewModel: keysignVM)
+                    .transition(.opacity)
+            } else {
+                keysignSigning
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.35), value: keysignVM.status == .KeysignFinished)
+        .onChange(of: keysignVM.status) { _, status in
+            // Advance the flow state on finish (title -> "overview", back button
+            // hidden), matching the former KeysignView-driven moveToNextView.
+            if status == .KeysignFinished, viewModel.state == .keysign {
+                viewModel.moveToNextView()
+            }
+        }
+    }
+
+    var keysignSigning: some View {
+        ZStack {
             if let fastPassword = fastVaultPassword.nilIfEmpty {
                 // Fast vaults skip the pair screen: KeysignView runs the
                 // off-screen relay bootstrap itself (connecting animation) and
                 // then drives the signing ceremony.
                 KeysignView(
+                    viewModel: keysignVM,
                     source: .fast(
                         vault: vault,
                         keysignPayload: nil,
                         customMessagePayload: customMessagePayload,
                         fastVaultPassword: fastPassword
-                    ),
-                    transferViewModel: viewModel
+                    )
                 )
             } else if let keysignView = keysignView {
                 keysignView
@@ -169,6 +193,7 @@ struct SettingsCustomMessageView: View {
             isShareButtonVisible: !vault.isFastVault
         ) { input in
             self.keysignView = KeysignView(
+                viewModel: keysignVM,
                 vault: input.vault,
                 keysignCommittee: input.keysignCommittee,
                 mediatorURL: input.mediatorURL,
@@ -177,7 +202,6 @@ struct SettingsCustomMessageView: View {
                 messsageToSign: input.messsageToSign,
                 keysignPayload: input.keysignPayload,
                 customMessagePayload: input.customMessagePayload,
-                transferViewModel: viewModel,
                 encryptionKeyHex: input.encryptionKeyHex,
                 isInitiateDevice: input.isInitiateDevice
             )
