@@ -8,8 +8,16 @@ import SwiftUI
 private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-view")
 
 struct KeysignView: View {
+    /// The keysign ceremony view-model, owned by the host (initiator, cosigner,
+    /// or custom-message screen) and observed here. Lifting it to the host is
+    /// what lets every host own the crossfade from this animation to its own
+    /// Done surface — this view is purely the signing animation now.
+    @ObservedObject var viewModel: KeysignViewModel
     let source: KeysignStartInput
-    let transferViewModel: TransferViewModel?
+    /// Host-supplied action for the broadcast-failure retry (pops to verify).
+    /// A UI action closure — only the initiator wires it; the cosigner and
+    /// custom-message paths leave it nil (they have no in-place retry surface).
+    let onRetry: ((BroadcastRetryReason) -> Void)?
     var decodedFunctionName: String? = nil
     var decodedTokenAmount: String? = nil
     var decodedTokenTicker: String? = nil
@@ -18,9 +26,7 @@ struct KeysignView: View {
     var decodedTokenIsUnlimited: Bool = false
     var decodedFunctionSignature: String? = nil
     var decodedFunctionArguments: String? = nil
-    @StateObject var viewModel = KeysignViewModel()
 
-    @State var showDoneText = false
     @State var showError = false
     /// The in-flight keysign run (fast bootstrap + ceremony). Tracked so it can
     /// be cancelled on teardown / superseded on retry — an untracked task would
@@ -31,7 +37,6 @@ struct KeysignView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
 
-    @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     @EnvironmentObject var appViewModel: AppViewModel
 
     /// The keysign payload supplied up front — used only for the connecting/
@@ -42,13 +47,6 @@ struct KeysignView: View {
         switch source {
         case .ready(let input): return input.keysignPayload
         case .fast(_, let keysignPayload, _, _): return keysignPayload
-        }
-    }
-
-    private var sourceVault: Vault {
-        switch source {
-        case .ready(let input): return input.vault
-        case .fast(let vault, _, _, _): return vault
         }
     }
 
@@ -66,8 +64,9 @@ struct KeysignView: View {
     }
 
     init(
+        viewModel: KeysignViewModel,
         source: KeysignStartInput,
-        transferViewModel: TransferViewModel?,
+        onRetry: ((BroadcastRetryReason) -> Void)? = nil,
         decodedFunctionName: String? = nil,
         decodedTokenAmount: String? = nil,
         decodedTokenTicker: String? = nil,
@@ -77,8 +76,9 @@ struct KeysignView: View {
         decodedFunctionSignature: String? = nil,
         decodedFunctionArguments: String? = nil
     ) {
+        self._viewModel = ObservedObject(wrappedValue: viewModel)
         self.source = source
-        self.transferViewModel = transferViewModel
+        self.onRetry = onRetry
         self.decodedFunctionName = decodedFunctionName
         self.decodedTokenAmount = decodedTokenAmount
         self.decodedTokenTicker = decodedTokenTicker
@@ -93,6 +93,7 @@ struct KeysignView: View {
     /// joining cosigner, the paired custom-message path): packs the fields into
     /// a `.ready` source.
     init(
+        viewModel: KeysignViewModel,
         vault: Vault,
         keysignCommittee: [String],
         mediatorURL: String,
@@ -101,9 +102,9 @@ struct KeysignView: View {
         messsageToSign: [String],
         keysignPayload: KeysignPayload?,
         customMessagePayload: CustomMessagePayload?,
-        transferViewModel: TransferViewModel?,
         encryptionKeyHex: String,
         isInitiateDevice: Bool,
+        onRetry: ((BroadcastRetryReason) -> Void)? = nil,
         decodedFunctionName: String? = nil,
         decodedTokenAmount: String? = nil,
         decodedTokenTicker: String? = nil,
@@ -114,6 +115,7 @@ struct KeysignView: View {
         decodedFunctionArguments: String? = nil
     ) {
         self.init(
+            viewModel: viewModel,
             source: .ready(KeysignInput(
                 vault: vault,
                 keysignCommittee: keysignCommittee,
@@ -126,7 +128,7 @@ struct KeysignView: View {
                 encryptionKeyHex: encryptionKeyHex,
                 isInitiateDevice: isInitiateDevice
             )),
-            transferViewModel: transferViewModel,
+            onRetry: onRetry,
             decodedFunctionName: decodedFunctionName,
             decodedTokenAmount: decodedTokenAmount,
             decodedTokenTicker: decodedTokenTicker,
@@ -140,7 +142,7 @@ struct KeysignView: View {
 
     var body: some View {
         content
-            .sensoryFeedback(.success, trigger: showDoneText)
+            .sensoryFeedback(.success, trigger: viewModel.status == .KeysignFinished)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
             // Observability hook for vultisig-ios#4327: the issue reporter sees
@@ -179,12 +181,16 @@ struct KeysignView: View {
                     .CreatingInstance,
                     .KeysignECDSA,
                     .KeysignEdDSA,
-                    .KeysignMLDSA:
-                // One animation host across connecting -> signing: keeping these
-                // in a single switch branch preserves the view's structural
-                // identity, so the Rive animation isn't torn down and recreated
-                // mid-transition. `connected` flips false -> true through the
-                // binding (searching -> signing visual) instead of restarting.
+                    .KeysignMLDSA,
+                    .KeysignFinished:
+                // One animation host across connecting -> signing -> finished:
+                // keeping these in a single switch branch preserves the view's
+                // structural identity, so the Rive animation isn't torn down and
+                // recreated mid-transition. `connected` flips false -> true
+                // through the binding (searching -> signing visual) instead of
+                // restarting. `.KeysignFinished` holds the completed animation
+                // (progress 100) in place until the host crossfades to its own
+                // Done surface.
                 SendCryptoKeysignView(
                     connected: viewModel.status != .connectingToFastServer,
                     coinLogo: sourceKeysignPayload?.coin.logo,
@@ -192,8 +198,6 @@ struct KeysignView: View {
                 )
             case .connectingToFastServerFailed:
                 fastBootstrapErrorView
-            case .KeysignFinished:
-                keysignFinished
             case .KeysignFailed:
                 sendCryptoKeysignView
                     .padding(.horizontal, 16)
@@ -209,9 +213,6 @@ struct KeysignView: View {
         }
         .onLoad {
             startKeysignFlow()
-        }
-        .onChange(of: viewModel.txid) {
-            movetoDoneView()
         }
     }
 
@@ -240,33 +241,6 @@ struct KeysignView: View {
         }
     }
 
-    var keysignFinished: some View {
-        ZStack {
-            if transferViewModel != nil, sourceKeysignPayload != nil {
-                forStartKeysign
-            } else {
-                forJoinKeysign
-            }
-        }
-        .onAppear {
-            showDoneText = true
-        }
-    }
-
-    var forStartKeysign: some View {
-        Loader()
-    }
-
-    var forJoinKeysign: some View {
-        JoinKeysignDoneView(vault: sourceVault, viewModel: viewModel)
-            .onAppear {
-                globalStateViewModel.showKeysignDoneView = true
-            }
-            .onDisappear {
-                globalStateViewModel.showKeysignDoneView = false
-            }
-    }
-
     var sendCryptoKeysignView: some View {
         SendCryptoKeysignView(title: viewModel.keysignError, showError: true)
             .onAppear {
@@ -281,7 +255,7 @@ struct KeysignView: View {
             errorButtonTitle: "tryAgain".localized,
             errorAction: {
                 guard let reason = viewModel.retryReason else { return }
-                transferViewModel?.retryBroadcast(reason: reason)
+                onRetry?(reason)
             }
         )
         .onAppear {
@@ -327,25 +301,6 @@ struct KeysignView: View {
         }
     }
 
-    private func movetoDoneView() {
-        // Don't navigate to the success done-screen when the broadcast result is
-        // unconfirmed — the txid is set for display only, not as proof of a
-        // landed tx. The neutral in-place view handles that state.
-        guard viewModel.status != .KeysignBroadcastUnconfirmed else {
-            return
-        }
-        guard let transferViewModel = transferViewModel, !viewModel.txid.isEmpty else {
-            return
-        }
-
-        transferViewModel.hash = viewModel.txid
-        transferViewModel.approveHash = viewModel.approveTxid
-        // Hand over the payload the ceremony actually signed (the fast bootstrap
-        // can refresh it, e.g. Solana blockhash) so the done route shows the
-        // SIGNED payload — replaces the old onKeysignInputResolved callback.
-        transferViewModel.updateResolvedKeysignPayload(viewModel.keysignPayload)
-        transferViewModel.moveToNextView()
-    }
 }
 
 #Preview {
@@ -353,6 +308,7 @@ struct KeysignView: View {
         Background()
 
         KeysignView(
+            viewModel: KeysignViewModel(),
             vault: Vault.example,
             keysignCommittee: [],
             mediatorURL: "",
@@ -361,30 +317,9 @@ struct KeysignView: View {
             messsageToSign: ["message"],
             keysignPayload: nil,
             customMessagePayload: nil,
-            transferViewModel: nil,
             encryptionKeyHex: "",
             isInitiateDevice: false
         )
     }
-    .environmentObject(HomeViewModel())
-    .environmentObject(GlobalStateViewModel())
     .environmentObject(AppViewModel())
 }
-
-#if os(iOS)
-import SwiftUI
-
-extension KeysignView {
-    var container: some View {
-        content
-            .onAppear {
-                UIApplication.shared.isIdleTimerDisabled = true
-            }
-            .onDisappear {
-                viewModel.stopMessagePuller()
-                UIApplication.shared.isIdleTimerDisabled = false
-            }
-            .navigationBarBackButtonHidden(viewModel.status == .KeysignFinished ? true : false)
-    }
-}
-#endif
