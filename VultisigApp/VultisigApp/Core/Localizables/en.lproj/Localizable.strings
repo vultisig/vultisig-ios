@@ -11,6 +11,7 @@
 "addChain" = "Add Chain";
 "addCoinLP" = "Add %@ LP";
 "addCustomChains" = "Add custom chains";
+"addDestinationTag" = "Add Destination Tag";
 "addFolder" = "Add folder";
 "addFriendsReferral" = "Add a Friends Referral";
 "addingToken" = "Adding Token...";
@@ -223,6 +224,7 @@
 "connected" = "Connected";
 "connectingWithServer..." = "Connecting with server...";
 "continue" = "Continue";
+"continueAnyway" = "Continue Anyway";
 "continueThresholdOfTotal" = "Continue (%d-of-%d)";
 "copyAddress" = "Copy address";
 "correctAmountCheck" = "The amount is correct";
@@ -321,6 +323,13 @@
 "deleteVaultTitle" = "Delete Vault";
 "dependencies" = "Dependencies";
 "destinationAddress" = "Destination Address";
+"destinationTag" = "Destination Tag";
+"destinationTagFromXAddress" = "Included in the X-address";
+"destinationTagInvalidError" = "Destination tag must be a whole number between 1 and 4294967295.";
+"destinationTagMemoConflictError" = "The memo and the destination tag don't match. XRP transactions can carry only one destination tag.";
+"destinationTagRequiredError" = "This address requires a destination tag (common for exchange deposits). Enter the tag from your deposit instructions or the funds may not be credited.";
+"destinationTagUnverifiedTitle" = "Couldn't Verify Destination";
+"destinationTagUnverifiedWarning" = "Couldn't verify whether this address requires a destination tag. If you're depositing to an exchange, add the tag before continuing.";
 "destinationValidator" = "Destination Validator";
 "device" = "device";
 "deviceBackupDescription" = "Store the vault share of this device.";
@@ -378,6 +387,7 @@
 "enterAddressHere" = "Enter address here";
 "enterAmount" = "Enter Amount";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Enter Destination Tag";
 "enterHint" = "Enter a hint";
 "enterMemo" = "Enter Memo";
 "enterPassword" = "Enter Password";
@@ -1478,6 +1488,8 @@
 "wrongVaultSelectedDescription" = "The vault you selected doesn't match the keygen session. Please select the correct vault.";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
 "x" = "X (Twitter)";
+"xrpDestinationLookupFailedError" = "The destination XRP account couldn't be verified (%@). Please try again.";
+"xrpDestinationNotActivatedError" = "The destination XRP address is not activated yet. A first transfer to it must be at least %@ XRP (the network base reserve). Increase the amount or double-check the address.";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
 "yieldClaimAmount" = "Claim %@";

@@ -11,11 +11,12 @@
 enum SwapRoute: Hashable {
     case root(fromCoinID: String?, toCoinID: String?, vaultPubKeyECDSA: String)
     case verify(transaction: SwapTransaction, retrySignal: SwapRetrySignal, vaultPubKeyECDSA: String)
-    case pair(vaultPubKeyECDSA: String, transaction: SwapTransaction, retrySignal: SwapRetrySignal, keysignPayload: KeysignPayload, fastVaultPassword: String?)
-    case keysign(input: KeysignInput, transaction: SwapTransaction, retrySignal: SwapRetrySignal)
-    case done(vaultPubKeyECDSA: String, hash: String, approveHash: String?, chain: Chain, transaction: SwapTransaction, progressLink: String?)
-
-    // Limit-swap pipeline reuses these same routes — `SwapTransaction`
-    // carries a `limitContext: LimitOrderRecord?` that flips each shared
-    // screen into its limit-mode UI when non-nil.
+    // pair → keysign → done live on the shared `SigningRoute`; verify
+    // navigates into it, carrying `vaultPubKeyECDSA` (not a live `Vault`)
+    // in `SigningTxContext.swap` so the actor-isolation contract is kept.
+    //
+    // Limit orders reuse this exact `.verify` entry and the shared
+    // `SigningRoute` tail: `SwapTransaction` carries a
+    // `limitContext: LimitOrderRecord?` that flips each shared screen
+    // (verify + done) into its limit-mode UI when non-nil.
 }

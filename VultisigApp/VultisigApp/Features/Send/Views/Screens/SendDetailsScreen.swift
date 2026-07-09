@@ -64,12 +64,22 @@ struct SendDetailsScreen: View {
                 if !newValue.chain.supportsMemo {
                     viewModel.memo = ""
                 }
+                // Same treatment for the XRP-only destination tag.
+                if !newValue.chain.supportsDestinationTag {
+                    viewModel.rippleTag.clearForUnsupportedChain()
+                }
+                // Re-evaluate (or clear, when no validator applies) the inline
+                // amount warning when the selected coin changes.
+                viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.cancelAddressResolution()
 
                 guard !viewModel.toAddress.isEmpty else {
-                    viewModel.addressSetupDone = false
+                    viewModel.onToAddressCleared()
+                    // Clear any stale amount warning now the destination is gone
+                    // (this branch returns before the trigger below).
+                    viewModel.debouncedValidateAmount()
                     return
                 }
 
@@ -79,6 +89,13 @@ struct SendDetailsScreen: View {
                 } else {
                     viewModel.debouncedResolveAddress()
                 }
+                // Destination changed → re-run the inline amount validation
+                // (no-op / clears when no validator applies or the address
+                // isn't ready).
+                viewModel.debouncedValidateAmount()
+            }
+            .onChange(of: viewModel.amount) { _, _ in
+                viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.isAddressResolved) { _, resolved in
                 guard let resolved else { return }
@@ -88,6 +105,7 @@ struct SendDetailsScreen: View {
                 } else if viewModel.selectedTab == .amount {
                     viewModel.onSelect(tab: .address)
                 }
+                viewModel.debouncedValidateAmount()
             }
             .onDisappear {
                 viewModel.stopMediator()
@@ -201,6 +219,28 @@ struct SendDetailsScreen: View {
     }
 
     var tabs: some View {
+        // `@Bindable` on the nested sub-VM: a binding can't chain through the
+        // parent's `let rippleTag` (read-only key path), so bind locally.
+        @Bindable var rippleTag = viewModel.rippleTag
+        return tabsContent
+            // Fail-open half of the XRP RequireDest gate: the lookup
+            // couldn't confirm whether the destination needs a tag, so the
+            // user must explicitly accept the risk before the send proceeds.
+            .alert(
+                NSLocalizedString("destinationTagUnverifiedTitle", comment: ""),
+                isPresented: $rippleTag.showDestinationTagUnverifiedAlert
+            ) {
+                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {}
+                Button(NSLocalizedString("continueAnyway", comment: "")) {
+                    viewModel.acknowledgeUnverifiedDestinationTag()
+                    Task { await validateForm() }
+                }
+            } message: {
+                Text(NSLocalizedString("destinationTagUnverifiedWarning", comment: ""))
+            }
+    }
+
+    var tabsContent: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 12) {

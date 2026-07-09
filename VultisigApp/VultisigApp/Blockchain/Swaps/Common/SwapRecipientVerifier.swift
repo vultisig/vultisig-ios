@@ -83,7 +83,11 @@ enum SwapRecipientVerifier {
     /// the 3rd colon-delimited field. The ASSET field never contains a colon, so
     /// splitting on `:` isolates the destination cleanly. Returns nil when the
     /// memo is malformed or the field is empty.
-    private static func memoDestination(from memo: String) -> String? {
+    ///
+    /// Also consumed by the swap confirm screens to surface an external
+    /// recipient — display and verification must agree on what the destination
+    /// is, so they share this one parser.
+    static func memoDestination(from memo: String) -> String? {
         let parts = memo.split(separator: ":", omittingEmptySubsequences: false)
         guard parts.count >= 3 else { return nil }
         let destination = String(parts[2]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -94,7 +98,11 @@ enum SwapRecipientVerifier {
     /// checksum casing, so they compare case-insensitively; every other encoding
     /// (bech32, base58, …) is case-sensitive and must match exactly — a blanket
     /// case-insensitive compare there could false-pass two distinct addresses.
-    private static func addressesMatch(_ lhs: String, _ rhs: String) -> Bool {
+    ///
+    /// Shared with the swap confirm screens so that "is this an external
+    /// recipient?" (display) and "does the built artifact target the recipient?"
+    /// (verification) never disagree on address equality.
+    static func addressesMatch(_ lhs: String, _ rhs: String) -> Bool {
         let l = lhs.trimmingCharacters(in: .whitespacesAndNewlines)
         let r = rhs.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !l.isEmpty, !r.isEmpty else { return false }

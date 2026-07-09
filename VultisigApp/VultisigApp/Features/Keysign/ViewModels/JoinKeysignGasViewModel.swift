@@ -31,7 +31,24 @@ struct JoinKeysignGasViewModel {
         }
 
         if payload.coin.chainType == .EVM {
-            let totalFeeWei = payload.chainSpecific.fee
+            // `chainSpecific.fee` values the EVM fee at the oracle inputs alone,
+            // but swaps riding the `.generic` payload are signed with the shared
+            // `EVMSwapFee` reconciliation — the quote's own gas price bumped to
+            // the oracle ceiling, the route gas floored by the oracle limit
+            // (with the zero-gas fallback). Value the fee exactly the way the
+            // vault signs it so the co-signer matches the initiator's display.
+            // THORChain/Maya swap payloads keep `chainSpecific.fee` — their
+            // signer prices purely from chainSpecific, already consistent.
+            var totalFeeWei = payload.chainSpecific.fee
+            if case .Ethereum(let maxFeePerGasWei, _, _, let gasLimit) = payload.chainSpecific,
+               case .generic(let generic)? = payload.swapPayload {
+                totalFeeWei = EVMSwapFee.effective(
+                    quoteGasPriceWei: EVMSwapFee.quoteGasPriceWei(generic.quote.tx.gasPrice),
+                    quoteGas: BigInt(generic.quote.tx.gas),
+                    maxFeePerGasWei: maxFeePerGasWei,
+                    gasLimit: gasLimit
+                ).feeWei
+            }
             let gasAmount = Decimal(totalFeeWei) / pow(10, nativeToken.decimals)
             let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 

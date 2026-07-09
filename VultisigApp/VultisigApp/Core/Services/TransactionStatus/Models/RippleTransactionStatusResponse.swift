@@ -7,12 +7,16 @@
 
 import Foundation
 
-struct RippleTransactionStatusResponse: Codable {
+struct RippleTransactionStatusResponse: Codable, RippleRPCResponse {
     let result: RippleResult?
     let error: String?  // "txnNotFound" when transaction doesn't exist
     let error_code: Int?
     let error_message: String?
     let status: String?  // "error" when there's an error
+
+    /// The node error string, whether XRPL returned it at the top level or
+    /// nested in `result`. Drives the shared same-host retry.
+    var rpcError: String? { error ?? result?.error }
 
     struct RippleResult: Codable {
         let Account: String?

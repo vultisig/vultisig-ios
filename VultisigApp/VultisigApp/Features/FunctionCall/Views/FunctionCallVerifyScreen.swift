@@ -142,12 +142,29 @@ struct FunctionCallVerifyScreen: View {
             do {
                 let result = try await depositVerifyViewModel.createKeysignPayload(tx: transaction)
                 await MainActor.run {
-                    router.navigate(to: FunctionCallRoute.pair(
+                    // Fast vaults sign server-side with no peer to pair with,
+                    // so route straight into keysign (the bootstrap runs there)
+                    // and skip the pairing screen. A present fast password is
+                    // the fast-sign signal; an empty one means paired-sign,
+                    // which keeps the QR pairing screen.
+                    let context = SigningTxContext.functionCall(
                         vault: vault,
                         tx: transaction,
-                        keysignPayload: result,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
-                    ))
+                        retry: SendRetrySignal()
+                    )
+                    if let fastPassword = fastVaultPassword.nilIfEmpty {
+                        router.navigate(to: SigningRoute.keysign(.fast(
+                            context: context,
+                            keysignPayload: result,
+                            fastVaultPassword: fastPassword
+                        )))
+                    } else {
+                        router.navigate(to: SigningRoute.pair(
+                            context: context,
+                            keysignPayload: result,
+                            fastVaultPassword: nil
+                        ))
+                    }
                 }
             } catch {
                 await MainActor.run {

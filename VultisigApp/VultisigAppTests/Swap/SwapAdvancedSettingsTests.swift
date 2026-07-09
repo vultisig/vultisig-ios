@@ -154,6 +154,7 @@ final class SwapAdvancedSettingsTests: XCTestCase {
             fromAmount: example.fromAmount,
             quote: example.quote,
             gas: example.gas,
+            gasLimit: example.gasLimit,
             thorchainFee: example.thorchainFee,
             vultDiscountBps: example.vultDiscountBps,
             referralDiscountBps: example.referralDiscountBps,

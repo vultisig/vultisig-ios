@@ -26,6 +26,11 @@ struct SwapTransaction: Hashable {
     /// `SwapQuote?` so the nil-safety cascades cleanly via SwapCryptoLogic.
     let quote: SwapQuote?
     let gas: BigInt
+    /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or before
+    /// the fee data loads). Carried alongside `gas` (= maxFeePerGas for EVM) so
+    /// the displayed fee can run the same `EVMSwapFee` reconciliation the
+    /// signer does — the stored floor can exceed the route gas on token routes.
+    let gasLimit: BigInt
     let thorchainFee: BigInt
     let vultDiscountBps: Int
     let referralDiscountBps: Int
@@ -67,6 +72,7 @@ extension SwapTransaction {
     func with(
         quote: SwapQuote? = nil,
         gas: BigInt? = nil,
+        gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
         vultDiscountBps: Int? = nil,
         referralDiscountBps: Int? = nil
@@ -77,6 +83,7 @@ extension SwapTransaction {
             fromAmount: fromAmount,
             quote: quote ?? self.quote,
             gas: gas ?? self.gas,
+            gasLimit: gasLimit ?? self.gasLimit,
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
@@ -97,6 +104,16 @@ extension SwapTransaction {
 
     var fee: BigInt {
         SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+    }
+
+    /// Network fee value shown on the verify/done screens. For EVM aggregator/
+    /// SwapKit routes this is the signed bond so the initiator matches the
+    /// co-signer (`JoinKeysignGasViewModel`) and the vault's signature. Also
+    /// what the verify screen's sufficiency re-validation checks against,
+    /// since the bond is the node's real admission requirement.
+    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
+    var displayedNetworkFeeWei: BigInt {
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
 
     var amountInCoinDecimal: BigInt {
@@ -171,11 +188,13 @@ extension SwapTransaction {
     }
 
     var swapGasString: String {
-        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: displayedNetworkFeeWei)
     }
 
+    /// Fiat sub-line of the network-fee cell on the verify/done screens. Uses the
+    /// displayed network fee so the crypto and fiat agree (and match the co-signer).
     var approveFeeString: String {
-        SwapCryptoLogic.approveFeeString(feeCoin: feeCoin, fee: fee)
+        SwapCryptoLogic.approveFeeString(feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
     var isApproveFeeZero: Bool {
@@ -183,7 +202,7 @@ extension SwapTransaction {
     }
 
     var totalFeeString: String {
-        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
     var fromAmountDecimal: Decimal { fromAmount }
@@ -268,6 +287,7 @@ extension SwapTransaction {
                 maxStreamingQuantity: nil
             )),
             gas: 0,
+            gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
