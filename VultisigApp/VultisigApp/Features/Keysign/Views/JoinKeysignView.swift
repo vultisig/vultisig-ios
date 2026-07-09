@@ -9,11 +9,14 @@ struct JoinKeysignView: View {
 
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
+    /// The keysign ceremony view-model, owned here so this host can crossfade
+    /// the shared `KeysignView` animation to the cosigner `JoinKeysignDoneView`
+    /// once the ceremony finishes — the same pattern the initiator uses.
+    @StateObject var keysignVM = KeysignViewModel()
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
     @EnvironmentObject var appViewModelLegacy: AppViewModel
-    @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
     var body: some View {
         content
@@ -73,7 +76,16 @@ struct JoinKeysignView: View {
     var keysignStartedView: some View {
         ZStack {
             if viewModel.serverAddress != nil && !viewModel.sessionID.isEmpty {
-                keysignView
+                ZStack {
+                    if keysignVM.status == .KeysignFinished {
+                        JoinKeysignDoneView(vault: viewModel.vault, viewModel: keysignVM)
+                            .transition(.opacity)
+                    } else {
+                        keysignView
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.35), value: keysignVM.status == .KeysignFinished)
             } else {
                 Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
@@ -96,6 +108,7 @@ struct JoinKeysignView: View {
         }
 
         return KeysignView(
+            viewModel: keysignVM,
             vault: viewModel.vault,
             keysignCommittee: viewModel.keysignCommittee,
             mediatorURL: viewModel.serverAddress ?? "",
@@ -104,7 +117,6 @@ struct JoinKeysignView: View {
             messsageToSign: viewModel.keysignMessages,
             keysignPayload: viewModel.keysignPayload,
             customMessagePayload: viewModel.customMessagePayload,
-            transferViewModel: nil,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             isInitiateDevice: false,
             decodedFunctionName: viewModel.decodedFunctionName,
@@ -220,7 +232,6 @@ struct JoinKeysignView: View {
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
         .environmentObject(AppViewModel())
-        .environmentObject(GlobalStateViewModel())
 }
 
 #if os(iOS)
@@ -234,7 +245,7 @@ extension JoinKeysignView {
         }
         .if(!isInAnimationState) {
             $0
-                .navigationTitle(NSLocalizedString(globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
+                .navigationTitle(NSLocalizedString(keysignVM.status == .KeysignFinished ? "transactionComplete" : "joinKeysign", comment: "Join Keysign"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
@@ -288,7 +299,7 @@ extension JoinKeysignView {
     }
 
     var headerMac: some View {
-        JoinKeygenHeader(title: globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", hideBackButton: globalStateViewModel.showKeysignDoneView)
+        JoinKeygenHeader(title: keysignVM.status == .KeysignFinished ? "transactionComplete" : "joinKeysign", hideBackButton: keysignVM.status == .KeysignFinished)
     }
 }
 #endif
