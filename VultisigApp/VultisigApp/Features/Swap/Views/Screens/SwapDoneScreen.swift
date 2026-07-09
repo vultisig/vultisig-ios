@@ -77,6 +77,7 @@ struct SwapDoneScreen: View {
                 transaction: transaction,
                 vault: vault
             ),
+            navigationTitle: "overview".localized,
             tokenContent: {
                 SwapDoneSummaryCard.initiator(
                     transaction: transaction,

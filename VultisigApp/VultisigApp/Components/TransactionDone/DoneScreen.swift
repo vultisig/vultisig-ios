@@ -34,6 +34,11 @@ struct DoneScreen<
 
     @StateObject private var statusService: DoneStatusService
 
+    /// Nav-bar title for the screen. Defaults to "Done"; the initiator
+    /// Send/Swap flows pass "Overview" so the in-place keysign→overview
+    /// container reads as one continuous "Overview" screen (Figma).
+    let navigationTitle: String
+
     let tokenContent: () -> TokenContent
     let detailContent: () -> DetailContent
     let bottomBarContent: () -> BottomBar
@@ -48,12 +53,14 @@ struct DoneScreen<
     init(
         input: TransactionDonePayload,
         statusService: @autoclosure @escaping () -> DoneStatusService,
+        navigationTitle: String = "done".localized,
         @ViewBuilder tokenContent: @escaping () -> TokenContent,
         @ViewBuilder detailContent: @escaping () -> DetailContent,
         @ViewBuilder bottomBarContent: @escaping () -> BottomBar
     ) {
         self.input = input
         _statusService = StateObject(wrappedValue: statusService())
+        self.navigationTitle = navigationTitle
         self.tokenContent = tokenContent
         self.detailContent = detailContent
         self.bottomBarContent = bottomBarContent
@@ -64,7 +71,7 @@ struct DoneScreen<
             content
                 .overlay(PopupCapsule(text: "hashCopied", showPopup: $showAlert))
         }
-        .screenTitle("done".localized)
+        .screenTitle(navigationTitle)
         .screenBackButtonHidden()
         .environment(\.notifyHashCopied) { showAlert = true }
     }
@@ -103,11 +110,13 @@ extension DoneScreen where TokenContent == DoneTokenContent,
     /// up the default slot content (coin display + hash row + Done CTA).
     init(
         input: TransactionDonePayload,
-        statusService: @autoclosure @escaping () -> DoneStatusService
+        statusService: @autoclosure @escaping () -> DoneStatusService,
+        navigationTitle: String = "done".localized
     ) {
         self.init(
             input: input,
             statusService: statusService(),
+            navigationTitle: navigationTitle,
             tokenContent: {
                 DoneTokenContent(input: input)
             },
