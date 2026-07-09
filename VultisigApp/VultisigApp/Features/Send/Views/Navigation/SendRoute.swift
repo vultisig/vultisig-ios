@@ -8,7 +8,8 @@
 enum SendRoute: Hashable {
     case details(seed: SendDetailsSeed)
     case verify(tx: SendTransaction, retrySignal: SendRetrySignal, vault: Vault, prebuiltKeysignPayload: KeysignPayload? = nil)
-    case pairing(vault: Vault, tx: SendTransaction, retrySignal: SendRetrySignal, keysignPayload: KeysignPayload, fastVaultPassword: String?)
-    case keysign(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal)
-    case done(vault: Vault, hash: String, chain: Chain, tx: SendTransaction?, keysignPayload: KeysignPayload?)
+    // pairing → keysign → done live on the shared `SigningRoute`; verify
+    // navigates into it. Only the pre-signing screens stay Send-specific.
+    // (The former `transactionDetails` secondary screen was replaced by an
+    // in-place expandable section on the shared `DoneScreen`.)
 }
