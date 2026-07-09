@@ -8,12 +8,28 @@
 import SwiftUI
 import SwiftData
 
+enum SendAddressBookListType: Int, CaseIterable, FilledSegmentedControlType {
+    case savedAddresses
+    case myVaults
+
+    var id: Int { rawValue }
+
+    var title: String {
+        switch self {
+        case .savedAddresses:
+            return "savedAddresses".localized
+        case .myVaults:
+            return "myVaults".localized
+        }
+    }
+}
+
 struct SendCryptoAddressBookView: View {
     let coin: Coin
     @Binding var showSheet: Bool
     var onSelectAddress: (String) -> Void
 
-    @State var isSavedAddressesSelected: Bool = true
+    @State var selectedListType: SendAddressBookListType = .savedAddresses
     @State var myAddresses: [(id: UUID, title: String, description: String)] = []
 
     @Query var vaults: [Vault]
@@ -37,45 +53,23 @@ struct SendCryptoAddressBookView: View {
     }
 
     var listSelector: some View {
-        HStack {
-            savedAddressesButton
-            myVaultsButton
-        }
-        .animation(.easeInOut, value: isSavedAddressesSelected)
-        .overlay(
-            RoundedRectangle(cornerRadius: 60)
-                .stroke(Theme.colors.border, lineWidth: 1)
+        FilledSegmentedControl(
+            selection: $selectedListType,
+            options: SendAddressBookListType.allCases,
+            size: .small
         )
-        .padding(.top, 12)
-    }
-
-    var savedAddressesButton: some View {
-        Button {
-            isSavedAddressesSelected = true
-        } label: {
-            getCell(for: "savedAddresses", isSelected: isSavedAddressesSelected)
-        }
-        .buttonStyle(.plain)
-    }
-
-    var myVaultsButton: some View {
-        Button {
-            isSavedAddressesSelected = false
-        } label: {
-            getCell(for: "myVaults", isSelected: !isSavedAddressesSelected)
-        }
-        .buttonStyle(.plain)
     }
 
     var list: some View {
         ScrollView {
-            if isSavedAddressesSelected {
+            switch selectedListType {
+            case .savedAddresses:
                 if !savedAddresses.isEmpty {
                     savedAddressesList
                 } else {
                     errorMessage
                 }
-            } else {
+            case .myVaults:
                 if !vaults.isEmpty {
                     myAddressesList
                 } else {
@@ -98,6 +92,7 @@ struct SendCryptoAddressBookView: View {
                 }
             }
         }
+        .padding(.top, 12)
     }
 
     func logo(for address: AddressBookItem) -> String {
@@ -122,6 +117,7 @@ struct SendCryptoAddressBookView: View {
                 }
             }
         }
+        .padding(.top, 12)
         .onAppear {
             filterVaults()
         }
@@ -132,16 +128,6 @@ struct SendCryptoAddressBookView: View {
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textSecondary)
             .padding(.top, 32)
-    }
-
-    private func getCell(for title: String, isSelected: Bool) -> some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(Theme.colors.textSecondary)
-            .frame(maxWidth: .infinity)
-            .frame(height: 42)
-            .background(isSelected ? Theme.colors.bgButtonTertiary : .clear)
-            .cornerRadius(60)
     }
 
     private func filterVaults() {
