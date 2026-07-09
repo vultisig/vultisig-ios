@@ -45,8 +45,12 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
 
     var body: some View {
         GeometryReader { proxy in
+            // Clamp to zero: during transient/zero-width layout passes (e.g. while a
+            // sheet with presentationDetents is presenting) proxy.size.width can be 0,
+            // which drives these widths negative and logs "Invalid frame dimension".
+            let trackWidth = max(0, proxy.size.width - trackPadding * 2)
+            let pillWidth = max(0, (trackWidth - optionGap * CGFloat(options.count - 1)) / CGFloat(max(options.count, 1)))
             ZStack(alignment: .leading) {
-                let pillWidth = (proxy.size.width - trackPadding * 2 - optionGap * CGFloat(options.count - 1)) / CGFloat(options.count)
                 RoundedRectangle(cornerRadius: pillCornerRadius)
                     .fill(pillColor)
                     .frame(width: pillWidth)
@@ -56,9 +60,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                 HStack(spacing: optionGap) {
                     ForEach(options) { option in
                         Button {
-                            withAnimation {
-                                self.selection = option
-                            }
+                            self.selection = option
                         } label: {
                             optionLabel(for: option)
                                 .padding(optionPadding)
@@ -68,7 +70,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                     }
                 }
             }
-            .frame(width: proxy.size.width - trackPadding * 2)
+            .frame(width: trackWidth)
             .padding(trackPadding)
             .background(
                 RoundedRectangle(cornerRadius: trackCornerRadius)
