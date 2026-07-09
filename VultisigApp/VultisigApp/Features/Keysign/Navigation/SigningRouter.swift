@@ -3,9 +3,9 @@
 //  VultisigApp
 //
 //  Single router for the shared `SigningRoute`, registered once in
-//  `ContentView`. Builds the shared pairing screen and dispatches to each
-//  flow's keysign / done screens based on the folded `SigningTxContext` /
-//  `DoneKind` payloads.
+//  `ContentView`. Builds the shared pairing + keysign screens based on the
+//  folded `SigningTxContext`. The done/overview is no longer a route —
+//  `SigningKeysignScreen` crossfades to it in place once keysign finishes.
 //
 //  Swap routes carry `Vault.pubKeyECDSA` (not a live `@Model`); the live
 //  vault is re-fetched here on `MainActor` before a screen is built, so a
@@ -28,8 +28,6 @@ struct SigningRouter {
             pairScreen(context: context, keysignPayload: keysignPayload, fastVaultPassword: fastVaultPassword)
         case .keysign(let keysignRoute):
             keysignScreen(keysignRoute)
-        case .done(let kind):
-            doneScreen(kind: kind)
         }
     }
 
@@ -69,26 +67,6 @@ struct SigningRouter {
                         fastVaultPassword: fastVaultPassword
                     ),
                     context: context
-                )
-            }
-        }
-    }
-
-    @MainActor
-    @ViewBuilder
-    private func doneScreen(kind: DoneKind) -> some View {
-        switch kind {
-        case .send(let vault, let hash, let chain, let tx, let keysignPayload):
-            SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx, keysignPayload: keysignPayload)
-        case .swap(let vaultPubKeyECDSA, let hash, let approveHash, let chain, let transaction, let progressLink):
-            if let vault = lookupVault(pubKeyECDSA: vaultPubKeyECDSA) {
-                SwapDoneScreen(
-                    vault: vault,
-                    hash: hash,
-                    approveHash: approveHash,
-                    chain: chain,
-                    transaction: transaction,
-                    progressLink: progressLink
                 )
             }
         }
