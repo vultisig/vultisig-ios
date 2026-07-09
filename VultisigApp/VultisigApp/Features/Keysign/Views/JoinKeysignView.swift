@@ -12,7 +12,7 @@ struct JoinKeysignView: View {
     /// The keysign ceremony view-model, owned here so this host can crossfade
     /// the shared `KeysignView` animation to the cosigner `JoinKeysignDoneView`
     /// once the ceremony finishes — the same pattern the initiator uses.
-    @StateObject var keysignVM = KeysignViewModel()
+    @StateObject private var keysignVM = KeysignViewModel()
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState

@@ -17,7 +17,7 @@ struct SettingsCustomMessageView: View {
     /// The keysign ceremony view-model, owned here so this host can crossfade
     /// the shared KeysignView animation to the signed-message done surface once
     /// signing finishes — the same pattern as the initiator and cosigner.
-    @StateObject var keysignVM = KeysignViewModel()
+    @StateObject private var keysignVM = KeysignViewModel()
 
     @State var keysignView: KeysignView?
     @State var method: String = .empty
