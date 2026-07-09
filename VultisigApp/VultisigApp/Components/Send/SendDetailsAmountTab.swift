@@ -35,13 +35,15 @@ struct SendDetailsAmountTab: View {
                 separator
                 amountFieldSection
 
-                if viewModel.showAmountAlert {
-                    errorText
-                }
+                errorText
+                    .transition(.verticalGrowAndFade)
+                    .animation(.interpolatingSpring, value: viewModel.showAmountAlert)
+                    .showIf(viewModel.showAmountAlert)
 
-                if let reserveWarning = viewModel.destinationReserveWarning {
-                    reserveWarningText(reserveWarning)
-                }
+                amountWarningText(viewModel.amountValidation.message ?? .empty)
+                    .transition(.verticalGrowAndFade)
+                    .animation(.interpolatingSpring, value: viewModel.amountValidation.message)
+                    .showIf(viewModel.amountValidation.message != nil)
 
                 percentageButtons
                 balanceSection
@@ -134,10 +136,11 @@ struct SendDetailsAmountTab: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // Inline early-feedback warning for a native XRP send to an unfunded
-    // destination below the base reserve. The message is already localized and
-    // formatted by the VM, so render it directly (not via NSLocalizedString).
-    func reserveWarningText(_ message: String) -> some View {
+    // Inline early-feedback warning surfaced by the async amount validators
+    // (e.g. a native XRP send below the destination's base reserve). The message
+    // is already localized and formatted by the VM, so render it directly (not
+    // via NSLocalizedString).
+    func amountWarningText(_ message: String) -> some View {
         Text(message)
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.alertWarning)

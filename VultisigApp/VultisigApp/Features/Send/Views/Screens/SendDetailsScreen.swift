@@ -68,18 +68,18 @@ struct SendDetailsScreen: View {
                 if !newValue.chain.supportsDestinationTag {
                     viewModel.rippleTag.clearForUnsupportedChain()
                 }
-                // Re-evaluate (or clear, for non-XRP) the inline reserve warning
-                // when the selected coin changes.
-                viewModel.debouncedValidateDestinationReserve()
+                // Re-evaluate (or clear, when no validator applies) the inline
+                // amount warning when the selected coin changes.
+                viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.toAddress) { _, _ in
                 viewModel.cancelAddressResolution()
 
                 guard !viewModel.toAddress.isEmpty else {
                     viewModel.onToAddressCleared()
-                    // Clear any stale XRP reserve warning now the destination
-                    // is gone (this branch returns before the trigger below).
-                    viewModel.debouncedValidateDestinationReserve()
+                    // Clear any stale amount warning now the destination is gone
+                    // (this branch returns before the trigger below).
+                    viewModel.debouncedValidateAmount()
                     return
                 }
 
@@ -89,12 +89,13 @@ struct SendDetailsScreen: View {
                 } else {
                     viewModel.debouncedResolveAddress()
                 }
-                // Destination changed → re-run the XRP inline base-reserve
-                // check (no-op / clears for non-XRP or an unready address).
-                viewModel.debouncedValidateDestinationReserve()
+                // Destination changed → re-run the inline amount validation
+                // (no-op / clears when no validator applies or the address
+                // isn't ready).
+                viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.amount) { _, _ in
-                viewModel.debouncedValidateDestinationReserve()
+                viewModel.debouncedValidateAmount()
             }
             .onChange(of: viewModel.isAddressResolved) { _, resolved in
                 guard let resolved else { return }
@@ -104,7 +105,7 @@ struct SendDetailsScreen: View {
                 } else if viewModel.selectedTab == .amount {
                     viewModel.onSelect(tab: .address)
                 }
-                viewModel.debouncedValidateDestinationReserve()
+                viewModel.debouncedValidateAmount()
             }
             .onDisappear {
                 viewModel.stopMediator()

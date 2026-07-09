@@ -22,7 +22,7 @@ final class SendDetailsViewModelReserveTests: XCTestCase {
 
     func testUnfundedBelowReserveSetsInlineWarningAndBlocksContinue() async {
         let vm = makeXRPVM(service: unfundedService(reserveBase: 1_000_000, reserveInc: 200_000))
-        vm.toAddress = "rUnfundedDestination"
+        vm.toAddress = Self.validXRPAddress
         vm.amount = "0.5" // 500_000 drops < 1 XRP base reserve
 
         let isValid = await vm.validateForm()
@@ -32,69 +32,80 @@ final class SendDetailsViewModelReserveTests: XCTestCase {
         // the live 1 XRP minimum interpolated — the same string the Verify
         // guard would present.
         let expected = String(format: "xrpDestinationNotActivatedError".localized, "1")
-        XCTAssertEqual(vm.destinationReserveWarning, expected)
+        XCTAssertEqual(vm.amountValidation.message, expected)
+        // The presented warning also disables the Continue button.
+        XCTAssertTrue(vm.amountValidation.blocksContinue)
+        XCTAssertTrue(vm.continueButtonDisabled)
     }
 
     func testFundedDestinationNoWarning() async {
         let vm = makeXRPVM(service: fundedService())
-        vm.toAddress = "rFundedDestination"
+        vm.toAddress = Self.validXRPAddress
         vm.amount = "0.5"
 
         let isValid = await vm.validateForm()
 
         XCTAssertTrue(isValid, "a funded destination has no activation minimum")
-        XCTAssertNil(vm.destinationReserveWarning)
+        XCTAssertNil(vm.amountValidation.message)
+        XCTAssertFalse(vm.continueButtonDisabled)
     }
 
     func testUnfundedAtReserveNoWarning() async {
         let vm = makeXRPVM(service: unfundedService(reserveBase: 1_000_000, reserveInc: 200_000))
-        vm.toAddress = "rUnfundedDestination"
+        vm.toAddress = Self.validXRPAddress
         vm.amount = "1" // exactly the base reserve activates the account
 
         let isValid = await vm.validateForm()
 
         XCTAssertTrue(isValid, "an amount at the base reserve is valid")
-        XCTAssertNil(vm.destinationReserveWarning)
+        XCTAssertNil(vm.amountValidation.message)
     }
 
     func testLookupFailureNoWarningFailOpen() async {
         let vm = makeXRPVM(service: failingService())
-        vm.toAddress = "rUnverifiableDestination"
+        vm.toAddress = Self.validXRPAddress
         vm.amount = "0.5"
 
         let isValid = await vm.validateForm()
 
         XCTAssertTrue(isValid, "form fails open on a lookup failure — the Verify guard blocks instead")
-        XCTAssertNil(vm.destinationReserveWarning)
+        XCTAssertNil(vm.amountValidation.message)
+        XCTAssertFalse(vm.continueButtonDisabled)
     }
 
     func testNonRippleChainSkipsReserveCheck() async {
-        // A BTC VM with an unfunded-scripted RippleService: the chain guard
-        // must short-circuit so the service is never consulted.
+        // A BTC VM with an unfunded-scripted XRP validator: the validator's
+        // `isApplicable` chain guard must short-circuit so the service is never
+        // consulted.
         let vm = SendFormFixture.make(
             coin: SendFormFixture.makeBTC(),
             addressResolver: { input, _ in input },
-            rippleService: unfundedService(reserveBase: 1_000_000, reserveInc: 200_000)
+            amountValidators: [RippleDestinationReserveValidator(
+                service: unfundedService(reserveBase: 1_000_000, reserveInc: 200_000)
+            )]
         )
         vm.toAddress = "bc1qexample"
         vm.amount = "0.5"
 
-        let blocked = await vm.validateDestinationReserve()
+        let allowed = await vm.validateAmountConstraints()
 
-        XCTAssertTrue(blocked, "non-XRP chains skip the reserve rule")
-        XCTAssertNil(vm.destinationReserveWarning)
+        XCTAssertTrue(allowed, "non-XRP chains skip the reserve rule")
+        XCTAssertNil(vm.amountValidation.message)
     }
 
-    // MARK: - While-typing (updateDestinationReserveWarning) path
+    // MARK: - While-typing (refreshAmountValidation) path
 
     func testUpdateWarningSetWhenBelowReserveAndAddressValid() async {
         let vm = makeXRPVM(service: unfundedService(reserveBase: 1_000_000, reserveInc: 200_000))
         vm.toAddress = Self.validXRPAddress
         vm.amount = "0.25"
 
-        await vm.updateDestinationReserveWarning()
+        await vm.refreshAmountValidation()
 
-        XCTAssertNotNil(vm.destinationReserveWarning)
+        XCTAssertNotNil(vm.amountValidation.message)
+        // A below-reserve verdict while typing also disables Continue.
+        XCTAssertTrue(vm.amountValidation.blocksContinue)
+        XCTAssertTrue(vm.continueButtonDisabled)
     }
 
     func testUpdateWarningClearedForInvalidAddress() async {
@@ -102,38 +113,40 @@ final class SendDetailsViewModelReserveTests: XCTestCase {
         vm.toAddress = "rNotAValidXRPAddress" // malformed → no node lookup
         vm.amount = "0.25"
 
-        await vm.updateDestinationReserveWarning()
+        await vm.refreshAmountValidation()
 
-        XCTAssertNil(vm.destinationReserveWarning,
+        XCTAssertNil(vm.amountValidation.message,
                      "no lookup until the address is a well-formed destination AND an amount is entered")
+        XCTAssertFalse(vm.continueButtonDisabled)
     }
 
     // MARK: - Reset
 
     func testResetClearsReserveWarning() {
         let vm = makeXRPVM(service: fundedService())
-        vm.destinationReserveWarning = "stale warning"
+        vm.amountValidation = SendAmountValidationState(message: "stale warning", blocksContinue: true)
 
         vm.reset(to: SendFormFixture.makeXRP())
 
-        XCTAssertNil(vm.destinationReserveWarning)
+        XCTAssertEqual(vm.amountValidation, .valid)
+        XCTAssertFalse(vm.continueButtonDisabled)
     }
 
     // MARK: - Fixtures
 
     /// A well-formed mainnet XRP classic address (the XRPL genesis account),
-    /// used where `shouldCheckDestinationReserve` requires real format validity.
+    /// used where the XRP validator requires real address-format validity.
     private static let validXRPAddress = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
 
     private func makeXRPVM(service: RippleService) -> SendDetailsViewModel {
         SendFormFixture.make(
             coin: SendFormFixture.makeXRP(rawBalance: "20000000"), // 20 XRP
             addressResolver: { input, _ in input },
+            amountValidators: [RippleDestinationReserveValidator(service: service)],
             // Isolate the reserve rule: satisfy the RequireDest gate so
             // validateForm() reaches the reserve check. RequireDest is covered
             // on its own in RippleRequireDestGateTests.
-            destinationTagRequirementProvider: { _ in .notRequired },
-            rippleService: service
+            destinationTagRequirementProvider: { _ in .notRequired }
         )
     }
 
