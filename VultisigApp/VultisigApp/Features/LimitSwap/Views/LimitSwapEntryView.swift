@@ -201,9 +201,10 @@ struct LimitSwapEntryView: View {
             fromAmount: limitFromCoin.decimal(for: vm.draft.sourceAmount),
             quote: nil,
             gas: 0,
-            // No EVM gas oracle on the limit path (THORChain deposit, no market
-            // quote) — matches `gas: 0`. `gasLimit` was added on `main` for the
-            // EVM fee-reconciliation display, which limit orders don't surface.
+            // `gas`/`gasLimit` are the market-swap EVM fee-display fields (from
+            // the market quote). The limit flow never reads them — fee display
+            // skips the quote refresh, and signing re-derives the EVM gas limit
+            // in LimitSwapPayloadAssembler for native-EVM sources — so 0 is inert.
             gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
