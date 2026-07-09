@@ -47,9 +47,9 @@ struct SigningKeysignScreen: View {
         .onDisappear {
             // Swap kept the mediator running through keysign and stopped it on
             // teardown; the send family never did. The finished path already
-            // stops it at the crossfade (below); this covers backing out before
-            // signing completes.
-            if case .swap = context {
+            // stopped it at the crossfade, so only cover backing out before
+            // signing completes here (avoids a redundant second stop).
+            if case .swap = context, !coordinator.keysignFinished {
                 coordinator.stopMediator()
             }
         }
