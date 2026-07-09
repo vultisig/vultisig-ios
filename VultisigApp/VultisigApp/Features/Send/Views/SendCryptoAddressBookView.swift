@@ -50,6 +50,9 @@ struct SendCryptoAddressBookView: View {
         .screenTitle("addressBook".localized)
         .presentationDetents([.medium, .large])
         .applySheetSize()
+        .onLoad {
+            filterVaults()
+        }
     }
 
     var listSelector: some View {
@@ -62,20 +65,24 @@ struct SendCryptoAddressBookView: View {
 
     var list: some View {
         ScrollView {
-            switch selectedListType {
-            case .savedAddresses:
-                if !savedAddresses.isEmpty {
-                    savedAddressesList
-                } else {
-                    errorMessage
-                }
-            case .myVaults:
-                if !vaults.isEmpty {
-                    myAddressesList
-                } else {
-                    errorMessage
+            Group {
+                switch selectedListType {
+                case .savedAddresses:
+                    if !savedAddresses.isEmpty {
+                        savedAddressesList
+                    } else {
+                        errorMessage
+                    }
+                case .myVaults:
+                    if !vaults.isEmpty {
+                        myAddressesList
+                    } else {
+                        errorMessage
+                    }
                 }
             }
+            .transition(.opacity)
+            .animation(.interpolatingSpring, value: selectedListType)
         }
     }
 
@@ -118,15 +125,13 @@ struct SendCryptoAddressBookView: View {
             }
         }
         .padding(.top, 12)
-        .onAppear {
-            filterVaults()
-        }
     }
 
     var errorMessage: some View {
         Text(NSLocalizedString("noSavedAddresses", comment: ""))
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 32)
     }
 
