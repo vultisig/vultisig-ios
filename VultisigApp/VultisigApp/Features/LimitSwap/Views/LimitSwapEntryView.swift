@@ -201,6 +201,10 @@ struct LimitSwapEntryView: View {
             fromAmount: limitFromCoin.decimal(for: vm.draft.sourceAmount),
             quote: nil,
             gas: 0,
+            // No EVM gas oracle on the limit path (THORChain deposit, no market
+            // quote) — matches `gas: 0`. `gasLimit` was added on `main` for the
+            // EVM fee-reconciliation display, which limit orders don't surface.
+            gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,

@@ -60,6 +60,7 @@ final class LimitSwapRecipientVerifierTests: XCTestCase {
             fromAmount: 1,
             quote: nil,
             gas: 0,
+            gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,

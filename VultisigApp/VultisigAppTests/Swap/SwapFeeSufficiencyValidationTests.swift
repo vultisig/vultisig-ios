@@ -164,6 +164,7 @@ final class SwapFeeSufficiencyValidationTests: XCTestCase {
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: eth,
+            limitContext: nil,
             advancedSettings: .default
         )
         let interactor = StubSwapInteractor(
