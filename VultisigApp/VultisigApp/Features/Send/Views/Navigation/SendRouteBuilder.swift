@@ -37,11 +37,6 @@ struct SendRouteBuilder {
     }
 
     @ViewBuilder
-    func buildTransactionDetailsScreen(input: TransactionDonePayload) -> some View {
-        SendCryptoSecondaryDoneView(input: input)
-    }
-
-    @ViewBuilder
     func buildBuyScreen(address: String, blockChainCode: String, coinType: String) -> some View {
         BanxaDisclaimer(url: getBuyURL(address: address, blockChainCode: blockChainCode, coinType: coinType))
     }

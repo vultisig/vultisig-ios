@@ -23,8 +23,6 @@ struct SendRouter {
                 vault: vault,
                 prebuiltKeysignPayload: prebuiltKeysignPayload
             )
-        case .transactionDetails(let input):
-            viewBuilder.buildTransactionDetailsScreen(input: input)
         }
     }
 }

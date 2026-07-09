@@ -156,11 +156,11 @@ final class TransactionDonePayloadTests: XCTestCase {
         XCTAssertFalse(payload.isSend)
     }
 
-    func testHashableForRouteUse() {
-        // `SendRoute.transactionDetails(input: TransactionDonePayload)`
-        // requires Hashable. Two payloads with the same content must
-        // hash identically — otherwise SwiftUI's NavigationStack
-        // diffing breaks on the secondary-detail route.
+    func testHashableConformanceIsStable() {
+        // `TransactionDonePayload` is a value type carried through the
+        // signing routes and SwiftUI diffing. Its `Hashable` conformance
+        // must be stable: two payloads with the same content compare
+        // equal and hash identically.
         let a = TransactionDonePayload(
             coin: .example,
             amountCrypto: "1.5 ETH",
