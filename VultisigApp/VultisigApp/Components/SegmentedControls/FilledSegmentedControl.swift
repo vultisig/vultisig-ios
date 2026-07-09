@@ -67,6 +67,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                                 .frame(maxWidth: .infinity)
                         }
                         .contentShape(Rectangle())
+                        .buttonStyle(.plain)
                     }
                 }
             }
