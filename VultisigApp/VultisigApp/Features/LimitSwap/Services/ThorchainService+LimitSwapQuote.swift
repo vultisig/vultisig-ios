@@ -18,11 +18,22 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
         targetDecimals _: Int,
         destinationAddress: String
     ) async throws -> Decimal {
+        // THORChain's quote endpoint expects `amount` in 1e8 fixed-point, NOT the
+        // coin's native smallest units. The market swap normalizes the same way
+        // (`amount * fromCoin.thorswapMultiplier`, = 1e8 for non-Maya). 8-decimal
+        // sources (RUNE/BTC) already match 1e8, but 18-decimal sources (ETH) would
+        // otherwise send 1e10× too much and get a mis-scaled `expected_amount_out`
+        // back → a wildly inflated market price. Normalize before quoting; the
+        // ratio math in `marketPrice` still uses the original native amount.
+        let thorchainAmount = Self.thorchainQuoteAmount(
+            sourceAmount: sourceAmount,
+            sourceDecimals: sourceDecimals
+        )
         let quote = try await fetchSwapQuotes(
             address: destinationAddress,
             fromAsset: sourceAsset,
             toAsset: targetAsset,
-            amount: sourceAmount.description,
+            amount: thorchainAmount.description,
             interval: 1,
             streamingQuantity: 0,
             // No minimum-output limit on the reference quote — this fetch only
@@ -37,6 +48,16 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
             sourceAmount: sourceAmount,
             sourceDecimals: sourceDecimals
         )
+    }
+
+    /// Convert a source amount from the coin's NATIVE smallest units
+    /// (`10^decimals`) to THORChain's 1e8 fixed-point, which is what the quote
+    /// endpoint expects for `amount`. Multiply first to preserve precision.
+    /// Limit orders are THORChain-only, so the 1e8 scale is always correct
+    /// (Maya's per-decimal multiplier never applies). For 8-decimal sources this
+    /// is a no-op (native already == 1e8). Pure + static so it is unit-testable.
+    static func thorchainQuoteAmount(sourceAmount: BigInt, sourceDecimals: Int) -> BigInt {
+        sourceAmount * BigInt(10).power(8) / BigInt(10).power(sourceDecimals)
     }
 
     /// Derive the market price (target natural units per source natural unit)
