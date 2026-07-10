@@ -168,7 +168,11 @@ actor CosmosCoinFinder {
                 let baseMeta = await metadataResolver.denomMetadata(chain: chain, denom: baseDenom)
                 let decimals = baseMeta.flatMap(CosmosTokenMetadataResolver.decimalsFromMeta)
                     ?? feeDecimals(for: chain)
+                // An opaque base (EVM `0x…` address, namespaced/over-long denom)
+                // has no readable symbol, so degrade the voucher to its short
+                // `IBC-<6hex>` label rather than showing the raw base string.
                 let ticker = CosmosTokenMetadataResolver.ibcTicker(baseDenom: baseDenom)
+                    ?? CosmosTokenMetadataResolver.deriveTicker(denom: denom, meta: nil)
                 return makeDiscovered(
                     chain: chain,
                     denom: denom,

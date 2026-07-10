@@ -308,24 +308,59 @@ actor CosmosTokenMetadataResolver {
                 return "IBC-" + hash.prefix(6).uppercased()
             }
         }
-        return denom
+        // Plain bank denom: strip a leading `u`/`a` micro-unit prefix and
+        // uppercase, so Terra fiat micro-denoms read as symbols
+        // (`ucny` -> `CNY`, `uluna` -> `LUNA`) instead of the raw `ucny`. This
+        // tier only runs for the Cosmos discovery path (`CosmosCoinFinder`,
+        // allowlisted to Terra / TerraClassic), so the strip is Terra-scoped.
+        return stripMicroUnitPrefix(denom).uppercased()
     }
 
-    /// Derive a display ticker from an IBC voucher's resolved base denom by
-    /// stripping a single leading micro-unit prefix (`u`/`a`) and uppercasing
-    /// — `uusdc` -> `USDC`, `uatom` -> `ATOM`. Mirrors the SDK
-    /// `deriveIbcTraceTicker` and Android `stripDenomUnitPrefix` (which strips
-    /// only when the second character is a letter, so `u123`-style denoms are
-    /// left untouched).
-    static func ibcTicker(baseDenom: String) -> String {
+    /// Strip a single leading micro-unit prefix (`u`/`a`) from a denom, but
+    /// only when the second character is a letter — so genuine micro-denoms
+    /// (`uatom`, `aevmos`) are stripped while `u123`-style ids are left
+    /// intact. Does NOT uppercase. Mirrors Android `stripDenomUnitPrefix`.
+    private static func stripMicroUnitPrefix(_ denom: String) -> String {
         let unitPrefixes: Set<Character> = ["u", "a"]
-        guard baseDenom.count > 1,
-              let first = baseDenom.first,
+        guard denom.count > 1,
+              let first = denom.first,
               unitPrefixes.contains(first),
-              baseDenom[baseDenom.index(after: baseDenom.startIndex)].isLetter else {
+              denom[denom.index(after: denom.startIndex)].isLetter else {
+            return denom
+        }
+        return String(denom.dropFirst())
+    }
+
+    /// Derive a display ticker from an IBC voucher's resolved base denom, or
+    /// `nil` when the base is opaque (an EVM `0x…` address, a namespaced denom,
+    /// or too long to read as a symbol) — the caller then degrades the voucher
+    /// to a short `IBC-<6hex>` label. Mirrors the SDK / Android IBC-ticker
+    /// conventions:
+    ///   - `factory/<minter>/<sub>` -> `<sub>` (single leading `u` stripped),
+    ///     uppercased (`…/alloyed/allBTC` -> `ALLBTC`).
+    ///   - a leading `u`/`a` micro-unit prefix -> stripped + uppercased
+    ///     (`uusdc` -> `USDC`, `uatom` -> `ATOM`).
+    ///   - an already-clean short symbol (`[A-Za-z0-9-]{1,12}`, not `0x…`)
+    ///     -> uppercased (`wbnb-wei` -> `WBNB-WEI`).
+    ///   - anything else (EVM address, contains `/`, too long) -> `nil`.
+    static func ibcTicker(baseDenom: String) -> String? {
+        if baseDenom.hasPrefix("factory/") {
+            let sub = baseDenom.split(separator: "/").last.map(String.init) ?? baseDenom
+            let stripped = sub.hasPrefix("u") ? String(sub.dropFirst()) : sub
+            return stripped.uppercased()
+        }
+
+        let microStripped = stripMicroUnitPrefix(baseDenom)
+        if microStripped != baseDenom {
+            return microStripped.uppercased()
+        }
+
+        if !baseDenom.lowercased().hasPrefix("0x"),
+           baseDenom.range(of: "^[A-Za-z0-9-]{1,12}$", options: .regularExpression) != nil {
             return baseDenom.uppercased()
         }
-        return String(baseDenom.dropFirst()).uppercased()
+
+        return nil
     }
 
     // MARK: - Private fetch implementations
