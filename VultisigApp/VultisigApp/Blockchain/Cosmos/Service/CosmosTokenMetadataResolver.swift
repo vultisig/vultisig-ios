@@ -52,6 +52,7 @@ actor CosmosTokenMetadataResolver {
 
     private var metadataCache: [String: CachedTask<CosmosDenomMetadata>] = [:]
     private var traceCache: [String: CachedTask<CosmosIbcDenomTraceDenomTrace>] = [:]
+    private var ibcDenomCache: [String: CachedTask<String>] = [:]
     private var cw20Cache: [String: CachedTask<CosmosCw20TokenInfo>] = [:]
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
@@ -149,6 +150,56 @@ actor CosmosTokenMetadataResolver {
         }
     }
 
+    /// Resolve the base denom behind an `ibc/<HASH>` voucher via the modern
+    /// ibc-go `/ibc/apps/transfer/v1/denoms/{hash}` endpoint. Unlike the
+    /// deprecated `denom_traces/{hash}` path (which Terra Classic LCDs answer
+    /// with `code 12 Not Implemented`), this endpoint is implemented on Terra
+    /// Classic, so it's the resolution path the caller uses there.
+    ///
+    /// Returns `nil` for non-IBC denoms WITHOUT a network call (same prefix
+    /// guard as `ibcDenomTrace`), and `nil` when the voucher is unknown
+    /// (NotFound decodes to a nil base). Cache-coalesced exactly like
+    /// `ibcDenomTrace`: concurrent callers share one in-flight round-trip and
+    /// a `nil`/error result is evicted so the next call retries.
+    func ibcDenom(chain: Chain, denom: String) async -> String? {
+        guard denom.hasPrefix("ibc/") else { return nil }
+        let hash = String(denom.dropFirst("ibc/".count))
+        guard !hash.isEmpty else { return nil }
+
+        let key = cacheKey(chain: chain, value: denom)
+
+        if let cached = ibcDenomCache[key], !isExpired(storedAt: cached.storedAt) {
+            do {
+                if let value = try await cached.task.value {
+                    return value
+                }
+                ibcDenomCache.removeValue(forKey: key)
+                return nil
+            } catch {
+                ibcDenomCache.removeValue(forKey: key)
+                return nil
+            }
+        }
+
+        let httpClient = self.httpClient
+        let task = Task<String?, Error> {
+            try await Self.fetchIbcDenomBase(httpClient: httpClient, chain: chain, hash: hash)
+        }
+        ibcDenomCache[key] = CachedTask(task: task, storedAt: Date())
+
+        do {
+            if let value = try await task.value {
+                return value
+            }
+            ibcDenomCache.removeValue(forKey: key)
+            return nil
+        } catch {
+            logger.warning("IBC denom lookup failed for \(denom, privacy: .public) on \(chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            ibcDenomCache.removeValue(forKey: key)
+            return nil
+        }
+    }
+
     /// Resolve CW20 token metadata (`name`, `symbol`, `decimals`) for a wasm
     /// contract via the `{"token_info":{}}` smart query — the same lookup the
     /// SDK's `getCw20MetaFromLCD` performs.
@@ -201,6 +252,7 @@ actor CosmosTokenMetadataResolver {
     func clearCacheForTests() {
         metadataCache.removeAll()
         traceCache.removeAll()
+        ibcDenomCache.removeAll()
         cw20Cache.removeAll()
     }
 
@@ -246,7 +298,34 @@ actor CosmosTokenMetadataResolver {
             let sub = denom.split(separator: "/").last.map(String.init) ?? denom
             return sub.hasPrefix("u") ? String(sub.dropFirst()) : sub
         }
+        if denom.hasPrefix("ibc/") {
+            // Guaranteed layout fallback for an unresolved voucher: a short
+            // `IBC-<6 hex>` label instead of the raw 64-char hash. Mirrors
+            // Android `String.toCosmosTicker` (`IBC-` + 6-char uppercase
+            // preview) so the three clients degrade to the same label.
+            let hash = denom.dropFirst("ibc/".count)
+            if !hash.isEmpty {
+                return "IBC-" + hash.prefix(6).uppercased()
+            }
+        }
         return denom
+    }
+
+    /// Derive a display ticker from an IBC voucher's resolved base denom by
+    /// stripping a single leading micro-unit prefix (`u`/`a`) and uppercasing
+    /// — `uusdc` -> `USDC`, `uatom` -> `ATOM`. Mirrors the SDK
+    /// `deriveIbcTraceTicker` and Android `stripDenomUnitPrefix` (which strips
+    /// only when the second character is a letter, so `u123`-style denoms are
+    /// left untouched).
+    static func ibcTicker(baseDenom: String) -> String {
+        let unitPrefixes: Set<Character> = ["u", "a"]
+        guard baseDenom.count > 1,
+              let first = baseDenom.first,
+              unitPrefixes.contains(first),
+              baseDenom[baseDenom.index(after: baseDenom.startIndex)].isLetter else {
+            return baseDenom.uppercased()
+        }
+        return String(baseDenom.dropFirst()).uppercased()
     }
 
     // MARK: - Private fetch implementations
@@ -360,6 +439,44 @@ actor CosmosTokenMetadataResolver {
             responseType: CosmosIbcDenomTrace.self
         )
         return response.data.denomTrace
+    }
+
+    private static func fetchIbcDenomBase(
+        httpClient: HTTPClientProtocol,
+        chain: Chain,
+        hash: String
+    ) async throws -> String? {
+        guard let config = try? CosmosServiceConfig.getConfig(forChain: chain),
+              let baseURL = config.baseURL else {
+            return nil
+        }
+
+        let response: HTTPResponse<CosmosIbcDenom>
+        do {
+            response = try await httpClient.request(
+                CosmosAPI(baseURL: baseURL, endpoint: .ibcDenom(hash: hash)),
+                responseType: CosmosIbcDenom.self
+            )
+        } catch HTTPError.statusCode(let code, let data) {
+            // A NotFound voucher answers with gRPC NOT_FOUND (HTTP 404, body
+            // `{"code":5,"message":"...not found..."}`). Treat any non-transient
+            // status as "voucher unknown" -> nil so the caller degrades to the
+            // truncated-ticker fallback. Transient gateway/overload statuses
+            // rethrow so the resolver's cache eviction retries them. Same
+            // discipline as `fetchCw20TokenInfo`.
+            guard !transientHTTPStatuses.contains(code) else {
+                throw HTTPError.statusCode(code, data)
+            }
+            return nil
+        } catch HTTPError.decodingFailed {
+            return nil
+        }
+
+        // A resolved voucher with an empty/absent base is also unresolved.
+        guard let base = response.data.denom?.base, !base.isEmpty else {
+            return nil
+        }
+        return base
     }
 
     // MARK: - Helpers
