@@ -44,6 +44,27 @@ enum SubstrateBroadcast {
     }
 }
 
+/// Classifies a JSON-RPC broadcast `error.message` as a *true* duplicate — the
+/// signed tx is already in the mempool or on-chain — versus a genuine rejection.
+///
+/// Only exact duplicate signals count. Substrings that used to match here caused
+/// rejections to be reported as success: `"known"` matched every `"unknown …"`
+/// message, `"nonce too high"` is a nonce gap (tx NOT accepted), the rate-limit
+/// message means the tx may never have been submitted, and a bare `"already"`
+/// matched almost anything. Those are excluded on purpose.
+enum BroadcastErrorClassifier {
+    static func isDuplicateBroadcast(_ message: String) -> Bool {
+        let message = message.lowercased()
+        return message.contains("already known")
+            || message.contains("already exists")
+            || message.contains("already_exists")
+            || message.contains("already imported")
+            || message.contains("already mined")
+            || message.contains("transaction is temporarily banned")
+            || message.contains("nonce too low")
+    }
+}
+
 class RpcService {
     // swiftlint:disable:next no_raw_urlsession
     private let session = URLSession.shared
@@ -96,16 +117,8 @@ class RpcService {
             }
 
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                if message.lowercased().contains("known".lowercased())
-                    || message.lowercased().contains("already known".lowercased())
-                    || message.lowercased().contains("Transaction is temporarily banned".lowercased())
-                    || message.lowercased().contains("nonce too low".lowercased())
-                    || message.lowercased().contains("nonce too high".lowercased())
-                    || message.lowercased().contains("transaction already exists".lowercased())
-                    || message.lowercased().contains("many requests for a specific RPC call".lowercased())
-                    || message.lowercased().contains("already".lowercased())
-                    || message.lowercased().contains("already mined".lowercased()) {
-                    return try decode("Transaction already broadcasted.")
+                if BroadcastErrorClassifier.isDuplicateBroadcast(message) {
+                    return try decode(SubstrateBroadcast.alreadyBroadcastedSentinel)
                 }
 
                 return try decode(message)
