@@ -8,8 +8,8 @@ import SwiftUI
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
 /// SegmentedControl is set to Limit. Matches Figma `74341-118736`: a two-section
-/// **accordion** (Execute when / Asset, one open at a time) with a quote-refresh
-/// countdown in the header and the Place-Order CTA pinned to the bottom.
+/// **accordion** (Execute when / Asset, one open at a time) with the Place-Order
+/// CTA pinned to the bottom.
 ///
 /// All business logic lives in `LimitSwapFormViewModel`; this view is
 /// declarative. The price field always edits `draft.targetPrice` in the target
@@ -123,17 +123,6 @@ struct LimitSwapBodyView: View {
             )
             .disabled(!isPlaceable)
             .padding(.bottom, 16)
-        }
-        // Surface the countdown up to the host so the shared badge can render in
-        // the Market/Limit tab row (the tab row is owned by SwapDetailsScreen).
-        .preference(key: LimitQuoteCountdownKey.self, value: vm.quoteRefreshCountdown)
-        .task {
-            // Drive the quote-refresh countdown ring once the view is on screen.
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                if Task.isCancelled { break }
-                await vm.tickQuoteCountdown()
-            }
         }
         .onLoad {
             // Commit the initial focus so each FormExpandableSection's onChange

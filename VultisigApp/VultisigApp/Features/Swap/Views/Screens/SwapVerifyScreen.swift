@@ -178,13 +178,6 @@ struct SwapVerifyScreen: View {
             .padding(16)
             .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(
-                        currentTransaction.isLimit ? Theme.colors.alertSuccess : Color.clear,
-                        lineWidth: 1
-                    )
-            )
         }
     }
 
@@ -391,8 +384,13 @@ struct SwapVerifyScreen: View {
             .opacity(0.2)
     }
 
+    @ViewBuilder
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
+        // Limit orders execute at a fixed target price, so there is no live quote
+        // to refresh — hide the countdown on the limit verify screen.
+        if !currentTransaction.isLimit {
+            SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
+        }
     }
 
     func getValueCell(

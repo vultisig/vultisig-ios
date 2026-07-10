@@ -15,9 +15,6 @@ struct SwapDetailsScreen: View {
     @StateObject private var keyboardObserver = KeyboardObserver()
 
     @State private var showErrorTooltip = false
-    /// Limit-mode quote-refresh countdown, surfaced from the limit body via
-    /// `LimitQuoteCountdownKey` so the shared tab-row badge can render it.
-    @State private var limitQuoteCountdown: Int?
     /// Local Market/Limit tab state. The Limit branch lives entirely
     /// inside `LimitSwapModeBody` (which owns its own form view model and
     /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
@@ -62,9 +59,6 @@ struct SwapDetailsScreen: View {
             }
         }
         .screenTitle("swap".localized)
-        .onPreferenceChange(LimitQuoteCountdownKey.self) { seconds in
-            limitQuoteCountdown = seconds
-        }
         .crossPlatformSheet(isPresented: $vm.showAdvancedSettingsSheet) {
             AdvancedSwapSheet(
                 isPresented: $vm.showAdvancedSettingsSheet,
@@ -324,20 +318,13 @@ struct SwapDetailsScreen: View {
         }
     }
 
-    /// Shared quote-refresh countdown in the Market/Limit tab row. Market mode
-    /// feeds `SwapDetailsViewModel.timer`; limit mode feeds the value surfaced
-    /// from the limit body via `LimitQuoteCountdownKey`.
+    /// Quote-refresh countdown in the Market/Limit tab row. Market mode only —
+    /// it feeds `SwapDetailsViewModel.timer`. Limit orders execute at a fixed
+    /// target price, so there is no live quote to count down to.
     @ViewBuilder
     var tabRowCountdown: some View {
-        switch selectedSwapMode {
-        case .market:
-            if detailsViewModel.showRefreshCounter {
-                SwapQuoteCountdownBadge(seconds: detailsViewModel.timer)
-            }
-        case .limit:
-            if let seconds = limitQuoteCountdown {
-                SwapQuoteCountdownBadge(seconds: seconds)
-            }
+        if selectedSwapMode == .market, detailsViewModel.showRefreshCounter {
+            SwapQuoteCountdownBadge(seconds: detailsViewModel.timer)
         }
     }
 

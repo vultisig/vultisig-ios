@@ -61,13 +61,6 @@ final class LimitSwapFormViewModel {
     /// Convenience for the view: `true` only when the queue is confirmed live.
     var isAdvancedSwapQueueEnabled: Bool { advancedSwapQueueEnabled == true }
 
-    /// Seconds remaining until the next automatic market-price refresh. Mirrors
-    /// the market Verify screen's ~60s quote cadence; the view drives the 1s
-    /// tick and the shared tab-row badge renders it as a "0:SS" countdown ring
-    /// (via `LimitQuoteCountdownKey`).
-    var quoteRefreshCountdown: Int = LimitSwapFormViewModel.quoteRefreshInterval
-    static let quoteRefreshInterval = 60
-
     /// User-facing error raised while assembling / pre-flighting the order in
     /// "Place Order" (memo byte-cap overflow, target-price overflow). Drives an
     /// alert in `LimitSwapEntryView`. `nil` clears the alert. Previously these
@@ -185,21 +178,6 @@ final class LimitSwapFormViewModel {
     func refreshAdvancedSwapQueueGate() async {
         advancedSwapQueueEnabled = await interactor.isAdvancedSwapQueueEnabled()
         logger.info("EnableAdvSwapQueue gate resolved: \(self.advancedSwapQueueEnabled == true, privacy: .public)")
-    }
-
-    /// One-second tick for the quote-refresh countdown. When it reaches zero it
-    /// refreshes the market price and resets. Reset externally (e.g. on a manual
-    /// refresh or asset change) via `resetQuoteCountdown()`.
-    func tickQuoteCountdown() async {
-        quoteRefreshCountdown -= 1
-        if quoteRefreshCountdown <= 0 {
-            await refreshMarketPrice()
-            quoteRefreshCountdown = Self.quoteRefreshInterval
-        }
-    }
-
-    func resetQuoteCountdown() {
-        quoteRefreshCountdown = Self.quoteRefreshInterval
     }
 
     func refreshMarketPrice() async {
