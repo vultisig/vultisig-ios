@@ -279,6 +279,81 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(probe, BigInt(500_000_000))
     }
 
+    // MARK: - preferredLimitSourceChain (limit-entry default source)
+
+    func testPreferredLimitSourcePrefersBTCWhenHeld() {
+        // Market default lands on RUNE; BTC is held and isn't the target → BTC.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .thorChain,
+            targetChain: .ethereum,
+            availableNativeChains: [.bitcoin, .thorChain]
+        )
+        XCTAssertEqual(chain, .bitcoin)
+    }
+
+    func testPreferredLimitSourceSkipsTargetChainAndFallsToETH() {
+        // Default RUNE→BTC: BTC is the target, so skip it and pick ETH → ETH→BTC.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .thorChain,
+            targetChain: .bitcoin,
+            availableNativeChains: [.bitcoin, .ethereum, .thorChain]
+        )
+        XCTAssertEqual(chain, .ethereum)
+    }
+
+    func testPreferredLimitSourcePrefersBTCOverETHWhenBothHeld() {
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .thorChain,
+            targetChain: .thorChain,
+            availableNativeChains: [.bitcoin, .ethereum]
+        )
+        XCTAssertEqual(chain, .bitcoin)
+    }
+
+    func testPreferredLimitSourceFallsBackToMarketDefaultWhenNeitherHeld() {
+        // Neither BTC nor ETH held (BTC is the target and not preferable anyway) →
+        // keep the market default rather than inventing an unheld source.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .litecoin,
+            targetChain: .bitcoin,
+            availableNativeChains: [.litecoin, .thorChain]
+        )
+        XCTAssertEqual(chain, .litecoin)
+    }
+
+    func testPreferredLimitSourceKeepsMarketDefaultWhenItIsAlreadyBTC() {
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .bitcoin,
+            targetChain: .ethereum,
+            availableNativeChains: [.bitcoin]
+        )
+        XCTAssertEqual(chain, .bitcoin)
+    }
+
+    func testPreferredLimitSourceAvoidsSelfPairWhenMarketDefaultEqualsTarget() {
+        // Same-chain market default (e.g. ETH→USDC both on Ethereum) with no
+        // BTC/ETH-vs-target preferred candidate must NOT seed a same-chain
+        // self-pair — pick another held native chain instead.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .ethereum,
+            targetChain: .ethereum,
+            availableNativeChains: [.ethereum, .thorChain]
+        )
+        XCTAssertNotEqual(chain, .ethereum)
+        XCTAssertEqual(chain, .thorChain)
+    }
+
+    func testPreferredLimitSourceReturnsMarketDefaultWhenOnlyTargetChainHeld() {
+        // Degenerate: the vault holds only the target chain, so a self-pair is
+        // unavoidable — return the market default rather than an unheld chain.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .ethereum,
+            targetChain: .ethereum,
+            availableNativeChains: [.ethereum]
+        )
+        XCTAssertEqual(chain, .ethereum)
+    }
+
     // MARK: - computeExpiryBlocks
 
     func testComputeExpiryBlocksFor12Hours() {

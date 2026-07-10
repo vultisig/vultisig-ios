@@ -50,7 +50,7 @@ struct SwapDetailsScreen: View {
                     }
                 case .limit:
                     LimitSwapEntryView(
-                        initialFromCoin: detailsViewModel.fromCoin,
+                        initialFromCoin: limitInitialFromCoin,
                         initialToCoin: detailsViewModel.toCoin,
                         vault: vault
                     )
@@ -316,6 +316,19 @@ struct SwapDetailsScreen: View {
         if !settingsViewModel.limitSwapEnabled, detailsViewModel.showRefreshCounter {
             SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
         }
+    }
+
+    /// Source coin the **limit** entry seeds with. The shared market default
+    /// sorts alphabetically (lands on RUNE), which reads as an untradeable
+    /// RUNE→BTC default; prefer a high-value routable native source the vault
+    /// holds (BTC → ETH) that doesn't collide with the target. Limit-entry only
+    /// — the shared market `detailsViewModel.fromCoin` is unchanged.
+    private var limitInitialFromCoin: Coin {
+        limitDefaultSourceCoin(
+            marketDefault: detailsViewModel.fromCoin,
+            targetCoin: detailsViewModel.toCoin,
+            vaultCoins: vault.coins
+        )
     }
 
     /// Quote-refresh countdown in the Market/Limit tab row. Market mode only —

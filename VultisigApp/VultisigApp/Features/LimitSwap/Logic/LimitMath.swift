@@ -131,6 +131,67 @@ func marketProbeAmount(
     return probe
 }
 
+/// Preferred default SOURCE chain for the **limit-swap entry only**. The shared
+/// market default sorts alphabetically (`SwapCoinsResolver` picks the first held
+/// coin), which lands on a cheap source like RUNE and presents an
+/// untradeable-looking RUNE→BTC default. Prefer a high-value, liquid,
+/// THORChain-routable native source the vault actually holds — BTC, then ETH —
+/// skipping any candidate that collides with the target chain (which would be a
+/// self-pair).
+///
+/// **Never returns `targetChain` while any alternative native source is held**
+/// (a same-chain source→target is not THORChain-routable). It only returns the
+/// target chain in the degenerate case where the vault holds no other native
+/// source. Pure so it is unit-testable; the caller resolves the chosen chain
+/// back to the concrete vault `Coin`. Does NOT change the shared market default.
+func preferredLimitSourceChain(
+    marketDefaultChain: Chain,
+    targetChain: Chain,
+    availableNativeChains: Set<Chain>
+) -> Chain {
+    // 1. High-value routable sources the vault holds (BTC → ETH), excluding a
+    //    self-pair with the target.
+    for candidate in [Chain.bitcoin, .ethereum]
+    where candidate != targetChain && availableNativeChains.contains(candidate) {
+        return candidate
+    }
+    // 2. Keep the market default when it isn't a self-pair with the target.
+    if marketDefaultChain != targetChain {
+        return marketDefaultChain
+    }
+    // 3. Market default collides with the target: pick any other held native
+    //    chain (deterministic order) so the seed is never a same-chain self-pair.
+    if let alternative = availableNativeChains
+        .filter({ $0 != targetChain })
+        .sorted(by: { $0.name < $1.name })
+        .first {
+        return alternative
+    }
+    // 4. Nothing else is held — a self-pair is unavoidable; the caller keeps its
+    //    market-default coin.
+    return marketDefaultChain
+}
+
+/// Resolves the concrete SOURCE `Coin` the **limit entry** seeds with, given the
+/// shared market-default source, the target coin, and the vault's coins. Maps
+/// `preferredLimitSourceChain` back to a native `Coin` the vault holds, falling
+/// back to the market default when the preferred chain isn't held (or already is
+/// the market default). Pure so the "held + non-colliding with target" guarantee
+/// is directly testable. Does NOT change the shared market default.
+func limitDefaultSourceCoin(marketDefault: Coin, targetCoin: Coin, vaultCoins: [Coin]) -> Coin {
+    let availableNativeChains = Set(vaultCoins.filter { $0.isNativeToken }.map(\.chain))
+    let chain = preferredLimitSourceChain(
+        marketDefaultChain: marketDefault.chain,
+        targetChain: targetCoin.chain,
+        availableNativeChains: availableNativeChains
+    )
+    guard chain != marketDefault.chain,
+          let coin = vaultCoins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+        return marketDefault
+    }
+    return coin
+}
+
 func computeExpiryBlocks(hours: Int) -> Int {
     return THORChainConstants.blocks(forHours: hours)
 }

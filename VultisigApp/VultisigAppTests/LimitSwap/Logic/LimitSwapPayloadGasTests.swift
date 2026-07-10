@@ -86,4 +86,52 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         let result = limitDepositChainSpecific(ethSpecific(gasLimit: BigInt(600_000)), sourceCoin: coin)
         XCTAssertEqual(extractedGasLimit(result), BigInt(600_000))
     }
+
+    // MARK: - limitDefaultSourceCoin (limit-entry default source, over real coins)
+
+    private func tokenCoin(chain: Chain, ticker: String, decimals: Int) -> Coin {
+        Coin(
+            asset: CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: false),
+            address: "0xtoken00000000000000000000000000000000000",
+            hexPublicKey: "pubkey"
+        )
+    }
+
+    func testLimitDefaultSourcePrefersBTCOverRuneMarketDefault() {
+        let rune = nativeCoin(chain: .thorChain, ticker: "RUNE", decimals: 8)
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
+        // Market default RUNE→ETH; BTC held and != target → BTC preferred.
+        let resolved = limitDefaultSourceCoin(marketDefault: rune, targetCoin: eth, vaultCoins: [rune, eth, btc])
+        XCTAssertEqual(resolved.chain, .bitcoin)
+        XCTAssertEqual(resolved.ticker, "BTC")
+    }
+
+    func testLimitDefaultSourceAvoidsSameChainSelfPair() {
+        // Market default ETH→USDC (both Ethereum) must NOT seed a same-chain
+        // self-pair — pick a held native source on another chain (BTC).
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let usdc = tokenCoin(chain: .ethereum, ticker: "USDC", decimals: 6)
+        let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
+        let resolved = limitDefaultSourceCoin(marketDefault: eth, targetCoin: usdc, vaultCoins: [eth, usdc, btc])
+        XCTAssertEqual(resolved.chain, .bitcoin)
+    }
+
+    func testLimitDefaultSourceKeepsMarketDefaultWhenOnlyTargetChainHeld() {
+        // Degenerate: only Ethereum assets held — a self-pair is unavoidable, so
+        // keep the market default rather than inventing an unheld source.
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let usdc = tokenCoin(chain: .ethereum, ticker: "USDC", decimals: 6)
+        let resolved = limitDefaultSourceCoin(marketDefault: eth, targetCoin: usdc, vaultCoins: [eth, usdc])
+        XCTAssertEqual(resolved.chain, .ethereum)
+        XCTAssertEqual(resolved.ticker, "ETH")
+    }
+
+    func testLimitDefaultSourceFallsBackToMarketDefaultWhenPreferredNotHeld() {
+        // Neither BTC nor ETH held; market default (LTC) isn't the target → keep it.
+        let ltc = nativeCoin(chain: .litecoin, ticker: "LTC", decimals: 8)
+        let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
+        let resolved = limitDefaultSourceCoin(marketDefault: ltc, targetCoin: btc, vaultCoins: [ltc])
+        XCTAssertEqual(resolved.chain, .litecoin)
+    }
 }
