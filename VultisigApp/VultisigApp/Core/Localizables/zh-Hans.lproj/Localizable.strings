@@ -761,6 +761,7 @@
 "noTransactionsYetSubtitle" = "您尚未从此金库进行任何兑换、发送或审批操作。";
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
+"noVaultAddresses" = "没有保险库地址";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
 "of" = "的";
 "off" = "关闭";
