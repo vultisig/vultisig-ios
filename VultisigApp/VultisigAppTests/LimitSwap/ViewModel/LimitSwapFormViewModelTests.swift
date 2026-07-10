@@ -199,12 +199,11 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.isLoadingMarketPrice)
     }
 
-    func testRefreshMarketPriceFallsBackToOneUnitWhenSourceAmountIsZero() async {
+    func testRefreshMarketPriceFallsBackToOneUnitWhenSourceAmountIsZeroWithoutRate() async {
         // Phase-1 behaviour: the view kicks `refreshMarketPrice()` on appear
-        // before the user has typed anything, so the VM substitutes a 1-unit
-        // (`10^sourceDecimals`) quote rather than early-returning. This
-        // populates `marketPriceRef` for the preset pills + price-field
-        // auto-seed.
+        // before the user has typed anything, so the VM substitutes a probe
+        // quote rather than early-returning. With no source USD rate the probe
+        // falls back to a 1-unit (`10^sourceDecimals`) quote.
         let vm = makeViewModel(sourceAmount: 0)
         quoteService.marketPriceResult = .success(99)
 
@@ -212,6 +211,34 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
         XCTAssertEqual(vm.marketPriceRef, 99)
         XCTAssertEqual(quoteService.marketPriceCallCount, 1)
+        XCTAssertEqual(quoteService.marketPriceAmounts.first, BigInt(10).power(8),
+                       "Without a USD rate the probe must fall back to 1 whole unit")
+    }
+
+    func testRefreshMarketPriceProbesFiatNotionalWhenSourceAmountIsZero() async {
+        // The bug: a cheap source (e.g. RUNE) at 0 amount probed with 1 whole
+        // unit, which THORChain rejects (outbound fee > output) so no reference
+        // ever loaded. With a source USD rate the probe is sized to ~$100 of the
+        // source instead — here $2/unit BTC-decimals → 50 units × 1e8.
+        let vm = makeViewModel(sourceAmount: 0)
+        vm.sourceUsdPricePerUnit = 2
+        quoteService.marketPriceResult = .success(99)
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertEqual(quoteService.marketPriceAmounts.first, BigInt(5_000_000_000))
+    }
+
+    func testRefreshMarketPriceUsesTypedAmountOverProbe() async {
+        // Once the user has typed an amount it is used verbatim, ignoring the
+        // notional probe / source price.
+        let vm = makeViewModel(sourceAmount: BigInt(777))
+        vm.sourceUsdPricePerUnit = 2
+        quoteService.marketPriceResult = .success(99)
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertEqual(quoteService.marketPriceAmounts.first, BigInt(777))
     }
 
     func testRefreshMarketPriceFailsWhenTargetChainHasNoVaultCoin() async {

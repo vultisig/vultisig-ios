@@ -48,6 +48,13 @@ final class LimitSwapFormViewModel {
     /// and the display falls back to asset-only formatting.
     var targetUsdPricePerUnit: Decimal = 0
 
+    /// USD price per natural unit of the **source** asset. Synced from the
+    /// owning view via `RateProvider`'s cached rate (`Coin.price`). Used to
+    /// size the pre-input market-price probe to a fixed fiat notional so a cheap
+    /// source (e.g. RUNE) still gets a quote back (see `marketProbeAmount`); `0`
+    /// means USD-unavailable and the probe falls back to a 1-unit quote.
+    var sourceUsdPricePerUnit: Decimal = 0
+
     var isLoadingMarketPrice = false
     var marketPriceError: Error?
 
@@ -152,10 +159,11 @@ final class LimitSwapFormViewModel {
     /// `marketPriceRef` on success; sets `marketPriceError` on failure (does
     /// not clobber the previous reference).
     ///
-    /// Quote uses the user's `sourceAmount` when ≥ 1 natural unit, otherwise
-    /// substitutes a 1-unit quote (`10^sourceDecimals`). This lets the view
-    /// seed a market reference *before* the user types an amount so the
-    /// Market pill and target-price auto-seed work on first paint.
+    /// Quote uses the user's `sourceAmount` when > 0, otherwise substitutes a
+    /// fixed-fiat-notional probe (`marketProbeAmount`, ~$100 of the source) so a
+    /// cheap source still gets a quote back. This lets the view seed a market
+    /// reference *before* the user types an amount so the Market pill and
+    /// target-price auto-seed work on first paint.
     /// Fetch the live THORChain inbound list and compute the routable set.
     /// On fetch failure or empty result, falls back to the static set
     /// derived from our prefix table — so the picker always has *some*
@@ -195,8 +203,11 @@ final class LimitSwapFormViewModel {
             marketPriceError = ViewModelError.noDestinationAddressForTargetChain
             return
         }
-        let oneUnit = BigInt(10).power(draft.fromAsset.decimals)
-        let quoteAmount = max(draft.sourceAmount, oneUnit)
+        let quoteAmount = marketProbeAmount(
+            sourceAmount: draft.sourceAmount,
+            sourceDecimals: draft.fromAsset.decimals,
+            sourceFiatPricePerUnit: sourceUsdPricePerUnit
+        )
 
         isLoadingMarketPrice = true
         marketPriceError = nil

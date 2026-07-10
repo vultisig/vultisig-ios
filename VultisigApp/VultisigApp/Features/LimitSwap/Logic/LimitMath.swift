@@ -90,6 +90,47 @@ func limitOrderExpectedOutput(
     return natural
 }
 
+/// Source amount (in the source coin's smallest units) to probe THORChain with
+/// when seeding the market-price reference *before* the user enters an amount.
+///
+/// The old behaviour probed with a whole 1 unit (`10^decimals`) of the source.
+/// For a cheap source (e.g. 1 RUNE ≈ $1.4) THORChain rejects the quote because
+/// the target-chain outbound fee exceeds the tiny output, so `marketPriceRef`
+/// never loads and the limit form shows no market reference. High-value sources
+/// (1 BTC / 1 ETH) probe fine, which is why only cheap-source pairs looked
+/// broken. Normalizing the probe to a fixed fiat notional (~$100) keeps it above
+/// outbound fees for cheap sources while staying reasonable (a fraction of a
+/// coin) for expensive ones.
+///
+/// The user's real `sourceAmount` is always used once it is > 0; the notional
+/// only seeds the pre-input reference. Falls back to 1 whole unit when no price
+/// rate is available (`sourceFiatPricePerUnit <= 0`), matching the prior seed.
+func marketProbeAmount(
+    sourceAmount: BigInt,
+    sourceDecimals: Int,
+    sourceFiatPricePerUnit: Decimal,
+    notionalFiat: Decimal = 100
+) -> BigInt {
+    if sourceAmount > 0 { return sourceAmount }
+
+    let oneUnit = BigInt(10).power(sourceDecimals)
+    guard sourceFiatPricePerUnit > 0, notionalFiat > 0 else { return oneUnit }
+
+    // Whole source coins worth `notionalFiat`, scaled up to smallest units.
+    var units = notionalFiat / sourceFiatPricePerUnit
+    var scaled = Decimal()
+    NSDecimalMultiplyByPowerOf10(&scaled, &units, Int16(sourceDecimals), .plain)
+    var rounded = Decimal()
+    NSDecimalRound(&rounded, &scaled, 0, .up)
+
+    guard !rounded.isNaN,
+          let probe = BigInt(NSDecimalNumber(decimal: rounded).stringValue),
+          probe > 0 else {
+        return oneUnit
+    }
+    return probe
+}
+
 func computeExpiryBlocks(hours: Int) -> Int {
     return THORChainConstants.blocks(forHours: hours)
 }

@@ -202,6 +202,83 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(out, Decimal(0))
     }
 
+    // MARK: - marketProbeAmount (pre-input market-price probe)
+
+    func testMarketProbeUsesUserAmountWhenPositive() {
+        // Once the user has typed an amount it is used verbatim regardless of price.
+        let probe = marketProbeAmount(
+            sourceAmount: BigInt(123_456),
+            sourceDecimals: 8,
+            sourceFiatPricePerUnit: Decimal(string: "1.4")!
+        )
+        XCTAssertEqual(probe, BigInt(123_456))
+    }
+
+    func testMarketProbeSizesToNotionalForCheapSource() {
+        // 0 amount, $2/unit, $100 notional → 50 units × 1e8 = 5_000_000_000.
+        let probe = marketProbeAmount(
+            sourceAmount: 0,
+            sourceDecimals: 8,
+            sourceFiatPricePerUnit: 2
+        )
+        XCTAssertEqual(probe, BigInt(5_000_000_000))
+    }
+
+    func testMarketProbeCheapSourceExceedsOneWholeUnit() {
+        // A cheap source (RUNE ≈ $1.4) must probe with MORE than 1 whole unit —
+        // this is exactly the case the old `max(amount, 1 unit)` seed got wrong.
+        let oneUnit = BigInt(10).power(8)
+        let probe = marketProbeAmount(
+            sourceAmount: 0,
+            sourceDecimals: 8,
+            sourceFiatPricePerUnit: Decimal(string: "1.4")!
+        )
+        XCTAssertGreaterThan(probe, oneUnit)
+    }
+
+    func testMarketProbeExpensiveSourceIsFractionOfOneUnit() {
+        // 0 amount, $50_000/unit (BTC-ish), $100 notional → 0.002 BTC = 200_000 sats,
+        // i.e. LESS than one whole unit. The notional probe never over-sizes to a
+        // whole expensive coin.
+        let probe = marketProbeAmount(
+            sourceAmount: 0,
+            sourceDecimals: 8,
+            sourceFiatPricePerUnit: 50_000
+        )
+        XCTAssertEqual(probe, BigInt(200_000))
+    }
+
+    func testMarketProbeHighDecimalSource() {
+        // 0 amount, $50/unit, $100 notional, 18-decimal source → 2 units × 1e18.
+        let probe = marketProbeAmount(
+            sourceAmount: 0,
+            sourceDecimals: 18,
+            sourceFiatPricePerUnit: 50
+        )
+        XCTAssertEqual(probe, BigInt("2000000000000000000"))
+    }
+
+    func testMarketProbeFallsBackToOneUnitWithoutRate() {
+        // No USD rate (0) → fall back to the prior 1-unit (`10^decimals`) seed.
+        let probe = marketProbeAmount(
+            sourceAmount: 0,
+            sourceDecimals: 8,
+            sourceFiatPricePerUnit: 0
+        )
+        XCTAssertEqual(probe, BigInt(10).power(8))
+    }
+
+    func testMarketProbeCustomNotional() {
+        // Explicit notional is honoured: $10 at $2/unit → 5 units × 1e8.
+        let probe = marketProbeAmount(
+            sourceAmount: 0,
+            sourceDecimals: 8,
+            sourceFiatPricePerUnit: 2,
+            notionalFiat: 10
+        )
+        XCTAssertEqual(probe, BigInt(500_000_000))
+    }
+
     // MARK: - computeExpiryBlocks
 
     func testComputeExpiryBlocksFor12Hours() {

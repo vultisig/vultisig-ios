@@ -65,6 +65,7 @@ struct LimitSwapEntryView: View {
             interactor: interactor
         )
         model.targetUsdPricePerUnit = Decimal(initialToCoin.price)
+        model.sourceUsdPricePerUnit = Decimal(initialFromCoin.price)
         self._vm = State(initialValue: model)
     }
 
@@ -87,6 +88,7 @@ struct LimitSwapEntryView: View {
         }
         .onChange(of: limitFromCoin) { _, newCoin in
             vm.selectFromAsset(LimitSwapAsset(coin: newCoin))
+            vm.sourceUsdPricePerUnit = Decimal(newCoin.price)
             Task { @MainActor in
                 await vm.refreshMarketPrice()
                 vm.selectPresetPct(0)
