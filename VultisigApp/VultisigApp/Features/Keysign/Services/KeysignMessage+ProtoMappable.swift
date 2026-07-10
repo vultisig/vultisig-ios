@@ -421,10 +421,10 @@ extension BlockChainSpecific {
             )
         case .ethereumSpecific(let value):
             self = .Ethereum(
-                maxFeePerGasWei: BigInt(stringLiteral: value.maxFeePerGasWei),
-                priorityFeeWei: BigInt(stringLiteral: value.priorityFee),
+                maxFeePerGasWei: BigInt(value.maxFeePerGasWei) ?? 0,
+                priorityFeeWei: BigInt(value.priorityFee) ?? 0,
                 nonce: value.nonce,
-                gasLimit: BigInt(stringLiteral: value.gasLimit)
+                gasLimit: BigInt(value.gasLimit) ?? 0
             )
         case .thorchainSpecific(let value):
             self = .THORChain(
@@ -452,8 +452,8 @@ extension BlockChainSpecific {
         case .solanaSpecific(let value):
             self = .Solana(
                 recentBlockHash: value.recentBlockHash,
-                priorityFee: BigInt(stringLiteral: value.priorityFee),
-                priorityLimit: value.hasComputeLimit ? BigInt(stringLiteral: value.computeLimit) : BigInt(0),
+                priorityFee: BigInt(value.priorityFee) ?? 0,
+                priorityLimit: value.hasComputeLimit ? (BigInt(value.computeLimit) ?? 0) : BigInt(0),
                 fromAddressPubKey: value.fromTokenAssociatedAddress.isEmpty ? nil : value.fromTokenAssociatedAddress,
                 toAddressPubKey: value.toTokenAssociatedAddress.isEmpty ? nil : value.toTokenAssociatedAddress,
                 hasProgramId: value.programID
@@ -462,7 +462,7 @@ extension BlockChainSpecific {
             self = .Polkadot(
                 recentBlockHash: value.recentBlockHash,
                 nonce: value.nonce,
-                currentBlockNumber: BigInt(stringLiteral: value.currentBlockNumber),
+                currentBlockNumber: BigInt(value.currentBlockNumber) ?? 0,
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
                 genesisHash: value.genesisHash,
