@@ -761,6 +761,7 @@
 "noTransactionsYetSubtitle" = "Du hast noch keine Swaps, Sends oder Genehmigungen aus diesem Vault durchgeführt.";
 "notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
 "noUnencryptedVaultsToImport" = "Keine unverschlüsselten Tresore zum Importieren";
+"noVaultAddresses" = "Keine Tresor-Adressen";
 "noVaultsFoundInZip" = "Keine Tresore in der ZIP-Datei gefunden.";
 "of" = "von";
 "off" = "Aus";

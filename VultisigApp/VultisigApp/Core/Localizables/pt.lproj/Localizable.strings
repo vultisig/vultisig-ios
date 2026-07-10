@@ -761,6 +761,7 @@
 "noTransactionsYetSubtitle" = "Você ainda não fez swaps, envios ou aprovações deste cofre.";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noUnencryptedVaultsToImport" = "Nenhum cofre não criptografado para importar";
+"noVaultAddresses" = "Nenhum endereço de cofre";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
 "of" = "de";
 "off" = "Desligado";

@@ -759,6 +759,7 @@
 "noTransactionsYetSubtitle" = "You haven't made any swaps, sends, or approvals from this vault.";
 "notWhitelistedOnNode" = "You are not whitelisted on this node";
 "noUnencryptedVaultsToImport" = "No unencrypted vaults to import";
+"noVaultAddresses" = "No Vault Addresses";
 "noVaultsFoundInZip" = "No vaults found in the ZIP file.";
 "of" = "of";
 "off" = "Off";
