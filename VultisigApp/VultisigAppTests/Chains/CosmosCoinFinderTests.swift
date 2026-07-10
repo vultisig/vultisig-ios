@@ -185,6 +185,56 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertEqual(ticker, "uatom")
     }
 
+    func testDeriveTickerIbcDenomTruncatesToShortHash() {
+        // Unresolved voucher -> IBC-<6hex uppercase>, never the raw 64-char
+        // hash. Mirrors Android `String.toCosmosTicker`. Uses a lowercase
+        // hash so the uppercasing is actually exercised.
+        let ticker = CosmosTokenMetadataResolver.deriveTicker(
+            denom: "ibc/0bb9d8513e8e8e9ae6a9d211d9136e6da42288dde6cfaa453a150a4566054dc5",
+            meta: nil
+        )
+        XCTAssertEqual(ticker, "IBC-0BB9D8")
+    }
+
+    func testDeriveTickerIbcDenomWithEmptyHashFallsThrough() {
+        // A malformed `ibc/` with no hash must not produce a bare `IBC-`
+        // label — it falls through to the raw-denom return.
+        let ticker = CosmosTokenMetadataResolver.deriveTicker(denom: "ibc/", meta: nil)
+        XCTAssertEqual(ticker, "ibc/")
+    }
+
+    // MARK: - IBC ticker derivation (pure)
+
+    func testIbcTickerStripsMicroPrefixAndUppercases() {
+        // Standard micro-denoms: strip the leading `u`, uppercase.
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "uusdc"), "USDC")
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "uatom"), "ATOM")
+    }
+
+    func testIbcTickerStripsAttoPrefix() {
+        // `a` (atto) is a valid micro-unit prefix on EVM-on-Cosmos chains.
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "aevmos"), "EVMOS")
+    }
+
+    func testIbcTickerLeavesNonPrefixedDenomUppercased() {
+        // No leading u/a micro prefix -> just uppercase, no strip.
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "gravity0x123"), "GRAVITY0X123")
+    }
+
+    func testIbcTickerLeavesSingleCharDenomUntouched() {
+        // Guard: length must exceed 1 before stripping, so a lone `u`/`a`
+        // survives (just uppercased).
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "u"), "U")
+    }
+
+    func testIbcTickerDoesNotStripWhenSecondCharIsNotLetter() {
+        // The prefix is stripped only when the second character is a letter
+        // (Android `stripDenomUnitPrefix` guard), so `u123` / `a0x` keep their
+        // leading char — they are not micro-denominated units.
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "u123"), "U123")
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "a0x"), "A0X")
+    }
+
     // MARK: - Fee-denom + fee-decimals table
 
     func testFeeDenomForTerraIsUluna() {
@@ -324,27 +374,18 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertTrue(atom.isHidden, "IBC trace path always sets isHidden = true")
     }
 
-    // MARK: - Terra Classic IBC trace gap
+    // MARK: - Terra Classic modern IBC resolution (#4761)
 
-    func testTerraClassicIbcDenomSkipsTraceEndpointAndLandsHidden() async throws {
-        // Terra Classic LCDs (publicnode, hexxagon, binodes) all return
-        // `code 12 Not Implemented` for /ibc/apps/transfer/v1/denom_traces.
-        // Mirroring the SDK (which has no IBC trace lookup for any chain),
-        // we skip the trace endpoint on Classic and fall through to the
-        // hidden tier with a derived ticker.
-        let ibcHash = "CLASSICHASH"
-        let ibcDenom = "ibc/\(ibcHash)"
+    func testTerraClassicReportedIbcTokenResolvesToUsdcViaTokensStore() async throws {
+        // The token in the bug report is Axelar USDC. A curated TokensStore
+        // entry keyed by the full ibc/<hash> contract resolves it at Tier 0
+        // -> symbol + logo + fiat, with no LCD metadata round-trip.
+        let reportedDenom = "ibc/0BB9D8513E8E8E9AE6A9D211D9136E6DA42288DDE6CFAA453A150A4566054DC5"
         let stub = ScriptedHTTPClient()
         stub.balances = [
             ("uluna", "1000"),
-            (ibcDenom, "999")
+            (reportedDenom, "5000000")
         ]
-        // Configure trace payload that would resolve to ATOM if the trace
-        // endpoint were called — the test asserts we DON'T call it.
-        stub.ibcTracePayloads[ibcHash] = ScriptedHTTPClient.TracePayload(
-            path: "transfer/channel-0",
-            baseDenom: "uatom"
-        )
 
         let finder = CosmosCoinFinder(
             httpClient: stub,
@@ -356,14 +397,105 @@ final class CosmosCoinFinderTests: XCTestCase {
         )
 
         XCTAssertEqual(result.count, 1)
-        let hidden = try XCTUnwrap(result.first)
-        XCTAssertEqual(hidden.denom, ibcDenom)
-        XCTAssertTrue(hidden.isHidden)
-        XCTAssertEqual(hidden.decimals, 6, "Hidden tier uses chain fee-coin decimals")
+        let usdc = try XCTUnwrap(result.first)
+        XCTAssertEqual(usdc.denom, reportedDenom)
+        XCTAssertEqual(usdc.ticker, "USDC")
+        XCTAssertEqual(usdc.decimals, 6)
+        XCTAssertEqual(usdc.priceProviderId, "usd-coin")
+        XCTAssertFalse(usdc.logo.isEmpty, "Curated entry must supply the USDC logo")
+        XCTAssertFalse(usdc.isHidden)
+        XCTAssertEqual(
+            stub.ibcDenomCallCount,
+            0,
+            "Curated Tier 0 must short-circuit before the /denoms endpoint"
+        )
+        XCTAssertEqual(stub.ibcTraceCallCount, 0)
+        XCTAssertEqual(
+            stub.totalCallCount,
+            1,
+            "Only the balance fetch — curated Tier 0 must not hit any metadata/denoms LCD call"
+        )
+    }
+
+    func testTerraClassicIbcDenomResolvesViaModernDenomsEndpoint() async throws {
+        // A non-curated ibc voucher on Terra Classic resolves through the
+        // modern /denoms endpoint: base `uusdc` -> ticker `USDC`. Terra
+        // Classic implements /denoms even though it rejects the deprecated
+        // denom_traces path, so the trace endpoint must NOT be hit. Decimals
+        // fall back to the chain fee-coin (6) because the base denom has no
+        // bank metadata, and the derived USDC ticker backfills the curated
+        // logo / priceProviderId.
+        let ibcHash = "AXLUSDCUNKNOWNHASH"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [
+            ("uluna", "1000"),
+            (ibcDenom, "5000000")
+        ]
+        stub.ibcDenomPayloads[ibcHash] = "uusdc"
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(
+            chain: .terraClassic,
+            address: "terra1classic"
+        )
+
+        XCTAssertEqual(result.count, 1)
+        let usdc = try XCTUnwrap(result.first)
+        XCTAssertEqual(usdc.denom, ibcDenom, "Discovered denom must be the on-chain ibc/<hash> id")
+        XCTAssertEqual(usdc.ticker, "USDC")
+        XCTAssertEqual(usdc.decimals, 6, "No base-denom metadata -> chain fee-coin decimals")
+        XCTAssertTrue(usdc.isHidden, "Discovered IBC voucher stays hidden per SDK semantics")
+        XCTAssertFalse(usdc.logo.isEmpty, "Derived USDC ticker backfills the curated logo")
+        XCTAssertEqual(stub.ibcDenomCallCount, 1, "Terra Classic must hit the modern /denoms endpoint")
         XCTAssertEqual(
             stub.ibcTraceCallCount,
             0,
-            "Terra Classic must NOT hit /ibc/apps/transfer/v1/denom_traces"
+            "Terra Classic must NOT hit the deprecated denom_traces endpoint"
+        )
+    }
+
+    func testTerraClassicIbcDenomFallsBackToTruncatedTickerWhenDenomsNotFound() async throws {
+        // When /denoms returns NotFound for an unknown voucher, the finder
+        // degrades to a short IBC-<6hex> label (Android parity) instead of
+        // the raw 64-char hash, and marks it hidden — never dropped.
+        let ibcHash = "0BB9D8FFEEDDCCBBAA"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [
+            ("uluna", "1000"),
+            (ibcDenom, "999")
+        ]
+        // No ibcDenomPayloads entry -> the stub answers 404 (gRPC NOT_FOUND).
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(
+            chain: .terraClassic,
+            address: "terra1classic"
+        )
+
+        XCTAssertEqual(result.count, 1, "Unresolved vouchers are surfaced hidden, not dropped")
+        let hidden = try XCTUnwrap(result.first)
+        XCTAssertEqual(hidden.denom, ibcDenom)
+        XCTAssertEqual(
+            hidden.ticker,
+            "IBC-0BB9D8",
+            "Fallback truncates to IBC-<6hex uppercase>, never the raw hash"
+        )
+        XCTAssertNotEqual(hidden.ticker, ibcDenom, "The raw ibc/<hash> denom must never become the ticker")
+        XCTAssertEqual(hidden.decimals, 6, "Hidden tier uses chain fee-coin decimals")
+        XCTAssertTrue(hidden.isHidden)
+        XCTAssertEqual(stub.ibcDenomCallCount, 1, "Must attempt the modern /denoms endpoint")
+        XCTAssertEqual(
+            stub.ibcTraceCallCount,
+            0,
+            "Terra Classic must NOT hit the deprecated denom_traces endpoint"
         )
     }
 
@@ -519,6 +651,72 @@ final class CosmosCoinFinderTests: XCTestCase {
         )
     }
 
+    // MARK: - Modern IBC denom resolution cache
+
+    func testIbcDenomShortCircuitsForNonIbcDenom() async {
+        // Same prefix guard as ibcDenomTrace: `uluna` must return nil WITHOUT
+        // a /denoms round-trip.
+        let stub = ScriptedHTTPClient()
+        let resolver = makeIsolatedResolver(client: stub)
+
+        let result = await resolver.ibcDenom(chain: .terraClassic, denom: "uluna")
+        XCTAssertNil(result)
+        XCTAssertEqual(stub.ibcDenomCallCount, 0, "Non-IBC denoms must not trigger a /denoms lookup")
+    }
+
+    func testIbcDenomCacheCoalescesConcurrentLookups() async {
+        // Two concurrent lookups for the same voucher share one /denoms
+        // round-trip — same Task-cell coalescing as the metadata/trace caches.
+        let stub = ScriptedHTTPClient()
+        let ibcHash = "DEADBEEF"
+        let ibcDenom = "ibc/\(ibcHash)"
+        stub.ibcDenomPayloads[ibcHash] = "uusdc"
+        let resolver = makeIsolatedResolver(client: stub)
+
+        async let first = resolver.ibcDenom(chain: .terraClassic, denom: ibcDenom)
+        async let second = resolver.ibcDenom(chain: .terraClassic, denom: ibcDenom)
+        let (a, b) = await (first, second)
+
+        XCTAssertEqual(a, "uusdc")
+        XCTAssertEqual(b, "uusdc")
+        XCTAssertEqual(
+            stub.ibcDenomCallCount,
+            1,
+            "Concurrent in-flight /denoms lookups must share one round-trip"
+        )
+    }
+
+    func testIbcDenomReturnsNilForUnknownVoucher() async {
+        // The modern endpoint answers 404 (gRPC NOT_FOUND) for an unknown
+        // voucher; the resolver must surface that as nil, not throw.
+        let stub = ScriptedHTTPClient()
+        let ibcDenom = "ibc/UNKNOWNVOUCHER"
+        let resolver = makeIsolatedResolver(client: stub)
+
+        let result = await resolver.ibcDenom(chain: .terraClassic, denom: ibcDenom)
+        XCTAssertNil(result)
+        XCTAssertEqual(stub.ibcDenomCallCount, 1)
+    }
+
+    // MARK: - CosmosIbcDenom decoding
+
+    func testCosmosIbcDenomDecodesResolvedShape() throws {
+        let json = Data(#"{"denom":{"base":"uusdc","trace":[{"port_id":"transfer","channel_id":"channel-113"}]}}"#.utf8)
+        let decoded = try JSONDecoder().decode(CosmosIbcDenom.self, from: json)
+        XCTAssertEqual(decoded.denom?.base, "uusdc")
+        XCTAssertEqual(decoded.denom?.trace?.first?.channelId, "channel-113")
+        XCTAssertEqual(decoded.denom?.trace?.first?.portId, "transfer")
+    }
+
+    func testCosmosIbcDenomDecodesNotFoundShapeToNilBase() throws {
+        // gRPC NOT_FOUND body must decode to a nil denom (unresolved) rather
+        // than throwing a decode error.
+        let json = Data(#"{"code":5,"message":"denomination trace not found"}"#.utf8)
+        let decoded = try JSONDecoder().decode(CosmosIbcDenom.self, from: json)
+        XCTAssertNil(decoded.denom)
+        XCTAssertNil(decoded.denom?.base)
+    }
+
     // MARK: - Test helpers
 
     private func makeIsolatedResolver(client: HTTPClientProtocol) -> CosmosTokenMetadataResolver {
@@ -553,11 +751,16 @@ private final class ScriptedHTTPClient: HTTPClientProtocol, @unchecked Sendable 
     var balances: [(denom: String, amount: String)] = []
     var denomMetadataPayloads: [String: MetaPayload] = [:]
     var ibcTracePayloads: [String: TracePayload] = [:]
+    /// Modern `/denoms/{hash}` responses: hash -> resolved base denom. A hash
+    /// with no entry answers HTTP 404 (gRPC NOT_FOUND), matching the modern
+    /// endpoint's reply for an unknown voucher.
+    var ibcDenomPayloads: [String: String] = [:]
     var shouldFailAllRequests = false
 
     private let queue = DispatchQueue(label: "ScriptedHTTPClient.queue")
     private var _denomMetadataCalls: [String: Int] = [:]
     private var _ibcTraceCalls = 0
+    private var _ibcDenomCalls = 0
     private var _totalCalls = 0
 
     func denomMetadataCallCount(for denom: String) -> Int {
@@ -566,6 +769,10 @@ private final class ScriptedHTTPClient: HTTPClientProtocol, @unchecked Sendable 
 
     var ibcTraceCallCount: Int {
         queue.sync { _ibcTraceCalls }
+    }
+
+    var ibcDenomCallCount: Int {
+        queue.sync { _ibcDenomCalls }
     }
 
     var totalCallCount: Int {
@@ -645,6 +852,23 @@ private final class ScriptedHTTPClient: HTTPClientProtocol, @unchecked Sendable 
             } else {
                 envelope = [:]
             }
+            let data = try JSONSerialization.data(withJSONObject: envelope)
+            let decoded = try JSONDecoder().decode(T.self, from: data)
+            return HTTPResponse(data: decoded, response: stubUrl)
+
+        case .ibcDenom(let hash):
+            queue.sync { _ibcDenomCalls += 1 }
+            guard let baseDenom = ibcDenomPayloads[hash] else {
+                // Unknown voucher: the modern endpoint answers gRPC NOT_FOUND
+                // (HTTP 404). The resolver must treat this as unresolved (nil).
+                throw HTTPError.statusCode(404, nil)
+            }
+            let envelope: [String: Any] = [
+                "denom": [
+                    "base": baseDenom,
+                    "trace": [["port_id": "transfer", "channel_id": "channel-113"]]
+                ]
+            ]
             let data = try JSONSerialization.data(withJSONObject: envelope)
             let decoded = try JSONDecoder().decode(T.self, from: data)
             return HTTPResponse(data: decoded, response: stubUrl)
