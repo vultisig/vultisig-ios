@@ -205,6 +205,20 @@ extension SwapTransaction {
         SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
+    /// Network-fee crypto string for a placed LIMIT order. The limit "fee" is
+    /// JUST the source-chain broadcast gas, pre-estimated into `thorchainFee`
+    /// (fee coin's smallest units) at place time — a resting `=<` order carries
+    /// no market quote, so the quote-driven `fee` / `totalFeeString` are zero /
+    /// empty for it. Empty until the estimate is available.
+    var limitNetworkFeeString: String {
+        SwapCryptoLogic.limitNetworkFeeString(feeCoin: feeCoin, fee: thorchainFee)
+    }
+
+    /// Fiat sub-line for `limitNetworkFeeString`.
+    var limitNetworkFeeFiat: String {
+        SwapCryptoLogic.limitNetworkFeeFiat(feeCoin: feeCoin, fee: thorchainFee)
+    }
+
     var fromAmountDecimal: Decimal { fromAmount }
 
     var durationString: String {

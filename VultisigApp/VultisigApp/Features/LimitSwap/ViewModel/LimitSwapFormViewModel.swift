@@ -75,6 +75,16 @@ final class LimitSwapFormViewModel {
     /// nothing happened, with no feedback.
     var placeOrderError: LimitSwapPlaceOrderError?
 
+    /// Estimated source-chain broadcast fee for the pending limit deposit, in the
+    /// fee coin's smallest units. Refreshed by `refreshNetworkFeeEstimate` (on
+    /// load / asset / amount change) and read at place time into the
+    /// `SwapTransaction.thorchainFee` so the shared Verify / Done screens can show
+    /// and persist the limit order's network fee. `.zero` until the first
+    /// estimate resolves. The limit "fee" is JUST the network fee — a resting
+    /// `=<` order has no provider/inbound fee. NEVER feeds signing (the signer
+    /// re-derives the fee from a fresh chain-specific fetch).
+    var networkFeeEstimate: BigInt = .zero
+
     private let vault: Vault
     private let interactor: LimitSwapInteractor
 
@@ -83,6 +93,10 @@ final class LimitSwapFormViewModel {
     /// it lands. Pure UUID ordering — no pointer to the actual Task is
     /// kept, so cancellation is implicit (we just ignore the result).
     private var marketPriceRequestID = UUID()
+
+    /// Tags each in-flight `refreshNetworkFeeEstimate` so a slower older request
+    /// can't overwrite a faster newer one's `networkFeeEstimate`.
+    private var networkFeeRequestID = UUID()
 
     init(initialDraft: LimitSwapDraft, vault: Vault, interactor: LimitSwapInteractor) {
         self.draft = initialDraft
@@ -236,6 +250,32 @@ final class LimitSwapFormViewModel {
             guard requestID == marketPriceRequestID else { return }
             marketPriceError = error
             logger.error("refreshMarketPrice failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Refresh `networkFeeEstimate` for the current source/target + amount. Kicked
+    /// by the view on load / asset change / amount change, mirroring
+    /// `refreshMarketPrice`. No-op until an amount is entered (the fee is only
+    /// needed for a placeable order, and a 0-amount UTXO plan can't be built).
+    /// Fail-soft: a transient fetch error keeps the previous estimate rather than
+    /// zeroing it. Stale results are dropped via the request-ID guard.
+    func refreshNetworkFeeEstimate(sourceCoin: Coin, targetCoin: Coin) async {
+        guard draft.sourceAmount > 0 else { return }
+        let requestID = UUID()
+        networkFeeRequestID = requestID
+        do {
+            let fee = try await interactor.estimateNetworkFee(
+                sourceCoin: sourceCoin,
+                targetCoin: targetCoin,
+                sourceAmount: draft.sourceAmount,
+                vault: vault
+            )
+            guard requestID == networkFeeRequestID else { return }
+            networkFeeEstimate = fee
+            logger.info("refreshNetworkFeeEstimate: \(sourceCoin.ticker, privacy: .public) fee=\(fee.description, privacy: .public)")
+        } catch {
+            guard requestID == networkFeeRequestID else { return }
+            logger.warning("refreshNetworkFeeEstimate failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 

@@ -134,4 +134,31 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         let resolved = limitDefaultSourceCoin(marketDefault: ltc, targetCoin: btc, vaultCoins: [ltc])
         XCTAssertEqual(resolved.chain, .litecoin)
     }
+
+    // MARK: - network-fee estimate derivation (chainSpecific -> fee)
+
+    func testThorchainFeeForNativeEvmLimitDepositIsGasPlusPriorityTimesLimit() async throws {
+        // The limit path estimates the network fee via
+        // limitDepositChainSpecific (pins the native-EVM deposit gas limit to
+        // 120000) + SwapCryptoLogic.thorchainFee (the same derivation the market
+        // swap / Send use). For EVM that is (maxFee + priority) * gasLimit.
+        let vault = TestStore.makeVault()
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let specific = limitDepositChainSpecific(ethSpecific(gasLimit: BigInt(600_000)), sourceCoin: eth)
+        let fee = try await SwapCryptoLogic.thorchainFee(for: specific, fromCoin: eth, fromAmount: 1, vault: vault)
+        XCTAssertEqual(fee, (BigInt(30) + BigInt(2)) * BigInt(120_000))
+    }
+
+    func testThorchainFeeForThorDepositUsesFixedGas() async throws {
+        // Native RUNE settles via MsgDeposit — the fee is the fixed chain-specific
+        // gas, and limitDepositChainSpecific is a no-op for non-EVM sources.
+        let vault = TestStore.makeVault()
+        let rune = nativeCoin(chain: .thorChain, ticker: "RUNE", decimals: 8)
+        let specific = BlockChainSpecific.THORChain(
+            accountNumber: 0, sequence: 0, fee: 2_000_000, isDeposit: true, transactionType: 0
+        )
+        let passed = limitDepositChainSpecific(specific, sourceCoin: rune)
+        let fee = try await SwapCryptoLogic.thorchainFee(for: passed, fromCoin: rune, fromAmount: 1, vault: vault)
+        XCTAssertEqual(fee, BigInt(2_000_000))
+    }
 }

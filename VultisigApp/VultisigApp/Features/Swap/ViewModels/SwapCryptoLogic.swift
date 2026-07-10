@@ -327,6 +327,27 @@ enum SwapCryptoLogic {
         return (providerFee + networkFee).formatToFiat(includeCurrencySymbol: true)
     }
 
+    // MARK: - Display: limit-order network fee
+
+    /// Network-fee crypto string for a LIMIT order — the source-chain broadcast
+    /// gas already estimated into `fee` (in the fee coin's smallest units). A
+    /// resting `=<` order has no market quote and no provider/inbound fee, so the
+    /// shared quote-driven helpers (`fee` / `totalFeeString`) return `.zero` /
+    /// `.empty` for it (`quote == nil`). Limit surfaces read this instead.
+    /// Empty when no estimate is available yet.
+    static func limitNetworkFeeString(feeCoin: Coin, fee: BigInt) -> String {
+        guard fee > 0 else { return .empty }
+        let amount = feeCoin.decimal(for: fee)
+        return "\(amount.formatToDecimal(digits: feeCoin.decimals)) \(feeCoin.ticker)"
+    }
+
+    /// Fiat sub-line for the limit-order network fee. Mirrors the market network
+    /// fee cell's fiat (`approveFeeString`). Empty when no estimate is available.
+    static func limitNetworkFeeFiat(feeCoin: Coin, fee: BigInt) -> String {
+        guard fee > 0 else { return .empty }
+        return feeCoin.fiat(gas: fee).formatToFiat(includeCurrencySymbol: true)
+    }
+
     // MARK: - Display: misc
 
     static func durationString(quote: SwapQuote?) -> String {

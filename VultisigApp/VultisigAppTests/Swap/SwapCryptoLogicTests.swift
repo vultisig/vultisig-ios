@@ -376,6 +376,31 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertEqual(result, quoteFee)
     }
 
+    // MARK: - limit-order network fee string
+
+    func testLimitNetworkFeeStringFormatsWholeUnitAmount() {
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        // 2 * 1e8 base units = 2 RUNE; whole number → locale-separator-independent.
+        XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeString(feeCoin: rune, fee: BigInt(200_000_000)), "2 RUNE")
+    }
+
+    func testLimitNetworkFeeStringFormatsFractionalAmountWithTicker() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let str = SwapCryptoLogic.limitNetworkFeeString(feeCoin: eth, fee: BigInt(3_840_000))
+        XCTAssertTrue(str.hasSuffix(" ETH"), "got \(str)")
+        XCTAssertTrue(str.hasPrefix("0"), "sub-unit fee should render as 0.<…>; got \(str)")
+    }
+
+    func testLimitNetworkFeeStringEmptyForZeroFee() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeString(feeCoin: eth, fee: .zero), "")
+    }
+
+    func testLimitNetworkFeeFiatEmptyForZeroFee() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeFiat(feeCoin: eth, fee: .zero), "")
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool) -> Coin {

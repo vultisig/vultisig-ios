@@ -140,7 +140,12 @@ struct SwapDoneScreen: View {
             isSend: false,
             fromAddress: transaction.fromCoin.address,
             toAddress: transaction.toCoin.address,
-            fee: FeeDisplay(crypto: transaction.totalFeeString, fiat: ""),
+            // Limit orders carry no market quote, so the quote-driven
+            // `totalFeeString` is empty; show the estimated source-chain network
+            // fee (the only fee a resting `=<` order has) instead.
+            fee: transaction.isLimit
+                ? FeeDisplay(crypto: transaction.limitNetworkFeeString, fiat: transaction.limitNetworkFeeFiat)
+                : FeeDisplay(crypto: transaction.totalFeeString, fiat: ""),
             keysignPayload: nil,
             pubKeyECDSA: vault.pubKeyECDSA
         )
@@ -183,8 +188,10 @@ struct SwapDoneScreen: View {
             toAmountFiat: transaction.toFiatAmount,
             fromAddress: transaction.fromCoin.address,
             toAddress: transaction.toCoin.address,
-            feeCrypto: transaction.totalFeeString,
-            feeFiat: "",
+            // Limit orders carry no market quote — persist the estimated
+            // source-chain network fee instead of the empty quote-driven total.
+            feeCrypto: transaction.isLimit ? transaction.limitNetworkFeeString : transaction.totalFeeString,
+            feeFiat: transaction.isLimit ? transaction.limitNetworkFeeFiat : "",
             chain: transaction.fromCoin.chain,
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
             // Limit orders carry no market quote (`quote == nil`), so fall back to

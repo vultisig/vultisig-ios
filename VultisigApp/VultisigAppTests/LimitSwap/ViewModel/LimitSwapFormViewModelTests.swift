@@ -257,6 +257,44 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNil(vm.marketPriceRef)
     }
 
+    // MARK: - refreshNetworkFeeEstimate (limit network-fee estimate)
+
+    func testRefreshNetworkFeeEstimateSkippedWhenAmountIsZero() async {
+        let mockInteractor = MockLimitSwapInteractor()
+        mockInteractor.networkFeeResult = .success(BigInt(4_200))
+        let vm = makeViewModel(interactor: mockInteractor, sourceAmount: 0)
+
+        await vm.refreshNetworkFeeEstimate(sourceCoin: btcCoin(), targetCoin: ethCoin())
+
+        XCTAssertEqual(mockInteractor.estimateNetworkFeeCallCount, 0, "No estimate is needed before an amount is entered")
+        XCTAssertEqual(vm.networkFeeEstimate, .zero)
+    }
+
+    func testRefreshNetworkFeeEstimateStoresInteractorResult() async {
+        let mockInteractor = MockLimitSwapInteractor()
+        mockInteractor.networkFeeResult = .success(BigInt(4_200))
+        let vm = makeViewModel(interactor: mockInteractor, sourceAmount: BigInt(100_000_000))
+
+        await vm.refreshNetworkFeeEstimate(sourceCoin: btcCoin(), targetCoin: ethCoin())
+
+        XCTAssertEqual(mockInteractor.estimateNetworkFeeCallCount, 1)
+        XCTAssertEqual(mockInteractor.estimateNetworkFeeAmounts.first, BigInt(100_000_000),
+                       "The estimate must be sized to the real (placed) amount")
+        XCTAssertEqual(vm.networkFeeEstimate, BigInt(4_200))
+    }
+
+    func testRefreshNetworkFeeEstimateKeepsPreviousEstimateOnFailure() async {
+        struct UpstreamError: Error {}
+        let mockInteractor = MockLimitSwapInteractor()
+        mockInteractor.networkFeeResult = .failure(UpstreamError())
+        let vm = makeViewModel(interactor: mockInteractor, sourceAmount: BigInt(100_000_000))
+        vm.networkFeeEstimate = BigInt(999)  // a prior successful estimate
+
+        await vm.refreshNetworkFeeEstimate(sourceCoin: btcCoin(), targetCoin: ethCoin())
+
+        XCTAssertEqual(vm.networkFeeEstimate, BigInt(999), "A transient fetch failure must not zero the estimate")
+    }
+
     // MARK: - refreshSupportedChains (routed through the injected interactor)
 
     func testRefreshSupportedChainsUsesInjectedInteractor() async {
@@ -477,6 +515,14 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         sourceAmount: BigInt = 0,
         initialDisplayUnit: PriceDisplayUnit = .asset
     ) -> LimitSwapFormViewModel {
+        makeViewModel(interactor: interactor, sourceAmount: sourceAmount, initialDisplayUnit: initialDisplayUnit)
+    }
+
+    private func makeViewModel(
+        interactor: LimitSwapInteractor,
+        sourceAmount: BigInt = 0,
+        initialDisplayUnit: PriceDisplayUnit = .asset
+    ) -> LimitSwapFormViewModel {
         let draft = LimitSwapDraft(
             fromAsset: btcAsset(),
             toAsset: ethAsset(),
@@ -488,6 +534,16 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             vault: vault,
             interactor: interactor
         )
+    }
+
+    /// The vault's BTC / ETH coins (installed in `setUp`) — for VM methods that
+    /// take concrete source/target `Coin`s (e.g. the network-fee estimate).
+    private func btcCoin() -> Coin {
+        vault.coins.first { $0.chain == .bitcoin }!
+    }
+
+    private func ethCoin() -> Coin {
+        vault.coins.first { $0.chain == .ethereum }!
     }
 
     private func btcAsset() -> LimitSwapAsset {

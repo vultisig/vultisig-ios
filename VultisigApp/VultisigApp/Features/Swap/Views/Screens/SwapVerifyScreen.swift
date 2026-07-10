@@ -111,6 +111,17 @@ struct SwapVerifyScreen: View {
 
                 if currentTransaction.isLimit {
                     limitTargetPriceRow
+
+                    // A resting `=<` order has no market quote (so the shared
+                    // `showGas`/`showFees` fee rows are all suppressed) — surface
+                    // the estimated source-chain network fee, the only fee it has.
+                    if !currentTransaction.limitNetworkFeeString.isEmpty {
+                        separator
+                        getNetworkFeeCell(
+                            cryptoAmount: currentTransaction.limitNetworkFeeString,
+                            fiatAmount: currentTransaction.limitNetworkFeeFiat
+                        )
+                    }
                 }
 
                 if let providerName = currentTransaction.quote?.displayName {

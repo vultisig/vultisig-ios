@@ -92,6 +92,7 @@ struct LimitSwapEntryView: View {
             Task { @MainActor in
                 await vm.refreshMarketPrice()
                 vm.selectPresetPct(0)
+                await vm.refreshNetworkFeeEstimate(sourceCoin: newCoin, targetCoin: limitToCoin)
             }
         }
         .onChange(of: limitToCoin) { _, newCoin in
@@ -100,6 +101,14 @@ struct LimitSwapEntryView: View {
             Task { @MainActor in
                 await vm.refreshMarketPrice()
                 vm.selectPresetPct(0)
+                await vm.refreshNetworkFeeEstimate(sourceCoin: limitFromCoin, targetCoin: newCoin)
+            }
+        }
+        .onChange(of: vm.draft.sourceAmount) { _, _ in
+            // The network fee (UTXO especially) depends on the amount; refresh the
+            // estimate so the Verify / Done screens show the placed order's fee.
+            Task { @MainActor in
+                await vm.refreshNetworkFeeEstimate(sourceCoin: limitFromCoin, targetCoin: limitToCoin)
             }
         }
         .crossPlatformSheet(isPresented: $showFromCoinPicker) {
@@ -194,6 +203,14 @@ struct LimitSwapEntryView: View {
         // in the VM (`preparePlaceableOrder`) so it is unit-testable and runs
         // the shared `validateLimitSwapInputs` gate in production. The view only
         // turns a prepared order into a `SwapTransaction` and navigates.
+        //
+        // Built SYNCHRONOUSLY (no await) so the Verify transaction is a consistent
+        // snapshot of the prepared draft and a single tap enqueues a single route
+        // — matching every other place/continue flow. `thorchainFee` carries the
+        // best-effort network-fee ESTIMATE (`vm.networkFeeEstimate`), refreshed on
+        // asset/amount change; it drives display + tx-history only. The REAL fee is
+        // re-derived from a fresh fetch at keysign time in LimitSwapPayloadAssembler,
+        // so a slightly-stale estimate never affects the signed transaction.
         guard let prepared = vm.preparePlaceableOrder() else { return }
         let record = prepared.record
 
@@ -203,12 +220,15 @@ struct LimitSwapEntryView: View {
             fromAmount: limitFromCoin.decimal(for: vm.draft.sourceAmount),
             quote: nil,
             gas: 0,
-            // `gas`/`gasLimit` are the market-swap EVM fee-display fields (from
-            // the market quote). The limit flow never reads them — fee display
-            // skips the quote refresh, and signing re-derives the EVM gas limit
-            // in LimitSwapPayloadAssembler for native-EVM sources — so 0 is inert.
+            // `gas`/`gasLimit` are the market-swap EVM fee-display fields (from a
+            // market quote) and stay 0 for limit — the Verify/Done fee display uses
+            // the `thorchainFee` estimate below, and signing re-derives the EVM gas
+            // limit in LimitSwapPayloadAssembler for native-EVM sources.
             gasLimit: 0,
-            thorchainFee: 0,
+            // Pre-estimated source-chain broadcast fee (fee coin's smallest units)
+            // so the shared Verify/Done screens can show and persist the limit
+            // order's network fee — the resting `=<` order carries no market quote.
+            thorchainFee: vm.networkFeeEstimate,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: limitFromCoin,

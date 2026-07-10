@@ -58,4 +58,45 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
     }
 }
 
+/// Test-only `LimitSwapInteractor` double for VM tests that exercise the
+/// network-fee estimate path (the concrete `DefaultLimitSwapInteractor` would hit
+/// `BlockChainService.shared`). Records the estimate call + amount and returns a
+/// stubbed result; the other protocol methods return benign stubs.
+final class MockLimitSwapInteractor: LimitSwapInteractor {
+
+    var marketPriceResult: Result<Decimal, Error> = .success(0)
+    var advancedSwapQueueEnabledResult = false
+    var inboundAddressesResult: [InboundAddress] = []
+
+    var networkFeeResult: Result<BigInt, Error> = .success(.zero)
+    private(set) var estimateNetworkFeeCallCount = 0
+    private(set) var estimateNetworkFeeAmounts: [BigInt] = []
+
+    func fetchMarketPrice(
+        sourceAsset: String,
+        sourceAmount: BigInt,
+        sourceDecimals: Int,
+        targetAsset: String,
+        targetDecimals: Int,
+        destinationAddress: String
+    ) async throws -> Decimal {
+        try marketPriceResult.get()
+    }
+
+    func isAdvancedSwapQueueEnabled() async -> Bool { advancedSwapQueueEnabledResult }
+
+    func fetchInboundAddresses() async -> [InboundAddress] { inboundAddressesResult }
+
+    func estimateNetworkFee(
+        sourceCoin: Coin,
+        targetCoin: Coin,
+        sourceAmount: BigInt,
+        vault: Vault
+    ) async throws -> BigInt {
+        estimateNetworkFeeCallCount += 1
+        estimateNetworkFeeAmounts.append(sourceAmount)
+        return try networkFeeResult.get()
+    }
+}
+
 // swiftlint:enable unused_parameter async_without_await
