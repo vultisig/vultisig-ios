@@ -45,6 +45,15 @@ actor CosmosCoinFinder {
     /// implement IBC trace lookups for any chain.
     static let ibcTraceCapableChains: Set<Chain> = [.terra]
 
+    /// Chains whose LCD nodes implement the modern ibc-go
+    /// `GET /ibc/apps/transfer/v1/denoms/{hash}` endpoint. Terra Classic
+    /// serves this (publicnode) even though it rejects the deprecated
+    /// `denom_traces/{hash}` path with `code 12 Not Implemented`, so it's the
+    /// resolution path we use to turn a held `ibc/<hash>` voucher into a real
+    /// base denom there. Phoenix-1 (`.terra`) stays on its existing working
+    /// `denom_traces` path to avoid regressing it.
+    static let ibcModernDenomChains: Set<Chain> = [.terraClassic]
+
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         metadataResolver: CosmosTokenMetadataResolver = CosmosTokenMetadataResolver.shared
@@ -143,6 +152,33 @@ actor CosmosCoinFinder {
                 decimals: decimals,
                 isHidden: false
             )
+        }
+
+        // Tier 2b: modern IBC resolution. Terra Classic LCDs implement the
+        // ibc-go `/denoms/{hash}` endpoint (but reject the deprecated
+        // `denom_traces/{hash}` path used by Tier 3), so for an `ibc/<HASH>`
+        // voucher on such a chain we resolve the base denom here, derive a
+        // ticker from it (`uusdc` -> `USDC`), and take decimals from the base
+        // denom's metadata when present, else the chain fee-coin fallback.
+        // `isHidden = true` mirrors the SDK's semantics for a discovered IBC
+        // voucher; `makeDiscovered` still backfills a curated logo /
+        // priceProviderId when the derived ticker matches a bundled entry.
+        if denom.hasPrefix("ibc/"), Self.ibcModernDenomChains.contains(chain) {
+            if let baseDenom = await metadataResolver.ibcDenom(chain: chain, denom: denom) {
+                let baseMeta = await metadataResolver.denomMetadata(chain: chain, denom: baseDenom)
+                let decimals = baseMeta.flatMap(CosmosTokenMetadataResolver.decimalsFromMeta)
+                    ?? feeDecimals(for: chain)
+                let ticker = CosmosTokenMetadataResolver.ibcTicker(baseDenom: baseDenom)
+                return makeDiscovered(
+                    chain: chain,
+                    denom: denom,
+                    ticker: ticker,
+                    decimals: decimals,
+                    isHidden: true
+                )
+            }
+            // Voucher unknown to the modern endpoint — fall through to the
+            // hidden tier, which now yields `IBC-<6hex>` via deriveTicker.
         }
 
         // Tier 3: IBC trace recursion. Only applies to `ibc/<HASH>` denoms;
