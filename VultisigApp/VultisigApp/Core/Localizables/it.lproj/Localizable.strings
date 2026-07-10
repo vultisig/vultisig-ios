@@ -761,6 +761,7 @@
 "noTransactionsYetSubtitle" = "Non hai ancora effettuato swap, invii o approvazioni da questo vault.";
 "notWhitelistedOnNode" = "Non sei nella whitelist di questo nodo";
 "noUnencryptedVaultsToImport" = "Nessun vault non crittografato da importare";
+"noVaultAddresses" = "Nessun indirizzo del Vault";
 "noVaultsFoundInZip" = "Nessun vault trovato nel file ZIP.";
 "of" = "Di";
 "off" = "Disattivato";

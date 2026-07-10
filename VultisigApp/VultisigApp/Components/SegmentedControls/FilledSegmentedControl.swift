@@ -49,7 +49,10 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
             // sheet with presentationDetents is presenting) proxy.size.width can be 0,
             // which drives these widths negative and logs "Invalid frame dimension".
             let trackWidth = max(0, proxy.size.width - trackPadding * 2)
-            let pillWidth = max(0, (trackWidth - optionGap * CGFloat(options.count - 1)) / CGFloat(max(options.count, 1)))
+            let gapCount = max(options.count - 1, 0)
+            let pillWidth = options.isEmpty
+                ? 0
+                : max(0, (trackWidth - optionGap * CGFloat(gapCount)) / CGFloat(options.count))
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: pillCornerRadius)
                     .fill(pillColor)

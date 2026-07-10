@@ -29,8 +29,8 @@ struct SendCryptoAddressBookView: View {
     @Binding var showSheet: Bool
     var onSelectAddress: (String) -> Void
 
-    @State var selectedListType: SendAddressBookListType = .savedAddresses
-    @State var myAddresses: [(id: UUID, title: String, description: String)] = []
+    @State private var selectedListType: SendAddressBookListType = .savedAddresses
+    @State private var myAddresses: [(id: UUID, title: String, description: String)] = []
 
     @Query var vaults: [Vault]
     @Query var savedAddresses: [AddressBookItem]
@@ -68,13 +68,13 @@ struct SendCryptoAddressBookView: View {
             Group {
                 switch selectedListType {
                 case .savedAddresses:
-                    if !savedAddresses.isEmpty {
+                    if !filteredSavedAddresses.isEmpty {
                         savedAddressesList
                     } else {
                         errorMessage
                     }
                 case .myVaults:
-                    if !vaults.isEmpty {
+                    if !myAddresses.isEmpty {
                         myAddressesList
                     } else {
                         errorMessage
@@ -128,11 +128,20 @@ struct SendCryptoAddressBookView: View {
     }
 
     var errorMessage: some View {
-        Text(NSLocalizedString("noSavedAddresses", comment: ""))
+        Text(emptyStateMessageKey.localized)
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 32)
+    }
+
+    private var emptyStateMessageKey: String {
+        switch selectedListType {
+        case .savedAddresses:
+            return "noSavedAddresses"
+        case .myVaults:
+            return "noVaultAddresses"
+        }
     }
 
     private func filterVaults() {
