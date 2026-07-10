@@ -45,6 +45,7 @@ struct ThorchainMainnetAPI: TargetType {
         case inboundAddresses
         case poolInfo(asset: String)
         case pools
+        case securedAssets
         case poolLiquidityProvider(asset: String, address: String)
         case swapQuote(
             fromAsset: String,
@@ -75,7 +76,7 @@ struct ThorchainMainnetAPI: TargetType {
     var baseURL: URL {
         switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
-             .networkInfo, .inboundAddresses, .poolInfo, .pools,
+             .networkInfo, .inboundAddresses, .poolInfo, .pools, .securedAssets,
              .poolLiquidityProvider, .swapQuote, .tcyStaker,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
@@ -117,6 +118,8 @@ struct ThorchainMainnetAPI: TargetType {
             return "/thorchain/pool/\(asset)"
         case .pools:
             return "/thorchain/pools"
+        case .securedAssets:
+            return "/thorchain/securedassets"
         case .poolLiquidityProvider(let asset, let address):
             return "/thorchain/pool/\(asset)/liquidity_provider/\(address)"
         case .swapQuote:
@@ -147,8 +150,9 @@ struct ThorchainMainnetAPI: TargetType {
     var task: HTTPTask {
         switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
-             .inboundAddresses, .poolInfo, .pools, .poolLiquidityProvider,
-             .tcyStaker, .networkStatus, .tcyAutoCompoundStatus, .resolveTNS:
+             .inboundAddresses, .poolInfo, .pools, .securedAssets,
+             .poolLiquidityProvider, .tcyStaker, .networkStatus,
+             .tcyAutoCompoundStatus, .resolveTNS:
             return .requestPlain
 
         case .allDenomMetadata:
@@ -177,7 +181,7 @@ struct ThorchainMainnetAPI: TargetType {
         var base: [String: String] = ["Content-Type": "application/json"]
         switch endpoint {
         case .balances, .accountNumber, .swapQuote, .poolInfo, .pools,
-             .poolLiquidityProvider, .inboundAddresses:
+             .securedAssets, .poolLiquidityProvider, .inboundAddresses:
             // Endpoints that the legacy code marked with X-Client-ID via
             // get9RRequest(). Kept for 9Realms partner attribution.
             base["X-Client-ID"] = "vultisig"
