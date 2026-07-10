@@ -377,6 +377,23 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(chain, .litecoin)
     }
 
+    // MARK: - isUserUsdPriceEdit (USD field feedback suppression)
+
+    func testIsUserUsdPriceEditTreatsProgrammaticEchoAsNonEdit() {
+        // The value the view just wrote programmatically must NOT be treated as a
+        // user edit — otherwise a preset/rate/mode redraw would round the
+        // canonical price through the 2-dp USD display.
+        XCTAssertFalse(isUserUsdPriceEdit(newText: "2870", lastSyncedText: "2870"))
+    }
+
+    func testIsUserUsdPriceEditTreatsDifferentTextAsUserEdit() {
+        XCTAssertTrue(isUserUsdPriceEdit(newText: "3000", lastSyncedText: "2870"))
+    }
+
+    func testIsUserUsdPriceEditTreatsChangeWithNoPriorSyncAsUserEdit() {
+        XCTAssertTrue(isUserUsdPriceEdit(newText: "3000", lastSyncedText: nil))
+    }
+
     // MARK: - computeExpiryBlocks
 
     func testComputeExpiryBlocksFor12Hours() {

@@ -60,6 +60,56 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice, Decimal(string: "16.5")!)
     }
 
+    // MARK: - USD-denominated target price edit
+
+    func testTargetPriceChangedFromUsdConvertsToAssetTerms() {
+        // USD editing stores the canonical price in TARGET-ASSET terms, not USD.
+        // rate = $2 per target unit; editing $6000 → 3000 target units per source.
+        let vm = makeViewModel()
+        vm.targetUsdPricePerUnit = 2
+        vm.targetPriceChangedFromUsd(6000)
+        XCTAssertEqual(vm.draft.targetPrice, 3000)
+    }
+
+    func testTargetPriceChangedFromUsdRoundTripsWithDisplay() {
+        // Editing USD then re-deriving the USD display (targetPrice × rate) must
+        // return the same USD value — the display and the edit are exact inverses.
+        let vm = makeViewModel()
+        vm.targetUsdPricePerUnit = Decimal(string: "1.5")!
+        vm.targetPriceChangedFromUsd(4500)
+        XCTAssertEqual(vm.draft.targetPrice, 3000)
+        XCTAssertEqual(vm.draft.targetPrice * vm.targetUsdPricePerUnit, 4500)
+    }
+
+    func testTargetPriceChangedFromUsdRoundsToEightDecimals() {
+        // The stored price must never carry more than the memo LIM's 8-dp
+        // precision, so the asset-text mirror round-trips it exactly (no feedback
+        // rounding of the canonical price). $1 at $3/unit → 0.33333333.
+        let vm = makeViewModel()
+        vm.targetUsdPricePerUnit = 3
+        vm.targetPriceChangedFromUsd(1)
+        XCTAssertEqual(vm.draft.targetPrice, Decimal(string: "0.33333333")!)
+    }
+
+    func testTargetPriceChangedFromUsdIsNoOpWithoutRate() {
+        // No USD rate → USD editing is disabled; the canonical price must not move
+        // (and must NEVER be set to the raw USD number).
+        let vm = makeViewModel()
+        vm.targetUsdPricePerUnit = 0
+        vm.draft.targetPrice = 42
+        vm.targetPriceChangedFromUsd(6000)
+        XCTAssertEqual(vm.draft.targetPrice, 42)
+    }
+
+    func testTargetPriceChangedFromUsdClearsPresetSelection() {
+        // A USD edit is a manual edit — the active preset highlight must clear.
+        let vm = makeViewModel()
+        vm.targetUsdPricePerUnit = 2
+        vm.lastPresetPct = 5
+        vm.targetPriceChangedFromUsd(6000)
+        XCTAssertNil(vm.lastPresetPct)
+    }
+
     func testSelectExpiryHoursUpdatesDraft() {
         let vm = makeViewModel()
         vm.selectExpiryHours(72)

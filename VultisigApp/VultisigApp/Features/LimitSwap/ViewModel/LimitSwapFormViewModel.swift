@@ -145,6 +145,26 @@ final class LimitSwapFormViewModel {
         lastPresetPct = nil
     }
 
+    /// Set the target price from a USD-denominated edit of the price display.
+    /// `draft.targetPrice` is ALWAYS stored in target-asset terms (the LIM source
+    /// the signed memo is derived from), so the USD value is converted back via
+    /// the target's USD rate — the exact inverse of the display's
+    /// `targetPrice × targetUsdPricePerUnit`. NEVER stores the USD number as the
+    /// target price. No-op when the rate is unavailable (USD editing is disabled).
+    ///
+    /// The result is rounded to 8 decimals (the memo LIM's 1e8 fixed-point
+    /// precision, matching `selectPresetPct`) so the stored price never carries
+    /// more precision than the signed order can, and the asset-text mirror
+    /// (`priceText`, capped at 8 dp) round-trips it exactly instead of rounding
+    /// it back through its own sync.
+    func targetPriceChangedFromUsd(_ usd: Decimal) {
+        guard targetUsdPricePerUnit > 0 else { return }
+        var raw = usd / targetUsdPricePerUnit
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &raw, 8, .plain)
+        targetPriceChanged(rounded)
+    }
+
     /// Set the target price from a preset pill (`Market`/`+1%`/`+5%`/`+10%`).
     /// No-op if `marketPriceRef` is unset (preset is meaningless without a base).
     /// Result is rounded to 8 decimals so the price text↔draft round-trip is

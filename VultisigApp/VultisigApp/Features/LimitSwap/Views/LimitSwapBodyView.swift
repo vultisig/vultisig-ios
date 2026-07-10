@@ -42,6 +42,16 @@ struct LimitSwapBodyView: View {
     @State private var focusedSection: FocusedSection?
     @State private var sourceAmountText: String = ""
     @State private var priceText: String = ""
+    /// USD-mode mirror of `priceText`. Editable in USD mode; kept in sync with
+    /// `draft.targetPrice` (× the target USD rate) so switching modes shows the
+    /// right value. The canonical price stays `draft.targetPrice` (asset terms).
+    @State private var usdText: String = ""
+    /// The last value written to `usdText` PROGRAMMATICALLY (by `syncUsdText`).
+    /// `onChange(usdText)` absorbs this one echo so a preset/rate/mode redraw of
+    /// the USD field can't round-trip through the 2-dp USD display and mutate the
+    /// canonical asset-terms price. `nil` once absorbed → the next change is a
+    /// genuine user edit.
+    @State private var lastSyncedUsdText: String?
     /// Mirrors the market swap: reset to `true` on a manual amount edit so the
     /// shared `SwapPercentageButtons` clears its selected-pill highlight.
     @State private var showAllPercentageButtons = true
@@ -71,6 +81,7 @@ struct LimitSwapBodyView: View {
                             LimitExecuteWhenContent(
                                 vm: vm,
                                 priceText: $priceText,
+                                usdText: $usdText,
                                 onPickFromAsset: onPickFromAsset
                             )
                         }
@@ -137,6 +148,11 @@ struct LimitSwapBodyView: View {
             if priceText.isEmpty, vm.draft.targetPrice > 0 {
                 priceText = formatPrice(vm.draft.targetPrice)
             }
+            if usdText.isEmpty, vm.draft.targetPrice > 0, vm.targetUsdPricePerUnit > 0 {
+                let text = formatUsdValue(vm.draft.targetPrice * vm.targetUsdPricePerUnit)
+                lastSyncedUsdText = text
+                usdText = text
+            }
             if sourceAmountText.isEmpty, vm.draft.sourceAmount > 0 {
                 sourceAmountText = formatPrice(fromCoin.decimal(for: vm.draft.sourceAmount))
             }
@@ -152,6 +168,19 @@ struct LimitSwapBodyView: View {
                 vm.targetPriceChanged(parsed)
             }
         }
+        .onChange(of: usdText) { _, newText in
+            // Convert USD → canonical asset-terms price only while USD is the
+            // ACTIVE (editable) representation. In asset mode `usdText` is synced
+            // in the background; gating on the mode stops that from feeding back.
+            guard vm.draft.displayUnit == .usd else { return }
+            // Absorb the one echo of a programmatic sync so a preset/rate/mode
+            // redraw of the USD field can't round the canonical price through the
+            // 2-dp USD display (or silently clear the active preset).
+            let synced = lastSyncedUsdText
+            lastSyncedUsdText = nil
+            guard isUserUsdPriceEdit(newText: newText, lastSyncedText: synced) else { return }
+            vm.targetPriceChangedFromUsd(parsePrice(newText))
+        }
         .onChange(of: vm.draft.targetPrice) { _, newPrice in
             // Sync vm → text only when the local text doesn't already parse to the
             // same Decimal. Preserves a trailing "." while typing and reflects
@@ -159,6 +188,12 @@ struct LimitSwapBodyView: View {
             if parsePrice(priceText) != newPrice {
                 priceText = newPrice == 0 ? "" : formatPrice(newPrice)
             }
+            syncUsdText(for: newPrice)
+        }
+        .onChange(of: vm.targetUsdPricePerUnit) { _, _ in
+            // The target asset (and thus its USD rate) changed — re-derive the USD
+            // field from the unchanged canonical price.
+            syncUsdText(for: vm.draft.targetPrice)
         }
         .onChange(of: fromCoin) { _, newCoin in
             // The source coin's decimals changed. `sourceAmountText`'s onChange
@@ -207,6 +242,38 @@ struct LimitSwapBodyView: View {
         return formatter.string(from: NSDecimalNumber(decimal: value))
             ?? NSDecimalNumber(decimal: value).stringValue
     }
+
+    /// USD amount formatted for the editable USD field (no grouping separators
+    /// so it round-trips through `parsePrice`).
+    private func formatUsdValue(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.usesGroupingSeparator = false
+        return formatter.string(from: NSDecimalNumber(decimal: value))
+            ?? NSDecimalNumber(decimal: value).stringValue
+    }
+
+    /// Re-derive `usdText` from the canonical target price, skipping the rewrite
+    /// when the current text already maps to `targetPrice` (so active USD typing
+    /// isn't clobbered — the mapping is exact because both sides divide the typed
+    /// USD by the same rate). Records the written value in `lastSyncedUsdText` so
+    /// the resulting `onChange(usdText)` is absorbed instead of feeding back.
+    private func syncUsdText(for targetPrice: Decimal) {
+        let newText: String
+        if vm.targetUsdPricePerUnit > 0 {
+            let mappedAsset = parsePrice(usdText) / vm.targetUsdPricePerUnit
+            guard mappedAsset != targetPrice else { return }
+            let usd = targetPrice * vm.targetUsdPricePerUnit
+            newText = usd == 0 ? "" : formatUsdValue(usd)
+        } else {
+            guard !usdText.isEmpty else { return }
+            newText = ""
+        }
+        lastSyncedUsdText = newText
+        usdText = newText
+    }
 }
 
 // MARK: - Keyboard accessory
@@ -246,6 +313,7 @@ private struct LimitExecuteWhenContent: View {
 
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
+    @Binding var usdText: String
     let onPickFromAsset: () -> Void
 
     var body: some View {
@@ -255,7 +323,7 @@ private struct LimitExecuteWhenContent: View {
             // content gap (→ ~18pt between the presets row and the expiry box).
             VStack(spacing: 10) {
                 ZStack(alignment: .trailing) {
-                    LimitPriceDisplay(vm: vm, priceText: $priceText, onPickFromAsset: onPickFromAsset)
+                    LimitPriceDisplay(vm: vm, priceText: $priceText, usdText: $usdText, onPickFromAsset: onPickFromAsset)
                     LimitPriceToggle(vm: vm)
                         .padding(.trailing, 4)
                 }
@@ -286,7 +354,12 @@ private struct LimitPriceDisplay: View {
 
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
+    @Binding var usdText: String
     let onPickFromAsset: () -> Void
+
+    /// USD-mode editing is only offered when a USD rate for the target is known;
+    /// otherwise the USD value stays a read-only reflection.
+    private var usdEditable: Bool { vm.targetUsdPricePerUnit > 0 }
 
     var body: some View {
         VStack(spacing: 6) {
@@ -313,13 +386,21 @@ private struct LimitPriceDisplay: View {
     private var priceValues: some View {
         VStack(spacing: 6) {
             if vm.draft.displayUnit == .usd {
-                Text(usdString)
-                    .font(Theme.fonts.priceTitle1)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                assetPriceField(font: Theme.fonts.bodySMedium, color: Theme.colors.textTertiary)
+                // USD mode: the emphasized value is the editable USD field (when a
+                // rate is known); the secondary is a read-only asset reflection.
+                if usdEditable {
+                    usdPriceField(font: Theme.fonts.priceTitle1, color: Theme.colors.textPrimary)
+                } else {
+                    Text(usdString)
+                        .font(Theme.fonts.priceTitle1)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
+                assetReflection(font: Theme.fonts.bodySMedium, color: Theme.colors.textTertiary)
             } else {
+                // Asset mode: the emphasized value is the editable asset field; the
+                // secondary is the read-only USD reflection.
                 assetPriceField(font: Theme.fonts.priceTitle1, color: Theme.colors.textPrimary)
                 Text(usdString)
                     .font(Theme.fonts.bodySMedium)
@@ -327,6 +408,36 @@ private struct LimitPriceDisplay: View {
                     .lineLimit(1)
             }
         }
+    }
+
+    /// Editable USD-denominated price field. Edits flow to the canonical
+    /// asset-terms `draft.targetPrice` via the parent's `usdText` sync + the VM's
+    /// `targetPriceChangedFromUsd` — the USD number is NEVER stored as the price.
+    private func usdPriceField(font: Font, color: Color) -> some View {
+        HStack(spacing: 2) {
+            Text("$")
+                .font(font)
+                .foregroundStyle(color)
+            TextField("0", text: $usdText)
+                .font(font)
+                .foregroundStyle(color)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: true, vertical: false)
+                .lineLimit(1)
+                #if os(iOS)
+                .keyboardType(.decimalPad)
+                #endif
+        }
+    }
+
+    /// Read-only reflection of the canonical asset-terms price, shown as the
+    /// secondary value in USD mode (mirrors `priceText`, which the parent keeps in
+    /// sync with `draft.targetPrice`).
+    private func assetReflection(font: Font, color: Color) -> some View {
+        Text("\(priceText.isEmpty ? "0" : priceText) \(vm.draft.toAsset.ticker)")
+            .font(font)
+            .foregroundStyle(color)
+            .lineLimit(1)
     }
 
     @ViewBuilder

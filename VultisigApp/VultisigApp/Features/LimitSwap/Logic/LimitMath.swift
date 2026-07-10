@@ -199,6 +199,17 @@ func limitDefaultSourceCoin(marketDefault: Coin, targetCoin: Coin, vaultCoins: [
     return coin
 }
 
+/// Whether a change to the USD price field is a genuine USER edit rather than the
+/// echo of a value the view just wrote PROGRAMMATICALLY (`newText ==
+/// lastSyncedText`). The limit price display keeps a USD mirror of the
+/// asset-terms target price; a preset tap / rate change / mode switch rewrites
+/// that mirror, and without this guard the resulting field change would convert
+/// back through the 2-dp USD display and silently round the canonical
+/// (LIM-source) price. Pure so the feedback-suppression is unit-testable.
+func isUserUsdPriceEdit(newText: String, lastSyncedText: String?) -> Bool {
+    newText != lastSyncedText
+}
+
 func computeExpiryBlocks(hours: Int) -> Int {
     return THORChainConstants.blocks(forHours: hours)
 }
