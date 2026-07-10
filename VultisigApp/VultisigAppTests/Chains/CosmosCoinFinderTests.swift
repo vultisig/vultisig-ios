@@ -180,9 +180,23 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertEqual(ticker, "ruji")
     }
 
-    func testDeriveTickerFallsThroughToFullDenomWhenNoRuleMatches() {
-        let ticker = CosmosTokenMetadataResolver.deriveTicker(denom: "uatom", meta: nil)
-        XCTAssertEqual(ticker, "uatom")
+    func testDeriveTickerPlainMicroDenomStripsPrefixAndUppercases() {
+        // Final plain-denom fallback: a leading `u`/`a` micro-unit prefix is
+        // stripped and the result uppercased, so native Terra fiat
+        // micro-denoms read as symbols instead of the raw `ucny`.
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "ucny", meta: nil), "CNY")
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "uhkd", meta: nil), "HKD")
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "uluna", meta: nil), "LUNA")
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "uatom", meta: nil), "ATOM")
+    }
+
+    func testDeriveTickerPlainDenomKeepsNonMicroPrefix() {
+        // Guard: strip only when the 2nd char is a letter, so `u123`-style
+        // denoms keep their leading char (just uppercased); short/edge denoms
+        // must not crash.
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "u1", meta: nil), "U1")
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "u123", meta: nil), "U123")
+        XCTAssertEqual(CosmosTokenMetadataResolver.deriveTicker(denom: "u", meta: nil), "U")
     }
 
     func testDeriveTickerIbcDenomTruncatesToShortHash() {
@@ -198,9 +212,10 @@ final class CosmosCoinFinderTests: XCTestCase {
 
     func testDeriveTickerIbcDenomWithEmptyHashFallsThrough() {
         // A malformed `ibc/` with no hash must not produce a bare `IBC-`
-        // label — it falls through to the raw-denom return.
+        // label — it falls through to the plain-denom fallback (which now
+        // uppercases): `ibc/` -> `IBC/`.
         let ticker = CosmosTokenMetadataResolver.deriveTicker(denom: "ibc/", meta: nil)
-        XCTAssertEqual(ticker, "ibc/")
+        XCTAssertEqual(ticker, "IBC/")
     }
 
     // MARK: - IBC ticker derivation (pure)
@@ -233,6 +248,33 @@ final class CosmosCoinFinderTests: XCTestCase {
         // leading char — they are not micro-denominated units.
         XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "u123"), "U123")
         XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "a0x"), "A0X")
+    }
+
+    func testIbcTickerFactoryBaseUsesLastSegment() {
+        // A factory base (e.g. an Osmosis alloyed asset) uses its last path
+        // segment, uppercased — never the full namespaced string.
+        XCTAssertEqual(
+            CosmosTokenMetadataResolver.ibcTicker(baseDenom: "factory/osmo1z6r6/alloyed/allBTC"),
+            "ALLBTC"
+        )
+        XCTAssertEqual(
+            CosmosTokenMetadataResolver.ibcTicker(baseDenom: "factory/osmo1q77/slayer"),
+            "SLAYER"
+        )
+    }
+
+    func testIbcTickerAcceptsCleanShortTicker() {
+        // An already-clean short symbol (<= 12 chars, `[A-Za-z0-9-]`, not a
+        // `0x…` address) is accepted and uppercased.
+        XCTAssertEqual(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "wbnb-wei"), "WBNB-WEI")
+    }
+
+    func testIbcTickerReturnsNilForOpaqueEvmAddress() {
+        // An EVM `0x…` address is opaque — return nil so the caller degrades
+        // the voucher to `IBC-<6hex>` instead of showing the raw address.
+        XCTAssertNil(
+            CosmosTokenMetadataResolver.ibcTicker(baseDenom: "0x45804880de22913dafe09f4980848ece6ecbaf78")
+        )
     }
 
     // MARK: - Fee-denom + fee-decimals table
@@ -497,6 +539,103 @@ final class CosmosCoinFinderTests: XCTestCase {
             0,
             "Terra Classic must NOT hit the deprecated denom_traces endpoint"
         )
+    }
+
+    func testTerraClassicIbcVoucherWithOpaqueEvmBaseFallsBackToTruncatedTicker() async throws {
+        // The voucher resolves, but its base denom is an opaque EVM `0x…`
+        // address with no readable symbol. The ticker must degrade to the
+        // voucher's short IBC-<6hex>, never the raw 0x address.
+        let ibcHash = "AF91F7ABCDEF"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [
+            ("uluna", "1000"),
+            (ibcDenom, "1000000000000000000")
+        ]
+        stub.ibcDenomPayloads[ibcHash] = "0x45804880de22913dafe09f4980848ece6ecbaf78"
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(
+            chain: .terraClassic,
+            address: "terra1classic"
+        )
+
+        XCTAssertEqual(result.count, 1)
+        let voucher = try XCTUnwrap(result.first)
+        XCTAssertEqual(voucher.denom, ibcDenom)
+        XCTAssertEqual(
+            voucher.ticker,
+            "IBC-AF91F7",
+            "Opaque EVM base -> voucher IBC-<6hex>, never the raw 0x address"
+        )
+        XCTAssertTrue(voucher.isHidden)
+        XCTAssertEqual(stub.ibcDenomCallCount, 1, "Must resolve the base via the modern /denoms endpoint")
+        // Prove the resolved 0x base was actually consumed (its metadata was
+        // looked up for decimals) — not that we merely fell through to Tier 4,
+        // which would coincidentally yield the same IBC-<6hex> label.
+        XCTAssertEqual(
+            stub.denomMetadataCallCount(for: "0x45804880de22913dafe09f4980848ece6ecbaf78"),
+            1,
+            "The modern tier must resolve the base denom's metadata before degrading the ticker"
+        )
+    }
+
+    func testTerraClassicIbcVoucherWithFactoryBaseUsesLastSegment() async throws {
+        // A voucher whose base is a factory alloyed asset resolves to the
+        // last path segment (uppercased), not the full namespaced string.
+        let ibcHash = "FACTORYVOUCHERHASH"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [
+            ("uluna", "1000"),
+            (ibcDenom, "1000000")
+        ]
+        stub.ibcDenomPayloads[ibcHash] = "factory/osmo1z6r6/alloyed/allBTC"
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(
+            chain: .terraClassic,
+            address: "terra1classic"
+        )
+
+        XCTAssertEqual(result.count, 1)
+        let voucher = try XCTUnwrap(result.first)
+        XCTAssertEqual(voucher.ticker, "ALLBTC")
+        XCTAssertTrue(voucher.isHidden)
+    }
+
+    func testTerraClassicNativeFiatMicroDenomResolvesToUppercaseSymbol() async throws {
+        // A non-IBC native fiat micro-denom (`ucny`) has no curated entry and
+        // no metadata, so it reaches the hidden Tier-4 fallback — which now
+        // renders it as the uppercase symbol `CNY` instead of the raw `ucny`.
+        let stub = ScriptedHTTPClient()
+        stub.balances = [
+            ("uluna", "1000"),
+            ("ucny", "5000")
+        ]
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(
+            chain: .terraClassic,
+            address: "terra1classic"
+        )
+
+        XCTAssertEqual(result.count, 1)
+        let cny = try XCTUnwrap(result.first)
+        XCTAssertEqual(cny.denom, "ucny")
+        XCTAssertEqual(cny.ticker, "CNY", "Native fiat micro-denom must render as its uppercase symbol")
+        XCTAssertEqual(cny.decimals, 6)
+        XCTAssertTrue(cny.isHidden)
+        XCTAssertEqual(stub.ibcDenomCallCount, 0, "A non-IBC denom must not hit the /denoms endpoint")
     }
 
     func testTerraPhoenix1IbcDenomStillUsesTraceEndpoint() async throws {
