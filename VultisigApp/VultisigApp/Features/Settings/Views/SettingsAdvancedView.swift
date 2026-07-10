@@ -44,7 +44,7 @@ struct SettingsAdvancedView: View {
             )
 
             SettingToggleCell(
-                title: "limitSwapToggle",
+                title: "limitSwapToggle".localized,
                 icon: "arrow.up.right.square",
                 isEnabled: $settingsViewModel.limitSwapEnabled
             )

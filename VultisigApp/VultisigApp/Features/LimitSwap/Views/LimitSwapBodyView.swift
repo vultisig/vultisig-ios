@@ -71,7 +71,7 @@ struct LimitSwapBodyView: View {
                             LimitExecuteWhenContent(
                                 vm: vm,
                                 priceText: $priceText,
-                                onPickToAsset: onPickToAsset
+                                onPickFromAsset: onPickFromAsset
                             )
                         }
                     )
@@ -238,7 +238,7 @@ private struct LimitExecuteWhenContent: View {
 
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
-    let onPickToAsset: () -> Void
+    let onPickFromAsset: () -> Void
 
     var body: some View {
         VStack(spacing: 6) {
@@ -247,7 +247,7 @@ private struct LimitExecuteWhenContent: View {
             // content gap (→ ~18pt between the presets row and the expiry box).
             VStack(spacing: 10) {
                 ZStack(alignment: .trailing) {
-                    LimitPriceDisplay(vm: vm, priceText: $priceText, onPickToAsset: onPickToAsset)
+                    LimitPriceDisplay(vm: vm, priceText: $priceText, onPickFromAsset: onPickFromAsset)
                     LimitPriceToggle(vm: vm)
                         .padding(.trailing, 4)
                 }
@@ -278,7 +278,7 @@ private struct LimitPriceDisplay: View {
 
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
-    let onPickToAsset: () -> Void
+    let onPickFromAsset: () -> Void
 
     var body: some View {
         VStack(spacing: 6) {
@@ -332,14 +332,17 @@ private struct LimitPriceDisplay: View {
     }
 
     private var unitChip: some View {
-        Button(action: onPickToAsset) {
+        // The "1 <sell>" chip: icon + tap target are the SELL (from) asset —
+        // the price is expressed as "1 <from> is worth <price> <to>", so the
+        // editable side here is the source. Tapping opens the from-asset picker.
+        Button(action: onPickFromAsset) {
             HStack(spacing: 8) {
-                if !vm.draft.toAsset.logo.isEmpty {
+                if !vm.draft.fromAsset.logo.isEmpty {
                     AsyncImageView(
-                        logo: vm.draft.toAsset.logo,
+                        logo: vm.draft.fromAsset.logo,
                         size: CGSize(width: 24, height: 24),
-                        ticker: vm.draft.toAsset.ticker,
-                        tokenChainLogo: vm.draft.toAsset.chainLogo
+                        ticker: vm.draft.fromAsset.ticker,
+                        tokenChainLogo: vm.draft.fromAsset.chainLogo
                     )
                 }
                 Text(String(format: "limitSwap.executeWhen.oneUnit".localized, vm.draft.fromAsset.ticker))

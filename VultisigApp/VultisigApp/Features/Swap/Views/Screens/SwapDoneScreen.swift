@@ -187,7 +187,9 @@ struct SwapDoneScreen: View {
             feeFiat: "",
             chain: transaction.fromCoin.chain,
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
-            provider: transaction.quote?.displayName ?? ""
+            // Limit orders carry no market quote (`quote == nil`), so fall back to
+            // the fixed provider — a placed `=<` order always routes through THORChain.
+            provider: transaction.isLimit ? "THORChain" : (transaction.quote?.displayName ?? "")
         )
     }
 
