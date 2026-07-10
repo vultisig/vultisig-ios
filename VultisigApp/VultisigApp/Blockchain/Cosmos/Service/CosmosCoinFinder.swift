@@ -210,10 +210,13 @@ actor CosmosCoinFinder {
                         isHidden: true
                     )
                 }
-                // Trace returned but no base metadata — fall through to
-                // the hidden-with-derived-ticker tier using the base denom
-                // string for ticker derivation.
-                let ticker = CosmosTokenMetadataResolver.deriveTicker(denom: baseDenom, meta: nil)
+                // Trace returned but no base metadata — derive a ticker from
+                // the base denom, degrading to the voucher's `IBC-<6hex>` when
+                // the base is opaque (EVM `0x…`, namespaced, over-long) so it
+                // never renders as a raw address. Same handling as the modern
+                // `/denoms` tier above.
+                let ticker = CosmosTokenMetadataResolver.ibcTicker(baseDenom: baseDenom)
+                    ?? CosmosTokenMetadataResolver.deriveTicker(denom: denom, meta: nil)
                 return makeDiscovered(
                     chain: chain,
                     denom: denom,

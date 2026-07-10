@@ -277,6 +277,14 @@ final class CosmosCoinFinderTests: XCTestCase {
         )
     }
 
+    func testIbcTickerReturnsNilForOpaqueFactoryTail() {
+        // A factory base whose last segment is itself opaque (an EVM `0x…`
+        // address or an over-long tail) must NOT render raw — it goes through
+        // the same clean-short-symbol gate and returns nil.
+        XCTAssertNil(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "factory/osmo1abc/0xdeadbeefcafebabe"))
+        XCTAssertNil(CosmosTokenMetadataResolver.ibcTicker(baseDenom: "factory/osmo1abc/thisnameiswaytoolong"))
+    }
+
     // MARK: - Fee-denom + fee-decimals table
 
     func testFeeDenomForTerraIsUluna() {
@@ -636,6 +644,38 @@ final class CosmosCoinFinderTests: XCTestCase {
         XCTAssertEqual(cny.decimals, 6)
         XCTAssertTrue(cny.isHidden)
         XCTAssertEqual(stub.ibcDenomCallCount, 0, "A non-IBC denom must not hit the /denoms endpoint")
+    }
+
+    func testTerraPhoenix1IbcVoucherWithOpaqueTraceBaseFallsBackToTruncatedTicker() async throws {
+        // On phoenix-1 the trace resolves a base denom with no metadata; when
+        // that base is opaque (an EVM `0x…` address) the ticker must degrade
+        // to the voucher's IBC-<6hex>, never the raw address.
+        let ibcHash = "BEEF12ABCDEF"
+        let ibcDenom = "ibc/\(ibcHash)"
+        let stub = ScriptedHTTPClient()
+        stub.balances = [(ibcDenom, "1000000000000000000")]
+        stub.ibcTracePayloads[ibcHash] = ScriptedHTTPClient.TracePayload(
+            path: "transfer/channel-0",
+            baseDenom: "0x45804880de22913dafe09f4980848ece6ecbaf78"
+        )
+        // No metadata payload for the base -> the meta-missing fallback path.
+
+        let finder = CosmosCoinFinder(
+            httpClient: stub,
+            metadataResolver: makeIsolatedResolver(client: stub)
+        )
+        let result = try await finder.discoverBankDenoms(chain: .terra, address: "terra1abc")
+
+        XCTAssertEqual(result.count, 1)
+        let voucher = try XCTUnwrap(result.first)
+        XCTAssertEqual(voucher.denom, ibcDenom)
+        XCTAssertEqual(
+            voucher.ticker,
+            "IBC-BEEF12",
+            "Opaque trace base -> voucher IBC-<6hex>, never the raw 0x address"
+        )
+        XCTAssertTrue(voucher.isHidden)
+        XCTAssertEqual(stub.ibcTraceCallCount, 1, "Phoenix-1 resolves via the trace endpoint")
     }
 
     func testTerraPhoenix1IbcDenomStillUsesTraceEndpoint() async throws {

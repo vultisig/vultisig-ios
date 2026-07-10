@@ -344,23 +344,25 @@ actor CosmosTokenMetadataResolver {
     ///     -> uppercased (`wbnb-wei` -> `WBNB-WEI`).
     ///   - anything else (EVM address, contains `/`, too long) -> `nil`.
     static func ibcTicker(baseDenom: String) -> String? {
+        // Reduce the base to a candidate symbol: a `factory/<minter>/<sub>`
+        // base uses its last path segment (single leading `u` stripped), a
+        // `u`/`a` micro-denom is stripped, otherwise the base stands as-is.
+        let candidate: String
         if baseDenom.hasPrefix("factory/") {
             let sub = baseDenom.split(separator: "/").last.map(String.init) ?? baseDenom
-            let stripped = sub.hasPrefix("u") ? String(sub.dropFirst()) : sub
-            return stripped.uppercased()
+            candidate = sub.hasPrefix("u") ? String(sub.dropFirst()) : sub
+        } else {
+            candidate = stripMicroUnitPrefix(baseDenom)
         }
 
-        let microStripped = stripMicroUnitPrefix(baseDenom)
-        if microStripped != baseDenom {
-            return microStripped.uppercased()
+        // Accept only a clean short symbol; reject opaque values (EVM `0x…`
+        // addresses, anything containing `/`, over-long tails) so the caller
+        // degrades the voucher to a short `IBC-<6hex>` label instead.
+        guard !candidate.lowercased().hasPrefix("0x"),
+              candidate.range(of: "^[A-Za-z0-9-]{1,12}$", options: .regularExpression) != nil else {
+            return nil
         }
-
-        if !baseDenom.lowercased().hasPrefix("0x"),
-           baseDenom.range(of: "^[A-Za-z0-9-]{1,12}$", options: .regularExpression) != nil {
-            return baseDenom.uppercased()
-        }
-
-        return nil
+        return candidate.uppercased()
     }
 
     // MARK: - Private fetch implementations
