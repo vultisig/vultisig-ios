@@ -354,6 +354,29 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(chain, .ethereum)
     }
 
+    func testPreferredLimitSourceSkipsUnroutableAlternate() {
+        // Same-chain market default with only an UNROUTABLE native alternate
+        // (SOL) must NOT seed the unroutable source (the place gate would reject
+        // it) — fall back to the market default instead.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .ethereum,
+            targetChain: .ethereum,
+            availableNativeChains: [.ethereum, .solana]
+        )
+        XCTAssertEqual(chain, .ethereum)
+    }
+
+    func testPreferredLimitSourceSkipsUnroutableMarketDefault() {
+        // An unroutable market default (SOL) with a held routable alternate (LTC)
+        // must pick the routable alternate rather than seed the unroutable default.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .solana,
+            targetChain: .ethereum,
+            availableNativeChains: [.solana, .litecoin]
+        )
+        XCTAssertEqual(chain, .litecoin)
+    }
+
     // MARK: - computeExpiryBlocks
 
     func testComputeExpiryBlocksFor12Hours() {

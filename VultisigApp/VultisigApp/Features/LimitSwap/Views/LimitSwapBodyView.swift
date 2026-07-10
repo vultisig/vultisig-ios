@@ -160,6 +160,14 @@ struct LimitSwapBodyView: View {
                 priceText = newPrice == 0 ? "" : formatPrice(newPrice)
             }
         }
+        .onChange(of: fromCoin) { _, newCoin in
+            // The source coin's decimals changed. `sourceAmountText`'s onChange
+            // only fires on TEXT edits, so without this the visible amount ("1")
+            // would keep the OLD coin's raw `draft.sourceAmount` (e.g. 1 BTC's
+            // 1e8 read as 1e-10 ETH). Reparse the visible text with the new coin's
+            // decimals so text ↔ draft stays consistent.
+            vm.amountChanged(parseAmount(sourceAmountText, decimals: newCoin.decimals))
+        }
     }
 
     private var isPlaceable: Bool {

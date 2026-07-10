@@ -102,9 +102,12 @@ func limitOrderExpectedOutput(
 /// outbound fees for cheap sources while staying reasonable (a fraction of a
 /// coin) for expensive ones.
 ///
-/// The user's real `sourceAmount` is always used once it is > 0; the notional
-/// only seeds the pre-input reference. Falls back to 1 whole unit when no price
-/// rate is available (`sourceFiatPricePerUnit <= 0`), matching the prior seed.
+/// When `sourceAmount > 0` it is returned verbatim; the notional only sizes the
+/// pre-input probe. Note the caller refreshes the market reference on asset
+/// change / first load (not on every amount keystroke), so in practice this
+/// seeds a spot reference that stays valid until the pair changes. Falls back to
+/// 1 whole unit when no price rate is available (`sourceFiatPricePerUnit <= 0`),
+/// matching the prior seed.
 func marketProbeAmount(
     sourceAmount: BigInt,
     sourceDecimals: Int,
@@ -139,36 +142,40 @@ func marketProbeAmount(
 /// skipping any candidate that collides with the target chain (which would be a
 /// self-pair).
 ///
-/// **Never returns `targetChain` while any alternative native source is held**
-/// (a same-chain source→target is not THORChain-routable). It only returns the
-/// target chain in the degenerate case where the vault holds no other native
-/// source. Pure so it is unit-testable; the caller resolves the chosen chain
-/// back to the concrete vault `Coin`. Does NOT change the shared market default.
+/// **Never returns `targetChain` while any held, THORChain-routable alternative
+/// native source exists** (a same-chain source→target is not THORChain-routable).
+/// It only returns the target chain (or an unroutable inherited default) in the
+/// degenerate case where the vault holds no other routable native source. Pure so
+/// it is unit-testable; the caller resolves the chosen chain back to the concrete
+/// vault `Coin`. Does NOT change the shared market default.
 func preferredLimitSourceChain(
     marketDefaultChain: Chain,
     targetChain: Chain,
     availableNativeChains: Set<Chain>
 ) -> Chain {
     // 1. High-value routable sources the vault holds (BTC → ETH), excluding a
-    //    self-pair with the target.
+    //    self-pair with the target. (BTC/ETH are always THORChain-routable.)
     for candidate in [Chain.bitcoin, .ethereum]
     where candidate != targetChain && availableNativeChains.contains(candidate) {
         return candidate
     }
-    // 2. Keep the market default when it isn't a self-pair with the target.
-    if marketDefaultChain != targetChain {
+    // 2. Keep the market default when it's THORChain-routable and not a self-pair.
+    if marketDefaultChain != targetChain, isThorchainRoutable(chain: marketDefaultChain) {
         return marketDefaultChain
     }
-    // 3. Market default collides with the target: pick any other held native
-    //    chain (deterministic order) so the seed is never a same-chain self-pair.
+    // 3. Otherwise pick any other held, THORChain-ROUTABLE native chain
+    //    (deterministic order). Never seed an unroutable source (e.g. SOL/TON):
+    //    the picker filters those out, but the initial seed bypasses that filter,
+    //    so an unroutable seed would enable Place Order only for `preparePlaceableOrder`
+    //    to silently reject it.
     if let alternative = availableNativeChains
-        .filter({ $0 != targetChain })
+        .filter({ $0 != targetChain && isThorchainRoutable(chain: $0) })
         .sorted(by: { $0.name < $1.name })
         .first {
         return alternative
     }
-    // 4. Nothing else is held — a self-pair is unavoidable; the caller keeps its
-    //    market-default coin.
+    // 4. Nothing routable else is held — a self-pair (or the inherited default) is
+    //    unavoidable; the caller keeps its concrete market-default coin.
     return marketDefaultChain
 }
 

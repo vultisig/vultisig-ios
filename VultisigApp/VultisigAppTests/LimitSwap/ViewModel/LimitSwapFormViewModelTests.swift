@@ -283,6 +283,24 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.networkFeeEstimate, BigInt(4_200))
     }
 
+    func testInputChangesClearStaleNetworkFeeEstimate() {
+        // A fee estimate must never survive a source/target/amount change — else a
+        // previous pair/amount's fee could be snapshotted into the placed order.
+        let vm = makeViewModel()
+
+        vm.networkFeeEstimate = BigInt(111)
+        vm.amountChanged(BigInt(5))
+        XCTAssertEqual(vm.networkFeeEstimate, .zero, "amountChanged must clear the estimate")
+
+        vm.networkFeeEstimate = BigInt(222)
+        vm.selectFromAsset(LimitSwapAsset(chain: .litecoin, ticker: "LTC", decimals: 8, contractAddress: "", isNativeToken: true))
+        XCTAssertEqual(vm.networkFeeEstimate, .zero, "selectFromAsset must clear the estimate")
+
+        vm.networkFeeEstimate = BigInt(333)
+        vm.selectToAsset(LimitSwapAsset(chain: .thorChain, ticker: "RUNE", decimals: 8, contractAddress: "", isNativeToken: true))
+        XCTAssertEqual(vm.networkFeeEstimate, .zero, "selectToAsset must clear the estimate")
+    }
+
     func testRefreshNetworkFeeEstimateKeepsPreviousEstimateOnFailure() async {
         struct UpstreamError: Error {}
         let mockInteractor = MockLimitSwapInteractor()

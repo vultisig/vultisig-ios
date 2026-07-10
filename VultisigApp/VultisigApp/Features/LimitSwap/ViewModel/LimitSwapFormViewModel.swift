@@ -108,6 +108,21 @@ final class LimitSwapFormViewModel {
 
     func amountChanged(_ amount: BigInt) {
         draft.sourceAmount = amount
+        // The network fee (UTXO especially) is amount-dependent; drop the stale
+        // estimate so a fee from a previous amount can never be snapshotted into
+        // the placed order. A fresh estimate is re-fetched by the view.
+        invalidateNetworkFeeEstimate()
+    }
+
+    /// Drop the cached network-fee estimate AND invalidate any in-flight
+    /// `refreshNetworkFeeEstimate` — called whenever an input (source / target /
+    /// amount) changes. Advancing the request ID is essential: without it an
+    /// older estimate that was already awaiting can complete *after* the clear
+    /// (when the next refresh hasn't advanced the token, e.g. the amount went to
+    /// 0) and repopulate `networkFeeEstimate` with a stale value.
+    private func invalidateNetworkFeeEstimate() {
+        networkFeeEstimate = .zero
+        networkFeeRequestID = UUID()
     }
 
     /// Formatted amount text for `pct`% of the source coin's balance, mirroring
@@ -156,15 +171,19 @@ final class LimitSwapFormViewModel {
     func selectFromAsset(_ asset: LimitSwapAsset) {
         draft.fromAsset = asset
         // Pair changed; the cached market price is stale and any prior
-        // preset/manual selection no longer applies.
+        // preset/manual selection no longer applies. The network-fee estimate is
+        // per-source too — drop it so a fee for the previous source can't be
+        // snapshotted into the order.
         marketPriceRef = nil
         lastPresetPct = nil
+        invalidateNetworkFeeEstimate()
     }
 
     func selectToAsset(_ asset: LimitSwapAsset) {
         draft.toAsset = asset
         marketPriceRef = nil
         lastPresetPct = nil
+        invalidateNetworkFeeEstimate()
     }
 
     // MARK: - Async actions
