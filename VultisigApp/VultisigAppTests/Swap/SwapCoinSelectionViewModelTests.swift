@@ -52,6 +52,33 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         XCTAssertTrue(filtered.isEmpty)
     }
 
+    // MARK: - Selected-first promotion (same-ticker secured variants)
+
+    /// Secured assets add multiple same-ticker `.thorChain` variants (ETH-USDC,
+    /// BASE-USDC, AVAX-USDC). The selected-first promotion must match the exact
+    /// `uniqueId`, not a ticker substring — otherwise selecting one variant
+    /// removes a different same-ticker row and duplicates the selected one.
+    func testSortPromotesSelectedByUniqueIdNotTickerSubstring() {
+        let ethUsdc = meta("USDC", chain: .thorChain, contract: "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+        let baseUsdc = meta("USDC", chain: .thorChain, contract: "base-usdc-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913")
+        let avaxUsdc = meta("USDC", chain: .thorChain, contract: "avax-usdc-0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e")
+        let selected = Coin(asset: baseUsdc, address: "thor1x", hexPublicKey: "")
+        let logic = SwapCoinSelectionLogic(
+            vault: makeVault(),
+            selectedCoin: selected,
+            isDestination: true,
+            registry: DestinationTokenRegistry()
+        )
+
+        let sorted = logic.sort(tokens: [ethUsdc, baseUsdc, avaxUsdc])
+
+        XCTAssertEqual(sorted.first?.uniqueId, baseUsdc.uniqueId, "The selected variant is promoted first")
+        XCTAssertEqual(sorted.count, 3, "No row lost or duplicated")
+        XCTAssertEqual(sorted.filter { $0.uniqueId == baseUsdc.uniqueId }.count, 1, "Selected variant not duplicated")
+        XCTAssertTrue(sorted.contains { $0.uniqueId == ethUsdc.uniqueId }, "ETH-USDC must survive")
+        XCTAssertTrue(sorted.contains { $0.uniqueId == avaxUsdc.uniqueId }, "AVAX-USDC must survive")
+    }
+
     // MARK: - Initial state defaults to loading
 
     func testInitialStateIsLoadingSoEmptyStateCannotRenderBeforeFirstPublish() async throws {

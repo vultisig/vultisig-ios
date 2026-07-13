@@ -339,10 +339,14 @@ struct SwapCoinSelectionLogic {
             return firstCoin?.balanceInFiatDecimal ?? 0 > secondCoin?.balanceInFiatDecimal ?? 0
         }
 
-        // Show selected first
-        if selectedCoin.chain == sortedCoins.first?.chain, let index = sortedCoins.firstIndex(where: { $0.ticker.localizedCaseInsensitiveContains(selectedCoin.ticker)}) {
+        // Show the selected coin first. Match on `uniqueId`, not a ticker
+        // substring: same-ticker THORChain secured variants (ETH-USDC, BASE-USDC,
+        // AVAX-USDC all ticker "USDC") would otherwise promote/duplicate the wrong
+        // row and hide a valid one.
+        let selectedMeta = selectedCoin.toCoinMeta()
+        if let index = sortedCoins.firstIndex(where: { $0.uniqueId == selectedMeta.uniqueId }) {
             sortedCoins.remove(at: index)
-            sortedCoins = [selectedCoin.toCoinMeta()] + sortedCoins
+            sortedCoins = [selectedMeta] + sortedCoins
         }
 
         return sortedCoins

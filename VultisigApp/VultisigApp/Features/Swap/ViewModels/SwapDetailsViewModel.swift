@@ -50,9 +50,12 @@ final class SwapDetailsViewModel {
     /// Whether to show the Advanced Settings sheet.
     var showAdvancedSettingsSheet = false
 
-    /// Gas-limit override applies only to EVM source chains.
+    /// Gas-limit override applies only to EVM source chains. Excluded for a
+    /// secured mint: its deposit is built by `ThorchainRouterDepositBuilder` from
+    /// a synthesized send (not the swap path that honors the override), so
+    /// offering it would silently drop the user's value.
     var isGasLimitSupported: Bool {
-        fromCoin.chain.chainType == .EVM
+        fromCoin.chain.chainType == .EVM && !isSecuredMint
     }
 
     // MARK: - Quote state
@@ -435,6 +438,12 @@ final class SwapDetailsViewModel {
         if !isGasLimitSupported {
             resolved.gasLimit = nil
         }
+        // A secured mint always deposits to the vault's own THORChain address, so
+        // an external recipient must never travel — otherwise Verify would show a
+        // recipient the SECURE+ memo (vault thor address) doesn't honor.
+        if isSecuredMint {
+            resolved.externalRecipient = nil
+        }
         return resolved
     }
 
@@ -522,6 +531,14 @@ extension SwapDetailsViewModel {
 
     var isApproveRequired: Bool {
         SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
+    }
+
+    /// Same-underlying secured selection (hold BTC → secured BTC): the flow mints
+    /// via SECURE+ instead of a pool swap. Drives skipping the pool-quote fetch,
+    /// the synthetic ~1:1 quote, and hiding the external-recipient / gas-limit
+    /// advanced settings the mint builder doesn't honor.
+    var isSecuredMint: Bool {
+        SwapCryptoLogic.isSameUnderlyingSecuredMint(fromCoin: fromCoin, toCoin: toCoin)
     }
 
     var isDeposit: Bool {
@@ -730,13 +747,6 @@ private extension SwapDetailsViewModel {
             self.isLoadingQuotes = false
             self.isLoadingFees = false
         }
-    }
-
-    /// Same-underlying secured selection (hold BTC → secured BTC): the flow mints
-    /// via SECURE+ instead of a pool swap. Drives skipping the pool-quote fetch
-    /// and the synthetic ~1:1 quote below.
-    var isSecuredMint: Bool {
-        SwapCryptoLogic.isSameUnderlyingSecuredMint(fromCoin: fromCoin, toCoin: toCoin)
     }
 
     func updateQuotes(vault: Vault, referredCode: String) async {
