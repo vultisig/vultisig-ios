@@ -114,6 +114,24 @@ final class LimitSwapFormViewModel {
     /// can't overwrite a faster newer one's `networkFeeEstimate`.
     private var networkFeeRequestID = UUID()
 
+    /// Bumped on every MANUAL target-price edit. A debounced pair refresh captures
+    /// this before its sleep and only re-seeds the Market preset if it hasn't
+    /// changed — so a price the user typed while the fetch was pending isn't
+    /// clobbered by the delayed auto-seed.
+    private var targetPriceEditSeq = 0
+
+    /// In-flight debounced PAIR refresh (market price + fee + preset re-seed).
+    /// Cancelled and replaced so the two coin mutations a swap makes collapse
+    /// into one round of fetches. Mirrors `SwapDetailsViewModel.fetchQuotes`.
+    @ObservationIgnored private var pairRefreshTask: Task<Void, Never>?
+
+    /// In-flight debounced AMOUNT fee refresh, separate from the pair task so a
+    /// keystroke never cancels a pending pair refresh (and vice-versa).
+    @ObservationIgnored private var feeRefreshTask: Task<Void, Never>?
+
+    /// Keystroke/selection debounce before the market-price / fee fetches fire.
+    static let inputDebounce: Duration = .milliseconds(300)
+
     init(initialDraft: LimitSwapDraft, vault: Vault, interactor: LimitSwapInteractor) {
         self.draft = initialDraft
         self.vault = vault
@@ -159,6 +177,9 @@ final class LimitSwapFormViewModel {
     func targetPriceChanged(_ price: Decimal) {
         draft.targetPrice = price
         lastPresetPct = nil
+        // A manual edit: a pending pair refresh must not overwrite it with the
+        // delayed Market preset.
+        targetPriceEditSeq += 1
     }
 
     /// Set the target price from a USD-denominated edit of the price display.
@@ -186,7 +207,10 @@ final class LimitSwapFormViewModel {
     /// Result is rounded to 8 decimals so the price text↔draft round-trip is
     /// stable (formatter caps at 8; without rounding, parse(format(x)) != x
     /// for high-precision quotes and the sync would clobber `lastPresetPct`).
-    func selectPresetPct(_ pct: Int) {
+    /// `userInitiated` is `true` for a preset PILL tap (a deliberate price
+    /// selection that must not be overwritten by a pending auto-seed) and `false`
+    /// for the programmatic Market auto-seed (on load / pair change).
+    func selectPresetPct(_ pct: Int, userInitiated: Bool = true) {
         guard let market = marketPriceRef else { return }
         let raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
         var rounded = Decimal()
@@ -194,6 +218,11 @@ final class LimitSwapFormViewModel {
         NSDecimalRound(&rounded, &input, 8, .plain)
         draft.targetPrice = rounded
         lastPresetPct = pct
+        if userInitiated {
+            // A user's preset selection is a price choice — a pending pair
+            // refresh's delayed Market auto-seed must not clobber it.
+            targetPriceEditSeq += 1
+        }
     }
 
     func selectExpiryHours(_ hours: Int) {
@@ -212,6 +241,10 @@ final class LimitSwapFormViewModel {
         // snapshotted into the order.
         marketPriceRef = nil
         lastPresetPct = nil
+        // Invalidate any in-flight market fetch SYNCHRONOUSLY so a previous
+        // pair's `refreshMarketPrice` can't land its result during the debounce
+        // sleep and repopulate `marketPriceRef` for the wrong pair.
+        marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
     }
 
@@ -219,6 +252,7 @@ final class LimitSwapFormViewModel {
         draft.toAsset = asset
         marketPriceRef = nil
         lastPresetPct = nil
+        marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
     }
 
@@ -331,6 +365,41 @@ final class LimitSwapFormViewModel {
         } catch {
             guard requestID == networkFeeRequestID else { return }
             logger.warning("refreshNetworkFeeEstimate failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Pair change: debounced, coalesced refresh of the market price + network
+    /// fee (run concurrently — they're independent) plus a Market-preset re-seed.
+    /// Cancels the prior pair refresh so a swap's two coin mutations collapse into
+    /// one round of fetches, and cancels any pending amount fee fetch that is now
+    /// stale for the new pair.
+    func schedulePairRefresh(sourceCoin: Coin, targetCoin: Coin) {
+        pairRefreshTask?.cancel()
+        feeRefreshTask?.cancel()
+        let editSeqAtSchedule = targetPriceEditSeq
+        pairRefreshTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.inputDebounce)
+            guard !Task.isCancelled, let self else { return }
+            async let market: Void = self.refreshMarketPrice()
+            async let fee: Void = self.refreshNetworkFeeEstimate(sourceCoin: sourceCoin, targetCoin: targetCoin)
+            _ = await (market, fee)
+            // Only auto-seed the Market preset if the user hasn't chosen a price
+            // (typed edit OR preset tap) since this refresh was scheduled —
+            // otherwise the delayed seed would clobber their choice.
+            guard !Task.isCancelled, self.targetPriceEditSeq == editSeqAtSchedule else { return }
+            self.selectPresetPct(0, userInitiated: false)
+        }
+    }
+
+    /// Amount change: debounced fee-only refresh (a keystroke burst collapses into
+    /// one fetch). Never touches the market price / preset, so typing an amount
+    /// can't reset the user's target price.
+    func scheduleFeeEstimate(sourceCoin: Coin, targetCoin: Coin) {
+        feeRefreshTask?.cancel()
+        feeRefreshTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.inputDebounce)
+            guard !Task.isCancelled, let self else { return }
+            await self.refreshNetworkFeeEstimate(sourceCoin: sourceCoin, targetCoin: targetCoin)
         }
     }
 

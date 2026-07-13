@@ -84,32 +84,25 @@ struct LimitSwapEntryView: View {
             async let marketPrice: () = vm.refreshMarketPrice()
             async let queueGate: () = vm.refreshAdvancedSwapQueueGate()
             _ = await (supportedChains, marketPrice, queueGate)
-            vm.selectPresetPct(0)
+            vm.selectPresetPct(0, userInitiated: false)
         }
         .onChange(of: limitFromCoin) { _, newCoin in
             vm.selectFromAsset(LimitSwapAsset(coin: newCoin))
             vm.sourceUsdPricePerUnit = Decimal(newCoin.price)
-            Task { @MainActor in
-                await vm.refreshMarketPrice()
-                vm.selectPresetPct(0)
-                await vm.refreshNetworkFeeEstimate(sourceCoin: newCoin, targetCoin: limitToCoin)
-            }
+            // Debounced + coalesced: a swap mutates both coins, so both onChanges
+            // fire — the scheduler cancels the first so only one refresh runs.
+            vm.schedulePairRefresh(sourceCoin: newCoin, targetCoin: limitToCoin)
         }
         .onChange(of: limitToCoin) { _, newCoin in
             vm.selectToAsset(LimitSwapAsset(coin: newCoin))
             vm.targetUsdPricePerUnit = Decimal(newCoin.price)
-            Task { @MainActor in
-                await vm.refreshMarketPrice()
-                vm.selectPresetPct(0)
-                await vm.refreshNetworkFeeEstimate(sourceCoin: limitFromCoin, targetCoin: newCoin)
-            }
+            vm.schedulePairRefresh(sourceCoin: limitFromCoin, targetCoin: newCoin)
         }
         .onChange(of: vm.draft.sourceAmount) { _, _ in
             // The network fee (UTXO especially) depends on the amount; refresh the
-            // estimate so the Verify / Done screens show the placed order's fee.
-            Task { @MainActor in
-                await vm.refreshNetworkFeeEstimate(sourceCoin: limitFromCoin, targetCoin: limitToCoin)
-            }
+            // estimate (debounced) so the Verify / Done screens show the placed
+            // order's fee — without resetting the user's target price.
+            vm.scheduleFeeEstimate(sourceCoin: limitFromCoin, targetCoin: limitToCoin)
         }
         .crossPlatformSheet(isPresented: $showFromCoinPicker) {
             SwapCoinPickerView(
