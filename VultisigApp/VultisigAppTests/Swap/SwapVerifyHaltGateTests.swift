@@ -89,6 +89,21 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         }
     }
 
+    // MARK: - Limit orders re-check funds before signing
+
+    func testLimitOrderInsufficientFundsBlocksSigning() async {
+        // The source coin has no balance, so the sign-time balance re-check must
+        // fail CLOSED with insufficientFunds rather than build the deposit
+        // payload. (refreshData skips the market balance check for limit orders.)
+        let vm = SwapVerifyViewModel(
+            transaction: makeLimitTransaction(),
+            interactor: StubGateInteractor(throwError: nil)
+        )
+        let payload = await vm.buildSwapKeysignPayload(vault: makeVault())
+        XCTAssertNil(payload, "A shortfall must block payload construction")
+        XCTAssertEqual(vm.error as? SwapCryptoLogic.Errors, .insufficientFunds)
+    }
+
     // MARK: - VM delegation
 
     func testVMReturnsFalseAndSetsErrorWhenGateThrows() async {
@@ -147,6 +162,14 @@ final class SwapVerifyHaltGateTests: XCTestCase {
     }
 
     // MARK: - Fixtures
+
+    private func makeVault() -> Vault {
+        Vault(
+            name: "Test Vault", signers: [], pubKeyECDSA: "e", pubKeyEdDSA: "d",
+            keyshares: [], localPartyID: "iPhone", hexChainCode: "hex",
+            resharePrefix: nil, libType: .DKLS
+        )
+    }
 
     private func makeEVMQuote() -> EVMQuote {
         EVMQuote(dstAmount: "1", tx: EVMQuote.Transaction(from: "0xfrom", to: "0xto", data: "0x", value: "0", gasPrice: "0", gas: 0))

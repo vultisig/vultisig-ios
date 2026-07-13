@@ -189,6 +189,27 @@ final class SwapVerifyViewModel {
             // is pre-built on the entry screen. Everything else (route to
             // pair → keysign → done) is shared with the market path.
             if let limitContext = transaction.limitContext {
+                // Sign-time insufficient-funds re-check. The market path re-runs
+                // `balanceError` on every 60s refresh, but `refreshData`
+                // early-returns for limit orders (no quote to refresh) so limit
+                // skipped the balance check entirely. Refresh the live source
+                // balance and fail CLOSED before building anything signable, so a
+                // balance drop while the user sat on Verify is caught here rather
+                // than only surfacing when the deposit is broadcast. The limit
+                // "fee" is the estimated source-chain gas carried in `thorchainFee`
+                // (the quote-driven `fee` is zero for a limit order).
+                await interactor.updateBalance(for: transaction.fromCoin)
+                if transaction.feeCoin != transaction.fromCoin {
+                    await interactor.updateBalance(for: transaction.feeCoin)
+                }
+                if let balanceError = SwapCryptoLogic.balanceError(
+                    fromCoin: transaction.fromCoin,
+                    feeCoin: transaction.feeCoin,
+                    fromAmount: transaction.fromAmount.description,
+                    fee: transaction.thorchainFee
+                ) {
+                    throw balanceError
+                }
                 // HIGH tier: run the same recipient safety-net the market path
                 // runs in `DefaultSwapInteractor.buildSwapKeysignPayload`, which
                 // the direct limit builder would otherwise skip. Limit orders
