@@ -92,7 +92,9 @@ class ThorchainService: ThorchainSwapProvider {
                 if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil {
+                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "ybrune", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "brune", options: [.caseInsensitive, .anchored]) == nil {
                     ticker = ticker.uppercased()
                 }
 

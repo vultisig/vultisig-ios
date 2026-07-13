@@ -65,6 +65,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 sendMaxAmount: isMaxAmount,
                 isAutoCompound: isAutocompound
             )
+        case "BRUNE":
+            return BRUNEUnstakeTransactionBuilder(
+                coin: coin,
+                percentage: Int(percentageSelected ?? percentageFromAmount),
+                autoCompoundAmount: autocompoundBalance,
+                sendMaxAmount: isMaxAmount
+            )
         case "RUJI":
             return RUJIUnstakeTransactionBuilder(
                 coin: coin,
@@ -108,6 +115,15 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 amount = try await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
             } catch {
                 logger.error("Failed to fetch TCY autocompound balance: \(error.localizedDescription, privacy: .private)")
+                amount = .zero
+            }
+            self.autocompoundBalance = coin.valueWithDecimals(value: amount)
+        case "BRUNE":
+            let amount: Decimal
+            do {
+                amount = try await ThorchainService.shared.fetchBRuneAutoCompoundAmount(address: coin.address)
+            } catch {
+                logger.error("Failed to fetch ybRUNE autocompound balance: \(error.localizedDescription, privacy: .private)")
                 amount = .zero
             }
             self.autocompoundBalance = coin.valueWithDecimals(value: amount)

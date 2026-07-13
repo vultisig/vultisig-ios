@@ -112,7 +112,7 @@ extension Coin {
         case .arbitrum:
             return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .base:
-            return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .optimism, .polygon, .polygonV2:
             return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
         case .mantle:

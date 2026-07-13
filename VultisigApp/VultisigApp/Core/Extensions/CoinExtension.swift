@@ -14,7 +14,7 @@ extension Coin {
         return chain.coinType
     }
 
-    static let defiOnlyTickers: Set<String> = ["STCY"]
+    static let defiOnlyTickers: Set<String> = ["STCY", "YBRUNE"]
 
     var isDefiOnly: Bool {
         Coin.defiOnlyTickers.contains(ticker.uppercased())

@@ -1900,6 +1900,15 @@ class TokensStore {
             contractAddress: "uusd",
             isNativeToken: false
         ),
+        CoinMeta(
+            chain: .terraClassic,
+            ticker: "USDC",
+            logo: "usdc",
+            decimals: 6,
+            priceProviderId: "usd-coin",
+            contractAddress: "ibc/0BB9D8513E8E8E9AE6A9D211D9136E6DA42288DDE6CFAA453A150A4566054DC5",
+            isNativeToken: false
+        ),
         rune,
         CoinMeta(
             chain: .thorChainChainnet,
@@ -1991,6 +2000,8 @@ class TokensStore {
         ),
         yrune,
         ytcy,
+        brune,
+        ybrune,
         CoinMeta(
             chain: .ton,
             ticker: "GRAM",
@@ -2180,6 +2191,34 @@ class TokensStore {
         decimals: 8,
         priceProviderId: "",
         contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
+        isNativeToken: false
+    )
+
+    /// Rujira Bonded RUNE. Trades at ~RUNE parity, so it shares RUNE's price
+    /// feed (`priceProviderId: "thorchain"` → the same CoinGecko id as RUNE).
+    static let brune: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "bRUNE",
+        logo: "brune",
+        decimals: 8,
+        priceProviderId: "thorchain",
+        contractAddress: "x/brune",
+        isNativeToken: false
+    )
+
+    /// Auto-compounding staking receipt for bRUNE (`x/staking-x/brune`).
+    /// DeFi-only (excluded from the plain wallet list via `defiOnlyTickers`).
+    /// Price is NAV-keyed on the contract denom (empty `priceProviderId`, like
+    /// yRUNE/yTCY): `fetchYieldTokenPrice` resolves NAV × bRUNE.
+    /// Shares the single `brune` icon (no distinct ybRUNE asset upstream,
+    /// matching vultisig-android; mirrors sRUJI reusing xruji's logo).
+    static let ybrune: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "ybRUNE",
+        logo: "brune",
+        decimals: 8,
+        priceProviderId: "",
+        contractAddress: "x/staking-x/brune",
         isNativeToken: false
     )
 

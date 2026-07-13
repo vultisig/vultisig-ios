@@ -36,7 +36,8 @@ struct SendDoneScreen: View {
                     chain: chain,
                     tx: tx,
                     vault: vault
-                )
+                ),
+                navigationTitle: "overview".localized
             )
         }
     }

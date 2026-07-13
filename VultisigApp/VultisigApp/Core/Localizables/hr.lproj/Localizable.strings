@@ -789,6 +789,7 @@
 "noTransactionsYetSubtitle" = "Još niste napravili zamjene, slanja ili odobrenja iz ovog trezora.";
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
 "noUnencryptedVaultsToImport" = "Nema nešifriranih trezora za uvoz";
+"noVaultAddresses" = "Nema adresa trezora";
 "noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
 "of" = "od";
 "off" = "Isključeno";
@@ -1106,6 +1107,7 @@
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
 "slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
+"solanaBatchSigningNotSupported" = "Potpisivanje više Solana transakcija odjednom još nije podržano.";
 "solanaStakingActionDelegate" = "Ulog";
 "solanaStakingActionUnstake" = "Skidanje stake-a";
 "solanaStakingActionWithdraw" = "Povuci";

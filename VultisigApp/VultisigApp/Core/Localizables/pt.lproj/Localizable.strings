@@ -789,6 +789,7 @@
 "noTransactionsYetSubtitle" = "Você ainda não fez swaps, envios ou aprovações deste cofre.";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noUnencryptedVaultsToImport" = "Nenhum cofre não criptografado para importar";
+"noVaultAddresses" = "Nenhum endereço de cofre";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
 "of" = "de";
 "off" = "Desligado";
@@ -1106,6 +1107,7 @@
 "slippageHelperText" = "Limita quanto o preço pode mudar antes que a execução seja cancelada.";
 "slippageMaxNote" = "O slippage é limitado a %@.";
 "slippageTolerance" = "Tolerância de slippage";
+"solanaBatchSigningNotSupported" = "Assinar várias transações Solana de uma vez ainda não é suportado.";
 "solanaStakingActionDelegate" = "Estaca";
 "solanaStakingActionUnstake" = "Cancelar stake";
 "solanaStakingActionWithdraw" = "Sacar";

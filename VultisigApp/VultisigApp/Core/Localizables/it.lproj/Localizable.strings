@@ -789,6 +789,7 @@
 "noTransactionsYetSubtitle" = "Non hai ancora effettuato swap, invii o approvazioni da questo vault.";
 "notWhitelistedOnNode" = "Non sei nella whitelist di questo nodo";
 "noUnencryptedVaultsToImport" = "Nessun vault non crittografato da importare";
+"noVaultAddresses" = "Nessun indirizzo del Vault";
 "noVaultsFoundInZip" = "Nessun vault trovato nel file ZIP.";
 "of" = "Di";
 "off" = "Disattivato";
@@ -1106,6 +1107,7 @@
 "slippageHelperText" = "Limita quanto il prezzo può cambiare prima che l'esecuzione venga annullata.";
 "slippageMaxNote" = "Lo slippage è limitato a %@.";
 "slippageTolerance" = "Tolleranza di slippage";
+"solanaBatchSigningNotSupported" = "La firma di più transazioni Solana contemporaneamente non è ancora supportata.";
 "solanaStakingActionDelegate" = "Palo";
 "solanaStakingActionUnstake" = "Ritira stake";
 "solanaStakingActionWithdraw" = "Preleva";

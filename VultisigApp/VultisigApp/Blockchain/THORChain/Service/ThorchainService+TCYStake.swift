@@ -63,31 +63,57 @@ extension ThorchainService {
         }
     }
 
-    /// Fetches the user's `x/staking-tcy` (auto-compound STCY) balance from THORNode.
+    /// Parses a THORNode bank `balances` response for a single `x/staking-*`
+    /// receipt denom and returns its raw (base-unit) amount.
     ///
-    /// Throws on transport / decoding failure — callers MUST distinguish this from a
-    /// successful zero. Silently swallowing the error and returning `.zero` (the previous
-    /// behavior) caused persisted STCY positions to be overwritten with zero on every
-    /// transient hiccup.
-    ///
-    /// Returns `.zero` only when the endpoint responds successfully but the user has no
-    /// `x/staking-tcy` balance in the response (genuine zero stake).
-    func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal {
-        let raw = try await httpClient.request(mainnet(.balances(address: address)))
-        guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
+    /// Pure so parsing is unit-testable without the LCD round-trip. Throws on a
+    /// malformed response so callers can distinguish a transport/decoding failure
+    /// from a genuine zero — returning `.zero` on a transient hiccup would clobber
+    /// a previously good persisted position. Returns `.zero` only when the
+    /// response is well-formed but carries no matching denom (genuine zero stake).
+    static func parseStakingReceiptAmount(data: Data, denom: String) throws -> Decimal {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let balances = json["balances"] as? [[String: Any]] else {
             throw HelperError.runtimeError("Malformed THORNode balances response")
         }
 
         for balance in balances {
-            if let denom = balance["denom"] as? String,
-               denom == "x/staking-tcy",
+            if let balanceDenom = balance["denom"] as? String,
+               balanceDenom == denom,
                let amountString = balance["amount"] as? String,
                let amount = UInt64(amountString) {
                 return Decimal(amount)
             }
         }
         return .zero
+    }
+
+    /// Fetches the user's bank balance for a single `x/staking-*` receipt denom
+    /// from THORNode. Throws on transport / decoding failure (see
+    /// `parseStakingReceiptAmount`).
+    private func fetchStakingReceiptAmount(address: String, denom: String) async throws -> Decimal {
+        let raw = try await httpClient.request(mainnet(.balances(address: address)))
+        return try Self.parseStakingReceiptAmount(data: raw.data, denom: denom)
+    }
+
+    /// Fetches the user's `x/staking-tcy` (auto-compound STCY) balance from THORNode.
+    func fetchTcyAutoCompoundAmount(address: String) async throws -> Decimal {
+        try await fetchStakingReceiptAmount(address: address, denom: "x/staking-tcy")
+    }
+
+    /// Fetches the user's `x/staking-x/brune` (auto-compound ybRUNE) balance from
+    /// THORNode. Sibling of `fetchTcyAutoCompoundAmount`.
+    func fetchBRuneAutoCompoundAmount(address: String) async throws -> Decimal {
+        try await fetchStakingReceiptAmount(address: address, denom: TokensStore.ybrune.contractAddress)
+    }
+
+    /// Fetches the user's `x/staking-x/ruji` (staked RUJI receipt) balance from THORNode.
+    ///
+    /// The DeFi Staked RUJI card prefers this on-chain receipt balance over the Rujira
+    /// staking API's `bonded.amount`, which can report zero even while receipts are held.
+    /// Sibling of `fetchTcyAutoCompoundAmount` / `fetchBRuneAutoCompoundAmount`.
+    func fetchRujiStakingReceiptAmount(address: String) async throws -> Decimal {
+        try await fetchStakingReceiptAmount(address: address, denom: TokensStore.sruji.contractAddress)
     }
 
     func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {

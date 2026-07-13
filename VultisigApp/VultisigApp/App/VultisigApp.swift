@@ -27,7 +27,6 @@ struct VultisigApp: App {
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
-    @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
     @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
     @StateObject var pushNotificationManager = PushNotificationManager.shared
@@ -170,7 +169,6 @@ extension VultisigApp {
             .environmentObject(settingsViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
-            .environmentObject(globalStateViewModel)
             .environmentObject(sheetPresentedCounterManager)
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)
@@ -244,7 +242,6 @@ extension VultisigApp {
             .environmentObject(settingsViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
-            .environmentObject(globalStateViewModel)
             .environmentObject(sheetPresentedCounterManager)
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)

@@ -789,6 +789,7 @@
 "noTransactionsYetSubtitle" = "您尚未从此金库进行任何兑换、发送或审批操作。";
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
+"noVaultAddresses" = "没有保险库地址";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
 "of" = "的";
 "off" = "关闭";
@@ -1106,6 +1107,7 @@
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
 "slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
+"solanaBatchSigningNotSupported" = "暂不支持一次性签署多笔 Solana 交易。";
 "solanaStakingActionDelegate" = "质押";
 "solanaStakingActionUnstake" = "取消质押";
 "solanaStakingActionWithdraw" = "提取";

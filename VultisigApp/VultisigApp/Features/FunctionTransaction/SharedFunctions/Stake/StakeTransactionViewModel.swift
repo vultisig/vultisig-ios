@@ -62,6 +62,12 @@ final class StakeTransactionViewModel: ObservableObject, Form {
                 sendMaxAmount: isMaxAmount,
                 isAutoCompound: isAutocompound
             )
+        case "BRUNE":
+            return BRUNEStakeTransactionBuilder(
+                coin: coin,
+                amount: amountField.value,
+                sendMaxAmount: isMaxAmount
+            )
         case "RUJI":
             return RUJIStakeTransactionBuilder(
                 coin: coin,

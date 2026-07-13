@@ -787,6 +787,7 @@
 "noTransactionsYetSubtitle" = "이 볼트에서 스왑, 전송 또는 승인을 한 적이 없습니다.";
 "notWhitelistedOnNode" = "이 노드에서 화이트리스트에 등록되지 않았습니다";
 "noUnencryptedVaultsToImport" = "가져올 암호화되지 않은 볼트가 없습니다";
+"noVaultAddresses" = "볼트 주소 없음";
 "noVaultsFoundInZip" = "ZIP 파일에서 볼트를 찾을 수 없습니다.";
 "of" = "/";
 "off" = "끄기";
