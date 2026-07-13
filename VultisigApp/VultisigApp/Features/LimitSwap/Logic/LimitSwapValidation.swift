@@ -26,6 +26,13 @@ func validateLimitSwapInputs(_ inputs: LimitSwapInputs) -> [LimitSwapValidationE
     if !isValidAssetFormat(inputs.targetAsset) {
         errors.append(.targetAssetMalformed(inputs.targetAsset))
     }
+    if inputs.sourceAsset.caseInsensitiveCompare(inputs.targetAsset) == .orderedSame {
+        // Swapping an asset for itself is impossible on THORChain — it refunds
+        // the deposit minus the network fee. The picker's swap-on-collision and
+        // the default-source seeding avoid this, but a single-asset vault can
+        // still reach here; reject before building the memo.
+        errors.append(.sourceEqualsTarget(inputs.sourceAsset))
+    }
 
     return errors
 }

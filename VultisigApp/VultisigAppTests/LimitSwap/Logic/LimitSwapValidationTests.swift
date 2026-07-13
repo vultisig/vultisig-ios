@@ -100,6 +100,23 @@ final class LimitSwapValidationTests: XCTestCase {
         XCTAssertTrue(errors.contains(.targetAssetMalformed("ETH.")))
     }
 
+    // MARK: - same-asset (source == target)
+
+    func testSameSourceAndTargetAssetIsRejected() {
+        let errors = validateLimitSwapInputs(.valid(sourceAsset: "BTC.BTC", targetAsset: "BTC.BTC"))
+        XCTAssertTrue(errors.contains(.sourceEqualsTarget("BTC.BTC")))
+    }
+
+    func testSameAssetIsRejectedCaseInsensitively() {
+        let errors = validateLimitSwapInputs(.valid(sourceAsset: "btc.btc", targetAsset: "BTC.BTC"))
+        XCTAssertTrue(errors.contains(where: { if case .sourceEqualsTarget = $0 { return true } else { return false } }))
+    }
+
+    func testDistinctAssetsAreNotFlaggedAsSameAsset() {
+        let errors = validateLimitSwapInputs(.valid(sourceAsset: "BTC.BTC", targetAsset: "ETH.ETH"))
+        XCTAssertFalse(errors.contains(where: { if case .sourceEqualsTarget = $0 { return true } else { return false } }))
+    }
+
     // MARK: - Multiple errors aggregated
 
     func testMultipleProblemsAreAllReported() {

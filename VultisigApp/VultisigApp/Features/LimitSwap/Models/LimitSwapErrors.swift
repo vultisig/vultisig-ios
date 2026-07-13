@@ -12,6 +12,11 @@ enum LimitSwapValidationError: Error, Equatable {
     case destAddressEmpty
     case sourceAssetMalformed(String)
     case targetAssetMalformed(String)
+    /// Source and target resolve to the SAME THORChain memo asset. A `=<` order
+    /// swapping an asset for itself (e.g. `BTC.BTC` → `BTC.BTC`) is impossible;
+    /// THORChain refunds it minus the network fee. Reject before the memo is
+    /// built so the user never wastes a broadcast.
+    case sourceEqualsTarget(String)
 }
 
 enum LimitSwapMemoError: Error, Equatable {
