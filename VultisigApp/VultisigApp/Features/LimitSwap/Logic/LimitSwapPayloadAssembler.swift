@@ -201,4 +201,3 @@ func limitDepositChainSpecific(_ specific: BlockChainSpecific, sourceCoin: Coin)
     }
     return specific.overridingEVMGasLimit(BigInt(EVMHelper.defaultERC20TransferGasUnit))
 }
-
