@@ -4,9 +4,9 @@
 
 Canonical THORChain limit-swap memo test vectors. **iOS-canonical for Phase 1**
 (see `wiki/pages/projects/vultisig/thorchain-limit-swap/spec/proposal.md`) until
-vultisig/vultisig-sdk#312 lands its own fixture file. Reconciliation is a
-follow-up task; if SDK fixtures diverge from these, SDK wins (cross-platform
-authority) and these regenerate.
+the SDK lands its own fixture file. Reconciliation is a follow-up task; if SDK
+fixtures diverge from these, SDK wins (cross-platform authority) and these
+regenerate.
 
 ### Schema
 

@@ -61,9 +61,9 @@ func shouldBlockRuneDeposit(inbounds: [InboundAddress]) -> Bool {
 ///    context for proper signing.
 ///
 /// **Implementation detail:** `BlockChainService.fetchSwapBlockChainSpecific`
-/// is the granular swap-shaped fetch on main (post-refactor PR #4332).
-/// Passing `quote: nil` matches the limit-order shape (no market quote
-/// exists) so the downstream call never touches `fromAmount`.
+/// is the granular swap-shaped chain-specific fetch. Passing `quote: nil`
+/// matches the limit-order shape (no market quote exists) so the downstream
+/// call never touches `fromAmount`.
 ///
 /// **Native-EVM gas limit (signing-path, maintainer-review):** with `quote:
 /// nil`, `estimateSwapGasLimit` returns `nil` and `fetchSwapBlockChainSpecific`

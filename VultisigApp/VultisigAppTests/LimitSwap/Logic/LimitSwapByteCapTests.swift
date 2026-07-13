@@ -42,7 +42,8 @@ final class LimitSwapByteCapTests: XCTestCase {
     func testUtxoSourceRejectsTokenTargetWithReferredAffiliate() {
         // Token target (ETH.USDC-EC7) on a referred user pushes the memo past 80B
         // even with the sci-notation LIM and a non-Vultisig destination chain.
-        // This is the canonical "fitness check" case from vultisig-sdk#312.
+        // This is the canonical byte-cap "fitness check" case cross-checked
+        // against the SDK's memo-length reference.
         let memo = "=<:ETH.USDC-EC7:0x1234567890abcdef1234567890abcdef12345678:16e8/14400/0:myref/vi:10/35"
         XCTAssertGreaterThan(memo.utf8.count, 80)
         XCTAssertThrowsError(try assertMemoByteLength(memo, sourceChainKind: .UTXO))
