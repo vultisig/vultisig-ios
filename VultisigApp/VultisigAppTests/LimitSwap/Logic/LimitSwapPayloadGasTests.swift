@@ -219,4 +219,22 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         let inbounds = [inbound(chain: "BTC", globalPaused: false), inbound(chain: "ETH", globalPaused: false)]
         XCTAssertFalse(shouldBlockRuneDeposit(inbounds: inbounds))
     }
+
+    // MARK: - inbound chain-symbol routing (shared with the market halt gate)
+
+    func testGetInboundChainNameCoversLimitRoutableSources() {
+        // The assembler now resolves the inbound chain symbol via the shared
+        // ThorchainService.getInboundChainName instead of a duplicate switch.
+        // Verify it returns the expected THORChain symbol for every non-THOR
+        // limit-routable native source (parity with the removed local table).
+        let expected: [Chain: String] = [
+            .bitcoin: "BTC", .ethereum: "ETH", .litecoin: "LTC",
+            .dogecoin: "DOGE", .bitcoinCash: "BCH", .avalanche: "AVAX",
+            .bscChain: "BSC", .gaiaChain: "GAIA"
+        ]
+        for (chain, symbol) in expected {
+            XCTAssertTrue(isThorchainRoutable(chain: chain), "\(chain) must be routable")
+            XCTAssertEqual(ThorchainService.getInboundChainName(for: chain), symbol)
+        }
+    }
 }

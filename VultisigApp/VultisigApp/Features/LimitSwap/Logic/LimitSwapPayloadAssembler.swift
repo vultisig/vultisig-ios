@@ -129,9 +129,15 @@ func buildLimitSwapKeysignPayload(
         }
         toAddress = sourceCoin.address
     } else {
-        guard let chainSymbol = thorchainInboundChainSymbol(for: sourceCoin.chain) else {
+        // Resolve the inbound chain symbol through the SHARED routing table
+        // (`ThorchainService.getInboundChainName`, also used by the market halt
+        // gate) rather than a duplicate switch, so limit and market can't drift.
+        // A non-routable source — already excluded by the picker — fails loud
+        // rather than resolving to a bogus symbol.
+        guard isThorchainRoutable(chain: sourceCoin.chain) else {
             throw LimitSwapAssemblyError.sourceChainNotRoutable(sourceCoin.chain)
         }
+        let chainSymbol = ThorchainService.getInboundChainName(for: sourceCoin.chain)
 
         // Live, cache-bypassing inbound fetch. The sign-time halt gate re-checks
         // halt status against a fresh fetch; the destination address selected
@@ -196,25 +202,3 @@ func limitDepositChainSpecific(_ specific: BlockChainSpecific, sourceCoin: Coin)
     return specific.overridingEVMGasLimit(BigInt(EVMHelper.defaultERC20TransferGasUnit))
 }
 
-/// Maps an iOS `Chain` to the THORChain inbound-address `chain` field.
-/// Returns `nil` for chains not currently routable through THORChain.
-///
-/// THORChain and Maya native sources are intentionally excluded — those
-/// settle via `MsgDeposit` on the swap chain itself (`SwapCryptoLogic.isDeposit`
-/// flags them, the assembler branches before this lookup). If a future
-/// caller forgets the deposit branch and reaches here for a native source,
-/// the resulting `sourceChainNotRoutable` is a louder failure than building
-/// a malformed payload with a bogus inbound address.
-private func thorchainInboundChainSymbol(for chain: Chain) -> String? {
-    switch chain {
-    case .bitcoin: return "BTC"
-    case .ethereum: return "ETH"
-    case .litecoin: return "LTC"
-    case .dogecoin: return "DOGE"
-    case .bitcoinCash: return "BCH"
-    case .avalanche: return "AVAX"
-    case .bscChain: return "BSC"
-    case .gaiaChain: return "GAIA"
-    default: return nil
-    }
-}
