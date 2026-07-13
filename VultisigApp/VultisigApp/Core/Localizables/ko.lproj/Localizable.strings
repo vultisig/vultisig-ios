@@ -807,6 +807,7 @@
 "passwordIsRequired" = "비밀번호가 필요합니다.";
 "passwordMismatch" = "비밀번호 불일치";
 "paste" = "붙여넣기";
+"peerDiscoveryInfoDescription" = "다른 기기에서 앱을 열고 \"QR 스캔\"을 탭하여 연결하세요.";
 "peerDiscoveryInfoTitle" = "다른 기기의 QR을 스캔하세요";
 "peerDiscoveryScanDeviceDisclaimer" = "다른 기기로 QR을 스캔하세요. 3기기 설정 권장, 2개로도 충분합니다.";
 "pendingRewards" = "대기 중인 보상";

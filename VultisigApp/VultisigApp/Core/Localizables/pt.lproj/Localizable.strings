@@ -809,6 +809,7 @@
 "passwordIsRequired" = "A senha é necessária.";
 "passwordMismatch" = "Senhas não coincidem";
 "paste" = "Colar";
+"peerDiscoveryInfoDescription" = "No seu outro dispositivo, abra o app e toque em \"Escanear QR\" para conectá-lo.";
 "peerDiscoveryInfoTitle" = "Escaneie o QR nos seus outros dispositivos";
 "peerDiscoveryScanDeviceDisclaimer" = "Escaneie o QR com outro dispositivo. Configuração com 3 dispositivos recomendada, 2 são suficientes.";
 "pendingRewards" = "Recompensas pendentes";
