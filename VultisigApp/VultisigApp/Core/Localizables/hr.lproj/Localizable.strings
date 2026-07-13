@@ -1079,6 +1079,7 @@
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
 "slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
+"solanaBatchSigningNotSupported" = "Potpisivanje više Solana transakcija odjednom još nije podržano.";
 "solanaStakingActionDelegate" = "Ulog";
 "solanaStakingActionUnstake" = "Skidanje stake-a";
 "solanaStakingActionWithdraw" = "Povuci";

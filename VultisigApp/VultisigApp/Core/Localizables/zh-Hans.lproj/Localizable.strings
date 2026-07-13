@@ -1079,6 +1079,7 @@
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
 "slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
+"solanaBatchSigningNotSupported" = "暂不支持一次性签署多笔 Solana 交易。";
 "solanaStakingActionDelegate" = "质押";
 "solanaStakingActionUnstake" = "取消质押";
 "solanaStakingActionWithdraw" = "提取";

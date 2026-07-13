@@ -306,6 +306,15 @@ enum SolanaHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         // Handle SignSolana (raw transactions)
         if let signSolana = keysignPayload.signSolana {
+            // Reject a multi-transaction batch (signAllTransactions, N>1) here —
+            // the single pre-ceremony chokepoint reached on BOTH the initiator
+            // and the co-signer before peer discovery. getSignedTransaction only
+            // supports a single raw transaction, so without this the user would
+            // physically approve the full multi-device keysign and only then hit
+            // an opaque post-ceremony failure. Fail fast with a clear message.
+            guard signSolana.rawTransactions.count <= 1 else {
+                throw HelperError.runtimeError("solanaBatchSigningNotSupported".localized)
+            }
             var allHashes: [String] = []
             for base64Tx in signSolana.rawTransactions {
                 let hashes = try getPreSignedImageHashForRaw(base64Transaction: base64Tx)
