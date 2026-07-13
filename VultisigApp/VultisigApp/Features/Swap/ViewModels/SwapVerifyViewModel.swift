@@ -193,22 +193,12 @@ final class SwapVerifyViewModel {
                 // `balanceError` on every 60s refresh, but `refreshData`
                 // early-returns for limit orders (no quote to refresh) so limit
                 // skipped the balance check entirely. Refresh the live source
-                // balance and fail CLOSED before building anything signable, so a
-                // balance drop while the user sat on Verify is caught here rather
-                // than only surfacing when the deposit is broadcast. The limit
-                // "fee" is the estimated source-chain gas carried in `thorchainFee`
-                // (the quote-driven `fee` is zero for a limit order).
+                // balance and fail CLOSED before signing, so a balance drop while
+                // the user sat on Verify is caught here rather than only surfacing
+                // when the deposit is broadcast.
                 await interactor.updateBalance(for: transaction.fromCoin)
                 if transaction.feeCoin != transaction.fromCoin {
                     await interactor.updateBalance(for: transaction.feeCoin)
-                }
-                if let balanceError = SwapCryptoLogic.balanceError(
-                    fromCoin: transaction.fromCoin,
-                    feeCoin: transaction.feeCoin,
-                    fromAmount: transaction.fromAmount.description,
-                    fee: transaction.thorchainFee
-                ) {
-                    throw balanceError
                 }
                 // HIGH tier: run the same recipient safety-net the market path
                 // runs in `DefaultSwapInteractor.buildSwapKeysignPayload`, which
@@ -223,13 +213,35 @@ final class SwapVerifyViewModel {
                 guard let sourceAmount = BigInt(limitContext.sourceAmount) else {
                     throw LimitSwapAssemblyError.invalidSourceAmount(limitContext.sourceAmount)
                 }
-                return try await buildLimitSwapKeysignPayload(
+                // Build FIRST so the balance check validates against the ACTUAL fee
+                // that will be signed. The payload carries the fresh sign-time
+                // chain-specific gas (`limitDepositChainSpecific` applied inside the
+                // assembler), whereas `transaction.networkFeeEstimate` is only the
+                // entry-screen estimate. Mirrors the market path, which validates
+                // against the freshly-refetched fee — a gas spike while the user sat
+                // on Verify must not pass a stale-lower-fee check.
+                let payload = try await buildLimitSwapKeysignPayload(
                     sourceCoin: transaction.fromCoin,
                     targetCoin: transaction.toCoin,
                     sourceAmount: sourceAmount,
                     memo: limitContext.memo,
                     vault: vault
                 )
+                let signTimeFee = try await SwapCryptoLogic.thorchainFee(
+                    for: payload.chainSpecific,
+                    fromCoin: transaction.fromCoin,
+                    fromAmount: transaction.fromAmount,
+                    vault: vault
+                )
+                if let balanceError = SwapCryptoLogic.balanceError(
+                    fromCoin: transaction.fromCoin,
+                    feeCoin: transaction.feeCoin,
+                    fromAmount: transaction.fromAmount.description,
+                    fee: signTimeFee
+                ) {
+                    throw balanceError
+                }
+                return payload
             }
             return try await interactor.buildSwapKeysignPayload(transaction: transaction, vault: vault)
         } catch {

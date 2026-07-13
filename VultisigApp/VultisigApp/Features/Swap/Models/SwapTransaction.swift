@@ -35,6 +35,16 @@ struct SwapTransaction: Hashable {
     let vultDiscountBps: Int
     let referralDiscountBps: Int
 
+    /// Source-chain broadcast-gas ESTIMATE for a placed LIMIT order, in the fee
+    /// coin's smallest units. A dedicated field — NOT the market `thorchainFee`,
+    /// whose meaning is the THORChain protocol/outbound fee that feeds
+    /// `SwapCryptoLogic.fee` — so the limit fee display and persisted tx-history
+    /// never depend on the market fee semantics. `.zero` for market transactions.
+    /// `var` only so it can carry a default in the synthesized memberwise init
+    /// (a defaulted `let` is excluded from it); set once at construction, never
+    /// mutated afterwards — the "immutable hand-off" contract still holds.
+    var networkFeeEstimate: BigInt = .zero
+
     /// Native coin that pays for gas — `fromCoin` for native sources, the EVM-native
     /// sibling (e.g. ETH for an USDC source) otherwise. Precomputed at construction
     /// because the sibling-lookup needs access to the full source-chain coin list,
@@ -87,6 +97,7 @@ extension SwapTransaction {
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
+            networkFeeEstimate: networkFeeEstimate,
             feeCoin: feeCoin,
             limitContext: limitContext,
             advancedSettings: advancedSettings
@@ -206,17 +217,17 @@ extension SwapTransaction {
     }
 
     /// Network-fee crypto string for a placed LIMIT order. The limit "fee" is
-    /// JUST the source-chain broadcast gas, pre-estimated into `thorchainFee`
+    /// JUST the source-chain broadcast gas, pre-estimated into `networkFeeEstimate`
     /// (fee coin's smallest units) at place time — a resting `=<` order carries
     /// no market quote, so the quote-driven `fee` / `totalFeeString` are zero /
     /// empty for it. Empty until the estimate is available.
     var limitNetworkFeeString: String {
-        SwapCryptoLogic.limitNetworkFeeString(feeCoin: feeCoin, fee: thorchainFee)
+        SwapCryptoLogic.limitNetworkFeeString(feeCoin: feeCoin, fee: networkFeeEstimate)
     }
 
     /// Fiat sub-line for `limitNetworkFeeString`.
     var limitNetworkFeeFiat: String {
-        SwapCryptoLogic.limitNetworkFeeFiat(feeCoin: feeCoin, fee: thorchainFee)
+        SwapCryptoLogic.limitNetworkFeeFiat(feeCoin: feeCoin, fee: networkFeeEstimate)
     }
 
     var fromAmountDecimal: Decimal { fromAmount }

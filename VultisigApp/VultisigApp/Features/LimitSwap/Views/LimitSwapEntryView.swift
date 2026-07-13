@@ -199,11 +199,12 @@ struct LimitSwapEntryView: View {
         //
         // Built SYNCHRONOUSLY (no await) so the Verify transaction is a consistent
         // snapshot of the prepared draft and a single tap enqueues a single route
-        // — matching every other place/continue flow. `thorchainFee` carries the
-        // best-effort network-fee ESTIMATE (`vm.networkFeeEstimate`), refreshed on
-        // asset/amount change; it drives display + tx-history only. The REAL fee is
-        // re-derived from a fresh fetch at keysign time in LimitSwapPayloadAssembler,
-        // so a slightly-stale estimate never affects the signed transaction.
+        // — matching every other place/continue flow. `networkFeeEstimate` carries
+        // the best-effort source-chain fee ESTIMATE (`vm.networkFeeEstimate`),
+        // refreshed on asset/amount change; it drives display + tx-history only. The
+        // REAL fee is re-derived from a fresh fetch at keysign time in
+        // LimitSwapPayloadAssembler, so a slightly-stale estimate never affects the
+        // signed transaction.
         guard let prepared = vm.preparePlaceableOrder() else { return }
         let record = prepared.record
 
@@ -218,12 +219,16 @@ struct LimitSwapEntryView: View {
             // the `thorchainFee` estimate below, and signing re-derives the EVM gas
             // limit in LimitSwapPayloadAssembler for native-EVM sources.
             gasLimit: 0,
+            // `thorchainFee` is the market protocol-fee field (feeds SwapCryptoLogic.fee)
+            // and stays 0 for a limit order — the limit network fee lives in its own
+            // `networkFeeEstimate` field below.
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
             // Pre-estimated source-chain broadcast fee (fee coin's smallest units)
             // so the shared Verify/Done screens can show and persist the limit
             // order's network fee — the resting `=<` order carries no market quote.
-            thorchainFee: vm.networkFeeEstimate,
-            vultDiscountBps: 0,
-            referralDiscountBps: 0,
+            networkFeeEstimate: vm.networkFeeEstimate,
             feeCoin: limitFromCoin,
             limitContext: record,
             advancedSettings: .default

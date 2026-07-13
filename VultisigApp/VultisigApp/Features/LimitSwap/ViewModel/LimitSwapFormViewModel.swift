@@ -94,8 +94,8 @@ final class LimitSwapFormViewModel {
     /// Estimated source-chain broadcast fee for the pending limit deposit, in the
     /// fee coin's smallest units. Refreshed by `refreshNetworkFeeEstimate` (on
     /// load / asset / amount change) and read at place time into the
-    /// `SwapTransaction.thorchainFee` so the shared Verify / Done screens can show
-    /// and persist the limit order's network fee. `.zero` until the first
+    /// `SwapTransaction.networkFeeEstimate` so the shared Verify / Done screens can
+    /// show and persist the limit order's network fee. `.zero` until the first
     /// estimate resolves. The limit "fee" is JUST the network fee — a resting
     /// `=<` order has no provider/inbound fee. NEVER feeds signing (the signer
     /// re-derives the fee from a fresh chain-specific fetch).
