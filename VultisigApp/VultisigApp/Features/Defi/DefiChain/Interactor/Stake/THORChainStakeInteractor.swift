@@ -98,6 +98,16 @@ private extension THORChainStakeInteractor {
                 return nil
             }
 
+        case "YBRUNE":
+            do {
+                let rawAmount = try await ThorchainService.shared.fetchBRuneAutoCompoundAmount(address: snapshot.address)
+                let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: snapshot.meta.decimals)
+                return StakePositionData(coin: snapshot.meta, type: type, amount: amount)
+            } catch {
+                logger.error("Error fetching ybRUNE auto-compound amount: \(error.localizedDescription, privacy: .private)")
+                return nil
+            }
+
         case "YRUNE", "YTCY":
             // Reads `coin.balanceDecimal` (kept up-to-date by `BalanceService`). Only update the
             // persisted row when balance is non-zero — `BalanceService` may briefly observe zero
