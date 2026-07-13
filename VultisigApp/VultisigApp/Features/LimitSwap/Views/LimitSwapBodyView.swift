@@ -158,12 +158,12 @@ struct LimitSwapBodyView: View {
             }
         }
         .onChange(of: sourceAmountText) { _, newText in
-            vm.amountChanged(parseAmount(newText, decimals: vm.draft.fromAsset.decimals))
+            vm.amountChanged(parseLimitAmount(newText, decimals: vm.draft.fromAsset.decimals))
             // A manual edit clears the selected-percentage highlight (market parity).
             showAllPercentageButtons = true
         }
         .onChange(of: priceText) { _, newText in
-            let parsed = parsePrice(newText)
+            let parsed = parseLimitPrice(newText)
             if parsed != vm.draft.targetPrice {
                 vm.targetPriceChanged(parsed)
             }
@@ -179,13 +179,13 @@ struct LimitSwapBodyView: View {
             let synced = lastSyncedUsdText
             lastSyncedUsdText = nil
             guard isUserUsdPriceEdit(newText: newText, lastSyncedText: synced) else { return }
-            vm.targetPriceChangedFromUsd(parsePrice(newText))
+            vm.targetPriceChangedFromUsd(parseLimitPrice(newText))
         }
         .onChange(of: vm.draft.targetPrice) { _, newPrice in
             // Sync vm → text only when the local text doesn't already parse to the
             // same Decimal. Preserves a trailing "." while typing and reflects
             // preset-pill taps that mutate vm.
-            if parsePrice(priceText) != newPrice {
+            if parseLimitPrice(priceText) != newPrice {
                 priceText = newPrice == 0 ? "" : formatPrice(newPrice)
             }
             syncUsdText(for: newPrice)
@@ -201,7 +201,7 @@ struct LimitSwapBodyView: View {
             // would keep the OLD coin's raw `draft.sourceAmount` (e.g. 1 BTC's
             // 1e8 read as 1e-10 ETH). Reparse the visible text with the new coin's
             // decimals so text ↔ draft stays consistent.
-            vm.amountChanged(parseAmount(sourceAmountText, decimals: newCoin.decimals))
+            vm.amountChanged(parseLimitAmount(sourceAmountText, decimals: newCoin.decimals))
         }
     }
 
@@ -217,22 +217,6 @@ struct LimitSwapBodyView: View {
         !vm.draft.fromAsset.ticker.isEmpty && !vm.draft.toAsset.ticker.isEmpty
     }
 
-    private func parseAmount(_ text: String, decimals: Int) -> BigInt {
-        let normalized = text.replacingOccurrences(of: ",", with: ".")
-        guard let decimal = Decimal(string: normalized), decimal > 0 else { return 0 }
-        var scaled = Decimal()
-        var input = decimal
-        NSDecimalMultiplyByPowerOf10(&scaled, &input, Int16(decimals), .down)
-        var truncated = Decimal()
-        NSDecimalRound(&truncated, &scaled, 0, .down)
-        return BigInt(NSDecimalNumber(decimal: truncated).stringValue) ?? 0
-    }
-
-    private func parsePrice(_ text: String) -> Decimal {
-        let normalized = text.replacingOccurrences(of: ",", with: ".")
-        return Decimal(string: normalized) ?? 0
-    }
-
     private func formatPrice(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -244,7 +228,7 @@ struct LimitSwapBodyView: View {
     }
 
     /// USD amount formatted for the editable USD field (no grouping separators
-    /// so it round-trips through `parsePrice`).
+    /// so it round-trips through `parseLimitPrice`).
     private func formatUsdValue(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -263,7 +247,7 @@ struct LimitSwapBodyView: View {
     private func syncUsdText(for targetPrice: Decimal) {
         let newText: String
         if vm.targetUsdPricePerUnit > 0 {
-            let mappedAsset = parsePrice(usdText) / vm.targetUsdPricePerUnit
+            let mappedAsset = parseLimitPrice(usdText) / vm.targetUsdPricePerUnit
             guard mappedAsset != targetPrice else { return }
             let usd = targetPrice * vm.targetUsdPricePerUnit
             newText = usd == 0 ? "" : formatUsdValue(usd)

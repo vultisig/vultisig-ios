@@ -234,3 +234,47 @@ func evaluateWarning(targetPrice: Decimal, marketPrice: Decimal) -> LimitSwapWar
     }
     return nil
 }
+
+// MARK: - Input parsing (locale-aware)
+
+/// Parse a user-entered numeric string into a `Decimal`, locale-aware.
+///
+/// **Fund-safety:** these values feed the SIGNED memo LIM (target price) and the
+/// deposit amount (sell amount). A naive `","→"."` + `Decimal(string:)` silently
+/// mis-parses a pasted GROUPED number — in an `en_US` locale `"1,000"` became
+/// `Decimal("1.000") == 1.0`, i.e. 1000× too small — which would place a resting
+/// order at a price/amount far off what the field shows. Route through the shared
+/// `parseInput` (the same locale-aware parser the market amount fields use) so a
+/// grouped `"1,000"` is `1000` and a comma-decimal locale's `"1,5"` is `1.5`.
+///
+/// The `Decimal(string:)` fallback fires only for in-progress typing states the
+/// strict locale parser rejects (e.g. a lone trailing separator like `"1."`), so
+/// keystroke-by-keystroke editing isn't broken; it never re-introduces the
+/// grouping mis-parse because `parseInput` already handles any grouped number.
+func parseLimitDecimal(_ text: String, locale: Locale = .current) -> Decimal {
+    let trimmed = text.trimmingCharacters(in: .whitespaces)
+    guard !trimmed.isEmpty else { return 0 }
+    if let parsed = trimmed.parseInput(locale: locale) {
+        return parsed
+    }
+    return Decimal(string: trimmed.replacingOccurrences(of: ",", with: ".")) ?? 0
+}
+
+/// Locale-aware parse of the target-price field into asset-terms `Decimal`.
+func parseLimitPrice(_ text: String, locale: Locale = .current) -> Decimal {
+    parseLimitDecimal(text, locale: locale)
+}
+
+/// Locale-aware parse of the sell-amount field into the source coin's smallest
+/// units. Truncates (rounds toward zero) at the coin's decimal precision, exactly
+/// as the prior naive parser did — only the locale/grouping handling changes.
+func parseLimitAmount(_ text: String, decimals: Int, locale: Locale = .current) -> BigInt {
+    let decimal = parseLimitDecimal(text, locale: locale)
+    guard decimal > 0 else { return 0 }
+    var scaled = Decimal()
+    var input = decimal
+    NSDecimalMultiplyByPowerOf10(&scaled, &input, Int16(decimals), .down)
+    var truncated = Decimal()
+    NSDecimalRound(&truncated, &scaled, 0, .down)
+    return BigInt(NSDecimalNumber(decimal: truncated).stringValue) ?? 0
+}

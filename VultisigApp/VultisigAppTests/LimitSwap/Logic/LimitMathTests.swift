@@ -481,4 +481,69 @@ final class LimitMathTests: XCTestCase {
     func testWarningWhenTargetTwiceMarket() {
         XCTAssertEqual(evaluateWarning(targetPrice: 200, marketPrice: 100), .priceFarAboveMarket)
     }
+
+    // MARK: - Input parsing (locale-aware) — fund-safety
+
+    private let enUS = Locale(identifier: "en_US")
+    private let deDE = Locale(identifier: "de_DE")
+
+    func testParseLimitPriceParsesPlainDecimal() {
+        XCTAssertEqual(parseLimitPrice("1.5", locale: enUS), Decimal(string: "1.5"))
+    }
+
+    func testParseLimitPriceParsesGroupedThousandsInUSLocale() {
+        // FUND-CRITICAL: a pasted "1,000" must be 1000, not the naive parser's 1.0.
+        XCTAssertEqual(parseLimitPrice("1,000", locale: enUS), Decimal(1000))
+    }
+
+    func testParseLimitPriceParsesGroupedMillionsInUSLocale() {
+        XCTAssertEqual(parseLimitPrice("1,000,000", locale: enUS), Decimal(1_000_000))
+    }
+
+    func testParseLimitPricePreservesCommaDecimalLocaleIntent() {
+        // In a comma-decimal locale "1,5" means 1.5 and "1.000,50" means 1000.5.
+        XCTAssertEqual(parseLimitPrice("1,5", locale: deDE), Decimal(string: "1.5"))
+        XCTAssertEqual(parseLimitPrice("1.000,50", locale: deDE), Decimal(string: "1000.5"))
+    }
+
+    func testParseLimitPricePreservesTrailingSeparatorWhileTyping() {
+        // A lone trailing separator is an in-progress edit — must resolve to 1,
+        // never 0 (zeroing the field mid-type would clobber the user's price).
+        XCTAssertEqual(parseLimitPrice("1.", locale: enUS), Decimal(1))
+    }
+
+    func testParseLimitPriceEmptyIsZero() {
+        XCTAssertEqual(parseLimitPrice("", locale: enUS), 0)
+        XCTAssertEqual(parseLimitPrice("   ", locale: enUS), 0)
+    }
+
+    func testParseLimitAmountScalesGroupedThousands() {
+        // FUND-CRITICAL: "1,000" of an 8-dec source is 1000 * 1e8 smallest units,
+        // NOT the naive parser's 1 * 1e8 (which would deposit 1000× too little).
+        XCTAssertEqual(
+            parseLimitAmount("1,000", decimals: 8, locale: enUS),
+            BigInt(1000) * BigInt(10).power(8)
+        )
+    }
+
+    func testParseLimitAmountScalesFractional() {
+        XCTAssertEqual(
+            parseLimitAmount("1.5", decimals: 8, locale: enUS),
+            BigInt(150_000_000)
+        )
+    }
+
+    func testParseLimitAmountTruncatesBeyondDecimals() {
+        // More fractional digits than the coin supports truncate toward zero.
+        XCTAssertEqual(
+            parseLimitAmount("0.123456789", decimals: 8, locale: enUS),
+            BigInt(12_345_678)
+        )
+    }
+
+    func testParseLimitAmountNonPositiveIsZero() {
+        XCTAssertEqual(parseLimitAmount("", decimals: 8, locale: enUS), 0)
+        XCTAssertEqual(parseLimitAmount("abc", decimals: 8, locale: enUS), 0)
+        XCTAssertEqual(parseLimitAmount("0", decimals: 8, locale: enUS), 0)
+    }
 }
