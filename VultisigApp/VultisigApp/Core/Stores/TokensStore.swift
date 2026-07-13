@@ -2187,11 +2187,10 @@ class TokensStore {
 
     /// Rujira Bonded RUNE. Trades at ~RUNE parity, so it shares RUNE's price
     /// feed (`priceProviderId: "thorchain"` → the same CoinGecko id as RUNE).
-    /// Icon is a placeholder (reuses the RUNE artwork) pending real Rujira art.
     static let brune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "bRUNE",
-        logo: "rune", // Placeholder: reuse RUNE artwork until Rujira art lands
+        logo: "brune",
         decimals: 8,
         priceProviderId: "thorchain",
         contractAddress: "x/brune",
@@ -2202,11 +2201,12 @@ class TokensStore {
     /// DeFi-only (excluded from the plain wallet list via `defiOnlyTickers`).
     /// Price is NAV-keyed on the contract denom (empty `priceProviderId`, like
     /// yRUNE/yTCY): `fetchYieldTokenPrice` resolves NAV × bRUNE.
-    /// Icon is a placeholder (reuses the xRUNE artwork) pending real Rujira art.
+    /// Shares the single `brune` icon (no distinct ybRUNE asset upstream,
+    /// matching vultisig-android; mirrors sRUJI reusing xruji's logo).
     static let ybrune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "ybRUNE",
-        logo: "xrune", // Placeholder: reuse xRUNE artwork until Rujira art lands
+        logo: "brune",
         decimals: 8,
         priceProviderId: "",
         contractAddress: "x/staking-x/brune",
