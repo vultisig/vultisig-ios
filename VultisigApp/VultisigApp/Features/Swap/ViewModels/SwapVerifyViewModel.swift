@@ -84,22 +84,26 @@ final class SwapVerifyViewModel {
         defer { isLoadingFees = false }
 
         do {
-            let result = try await interactor.fetchQuote(
-                amount: transaction.fromAmount,
-                fromCoin: transaction.fromCoin,
-                toCoin: transaction.toCoin,
-                vault: vault,
-                referredCode: referredCode,
-                slippageBps: transaction.advancedSettings.slippage.bps,
-                recipientAddress: transaction.advancedSettings.externalRecipient
-            )
             var updated = transaction
-            if let result {
-                updated = updated.with(
-                    quote: result.quote,
-                    vultDiscountBps: result.vultDiscountBps,
-                    referralDiscountBps: result.referralDiscountBps
+            // Same-underlying secured mint has no pool quote to refresh — keep the
+            // synthetic ~1:1 quote and refresh only the L1 deposit gas below.
+            if transaction.mode == .standard {
+                let result = try await interactor.fetchQuote(
+                    amount: transaction.fromAmount,
+                    fromCoin: transaction.fromCoin,
+                    toCoin: transaction.toCoin,
+                    vault: vault,
+                    referredCode: referredCode,
+                    slippageBps: transaction.advancedSettings.slippage.bps,
+                    recipientAddress: transaction.advancedSettings.externalRecipient
                 )
+                if let result {
+                    updated = updated.with(
+                        quote: result.quote,
+                        vultDiscountBps: result.vultDiscountBps,
+                        referralDiscountBps: result.referralDiscountBps
+                    )
+                }
             }
             // Fetch the oracle fee data BEFORE validating: for EVM aggregator/
             // SwapKit routes the node admits a transaction only when the

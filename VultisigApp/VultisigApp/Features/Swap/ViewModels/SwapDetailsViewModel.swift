@@ -416,6 +416,7 @@ final class SwapDetailsViewModel {
             toCoin: toCoin,
             fromAmount: fromAmount.toDecimal(),
             quote: quote,
+            mode: isSecuredMint ? .securedMint : .standard,
             gas: gas,
             gasLimit: gasLimit,
             thorchainFee: thorchainFee,
@@ -731,6 +732,13 @@ private extension SwapDetailsViewModel {
         }
     }
 
+    /// Same-underlying secured selection (hold BTC → secured BTC): the flow mints
+    /// via SECURE+ instead of a pool swap. Drives skipping the pool-quote fetch
+    /// and the synthetic ~1:1 quote below.
+    var isSecuredMint: Bool {
+        SwapCryptoLogic.isSameUnderlyingSecuredMint(fromCoin: fromCoin, toCoin: toCoin)
+    }
+
     func updateQuotes(vault: Vault, referredCode: String) async {
         // Don't clear `quote` here: stale-while-revalidate keeps the previous
         // quote (and its summary) on screen until the fresh one lands. The pair
@@ -738,6 +746,20 @@ private extension SwapDetailsViewModel {
         error = nil
 
         guard !fromAmount.isEmpty else { return }
+
+        // Same-underlying secured selection: there's no meaningful pool swap, so
+        // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
+        // quote. Confirm builds the real SECURE+ deposit payload.
+        if isSecuredMint {
+            selectedQuote = nil
+            bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: fromAmount.toDecimal(), toCoin: toCoin)
+            allQuotes = [bestQuote].compactMap { $0 }
+            quotedPair = currentPair
+            quotedAmount = fromAmount
+            vultDiscountBps = 0
+            referralDiscountBps = 0
+            return
+        }
 
         do {
             let result = try await interactor.fetchQuote(

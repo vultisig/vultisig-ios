@@ -17,11 +17,28 @@ import BigInt
 import Foundation
 import SwiftUI
 
+/// How the swap flow settles. `.standard` is the normal pool/aggregator swap.
+/// `.securedMint` is the inline same-underlying case (the user holds the L1
+/// asset and picks its own secured form, e.g. BTC → secured BTC): instead of a
+/// wasteful ~1:1 pool swap, the flow mints via a SECURE+ deposit. The pool-quote
+/// fetch is skipped, a synthetic ~1:1 quote is displayed, and at confirm the
+/// SECURE+ deposit keysign payload is built instead of a swap payload.
+enum SwapMode: Hashable {
+    case standard
+    case securedMint
+}
+
 struct SwapTransaction: Hashable {
     let fromCoin: Coin
     let toCoin: Coin
     let fromAmount: Decimal
     let quote: SwapQuote
+    /// Settlement mode. Defaults to `.standard` (so the memberwise initializer
+    /// keeps it optional and existing call sites are unchanged); only the
+    /// same-underlying secured path sets `.securedMint`. `var` purely so the
+    /// synthesized memberwise init carries the default — the struct is still used
+    /// immutably (`let`-bound everywhere, rebuilt via `with`).
+    var mode: SwapMode = .standard
     let gas: BigInt
     /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or before
     /// the fee data loads). Carried alongside `gas` (= maxFeePerGas for EVM) so
@@ -54,6 +71,18 @@ struct SwapTransaction: Hashable {
     var hasExternalRecipient: Bool {
         advancedSettings.externalRecipient != nil
     }
+
+    /// Provider label for the verify/summary screens. Secured mints aren't a
+    /// third-party route, so they read "Mint (SECURE+)" rather than the synthetic
+    /// quote's "THORChain". Non-localized, matching the other brand display names.
+    var providerDisplayName: String? {
+        switch mode {
+        case .securedMint:
+            return "Mint (SECURE+)"
+        case .standard:
+            return quote.displayName
+        }
+    }
 }
 
 extension SwapTransaction {
@@ -72,6 +101,7 @@ extension SwapTransaction {
             toCoin: toCoin,
             fromAmount: fromAmount,
             quote: quote ?? self.quote,
+            mode: mode,
             gas: gas ?? self.gas,
             gasLimit: gasLimit ?? self.gasLimit,
             thorchainFee: thorchainFee ?? self.thorchainFee,
@@ -122,7 +152,15 @@ extension SwapTransaction {
     }
 
     var isApproveRequired: Bool {
-        SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
+        // A secured mint bundles an ERC20 router approval (built by the deposit
+        // builder for approve-required source tokens), but its synthetic quote
+        // carries no router — so gate on the source coin directly. Keying off the
+        // quote router here would skip the approval-consent checkbox on Verify for
+        // e.g. USDC → secured USDC even though an allowance is being signed.
+        if mode == .securedMint {
+            return fromCoin.shouldApprove
+        }
+        return SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
     }
 
     var isDeposit: Bool {
