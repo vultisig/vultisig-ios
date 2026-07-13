@@ -47,7 +47,7 @@ final class THORChainStakeInteractorTests: XCTestCase {
 
     // MARK: - resolveRujiStakedAmount (prefer on-chain receipt over API bonded)
 
-    func test_resolveRujiStakedAmount_prefersOnChainReceiptOverBonded() {
+    func testResolveRujiStakedAmountPrefersOnChainReceiptOverBonded() {
         // On-chain receipt read succeeded (raw 8_833_889_972 → 88.33889972); the API `bonded`
         // amount is ignored even though it differs.
         let result = THORChainStakeInteractor.resolveRujiStakedAmount(
@@ -58,7 +58,7 @@ final class THORChainStakeInteractorTests: XCTestCase {
         XCTAssertEqual(result, Decimal(string: "88.33889972"))
     }
 
-    func test_resolveRujiStakedAmount_successfulOnChainZeroStaysZero() {
+    func testResolveRujiStakedAmountSuccessfulOnChainZeroStaysZero() {
         // A genuine on-chain zero must NOT fall back to a stale non-zero `bonded`.
         let result = THORChainStakeInteractor.resolveRujiStakedAmount(
             onChainRaw: 0,
@@ -68,7 +68,7 @@ final class THORChainStakeInteractorTests: XCTestCase {
         XCTAssertEqual(result, 0)
     }
 
-    func test_resolveRujiStakedAmount_fallsBackToBondedWhenOnChainNil() {
+    func testResolveRujiStakedAmountFallsBackToBondedWhenOnChainNil() {
         // On-chain read failed (nil) → fall back to the API `bonded` amount (already scaled).
         let bonded = Decimal(string: "12.5")!
         let result = THORChainStakeInteractor.resolveRujiStakedAmount(

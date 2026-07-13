@@ -108,7 +108,7 @@ final class ThorchainSRujiTests: XCTestCase {
     // bank balance (preferred over the Rujira staking API's `bonded.amount`, which can
     // report zero even while receipts are held). These pin the parse that feeds it.
 
-    func test_parseStakingReceiptAmount_findsSRujiByOnChainDenom() throws {
+    func testParseStakingReceiptAmountFindsSRujiByOnChainDenom() throws {
         let json = """
         {
           "balances": [
@@ -125,7 +125,7 @@ final class ThorchainSRujiTests: XCTestCase {
         XCTAssertEqual(amount, Decimal(8_833_889_972))
     }
 
-    func test_parseStakingReceiptAmount_returnsZeroWhenDenomAbsent() throws {
+    func testParseStakingReceiptAmountReturnsZeroWhenDenomAbsent() throws {
         // A successful response with no sRUJI receipt is a genuine zero — the card keeps it
         // (only a request *failure* falls back to the API `bonded` amount).
         let json = """
@@ -139,7 +139,7 @@ final class ThorchainSRujiTests: XCTestCase {
         XCTAssertEqual(amount, .zero)
     }
 
-    func test_parseStakingReceiptAmount_ignoresStaleDenom() throws {
+    func testParseStakingReceiptAmountIgnoresStaleDenom() throws {
         let json = """
         { "balances": [ { "denom": "\(staleDenom)", "amount": "123456" } ] }
         """
