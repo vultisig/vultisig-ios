@@ -415,14 +415,13 @@ final class SwapDetailsViewModel {
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount.toDecimal(),
-            quote: quote,
+            kind: .market(quote),
             gas: gas,
             gasLimit: gasLimit,
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
             feeCoin: feeCoin,
-            limitContext: nil,
             advancedSettings: resolvedAdvancedSettings
         )
     }

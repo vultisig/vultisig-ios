@@ -17,14 +17,33 @@ import BigInt
 import Foundation
 import SwiftUI
 
+/// Discriminates the two kinds of swap transaction so the illegal states are
+/// unrepresentable: a market swap carries an optional `SwapQuote`; a placed
+/// THORChain limit order carries its `LimitOrderRecord`. Previously these were
+/// two independent optionals (`quote` + `limitContext`) on `SwapTransaction`,
+/// which allowed contradictory combinations and let a shared screen silently
+/// forget the limit case. Construction now goes through this enum; `switch` on
+/// it for any behaviour that differs between market and limit.
+enum SwapKind: Hashable {
+    case market(SwapQuote?)
+    case limit(LimitOrderRecord)
+}
+
 struct SwapTransaction: Hashable {
     let fromCoin: Coin
     let toCoin: Coin
     let fromAmount: Decimal
-    /// `nil` when the transaction is a limit order — limit flows have no
-    /// market quote. All quote-derived computed properties already accept
-    /// `SwapQuote?` so the nil-safety cascades cleanly via SwapCryptoLogic.
-    let quote: SwapQuote?
+    /// Single source of truth for "market vs limit". Construction goes through
+    /// it; new consumers should `switch` on `kind` rather than the derived
+    /// `quote` / `limitContext` / `isLimit` accessors below.
+    let kind: SwapKind
+
+    /// Market quote — `nil` for a limit order. Derived from `kind`; kept because
+    /// the many quote-driven fee/amount helpers already accept `SwapQuote?`.
+    var quote: SwapQuote? {
+        if case let .market(quote) = kind { return quote }
+        return nil
+    }
     let gas: BigInt
     /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or before
     /// the fee data loads). Carried alongside `gas` (= maxFeePerGas for EVM) so
@@ -51,12 +70,18 @@ struct SwapTransaction: Hashable {
     /// which Verify/Done don't otherwise carry.
     let feeCoin: Coin
 
-    /// Non-nil iff this transaction represents a placed THORChain limit
-    /// order. Lets the shared Verify / Pair / Keysign / Done screens flip
-    /// to limit-specific UI (`isLimit`) without forking the screen types.
-    let limitContext: LimitOrderRecord?
+    /// The placed limit order's record — `nil` for a market swap. Derived from
+    /// `kind`. Lets the shared Verify / Pair / Keysign / Done screens flip to
+    /// limit-specific UI without forking the screen types.
+    var limitContext: LimitOrderRecord? {
+        if case let .limit(record) = kind { return record }
+        return nil
+    }
 
-    var isLimit: Bool { limitContext != nil }
+    var isLimit: Bool {
+        if case .limit = kind { return true }
+        return false
+    }
 
     /// Per-swap advanced settings (slippage / gas-limit override / external
     /// recipient) captured at hand-off. The external recipient MUST be surfaced
@@ -91,7 +116,10 @@ extension SwapTransaction {
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount,
-            quote: quote ?? self.quote,
+            // `with(quote:)` is a market-refresh helper: a new quote re-quotes a
+            // market swap; with no quote we preserve the existing kind (a limit
+            // order never refreshes through here).
+            kind: quote.map { .market($0) } ?? self.kind,
             gas: gas ?? self.gas,
             gasLimit: gasLimit ?? self.gasLimit,
             thorchainFee: thorchainFee ?? self.thorchainFee,
@@ -99,7 +127,6 @@ extension SwapTransaction {
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
             networkFeeEstimate: networkFeeEstimate,
             feeCoin: feeCoin,
-            limitContext: limitContext,
             advancedSettings: advancedSettings
         )
     }
@@ -292,7 +319,7 @@ extension SwapTransaction {
             fromCoin: .example,
             toCoin: .example,
             fromAmount: 0,
-            quote: .thorchain(ThorchainSwapQuote(
+            kind: .market(.thorchain(ThorchainSwapQuote(
                 dustThreshold: nil,
                 expectedAmountOut: "0",
                 expiry: 0,
@@ -310,14 +337,13 @@ extension SwapTransaction {
                 warning: "",
                 router: nil,
                 maxStreamingQuantity: nil
-            )),
+            ))),
             gas: 0,
             gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: .example,
-            limitContext: nil,
             advancedSettings: .default
         )
     }()

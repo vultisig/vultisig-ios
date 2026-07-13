@@ -212,7 +212,7 @@ struct LimitSwapEntryView: View {
             fromCoin: limitFromCoin,
             toCoin: limitToCoin,
             fromAmount: limitFromCoin.decimal(for: vm.draft.sourceAmount),
-            quote: nil,
+            kind: .limit(record),
             gas: 0,
             // `gas`/`gasLimit` are the market-swap EVM fee-display fields (from a
             // market quote) and stay 0 for limit — the Verify/Done fee display uses
@@ -230,7 +230,6 @@ struct LimitSwapEntryView: View {
             // order's network fee — the resting `=<` order carries no market quote.
             networkFeeEstimate: vm.networkFeeEstimate,
             feeCoin: limitFromCoin,
-            limitContext: record,
             advancedSettings: .default
         )
 

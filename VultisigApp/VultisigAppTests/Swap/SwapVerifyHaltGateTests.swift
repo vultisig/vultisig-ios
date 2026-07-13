@@ -198,14 +198,13 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             fromCoin: arb,
             toCoin: eth,
             fromAmount: 1,
-            quote: quote ?? .mayachain(makeQuote()),
+            kind: .market(quote ?? .mayachain(makeQuote())),
             gas: .zero,
             gasLimit: .zero,
             thorchainFee: .zero,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: arb,
-            limitContext: nil,
             advancedSettings: .default
         )
     }
@@ -220,27 +219,27 @@ final class SwapVerifyHaltGateTests: XCTestCase {
     private func makeLimitTransaction() -> SwapTransaction {
         let arb = makeCoin(.arbitrum, ticker: "ARB")
         let btc = makeCoin(.bitcoin, ticker: "BTC")
+        let record = LimitOrderRecord(
+            inboundTxHash: "",
+            sourceAsset: "ARB.ETH",
+            sourceAmount: "1000000000000000000",
+            sourceDecimals: 18,
+            targetAsset: "BTC.BTC",
+            destAddress: "addr-BTC",
+            targetPrice: 1,
+            expiryBlocks: 14_400
+        )
         return SwapTransaction(
             fromCoin: arb,
             toCoin: btc,
             fromAmount: 1,
-            quote: nil,
+            kind: .limit(record),
             gas: .zero,
             gasLimit: .zero,
             thorchainFee: .zero,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
             feeCoin: arb,
-            limitContext: LimitOrderRecord(
-                inboundTxHash: "",
-                sourceAsset: "ARB.ETH",
-                sourceAmount: "1000000000000000000",
-                sourceDecimals: 18,
-                targetAsset: "BTC.BTC",
-                destAddress: "addr-BTC",
-                targetPrice: 1,
-                expiryBlocks: 14_400
-            ),
             advancedSettings: .default
         )
     }

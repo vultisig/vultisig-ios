@@ -408,15 +408,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             fromCoin: rune,
             toCoin: btc,
             fromAmount: 1.0,
-            quote: .thorchain(quote),
+            kind: .market(.thorchain(quote)),
             gas: 0,
             gasLimit: 0,
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: rune,
-            limitContext: nil,
-            advancedSettings: .default
+            feeCoin: rune,            advancedSettings: .default
         )
     }
 
@@ -427,15 +425,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             fromCoin: cacao,
             toCoin: btc,
             fromAmount: 1.0,
-            quote: .mayachain(quote),
+            kind: .market(.mayachain(quote)),
             gas: 0,
             gasLimit: 0,
             thorchainFee: BigInt(2_000),
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: cacao,
-            limitContext: nil,
-            advancedSettings: .default
+            feeCoin: cacao,            advancedSettings: .default
         )
     }
 
@@ -446,15 +442,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             fromCoin: usdc,
             toCoin: eth,
             fromAmount: 100,
-            quote: quote,
+            kind: .market(quote),
             gas: 0,
             gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,
-            limitContext: nil,
-            advancedSettings: .default
+            feeCoin: eth,            advancedSettings: .default
         )
     }
 
@@ -490,15 +484,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             fromCoin: eth,
             toCoin: usdc,
             fromAmount: 1.0,
-            quote: quote,
+            kind: .market(quote),
             gas: 0,
             gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,
-            limitContext: nil,
-            advancedSettings: .default
+            feeCoin: eth,            advancedSettings: .default
         )
     }
 
@@ -509,15 +501,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             fromCoin: usdc,
             toCoin: eth,
             fromAmount: 100,
-            quote: quote,
+            kind: .market(quote),
             gas: 0,
             gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: eth,
-            limitContext: nil,
-            advancedSettings: .default
+            feeCoin: eth,            advancedSettings: .default
         )
     }
 
@@ -576,15 +566,13 @@ final class SwapPayloadBuilderTests: XCTestCase {
             fromCoin: sol,
             toCoin: usdc,
             fromAmount: 1.0,
-            quote: quote,
+            kind: .market(quote),
             gas: 0,
             gasLimit: 0,
             thorchainFee: 0,
             vultDiscountBps: 0,
             referralDiscountBps: 0,
-            feeCoin: sol,
-            limitContext: nil,
-            advancedSettings: .default
+            feeCoin: sol,            advancedSettings: .default
         )
     }
 
