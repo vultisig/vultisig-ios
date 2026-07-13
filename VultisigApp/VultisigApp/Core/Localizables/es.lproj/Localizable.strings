@@ -1079,6 +1079,7 @@
 "slippageHelperText" = "Limita cuánto puede cambiar el precio antes de cancelar la ejecución.";
 "slippageMaxNote" = "El deslizamiento está limitado a %@.";
 "slippageTolerance" = "Tolerancia de deslizamiento";
+"solanaBatchSigningNotSupported" = "Aún no se admite firmar varias transacciones de Solana a la vez.";
 "solanaStakingActionDelegate" = "Apostar";
 "solanaStakingActionUnstake" = "Cancelar staking";
 "solanaStakingActionWithdraw" = "Retirar";
