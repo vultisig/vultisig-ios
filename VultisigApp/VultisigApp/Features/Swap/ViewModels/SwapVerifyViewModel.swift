@@ -215,7 +215,19 @@ final class SwapVerifyViewModel {
                 guard let sourceAmount = BigInt(limitContext.sourceAmount) else {
                     throw LimitSwapAssemblyError.invalidSourceAmount(limitContext.sourceAmount)
                 }
-                // Build FIRST so the balance check validates against the ACTUAL fee
+                // Fast pre-check against the entry-screen fee estimate BEFORE the
+                // (network) payload build: catches an obvious shortfall early and
+                // keeps failing closed even if the build can't run. The fresh-fee
+                // re-check below then covers a gas spike since the estimate.
+                if let balanceError = SwapCryptoLogic.balanceError(
+                    fromCoin: transaction.fromCoin,
+                    feeCoin: transaction.feeCoin,
+                    fromAmount: transaction.fromAmount.description,
+                    fee: transaction.networkFeeEstimate
+                ) {
+                    throw balanceError
+                }
+                // Build so the FINAL balance check validates against the ACTUAL fee
                 // that will be signed. The payload carries the fresh sign-time
                 // chain-specific gas (`limitDepositChainSpecific` applied inside the
                 // assembler), whereas `transaction.networkFeeEstimate` is only the

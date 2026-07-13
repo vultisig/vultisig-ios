@@ -408,7 +408,11 @@ class BalanceService {
     /// sign-time funds check so a down balance RPC can't pass an insufficient
     /// order against a stale balance.
     func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {
-        let rawBalance = try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
+        // Snapshot the SwiftData @Model's identity on MainActor before the async
+        // fetch — reading a main-context model off a generic executor is a
+        // concurrency hazard.
+        let (meta, address) = await MainActor.run { (coin.toCoinMeta(), coin.address) }
+        let rawBalance = try await fetchBalance(for: meta, address: address)
         try await MainActor.run {
             if coin.rawBalance != rawBalance {
                 coin.rawBalance = rawBalance
