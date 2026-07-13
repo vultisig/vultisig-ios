@@ -84,9 +84,19 @@ func limitOrderExpectedOutput(
         sourceAmount: sourceAmount,
         sourceDecimals: sourceDecimals,
         targetPrice: targetPrice
-    ), let limDecimal = Decimal(string: lim.description) else {
+    ) else {
         return 0
     }
+    return limNaturalOutput(lim)
+}
+
+/// Convert a THORChain LIM (1e8 fixed-point, target asset) to the target's
+/// natural units for display. Shared by `limitOrderExpectedOutput` and the
+/// byte-fitting path, so a memo whose LIM was rounded UP to fit
+/// (`buildFittedLimitSwapMemo`) shows the EXACT effective minimum the order was
+/// signed with — display == memo.
+func limNaturalOutput(_ lim: BigInt) -> Decimal {
+    guard let limDecimal = Decimal(string: lim.description) else { return 0 }
     var scaled = limDecimal
     var natural = Decimal()
     NSDecimalMultiplyByPowerOf10(&natural, &scaled, Int16(-Coin.thorchainFixedPointExponent), .plain)

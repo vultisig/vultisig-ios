@@ -428,7 +428,10 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(record.memo, prepared.memo)
     }
 
-    func testPreparePlaceableOrderRejectsNonNativeSource() {
+    func testPreparePlaceableOrderAcceptsNonNativeErc20Source() {
+        // ERC20 sources are supported: the order assembles (memo + record) and
+        // the keysign path builds approve(router) + router depositWithExpiry.
+        // (The old native-only gate has been removed.)
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
         vm.draft.fromAsset = LimitSwapAsset(
@@ -447,8 +450,84 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         ))
         vm.draft.targetPrice = Decimal(string: "0.00002")!
 
-        XCTAssertNil(vm.preparePlaceableOrder())
-        XCTAssertEqual(vm.placeOrderError, .nonNativeSourceUnsupported)
+        let prepared = vm.preparePlaceableOrder()
+        XCTAssertNotNil(prepared, "ERC20 source should now assemble a placeable order")
+        XCTAssertNil(vm.placeOrderError)
+        XCTAssertTrue(prepared?.record.sourceAsset.hasPrefix("ETH.USDC-") ?? false)
+        XCTAssertTrue(prepared?.memo.hasPrefix("=<:BTC.BTC:") ?? false)
+    }
+
+    // MARK: - ERC20 limit approve consent (isApproveRequired / isValidForm)
+
+    private func limitTransaction(sourceIsErc20: Bool) -> SwapTransaction {
+        let fromCoin = sourceIsErc20
+            ? Coin(asset: CoinMeta.make(chain: .ethereum, ticker: "USDC", decimals: 6, isNativeToken: false),
+                   address: "0xsource0000000000000000000000000000000000", hexPublicKey: "pk")
+            : Coin(asset: CoinMeta.make(chain: .bitcoin, ticker: "BTC", decimals: 8),
+                   address: "bc1qsource0000000000000000000000000000000", hexPublicKey: "pk")
+        let toCoin = Coin(asset: CoinMeta.make(chain: .thorChain, ticker: "RUNE", decimals: 8),
+                          address: "thor1destination", hexPublicKey: "pk")
+        let feeCoin = sourceIsErc20
+            ? Coin(asset: CoinMeta.make(chain: .ethereum, ticker: "ETH", decimals: 18),
+                   address: "0xfee00000000000000000000000000000000000000", hexPublicKey: "pk")
+            : fromCoin
+        let record = LimitOrderRecord(
+            inboundTxHash: "",
+            sourceAsset: sourceIsErc20 ? "ETH.USDC-EC7" : "BTC.BTC",
+            sourceAmount: "1000000",
+            sourceDecimals: fromCoin.decimals,
+            targetAsset: "THOR.RUNE",
+            destAddress: "thor1destination",
+            targetPrice: Decimal(string: "2.5")!,
+            expiryBlocks: 14_400,
+            memo: "=<:THOR.RUNE:thor1destination:1/14400/0:vi:50",
+            expiryHours: 24
+        )
+        return SwapTransaction(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: 1,
+            kind: .limit(record),
+            gas: 0,
+            gasLimit: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            networkFeeEstimate: BigInt(1_000_000_000_000_000),
+            feeCoin: feeCoin,
+            advancedSettings: .default
+        )
+    }
+
+    func testErc20LimitOrderRequiresApproveConfirmation() {
+        // An ERC20 source attaches approve(router), so the approve checkbox must
+        // surface — even though a limit order carries no market quote.
+        XCTAssertTrue(limitTransaction(sourceIsErc20: true).isApproveRequired)
+        // A native source has no approve.
+        XCTAssertFalse(limitTransaction(sourceIsErc20: false).isApproveRequired)
+    }
+
+    func testErc20LimitFormGatesSigningOnAmountFeeAndApprove() {
+        let tx = limitTransaction(sourceIsErc20: true)
+        let vm = SwapVerifyViewModel(transaction: tx)
+        vm.isAmountCorrect = true
+        vm.isFeeCorrect = true
+        vm.isApproveCorrect = false
+        XCTAssertFalse(vm.isValidForm(shouldApprove: tx.isApproveRequired),
+                       "the bundled ERC20 approve must gate signing on the approve checkbox")
+        vm.isApproveCorrect = true
+        XCTAssertTrue(vm.isValidForm(shouldApprove: tx.isApproveRequired))
+    }
+
+    func testNativeLimitFormGatesSigningOnAmountAndFee() {
+        let tx = limitTransaction(sourceIsErc20: false)
+        let vm = SwapVerifyViewModel(transaction: tx)
+        vm.isAmountCorrect = true
+        vm.isFeeCorrect = false
+        XCTAssertFalse(vm.isValidForm(shouldApprove: tx.isApproveRequired),
+                       "the network-fee checkbox must gate signing for limit orders")
+        vm.isFeeCorrect = true
+        XCTAssertTrue(vm.isValidForm(shouldApprove: tx.isApproveRequired))
     }
 
     func testPreparePlaceableOrderRejectsUnsupportedExpiryViaValidation() {

@@ -55,17 +55,16 @@ final class SwapVerifyViewModel {
     }
 
     func isValidForm(shouldApprove: Bool) -> Bool {
-        // Limit orders only have the "amount is correct" checkbox — fee /
-        // approve checkboxes don't render for limit (no quote, no ERC20
-        // approve). Mirrors the verify-screen UI gate.
-        if transaction.isLimit {
-            return isAmountCorrect
-        }
+        // Every order confirms amount + network fee — both checkboxes always
+        // render (a limit order surfaces its estimated source-chain fee too). A
+        // bundled ERC20 approve (market OR an ERC20-source limit, whose assembler
+        // attaches `approve(router)`) additionally gates on the approve checkbox.
+        // `shouldApprove` is `transaction.isApproveRequired`, which already
+        // accounts for the limit case.
         if shouldApprove {
             return isAmountCorrect && isFeeCorrect && isApproveCorrect
-        } else {
-            return isAmountCorrect && isFeeCorrect
         }
+        return isAmountCorrect && isFeeCorrect
     }
 
     func scan() async {
@@ -239,7 +238,8 @@ final class SwapVerifyViewModel {
                     targetCoin: transaction.toCoin,
                     sourceAmount: sourceAmount,
                     memo: limitContext.memo,
-                    vault: vault
+                    vault: vault,
+                    expectedToAmountDecimal: transaction.toAmountDecimal
                 )
                 let signTimeFee = try await SwapCryptoLogic.thorchainFee(
                     for: payload.chainSpecific,

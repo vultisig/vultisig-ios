@@ -62,11 +62,6 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
     /// The order's minimum output (LIM) truncates to zero — the amount/price is
     /// too small to place a price-bound order.
     case limitAmountTooSmall
-    /// A non-native (ERC20-style) source asset was selected. The Phase 1
-    /// limit-swap flow routes the source transfer straight to the THORChain
-    /// router without an approve-first keysign, which the router would reject.
-    /// Fail loud at "Place Order" rather than broadcasting a doomed tx.
-    case nonNativeSourceUnsupported
     /// The shared input validation (`validateLimitSwapInputs`) rejected the
     /// draft before the memo was built. The live "Place Order" path runs this
     /// gate in production so malformed inputs surface as an alert instead of
@@ -86,8 +81,6 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "targetPriceOverflow"
         case .limitAmountTooSmall:
             return "limitAmountTooSmall"
-        case .nonNativeSourceUnsupported:
-            return "nonNativeSourceUnsupported"
         case let .invalidInputs(errors):
             return "invalidInputs-\(errors.map(String.init(describing:)).joined(separator: ","))"
         case .advancedSwapQueueDisabled:
@@ -108,8 +101,6 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "limitSwap.error.targetPriceOverflow".localized
         case .limitAmountTooSmall:
             return "limitSwap.error.limitAmountTooSmall".localized
-        case .nonNativeSourceUnsupported:
-            return "limitSwap.error.nonNativeSource".localized
         case .invalidInputs:
             return "limitSwap.error.invalidInputs".localized
         case .advancedSwapQueueDisabled:

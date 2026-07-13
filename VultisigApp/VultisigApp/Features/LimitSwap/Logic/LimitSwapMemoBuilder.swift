@@ -16,8 +16,98 @@ func buildLimitSwapMemo(_ inputs: LimitSwapInputs) throws -> String {
         targetPrice: inputs.targetPrice
     )
     let interval = computeExpiryBlocks(hours: inputs.expiryHours)
+    return composeLimitSwapMemo(limString: compressLim(lim), inputs: inputs, interval: interval)
+}
 
-    return "=<:\(inputs.targetAsset):\(inputs.destAddress):\(compressLim(lim))/\(interval)/0:\(inputs.affiliate):\(inputs.affiliateBps)"
+/// Assemble the `=<` memo string from a (pre-formatted) LIM field and the order
+/// inputs. Single source of the wire layout so the exact-precision path and the
+/// byte-fitting path (`buildFittedLimitSwapMemo`) can't drift.
+private func composeLimitSwapMemo(limString: String, inputs: LimitSwapInputs, interval: Int) -> String {
+    "=<:\(inputs.targetAsset):\(inputs.destAddress):\(limString)/\(interval)/0:\(inputs.affiliate):\(inputs.affiliateBps)"
+}
+
+/// Maximum the minimum-output (LIM) may be rounded UP to make an over-long memo
+/// fit its source-chain byte budget, in basis points. 50 bps = 0.5%. Rounding
+/// UP only ever RAISES the guaranteed floor, so the user can never receive less
+/// than their target — the order just needs a fractionally better price to fill.
+let limitLimRoundingMaxBps = 50
+
+/// Per-tx memo byte budget for a limit deposit on a given source chain. UTXO
+/// chains cap `OP_RETURN` at 80 bytes; everything else aligns with THORChain's
+/// 250-byte memo limit. Single source shared by `assertMemoByteLength` and the
+/// byte-fitting builder.
+func limitMemoByteLimit(for sourceChainKind: ChainType) -> Int {
+    (sourceChainKind == .UTXO) ? 80 : 250
+}
+
+/// Build the `=<` memo, shrinking it to fit the source chain's byte budget when
+/// the exact-precision memo overflows (only bites for UTXO sources at 80 bytes —
+/// a 42-char L2 destination + a referral affiliate tail + a non-round LIM).
+///
+/// The ONLY field with slack is the LIM, and `compressLim` is lossless so it
+/// can't shrink a precise value. So when the exact memo overflows, the LIM is
+/// rounded UP to progressively fewer significant figures (which gives it trailing
+/// zeros that `compressLim` collapses to `111e6`-style) until the memo fits —
+/// bounded by `limitLimRoundingMaxBps`. Rounding UP is the safe direction: it can
+/// only RAISE the minimum-output floor, so the user never receives less than
+/// their target (the order may just fill at a fractionally better price, or not
+/// at all — never worse). Returns the memo AND the effective LIM actually
+/// encoded, so the Verify/Done "min payout" display and the signed order agree
+/// exactly (what you see is what you sign).
+///
+/// Throws `LimitSwapMemoError.memoExceedsByteLimit` when not even the
+/// tolerance-bounded rounding fits — the caller surfaces the clear error rather
+/// than silently over-rounding the price.
+func buildFittedLimitSwapMemo(
+    _ inputs: LimitSwapInputs,
+    sourceChainKind: ChainType
+) throws -> (memo: String, effectiveLim: BigInt) {
+    let lim = try computeLim(
+        sourceAmount: inputs.sourceAmount,
+        sourceDecimals: inputs.sourceDecimals,
+        targetPrice: inputs.targetPrice
+    )
+    let interval = computeExpiryBlocks(hours: inputs.expiryHours)
+    let limit = limitMemoByteLimit(for: sourceChainKind)
+
+    // Common case: the exact (lossless) memo already fits — no rounding.
+    let exactMemo = composeLimitSwapMemo(limString: compressLim(lim), inputs: inputs, interval: interval)
+    if exactMemo.utf8.count <= limit {
+        return (exactMemo, lim)
+    }
+
+    // Overflow: round the LIM UP to the fewest significant figures that fit,
+    // within the tolerance cap. Iterate most-precise → coarsest; the first fit is
+    // the least rounding. Stop once the rounding would exceed the tolerance
+    // (it only grows as precision drops).
+    let digits = lim.description.count
+    for significantFigures in stride(from: digits - 1, through: 1, by: -1) {
+        let rounded = roundUpToSignificantFigures(lim, significantFigures: significantFigures)
+        // (rounded - lim) / lim <= maxBps / 10_000, as integers.
+        if (rounded - lim) * 10_000 > lim * BigInt(limitLimRoundingMaxBps) {
+            break
+        }
+        let candidate = composeLimitSwapMemo(limString: compressLim(rounded), inputs: inputs, interval: interval)
+        if candidate.utf8.count <= limit {
+            return (candidate, rounded)
+        }
+    }
+
+    throw LimitSwapMemoError.memoExceedsByteLimit(actual: exactMemo.utf8.count, limit: limit)
+}
+
+/// Round `value` UP to `significantFigures` significant digits (i.e. toward
+/// +infinity), producing a value with trailing zeros. Used to make a LIM
+/// `compressLim`-friendly when a memo must be shortened. A no-op when
+/// `significantFigures` already covers every digit or the value is non-positive.
+func roundUpToSignificantFigures(_ value: BigInt, significantFigures: Int) -> BigInt {
+    guard value > 0, significantFigures >= 1 else { return value }
+    let digits = value.description.count
+    guard significantFigures < digits else { return value }
+    let factor = BigInt(10).power(digits - significantFigures)
+    let (quotient, remainder) = value.quotientAndRemainder(dividingBy: factor)
+    let rounded = remainder == 0 ? quotient : quotient + 1
+    return rounded * factor
 }
 
 /// Encode a LIM integer using THORChain's `<mantissa>e<exponent>` shorthand
@@ -90,7 +180,7 @@ func compressLim(_ lim: BigInt) -> String {
 /// - Throws: `LimitSwapMemoError.memoExceedsByteLimit(actual:limit:)` when
 ///   the memo's UTF-8 byte count exceeds the applicable cap.
 func assertMemoByteLength(_ memo: String, sourceChainKind: ChainType) throws {
-    let limit = (sourceChainKind == .UTXO) ? 80 : 250
+    let limit = limitMemoByteLimit(for: sourceChainKind)
     let actual = memo.utf8.count
     if actual > limit {
         throw LimitSwapMemoError.memoExceedsByteLimit(actual: actual, limit: limit)

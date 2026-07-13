@@ -441,17 +441,6 @@ final class LimitSwapFormViewModel {
             return nil
         }
 
-        // Phase 1 routes only native source assets. A non-native (ERC20-style)
-        // source would set `toAddress = router` with `approvePayload: nil` and
-        // no approve-first keysign, which the THORChain router rejects. The
-        // picker filters by chain, not token type, so ETH.USDC is still
-        // pickable — guard loudly here. (ERC20 approve-first flow is Phase 2.)
-        guard draft.fromAsset.isNativeToken else {
-            logger.error("Place order rejected: non-native source \(self.draft.fromAsset.ticker, privacy: .public) not supported in Phase 1")
-            placeOrderError = .nonNativeSourceUnsupported
-            return nil
-        }
-
         // Real affiliate config: read the vault's referral code (if any) and
         // compute the affiliate fragment via the same helper the market path
         // uses. Vault-tier discount defaults to 0 for Phase 1.
@@ -482,14 +471,22 @@ final class LimitSwapFormViewModel {
             return nil
         }
 
-        // Memo assembly + byte-cap pre-flight. Both can fail for genuinely
+        // Memo assembly + byte-cap fitting. Can fail for genuinely
         // user-actionable reasons (a target price that overflows the LIM
-        // fixed-point, or a memo that overflows the source chain's per-tx byte
-        // budget). These must surface via an alert, not be swallowed silently.
+        // fixed-point, or a memo that still overflows the source chain's per-tx
+        // byte budget even after bounded LIM round-up). These must surface via an
+        // alert, not be swallowed silently. `buildFittedLimitSwapMemo` returns the
+        // effective LIM actually encoded so the displayed minimum matches the
+        // signed order.
         let memo: String
+        let effectiveMinOutput: Decimal
         do {
-            memo = try buildLimitSwapMemo(inputs)
-            try assertMemoByteLength(memo, sourceChainKind: draft.fromAsset.chain.chainType)
+            let fitted = try buildFittedLimitSwapMemo(
+                inputs,
+                sourceChainKind: draft.fromAsset.chain.chainType
+            )
+            memo = fitted.memo
+            effectiveMinOutput = limNaturalOutput(fitted.effectiveLim)
         } catch let error as LimitSwapMemoError {
             switch error {
             case let .memoExceedsByteLimit(actual, limit):
@@ -521,7 +518,8 @@ final class LimitSwapFormViewModel {
             createdAt: Date(),
             status: .pending,
             memo: memo,
-            expiryHours: draft.expiryHours
+            expiryHours: draft.expiryHours,
+            minOutputOverride: effectiveMinOutput
         )
         return (memo, record)
     }

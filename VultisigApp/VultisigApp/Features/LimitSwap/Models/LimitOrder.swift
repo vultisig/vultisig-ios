@@ -92,6 +92,13 @@ struct LimitOrderRecord: Hashable, Sendable {
     /// `expiryHours` is the human-readable display value the verify and
     /// done screens render alongside the target price.
     let expiryHours: Int
+    /// Effective guaranteed-minimum output (target natural units) when the memo's
+    /// LIM was rounded UP to fit the source-chain byte budget
+    /// (`buildFittedLimitSwapMemo`). `nil` means the LIM equals the exact
+    /// `targetPrice`-derived value, so the display falls back to
+    /// `limitOrderExpectedOutput`. When set, the Verify/Done "min payout" shows
+    /// the EXACT figure the order was signed with (what you see is what you sign).
+    let minOutputOverride: Decimal?
 
     init(
         inboundTxHash: String,
@@ -105,7 +112,8 @@ struct LimitOrderRecord: Hashable, Sendable {
         createdAt: Date = Date(),
         status: LimitOrderStatus = .pending,
         memo: String = "",
-        expiryHours: Int = 0
+        expiryHours: Int = 0,
+        minOutputOverride: Decimal? = nil
     ) {
         self.inboundTxHash = inboundTxHash
         self.sourceAsset = sourceAsset
@@ -119,5 +127,6 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.status = status
         self.memo = memo
         self.expiryHours = expiryHours
+        self.minOutputOverride = minOutputOverride
     }
 }

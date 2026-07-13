@@ -162,8 +162,13 @@ extension SwapTransaction {
         // Limit orders carry no market quote (`quote == nil`) — the limit-ness
         // lives in the memo. Deriving the "you receive" amount from the quote
         // would render 0 on the shared Verify / Done screens. Use the minimum
-        // output implied by the limit price instead.
+        // output implied by the limit price instead — or the exact effective
+        // minimum when the memo's LIM was rounded up to fit its byte budget, so
+        // the displayed floor matches the signed order.
         if let limit = limitContext {
+            if let override = limit.minOutputOverride {
+                return override
+            }
             return limitOrderExpectedOutput(
                 sourceAmount: BigInt(limit.sourceAmount) ?? 0,
                 sourceDecimals: limit.sourceDecimals,
@@ -182,7 +187,15 @@ extension SwapTransaction {
     }
 
     var isApproveRequired: Bool {
-        SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
+        // Limit orders carry no market quote, so the quote-derived check reads
+        // false — but an ERC20 source still deposits through the router
+        // (approve + depositWithExpiry, attached by the limit assembler), so the
+        // approval must be surfaced and confirmed on Verify. Mirror the
+        // assembler's condition (`fromCoin.shouldApprove` = EVM token source).
+        if isLimit {
+            return fromCoin.shouldApprove
+        }
+        return SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
     }
 
     var isDeposit: Bool {

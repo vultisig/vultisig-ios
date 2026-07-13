@@ -651,7 +651,6 @@
 "limitSwap.error.advancedSwapQueueDisabled" = "As ordens limite estão temporariamente indisponíveis na THORChain. Tente novamente mais tarde ou use uma troca de mercado.";
 "limitSwap.error.invalidInputs" = "Alguns detalhes da ordem são inválidos. Verifique o valor, o preço e a validade e tente novamente.";
 "limitSwap.error.limitAmountTooSmall" = "Esta ordem é pequena demais para um preço limite. Aumente o valor ou ajuste o preço e tente novamente.";
-"limitSwap.error.nonNativeSource" = "As ordens limite atualmente suportam apenas ativos de origem nativos. Escolha a moeda nativa da chain e tente novamente.";
 "limitSwap.error.targetPriceOverflow" = "O preço-alvo é muito alto. Insira um preço menor e tente novamente.";
 "limitSwap.error.title" = "Não foi possível colocar a ordem";
 "limitSwap.executeWhen" = "Executar quando";

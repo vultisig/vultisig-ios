@@ -24,6 +24,11 @@ enum LimitSwapAssemblyError: Error, Equatable {
     /// inbound halt/pause filter the external-source branch applies — this is the
     /// fail-closed global-pause gate for the deposit path.
     case thorchainTradingPaused
+    /// An ERC20 source resolved a live inbound row with no router contract. A
+    /// token deposit is the router's `depositWithExpiry` call, so without a
+    /// router the tokens can't be deposited — fail loud rather than fall back to
+    /// a plain transfer that would strand them on the vault with no memo.
+    case noRouterForTokenSource(String)
 }
 
 /// Whether THORChain has globally paused trading, per a live `inbound_addresses`
@@ -52,13 +57,21 @@ func shouldBlockRuneDeposit(inbounds: [InboundAddress]) -> Bool {
 /// `BlockChainService` (chain-specific fee/nonce/etc. fetch), and
 /// `KeysignPayloadFactory` (UTXO selection + final payload construction).
 ///
-/// Mirrors how the market-swap path assembles its keysign payload, with
-/// two differences:
-/// 1. `memo` is the limit-swap memo built client-side (`=<:...`) rather than
-///    the API-provided market memo (`=>:...`).
-/// 2. `swapPayload` is `nil` — the limit-ness lives entirely in the memo for
-///    Phase 1; revisit if a chain helper turns out to require swap-payload
-///    context for proper signing.
+/// Mirrors how the market-swap path assembles its keysign payload. The
+/// limit-ness always lives in the `memo` (client-built `=<:...` vs the market
+/// `=>:...`); how that memo reaches the chain depends on the source:
+/// - **Native RUNE:** `MsgDeposit` on THORChain (no inbound vault).
+/// - **Native gas asset (ETH/AVAX/BTC/…):** transfer to the Asgard inbound
+///   vault with the memo in tx `data` / OP_RETURN — `swapPayload`/`approvePayload`
+///   stay `nil`.
+/// - **ERC20 source:** the router's `depositWithExpiry(vault, asset, amount,
+///   memo, expiry)` call, which first needs `approve(router, amount)`. This
+///   rides `swapPayload = .thorchain(...)` + `approvePayload`, mirroring the
+///   market ERC20 THORChain swap exactly (approve + deposit signed in ONE
+///   ceremony → `.regularWithApprove`); only the memo prefix differs. A token
+///   source signed WITHOUT a swap payload would fall through to the plain
+///   ERC20-transfer path in `KeysignViewModel`, dropping the memo and stranding
+///   the tokens on the router — so it MUST ride the swap payload.
 ///
 /// **Implementation detail:** `BlockChainService.fetchSwapBlockChainSpecific`
 /// is the granular swap-shaped chain-specific fetch. Passing `quote: nil`
@@ -75,17 +88,24 @@ func shouldBlockRuneDeposit(inbounds: [InboundAddress]) -> Bool {
 /// so the two paths gas the identical deposit identically and the limit path
 /// doesn't over-reserve 5× the fee headroom. This changes ONLY the EVM gas-limit
 /// field (via `overridingEVMGasLimit`); maxFeePerGas / priority / nonce are
-/// untouched. It is a no-op for non-EVM and token sources.
+/// untouched. It is a no-op for non-EVM and token sources — a token
+/// `depositWithExpiry` keeps the 600000 swap default, which safely over-covers
+/// the router call.
 ///
-/// **Phase 1 scope:** native source coins only. ERC20 sources require an
-/// approval-keysign-first flow that's deferred to Phase 2.
+/// `expectedToAmountDecimal` is the order's guaranteed-minimum output in the
+/// target's natural units — surfaced only on the ERC20 swap payload for
+/// cross-device "you receive" display (see `limitThorchainSwapPayload`); it
+/// never influences signing. `now` is parameterised so the ERC20 deposit's
+/// router expiry is deterministic under test.
 @MainActor
 func buildLimitSwapKeysignPayload(
     sourceCoin: Coin,
     targetCoin: Coin,
     sourceAmount: BigInt,
     memo: String,
-    vault: Vault
+    vault: Vault,
+    expectedToAmountDecimal: Decimal = 0,
+    now: Date = Date()
 ) async throws -> KeysignPayload {
 
     // Sign-time fail-closed availability re-check. Placement was gated on the
@@ -112,6 +132,10 @@ func buildLimitSwapKeysignPayload(
     // fall through to `thorchainInboundChainSymbol` and fail loud as
     // `sourceChainNotRoutable` rather than build a cross-protocol MsgDeposit.
     let toAddress: String
+    // Non-nil only for an ERC20 source, which deposits via the router's
+    // `depositWithExpiry` call (approve + deposit signed in one ceremony).
+    var swapPayload: SwapPayload?
+    var approvePayload: ERC20ApprovePayload?
     if SwapCryptoLogic.isDeposit(fromCoin: sourceCoin),
        thorchainChainPrefix(for: sourceCoin.chain) == "THOR" {
         // Native RUNE settles via `MsgDeposit` with no inbound vault, so it
@@ -157,11 +181,31 @@ func buildLimitSwapKeysignPayload(
             throw LimitSwapAssemblyError.noInboundAddressForChain(chainSymbol)
         }
 
-        // ERC20 source → router contract; native source → inbound vault.
-        if !sourceCoin.isNativeToken, let router = inbound.router, !router.isEmpty {
-            toAddress = router
-        } else {
+        if sourceCoin.isNativeToken {
+            // Native gas asset (ETH / AVAX / BTC / …): deposit straight to the
+            // Asgard inbound vault; the `=<` memo rides in the tx `data` (EVM)
+            // / OP_RETURN (UTXO). No approval, no router call.
             toAddress = inbound.address
+        } else {
+            // ERC20 source: a THORChain token deposit is the router's
+            // `depositWithExpiry(vault, asset, amount, memo, expiry)` call, which
+            // first needs `approve(router, amount)`. Requires a router — without
+            // one the tokens can't be deposited; fail loud rather than fall back
+            // to a plain transfer that strands them.
+            guard let router = inbound.router, !router.isEmpty else {
+                throw LimitSwapAssemblyError.noRouterForTokenSource(chainSymbol)
+            }
+            toAddress = router
+            approvePayload = ERC20ApprovePayload(amount: sourceAmount, spender: router)
+            swapPayload = .thorchain(limitThorchainSwapPayload(
+                sourceCoin: sourceCoin,
+                targetCoin: targetCoin,
+                sourceAmount: sourceAmount,
+                vaultAddress: inbound.address,
+                routerAddress: router,
+                toAmountDecimal: expectedToAmountDecimal,
+                now: now
+            ))
         }
     }
 
@@ -180,9 +224,62 @@ func buildLimitSwapKeysignPayload(
         amount: sourceAmount,
         memo: memo,
         chainSpecific: chainSpecific,
-        swapPayload: nil,
-        approvePayload: nil,
+        swapPayload: swapPayload,
+        approvePayload: approvePayload,
         vault: vault
+    )
+}
+
+/// Builds the `THORChainSwapPayload` that drives an ERC20 limit deposit's signed
+/// `depositWithExpiry(vault, asset, amount, memo, expiry)` router call. Mirrors
+/// the market ERC20 THORChain swap: `EVMHelper.getSwapPreSignedInputData` reads
+/// `routerAddress` (tx `to`), `vaultAddress` (the Asgard vault, first ABI
+/// param), `fromCoin.contractAddress` and `fromAmount` off this payload; the
+/// `=<` limit memo rides on `KeysignPayload.memo`, NOT this payload.
+///
+/// `toAmountDecimal` is the order's guaranteed-MINIMUM output in the target's
+/// natural units (the memo LIM expressed for display, via
+/// `SwapTransaction.toAmountDecimal` → `limitOrderExpectedOutput`). It feeds
+/// only cross-device SWAP display — the co-signer's "you receive" row — so a
+/// resting limit order shows its LIM floor rather than 0. Signing and every
+/// fund-safety gate ignore it (they read `transaction` / `toCoin.address`), so
+/// its exact value can never affect what is signed. `toAmountLimit` stays "0":
+/// it drives only the WalletCore native-RUNE `THORChainSwap.build` min-output
+/// arg, which an ERC20 `depositWithExpiry` never reaches, and nothing displays
+/// it.
+///
+/// `expirationTime` is the router's ON-CHAIN tx-execution deadline
+/// (`require(block.timestamp < expiry)` inside `depositWithExpiry`) — a guard
+/// that a stale, long-unconfirmed deposit tx can't execute — NOT the resting
+/// order's lifetime (that is the memo's TTL, up to 3 days, checked per-block by
+/// THORChain). The market path's 15-minute window is reused verbatim: once
+/// THORChain observes the deposit (a block or two, far under 15m) the `=<` order
+/// rests for its full memo TTL regardless of this value.
+///
+/// Pure so the router/vault/amount/expiry wiring is unit-testable without a
+/// network fetch.
+func limitThorchainSwapPayload(
+    sourceCoin: Coin,
+    targetCoin: Coin,
+    sourceAmount: BigInt,
+    vaultAddress: String,
+    routerAddress: String,
+    toAmountDecimal: Decimal,
+    now: Date
+) -> THORChainSwapPayload {
+    THORChainSwapPayload(
+        fromAddress: sourceCoin.address,
+        fromCoin: sourceCoin,
+        toCoin: targetCoin,
+        vaultAddress: vaultAddress,
+        routerAddress: routerAddress,
+        fromAmount: sourceAmount,
+        toAmountDecimal: toAmountDecimal,
+        toAmountLimit: "0",
+        streamingInterval: "0",
+        streamingQuantity: "0",
+        expirationTime: UInt64(now.addingTimeInterval(60 * 15).timeIntervalSince1970),
+        isAffiliate: SwapCryptoLogic.isAffiliate
     )
 }
 
@@ -193,8 +290,10 @@ func buildLimitSwapKeysignPayload(
 ///
 /// Pure so the gas-limit decision is unit-testable without a network fetch.
 /// Changes ONLY the EVM gas-limit field (via `overridingEVMGasLimit`); a no-op
-/// for non-EVM chains and for non-native (token) EVM sources — token sources are
-/// Phase 2 and never reach here.
+/// for non-EVM chains and for non-native (token) EVM sources. A token source's
+/// `depositWithExpiry` router call is more expensive than a native transfer, so
+/// it intentionally keeps the 600000 swap default rather than the 120000
+/// native-transfer figure.
 func limitDepositChainSpecific(_ specific: BlockChainSpecific, sourceCoin: Coin) -> BlockChainSpecific {
     guard sourceCoin.chainType == .EVM, sourceCoin.isNativeToken else {
         return specific

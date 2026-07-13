@@ -77,6 +77,76 @@ final class LimitSwapMemoBuilderTests: XCTestCase {
         XCTAssertEqual(compressLim(BigInt(0)), "0")
     }
 
+    // MARK: - roundUpToSignificantFigures
+
+    func testRoundUpToSignificantFiguresRoundsTowardPlusInfinity() {
+        XCTAssertEqual(roundUpToSignificantFigures(BigInt(123_456_789), significantFigures: 3), BigInt(124_000_000))
+        XCTAssertEqual(roundUpToSignificantFigures(BigInt(123_456_789), significantFigures: 5), BigInt(123_460_000))
+        XCTAssertEqual(roundUpToSignificantFigures(BigInt(999), significantFigures: 1), BigInt(1000))
+        // Already exact at that precision (trailing zeros) → unchanged.
+        XCTAssertEqual(roundUpToSignificantFigures(BigInt(110_000_000), significantFigures: 3), BigInt(110_000_000))
+        // sig figs ≥ digit count, or non-positive → no-op.
+        XCTAssertEqual(roundUpToSignificantFigures(BigInt(123), significantFigures: 5), BigInt(123))
+        XCTAssertEqual(roundUpToSignificantFigures(BigInt(0), significantFigures: 3), BigInt(0))
+    }
+
+    // MARK: - buildFittedLimitSwapMemo (bounded LIM round-up to fit the byte cap)
+
+    /// LIM = 100000000 × floor(1.23456789 × 1e8) / 1e8 = 123456789 — nine
+    /// non-round digits `compressLim` can't shrink. A 42-char ETH destination
+    /// plus a referral affiliate pushes the exact BTC-source memo over 80 bytes.
+    private func overflowInputs(affiliate: String) -> LimitSwapInputs {
+        LimitSwapInputs(
+            sourceAsset: "BTC.BTC",
+            sourceAmount: BigInt(100_000_000),
+            sourceDecimals: 8,
+            targetAsset: "ETH.ETH",
+            destAddress: "0x" + String(repeating: "a", count: 40),
+            targetPrice: Decimal(string: "1.23456789")!,
+            expiryHours: 24,
+            affiliate: affiliate,
+            affiliateBps: "10/35"
+        )
+    }
+
+    func testFittedMemoLeavesAFittingMemoExact() throws {
+        // EVM source (250-byte cap) never overflows → byte-identical to the
+        // lossless builder, and the effective LIM is the exact LIM.
+        let inputs = overflowInputs(affiliate: "vlt/vi")
+        let (memo, effectiveLim) = try buildFittedLimitSwapMemo(inputs, sourceChainKind: .EVM)
+        XCTAssertEqual(memo, try buildLimitSwapMemo(inputs))
+        XCTAssertEqual(effectiveLim, BigInt(123_456_789))
+    }
+
+    func testFittedMemoRoundsLimUpToFitUtxoCap() throws {
+        let inputs = overflowInputs(affiliate: "vlt/vi")
+        // Exact memo overflows the 80-byte UTXO OP_RETURN cap.
+        XCTAssertGreaterThan(try buildLimitSwapMemo(inputs).utf8.count, 80)
+
+        let (memo, effectiveLim) = try buildFittedLimitSwapMemo(inputs, sourceChainKind: .UTXO)
+        XCTAssertLessThanOrEqual(memo.utf8.count, 80, "fitted memo must fit the 80-byte cap")
+        // Rounded UP (never a lower floor) and within the 0.5% tolerance.
+        XCTAssertGreaterThanOrEqual(effectiveLim, BigInt(123_456_789))
+        XCTAssertLessThanOrEqual(
+            (effectiveLim - BigInt(123_456_789)) * 10_000,
+            BigInt(123_456_789) * BigInt(limitLimRoundingMaxBps)
+        )
+        // The memo carries the compressed EFFECTIVE LIM (display == memo).
+        XCTAssertTrue(memo.contains(compressLim(effectiveLim)))
+    }
+
+    func testFittedMemoThrowsWhenEvenBoundedRoundingCannotFit() {
+        // A long referral affiliate leaves no slack — even max-tolerance round-up
+        // can't reach 80 bytes, so the clear error is surfaced rather than
+        // silently over-rounding the price floor.
+        let inputs = overflowInputs(affiliate: "referralpartner/vi")
+        XCTAssertThrowsError(try buildFittedLimitSwapMemo(inputs, sourceChainKind: .UTXO)) { error in
+            guard case LimitSwapMemoError.memoExceedsByteLimit = error else {
+                return XCTFail("Expected memoExceedsByteLimit, got \(error)")
+            }
+        }
+    }
+
     /// Decode `<mantissa>e<exp>` (or a plain integer) back to a BigInt, for the
     /// lossless round-trip assertions above.
     private func decodeSci(_ encoded: String) -> BigInt {

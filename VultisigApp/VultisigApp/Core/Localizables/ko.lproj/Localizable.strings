@@ -649,7 +649,6 @@
 "limitSwap.error.advancedSwapQueueDisabled" = "THORChain에서 지정가 주문을 일시적으로 사용할 수 없습니다. 나중에 다시 시도하거나 시장가 스왑을 사용하세요.";
 "limitSwap.error.invalidInputs" = "일부 주문 정보가 잘못되었습니다. 수량, 가격, 만료를 확인한 후 다시 시도하세요.";
 "limitSwap.error.limitAmountTooSmall" = "이 주문은 지정가로 설정하기에 너무 작습니다. 수량을 늘리거나 가격을 조정한 후 다시 시도하세요.";
-"limitSwap.error.nonNativeSource" = "지정가 주문은 현재 네이티브 소스 자산만 지원합니다. 체인의 네이티브 코인을 선택한 후 다시 시도하세요.";
 "limitSwap.error.targetPriceOverflow" = "목표 가격이 너무 큽니다. 더 작은 가격을 입력한 후 다시 시도하세요.";
 "limitSwap.error.title" = "주문을 넣을 수 없습니다";
 "limitSwap.executeWhen" = "실행 조건";

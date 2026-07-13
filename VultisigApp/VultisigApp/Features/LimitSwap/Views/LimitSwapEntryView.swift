@@ -229,7 +229,14 @@ struct LimitSwapEntryView: View {
             // so the shared Verify/Done screens can show and persist the limit
             // order's network fee — the resting `=<` order carries no market quote.
             networkFeeEstimate: vm.networkFeeEstimate,
-            feeCoin: limitFromCoin,
+            // Gas is paid in the source chain's NATIVE coin, not the source
+            // token: an ERC20 source (e.g. ETH.USDC) pays ETH. Resolve the native
+            // sibling (same helper the market swap uses) so the fee display AND
+            // the sign-time `balanceError` gate read wei against ETH's 18 decimals
+            // — not the token's, which showed the fee as billions and tripped a
+            // false `insufficientGas`. Falls back to the source coin (native
+            // sources return themselves).
+            feeCoin: SwapCryptoLogic.feeCoin(fromCoin: limitFromCoin, fromCoins: vault.coins),
             advancedSettings: .default
         )
 

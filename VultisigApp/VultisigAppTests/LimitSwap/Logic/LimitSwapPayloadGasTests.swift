@@ -237,4 +237,94 @@ final class LimitSwapPayloadGasTests: XCTestCase {
             XCTAssertEqual(ThorchainService.getInboundChainName(for: chain), symbol)
         }
     }
+
+    // MARK: - ERC20 deposit swap payload (limitThorchainSwapPayload)
+
+    private func usdcSource() -> Coin {
+        Coin(
+            asset: CoinMeta.make(chain: .ethereum, ticker: "USDC", decimals: 6, isNativeToken: false),
+            address: "0xsender0000000000000000000000000000000000",
+            hexPublicKey: "pubkey"
+        )
+    }
+
+    private func btcTarget() -> Coin {
+        Coin(
+            asset: CoinMeta.make(chain: .bitcoin, ticker: "BTC", decimals: 8, isNativeToken: true),
+            address: "bc1qtarget",
+            hexPublicKey: "pubkey"
+        )
+    }
+
+    func testErc20DepositRoutesThroughRouterWithVaultAndAmount() {
+        // The ERC20 limit deposit is the router's `depositWithExpiry` call:
+        // `EVMHelper.getSwapPreSignedInputData` reads routerAddress (tx.to),
+        // vaultAddress (asgard, first ABI param) and fromAmount off this payload.
+        let source = usdcSource()
+        let payload = limitThorchainSwapPayload(
+            sourceCoin: source,
+            targetCoin: btcTarget(),
+            sourceAmount: BigInt(1_000_000),
+            vaultAddress: "0xvault0000000000000000000000000000000000",
+            routerAddress: "0xrouter000000000000000000000000000000000",
+            toAmountDecimal: Decimal(string: "0.037")!,
+            now: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        XCTAssertEqual(payload.routerAddress, "0xrouter000000000000000000000000000000000")
+        XCTAssertEqual(payload.vaultAddress, "0xvault0000000000000000000000000000000000")
+        XCTAssertEqual(payload.fromAmount, BigInt(1_000_000))
+        XCTAssertEqual(payload.fromAddress, source.address)
+        XCTAssertEqual(payload.fromCoin.ticker, "USDC")
+        XCTAssertEqual(payload.toCoin.ticker, "BTC")
+    }
+
+    func testErc20DepositCarriesExpectedOutputForCosignerDisplay() {
+        // toAmountDecimal is the guaranteed-minimum output (memo LIM in natural
+        // units); it feeds the co-signer's "you receive" row so a 2-device order
+        // shows the floor instead of 0. It never influences signing.
+        let payload = limitThorchainSwapPayload(
+            sourceCoin: usdcSource(),
+            targetCoin: btcTarget(),
+            sourceAmount: BigInt(1_000_000),
+            vaultAddress: "0xvault",
+            routerAddress: "0xrouter",
+            toAmountDecimal: Decimal(string: "0.037")!,
+            now: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        XCTAssertEqual(payload.toAmountDecimal, Decimal(string: "0.037")!)
+    }
+
+    func testErc20DepositExpiryIsFifteenMinutesFromNow() {
+        // `depositWithExpiry`'s expiry is the ROUTER's on-chain tx-execution
+        // deadline (`require(block.timestamp < expiry)`), NOT the resting order's
+        // lifetime — that lives in the `=<` memo's TTL field (up to 3 days,
+        // checked per-block by THORChain). Reuse the market path's 15-minute
+        // window verbatim: once THORChain observes the deposit (a block or two,
+        // far under 15m) the order rests for its full memo TTL regardless.
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let payload = limitThorchainSwapPayload(
+            sourceCoin: usdcSource(),
+            targetCoin: btcTarget(),
+            sourceAmount: BigInt(1_000_000),
+            vaultAddress: "0xvault",
+            routerAddress: "0xrouter",
+            toAmountDecimal: 0,
+            now: now
+        )
+        XCTAssertEqual(payload.expirationTime, UInt64(now.addingTimeInterval(60 * 15).timeIntervalSince1970))
+        XCTAssertEqual(payload.expirationTime, 1_700_000_900)
+    }
+
+    func testErc20DepositIsAffiliateMatchesMarketPath() {
+        let payload = limitThorchainSwapPayload(
+            sourceCoin: usdcSource(),
+            targetCoin: btcTarget(),
+            sourceAmount: BigInt(1_000_000),
+            vaultAddress: "0xvault",
+            routerAddress: "0xrouter",
+            toAmountDecimal: 0,
+            now: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        XCTAssertEqual(payload.isAffiliate, SwapCryptoLogic.isAffiliate)
+    }
 }

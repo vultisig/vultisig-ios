@@ -649,7 +649,6 @@
 "limitSwap.error.advancedSwapQueueDisabled" = "Limit orders are temporarily unavailable on THORChain. Try again later or use a market swap.";
 "limitSwap.error.invalidInputs" = "Some order details are invalid. Check the amount, price and expiry, then try again.";
 "limitSwap.error.limitAmountTooSmall" = "This order is too small to place at a limit price. Increase the amount or adjust the price and try again.";
-"limitSwap.error.nonNativeSource" = "Limit orders currently support native source assets only. Pick the chain's native coin and try again.";
 "limitSwap.error.targetPriceOverflow" = "Target price is too large. Enter a smaller price and try again.";
 "limitSwap.error.title" = "Couldn't place order";
 "limitSwap.executeWhen" = "Execute when";

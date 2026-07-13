@@ -293,15 +293,9 @@ struct SwapVerifyScreen: View {
         @Bindable var vm = verifyViewModel
         return VStack(spacing: 16) {
             Checkbox(isChecked: $vm.isAmountCorrect, text: "swapVerifyCheckbox1Description")
-            // Limit orders skip the fee/approve checkboxes — there's no
-            // market quote to compare against, and limit deposits don't
-            // need an ERC20 approve. Figma 74341:117861 shows a single
-            // checkbox row.
-            if !currentTransaction.isLimit {
-                Checkbox(isChecked: $vm.isFeeCorrect, text: "swapVerifyCheckbox2Description")
-                if showApproveCheckmark {
-                    Checkbox(isChecked: $vm.isApproveCorrect, text: "swapVerifyCheckbox3Description")
-                }
+            Checkbox(isChecked: $vm.isFeeCorrect, text: "swapVerifyCheckbox2Description")
+            if showApproveCheckmark {
+                Checkbox(isChecked: $vm.isApproveCorrect, text: "swapVerifyCheckbox3Description")
             }
         }
     }
