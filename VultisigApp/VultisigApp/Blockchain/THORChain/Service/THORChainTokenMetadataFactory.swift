@@ -39,6 +39,12 @@ enum THORChainTokenMetadataFactory {
             } else if asset == "x/staking-tcy" {
                 symbol = "sTCY"
                 ticker = "stcy"
+            } else if asset == TokensStore.brune.contractAddress {
+                symbol = "bRUNE"
+                ticker = "brune"
+            } else if asset == TokensStore.ybrune.contractAddress {
+                symbol = "ybRUNE"
+                ticker = "ybrune"
             } else {
                 symbol = asset
                 ticker = asset
