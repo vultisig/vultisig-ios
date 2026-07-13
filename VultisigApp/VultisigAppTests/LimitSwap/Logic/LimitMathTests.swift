@@ -145,6 +145,18 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(0))
     }
 
+    func testComputeLimZeroTargetPriceWithPositiveSourceThrows() {
+        // Defense-in-depth: a zero target price against a POSITIVE source yields
+        // LIM = 0 ("fill at ANY price"). The guard must fire regardless of the
+        // target price's sign, so this throws rather than emitting a price-blind
+        // order. (validateLimitSwapInputs also rejects a non-positive price.)
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 0)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .limitAmountTooSmall)
+        }
+    }
+
     // MARK: - computeLim — negative inputs MUST fail loud (fund-safety)
 
     func testComputeLimNegativeSourceAmountThrows() {

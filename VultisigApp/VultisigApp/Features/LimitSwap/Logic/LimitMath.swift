@@ -46,14 +46,17 @@ func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal)
     let denominator = BigInt(10).power(sourceDecimals)
     let lim = (sourceAmount * priceBig) / denominator
 
-    // Integer division truncates toward zero: a dust source amount or a very low
-    // target price against a high-decimal source can floor the LIM to 0 even
-    // though both inputs are positive. A `LIM=0` memo means "fill at ANY price"
-    // — the same hazard the overflow guard above prevents, from the underflow
-    // side. Fail loud instead of emitting a price-blind order. A zero source
-    // amount is a separate precondition (rejected upstream by
-    // `validateLimitSwapInputs`); it returns 0 here without throwing.
-    if lim <= 0, sourceAmount > 0, targetPrice > 0 {
+    // Integer division truncates toward zero: a dust source amount, a very low
+    // target price, or a zero target price against a positive source can floor
+    // the LIM to 0. A `LIM=0` memo means "fill at ANY price" — the same hazard
+    // the overflow guard above prevents, from the underflow side. Fail loud for
+    // ANY positive source that yields `lim <= 0`, regardless of the target
+    // price's sign, so `targetPrice == 0` also throws rather than emitting a
+    // price-blind order (defense-in-depth: `validateLimitSwapInputs` already
+    // rejects a non-positive target price upstream). A zero SOURCE amount stays
+    // a separate precondition and returns 0 here without throwing, so callers
+    // that display an expected output before an amount is typed are unaffected.
+    if lim <= 0, sourceAmount > 0 {
         throw LimitSwapMemoError.limitAmountTooSmall
     }
     return lim
