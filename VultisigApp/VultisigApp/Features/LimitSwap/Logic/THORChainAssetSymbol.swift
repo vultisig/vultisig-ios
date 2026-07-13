@@ -31,10 +31,22 @@ func thorchainMemoAsset(
     if isNativeToken {
         return "\(prefix).\(normalizedTicker)"
     }
+    let normalized = contractAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+    // THOR-chain SECURED assets carry their full on-chain denom
+    // (`<l1>-<symbol>-<contract>`, e.g. `eth-usdc-0xa0b…`) as the memo asset —
+    // the exact string `Coin.swapAsset` emits for them (which the market path
+    // sends to THORChain verbatim). Detected the same way as
+    // `THORChainHelper.isSecuredAsset`: a non-native THOR coin whose denom
+    // contains `-` and isn't an `x/`-prefixed synth. Encoding one as
+    // `THOR.<TICKER>-<SUFFIX>` like a normal token would target the wrong pool,
+    // so return the denom verbatim to stay byte-identical to the canonical
+    // encoder.
+    if prefix == "THOR", !normalized.hasPrefix("x/"), normalized.contains("-") {
+        return normalized
+    }
     // Token form: `<CHAIN>.<TICKER>-<SUFFIX>` where SUFFIX is the last 6 chars
     // of the contract address. Reject too-short or whitespace-only contracts
     // so the memo never gains a trailing `-` (or worse, a malformed suffix).
-    let normalized = contractAddress.trimmingCharacters(in: .whitespacesAndNewlines)
     guard normalized.count >= 6 else { return nil }
     let suffix = normalized.suffix(6).uppercased()
     return "\(prefix).\(normalizedTicker)-\(suffix)"

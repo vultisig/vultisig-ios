@@ -128,6 +128,51 @@ final class THORChainAssetSymbolTests: XCTestCase {
         )
     }
 
+    // MARK: - THOR secured assets (raw denom, matching Coin.swapAsset)
+
+    func testThorSecuredAssetMemoUsesRawDenom() {
+        // A THOR secured asset's denom (`<l1>-<symbol>-<contract>`) is the memo
+        // asset verbatim — the same string Coin.swapAsset emits. Encoding it as a
+        // normal token (`THOR.USDC-<last6>`) would target the wrong pool.
+        let denom = "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        XCTAssertEqual(
+            thorchainMemoAsset(chain: .thorChain, ticker: "USDC", contractAddress: denom, isNativeToken: false),
+            denom
+        )
+    }
+
+    func testThorSecuredAssetOnStagenetUsesRawDenom() {
+        let denom = "btc-btc"
+        XCTAssertEqual(
+            thorchainMemoAsset(chain: .thorChainStagenet, ticker: "BTC", contractAddress: denom, isNativeToken: false),
+            denom
+        )
+    }
+
+    func testThorSecuredAssetMatchesCanonicalCoinSwapAsset() throws {
+        // Parity with the canonical encoder the market path uses.
+        let meta = CoinMeta(
+            chain: .thorChain, ticker: "USDC",
+            logo: "", decimals: 8,
+            priceProviderId: "", contractAddress: "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            isNativeToken: false
+        )
+        let coin = Coin(asset: meta, address: "thor1xyz", hexPublicKey: "")
+        XCTAssertTrue(THORChainHelper.isSecuredAsset(coin: coin))
+        XCTAssertEqual(thorchainMemoAsset(for: coin), coin.swapAsset)
+    }
+
+    func testEthereumTokenIsNotTreatedAsSecuredAsset() {
+        // The secured-asset branch is THOR-only: an EVM token keeps the last-6 form.
+        XCTAssertEqual(
+            thorchainMemoAsset(
+                chain: .ethereum, ticker: "USDC",
+                contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", isNativeToken: false
+            ),
+            "ETH.USDC-06EB48"
+        )
+    }
+
     // MARK: - Unsupported chains return nil
 
     func testSolanaIsNotRoutableInPhase1() {
