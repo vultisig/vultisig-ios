@@ -161,4 +161,62 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         let fee = try await SwapCryptoLogic.thorchainFee(for: passed, fromCoin: rune, fromAmount: 1, vault: vault)
         XCTAssertEqual(fee, BigInt(2_000_000))
     }
+
+    // MARK: - global-pause gate for the RUNE MsgDeposit branch
+
+    private func inbound(chain: String, globalPaused: Bool?) -> InboundAddress {
+        InboundAddress(
+            chain: chain,
+            address: "addr-\(chain)",
+            router: nil,
+            halted: false,
+            global_trading_paused: globalPaused,
+            chain_trading_paused: false,
+            chain_lp_actions_paused: false,
+            gas_rate: "0",
+            gas_rate_units: "u",
+            dust_threshold: nil,
+            outbound_fee: nil,
+            outbound_tx_size: nil
+        )
+    }
+
+    func testGloballyPausedWhenAnyRowIsPaused() {
+        // THORChain sets global_trading_paused on every row when it halts trading
+        // network-wide; a RUNE MsgDeposit must fail closed against it.
+        let inbounds = [
+            inbound(chain: "BTC", globalPaused: false),
+            inbound(chain: "ETH", globalPaused: true)
+        ]
+        XCTAssertTrue(isThorchainGloballyPaused(inbounds: inbounds))
+    }
+
+    func testNotGloballyPausedWhenAllRowsOpen() {
+        let inbounds = [
+            inbound(chain: "BTC", globalPaused: false),
+            inbound(chain: "ETH", globalPaused: false)
+        ]
+        XCTAssertFalse(isThorchainGloballyPaused(inbounds: inbounds))
+    }
+
+    func testNotGloballyPausedWhenFlagMissing() {
+        // A missing flag reads as "not paused" — same convention as SwapHaltGate.
+        XCTAssertFalse(isThorchainGloballyPaused(inbounds: [inbound(chain: "BTC", globalPaused: nil)]))
+    }
+
+    func testRuneDepositBlockedWhenGloballyPaused() {
+        let inbounds = [inbound(chain: "BTC", globalPaused: false), inbound(chain: "ETH", globalPaused: true)]
+        XCTAssertTrue(shouldBlockRuneDeposit(inbounds: inbounds))
+    }
+
+    func testRuneDepositBlockedWhenInboundListEmpty() {
+        // Fail closed: an empty (but non-throwing) inbound response means the
+        // pause state is unverifiable — never sign a deposit against it.
+        XCTAssertTrue(shouldBlockRuneDeposit(inbounds: []))
+    }
+
+    func testRuneDepositAllowedWhenAllRowsOpenAndNonEmpty() {
+        let inbounds = [inbound(chain: "BTC", globalPaused: false), inbound(chain: "ETH", globalPaused: false)]
+        XCTAssertFalse(shouldBlockRuneDeposit(inbounds: inbounds))
+    }
 }

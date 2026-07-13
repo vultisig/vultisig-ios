@@ -19,6 +19,31 @@ enum LimitSwapAssemblyError: Error, Equatable {
     /// so a `=<` order is never signed onto a network that would treat it as a
     /// market swap.
     case advancedSwapQueueDisabled
+    /// THORChain has globally paused trading (`global_trading_paused`). A native
+    /// RUNE `MsgDeposit` has no inbound vault, so it bypasses the per-chain
+    /// inbound halt/pause filter the external-source branch applies — this is the
+    /// fail-closed global-pause gate for the deposit path.
+    case thorchainTradingPaused
+}
+
+/// Whether THORChain has globally paused trading, per a live `inbound_addresses`
+/// list. THORChain sets `global_trading_paused` on EVERY inbound row when it
+/// halts trading network-wide. A native RUNE `MsgDeposit` settles on THORChain
+/// itself with no inbound vault, so it never passes through the per-chain halt
+/// filter the external branch runs — this global signal is the gate applied
+/// before signing a RUNE deposit. Pure so it is unit-testable without a fetch.
+func isThorchainGloballyPaused(inbounds: [InboundAddress]) -> Bool {
+    inbounds.contains { $0.global_trading_paused ?? false }
+}
+
+/// Whether a native RUNE `MsgDeposit` must be BLOCKED given the live inbound
+/// list. Blocks when THORChain has globally paused trading, and — fail-closed —
+/// when the list is empty: a real `inbound_addresses` response always carries
+/// many chain rows, so an empty (but non-throwing) result means the pause state
+/// is unverifiable and a deposit must not be signed against it. Pure so it is
+/// unit-testable without a network fetch.
+func shouldBlockRuneDeposit(inbounds: [InboundAddress]) -> Bool {
+    inbounds.isEmpty || isThorchainGloballyPaused(inbounds: inbounds)
 }
 
 /// Assembles the `KeysignPayload` for a placed limit swap.
@@ -89,6 +114,19 @@ func buildLimitSwapKeysignPayload(
     let toAddress: String
     if SwapCryptoLogic.isDeposit(fromCoin: sourceCoin),
        thorchainChainPrefix(for: sourceCoin.chain) == "THOR" {
+        // Native RUNE settles via `MsgDeposit` with no inbound vault, so it
+        // NEVER passes through the per-chain inbound halt/pause filter the
+        // external-source branch below applies (and `SwapHaltGate.isHalted`
+        // finds no THOR inbound row, so the verify-screen gate reads it as
+        // "not halted" too). THORChain's global trading pause still applies to
+        // RUNE deposits — fetch live (cache-bypass, matching the external
+        // branch) and fail CLOSED if it's set, so a resting order is never
+        // signed while the network has globally paused trading. The throwing
+        // fetch also fails closed on an unverifiable inbound fetch.
+        let inbounds = try await ThorchainService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+        guard !shouldBlockRuneDeposit(inbounds: inbounds) else {
+            throw LimitSwapAssemblyError.thorchainTradingPaused
+        }
         toAddress = sourceCoin.address
     } else {
         guard let chainSymbol = thorchainInboundChainSymbol(for: sourceCoin.chain) else {
