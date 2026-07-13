@@ -290,7 +290,7 @@ private extension CryptoPriceService {
             var rates: [Rate] = []
             for contract in contracts {
 
-                let yieldTokens = TokensStore.TokenSelectionAssets.filter({ $0.chain == chain && ( $0.ticker == "yRUNE" || $0.ticker == "yTCY") }).map({$0.contractAddress})
+                let yieldTokens = TokensStore.TokenSelectionAssets.filter({ $0.chain == chain && ( $0.ticker == "yRUNE" || $0.ticker == "yTCY" || $0.ticker == "ybRUNE") }).map({$0.contractAddress})
 
                 if yieldTokens.contains(contract) {
                     let price = await thorService.fetchYieldTokenPrice(for: contract)
