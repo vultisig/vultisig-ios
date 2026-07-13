@@ -1200,6 +1200,7 @@
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
+"swapSecuredAssetBadge" = "担保";
 "swapSecuredAssetInvalidDestination" = "受保护资产兑换的目标地址不是有效的 %1$@ 地址（%2$@）。";
 "swapTrackingLink" = "交换跟踪链接";
 "swapTradingHalted" = "该资产的交易已暂时停止，请稍后再试。";

@@ -1198,6 +1198,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
+"swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Secured-asset swap destination is not a valid %1$@ address (%2$@).";
 "swapTrackingLink" = "Swap tracking link";
 "swapTradingHalted" = "Trading for this asset is temporarily halted. Please try again later.";

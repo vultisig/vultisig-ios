@@ -1200,6 +1200,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
 "swaps" = "Trocas";
+"swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "O destino do swap de ativo protegido não é um endereço %1$@ válido (%2$@).";
 "swapTrackingLink" = "Link de rastreamento da troca";
 "swapTradingHalted" = "A negociação deste ativo está temporariamente suspensa. Tente novamente mais tarde.";
