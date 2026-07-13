@@ -18,9 +18,16 @@ struct BRUNEStakeTransactionBuilder: TransactionBuilder {
     let amount: String
     let sendMaxAmount: Bool
 
-    /// Bonded amount in base units of the `x/brune` denom (8 dp).
+    /// Bonded amount in whole base units of the `x/brune` denom (8 dp).
+    ///
+    /// Rounds DOWN to an integer: `decimalToCrypto` (×10^decimals) leaves a
+    /// fractional `Decimal` when the entered amount exceeds the coin's precision
+    /// (the amount field does not cap to 8 dp), and `CosmosCoin.amount` must be an
+    /// integer base-unit string or the wasm execute is malformed. Never round up —
+    /// funding more base units than held would fail on-chain. Mirrors the unstake
+    /// builder's `.toInt()`.
     var rawAmount: String {
-        coin.decimalToCrypto(value: amount.toDecimal()).description
+        String(coin.decimalToCrypto(value: amount.toDecimal()).toInt())
     }
 
     var memo: String { "" }

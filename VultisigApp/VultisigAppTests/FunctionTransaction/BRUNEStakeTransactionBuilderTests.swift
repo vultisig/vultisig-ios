@@ -61,6 +61,17 @@ final class BRUNEStakeTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(funds.amount, "1000000000")
     }
 
+    func testStakeBuilderTruncatesSubBaseUnitPrecision() throws {
+        // 9 dp exceeds bRUNE's 8 dp: 1.123456789 * 1e8 = 112345678.9, which must
+        // round DOWN to an integer base-unit string (no fractional part) so the
+        // wasm execute funds a valid CosmosCoin amount.
+        let builder = BRUNEStakeTransactionBuilder(coin: Self.makeBRuneCoin(), amount: "1.123456789", sendMaxAmount: false)
+        let payload = try XCTUnwrap(builder.wasmContractPayload)
+        let funds = try XCTUnwrap(payload.coins.first)
+        XCTAssertEqual(funds.amount, "112345678")
+        XCTAssertFalse(funds.amount.contains("."), "funds amount must be an integer base-unit string")
+    }
+
     func testStakeBuilderSenderIsCoinAddress() throws {
         let coin = Self.makeBRuneCoin()
         let builder = BRUNEStakeTransactionBuilder(coin: coin, amount: "10", sendMaxAmount: false)
