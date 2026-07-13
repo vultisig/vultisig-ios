@@ -107,6 +107,15 @@ extension ThorchainService {
         try await fetchStakingReceiptAmount(address: address, denom: TokensStore.ybrune.contractAddress)
     }
 
+    /// Fetches the user's `x/staking-x/ruji` (staked RUJI receipt) balance from THORNode.
+    ///
+    /// The DeFi Staked RUJI card prefers this on-chain receipt balance over the Rujira
+    /// staking API's `bonded.amount`, which can report zero even while receipts are held.
+    /// Sibling of `fetchTcyAutoCompoundAmount` / `fetchBRuneAutoCompoundAmount`.
+    func fetchRujiStakingReceiptAmount(address: String) async throws -> Decimal {
+        try await fetchStakingReceiptAmount(address: address, denom: TokensStore.sruji.contractAddress)
+    }
+
     func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {
         do {
             let raw = try await httpClient.request(mainnet(.tcyAutoCompoundStatus))

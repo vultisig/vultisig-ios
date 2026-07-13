@@ -16,6 +16,17 @@ struct THORChainStakeInteractor: StakeInteractor {
         rawAmount / pow(10, decimals)
     }
 
+    /// Resolves the Staked RUJI amount shown on the DeFi card.
+    ///
+    /// Prefers the on-chain `x/staking-x/ruji` receipt balance (`onChainRaw`, unscaled) —
+    /// the source of truth — over the Rujira staking API's already-scaled `bonded` amount,
+    /// which can report zero even while receipts are held. `onChainRaw == nil` means the
+    /// on-chain read failed, so fall back to `bonded`; a successful zero stays zero.
+    static func resolveRujiStakedAmount(onChainRaw: Decimal?, bonded: Decimal, decimals: Int) -> Decimal {
+        guard let onChainRaw else { return bonded }
+        return scaledAmount(rawAmount: onChainRaw, decimals: decimals)
+    }
+
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
         // Snapshot every `@Model` value the async branch will need on `MainActor`, then operate
         // exclusively on value types.
@@ -66,7 +77,7 @@ private extension THORChainStakeInteractor {
         let type = StakePositionType.defaultType(for: snapshot.meta)
 
         switch ticker {
-        case "TCY", "RUJI":
+        case "TCY":
             do {
                 let details = try await stakingService.fetchStakingDetails(
                     coinMeta: snapshot.meta,
@@ -84,7 +95,40 @@ private extension THORChainStakeInteractor {
                     rewardCoin: details.rewardsCoin
                 )
             } catch {
-                logger.error("Error fetching \(ticker, privacy: .public) staking details: \(error.localizedDescription, privacy: .private)")
+                logger.error("Error fetching TCY staking details: \(error.localizedDescription, privacy: .private)")
+                return nil
+            }
+
+        case "RUJI":
+            do {
+                let details = try await stakingService.fetchStakingDetails(
+                    coinMeta: snapshot.meta,
+                    runeCoinMeta: runeMeta,
+                    address: snapshot.address
+                )
+                // The Rujira staking API's `bonded.amount` (surfaced as `details.stakedAmount`)
+                // can report zero even while sRUJI receipts are held on-chain. Prefer the
+                // on-chain `x/staking-x/ruji` receipt balance as the source of truth; a
+                // successful read — including a genuine zero — wins. Fall back to the API
+                // amount only when the on-chain read fails (throws → nil via `try?`).
+                let onChainRaw = try? await ThorchainService.shared.fetchRujiStakingReceiptAmount(address: snapshot.address)
+                let amount = THORChainStakeInteractor.resolveRujiStakedAmount(
+                    onChainRaw: onChainRaw,
+                    bonded: details.stakedAmount,
+                    decimals: snapshot.meta.decimals
+                )
+                return StakePositionData(
+                    coin: snapshot.meta,
+                    type: type,
+                    amount: amount,
+                    apr: details.apr,
+                    estimatedReward: details.estimatedReward,
+                    nextPayout: details.nextPayoutDate,
+                    rewards: details.rewards,
+                    rewardCoin: details.rewardsCoin
+                )
+            } catch {
+                logger.error("Error fetching RUJI staking details: \(error.localizedDescription, privacy: .private)")
                 return nil
             }
 
