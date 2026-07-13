@@ -179,18 +179,27 @@ enum SwapCryptoLogic {
         fromCoin.shouldApprove && router(quote: quote) != nil
     }
 
-    /// True iff this is a native-source swap into THORChain or Maya — those
-    /// settle via Cosmos `MsgDeposit` on the swap chain itself rather than
-    /// a cross-chain `MsgSend` to an Asgard vault. Mirrors the SDK rule
-    /// (`areEqualCoins(fromCoin, chainFeeCoin[swapChain])`) — see
-    /// `vultisig-sdk/packages/core/mpc/keysign/swap/build.ts` and the
-    /// THORChain docs on `MsgDeposit` for RUNE source.
+    /// True iff this source swap settles via a Cosmos `MsgDeposit` on the swap
+    /// chain itself rather than a cross-chain `MsgSend` to an Asgard vault.
+    /// THORChain variants require a NATIVE source (RUNE) — the SDK rule
+    /// `areEqualCoins(fromCoin, chainFeeCoin[swapChain])`, see
+    /// `vultisig-sdk/packages/core/mpc/keysign/swap/build.ts`. MayaChain returns
+    /// `true` unconditionally: Maya settles every source swap (native CACAO and
+    /// non-native Maya assets alike) via `MsgDeposit`, matching the market path's
+    /// long-standing behaviour.
     static func isDeposit(fromCoin: Coin) -> Bool {
         switch fromCoin.chain {
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return fromCoin.isNativeToken
         case .mayaChain:
-            return fromCoin.isNativeToken
+            // MayaChain settles EVERY source swap via `MsgDeposit`, native CACAO
+            // and non-native Maya assets alike — never a cross-chain `MsgSend`.
+            // Keying this on `isNativeToken` (as the THORChain arm is) would flip
+            // a non-native Maya market swap to an empty router so it can't sign.
+            // Native THORChain limit deposits are gated separately in the
+            // assembler (`thorchainChainPrefix == "THOR"`), so a Maya coin never
+            // reaches the limit `MsgDeposit` branch regardless.
+            return true
         default:
             return false
         }

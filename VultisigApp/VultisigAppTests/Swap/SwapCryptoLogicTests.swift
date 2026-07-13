@@ -194,10 +194,14 @@ final class SwapCryptoLogicTests: XCTestCase {
         XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: rune))
     }
 
-    func testIsDepositFalseForNonNativeMayaToken() {
-        // Maya non-native (token) source would settle via MsgSend, not deposit.
+    func testIsDepositTrueForNonNativeMayaToken() {
+        // MayaChain settles ALL its source swaps via MsgDeposit — native CACAO
+        // and non-native Maya assets (e.g. MAYA) alike. Keying Maya on
+        // `isNativeToken` (as the THORChain arm is) flips a non-native Maya
+        // market swap to an empty router and it fails to sign. Market Maya
+        // behaviour is unconditional deposit.
         let mayaToken = makeCoin(.mayaChain, ticker: "MAYA", decimals: 6, isNative: false)
-        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: mayaToken))
+        XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: mayaToken))
     }
 
     func testIsDepositFalseForBitcoin() {
