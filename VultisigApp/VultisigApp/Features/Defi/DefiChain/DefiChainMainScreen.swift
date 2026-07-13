@@ -401,6 +401,8 @@ struct DefiChainMainScreen: View {
         switch compoundCoin.ticker.uppercased() {
         case "STCY":
             return TokensStore.tcy
+        case "YBRUNE":
+            return TokensStore.brune
         default:
             return compoundCoin
         }

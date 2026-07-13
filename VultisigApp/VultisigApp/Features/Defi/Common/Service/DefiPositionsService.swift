@@ -31,7 +31,12 @@ struct DefiPositionsService {
                 TokensStore.stcy,
                 TokensStore.ruji,
                 TokensStore.yrune,
-                TokensStore.ytcy
+                TokensStore.ytcy,
+                // ybRUNE is the auto-compound (`.compound`) position; its card
+                // both bonds bRUNE→ybRUNE and unbonds. bRUNE itself is a plain
+                // wallet token (no native, non-compound bRUNE staking), so it is
+                // intentionally NOT a selectable staking position here.
+                TokensStore.ybrune
             ]
         case .mayaChain:
             [
