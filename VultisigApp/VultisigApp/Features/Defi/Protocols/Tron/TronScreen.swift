@@ -18,8 +18,8 @@ struct TronScreen: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
-            .onAppear {
-                Task { await loadData() }
+            .task {
+                await loadData()
             }
     }
 
@@ -63,12 +63,15 @@ struct TronScreen: View {
             model.isLoading = cachedAccount == nil || cachedResource == nil
             model.isLoadingBalance = cachedAccount == nil
             model.isLoadingResources = cachedResource == nil
-        }
 
-        // Persist the frozen/unfreezing balance into `Coin.stakedBalance` so the
-        // DeFi portfolio main screen (which reads the persisted value) stays in
-        // sync with this live detail view instead of diverging.
-        await BalanceService.shared.updateBalance(for: trxCoin)
+            if let cachedAccount {
+                model.apply(account: cachedAccount)
+            }
+
+            if let cachedResource {
+                model.apply(resource: cachedResource)
+            }
+        }
 
         // Use structured concurrency for proper cancellation handling
         await withTaskGroup(of: Void.self) { group in
@@ -76,30 +79,7 @@ struct TronScreen: View {
             group.addTask {
                 do {
                     let account = try await tronService.getAccount(address: address, forceRefresh: forceRefresh)
-                    await MainActor.run {
-                        // Calculate available balance (in TRX, not SUN)
-                        let balanceSun = account.balance ?? 0
-                        self.model.availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
-
-                        // Parse frozen balances from frozenV2 array (Stake 2.0)
-                        self.model.frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
-                        self.model.frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
-
-                        // Parse unfreezing balance
-                        self.model.unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
-
-                        // Parse pending withdrawals
-                        self.model.pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
-                            guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
-                                return nil
-                            }
-                            let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
-                            let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
-                            return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
-                        }.sorted { $0.expirationDate < $1.expirationDate }
-
-                        self.model.isLoadingBalance = false
-                    }
+                    await self.model.apply(account: account)
                 } catch {
                     if !(error is CancellationError) {
                         await MainActor.run {
@@ -114,13 +94,7 @@ struct TronScreen: View {
             group.addTask {
                 do {
                     let resource = try await tronService.getAccountResource(address: address, forceRefresh: forceRefresh)
-                    await MainActor.run {
-                        self.model.availableBandwidth = resource.calculateAvailableBandwidth()
-                        self.model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
-                        self.model.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
-                        self.model.totalEnergy = resource.EnergyLimit
-                        self.model.isLoadingResources = false
-                    }
+                    await self.model.apply(resource: resource)
                 } catch {
                     if !(error is CancellationError) {
                         await MainActor.run {
@@ -134,5 +108,12 @@ struct TronScreen: View {
 
         // Clear global loading state after task group completes
         await MainActor.run { model.isLoading = false }
+        guard !Task.isCancelled else { return }
+
+        // Persist the frozen/unfreezing balance into `Coin.stakedBalance` so the
+        // DeFi portfolio main screen (which reads the persisted value) stays in
+        // sync with this live detail view instead of diverging. Run this only
+        // after the detail data is populated so its network calls never gate cards.
+        await BalanceService.shared.updateBalance(for: trxCoin)
     }
 }
