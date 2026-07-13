@@ -614,6 +614,29 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.canPlaceOrder, "Zero price is not placeable")
     }
 
+    // MARK: - expectedBuyAmount (memoized)
+
+    func testExpectedBuyAmountMatchesComputeAndUpdatesWithInputs() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))  // 1 BTC (8 dec)
+        vm.draft.targetPrice = 16
+        let expected = limitOrderExpectedOutput(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 16)
+        XCTAssertEqual(vm.expectedBuyAmount, expected)
+        // Repeat read (cache hit) returns the same value.
+        XCTAssertEqual(vm.expectedBuyAmount, expected)
+
+        // Changing a keyed input invalidates the cache and recomputes.
+        vm.draft.targetPrice = 32
+        let expected2 = limitOrderExpectedOutput(sourceAmount: BigInt(100_000_000), sourceDecimals: 8, targetPrice: 32)
+        XCTAssertEqual(vm.expectedBuyAmount, expected2)
+        XCTAssertNotEqual(expected2, expected)
+
+        vm.amountChanged(BigInt(50_000_000))
+        XCTAssertEqual(
+            vm.expectedBuyAmount,
+            limitOrderExpectedOutput(sourceAmount: BigInt(50_000_000), sourceDecimals: 8, targetPrice: 32)
+        )
+    }
+
     // MARK: - fixtures
 
     private func makeViewModel(

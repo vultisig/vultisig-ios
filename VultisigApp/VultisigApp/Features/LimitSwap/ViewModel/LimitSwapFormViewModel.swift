@@ -528,17 +528,33 @@ final class LimitSwapFormViewModel {
 
     // MARK: - Computed UI state
 
+    /// Memoizes `expectedBuyAmount` keyed on its three inputs, so a render-path
+    /// read doesn't re-run `computeLim` (BigInt.power + Decimal↔BigInt) on every
+    /// view-body evaluation / crossfade frame. `@ObservationIgnored` so writing
+    /// the cache inside the getter can't trip the observation machinery.
+    @ObservationIgnored
+    private var expectedBuyAmountCache: (amount: BigInt, decimals: Int, price: Decimal, value: Decimal)?
+
     /// Expected buy (target) amount for the current draft, derived from the SAME
     /// truncated `computeLim` the signed memo's LIM uses — so the Asset-section
     /// preview can never diverge (higher) from what the order actually
     /// guarantees. `0` when not yet computable. Business math stays out of the
-    /// view.
+    /// view. Memoized on `(sourceAmount, sourceDecimals, targetPrice)`.
     var expectedBuyAmount: Decimal {
-        limitOrderExpectedOutput(
-            sourceAmount: draft.sourceAmount,
-            sourceDecimals: draft.fromAsset.decimals,
-            targetPrice: draft.targetPrice
+        let amount = draft.sourceAmount
+        let decimals = draft.fromAsset.decimals
+        let price = draft.targetPrice
+        if let cache = expectedBuyAmountCache,
+           cache.amount == amount, cache.decimals == decimals, cache.price == price {
+            return cache.value
+        }
+        let value = limitOrderExpectedOutput(
+            sourceAmount: amount,
+            sourceDecimals: decimals,
+            targetPrice: price
         )
+        expectedBuyAmountCache = (amount, decimals, price, value)
+        return value
     }
 
     /// Percentage above (positive) or below (negative) the current market.
