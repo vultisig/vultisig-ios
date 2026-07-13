@@ -807,6 +807,7 @@
 "passwordIsRequired" = "Password is required.";
 "passwordMismatch" = "Password Mismatch";
 "paste" = "Paste";
+"peerDiscoveryInfoDescription" = "On your other device, open the app and tap \"Scan QR\" to connect it.";
 "peerDiscoveryInfoTitle" = "Scan the QR on your other devices";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
 "pendingRewards" = "Pending Rewards";

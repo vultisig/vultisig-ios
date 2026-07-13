@@ -809,6 +809,7 @@
 "passwordIsRequired" = "Potrebna je lozinka.";
 "passwordMismatch" = "Lozinke se ne podudaraju";
 "paste" = "Zalijepi";
+"peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
 "peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
 "pendingRewards" = "Nagrade na čekanju";
