@@ -1900,6 +1900,15 @@ class TokensStore {
             contractAddress: "uusd",
             isNativeToken: false
         ),
+        CoinMeta(
+            chain: .terraClassic,
+            ticker: "USDC",
+            logo: "usdc",
+            decimals: 6,
+            priceProviderId: "usd-coin",
+            contractAddress: "ibc/0BB9D8513E8E8E9AE6A9D211D9136E6DA42288DDE6CFAA453A150A4566054DC5",
+            isNativeToken: false
+        ),
         rune,
         CoinMeta(
             chain: .thorChainChainnet,

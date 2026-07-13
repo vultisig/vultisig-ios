@@ -24,6 +24,7 @@ struct CosmosAPI: TargetType {
         case wasmTokenBalance(contractAddress: String, base64Payload: String)
         case wasmTokenInfo(contractAddress: String)
         case ibcDenomTrace(hash: String)
+        case ibcDenom(hash: String)
         case denomMetadata(denom: String)
         case allDenomsMetadata
         case latestBlock
@@ -51,6 +52,12 @@ struct CosmosAPI: TargetType {
             return Self.wasmSmartQueryPath(contractAddress: contractAddress, base64Payload: base64Payload)
         case .ibcDenomTrace(let hash):
             return "/ibc/apps/transfer/v1/denom_traces/\(hash)"
+        case .ibcDenom(let hash):
+            // Modern ibc-go path. Unlike the deprecated `denom_traces/{hash}`
+            // endpoint (which Terra Classic LCDs answer with `code 12 Not
+            // Implemented`), Terra Classic implements this one — it returns the
+            // base denom + hop trace for a hashed IBC voucher.
+            return "/ibc/apps/transfer/v1/denoms/\(hash)"
         case .denomMetadata(let denom):
             // Denom strings can contain `/` (factory/..., ibc/HASH) which the
             // URL parser would otherwise treat as path separators. Percent-
@@ -143,6 +150,32 @@ struct CosmosCw20TokenInfoResponse: Decodable {
         let name: String?
         let symbol: String?
         let decimals: Int?
+    }
+}
+
+/// Response for the modern `/ibc/apps/transfer/v1/denoms/{hash}` endpoint.
+///
+/// A resolved voucher answers `{"denom":{"base":"uusdc","trace":[{...}]}}`;
+/// the base denom is what the wallet derives a ticker + decimals from. Every
+/// field is optional so the gRPC-gateway NotFound shape (`{"code":5,
+/// "message":"...not found..."}`) decodes to a `nil` base — treated as
+/// unresolved — instead of throwing a decode error.
+struct CosmosIbcDenom: Decodable {
+    let denom: Denom?
+
+    struct Denom: Decodable {
+        let base: String?
+        let trace: [Hop]?
+
+        struct Hop: Decodable {
+            let portId: String?
+            let channelId: String?
+
+            enum CodingKeys: String, CodingKey {
+                case portId = "port_id"
+                case channelId = "channel_id"
+            }
+        }
     }
 }
 
