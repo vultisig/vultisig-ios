@@ -878,8 +878,9 @@ private struct LimitAssetRow: View {
         if let computedAmount {
             return computedAmount
         }
-        let normalized = amountText.replacingOccurrences(of: ",", with: ".")
-        return Decimal(string: normalized) ?? 0
+        // Locale-aware so the fiat sub-line doesn't mis-read a pasted grouped
+        // number (shares the parser the amount field itself uses).
+        return parseLimitDecimal(amountText)
     }
 }
 

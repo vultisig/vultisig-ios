@@ -57,7 +57,7 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
     /// (Maya's per-decimal multiplier never applies). For 8-decimal sources this
     /// is a no-op (native already == 1e8). Pure + static so it is unit-testable.
     static func thorchainQuoteAmount(sourceAmount: BigInt, sourceDecimals: Int) -> BigInt {
-        sourceAmount * BigInt(10).power(8) / BigInt(10).power(sourceDecimals)
+        sourceAmount * BigInt(10).power(Coin.thorchainFixedPointExponent) / BigInt(10).power(sourceDecimals)
     }
 
     /// Derive the market price (target natural units per source natural unit)
@@ -73,7 +73,7 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
         guard let expectedRaw = Decimal(string: expectedAmountOut) else {
             throw LimitSwapQuoteError.invalidExpectedAmount(expectedAmountOut)
         }
-        let expectedTargetNatural = expectedRaw / pow(10, 8)
+        let expectedTargetNatural = expectedRaw / pow(10, Coin.thorchainFixedPointExponent)
 
         guard let sourceRaw = Decimal(string: sourceAmount.description) else {
             throw LimitSwapQuoteError.invalidSourceAmount(sourceAmount.description)

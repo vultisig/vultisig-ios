@@ -32,7 +32,7 @@ func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal)
 
     var price = targetPrice
     var scaled = Decimal()
-    NSDecimalMultiplyByPowerOf10(&scaled, &price, 8, .plain)
+    NSDecimalMultiplyByPowerOf10(&scaled, &price, Int16(Coin.thorchainFixedPointExponent), .plain)
 
     var truncated = Decimal()
     NSDecimalRound(&truncated, &scaled, 0, .down)
@@ -89,7 +89,7 @@ func limitOrderExpectedOutput(
     }
     var scaled = limDecimal
     var natural = Decimal()
-    NSDecimalMultiplyByPowerOf10(&natural, &scaled, -8, .plain)
+    NSDecimalMultiplyByPowerOf10(&natural, &scaled, Int16(-Coin.thorchainFixedPointExponent), .plain)
     return natural
 }
 
