@@ -700,6 +700,8 @@
 "networkFee" = "Mrežna naknada";
 "new" = "NOVO";
 "newAddress" = "Nova adresa";
+"newBackupsCreatedDescription" = "Svaki će uređaj stvoriti novu .vult sigurnosnu kopiju koja se razlikuje od starih sigurnosnih kopija";
+"newBackupsCreatedTitle" = "Stvorit će se nove sigurnosne kopije";
 "newChainDetected" = "Otkriven novi lanac";
 "newUpdateAvailable" = "Dostupno novo ažuriranje";
 "newWalletNameDescription" = "Možete preimenovati svoj trezor kasnije u postavkama";
@@ -760,8 +762,8 @@
 "of" = "od";
 "off" = "Isključeno";
 "ok" = "U redu";
-"oldBackupsStopWorkingDescription" = "Sve postojeće .vult datoteke postaju nevažeće. Nakon ponovnog dijeljenja morat ćete izraditi nove sigurnosne kopije.";
-"oldBackupsStopWorkingTitle" = "Stare sigurnosne kopije prestat će raditi";
+"oldBackupsOnlyWorkTogetherDescription" = "Sve postojeće .vult datoteke rade samo zajedno. Miješanje starih i novih udjela neće raditi za potpisivanje transakcija.";
+"oldBackupsOnlyWorkTogetherTitle" = "Stare sigurnosne kopije rade samo zajedno";
 "oldBackupsWontWork" = "Stare sigurnosne kopije neće raditi";
 "oldBackupsWontWorkDescription" = "Sigurnosne kopije iz prethodnih postavki trezora ne mogu se koristiti. Valjane su samo sigurnosne kopije izrađene tijekom ovih postavki.";
 "on" = "na";
@@ -1120,7 +1122,6 @@
 "stakedCoin" = "%@ Uloženo";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "U Pripravnosti";
-"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "startReshare" = "Započni ponovno dijeljenje";
 "startReshareSubtitle" = "Mijenjate postavke uređaja ovog trezora.";
 "startScanning" = "Započni skeniranje";
@@ -1219,8 +1220,6 @@
 "thorchainAddress" = "THORChain adresa";
 "thorchainCustomTokenInvalidFormat" = "Neispravan format THORChain tokena. Koristite THOR.{SYMBOL}, npr. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
-"thresholdNotMetDescription" = "Pokušavate smanjiti broj uređaja s %1$d na %2$d, ali ovaj trezor zahtijeva %3$d aktivnih potpisnika kako bi ostao siguran.";
-"thresholdNotMetTitle" = "Prag nije dosegnut";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";
 "title" = "Naslov";

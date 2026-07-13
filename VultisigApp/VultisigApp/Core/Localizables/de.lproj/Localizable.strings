@@ -700,6 +700,8 @@
 "networkFee" = "Netzwerkgebühr";
 "new" = "NEU";
 "newAddress" = "Neue Adresse";
+"newBackupsCreatedDescription" = "Jedes Gerät erstellt ein neues .vult-Backup, das sich von den alten Backups unterscheidet";
+"newBackupsCreatedTitle" = "Neue Backups werden erstellt";
 "newChainDetected" = "Neue Kette erkannt";
 "newUpdateAvailable" = "Neues Update verfügbar";
 "newWalletNameDescription" = "Sie können Ihren Tresor später in den Einstellungen umbenennen";
@@ -760,8 +762,8 @@
 "of" = "von";
 "off" = "Aus";
 "ok" = "OK";
-"oldBackupsStopWorkingDescription" = "Alle vorhandenen .vult-Dateien werden ungültig. Nach dem erneuten Teilen müssen Sie neue Backups erstellen.";
-"oldBackupsStopWorkingTitle" = "Alte Backups funktionieren nicht mehr";
+"oldBackupsOnlyWorkTogetherDescription" = "Alle vorhandenen .vult-Dateien funktionieren nur zusammen. Das Mischen alter und neuer Shares funktioniert nicht zum Signieren von Transaktionen.";
+"oldBackupsOnlyWorkTogetherTitle" = "Alte Backups funktionieren nur zusammen";
 "oldBackupsWontWork" = "Alte Backups funktionieren nicht mehr";
 "oldBackupsWontWorkDescription" = "Backups aus früheren Tresor-Einrichtungen können nicht verwendet werden. Nur Backups, die während dieser Einrichtung erstellt wurden, sind gültig.";
 "on" = "auf";
@@ -1120,7 +1122,6 @@
 "stakedCoin" = "%@ gestaked";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "Bereitschaft";
-"startFastVaultReshare" = "Erneutes Teilen mit Vultiserver starten";
 "startReshare" = "Erneutes Teilen starten";
 "startReshareSubtitle" = "Sie ändern die Geräte-Einrichtung dieses Tresors.";
 "startScanning" = "Scannen starten";
@@ -1219,8 +1220,6 @@
 "thorchainAddress" = "THORChain-Adresse";
 "thorchainCustomTokenInvalidFormat" = "Ungültiges THORChain-Token-Format. Verwende THOR.{SYMBOL}, z. B. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain ist in diesem Tresor nicht aktiviert. Bitte aktiviere THORChain, um diese Funktion zu nutzen.";
-"thresholdNotMetDescription" = "Sie versuchen, die Anzahl der Geräte von %1$d auf %2$d zu reduzieren, aber dieser Tresor benötigt %3$d aktive Unterzeichner, um sicher zu bleiben.";
-"thresholdNotMetTitle" = "Schwellenwert nicht erreicht";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "timeout" = "Zeitüberschreitung";
 "title" = "Titel";

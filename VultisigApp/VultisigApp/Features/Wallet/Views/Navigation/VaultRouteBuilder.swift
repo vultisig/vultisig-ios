@@ -94,11 +94,6 @@ struct VaultRouteBuilder {
     }
 
     @ViewBuilder
-    func buildReshareDeviceCountScreen(vault: Vault) -> some View {
-        ReshareDevicesSelectionScreen(vault: vault)
-    }
-
-    @ViewBuilder
     func buildPasswordHintScreen(vault: Vault) -> some View {
         SettingsPasswordHintScreen(vault: vault, viewModel: SettingsBiometryViewModel())
     }

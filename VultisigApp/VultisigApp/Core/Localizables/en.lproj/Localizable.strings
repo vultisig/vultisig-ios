@@ -698,6 +698,8 @@
 "networkFee" = "Network Fee";
 "new" = "NEW";
 "newAddress" = "New Address";
+"newBackupsCreatedDescription" = "Each device will create a new .vult backup which is different to the old backups";
+"newBackupsCreatedTitle" = "New backups will be created";
 "newChainDetected" = "New chain detected";
 "newUpdateAvailable" = "Update is available.";
 "newWalletNameDescription" = "You can always rename your vault later in the settings";
@@ -758,8 +760,8 @@
 "of" = "of";
 "off" = "Off";
 "ok" = "OK";
-"oldBackupsStopWorkingDescription" = "Any existing .vult files become invalid. You'll need to create fresh backups after resharing.";
-"oldBackupsStopWorkingTitle" = "Old backups will stop working";
+"oldBackupsOnlyWorkTogetherDescription" = "Any existing .vult files will only work together. Mixing old and new shares will not work to sign transactions.";
+"oldBackupsOnlyWorkTogetherTitle" = "Old backups will only work together";
 "oldBackupsWontWork" = "Old backups won't work";
 "oldBackupsWontWorkDescription" = "Backups from previous vault setups can't be used. Only backups created during this setup are valid.";
 "on" = "on";
@@ -1118,7 +1120,6 @@
 "stakedCoin" = "Staked %@";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "Standby";
-"startFastVaultReshare" = "Start Reshare with Vultiserver";
 "startReshare" = "Start Reshare";
 "startReshareSubtitle" = "You are changing this vault's device setup.";
 "startScanning" = "Start scanning";
@@ -1217,8 +1218,6 @@
 "thorchainAddress" = "THORChain Address";
 "thorchainCustomTokenInvalidFormat" = "Invalid THORChain token format. Use THOR.{SYMBOL}, e.g. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain is not enabled on this vault. Please enable THORChain to use this feature.";
-"thresholdNotMetDescription" = "You're trying to reduce the number of devices from %1$d to %2$d, but this vault requires %3$d active signers to stay secure.";
-"thresholdNotMetTitle" = "Threshold not met";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "timeout" = "Timeout";
 "title" = "Title";

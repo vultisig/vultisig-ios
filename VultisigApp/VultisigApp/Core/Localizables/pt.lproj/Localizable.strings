@@ -700,6 +700,8 @@
 "networkFee" = "Taxa de rede";
 "new" = "NOVO";
 "newAddress" = "Novo Endereço";
+"newBackupsCreatedDescription" = "Cada dispositivo criará um novo backup .vult, diferente dos backups antigos";
+"newBackupsCreatedTitle" = "Novos backups serão criados";
 "newChainDetected" = "Nova cadeia detectada";
 "newUpdateAvailable" = "Nova atualização disponível";
 "newWalletNameDescription" = "Você pode renomear seu cofre mais tarde nas configurações";
@@ -760,8 +762,8 @@
 "of" = "de";
 "off" = "Desligado";
 "ok" = "OK";
-"oldBackupsStopWorkingDescription" = "Todos os arquivos .vult existentes se tornarão inválidos. Você precisará criar novos backups após compartilhar novamente.";
-"oldBackupsStopWorkingTitle" = "Backups antigos deixarão de funcionar";
+"oldBackupsOnlyWorkTogetherDescription" = "Todos os arquivos .vult existentes só funcionam juntos. Misturar partes antigas e novas não funcionará para assinar transações.";
+"oldBackupsOnlyWorkTogetherTitle" = "Os backups antigos só funcionam juntos";
 "oldBackupsWontWork" = "Backups antigos não funcionarão";
 "oldBackupsWontWorkDescription" = "Backups de configurações anteriores do cofre não podem ser usados. Apenas os backups criados durante esta configuração são válidos.";
 "on" = "na";
@@ -1120,7 +1122,6 @@
 "stakedCoin" = "%@ em Stake";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "Em Espera";
-"startFastVaultReshare" = "Iniciar compartilhamento com Vultiserver";
 "startReshare" = "Iniciar compartilhamento novamente";
 "startReshareSubtitle" = "Você está alterando a configuração de dispositivos deste cofre.";
 "startScanning" = "Iniciar escaneamento";
@@ -1219,8 +1220,6 @@
 "thorchainAddress" = "Endereço THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token THORChain inválido. Use THOR.{SYMBOL}, ex.: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain não está habilitado neste cofre. Por favor, habilite THORChain para usar este recurso.";
-"thresholdNotMetDescription" = "Você está tentando reduzir o número de dispositivos de %1$d para %2$d, mas este cofre requer %3$d signatários ativos para permanecer seguro.";
-"thresholdNotMetTitle" = "Limite não atingido";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "timeout" = "Tempo esgotado";
 "title" = "Título";

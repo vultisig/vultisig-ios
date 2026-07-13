@@ -700,6 +700,8 @@
 "networkFee" = "Tarifa de red";
 "new" = "NUEVO";
 "newAddress" = "Nueva dirección";
+"newBackupsCreatedDescription" = "Cada dispositivo creará un nuevo respaldo .vult, diferente de los respaldos antiguos";
+"newBackupsCreatedTitle" = "Se crearán nuevos respaldos";
 "newChainDetected" = "Nueva cadena detectada";
 "newUpdateAvailable" = "Nueva actualización disponible";
 "newWalletNameDescription" = "Siempre puedes renombrar tu bóveda más tarde en la configuración";
@@ -760,8 +762,8 @@
 "of" = "de";
 "off" = "Desactivado";
 "ok" = "DE ACUERDO";
-"oldBackupsStopWorkingDescription" = "Todos los archivos .vult existentes quedarán inválidos. Deberás crear nuevos respaldos después de compartir nuevamente.";
-"oldBackupsStopWorkingTitle" = "Los respaldos antiguos dejarán de funcionar";
+"oldBackupsOnlyWorkTogetherDescription" = "Todos los archivos .vult existentes solo funcionan juntos. Mezclar particiones antiguas y nuevas no servirá para firmar transacciones.";
+"oldBackupsOnlyWorkTogetherTitle" = "Los respaldos antiguos solo funcionan juntos";
 "oldBackupsWontWork" = "Los respaldos antiguos no funcionarán";
 "oldBackupsWontWorkDescription" = "Los respaldos de configuraciones anteriores de la bóveda no se pueden usar. Solo son válidos los respaldos creados durante esta configuración.";
 "on" = "en";
@@ -1120,7 +1122,6 @@
 "stakedCoin" = "%@ en Staking";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "En Espera";
-"startFastVaultReshare" = "Iniciar compartir con Vultiserver";
 "startReshare" = "Iniciar compartir nuevamente";
 "startReshareSubtitle" = "Estás cambiando la configuración de dispositivos de esta bóveda.";
 "startScanning" = "Iniciar escaneo";
@@ -1219,8 +1220,6 @@
 "thorchainAddress" = "Dirección de THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token de THORChain no válido. Usa THOR.{SYMBOL}, p. ej. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Por favor, habilita THORChain para usar esta función.";
-"thresholdNotMetDescription" = "Estás intentando reducir la cantidad de dispositivos de %1$d a %2$d, pero esta bóveda requiere %3$d firmantes activos para mantenerse segura.";
-"thresholdNotMetTitle" = "Umbral no alcanzado";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";
 "title" = "Título";

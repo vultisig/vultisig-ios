@@ -125,7 +125,29 @@ struct ReshareScreen: View {
     }
 
     private func onStartReshareConfirmed() {
-        router.navigate(to: VaultRoute.reshareDeviceCount(vault: vault))
+        // A server-backed vault must collect its password first so the server
+        // is registered and joins the session; otherwise peer discovery would
+        // wait forever for a device that never connects. Every other vault
+        // goes straight to peer discovery.
+        if vault.hasServerSigner {
+            router.navigate(to: KeygenRoute.fastVaultPassword(
+                tssType: .Reshare,
+                vault: vault,
+                selectedTab: .secure,
+                isExistingVault: true,
+                singleKeygenType: nil
+            ))
+        } else {
+            router.navigate(to: KeygenRoute.peerDiscovery(
+                tssType: .Reshare,
+                vault: vault,
+                selectedTab: .secure,
+                fastSignConfig: nil,
+                keyImportInput: nil,
+                setupType: nil,
+                singleKeygenType: nil
+            ))
+        }
     }
 
     private func onJoinReshare() {

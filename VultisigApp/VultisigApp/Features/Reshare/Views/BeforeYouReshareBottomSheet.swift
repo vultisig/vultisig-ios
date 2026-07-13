@@ -44,9 +44,15 @@ struct BeforeYouReshareBottomSheet: View, BottomSheetProperties {
     var warningCards: some View {
         VStack(spacing: 10) {
             ReshareWarningCard(
+                icon: "file-tree",
+                title: "newBackupsCreatedTitle".localized,
+                subtitle: "newBackupsCreatedDescription".localized
+            )
+
+            ReshareWarningCard(
                 icon: "traffic-cone",
-                title: "oldBackupsStopWorkingTitle".localized,
-                subtitle: "oldBackupsStopWorkingDescription".localized
+                title: "oldBackupsOnlyWorkTogetherTitle".localized,
+                subtitle: "oldBackupsOnlyWorkTogetherDescription".localized
             )
 
             ReshareWarningCard(

@@ -700,6 +700,8 @@
 "networkFee" = "Commissione di rete";
 "new" = "NUOVO";
 "newAddress" = "Nuovo indirizzo";
+"newBackupsCreatedDescription" = "Ogni dispositivo creerà un nuovo backup .vult, diverso dai vecchi backup";
+"newBackupsCreatedTitle" = "Verranno creati nuovi backup";
 "newChainDetected" = "Nuova catena rilevata";
 "newUpdateAvailable" = "Nuovo aggiornamento disponibile";
 "newWalletNameDescription" = "Puoi sempre rinominare il tuo vault più tardi nelle impostazioni";
@@ -760,8 +762,8 @@
 "of" = "Di";
 "off" = "Disattivato";
 "ok" = "OK";
-"oldBackupsStopWorkingDescription" = "Tutti i file .vult esistenti diventano non validi. Dovrai creare nuovi backup dopo la ricondivisione.";
-"oldBackupsStopWorkingTitle" = "I vecchi backup smetteranno di funzionare";
+"oldBackupsOnlyWorkTogetherDescription" = "Tutti i file .vult esistenti funzionano solo insieme. Combinare quote vecchie e nuove non funzionerà per firmare le transazioni.";
+"oldBackupsOnlyWorkTogetherTitle" = "I vecchi backup funzionano solo insieme";
 "oldBackupsWontWork" = "I vecchi backup non funzioneranno";
 "oldBackupsWontWorkDescription" = "I backup delle configurazioni precedenti del vault non possono essere utilizzati. Sono validi solo i backup creati durante questa configurazione.";
 "on" = "su";
@@ -1120,7 +1122,6 @@
 "stakedCoin" = "%@ in Staking";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "In Standby";
-"startFastVaultReshare" = "Inizia la ricondivisione con Vultiserver";
 "startReshare" = "Inizia la ricondivisione";
 "startReshareSubtitle" = "Stai modificando la configurazione dei dispositivi di questo vault.";
 "startScanning" = "Avvia scansione";
@@ -1219,8 +1220,6 @@
 "thorchainAddress" = "Indirizzo THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato del token THORChain non valido. Usa THOR.{SYMBOL}, ad es. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain non è abilitato su questo caveau. Abilita THORChain per utilizzare questa funzione.";
-"thresholdNotMetDescription" = "Stai cercando di ridurre il numero di dispositivi da %1$d a %2$d, ma questo vault richiede %3$d firmatari attivi per rimanere sicuro.";
-"thresholdNotMetTitle" = "Soglia non raggiunta";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "timeout" = "Tempo scaduto";
 "title" = "Titolo";

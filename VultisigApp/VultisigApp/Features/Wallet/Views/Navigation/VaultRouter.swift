@@ -43,8 +43,6 @@ struct VaultRouter {
             viewBuilder.buildVaultShareBackupsScreen(vault: vault)
         case .reshare(let vault):
             viewBuilder.buildReshareScreen(vault: vault)
-        case .reshareDeviceCount(let vault):
-            viewBuilder.buildReshareDeviceCountScreen(vault: vault)
         case .passwordHint(let vault):
             viewBuilder.buildPasswordHintScreen(vault: vault)
         case .vaultDetails(let vault, let devicesInfo):

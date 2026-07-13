@@ -700,6 +700,8 @@
 "networkFee" = "网络费用";
 "new" = "新";
 "newAddress" = "新地址";
+"newBackupsCreatedDescription" = "每台设备都会创建一个新的 .vult 备份，与旧备份不同";
+"newBackupsCreatedTitle" = "将创建新备份";
 "newChainDetected" = "检测到新链";
 "newUpdateAvailable" = "有可用更新";
 "newWalletNameDescription" = "您以后可以随时在设置中重命名保险库";
@@ -760,8 +762,8 @@
 "of" = "的";
 "off" = "关闭";
 "ok" = "确定";
-"oldBackupsStopWorkingDescription" = "所有现有的 .vult 文件将失效。重新共享后您需要创建新的备份。";
-"oldBackupsStopWorkingTitle" = "旧备份将失效";
+"oldBackupsOnlyWorkTogetherDescription" = "所有现有的 .vult 文件只能一起使用。混用新旧份额将无法签署交易。";
+"oldBackupsOnlyWorkTogetherTitle" = "旧备份只能一起使用";
 "oldBackupsWontWork" = "旧备份将无法使用";
 "oldBackupsWontWorkDescription" = "先前保险库设置的备份无法使用。只有在本次设置期间创建的备份才有效。";
 "on" = "在";
@@ -1120,7 +1122,6 @@
 "stakedCoin" = "已质押 %@";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "待机";
-"startFastVaultReshare" = "使用 Vultiserver 开始重新共享";
 "startReshare" = "开始重新共享";
 "startReshareSubtitle" = "您正在更改此保险库的设备设置。";
 "startScanning" = "开始扫描";
@@ -1219,8 +1220,6 @@
 "thorchainAddress" = "THORChain 地址";
 "thorchainCustomTokenInvalidFormat" = "THORChain 代币格式无效。请使用 THOR.{SYMBOL}，例如 THOR.LQDY。";
 "thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
-"thresholdNotMetDescription" = "您正在尝试将设备数量从 %1$d 台减少到 %2$d 台，但此保险库需要 %3$d 个活跃签名者才能保持安全。";
-"thresholdNotMetTitle" = "未达到阈值";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "timeout" = "超时";
 "title" = "标题";
