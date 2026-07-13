@@ -198,6 +198,10 @@ struct DefaultSwapInteractor: SwapInteractor {
         await balance.updateBalance(for: coin)
     }
 
+    func refreshBalanceOrThrow(for coin: Coin) async throws {
+        try await balance.refreshSpendableBalanceOrThrow(for: coin)
+    }
+
     func warmDiscountTier(for vault: Vault) async {
         _ = await tierResolver.resolveTierForSession(for: vault)
     }

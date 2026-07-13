@@ -402,6 +402,21 @@ class BalanceService {
         }
     }
 
+    /// Fail-closed spendable-balance refresh: fetches the live raw balance and
+    /// applies it, RETHROWING on fetch failure — unlike `updateBalance`, which
+    /// swallows the error and keeps the stale cached balance. Used by the swap
+    /// sign-time funds check so a down balance RPC can't pass an insufficient
+    /// order against a stale balance.
+    func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {
+        let rawBalance = try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
+        try await MainActor.run {
+            if coin.rawBalance != rawBalance {
+                coin.rawBalance = rawBalance
+                try Storage.shared.save()
+            }
+        }
+    }
+
     func fetchBalance(for coin: CoinMeta, address: String) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:

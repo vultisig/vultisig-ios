@@ -195,10 +195,12 @@ final class SwapVerifyViewModel {
                 // skipped the balance check entirely. Refresh the live source
                 // balance and fail CLOSED before signing, so a balance drop while
                 // the user sat on Verify is caught here rather than only surfacing
-                // when the deposit is broadcast.
-                await interactor.updateBalance(for: transaction.fromCoin)
+                // when the deposit is broadcast. `refreshBalanceOrThrow` rethrows
+                // if the balance RPC is down — otherwise a stale cached balance
+                // could pass this check while the account is actually short.
+                try await interactor.refreshBalanceOrThrow(for: transaction.fromCoin)
                 if transaction.feeCoin != transaction.fromCoin {
-                    await interactor.updateBalance(for: transaction.feeCoin)
+                    try await interactor.refreshBalanceOrThrow(for: transaction.feeCoin)
                 }
                 // HIGH tier: run the same recipient safety-net the market path
                 // runs in `DefaultSwapInteractor.buildSwapKeysignPayload`, which
