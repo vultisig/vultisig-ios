@@ -306,10 +306,12 @@ enum SolanaHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         // Handle SignSolana (raw transactions)
         if let signSolana = keysignPayload.signSolana {
-            // Reject a multi-transaction batch (signAllTransactions, N>1) here —
-            // the single pre-ceremony chokepoint reached on BOTH the initiator
-            // and the co-signer before peer discovery. getSignedTransaction only
-            // supports a single raw transaction, so without this the user would
+            // Reject a multi-transaction batch (signAllTransactions, N>1) here.
+            // This runs while keysign messages are built, before peer discovery.
+            // A relayed N>1 batch reaches this device only as a co-signer (the
+            // sole in-app signSolana producers are single-tx staking and the
+            // proto-ingress joiner path), and getSignedTransaction supports just
+            // one raw transaction — so without this the co-signer would
             // physically approve the full multi-device keysign and only then hit
             // an opaque post-ceremony failure. Fail fast with a clear message.
             guard signSolana.rawTransactions.count <= 1 else {
