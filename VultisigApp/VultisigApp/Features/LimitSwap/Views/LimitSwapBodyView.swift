@@ -132,7 +132,7 @@ struct LimitSwapBodyView: View {
                 title: "limitSwap.placeOrder".localized,
                 action: onPlaceOrder
             )
-            .disabled(!isPlaceable)
+            .disabled(!vm.canPlaceOrder)
             .padding(.bottom, 16)
         }
         .onLoad {
@@ -203,12 +203,6 @@ struct LimitSwapBodyView: View {
             // decimals so text ↔ draft stays consistent.
             vm.amountChanged(parseLimitAmount(sourceAmountText, decimals: newCoin.decimals))
         }
-    }
-
-    private var isPlaceable: Bool {
-        vm.draft.targetPrice > 0
-            && vm.draft.sourceAmount > 0
-            && vm.isAdvancedSwapQueueEnabled
     }
 
     /// Asset section shows the collapsed summary + checkmark/pencil once the user

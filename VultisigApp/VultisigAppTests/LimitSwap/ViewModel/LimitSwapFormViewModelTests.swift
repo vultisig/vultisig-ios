@@ -577,6 +577,43 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.isAdvancedSwapQueueEnabled)
     }
 
+    // MARK: - canPlaceOrder (Place-Order gate incl. resolved network fee)
+
+    func testCanPlaceOrderRequiresResolvedNetworkFee() {
+        // Fee-disclosure race: a fully valid draft must NOT be placeable until the
+        // network-fee estimate resolves — otherwise the order is signed with a
+        // blank fee the user never saw.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = .zero
+        XCTAssertFalse(vm.canPlaceOrder, "Must be blocked while the network fee is unresolved")
+
+        vm.networkFeeEstimate = BigInt(4_200)
+        XCTAssertTrue(vm.canPlaceOrder, "Placeable once amount, price, queue gate and fee are all resolved")
+    }
+
+    func testCanPlaceOrderFalseWhenQueueDisabled() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = false
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        XCTAssertFalse(vm.canPlaceOrder)
+    }
+
+    func testCanPlaceOrderFalseWhenAmountOrPriceMissing() {
+        let vm = makeViewModel(sourceAmount: 0)
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        XCTAssertFalse(vm.canPlaceOrder, "Zero amount is not placeable")
+
+        vm.amountChanged(BigInt(100_000_000))
+        vm.networkFeeEstimate = BigInt(4_200)  // amountChanged clears it; restore
+        vm.draft.targetPrice = 0
+        XCTAssertFalse(vm.canPlaceOrder, "Zero price is not placeable")
+    }
+
     // MARK: - fixtures
 
     private func makeViewModel(

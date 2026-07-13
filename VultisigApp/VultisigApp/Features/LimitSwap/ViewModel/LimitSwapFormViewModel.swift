@@ -68,6 +68,22 @@ final class LimitSwapFormViewModel {
     /// Convenience for the view: `true` only when the queue is confirmed live.
     var isAdvancedSwapQueueEnabled: Bool { advancedSwapQueueEnabled == true }
 
+    /// Whether the current draft can be placed — gates the entry screen's Place
+    /// Order button. Requires a positive amount + target price, the Advanced Swap
+    /// Queue confirmed live, AND a RESOLVED network-fee estimate
+    /// (`networkFeeEstimate > 0`). Gating on the resolved fee closes a
+    /// fee-disclosure race: the estimate is dropped to `0` on every input change
+    /// and re-fetched asynchronously, so without this the user could tap Place
+    /// before it resolves and sign an order whose Verify / Done screens show a
+    /// blank network-fee row — never seeing the real source-chain gas that is
+    /// derived at sign time. While the fee recomputes the button stays disabled.
+    var canPlaceOrder: Bool {
+        draft.targetPrice > 0
+            && draft.sourceAmount > 0
+            && isAdvancedSwapQueueEnabled
+            && networkFeeEstimate > 0
+    }
+
     /// User-facing error raised while assembling / pre-flighting the order in
     /// "Place Order" (memo byte-cap overflow, target-price overflow). Drives an
     /// alert in `LimitSwapEntryView`. `nil` clears the alert. Previously these
