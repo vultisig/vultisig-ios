@@ -761,6 +761,7 @@
 "noTransactionsYetSubtitle" = "Aún no has realizado swaps, envíos ni aprobaciones desde esta bóveda.";
 "notWhitelistedOnNode" = "No estás en la lista blanca de este nodo";
 "noUnencryptedVaultsToImport" = "No hay bóvedas sin cifrar para importar";
+"noVaultAddresses" = "No hay direcciones de bóveda";
 "noVaultsFoundInZip" = "No se encontraron bóvedas en el archivo ZIP.";
 "of" = "de";
 "off" = "Desactivado";
