@@ -8,13 +8,11 @@ import SwiftUI
 struct TransactionHistoryCardView: View {
     let transaction: TransactionHistoryData
 
-    @State private var isExpanded: Bool
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
 
-    init(transaction: TransactionHistoryData) {
-        self.transaction = transaction
-        _isExpanded = State(initialValue: transaction.status == .inProgress && transaction.type != .approve)
+    private var isExpanded: Bool {
+        Self.shouldExpand(status: transaction.status, type: transaction.type)
     }
 
     var body: some View {
@@ -49,11 +47,12 @@ struct TransactionHistoryCardView: View {
         .onChange(of: transaction.status) { _, newStatus in
             if newStatus != .inProgress {
                 stopTimer()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation { isExpanded = false }
-                }
             }
         }
+    }
+
+    static func shouldExpand(status: TransactionHistoryStatus, type: TransactionHistoryType) -> Bool {
+        status == .inProgress && type != .approve
     }
 
     // MARK: - Top Row
