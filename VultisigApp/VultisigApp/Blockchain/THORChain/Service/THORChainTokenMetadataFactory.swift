@@ -41,10 +41,14 @@ enum THORChainTokenMetadataFactory {
                 ticker = "stcy"
             } else if asset == TokensStore.brune.contractAddress {
                 symbol = "bRUNE"
-                ticker = "brune"
+                // Exact curated casing so a metadata-fetch fallback still matches
+                // `TokensStore.brune` and displays `bRUNE` rather than lowercase.
+                ticker = "bRUNE"
             } else if asset == TokensStore.ybrune.contractAddress {
                 symbol = "ybRUNE"
-                ticker = "ybrune"
+                // Exact curated casing so the DeFi interactor's case-sensitive
+                // ticker match still resolves ybRUNE if LCD metadata is missing.
+                ticker = "ybRUNE"
             } else {
                 symbol = asset
                 ticker = asset
