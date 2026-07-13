@@ -28,7 +28,8 @@ enum ThorchainRouterDepositBuilder {
     /// build the identical shim.
     @MainActor
     static func synthesizeRouterDeposit(
-        tx: SendTransaction
+        tx: SendTransaction,
+        thorchainService: ThorchainService = .shared
     ) async throws -> (swapPayload: SwapPayload?, approvePayload: ERC20ApprovePayload?) {
         let isLPAdd = tx.memoFunctionDictionary["pool"] != nil
         let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
@@ -37,10 +38,10 @@ enum ThorchainRouterDepositBuilder {
             return (nil, nil)
         }
 
-        let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+        let inboundAddresses = await thorchainService.fetchThorchainInboundAddress()
         let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
         guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-            throw HelperError.runtimeError("Failed to find inbound address for \(chainName)")
+            throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
         }
 
         let expirationTime = Date().addingTimeInterval(60 * 15)
@@ -100,7 +101,7 @@ enum ThorchainRouterDepositBuilder {
         )
 
         let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-        let (swapPayload, approvePayload) = try await synthesizeRouterDeposit(tx: tx)
+        let (swapPayload, approvePayload) = try await synthesizeRouterDeposit(tx: tx, thorchainService: thorchainService)
         return try await KeysignPayloadFactory().buildTransfer(
             coin: fromCoin,
             toAddress: toAddress,
