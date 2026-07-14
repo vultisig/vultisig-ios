@@ -397,6 +397,10 @@ private struct LimitPriceDisplay: View {
                 .font(font)
                 .foregroundStyle(color)
             TextField("0", text: $usdText)
+                // `.plain` strips macOS's default bordered chrome (the dark bezel
+                // box); iOS is unaffected. Matches the market amount field, which
+                // uses PlainTextFieldStyle via `.borderlessTextFieldStyle()`.
+                .textFieldStyle(.plain)
                 .font(font)
                 .foregroundStyle(color)
                 .multilineTextAlignment(.center)
@@ -460,6 +464,9 @@ private struct LimitPriceDisplay: View {
     private func assetPriceField(font: Font, color: Color) -> some View {
         HStack(spacing: 6) {
             TextField("0", text: $priceText)
+                // `.plain` strips macOS's default bordered chrome (the dark bezel
+                // box); iOS is unaffected. Matches the market amount field.
+                .textFieldStyle(.plain)
                 .font(font)
                 .foregroundStyle(color)
                 .multilineTextAlignment(.center)
@@ -827,6 +834,10 @@ private struct LimitAssetRow: View {
                 VStack(alignment: .trailing, spacing: 6) {
                     if amountIsEditable {
                         TextField("0", text: $amountText)
+                            // `.plain` strips macOS's default bordered chrome (the
+                            // dark bezel box); iOS is unaffected. Matches the market
+                            // amount field.
+                            .textFieldStyle(.plain)
                             .font(Theme.fonts.title2)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .multilineTextAlignment(.trailing)
