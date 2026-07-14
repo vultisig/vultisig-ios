@@ -99,6 +99,12 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
     /// Fail CLOSED — placing anyway risks the order being treated as a market
     /// swap or rejected on-chain.
     case advancedSwapQueueDisabled
+    /// The selected pair can't be assembled into a placeable order — one side has
+    /// no THORChain memo-asset encoding, or no destination address could be
+    /// resolved for the target chain. The CTA is also disabled on these via
+    /// `canPlaceOrder`, so this is the belt-and-suspenders that guarantees a tap
+    /// can never silently no-op (previously these guards `return nil`ed silently).
+    case pairNotPlaceable
 
     var id: String {
         switch self {
@@ -112,6 +118,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "invalidInputs-\(errors.map(String.init(describing:)).joined(separator: ","))"
         case .advancedSwapQueueDisabled:
             return "advancedSwapQueueDisabled"
+        case .pairNotPlaceable:
+            return "pairNotPlaceable"
         }
     }
 
@@ -132,6 +140,10 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "limitSwap.error.invalidInputs".localized
         case .advancedSwapQueueDisabled:
             return "limitSwap.error.advancedSwapQueueDisabled".localized
+        case .pairNotPlaceable:
+            // Reuses the routability-gate copy: the actionable ask is identical —
+            // pick a different asset THORChain can route.
+            return "limitSwap.error.pairNotRoutable".localized
         }
     }
 }

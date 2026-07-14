@@ -93,10 +93,25 @@ final class LimitSwapFormViewModel {
             && draft.sourceAmount > 0
             && isAdvancedSwapQueueEnabled
             && networkFeeEstimate > 0
-            // The picker filters by CHAIN routability only; block a pair that
-            // THORChain can't actually route (no pool / unsupported asset), so a
-            // poolless pair never reaches Verify and rests as an unfillable order.
+            // POSITIVE routability proof: a resolved market reference means the
+            // market-price probe got a quote back, which proves the pair has a
+            // THORChain pool (the picker only filters per-CHAIN, so a poolless
+            // pair like RUNE→VULT / KUJI→ETH slips through). Requiring the
+            // reference — rather than merely the ABSENCE of a known-bad verdict —
+            // closes the pre-probe window where `pairUnroutableReason` hasn't
+            // resolved yet, so a poolless pair can never reach Verify. `nil` while
+            // the probe is pending or failed, and cleared to `nil` on pair change.
+            && marketPriceRef != nil
+            // Redundant with the positive proof above in every reachable state,
+            // but kept as defence-in-depth: never place a pair the probe flagged.
             && pairUnroutableReason == nil
+            // Prerequisites for building a placeable order — without these
+            // `preparePlaceableOrder` can't assemble a memo, so disable the CTA
+            // rather than let the tap silently no-op (per-ASSET routability that
+            // the per-CHAIN picker filter doesn't cover).
+            && draft.fromAsset.memoSymbol != nil
+            && draft.toAsset.memoSymbol != nil
+            && destinationAddress() != nil
     }
 
     /// User-facing error raised while assembling / pre-flighting the order in
@@ -363,11 +378,19 @@ final class LimitSwapFormViewModel {
         } catch {
             guard requestID == marketPriceRequestID else { return }
             marketPriceError = error
-            // Only a server-side refusal (`ThorchainSwapError`, e.g. "pool does
-            // not exist" / trading paused) marks the pair unplaceable and blocks
-            // the CTA. A transient network error keeps `pairUnroutableReason` as
-            // it was so a blip doesn't permanently block an otherwise-valid pair.
-            if error is ThorchainSwapError {
+            // Classify a NO-POOL refusal specifically. `ThorchainSwapError` is
+            // just THORNode's structured error envelope (it also carries
+            // amount/dust/fee/halt failures), so keying `.noRoute` off the type
+            // alone would mislabel a valid pair. Route it through the SAME
+            // classifier the market swap uses (`SwapService.mapThorchainSwapError`
+            // → `.noLiquidityPool` for "pool does not exist" / "invalid symbol" /
+            // "bad to|from asset"): only a definitive missing-pool verdict drives
+            // the "can't route" row. Any other failure (transient network, dust,
+            // a transient halt) leaves `pairUnroutableReason` untouched; placement
+            // is still blocked by the missing `marketPriceRef` positive proof,
+            // just without a misleading routability message.
+            if let swapError = error as? ThorchainSwapError,
+               SwapService.mapThorchainSwapError(swapError) == .noLiquidityPool {
                 pairUnroutableReason = .noRoute
             }
             logger.error("refreshMarketPrice failed: \(error.localizedDescription, privacy: .public)")
@@ -448,15 +471,35 @@ final class LimitSwapFormViewModel {
     /// previous live path built the memo inline in the entry view and never ran
     /// `validateLimitSwapInputs`, so validation only executed in dead code.
     func preparePlaceableOrder() -> (memo: String, record: LimitOrderRecord)? {
-        // Prerequisites that mean "not ready yet" rather than a user-actionable
-        // error: the CTA is disabled while amount/price are 0, and unroutable
-        // chains are filtered out by the picker (so `memoSymbol` is non-nil).
-        // Return silently — no alert.
+        // "Not ready yet" rather than a user-actionable error: the CTA is disabled
+        // while amount/price are 0. Return silently — no alert.
+        guard draft.sourceAmount > 0, draft.targetPrice > 0 else {
+            return nil
+        }
+        // A tappable CTA must NEVER silently no-op. If the pair can't be encoded
+        // to a THORChain memo asset (per-ASSET routability — the picker only
+        // filters per-CHAIN, so e.g. a THOR token with no pool slips through) or
+        // no destination address resolves for the target chain, surface an alert.
+        // `canPlaceOrder` also disables the CTA on these, so this is the belt to
+        // that suspenders — a stale-state tap still gets feedback.
         guard let sourceAsset = draft.fromAsset.memoSymbol,
               let targetAsset = draft.toAsset.memoSymbol,
-              let destAddress = destinationAddress(),
-              draft.sourceAmount > 0,
-              draft.targetPrice > 0 else {
+              let destAddress = destinationAddress() else {
+            logger.error("Place order rejected: pair not placeable (memoSymbol/dest nil) — from=\(self.draft.fromAsset.ticker, privacy: .public) to=\(self.draft.toAsset.ticker, privacy: .public)")
+            placeOrderError = .pairNotPlaceable
+            return nil
+        }
+
+        // Belt to `canPlaceOrder`'s suspenders: a pair the market-price probe
+        // flagged as unroutable (no THORChain pool) — OR one the probe hasn't yet
+        // proven routable (`marketPriceRef == nil`) — must never assemble, even if
+        // a stale/direct call slipped past the disabled CTA. Requiring the
+        // positive `marketPriceRef` proof here (not just the absence of a known
+        // verdict) fully closes the pre-probe window, so a poolless `=<` order can
+        // never reach Verify and rest unfillable.
+        guard pairUnroutableReason == nil, marketPriceRef != nil else {
+            logger.error("Place order rejected: pair unroutable/unproven (reason=\(String(describing: self.pairUnroutableReason), privacy: .public), hasMarketRef=\(self.marketPriceRef != nil, privacy: .public))")
+            placeOrderError = .pairNotPlaceable
             return nil
         }
 

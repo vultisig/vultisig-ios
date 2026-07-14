@@ -405,6 +405,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
         vm.draft.expiryHours = 24
+        vm.marketPriceRef = 16  // positive routability proof (resolved quote)
 
         guard let prepared = vm.preparePlaceableOrder() else {
             return XCTFail("Expected a prepared order for a valid draft")
@@ -449,6 +450,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             hexPublicKey: "btc-dest-pubkey"
         ))
         vm.draft.targetPrice = Decimal(string: "0.00002")!
+        vm.marketPriceRef = Decimal(string: "0.00002")!  // positive routability proof
 
         let prepared = vm.preparePlaceableOrder()
         XCTAssertNotNil(prepared, "ERC20 source should now assemble a placeable order")
@@ -534,6 +536,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof
         vm.draft.expiryHours = 99  // not in {12, 24, 72}
 
         XCTAssertNil(vm.preparePlaceableOrder())
@@ -549,6 +552,87 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
         XCTAssertNil(vm.preparePlaceableOrder())
         XCTAssertNil(vm.placeOrderError, "A not-ready draft returns nil without raising a user-facing error")
+    }
+
+    // MARK: - never a dead tap (memo/dest prerequisites)
+
+    func testPreparePlaceableOrderRaisesPairNotPlaceableWhenTargetUnencodable() {
+        // A target asset with no THORChain memo encoding must surface an alert,
+        // not silently return nil (the dead-tap bug).
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .solana, ticker: "SOL", decimals: 9,
+            contractAddress: "", isNativeToken: true
+        )
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .pairNotPlaceable)
+    }
+
+    func testPreparePlaceableOrderRaisesPairNotPlaceableWhenNoDestinationAddress() {
+        // The vault holds no coin on the target chain → destinationAddress() nil.
+        vault.coins.removeAll(where: { $0.chain == .ethereum })
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .pairNotPlaceable)
+    }
+
+    func testCanPlaceOrderBlockedWhenTargetAssetUnencodable() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        vm.marketPriceRef = 16  // isolate the memoSymbol cause from the probe gate
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .solana, ticker: "SOL", decimals: 9,
+            contractAddress: "", isNativeToken: true
+        )
+        XCTAssertFalse(vm.canPlaceOrder, "An unencodable target must disable the CTA")
+    }
+
+    func testCanPlaceOrderBlockedWhenNoDestinationAddress() {
+        vault.coins.removeAll(where: { $0.chain == .ethereum })
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        vm.marketPriceRef = 16  // isolate the destination cause from the probe gate
+        XCTAssertFalse(vm.canPlaceOrder, "No destination address must disable the CTA")
+    }
+
+    func testRuneToTcyIsPlaceable() {
+        // Regression for the RUNE→TCY dead tap: TCY now encodes to THOR.TCY, so a
+        // RUNE→TCY draft assembles a placeable order instead of a silent no-op.
+        vault.coins.append(Coin(
+            asset: CoinMeta.make(chain: .thorChain, ticker: "TCY", decimals: 8, isNativeToken: false),
+            address: "thor1tcydest000000000000000000000000000000",
+            hexPublicKey: "tcy-pubkey"
+        ))
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.fromAsset = LimitSwapAsset(
+            chain: .thorChain, ticker: "RUNE", decimals: 8,
+            contractAddress: "", isNativeToken: true
+        )
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .thorChain, ticker: "TCY", decimals: 8,
+            contractAddress: "tcy", isNativeToken: false
+        )
+        vm.draft.targetPrice = Decimal(string: "4.6")!
+        vm.marketPriceRef = Decimal(string: "4.6")!  // positive routability proof
+
+        guard let prepared = vm.preparePlaceableOrder() else {
+            return XCTFail("RUNE→TCY should assemble a placeable order")
+        }
+        XCTAssertNil(vm.placeOrderError)
+        XCTAssertEqual(prepared.record.sourceAsset, "THOR.RUNE")
+        XCTAssertEqual(prepared.record.targetAsset, "THOR.TCY")
+        XCTAssertTrue(prepared.memo.hasPrefix("=<:THOR.TCY:"))
     }
 
     func testPreparePlaceableOrderWiresReferredAffiliateFragment() {
@@ -568,6 +652,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             contractAddress: "BTC-contract", isNativeToken: true
         )
         vm.draft.targetPrice = Decimal(string: "0.0625")!
+        vm.marketPriceRef = Decimal(string: "0.0625")!  // positive routability proof
 
         guard let prepared = vm.preparePlaceableOrder() else {
             return XCTFail("Expected a prepared order")
@@ -590,6 +675,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false
         )
         vm.draft.targetPrice = Decimal(string: "0.00002")!
+        vm.marketPriceRef = Decimal(string: "0.00002")!  // positive routability proof
 
         XCTAssertNil(vm.preparePlaceableOrder())
         guard case .memoTooLong(let actual, let limit)? = vm.placeOrderError else {
@@ -620,6 +706,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         // fully valid draft must NOT be placeable.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof: isolate the queue gate
         XCTAssertNil(vm.advancedSwapQueueEnabled)
 
         XCTAssertNil(vm.preparePlaceableOrder())
@@ -630,6 +717,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = false
         vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof: isolate the queue gate
 
         XCTAssertNil(vm.preparePlaceableOrder())
         XCTAssertEqual(vm.placeOrderError, .advancedSwapQueueDisabled)
@@ -665,11 +753,27 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof (a resolved quote)
         vm.networkFeeEstimate = .zero
         XCTAssertFalse(vm.canPlaceOrder, "Must be blocked while the network fee is unresolved")
 
         vm.networkFeeEstimate = BigInt(4_200)
-        XCTAssertTrue(vm.canPlaceOrder, "Placeable once amount, price, queue gate and fee are all resolved")
+        XCTAssertTrue(vm.canPlaceOrder, "Placeable once amount, price, queue gate, fee and market ref are all resolved")
+    }
+
+    func testCanPlaceOrderRequiresSuccessfulMarketProbe() {
+        // Positive routability proof: without a resolved market reference (the
+        // probe hasn't succeeded → the pair isn't proven routable) the CTA stays
+        // disabled, closing the pre-probe window for a poolless pair.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        vm.marketPriceRef = nil
+        XCTAssertFalse(vm.canPlaceOrder, "Not placeable until the market probe proves the pair routable")
+
+        vm.marketPriceRef = 16
+        XCTAssertTrue(vm.canPlaceOrder)
     }
 
     func testCanPlaceOrderFalseWhenQueueDisabled() {
@@ -723,15 +827,30 @@ final class LimitSwapFormViewModelTests: XCTestCase {
     }
 
     func testRefreshMarketPriceTransientErrorDoesNotMarkPairUnroutable() async {
-        // A non-THORChain (transient network) error must NOT permanently block
-        // an otherwise-valid pair — only a server-side ThorchainSwapError does.
+        // A non-THORChain (transient network) error must NOT flag the pair
+        // unroutable — only a server-side no-pool refusal does.
         struct UpstreamError: Error {}
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         quoteService.marketPriceResult = .failure(UpstreamError())
 
         await vm.refreshMarketPrice()
 
-        XCTAssertNil(vm.pairUnroutableReason, "A transient error must not block placement")
+        XCTAssertNil(vm.pairUnroutableReason, "A transient error must not flag the pair unroutable")
+        XCTAssertNotNil(vm.marketPriceError)
+    }
+
+    func testRefreshMarketPriceNonPoolServerErrorDoesNotMarkPairUnroutable() async {
+        // ThorchainSwapError is THORNode's generic error envelope — a non-pool
+        // failure (e.g. a dust/amount rejection) must NOT be mislabeled as a
+        // routing failure. Only the "...pool does not exist..." message does.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        quoteService.marketPriceResult = .failure(
+            ThorchainSwapError(code: 3, message: "swap amount is too small to cover the outbound fee")
+        )
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertNil(vm.pairUnroutableReason, "A non-pool server error must not flag the pair unroutable")
         XCTAssertNotNil(vm.marketPriceError)
     }
 
@@ -749,10 +868,13 @@ final class LimitSwapFormViewModelTests: XCTestCase {
     }
 
     func testCanPlaceOrderBlockedWhenPairUnroutable() {
+        // Defence-in-depth: even with a (stale) market reference present, a pair
+        // the probe flagged unroutable must not be placeable.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
+        vm.marketPriceRef = 16
         XCTAssertTrue(vm.canPlaceOrder)
 
         vm.pairUnroutableReason = .noRoute

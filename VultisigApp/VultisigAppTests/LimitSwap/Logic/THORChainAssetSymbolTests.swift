@@ -173,6 +173,35 @@ final class THORChainAssetSymbolTests: XCTestCase {
         )
     }
 
+    // MARK: - THOR-native L1 tokens (TCY / RUJI) — bare `THOR.<TICKER>`
+
+    func testThorTcyTokenUsesBareThorPrefix() {
+        // TCY is a non-native THOR token (denom "tcy") whose memo asset is
+        // `THOR.TCY`, NOT the EVM last-6-of-contract suffix. Previously the
+        // 3-char denom fell through the 6-char guard and returned nil — the
+        // RUNE→TCY dead tap. THOR.TCY pool is Available on THORChain, so it's
+        // genuinely placeable.
+        XCTAssertEqual(
+            thorchainMemoAsset(chain: .thorChain, ticker: "TCY", contractAddress: "tcy", isNativeToken: false),
+            "THOR.TCY"
+        )
+    }
+
+    func testThorNativeTokenMatchesCanonicalCoinSwapAsset() {
+        // Parity with the canonical encoder the market path uses: a non-secured
+        // THOR token encodes as `THOR.<TICKER>`.
+        let meta = CoinMeta(
+            chain: .thorChain, ticker: "TCY",
+            logo: "", decimals: 8,
+            priceProviderId: "", contractAddress: "tcy",
+            isNativeToken: false
+        )
+        let coin = Coin(asset: meta, address: "thor1xyz", hexPublicKey: "")
+        XCTAssertFalse(THORChainHelper.isSecuredAsset(coin: coin))
+        XCTAssertEqual(coin.swapAsset, "THOR.TCY")
+        XCTAssertEqual(thorchainMemoAsset(for: coin), coin.swapAsset)
+    }
+
     // MARK: - Unsupported chains return nil
 
     func testSolanaIsNotRoutableInPhase1() {
