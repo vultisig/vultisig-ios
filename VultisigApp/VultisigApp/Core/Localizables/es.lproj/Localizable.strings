@@ -661,6 +661,8 @@
 "limitSwap.error.title" = "No se pudo colocar la orden";
 "limitSwap.error.unsupportedAsset" = "Este activo no es compatible con las órdenes límite. Elige otro activo.";
 "limitSwap.executeWhen" = "Ejecutar cuando";
+"limitSwap.executeWhen.headerIsWorth" = "valga";
+"limitSwap.executeWhen.headerWhenOne" = "Cuando 1";
 "limitSwap.executeWhen.marketReference" = "Mercado %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Vencimiento";
@@ -677,6 +679,7 @@
 "limitSwap.verify.title" = "Estás colocando una orden límite";
 "limitSwap.warning.priceAtOrBelowMarket" = "Precio ya disponible, considera un swap de mercado";
 "limitSwap.warning.priceFarAboveMarket" = "Puede no ejecutarse antes del vencimiento";
+"limitSwap.youReceiveAtLeast" = "Recibes al menos";
 "limitSwapToggle" = "Swap límite";
 "liquidityPools" = "Pools de liquidez";
 "loading" = "Loading...";

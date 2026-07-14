@@ -15,6 +15,12 @@ import SwiftUI
 /// `SwapTransaction` carrying `limitContext`. From there the standard
 /// Swap pipeline (Verify → Pair → Keysign → Done) handles the rest —
 /// each screen surfaces limit-specific UI when `transaction.isLimit`.
+///
+/// **Design-review branch:** this entry view additionally carries all four
+/// candidate limit layouts (see `LimitLayoutVariant`) behind a runtime picker.
+/// Only the body view swaps — the VM, the coin state, the pickers, the
+/// routability gate and the place-order flow below are shared verbatim by every
+/// variant, which is what makes the comparison honest.
 struct LimitSwapEntryView: View {
 
     let initialFromCoin: Coin
@@ -37,6 +43,11 @@ struct LimitSwapEntryView: View {
 
     @State private var showFromCoinPicker: Bool = false
     @State private var showToCoinPicker: Bool = false
+
+    /// Which candidate layout to render. `@AppStorage` so a reviewer's choice
+    /// survives relaunch — comparing layouts means backgrounding the app, and
+    /// re-picking the variant on every cold start would make that unusable.
+    @AppStorage("limitLayoutVariant") private var layoutVariant: LimitLayoutVariant = .accordion
 
     /// `SwapCoinPickerView` declares an `@EnvironmentObject` for this VM and
     /// will crash at runtime if the picker sheet renders without it. The
@@ -70,15 +81,10 @@ struct LimitSwapEntryView: View {
     }
 
     var body: some View {
-        LimitSwapBodyView(
-            vm: vm,
-            fromCoin: limitFromCoin,
-            toCoin: limitToCoin,
-            onPickFromAsset: { showFromCoinPicker = true },
-            onPickToAsset: { showToCoinPicker = true },
-            onSwapAssets: handleSwapAssets,
-            onPlaceOrder: handlePlaceOrder
-        )
+        VStack(spacing: 0) {
+            variantPicker
+            selectedBody
+        }
         .task {
             async let supportedChains: () = vm.refreshSupportedChains()
             async let marketPrice: () = vm.refreshMarketPrice()
@@ -136,6 +142,98 @@ struct LimitSwapEntryView: View {
         } message: { error in
             Text(error.message)
         }
+    }
+
+    // MARK: - Layout variants (design-review branch only)
+
+    /// Renders the selected candidate layout. Every case is handed the same VM,
+    /// the same coin state and the same callbacks — `.threeSection` takes no
+    /// `toCoin` because that layout reads the target's rate off the VM instead
+    /// (see `LimitSwapBodyThreeSectionView.fromCoin`); the other three need it.
+    @ViewBuilder
+    private var selectedBody: some View {
+        switch layoutVariant {
+        case .accordion:
+            LimitSwapBodyView(
+                vm: vm,
+                fromCoin: limitFromCoin,
+                toCoin: limitToCoin,
+                onPickFromAsset: { showFromCoinPicker = true },
+                onPickToAsset: { showToCoinPicker = true },
+                onSwapAssets: handleSwapAssets,
+                onPlaceOrder: handlePlaceOrder
+            )
+        case .assetsFirst:
+            LimitSwapBodyAssetsFirstView(
+                vm: vm,
+                fromCoin: limitFromCoin,
+                toCoin: limitToCoin,
+                onPickFromAsset: { showFromCoinPicker = true },
+                onPickToAsset: { showToCoinPicker = true },
+                onSwapAssets: handleSwapAssets,
+                onPlaceOrder: handlePlaceOrder
+            )
+        case .uniswapFlat:
+            LimitSwapBodyUniswapView(
+                vm: vm,
+                fromCoin: limitFromCoin,
+                toCoin: limitToCoin,
+                onPickFromAsset: { showFromCoinPicker = true },
+                onPickToAsset: { showToCoinPicker = true },
+                onSwapAssets: handleSwapAssets,
+                onPlaceOrder: handlePlaceOrder
+            )
+        case .threeSection:
+            LimitSwapBodyThreeSectionView(
+                vm: vm,
+                fromCoin: limitFromCoin,
+                onPickFromAsset: { showFromCoinPicker = true },
+                onPickToAsset: { showToCoinPicker = true },
+                onSwapAssets: handleSwapAssets,
+                onPlaceOrder: handlePlaceOrder
+            )
+        }
+    }
+
+    /// Compact dev-facing layout switcher. Mirrors the `Menu { Picker }` shape
+    /// the repo already uses for its debug `forcedSwapProvider` picker
+    /// (`SettingPickerCell`), which is also unlocalized and also ungated.
+    ///
+    /// Not `#if DEBUG`-gated on purpose: the point of this branch is to hand ONE
+    /// build to devs and designers and let them flip between the four layouts,
+    /// and those builds are frequently Release/TestFlight — a DEBUG gate would
+    /// delete the picker from exactly the builds it exists for. It is already
+    /// unreachable for normal users behind the default-off `limitSwapEnabled`
+    /// advanced setting, and this branch is not intended to merge, so the gate
+    /// would buy no safety it doesn't already have.
+    private var variantPicker: some View {
+        Menu {
+            Picker("", selection: $layoutVariant) {
+                ForEach(LimitLayoutVariant.allCases) { variant in
+                    Text(variant.displayName).tag(variant)
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(layoutVariant.displayName)
+                Image(systemName: "chevron.up.chevron.down")
+            }
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Theme.colors.bgSurface1)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Theme.colors.border, lineWidth: 1)
+                    )
+            )
+        }
+        .fixedSize()
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.bottom, 8)
     }
 
     // MARK: - Picker bindings (swap-on-collision)
