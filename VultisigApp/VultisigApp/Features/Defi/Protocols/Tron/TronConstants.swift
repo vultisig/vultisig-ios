@@ -16,11 +16,7 @@ struct TronConstants {
         static let verticalSpacing: CGFloat = 16
         static let cornerRadius: CGFloat = 16
 
-        #if os(macOS)
-        static let mainViewTopPadding: CGFloat = 60
-        #else
         static let mainViewTopPadding: CGFloat = 16
-        #endif
 
         static let mainViewBottomPadding: CGFloat = 32
     }

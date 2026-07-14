@@ -33,7 +33,7 @@ struct TronScreen: View {
                 TronDashboardView(vault: vault, model: model, onRefresh: { await loadData(forceRefresh: true) })
             }
             .screenTitle("tronTitle".localized)
-            .screenEdgeInsets(.init(leading: 0, trailing: 0))
+            .screenEdgeInsets(.init(top: 0, leading: 0, trailing: 0))
         }
     }
 
