@@ -643,6 +643,11 @@
 "learnMore" = "Mehr erfahren";
 "Leave" = "Verlassen";
 "legal" = "Rechtliches";
+"limitSwap.assemblyError.invalidSourceAmount" = "Der Bestellbetrag ist ungültig. Gib den Betrag erneut ein und versuche es noch einmal.";
+"limitSwap.assemblyError.noInboundAddress" = "THORChain hat derzeit keine verfügbare Einzahlungsadresse. Versuche es später erneut.";
+"limitSwap.assemblyError.noRouterForTokenSource" = "Dieser Token kann derzeit nicht auf THORChain eingezahlt werden. Versuche es später erneut.";
+"limitSwap.assemblyError.sourceChainNotRoutable" = "%@ kann nicht über THORChain geleitet werden.";
+"limitSwap.assemblyError.thorchainTradingPaused" = "THORChain hat den Handel pausiert. Versuche es später erneut.";
 "limitSwap.asset" = "Asset";
 "limitSwap.buy" = "Kaufen";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";

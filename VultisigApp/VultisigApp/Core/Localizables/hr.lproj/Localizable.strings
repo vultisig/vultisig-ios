@@ -643,6 +643,11 @@
 "learnMore" = "Saznaj više";
 "Leave" = "Napusti";
 "legal" = "Pravno";
+"limitSwap.assemblyError.invalidSourceAmount" = "Iznos naloga nije valjan. Ponovno unesite iznos i pokušajte ponovno.";
+"limitSwap.assemblyError.noInboundAddress" = "THORChain trenutačno nema dostupnu adresu za uplatu. Pokušajte kasnije.";
+"limitSwap.assemblyError.noRouterForTokenSource" = "Ovaj token trenutačno nije moguće položiti na THORChain. Pokušajte kasnije.";
+"limitSwap.assemblyError.sourceChainNotRoutable" = "%@ se ne može usmjeriti kroz THORChain.";
+"limitSwap.assemblyError.thorchainTradingPaused" = "THORChain je pauzirao trgovanje. Pokušajte kasnije.";
 "limitSwap.asset" = "Imovina";
 "limitSwap.buy" = "Kupi";
 "limitSwap.confirmation.byteCapError.format" = "Memo predugačak: %d bajtova (najviše %d). Pokušaj kraću odredišnu adresu ili izvor koji nije UTXO.";

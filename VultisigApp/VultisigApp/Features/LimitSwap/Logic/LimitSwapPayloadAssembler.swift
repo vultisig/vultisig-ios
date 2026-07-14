@@ -6,7 +6,7 @@
 import BigInt
 import Foundation
 
-enum LimitSwapAssemblyError: Error, Equatable {
+enum LimitSwapAssemblyError: Error, Equatable, LocalizedError {
     case sourceChainNotRoutable(Chain)
     case noInboundAddressForChain(String)
     /// The persisted `LimitOrderRecord.sourceAmount` (a BigInt-as-string) failed
@@ -29,6 +29,30 @@ enum LimitSwapAssemblyError: Error, Equatable {
     /// router the tokens can't be deposited — fail loud rather than fall back to
     /// a plain transfer that would strand them on the vault with no memo.
     case noRouterForTokenSource(String)
+
+    /// Friendly, localized message for the shared Verify screen's error alert
+    /// (`SwapVerifyScreen` renders `error.localizedDescription`). Without this
+    /// `LocalizedError` conformance the alert fell back to the raw NSError form
+    /// — "(VultisigApp.LimitSwapAssemblyError error 3.)".
+    var errorDescription: String? {
+        switch self {
+        case let .sourceChainNotRoutable(chain):
+            return String(format: "limitSwap.assemblyError.sourceChainNotRoutable".localized, chain.name)
+        case .noInboundAddressForChain:
+            return "limitSwap.assemblyError.noInboundAddress".localized
+        case .invalidSourceAmount:
+            return "limitSwap.assemblyError.invalidSourceAmount".localized
+        case .advancedSwapQueueDisabled:
+            // Reuse the existing user-facing queue-disabled copy the entry form
+            // already shows, so the same condition reads identically wherever it
+            // surfaces.
+            return "limitSwap.error.advancedSwapQueueDisabled".localized
+        case .thorchainTradingPaused:
+            return "limitSwap.assemblyError.thorchainTradingPaused".localized
+        case .noRouterForTokenSource:
+            return "limitSwap.assemblyError.noRouterForTokenSource".localized
+        }
+    }
 }
 
 /// Whether THORChain has globally paused trading, per a live `inbound_addresses`

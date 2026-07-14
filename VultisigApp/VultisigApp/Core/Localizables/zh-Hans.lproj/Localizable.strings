@@ -643,6 +643,11 @@
 "learnMore" = "了解更多";
 "Leave" = "离开";
 "legal" = "法律";
+"limitSwap.assemblyError.invalidSourceAmount" = "订单金额无效。请重新输入金额后重试。";
+"limitSwap.assemblyError.noInboundAddress" = "THORChain 当前没有可用的充值地址。请稍后重试。";
+"limitSwap.assemblyError.noRouterForTokenSource" = "该代币当前无法存入 THORChain。请稍后重试。";
+"limitSwap.assemblyError.sourceChainNotRoutable" = "%@ 无法通过 THORChain 路由。";
+"limitSwap.assemblyError.thorchainTradingPaused" = "THORChain 已暂停交易。请稍后重试。";
 "limitSwap.asset" = "资产";
 "limitSwap.buy" = "买入";
 "limitSwap.confirmation.byteCapError.format" = "备注过长：%d 字节（最多 %d）。请尝试更短的目标地址或非 UTXO 源。";
