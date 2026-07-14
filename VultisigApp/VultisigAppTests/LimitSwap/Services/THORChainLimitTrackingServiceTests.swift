@@ -52,12 +52,13 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         XCTAssertNil(registry.service(for: Self.makeLimitTx(includeTracking: false)))
     }
 
-    /// A freshly-placed order has metadata but no recorded poll. That must read
-    /// as non-terminal — an unfilled order is pending, not done.
+    /// A freshly-placed order has metadata but no recorded poll. It reads as
+    /// `resting` — non-terminal, and the literal truth: it is sitting in the
+    /// queue waiting for a price.
     func testAFreshlyPlacedLimitOrderIsNotTerminal() {
         let tx = Self.makeLimitTx()
 
-        XCTAssertEqual(tx.swapTrackingUiStatus, .pending)
+        XCTAssertEqual(tx.swapTrackingUiStatus, .resting)
         XCTAssertFalse(tx.swapTrackingUiStatus.isTerminal)
     }
 
@@ -111,7 +112,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         service.start(tx: Self.makeLimitTx())
 
         XCTAssertEqual(service.trackedOrderCountForTesting, 1)
-        XCTAssertEqual(service.uiStatusByTxHash["limit-hash"], .pending)
+        XCTAssertEqual(service.uiStatusByTxHash["limit-hash"], .resting)
     }
 
     func testStartIgnoresARowOwnedByAnotherProvider() {
@@ -137,7 +138,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     func testStartSeedsButDoesNotTrackATerminalRow() {
         let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
 
-        service.start(tx: Self.makeLimitTx(latestTrackingStatus: "completed"))
+        service.start(tx: Self.makeLimitTx(latestTrackingStatus: "filled"))
 
         XCTAssertEqual(service.uiStatusByTxHash["limit-hash"], .completed)
         XCTAssertEqual(service.trackedOrderCountForTesting, 0)
@@ -168,7 +169,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
             Self.makeLimitTx(txHash: "limit-1"),
             Self.makeLimitTx(txHash: "limit-2"),
             Self.makeLimitTx(txHash: "swapkit-1", providerKind: "swapKit"),
-            Self.makeLimitTx(txHash: "limit-done", latestTrackingStatus: "completed")
+            Self.makeLimitTx(txHash: "limit-done", latestTrackingStatus: "filled")
         ]
         let service = THORChainLimitTrackingService(storage: storage)
 

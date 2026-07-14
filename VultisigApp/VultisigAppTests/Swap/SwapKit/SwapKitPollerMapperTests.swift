@@ -104,4 +104,24 @@ final class SwapKitPollerMapperTests: XCTestCase {
         let pendingFromSwapping = SwapKitPoller.mapSwapKitStatus(.swapping, estimatedTime: "~30 min")
         XCTAssertEqual(pendingFromSwapping.broadcastedEstimatedTime, "")
     }
+
+    // MARK: - Limit-order states (defensive)
+
+    /// `resting`/`expired`/`cancelled` belong to the THORChain limit provider
+    /// and cannot reach this mapper — limit orders are routed to `ChainPoller`.
+    /// They are enumerated here (rather than swept into a `default`) so that
+    /// adding a real SwapKit status later still fails the switch to compile.
+    ///
+    /// If one ever did arrive, the frame must claim neither success nor
+    /// failure: this screen would be reporting on an order it knows nothing
+    /// about.
+    func testLimitOrderStatusesMapToPendingAndNeverClaimAnOutcome() {
+        for status in [SwapTrackingUiStatus.resting, .expired, .cancelled] {
+            let frame = SwapKitPoller.mapSwapKitStatus(status, estimatedTime: "~30 min")
+
+            guard case .pending = frame else {
+                return XCTFail("\(status) must map to .pending, got \(frame)")
+            }
+        }
+    }
 }
