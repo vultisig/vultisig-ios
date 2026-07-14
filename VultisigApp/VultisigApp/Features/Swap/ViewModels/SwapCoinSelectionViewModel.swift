@@ -28,6 +28,15 @@ class SwapCoinSelectionViewModel: ObservableObject {
     private let logic: SwapCoinSelectionLogic
     private var cancellable: AnyCancellable?
 
+    /// Per-chain cache of the fully-assembled + sorted picker list for the
+    /// current picker session. Re-selecting a chain already assembled this
+    /// session republishes the cached result in one publish and skips the
+    /// whole merge+sort — the dominant cost on rapid back-and-forth switching.
+    /// Cleared on `forceRefresh` (first open per presentation), so live balance
+    /// changes are picked up on the next forced load. MainActor-isolated: only
+    /// touched from `MainActor.run` bodies.
+    @MainActor private var memo: [Chain: SwapCoinSelectionResult] = [:]
+
     @MainActor
     init(
         vault: Vault,
@@ -61,6 +70,20 @@ class SwapCoinSelectionViewModel: ObservableObject {
     /// `SwapTokenListCache` freshness logic — only the destination-registry
     /// catalog is forced.
     func fetchCoins(chain: Chain, forceRefresh: Bool = false) async {
+        if forceRefresh {
+            // First open per presentation: drop any memoized results so a stale
+            // assembled list can't shadow the forced re-fetch.
+            await MainActor.run { memo.removeAll() }
+        } else if let memoized = await MainActor.run(body: { memo[chain] }) {
+            // Re-selecting a chain already assembled this session: republish the
+            // cached result in a single publish and skip the whole merge+sort.
+            // `filteredTokens` is recomputed from the cached list against the
+            // current search text inside `publish`.
+            await MainActor.run { error = nil }
+            await publish(memoized)
+            return
+        }
+
         // Sync peek on the MainActor: when the chain's vault-independent token
         // list is already cached, do the cheap local merge and publish — the
         // first publish clears `isLoading`, so any spinner (initial state, or
@@ -106,7 +129,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
             }
             let result = try await logic.fetchCoins(chain: chain, forceRefresh: forceRefresh)
             try Task.checkCancellation()
-            await publish(result)
+            await publish(result, memoizeFor: chain)
         } catch is CancellationError {
             // Superseded by a faster chain-switch — leave state for the winner.
         } catch {
@@ -125,6 +148,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
             let result = try await logic.fetchCoins(chain: chain)
             try Task.checkCancellation()
             await MainActor.run {
+                self.memo[chain] = result
                 self.tokens = result.tokens
                 self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
             }
@@ -151,7 +175,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
             }
             let result = try await logic.merge(externalTokens: externalTokens, chain: chain, forceRefresh: forceRefresh)
             try Task.checkCancellation()
-            await publish(result)
+            await publish(result, memoizeFor: chain)
         } catch {
             guard !Task.isCancelled else { return }
             await MainActor.run {
@@ -164,8 +188,17 @@ class SwapCoinSelectionViewModel: ObservableObject {
         }
     }
 
-    private func publish(_ result: SwapCoinSelectionResult) async {
+    /// Publishes a result to the view. Pass `memoizeFor:` with the chain when
+    /// the result is the fully-assembled final list so a later re-select can be
+    /// served from the memo — the partial `local` first-paint publishes omit it
+    /// (they're intentionally incomplete and must not be cached). `nil` chain
+    /// means "publish but don't memoize" (used for the memo-hit republish and
+    /// the destination first-paint).
+    private func publish(_ result: SwapCoinSelectionResult, memoizeFor chain: Chain? = nil) async {
         await MainActor.run {
+            if let chain {
+                self.memo[chain] = result
+            }
             self.tokens = result.tokens
             self.filteredTokens = self.logic.filterTokens(searchText: self.searchText, tokens: result.tokens)
             self.isLoading = false
