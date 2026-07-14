@@ -240,8 +240,10 @@ struct SwapCoinPickerView: View {
             // (forceRefresh) skips the delay to stay snappy.
             if !forceRefresh {
                 try? await Task.sleep(nanoseconds: 150_000_000)
-                guard !Task.isCancelled else { return }
             }
+            // Applies to both the debounced and the forced path: a task the
+            // cancel above superseded must not go on to fetch/publish.
+            guard !Task.isCancelled else { return }
             guard let selectedChain else { return }
             await viewModel.fetchCoins(chain: selectedChain, forceRefresh: forceRefresh)
         }

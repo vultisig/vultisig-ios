@@ -79,6 +79,10 @@ class SwapCoinSelectionViewModel: ObservableObject {
             // cached result in a single publish and skip the whole merge+sort.
             // `filteredTokens` is recomputed from the cached list against the
             // current search text inside `publish`.
+            // Bail if a newer chain switch superseded this task — the memoized
+            // fast-path skips the cold path's checkCancellation, so without this
+            // it could publish the previous chain's list mid-burst.
+            guard !Task.isCancelled else { return }
             await MainActor.run { error = nil }
             await publish(memoized)
             return
