@@ -306,7 +306,14 @@ struct SwapCoinSelectionLogic {
         let merged = Self.mergeExternal(base: baseUnique, externals: externalBuckets)
         let withVault = Self.merge(base: merged, extra: vaultTokens)
         let deduped = Self.collapseToSingleNative(withVault)
-        let sorted = await MainActor.run { sort(tokens: deduped) }
+
+        // Precompute the vault balances on the MainActor (the only place the
+        // @Model reads are legal), then run the comparison off the MainActor
+        // against the value snapshot. The sort itself no longer calls the O(m)
+        // `vault.coin(for:)` linear scan twice per comparison on the main
+        // thread — the dominant per-switch cost.
+        let snapshot = await makeSortSnapshot(tokens: deduped)
+        let sorted = Self.sort(tokens: deduped, snapshot: snapshot)
 
         return SwapCoinSelectionResult(tokens: sorted)
     }
@@ -354,7 +361,44 @@ struct SwapCoinSelectionLogic {
         return result
     }
 
-    func sort(tokens: [CoinMeta]) -> [CoinMeta] {
+    /// Value snapshot of the MainActor-only inputs `sort` needs, so the
+    /// comparison can run off the MainActor without touching any SwiftData
+    /// `@Model`. `balancesByUniqueId` maps each token's `uniqueId` to its vault
+    /// fiat balance (resolved once per token via `Vault.coin(for:)` on the
+    /// MainActor); the `selected*` fields mirror the `selectedCoin` reads the
+    /// selected-first reordering used to make inline.
+    struct SortSnapshot: Sendable {
+        let balancesByUniqueId: [String: Decimal]
+        let selectedChain: Chain
+        let selectedTicker: String
+        let selectedCoinMeta: CoinMeta
+    }
+
+    /// Builds a `SortSnapshot` on the MainActor. `Vault.coin(for:)` is an O(m)
+    /// linear scan; the previous sort called it twice per comparison
+    /// (O(n·log n·m)). Here it runs exactly once per token (O(n·m)) and the
+    /// off-actor sort does O(1) dictionary lookups against the result. The
+    /// mapping mirrors `coin(for:)`'s own prefer-contract-else-ticker rule
+    /// because the key is the token's `uniqueId`, resolved by that same method.
+    @MainActor
+    func makeSortSnapshot(tokens: [CoinMeta]) -> SortSnapshot {
+        var balances = [String: Decimal](minimumCapacity: tokens.count)
+        for token in tokens {
+            balances[token.uniqueId] = vault.coin(for: token)?.balanceInFiatDecimal ?? 0
+        }
+        return SortSnapshot(
+            balancesByUniqueId: balances,
+            selectedChain: selectedCoin.chain,
+            selectedTicker: selectedCoin.ticker,
+            selectedCoinMeta: selectedCoin.toCoinMeta()
+        )
+    }
+
+    /// Sorts the picker list off the MainActor using only the value snapshot:
+    /// native token first, then descending vault fiat balance, then the
+    /// selected coin pinned first. Semantics are identical to the previous
+    /// MainActor sort — only the balance reads are pre-resolved into `snapshot`.
+    static func sort(tokens: [CoinMeta], snapshot: SortSnapshot) -> [CoinMeta] {
         // Sort coins: native token first, then by USD balance in descending order
         var sortedCoins = tokens.sorted { first, second in
             if first.isNativeToken && !second.isNativeToken {
@@ -365,17 +409,17 @@ struct SwapCoinSelectionLogic {
                 return false
             }
 
-            let firstCoin = vault.coin(for: first)
-            let secondCoin = vault.coin(for: second)
-
             // If both are native or both are not native, sort by USD balance
-            return firstCoin?.balanceInFiatDecimal ?? 0 > secondCoin?.balanceInFiatDecimal ?? 0
+            let firstBalance = snapshot.balancesByUniqueId[first.uniqueId] ?? 0
+            let secondBalance = snapshot.balancesByUniqueId[second.uniqueId] ?? 0
+            return firstBalance > secondBalance
         }
 
         // Show selected first
-        if selectedCoin.chain == sortedCoins.first?.chain, let index = sortedCoins.firstIndex(where: { $0.ticker.localizedCaseInsensitiveContains(selectedCoin.ticker)}) {
+        if snapshot.selectedChain == sortedCoins.first?.chain,
+           let index = sortedCoins.firstIndex(where: { $0.ticker.localizedCaseInsensitiveContains(snapshot.selectedTicker) }) {
             sortedCoins.remove(at: index)
-            sortedCoins = [selectedCoin.toCoinMeta()] + sortedCoins
+            sortedCoins = [snapshot.selectedCoinMeta] + sortedCoins
         }
 
         return sortedCoins
