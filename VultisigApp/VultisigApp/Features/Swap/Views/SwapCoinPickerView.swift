@@ -240,8 +240,10 @@ struct SwapCoinPickerView: View {
     }
 
     private func onSelect(chain: Chain) {
+        // Only mutate the selection; the single `.onChange(of: selectedChain)`
+        // owns the reload. Calling `reloadCoins()` here too fired two loads per
+        // tap, doubling the merge+sort work during rapid chain switching.
         selectedChain = chain
-        reloadCoins()
     }
 
     private func onSelect(coin: CoinMeta) {
