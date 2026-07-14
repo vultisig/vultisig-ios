@@ -9,6 +9,62 @@ import XCTest
 
 final class LimitSwapMemoBuilderTests: XCTestCase {
 
+    // MARK: - isLimitSwapMemo
+    //
+    // The memo prefix is the ONLY on-the-wire signal that separates a resting
+    // limit order from a market swap, and it is what a co-signer keys off to
+    // decide whether the row needs limit tracking. A false negative there puts
+    // the order back under the native poller, which reports it Successful while
+    // it is still resting.
+
+    func testIsLimitSwapMemoAcceptsABuiltLimitMemo() throws {
+        let memo = try buildLimitSwapMemo(
+            LimitSwapInputs(
+                sourceAsset: "THOR.RUNE",
+                sourceAmount: BigInt(100_000_000),
+                sourceDecimals: 8,
+                targetAsset: "BTC.BTC",
+                destAddress: "bc1qexample",
+                targetPrice: Decimal(string: "0.015")!,
+                expiryHours: 24,
+                affiliate: "va",
+                affiliateBps: "50"
+            )
+        )
+
+        XCTAssertTrue(memo.hasPrefix("=<:"), "fixture guard: expected a limit memo, got \(memo)")
+        XCTAssertTrue(isLimitSwapMemo(memo))
+    }
+
+    /// The market prefix (`=>`) differs from the limit prefix (`=<`) by a single
+    /// character. Misreading one as the other is the whole risk of prefix
+    /// sniffing, so pin it.
+    func testIsLimitSwapMemoRejectsAMarketSwapMemo() {
+        XCTAssertFalse(isLimitSwapMemo("=>:BTC.BTC:bc1qexample:1e6:va:50"))
+    }
+
+    func testIsLimitSwapMemoRejectsNilAndEmpty() {
+        XCTAssertFalse(isLimitSwapMemo(nil))
+        XCTAssertFalse(isLimitSwapMemo(""))
+    }
+
+    func testIsLimitSwapMemoRejectsOtherThorchainMemos() {
+        XCTAssertFalse(isLimitSwapMemo("SWAP:BTC.BTC:bc1qexample"))
+        XCTAssertFalse(isLimitSwapMemo("=:BTC.BTC:bc1qexample"))
+        XCTAssertFalse(isLimitSwapMemo("+:BTC.BTC:bc1qexample"))
+    }
+
+    /// Must match the prefix, not merely contain it — a memo that happens to
+    /// carry `=<:` inside a field is not a limit order.
+    func testIsLimitSwapMemoRequiresThePrefixNotASubstring() {
+        XCTAssertFalse(isLimitSwapMemo("SWAP:BTC.BTC:=<:not-an-order"))
+    }
+
+    /// `=<` without the separating colon is not the limit prefix.
+    func testIsLimitSwapMemoRejectsTheBarePrefixWithoutSeparator() {
+        XCTAssertFalse(isLimitSwapMemo("=<"))
+    }
+
     func testAllVectorsInLimitSwapMemosFixture() throws {
         let fixture = try loadMemoFixture()
 

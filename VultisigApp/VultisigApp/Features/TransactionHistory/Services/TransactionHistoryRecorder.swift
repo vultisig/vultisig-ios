@@ -69,6 +69,17 @@ final class TransactionHistoryRecorder {
 
     // MARK: - Record Swap
 
+    /// Records a swap row.
+    ///
+    /// `swapTracking` is written in the SAME save as the row. Providers that
+    /// only learn their tracking identifiers later (SwapKit, whose `attach`
+    /// closure fires on done-screen appear) pass `nil` here and call
+    /// `attachSwapTracking` afterwards. Providers that already know them at
+    /// record time (THORChain limit orders) MUST pass them here instead: a
+    /// row that is saved untracked and only tracked by a second save has a
+    /// window where a failure leaves it permanently untracked — and an
+    /// untracked limit row is exactly the row the native poller marks
+    /// Successful while it is still resting.
     func recordSwap(
         txHash: String,
         approveTxHash: String?,
@@ -85,7 +96,8 @@ final class TransactionHistoryRecorder {
         feeFiat: String,
         chain: Chain,
         explorerLink: String,
-        provider: String?
+        provider: String?,
+        swapTracking: SwapTrackingMetadataData? = nil
     ) {
         let data = TransactionHistoryData(
             id: UUID(),
@@ -115,7 +127,8 @@ final class TransactionHistoryRecorder {
             createdAt: Date(),
             completedAt: nil,
             estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
-            errorMessage: nil
+            errorMessage: nil,
+            swapTracking: swapTracking
         )
         do {
             try storage.save(data)
@@ -199,7 +212,24 @@ final class TransactionHistoryRecorder {
                 feeFiat: "",
                 chain: keysignPayload.coin.chain,
                 explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash),
-                provider: swapPayload.providerName
+                provider: swapPayload.providerName,
+                // A co-signer never sees the initiator's `SwapTransaction`, so
+                // the memo is the only thing telling it this swap row is a
+                // resting limit order rather than a market swap. Without this,
+                // the co-signing device runs the native poller against the row
+                // and reports the order Successful on inbound confirmation —
+                // the same lie, just on the other device.
+                //
+                // Only ERC20-source limit orders reach this branch (they ride a
+                // `swapPayload` for the router's `depositWithExpiry`). Native
+                // sources carry no swap payload and fall through to the send
+                // branch below.
+                swapTracking: isLimitSwapMemo(keysignPayload.memo)
+                    ? THORChainLimitTrackingService.metadata(
+                        broadcastHash: txHash,
+                        sourceChain: keysignPayload.coin.chain
+                    )
+                    : nil
             )
         } else {
             recordSend(

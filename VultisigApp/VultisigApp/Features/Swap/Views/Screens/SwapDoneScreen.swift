@@ -197,7 +197,24 @@ struct SwapDoneScreen: View {
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
             // Limit orders carry no market quote (`quote == nil`), so fall back to
             // the fixed provider — a placed `=<` order always routes through THORChain.
-            provider: transaction.isLimit ? "THORChain" : (transaction.quote?.displayName ?? "")
+            provider: transaction.isLimit ? "THORChain" : (transaction.quote?.displayName ?? ""),
+            // A resting limit order must not be arbitrated by the native
+            // source-chain poller: that poller confirms the *inbound deposit*
+            // and would flip the row to `.successful` within minutes, while the
+            // order can rest unfilled for 12-72h. Tracking metadata is what
+            // makes the registry resolve a service for this row, which is the
+            // condition both `TransactionHistoryViewModel` and
+            // `TransactionStatusPoller` gate native polling on.
+            //
+            // Passed inline (rather than a follow-up `attachSwapTracking`, the
+            // SwapKit path) so the row can never exist untracked: everything
+            // needed is known at record time.
+            swapTracking: transaction.isLimit
+                ? THORChainLimitTrackingService.metadata(
+                    broadcastHash: hash,
+                    sourceChain: transaction.fromCoin.chain
+                )
+                : nil
         )
     }
 
