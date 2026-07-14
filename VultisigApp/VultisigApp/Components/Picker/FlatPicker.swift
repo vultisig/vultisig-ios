@@ -32,6 +32,20 @@ struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
     @State private var currentVisibleIndex: Int = 0
     @State private var scrollViewProxy: ScrollViewProxy?
     @State private var scrollCheckWorkItem: DispatchWorkItem?
+    /// True while a programmatic scroll (external selection change / onLoad) is
+    /// animating. The offset churn such a scroll produces must NOT be mistaken
+    /// for a user drag: while set, the settle handler skips the `selectedItem`
+    /// write-back and the per-frame haptic. User drag-to-select stays intact —
+    /// the flag is only set for programmatic scrolls, so a physical drag still
+    /// writes back and still buzzes.
+    @State private var isProgrammaticScroll: Bool = false
+    @State private var programmaticScrollResetWorkItem: DispatchWorkItem?
+    /// True for the window between this picker writing `selectedItem` from a
+    /// drag settle and the resulting `onChange(of: selectedItem)`. It lets that
+    /// re-center distinguish its OWN drag-driven change (which must NOT arm the
+    /// programmatic-scroll suppression, or a rapid follow-up drag would be
+    /// swallowed) from an EXTERNAL selection change such as a chain-button tap.
+    @State private var isSelfSelectionUpdate: Bool = false
 #if os(iOS)
     private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
 #endif
@@ -53,10 +67,14 @@ struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                         // Calculate current visible index for haptic feedback
                         let newIndex = calculateIndex(newOffset: newOffset, containerSize: containerSize)
 
-                        // Trigger haptic feedback when passing through a new item
+                        // Trigger haptic feedback when passing through a new item.
+                        // Suppressed during a programmatic scroll so an external
+                        // selection's sweep doesn't machine-gun the haptic.
                         if newIndex != currentVisibleIndex {
                             #if os(iOS)
+                            if !isProgrammaticScroll {
                                 impactGenerator.impactOccurred()
+                            }
                             #endif
                             currentVisibleIndex = newIndex
                         }
@@ -72,9 +90,30 @@ struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
                     }
                     .onChange(of: lastOffset) { _, lastOffset in
+                        // A programmatic scroll (external selection / onLoad) is
+                        // in flight: its offset churn must not be written back as
+                        // a selection or it would fight the selection that
+                        // started it during rapid switching.
+                        if isProgrammaticScroll {
+                            // This settle IS the programmatic scroll landing:
+                            // consume it (no write-back, no re-snap) and disarm
+                            // now that it has settled, so a following user drag is
+                            // honored immediately. Disarming on the settle itself
+                            // (rather than a fixed timer) closes the gap between
+                            // the timer and the debounced settle. User drags never
+                            // arm the flag, so drag-to-select falls through below.
+                            programmaticScrollResetWorkItem?.cancel()
+                            isProgrammaticScroll = false
+                            return
+                        }
+
                         let newItemIndex = calculateIndex(newOffset: lastOffset, containerSize: containerSize)
 
                         if selectedItem != items[newItemIndex] {
+                            // Mark our own drag-driven write so the ensuing
+                            // onChange(of: selectedItem) re-centers WITHOUT arming
+                            // suppression — a rapid follow-up drag must still land.
+                            isSelfSelectionUpdate = true
                             selectedItem = items[newItemIndex]
                         }
 
@@ -82,11 +121,17 @@ struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                     }
                     .onLoad {
                         scrollViewProxy = proxy
-                        // Initialize current visible index
-                        updateCurrentVisibilityIndex(animated: false)
+                        // Initialize current visible index (external-style: arm
+                        // suppression so the initial scroll isn't written back).
+                        updateCurrentVisibilityIndex(animated: false, suppressFeedback: true)
                     }
                     .onChange(of: selectedItem) { _, _ in
-                        updateCurrentVisibilityIndex(animated: true)
+                        // Only an EXTERNAL change (parent set it, e.g. a chain
+                        // button tap) arms suppression; a change from this
+                        // picker's own drag settle does not.
+                        let external = !isSelfSelectionUpdate
+                        isSelfSelectionUpdate = false
+                        updateCurrentVisibilityIndex(animated: true, suppressFeedback: external)
                     }
                 }
                 overlayingGradientsView
@@ -104,13 +149,37 @@ private extension FlatPicker {
         return clampedIndex
     }
 
-    func updateCurrentVisibilityIndex(animated: Bool) {
+    func updateCurrentVisibilityIndex(animated: Bool, suppressFeedback: Bool) {
         guard let selectedItem else { return }
         if let initialIndex = items.firstIndex(of: selectedItem) {
             currentVisibleIndex = initialIndex
         }
+        // Arm suppression only for externally-driven scrolls (chain-button tap /
+        // onLoad): their scrollTo animation drives offset churn that must not be
+        // written back as a competing selection. A re-center that followed this
+        // picker's own drag settle passes `suppressFeedback: false`, so a rapid
+        // follow-up user drag is still honored.
+        if suppressFeedback {
+            beginProgrammaticScroll()
+        }
         // Scroll to selected item on load
         updateSelectedItem(animated: animated)
+    }
+
+    /// Arms programmatic-scroll suppression. The flag is normally cleared when
+    /// the scroll's settle lands (see the `lastOffset` handler); this timer is a
+    /// safety net that disarms if no settle ever fires (e.g. a scrollTo that
+    /// produces no offset change because the target is already centered). It is
+    /// set well past the 0.2s scrollTo animation plus the 0.15s settle debounce
+    /// (with margin for janky frames) so a real settle always disarms first and
+    /// the timer only fires for the no-offset-change case. Overlapping
+    /// programmatic scrolls (rapid external switching) cancel and reschedule it.
+    func beginProgrammaticScroll() {
+        isProgrammaticScroll = true
+        programmaticScrollResetWorkItem?.cancel()
+        let workItem = DispatchWorkItem { isProgrammaticScroll = false }
+        programmaticScrollResetWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: workItem)
     }
 
     func updateSelectedItem(animated: Bool) {
