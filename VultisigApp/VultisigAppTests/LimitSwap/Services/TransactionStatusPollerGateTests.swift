@@ -22,7 +22,12 @@ final class TransactionStatusPollerGateTests: XCTestCase {
 
     private func makeRegistryWithLimitService() -> SwapTrackingRegistry {
         let registry = SwapTrackingRegistry()
-        registry.register(THORChainLimitTrackingService(storage: NoopTrackingStorage()))
+        registry.register(THORChainLimitTrackingService(
+            httpClient: NoopHTTPClient(),
+            storage: NoopTrackingStorage(),
+            orders: NoopLimitOrderObserver(),
+            outcomes: NoopOutcomeResolver()
+        ))
         return registry
     }
 
@@ -142,6 +147,39 @@ final class TransactionStatusPollerGateTests: XCTestCase {
 }
 
 // MARK: - Fakes
+
+/// These cases only need the registry to RESOLVE a service for a row — the gate
+/// keys off `providerKind` alone — so every collaborator is inert.
+private final class NoopHTTPClient: HTTPClientProtocol {
+    struct NoopError: Error {}
+
+    func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
+        throw NoopError()
+    }
+
+    func requestEmpty(_: TargetType) async throws -> HTTPResponse<EmptyResponse> { // swiftlint:disable:this async_without_await
+        throw NoopError()
+    }
+}
+
+@MainActor
+private final class NoopLimitOrderObserver: LimitOrderObserving {
+    func recordObservation(
+        inboundTxHash _: String,
+        pubKeyECDSA _: String,
+        status _: LimitOrderStatus,
+        depositAmount _: String?,
+        filledInAmount _: String?,
+        filledOutAmount _: String?
+    ) throws {}
+}
+
+@MainActor
+private final class NoopOutcomeResolver: LimitOrderOutcomeResolving {
+    func resolveOutcome(inboundTxHash _: String, sourceChain _: Chain) async -> LimitOrderOutcome { // swiftlint:disable:this async_without_await
+        .unresolved
+    }
+}
 
 private final class NoopTrackingStorage: SwapTrackingStorage {
     func updateSwapTrackingStatus(

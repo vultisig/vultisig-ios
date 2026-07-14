@@ -37,7 +37,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     /// inbound deposit and marks a still-resting order `.successful`.
     func testRegistryResolvesThisServiceForALimitRow() {
         let registry = SwapTrackingRegistry()
-        registry.register(THORChainLimitTrackingService(storage: FakeLimitTrackingStorage()))
+        registry.register(Self.makeService(storage: FakeLimitTrackingStorage()))
 
         XCTAssertNotNil(registry.service(for: Self.makeLimitTx()))
     }
@@ -47,7 +47,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     /// authoritative and flips the order to Successful on deposit confirmation.
     func testRegistryResolvesNoServiceForALimitRowWithoutTrackingMetadata() {
         let registry = SwapTrackingRegistry()
-        registry.register(THORChainLimitTrackingService(storage: FakeLimitTrackingStorage()))
+        registry.register(Self.makeService(storage: FakeLimitTrackingStorage()))
 
         XCTAssertNil(registry.service(for: Self.makeLimitTx(includeTracking: false)))
     }
@@ -95,7 +95,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     /// terminal, or the tracker would skip it and the row would stick.
     func testMetadataFromTheFactoryStartsNonTerminal() {
         let registry = SwapTrackingRegistry()
-        registry.register(THORChainLimitTrackingService(storage: FakeLimitTrackingStorage()))
+        registry.register(Self.makeService(storage: FakeLimitTrackingStorage()))
         let tx = Self.makeLimitTxCarrying(
             THORChainLimitTrackingService.metadata(broadcastHash: "ABC123", sourceChain: .thorChain)
         )
@@ -107,7 +107,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     // MARK: - Ownership
 
     func testStartTakesOwnershipOfALimitRow() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
 
         service.start(tx: Self.makeLimitTx())
 
@@ -116,7 +116,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     }
 
     func testStartIgnoresARowOwnedByAnotherProvider() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
 
         service.start(tx: Self.makeLimitTx(providerKind: "swapKit"))
 
@@ -125,7 +125,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     }
 
     func testStartIsIdempotentForTheSameRow() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
 
         service.start(tx: Self.makeLimitTx())
         service.start(tx: Self.makeLimitTx())
@@ -136,7 +136,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     /// A terminal row still gets its status seeded (so a view mounting on it
     /// renders correctly) but is never taken up for polling.
     func testStartSeedsButDoesNotTrackATerminalRow() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
 
         service.start(tx: Self.makeLimitTx(latestTrackingStatus: "filled"))
 
@@ -145,7 +145,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     }
 
     func testStopReleasesTheRow() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
         service.start(tx: Self.makeLimitTx())
 
         service.stop(txHash: "limit-hash")
@@ -154,7 +154,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     }
 
     func testStopIsIdempotent() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
 
         service.stop(txHash: "never-tracked")
 
@@ -171,7 +171,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
             Self.makeLimitTx(txHash: "swapkit-1", providerKind: "swapKit"),
             Self.makeLimitTx(txHash: "limit-done", latestTrackingStatus: "filled")
         ]
-        let service = THORChainLimitTrackingService(storage: storage)
+        let service = Self.makeService(storage: storage)
 
         await service.resumeInFlight()
 
@@ -181,7 +181,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     func testResumeInFlightSurvivesAStorageFailure() async {
         let storage = FakeLimitTrackingStorage()
         storage.shouldThrowOnFetch = true
-        let service = THORChainLimitTrackingService(storage: storage)
+        let service = Self.makeService(storage: storage)
 
         await service.resumeInFlight()
 
@@ -191,7 +191,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     // MARK: - ScenePhase
 
     func testSetActiveTogglesTheForegroundFlag() {
-        let service = THORChainLimitTrackingService(storage: FakeLimitTrackingStorage())
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
 
         service.setActive(false)
         XCTAssertFalse(service.isActiveForTesting)
@@ -201,6 +201,20 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
     }
 
     // MARK: - Fixtures
+
+    /// Builds the service with inert collaborators: these cases cover
+    /// registration, ownership and lifecycle, not the poll loop (that's
+    /// `THORChainLimitTrackingPollTests`). The inert HTTP client fails every
+    /// request, so any poll a `start` kicks off just backs off — it never
+    /// touches the network or reaches a conclusion.
+    private static func makeService(storage: SwapTrackingStorage) -> THORChainLimitTrackingService {
+        THORChainLimitTrackingService(
+            httpClient: InertHTTPClient(),
+            storage: storage,
+            orders: InertLimitOrderObserver(),
+            outcomes: InertOutcomeResolver()
+        )
+    }
 
     /// `includeTracking: false` models a row recorded *without* tracking
     /// metadata — the pre-fix behaviour. A nullable `swapTracking` parameter
@@ -292,5 +306,38 @@ private final class FakeLimitTrackingStorage: SwapTrackingStorage {
         return inFlight
             .filter { $0.swapTracking?.providerKind == providerKind }
             .filter { !$0.swapTrackingUiStatus.isTerminal }
+    }
+}
+
+/// Fails every request, so a poll started by these lifecycle tests backs off
+/// instead of reaching the network or a conclusion.
+private final class InertHTTPClient: HTTPClientProtocol {
+    struct InertError: Error {}
+
+    func request(_: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
+        throw InertError()
+    }
+
+    func requestEmpty(_: TargetType) async throws -> HTTPResponse<EmptyResponse> { // swiftlint:disable:this async_without_await
+        throw InertError()
+    }
+}
+
+@MainActor
+private final class InertLimitOrderObserver: LimitOrderObserving {
+    func recordObservation(
+        inboundTxHash _: String,
+        pubKeyECDSA _: String,
+        status _: LimitOrderStatus,
+        depositAmount _: String?,
+        filledInAmount _: String?,
+        filledOutAmount _: String?
+    ) throws {}
+}
+
+@MainActor
+private final class InertOutcomeResolver: LimitOrderOutcomeResolving {
+    func resolveOutcome(inboundTxHash _: String, sourceChain _: Chain) async -> LimitOrderOutcome { // swiftlint:disable:this async_without_await
+        .unresolved
     }
 }
