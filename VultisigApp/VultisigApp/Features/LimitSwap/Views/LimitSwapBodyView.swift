@@ -400,7 +400,7 @@ private struct LimitPriceDisplay: View {
             Text("$")
                 .font(font)
                 .foregroundStyle(color)
-            TextField("0", text: $usdText)
+            TextField("0", text: $usdText.decimalOnly())
                 // `.plain` strips macOS's default bordered chrome (the dark bezel
                 // box); iOS is unaffected. Matches the market amount field, which
                 // uses PlainTextFieldStyle via `.borderlessTextFieldStyle()`.
@@ -408,7 +408,10 @@ private struct LimitPriceDisplay: View {
                 .font(font)
                 .foregroundStyle(color)
                 .multilineTextAlignment(.center)
-                .fixedSize(horizontal: true, vertical: false)
+                // `.fixedSize()` on BOTH axes so the field's frame collapses to its
+                // text — otherwise macOS keeps the field at its taller intrinsic
+                // height, so the caret/placeholder sit off the `$` baseline.
+                .fixedSize()
                 .lineLimit(1)
                 #if os(iOS)
                 .keyboardType(.decimalPad)
@@ -467,14 +470,17 @@ private struct LimitPriceDisplay: View {
 
     private func assetPriceField(font: Font, color: Color) -> some View {
         HStack(spacing: 6) {
-            TextField("0", text: $priceText)
+            TextField("0", text: $priceText.decimalOnly())
                 // `.plain` strips macOS's default bordered chrome (the dark bezel
                 // box); iOS is unaffected. Matches the market amount field.
                 .textFieldStyle(.plain)
                 .font(font)
                 .foregroundStyle(color)
                 .multilineTextAlignment(.center)
-                .fixedSize(horizontal: true, vertical: false)
+                // `.fixedSize()` on BOTH axes so the field's frame collapses to its
+                // text — otherwise macOS keeps the field at its taller intrinsic
+                // height, so the caret/placeholder sit off the ticker's baseline.
+                .fixedSize()
                 .lineLimit(1)
                 #if os(iOS)
                 .keyboardType(.decimalPad)
@@ -837,7 +843,7 @@ private struct LimitAssetRow: View {
 
                 VStack(alignment: .trailing, spacing: 6) {
                     if amountIsEditable {
-                        TextField("0", text: $amountText)
+                        TextField("0", text: $amountText.decimalOnly())
                             // `.plain` strips macOS's default bordered chrome (the
                             // dark bezel box); iOS is unaffected. Matches the market
                             // amount field.
@@ -1112,5 +1118,21 @@ private struct LimitWarningRow: View {
         case .priceFarAboveMarket:
             return "limitSwap.warning.priceFarAboveMarket"
         }
+    }
+}
+
+private extension Binding where Value == String {
+    /// Wrap a text binding so an edit is accepted only when it is a valid numeric
+    /// input (`isDecimalInput`). The price/amount fields then reject any letter or
+    /// symbol — whether typed or pasted — instead of silently keeping its digits,
+    /// which matches what the iOS `.decimalPad` enforces for free (macOS has no
+    /// such keypad). A rejected edit leaves the prior value untouched.
+    func decimalOnly() -> Binding<String> {
+        Binding<String>(
+            get: { wrappedValue },
+            set: { newValue in
+                if newValue.isDecimalInput() { wrappedValue = newValue }
+            }
+        )
     }
 }

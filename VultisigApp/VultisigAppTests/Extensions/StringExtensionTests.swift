@@ -113,4 +113,35 @@ final class StringExtensionsTests: XCTestCase {
     func testParseDecimal_ES_ES() {
         assertEuropeNumberParsing(for: Locale(identifier: "es_ES"))
     }
+
+    // MARK: - isDecimalInput
+
+    func testIsDecimalInput_EN_US() {
+        let locale = Locale(identifier: "en_US")
+
+        XCTAssertTrue("12.5".isDecimalInput(locale: locale))
+        XCTAssertTrue("12".isDecimalInput(locale: locale))
+        XCTAssertTrue("".isDecimalInput(locale: locale))            // empty clears the field
+        XCTAssertTrue("1,234.56".isDecimalInput(locale: locale))    // grouped paste is allowed
+        XCTAssertTrue("1.".isDecimalInput(locale: locale))          // in-progress typing
+
+        // Reject anything with a letter/symbol so it is NEVER silently reduced to
+        // its digits (the corruption a strip-based filter would introduce).
+        XCTAssertFalse("abc".isDecimalInput(locale: locale))
+        XCTAssertFalse("12abc34".isDecimalInput(locale: locale))
+        XCTAssertFalse("1e5".isDecimalInput(locale: locale))        // scientific notation
+        XCTAssertFalse("$1.00".isDecimalInput(locale: locale))
+        XCTAssertFalse("-5".isDecimalInput(locale: locale))         // sign
+    }
+
+    func testIsDecimalInput_PT_BR() {
+        let locale = Locale(identifier: "pt_BR")
+
+        XCTAssertTrue("12,5".isDecimalInput(locale: locale))        // comma is the decimal separator
+        // Grouped paste ("." grouping, "," decimal) is valid AND parses correctly —
+        // guards against the earlier separator-collapse corruption.
+        XCTAssertTrue("1.234,56".isDecimalInput(locale: locale))
+        XCTAssertEqual("1.234,56".parseInput(locale: locale), Decimal(string: "1234.56"))
+        XCTAssertFalse("abc12,5".isDecimalInput(locale: locale))
+    }
 }
