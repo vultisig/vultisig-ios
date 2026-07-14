@@ -693,6 +693,95 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.canPlaceOrder, "Zero price is not placeable")
     }
 
+    // MARK: - pair routability gate (poolless pairs must not be placeable)
+
+    func testRefreshMarketPricePoolErrorMarksPairUnroutable() async {
+        // A poolless pair (e.g. RUNE→VULT) makes THORChain's quote endpoint
+        // return {code,message} → ThorchainSwapError. That must mark the pair
+        // unplaceable so the CTA disables and the inline row shows.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        quoteService.marketPriceResult = .failure(
+            ThorchainSwapError(code: 3, message: "pool does not exist: invalid request")
+        )
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertEqual(vm.pairUnroutableReason, .noRoute)
+        XCTAssertNotNil(vm.marketPriceError)
+    }
+
+    func testRefreshMarketPriceSuccessClearsUnroutableReason() async {
+        // A later successful quote proves the pair routable and clears the block.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.pairUnroutableReason = .noRoute
+        quoteService.marketPriceResult = .success(Decimal(string: "16.5")!)
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertNil(vm.pairUnroutableReason)
+        XCTAssertEqual(vm.marketPriceRef, Decimal(string: "16.5")!)
+    }
+
+    func testRefreshMarketPriceTransientErrorDoesNotMarkPairUnroutable() async {
+        // A non-THORChain (transient network) error must NOT permanently block
+        // an otherwise-valid pair — only a server-side ThorchainSwapError does.
+        struct UpstreamError: Error {}
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        quoteService.marketPriceResult = .failure(UpstreamError())
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertNil(vm.pairUnroutableReason, "A transient error must not block placement")
+        XCTAssertNotNil(vm.marketPriceError)
+    }
+
+    func testRefreshMarketPriceUnsupportedAssetMarksPairUnroutable() async {
+        // An asset with no memo-asset encoding (unroutable chain) can't be placed.
+        let vm = makeViewModel()
+        vm.draft.toAsset = LimitSwapAsset(
+            chain: .solana, ticker: "SOL", decimals: 9,
+            contractAddress: "", isNativeToken: true
+        )
+
+        await vm.refreshMarketPrice()
+
+        XCTAssertEqual(vm.pairUnroutableReason, .unsupportedAsset)
+    }
+
+    func testCanPlaceOrderBlockedWhenPairUnroutable() {
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        XCTAssertTrue(vm.canPlaceOrder)
+
+        vm.pairUnroutableReason = .noRoute
+        XCTAssertFalse(vm.canPlaceOrder, "A pair THORChain can't route must not be placeable")
+
+        vm.pairUnroutableReason = nil
+        XCTAssertTrue(vm.canPlaceOrder)
+    }
+
+    func testSelectFromAssetClearsUnroutableReason() {
+        let vm = makeViewModel()
+        vm.pairUnroutableReason = .noRoute
+        vm.selectFromAsset(LimitSwapAsset(
+            chain: .litecoin, ticker: "LTC", decimals: 8,
+            contractAddress: "", isNativeToken: true
+        ))
+        XCTAssertNil(vm.pairUnroutableReason)
+    }
+
+    func testSelectToAssetClearsUnroutableReason() {
+        let vm = makeViewModel()
+        vm.pairUnroutableReason = .noRoute
+        vm.selectToAsset(LimitSwapAsset(
+            chain: .thorChain, ticker: "RUNE", decimals: 8,
+            contractAddress: "", isNativeToken: true
+        ))
+        XCTAssertNil(vm.pairUnroutableReason)
+    }
+
     // MARK: - expectedBuyAmount (memoized)
 
     func testExpectedBuyAmountMatchesComputeAndUpdatesWithInputs() {

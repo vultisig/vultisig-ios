@@ -50,6 +50,33 @@ enum LimitSwapWarning: Equatable {
     case priceFarAboveMarket
 }
 
+/// Why the currently-selected pair can't be placed as a resting `=<` order.
+/// Derived from the form's market-price probe: either a selected asset that has
+/// no THORChain memo-asset encoding, or a pair THORChain refuses to quote (no
+/// pool for the pair, or trading paused). Drives the inline "can't route" row
+/// and disables the Place CTA so a poolless pair (e.g. RUNE→VULT, KUJI→ETH)
+/// never reaches the Verify screen and rests as an unfillable order. Distinct
+/// from a transient network `marketPriceError`, which does NOT block placement.
+enum LimitSwapPairUnroutableReason: Equatable {
+    /// One side of the pair has no THORChain memo-asset encoding — the asset
+    /// isn't supported for limit orders (its `memoSymbol` is `nil`).
+    case unsupportedAsset
+    /// THORChain refused to quote the pair — there is no pool for the pair, or
+    /// trading is currently paused. Surfaced from a `ThorchainSwapError` thrown
+    /// by the market-price probe.
+    case noRoute
+
+    /// Localized, user-readable message for the inline row.
+    var message: String {
+        switch self {
+        case .unsupportedAsset:
+            return "limitSwap.error.unsupportedAsset".localized
+        case .noRoute:
+            return "limitSwap.error.pairNotRoutable".localized
+        }
+    }
+}
+
 /// User-facing failure surfaced when "Place Order" cannot assemble a valid
 /// order. Carries a localized message so the entry view can show an alert
 /// instead of silently doing nothing. `Identifiable` so it can back a SwiftUI

@@ -122,6 +122,10 @@ struct LimitSwapBodyView: View {
                         LimitUnavailableRow()
                     }
 
+                    if let unroutable = vm.pairUnroutableReason {
+                        LimitNoticeRow(message: unroutable.message)
+                    }
+
                     if let warning = vm.displayedWarning {
                         LimitWarningRow(warning: warning)
                     }
@@ -1022,6 +1026,41 @@ private struct LimitUnavailableRow: View {
                 .foregroundStyle(Theme.colors.alertWarning)
 
             Text("limitSwap.error.advancedSwapQueueDisabled".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .multilineTextAlignment(.leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Theme.colors.bgSurface1)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - Generic blocking-notice row
+//
+// A message-driven sibling of `LimitUnavailableRow`, used for the pair-not-
+// routable / unsupported-asset gate: the coin picker filters by CHAIN
+// routability only, so a poolless pair (e.g. RUNE→VULT) slips through — the
+// market-price probe's failure surfaces here (previously `marketPriceError` was
+// never rendered) and the Place CTA is disabled while it shows.
+
+private struct LimitNoticeRow: View {
+
+    let message: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.octagon.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.colors.alertWarning)
+
+            Text(message)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .multilineTextAlignment(.leading)

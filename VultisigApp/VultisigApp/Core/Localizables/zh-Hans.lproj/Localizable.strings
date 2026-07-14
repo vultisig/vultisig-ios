@@ -656,8 +656,10 @@
 "limitSwap.error.advancedSwapQueueDisabled" = "THORChain 暂时无法使用限价单。请稍后重试或使用市价兑换。";
 "limitSwap.error.invalidInputs" = "部分订单信息无效。请检查数量、价格和有效期后重试。";
 "limitSwap.error.limitAmountTooSmall" = "此订单金额过小，无法设置限价。请增加数量或调整价格后重试。";
+"limitSwap.error.pairNotRoutable" = "该交易对目前无法在 THORChain 上交易。请选择其他资产。";
 "limitSwap.error.targetPriceOverflow" = "目标价格过大。请输入较小的价格后重试。";
 "limitSwap.error.title" = "无法下单";
+"limitSwap.error.unsupportedAsset" = "该资产不支持限价单。请选择其他资产。";
 "limitSwap.executeWhen" = "执行条件";
 "limitSwap.executeWhen.marketReference" = "市场 %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";

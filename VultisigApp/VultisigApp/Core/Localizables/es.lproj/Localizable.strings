@@ -656,8 +656,10 @@
 "limitSwap.error.advancedSwapQueueDisabled" = "Las órdenes límite no están disponibles temporalmente en THORChain. Inténtalo más tarde o usa un swap de mercado.";
 "limitSwap.error.invalidInputs" = "Algunos datos de la orden no son válidos. Revisa el importe, el precio y la caducidad e inténtalo de nuevo.";
 "limitSwap.error.limitAmountTooSmall" = "Esta orden es demasiado pequeña para un precio límite. Aumenta el importe o ajusta el precio e inténtalo de nuevo.";
+"limitSwap.error.pairNotRoutable" = "Este par no se puede negociar en THORChain en este momento. Elige otro activo.";
 "limitSwap.error.targetPriceOverflow" = "El precio objetivo es demasiado alto. Introduce un precio menor e inténtalo de nuevo.";
 "limitSwap.error.title" = "No se pudo colocar la orden";
+"limitSwap.error.unsupportedAsset" = "Este activo no es compatible con las órdenes límite. Elige otro activo.";
 "limitSwap.executeWhen" = "Ejecutar cuando";
 "limitSwap.executeWhen.marketReference" = "Mercado %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";

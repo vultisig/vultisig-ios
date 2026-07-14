@@ -58,6 +58,17 @@ final class LimitSwapFormViewModel {
     var isLoadingMarketPrice = false
     var marketPriceError: Error?
 
+    /// Non-nil when the selected pair can't be placed as a resting `=<` order —
+    /// an unsupported (unencodable) asset, or a pair THORChain refuses to quote
+    /// (no pool / trading paused). Resolved by `refreshMarketPrice`: a poolless
+    /// quote throws a `ThorchainSwapError` here. Drives the inline "can't route"
+    /// row and blocks `canPlaceOrder`, so a poolless pair (e.g. RUNE→VULT,
+    /// KUJI→ETH) can never reach Verify and rest as an unfillable order. `nil`
+    /// while unresolved (the picker already filters chains) and after a
+    /// successful probe. The coin picker filters by CHAIN routability only, so
+    /// this per-PAIR/asset gate is what catches poolless pairs the picker admits.
+    var pairUnroutableReason: LimitSwapPairUnroutableReason?
+
     /// Whether THORChain's Advanced Swap Queue (`EnableAdvSwapQueue` mimir) is
     /// live, so resting `=<` limit orders are actually accepted on-chain.
     /// `nil` while the gate hasn't been resolved yet. **Fail-closed:** placement
@@ -82,6 +93,10 @@ final class LimitSwapFormViewModel {
             && draft.sourceAmount > 0
             && isAdvancedSwapQueueEnabled
             && networkFeeEstimate > 0
+            // The picker filters by CHAIN routability only; block a pair that
+            // THORChain can't actually route (no pool / unsupported asset), so a
+            // poolless pair never reaches Verify and rests as an unfillable order.
+            && pairUnroutableReason == nil
     }
 
     /// User-facing error raised while assembling / pre-flighting the order in
@@ -241,6 +256,9 @@ final class LimitSwapFormViewModel {
         // snapshotted into the order.
         marketPriceRef = nil
         lastPresetPct = nil
+        // Pair changed — the prior pair's routability verdict no longer applies;
+        // clear it so the CTA isn't stale-blocked until the new probe resolves.
+        pairUnroutableReason = nil
         // Invalidate any in-flight market fetch SYNCHRONOUSLY so a previous
         // pair's `refreshMarketPrice` can't land its result during the debounce
         // sleep and repopulate `marketPriceRef` for the wrong pair.
@@ -252,6 +270,8 @@ final class LimitSwapFormViewModel {
         draft.toAsset = asset
         marketPriceRef = nil
         lastPresetPct = nil
+        // Pair changed — clear the prior routability verdict (see selectFromAsset).
+        pairUnroutableReason = nil
         marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
     }
@@ -299,6 +319,9 @@ final class LimitSwapFormViewModel {
               let toMemo = draft.toAsset.memoSymbol else {
             logger.warning("refreshMarketPrice: missing memo symbol — from=\(self.draft.fromAsset.ticker, privacy: .public) to=\(self.draft.toAsset.ticker, privacy: .public)")
             marketPriceRef = nil
+            // An asset with no memo-asset encoding can't be placed — surface it
+            // and block the CTA rather than let a dead tap through.
+            pairUnroutableReason = .unsupportedAsset
             return
         }
         guard let destAddress = destinationAddress() else {
@@ -334,10 +357,19 @@ final class LimitSwapFormViewModel {
             // started while this one was awaiting, drop our result.
             guard requestID == marketPriceRequestID else { return }
             marketPriceRef = price
+            // A successful quote proves the pair is routable (a pool exists).
+            pairUnroutableReason = nil
             logger.info("refreshMarketPrice: \(fromMemo, privacy: .public) → \(toMemo, privacy: .public) = \(price.description, privacy: .public)")
         } catch {
             guard requestID == marketPriceRequestID else { return }
             marketPriceError = error
+            // Only a server-side refusal (`ThorchainSwapError`, e.g. "pool does
+            // not exist" / trading paused) marks the pair unplaceable and blocks
+            // the CTA. A transient network error keeps `pairUnroutableReason` as
+            // it was so a blip doesn't permanently block an otherwise-valid pair.
+            if error is ThorchainSwapError {
+                pairUnroutableReason = .noRoute
+            }
             logger.error("refreshMarketPrice failed: \(error.localizedDescription, privacy: .public)")
         }
     }
