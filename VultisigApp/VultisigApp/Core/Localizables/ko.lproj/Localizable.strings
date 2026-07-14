@@ -659,6 +659,8 @@
 "limitSwap.error.title" = "주문을 넣을 수 없습니다";
 "limitSwap.error.unsupportedAsset" = "이 자산은 지정가 주문을 지원하지 않습니다. 다른 자산을 선택하세요.";
 "limitSwap.executeWhen" = "실행 조건";
+"limitSwap.executeWhen.headerIsWorth" = "의 가치가";
+"limitSwap.executeWhen.headerWhenOne" = "1";
 "limitSwap.executeWhen.marketReference" = "시장 %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "만료";

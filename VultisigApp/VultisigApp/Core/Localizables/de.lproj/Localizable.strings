@@ -661,6 +661,8 @@
 "limitSwap.error.title" = "Order konnte nicht platziert werden";
 "limitSwap.error.unsupportedAsset" = "Dieses Asset wird für Limit-Orders nicht unterstützt. Wähle ein anderes Asset.";
 "limitSwap.executeWhen" = "Ausführen wenn";
+"limitSwap.executeWhen.headerIsWorth" = "wert ist";
+"limitSwap.executeWhen.headerWhenOne" = "Wenn 1";
 "limitSwap.executeWhen.marketReference" = "Markt %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Ablauf";

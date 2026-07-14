@@ -7,9 +7,12 @@ import BigInt
 import SwiftUI
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
-/// SegmentedControl is set to Limit. Matches Figma `74341-118736`: a two-section
-/// **accordion** (Execute when / Asset, one open at a time) with the Place-Order
-/// CTA pinned to the bottom.
+/// SegmentedControl is set to Limit. **Uniswap-style flat layout**: the price
+/// card ("When 1 <sell> is worth <price> <buy>" + Market/+1%/+5%/+10% pills) on
+/// top, the asset swap form (Sell + swap button + Buy) below it, then the expiry
+/// card, then the inline notices, with the Place-Order CTA pinned to the bottom.
+/// No collapse/expand — every input is visible at once, so the price and the
+/// amount it applies to are never hidden behind a chevron.
 ///
 /// All business logic lives in `LimitSwapFormViewModel`; this view is
 /// declarative. The price field always edits `draft.targetPrice` in the target
@@ -18,28 +21,10 @@ import SwiftUI
 /// stored, so the memo math is never at risk.
 struct LimitSwapBodyView: View {
 
-    enum FocusedSection: Hashable {
-        case executeWhen
-        case asset
-    }
-
     @Bindable var vm: LimitSwapFormViewModel
     let fromCoin: Coin
     let toCoin: Coin
 
-    /// Which section is open on first launch. Defaults to Execute-when (the
-    /// price card) so the user lands on the field they most likely want to set;
-    /// tapping "Asset" collapses this into its compact summary and expands the
-    /// asset picker. The section is actually opened by `.onLoad` committing this
-    /// into `focusedSection` (see below).
-    var initialFocusedSection: FocusedSection = .executeWhen
-
-    /// `nil` on frame 0, then seeded from `initialFocusedSection` in `.onLoad`.
-    /// Starting at `nil` (rather than a fixed section) is what lets each
-    /// `FormExpandableSection`'s `onChange(of: focusedField)` observe the
-    /// transition and drive its open animation — the same nil→onLoad focus
-    /// pattern the Send/Bond expandable forms use.
-    @State private var focusedSection: FocusedSection?
     @State private var sourceAmountText: String = ""
     @State private var priceText: String = ""
     /// USD-mode mirror of `priceText`. Editable in USD mode; kept in sync with
@@ -64,59 +49,27 @@ struct LimitSwapBodyView: View {
     var body: some View {
         VStack(spacing: 12) {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 8) {
-                    FormExpandableSection(
-                        title: "limitSwap.executeWhen".localized,
-                        isValid: false,
-                        value: "",
-                        showValue: false,
-                        focusedField: $focusedSection,
-                        focusedFieldEquals: .executeWhen,
-                        cornerRadius: 24,
-                        plainSeparator: true,
-                        onExpand: { isExpanded in
-                            focusedSection = isExpanded ? .executeWhen : nil
-                        },
-                        content: {
-                            LimitExecuteWhenContent(
-                                vm: vm,
-                                priceText: $priceText,
-                                usdText: $usdText,
-                                onPickFromAsset: onPickFromAsset
-                            )
-                        }
+                VStack(spacing: 12) {
+                    LimitPriceCard(
+                        vm: vm,
+                        priceText: $priceText,
+                        usdText: $usdText,
+                        onPickFromAsset: onPickFromAsset,
+                        onPickToAsset: onPickToAsset
                     )
 
-                    FormExpandableSection(
-                        title: "limitSwap.asset".localized,
-                        isValid: bothAssetsPicked,
-                        showValue: focusedSection != .asset,
-                        focusedField: $focusedSection,
-                        focusedFieldEquals: .asset,
-                        cornerRadius: 24,
-                        plainSeparator: true,
-                        onExpand: { isExpanded in
-                            focusedSection = isExpanded ? .asset : nil
-                        },
-                        content: {
-                            LimitAssetSwapForm(
-                                vm: vm,
-                                fromCoin: fromCoin,
-                                toCoin: toCoin,
-                                sourceAmountText: $sourceAmountText,
-                                showAllPercentageButtons: $showAllPercentageButtons,
-                                onPickFromAsset: onPickFromAsset,
-                                onPickToAsset: onPickToAsset,
-                                onSwapAssets: onSwapAssets
-                            )
-                        },
-                        valueView: {
-                            LimitAssetCompactValue(
-                                fromAsset: vm.draft.fromAsset,
-                                toAsset: vm.draft.toAsset
-                            )
-                        }
+                    LimitAssetSwapForm(
+                        vm: vm,
+                        fromCoin: fromCoin,
+                        toCoin: toCoin,
+                        sourceAmountText: $sourceAmountText,
+                        showAllPercentageButtons: $showAllPercentageButtons,
+                        onPickFromAsset: onPickFromAsset,
+                        onPickToAsset: onPickToAsset,
+                        onSwapAssets: onSwapAssets
                     )
+
+                    LimitExpiryCard(vm: vm)
 
                     if vm.advancedSwapQueueEnabled == false {
                         LimitUnavailableRow()
@@ -140,12 +93,6 @@ struct LimitSwapBodyView: View {
             .padding(.bottom, 16)
         }
         .onLoad {
-            // Commit the initial focus so each FormExpandableSection's onChange
-            // fires and animates the default section open (both start collapsed
-            // on frame 0).
-            if focusedSection == nil {
-                focusedSection = initialFocusedSection
-            }
             // Reflect an already-populated draft in the editable fields on first
             // appear — otherwise they only sync via onChange and read empty
             // until the user edits them.
@@ -207,12 +154,6 @@ struct LimitSwapBodyView: View {
             // decimals so text ↔ draft stays consistent.
             vm.amountChanged(parseLimitAmount(sourceAmountText, decimals: newCoin.decimals))
         }
-    }
-
-    /// Asset section shows the collapsed summary + checkmark/pencil once the user
-    /// has a non-empty pair — true on launch since we seed from the host's coins.
-    private var bothAssetsPicked: Bool {
-        !vm.draft.fromAsset.ticker.isEmpty && !vm.draft.toAsset.ticker.isEmpty
     }
 
     private func formatPrice(_ value: Decimal) -> String {
@@ -289,42 +230,18 @@ private extension View {
     }
 }
 
-// MARK: - Execute-when content (price display + toggle + presets + expiry)
-
-private struct LimitExecuteWhenContent: View {
-
-    @Bindable var vm: LimitSwapFormViewModel
-    @Binding var priceText: String
-    @Binding var usdText: String
-    let onPickFromAsset: () -> Void
-
-    var body: some View {
-        VStack(spacing: 6) {
-            // Price + presets sit together (Figma gap-10) with the price box's
-            // 12pt bottom padding; the expiry sub-box follows with the 6pt
-            // content gap (→ ~18pt between the presets row and the expiry box).
-            VStack(spacing: 10) {
-                ZStack(alignment: .trailing) {
-                    LimitPriceDisplay(vm: vm, priceText: $priceText, usdText: $usdText, onPickFromAsset: onPickFromAsset)
-                    LimitPriceToggle(vm: vm)
-                        .padding(.trailing, 4)
-                }
-
-                LimitPresetPills(vm: vm)
-            }
-            .padding(.bottom, 12)
-
-            LimitExpiryRow(vm: vm)
-        }
-    }
-}
-
-// MARK: - Centered price display
+// MARK: - Limit price card (Uniswap-style, flat)
 //
-// Market-reference line + "1 <fromTicker>" unit chip + the editable target price
-// with its USD equivalent. The editable field is ALWAYS bound to the target
-// price in the target asset's terms (the memo's LIM source) — the $/asset toggle
-// only swaps which representation is emphasized (large vs subtitle).
+// Header: "When 1 [icon] <TICKER> is worth" (LimitExecuteWhenTitle) — the icon +
+// ticker are tappable and open the from-asset picker; the $/asset toggle sits at
+// the trailing edge of the same row. Body: the large editable price on the left,
+// the target [icon] TICKER button on the right (tappable → to-asset picker), with
+// the secondary representation beneath it. Then the market reference line, then
+// the preset pills (the Market pill is dynamic — see LimitPresetPills).
+//
+// The editable field is ALWAYS bound to the target price in the target asset's
+// terms (the memo's LIM source) — the $/asset toggle only swaps which
+// representation is emphasized (large vs subtitle).
 //
 // NOTE (maintainer): Figma expresses the price as "1 <buyAsset> = $<usd>", which
 // inverts this per-unit-rate convention. Reconciling which representation is
@@ -332,41 +249,86 @@ private struct LimitExecuteWhenContent: View {
 // is intentionally NOT guessed at here (a wrong inversion would place orders at
 // the reciprocal price).
 
-private struct LimitPriceDisplay: View {
+private struct LimitPriceCard: View {
 
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
     @Binding var usdText: String
     let onPickFromAsset: () -> Void
+    let onPickToAsset: () -> Void
 
     /// USD-mode editing is only offered when a USD rate for the target is known;
     /// otherwise the USD value stays a read-only reflection.
     private var usdEditable: Bool { vm.targetUsdPricePerUnit > 0 }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center) {
+                LimitExecuteWhenTitle(
+                    asset: vm.draft.fromAsset,
+                    onTapAsset: onPickFromAsset
+                )
+
+                Spacer(minLength: 8)
+
+                LimitPriceToggle(vm: vm)
+            }
+
+            HStack(alignment: .center) {
+                // The primary/secondary representations swap on toggle; a new
+                // identity per unit + an opacity transition crossfades them (the
+                // toggle wraps the mutation in withAnimation). Storage of
+                // draft.targetPrice is unchanged — only which representation is
+                // emphasised.
+                priceValues
+                    .id(vm.draft.displayUnit)
+                    .transition(.opacity)
+
+                Spacer(minLength: 8)
+
+                targetAssetButton
+            }
+
             marketReference
 
-            unitChip
-
-            // The primary/secondary representations swap on toggle; a new identity
-            // per unit + an opacity transition crossfades them (the toggle wraps
-            // the mutation in withAnimation). Storage of draft.targetPrice is
-            // unchanged — only which representation is emphasised.
-            priceValues
-                .id(vm.draft.displayUnit)
-                .transition(.opacity)
+            LimitPresetPills(vm: vm)
         }
-        .frame(maxWidth: .infinity, minHeight: 180)
-        .padding(.vertical, 8)
+        .padding(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
         // Done-only keyboard accessory for the decimal-pad target-price field
         // (no percentages — the target price isn't balance-derived).
         .limitKeyboardAccessory { EmptyView() }
     }
 
+    /// The "<price> [icon] TICKER" trailing control — the flat layout's stand-in
+    /// for the accordion's inline ticker label: it both names the unit the price
+    /// is quoted in AND opens the to-asset picker.
+    private var targetAssetButton: some View {
+        Button(action: onPickToAsset) {
+            HStack(spacing: 6) {
+                if !vm.draft.toAsset.logo.isEmpty {
+                    AsyncImageView(
+                        logo: vm.draft.toAsset.logo,
+                        size: CGSize(width: 20, height: 20),
+                        ticker: vm.draft.toAsset.ticker,
+                        tokenChainLogo: vm.draft.toAsset.chainLogo
+                    )
+                }
+                Text(vm.draft.toAsset.ticker)
+                    .font(Theme.fonts.priceBodyL)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
     @ViewBuilder
     private var priceValues: some View {
-        VStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             if vm.draft.displayUnit == .usd {
                 // USD mode: the emphasized value is the editable USD field (when a
                 // rate is known); the secondary is a read-only asset reflection.
@@ -407,7 +369,7 @@ private struct LimitPriceDisplay: View {
                 .textFieldStyle(.plain)
                 .font(font)
                 .foregroundStyle(color)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 // `.fixedSize()` on BOTH axes so the field's frame collapses to its
                 // text — otherwise macOS keeps the field at its taller intrinsic
                 // height, so the caret/placeholder sit off the `$` baseline.
@@ -417,6 +379,27 @@ private struct LimitPriceDisplay: View {
                 .keyboardType(.decimalPad)
                 #endif
         }
+    }
+
+    /// Editable asset-terms price field — the canonical `draft.targetPrice`. The
+    /// unit it is quoted in is named by the adjacent `targetAssetButton`.
+    private func assetPriceField(font: Font, color: Color) -> some View {
+        TextField("0", text: $priceText.decimalOnly())
+            // `.plain` strips macOS's default bordered chrome (the dark bezel box);
+            // iOS is unaffected. Matches the market amount field.
+            .textFieldStyle(.plain)
+            .font(font)
+            .foregroundStyle(color)
+            .multilineTextAlignment(.leading)
+            // `.fixedSize()` on BOTH axes so the field's frame collapses to its
+            // text — otherwise macOS keeps the field at its taller intrinsic
+            // height, so the caret/placeholder sit off the target-asset button's
+            // baseline.
+            .fixedSize()
+            .lineLimit(1)
+            #if os(iOS)
+            .keyboardType(.decimalPad)
+            #endif
     }
 
     /// Read-only reflection of the canonical asset-terms price, shown as the
@@ -436,58 +419,6 @@ private struct LimitPriceDisplay: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .lineLimit(1)
-        }
-    }
-
-    private var unitChip: some View {
-        // The "1 <sell>" chip: icon + tap target are the SELL (from) asset —
-        // the price is expressed as "1 <from> is worth <price> <to>", so the
-        // editable side here is the source. Tapping opens the from-asset picker.
-        Button(action: onPickFromAsset) {
-            HStack(spacing: 8) {
-                if !vm.draft.fromAsset.logo.isEmpty {
-                    AsyncImageView(
-                        logo: vm.draft.fromAsset.logo,
-                        size: CGSize(width: 24, height: 24),
-                        ticker: vm.draft.fromAsset.ticker,
-                        tokenChainLogo: vm.draft.fromAsset.chainLogo
-                    )
-                }
-                Text(String(format: "limitSwap.executeWhen.oneUnit".localized, vm.draft.fromAsset.ticker))
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textSecondary)
-            }
-            .padding(.leading, 6)
-            .padding(.trailing, 12)
-            .padding(.vertical, 6)
-            .overlay(
-                RoundedRectangle(cornerRadius: 99)
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func assetPriceField(font: Font, color: Color) -> some View {
-        HStack(spacing: 6) {
-            TextField("0", text: $priceText.decimalOnly())
-                // `.plain` strips macOS's default bordered chrome (the dark bezel
-                // box); iOS is unaffected. Matches the market amount field.
-                .textFieldStyle(.plain)
-                .font(font)
-                .foregroundStyle(color)
-                .multilineTextAlignment(.center)
-                // `.fixedSize()` on BOTH axes so the field's frame collapses to its
-                // text — otherwise macOS keeps the field at its taller intrinsic
-                // height, so the caret/placeholder sit off the ticker's baseline.
-                .fixedSize()
-                .lineLimit(1)
-                #if os(iOS)
-                .keyboardType(.decimalPad)
-                #endif
-            Text(vm.draft.toAsset.ticker)
-                .font(font)
-                .foregroundStyle(color)
         }
     }
 
@@ -516,6 +447,49 @@ private struct LimitPriceDisplay: View {
         formatter.maximumFractionDigits = 2
         formatter.groupingSeparator = ","
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0.00"
+    }
+}
+
+// MARK: - Execute When card title
+//
+// "When 1 [icon] <TICKER> is worth" — the icon + ticker reference the source
+// asset (the thing being sold) and are tappable as a single button that opens the
+// from-asset picker. Ticker is rendered in `textSecondary` to highlight it against
+// the surrounding `textPrimary` header text.
+
+private struct LimitExecuteWhenTitle: View {
+
+    let asset: LimitSwapAsset
+    let onTapAsset: () -> Void
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("limitSwap.executeWhen.headerWhenOne".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            Button(action: onTapAsset) {
+                HStack(spacing: 4) {
+                    if !asset.logo.isEmpty {
+                        AsyncImageView(
+                            logo: asset.logo,
+                            size: CGSize(width: 16, height: 16),
+                            ticker: asset.ticker,
+                            tokenChainLogo: asset.chainLogo
+                        )
+                    }
+                    Text(asset.ticker)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            Text("limitSwap.executeWhen.headerIsWorth".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .lineLimit(1)
     }
 }
 
@@ -566,9 +540,13 @@ private struct LimitPriceToggle: View {
     }
 }
 
-// MARK: - Expiry row (inside the Execute-when card)
+// MARK: - Expiry card
+//
+// Its own flat card in the Uniswap layout (rather than a sub-box nested inside
+// the price card), so the expiry choice reads as a peer of the price and the
+// asset rather than a detail of the price.
 
-private struct LimitExpiryRow: View {
+private struct LimitExpiryCard: View {
 
     @Bindable var vm: LimitSwapFormViewModel
 
@@ -587,21 +565,12 @@ private struct LimitExpiryRow: View {
             }
         }
         .padding(14)
-        // Figma "backgrounds/disabled" (#0b1a3a80) — the design-system token
-        // with that exact base hex is bgButtonDisabled (#0b1a3a), at 50%.
-        .background(Theme.colors.bgButtonDisabled.opacity(0.5))
-        .clipShape(UnevenRoundedRectangle(cornerRadii: Self.corners))
         .overlay(
-            UnevenRoundedRectangle(cornerRadii: Self.corners)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
-
-    // Nests under the price area: small top corners, larger bottom corners that
-    // echo the enclosing card (Figma top-12 / bottom-16).
-    private static let corners = RectangleCornerRadii(
-        topLeading: 12, bottomLeading: 16, bottomTrailing: 16, topTrailing: 12
-    )
 
     private func pill(titleKey: String, hours: Int) -> some View {
         let isSelected = vm.draft.expiryHours == hours
@@ -624,47 +593,10 @@ private struct LimitExpiryRow: View {
     }
 }
 
-// MARK: - Collapsed Asset summary (Sell <ticker> · Buy <ticker>)
-//
-// Rendered by FormExpandableSection as the section's value view when the Asset
-// section is collapsed. The checkmark + pencil affordances are supplied by
-// FormExpandableSection itself.
-
-private struct LimitAssetCompactValue: View {
-
-    let fromAsset: LimitSwapAsset
-    let toAsset: LimitSwapAsset
-
-    var body: some View {
-        HStack(spacing: 12) {
-            chip(labelKey: "limitSwap.sell", asset: fromAsset)
-            chip(labelKey: "limitSwap.buy", asset: toAsset)
-        }
-    }
-
-    private func chip(labelKey: String, asset: LimitSwapAsset) -> some View {
-        HStack(spacing: 4) {
-            Text(labelKey.localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-            if !asset.logo.isEmpty {
-                AsyncImageView(
-                    logo: asset.logo,
-                    size: CGSize(width: 16, height: 16),
-                    ticker: asset.ticker,
-                    tokenChainLogo: asset.chainLogo
-                )
-            }
-            Text(asset.ticker)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
-        }
-    }
-}
-
 // MARK: - Asset swap form (Sell + middle swap button + Buy)
 //
-// Inner content of the Asset FormExpandableSection's expanded state.
+// A flat card in the Uniswap layout — always visible alongside the price, so the
+// amount the target price applies to is never hidden.
 
 private struct LimitAssetSwapForm: View {
 
@@ -907,18 +839,19 @@ private struct LimitAssetRow: View {
 
 // MARK: - Preset pills
 //
-// The +1% / +5% / +10% pills are always static. The Market pill is dynamic but
-// only after a *manual* edit — while any preset is the live source it stays
-// static "Market". Uses `LimitPillFlow` so it wraps to a second row when the
-// dynamic Market pill's content grows.
+// Layout uses a custom `LimitPillFlow` so pills wrap to a second row when the
+// dynamic Market pill's content (e.g. "+12.5% ✕") is too wide for one row. The
+// +1% / +5% / +10% pills are always static and just call `selectPresetPct(pct)`.
+// The Market pill is dynamic but only after a *manual* edit — when any preset is
+// the live source (`vm.lastPresetPct != nil`), it stays static "Market". Tapping
+// any pill dismisses the keyboard so it doesn't linger after a selection.
 
 private struct LimitPresetPills: View {
 
     @Bindable var vm: LimitSwapFormViewModel
 
     var body: some View {
-        // Figma lays the four presets out as equal-width pills filling the row.
-        HStack(spacing: 6) {
+        LimitPillFlow(spacing: 6) {
             marketPill
             staticPill(titleKey: "limitSwap.preset.plus1", pct: 1)
             staticPill(titleKey: "limitSwap.preset.plus5", pct: 5)
@@ -929,6 +862,10 @@ private struct LimitPresetPills: View {
     @ViewBuilder
     private var marketPill: some View {
         let rounded = roundedPctFromMarket
+        // Render statically when *any* preset is the live source (including the
+        // Market preset) OR when there's effectively no delta from market. The
+        // dynamic state only kicks in after the user manually edits the price
+        // (which sets `vm.lastPresetPct = nil`).
         let renderStatic = vm.lastPresetPct != nil || rounded == 0
         Button {
             dismissKeyboard()
@@ -949,7 +886,6 @@ private struct LimitPresetPills: View {
                 }
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.85)
             .pillShape()
         }
         .buttonStyle(.plain)
@@ -971,6 +907,9 @@ private struct LimitPresetPills: View {
         .disabled(vm.marketPriceRef == nil)
     }
 
+    /// Rounds `vm.pctFromMarket` to the nearest 0.5%. Returns 0 when no market
+    /// reference is loaded yet, when target price is 0, or when the actual pct
+    /// rounds to 0 (i.e. |pct| < 0.25%).
     private var roundedPctFromMarket: Decimal {
         guard vm.marketPriceRef != nil, vm.draft.targetPrice > 0 else { return 0 }
         var doubled = vm.pctFromMarket * 2
@@ -1001,19 +940,90 @@ private struct LimitPresetPills: View {
 
 // MARK: - Preset pill shape
 //
-// Equal-width rounded outline used by every Execute-when preset pill so the row
-// distributes them evenly (Figma lays them out flex-1).
+// Intrinsically-sized rounded outline: each pill hugs its own content so
+// `LimitPillFlow` can wrap a grown Market pill to its own row instead of
+// cropping it.
 
 private extension View {
     func pillShape() -> some View {
         self
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .frame(maxWidth: .infinity)
             .overlay(
                 RoundedRectangle(cornerRadius: 100)
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
+    }
+}
+
+// MARK: - Pill flow layout
+//
+// Wraps subviews to a second row when content overflows the available width.
+// Each child is sized by its own intrinsic content (so the dynamic Market pill
+// grows when its label becomes "+12.5% ✕"); other pills can drop to the next line
+// instead of getting cropped.
+
+private struct LimitPillFlow: Layout {
+
+    let spacing: CGFloat
+
+    init(spacing: CGFloat = 6) {
+        self.spacing = spacing
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        let lines = arrange(subviews: subviews, in: width)
+        let totalHeight = lines.map(\.height).reduce(0, +)
+            + CGFloat(max(0, lines.count - 1)) * spacing
+        let widestLine = lines.map(\.width).max() ?? 0
+        return CGSize(width: widestLine, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
+        let lines = arrange(subviews: subviews, in: bounds.width)
+        var y = bounds.minY
+        for line in lines {
+            var x = bounds.minX
+            for index in line.indices {
+                let size = subviews[index].sizeThatFits(.unspecified)
+                subviews[index].place(
+                    at: CGPoint(x: x, y: y),
+                    anchor: .topLeading,
+                    proposal: ProposedViewSize(size)
+                )
+                x += size.width + spacing
+            }
+            y += line.height + spacing
+        }
+    }
+
+    private struct Line {
+        var indices: [Int] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    private func arrange(subviews: Subviews, in maxWidth: CGFloat) -> [Line] {
+        var lines: [Line] = [Line()]
+        for (i, sub) in subviews.enumerated() {
+            let size = sub.sizeThatFits(.unspecified)
+            let extraSpacing: CGFloat = lines[lines.count - 1].indices.isEmpty ? 0 : spacing
+            let prospectiveWidth = lines[lines.count - 1].width + extraSpacing + size.width
+            if prospectiveWidth > maxWidth, !lines[lines.count - 1].indices.isEmpty {
+                var newLine = Line()
+                newLine.indices = [i]
+                newLine.width = size.width
+                newLine.height = size.height
+                lines.append(newLine)
+            } else {
+                lines[lines.count - 1].indices.append(i)
+                lines[lines.count - 1].width = prospectiveWidth
+                lines[lines.count - 1].height = max(lines[lines.count - 1].height, size.height)
+            }
+        }
+        return lines
     }
 }
 
@@ -1053,8 +1063,8 @@ private struct LimitUnavailableRow: View {
 // A message-driven sibling of `LimitUnavailableRow`, used for the pair-not-
 // routable / unsupported-asset gate: the coin picker filters by CHAIN
 // routability only, so a poolless pair (e.g. RUNE→VULT) slips through — the
-// market-price probe's failure surfaces here (previously `marketPriceError` was
-// never rendered) and the Place CTA is disabled while it shows.
+// market-price probe's failure surfaces here and the Place CTA is disabled while
+// it shows.
 
 private struct LimitNoticeRow: View {
 

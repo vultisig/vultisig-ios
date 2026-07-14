@@ -659,6 +659,8 @@
 "limitSwap.error.title" = "Couldn't place order";
 "limitSwap.error.unsupportedAsset" = "This asset isn't supported for limit orders. Pick a different asset.";
 "limitSwap.executeWhen" = "Execute when";
+"limitSwap.executeWhen.headerIsWorth" = "is worth";
+"limitSwap.executeWhen.headerWhenOne" = "When 1";
 "limitSwap.executeWhen.marketReference" = "Market %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Expiry";

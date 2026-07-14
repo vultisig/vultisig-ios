@@ -661,6 +661,8 @@
 "limitSwap.error.title" = "无法下单";
 "limitSwap.error.unsupportedAsset" = "该资产不支持限价单。请选择其他资产。";
 "limitSwap.executeWhen" = "执行条件";
+"limitSwap.executeWhen.headerIsWorth" = "价值达到";
+"limitSwap.executeWhen.headerWhenOne" = "当 1";
 "limitSwap.executeWhen.marketReference" = "市场 %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "到期";

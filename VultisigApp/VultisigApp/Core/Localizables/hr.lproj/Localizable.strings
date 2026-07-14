@@ -661,6 +661,8 @@
 "limitSwap.error.title" = "Nije moguće postaviti nalog";
 "limitSwap.error.unsupportedAsset" = "Ova imovina nije podržana za limit naloge. Odaberite drugu imovinu.";
 "limitSwap.executeWhen" = "Izvrši kada";
+"limitSwap.executeWhen.headerIsWorth" = "vrijedi";
+"limitSwap.executeWhen.headerWhenOne" = "Kada 1";
 "limitSwap.executeWhen.marketReference" = "Tržište %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Istek";

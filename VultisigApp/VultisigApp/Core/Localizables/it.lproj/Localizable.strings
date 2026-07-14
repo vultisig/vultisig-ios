@@ -661,6 +661,8 @@
 "limitSwap.error.title" = "Impossibile inserire l'ordine";
 "limitSwap.error.unsupportedAsset" = "Questo asset non è supportato per gli ordini limite. Scegli un altro asset.";
 "limitSwap.executeWhen" = "Esegui quando";
+"limitSwap.executeWhen.headerIsWorth" = "vale";
+"limitSwap.executeWhen.headerWhenOne" = "Quando 1";
 "limitSwap.executeWhen.marketReference" = "Mercato %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Scadenza";
