@@ -234,6 +234,14 @@ struct SwapCoinPickerView: View {
         // fetch can't publish results for the wrong chain.
         reloadTask?.cancel()
         reloadTask = Task {
+            // Debounce a burst of back-and-forth chain switches: the cancel
+            // above coalesces the burst so only the last selection's task
+            // survives the sleep and actually fetches. First open
+            // (forceRefresh) skips the delay to stay snappy.
+            if !forceRefresh {
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                guard !Task.isCancelled else { return }
+            }
             guard let selectedChain else { return }
             await viewModel.fetchCoins(chain: selectedChain, forceRefresh: forceRefresh)
         }
