@@ -6,6 +6,22 @@
 import BigInt
 import SwiftUI
 
+/// Corner radius for the limit form's standalone peer sections (price card,
+/// expiry card). This is the OUTER radius of the market swap's reusable section
+/// (`SwapFromToField`), so the limit form speaks the same radius language as the
+/// rest of swap. `SwapFromToField`'s uneven 24/12 shape exists only because its
+/// from/to fields are a stacked PAIR that must read as one unit (24 outside, 12
+/// where they meet) — a standalone card has no neighbour to meet, so it takes the
+/// outer 24 on all corners. The paired Sell/Buy rows below keep the uneven
+/// pairing shape (see `LimitAssetRowKind.cornerRadii`).
+private let limitSectionCornerRadius: CGFloat = 24
+
+/// Corner radius for the inline notice/warning rows. Deliberately NOT the section
+/// radius: these rows are single-line annotations (~39pt tall), and a 24pt radius
+/// exceeds half their height, degenerating the shape into a capsule and making
+/// them read as pills rather than as messages.
+private let limitNoticeCornerRadius: CGFloat = 12
+
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
 /// SegmentedControl is set to Limit. **Uniswap-style flat layout**: the price
 /// card ("When 1 <sell> is worth <price> <buy>" + Market/+1%/+5%/+10% pills) on
@@ -286,44 +302,28 @@ private struct LimitPriceCard: View {
 
                 Spacer(minLength: 8)
 
-                targetAssetButton
+                // The trailing chip names the unit the price is quoted in AND
+                // opens the to-asset picker — the flat layout's stand-in for the
+                // accordion's inline ticker label.
+                LimitAssetChip(
+                    asset: vm.draft.toAsset,
+                    iconSize: 20,
+                    font: Theme.fonts.priceBodyL,
+                    action: onPickToAsset
+                )
             }
-
-            marketReference
 
             LimitPresetPills(vm: vm)
         }
         .padding(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: limitSectionCornerRadius)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
         // Done-only keyboard accessory for the decimal-pad target-price field
         // (no percentages — the target price isn't balance-derived).
         .limitKeyboardAccessory { EmptyView() }
-    }
-
-    /// The "<price> [icon] TICKER" trailing control — the flat layout's stand-in
-    /// for the accordion's inline ticker label: it both names the unit the price
-    /// is quoted in AND opens the to-asset picker.
-    private var targetAssetButton: some View {
-        Button(action: onPickToAsset) {
-            HStack(spacing: 6) {
-                if !vm.draft.toAsset.logo.isEmpty {
-                    AsyncImageView(
-                        logo: vm.draft.toAsset.logo,
-                        size: CGSize(width: 20, height: 20),
-                        ticker: vm.draft.toAsset.ticker,
-                        tokenChainLogo: vm.draft.toAsset.chainLogo
-                    )
-                }
-                Text(vm.draft.toAsset.ticker)
-                    .font(Theme.fonts.priceBodyL)
-                    .foregroundStyle(Theme.colors.textSecondary)
-            }
-        }
-        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -412,16 +412,6 @@ private struct LimitPriceCard: View {
             .lineLimit(1)
     }
 
-    @ViewBuilder
-    private var marketReference: some View {
-        if let market = vm.marketPriceRef, market > 0 {
-            Text(String(format: "limitSwap.executeWhen.marketReference".localized, marketString(market)))
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .lineLimit(1)
-        }
-    }
-
     /// USD equivalent of the target price (per the design-flags decision:
     /// `targetPrice × targetUsdPricePerUnit`). Falls back to the asset-terms
     /// value when no USD rate is available.
@@ -431,13 +421,6 @@ private struct LimitPriceCard: View {
         }
         let usd = vm.draft.targetPrice * vm.targetUsdPricePerUnit
         return "$\(formatUsd(usd))"
-    }
-
-    private func marketString(_ market: Decimal) -> String {
-        if vm.targetUsdPricePerUnit > 0 {
-            return "$\(formatUsd(market * vm.targetUsdPricePerUnit))"
-        }
-        return "\(market.formatForDisplay()) \(vm.draft.toAsset.ticker)"
     }
 
     private func formatUsd(_ value: Decimal) -> String {
@@ -450,12 +433,52 @@ private struct LimitPriceCard: View {
     }
 }
 
+// MARK: - Tappable asset chip
+//
+// The shared construction behind BOTH asset-picker chips in the price card (the
+// "When 1 [chip] is worth" source chip and the trailing target chip), so the two
+// stay symmetric with each other. Matches the established asset-pill style used by
+// `LimitAssetRow` — filled `bgSurface2` capsule with the 6/12/6 padding — so the
+// fill (not just a border) is what signals "tappable". Only the icon size + font
+// vary, tied to the type scale of the row each chip sits in.
+
+private struct LimitAssetChip: View {
+
+    let asset: LimitSwapAsset
+    let iconSize: CGFloat
+    let font: Font
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if !asset.logo.isEmpty {
+                    AsyncImageView(
+                        logo: asset.logo,
+                        size: CGSize(width: iconSize, height: iconSize),
+                        ticker: asset.ticker,
+                        tokenChainLogo: asset.chainLogo
+                    )
+                }
+                Text(asset.ticker)
+                    .font(font)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+            .padding(.leading, 6)
+            .padding(.trailing, 12)
+            .padding(.vertical, 6)
+            .background(Theme.colors.bgSurface2)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Execute When card title
 //
 // "When 1 [icon] <TICKER> is worth" — the icon + ticker reference the source
-// asset (the thing being sold) and are tappable as a single button that opens the
-// from-asset picker. Ticker is rendered in `textSecondary` to highlight it against
-// the surrounding `textPrimary` header text.
+// asset (the thing being sold) and are tappable as a single chip that opens the
+// from-asset picker.
 
 private struct LimitExecuteWhenTitle: View {
 
@@ -468,22 +491,12 @@ private struct LimitExecuteWhenTitle: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
 
-            Button(action: onTapAsset) {
-                HStack(spacing: 4) {
-                    if !asset.logo.isEmpty {
-                        AsyncImageView(
-                            logo: asset.logo,
-                            size: CGSize(width: 16, height: 16),
-                            ticker: asset.ticker,
-                            tokenChainLogo: asset.chainLogo
-                        )
-                    }
-                    Text(asset.ticker)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                }
-            }
-            .buttonStyle(.plain)
+            LimitAssetChip(
+                asset: asset,
+                iconSize: 16,
+                font: Theme.fonts.bodySMedium,
+                action: onTapAsset
+            )
 
             Text("limitSwap.executeWhen.headerIsWorth".localized)
                 .font(Theme.fonts.bodySMedium)
@@ -493,7 +506,13 @@ private struct LimitExecuteWhenTitle: View {
     }
 }
 
-// MARK: - $/asset toggle (two stacked circular buttons)
+// MARK: - $/asset toggle (two side-by-side circular buttons)
+//
+// Laid out horizontally so the price card spends its vertical budget on the price
+// itself — the flat layout stacks every section, so vertical space is the scarce
+// axis. The matched-geometry thumb is layout-agnostic: it interpolates the
+// selected indicator's frame between the two chips, so it now slides on the X axis
+// instead of Y with no change to the animation itself.
 
 private struct LimitPriceToggle: View {
 
@@ -501,9 +520,10 @@ private struct LimitPriceToggle: View {
     @Namespace private var thumb
 
     var body: some View {
-        VStack(spacing: 2) {
-            // Top: the asset-terms view (Figma "circles" glyph — two interlocking
-            // rings). Bottom: the USD toggle ($, blue-filled when active).
+        HStack(spacing: 2) {
+            // Leading: the asset-terms view (Figma "circles" glyph — two
+            // interlocking rings). Trailing: the USD toggle ($, blue-filled when
+            // active).
             toggleButton(unit: .asset, systemImage: "circlebadge.2")
             toggleButton(unit: .usd, systemImage: "dollarsign.circle")
         }
@@ -566,10 +586,10 @@ private struct LimitExpiryCard: View {
         }
         .padding(14)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: limitSectionCornerRadius)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
     }
 
     private func pill(titleKey: String, hours: Int) -> some View {
@@ -1051,10 +1071,10 @@ private struct LimitUnavailableRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
     }
 }
 
@@ -1086,10 +1106,10 @@ private struct LimitNoticeRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
     }
 }
 
@@ -1115,10 +1135,10 @@ private struct LimitWarningRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
     }
 
     private var messageKey: String {
