@@ -77,6 +77,38 @@ struct LimitOrderStorageService {
         try saveAndNotify()
     }
 
+    /// Records an on-chain observation of an order: its status and its fill
+    /// split, in one save.
+    ///
+    /// Status and amounts are written together on purpose. They are read
+    /// together — "Expired · 40% filled" is one statement — and persisting them
+    /// separately would leave a window where the row claims a status its
+    /// amounts contradict.
+    ///
+    /// A `nil` amount means "not observed this poll" and LEAVES the stored value
+    /// alone; it never overwrites a known split with unknown. That matters at
+    /// exactly the moment it's hardest to re-fetch: an order goes terminal by
+    /// disappearing from the queue, and the last good observation is all we will
+    /// ever have.
+    @MainActor
+    func recordObservation(
+        of orderId: String,
+        status: LimitOrderStatus,
+        depositAmount: String? = nil,
+        filledInAmount: String? = nil,
+        filledOutAmount: String? = nil,
+        in vault: Vault
+    ) throws {
+        guard let order = vault.limitOrders.first(where: { $0.id == orderId }) else {
+            throw LimitOrderStorageError.notFound(id: orderId)
+        }
+        order.statusRawValue = status.rawValue
+        if let depositAmount { order.depositAmount = depositAmount }
+        if let filledInAmount { order.filledInAmount = filledInAmount }
+        if let filledOutAmount { order.filledOutAmount = filledOutAmount }
+        try saveAndNotify()
+    }
+
     @MainActor
     private func makeId(inboundTxHash: String, vault: Vault) -> String {
         "\(inboundTxHash)_\(vault.pubKeyECDSA)"
