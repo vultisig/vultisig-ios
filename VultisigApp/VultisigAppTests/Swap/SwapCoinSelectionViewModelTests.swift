@@ -63,14 +63,12 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
         let baseUsdc = meta("USDC", chain: .thorChain, contract: "base-usdc-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913")
         let avaxUsdc = meta("USDC", chain: .thorChain, contract: "avax-usdc-0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e")
         let selected = Coin(asset: baseUsdc, address: "thor1x", hexPublicKey: "")
-        let logic = SwapCoinSelectionLogic(
-            vault: makeVault(),
-            selectedCoin: selected,
-            isDestination: true,
-            registry: DestinationTokenRegistry()
+        let snapshot = SwapCoinSelectionLogic.SortSnapshot(
+            balancesByUniqueId: [:],
+            selectedCoinMeta: selected.toCoinMeta()
         )
 
-        let sorted = logic.sort(tokens: [ethUsdc, baseUsdc, avaxUsdc])
+        let sorted = SwapCoinSelectionLogic.sort(tokens: [ethUsdc, baseUsdc, avaxUsdc], snapshot: snapshot)
 
         XCTAssertEqual(sorted.first?.uniqueId, baseUsdc.uniqueId, "The selected variant is promoted first")
         XCTAssertEqual(sorted.count, 3, "No row lost or duplicated")
