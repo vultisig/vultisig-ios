@@ -51,4 +51,29 @@ enum LimitLayoutVariant: String, CaseIterable, Identifiable {
             return "Three sections"
         }
     }
+
+    /// Ultra-compact tag for the collapsed picker label. The picker shares a row
+    /// with the Market/Limit segmented control, so the label has to stay narrow
+    /// enough that it can't crowd the tabs on the smallest screen — a full
+    /// "Accordion (current)" there would. These letters are the vocabulary the
+    /// spike already uses for the variants (A/B/C/D), and `menuLabel` spells the
+    /// mapping out one tap away, so the shortening costs no clarity.
+    var shortName: String {
+        switch self {
+        case .accordion:
+            return "A"
+        case .assetsFirst:
+            return "B"
+        case .uniswapFlat:
+            return "C"
+        case .threeSection:
+            return "D"
+        }
+    }
+
+    /// Expanded menu row — letter + full name, so opening the picker teaches the
+    /// letter that the collapsed label shows.
+    var menuLabel: String {
+        "\(shortName) — \(displayName)"
+    }
 }

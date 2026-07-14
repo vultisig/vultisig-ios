@@ -22,6 +22,13 @@ struct SwapDetailsScreen: View {
     @State private var selectedSwapMode: SwapMode = .market
     @State private var showAdvancedLockedSheet = false
 
+    /// Design-review branch only: which limit layout the tab-row picker selects.
+    /// `LimitSwapEntryView` declares the SAME key and does the actual body
+    /// switch — same-key `@AppStorage` instances share one `UserDefaults`
+    /// entry, so writing here redraws there without threading a binding through.
+    /// Read/written only from the Limit tab; Market never observes it.
+    @AppStorage("limitLayoutVariant") private var limitLayoutVariant: LimitLayoutVariant = .accordion
+
     private let tierService = VultTierService()
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -36,7 +43,12 @@ struct SwapDetailsScreen: View {
                     swapModeTabs
                         .fixedSize()
                     Spacer(minLength: 8)
+                    // Two mutually-exclusive occupants of the row's trailing
+                    // slot: the countdown renders only in Market, the variant
+                    // picker only in Limit. At most one is ever non-empty, so
+                    // they can share the slot without competing for width.
                     tabRowCountdown
+                    tabRowVariantPicker
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -329,6 +341,54 @@ struct SwapDetailsScreen: View {
             targetCoin: detailsViewModel.toCoin,
             vaultCoins: vault.coins
         )
+    }
+
+    /// Limit-layout switcher for this **design-review branch**, sharing the tab
+    /// row's trailing slot with `tabRowCountdown` — which never renders in Limit
+    /// mode, leaving the slot free. Limit mode only, so Market's row is byte-for
+    /// -byte the layout it was: this returns an empty `@ViewBuilder` there, the
+    /// same way the countdown already does in Limit.
+    ///
+    /// The label collapses to `variant.shortName` (a single letter) because it
+    /// shares a row with a `.fixedSize()` segmented control and only a
+    /// `Spacer(minLength: 8)` separates them — a full "Accordion (current)"
+    /// would crowd the tabs on a narrow screen. The menu carries the full names.
+    ///
+    /// Not `#if DEBUG`-gated on purpose, matching the repo's existing debug
+    /// `forcedSwapProvider` picker: the row is already behind the default-off
+    /// `limitSwapEnabled` advanced setting, this branch never merges, and review
+    /// builds are often Release/TestFlight — a DEBUG gate would delete the
+    /// picker from exactly the builds it exists for.
+    @ViewBuilder
+    var tabRowVariantPicker: some View {
+        if selectedSwapMode == .limit {
+            Menu {
+                Picker("", selection: $limitLayoutVariant) {
+                    ForEach(LimitLayoutVariant.allCases) { variant in
+                        Text(variant.menuLabel).tag(variant)
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text(limitLayoutVariant.shortName)
+                    Image(systemName: "chevron.up.chevron.down")
+                }
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .lineLimit(1)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Theme.colors.bgSurface1)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Theme.colors.border, lineWidth: 1)
+                        )
+                )
+            }
+            .fixedSize()
+        }
     }
 
     /// Quote-refresh countdown in the Market/Limit tab row. Market mode only —

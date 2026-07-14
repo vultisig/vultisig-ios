@@ -44,9 +44,13 @@ struct LimitSwapEntryView: View {
     @State private var showFromCoinPicker: Bool = false
     @State private var showToCoinPicker: Bool = false
 
-    /// Which candidate layout to render. `@AppStorage` so a reviewer's choice
-    /// survives relaunch — comparing layouts means backgrounding the app, and
-    /// re-picking the variant on every cold start would make that unusable.
+    /// Which candidate layout to render. The picker that WRITES this lives in
+    /// `SwapDetailsScreen`, inline with the Market/Limit segmented control; this
+    /// is the read side. No binding is threaded down: `@AppStorage` instances
+    /// sharing a key observe the same `UserDefaults`, so the write there redraws
+    /// here. It also means the choice survives relaunch — comparing layouts
+    /// means backgrounding the app, and re-picking on every cold start would
+    /// make that tedious.
     @AppStorage("limitLayoutVariant") private var layoutVariant: LimitLayoutVariant = .accordion
 
     /// `SwapCoinPickerView` declares an `@EnvironmentObject` for this VM and
@@ -81,8 +85,14 @@ struct LimitSwapEntryView: View {
     }
 
     var body: some View {
+        // The container is load-bearing despite its single child: it gives the
+        // modifiers below a STABLE identity. Hung directly off `selectedBody`
+        // they would belong to a `_ConditionalContent` that changes type when
+        // the variant switches, so `.task` would re-run and its
+        // `selectPresetPct(0)` would silently reset the reviewer's amount on
+        // every flip — destroying the like-for-like comparison the picker is
+        // for. Anchored here, the VM and the entered order survive the switch.
         VStack(spacing: 0) {
-            variantPicker
             selectedBody
         }
         .task {
@@ -193,47 +203,6 @@ struct LimitSwapEntryView: View {
                 onPlaceOrder: handlePlaceOrder
             )
         }
-    }
-
-    /// Compact dev-facing layout switcher. Mirrors the `Menu { Picker }` shape
-    /// the repo already uses for its debug `forcedSwapProvider` picker
-    /// (`SettingPickerCell`), which is also unlocalized and also ungated.
-    ///
-    /// Not `#if DEBUG`-gated on purpose: the point of this branch is to hand ONE
-    /// build to devs and designers and let them flip between the four layouts,
-    /// and those builds are frequently Release/TestFlight — a DEBUG gate would
-    /// delete the picker from exactly the builds it exists for. It is already
-    /// unreachable for normal users behind the default-off `limitSwapEnabled`
-    /// advanced setting, and this branch is not intended to merge, so the gate
-    /// would buy no safety it doesn't already have.
-    private var variantPicker: some View {
-        Menu {
-            Picker("", selection: $layoutVariant) {
-                ForEach(LimitLayoutVariant.allCases) { variant in
-                    Text(variant.displayName).tag(variant)
-                }
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Text(layoutVariant.displayName)
-                Image(systemName: "chevron.up.chevron.down")
-            }
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Theme.colors.bgSurface1)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Theme.colors.border, lineWidth: 1)
-                    )
-            )
-        }
-        .fixedSize()
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding(.bottom, 8)
     }
 
     // MARK: - Picker bindings (swap-on-collision)
