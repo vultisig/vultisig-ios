@@ -115,4 +115,36 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
     var hasPendingWithdrawals: Bool {
         !pendingWithdrawals.isEmpty
     }
+
+    @MainActor
+    func apply(account: TronAccountResponse) {
+        let balanceSun = account.balance ?? 0
+        availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
+
+        frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
+        frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
+        unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
+
+        pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
+            guard let amountSun = entry.unfreeze_amount,
+                  let expireTime = entry.unfreeze_expire_time else {
+                return nil
+            }
+
+            let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
+            let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1_000))
+            return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
+        }.sorted { $0.expirationDate < $1.expirationDate }
+
+        isLoadingBalance = false
+    }
+
+    @MainActor
+    func apply(resource: TronAccountResourceResponse) {
+        availableBandwidth = resource.calculateAvailableBandwidth()
+        totalBandwidth = resource.freeNetLimit + resource.NetLimit
+        availableEnergy = resource.EnergyLimit - resource.EnergyUsed
+        totalEnergy = resource.EnergyLimit
+        isLoadingResources = false
+    }
 }
