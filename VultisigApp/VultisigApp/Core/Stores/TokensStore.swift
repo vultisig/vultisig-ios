@@ -2039,6 +2039,33 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
+            chain: .tron,
+            ticker: "USDC",
+            logo: "usdc",
+            decimals: 6,
+            priceProviderId: "usd-coin",
+            contractAddress: "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .tron,
+            ticker: "USDD",
+            logo: "usdd",
+            decimals: 18,
+            priceProviderId: "usdd",
+            contractAddress: "TXDk8mbtRbXeYuMNS83CfKPaYYT8XWv9Hz",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .tron,
+            ticker: "stUSDT",
+            logo: "stusdt",
+            decimals: 18,
+            priceProviderId: "staked-usdt",
+            contractAddress: "TThzxNRLrW2Brp9DcTQU8i4Wd9udCWEdZ3",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .zksync,
             ticker: "ETH",
             logo: "zsync_era",

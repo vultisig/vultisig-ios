@@ -108,3 +108,6 @@ VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcdebugger/
 VultisigApp/VultisigApp.xcodeproj/xcshareddata/xcschememanagement.plist
 # Keep Package.resolved under version control even though it lives inside the xcodeproj.
 !VultisigApp/VultisigApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+.agents/*
+.codex/*
+scripts/release.sh

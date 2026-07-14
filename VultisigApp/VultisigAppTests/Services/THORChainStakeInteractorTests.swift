@@ -45,6 +45,40 @@ final class THORChainStakeInteractorTests: XCTestCase {
         XCTAssertEqual(result, Decimal(string: "0.00000001"))
     }
 
+    // MARK: - resolveRujiStakedAmount (prefer on-chain receipt over API bonded)
+
+    func testResolveRujiStakedAmountPrefersOnChainReceiptOverBonded() {
+        // On-chain receipt read succeeded (raw 8_833_889_972 → 88.33889972); the API `bonded`
+        // amount is ignored even though it differs.
+        let result = THORChainStakeInteractor.resolveRujiStakedAmount(
+            onChainRaw: 8_833_889_972,
+            bonded: Decimal(string: "5")!,
+            decimals: 8
+        )
+        XCTAssertEqual(result, Decimal(string: "88.33889972"))
+    }
+
+    func testResolveRujiStakedAmountSuccessfulOnChainZeroStaysZero() {
+        // A genuine on-chain zero must NOT fall back to a stale non-zero `bonded`.
+        let result = THORChainStakeInteractor.resolveRujiStakedAmount(
+            onChainRaw: 0,
+            bonded: Decimal(string: "5")!,
+            decimals: 8
+        )
+        XCTAssertEqual(result, 0)
+    }
+
+    func testResolveRujiStakedAmountFallsBackToBondedWhenOnChainNil() {
+        // On-chain read failed (nil) → fall back to the API `bonded` amount (already scaled).
+        let bonded = Decimal(string: "12.5")!
+        let result = THORChainStakeInteractor.resolveRujiStakedAmount(
+            onChainRaw: nil,
+            bonded: bonded,
+            decimals: 8
+        )
+        XCTAssertEqual(result, bonded)
+    }
+
     // MARK: - APR fractionalRate
 
     /// Per the Rujira GraphQL schema, `Bigint` decimal scalars are scaled to 12 decimal places.
