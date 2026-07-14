@@ -698,7 +698,7 @@
 "networkFee" = "Network Fee";
 "new" = "NEW";
 "newAddress" = "New Address";
-"newBackupsCreatedDescription" = "Each device will create a new .vult backup which is different to the old backups";
+"newBackupsCreatedDescription" = "Each device will create a new .vult backup that differs from the old backups";
 "newBackupsCreatedTitle" = "New backups will be created";
 "newChainDetected" = "New chain detected";
 "newUpdateAvailable" = "Update is available.";
