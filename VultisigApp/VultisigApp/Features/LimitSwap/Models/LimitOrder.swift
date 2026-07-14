@@ -24,6 +24,14 @@ final class LimitOrder {
     var expiryBlocks: Int
     var createdAt: Date
     var statusRawValue: String
+    /// Effective guaranteed-minimum output the order was actually signed with,
+    /// when the memo's LIM had to be rounded UP to fit the source-chain byte
+    /// budget. `nil` means the LIM matches the exact `targetPrice`-derived
+    /// value. Persisted because it is the figure shown on Verify — the order
+    /// card has to keep showing what the user signed, not a recomputed guess.
+    ///
+    /// Optional, so this rides SwiftData lightweight migration.
+    var minOutputOverride: Decimal?
 
     @Relationship(inverse: \Vault.limitOrders) var vault: Vault?
 
@@ -39,6 +47,7 @@ final class LimitOrder {
         expiryBlocks: Int,
         createdAt: Date,
         status: LimitOrderStatus,
+        minOutputOverride: Decimal? = nil,
         vault: Vault
     ) {
         self.id = id
@@ -52,6 +61,7 @@ final class LimitOrder {
         self.expiryBlocks = expiryBlocks
         self.createdAt = createdAt
         self.statusRawValue = status.rawValue
+        self.minOutputOverride = minOutputOverride
         self.vault = vault
     }
 
@@ -128,5 +138,30 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.memo = memo
         self.expiryHours = expiryHours
         self.minOutputOverride = minOutputOverride
+    }
+
+    /// Returns a copy with the inbound TX hash spliced in. The record is built
+    /// at sign time, before the hash exists; the done screen fills it in once
+    /// the broadcast returns, then hands it to `LimitOrderStorageService`.
+    ///
+    /// Every other field must ride along verbatim — this sits on the path the
+    /// execution tracker reads back, so a silently dropped field here becomes a
+    /// wrong number on the order card.
+    func with(inboundTxHash: String) -> LimitOrderRecord {
+        LimitOrderRecord(
+            inboundTxHash: inboundTxHash,
+            sourceAsset: sourceAsset,
+            sourceAmount: sourceAmount,
+            sourceDecimals: sourceDecimals,
+            targetAsset: targetAsset,
+            destAddress: destAddress,
+            targetPrice: targetPrice,
+            expiryBlocks: expiryBlocks,
+            createdAt: createdAt,
+            status: status,
+            memo: memo,
+            expiryHours: expiryHours,
+            minOutputOverride: minOutputOverride
+        )
     }
 }

@@ -53,6 +53,7 @@ struct LimitOrderStorageService {
             expiryBlocks: record.expiryBlocks,
             createdAt: record.createdAt,
             status: record.status,
+            minOutputOverride: record.minOutputOverride,
             vault: vault
         )
         Storage.shared.modelContext.insert(model)

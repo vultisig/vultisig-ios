@@ -42,6 +42,24 @@ final class LimitOrderStorageServiceTests: XCTestCase {
         XCTAssertEqual(order.statusRawValue, "pending")
     }
 
+    /// The signed guaranteed-minimum output has to survive all the way into the
+    /// table, not just into the in-memory record: the order card reads it back
+    /// from here, and a value dropped at `persist` means showing a recomputed
+    /// number instead of the one the user actually signed.
+    func testPersistRoundTripsMinOutputOverride() throws {
+        let record = makeRecord(inboundTxHash: "abc123", minOutputOverride: Decimal(string: "0.00512345")!)
+
+        let order = try service.persist(record, for: vault)
+
+        XCTAssertEqual(order.minOutputOverride, Decimal(string: "0.00512345")!)
+    }
+
+    func testPersistRoundTripsANilMinOutputOverride() throws {
+        let order = try service.persist(makeRecord(inboundTxHash: "abc123"), for: vault)
+
+        XCTAssertNil(order.minOutputOverride)
+    }
+
     func testPersistGeneratesIdFromInboundHashAndPubKey() throws {
         let order = try service.persist(makeRecord(inboundTxHash: "abc123"), for: vault)
         XCTAssertEqual(order.id, "abc123_\(vault.pubKeyECDSA)")
@@ -154,7 +172,8 @@ final class LimitOrderStorageServiceTests: XCTestCase {
 
     private func makeRecord(
         inboundTxHash: String,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        minOutputOverride: Decimal? = nil
     ) -> LimitOrderRecord {
         LimitOrderRecord(
             inboundTxHash: inboundTxHash,
@@ -166,7 +185,8 @@ final class LimitOrderStorageServiceTests: XCTestCase {
             targetPrice: 16,
             expiryBlocks: 14400,
             createdAt: createdAt,
-            status: .pending
+            status: .pending,
+            minOutputOverride: minOutputOverride
         )
     }
 }

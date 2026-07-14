@@ -245,25 +245,3 @@ struct SwapDoneScreen: View {
         }
     }
 }
-
-private extension LimitOrderRecord {
-    /// Returns a copy with the inbound tx hash filled in. Used by the
-    /// done screen to splice the broadcast result into the record before
-    /// handing it to `LimitOrderStorageService.persist`.
-    func with(inboundTxHash: String) -> LimitOrderRecord {
-        LimitOrderRecord(
-            inboundTxHash: inboundTxHash,
-            sourceAsset: sourceAsset,
-            sourceAmount: sourceAmount,
-            sourceDecimals: sourceDecimals,
-            targetAsset: targetAsset,
-            destAddress: destAddress,
-            targetPrice: targetPrice,
-            expiryBlocks: expiryBlocks,
-            createdAt: createdAt,
-            status: status,
-            memo: memo,
-            expiryHours: expiryHours
-        )
-    }
-}
