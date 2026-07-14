@@ -11,6 +11,7 @@
 "addChain" = "添加链";
 "addCoinLP" = "添加 %@ LP";
 "addCustomChains" = "添加自定义链";
+"addDestinationTag" = "添加目标标签";
 "addFolder" = "添加文件夹";
 "addFriendsReferral" = "添加好友推荐";
 "addingToken" = "正在添加代币...";
@@ -227,6 +228,7 @@
 "connected" = "已连接";
 "connectingWithServer..." = "正在连接服务器...";
 "continue" = "继续";
+"continueAnyway" = "仍要继续";
 "continueThresholdOfTotal" = "继续 (%d/%d)";
 "copyAddress" = "复制地址";
 "correctAmountCheck" = "金额正确";
@@ -325,6 +327,13 @@
 "deleteVaultTitle" = "删除保险库";
 "dependencies" = "依赖项";
 "destinationAddress" = "目标地址";
+"destinationTag" = "目标标签";
+"destinationTagFromXAddress" = "已包含在 X 地址中";
+"destinationTagInvalidError" = "目标标签必须是 1 到 4294967295 之间的整数。";
+"destinationTagMemoConflictError" = "备忘录与目标标签不一致。XRP 交易只能携带一个目标标签。";
+"destinationTagRequiredError" = "该地址要求提供目标标签（交易所充值时很常见）。请输入充值说明中的标签，否则资金可能无法入账。";
+"destinationTagUnverifiedTitle" = "无法核实目标地址";
+"destinationTagUnverifiedWarning" = "无法核实该地址是否需要目标标签。如果您是向交易所充值，请先添加标签再继续。";
 "destinationValidator" = "目标验证人";
 "device" = "设备";
 "deviceBackupDescription" = "存储此设备的保险库份额";
@@ -384,6 +393,7 @@
 "enterAddressHere" = "在此输入地址";
 "enterAmount" = "输入金额";
 "enterAmountToUnmerge" = "输入解绑金额";
+"enterDestinationTag" = "输入目标标签";
 "enterHint" = "输入提示";
 "enterMemo" = "输入备忘录";
 "enterPassword" = "输入密码";
@@ -758,6 +768,7 @@
 "noTransactionsYetSubtitle" = "您尚未从此金库进行任何兑换、发送或审批操作。";
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
+"noVaultAddresses" = "没有保险库地址";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
 "of" = "的";
 "off" = "关闭";
@@ -809,6 +820,7 @@
 "passwordIsRequired" = "密码是必需的";
 "passwordMismatch" = "密码不匹配";
 "paste" = "粘贴";
+"peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
 "peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
 "pendingRewards" = "待领取奖励";
@@ -1078,6 +1090,7 @@
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
 "slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
+"solanaBatchSigningNotSupported" = "暂不支持一次性签署多笔 Solana 交易。";
 "solanaStakingActionDelegate" = "质押";
 "solanaStakingActionUnstake" = "取消质押";
 "solanaStakingActionWithdraw" = "提取";
@@ -1451,6 +1464,8 @@
 "wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
 "x" = "X（推特）";
+"xrpDestinationLookupFailedError" = "无法验证目标 XRP 账户 (%@)。请重试。";
+"xrpDestinationNotActivatedError" = "目标 XRP 地址尚未激活。首次向其转账必须至少为 %@ XRP（网络基础准备金）。请增加金额或核对地址。";
 "yes" = "是";
 "yesterday" = "昨天";
 "yieldClaimAmount" = "领取 %@";

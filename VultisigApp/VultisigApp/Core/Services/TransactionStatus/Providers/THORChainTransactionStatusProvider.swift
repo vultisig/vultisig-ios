@@ -51,7 +51,7 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
             return mapActionToStatus(action: action, blockNumber: blockNum)
 
         } catch let error as HTTPError {
-            return handleHTTPError(error)
+            return try handleHTTPError(error)
         }
     }
 
@@ -118,11 +118,15 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
         return parts.joined(separator: ", ")
     }
 
-    private func handleHTTPError(_ error: HTTPError) -> TransactionStatusResult {
-        switch error {
-        case .statusCode(let code, _):
+    /// Maps HTTP failures to a status.
+    /// - 404: Midgard has no action for this txid yet → `.notFound` (keep polling).
+    /// - 429 / 5xx: marked `.failed` so the error surfaces to the user.
+    /// - timeout / network / other: transport-level, not an on-chain result, so
+    ///   thrown — the poller keeps polling and the duplicate-broadcast check keeps
+    ///   retrying instead of marking a live tx permanently FAILED.
+    private func handleHTTPError(_ error: HTTPError) throws -> TransactionStatusResult {
+        if case .statusCode(let code, _) = error {
             if code == 404 {
-                // Transaction not found in Midgard
                 return TransactionStatusResult(
                     status: .notFound,
                     blockNumber: nil,
@@ -131,7 +135,6 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
             }
 
             if code == 429 {
-                // Rate limited
                 return TransactionStatusResult(
                     status: .failed(reason: "Rate limited - too many requests"),
                     blockNumber: nil,
@@ -140,43 +143,14 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
             }
 
             if code >= 500 {
-                // Server error (retryable)
                 return TransactionStatusResult(
-                    status: .failed(reason: "Server error (retryable): \(code)"),
+                    status: .failed(reason: "Server error: \(code)"),
                     blockNumber: nil,
                     confirmations: nil
                 )
             }
-
-            // Other HTTP errors
-            return TransactionStatusResult(
-                status: .failed(reason: "HTTP error: \(code)"),
-                blockNumber: nil,
-                confirmations: nil
-            )
-
-        case .timeout:
-            // Network timeout (retryable)
-            return TransactionStatusResult(
-                status: .failed(reason: "Request timeout (retryable)"),
-                blockNumber: nil,
-                confirmations: nil
-            )
-
-        case .networkError:
-            // Network error (retryable)
-            return TransactionStatusResult(
-                status: .failed(reason: "Network error (retryable)"),
-                blockNumber: nil,
-                confirmations: nil
-            )
-
-        default:
-            return TransactionStatusResult(
-                status: .failed(reason: "Unknown error"),
-                blockNumber: nil,
-                confirmations: nil
-            )
         }
+
+        throw error
     }
 }

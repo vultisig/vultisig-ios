@@ -16,9 +16,9 @@
 //
 //  Audit (Mediator.shared.stop): the pre-refactor screen kicked off a
 //  5-second-delayed `Mediator.shared.stop()` here. Confirmed redundant
-//  — `SwapKeysignScreen.onDisappear` calls `viewModel.stopMediator()`
-//  before this screen ever appears (verified at
-//  Features/Swap/Views/Screens/SwapKeysignScreen.swift:64). Removed.
+//  — the shared keysign screen's `onDisappear` calls `stopMediator()` for
+//  the swap flow before this screen ever appears (`SigningKeysignScreen`).
+//  Removed.
 //
 
 import SwiftUI
@@ -77,6 +77,7 @@ struct SwapDoneScreen: View {
                 transaction: transaction,
                 vault: vault
             ),
+            navigationTitle: "overview".localized,
             tokenContent: {
                 SwapDoneSummaryCard.initiator(
                     transaction: transaction,

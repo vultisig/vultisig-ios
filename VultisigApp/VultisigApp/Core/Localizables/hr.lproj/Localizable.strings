@@ -11,6 +11,7 @@
 "addChain" = "Dodajte lanac";
 "addCoinLP" = "Dodaj %@ LP";
 "addCustomChains" = "Dodaj prilagođene chainove";
+"addDestinationTag" = "Dodaj oznaku odredišta";
 "addFolder" = "Dodaj mapu";
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
 "addingToken" = "Dodavanje tokena";
@@ -227,6 +228,7 @@
 "connected" = "Povezano";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "continue" = "Nastavi";
+"continueAnyway" = "Svejedno nastavi";
 "continueThresholdOfTotal" = "Nastavi (%d-od-%d)";
 "copyAddress" = "Kopiraj adresu";
 "correctAmountCheck" = "Iznos je točan";
@@ -325,6 +327,13 @@
 "deleteVaultTitle" = "Izbriši sef";
 "dependencies" = "Ovisnosti";
 "destinationAddress" = "Odredišna adresa";
+"destinationTag" = "Oznaka odredišta";
+"destinationTagFromXAddress" = "Uključena u X-adresu";
+"destinationTagInvalidError" = "Oznaka odredišta mora biti cijeli broj između 1 i 4294967295.";
+"destinationTagMemoConflictError" = "Bilješka i oznaka odredišta se ne podudaraju. XRP transakcije mogu nositi samo jednu oznaku odredišta.";
+"destinationTagRequiredError" = "Ova adresa zahtijeva oznaku odredišta (uobičajeno za uplate na mjenjačnice). Unesite oznaku iz uputa za uplatu ili sredstva možda neće biti evidentirana.";
+"destinationTagUnverifiedTitle" = "Odredište nije moguće provjeriti";
+"destinationTagUnverifiedWarning" = "Nije moguće provjeriti zahtijeva li ova adresa oznaku odredišta. Ako uplaćujete na mjenjačnicu, dodajte oznaku prije nastavka.";
 "destinationValidator" = "Odredišni validator";
 "device" = "uređajem";
 "deviceBackupDescription" = "Spremite udio trezora ovog uređaja.";
@@ -384,6 +393,7 @@
 "enterAddressHere" = "Unesite adresu ovdje";
 "enterAmount" = "Unesite iznos";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Unesite oznaku odredišta";
 "enterHint" = "Unesite savjet";
 "enterMemo" = "Unesite bilješku";
 "enterPassword" = "Unesite lozinku";
@@ -758,6 +768,7 @@
 "noTransactionsYetSubtitle" = "Još niste napravili zamjene, slanja ili odobrenja iz ovog trezora.";
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
 "noUnencryptedVaultsToImport" = "Nema nešifriranih trezora za uvoz";
+"noVaultAddresses" = "Nema adresa trezora";
 "noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
 "of" = "od";
 "off" = "Isključeno";
@@ -809,6 +820,7 @@
 "passwordIsRequired" = "Potrebna je lozinka.";
 "passwordMismatch" = "Lozinke se ne podudaraju";
 "paste" = "Zalijepi";
+"peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
 "peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
 "pendingRewards" = "Nagrade na čekanju";
@@ -1078,6 +1090,7 @@
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
 "slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
+"solanaBatchSigningNotSupported" = "Potpisivanje više Solana transakcija odjednom još nije podržano.";
 "solanaStakingActionDelegate" = "Ulog";
 "solanaStakingActionUnstake" = "Skidanje stake-a";
 "solanaStakingActionWithdraw" = "Povuci";
@@ -1451,6 +1464,8 @@
 "wrongVaultSelectedDescription" = "Vault koji ste odabrali ne odgovara keygen sesiji. Molimo odaberite ispravan Vault.";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "x" = "x";
+"xrpDestinationLookupFailedError" = "Odredišni XRP račun nije bilo moguće provjeriti (%@). Pokušajte ponovno.";
+"xrpDestinationNotActivatedError" = "Odredišna XRP adresa još nije aktivirana. Prvi prijenos na nju mora iznositi najmanje %@ XRP (osnovna rezerva mreže). Povećajte iznos ili provjerite adresu.";
 "yes" = "Da";
 "yesterday" = "Jučer";
 "yieldClaimAmount" = "Preuzmi %@";

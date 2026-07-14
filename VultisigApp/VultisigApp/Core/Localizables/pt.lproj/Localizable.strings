@@ -11,6 +11,7 @@
 "addChain" = "Adicione a corrente";
 "addCoinLP" = "Adicionar %@ LP";
 "addCustomChains" = "Adicionar chains personalizadas";
+"addDestinationTag" = "Adicionar tag de destino";
 "addFolder" = "Adicionar pasta";
 "addFriendsReferral" = "Adicione uma referência de amigos";
 "addingToken" = "Adicionando token";
@@ -227,6 +228,7 @@
 "connected" = "Conectado";
 "connectingWithServer..." = "Conectando-se ao servidor...";
 "continue" = "Continuar";
+"continueAnyway" = "Continuar mesmo assim";
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
 "copyAddress" = "Copiar endereço";
 "correctAmountCheck" = "A quantidade está correta";
@@ -325,6 +327,13 @@
 "deleteVaultTitle" = "Deletar Cofre";
 "dependencies" = "Dependências";
 "destinationAddress" = "Endereço de destino";
+"destinationTag" = "Tag de Destino";
+"destinationTagFromXAddress" = "Incluída no endereço X";
+"destinationTagInvalidError" = "A tag de destino deve ser um número inteiro entre 1 e 4294967295.";
+"destinationTagMemoConflictError" = "O memorando e a tag de destino não coincidem. Transações XRP só podem levar uma tag de destino.";
+"destinationTagRequiredError" = "Este endereço exige uma tag de destino (comum em depósitos em exchanges). Insira a tag das suas instruções de depósito ou os fundos podem não ser creditados.";
+"destinationTagUnverifiedTitle" = "Não foi possível verificar o destino";
+"destinationTagUnverifiedWarning" = "Não foi possível verificar se este endereço exige uma tag de destino. Se estiver depositando em uma exchange, adicione a tag antes de continuar.";
 "destinationValidator" = "Validador de destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Armazene a participação do Vault deste dispositivo.";
@@ -384,6 +393,7 @@
 "enterAddressHere" = "Digite o endereço aqui";
 "enterAmount" = "Inserir Quantidade";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Insira a tag de destino";
 "enterHint" = "Insira uma dica";
 "enterMemo" = "Insira o memo";
 "enterPassword" = "Digite a senha";
@@ -758,6 +768,7 @@
 "noTransactionsYetSubtitle" = "Você ainda não fez swaps, envios ou aprovações deste cofre.";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noUnencryptedVaultsToImport" = "Nenhum cofre não criptografado para importar";
+"noVaultAddresses" = "Nenhum endereço de cofre";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
 "of" = "de";
 "off" = "Desligado";
@@ -809,6 +820,7 @@
 "passwordIsRequired" = "A senha é necessária.";
 "passwordMismatch" = "Senhas não coincidem";
 "paste" = "Colar";
+"peerDiscoveryInfoDescription" = "No seu outro dispositivo, abra o app e toque em \"Escanear QR\" para conectá-lo.";
 "peerDiscoveryInfoTitle" = "Escaneie o QR nos seus outros dispositivos";
 "peerDiscoveryScanDeviceDisclaimer" = "Escaneie o QR com outro dispositivo. Configuração com 3 dispositivos recomendada, 2 são suficientes.";
 "pendingRewards" = "Recompensas pendentes";
@@ -1078,6 +1090,7 @@
 "slippageHelperText" = "Limita quanto o preço pode mudar antes que a execução seja cancelada.";
 "slippageMaxNote" = "O slippage é limitado a %@.";
 "slippageTolerance" = "Tolerância de slippage";
+"solanaBatchSigningNotSupported" = "Assinar várias transações Solana de uma vez ainda não é suportado.";
 "solanaStakingActionDelegate" = "Estaca";
 "solanaStakingActionUnstake" = "Cancelar stake";
 "solanaStakingActionWithdraw" = "Sacar";
@@ -1451,6 +1464,8 @@
 "wrongVaultSelectedDescription" = "O Vault que você selecionou não corresponde à sessão de keygen. Por favor, selecione o Vault correto.";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
 "x" = "x";
+"xrpDestinationLookupFailedError" = "Não foi possível verificar a conta XRP de destino (%@). Tente novamente.";
+"xrpDestinationNotActivatedError" = "O endereço XRP de destino ainda não está ativado. Uma primeira transferência deve ser de pelo menos %@ XRP (a reserva base da rede). Aumente o valor ou verifique o endereço.";
 "yes" = "Sim";
 "yesterday" = "Ontem";
 "yieldClaimAmount" = "Resgatar %@";

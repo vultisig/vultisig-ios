@@ -417,7 +417,10 @@ extension Coin {
 
     var thorchainDefiBalanceDecimal: Decimal {
         switch ticker.uppercased() {
-        case "YRUNE", "YTCY":
+        case "YRUNE", "YTCY", "YBRUNE":
+            // Receipt coins whose on-chain bank balance IS the held amount, so
+            // the DeFi total reads `balanceDecimal` directly (ybRUNE's
+            // `x/staking-x/brune` balance mirrors the yRUNE/yTCY receipts).
             return balanceDecimal
         default:
             return stakedBalanceDecimal

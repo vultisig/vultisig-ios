@@ -39,6 +39,14 @@ struct CustomMessagePayload: Codable, Hashable {
         } else if method == "eth_signTypedData_v4" {
             // Handle eth_signTypedData_v4 (EIP-712)
             return keysignMessagesForTypedData()
+        } else if isCosmosFamily {
+            // Cosmos-family chains (incl. THORChain/Maya) sign the sha256 of the
+            // message (Keplr ADR-36 signArbitrary over the StdSignDoc bytes).
+            // keccak256 here diverges from the md5 message-ID the initiator
+            // derives, so cross-platform co-signing 404s. Mirrors
+            // getCustomMessageHex.ts in vultisig-windows and vultisig-android.
+            let hash = data.sha256()
+            return [hash.hexString]
         } else if method == "sign_message" && chain.lowercased() == "tron" {
             // TRON: message has TIP-191/legacy header prefix from extension, hash with keccak256
             let hash = data.sha3(.keccak256)
@@ -51,6 +59,22 @@ struct CustomMessagePayload: Codable, Hashable {
         } else {
             // For Solana and other chains that don't use keccak256, use the message directly
             return [data.hexString]
+        }
+    }
+
+    /// Whether `chain` is a Cosmos-family chain (Cosmos SDK or THORChain/Maya),
+    /// which sign the sha256 of the custom message rather than keccak256.
+    private var isCosmosFamily: Bool {
+        guard let resolved = Chain.allCases.first(where: {
+            $0.name.caseInsensitiveCompare(chain) == .orderedSame
+        }) else {
+            return false
+        }
+        switch resolved.chainType {
+        case .Cosmos, .THORChain:
+            return true
+        default:
+            return false
         }
     }
 

@@ -101,4 +101,53 @@ final class ThorchainSRujiTests: XCTestCase {
 
         XCTAssertTrue(current.matches(TokensStore.sruji))
     }
+
+    // MARK: - 5. On-chain receipt-balance parse (Staked RUJI DeFi-card source of truth)
+    //
+    // The Staked RUJI card now derives its amount from the on-chain `x/staking-x/ruji`
+    // bank balance (preferred over the Rujira staking API's `bonded.amount`, which can
+    // report zero even while receipts are held). These pin the parse that feeds it.
+
+    func testParseStakingReceiptAmountFindsSRujiByOnChainDenom() throws {
+        let json = """
+        {
+          "balances": [
+            { "denom": "rune", "amount": "1000" },
+            { "denom": "\(onChainDenom)", "amount": "8833889972" }
+          ]
+        }
+        """
+        let amount = try ThorchainService.parseStakingReceiptAmount(
+            data: Data(json.utf8),
+            denom: TokensStore.sruji.contractAddress
+        )
+
+        XCTAssertEqual(amount, Decimal(8_833_889_972))
+    }
+
+    func testParseStakingReceiptAmountReturnsZeroWhenDenomAbsent() throws {
+        // A successful response with no sRUJI receipt is a genuine zero — the card keeps it
+        // (only a request *failure* falls back to the API `bonded` amount).
+        let json = """
+        { "balances": [ { "denom": "rune", "amount": "1000" } ] }
+        """
+        let amount = try ThorchainService.parseStakingReceiptAmount(
+            data: Data(json.utf8),
+            denom: TokensStore.sruji.contractAddress
+        )
+
+        XCTAssertEqual(amount, .zero)
+    }
+
+    func testParseStakingReceiptAmountIgnoresStaleDenom() throws {
+        let json = """
+        { "balances": [ { "denom": "\(staleDenom)", "amount": "123456" } ] }
+        """
+        let amount = try ThorchainService.parseStakingReceiptAmount(
+            data: Data(json.utf8),
+            denom: TokensStore.sruji.contractAddress
+        )
+
+        XCTAssertEqual(amount, .zero)
+    }
 }

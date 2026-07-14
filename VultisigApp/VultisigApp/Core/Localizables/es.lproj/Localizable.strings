@@ -11,6 +11,7 @@
 "addChain" = "Agregar cadena";
 "addCoinLP" = "Agregar %@ LP";
 "addCustomChains" = "Agregar chains personalizadas";
+"addDestinationTag" = "Agregar etiqueta de destino";
 "addFolder" = "Agregar carpeta";
 "addFriendsReferral" = "Agregar una referencia de amigos";
 "addingToken" = "Agregando token";
@@ -227,6 +228,7 @@
 "connected" = "Conectado";
 "connectingWithServer..." = "Conectando con el servidor...";
 "continue" = "Continuar";
+"continueAnyway" = "Continuar de todos modos";
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
 "copyAddress" = "Copiar dirección";
 "correctAmountCheck" = "La cantidad es correcta";
@@ -325,6 +327,13 @@
 "deleteVaultTitle" = "Eliminar Caja Fuerte";
 "dependencies" = "Dependencias";
 "destinationAddress" = "Dirección de destino";
+"destinationTag" = "Etiqueta de destino";
+"destinationTagFromXAddress" = "Incluida en la dirección X";
+"destinationTagInvalidError" = "La etiqueta de destino debe ser un número entero entre 1 y 4294967295.";
+"destinationTagMemoConflictError" = "El memorándum y la etiqueta de destino no coinciden. Las transacciones XRP solo pueden llevar una etiqueta de destino.";
+"destinationTagRequiredError" = "Esta dirección requiere una etiqueta de destino (habitual en depósitos a exchanges). Introduce la etiqueta de tus instrucciones de depósito o los fondos podrían no acreditarse.";
+"destinationTagUnverifiedTitle" = "No se pudo verificar el destino";
+"destinationTagUnverifiedWarning" = "No se pudo verificar si esta dirección requiere una etiqueta de destino. Si estás depositando en un exchange, añade la etiqueta antes de continuar.";
 "destinationValidator" = "Validador destino";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Almacene la parte de la bóveda de este dispositivo.";
@@ -384,6 +393,7 @@
 "enterAddressHere" = "Ingresa la dirección aquí";
 "enterAmount" = "Ingresar Cantidad";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
+"enterDestinationTag" = "Introduce la etiqueta de destino";
 "enterHint" = "Introduce una pista";
 "enterMemo" = "Introduce el memo";
 "enterPassword" = "Introduce la contraseña";
@@ -758,6 +768,7 @@
 "noTransactionsYetSubtitle" = "Aún no has realizado swaps, envíos ni aprobaciones desde esta bóveda.";
 "notWhitelistedOnNode" = "No estás en la lista blanca de este nodo";
 "noUnencryptedVaultsToImport" = "No hay bóvedas sin cifrar para importar";
+"noVaultAddresses" = "No hay direcciones de bóveda";
 "noVaultsFoundInZip" = "No se encontraron bóvedas en el archivo ZIP.";
 "of" = "de";
 "off" = "Desactivado";
@@ -809,6 +820,7 @@
 "passwordIsRequired" = "Se requiere contraseña.";
 "passwordMismatch" = "Las contraseñas no coinciden";
 "paste" = "Pegar";
+"peerDiscoveryInfoDescription" = "En tu otro dispositivo, abre la app y toca \"Escanear QR\" para conectarlo.";
 "peerDiscoveryInfoTitle" = "Escanea el QR en tus otros dispositivos";
 "peerDiscoveryScanDeviceDisclaimer" = "Escanea el QR con otro dispositivo. Se recomienda una configuración de 3 dispositivos, 2 son suficientes.";
 "pendingRewards" = "Recompensas pendientes";
@@ -1078,6 +1090,7 @@
 "slippageHelperText" = "Limita cuánto puede cambiar el precio antes de cancelar la ejecución.";
 "slippageMaxNote" = "El deslizamiento está limitado a %@.";
 "slippageTolerance" = "Tolerancia de deslizamiento";
+"solanaBatchSigningNotSupported" = "Aún no se admite firmar varias transacciones de Solana a la vez.";
 "solanaStakingActionDelegate" = "Apostar";
 "solanaStakingActionUnstake" = "Cancelar staking";
 "solanaStakingActionWithdraw" = "Retirar";
@@ -1451,6 +1464,8 @@
 "wrongVaultSelectedDescription" = "El Vault que seleccionaste no coincide con la sesión de keygen. Por favor selecciona el Vault correcto.";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "x" = "X (Twitter)";
+"xrpDestinationLookupFailedError" = "No se pudo verificar la cuenta XRP de destino (%@). Inténtalo de nuevo.";
+"xrpDestinationNotActivatedError" = "La dirección XRP de destino aún no está activada. Una primera transferencia debe ser de al menos %@ XRP (la reserva base de la red). Aumenta el importe o verifica la dirección.";
 "yes" = "Sí";
 "yesterday" = "Ayer";
 "yieldClaimAmount" = "Reclamar %@";

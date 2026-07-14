@@ -295,14 +295,23 @@ class SolanaService {
     }
 
     func fetchTokenAssociatedAccountByOwner(for ownerAddress: String, mintAddress: String) async throws -> (String, Bool) {
-        // First try getTokenAccountsByOwner
-        let (tokenAccounts, isToken2022) = try await getTokenAccountsByOwner(walletAddress: ownerAddress, mintAddress: mintAddress)
+        // First try getTokenAccountsByOwner. A transient RPC/node error is treated
+        // like an empty result: the account index can lag right after an ATA is
+        // created, or the node may momentarily fail, yet the ATA is still
+        // deterministically derivable. Falling through to the derivation probe
+        // instead of propagating keeps the send from failing when the account
+        // actually exists. A successful lookup keeps today's behavior exactly.
+        do {
+            let (tokenAccounts, isToken2022) = try await getTokenAccountsByOwner(walletAddress: ownerAddress, mintAddress: mintAddress)
 
-        if !tokenAccounts.isEmpty {
-            return (tokenAccounts, isToken2022)
+            if !tokenAccounts.isEmpty {
+                return (tokenAccounts, isToken2022)
+            }
+        } catch {
+            logger.warning("getTokenAccountsByOwner lookup failed; falling back to ATA derivation: \(error.localizedDescription, privacy: .public)")
         }
 
-        // If getTokenAccountsByOwner returns empty, probe the deterministic ATAs directly
+        // If getTokenAccountsByOwner returns empty (or errored), probe the deterministic ATAs directly
         guard let walletCoreAddress = WalletCore.SolanaAddress(string: ownerAddress) else {
             return ("", false)
         }

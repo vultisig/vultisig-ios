@@ -13,6 +13,9 @@ struct SendCryptoVerifySummary {
     let network: String
     let networkImage: String
     let memo: String
+    /// XRP destination tag, pre-formatted for display. Rendered as its own
+    /// row under the memo. `nil` (the default) hides the row.
+    let destinationTag: String?
     let decodedFunctionSignature: String?
     let decodedFunctionArguments: String?
     let memoFunctionDictionary: [String: String]?
@@ -51,6 +54,7 @@ struct SendCryptoVerifySummary {
         network: String,
         networkImage: String,
         memo: String,
+        destinationTag: String? = nil,
         // Only for Function Calls
         decodedFunctionSignature: String? = nil,
         decodedFunctionArguments: String? = nil,
@@ -76,6 +80,7 @@ struct SendCryptoVerifySummary {
         self.network = network
         self.networkImage = networkImage
         self.memo = memo
+        self.destinationTag = destinationTag
         self.decodedFunctionSignature = decodedFunctionSignature
         self.decodedFunctionArguments = decodedFunctionArguments
         self.memoFunctionDictionary = memoFunctionDictionary

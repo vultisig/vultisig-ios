@@ -11,6 +11,7 @@
 "addChain" = "Aggiungi catena";
 "addCoinLP" = "Aggiungi %@ LP";
 "addCustomChains" = "Aggiungi chain personalizzate";
+"addDestinationTag" = "Aggiungi destination tag";
 "addFolder" = "Aggiungi cartella";
 "addFriendsReferral" = "Aggiungi un referral di amici";
 "addingToken" = "Aggiunta token...";
@@ -227,6 +228,7 @@
 "connected" = "Connesso";
 "connectingWithServer..." = "Connessione al server in corso...";
 "continue" = "Continua";
+"continueAnyway" = "Continua comunque";
 "continueThresholdOfTotal" = "Continua (%d-di-%d)";
 "copyAddress" = "Copia indirizzo";
 "correctAmountCheck" = "La quantità è corretta";
@@ -325,6 +327,13 @@
 "deleteVaultTitle" = "Elimina Cassaforte";
 "dependencies" = "Dipendenze";
 "destinationAddress" = "Indirizzo di destinazione";
+"destinationTag" = "Destination tag";
+"destinationTagFromXAddress" = "Incluso nell'indirizzo X";
+"destinationTagInvalidError" = "Il destination tag deve essere un numero intero tra 1 e 4294967295.";
+"destinationTagMemoConflictError" = "Il memo e il destination tag non corrispondono. Le transazioni XRP possono contenere un solo destination tag.";
+"destinationTagRequiredError" = "Questo indirizzo richiede un destination tag (comune per i depositi su exchange). Inserisci il tag dalle istruzioni di deposito o i fondi potrebbero non essere accreditati.";
+"destinationTagUnverifiedTitle" = "Impossibile verificare la destinazione";
+"destinationTagUnverifiedWarning" = "Impossibile verificare se questo indirizzo richiede un destination tag. Se stai depositando su un exchange, aggiungi il tag prima di continuare.";
 "destinationValidator" = "Validatore di destinazione";
 "device" = "dispositivo";
 "deviceBackupDescription" = "Memorizza la condivisione Vault di questo dispositivo.";
@@ -384,6 +393,7 @@
 "enterAddressHere" = "Inserisci l'indirizzo qui";
 "enterAmount" = "Inserisci Quantità";
 "enterAmountToUnmerge" = "Inserisci importo da separare";
+"enterDestinationTag" = "Inserisci destination tag";
 "enterHint" = "Inserisci un suggerimento";
 "enterMemo" = "Inserisci memo";
 "enterPassword" = "Inserisci la password";
@@ -758,6 +768,7 @@
 "noTransactionsYetSubtitle" = "Non hai ancora effettuato swap, invii o approvazioni da questo vault.";
 "notWhitelistedOnNode" = "Non sei nella whitelist di questo nodo";
 "noUnencryptedVaultsToImport" = "Nessun vault non crittografato da importare";
+"noVaultAddresses" = "Nessun indirizzo del Vault";
 "noVaultsFoundInZip" = "Nessun vault trovato nel file ZIP.";
 "of" = "Di";
 "off" = "Disattivato";
@@ -809,6 +820,7 @@
 "passwordIsRequired" = "È richiesta la password.";
 "passwordMismatch" = "Le password non corrispondono";
 "paste" = "Incolla";
+"peerDiscoveryInfoDescription" = "Sull'altro dispositivo, apri l'app e tocca \"Scansiona QR\" per connetterlo.";
 "peerDiscoveryInfoTitle" = "Scansiona il QR sugli altri dispositivi";
 "peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";
 "pendingRewards" = "Premio in sospeso";
@@ -1078,6 +1090,7 @@
 "slippageHelperText" = "Limita quanto il prezzo può cambiare prima che l'esecuzione venga annullata.";
 "slippageMaxNote" = "Lo slippage è limitato a %@.";
 "slippageTolerance" = "Tolleranza di slippage";
+"solanaBatchSigningNotSupported" = "La firma di più transazioni Solana contemporaneamente non è ancora supportata.";
 "solanaStakingActionDelegate" = "Palo";
 "solanaStakingActionUnstake" = "Ritira stake";
 "solanaStakingActionWithdraw" = "Preleva";
@@ -1451,6 +1464,8 @@
 "wrongVaultSelectedDescription" = "Il Vault che hai selezionato non corrisponde alla sessione di keygen. Si prega di selezionare il Vault corretto.";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
 "x" = "X (Twitter)";
+"xrpDestinationLookupFailedError" = "Impossibile verificare l'account XRP di destinazione (%@). Riprova.";
+"xrpDestinationNotActivatedError" = "L'indirizzo XRP di destinazione non è ancora attivato. Un primo trasferimento deve essere di almeno %@ XRP (la riserva base della rete). Aumenta l'importo o verifica l'indirizzo.";
 "yes" = "Sì";
 "yesterday" = "Ieri";
 "yieldClaimAmount" = "Riscuoti %@";

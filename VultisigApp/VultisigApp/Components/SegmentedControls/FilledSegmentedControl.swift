@@ -45,8 +45,15 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
 
     var body: some View {
         GeometryReader { proxy in
+            // Clamp to zero: during transient/zero-width layout passes (e.g. while a
+            // sheet with presentationDetents is presenting) proxy.size.width can be 0,
+            // which drives these widths negative and logs "Invalid frame dimension".
+            let trackWidth = max(0, proxy.size.width - trackPadding * 2)
+            let gapCount = max(options.count - 1, 0)
+            let pillWidth = options.isEmpty
+                ? 0
+                : max(0, (trackWidth - optionGap * CGFloat(gapCount)) / CGFloat(options.count))
             ZStack(alignment: .leading) {
-                let pillWidth = (proxy.size.width - trackPadding * 2 - optionGap * CGFloat(options.count - 1)) / CGFloat(options.count)
                 RoundedRectangle(cornerRadius: pillCornerRadius)
                     .fill(pillColor)
                     .frame(width: pillWidth)
@@ -56,19 +63,18 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                 HStack(spacing: optionGap) {
                     ForEach(options) { option in
                         Button {
-                            withAnimation {
-                                self.selection = option
-                            }
+                            self.selection = option
                         } label: {
                             optionLabel(for: option)
                                 .padding(optionPadding)
                                 .frame(maxWidth: .infinity)
                         }
                         .contentShape(Rectangle())
+                        .buttonStyle(.plain)
                     }
                 }
             }
-            .frame(width: proxy.size.width - trackPadding * 2)
+            .frame(width: trackWidth)
             .padding(trackPadding)
             .background(
                 RoundedRectangle(cornerRadius: trackCornerRadius)
