@@ -30,6 +30,13 @@ final class THORChainLimitTrackingStatusMapperTests: XCTestCase {
         XCTAssertTrue(SwapTrackingUiStatus.expired.isTerminal)
     }
 
+    /// What the tracker actually records when an order closes with the funds
+    /// returned — the observed fact, not an inferred cause.
+    func testRefundedMapsToRefundedAndIsTerminal() {
+        XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(.refunded), .refunded)
+        XCTAssertTrue(SwapTrackingUiStatus.refunded.isTerminal)
+    }
+
     func testCancelledMapsToCancelledAndIsTerminal() {
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(.cancelled), .cancelled)
         XCTAssertTrue(SwapTrackingUiStatus.cancelled.isTerminal)
@@ -42,6 +49,7 @@ final class THORChainLimitTrackingStatusMapperTests: XCTestCase {
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "filled"), .completed)
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "expired"), .expired)
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "cancelled"), .cancelled)
+        XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "refunded"), .refunded)
     }
 
     // MARK: - Fallbacks

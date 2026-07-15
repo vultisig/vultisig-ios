@@ -37,6 +37,8 @@ enum THORChainLimitTrackingStatusMapper {
             return .resting
         case .filled:
             return .completed
+        case .refunded:
+            return .refunded
         case .expired:
             return .expired
         case .cancelled:

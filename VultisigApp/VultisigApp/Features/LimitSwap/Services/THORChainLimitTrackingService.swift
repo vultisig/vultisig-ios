@@ -339,8 +339,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             if write(order: order, status: .filled, uiStatus: .completed, state: nil) {
                 release(order)
             }
-        case .expired:
-            if write(order: order, status: .expired, uiStatus: .expired, state: nil) {
+        case .refunded:
+            // Recorded as refunded, not expired: the funds coming back is what
+            // we observed; a TTL elapsing is a cause we can't corroborate.
+            if write(order: order, status: .refunded, uiStatus: .refunded, state: nil) {
                 release(order)
             }
         }
@@ -375,6 +377,13 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 filledInAmount: state?.inAmount,
                 filledOutAmount: state?.outAmount
             )
+        } catch LimitOrderStorageError.notFound {
+            // Expected on a CO-SIGNER: `LimitOrder` is written by the device
+            // that placed the order, so a co-signing device tracks a row it has
+            // no local order record for. That's not a failed write — there is
+            // nothing here to write to, and the row IS the whole picture on this
+            // device. Retrying forever would peg the row at "resting" for good.
+            logger.debug("No local limit order for \(order.txHash, privacy: .public) — mirroring onto the row only")
         } catch {
             logger.error("Failed to record limit-order observation: \(error.localizedDescription, privacy: .public)")
             return false

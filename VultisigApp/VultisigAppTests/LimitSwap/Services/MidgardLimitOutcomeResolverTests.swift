@@ -32,10 +32,13 @@ final class MidgardLimitOutcomeResolverTests: XCTestCase {
         XCTAssertEqual(outcome, .filled)
     }
 
-    func testARefundedActionMeansExpired() async {
+    /// Reported as refunded, NOT expired: an order rejected at placement (halted
+    /// pool, bad memo) also refunds, seconds in, with no TTL elapsed. We have no
+    /// evidence to tell those apart, so we report the fact and not the story.
+    func testARefundedActionMeansRefundedNotExpired() async {
         let outcome = await resolve(.body(Self.action(status: "refund")))
 
-        XCTAssertEqual(outcome, .expired)
+        XCTAssertEqual(outcome, .refunded)
     }
 
     func testActionStatusIsMatchedCaseInsensitively() async {
@@ -67,26 +70,26 @@ final class MidgardLimitOutcomeResolverTests: XCTestCase {
 
     /// The regression this type is shaped around: a rate limit is not a refund.
     /// Routed through `THORChainTransactionStatusProvider` this returned
-    /// `.failed`, which would have expired a live resting order permanently.
-    func testARateLimitIsUnresolvedNotExpired() async {
+    /// `.failed`, which would have refunded-out a live resting order permanently.
+    func testARateLimitIsUnresolvedNotARefund() async {
         let outcome = await resolve(.failing(statusCode: 429))
 
         XCTAssertEqual(outcome, .unresolved, "429 is an infrastructure failure, not a refund")
     }
 
-    func testAServerErrorIsUnresolvedNotExpired() async {
+    func testAServerErrorIsUnresolvedNotARefund() async {
         let outcome = await resolve(.failing(statusCode: 503))
 
         XCTAssertEqual(outcome, .unresolved, "5xx is an infrastructure failure, not a refund")
     }
 
-    func testANetworkFailureIsUnresolvedNotExpired() async {
+    func testANetworkFailureIsUnresolvedNotARefund() async {
         let outcome = await resolve(.throwing)
 
         XCTAssertEqual(outcome, .unresolved)
     }
 
-    func testAnUndecodableBodyIsUnresolvedNotExpired() async {
+    func testAnUndecodableBodyIsUnresolvedNotARefund() async {
         let outcome = await resolve(.body("<html>gateway timeout</html>"))
 
         XCTAssertEqual(outcome, .unresolved)

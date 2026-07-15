@@ -151,6 +151,17 @@ final class LimitOrder {
 enum LimitOrderStatus: String, Codable, Equatable {
     case pending
     case filled
+    /// The order closed and the funds came back — the observable fact.
+    ///
+    /// Distinct from `expired`, which is a claim about WHY: an order rejected at
+    /// placement (halted pool, bad memo) also refunds, seconds in, with no TTL
+    /// elapsed. Nothing reachable from a client distinguishes them — the close
+    /// reason lives in an EndBlock event no REST route exposes, and a closed
+    /// order is already gone from the queue with its expiry countdown. So the
+    /// tracker records this, and doesn't invent the cause.
+    case refunded
+    /// The order's TTL elapsed. Only for a caller that can actually corroborate
+    /// expiry — the tracker cannot, and uses `refunded`.
     case expired
     case cancelled
 }

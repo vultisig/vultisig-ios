@@ -125,119 +125,6 @@ final class ThorchainLimitSwapQueueTests: XCTestCase {
         XCTAssertNil(entry.swap.state)
     }
 
-    // MARK: - queue/swap/details 400 body
-
-    /// Captured from mainnet: the 400 body returned once an order has closed.
-    func testDecodesTheClosedOrderErrorBody() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        let error = try decode(ThorchainQueueErrorResponse.self, json)
-
-        XCTAssertEqual(error.code, 3)
-        XCTAssertTrue(error.indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    /// Tx-id hex case carries no meaning, so it must not decide whether an
-    /// order is closed.
-    func testTheClosedCheckIsCaseInsensitiveOnTheHash() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        XCTAssertTrue(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "abc123"))
-    }
-
-    /// A response about a DIFFERENT order must never close this one.
-    func testAnErrorNamingAnotherHashDoesNotCloseThisOrder() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id OTHER999 not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    /// The hash is compared as a COMPLETE token, not searched for: a truncated
-    /// or short hash must not match a longer one and close the wrong order.
-    func testAPartialHashDoesNotCloseALongerOrder() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "ABC"))
-    }
-
-    /// Nor may a longer requested hash match a shorter named one.
-    func testALongerHashDoesNotMatchAShorterNamedOne() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    /// A word from the message itself is not a hash match.
-    func testAWordFromTheMessageIsNotAHashMatch() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "queue"))
-    }
-
-    /// A genuine bad request must NOT be read as "order closed" — that would
-    /// silently mark a still-resting order terminal.
-    func testAGenuineBadRequestIsNotReadAsClosed() throws {
-        let error = try decode(ThorchainQueueErrorResponse.self, #"{"code":3,"message":"invalid request"}"#)
-
-        XCTAssertFalse(error.indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    /// Right message, wrong code — the contract we verified is code 3. Anything
-    /// else is a response we don't understand, so it stays resting.
-    func testAnUnexpectedCodeIsNotReadAsClosed() throws {
-        let json = """
-        {"code":5,"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    func testAMissingCodeIsNotReadAsClosed() throws {
-        let json = """
-        {"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    /// A reworded message is a contract we no longer recognise. Unknown must
-    /// stay unknown — retried, not closed.
-    func testARewordedMessageIsNotReadAsClosed() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC123 is NOT PRESENT IN ANY QUEUE: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    func testAnEmptyErrorBodyIsNotReadAsClosed() throws {
-        let error = try decode(ThorchainQueueErrorResponse.self, "{}")
-
-        XCTAssertFalse(error.indicatesOrderClosed(forTxHash: "ABC123"))
-    }
-
-    /// Guard against a caller passing an empty hash: with a substring match, an
-    /// empty needle matches everything and would close the order.
-    func testAnEmptyRequestedHashNeverCloses() throws {
-        let json = """
-        {"code":3,"message":"swap with tx_id ABC123 not found in any queue: invalid request"}
-        """
-
-        XCTAssertFalse(try decode(ThorchainQueueErrorResponse.self, json).indicatesOrderClosed(forTxHash: ""))
-    }
-
     // MARK: - TargetType wiring
 
     func testLimitSwapQueueScopesToTheSender() {
@@ -250,25 +137,7 @@ final class ThorchainLimitSwapQueueTests: XCTestCase {
         XCTAssertEqual(params["sender"] as? String, "thor1sender")
     }
 
-    func testLimitSwapDetailsPinsTheHashInThePath() {
-        let target = ThorchainMainnetAPI(.limitSwapDetails(txHash: "ABC123"))
-
-        XCTAssertEqual(target.path, "/thorchain/queue/swap/details/ABC123")
-    }
-
-    /// The 400-as-state seam: without this the HTTP client throws on a closed
-    /// order and the tracker can't tell "closed" from "network down".
-    func testLimitSwapDetailsAccepts400AsAState() {
-        let target = ThorchainMainnetAPI(.limitSwapDetails(txHash: "ABC123"))
-
-        guard case let .customCodes(codes) = target.validationType else {
-            return XCTFail("expected customCodes, got \(target.validationType)")
-        }
-        XCTAssertEqual(codes.sorted(), [200, 400])
-    }
-
-    /// The queue list has no 400-as-state contract — a 400 there is a real
-    /// failure and must still throw.
+    /// A 400 from the queue list is a real failure and must still throw.
     func testLimitSwapQueueUsesDefaultValidation() {
         let target = ThorchainMainnetAPI(.limitSwapQueue(sender: "thor1sender"))
 
@@ -277,12 +146,10 @@ final class ThorchainLimitSwapQueueTests: XCTestCase {
         }
     }
 
-    func testLimitSwapEndpointsUseTheLCDHost() {
+    func testTheLimitSwapQueueUsesTheLCDHost() {
         let host = URL(staticString: "https://example.invalid/lcd")
         let queue = ThorchainMainnetAPI(.limitSwapQueue(sender: nil), lcdHost: host, rpcHost: URL(staticString: "https://example.invalid/rpc"))
-        let details = ThorchainMainnetAPI(.limitSwapDetails(txHash: "ABC"), lcdHost: host, rpcHost: URL(staticString: "https://example.invalid/rpc"))
 
         XCTAssertEqual(queue.baseURL, host)
-        XCTAssertEqual(details.baseURL, host)
     }
 }

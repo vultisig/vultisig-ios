@@ -71,11 +71,6 @@ struct ThorchainMainnetAPI: TargetType {
         /// vault with orders from several source chains needs one call per
         /// source address in play — still far fewer than one per order.
         case limitSwapQueue(sender: String?)
-        /// `/thorchain/queue/swap/details/<hash>` — a single queued swap.
-        ///
-        /// Returns 400 (NOT 404) once the order leaves the queue, which is a
-        /// STATE (closed), not a transport failure — see `validationType`.
-        case limitSwapDetails(txHash: String)
 
         // MARK: RPC node (different host)
         case networkStatus
@@ -95,7 +90,7 @@ struct ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .mimir, .poolInfo, .pools,
              .poolLiquidityProvider, .swapQuote, .tcyStaker,
-             .limitSwapQueue, .limitSwapDetails,
+             .limitSwapQueue,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
             // host (balances / account / inbound addresses, the primary balance
@@ -148,8 +143,6 @@ struct ThorchainMainnetAPI: TargetType {
             return "/thorchain/tcy_staker/\(addr)"
         case .limitSwapQueue:
             return "/thorchain/queue/limit_swaps"
-        case .limitSwapDetails(let txHash):
-            return "/thorchain/queue/swap/details/\(txHash)"
         case .networkStatus:
             return "/status"
         case .tcyAutoCompoundStatus:
@@ -175,8 +168,7 @@ struct ThorchainMainnetAPI: TargetType {
         switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
              .inboundAddresses, .mimir, .poolInfo, .pools, .poolLiquidityProvider,
-             .tcyStaker, .networkStatus, .tcyAutoCompoundStatus, .resolveTNS,
-             .limitSwapDetails:
+             .tcyStaker, .networkStatus, .tcyAutoCompoundStatus, .resolveTNS:
             return .requestPlain
 
         case .limitSwapQueue(let sender):
@@ -224,20 +216,10 @@ struct ThorchainMainnetAPI: TargetType {
     /// LP positions return 404 for users without a position on a given pool;
     /// callers use `.customCodes([200, 404])` via the service layer today —
     /// expose it here so the service can just throw on other codes.
-    ///
-    /// `limitSwapDetails` is the same shape with a different code: THORNode
-    /// answers **400** (not 404) once an order is no longer queued, with
-    /// `{"code":3,"message":"swap with tx_id … not found in any queue"}`. That
-    /// is the ANSWER — the order closed — not a transport failure, so it must
-    /// not throw. Accepting it here lets the caller read the body and decide,
-    /// rather than inferring "closed" from a thrown error, which would also
-    /// swallow genuine 400s.
     var validationType: ValidationType {
         switch endpoint {
         case .poolLiquidityProvider:
             return .customCodes([200, 404])
-        case .limitSwapDetails:
-            return .customCodes([200, 400])
         default:
             return .successCodes
         }

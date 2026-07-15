@@ -110,14 +110,17 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 0, "terminal — stop tracking")
     }
 
-    func testAnOrderThatLeavesTheQueueAndRefundedIsExpired() async {
-        let env = TestEnv(queueBody: .empty, outcome: .expired)
+    /// Recorded as REFUNDED, not expired. The funds coming back is what we
+    /// observed; "your order expired" is a cause we can't corroborate, and it
+    /// would be a fabricated explanation for an order rejected at placement.
+    func testAnOrderThatLeavesTheQueueAndRefundedIsRecordedAsRefunded() async {
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
         await env.service.pollOnceForTesting(sender: sender)
 
-        XCTAssertEqual(env.orders.observations.last?.status, .expired)
-        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .expired)
+        XCTAssertEqual(env.orders.observations.last?.status, .refunded)
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .refunded)
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
     }
 
@@ -129,11 +132,11 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         await env.service.pollOnceForTesting(sender: sender)
 
         env.http.body = QueueBody.empty.json
-        env.outcomes.outcome = .expired
+        env.outcomes.outcome = .refunded
         await env.service.pollOnceForTesting(sender: sender)
 
         let terminal = env.orders.observations.last
-        XCTAssertEqual(terminal?.status, .expired)
+        XCTAssertEqual(terminal?.status, .refunded)
         XCTAssertNil(terminal?.depositAmount, "nil leaves the stored split alone")
         XCTAssertNil(terminal?.filledInAmount)
         XCTAssertNil(terminal?.filledOutAmount)
@@ -149,7 +152,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
 
         await env.service.pollOnceForTesting(sender: sender)
 
-        XCTAssertNotEqual(env.orders.observations.last?.status, .expired)
+        XCTAssertNotEqual(env.orders.observations.last?.status, .refunded)
         XCTAssertNotEqual(env.orders.observations.last?.status, .filled)
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1, "keep asking until it answers")
     }
@@ -171,7 +174,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
     /// The `limit_swaps` key absent is a response we don't understand — NOT an
     /// empty queue. Reading it as empty would close every order at once.
     func testAnUnrecognisedQueueEnvelopeDoesNotCloseOrders() async {
-        let env = TestEnv(queueBody: .unrecognisedEnvelope, outcome: .expired)
+        let env = TestEnv(queueBody: .unrecognisedEnvelope, outcome: .refunded)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
         await env.service.pollOnceForTesting(sender: sender)
@@ -182,7 +185,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
     }
 
     func testANetworkFailureDoesNotCloseOrders() async {
-        let env = TestEnv(queueBody: .empty, outcome: .expired)
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
         env.http.shouldThrow = true
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
@@ -197,7 +200,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
     /// authority back to the native poller, which would confirm the deposit and
     /// report a resting order Successful — the original bug.
     func testTheTrackerNeverSurrendersToNativePolling() async {
-        let env = TestEnv(queueBody: .empty, outcome: .expired)
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
         env.http.shouldThrow = true
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 

@@ -94,9 +94,18 @@ struct LimitOrderObserver: LimitOrderObserving {
 enum LimitOrderOutcome: Equatable {
     /// The order executed — an outbound in the target asset settled.
     case filled
-    /// The order settled as a refund: its TTL elapsed and the unfilled
-    /// remainder came back.
-    case expired
+    /// The order settled as a REFUND: the funds came back.
+    ///
+    /// Deliberately not called "expired". A refund is what we can observe; an
+    /// expiry is an inference about WHY, and the two aren't the same — a
+    /// placement rejected outright (halted pool, bad memo) refunds within
+    /// seconds without any TTL elapsing. Telling that user their order "expired"
+    /// would be a fabricated explanation of their own funds' history.
+    ///
+    /// Separating them would need TTL corroboration the tracker doesn't carry:
+    /// a closed order is gone from the queue, taking its expiry countdown with
+    /// it. So we report the fact and not the story.
+    case refunded
     /// Not knowable yet. NOT a state — the caller must keep the order resting
     /// and ask again, never guess.
     case unresolved
@@ -144,7 +153,7 @@ struct MidgardLimitOutcomeResolver: LimitOrderOutcomeResolving {
             case "success":
                 return .filled
             case "refund":
-                return .expired
+                return .refunded
             default:
                 // "pending", or a status we don't recognise. Either way, not an
                 // answer — ask again.
