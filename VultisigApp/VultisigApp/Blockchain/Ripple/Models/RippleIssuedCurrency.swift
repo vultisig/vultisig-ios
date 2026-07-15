@@ -40,6 +40,13 @@ enum RippleIssuedCurrency {
     /// XRPL amount and is rejected (→ mismatch, fail closed).
     private static let maxShiftMagnitude = 1024
 
+    /// Caps the number of significant coefficient digits parsed from a value
+    /// string, so an adversarial value can't build a giant BigInt (CPU/memory
+    /// exhaustion) before failing closed. No real XRPL value approaches this
+    /// (15 significant digits, at most ~96 written-out fraction/integer zeros);
+    /// anything larger is rejected.
+    private static let maxCoefficientDigits = 1024
+
     /// Guards `formatIssuedCurrencyValue` against a hostile `coin.decimals`
     /// (proto-relayed, so untrusted): negative would index out of bounds and an
     /// astronomically large value would try to allocate gigabytes of padding.
@@ -158,15 +165,18 @@ enum RippleIssuedCurrency {
         while fracPart.hasSuffix("0") { fracPart.removeLast() }
         let exponentString = group(4)
 
-        guard let digits = BigInt(intPart + fracPart) else { throw ParseError.invalidValue }
-        // A zero coefficient is zero at any scale — short-circuit before
-        // computing any power, so a huge exponent on a zero value neither
-        // allocates a giant BigInt nor gets rejected.
-        if digits == 0 { return 0 }
+        // Cap the coefficient length before building any BigInt, so an
+        // adversarial value (e.g. a million-digit coefficient) can't exhaust
+        // CPU/memory before the checks below fail it closed.
+        guard intPart.count + fracPart.count <= maxCoefficientDigits else {
+            throw ParseError.invalidValue
+        }
 
-        // Bound the exponent WITHOUT `abs` (which would trap on Int.min) and
-        // reject anything that doesn't fit in Int, so the shift arithmetic
-        // below can't overflow.
+        // Validate the exponent and shift BEFORE the zero short-circuit, so an
+        // out-of-range exponent is rejected even for a zero coefficient (e.g.
+        // "0e999999" fails closed rather than passing as zero). Bound WITHOUT
+        // `abs` (which would trap on Int.min) and reject an exponent that
+        // doesn't fit in Int, so the shift arithmetic can't overflow.
         let exponent: Int
         if exponentString.isEmpty {
             exponent = 0
@@ -184,6 +194,11 @@ enum RippleIssuedCurrency {
         guard shift >= -maxShiftMagnitude, shift <= maxShiftMagnitude else {
             throw ParseError.exponentOutOfRange
         }
+
+        guard let digits = BigInt(intPart + fracPart) else { throw ParseError.invalidValue }
+        // A zero coefficient is zero at any scale — short-circuit before
+        // computing any power (the exponent is already validated above).
+        if digits == 0 { return 0 }
 
         let magnitude: BigInt = shift >= 0
             ? digits * BigInt(10).power(shift)

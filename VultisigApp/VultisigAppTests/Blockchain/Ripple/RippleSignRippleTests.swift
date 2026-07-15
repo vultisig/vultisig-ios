@@ -306,6 +306,23 @@ final class RippleSignRippleTests: XCTestCase {
         XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
     }
 
+    /// An issued-currency value with an absurd exponent must fail closed (be
+    /// rejected as a mismatch) rather than driving an unbounded BigInt power.
+    func testIssuedCurrencyPaymentAbsurdExponentThrows() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "USD.\(issuer)", decimals: 15)
+        let rawJson = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1e999999"},"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: coin,
+            toAddress: Self.destination,
+            toAmount: BigInt("1500000000000000")
+        )
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
+    }
+
     // MARK: - Native path unchanged
 
     /// With no signRipple, RippleHelper still builds the native opPayment from
