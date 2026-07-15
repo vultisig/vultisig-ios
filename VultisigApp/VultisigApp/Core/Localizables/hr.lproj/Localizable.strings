@@ -1201,6 +1201,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swaps" = "Zamjene";
+"swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Odredište zamjene osiguranog sredstva nije valjana %1$@ adresa (%2$@).";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";
 "swapTradingHalted" = "Trgovanje ovom imovinom privremeno je zaustavljeno. Pokušajte ponovno kasnije.";

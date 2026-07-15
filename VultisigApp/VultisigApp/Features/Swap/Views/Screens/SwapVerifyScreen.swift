@@ -109,7 +109,7 @@ struct SwapVerifyScreen: View {
                 summaryTitle
                 summaryFromTo
 
-                if let providerName = currentTransaction.quote.displayName {
+                if let providerName = currentTransaction.providerDisplayName {
                     separator
                     getValueCell(
                         for: "provider",

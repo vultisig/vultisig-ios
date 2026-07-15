@@ -369,12 +369,10 @@ struct SwapCoinSelectionLogic {
     /// comparison can run off the MainActor without touching any SwiftData
     /// `@Model`. `balancesByUniqueId` maps each token's `uniqueId` to its vault
     /// fiat balance (resolved once per token via `Vault.coin(for:)` on the
-    /// MainActor); the `selected*` fields mirror the `selectedCoin` reads the
+    /// MainActor); `selectedCoinMeta` mirrors the `selectedCoin` read the
     /// selected-first reordering used to make inline.
     struct SortSnapshot: Sendable {
         let balancesByUniqueId: [String: Decimal]
-        let selectedChain: Chain
-        let selectedTicker: String
         let selectedCoinMeta: CoinMeta
     }
 
@@ -392,8 +390,6 @@ struct SwapCoinSelectionLogic {
         }
         return SortSnapshot(
             balancesByUniqueId: balances,
-            selectedChain: selectedCoin.chain,
-            selectedTicker: selectedCoin.ticker,
             selectedCoinMeta: selectedCoin.toCoinMeta()
         )
     }
@@ -419,11 +415,14 @@ struct SwapCoinSelectionLogic {
             return firstBalance > secondBalance
         }
 
-        // Show selected first
-        if snapshot.selectedChain == sortedCoins.first?.chain,
-           let index = sortedCoins.firstIndex(where: { $0.ticker.localizedCaseInsensitiveContains(snapshot.selectedTicker) }) {
+        // Show the selected coin first. Match on `uniqueId`, not a ticker
+        // substring: same-ticker THORChain secured variants (ETH-USDC, BASE-USDC,
+        // AVAX-USDC all ticker "USDC") would otherwise promote/duplicate the wrong
+        // row and hide a valid one.
+        let selectedMeta = snapshot.selectedCoinMeta
+        if let index = sortedCoins.firstIndex(where: { $0.uniqueId == selectedMeta.uniqueId }) {
             sortedCoins.remove(at: index)
-            sortedCoins = [snapshot.selectedCoinMeta] + sortedCoins
+            sortedCoins = [selectedMeta] + sortedCoins
         }
 
         return sortedCoins

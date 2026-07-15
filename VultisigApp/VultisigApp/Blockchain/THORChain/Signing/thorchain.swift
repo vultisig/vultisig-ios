@@ -333,20 +333,39 @@ enum THORChainHelper {
 
     /// Checks if a coin is a secured asset by matching its on-chain denom pattern
     static func isSecuredAsset(coin: Coin) -> Bool {
-        switch coin.chain {
+        isSecuredAsset(chain: coin.chain, isNativeToken: coin.isNativeToken, contractAddress: coin.contractAddress)
+    }
+
+    /// `CoinMeta` overload — the swap picker renders from `CoinMeta`, which
+    /// carries the same chain / isNativeToken / contractAddress the check reads.
+    static func isSecuredAsset(coinMeta: CoinMeta) -> Bool {
+        isSecuredAsset(chain: coinMeta.chain, isNativeToken: coinMeta.isNativeToken, contractAddress: coinMeta.contractAddress)
+    }
+
+    private static func isSecuredAsset(chain: Chain, isNativeToken: Bool, contractAddress: String) -> Bool {
+        switch chain {
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             break
         default:
             return false
         }
-        guard !coin.isNativeToken else { return false }
-        guard !coin.contractAddress.hasPrefix("x/") else { return false }
-        return coin.contractAddress.contains("-")
+        guard !isNativeToken else { return false }
+        guard !contractAddress.hasPrefix("x/") else { return false }
+        return contractAddress.contains("-")
     }
 
     /// Returns the L1 chain from the secured asset denom (e.g., "eth-usdc-0xa0b..." → "ETH")
     static func securedAssetChain(coin: Coin) -> String {
-        guard let chain = coin.contractAddress.split(separator: "-").first else {
+        securedAssetChain(contractAddress: coin.contractAddress)
+    }
+
+    /// `CoinMeta` overload used by the picker to label a secured row with its L1 chain.
+    static func securedAssetChain(coinMeta: CoinMeta) -> String {
+        securedAssetChain(contractAddress: coinMeta.contractAddress)
+    }
+
+    private static func securedAssetChain(contractAddress: String) -> String {
+        guard let chain = contractAddress.split(separator: "-").first else {
             return "THOR"
         }
         return String(chain).uppercased()

@@ -73,8 +73,24 @@ struct SwapCoinCell: View {
             .foregroundStyle(Theme.colors.textPrimary)
     }
 
+    @ViewBuilder
     var chain: some View {
-        Text(coin.chain.name)
+        // A secured asset's chain is THORChain, but that reads as misleading
+        // ("USDC · THORChain") — it settles on THORChain but represents an L1
+        // asset. Show the L1 chain + a "Secured" badge instead, so the row
+        // reads e.g. "USDC · ETH · Secured".
+        if THORChainHelper.isSecuredAsset(coinMeta: coin) {
+            HStack(spacing: 6) {
+                chainPill(text: THORChainHelper.securedAssetChain(coinMeta: coin))
+                securedBadge
+            }
+        } else {
+            chainPill(text: coin.chain.name)
+        }
+    }
+
+    func chainPill(text: String) -> some View {
+        Text(text)
             .foregroundStyle(Theme.colors.textSecondary)
             .font(Theme.fonts.caption10)
             .padding(.vertical, 8)
@@ -82,6 +98,18 @@ struct SwapCoinCell: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
                     .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+            )
+    }
+
+    var securedBadge: some View {
+        Text("swapSecuredAssetBadge".localized)
+            .foregroundStyle(Theme.colors.alertInfo)
+            .font(Theme.fonts.caption10)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Theme.colors.alertInfo, lineWidth: 1)
             )
     }
 

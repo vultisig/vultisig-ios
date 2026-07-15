@@ -131,13 +131,18 @@ struct AdvancedSwapSheet: View {
                     }
                 }
 
-                Separator()
-                AdvancedSwapMainRow(
-                    icon: "external-recipient",
-                    title: "useExternalRecipient".localized,
-                    value: externalRecipientValue
-                ) {
-                    updateSheet(.externalRecipient)
+                // A secured mint always deposits to the vault's own THORChain
+                // address (the SECURE+ memo target); an external recipient has no
+                // meaning and is ignored by the mint builder, so don't offer it.
+                if !vm.isSecuredMint {
+                    Separator()
+                    AdvancedSwapMainRow(
+                        icon: "external-recipient",
+                        title: "useExternalRecipient".localized,
+                        value: externalRecipientValue
+                    ) {
+                        updateSheet(.externalRecipient)
+                    }
                 }
             }
             .background(Theme.colors.bgSurface1)
