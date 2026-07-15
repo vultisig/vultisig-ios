@@ -22,6 +22,25 @@ private let limitSectionCornerRadius: CGFloat = 24
 /// them read as pills rather than as messages.
 private let limitNoticeCornerRadius: CGFloat = 12
 
+/// The limit form's editable fields, as focus identities.
+///
+/// A `.keyboard` toolbar is NOT scoped to the TextField it is attached to — it is
+/// merged across every view in the presented hierarchy. The flat layout renders
+/// the price card and the Sell row at the same time, so per-field accessories
+/// would collide and the Sell percentage buttons could surface while the *price*
+/// is being edited (tapping one would then mutate the sell amount behind the
+/// user's back). The parent therefore owns ONE keyboard toolbar and switches its
+/// content on the focused field, which this enum names.
+private enum LimitFocusField: Hashable {
+    /// The asset-terms target price (canonical `draft.targetPrice`).
+    case assetPrice
+    /// The USD-denominated target price — only rendered in USD mode.
+    case usdPrice
+    /// The Sell amount — the only balance-derived field, so the only one that
+    /// gets the percentage buttons.
+    case sellAmount
+}
+
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
 /// SegmentedControl is set to Limit. **Uniswap-style flat layout**: the price
 /// card ("When 1 <sell> is worth <price> <buy>" + Market/+1%/+5%/+10% pills) on
@@ -56,6 +75,8 @@ struct LimitSwapBodyView: View {
     /// Mirrors the market swap: reset to `true` on a manual amount edit so the
     /// shared `SwapPercentageButtons` clears its selected-pill highlight.
     @State private var showAllPercentageButtons = true
+    /// Drives the single keyboard accessory below — see `LimitFocusField`.
+    @FocusState private var focusedField: LimitFocusField?
 
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
@@ -70,6 +91,7 @@ struct LimitSwapBodyView: View {
                         vm: vm,
                         priceText: $priceText,
                         usdText: $usdText,
+                        focusedField: $focusedField,
                         onPickFromAsset: onPickFromAsset,
                         onPickToAsset: onPickToAsset
                     )
@@ -79,7 +101,7 @@ struct LimitSwapBodyView: View {
                         fromCoin: fromCoin,
                         toCoin: toCoin,
                         sourceAmountText: $sourceAmountText,
-                        showAllPercentageButtons: $showAllPercentageButtons,
+                        focusedField: $focusedField,
                         onPickFromAsset: onPickFromAsset,
                         onPickToAsset: onPickToAsset,
                         onSwapAssets: onSwapAssets
@@ -108,6 +130,32 @@ struct LimitSwapBodyView: View {
             .disabled(!vm.canPlaceOrder)
             .padding(.bottom, 16)
         }
+        #if os(iOS)
+        // ONE keyboard accessory for the whole form. `.keyboard` toolbars are not
+        // scoped to the field they're attached to, so sibling accessories on the
+        // (simultaneously rendered) price card and Sell row would merge — the fix
+        // is a single toolbar whose content follows `focusedField`. The decimal
+        // pad has no return key, so Done is unconditional: every field can be
+        // dismissed. The percentage buttons are gated on the Sell amount, the
+        // only balance-derived field.
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                if focusedField == .sellAmount {
+                    SwapPercentageButtons(
+                        show100: !fromCoin.isNativeToken,
+                        showAllPercentageButtons: $showAllPercentageButtons,
+                        onTap: handleSellPercentage
+                    )
+                }
+                Spacer()
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text("done".localized)
+                }
+            }
+        }
+        #endif
         .onLoad {
             // Reflect an already-populated draft in the editable fields on first
             // appear — otherwise they only sync via onChange and read empty
@@ -172,6 +220,18 @@ struct LimitSwapBodyView: View {
         }
     }
 
+    #if os(iOS)
+    /// Sets the Sell amount to `pct`% of the source balance. Assigns the field
+    /// text (its `onChange` funnels the value into `draft.sourceAmount`); the
+    /// balance math + formatting live in the VM (market parity). Owned by the
+    /// parent because the keyboard accessory that calls it is — and iOS-only for
+    /// the same reason: macOS has no keyboard accessory, so it has no caller.
+    private func handleSellPercentage(_ pct: Int) {
+        showAllPercentageButtons = false
+        sourceAmountText = vm.sourceAmountText(forPercentage: pct, of: fromCoin)
+    }
+    #endif
+
     private func formatPrice(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -215,37 +275,6 @@ struct LimitSwapBodyView: View {
     }
 }
 
-// MARK: - Keyboard accessory
-//
-// The limit form's decimal-pad fields (Sell amount, target price) have no
-// return key, so they need a Done accessory to dismiss — the same mechanism the
-// market swap uses (`SwapPercentageButtons` + `hideKeyboard()`). The Sell field
-// passes the shared percentage buttons as leading content; the price field
-// passes none (Done only).
-
-private extension View {
-    @ViewBuilder
-    func limitKeyboardAccessory<Leading: View>(
-        @ViewBuilder leading: @escaping () -> Leading
-    ) -> some View {
-        #if os(iOS)
-        toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                leading()
-                Spacer()
-                Button {
-                    hideKeyboard()
-                } label: {
-                    Text("done".localized)
-                }
-            }
-        }
-        #else
-        self
-        #endif
-    }
-}
-
 // MARK: - Limit price card (Uniswap-style, flat)
 //
 // Header: "When 1 [icon] <TICKER> is worth" (LimitExecuteWhenTitle) — the icon +
@@ -270,6 +299,8 @@ private struct LimitPriceCard: View {
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
     @Binding var usdText: String
+    /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
+    var focusedField: FocusState<LimitFocusField?>.Binding
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
 
@@ -321,9 +352,6 @@ private struct LimitPriceCard: View {
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
-        // Done-only keyboard accessory for the decimal-pad target-price field
-        // (no percentages — the target price isn't balance-derived).
-        .limitKeyboardAccessory { EmptyView() }
     }
 
     @ViewBuilder
@@ -375,6 +403,7 @@ private struct LimitPriceCard: View {
                 // height, so the caret/placeholder sit off the `$` baseline.
                 .fixedSize()
                 .lineLimit(1)
+                .focused(focusedField, equals: .usdPrice)
                 #if os(iOS)
                 .keyboardType(.decimalPad)
                 #endif
@@ -397,6 +426,7 @@ private struct LimitPriceCard: View {
             // baseline.
             .fixedSize()
             .lineLimit(1)
+            .focused(focusedField, equals: .assetPrice)
             #if os(iOS)
             .keyboardType(.decimalPad)
             #endif
@@ -624,7 +654,8 @@ private struct LimitAssetSwapForm: View {
     let fromCoin: Coin
     let toCoin: Coin
     @Binding var sourceAmountText: String
-    @Binding var showAllPercentageButtons: Bool
+    /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
+    var focusedField: FocusState<LimitFocusField?>.Binding
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
     let onSwapAssets: () -> Void
@@ -637,28 +668,20 @@ private struct LimitAssetSwapForm: View {
                     coin: fromCoin,
                     asset: vm.draft.fromAsset,
                     amountText: $sourceAmountText,
-                    amountIsEditable: true,
+                    editableFocus: .sellAmount,
+                    focusedField: focusedField,
                     computedAmount: nil,
                     usdPricePerUnit: Decimal(fromCoin.price),
                     onPickAsset: onPickFromAsset
                 )
-                // Reuse the market swap's percentage buttons + Done accessory on
-                // the Sell amount keyboard. Attached to the row (an ancestor of
-                // the field) so it scopes to the sell amount's editing session.
-                .limitKeyboardAccessory {
-                    SwapPercentageButtons(
-                        show100: !fromCoin.isNativeToken,
-                        showAllPercentageButtons: $showAllPercentageButtons,
-                        onTap: handleSellPercentage
-                    )
-                }
 
                 LimitAssetRow(
                     kind: .buy,
                     coin: toCoin,
                     asset: vm.draft.toAsset,
                     amountText: .constant(formattedBuyAmount),
-                    amountIsEditable: false,
+                    editableFocus: nil,
+                    focusedField: focusedField,
                     computedAmount: buyAmountDecimal,
                     usdPricePerUnit: vm.targetUsdPricePerUnit,
                     onPickAsset: onPickToAsset
@@ -670,14 +693,6 @@ private struct LimitAssetSwapForm: View {
                 onSwapAssets()
             }
         }
-    }
-
-    /// Sets the Sell amount to `pct`% of the source balance. Assigns the field
-    /// text (its `onChange` funnels the value into `draft.sourceAmount`); the
-    /// balance math + formatting live in the VM (market parity).
-    private func handleSellPercentage(_ pct: Int) {
-        showAllPercentageButtons = false
-        sourceAmountText = vm.sourceAmountText(forPercentage: pct, of: fromCoin)
     }
 
     /// Buy amount preview — the VM derives it from the signed `computeLim`
@@ -721,7 +736,13 @@ private struct LimitAssetRow: View {
     let coin: Coin
     let asset: LimitSwapAsset
     @Binding var amountText: String
-    let amountIsEditable: Bool
+    /// Non-nil when the amount is user-editable, and names the field's focus
+    /// identity — the two are inseparable, since an editable field is exactly
+    /// what the parent's keyboard accessory has to distinguish. `nil` renders the
+    /// amount as read-only text (the computed Buy side).
+    let editableFocus: LimitFocusField?
+    /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
+    var focusedField: FocusState<LimitFocusField?>.Binding
     let computedAmount: Decimal?
     let usdPricePerUnit: Decimal
     let onPickAsset: () -> Void
@@ -794,7 +815,7 @@ private struct LimitAssetRow: View {
                 Spacer(minLength: 12)
 
                 VStack(alignment: .trailing, spacing: 6) {
-                    if amountIsEditable {
+                    if let editableFocus {
                         TextField("0", text: $amountText.decimalOnly())
                             // `.plain` strips macOS's default bordered chrome (the
                             // dark bezel box); iOS is unaffected. Matches the market
@@ -804,6 +825,7 @@ private struct LimitAssetRow: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .multilineTextAlignment(.trailing)
                             .lineLimit(1)
+                            .focused(focusedField, equals: editableFocus)
                             #if os(iOS)
                             .keyboardType(.decimalPad)
                             #endif
