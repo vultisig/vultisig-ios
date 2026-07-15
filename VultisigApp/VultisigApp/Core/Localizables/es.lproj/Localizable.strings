@@ -118,6 +118,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponible:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Antes de compartir nuevamente";
+"beforeYouReshareSubtitle" = "Compartir nuevamente regenera las particiones de tu bóveda. Hay algunas cosas que debes saber primero.";
 "beforeYouStart" = "Antes de comenzar...";
 "belowExistentialDepositError" = "Este envío dejaría menos del saldo mínimo (depósito existencial) en tu cuenta, por lo que la red lo rechazaría. Reduce el importe o envía el saldo completo.";
 "biometricsFastSigning" = "Biometría Firma rápida";
@@ -596,6 +598,7 @@
 "joinKeysign" = "Unirse a Keysign";
 "joinKeysignCommitteeFailed" = "No se pudo unir al comité de keysign. Comprueba tu conexión e inténtalo de nuevo.";
 "joinReshare" = "Unirse al compartir";
+"joinReshareSubtitle" = "Recibiste una solicitud para compartir nuevamente desde otro dispositivo.";
 "joinSend" = "Unirse a Enviar";
 "joinSwap" = "Unirse al intercambio";
 "joinTransactionSigning" = "Unir firma de transacciones";
@@ -705,6 +708,8 @@
 "networkFee" = "Tarifa de red";
 "new" = "NUEVO";
 "newAddress" = "Nueva dirección";
+"newBackupsCreatedDescription" = "Cada dispositivo creará un nuevo respaldo .vult, diferente de los respaldos antiguos";
+"newBackupsCreatedTitle" = "Se crearán nuevos respaldos";
 "newChainDetected" = "Nueva cadena detectada";
 "newUpdateAvailable" = "Nueva actualización disponible";
 "newWalletNameDescription" = "Siempre puedes renombrar tu bóveda más tarde en la configuración";
@@ -766,6 +771,10 @@
 "of" = "de";
 "off" = "Desactivado";
 "ok" = "DE ACUERDO";
+"oldBackupsOnlyWorkTogetherDescription" = "Todos los archivos .vult existentes solo funcionan juntos. Mezclar particiones antiguas y nuevas no servirá para firmar transacciones.";
+"oldBackupsOnlyWorkTogetherTitle" = "Los respaldos antiguos solo funcionan juntos";
+"oldBackupsWontWork" = "Los respaldos antiguos no funcionarán";
+"oldBackupsWontWorkDescription" = "Los respaldos de configuraciones anteriores de la bóveda no se pueden usar. Solo son válidos los respaldos creados durante esta configuración.";
 "on" = "en";
 "OnboardingCard1Text1" = "Di hola a ";
 "OnboardingCard1Text2" = "comparticiones de bóveda, ";
@@ -940,13 +949,14 @@
 "requestServerVaultShareTooManyRequestsError" = "Ha solicitado una parte de bóveda demasiadas veces en un corto período de tiempo. Espere %@ minutos y vuelva a intentarlo.";
 "requestServerVaultShareUnknownError" = "No pudimos enviar una nueva copia de su bóveda compartida. Espere un par de minutos y vuelva a intentarlo.";
 "requestToBond" = "Solicitud de Vinculación";
+"requiredCosignersOnlineDescription" = "Deben participar suficientes dispositivos actuales para alcanzar el umbral de tu bóveda en la sesión de compartir nuevamente.";
+"requiredCosignersOnlineTitle" = "Los cofirmantes necesarios deben estar en línea";
 "resendNotification" = "Reenviar notificación";
 "resendNotificationIn" = "Reenviar notificación en %@";
 "reshare" = "Recompartir";
-"reshareLabelDisclaimer" = "Para todas las acciones de compartir nuevamente, siempre se requiere el umbral de dispositivos.";
-"reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";
 "reshareLabelTitle" = "Compartir nuevamente tu bóveda";
 "reshareVault" = "Recompartir caja fuerte con un nuevo comité";
+"reshareVaultSubtitle" = "Actualiza la configuración de tu bóveda. Agrega o elimina dispositivos, o actualiza las particiones.";
 "resharingLoaderTitle" = "Agregue dispositivos para incluir o deje dispositivos fuera para eliminar del Cofre";
 "resolvingRecipientName" = "Resolviendo nombre…";
 "restart" = "Por favor, reinicie la aplicación para aplicar los nuevos ajustes de idioma.";
@@ -1125,8 +1135,8 @@
 "stakedCoin" = "%@ en Staking";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "En Espera";
-"startFastVaultReshare" = "Iniciar compartir con Vultiserver";
 "startReshare" = "Iniciar compartir nuevamente";
+"startReshareSubtitle" = "Estás cambiando la configuración de dispositivos de esta bóveda.";
 "startScanning" = "Iniciar escaneo";
 "status" = "Estado";
 "storeBackupsSeparately" = "Almacena los respaldos por separado";
@@ -1359,6 +1369,7 @@
 "vaultNotImportedDescription" = "Por favor, importe la parte correcta.";
 "vaultNotImportedTitle" = "La bóveda no está cargada";
 "vaultPart" = "Parte del cofre";
+"vaultReshared" = "Bóveda compartida nuevamente";
 "vaultRestoreFailed" = "No se pudo restaurar el almacén";
 "vaults" = "Cajas Fuertes";
 "vaultSelected" = "Bóveda seleccionada";

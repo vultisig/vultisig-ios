@@ -118,6 +118,8 @@
 "balance" = "잔액";
 "balanceAvailable" = "사용 가능한 잔액:";
 "balanceInParentheses" = "( 잔액: %@ %@ )";
+"beforeYouReshare" = "재공유하기 전에";
+"beforeYouReshareSubtitle" = "재공유하면 볼트 셰어가 다시 생성됩니다. 먼저 알아두어야 할 사항이 있습니다.";
 "beforeYouStart" = "시작하기 전에...";
 "belowExistentialDepositError" = "이 전송은 계정에 최소 잔액(존재 보증금)보다 적은 금액을 남기게 되어 네트워크에서 거부됩니다. 금액을 줄이거나 전체 잔액을 보내세요.";
 "biometricsFastSigning" = "생체인식 빠른 서명";
@@ -594,6 +596,7 @@
 "joinKeysign" = "키사인 참여";
 "joinKeysignCommitteeFailed" = "Keysign 위원회 참여에 실패했습니다. 연결을 확인한 후 다시 시도하세요.";
 "joinReshare" = "재공유 참여";
+"joinReshareSubtitle" = "다른 기기에서 재공유 요청을 받았습니다.";
 "joinSend" = "전송 참여";
 "joinSwap" = "스왑 참여";
 "joinTransactionSigning" = "트랜잭션 서명 참여";
@@ -703,6 +706,8 @@
 "networkFee" = "네트워크 수수료";
 "new" = "새로운";
 "newAddress" = "새 주소";
+"newBackupsCreatedDescription" = "각 기기가 기존 백업과 다른 새 .vult 백업을 생성합니다";
+"newBackupsCreatedTitle" = "새 백업이 생성됩니다";
 "newChainDetected" = "새 체인 감지됨";
 "newUpdateAvailable" = "업데이트가 가능합니다.";
 "newWalletNameDescription" = "나중에 설정에서 볼트 이름을 변경할 수 있습니다";
@@ -764,6 +769,10 @@
 "of" = "/";
 "off" = "끄기";
 "ok" = "확인";
+"oldBackupsOnlyWorkTogetherDescription" = "기존 .vult 파일은 모두 함께만 작동합니다. 기존 셰어와 새 셰어를 혼용하면 거래에 서명할 수 없습니다.";
+"oldBackupsOnlyWorkTogetherTitle" = "기존 백업은 함께만 작동합니다";
+"oldBackupsWontWork" = "기존 백업은 사용할 수 없습니다";
+"oldBackupsWontWorkDescription" = "이전 볼트 설정의 백업은 사용할 수 없습니다. 이번 설정 중에 만든 백업만 유효합니다.";
 "on" = "켜짐";
 "OnboardingCard1Text1" = "새로운 ";
 "OnboardingCard1Text2" = "볼트 공유를 ";
@@ -938,13 +947,14 @@
 "requestServerVaultShareTooManyRequestsError" = "짧은 시간에 볼트 공유를 너무 많이 요청했습니다. %@ 분 후에 다시 시도하세요.";
 "requestServerVaultShareUnknownError" = "볼트 공유의 새 사본을 보낼 수 없습니다. 몇 분 후에 다시 시도하세요.";
 "requestToBond" = "본드 요청";
+"requiredCosignersOnlineDescription" = "볼트의 임계값을 충족할 만큼 충분한 현재 기기가 재공유 세션에 참여해야 합니다.";
+"requiredCosignersOnlineTitle" = "필요한 공동 서명자가 온라인 상태여야 합니다";
 "resendNotification" = "알림 재전송";
 "resendNotificationIn" = "%@ 후 알림 재전송";
 "reshare" = "재공유";
-"reshareLabelDisclaimer" = "모든 재공유 작업에는 항상 기기 임계값이 필요합니다.";
-"reshareLabelSubtitle" = "재공유는 볼트의 기기 수를 새로 고치고, 확장하거나 줄이는 데 사용할 수 있습니다.";
 "reshareLabelTitle" = "볼트 재공유";
 "reshareVault" = "새 기기로 볼트 재공유";
+"reshareVaultSubtitle" = "볼트 설정을 업데이트하세요. 기기를 추가 또는 제거하거나 셰어를 갱신하세요.";
 "resharingLoaderTitle" = "포함할 기기를 추가하거나 볼트에서 제거할 기기를 제외하세요";
 "resolvingRecipientName" = "이름 확인 중…";
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
@@ -1088,8 +1098,8 @@
 "stakedCoin" = "스테이킹됨 %@";
 "standardSolanaWallet" = "표준 Solana 지갑";
 "standby" = "대기 중";
-"startFastVaultReshare" = "Vultiserver로 재공유 시작";
 "startReshare" = "재공유 시작";
+"startReshareSubtitle" = "이 볼트의 기기 구성을 변경하고 있습니다.";
 "startScanning" = "스캔 시작";
 "status" = "상태";
 "storeBackupsSeparately" = "백업을 별도로 저장";
@@ -1320,6 +1330,7 @@
 "vaultNotImportedDescription" = "올바른 공유를 가져오세요.";
 "vaultNotImportedTitle" = "볼트가 로드되지 않음";
 "vaultPart" = "볼트 공유";
+"vaultReshared" = "볼트 재공유 완료";
 "vaultRestoreFailed" = "볼트 복구 실패";
 "vaults" = "볼트";
 "vaultSelected" = "볼트 선택됨";

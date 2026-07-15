@@ -118,6 +118,8 @@
 "balance" = "Guthaben";
 "balanceAvailable" = "Verfügbares Guthaben:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Bevor Sie erneut teilen";
+"beforeYouReshareSubtitle" = "Beim erneuten Teilen werden die Shares Ihres Tresors neu erzeugt. Vorher gibt es ein paar Dinge zu wissen.";
 "beforeYouStart" = "Bevor Sie beginnen...";
 "belowExistentialDepositError" = "Diese Überweisung würde weniger als das Mindestguthaben (Existenzminimum) auf Ihrem Konto belassen, sodass das Netzwerk sie ablehnen würde. Verringern Sie den Betrag oder senden Sie das gesamte Guthaben.";
 "biometricsFastSigning" = "Biometrie schnell unterschreiben";
@@ -596,6 +598,7 @@
 "joinKeysign" = "Keysign beitreten";
 "joinKeysignCommitteeFailed" = "Beitritt zum Keysign-Komitee fehlgeschlagen. Bitte überprüfe deine Verbindung und versuche es erneut.";
 "joinReshare" = "Erneutem Teilen beitreten";
+"joinReshareSubtitle" = "Sie haben eine Anfrage zum erneuten Teilen von einem anderen Gerät erhalten.";
 "joinSend" = "Senden beitreten";
 "joinSwap" = "Tausch beitreten";
 "joinTransactionSigning" = "Verbinden Sie die Transaktionsunterzeichnung";
@@ -705,6 +708,8 @@
 "networkFee" = "Netzwerkgebühr";
 "new" = "NEU";
 "newAddress" = "Neue Adresse";
+"newBackupsCreatedDescription" = "Jedes Gerät erstellt ein neues .vult-Backup, das sich von den alten Backups unterscheidet";
+"newBackupsCreatedTitle" = "Neue Backups werden erstellt";
 "newChainDetected" = "Neue Kette erkannt";
 "newUpdateAvailable" = "Neues Update verfügbar";
 "newWalletNameDescription" = "Sie können Ihren Tresor später in den Einstellungen umbenennen";
@@ -766,6 +771,10 @@
 "of" = "von";
 "off" = "Aus";
 "ok" = "OK";
+"oldBackupsOnlyWorkTogetherDescription" = "Alle vorhandenen .vult-Dateien funktionieren nur zusammen. Das Mischen alter und neuer Shares funktioniert nicht zum Signieren von Transaktionen.";
+"oldBackupsOnlyWorkTogetherTitle" = "Alte Backups funktionieren nur zusammen";
+"oldBackupsWontWork" = "Alte Backups funktionieren nicht mehr";
+"oldBackupsWontWorkDescription" = "Backups aus früheren Tresor-Einrichtungen können nicht verwendet werden. Nur Backups, die während dieser Einrichtung erstellt wurden, sind gültig.";
 "on" = "auf";
 "OnboardingCard1Text1" = "Sag Hallo zu ";
 "OnboardingCard1Text2" = "Tresoranteilen, ";
@@ -940,13 +949,14 @@
 "requestServerVaultShareTooManyRequestsError" = "Sie haben in kurzer Zeit einen Tresoranteil zu oft angefordert. Bitte warten Sie %@ Minuten und versuchen Sie es erneut.";
 "requestServerVaultShareUnknownError" = "Wir konnten keine neue Kopie Ihrer Tresorfreigabe senden. Bitte warten Sie ein paar Minuten und versuchen Sie es erneut.";
 "requestToBond" = "Bindungsanfrage";
+"requiredCosignersOnlineDescription" = "Genügend aktuelle Geräte, um den Schwellenwert Ihres Tresors zu erreichen, müssen an der Sitzung zum erneuten Teilen teilnehmen.";
+"requiredCosignersOnlineTitle" = "Erforderliche Mitunterzeichner müssen online sein";
 "resendNotification" = "Benachrichtigung erneut senden";
 "resendNotificationIn" = "Benachrichtigung erneut senden in %@";
 "reshare" = "Erneut teilen";
-"reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer der Schwellenwert der Geräte erforderlich.";
-"reshareLabelSubtitle" = "Das erneute Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelTitle" = "Teile deinen Tresor erneut";
 "reshareVault" = "Tresor mit neuen Geräten teilen";
+"reshareVaultSubtitle" = "Aktualisieren Sie Ihre Tresor-Einrichtung. Fügen Sie Geräte hinzu, entfernen Sie Geräte oder erneuern Sie die Shares.";
 "resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
 "resolvingRecipientName" = "Name wird aufgelöst…";
 "restart" = "Bitte starte die App neu, um die neuen Spracheinstellungen zu übernehmen.";
@@ -1125,8 +1135,8 @@
 "stakedCoin" = "%@ gestaked";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "Bereitschaft";
-"startFastVaultReshare" = "Erneutes Teilen mit Vultiserver starten";
 "startReshare" = "Erneutes Teilen starten";
+"startReshareSubtitle" = "Sie ändern die Geräte-Einrichtung dieses Tresors.";
 "startScanning" = "Scannen starten";
 "status" = "Status";
 "storeBackupsSeparately" = "Backups getrennt speichern";
@@ -1359,6 +1369,7 @@
 "vaultNotImportedDescription" = "Bitte importieren Sie den richtigen Anteil.";
 "vaultNotImportedTitle" = "Vault ist nicht geladen";
 "vaultPart" = "Tresorteil";
+"vaultReshared" = "Tresor erneut geteilt";
 "vaultRestoreFailed" = "Wiederherstellung des Tresors fehlgeschlagen";
 "vaults" = "Tresore";
 "vaultSelected" = "Vault ausgewählt";

@@ -55,6 +55,9 @@ struct ColorSystem: ColorSystemProtocol {
 
     var turquoise: Color { .init(hex: "33E6BF") }
 
+    // Devices-selection blue glow (onboarding + reshare)
+    var devicesSelectionGlow: Color { .init(hex: "084BFF") }
+
     // Chain-specific colors
     var tronRed: Color { .init(hex: "FF0013") }
 }

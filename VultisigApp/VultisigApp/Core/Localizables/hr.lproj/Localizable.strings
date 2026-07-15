@@ -118,6 +118,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Dostupan saldo:";
 "balanceInParentheses" = "( Stanje: %@ %@ )";
+"beforeYouReshare" = "Prije ponovnog dijeljenja";
+"beforeYouReshareSubtitle" = "Ponovno dijeljenje ponovno stvara udjele vašeg trezora. Prvo trebate znati nekoliko stvari.";
 "beforeYouStart" = "Prije nego započnete...";
 "belowExistentialDepositError" = "Ovaj prijenos ostavio bi manje od minimalnog stanja (egzistencijalni depozit) na vašem računu, pa bi ga mreža odbila. Smanjite iznos ili pošaljite cijeli saldo.";
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
@@ -596,6 +598,7 @@
 "joinKeysign" = "Pridružite se Keysign-u";
 "joinKeysignCommitteeFailed" = "Pridruživanje keysign odboru nije uspjelo. Provjeri vezu i pokušaj ponovno.";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
+"joinReshareSubtitle" = "Primili ste zahtjev za ponovno dijeljenje s drugog uređaja.";
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
@@ -705,6 +708,8 @@
 "networkFee" = "Mrežna naknada";
 "new" = "NOVO";
 "newAddress" = "Nova adresa";
+"newBackupsCreatedDescription" = "Svaki će uređaj stvoriti novu .vult sigurnosnu kopiju koja se razlikuje od starih sigurnosnih kopija";
+"newBackupsCreatedTitle" = "Stvorit će se nove sigurnosne kopije";
 "newChainDetected" = "Otkriven novi lanac";
 "newUpdateAvailable" = "Dostupno novo ažuriranje";
 "newWalletNameDescription" = "Možete preimenovati svoj trezor kasnije u postavkama";
@@ -766,6 +771,10 @@
 "of" = "od";
 "off" = "Isključeno";
 "ok" = "U redu";
+"oldBackupsOnlyWorkTogetherDescription" = "Sve postojeće .vult datoteke rade samo zajedno. Miješanje starih i novih udjela neće raditi za potpisivanje transakcija.";
+"oldBackupsOnlyWorkTogetherTitle" = "Stare sigurnosne kopije rade samo zajedno";
+"oldBackupsWontWork" = "Stare sigurnosne kopije neće raditi";
+"oldBackupsWontWorkDescription" = "Sigurnosne kopije iz prethodnih postavki trezora ne mogu se koristiti. Valjane su samo sigurnosne kopije izrađene tijekom ovih postavki.";
 "on" = "na";
 "OnboardingCard1Text1" = "Pozdravite ";
 "OnboardingCard1Text2" = "dijelove trezora, ";
@@ -940,13 +949,14 @@
 "requestServerVaultShareTooManyRequestsError" = "U kratkom vremenu ste previše puta zatražili udio u trezoru. Pričekajte %@ minuta i pokušajte ponovo.";
 "requestServerVaultShareUnknownError" = "Nismo mogli poslati novu kopiju vašeg udjela u trezoru. Pričekajte nekoliko minuta i pokušajte ponovo.";
 "requestToBond" = "Zahtjev za Vezivanje";
+"requiredCosignersOnlineDescription" = "Dovoljno trenutačnih uređaja za dostizanje praga vašeg trezora mora sudjelovati u sesiji ponovnog dijeljenja.";
+"requiredCosignersOnlineTitle" = "Potrebni supotpisnici moraju biti na mreži";
 "resendNotification" = "Ponovo pošalji obavijest";
 "resendNotificationIn" = "Ponovo pošalji obavijest za %@";
 "reshare" = "Ponovno podijeli";
-"reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
-"reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareVault" = "Ponovno podijelite sef s novim odborom";
+"reshareVaultSubtitle" = "Ažurirajte postavke svog trezora. Dodajte ili uklonite uređaje ili osvježite udjele.";
 "resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
 "resolvingRecipientName" = "Razrješavanje naziva…";
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
@@ -1125,8 +1135,8 @@
 "stakedCoin" = "%@ Uloženo";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "U Pripravnosti";
-"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "startReshare" = "Započni ponovno dijeljenje";
+"startReshareSubtitle" = "Mijenjate postavke uređaja ovog trezora.";
 "startScanning" = "Započni skeniranje";
 "status" = "Status";
 "storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";
@@ -1359,6 +1369,7 @@
 "vaultNotImportedDescription" = "Molimo uvezite ispravan udio.";
 "vaultNotImportedTitle" = "Spremište nije učitano";
 "vaultPart" = "Dio trezora";
+"vaultReshared" = "Trezor ponovno podijeljen";
 "vaultRestoreFailed" = "Neuspješno vraćanje spremišta";
 "vaults" = "Sefovi";
 "vaultSelected" = "Odabrani trezor";

@@ -1,0 +1,8 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="file-tree">
+<path d="M14.4993 8.99984H11.4993C11.2233 8.99984 10.9993 8.77584 10.9993 8.49984V4.49984C10.9993 4.22384 11.2233 3.99984 11.4993 3.99984H12.9993L14.9993 5.99984V8.49984C14.9993 8.77584 14.7753 8.99984 14.4993 8.99984Z" fill="#FFC25C" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14.4993 17.0003H11.4993C11.2233 17.0003 10.9993 16.7763 10.9993 16.5003V12.5003C10.9993 12.2243 11.2233 12.0003 11.4993 12.0003H12.9993L14.9993 14.0003V16.5003C14.9993 16.7763 14.7753 17.0003 14.4993 17.0003Z" fill="#FFC25C" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 2.99967V6.99967H8" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5 7.00033V13.0003C5 14.1053 5.895 15.0003 7 15.0003H8" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

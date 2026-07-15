@@ -118,6 +118,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponível:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Antes de compartilhar novamente";
+"beforeYouReshareSubtitle" = "Compartilhar novamente regenera as partes do seu cofre. Há algumas coisas que você precisa saber primeiro.";
 "beforeYouStart" = "Antes de começar...";
 "belowExistentialDepositError" = "Este envio deixaria menos do que o saldo mínimo (depósito existencial) na sua conta, então a rede o rejeitaria. Reduza o valor ou envie o saldo completo.";
 "biometricsFastSigning" = "Biometria assinatura rápida";
@@ -596,6 +598,7 @@
 "joinKeysign" = "Participar do Keysign";
 "joinKeysignCommitteeFailed" = "Não foi possível entrar no comité de keysign. Verifica a tua ligação e tenta novamente.";
 "joinReshare" = "Juntar-se ao compartilhamento";
+"joinReshareSubtitle" = "Você recebeu uma solicitação para compartilhar novamente de outro dispositivo.";
 "joinSend" = "Juntar-se ao Envio";
 "joinSwap" = "Participar da troca";
 "joinTransactionSigning" = "Junte -se à assinatura da transação";
@@ -705,6 +708,8 @@
 "networkFee" = "Taxa de rede";
 "new" = "NOVO";
 "newAddress" = "Novo Endereço";
+"newBackupsCreatedDescription" = "Cada dispositivo criará um novo backup .vult, diferente dos backups antigos";
+"newBackupsCreatedTitle" = "Novos backups serão criados";
 "newChainDetected" = "Nova cadeia detectada";
 "newUpdateAvailable" = "Nova atualização disponível";
 "newWalletNameDescription" = "Você pode renomear seu cofre mais tarde nas configurações";
@@ -766,6 +771,10 @@
 "of" = "de";
 "off" = "Desligado";
 "ok" = "OK";
+"oldBackupsOnlyWorkTogetherDescription" = "Todos os arquivos .vult existentes só funcionam juntos. Misturar partes antigas e novas não funcionará para assinar transações.";
+"oldBackupsOnlyWorkTogetherTitle" = "Os backups antigos só funcionam juntos";
+"oldBackupsWontWork" = "Backups antigos não funcionarão";
+"oldBackupsWontWorkDescription" = "Backups de configurações anteriores do cofre não podem ser usados. Apenas os backups criados durante esta configuração são válidos.";
 "on" = "na";
 "OnboardingCard1Text1" = "Diga olá para ";
 "OnboardingCard1Text2" = "partes do cofre, ";
@@ -940,13 +949,14 @@
 "requestServerVaultShareTooManyRequestsError" = "Você solicitou um compartilhamento do Vault muitas vezes em um curto período de tempo. Por favor, espere %@ minutos e tente novamente.";
 "requestServerVaultShareUnknownError" = "Não poderíamos enviar uma nova cópia do seu compartilhamento do Vault. Aguarde alguns minutos e tente novamente.";
 "requestToBond" = "Solicitação de Vínculo";
+"requiredCosignersOnlineDescription" = "Dispositivos atuais suficientes para atingir o limite do seu cofre devem participar da sessão de compartilhamento.";
+"requiredCosignersOnlineTitle" = "Os cossignatários necessários devem estar online";
 "resendNotification" = "Reenviar notificação";
 "resendNotificationIn" = "Reenviar notificação em %@";
 "reshare" = "Recompartilhar";
-"reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
-"reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareVault" = "Recompartilhar cofre com um novo comitê";
+"reshareVaultSubtitle" = "Atualize a configuração do seu cofre. Adicione ou remova dispositivos, ou renove as partes.";
 "resharingLoaderTitle" = "Adicione dispositivos para incluir ou deixe de fora para remover do Cofre";
 "resolvingRecipientName" = "Resolvendo nome…";
 "restart" = "Por favor, reinicie o aplicativo para aplicar as novas configurações de idioma.";
@@ -1125,8 +1135,8 @@
 "stakedCoin" = "%@ em Stake";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "Em Espera";
-"startFastVaultReshare" = "Iniciar compartilhamento com Vultiserver";
 "startReshare" = "Iniciar compartilhamento novamente";
+"startReshareSubtitle" = "Você está alterando a configuração de dispositivos deste cofre.";
 "startScanning" = "Iniciar escaneamento";
 "status" = "Status";
 "storeBackupsSeparately" = "Armazene backups separadamente";
@@ -1359,6 +1369,7 @@
 "vaultNotImportedDescription" = "Por favor, importe a parte correta.";
 "vaultNotImportedTitle" = "O cofre não está carregado";
 "vaultPart" = "Parte do cofre";
+"vaultReshared" = "Cofre compartilhado novamente";
 "vaultRestoreFailed" = "Falha ao restaurar o cofre";
 "vaults" = "Cofres";
 "vaultSelected" = "Vault selecionado";
