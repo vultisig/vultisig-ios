@@ -118,6 +118,8 @@
 "balance" = "Saldo";
 "balanceAvailable" = "Saldo disponibile:";
 "balanceInParentheses" = "( Saldo: %@ %@ )";
+"beforeYouReshare" = "Prima di ricondividere";
+"beforeYouReshareSubtitle" = "La ricondivisione rigenera le quote del tuo vault. Ci sono alcune cose da sapere prima.";
 "beforeYouStart" = "Prima di iniziare...";
 "belowExistentialDepositError" = "Questo invio lascerebbe sul tuo conto un saldo inferiore al minimo (deposito esistenziale), quindi la rete lo rifiuterebbe. Riduci l'importo o invia l'intero saldo.";
 "biometricsFastSigning" = "Biometria Firma rapida";
@@ -596,6 +598,7 @@
 "joinKeysign" = "Partecipa a Keysign";
 "joinKeysignCommitteeFailed" = "Impossibile unirsi al comitato di keysign. Controlla la connessione e riprova.";
 "joinReshare" = "Unisciti alla ricondivisione";
+"joinReshareSubtitle" = "Hai ricevuto una richiesta di ricondivisione da un altro dispositivo.";
 "joinSend" = "Unisciti a Invia";
 "joinSwap" = "Partecipa a Swap";
 "joinTransactionSigning" = "Unisciti alla firma delle transazioni";
@@ -742,6 +745,8 @@
 "networkFee" = "Commissione di rete";
 "new" = "NUOVO";
 "newAddress" = "Nuovo indirizzo";
+"newBackupsCreatedDescription" = "Ogni dispositivo creerà un nuovo backup .vult, diverso dai vecchi backup";
+"newBackupsCreatedTitle" = "Verranno creati nuovi backup";
 "newChainDetected" = "Nuova catena rilevata";
 "newUpdateAvailable" = "Nuovo aggiornamento disponibile";
 "newWalletNameDescription" = "Puoi sempre rinominare il tuo vault più tardi nelle impostazioni";
@@ -803,6 +808,10 @@
 "of" = "Di";
 "off" = "Disattivato";
 "ok" = "OK";
+"oldBackupsOnlyWorkTogetherDescription" = "Tutti i file .vult esistenti funzionano solo insieme. Combinare quote vecchie e nuove non funzionerà per firmare le transazioni.";
+"oldBackupsOnlyWorkTogetherTitle" = "I vecchi backup funzionano solo insieme";
+"oldBackupsWontWork" = "I vecchi backup non funzioneranno";
+"oldBackupsWontWorkDescription" = "I backup delle configurazioni precedenti del vault non possono essere utilizzati. Sono validi solo i backup creati durante questa configurazione.";
 "on" = "su";
 "OnboardingCard1Text1" = "Dì ciao a ";
 "OnboardingCard1Text2" = "quote della cassaforte, ";
@@ -846,6 +855,7 @@
 "passwordIsRequired" = "È richiesta la password.";
 "passwordMismatch" = "Le password non corrispondono";
 "paste" = "Incolla";
+"peerDiscoveryInfoDescription" = "Sull'altro dispositivo, apri l'app e tocca \"Scansiona QR\" per connetterlo.";
 "peerDiscoveryInfoTitle" = "Scansiona il QR sugli altri dispositivi";
 "peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";
 "pendingRewards" = "Premio in sospeso";
@@ -976,13 +986,14 @@
 "requestServerVaultShareTooManyRequestsError" = "Hai richiesto una parte del vault troppe volte in un breve periodo di tempo. Per favore attendi %@ minuti e riprova.";
 "requestServerVaultShareUnknownError" = "Non potremmo inviare una nuova copia della tua condivisione Vault. Per favore attendi un paio di minuti e riprova.";
 "requestToBond" = "Richiesta di Vincolo";
+"requiredCosignersOnlineDescription" = "Alla sessione di ricondivisione deve partecipare un numero di dispositivi attuali sufficiente a raggiungere la soglia del vault.";
+"requiredCosignersOnlineTitle" = "I cofirmatari necessari devono essere online";
 "resendNotification" = "Rinvia notifica";
 "resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Ricondividi";
-"reshareLabelDisclaimer" = "Per tutte le azioni di ricondivisione è sempre richiesto il numero minimo di dispositivi.";
-"reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";
 "reshareLabelTitle" = "Condividi nuovamente il tuo vault";
 "reshareVault" = "Ricondividi la cassaforte con un nuovo comitato";
+"reshareVaultSubtitle" = "Aggiorna la configurazione del tuo vault. Aggiungi o rimuovi dispositivi, oppure aggiorna le quote.";
 "resharingLoaderTitle" = "Aggiungi dispositivi per includerli o escludili per rimuoverli dalla Cassaforte";
 "resolvingRecipientName" = "Risoluzione del nome…";
 "restart" = "Si prega di riavviare l'app per applicare le nuove impostazioni della lingua.";
@@ -1161,8 +1172,8 @@
 "stakedCoin" = "%@ in Staking";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "In Standby";
-"startFastVaultReshare" = "Inizia la ricondivisione con Vultiserver";
 "startReshare" = "Inizia la ricondivisione";
+"startReshareSubtitle" = "Stai modificando la configurazione dei dispositivi di questo vault.";
 "startScanning" = "Avvia scansione";
 "status" = "Stato";
 "storeBackupsSeparately" = "Conserva i backup separatamente";
@@ -1239,6 +1250,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Percorso di scambio non disponibile";
 "swaps" = "Scambi";
+"swapSecuredAssetBadge" = "Garantito";
 "swapSecuredAssetInvalidDestination" = "La destinazione dello swap dell'asset protetto non è un indirizzo %1$@ valido (%2$@).";
 "swapTrackingLink" = "Link di tracciamento dello scambio";
 "swapTradingHalted" = "La negoziazione di questo asset è temporaneamente sospesa. Riprova più tardi.";
@@ -1396,6 +1408,7 @@
 "vaultNotImportedDescription" = "Si prega di importare la condivisione corretta.";
 "vaultNotImportedTitle" = "Il vault non è caricato";
 "vaultPart" = "Parte della cassaforte";
+"vaultReshared" = "Vault ricondiviso";
 "vaultRestoreFailed" = "Ripristino del caveau non riuscito";
 "vaults" = "Cassaforti";
 "vaultSelected" = "Vault selezionato";

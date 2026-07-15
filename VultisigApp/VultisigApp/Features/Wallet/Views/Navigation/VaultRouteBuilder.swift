@@ -90,7 +90,7 @@ struct VaultRouteBuilder {
 
     @ViewBuilder
     func buildReshareScreen(vault: Vault) -> some View {
-        ReshareView(vault: vault)
+        ReshareScreen(vault: vault)
     }
 
     @ViewBuilder

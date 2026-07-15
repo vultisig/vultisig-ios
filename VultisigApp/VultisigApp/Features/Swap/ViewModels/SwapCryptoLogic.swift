@@ -205,6 +205,58 @@ enum SwapCryptoLogic {
         }
     }
 
+    // MARK: - Same-underlying secured mint
+
+    /// True when the user holds an L1 asset and selected *its own* secured form
+    /// (e.g. native BTC → secured BTC, or ERC20 USDC → secured USDC). Such a pair
+    /// has no meaningful pool swap — it should mint via SECURE+ instead. The
+    /// secured `toCoin`'s underlying is `<L1 chain>.<symbol>` (from its dash
+    /// denom); `fromCoin.swapAsset` is the same `CHAIN.SYMBOL` form for the L1
+    /// asset. `securedAssetSymbol` uppercases the hex contract while `swapAsset`
+    /// preserves case, so the compare is case-insensitive.
+    static func isSameUnderlyingSecuredMint(fromCoin: Coin, toCoin: Coin) -> Bool {
+        guard THORChainHelper.isSecuredAsset(coin: toCoin) else { return false }
+        let underlying = "\(THORChainHelper.securedAssetChain(coin: toCoin)).\(THORChainHelper.securedAssetSymbol(coin: toCoin))"
+        return underlying.caseInsensitiveCompare(fromCoin.swapAsset) == .orderedSame
+    }
+
+    /// Synthetic display-only ~1:1 "Mint (SECURE+)" quote for the same-underlying
+    /// case. The pool-quote fetch is skipped, so this fills the quote panel:
+    /// `expectedAmountOut` is `fromAmount` in THORChain base units (so
+    /// `toAmountDecimal ≈ fromAmount`), with no fees/slippage/memo. It NEVER feeds
+    /// signing — the confirm path builds the real SECURE+ deposit payload; the
+    /// minted amount settles on-chain at the current share ratio (~1:1 for these
+    /// non-yield wrappers).
+    static func securedMintQuote(fromAmount: Decimal, toCoin: Coin) -> SwapQuote {
+        let expectedBase = fromAmount * toCoin.thorswapMultiplier
+        let expectedAmountOut = NSDecimalNumber(decimal: expectedBase)
+            .rounding(accordingToBehavior: NSDecimalNumberHandler(
+                roundingMode: .down, scale: 0,
+                raiseOnExactness: false, raiseOnOverflow: false,
+                raiseOnUnderflow: false, raiseOnDivideByZero: false
+            ))
+            .stringValue
+        return .thorchain(ThorchainSwapQuote(
+            dustThreshold: nil,
+            expectedAmountOut: expectedAmountOut,
+            expiry: 0,
+            fees: Fees(affiliate: "0", asset: "", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
+            inboundAddress: nil,
+            inboundConfirmationBlocks: nil,
+            inboundConfirmationSeconds: nil,
+            memo: "",
+            notes: "",
+            outboundDelayBlocks: 0,
+            outboundDelaySeconds: 0,
+            recommendedMinAmountIn: "0",
+            slippageBps: nil,
+            totalSwapSeconds: nil,
+            warning: "",
+            router: nil,
+            maxStreamingQuantity: nil
+        ))
+    }
+
     // MARK: - Fee coin
 
     /// Native coin that pays for gas. For ERC20 sources we look up the EVM-native

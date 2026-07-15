@@ -165,6 +165,17 @@ struct DefaultSwapInteractor: SwapInteractor {
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
+        // Same-underlying secured selection: mint via a SECURE+ deposit instead of
+        // a pool swap. The synthetic quote never feeds signing — build the real
+        // SECURE+ deposit payload (shared with the Function-Call verify path).
+        if transaction.mode == .securedMint {
+            return try await ThorchainRouterDepositBuilder.buildSecuredMintPayload(
+                fromCoin: transaction.fromCoin,
+                amount: transaction.fromAmount,
+                vault: vault
+            )
+        }
+
         // Safety net (HIGH tier): before building anything signable, verify the
         // finalised quote's on-chain output target actually equals the intended
         // external recipient. No-op when no external recipient is set. A mismatch

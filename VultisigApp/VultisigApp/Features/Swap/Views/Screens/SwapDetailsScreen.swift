@@ -19,7 +19,7 @@ struct SwapDetailsScreen: View {
     /// inside `LimitSwapModeBody` (which owns its own form view model and
     /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
     /// renders the existing Market layout pixel-identical to pre-feature.
-    @State private var selectedSwapMode: SwapMode = .market
+    @State private var selectedSwapMode: SwapFormMode = .market
     @State private var showAdvancedLockedSheet = false
 
     private let tierService = VultTierService()
@@ -498,11 +498,11 @@ extension SwapDetailsScreen {
             selection: $selectedSwapMode,
             items: [
                 SegmentedControlItem(
-                    value: SwapMode.market,
+                    value: SwapFormMode.market,
                     title: "swap.tab.market".localized
                 ),
                 SegmentedControlItem(
-                    value: SwapMode.limit,
+                    value: SwapFormMode.limit,
                     title: "swap.tab.limit".localized,
                     isEnabled: canCurrentPairUseLimitSwap
                 )

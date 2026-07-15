@@ -118,6 +118,8 @@
 "balance" = "余额";
 "balanceAvailable" = "可用余额：";
 "balanceInParentheses" = "( 余额: %@ %@ )";
+"beforeYouReshare" = "重新共享之前";
+"beforeYouReshareSubtitle" = "重新共享会重新生成您的保险库份额。请先了解以下事项。";
 "beforeYouStart" = "开始之前...";
 "belowExistentialDepositError" = "此次转账后您账户中的余额将低于最低留存额（生存性存款），网络将拒绝该交易。请减少金额或转出全部余额。";
 "biometricsFastSigning" = "生物识别快速签名";
@@ -596,6 +598,7 @@
 "joinKeysign" = "加入密钥签名";
 "joinKeysignCommitteeFailed" = "加入 keysign 委员会失败。请检查网络连接后重试。";
 "joinReshare" = "加入重新共享";
+"joinReshareSubtitle" = "您收到了来自其他设备的重新共享请求。";
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
@@ -742,6 +745,8 @@
 "networkFee" = "网络费用";
 "new" = "新";
 "newAddress" = "新地址";
+"newBackupsCreatedDescription" = "每台设备都会创建一个新的 .vult 备份，与旧备份不同";
+"newBackupsCreatedTitle" = "将创建新备份";
 "newChainDetected" = "检测到新链";
 "newUpdateAvailable" = "有可用更新";
 "newWalletNameDescription" = "您以后可以随时在设置中重命名保险库";
@@ -803,6 +808,10 @@
 "of" = "的";
 "off" = "关闭";
 "ok" = "确定";
+"oldBackupsOnlyWorkTogetherDescription" = "所有现有的 .vult 文件只能一起使用。混用新旧份额将无法签署交易。";
+"oldBackupsOnlyWorkTogetherTitle" = "旧备份只能一起使用";
+"oldBackupsWontWork" = "旧备份将无法使用";
+"oldBackupsWontWorkDescription" = "先前保险库设置的备份无法使用。只有在本次设置期间创建的备份才有效。";
 "on" = "在";
 "OnboardingCard1Text1" = "向";
 "OnboardingCard1Text2" = "保险库份额问好，";
@@ -846,6 +855,7 @@
 "passwordIsRequired" = "密码是必需的";
 "passwordMismatch" = "密码不匹配";
 "paste" = "粘贴";
+"peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
 "peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
 "pendingRewards" = "待领取奖励";
@@ -976,13 +986,14 @@
 "requestServerVaultShareTooManyRequestsError" = "您在短时间内请求保险库份额的次数过多。请等待 %@ 分钟后重试";
 "requestServerVaultShareUnknownError" = "我们无法发送新的保险库份额副本。请等待几分钟后重试";
 "requestToBond" = "请求绑定";
+"requiredCosignersOnlineDescription" = "必须有足够的现有设备参与重新共享会话，以达到保险库的阈值。";
+"requiredCosignersOnlineTitle" = "所需的共同签名者必须在线";
 "resendNotification" = "重新发送通知";
 "resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";
-"reshareLabelDisclaimer" = "对于所有重新共享操作，始终需要达到设备阈值";
-"reshareLabelSubtitle" = "重新共享可用于刷新、扩展或减少保险库中的设备数量";
 "reshareLabelTitle" = "重新共享您的保险库";
 "reshareVault" = "使用新设备重新共享保险库";
+"reshareVaultSubtitle" = "更新您的保险库设置。添加或移除设备，或刷新份额。";
 "resharingLoaderTitle" = "添加要包含的设备或排除要从保险库中删除的设备";
 "resolvingRecipientName" = "正在解析名称…";
 "restart" = "请重新启动应用程序以应用新的语言设置";
@@ -1161,8 +1172,8 @@
 "stakedCoin" = "已质押 %@";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "待机";
-"startFastVaultReshare" = "使用 Vultiserver 开始重新共享";
 "startReshare" = "开始重新共享";
+"startReshareSubtitle" = "您正在更改此保险库的设备设置。";
 "startScanning" = "开始扫描";
 "status" = "状态";
 "storeBackupsSeparately" = "分别存储备份";
@@ -1239,6 +1250,7 @@
 "swapRouteEta" = "~%ld秒";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
+"swapSecuredAssetBadge" = "担保";
 "swapSecuredAssetInvalidDestination" = "受保护资产兑换的目标地址不是有效的 %1$@ 地址（%2$@）。";
 "swapTrackingLink" = "交换跟踪链接";
 "swapTradingHalted" = "该资产的交易已暂时停止，请稍后再试。";
@@ -1396,6 +1408,7 @@
 "vaultNotImportedDescription" = "请导入正确的份额。";
 "vaultNotImportedTitle" = "保险库未加载";
 "vaultPart" = "保险库份额";
+"vaultReshared" = "保险库已重新共享";
 "vaultRestoreFailed" = "恢复保险库失败";
 "vaults" = "保险库";
 "vaultSelected" = "已选择保险库";

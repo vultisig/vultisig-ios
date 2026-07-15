@@ -139,20 +139,7 @@ final class FunctionCallWithdrawSecuredAsset {
     }
 
     private func persistSecuredAsset(balance: CosmosBalance, chain: Chain) throws -> Coin? {
-        let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
-        let ticker = info.ticker.uppercased()
-        let localAsset = TokensStore.TokenSelectionAssets.first {
-            $0.ticker.caseInsensitiveCompare(ticker) == .orderedSame
-        }
-        let coinMeta = CoinMeta(
-            chain: chain,
-            ticker: ticker,
-            logo: localAsset?.logo ?? info.logo,
-            decimals: info.decimals,
-            priceProviderId: localAsset?.priceProviderId ?? "",
-            contractAddress: balance.denom,
-            isNativeToken: false
-        )
+        let coinMeta = SecuredAssetMapper.coinMeta(forDenom: balance.denom, chain: chain)
         return try CoinService.addIfNeeded(asset: coinMeta, to: vault, priceProviderId: coinMeta.priceProviderId)
     }
 

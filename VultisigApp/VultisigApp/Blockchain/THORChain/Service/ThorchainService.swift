@@ -29,6 +29,7 @@ class ThorchainService: ThorchainSwapProvider {
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
+    private var cacheSecuredAssets = ThreadSafeDictionary<String, (data: [ThorchainSecuredAsset], timestamp: Date)>()
     private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
 
     init(
@@ -610,6 +611,31 @@ extension ThorchainService {
             cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
 
             return availablePools
+        }
+    }
+
+    /// Fetch the canonical THORChain secured-asset universe from
+    /// `/thorchain/securedassets`. Each entry is the uppercase dash-notation
+    /// denom (e.g. `ETH-USDC-0X…`) plus its `supply`/`depth`. Cached for 5
+    /// minutes and retried like `fetchLPPools`. This is the source of truth for
+    /// the discovery catalog — every pooled/securable asset has a secured form.
+    func fetchSecuredAssets() async throws -> [ThorchainSecuredAsset] {
+        let cacheKey = "secured_assets"
+        let cacheExpirationMinutes = 5.0
+
+        if let cached = cacheSecuredAssets.get(cacheKey),
+           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
+            return cached.data
+        }
+
+        return try await withRetry(maxAttempts: 3) {
+            let response = try await httpClient.request(
+                mainnet(.securedAssets),
+                responseType: [ThorchainSecuredAsset].self
+            )
+            let assets = response.data
+            cacheSecuredAssets.set(cacheKey, (data: assets, timestamp: Date()))
+            return assets
         }
     }
 
