@@ -57,6 +57,19 @@ final class LimitOrderStatusDisplayTests: XCTestCase {
         XCTAssertNil(display.detail)
     }
 
+    /// The stale-snapshot trap at the display layer: an order last SEEN 40%
+    /// filled that then completed must not read "Successful · 40% filled".
+    func testCompletedOrderWithAStalePartialSnapshotShowsNoProgressLine() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .completed,
+            details: makeDetails(status: .filled, deposit: "1000", filledIn: "400", filledOut: "50"),
+            errorMessage: nil
+        )
+
+        XCTAssertEqual(display.kind, .successful)
+        XCTAssertNil(display.detail, "A completed order isn't 40% filled — the last snapshot is just stale")
+    }
+
     /// The two-leg case: an order that expired 40% filled. The status says it
     /// closed; the detail says how much got through.
     func testTerminalAfterPartialFillKeepsTheProgressDetail() {

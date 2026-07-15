@@ -179,6 +179,50 @@ final class LimitOrderDetailsTests: XCTestCase {
         XCTAssertFalse(details.wasRefunded, "Nothing was left over to refund")
     }
 
+    // MARK: - The stale-snapshot trap
+
+    /// The split we store is the last RESTING observation, taken up to a poll
+    /// interval before the order closed. An order seen 40% filled that then
+    /// COMPLETES leaves that 40% behind as its final snapshot.
+    ///
+    /// Read literally, `deposit - in` = 600 and the sheet would report a 600
+    /// RUNE refund — money that was never sent back, stated as fact on a screen
+    /// about the user's own funds. `.filled` means `In == Deposit` on-chain, so
+    /// the status is the truth and the snapshot is merely stale.
+    func testCompletedOrderWithAStalePartialSnapshotClaimsNoRefund() {
+        let details = makeDetails(
+            status: .filled,
+            fill: LimitOrderFill(depositAmount: "1000", filledInAmount: "400", filledOutAmount: "50")
+        )
+
+        XCTAssertFalse(details.wasRefunded, "A completed order refunded nothing, whatever the last snapshot caught")
+    }
+
+    /// Same trap, other row: a completed order must not be captioned
+    /// "40% filled".
+    func testCompletedOrderWithAStalePartialSnapshotIsNotReportedAsPartiallyFilled() {
+        let details = makeDetails(
+            status: .filled,
+            fill: LimitOrderFill(depositAmount: "1000", filledInAmount: "400", filledOutAmount: "50")
+        )
+
+        XCTAssertFalse(details.isPartiallyFilled, "`.filled` means it finished — the snapshot is just stale")
+    }
+
+    /// The guard must be narrow. A genuinely-partial REFUNDED order is the
+    /// two-leg settlement this feature exists to show, and must survive.
+    func testRefundedOrderWithAPartialSnapshotStillReportsBothLegs() {
+        let details = makeDetails(
+            status: .refunded,
+            fill: LimitOrderFill(depositAmount: "1000", filledInAmount: "400", filledOutAmount: "50")
+        )
+
+        XCTAssertTrue(details.isPartiallyFilled)
+        XCTAssertTrue(details.wasRefunded)
+        XCTAssertEqual(details.fill.refundedAmount, 600)
+        XCTAssertEqual(details.fill.paidOutAmount, 50)
+    }
+
     func testUnobservedTerminalOrderMakesNoRefundClaim() {
         let details = makeDetails(status: .refunded, fill: .unobserved)
         XCTAssertFalse(details.wasRefunded, "Never observed the split — don't claim an amount came back")

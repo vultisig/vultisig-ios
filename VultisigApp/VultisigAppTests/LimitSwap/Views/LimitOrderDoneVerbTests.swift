@@ -30,7 +30,37 @@ final class LimitOrderDoneVerbTests: XCTestCase {
         XCTAssertEqual(verb.broadcastedKey, "limitSwap.done.status.submitted")
         XCTAssertEqual(verb.pendingKey, "limitSwap.done.status.resting")
         XCTAssertEqual(verb.successfulKey, "limitSwap.done.status.filled")
-        XCTAssertEqual(verb.failedKey, "limitSwap.done.status.notFilled")
+        XCTAssertEqual(verb.failedKey, "limitSwap.done.status.closed")
+    }
+
+    /// "Order closed", never "Order not filled".
+    ///
+    /// An order can settle in two legs — expiring after a partial fill pays out
+    /// what filled AND refunds the rest — so a frame that states nothing went
+    /// through would be false for exactly the case that most needs care.
+    func testTheTerminalFrameDoesNotClaimNothingFilled() {
+        let title = TransactionActionVerb.limitOrder.failedKey.localized
+
+        XCTAssertFalse(
+            title.localizedCaseInsensitiveContains("not filled"),
+            "A partially-filled order that then closed did fill — the title must not deny it"
+        )
+    }
+
+    /// Same claim, in the reason lines. Only an outright placement failure may
+    /// promise the funds came back whole, because only then did nothing fill.
+    func testTerminalReasonsDoNotClaimAZeroFillExceptOnPlacementFailure() {
+        for key in ["limitSwap.done.reason.refunded", "limitSwap.done.reason.expired", "limitSwap.done.reason.cancelled"] {
+            let reason = key.localized
+            XCTAssertFalse(
+                reason.localizedCaseInsensitiveContains("without filling"),
+                "\(key) states a zero fill as fact, which is false after a partial fill"
+            )
+            XCTAssertTrue(
+                reason.localizedCaseInsensitiveContains("unfilled"),
+                "\(key) should qualify what came back as the UNFILLED amount"
+            )
+        }
     }
 
     /// The regression guard. If the limit verb ever falls back to the `.send`

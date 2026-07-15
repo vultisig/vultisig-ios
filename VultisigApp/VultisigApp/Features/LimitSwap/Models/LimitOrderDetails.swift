@@ -171,7 +171,6 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     let expiry: LimitOrderExpiry?
 
     var fillFraction: Decimal? { fill.fillFraction }
-    var isPartiallyFilled: Bool { fill.isPartiallyFilled }
 
     /// True once the order can no longer fill. Drives the resting-only surfaces
     /// (the live expiry chip; later, the Cancel action).
@@ -184,12 +183,35 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
         }
     }
 
-    /// The order was refunded in part or in whole — the remainder came back.
+    /// The order COMPLETED. `IsDone` on-chain is `State.In == State.Deposit`, so
+    /// this is a statement that nothing was left over — regardless of what the
+    /// last snapshot happened to catch.
+    private var didFillCompletely: Bool { status == .filled }
+
+    /// Whether to report a partial fill.
     ///
-    /// Only meaningful once terminal: a live order's unfilled remainder is
-    /// still resting, not refunded.
+    /// Not simply `fill.isPartiallyFilled`. The stored split is the last
+    /// RESTING observation, taken up to a poll interval before the order
+    /// closed — an order seen 40% filled and then completing leaves that 40%
+    /// behind as the final snapshot. Reading it literally would caption a
+    /// completed order "40% filled". `.filled` means it finished; the snapshot
+    /// is just stale.
+    var isPartiallyFilled: Bool {
+        !didFillCompletely && fill.isPartiallyFilled
+    }
+
+    /// The order was refunded in part or in whole — an unfilled remainder came
+    /// back.
+    ///
+    /// Guarded twice, and both guards matter:
+    /// - not while live: a resting order's unfilled remainder is still working,
+    ///   not returned.
+    /// - not when `.filled`: same stale-snapshot trap as above, except the
+    ///   consequence is worse. A completed order whose last snapshot read 40%
+    ///   would claim 60% of the deposit was refunded — money that was never
+    ///   sent back, reported as fact, on a screen about the user's own funds.
     var wasRefunded: Bool {
-        guard isTerminal, let refunded = fill.refundedAmount else { return false }
+        guard isTerminal, !didFillCompletely, let refunded = fill.refundedAmount else { return false }
         return refunded > 0
     }
 }

@@ -61,7 +61,10 @@ struct TransactionHistoryDetailSheet: View {
             .padding(.top, 20)
         }
         .onAppear { now = Date() }
-        .task(id: isLimit) { await tickExpiryWhileResting() }
+        // Keyed on the order's status so the tick is torn down and re-evaluated
+        // the moment it goes terminal, rather than running on for a closed
+        // order until the sheet happens to be dismissed.
+        .task(id: limitOrder?.status) { await tickExpiryWhileResting() }
         .background(ModalBackgroundView(width: .infinity))
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
@@ -405,8 +408,16 @@ struct TransactionHistoryDetailSheet: View {
     /// open. Stops as soon as the order can't fill any more — a closed order
     /// has no countdown, and this must not keep waking for one.
     private func tickExpiryWhileResting() async {
-        guard isLimit, let order = limitOrder, !order.isTerminal else { return }
+        guard isLimit else { return }
         while !Task.isCancelled {
+            // Re-checked every iteration, not just on entry: an order can go
+            // terminal, or run its countdown out, while the sheet sits open.
+            // There is nothing left to animate then, and waking once a second
+            // to re-render an unchanged chip is pure battery.
+            guard let order = limitOrder, !order.isTerminal,
+                  let expiry = order.expiry, !expiry.hasElapsed(now: Date()) else {
+                return
+            }
             do {
                 try await Task.sleep(for: .seconds(1))
             } catch {

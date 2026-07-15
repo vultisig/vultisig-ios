@@ -45,7 +45,17 @@ struct TransactionHistoryScreen: View {
             // `@ObservedObject` here — so without this the tracker's writes
             // (fill progress, expiry countdown, terminal status) would be
             // invisible until the screen was rebuilt.
-            viewModel.loadLimitOrders()
+            //
+            // Hopped to the next main-actor turn on purpose. The tracker writes
+            // `LimitOrder` FIRST (it's authoritative) and mirrors the coarse
+            // status onto the tx-history row second; this notification is
+            // posted by that first write and delivered synchronously. Reloading
+            // inline would therefore read the row from BEFORE the mirror and
+            // pin the card's headline one poll behind its own detail rows.
+            // Yielding lets the tracker finish both writes first.
+            Task { @MainActor in
+                viewModel.reloadAfterLimitOrderChange()
+            }
         }
         .crossPlatformSheet(item: $viewModel.selectedDetail) { detail in
             detailSheet(for: detail)

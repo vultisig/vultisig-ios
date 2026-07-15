@@ -76,24 +76,42 @@ class TransactionHistoryViewModel: ObservableObject {
     // MARK: - Loading
 
     func load() {
+        fetchRows()
+        pollInProgressTransactions()
+        resumeSwapTracking()
+        loadLimitOrders()
+    }
+
+    /// Re-read both tables after the limit tracker observes something.
+    ///
+    /// Rows AND orders, never just orders. They are two halves of one sentence
+    /// — the card's headline status comes from the ROW's tracking status while
+    /// its progress line and the sheet's Filled/Refunded rows come from the
+    /// ORDER. Refreshing only the order would let the sheet say "Refunded ·
+    /// 600.12 RUNE" under a headline still reading "In progress": two
+    /// statements about the same funds, disagreeing, on screen at once.
+    ///
+    /// Deliberately does NOT re-poll or re-resume tracking — the tracker is
+    /// what triggered this, and `load()`'s polling side effects have no place
+    /// on a data-changed notification.
+    func reloadAfterLimitOrderChange() {
+        fetchRows()
+        loadLimitOrders()
+    }
+
+    private func fetchRows() {
         do {
             if let chain = chainFilter {
                 transactions = try storage.fetchByChain(pubKeyECDSA: pubKeyECDSA, chainRawValue: chain.rawValue)
             } else {
                 transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
-            pollInProgressTransactions()
-            resumeSwapTracking()
         } catch {
             logger.error("Failed to load: \(error)")
         }
-        loadLimitOrders()
     }
 
-    /// Re-reads the order table. Cheap (an in-memory relationship read) and
-    /// driven by `.limitOrdersDidChange`, which the tracker posts on every
-    /// observation — that notification is what makes a fill percentage or an
-    /// expiry countdown appear without the user pulling to refresh.
+    /// Re-reads the order table. Cheap — an in-memory relationship read.
     func loadLimitOrders() {
         limitOrdersByTxHash = limitOrderStorage.fetchDetailsByTxHash(pubKeyECDSA: pubKeyECDSA)
     }

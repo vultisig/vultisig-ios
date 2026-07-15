@@ -54,12 +54,19 @@ enum TransactionActionVerb: Hashable {
         }
     }
 
+    /// Note for `.limitOrder`: "closed", not "not filled".
+    ///
+    /// An order can settle in TWO legs — expiring after a partial fill pays out
+    /// what did fill AND refunds the remainder. "Order not filled" would state
+    /// as fact that nothing went through, which for that order is false. This
+    /// frame covers refunded / expired / cancelled / failed alike, and the
+    /// reason line beneath says which.
     var failedKey: String {
         switch self {
         case .send: return "transactionFailed"
         case .claim: return "claimFailed"
         case .sign: return "messageSignFailed"
-        case .limitOrder: return "limitSwap.done.status.notFilled"
+        case .limitOrder: return "limitSwap.done.status.closed"
         }
     }
 
@@ -78,7 +85,7 @@ enum TransactionActionVerb: Hashable {
     var failedHighlightKey: String {
         switch self {
         case .send, .claim, .sign: return "transactionFailedHighlight"
-        case .limitOrder: return "limitSwap.done.status.notFilledHighlight"
+        case .limitOrder: return "limitSwap.done.status.closedHighlight"
         }
     }
 
