@@ -58,6 +58,63 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(observation?.filledOutAmount, "25")
     }
 
+    /// The expiry countdown is persisted alongside the split. Without it the
+    /// detail sheet has no honest way to say how long an order has left — the
+    /// stored TTL is a guess that assumes the deposit queued the instant it was
+    /// signed and that blocks are exactly 6s.
+    func testTheExpiryCountdownIsRecordedFromTheQueue() async {
+        let env = TestEnv(queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        // Base 10. Caught a real one: an unapplied `Int.init` resolves to this
+        // codebase's `Int.init?(hex:)` extension, so `flatMap(Int.init)` parsed
+        // "39069" as base-16 (= 233577) and the chip would have promised ~6x
+        // the time the order actually had left.
+        XCTAssertEqual(env.orders.observations.last?.timeToExpiryBlocks, 39069)
+    }
+
+    /// The queue reports every number as a string, and nothing guarantees it
+    /// parses. A dropped countdown just hides the chip; a defaulted `0` would
+    /// tell the user a healthy resting order had expired.
+    func testAnUnparseableExpiryCountdownIsDroppedRatherThanDefaultedToZero() async {
+        let env = TestEnv(queueBody: .restingWithExpiry(hash: "ABC123", expiryBlocks: "not-a-number"))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        let observation = env.orders.observations.last
+        XCTAssertEqual(observation?.status, .pending, "It's still resting — the countdown just didn't parse")
+        XCTAssertNil(observation?.timeToExpiryBlocks)
+    }
+
+    /// The key is optional on the wire.
+    func testAMissingExpiryCountdownIsNotAnError() async {
+        let env = TestEnv(queueBody: .restingMany(hashes: ["ABC123"]))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .resting)
+        XCTAssertNil(env.orders.observations.last?.timeToExpiryBlocks)
+    }
+
+    /// A terminal order is already gone from the queue, so there is no
+    /// countdown left to report — and overwriting the last known split with
+    /// "unknown" would lose the only record of how much of it filled.
+    func testATerminalWriteLeavesTheSplitAndExpiryUntouched() async {
+        let env = TestEnv(queueBody: .empty, outcome: .filled)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        let observation = env.orders.observations.last
+        XCTAssertEqual(observation?.status, .filled)
+        XCTAssertNil(observation?.timeToExpiryBlocks, "A closed order has no countdown")
+        XCTAssertNil(observation?.depositAmount, "nil means 'not observed' and must not clobber the stored split")
+    }
+
     /// A partially-filled order is still resting — the remainder is genuinely
     /// still working.
     func testAPartiallyFilledOrderStaysResting() async {
@@ -377,6 +434,8 @@ private enum QueueBody {
     case empty
     case resting(hash: String, deposit: String, inAmount: String, outAmount: String)
     case restingMany(hashes: [String])
+    /// A resting order with a specific (possibly junk) expiry countdown.
+    case restingWithExpiry(hash: String, expiryBlocks: String)
     /// A 200 whose `limit_swaps` key is absent.
     case unrecognisedEnvelope
 
@@ -384,6 +443,12 @@ private enum QueueBody {
         switch self {
         case .empty:
             return #"{"limit_swaps":[]}"#
+        case let .restingWithExpiry(hash, expiryBlocks):
+            return """
+            {"limit_swaps":[{"time_to_expiry_blocks":"\(expiryBlocks)",
+              "swap":{"tx":{"id":"\(hash)","from_address":"thor1sender"},
+                      "state":{"deposit":"1000","in":"0","out":"0","failed_swap_reasons":[]}}}]}
+            """
         case let .resting(hash, deposit, inAmount, outAmount):
             return """
             {"limit_swaps":[{"time_to_expiry_blocks":"39069",
@@ -440,6 +505,7 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
         let depositAmount: String?
         let filledInAmount: String?
         let filledOutAmount: String?
+        let timeToExpiryBlocks: Int?
     }
 
     private(set) var observations: [Observation] = []
@@ -455,7 +521,8 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
         status: LimitOrderStatus,
         depositAmount: String?,
         filledInAmount: String?,
-        filledOutAmount: String?
+        filledOutAmount: String?,
+        timeToExpiryBlocks: Int?
     ) throws {
         if let error { throw error }
         if shouldThrow { throw WriteError() }
@@ -464,7 +531,8 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
             status: status,
             depositAmount: depositAmount,
             filledInAmount: filledInAmount,
-            filledOutAmount: filledOutAmount
+            filledOutAmount: filledOutAmount,
+            timeToExpiryBlocks: timeToExpiryBlocks
         ))
     }
 }

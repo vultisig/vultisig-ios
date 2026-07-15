@@ -170,7 +170,8 @@ private final class NoopLimitOrderObserver: LimitOrderObserving {
         status _: LimitOrderStatus,
         depositAmount _: String?,
         filledInAmount _: String?,
-        filledOutAmount _: String?
+        filledOutAmount _: String?,
+        timeToExpiryBlocks _: Int?
     ) throws {}
 }
 

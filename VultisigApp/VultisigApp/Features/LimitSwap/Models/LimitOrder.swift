@@ -3,7 +3,6 @@
 //  VultisigApp
 //
 
-import BigInt
 import Foundation
 import SwiftData
 
@@ -50,6 +49,24 @@ final class LimitOrder {
     var filledInAmount: String?
     var filledOutAmount: String?
 
+    /// Blocks left before expiry, as the queue last reported them, and WHEN it
+    /// reported them.
+    ///
+    /// Both are needed together: `timeToExpiryBlocks` alone is a number with no
+    /// meaning once a minute has passed. Anchoring it to the observation time
+    /// is what lets the expiry chip tick live between polls instead of showing
+    /// a stale figure — and it's why the chip is honest in a way the stored
+    /// TTL + `createdAt` never could be, since that pair assumes the deposit
+    /// was queued the instant it was signed and that blocks are exactly 6s.
+    ///
+    /// `nil` until the first poll. Left alone once an order goes terminal: it
+    /// disappears from the queue, and a countdown for a closed order is
+    /// meaningless anyway.
+    ///
+    /// Optional, so these ride SwiftData lightweight migration.
+    var timeToExpiryBlocks: Int?
+    var expiryObservedAt: Date?
+
     @Relationship(inverse: \Vault.limitOrders) var vault: Vault?
 
     init(
@@ -86,66 +103,45 @@ final class LimitOrder {
         LimitOrderStatus(rawValue: statusRawValue) ?? .pending
     }
 
-    /// The observed `(deposit, in)` pair as exact integers, or `nil` when the
-    /// split isn't knowable: never observed, unparseable, negative, or a zero
-    /// deposit (dividing by which is a crash, not a percentage).
-    ///
-    /// Parsed as `BigInt`, never `Decimal`. These are arbitrary-precision
-    /// integer strings off the wire (THORChain's accounting is `cosmos.Uint`, a
-    /// big.Int), and `Decimal` silently rounds past ~38 significant digits — so
-    /// two different amounts could parse equal and report a partially-filled
-    /// order as fully filled. `LimitMath` avoids `Decimal` on these same units
-    /// for the same reason.
-    private var observedSplit: (deposit: BigInt, filled: BigInt)? {
-        guard let depositAmount, let filledInAmount,
-              let deposit = BigInt(depositAmount),
-              let filled = BigInt(filledInAmount),
-              deposit > 0, filled >= 0 else {
-            return nil
-        }
-        return (deposit, filled)
+    /// The fill accounting as a pure value. The arithmetic lives on
+    /// `LimitOrderFill` so the order card and the detail sheet — which read a
+    /// `LimitOrderDetails` snapshot, never this `@Model` — derive percentages
+    /// and refunds from exactly the same code this does.
+    var fill: LimitOrderFill {
+        LimitOrderFill(
+            depositAmount: depositAmount,
+            filledInAmount: filledInAmount,
+            filledOutAmount: filledOutAmount
+        )
     }
 
-    /// How much of the deposit has been swapped so far, as a 0...1 fraction, or
-    /// `nil` when it can't be known.
-    ///
-    /// Derived rather than stored: a persisted percentage could drift out of
-    /// sync with the amounts it came from, and there'd be no way to tell which
-    /// was right.
-    ///
-    /// For DISPLAY. The ratio is computed by exact integer division scaled to
-    /// `fractionScale`, so the conversion to `Decimal` happens on a bounded
-    /// 0...1 value that can't overflow it. Rounding here is display rounding
-    /// only — `isPartiallyFilled` never consults it.
-    var fillFraction: Decimal? {
-        guard let (deposit, filled) = observedSplit else { return nil }
-        // An `in` above `deposit` is not something the protocol should produce;
-        // clamp rather than report >100% if it ever does.
-        guard filled < deposit else { return 1 }
-        let scaled = (filled * Self.fractionScale) / deposit
-        return Decimal(string: String(scaled)).map { $0 / Decimal(string: String(Self.fractionScale))! }
+    var fillFraction: Decimal? { fill.fillFraction }
+
+    var isPartiallyFilled: Bool { fill.isPartiallyFilled }
+
+    /// The live expiry countdown, or `nil` if the queue has never been polled
+    /// for this order.
+    var expiry: LimitOrderExpiry? {
+        guard let timeToExpiryBlocks, let expiryObservedAt else { return nil }
+        return LimitOrderExpiry(blocksRemaining: timeToExpiryBlocks, observedAt: expiryObservedAt)
     }
 
-    /// True when the order has filled in part but not in full — the remainder is
-    /// genuinely still resting.
-    ///
-    /// This is a QUALIFIER on in-progress, not a status of its own: an order
-    /// fills via streaming sub-swaps, so a partial fill is a normal stage of a
-    /// live order rather than a distinct outcome. Keeping it out of
-    /// `LimitOrderStatus` is what stops the status vocabulary from growing a
-    /// case that can contradict the amounts.
-    ///
-    /// Decided by exact integer comparison, NOT by `fillFraction`: a fill small
-    /// enough to round to 0% at display scale is still a partial fill, and the
-    /// remainder is still resting.
-    var isPartiallyFilled: Bool {
-        guard let (deposit, filled) = observedSplit else { return false }
-        return filled > 0 && filled < deposit
+    /// Sendable snapshot for the tx-history surfaces.
+    var details: LimitOrderDetails {
+        LimitOrderDetails(
+            id: id,
+            inboundTxHash: inboundTxHash,
+            sourceAsset: sourceAsset,
+            targetAsset: targetAsset,
+            targetPrice: targetPrice,
+            expiryBlocks: expiryBlocks,
+            createdAt: createdAt,
+            status: status,
+            minOutputOverride: minOutputOverride,
+            fill: fill,
+            expiry: expiry
+        )
     }
-
-    /// Fixed-point scale for the display fraction — 6 dp is far finer than any
-    /// percentage the UI renders.
-    private static let fractionScale = BigInt(1_000_000)
 }
 
 enum LimitOrderStatus: String, Codable, Equatable {

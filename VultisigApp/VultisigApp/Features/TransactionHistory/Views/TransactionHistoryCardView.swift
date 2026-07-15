@@ -7,12 +7,18 @@ import SwiftUI
 
 struct TransactionHistoryCardView: View {
     let transaction: TransactionHistoryData
+    /// The order behind this row, for `.limit` rows whose order record is on
+    /// this device. `nil` for every other type — and for a limit row on a
+    /// co-signer, which never persists a `LimitOrder`. Only supplies fill
+    /// progress; the status resolves without it.
+    var limitOrder: LimitOrderDetails?
 
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
 
     private var isExpanded: Bool {
         Self.shouldExpand(status: transaction.status, type: transaction.type)
+            && (transaction.type != .limit || transaction.toCoinTicker != nil)
     }
 
     var body: some View {
@@ -41,7 +47,10 @@ struct TransactionHistoryCardView: View {
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isExpanded)
         .onAppear {
-            if transaction.status == .inProgress { startTimer() }
+            // No timer for limit rows — they don't render the elapsed chip, so
+            // ticking once a second for an order that rests for days would be
+            // pure wakeups for a label nothing shows.
+            if transaction.status == .inProgress && transaction.type != .limit { startTimer() }
         }
         .onDisappear { stopTimer() }
         .onChange(of: transaction.status) { _, newStatus in
@@ -63,11 +72,66 @@ struct TransactionHistoryCardView: View {
 
             Spacer()
 
-            if transaction.status == .inProgress {
+            if transaction.type == .limit {
+                // Limit orders never show the elapsed-time chip. It counts up
+                // from broadcast, which is meaningful for a swap that should
+                // land in seconds and absurd for an order designed to rest for
+                // 12-72h ("In progress... 1440m 12s"). The order's own status
+                // line carries the truth instead, including fill progress.
+                limitStatusView
+            } else if transaction.status == .inProgress {
                 inProgressChip
             } else {
                 statusView
             }
+        }
+    }
+
+    // MARK: - Limit Order Status
+
+    /// Two-line status: the state, and beneath it the progress.
+    ///
+    /// This is the mock's existing two-line status slot (used there for an
+    /// error message), reused verbatim — a partially-filled order is still
+    /// in progress, so its percentage is a qualifier on the status line rather
+    /// than a new component.
+    @ViewBuilder
+    private var limitStatusView: some View {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: transaction.swapTrackingUiStatus,
+            details: limitOrder,
+            errorMessage: transaction.errorMessage
+        )
+
+        VStack(alignment: .trailing, spacing: 4) {
+            Text(display.title)
+            if let detail = display.detail {
+                Text(detail)
+            }
+        }
+        .font(Theme.fonts.caption12)
+        .foregroundStyle(Self.limitStatusColor(display.kind))
+        .multilineTextAlignment(.trailing)
+    }
+
+    /// Amber, not red, for a terminal order that didn't fill.
+    ///
+    /// An expired or refunded order is a NORMAL outcome — the order did exactly
+    /// what it was told to and the funds came back — so painting it in the same
+    /// red as a genuine failure would cry wolf on the expected case. Red is
+    /// kept for an actual failure. In-progress stays tertiary, matching every
+    /// other card in tx history, so "live" can never be mistaken at a glance
+    /// for the green of "filled".
+    static func limitStatusColor(_ kind: LimitOrderStatusDisplay.Kind) -> Color {
+        switch kind {
+        case .inProgress:
+            return Theme.colors.textTertiary
+        case .successful:
+            return Theme.colors.alertSuccess
+        case .closedUnfilled:
+            return Theme.colors.alertWarning
+        case .failed:
+            return Theme.colors.alertError
         }
     }
 
@@ -185,7 +249,10 @@ struct TransactionHistoryCardView: View {
 
     @ViewBuilder
     private var toRow: some View {
-        if transaction.type == .swap {
+        // A limit order shows the same from -> to pair as a swap, and the
+        // existing "min. payout" label on the to-side happens to be exactly
+        // right for one: the order's LIM *is* a guaranteed minimum output.
+        if transaction.type == .swap || transaction.type == .limit {
             swapToRow
         } else {
             sendToRow

@@ -40,6 +40,10 @@ struct TransactionHistoryTypePill: View {
             Image("bubble-check")
                 .resizable()
                 .frame(width: 12, height: 12)
+        case .limit:
+            Image("clock-rotate-clockwise-3")
+                .resizable()
+                .frame(width: 12, height: 12)
         }
     }
 
@@ -51,6 +55,8 @@ struct TransactionHistoryTypePill: View {
             return "swap".localized
         case .approve:
             return "approve".localized
+        case .limit:
+            return "limitSwap.typePill".localized
         }
     }
 

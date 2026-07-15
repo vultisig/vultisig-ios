@@ -32,6 +32,13 @@ extension TransactionStatusPoller: TransactionHistoryNativePoller {}
 @MainActor
 class TransactionHistoryViewModel: ObservableObject {
     @Published var transactions: [TransactionHistoryData] = []
+    /// Limit orders for this vault, keyed by UPPERCASED inbound tx hash.
+    ///
+    /// The row and the order are two tables: `TransactionHistoryItem` carries
+    /// no target price, expiry or fill split, and `LimitOrder` carries no coin
+    /// logos or fiat. The Limit Orders tab needs both, so they're joined on the
+    /// inbound hash at render time.
+    @Published var limitOrdersByTxHash: [String: LimitOrderDetails] = [:]
     @Published var selectedTab: TransactionHistoryTab = .overview
     @Published var selectedAssetFilters: Set<String> = []
     @Published var showAssetFilter = false
@@ -43,6 +50,7 @@ class TransactionHistoryViewModel: ObservableObject {
     let chainFilter: Chain?
 
     private let storage = TransactionHistoryStorage.shared
+    private let limitOrderStorage = LimitOrderStorageService()
     private let poller: TransactionHistoryNativePoller
     private let registry: SwapTrackingRegistry
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
@@ -79,6 +87,25 @@ class TransactionHistoryViewModel: ObservableObject {
         } catch {
             logger.error("Failed to load: \(error)")
         }
+        loadLimitOrders()
+    }
+
+    /// Re-reads the order table. Cheap (an in-memory relationship read) and
+    /// driven by `.limitOrdersDidChange`, which the tracker posts on every
+    /// observation — that notification is what makes a fill percentage or an
+    /// expiry countdown appear without the user pulling to refresh.
+    func loadLimitOrders() {
+        limitOrdersByTxHash = limitOrderStorage.fetchDetailsByTxHash(pubKeyECDSA: pubKeyECDSA)
+    }
+
+    /// The order behind a row, if this device has one.
+    ///
+    /// `nil` for a non-limit row, and for a limit row on a CO-SIGNER: only the
+    /// device that placed the order persists a `LimitOrder`. The surfaces
+    /// degrade to what the row itself knows rather than inventing a price.
+    func limitOrder(for tx: TransactionHistoryData) -> LimitOrderDetails? {
+        guard tx.type == .limit else { return nil }
+        return limitOrdersByTxHash[tx.txHash.uppercased()]
     }
 
     func refresh() async {
@@ -191,7 +218,15 @@ class TransactionHistoryViewModel: ObservableObject {
         case .overview:
             break
         case .swaps:
+            // Limit orders are deliberately NOT included: `.swap` means a swap
+            // that executed, `.limit` means an order that may never execute.
             result = result.filter { $0.type == .swap }
+        case .limitOrders:
+            // Every order, in whatever state — resting, filled, expired,
+            // cancelled. No status sectioning; the existing date grouping
+            // applies here exactly as it does on the other tabs, and the card
+            // carries the status.
+            result = result.filter { $0.type == .limit }
         case .send:
             result = result.filter { $0.type == .send || $0.type == .approve }
         }

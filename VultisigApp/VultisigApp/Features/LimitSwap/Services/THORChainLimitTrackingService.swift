@@ -310,9 +310,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         )
     }
 
-    /// Still queued: record the fill split and keep it resting.
+    /// Still queued: record the fill split and the expiry countdown, and keep it
+    /// resting.
     private func observeResting(order: TrackedOrder, entry: ThorchainLimitSwapQueueEntry) {
-        write(order: order, status: .pending, uiStatus: .resting, state: entry.swap.state)
+        write(order: order, status: .pending, uiStatus: .resting, entry: entry)
     }
 
     /// Gone from the queue, so it closed — but the queue never says why.
@@ -336,13 +337,13 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             // Almost always Midgard indexing lag. Stay resting; ask next poll.
             logger.debug("Limit order \(order.txHash, privacy: .public) left the queue; outcome not resolvable yet")
         case .filled:
-            if write(order: order, status: .filled, uiStatus: .completed, state: nil) {
+            if write(order: order, status: .filled, uiStatus: .completed, entry: nil) {
                 release(order)
             }
         case .refunded:
             // Recorded as refunded, not expired: the funds coming back is what
             // we observed; a TTL elapsing is a cause we can't corroborate.
-            if write(order: order, status: .refunded, uiStatus: .refunded, state: nil) {
+            if write(order: order, status: .refunded, uiStatus: .refunded, entry: nil) {
                 release(order)
             }
         }
@@ -351,9 +352,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
     /// Write to `LimitOrder` (authoritative), then mirror onto the row.
     ///
-    /// `state == nil` leaves the stored split untouched: a terminal order is
-    /// already gone from the queue, so the last resting observation is the final
-    /// word on how much of it filled.
+    /// `entry == nil` leaves the stored split and expiry countdown untouched: a
+    /// terminal order is already gone from the queue, so the last resting
+    /// observation is the final word on how much of it filled — and a countdown
+    /// for a closed order is meaningless.
     ///
     /// - Returns: whether the AUTHORITATIVE write landed. The caller must not
     ///   release an order on `false`: dropping it after a failed write would
@@ -366,8 +368,9 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         order: TrackedOrder,
         status: LimitOrderStatus,
         uiStatus: SwapTrackingUiStatus,
-        state: ThorchainQueuedSwapState?
+        entry: ThorchainLimitSwapQueueEntry?
     ) -> Bool {
+        let state = entry?.swap.state
         do {
             try orders.recordObservation(
                 inboundTxHash: order.txHash,
@@ -375,7 +378,18 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 status: status,
                 depositAmount: state?.deposit,
                 filledInAmount: state?.inAmount,
-                filledOutAmount: state?.outAmount
+                filledOutAmount: state?.outAmount,
+                // Every numeric field on this endpoint arrives as a string. An
+                // unparseable countdown is dropped rather than defaulted: `0`
+                // would render "expired" on an order that is resting fine.
+                //
+                // `Int($0)`, never `flatMap(Int.init)`: an unapplied `Int.init`
+                // resolves to this codebase's `Int.init?(hex:)` extension —
+                // argument labels are erased when an initializer is converted
+                // to a function value, and that overload matches
+                // `(String) -> Int?` too. The countdown would then be read as
+                // base-16 and silently report ~6x the real time remaining.
+                timeToExpiryBlocks: entry?.timeToExpiryBlocks.flatMap { Int($0) }
             )
         } catch LimitOrderStorageError.notFound {
             // Expected on a CO-SIGNER: `LimitOrder` is written by the device

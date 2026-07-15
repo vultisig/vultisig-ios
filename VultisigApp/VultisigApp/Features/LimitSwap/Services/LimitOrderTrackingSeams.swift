@@ -22,13 +22,16 @@ protocol LimitOrderObserving {
     ///   - pubKeyECDSA: identifies the owning vault.
     ///   - amounts: `nil` means "not observed" and must leave any stored value
     ///     untouched.
+    ///   - timeToExpiryBlocks: the queue's live countdown; `nil` means "not
+    ///     observed" and follows the same rule.
     func recordObservation(
         inboundTxHash: String,
         pubKeyECDSA: String,
         status: LimitOrderStatus,
         depositAmount: String?,
         filledInAmount: String?,
-        filledOutAmount: String?
+        filledOutAmount: String?,
+        timeToExpiryBlocks: Int?
     ) throws
 }
 
@@ -56,9 +59,10 @@ struct LimitOrderObserver: LimitOrderObserving {
         status: LimitOrderStatus,
         depositAmount: String?,
         filledInAmount: String?,
-        filledOutAmount: String?
+        filledOutAmount: String?,
+        timeToExpiryBlocks: Int?
     ) throws {
-        guard let vault = try Self.lookupVault(pubKeyECDSA: pubKeyECDSA) else {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
             logger.error("No vault for pubKey — cannot record limit-order observation")
             throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
         }
@@ -68,18 +72,9 @@ struct LimitOrderObserver: LimitOrderObserving {
             depositAmount: depositAmount,
             filledInAmount: filledInAmount,
             filledOutAmount: filledOutAmount,
+            timeToExpiryBlocks: timeToExpiryBlocks,
             in: vault
         )
-    }
-
-    /// A fetch failure propagates rather than collapsing into "no such vault":
-    /// both mean the write can't proceed, and neither may look like success.
-    private static func lookupVault(pubKeyECDSA: String) throws -> Vault? {
-        guard let modelContext = Storage.shared.modelContext else {
-            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
-        }
-        let descriptor = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == pubKeyECDSA })
-        return try modelContext.fetch(descriptor).first
     }
 }
 

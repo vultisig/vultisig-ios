@@ -80,6 +80,9 @@ final class TransactionHistoryRecorder {
     /// window where a failure leaves it permanently untracked — and an
     /// untracked limit row is exactly the row the native poller marks
     /// Successful while it is still resting.
+    ///
+    /// The row's `type` is DERIVED from `swapTracking` (see `rowType(for:)`) —
+    /// a limit-tracked row is a `.limit` row, always.
     func recordSwap(
         txHash: String,
         approveTxHash: String?,
@@ -104,7 +107,7 @@ final class TransactionHistoryRecorder {
             txHash: txHash,
             approveTxHash: approveTxHash,
             pubKeyECDSA: pubKeyECDSA,
-            type: .swap,
+            type: Self.rowType(for: swapTracking),
             status: .inProgress,
             chainRawValue: chain.rawValue,
             coinTicker: fromCoin.ticker,
@@ -129,6 +132,92 @@ final class TransactionHistoryRecorder {
             estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
             errorMessage: nil,
             swapTracking: swapTracking
+        )
+        do {
+            try storage.save(data)
+        } catch {
+            logger.error("Save failed for txHash=\(txHash): \(error)")
+        }
+    }
+
+    // MARK: - Row type
+
+    /// The row type a swap-shaped record carries.
+    ///
+    /// Derived from the tracking provider rather than passed in, because the
+    /// two must never disagree: the Limit Orders tab filters on `type`, while
+    /// the polling-arbitration gate turns on `swapTracking`. A limit order
+    /// typed `.swap` would poll correctly but be missing from the tab the
+    /// done-screen banner sends the user to; a `.swap` typed `.limit` would
+    /// show up in a tab it has no business in. Deriving one from the other
+    /// makes the mismatch unrepresentable.
+    private static func rowType(for swapTracking: SwapTrackingMetadataData?) -> TransactionHistoryType {
+        swapTracking?.providerKind == THORChainLimitTrackingService.providerKind ? .limit : .swap
+    }
+
+    // MARK: - Record a native-source limit order (co-signer path)
+
+    /// Records a limit order placed from a NATIVE source asset (RUNE, BTC, …).
+    ///
+    /// These carry no `swapPayload` — they are a plain deposit whose `=<` memo
+    /// is the entire order — so the co-signing device cannot see the target
+    /// coin or amount at all. It used to fall through to `recordSend`, which
+    /// produced a `send` row with NO tracking metadata: the order was both
+    /// missing from the Limit Orders tab and reported Successful by the native
+    /// poller as soon as the deposit confirmed.
+    ///
+    /// The to-side is deliberately left `nil` rather than guessed. The memo
+    /// does carry the target asset and the LIM, but resolving those to a real
+    /// `Coin` (for a logo and decimals) is exactly the kind of reconstruction
+    /// that produces a confidently wrong number on an order card. A row that
+    /// admits it only knows the source side is honest; the initiating device
+    /// records the full picture, and both devices agree on status.
+    func recordLimitOrder(
+        txHash: String,
+        pubKeyECDSA: String,
+        coin: Coin,
+        amountCrypto: String,
+        amountFiat: String,
+        fromAddress: String,
+        toAddress: String,
+        chain: Chain,
+        explorerLink: String
+    ) {
+        let data = TransactionHistoryData(
+            id: UUID(),
+            txHash: txHash,
+            approveTxHash: nil,
+            pubKeyECDSA: pubKeyECDSA,
+            type: .limit,
+            status: .inProgress,
+            chainRawValue: chain.rawValue,
+            coinTicker: coin.ticker,
+            coinLogo: coin.logo,
+            coinChainLogo: coin.tokenChainLogo,
+            amountCrypto: amountCrypto,
+            amountFiat: amountFiat,
+            fromAddress: fromAddress,
+            toAddress: toAddress,
+            toCoinTicker: nil,
+            toCoinLogo: nil,
+            toCoinChainLogo: nil,
+            toAmountCrypto: nil,
+            toAmountFiat: nil,
+            // A placed `=<` order always routes through THORChain — the same
+            // fixed provider the initiator records.
+            swapProvider: "THORChain",
+            feeCrypto: "",
+            feeFiat: "",
+            network: chain.name,
+            explorerLink: explorerLink,
+            createdAt: Date(),
+            completedAt: nil,
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime,
+            errorMessage: nil,
+            swapTracking: THORChainLimitTrackingService.metadata(
+                broadcastHash: txHash,
+                sourceChain: chain
+            )
         )
         do {
             try storage.save(data)
@@ -222,7 +311,7 @@ final class TransactionHistoryRecorder {
                 //
                 // Only ERC20-source limit orders reach this branch (they ride a
                 // `swapPayload` for the router's `depositWithExpiry`). Native
-                // sources carry no swap payload and fall through to the send
+                // sources carry no swap payload and take the limit-order
                 // branch below.
                 swapTracking: isLimitSwapMemo(keysignPayload.memo)
                     ? THORChainLimitTrackingService.metadata(
@@ -230,6 +319,23 @@ final class TransactionHistoryRecorder {
                         sourceChain: keysignPayload.coin.chain
                     )
                     : nil
+            )
+        } else if isLimitSwapMemo(keysignPayload.memo) {
+            // Native-source limit order: no swap payload, so the `=<` memo is
+            // the only evidence this deposit is an order at all. Recorded as a
+            // `.limit` row rather than a `send` row — it belongs in the Limit
+            // Orders tab, and it needs the tracking metadata that stands the
+            // deposit-confirming native poller down.
+            recordLimitOrder(
+                txHash: txHash,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                coin: keysignPayload.coin,
+                amountCrypto: keysignPayload.toAmountWithTickerString,
+                amountFiat: keysignPayload.toSendAmountFiatString,
+                fromAddress: keysignPayload.coin.address,
+                toAddress: keysignPayload.toAddress,
+                chain: keysignPayload.coin.chain,
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash)
             )
         } else {
             recordSend(

@@ -125,8 +125,23 @@ struct DoneScreen<
                 .frame(maxHeight: isExpanded ? 0 : .infinity)
         }
         .onAppear {
-            statusService.start()
+            // Record BEFORE starting the poller, not after.
+            //
+            // A tracking-backed poller attaches to the tx-history ROW: it reads
+            // the row back from storage and hands it to its tracking service
+            // (`LimitOrderPoller`), or attaches metadata to it
+            // (`SwapKitPoller`, whose storage call no-ops when the parent row
+            // is absent). Started first, it finds nothing and the tracker never
+            // runs — leaving the header frozen on its seed status while the
+            // order or swap actually progresses.
+            //
+            // Only the cosigner paths record from here; the Send/Swap
+            // initiators pre-record in their own screen layer for exactly this
+            // reason (see `SwapDoneScreen.init`). Recording is idempotent —
+            // `storage.save` short-circuits on an existing row — so ordering it
+            // first is safe for every caller.
             TransactionHistoryRecording.record(payload: input)
+            statusService.start()
         }
         .onDisappear { statusService.stop() }
         .task { await revealAfterHold() }

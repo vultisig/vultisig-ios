@@ -11,6 +11,19 @@ enum TransactionHistoryType: String, Codable, Sendable, Hashable {
     case send
     case swap
     case approve
+    /// A THORChain limit (`=<`) order — a RESTING order, not a swap that
+    /// happened.
+    ///
+    /// Its own case rather than a flag on `.swap`, because nothing else on the
+    /// row can tell the two apart: a limit order and a genuine THORChain
+    /// *market* swap both carry `swapProvider == "THORChain"`. Without this,
+    /// the Limit Orders tab could only be filtered by a predicate that also
+    /// catches market swaps.
+    ///
+    /// It also gives native-source co-signer orders somewhere honest to live —
+    /// they carry no swap payload and so used to be recorded as plain `send`
+    /// rows.
+    case limit
 }
 
 // MARK: - Status Enum
