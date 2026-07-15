@@ -24,9 +24,24 @@ import SwiftUI
 /// which allowed contradictory combinations and let a shared screen silently
 /// forget the limit case. Construction now goes through this enum; `switch` on
 /// it for any behaviour that differs between market and limit.
+///
+/// Orthogonal to `SwapMode`: `kind` is *what the user is placing* (market vs
+/// resting limit order), `mode` is *how a market swap settles* (pool swap vs
+/// SECURE+ mint). A limit order is always `mode == .standard`.
 enum SwapKind: Hashable {
     case market(SwapQuote?)
     case limit(LimitOrderRecord)
+}
+
+/// How the swap flow settles. `.standard` is the normal pool/aggregator swap.
+/// `.securedMint` is the inline same-underlying case (the user holds the L1
+/// asset and picks its own secured form, e.g. BTC → secured BTC): instead of a
+/// wasteful ~1:1 pool swap, the flow mints via a SECURE+ deposit. The pool-quote
+/// fetch is skipped, a synthetic ~1:1 quote is displayed, and at confirm the
+/// SECURE+ deposit keysign payload is built instead of a swap payload.
+enum SwapMode: Hashable {
+    case standard
+    case securedMint
 }
 
 struct SwapTransaction: Hashable {
@@ -44,6 +59,16 @@ struct SwapTransaction: Hashable {
         if case let .market(quote) = kind { return quote }
         return nil
     }
+
+    /// Settlement mode. Defaults to `.standard` (so the memberwise initializer
+    /// keeps it optional and existing call sites are unchanged); only the
+    /// same-underlying secured path sets `.securedMint`. `var` purely so the
+    /// synthesized memberwise init carries the default — the struct is still used
+    /// immutably (`let`-bound everywhere, rebuilt via `with`).
+    ///
+    /// Only meaningful for `.market` kinds: a placed limit order settles through
+    /// the THORChain limit memo, never a SECURE+ mint, so it stays `.standard`.
+    var mode: SwapMode = .standard
     let gas: BigInt
     /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or before
     /// the fee data loads). Carried alongside `gas` (= maxFeePerGas for EVM) so
@@ -99,6 +124,25 @@ struct SwapTransaction: Hashable {
     var hasExternalRecipient: Bool {
         advancedSettings.externalRecipient != nil
     }
+
+    /// Provider label for the verify/summary screens. Secured mints aren't a
+    /// third-party route, so they read "Mint (SECURE+)" rather than the synthetic
+    /// quote's "THORChain". Non-localized, matching the other brand display names.
+    ///
+    /// `nil` for a placed limit order: it carries no market quote, so there is no
+    /// provider row to show — the caller's `if let` drops the row, matching the
+    /// limit flow's existing Verify layout.
+    var providerDisplayName: String? {
+        switch mode {
+        case .securedMint:
+            return "Mint (SECURE+)"
+        case .standard:
+            // `flatMap`, not `?.`: `quote` is optional (limit orders have none)
+            // AND `displayName` is itself `String?`, so `?.` would nest to
+            // `String??`.
+            return quote.flatMap(\.displayName)
+        }
+    }
 }
 
 extension SwapTransaction {
@@ -120,6 +164,9 @@ extension SwapTransaction {
             // market swap; with no quote we preserve the existing kind (a limit
             // order never refreshes through here).
             kind: quote.map { .market($0) } ?? self.kind,
+            // A refresh never changes how the swap settles — a secured mint that
+            // re-quotes is still a secured mint.
+            mode: mode,
             gas: gas ?? self.gas,
             gasLimit: gasLimit ?? self.gasLimit,
             thorchainFee: thorchainFee ?? self.thorchainFee,
@@ -187,12 +234,22 @@ extension SwapTransaction {
     }
 
     var isApproveRequired: Bool {
-        // Limit orders carry no market quote, so the quote-derived check reads
-        // false — but an ERC20 source still deposits through the router
-        // (approve + depositWithExpiry, attached by the limit assembler), so the
-        // approval must be surfaced and confirmed on Verify. Mirror the
-        // assembler's condition (`fromCoin.shouldApprove` = EVM token source).
-        if isLimit {
+        // Two distinct paths sign an ERC20 router approval that the quote-derived
+        // check below cannot see, because neither has a router-bearing market
+        // quote. Both must gate on the source coin directly, or Verify silently
+        // omits the approval-consent checkbox while an allowance IS being signed:
+        //
+        //  - Limit orders carry no market quote at all (`quote == nil`), yet an
+        //    ERC20 source still deposits through the router (approve +
+        //    depositWithExpiry, attached by the limit assembler).
+        //  - A secured mint bundles an ERC20 router approval (built by the deposit
+        //    builder for approve-required source tokens), but its synthetic quote
+        //    carries no router — e.g. USDC → secured USDC.
+        //
+        // Both mirror the assembler/builder condition (`fromCoin.shouldApprove` =
+        // EVM token source). The two are orthogonal, so this must stay an OR:
+        // dropping either side reintroduces that side's missing-consent bug.
+        if isLimit || mode == .securedMint {
             return fromCoin.shouldApprove
         }
         return SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)

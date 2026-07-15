@@ -56,6 +56,7 @@ struct VultisigApp: App {
         DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
         DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .thorchain))
         DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .mayachain))
+        DestinationTokenRegistry.shared.register(SecuredAssetTokenProvider())
     }
     var body: some Scene {
         WindowGroup {

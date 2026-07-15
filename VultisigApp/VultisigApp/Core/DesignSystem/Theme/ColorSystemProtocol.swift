@@ -55,6 +55,9 @@ public protocol ColorSystemProtocol {
 
     var turquoise: Color { get }
 
+    // Devices-selection blue glow (onboarding + reshare)
+    var devicesSelectionGlow: Color { get }
+
     // Chain-specific colors
     var tronRed: Color { get }
 }

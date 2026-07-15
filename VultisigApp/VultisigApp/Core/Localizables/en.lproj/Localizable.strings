@@ -118,6 +118,8 @@
 "balance" = "Balance";
 "balanceAvailable" = "Balance available:";
 "balanceInParentheses" = "( Balance: %@ %@ )";
+"beforeYouReshare" = "Before you reshare";
+"beforeYouReshareSubtitle" = "Resharing regenerates your vault shares. There are a few things to know first.";
 "beforeYouStart" = "Before you start...";
 "belowExistentialDepositError" = "This send would leave less than the minimum balance (existential deposit) in your account, so the network would reject it. Reduce the amount or send the full balance.";
 "biometricsFastSigning" = "Biometrics Fast Signing";
@@ -594,6 +596,7 @@
 "joinKeysign" = "Join Keysign";
 "joinKeysignCommitteeFailed" = "Failed to join the keysign committee. Please check your connection and try again.";
 "joinReshare" = "Join Reshare";
+"joinReshareSubtitle" = "You received a reshare request from another device.";
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
 "joinTransactionSigning" = "Join transaction signing";
@@ -659,6 +662,8 @@
 "limitSwap.error.title" = "Couldn't place order";
 "limitSwap.error.unsupportedAsset" = "This asset isn't supported for limit orders. Pick a different asset.";
 "limitSwap.executeWhen" = "Execute when";
+"limitSwap.executeWhen.headerIsWorth" = "is worth";
+"limitSwap.executeWhen.headerWhenOne" = "When 1";
 "limitSwap.executeWhen.marketReference" = "Market %@";
 "limitSwap.executeWhen.oneUnit" = "1 %@";
 "limitSwap.expiry" = "Expiry";
@@ -738,6 +743,8 @@
 "networkFee" = "Network Fee";
 "new" = "NEW";
 "newAddress" = "New Address";
+"newBackupsCreatedDescription" = "Each device will create a new .vult backup that differs from the old backups";
+"newBackupsCreatedTitle" = "New backups will be created";
 "newChainDetected" = "New chain detected";
 "newUpdateAvailable" = "Update is available.";
 "newWalletNameDescription" = "You can always rename your vault later in the settings";
@@ -799,6 +806,10 @@
 "of" = "of";
 "off" = "Off";
 "ok" = "OK";
+"oldBackupsOnlyWorkTogetherDescription" = "Any existing .vult files will only work together. Mixing old and new shares will not work to sign transactions.";
+"oldBackupsOnlyWorkTogetherTitle" = "Old backups will only work together";
+"oldBackupsWontWork" = "Old backups won't work";
+"oldBackupsWontWorkDescription" = "Backups from previous vault setups can't be used. Only backups created during this setup are valid.";
 "on" = "on";
 "OnboardingCard1Text1" = "Say hello to ";
 "OnboardingCard1Text2" = "vault shares, ";
@@ -842,6 +853,7 @@
 "passwordIsRequired" = "Password is required.";
 "passwordMismatch" = "Password Mismatch";
 "paste" = "Paste";
+"peerDiscoveryInfoDescription" = "On your other device, open the app and tap \"Scan QR\" to connect it.";
 "peerDiscoveryInfoTitle" = "Scan the QR on your other devices";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
 "pendingRewards" = "Pending Rewards";
@@ -972,13 +984,14 @@
 "requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait %@ minutes and try again.";
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestToBond" = "Request to Bond";
+"requiredCosignersOnlineDescription" = "Enough current devices to meet your vault's threshold must participate in the reshare session.";
+"requiredCosignersOnlineTitle" = "Required co-signers must be online";
 "resendNotification" = "Resend notification";
 "resendNotificationIn" = "Resend notification in %@";
 "reshare" = "Reshare";
-"reshareLabelDisclaimer" = "For all Reshare actions the threshold of devices is always required.";
-"reshareLabelSubtitle" = "Reshare can be used to refresh, expand or reduce the amount of devices in a Vault.";
 "reshareLabelTitle" = "Reshare your vault";
 "reshareVault" = "Reshare vault with new devices";
+"reshareVaultSubtitle" = "Update your vault setup. Add or remove devices, or refresh shares.";
 "resharingLoaderTitle" = "Add devices to include or leave devices out to remove from Vault";
 "resolvingRecipientName" = "Resolving name…";
 "restart" = "Please restart the app to apply the new language settings.";
@@ -1157,8 +1170,8 @@
 "stakedCoin" = "Staked %@";
 "standardSolanaWallet" = "Standard Solana wallet";
 "standby" = "Standby";
-"startFastVaultReshare" = "Start Reshare with Vultiserver";
 "startReshare" = "Start Reshare";
+"startReshareSubtitle" = "You are changing this vault's device setup.";
 "startScanning" = "Start scanning";
 "status" = "Status";
 "storeBackupsSeparately" = "Store backups separately";
@@ -1235,6 +1248,7 @@
 "swapRouteEta" = "~%lds";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
+"swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Secured-asset swap destination is not a valid %1$@ address (%2$@).";
 "swapTrackingLink" = "Swap tracking link";
 "swapTradingHalted" = "Trading for this asset is temporarily halted. Please try again later.";
@@ -1392,6 +1406,7 @@
 "vaultNotImportedDescription" = "Please import the correct share.";
 "vaultNotImportedTitle" = "Vault is not loaded";
 "vaultPart" = "Vault Share";
+"vaultReshared" = "Vault reshared";
 "vaultRestoreFailed" = "Failed to restore vault";
 "vaults" = "Vaults";
 "vaultSelected" = "Vault selected";
