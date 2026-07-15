@@ -35,6 +35,7 @@ struct PeerDiscoveryInfoBanner: View {
                     .frame(width: 40, height: 40)
                     .offset(x: -16, y: 5)
             }
+            .edgesIgnoringSafeArea(.top)
     }
 
     var image: some View {
