@@ -27,13 +27,18 @@ class SendSummaryViewModel: ObservableObject {
         // unit, which is what we actually owe.
         let networkFee = tx.feeCoin.fiat(value: tx.fee)
 
-        if let swapFeeBigInt = tx.quote.evmSwapFeeBigInt {
+        // Limit orders have no market quote — fees reduce to the network fee.
+        guard let quote = tx.quote else {
+            return networkFee.formatToFiat(includeCurrencySymbol: true)
+        }
+
+        if let swapFeeBigInt = quote.evmSwapFeeBigInt {
             let feeDecimal = tx.feeCoin.decimal(for: swapFeeBigInt)
             let swapFee = tx.feeCoin.fiat(decimal: feeDecimal)
             return (swapFee + networkFee).formatToFiat(includeCurrencySymbol: true)
         }
 
-        guard let inboundFeeDecimal = tx.quote.inboundFeeDecimal(toCoin: tx.toCoin) else { return .empty }
+        guard let inboundFeeDecimal = quote.inboundFeeDecimal(toCoin: tx.toCoin) else { return .empty }
 
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
         let fee = tx.toCoin.fiat(value: inboundFee) + networkFee

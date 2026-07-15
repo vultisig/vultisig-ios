@@ -137,6 +137,29 @@ extension String {
         // If both attempts fail
         return nil
     }
+
+    /// Whether every character belongs to a numeric amount: an ASCII digit or a
+    /// decimal / grouping separator (the current locale's, plus `.`/`,` so a value
+    /// pasted from another locale still validates). An empty string is valid (it
+    /// clears the field).
+    ///
+    /// Used to gate entry on macOS, which has no decimal keypad: a numeric field
+    /// rejects any edit that introduces a letter or symbol, rather than silently
+    /// stripping it — stripping would turn a mixed paste like `"12abc34"` into a
+    /// real-looking `"1234"`, and collapse a grouped `pt_BR` `"1.234,56"` toward a
+    /// wrong value. This only validates the character SET; `parseInput` remains the
+    /// numeric validator (so an in-progress `"1."` or a stray second separator is
+    /// still allowed as text and simply parses to its own value / zero).
+    func isDecimalInput(locale: Locale = .current) -> Bool {
+        var allowed: Set<Character> = [".", ","]
+        if let decimal = locale.decimalSeparator, decimal.count == 1 {
+            allowed.insert(Character(decimal))
+        }
+        if let grouping = locale.groupingSeparator, grouping.count == 1 {
+            allowed.insert(Character(grouping))
+        }
+        return allSatisfy { ($0.isASCII && $0.isNumber) || allowed.contains($0) }
+    }
 }
 
 extension String {

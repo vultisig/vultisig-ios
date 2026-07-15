@@ -157,7 +157,7 @@ final class SwapFeeSufficiencyValidationTests: XCTestCase {
             fromCoin: eth,
             toCoin: btc,
             fromAmount: Decimal(string: "0.0001") ?? 0,
-            quote: quote,
+            kind: .market(quote),
             gas: .zero,
             gasLimit: .zero,
             thorchainFee: .zero,

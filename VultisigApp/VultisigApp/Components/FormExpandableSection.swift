@@ -11,6 +11,12 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     let title: String
     let isValid: Bool
     let showValue: Bool
+    /// Corner radius of the bordered card. Defaults to the shared form value;
+    /// only the limit-swap sections override it to match their Figma radius.
+    let cornerRadius: CGFloat
+    /// When true, the header/content divider is a plain hairline instead of the
+    /// default gradient separator. Only the limit-swap sections opt in.
+    let plainSeparator: Bool
 
     var focusedField: Binding<T?>
     let focusedFieldEquals: [T]
@@ -25,6 +31,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
+        cornerRadius: CGFloat = 12,
+        plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
     ) where ValueView == AnyView {
@@ -34,6 +42,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
             showValue: showValue,
             focusedField: focusedField,
             focusedFieldEquals: focusedFieldEquals,
+            cornerRadius: cornerRadius,
+            plainSeparator: plainSeparator,
             onExpand: onExpand,
             content: content,
             valueView: {
@@ -53,6 +63,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: [T],
+        cornerRadius: CGFloat = 12,
+        plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
     ) where ValueView == AnyView {
@@ -62,6 +74,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
             showValue: showValue,
             focusedField: focusedField,
             focusedFieldEquals: focusedFieldEquals,
+            cornerRadius: cornerRadius,
+            plainSeparator: plainSeparator,
             onExpand: onExpand,
             content: content,
             valueView: {
@@ -80,6 +94,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
+        cornerRadius: CGFloat = 12,
+        plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder valueView: @escaping () -> ValueView
@@ -87,6 +103,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         self.title = title
         self.isValid = isValid
         self.showValue = showValue
+        self.cornerRadius = cornerRadius
+        self.plainSeparator = plainSeparator
         self.focusedField = focusedField
         self.focusedFieldEquals = [focusedFieldEquals]
         self.onExpand = onExpand
@@ -100,6 +118,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: [T],
+        cornerRadius: CGFloat = 12,
+        plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder valueView: @escaping () -> ValueView
@@ -107,6 +127,8 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         self.title = title
         self.isValid = isValid
         self.showValue = showValue
+        self.cornerRadius = cornerRadius
+        self.plainSeparator = plainSeparator
         self.focusedField = focusedField
         self.focusedFieldEquals = focusedFieldEquals
         self.onExpand = onExpand
@@ -117,7 +139,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     @State var isExpanded = false
 
     var body: some View {
-        SendFormExpandableSection(isExpanded: isExpanded) {
+        SendFormExpandableSection(isExpanded: isExpanded, cornerRadius: cornerRadius) {
             FormSectionHeader(
                 title: title,
                 showValue: showValue,
@@ -129,7 +151,13 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
                 valueView: valueView
             )
         } content: {
-            GradientListSeparator()
+            if plainSeparator {
+                Rectangle()
+                    .fill(Theme.colors.border)
+                    .frame(height: 1)
+            } else {
+                GradientListSeparator()
+            }
             content()
         }
         .onChange(of: focusedField.wrappedValue) { _, newValue in

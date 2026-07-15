@@ -14,4 +14,9 @@ enum SwapRoute: Hashable {
     // pair → keysign → done live on the shared `SigningRoute`; verify
     // navigates into it, carrying `vaultPubKeyECDSA` (not a live `Vault`)
     // in `SigningTxContext.swap` so the actor-isolation contract is kept.
+    //
+    // Limit orders reuse this exact `.verify` entry and the shared
+    // `SigningRoute` tail: `SwapTransaction` carries a
+    // `limitContext: LimitOrderRecord?` that flips each shared screen
+    // (verify + done) into its limit-mode UI when non-nil.
 }

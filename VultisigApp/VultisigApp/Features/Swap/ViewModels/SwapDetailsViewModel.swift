@@ -418,7 +418,7 @@ final class SwapDetailsViewModel {
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount.toDecimal(),
-            quote: quote,
+            kind: .market(quote),
             mode: isSecuredMint ? .securedMint : .standard,
             gas: gas,
             gasLimit: gasLimit,

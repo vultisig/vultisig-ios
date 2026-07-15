@@ -93,7 +93,8 @@ struct VultisigApp: App {
             VaultSettings.self,
             TransactionHistoryItem.self,
             SwapTrackingMetadata.self,
-            CustomRPCOverride.self
+            CustomRPCOverride.self,
+            LimitOrder.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

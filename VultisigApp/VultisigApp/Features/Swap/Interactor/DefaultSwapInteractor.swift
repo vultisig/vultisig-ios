@@ -109,26 +109,46 @@ struct DefaultSwapInteractor: SwapInteractor {
     }
 
     func assertSourceChainNotHalted(transaction: SwapTransaction) async throws {
-        let quote = transaction.quote
-        guard quote.isNativeProtocolRoute else { return }
+        let inboundFetch: () async throws -> [InboundAddress]
 
-        let sourceChain = transaction.fromCoin.chain
-        do {
-            let inbound: [InboundAddress]
+        if transaction.isLimit {
+            // Limit orders carry no market quote but always route through
+            // THORChain mainnet — apply the same fail-closed, cache-bypassing
+            // re-check as a `.thorchain` market quote. (`LimitSwapPayloadAssembler`
+            // additionally refuses halted/paused inbounds when it selects the
+            // vault, but that read can be cache-served; this is the live gate.)
+            inboundFetch = { [thorchainService] in
+                try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+            }
+        } else {
+            guard let quote = transaction.quote, quote.isNativeProtocolRoute else { return }
             switch quote {
             case .mayachain:
-                inbound = try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
+                inboundFetch = { [mayachainService] in
+                    try await mayachainService.fetchInboundAddressOrThrow(bypassCache: true)
+                }
             case .thorchain:
-                inbound = try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                inboundFetch = { [thorchainService] in
+                    try await thorchainService.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                }
             case .thorchainChainnet:
                 // Read inbound from the matching node, not mainnet, so the
                 // halt status reflects the network the quote actually routes on.
-                inbound = try await ThorchainChainnetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                inboundFetch = {
+                    try await ThorchainChainnetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                }
             case .thorchainStagenet:
-                inbound = try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                inboundFetch = {
+                    try await ThorchainStagenetService.shared.fetchThorchainInboundAddressOrThrow(bypassCache: true)
+                }
             case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
                 return
             }
+        }
+
+        let sourceChain = transaction.fromCoin.chain
+        do {
+            let inbound = try await inboundFetch()
             if SwapHaltGate.isHalted(chain: sourceChain, in: inbound) {
                 throw SwapError.tradingHalted
             }
@@ -187,6 +207,10 @@ struct DefaultSwapInteractor: SwapInteractor {
 
     func updateBalance(for coin: Coin) async {
         await balance.updateBalance(for: coin)
+    }
+
+    func refreshBalanceOrThrow(for coin: Coin) async throws {
+        try await balance.refreshSpendableBalanceOrThrow(for: coin)
     }
 
     func warmDiscountTier(for vault: Vault) async {

@@ -44,7 +44,22 @@ final class ChainHelperTests: XCTestCase {
         for jsonFile in jsonFiles {
             let data = try Data(contentsOf: jsonFile)
             let decoder = JSONDecoder()
-            let testCases = try decoder.decode([ChainHelperTestCase].self, from: data)
+
+            // Skip files that aren't ChainHelper fixtures — other suites
+            // may bundle their own JSON (e.g. Fixtures/LimitSwapMemos.json)
+            // that flatten to the same resourcePath at test time. Match by
+            // filename prefix and fail fast if a *named* ChainHelper file
+            // doesn't decode (so genuine schema regressions still surface).
+            let isChainHelperFixture = jsonFile.lastPathComponent.hasPrefix("ChainHelper")
+            guard isChainHelperFixture else { continue }
+
+            let testCases: [ChainHelperTestCase]
+            do {
+                testCases = try decoder.decode([ChainHelperTestCase].self, from: data)
+            } catch {
+                XCTFail("Invalid ChainHelper fixture \(jsonFile.lastPathComponent): \(error)")
+                continue
+            }
 
             for testCase in testCases {
                 try runTestCase(testCase)

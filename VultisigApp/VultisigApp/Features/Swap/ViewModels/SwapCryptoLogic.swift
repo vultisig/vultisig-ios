@@ -179,8 +179,30 @@ enum SwapCryptoLogic {
         fromCoin.shouldApprove && router(quote: quote) != nil
     }
 
+    /// True iff this source swap settles via a Cosmos `MsgDeposit` on the swap
+    /// chain itself rather than a cross-chain `MsgSend` to an Asgard vault.
+    /// THORChain variants require a NATIVE source (RUNE) — the SDK rule
+    /// `areEqualCoins(fromCoin, chainFeeCoin[swapChain])`, see
+    /// `vultisig-sdk/packages/core/mpc/keysign/swap/build.ts`. MayaChain returns
+    /// `true` unconditionally: Maya settles every source swap (native CACAO and
+    /// non-native Maya assets alike) via `MsgDeposit`, matching the market path's
+    /// long-standing behaviour.
     static func isDeposit(fromCoin: Coin) -> Bool {
-        fromCoin.chain == .mayaChain
+        switch fromCoin.chain {
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
+            return fromCoin.isNativeToken
+        case .mayaChain:
+            // MayaChain settles EVERY source swap via `MsgDeposit`, native CACAO
+            // and non-native Maya assets alike — never a cross-chain `MsgSend`.
+            // Keying this on `isNativeToken` (as the THORChain arm is) would flip
+            // a non-native Maya market swap to an empty router so it can't sign.
+            // Native THORChain limit deposits are gated separately in the
+            // assembler (`thorchainChainPrefix == "THOR"`), so a Maya coin never
+            // reaches the limit `MsgDeposit` branch regardless.
+            return true
+        default:
+            return false
+        }
     }
 
     // MARK: - Same-underlying secured mint
@@ -364,6 +386,27 @@ enum SwapCryptoLogic {
         let inboundFeeRaw = toCoin.raw(for: inboundFee)
         let providerFee = toCoin.fiat(value: inboundFeeRaw)
         return (providerFee + networkFee).formatToFiat(includeCurrencySymbol: true)
+    }
+
+    // MARK: - Display: limit-order network fee
+
+    /// Network-fee crypto string for a LIMIT order — the source-chain broadcast
+    /// gas already estimated into `fee` (in the fee coin's smallest units). A
+    /// resting `=<` order has no market quote and no provider/inbound fee, so the
+    /// shared quote-driven helpers (`fee` / `totalFeeString`) return `.zero` /
+    /// `.empty` for it (`quote == nil`). Limit surfaces read this instead.
+    /// Empty when no estimate is available yet.
+    static func limitNetworkFeeString(feeCoin: Coin, fee: BigInt) -> String {
+        guard fee > 0 else { return .empty }
+        let amount = feeCoin.decimal(for: fee)
+        return "\(amount.formatToDecimal(digits: feeCoin.decimals)) \(feeCoin.ticker)"
+    }
+
+    /// Fiat sub-line for the limit-order network fee. Mirrors the market network
+    /// fee cell's fiat (`approveFeeString`). Empty when no estimate is available.
+    static func limitNetworkFeeFiat(feeCoin: Coin, fee: BigInt) -> String {
+        guard fee > 0 else { return .empty }
+        return feeCoin.fiat(gas: fee).formatToFiat(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: misc

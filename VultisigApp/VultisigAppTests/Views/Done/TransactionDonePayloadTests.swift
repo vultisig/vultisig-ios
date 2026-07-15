@@ -69,7 +69,7 @@ final class TransactionDonePayloadTests: XCTestCase {
             fromCoin: rune,
             toCoin: btc,
             fromAmount: 1.0,
-            quote: .thorchain(quote),
+            kind: .market(.thorchain(quote)),
             gas: gas,
             gasLimit: 0,
             thorchainFee: 0,

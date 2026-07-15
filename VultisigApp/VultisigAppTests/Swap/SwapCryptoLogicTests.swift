@@ -177,14 +177,41 @@ final class SwapCryptoLogicTests: XCTestCase {
 
     // MARK: - isDeposit
 
-    func testIsDepositTrueForMayaChain() {
+    func testIsDepositTrueForNativeCacao() {
         let cacao = makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true)
         XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: cacao))
     }
 
-    func testIsDepositFalseForThorChain() {
+    func testIsDepositTrueForNativeRune() {
+        // Native RUNE → MsgDeposit on THORChain itself. Was returning
+        // false before, which broke RUNE-source swaps (no inbound vault).
         let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
-        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: rune))
+        XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: rune))
+    }
+
+    func testIsDepositTrueForNativeRuneOnStagenet() {
+        let rune = makeCoin(.thorChainStagenet, ticker: "RUNE", decimals: 8, isNative: true)
+        XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: rune))
+    }
+
+    func testIsDepositTrueForNonNativeMayaToken() {
+        // MayaChain settles ALL its source swaps via MsgDeposit — native CACAO
+        // and non-native Maya assets (e.g. MAYA) alike. Keying Maya on
+        // `isNativeToken` (as the THORChain arm is) flips a non-native Maya
+        // market swap to an empty router and it fails to sign. Market Maya
+        // behaviour is unconditional deposit.
+        let mayaToken = makeCoin(.mayaChain, ticker: "MAYA", decimals: 6, isNative: false)
+        XCTAssertTrue(SwapCryptoLogic.isDeposit(fromCoin: mayaToken))
+    }
+
+    func testIsDepositFalseForBitcoin() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: btc))
+    }
+
+    func testIsDepositFalseForEthereum() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        XCTAssertFalse(SwapCryptoLogic.isDeposit(fromCoin: eth))
     }
 
     // MARK: - isAffiliate
@@ -351,6 +378,31 @@ final class SwapCryptoLogicTests: XCTestCase {
         )
 
         XCTAssertEqual(result, quoteFee)
+    }
+
+    // MARK: - limit-order network fee string
+
+    func testLimitNetworkFeeStringFormatsWholeUnitAmount() {
+        let rune = makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true)
+        // 2 * 1e8 base units = 2 RUNE; whole number → locale-separator-independent.
+        XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeString(feeCoin: rune, fee: BigInt(200_000_000)), "2 RUNE")
+    }
+
+    func testLimitNetworkFeeStringFormatsFractionalAmountWithTicker() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let str = SwapCryptoLogic.limitNetworkFeeString(feeCoin: eth, fee: BigInt(3_840_000))
+        XCTAssertTrue(str.hasSuffix(" ETH"), "got \(str)")
+        XCTAssertTrue(str.hasPrefix("0"), "sub-unit fee should render as 0.<…>; got \(str)")
+    }
+
+    func testLimitNetworkFeeStringEmptyForZeroFee() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeString(feeCoin: eth, fee: .zero), "")
+    }
+
+    func testLimitNetworkFeeFiatEmptyForZeroFee() {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        XCTAssertEqual(SwapCryptoLogic.limitNetworkFeeFiat(feeCoin: eth, fee: .zero), "")
     }
 
     // MARK: - Fixtures

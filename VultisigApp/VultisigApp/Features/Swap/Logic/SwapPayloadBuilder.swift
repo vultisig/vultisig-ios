@@ -153,7 +153,13 @@ extension SwapCryptoLogic {
             quote: transaction.quote
         )
 
-        switch transaction.quote {
+        // Limit orders never reach this builder — they construct their
+        // payload via `LimitSwapPayloadAssembler`. Guard for symmetry.
+        guard let quote = transaction.quote else {
+            throw Errors.insufficientFunds
+        }
+
+        switch quote {
         case let .mayachain(quote):
             let toAddress = fromCoin.isNativeToken ? quote.inboundAddress : quote.router
             return try await keysignFactory.buildTransfer(
@@ -246,9 +252,9 @@ extension SwapCryptoLogic {
             var swapFeeChain: String?
             var swapFeeTokenId: String?
             var swapFeeDecimals: Int?
-            if transaction.quote.evmSwapFeeBigInt != nil {
+            if quote.evmSwapFeeBigInt != nil {
                 let resolvedFeeCoin = swapFeeCoin(
-                    quote: transaction.quote,
+                    quote: quote,
                     fromCoin: fromCoin,
                     toCoin: toCoin,
                     feeCoin: transaction.feeCoin
@@ -263,7 +269,7 @@ extension SwapCryptoLogic {
                 fromAmount: amountInCoin,
                 toAmountDecimal: toDecimal,
                 quote: evmQuote,
-                provider: transaction.quote.swapProviderId ?? .oneInch,
+                provider: quote.swapProviderId ?? .oneInch,
                 swapFeeChain: swapFeeChain,
                 swapFeeTokenId: swapFeeTokenId,
                 swapFeeDecimals: swapFeeDecimals

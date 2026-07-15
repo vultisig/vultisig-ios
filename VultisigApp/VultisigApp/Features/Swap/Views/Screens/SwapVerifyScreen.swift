@@ -109,6 +109,21 @@ struct SwapVerifyScreen: View {
                 summaryTitle
                 summaryFromTo
 
+                if currentTransaction.isLimit {
+                    limitTargetPriceRow
+
+                    // A resting `=<` order has no market quote (so the shared
+                    // `showGas`/`showFees` fee rows are all suppressed) — surface
+                    // the estimated source-chain network fee, the only fee it has.
+                    if !currentTransaction.limitNetworkFeeString.isEmpty {
+                        separator
+                        getNetworkFeeCell(
+                            cryptoAmount: currentTransaction.limitNetworkFeeString,
+                            fiatAmount: currentTransaction.limitNetworkFeeFiat
+                        )
+                    }
+                }
+
                 if let providerName = currentTransaction.providerDisplayName {
                     separator
                     getValueCell(
@@ -177,6 +192,38 @@ struct SwapVerifyScreen: View {
         }
     }
 
+    /// Row shown only on limit orders, between the from/to summary and the
+    /// provider row. Matches Figma 74341:117861:
+    /// "Target Price: 1 <toCoin> = <price> <fromCoin>"  ⏱  "<expiry>h"
+    @ViewBuilder
+    var limitTargetPriceRow: some View {
+        if let limit = currentTransaction.limitContext {
+            HStack(spacing: 4) {
+                // LIM = sourceAmount(fromCoin) × targetPrice, so targetPrice is
+                // toCoin-per-1-fromCoin. The row MUST read "1 <fromCoin> = <price>
+                // <toCoin>" — passing toCoin first would confirm the reciprocal
+                // pair against the signed memo (fund-safety).
+                Text(String(
+                    format: "limitSwap.verify.targetPrice".localized,
+                    currentTransaction.fromCoin.ticker,
+                    limit.targetPrice.formatForDisplay(),
+                    currentTransaction.toCoin.ticker
+                ))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "clock")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.colors.textSecondary)
+
+                Text("\(limit.expiryHours)h")
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+        }
+    }
+
     var summaryFromToIcons: some View {
         HStack(spacing: 10) {
             ZStack {
@@ -233,7 +280,10 @@ struct SwapVerifyScreen: View {
     }
 
     var summaryTitle: some View {
-        Text(NSLocalizedString("youreSwapping", comment: ""))
+        Text(NSLocalizedString(
+            currentTransaction.isLimit ? "limitSwap.verify.title" : "youreSwapping",
+            comment: ""
+        ))
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -339,8 +389,13 @@ struct SwapVerifyScreen: View {
             .opacity(0.2)
     }
 
+    @ViewBuilder
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
+        // Limit orders execute at a fixed target price, so there is no live quote
+        // to refresh — hide the countdown on the limit verify screen.
+        if !currentTransaction.isLimit {
+            SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
+        }
     }
 
     func getValueCell(

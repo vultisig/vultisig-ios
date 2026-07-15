@@ -152,7 +152,7 @@ final class SwapAdvancedSettingsTests: XCTestCase {
             fromCoin: example.fromCoin,
             toCoin: example.toCoin,
             fromAmount: example.fromAmount,
-            quote: example.quote,
+            kind: example.kind,
             gas: example.gas,
             gasLimit: example.gasLimit,
             thorchainFee: example.thorchainFee,

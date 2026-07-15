@@ -14,7 +14,10 @@ class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
-    let httpClient: HTTPClientProtocol = HTTPClient()
+    /// Injectable so the sign-time halt gate is unit-testable with a stubbed
+    /// inbound response (same pattern as `MayachainService`); production uses
+    /// the default `HTTPClient`.
+    let httpClient: HTTPClientProtocol
 
     /// Resolves the THORChain custom RPC override. Injected so the API values
     /// are built from a dependency rather than a global reach-in; resolution
@@ -29,8 +32,12 @@ class ThorchainService: ThorchainSwapProvider {
     private var cacheSecuredAssets = ThreadSafeDictionary<String, (data: [ThorchainSecuredAsset], timestamp: Date)>()
     private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    init(
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        httpClient: HTTPClientProtocol = HTTPClient()
+    ) {
         self.resolver = resolver
+        self.httpClient = httpClient
     }
 
     /// The override-aware THORChain LCD host. Falls back to the default host

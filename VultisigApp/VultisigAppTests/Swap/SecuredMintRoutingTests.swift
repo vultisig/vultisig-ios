@@ -91,7 +91,7 @@ final class SecuredMintRoutingTests: XCTestCase {
         tx.mode = .securedMint
         XCTAssertEqual(tx.providerDisplayName, "Mint (SECURE+)")
         tx.mode = .standard
-        XCTAssertEqual(tx.providerDisplayName, tx.quote.displayName)
+        XCTAssertEqual(tx.providerDisplayName, tx.quote.flatMap(\.displayName))
     }
 
     // MARK: - Approve consent
@@ -102,7 +102,10 @@ final class SecuredMintRoutingTests: XCTestCase {
             fromCoin: fromCoin,
             toCoin: base.toCoin,
             fromAmount: base.fromAmount,
-            quote: base.quote,
+            // A secured mint is always a market kind — the two discriminators are
+            // orthogonal, and `.market` here keeps the fixture from ever pairing
+            // `.securedMint` with a limit order.
+            kind: .market(base.quote),
             mode: .securedMint,
             gas: base.gas,
             gasLimit: base.gasLimit,

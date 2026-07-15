@@ -171,7 +171,20 @@ struct SwapDoneSummaryCard: View {
             getCell(title: "to", value: fields.toAddress, valueMaxWidth: 120)
 
             if let transaction = fields.transaction {
-                if transaction.showTotalFees {
+                if transaction.isLimit {
+                    // A resting `=<` order has no market quote, so the quote-driven
+                    // fee surfaces (`showTotalFees`/`showFees`/`showGas`) are all
+                    // suppressed. Show its only fee — the estimated source-chain
+                    // network fee — as a plain cell.
+                    if !transaction.limitNetworkFeeString.isEmpty {
+                        separator
+                        getCell(
+                            title: "networkFee",
+                            value: transaction.limitNetworkFeeString,
+                            bracketValue: transaction.limitNetworkFeeFiat.isEmpty ? nil : transaction.limitNetworkFeeFiat
+                        )
+                    }
+                } else if transaction.showTotalFees {
                     separator
                     if transaction.hasFeeBreakdown {
                         totalFees(transaction)

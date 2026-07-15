@@ -64,6 +64,46 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         }
     }
 
+    // MARK: - Limit orders (no market quote) ride the THORChain gate
+
+    func testHaltedSourceChainBlocksLimitOrderSigning() async {
+        let stub = PathStubClient(responses: ["/thorchain/inbound_addresses": haltedArbInbound])
+        let interactor = makeInteractor(thor: ThorchainService(httpClient: stub))
+        await assertThrowsTradingHalted {
+            try await interactor.assertSourceChainNotHalted(transaction: makeLimitTransaction())
+        }
+    }
+
+    func testNonHaltedSourceChainProceedsForLimitOrder() async throws {
+        let stub = PathStubClient(responses: ["/thorchain/inbound_addresses": openArbInbound])
+        let interactor = makeInteractor(thor: ThorchainService(httpClient: stub))
+        try await interactor.assertSourceChainNotHalted(transaction: makeLimitTransaction())
+        let count = await stub.requestCount
+        XCTAssertEqual(count, 1, "Limit orders must run the live THORChain inbound re-check")
+    }
+
+    func testLimitOrderFailsClosedWhenInboundFetchThrows() async {
+        let interactor = makeInteractor(thor: ThorchainService(httpClient: PathStubClient(responses: [:])))
+        await assertThrowsTradingHalted {
+            try await interactor.assertSourceChainNotHalted(transaction: makeLimitTransaction())
+        }
+    }
+
+    // MARK: - Limit orders re-check funds before signing
+
+    func testLimitOrderInsufficientFundsBlocksSigning() async {
+        // The source coin has no balance, so the sign-time balance re-check must
+        // fail CLOSED with insufficientFunds rather than build the deposit
+        // payload. (refreshData skips the market balance check for limit orders.)
+        let vm = SwapVerifyViewModel(
+            transaction: makeLimitTransaction(),
+            interactor: StubGateInteractor(throwError: nil)
+        )
+        let payload = await vm.buildSwapKeysignPayload(vault: makeVault())
+        XCTAssertNil(payload, "A shortfall must block payload construction")
+        XCTAssertEqual(vm.error as? SwapCryptoLogic.Errors, .insufficientFunds)
+    }
+
     // MARK: - VM delegation
 
     func testVMReturnsFalseAndSetsErrorWhenGateThrows() async {
@@ -97,6 +137,17 @@ final class SwapVerifyHaltGateTests: XCTestCase {
         )
     }
 
+    private func makeInteractor(thor: ThorchainService) -> DefaultSwapInteractor {
+        DefaultSwapInteractor(
+            quote: SwapService.shared,
+            blockchain: BlockChainService.shared,
+            balance: BalanceService.shared,
+            fastVault: FastVaultService.shared,
+            tierResolver: VultTierService(),
+            thorchainService: thor
+        )
+    }
+
     private func assertThrowsTradingHalted(
         _ body: () async throws -> Void,
         file: StaticString = #filePath,
@@ -111,6 +162,14 @@ final class SwapVerifyHaltGateTests: XCTestCase {
     }
 
     // MARK: - Fixtures
+
+    private func makeVault() -> Vault {
+        Vault(
+            name: "Test Vault", signers: [], pubKeyECDSA: "e", pubKeyEdDSA: "d",
+            keyshares: [], localPartyID: "iPhone", hexChainCode: "hex",
+            resharePrefix: nil, libType: .DKLS
+        )
+    }
 
     private func makeEVMQuote() -> EVMQuote {
         EVMQuote(dstAmount: "1", tx: EVMQuote.Transaction(from: "0xfrom", to: "0xto", data: "0x", value: "0", gasPrice: "0", gas: 0))
@@ -139,7 +198,7 @@ final class SwapVerifyHaltGateTests: XCTestCase {
             fromCoin: arb,
             toCoin: eth,
             fromAmount: 1,
-            quote: quote ?? .mayachain(makeQuote()),
+            kind: .market(quote ?? .mayachain(makeQuote())),
             gas: .zero,
             gasLimit: .zero,
             thorchainFee: .zero,
@@ -153,6 +212,36 @@ final class SwapVerifyHaltGateTests: XCTestCase {
     private func makeCoin(_ chain: Chain, ticker: String) -> Coin {
         let meta = CoinMeta.make(chain: chain, ticker: ticker, decimals: 18, isNativeToken: true)
         return Coin(asset: meta, address: "addr-\(ticker)", hexPublicKey: "")
+    }
+
+    /// Limit order shape: `quote == nil`, `limitContext != nil`. Source chain
+    /// ARB so it matches the halted/open ARB inbound fixtures.
+    private func makeLimitTransaction() -> SwapTransaction {
+        let arb = makeCoin(.arbitrum, ticker: "ARB")
+        let btc = makeCoin(.bitcoin, ticker: "BTC")
+        let record = LimitOrderRecord(
+            inboundTxHash: "",
+            sourceAsset: "ARB.ETH",
+            sourceAmount: "1000000000000000000",
+            sourceDecimals: 18,
+            targetAsset: "BTC.BTC",
+            destAddress: "addr-BTC",
+            targetPrice: 1,
+            expiryBlocks: 14_400
+        )
+        return SwapTransaction(
+            fromCoin: arb,
+            toCoin: btc,
+            fromAmount: 1,
+            kind: .limit(record),
+            gas: .zero,
+            gasLimit: .zero,
+            thorchainFee: .zero,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: arb,
+            advancedSettings: .default
+        )
     }
 
     private func makeQuote() -> ThorchainSwapQuote {

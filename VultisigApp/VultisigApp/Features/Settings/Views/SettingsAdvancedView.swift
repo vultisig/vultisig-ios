@@ -43,6 +43,12 @@ struct SettingsAdvancedView: View {
                 isEnabled: $settingsViewModel.tssBatchEnabled
             )
 
+            SettingToggleCell(
+                title: "limitSwapToggle".localized,
+                icon: "arrow.up.right.square",
+                isEnabled: $settingsViewModel.limitSwapEnabled
+            )
+
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
                 icon: "arrow.triangle.branch",

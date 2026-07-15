@@ -62,7 +62,8 @@ enum TestStore {
             YieldPosition.self,
             YieldRedemptionRecord.self,
             DatabaseRate.self,
-            CustomRPCOverride.self
+            CustomRPCOverride.self,
+            LimitOrder.self
         ])
         let configuration = ModelConfiguration(
             schema: schema,

@@ -60,6 +60,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
     @Relationship(deleteRule: .cascade) var circlePosition: CirclePosition?
+    @Relationship(deleteRule: .cascade) var limitOrders: [LimitOrder] = []
     // Generalized yield-vault position cache, keyed (providerID, pubKeyECDSA).
     // `circlePosition` is retained for the one-time migration backfill of
     // pre-existing Circle rows; new reads/writes go here.

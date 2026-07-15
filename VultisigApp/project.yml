@@ -228,6 +228,14 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
+          # Never flatten docs into the test bundle. Fixture directories carry
+          # `README.md` files (e.g. `Fixtures/README.md`, the qbtc-voteweighted
+          # tool README); depending on the XcodeGen version's `dir/**` glob
+          # semantics these can each flatten to the bundle root as `README.md`
+          # and collide ("Multiple commands produce …/README.md") — a clean-build
+          # failure CI hits but an incremental local build can miss. Markdown is
+          # never a test resource, so exclude it wholesale.
+          - "**/*.md"
           # Exclude the fixture JSONs from the generic-sources scan; they're
           # picked up explicitly below as a folder reference so they land at
           # `__fixtures__/*.json` inside the bundle. Without this exclude,

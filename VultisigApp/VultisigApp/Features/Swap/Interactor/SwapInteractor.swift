@@ -55,6 +55,12 @@ protocol SwapInteractor {
     /// the swap details screen).
     func updateBalance(for coin: Coin) async
 
+    /// Fail-closed balance refresh for the sign-time funds check: throws if the
+    /// live balance fetch fails, so an insufficient order can't slip through
+    /// against a stale cached balance when the RPC is down. Defaults to the
+    /// non-throwing `updateBalance` for test seams; production overrides it.
+    func refreshBalanceOrThrow(for coin: Coin) async throws
+
     /// Resolve and cache the VULT discount tier (VULT balance + Thorguard NFT) for the
     /// wallet once per session. Called on screen load to warm the cache so the per-quote
     /// path reads the cached tier instead of re-running the Thorguard eth_call each time.
@@ -62,6 +68,12 @@ protocol SwapInteractor {
 }
 
 extension SwapInteractor {
+    /// Default for test seams: best-effort refresh that never throws. Production
+    /// `DefaultSwapInteractor` overrides this with the fail-closed implementation.
+    func refreshBalanceOrThrow(for coin: Coin) async throws {
+        await updateBalance(for: coin)
+    }
+
     /// Convenience for callers that re-quote an already-valid pair without
     /// slippage / recipient overrides (e.g. the verify-screen refresh).
     func fetchQuote(
