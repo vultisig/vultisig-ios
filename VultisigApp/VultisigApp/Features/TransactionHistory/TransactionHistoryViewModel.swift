@@ -109,11 +109,38 @@ class TransactionHistoryViewModel: ObservableObject {
         } catch {
             logger.error("Failed to load: \(error)")
         }
+        reconcileSelectedDetail()
+    }
+
+    /// Re-point an open detail sheet at the row we just re-read.
+    ///
+    /// `selectedDetail` is a value-type SNAPSHOT handed to the sheet when it
+    /// was presented, so refreshing `transactions` does not reach it. Left
+    /// alone, a sheet open across a tracker write keeps its old row while its
+    /// order-derived rows update underneath — the headline stuck on "In
+    /// progress" above a freshly-rendered "Refunded · 600.12 RUNE". Same
+    /// reconciliation `updateTransaction` already does for the native poller.
+    ///
+    /// A row that vanished leaves the sheet as-is rather than yanking it out
+    /// from under the user.
+    private func reconcileSelectedDetail() {
+        guard let current = selectedDetail,
+              let fresh = transactions.first(where: { $0.id == current.id }),
+              fresh != current else {
+            return
+        }
+        selectedDetail = fresh
     }
 
     /// Re-reads the order table. Cheap — an in-memory relationship read.
     func loadLimitOrders() {
         limitOrdersByTxHash = limitOrderStorage.fetchDetailsByTxHash(pubKeyECDSA: pubKeyECDSA)
+    }
+
+    /// Test-only — drives the reconcile without standing up SwiftData, which
+    /// `fetchRows` needs and a unit test can't provide.
+    func reconcileSelectedDetailForTesting() {
+        reconcileSelectedDetail()
     }
 
     /// The order behind a row, if this device has one.

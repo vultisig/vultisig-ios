@@ -147,6 +147,38 @@ final class LimitOrdersTabFilterTests: XCTestCase {
         XCTAssertNil(vm.limitOrder(for: makeRow(type: .limit, hash: "0xunknown")))
     }
 
+    // MARK: - Keeping an open sheet consistent
+
+    /// `selectedDetail` is a value-type snapshot, so a row refresh doesn't
+    /// reach an already-open sheet on its own. Unreconciled, the sheet's
+    /// headline (from the ROW) freezes while its Filled/Refunded rows (from the
+    /// ORDER) move — two statements about the same funds, disagreeing on one
+    /// screen.
+    func testAnOpenDetailSheetIsRepointedAtTheRefreshedRow() {
+        let vm = makeViewModel()
+        let stale = makeRow(type: .limit, hash: "0xlimit", status: .inProgress)
+        vm.transactions = [stale]
+        vm.selectedDetail = stale
+
+        // The tracker mirrors a terminal status onto the row, then notifies.
+        let fresh = makeRow(type: .limit, hash: "0xlimit", status: .successful, id: stale.id)
+        vm.transactions = [fresh]
+        vm.reconcileSelectedDetailForTesting()
+
+        XCTAssertEqual(vm.selectedDetail?.status, .successful, "The open sheet must follow the row it is showing")
+    }
+
+    func testReconcilingLeavesAnOpenSheetAloneWhenItsRowIsGone() {
+        let vm = makeViewModel()
+        let row = makeRow(type: .limit, hash: "0xlimit")
+        vm.selectedDetail = row
+        vm.transactions = []
+
+        vm.reconcileSelectedDetailForTesting()
+
+        XCTAssertNotNil(vm.selectedDetail, "Don't yank a sheet out from under the user")
+    }
+
     // MARK: - Fixtures
 
     private func makeViewModel() -> TransactionHistoryViewModel {
@@ -173,10 +205,11 @@ final class LimitOrdersTabFilterTests: XCTestCase {
         type: TransactionHistoryType,
         hash: String,
         status: TransactionHistoryStatus = .inProgress,
-        provider: String? = "THORChain"
+        provider: String? = "THORChain",
+        id: UUID = UUID()
     ) -> TransactionHistoryData {
         TransactionHistoryData(
-            id: UUID(),
+            id: id,
             txHash: hash,
             approveTxHash: nil,
             pubKeyECDSA: "vault-pub",
