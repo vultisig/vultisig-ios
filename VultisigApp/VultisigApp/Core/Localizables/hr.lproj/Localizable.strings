@@ -32,8 +32,6 @@
 "advancedDescription" = "Popravite, upravljajte sigurnosnim ili potpisati poruke.";
 "advancedSettings" = "Napredne postavke";
 "advancedSwap" = "Napredni swap";
-"allCosignersOnlineDescription" = "Svaki trenutačni uređaj u vašem trezoru mora sudjelovati u sesiji ponovnog dijeljenja.";
-"allCosignersOnlineTitle" = "Svi supotpisnici moraju biti na mreži";
 "allDevicesUpgradeTitle1" = "Provjeri da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
@@ -951,6 +949,8 @@
 "requestServerVaultShareTooManyRequestsError" = "U kratkom vremenu ste previše puta zatražili udio u trezoru. Pričekajte %@ minuta i pokušajte ponovo.";
 "requestServerVaultShareUnknownError" = "Nismo mogli poslati novu kopiju vašeg udjela u trezoru. Pričekajte nekoliko minuta i pokušajte ponovo.";
 "requestToBond" = "Zahtjev za Vezivanje";
+"requiredCosignersOnlineDescription" = "Dovoljno trenutačnih uređaja za dostizanje praga vašeg trezora mora sudjelovati u sesiji ponovnog dijeljenja.";
+"requiredCosignersOnlineTitle" = "Potrebni supotpisnici moraju biti na mreži";
 "resendNotification" = "Ponovo pošalji obavijest";
 "resendNotificationIn" = "Ponovo pošalji obavijest za %@";
 "reshare" = "Ponovno podijeli";

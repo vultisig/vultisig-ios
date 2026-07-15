@@ -32,8 +32,6 @@
 "advancedDescription" = "重新共享、管理安全或签署消息";
 "advancedSettings" = "高级设置";
 "advancedSwap" = "高级兑换";
-"allCosignersOnlineDescription" = "保险库中的每台现有设备都需要参与重新共享会话。";
-"allCosignersOnlineTitle" = "所有共同签名者必须在线";
 "allDevicesUpgradeTitle1" = "确保";
 "allDevicesUpgradeTitle2" = " 所有初始设备都在场 ";
 "allDevicesUpgradeTitle3" = "升级时";
@@ -951,6 +949,8 @@
 "requestServerVaultShareTooManyRequestsError" = "您在短时间内请求保险库份额的次数过多。请等待 %@ 分钟后重试";
 "requestServerVaultShareUnknownError" = "我们无法发送新的保险库份额副本。请等待几分钟后重试";
 "requestToBond" = "请求绑定";
+"requiredCosignersOnlineDescription" = "必须有足够的现有设备参与重新共享会话，以达到保险库的阈值。";
+"requiredCosignersOnlineTitle" = "所需的共同签名者必须在线";
 "resendNotification" = "重新发送通知";
 "resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";

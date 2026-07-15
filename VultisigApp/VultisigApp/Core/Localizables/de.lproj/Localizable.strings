@@ -32,8 +32,6 @@
 "advancedDescription" = "Umgestalten, Sicherheits- oder Zeichennachrichten verwalten.";
 "advancedSettings" = "Erweiterte Einstellungen";
 "advancedSwap" = "Erweiterter Swap";
-"allCosignersOnlineDescription" = "Jedes aktuelle Gerät in Ihrem Tresor muss an der Sitzung zum erneuten Teilen teilnehmen.";
-"allCosignersOnlineTitle" = "Alle Mitunterzeichner müssen online sein";
 "allDevicesUpgradeTitle1" = "Stelle sicher, dass";
 "allDevicesUpgradeTitle2" = " alle ursprünglichen Geräte vorhanden sind ";
 "allDevicesUpgradeTitle3" = "beim Upgrade";
@@ -951,6 +949,8 @@
 "requestServerVaultShareTooManyRequestsError" = "Sie haben in kurzer Zeit einen Tresoranteil zu oft angefordert. Bitte warten Sie %@ Minuten und versuchen Sie es erneut.";
 "requestServerVaultShareUnknownError" = "Wir konnten keine neue Kopie Ihrer Tresorfreigabe senden. Bitte warten Sie ein paar Minuten und versuchen Sie es erneut.";
 "requestToBond" = "Bindungsanfrage";
+"requiredCosignersOnlineDescription" = "Genügend aktuelle Geräte, um den Schwellenwert Ihres Tresors zu erreichen, müssen an der Sitzung zum erneuten Teilen teilnehmen.";
+"requiredCosignersOnlineTitle" = "Erforderliche Mitunterzeichner müssen online sein";
 "resendNotification" = "Benachrichtigung erneut senden";
 "resendNotificationIn" = "Benachrichtigung erneut senden in %@";
 "reshare" = "Erneut teilen";

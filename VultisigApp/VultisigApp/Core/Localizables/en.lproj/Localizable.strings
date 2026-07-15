@@ -32,8 +32,6 @@
 "advancedDescription" = "Reshare, manage security or sign messages.";
 "advancedSettings" = "Advanced Settings";
 "advancedSwap" = "Advanced swap";
-"allCosignersOnlineDescription" = "Every current device in your vault needs to participate in the reshare session.";
-"allCosignersOnlineTitle" = "All co-signers must be online";
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
@@ -949,6 +947,8 @@
 "requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait %@ minutes and try again.";
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestToBond" = "Request to Bond";
+"requiredCosignersOnlineDescription" = "Enough current devices to meet your vault's threshold must participate in the reshare session.";
+"requiredCosignersOnlineTitle" = "Required co-signers must be online";
 "resendNotification" = "Resend notification";
 "resendNotificationIn" = "Resend notification in %@";
 "reshare" = "Reshare";

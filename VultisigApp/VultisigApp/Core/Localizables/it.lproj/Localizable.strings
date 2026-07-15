@@ -32,8 +32,6 @@
 "advancedDescription" = "Reshare, gestire i messaggi di sicurezza o firma.";
 "advancedSettings" = "Impostazioni avanzate";
 "advancedSwap" = "Swap avanzato";
-"allCosignersOnlineDescription" = "Ogni dispositivo attuale del tuo vault deve partecipare alla sessione di ricondivisione.";
-"allCosignersOnlineTitle" = "Tutti i cofirmatari devono essere online";
 "allDevicesUpgradeTitle1" = "Assicurati che";
 "allDevicesUpgradeTitle2" = " tutti i dispositivi iniziali siano presenti ";
 "allDevicesUpgradeTitle3" = "durante l’aggiornamento";
@@ -951,6 +949,8 @@
 "requestServerVaultShareTooManyRequestsError" = "Hai richiesto una parte del vault troppe volte in un breve periodo di tempo. Per favore attendi %@ minuti e riprova.";
 "requestServerVaultShareUnknownError" = "Non potremmo inviare una nuova copia della tua condivisione Vault. Per favore attendi un paio di minuti e riprova.";
 "requestToBond" = "Richiesta di Vincolo";
+"requiredCosignersOnlineDescription" = "Alla sessione di ricondivisione deve partecipare un numero di dispositivi attuali sufficiente a raggiungere la soglia del vault.";
+"requiredCosignersOnlineTitle" = "I cofirmatari necessari devono essere online";
 "resendNotification" = "Rinvia notifica";
 "resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Ricondividi";

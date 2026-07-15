@@ -32,8 +32,6 @@
 "advancedDescription" = "재공유, 보안 관리 또는 메시지 서명.";
 "advancedSettings" = "고급 설정";
 "advancedSwap" = "고급 스왑";
-"allCosignersOnlineDescription" = "볼트의 모든 현재 기기가 재공유 세션에 참여해야 합니다.";
-"allCosignersOnlineTitle" = "모든 공동 서명자가 온라인 상태여야 합니다";
 "allDevicesUpgradeTitle1" = "업그레이드 시";
 "allDevicesUpgradeTitle2" = " 모든 초기 기기가 있어야 ";
 "allDevicesUpgradeTitle3" = "합니다";
@@ -949,6 +947,8 @@
 "requestServerVaultShareTooManyRequestsError" = "짧은 시간에 볼트 공유를 너무 많이 요청했습니다. %@ 분 후에 다시 시도하세요.";
 "requestServerVaultShareUnknownError" = "볼트 공유의 새 사본을 보낼 수 없습니다. 몇 분 후에 다시 시도하세요.";
 "requestToBond" = "본드 요청";
+"requiredCosignersOnlineDescription" = "볼트의 임계값을 충족할 만큼 충분한 현재 기기가 재공유 세션에 참여해야 합니다.";
+"requiredCosignersOnlineTitle" = "필요한 공동 서명자가 온라인 상태여야 합니다";
 "resendNotification" = "알림 재전송";
 "resendNotificationIn" = "%@ 후 알림 재전송";
 "reshare" = "재공유";

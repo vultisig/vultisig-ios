@@ -32,8 +32,6 @@
 "advancedDescription" = "Respaldar, administrar la seguridad o firmar mensajes.";
 "advancedSettings" = "Ajustes avanzados";
 "advancedSwap" = "Swap avanzado";
-"allCosignersOnlineDescription" = "Cada dispositivo actual de tu bóveda debe participar en la sesión de compartir nuevamente.";
-"allCosignersOnlineTitle" = "Todos los cofirmantes deben estar en línea";
 "allDevicesUpgradeTitle1" = "Asegúrate de que";
 "allDevicesUpgradeTitle2" = " todos los dispositivos iniciales estén presentes ";
 "allDevicesUpgradeTitle3" = "durante la actualización";
@@ -951,6 +949,8 @@
 "requestServerVaultShareTooManyRequestsError" = "Ha solicitado una parte de bóveda demasiadas veces en un corto período de tiempo. Espere %@ minutos y vuelva a intentarlo.";
 "requestServerVaultShareUnknownError" = "No pudimos enviar una nueva copia de su bóveda compartida. Espere un par de minutos y vuelva a intentarlo.";
 "requestToBond" = "Solicitud de Vinculación";
+"requiredCosignersOnlineDescription" = "Deben participar suficientes dispositivos actuales para alcanzar el umbral de tu bóveda en la sesión de compartir nuevamente.";
+"requiredCosignersOnlineTitle" = "Los cofirmantes necesarios deben estar en línea";
 "resendNotification" = "Reenviar notificación";
 "resendNotificationIn" = "Reenviar notificación en %@";
 "reshare" = "Recompartir";

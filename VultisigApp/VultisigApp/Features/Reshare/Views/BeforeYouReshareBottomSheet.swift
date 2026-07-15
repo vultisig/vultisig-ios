@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Pre-flight warning shown before starting a reshare: old backups become
-/// invalid and every current co-signer must be online for the session.
+/// invalid and enough current co-signers to meet the threshold must be online.
 struct BeforeYouReshareBottomSheet: View, BottomSheetProperties {
     let onContinue: () -> Void
 
@@ -57,8 +57,8 @@ struct BeforeYouReshareBottomSheet: View, BottomSheetProperties {
 
             ReshareWarningCard(
                 icon: "circles-5",
-                title: "allCosignersOnlineTitle".localized,
-                subtitle: "allCosignersOnlineDescription".localized
+                title: "requiredCosignersOnlineTitle".localized,
+                subtitle: "requiredCosignersOnlineDescription".localized
             )
         }
     }
