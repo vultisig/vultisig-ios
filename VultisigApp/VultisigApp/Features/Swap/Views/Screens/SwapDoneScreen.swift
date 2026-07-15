@@ -17,7 +17,11 @@
 //  Limit orders ride the same screen (`transaction.isLimit`): the
 //  detail slot shows the "find your order in Transaction History"
 //  banner and `onAppear` persists the `LimitOrderRecord` with the
-//  broadcast hash spliced in.
+//  broadcast hash spliced in. Their status comes from
+//  `LimitOrderPoller` (the source-chain poller would confirm the inbound
+//  DEPOSIT and call a resting order successful), and the `.limitOrder`
+//  verb re-casts the header copy in terms of the order rather than the
+//  transaction.
 //
 //  Audit (Mediator.shared.stop): the pre-refactor screen kicked off a
 //  5-second-delayed `Mediator.shared.stop()` here. Confirmed redundant
@@ -148,7 +152,12 @@ struct SwapDoneScreen: View {
                 ? FeeDisplay(crypto: transaction.limitNetworkFeeString, fiat: transaction.limitNetworkFeeFiat)
                 : FeeDisplay(crypto: transaction.totalFeeString, fiat: ""),
             keysignPayload: nil,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            // Re-casts the status header in terms of the ORDER ("Order placed
+            // / Resting until your price is met") instead of the transaction
+            // ("Transaction successful"), which is what the generic copy would
+            // claim about an order that has not filled.
+            verb: transaction.isLimit ? .limitOrder : .send
         )
     }
 

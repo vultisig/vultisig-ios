@@ -108,9 +108,10 @@ final class SwapKitPollerMapperTests: XCTestCase {
     // MARK: - Limit-order states (defensive)
 
     /// `resting`/`expired`/`cancelled` belong to the THORChain limit provider
-    /// and cannot reach this mapper — limit orders are routed to `ChainPoller`.
-    /// They are enumerated here (rather than swept into a `default`) so that
-    /// adding a real SwapKit status later still fails the switch to compile.
+    /// and cannot reach this mapper — limit orders are routed to
+    /// `LimitOrderPoller`. They are enumerated here (rather than swept into a
+    /// `default`) so that adding a real SwapKit status later still fails the
+    /// switch to compile.
     ///
     /// If one ever did arrive, the frame must claim neither success nor
     /// failure: this screen would be reporting on an order it knows nothing

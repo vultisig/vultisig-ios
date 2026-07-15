@@ -656,6 +656,17 @@
 "limitSwap.confirmation.byteCapError.format" = "备注过长：%d 字节（最多 %d）。请尝试更短的目标地址或非 UTXO 源。";
 "limitSwap.done.bannerDetail" = "在交易历史的限价单标签下追踪它们。";
 "limitSwap.done.bannerTitle" = "限价单";
+"limitSwap.done.reason.cancelled" = "您已取消此订单。资金已退回。";
+"limitSwap.done.reason.expired" = "订单在达到您的价格前已过期。资金已退回。";
+"limitSwap.done.reason.failed" = "无法下单。资金已退回。";
+"limitSwap.done.reason.refunded" = "订单未成交即已关闭。资金已退回。";
+"limitSwap.done.status.filled" = "订单已成交";
+"limitSwap.done.status.filledHighlight" = "已成交";
+"limitSwap.done.status.notFilled" = "订单未成交";
+"limitSwap.done.status.notFilledHighlight" = "未成交";
+"limitSwap.done.status.resting" = "订单已挂出";
+"limitSwap.done.status.restingDetail" = "挂单等待，直至达到您的价格";
+"limitSwap.done.status.submitted" = "订单已提交";
 "limitSwap.error.advancedSwapQueueDisabled" = "THORChain 暂时无法使用限价单。请稍后重试或使用市价兑换。";
 "limitSwap.error.invalidInputs" = "部分订单信息无效。请检查数量、价格和有效期后重试。";
 "limitSwap.error.limitAmountTooSmall" = "此订单金额过小，无法设置限价。请增加数量或调整价格后重试。";

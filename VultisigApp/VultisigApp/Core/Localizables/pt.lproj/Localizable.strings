@@ -656,6 +656,17 @@
 "limitSwap.confirmation.byteCapError.format" = "Memo muito longo: %d bytes (máx %d). Tente um endereço de destino mais curto ou uma origem não UTXO.";
 "limitSwap.done.bannerDetail" = "Acompanhe-as no Histórico de Transações na aba Ordens Limite.";
 "limitSwap.done.bannerTitle" = "Ordens Limite";
+"limitSwap.done.reason.cancelled" = "Você cancelou esta ordem. Seus fundos foram devolvidos.";
+"limitSwap.done.reason.expired" = "A ordem expirou antes de atingir seu preço. Seus fundos foram devolvidos.";
+"limitSwap.done.reason.failed" = "Não foi possível colocar a ordem. Seus fundos foram devolvidos.";
+"limitSwap.done.reason.refunded" = "A ordem foi encerrada sem ser executada. Seus fundos foram devolvidos.";
+"limitSwap.done.status.filled" = "Ordem executada";
+"limitSwap.done.status.filledHighlight" = "executada";
+"limitSwap.done.status.notFilled" = "Ordem não executada";
+"limitSwap.done.status.notFilledHighlight" = "não executada";
+"limitSwap.done.status.resting" = "Ordem colocada";
+"limitSwap.done.status.restingDetail" = "Aguardando até atingir seu preço";
+"limitSwap.done.status.submitted" = "Ordem enviada";
 "limitSwap.error.advancedSwapQueueDisabled" = "As ordens limite estão temporariamente indisponíveis na THORChain. Tente novamente mais tarde ou use uma troca de mercado.";
 "limitSwap.error.invalidInputs" = "Alguns detalhes da ordem são inválidos. Verifique o valor, o preço e a validade e tente novamente.";
 "limitSwap.error.limitAmountTooSmall" = "Esta ordem é pequena demais para um preço limite. Aumente o valor ou ajuste o preço e tente novamente.";
