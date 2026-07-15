@@ -6,12 +6,9 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct PeerDiscoveryInfoBanner: View {
     @Binding var isPresented: Bool
-
-    @State var animationVM: RiveViewModel? = nil
 
     var body: some View {
         ZStack {
@@ -19,12 +16,6 @@ struct PeerDiscoveryInfoBanner: View {
             content
         }
         .presentationDetents([.height(416)])
-        .onAppear {
-            animationVM = RiveViewModel(fileName: "peer_discovery_info_banner", autoPlay: true)
-        }
-        .onDisappear {
-            animationVM?.stop()
-        }
     }
 
     var content: some View {
@@ -38,23 +29,18 @@ struct PeerDiscoveryInfoBanner: View {
     }
 
     var display: some View {
-        ZStack {
-            image
-            animation
-        }
-        .edgesIgnoringSafeArea(.top)
+        image
+            .overlay(alignment: .center) {
+                TapPointerIndicator()
+                    .frame(width: 40, height: 40)
+                    .offset(x: -16, y: 5)
+            }
     }
 
     var image: some View {
         Image("secure-qr-tutorial")
             .resizable()
             .frame(width: 290, height: 230)
-    }
-
-    var animation: some View {
-        animationVM?.view()
-            .frame(width: 80, height: 80)
-            .offset(x: -16, y: -30)
     }
 
     var text: some View {
