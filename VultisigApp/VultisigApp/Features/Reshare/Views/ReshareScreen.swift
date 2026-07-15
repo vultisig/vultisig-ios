@@ -16,6 +16,7 @@ struct ReshareScreen: View {
     @State private var shouldJoinKeygen = false
     @State private var showBeforeYouReshareSheet = false
     @State private var animationVM: RiveViewModel?
+    @State private var isResolvingStart = false
 
     var body: some View {
         Screen {
@@ -39,6 +40,7 @@ struct ReshareScreen: View {
                 onStartReshareConfirmed()
             }
         }
+        .withLoading(isLoading: $isResolvingStart)
         #if os(iOS)
         .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
             guard shouldNavigate else { return }
@@ -125,29 +127,71 @@ struct ReshareScreen: View {
     }
 
     private func onStartReshareConfirmed() {
-        // A server-backed vault must collect its password first so the server
-        // is registered and joins the session; otherwise peer discovery would
-        // wait forever for a device that never connects. Every other vault
-        // goes straight to peer discovery.
-        if vault.hasServerSigner {
-            router.navigate(to: KeygenRoute.fastVaultPassword(
-                tssType: .Reshare,
-                vault: vault,
-                selectedTab: .secure,
-                isExistingVault: true,
-                singleKeygenType: nil
-            ))
-        } else {
-            router.navigate(to: KeygenRoute.peerDiscovery(
-                tssType: .Reshare,
-                vault: vault,
-                selectedTab: .secure,
-                fastSignConfig: nil,
-                keyImportInput: nil,
-                setupType: nil,
-                singleKeygenType: nil
-            ))
+        // Latch re-entry for every vault type so a double confirmation can't
+        // push two destinations. The flag also drives the loading overlay while
+        // the backend eligibility probe is in flight.
+        guard !isResolvingStart else { return }
+        isResolvingStart = true
+
+        Task {
+            // Only route to the password screen when the backend vault is
+            // CONFIRMED present. The structural `server-*` signer alone is not
+            // enough: a restored or stale vault can carry one with no backend
+            // vault, and forcing it into the password screen would dead-end (the
+            // password can never validate). `isEligibleForFastSign` returns
+            // `false` whenever presence is unconfirmed — missing, throttled, a
+            // backend/storage error, or unreachable (the backend answers 400 for
+            // both "absent" and "storage error", so those can't be told apart) —
+            // and every such case falls back to peer discovery rather than
+            // forcing password entry.
+            let isBackendConfirmedPresent = await FastVaultService.shared.isEligibleForFastSign(vault: vault)
+            isResolvingStart = false
+            switch Self.startReshareRoute(isBackendConfirmedPresent: isBackendConfirmedPresent) {
+            case .fastVaultPassword:
+                navigateToFastVaultPassword()
+            case .peerDiscovery:
+                navigateToPeerDiscovery()
+            }
         }
+    }
+
+    private func navigateToFastVaultPassword() {
+        router.navigate(to: KeygenRoute.fastVaultPassword(
+            tssType: .Reshare,
+            vault: vault,
+            selectedTab: .secure,
+            isExistingVault: true,
+            singleKeygenType: nil
+        ))
+    }
+
+    private func navigateToPeerDiscovery() {
+        router.navigate(to: KeygenRoute.peerDiscovery(
+            tssType: .Reshare,
+            vault: vault,
+            selectedTab: .secure,
+            fastSignConfig: nil,
+            keyImportInput: nil,
+            setupType: nil,
+            singleKeygenType: nil
+        ))
+    }
+
+    /// Where "Start reshare" routes once the pre-flight sheet is confirmed.
+    enum ReshareStartRoute: Equatable {
+        /// Backend vault confirmed present: collect the password so the server joins.
+        case fastVaultPassword
+        /// Presence unconfirmed (secure vault, restored/stale vault, or an
+        /// unreachable backend): reshare the actual devices via peer discovery
+        /// instead of dead-ending on a password that can never validate.
+        case peerDiscovery
+    }
+
+    /// Routes to the FastVault password screen only when the backend vault is
+    /// confirmed present. A structural `server-*` signer with an unconfirmed
+    /// backend vault must NOT be forced into password validation.
+    static func startReshareRoute(isBackendConfirmedPresent: Bool) -> ReshareStartRoute {
+        isBackendConfirmedPresent ? .fastVaultPassword : .peerDiscovery
     }
 
     private func onJoinReshare() {

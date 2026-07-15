@@ -12,18 +12,55 @@ import SwiftUI
 struct BeforeYouReshareBottomSheet: View, BottomSheetProperties {
     let onContinue: () -> Void
 
+    /// Natural height of the (unscrolled) warning content. Used to size the
+    /// scroll region so the sheet still hugs its content on roomy screens while
+    /// scrolling — instead of clipping the pinned button — under large
+    /// Accessibility Dynamic Type or on short screens.
+    @State private var contentHeight: CGFloat = .zero
+
     var bgColor: Color? { Theme.colors.bgPrimary }
 
     var body: some View {
+        VStack(spacing: 10) {
+            scrollableContent
+            PrimaryButton(title: "iUnderstand", action: onContinue)
+        }
+        .padding(.top, 10)
+        .padding(.bottom, 16)
+        .onPreferenceChange(ReshareSheetContentHeightKey.self) { contentHeight = $0 }
+    }
+
+    @ViewBuilder
+    var scrollableContent: some View {
+        if contentHeight > 0 {
+            ScrollView {
+                measuredContent
+            }
+            .frame(maxHeight: contentHeight)
+            .scrollBounceBehavior(.basedOnSize)
+        } else {
+            // First layout pass: render unscrolled so the sheet can measure the
+            // natural content height and size its detent before we wrap the
+            // content in a (greedy) ScrollView.
+            measuredContent
+        }
+    }
+
+    var measuredContent: some View {
         VStack(spacing: 10) {
             header
             warningCards
                 .padding(.top, 12)
                 .padding(.bottom, 24)
-            PrimaryButton(title: "iUnderstand", action: onContinue)
         }
-        .padding(.top, 10)
-        .padding(.bottom, 16)
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: ReshareSheetContentHeightKey.self,
+                    value: proxy.size.height
+                )
+            }
+        )
     }
 
     var header: some View {
@@ -97,6 +134,13 @@ private struct ReshareWarningCard: View {
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+private struct ReshareSheetContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = .zero
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 
