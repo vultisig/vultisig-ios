@@ -12,7 +12,7 @@ import Foundation
 /// resolves the badge colour, threshold amount, and balance comparison from the
 /// tier system (`VultDiscountTier` / `VultTierService`) — never from a design
 /// mock. Add a case here to gate a new feature behind the same upsell sheet.
-enum LockedFeature: Hashable {
+enum LockedFeature: Hashable, CaseIterable {
     case customRPC
     case swapAdvancedSettings
 

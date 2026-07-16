@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum CoinAction: String, Codable {
+enum CoinAction: String, Codable, CaseIterable {
     case send
     case swap
     case deposit

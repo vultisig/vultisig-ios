@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum NotificationBannerStyle {
+enum NotificationBannerStyle: CaseIterable {
     case success
     case error
 

@@ -20,7 +20,7 @@ enum SettingsOptionType {
     case shareLink(url: URL)
 }
 
-enum SettingsOption: String, Identifiable {
+enum SettingsOption: String, Identifiable, CaseIterable {
     var id: String { rawValue }
 
     case vaultSettings
