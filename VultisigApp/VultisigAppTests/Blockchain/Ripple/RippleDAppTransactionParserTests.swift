@@ -178,21 +178,27 @@ final class RippleDAppTransactionParserTests: XCTestCase {
 
     // MARK: - Amount validation (over-long drops / non-numeric IOU value)
 
-    /// A pathologically long drops string is rejected before BigInt conversion.
+    /// A drops string one character past the 20-char budget is rejected before
+    /// BigInt conversion — pins the off-by-one at the boundary.
     func testOverLongDropsReturnsNil() {
-        let overLong = String(repeating: "9", count: 40)
+        let justOverBudget = String(repeating: "9", count: 21)
         XCTAssertNil(parse("""
-        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"\(overLong)"}
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"\(justOverBudget)"}
+        """))
+
+        let farOverBudget = String(repeating: "9", count: 40)
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"\(farOverBudget)"}
         """))
     }
 
-    /// A drops string right at the length budget still parses.
+    /// A drops string exactly at the 20-char budget still parses.
     func testMaxLengthDropsParses() throws {
-        // 18 digits — XRPL's max drops magnitude, within the 20-char budget.
+        // 20 characters — the length budget's upper bound.
         let tx = try XCTUnwrap(parse("""
-        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"100000000000000000"}
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"10000000000000000000"}
         """))
-        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.native(xrp: "100000000000")))
+        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.native(xrp: "10000000000000")))
     }
 
     /// A non-numeric IOU `value` fails closed.
@@ -217,5 +223,10 @@ final class RippleDAppTransactionParserTests: XCTestCase {
         {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"1e-5","currency":"USD","issuer":"rIssuer"}}
         """))
         XCTAssertEqual(field(scientific, "rippleFieldAmount"), .amount(.issued(value: "1e-5", currency: "USD", issuer: "rIssuer")))
+
+        let signed = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"-1.5","currency":"USD","issuer":"rIssuer"}}
+        """))
+        XCTAssertEqual(field(signed, "rippleFieldAmount"), .amount(.issued(value: "-1.5", currency: "USD", issuer: "rIssuer")))
     }
 }
