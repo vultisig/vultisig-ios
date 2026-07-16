@@ -32,6 +32,14 @@ enum SolanaRetryableError: Error, LocalizedError, RetryableBroadcastError {
     }
 }
 
+enum SolanaWithdrawPreflightError: Error, LocalizedError {
+    case stakeNotReady
+
+    var errorDescription: String? {
+        "solanaStakingErrorWithdrawNotReady".localized
+    }
+}
+
 class SolanaService {
     static let shared = SolanaService()
 
@@ -144,6 +152,43 @@ class SolanaService {
         // Unreachable: the loop either returns a result or throws on the final
         // attempt. Present to satisfy the non-optional control-flow analysis.
         return nil
+    }
+
+    /// Simulates the exact unsigned withdrawal before an MPC keysign starts.
+    /// Solana cooldown is stake-history dependent and can span multiple epochs,
+    /// so comparing only `currentEpoch` with `deactivationEpoch` is not an
+    /// authoritative readiness check. The Stake program is: if it still reports
+    /// insufficient funds while the account is cooling, fail before users spend
+    /// time approving a transaction the chain cannot accept yet.
+    func validateSolanaWithdraw(encodedTransaction: String) async throws {
+        let response = try await httpClient.request(
+            api(.simulateTransaction(encodedTransaction: encodedTransaction)),
+            responseType: SolanaSimulateTransactionResponse.self
+        )
+
+        if let error = response.data.error {
+            throw SolanaServiceError.rpcError(message: error.message, code: error.code)
+        }
+        guard let result = response.data.result else {
+            throw SolanaServiceError.rpcError(message: "Missing simulation result", code: -1)
+        }
+        guard result.value.err != nil else { return }
+
+        let logs = result.value.logs ?? []
+        let loweredLogs = logs.joined(separator: " ").lowercased()
+        logger.warning(
+            "Solana withdraw preflight rejected the transaction:\n\(logs.joined(separator: "\n"), privacy: .public)"
+        )
+
+        if loweredLogs.contains("insufficient funds")
+            || loweredLogs.contains("balance was too small") {
+            throw SolanaWithdrawPreflightError.stakeNotReady
+        }
+
+        let detail = logs.isEmpty
+            ? "Transaction simulation failed"
+            : logs.suffix(4).joined(separator: "\n")
+        throw SolanaServiceError.rpcError(message: detail, code: -32002)
     }
 
     func getSolanaBalance(coin: Coin) async throws -> String {

@@ -1105,6 +1105,7 @@
 "solanaStakingErrorMissingPayload" = "Payload di staking Solana mancante.";
 "solanaStakingErrorMissingPayloadField" = "Al payload di staking Solana manca un campo obbligatorio: %@";
 "solanaStakingErrorValidatorPreflightFailed" = "Validazione del validatore non riuscita: %@";
+"solanaStakingErrorWithdrawNotReady" = "Questo account di staking non è ancora pronto per il prelievo. Aggiorna e riprova più tardi.";
 "solanaStakingErrorWrongOpType" = "Operazione di staking Solana non supportata.";
 "solanaStakingInactiveNotice" = "Inattivo — raffreddato e pronto per il prelievo.";
 "solanaStakingMinimumDelegation" = "Lo stake minimo è %@ SOL";

@@ -1103,6 +1103,7 @@
 "solanaStakingErrorMissingPayload" = "Solana staking payload is missing.";
 "solanaStakingErrorMissingPayloadField" = "Solana staking payload missing required field: %@";
 "solanaStakingErrorValidatorPreflightFailed" = "Validator validation failed: %@";
+"solanaStakingErrorWithdrawNotReady" = "This stake account is not ready to withdraw. Refresh and try again later.";
 "solanaStakingErrorWrongOpType" = "Unsupported Solana staking operation.";
 "solanaStakingInactiveNotice" = "Inactive — cooled down and ready to withdraw.";
 "solanaStakingMinimumDelegation" = "Minimum stake is %@ SOL";

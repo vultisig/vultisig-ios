@@ -1105,6 +1105,7 @@
 "solanaStakingErrorMissingPayload" = "缺少 Solana 质押载荷。";
 "solanaStakingErrorMissingPayloadField" = "Solana 质押载荷缺少必填字段：%@";
 "solanaStakingErrorValidatorPreflightFailed" = "验证者校验失败：%@";
+"solanaStakingErrorWithdrawNotReady" = "此质押账户尚未准备好提取。请刷新并稍后重试。";
 "solanaStakingErrorWrongOpType" = "不支持的 Solana 质押操作。";
 "solanaStakingInactiveNotice" = "未激活 — 已冷却，可提取。";
 "solanaStakingMinimumDelegation" = "最低质押为 %@ SOL";

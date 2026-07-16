@@ -57,6 +57,10 @@ private final class FakeStakingService: SolanaStakingServiceProtocol, @unchecked
         return accounts
     }
 
+    func fetchStakeAccount(address: String) async throws -> SolanaStakeAccount? {
+        accounts.first { $0.pubkey == address }
+    }
+
     func fetchEpochInfo() async throws -> SolanaEpochInfo { epoch }
     func fetchRentReserve() async throws -> UInt64 { rentReserve }
     func fetchMinDelegation() async throws -> UInt64 { 1_000_000_000 }
@@ -78,6 +82,7 @@ private final class CountingReader: SolanaStakingReading, @unchecked Sendable {
     }
 
     func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] { [] }
+    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount? { nil }
     func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo {
         SolanaEpochInfo(epoch: 800, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
     }
@@ -254,6 +259,22 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
         // cache-invalidation hook fired exactly once on the post-keysign refresh.
         XCTAssertEqual(service.stakeAccountCalls, 2)
         XCTAssertEqual(invalidated, 1)
+    }
+
+    func testWithdrawPreparationFetchesIndividualLiveAccount() async throws {
+        let expected = account(
+            pubkey: "StakeLive",
+            vote: "V1",
+            stake: 1_000_610_412,
+            activationEpoch: 998,
+            deactivationEpoch: 1_001
+        )
+        let service = FakeStakingService(accounts: [expected])
+        let vm = makeViewModel(service: service)
+
+        let fetched = try await vm.fetchStakeAccount(address: expected.pubkey)
+
+        XCTAssertEqual(fetched, expected)
     }
 
     // MARK: - Cache-first paint

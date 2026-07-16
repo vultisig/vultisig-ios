@@ -1105,6 +1105,7 @@
 "solanaStakingErrorMissingPayload" = "Nedostaje Solana staking payload.";
 "solanaStakingErrorMissingPayloadField" = "Solana staking payload nedostaje obavezno polje: %@";
 "solanaStakingErrorValidatorPreflightFailed" = "Provjera validatora nije uspjela: %@";
+"solanaStakingErrorWithdrawNotReady" = "Ovaj staking račun još nije spreman za povlačenje. Osvježite i pokušajte ponovno kasnije.";
 "solanaStakingErrorWrongOpType" = "Nepodržana Solana staking operacija.";
 "solanaStakingInactiveNotice" = "Neaktivno — ohlađeno i spremno za povlačenje.";
 "solanaStakingMinimumDelegation" = "Minimalni ulog je %@ SOL";

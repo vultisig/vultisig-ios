@@ -23,6 +23,14 @@ final class SolanaServiceBroadcastTests: XCTestCase {
         )
     }
 
+    private func makePreflightService(_ json: String) -> SolanaService {
+        SolanaService(
+            resolver: NoOverrideResolver(),
+            httpClient: SolanaPreflightStubHTTPClient(json: json),
+            broadcastRetryBackoff: .zero
+        )
+    }
+
     func test_send_returnsSignature_onFirstAttempt() async throws {
         let stub = SolanaStubHTTPClient(results: [.success("sig123")])
         let service = makeService(stub)
@@ -107,6 +115,65 @@ final class SolanaServiceBroadcastTests: XCTestCase {
         }
         XCTAssertEqual(stub.callCount, 1)
     }
+
+    func test_withdrawPreflight_allowsSuccessfulSimulation() async throws {
+        let service = makePreflightService(
+            #"{"jsonrpc":"2.0","id":1,"result":{"value":{"err":null,"logs":[]}}}"#
+        )
+
+        try await service.validateSolanaWithdraw(encodedTransaction: "dGVzdA==")
+    }
+
+    func test_withdrawPreflight_mapsReportedInsufficientFundsToNotReady() async {
+        let json = #"{"jsonrpc":"2.0","id":1,"result":{"value":{"err":{"InstructionError":[2,"InsufficientFunds"]},"logs":["Program log: ERROR: An account's balance was too small to complete the instruction","Program Stake11111111111111111111111111111111111111 failed: insufficient funds for instruction"]}}}"#
+        let service = makePreflightService(json)
+
+        do {
+            try await service.validateSolanaWithdraw(encodedTransaction: "dGVzdA==")
+            XCTFail("expected stakeNotReady")
+        } catch let error as SolanaWithdrawPreflightError {
+            guard case .stakeNotReady = error else {
+                return XCTFail("unexpected preflight error: \(error)")
+            }
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+    }
+
+    func test_withdrawPreflight_preservesOtherSimulationFailure() async {
+        let json = #"{"jsonrpc":"2.0","id":1,"result":{"value":{"err":{"InstructionError":[2,"InvalidAccountData"]},"logs":["Program failed: invalid account data"]}}}"#
+        let service = makePreflightService(json)
+
+        do {
+            try await service.validateSolanaWithdraw(encodedTransaction: "dGVzdA==")
+            XCTFail("expected rpcError")
+        } catch let error as SolanaServiceError {
+            guard case .rpcError(_, let code) = error else {
+                return XCTFail("unexpected service error: \(error)")
+            }
+            XCTAssertEqual(code, -32002)
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+    }
+
+    func test_withdrawPreflight_preservesTopLevelRpcError() async {
+        let service = makePreflightService(
+            #"{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}}"#
+        )
+
+        do {
+            try await service.validateSolanaWithdraw(encodedTransaction: "dGVzdA==")
+            XCTFail("expected rpcError")
+        } catch let error as SolanaServiceError {
+            guard case .rpcError(_, let code) = error else {
+                return XCTFail("unexpected service error: \(error)")
+            }
+            XCTAssertEqual(code, -32601)
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+    }
 }
 
 // MARK: - Test doubles
@@ -149,6 +216,31 @@ private final class SolanaStubHTTPClient: HTTPClientProtocol {
             json = #"{"jsonrpc":"2.0","id":1,"error":{"code":\#(code),"message":"\#(message)"}}"#
         }
 
+        let response = HTTPURLResponse(
+            url: URL(string: "https://test.local")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        return HTTPResponse(data: Data(json.utf8), response: response)
+    }
+}
+
+private final class SolanaPreflightStubHTTPClient: HTTPClientProtocol {
+    private let json: String
+
+    init(json: String) {
+        self.json = json
+    }
+
+    // Protocol requires `async`; the body is sync. Silence the lint here.
+    // swiftlint:disable:next async_without_await
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        guard let api = target as? SolanaAPI,
+              case .simulateTransaction = api.rpcMethod else {
+            XCTFail("expected simulateTransaction")
+            throw HTTPError.invalidResponse
+        }
         let response = HTTPURLResponse(
             url: URL(string: "https://test.local")!,
             statusCode: 200,

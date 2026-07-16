@@ -13,6 +13,49 @@ import BigInt
 import WalletCore
 import XCTest
 
+private enum WithdrawPreflightTestError: Error {
+    case rejected
+}
+
+private actor FakeWithdrawPreflight: SolanaWithdrawPreflightChecking {
+    private(set) var encodedTransaction: String?
+    private let shouldReject: Bool
+
+    init(shouldReject: Bool = false) {
+        self.shouldReject = shouldReject
+    }
+
+    // Protocol conformance requires async; this deterministic fake does no work
+    // that can suspend.
+    // swiftlint:disable:next async_without_await
+    func validateSolanaWithdraw(encodedTransaction: String) async throws {
+        self.encodedTransaction = encodedTransaction
+        if shouldReject { throw WithdrawPreflightTestError.rejected }
+    }
+}
+
+// Protocol conformance requires async reads; this deterministic fake never
+// suspends.
+// swiftlint:disable async_without_await unused_parameter
+private final class RefreshingWithdrawStakingService: SolanaStakingServiceProtocol, @unchecked Sendable {
+    let account: SolanaStakeAccount?
+
+    init(account: SolanaStakeAccount?) {
+        self.account = account
+    }
+
+    func fetchValidators() async throws -> [SolanaValidator] { [] }
+    func fetchStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] { [] }
+    func fetchStakeAccount(address: String) async throws -> SolanaStakeAccount? { account }
+    func fetchEpochInfo() async throws -> SolanaEpochInfo {
+        SolanaEpochInfo(epoch: 1_002, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
+    }
+    func fetchRentReserve() async throws -> UInt64 { 2_282_880 }
+    func fetchMinDelegation() async throws -> UInt64 { 1_000_000_000 }
+    func fetchInflationRate() async throws -> Double { 0.07 }
+}
+// swiftlint:enable async_without_await unused_parameter
+
 final class SolanaDeactivateWithdrawResolverTests: XCTestCase {
 
     private let recentBlockHash = "11111111111111111111111111111111"
@@ -59,6 +102,17 @@ final class SolanaDeactivateWithdrawResolverTests: XCTestCase {
             qbtcClaimPayload: nil, isQbtcClaim: false,
             solanaStakingPayload: stakingPayload,
             skipBroadcast: false, signData: nil
+        )
+    }
+
+    private func liveAccount(address: String, lamports: UInt64) -> SolanaStakeAccount {
+        SolanaStakeAccount(
+            pubkey: address,
+            lamports: lamports,
+            rentExemptReserve: 2_282_880,
+            staker: "Owner",
+            withdrawer: "Owner",
+            delegation: nil
         )
     }
 
@@ -113,6 +167,99 @@ final class SolanaDeactivateWithdrawResolverTests: XCTestCase {
         )
         let rebuildHashes = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
         XCTAssertEqual(relayedHashes, rebuildHashes)
+    }
+
+    func testWithdrawVerifyPreflightsExactRelayedTransaction() async throws {
+        let privateKey = try makeSignerKey()
+        let stakeAccount = try stakeAccountAddress()
+        let liveLamports: UInt64 = 1_003_200_626
+        let stakingPayload = SolanaStakingPayload.withdraw(
+            stakeAccount: stakeAccount,
+            lamports: liveLamports
+        )
+        let payload = makePayload(privateKey: privateKey, stakingPayload: stakingPayload)
+        let preflight = FakeWithdrawPreflight()
+        let stakingService = RefreshingWithdrawStakingService(
+            account: liveAccount(address: stakeAccount, lamports: liveLamports)
+        )
+
+        let signSolana = try await SolanaStakingVerifyResolver.resolve(
+            payload: stakingPayload,
+            basePayload: payload,
+            coin: payload.coin,
+            stakingService: stakingService,
+            withdrawPreflight: preflight
+        )
+
+        let preflightTransaction = await preflight.encodedTransaction
+        XCTAssertEqual(preflightTransaction, signSolana.rawTransactions.first)
+
+        let expected = try SolanaStakingSignDataResolver.resolveWithdraw(basePayload: payload)
+        XCTAssertEqual(signSolana.rawTransactions, expected.rawTransactions)
+    }
+
+    func testWithdrawVerifyStopsWhenBalanceChangedAfterConfirmation() async throws {
+        let privateKey = try makeSignerKey()
+        let stakeAccount = try stakeAccountAddress()
+        let displayedLamports: UInt64 = 1_002_893_292
+        let stakingPayload = SolanaStakingPayload.withdraw(
+            stakeAccount: stakeAccount,
+            lamports: displayedLamports
+        )
+        let payload = makePayload(privateKey: privateKey, stakingPayload: stakingPayload)
+        let preflight = FakeWithdrawPreflight()
+        let stakingService = RefreshingWithdrawStakingService(
+            account: liveAccount(address: stakeAccount, lamports: 1_003_200_626)
+        )
+
+        do {
+            _ = try await SolanaStakingVerifyResolver.resolve(
+                payload: stakingPayload,
+                basePayload: payload,
+                coin: payload.coin,
+                stakingService: stakingService,
+                withdrawPreflight: preflight
+            )
+            XCTFail("expected a changed live balance to stop keysign resolution")
+        } catch let error as SolanaWithdrawPreflightError {
+            guard case .stakeNotReady = error else {
+                return XCTFail("unexpected preflight error: \(error)")
+            }
+            let preflightTransaction = await preflight.encodedTransaction
+            XCTAssertNil(preflightTransaction)
+        } catch {
+            XCTFail("expected SolanaWithdrawPreflightError.stakeNotReady, got \(error)")
+        }
+    }
+
+    func testWithdrawVerifyStopsWhenStakeProgramPreflightRejectsCooldown() async throws {
+        let privateKey = try makeSignerKey()
+        let stakeAccount = try stakeAccountAddress()
+        let stakingPayload = SolanaStakingPayload.withdraw(
+            stakeAccount: stakeAccount,
+            lamports: 1_002_893_292
+        )
+        let payload = makePayload(privateKey: privateKey, stakingPayload: stakingPayload)
+        let preflight = FakeWithdrawPreflight(shouldReject: true)
+        let stakingService = RefreshingWithdrawStakingService(
+            account: liveAccount(address: stakeAccount, lamports: 1_002_893_292)
+        )
+
+        do {
+            _ = try await SolanaStakingVerifyResolver.resolve(
+                payload: stakingPayload,
+                basePayload: payload,
+                coin: payload.coin,
+                stakingService: stakingService,
+                withdrawPreflight: preflight
+            )
+            XCTFail("expected the rejected cooldown preflight to stop verify resolution")
+        } catch WithdrawPreflightTestError.rejected {
+            let preflightTransaction = await preflight.encodedTransaction
+            XCTAssertNotNil(preflightTransaction)
+        } catch {
+            XCTFail("expected WithdrawPreflightTestError.rejected, got \(error)")
+        }
     }
 
     func testWithdrawRejectsDeactivatePayload() throws {

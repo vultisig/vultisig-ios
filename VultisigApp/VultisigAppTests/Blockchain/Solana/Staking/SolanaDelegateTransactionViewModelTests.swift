@@ -21,6 +21,7 @@ private final class FakeDelegateStakingService: SolanaStakingServiceProtocol, @u
 
     func fetchValidators() async throws -> [SolanaValidator] { [] }
     func fetchStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] { [] }
+    func fetchStakeAccount(address: String) async throws -> SolanaStakeAccount? { nil }
     func fetchEpochInfo() async throws -> SolanaEpochInfo {
         SolanaEpochInfo(epoch: 800, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
     }

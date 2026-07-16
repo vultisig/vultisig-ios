@@ -199,6 +199,13 @@ final class SolanaStakeDefiViewModel: ObservableObject {
         await refresh(owner: owner, decimals: decimals)
     }
 
+    /// Uncached single-account read used when Withdraw is tapped, before the
+    /// Verify screen is built. This makes the amount the user reviews the exact
+    /// current account balance rather than the earlier list snapshot.
+    func fetchStakeAccount(address: String) async throws -> SolanaStakeAccount? {
+        try await stakingService.fetchStakeAccount(address: address)
+    }
+
     /// Best-effort background prime of the FULL validator set + its metadata so
     /// the validator picker opens warm. Both reads hit the process-wide shared
     /// service/provider caches, so this is safe to call on every Solana DeFi tab

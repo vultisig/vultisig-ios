@@ -7,7 +7,10 @@
 //  withdrawable only once the network epoch has advanced PAST the account's
 //  `deactivationEpoch`. Evaluating this before a (future) withdraw keysign
 //  avoids surprising the user with a transaction the Stake program would
-//  reject. Analog: `CosmosRedelegationCooldownGate`.
+//  reject. This epoch check drives the optimistic row state only; Solana's
+//  actual cooldown is stake-history dependent and can span multiple epochs, so
+//  the exact unsigned withdraw is also simulated before keysign. Analog:
+//  `CosmosRedelegationCooldownGate`.
 //
 
 import Foundation
@@ -23,7 +26,9 @@ enum SolanaEpochCooldownState: Equatable {
 enum SolanaEpochCooldownGate {
     /// Evaluates whether `stakeAccount`'s deactivated stake can be withdrawn at
     /// `currentEpoch`. Pure function over the parsed delegation + the live
-    /// epoch so the unit tests can pin the boundary deterministically.
+    /// epoch so the unit tests can pin the optimistic UI boundary
+    /// deterministically. `SolanaWithdrawPreflightChecking` remains the
+    /// authoritative gate before keysign.
     ///
     /// - A non-deactivating account (sentinel `deactivationEpoch`) is `available`
     ///   — there is nothing cooling down. (Whether it's still *delegated* is a

@@ -313,19 +313,25 @@ struct DefiChainMainScreen: View {
                 ))
             },
             onWithdraw: { row in
-                // The row gates Withdraw on a fully-inactive (cooled-down)
-                // account — `canWithdraw` IS the cooldown guard, so a still-
-                // cooling account never reaches here. A full withdraw has no
-                // editable field, so skip the confirm screen: build from the
-                // live account's whole balance and go straight to Verify.
+                // Refresh the individual account BEFORE constructing Verify so
+                // the displayed full-withdraw amount includes the latest rewards
+                // and matches the bytes that will be signed. Verify re-checks
+                // that this balance has not changed, then simulates the exact tx.
                 guard let stakeAccount = row.stakeAccount, row.canWithdraw else { return }
-                let divisor = pow(Decimal(10), coin.decimals)
-                let withdrawableAmount = Decimal(stakeAccount.lamports) / divisor
-                presentVerify(for: SolanaWithdrawTransactionBuilder(
-                    coin: coin,
-                    stakeAccount: stakeAccount.pubkey,
-                    amount: withdrawableAmount.formatToDecimal(digits: coin.decimals)
-                ))
+                presentVerify(preparing: {
+                    guard let liveAccount = try await solanaStakeViewModel.fetchStakeAccount(
+                        address: stakeAccount.pubkey
+                    ) else {
+                        throw SolanaWithdrawPreflightError.stakeNotReady
+                    }
+                    let divisor = pow(Decimal(10), coin.decimals)
+                    let withdrawableAmount = Decimal(liveAccount.lamports) / divisor
+                    return SolanaWithdrawTransactionBuilder(
+                        coin: coin,
+                        stakeAccount: liveAccount.pubkey,
+                        amount: withdrawableAmount.formatToDecimal(digits: coin.decimals)
+                    )
+                })
             },
             emptyStateView: { emptyStateView }
         )
@@ -496,17 +502,31 @@ struct DefiChainMainScreen: View {
     /// Verify shows the fee immediately; it is re-fetched there anyway, so a
     /// failure here is non-fatal.
     func presentVerify(for builder: TransactionBuilder) {
+        presentVerify(preparing: { builder })
+    }
+
+    /// Resolves any required live inputs before constructing the transaction the
+    /// user reviews. Builder-preparation failures are surfaced here rather than
+    /// navigating to a Verify screen with stale data.
+    func presentVerify(
+        preparing builderProvider: @escaping @MainActor () async throws -> TransactionBuilder
+    ) {
         Task { @MainActor in
             isLoading = true
             defer { isLoading = false }
-            var sendTx = builder.buildSendTransaction(vault: vault)
             do {
-                let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
-                sendTx = sendTx.copy(gas: chainSpecific.gas)
+                let builder = try await builderProvider()
+                var sendTx = builder.buildSendTransaction(vault: vault)
+                do {
+                    let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
+                    sendTx = sendTx.copy(gas: chainSpecific.gas)
+                } catch {
+                    // Non-fatal: gas is re-fetched during Verify.
+                }
+                router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
             } catch {
-                // Non-fatal: gas is re-fetched during Verify.
+                self.error = HelperError.runtimeError(error.localizedDescription)
             }
-            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }
 }

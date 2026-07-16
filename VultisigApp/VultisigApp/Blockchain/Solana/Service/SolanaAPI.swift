@@ -36,6 +36,10 @@ struct SolanaAPI: TargetType {
 
     enum Method {
         case sendTransaction(encodedTransaction: String)
+        /// Simulates an unsigned, base64-encoded transaction against current
+        /// bank state. Used as the authoritative pre-keysign cooldown gate for
+        /// stake withdrawals.
+        case simulateTransaction(encodedTransaction: String)
         case getBalance(address: String)
         case getRecentPrioritizationFees
         case getLatestBlockhash
@@ -104,6 +108,22 @@ struct SolanaAPI: TargetType {
                 rpcEnvelope(
                     method: "sendTransaction",
                     params: [encodedTransaction, ["encoding": "base64", "preflightCommitment": "confirmed"]]
+                ),
+                .jsonEncoding
+            )
+        case .simulateTransaction(let encodedTransaction):
+            return .requestParameters(
+                rpcEnvelope(
+                    method: "simulateTransaction",
+                    params: [
+                        encodedTransaction,
+                        [
+                            "encoding": "base64",
+                            "commitment": "confirmed",
+                            "sigVerify": false,
+                            "replaceRecentBlockhash": true
+                        ] as [String: Any]
+                    ]
                 ),
                 .jsonEncoding
             )
@@ -227,6 +247,20 @@ struct SolanaSendTransactionResponse: Decodable {
                 let container = try decoder.singleValueContainer()
                 stringValue = try? container.decode(String.self)
             }
+        }
+    }
+}
+
+struct SolanaSimulateTransactionResponse: Decodable {
+    let result: Result?
+    let error: SolanaSendTransactionResponse.Error?
+
+    struct Result: Decodable {
+        let value: Value
+
+        struct Value: Decodable {
+            let err: SolanaSendTransactionResponse.Error.AnyCodableErr?
+            let logs: [String]?
         }
     }
 }

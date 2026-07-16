@@ -1105,6 +1105,7 @@
 "solanaStakingErrorMissingPayload" = "Solana-Staking-Payload fehlt.";
 "solanaStakingErrorMissingPayloadField" = "Solana-Staking-Payload fehlt erforderliches Feld: %@";
 "solanaStakingErrorValidatorPreflightFailed" = "Validator-Prüfung fehlgeschlagen: %@";
+"solanaStakingErrorWithdrawNotReady" = "Dieses Stake-Konto ist noch nicht zur Auszahlung bereit. Aktualisiere die Ansicht und versuche es später erneut.";
 "solanaStakingErrorWrongOpType" = "Nicht unterstützte Solana-Staking-Operation.";
 "solanaStakingInactiveNotice" = "Inaktiv — abgekühlt und bereit zum Abheben.";
 "solanaStakingMinimumDelegation" = "Mindest-Stake beträgt %@ SOL";

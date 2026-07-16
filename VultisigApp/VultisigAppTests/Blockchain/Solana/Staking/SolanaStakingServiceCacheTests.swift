@@ -44,6 +44,8 @@ private final class CountingReader: SolanaStakingReading, @unchecked Sendable {
         return []
     }
 
+    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount? { nil }
+
     func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo {
         SolanaEpochInfo(epoch: 993, slotIndex: 1, slotsInEpoch: 432_000, absoluteSlot: 1)
     }

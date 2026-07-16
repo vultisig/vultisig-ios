@@ -21,6 +21,7 @@ import OSLog
 protocol SolanaStakingServiceProtocol: Sendable {
     func fetchValidators() async throws -> [SolanaValidator]
     func fetchStakeAccounts(owner: String) async throws -> [SolanaStakeAccount]
+    func fetchStakeAccount(address: String) async throws -> SolanaStakeAccount?
     func fetchEpochInfo() async throws -> SolanaEpochInfo
     func fetchRentReserve() async throws -> UInt64
     func fetchMinDelegation() async throws -> UInt64
@@ -33,6 +34,7 @@ protocol SolanaStakingServiceProtocol: Sendable {
 protocol SolanaStakingReading {
     func fetchSolanaValidators() async throws -> [SolanaValidator]
     func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount]
+    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount?
     func fetchSolanaEpochInfo() async throws -> SolanaEpochInfo
     func fetchSolanaRentReserve() async throws -> UInt64
     func fetchSolanaMinDelegation() async throws -> UInt64
@@ -92,6 +94,12 @@ actor SolanaStakingService: SolanaStakingServiceProtocol {
         // Intentionally uncached — stake accounts must reflect a just-submitted
         // stake/unstake and newly accrued (auto-compounded) rewards.
         try await solanaService.fetchSolanaStakeAccounts(owner: owner)
+    }
+
+    func fetchStakeAccount(address: String) async throws -> SolanaStakeAccount? {
+        // Intentionally uncached — Verify uses this to replace the DeFi row's
+        // snapshot with the exact balance that will be withdrawn.
+        try await solanaService.fetchSolanaStakeAccount(address: address)
     }
 
     func fetchEpochInfo() async throws -> SolanaEpochInfo {

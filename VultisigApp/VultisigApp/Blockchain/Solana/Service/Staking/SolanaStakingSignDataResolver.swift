@@ -148,9 +148,10 @@ enum SolanaStakingSignDataResolver {
     }
 
     /// Resolves the `SignSolana` artefact for a withdraw payload. The withdraw
-    /// CTA is gated upstream by `SolanaEpochCooldownGate` (full inactivity), so
-    /// no cooldown check is repeated here — only the field/shape validation and
-    /// the byte-parity build. Carries the stake account + the withdrawal amount.
+    /// CTA has an optimistic epoch gate upstream. The exact transaction is
+    /// simulated by `SolanaStakingVerifyResolver` after this byte-parity build,
+    /// before keysign, because real cooldown is stake-history dependent. Carries
+    /// the stake account + the withdrawal amount.
     static func resolveWithdraw(basePayload: KeysignPayload) throws -> SignSolana {
         guard let payload = basePayload.solanaStakingPayload else {
             throw Errors.missingPayload

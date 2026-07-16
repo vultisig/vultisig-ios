@@ -86,6 +86,20 @@ final class SolanaStakingAPITests: XCTestCase {
         XCTAssertTrue(rpcParams.isEmpty)
     }
 
+    func testWithdrawSimulationUsesUnsignedBase64AndReplacesBlockhash() throws {
+        let encodedTransaction = "dGVzdC10cmFuc2FjdGlvbg=="
+        let envelope = try params(for: .simulateTransaction(encodedTransaction: encodedTransaction))
+
+        XCTAssertEqual(envelope["method"] as? String, "simulateTransaction")
+        let rpcParams = try XCTUnwrap(envelope["params"] as? [Any])
+        XCTAssertEqual(rpcParams.first as? String, encodedTransaction)
+        let config = try XCTUnwrap(rpcParams[1] as? [String: Any])
+        XCTAssertEqual(config["encoding"] as? String, "base64")
+        XCTAssertEqual(config["commitment"] as? String, "confirmed")
+        XCTAssertEqual(config["sigVerify"] as? Bool, false)
+        XCTAssertEqual(config["replaceRecentBlockhash"] as? Bool, true)
+    }
+
     func testMinDelegationPublicHostsDropTheProxyPath() {
         // The public endpoints are complete JSON-RPC URLs, so the `/solana/`
         // proxy path must not be appended.
@@ -124,6 +138,17 @@ final class SolanaStakingAPITests: XCTestCase {
             from: Data(json.utf8)
         )
         XCTAssertEqual(response.result.value, 1_000_000_000)
+    }
+
+    func testWithdrawSimulationResponseDecodesStakeProgramFailure() throws {
+        let json = #"{"jsonrpc":"2.0","result":{"value":{"err":{"InstructionError":[2,"InsufficientFunds"]},"logs":["Program log: ERROR: An account's balance was too small to complete the instruction"]}},"id":1}"#
+        let response = try JSONDecoder().decode(
+            SolanaSimulateTransactionResponse.self,
+            from: Data(json.utf8)
+        )
+
+        XCTAssertNotNil(response.result?.value.err)
+        XCTAssertEqual(response.result?.value.logs?.count, 1)
     }
 
     func testVoteAccountsResponseDecodesAndTagsDelinquency() throws {
