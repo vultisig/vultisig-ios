@@ -11,7 +11,7 @@ struct VaultIconTypeView: View {
     let isFastVault: Bool
 
     var iconName: String {
-        isFastVault ? "lightning" : "shield"
+        isFastVault ? "bolt" : "shield"
     }
 
     var iconColor: Color {

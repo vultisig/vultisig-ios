@@ -22,7 +22,7 @@ struct ForegroundNotificationData: Equatable {
         case .swap:
             return "repeat-left-right"
         case .send:
-            return "arrow-up-from-dot"
+            return "arrow-up-from-line"
         case .generic:
             return "bell"
         }

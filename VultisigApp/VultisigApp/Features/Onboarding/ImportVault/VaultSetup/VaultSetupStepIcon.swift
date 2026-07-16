@@ -89,7 +89,7 @@ enum VaultSetupStepState: Equatable {
     Screen {
         VStack {
             VaultSetupStepIcon(state: .valid, icon: "feather")
-            VaultSetupStepIcon(state: .active, icon: "email")
+            VaultSetupStepIcon(state: .active, icon: "envelope")
             VaultSetupStepIcon(state: .inactive, icon: "focus-lock")
         }
     }

@@ -87,7 +87,7 @@ struct AddressBookCell: View {
     }
 
     var rearrangeIcon: some View {
-        Icon(named: "grip-vertical", color: Theme.colors.textSecondary)
+        Icon(named: "grip-dots-vertical", color: Theme.colors.textSecondary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }

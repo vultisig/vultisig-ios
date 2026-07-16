@@ -112,7 +112,7 @@ struct AdvancedSwapSheet: View {
                 if isGasLimitSupported {
                     Separator()
                     AdvancedSwapMainRow(
-                        icon: "gas",
+                        icon: "gas-pump",
                         title: "gasLimit".localized,
                         value: gasLimitValue
                     ) {

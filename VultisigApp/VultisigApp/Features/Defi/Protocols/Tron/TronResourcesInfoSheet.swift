@@ -80,7 +80,7 @@ struct TronResourcesInfoSheet: View {
         VStack(spacing: 12) {
             accordionSection(
                 resource: .bandwidth,
-                icon: "gauge",
+                icon: "gauge-2",
                 title: "tronBandwidth".localized,
                 accentColor: Theme.colors.alertSuccess,
                 description: "tronBandwidthDescription".localized
@@ -88,7 +88,7 @@ struct TronResourcesInfoSheet: View {
 
             accordionSection(
                 resource: .energy,
-                icon: "lightning",
+                icon: "bolt",
                 title: "tronEnergy".localized,
                 accentColor: Theme.colors.alertWarning,
                 description: "tronEnergyDescription".localized

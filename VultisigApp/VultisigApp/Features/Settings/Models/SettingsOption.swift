@@ -83,17 +83,17 @@ enum SettingsOption: String, Identifiable {
     var icon: String? {
         switch self {
         case .vaultSettings:
-            return "settings"
+            return "gear"
         case .vultDiscountTiers:
             return "coins"
         case .language:
-            return "languages"
+            return "language"
         case .currency:
-            return "circle-dollar-sign"
+            return "circle-dollar"
         case .notifications:
             return "bell"
         case .addressBook:
-            return "book-marked"
+            return "book-bookmark"
         case .referralCode:
             return "megaphone"
         case .faq:

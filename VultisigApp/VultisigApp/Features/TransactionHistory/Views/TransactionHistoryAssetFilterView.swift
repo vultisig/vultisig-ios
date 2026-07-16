@@ -24,7 +24,7 @@ struct TransactionHistoryAssetFilterView: View {
             cellBuilder: cellBuilder,
             emptyStateBuilder: {
                 ActionBannerView(
-                    icon: "calendar-days",
+                    icon: "calendar",
                     title: "noTransactionsYet".localized,
                     subtitle: "noTransactionsYetSubtitle".localized,
                     buttonTitle: "",

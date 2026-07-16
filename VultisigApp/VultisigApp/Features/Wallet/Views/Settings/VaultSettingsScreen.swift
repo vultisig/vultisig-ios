@@ -96,7 +96,7 @@ struct VaultSettingsScreen: View {
 
     var fastSigningBiometrics: some View {
         SettingsOptionView(
-            icon: "lightning",
+            icon: "bolt",
             title: "biometricsFastSigning".localized,
             showSeparator: false
         ) {
@@ -173,7 +173,7 @@ struct VaultSettingsScreen: View {
             showUpgradeYourVaultSheet = true
         } label: {
             SettingsCommonOptionView(
-                icon: "arrow-up-from-dot",
+                icon: "arrow-up-from-line",
                 title: "migrate".localized,
                 subtitle: "migrateVault".localized
             )

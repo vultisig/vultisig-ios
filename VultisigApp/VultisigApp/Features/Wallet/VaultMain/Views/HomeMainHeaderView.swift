@@ -84,7 +84,7 @@ struct HomeMainHeaderView: View {
                 Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
             }
             .accessibilityIdentifier(AccessibilityID.Home.historyButton)
-            ToolbarButton(image: "settings", action: settingsAction)
+            ToolbarButton(image: "gear", action: settingsAction)
                 .accessibilityIdentifier(AccessibilityID.Home.settingsButton)
         }
     }

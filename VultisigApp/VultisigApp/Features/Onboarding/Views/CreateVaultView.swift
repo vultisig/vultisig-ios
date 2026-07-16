@@ -240,13 +240,13 @@ extension CreateVaultView {
     }
 
     var scanPhoneButton: some View {
-        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qrcode", type: .secondary) {
             showSheet = true
         }
     }
 
     var scanMacButton: some View {
-        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qrcode", type: .secondary) {
             navigateToGeneralQRImport = true
         }
     }
@@ -265,7 +265,7 @@ extension CreateVaultView {
     }
 
     var scanButton: some View {
-        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qrcode", type: .secondary) {
             navigateToScanQR = true
         }
     }

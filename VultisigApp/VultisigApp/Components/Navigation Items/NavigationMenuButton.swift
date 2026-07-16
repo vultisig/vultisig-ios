@@ -11,7 +11,7 @@ struct NavigationMenuButton: View {
     var tint: Color = Theme.colors.textPrimary
 
     var body: some View {
-        Image("MenuIcon")
+        Image("menu")
             .font(Theme.fonts.bodyLMedium)
             .foregroundStyle(tint)
     }

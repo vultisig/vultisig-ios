@@ -104,7 +104,7 @@ struct VaultAdvancedSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.customMessage(vault: vault))
         } label: {
-            SettingsCommonOptionView(icon: "file-pen-line", title: "sign".localized, subtitle: "signCustomMessage".localized)
+            SettingsCommonOptionView(icon: "file-pen", title: "sign".localized, subtitle: "signCustomMessage".localized)
         }
     }
 

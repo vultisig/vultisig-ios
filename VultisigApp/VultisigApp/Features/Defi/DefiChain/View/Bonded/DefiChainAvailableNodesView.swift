@@ -56,7 +56,7 @@ struct DefiChainAvailableNodesView: View {
                 BondNodeStateView(state: node.state)
             }
 
-            DefiButton(title: "requestToBond".localized, icon: "arrow-up-right-1", type: .secondary) {
+            DefiButton(title: "requestToBond".localized, icon: "arrow-up-right", type: .secondary) {
                 onBond(node)
             }
             .disabled(!node.state.canBond || !canAddBond)

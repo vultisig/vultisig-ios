@@ -37,7 +37,7 @@ struct VaultSetupScreen: View {
     private var stepIcons: [String] {
         var icons = ["feather"]
         if viewModel.showFastSignFields {
-            icons.append(contentsOf: ["email", "focus-lock"])
+            icons.append(contentsOf: ["envelope", "focus-lock"])
         }
         return icons
     }

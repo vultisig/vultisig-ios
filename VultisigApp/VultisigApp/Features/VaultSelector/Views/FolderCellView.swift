@@ -21,7 +21,7 @@ struct FolderCellView: View {
         Button(action: action) {
             VaultEditCellContainer(isEditing: $isEditing, showDragIndicator: true) {
                 HStack {
-                    Icon(named: isSelected ? "folder-fill" : "folder", color: Theme.colors.alertInfo, size: 16)
+                    Icon(named: isSelected ? "folder-filled" : "folder", color: Theme.colors.alertInfo, size: 16)
                         .padding(12)
                         .background(Circle().fill(Theme.colors.bgSurface2))
                         .overlay(

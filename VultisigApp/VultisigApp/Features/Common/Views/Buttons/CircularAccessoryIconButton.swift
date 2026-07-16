@@ -44,7 +44,7 @@ struct CircularAccessoryIconButton: View {
 
 #Preview {
     ScrollView {
-        CircularAccessoryIconButton(icon: "settings") {}
+        CircularAccessoryIconButton(icon: "gear") {}
         CircularAccessoryIconButton(icon: "x") {}
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)

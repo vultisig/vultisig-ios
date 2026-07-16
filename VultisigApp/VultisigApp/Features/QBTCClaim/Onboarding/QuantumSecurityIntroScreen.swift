@@ -79,7 +79,7 @@ struct QuantumSecurityIntroScreen: View {
                 subtitle: "quantumSecurityFeatureGenerateSubtitle".localized
             )
             QuantumSecurityFeatureRow(
-                icon: "keyboard-cable",
+                icon: "keyboard",
                 title: "quantumSecurityFeatureLinkTitle".localized,
                 subtitle: "quantumSecurityFeatureLinkSubtitle".localized
             )

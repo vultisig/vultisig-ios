@@ -211,7 +211,7 @@ struct SolanaStakeDefiView<EmptyState: View>: View {
     private func apyRow(for row: SolanaStakeAccountRow) -> some View {
         if let apyText = apyDisplay(for: row) {
             HStack(spacing: 4) {
-                Icon(named: "percent", color: Theme.colors.textTertiary, size: 16)
+                Icon(named: "percentage", color: Theme.colors.textTertiary, size: 16)
                 Text("solanaStakingApy".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)

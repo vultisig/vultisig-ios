@@ -22,7 +22,7 @@ enum LockedFeature: Hashable {
         case .customRPC:
             return "signal-tower"
         case .swapAdvancedSettings:
-            return "sliders"
+            return "slider"
         }
     }
 

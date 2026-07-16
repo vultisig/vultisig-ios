@@ -33,7 +33,7 @@ struct SearchTextField: View {
     var body: some View {
         HStack(spacing: 0) {
             Icon(
-                named: "magnifying-glass",
+                named: "magnifier",
                 color: Theme.colors.textSecondary,
                 size: 16
             )

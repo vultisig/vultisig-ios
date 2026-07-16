@@ -31,7 +31,7 @@ struct ChooseBackupSheetView: View, BottomSheetProperties {
                 buttonView(
                     title: "deviceBackupTitle".localized,
                     subtitle: "deviceBackupDescription".localized,
-                    icon: "tablet-smartphone",
+                    icon: "tablet-mobile",
                     action: onDeviceBackup
                 )
                 buttonView(

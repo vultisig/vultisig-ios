@@ -58,7 +58,7 @@ struct DefiChainActiveNodeView: View {
             .lineLimit(1)
 
             HStack(spacing: 4) {
-                Icon(named: "percent", size: 16)
+                Icon(named: "percentage", size: 16)
                 Text("apy".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -90,7 +90,7 @@ struct DefiChainActiveNodeView: View {
     var nextChurnView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "calendar-days", color: Theme.colors.textTertiary, size: 16)
+                Icon(named: "calendar", color: Theme.colors.textTertiary, size: 16)
                 Text("nextChurn".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -117,7 +117,7 @@ struct DefiChainActiveNodeView: View {
 
     var bondButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "unbond".localized, icon: "broken-chain-3", type: .secondary) {
+            DefiButton(title: "unbond".localized, icon: "link-slash", type: .secondary) {
                 onUnbond(activeNode.node)
             }
             .disabled(unbondDisabled)

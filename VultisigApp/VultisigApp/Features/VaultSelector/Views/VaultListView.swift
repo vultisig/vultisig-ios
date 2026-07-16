@@ -165,7 +165,7 @@ struct VaultListView: View {
         ListBottomSection(content: {
             PrimaryButton(
                 title: "addFolder",
-                leadingIcon: "folder-add",
+                leadingIcon: "folder-plus",
                 type: .secondary,
                 action: onAddFolder
             )

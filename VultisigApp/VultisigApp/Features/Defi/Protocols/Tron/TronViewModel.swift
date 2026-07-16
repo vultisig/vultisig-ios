@@ -29,9 +29,9 @@ enum TronResourceType: String, CaseIterable, FilledSegmentedControlType {
     var icon: String? {
         switch self {
         case .bandwidth:
-            return "gauge"
+            return "gauge-2"
         case .energy:
-            return "lightning"
+            return "bolt"
         }
     }
 

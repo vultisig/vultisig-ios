@@ -222,7 +222,7 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
     private func apyRow(for position: CosmosStakePositionRow) -> some View {
         if let apyText = apyDisplay(for: position) {
             HStack(spacing: 4) {
-                Icon(named: "percent", color: Theme.colors.textTertiary, size: 16)
+                Icon(named: "percentage", color: Theme.colors.textTertiary, size: 16)
                 Text("cosmosStakingApy".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
