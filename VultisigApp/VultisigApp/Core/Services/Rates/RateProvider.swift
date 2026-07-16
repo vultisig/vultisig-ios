@@ -27,6 +27,15 @@ final class RateProvider {
 
     static let shared = RateProvider()
 
+    /// Fires on the main actor whenever the cached rate set changes — the initial
+    /// load of persisted rates and every `save(rates:)`.
+    ///
+    /// Rates are an otherwise silent cache: callers that render a *precomputed*
+    /// fiat value (rather than reading `rate(for:)` inside `body`) have no way to
+    /// learn that a rate arrived, so their fiat stays frozen at whatever was
+    /// cached when they last recomputed. This signal is that missing link.
+    let ratesDidChange = PassthroughSubject<Void, Never>()
+
     static func cryptoId(for coin: CoinMeta) -> CryptoId {
         switch coin.chain.chainType {
         case .EVM, .Solana, .Sui, .THORChain:
@@ -66,6 +75,10 @@ final class RateProvider {
             do {
                 let objects = try Storage.shared.modelContext.fetch(descriptor)
                 self.rates = Set(objects.map { Rate(object: $0) })
+                // Persisted rates make fiat renderable immediately on a warm
+                // start; announce them so views that cached a pre-load fiat
+                // value recompute instead of waiting on a network refresh.
+                self.ratesDidChange.send()
             } catch {
                 print("Failed to load rates: \(error.localizedDescription)")
             }
@@ -155,5 +168,6 @@ final class RateProvider {
         }
 
         try Storage.shared.modelContext.save()
+        ratesDidChange.send()
     }
 }
