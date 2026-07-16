@@ -20,13 +20,28 @@ struct TapPointerIndicator: View {
     private let haloDiameter: CGFloat = 34
     private let pulseDuration: TimeInterval = 1.6
 
+    /// Halo scale relative to `haloDiameter`. Reduce Motion holds it partway
+    /// out so the ring stays visibly larger than the core instead of collapsing
+    /// behind it; otherwise it expands from the core to full size as it pulses.
+    private var haloScale: CGFloat {
+        if reduceMotion { return 0.75 }
+        return isPulsing ? 1 : coreDiameter / haloDiameter
+    }
+
+    /// Halo opacity. Reduce Motion holds a steady faint ring; otherwise it fades
+    /// out as the pulse expands.
+    private var haloOpacity: Double {
+        if reduceMotion { return 0.35 }
+        return isPulsing ? 0 : 0.8
+    }
+
     var body: some View {
         ZStack {
             Circle()
                 .fill(Theme.colors.textPrimary)
                 .frame(width: haloDiameter, height: haloDiameter)
-                .scaleEffect(isPulsing ? 1 : coreDiameter / haloDiameter)
-                .opacity(isPulsing ? 0 : 0.8)
+                .scaleEffect(haloScale)
+                .opacity(haloOpacity)
 
             Circle()
                 .fill(Theme.colors.textPrimary)
@@ -34,7 +49,8 @@ struct TapPointerIndicator: View {
         }
         .accessibilityHidden(true)
         .onAppear {
-            // Reduce Motion keeps the halo as a static ring rather than pulsing.
+            // Reduce Motion shows a static ring (see haloScale/haloOpacity)
+            // rather than pulsing.
             guard !reduceMotion else { return }
             withAnimation(.easeOut(duration: pulseDuration).repeatForever(autoreverses: false)) {
                 isPulsing = true
