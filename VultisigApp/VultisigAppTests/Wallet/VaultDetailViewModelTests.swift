@@ -111,6 +111,38 @@ final class VaultDetailViewModelTests: XCTestCase {
         await fulfillment(of: [rebuilt], timeout: 2)
     }
 
+    /// Rates land once per chain group, and `chainRows` orders by fiat desc, so a
+    /// rate-driven rebuild that re-sorted would reshuffle the list under the user
+    /// mid-refresh. The rate rebuild must refresh values in place and leave
+    /// ordering to `updateBalance`'s tail.
+    func testRateArrivalRefreshesFiatWithoutReorderingRows() async throws {
+        let btcId = "order-btc-\(UUID().uuidString)"
+        let ethId = "order-eth-\(UUID().uuidString)"
+        let vault = makeVault(pubKey: "vault-order", chains: [])
+        vault.coins = [
+            makePricedCoin(chain: .bitcoin, ticker: "BTC", providerId: btcId, rawBalance: "100000000"),
+            makePricedCoin(chain: .ethereum, ticker: "ETH", providerId: ethId, rawBalance: "1000000000000000000")
+        ]
+
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+        let orderBefore = vm.rows.map(\.chain)
+
+        // Price ETH far above BTC. A re-sorting rebuild would flip the order.
+        let rebuilt = expectation(description: "fiat refreshed")
+        rateCancellable = vm.$rows.dropFirst().sink { rows in
+            if rows.contains(where: { $0.fiatBalance != Decimal.zero.formatToFiat(includeCurrencySymbol: true) }) {
+                rebuilt.fulfill()
+            }
+        }
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: ethId, value: 900_000)
+        ])
+        await fulfillment(of: [rebuilt], timeout: 2)
+
+        XCTAssertEqual(vm.rows.map(\.chain), orderBefore, "a rate arrival must not reorder the list")
+    }
+
     /// A rate for a coin this vault does not hold must not republish `rows` —
     /// `save(rates:)` fires once per chain group, so an unguarded rebuild would
     /// churn the list several times per refresh.

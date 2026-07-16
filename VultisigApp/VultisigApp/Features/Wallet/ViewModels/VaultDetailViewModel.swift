@@ -56,13 +56,23 @@ class VaultDetailViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// Recomputes the projection against the currently cached rates. No-ops when
-    /// nothing changed, so the repeated `save(rates:)` calls of a single refresh
-    /// collapse into at most one publish.
+    /// Recomputes the projection's fiat against the currently cached rates,
+    /// **keeping the current row order**.
+    ///
+    /// `chainRows(vault:)` orders by fiat descending, and rates land once per
+    /// chain group, so re-sorting here would reshuffle the list under the user
+    /// several times per refresh. A rate arriving should refresh the values, not
+    /// reorder — the authoritative fiat-desc re-sort stays on `updateBalance`'s
+    /// tail, which keeps the deliberate "no stale-then-fresh double reorder"
+    /// behaviour intact. No-ops when nothing changed.
     private func rebuildRowsForRateChange() {
-        guard let vault = rowsVault, !chains.isEmpty else { return }
-        let rebuilt = logic.chainRows(vault: vault)
-        guard rebuilt != rows else { return }
+        guard let vault = rowsVault, !rows.isEmpty else { return }
+        let byChain = Dictionary(
+            logic.chainRows(vault: vault).map { ($0.chain, $0) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        let rebuilt = rows.compactMap { byChain[$0.chain] }
+        guard rebuilt.count == rows.count, rebuilt != rows else { return }
         rows = rebuilt
     }
 
