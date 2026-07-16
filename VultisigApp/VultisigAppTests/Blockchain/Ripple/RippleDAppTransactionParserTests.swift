@@ -142,4 +142,37 @@ final class RippleDAppTransactionParserTests: XCTestCase {
         {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"currency":"USD","issuer":"rIssuer"}}
         """))
     }
+
+    // MARK: - Transaction-type allowlist
+
+    /// Every supported type decodes; a partial decode is never rendered for a
+    /// type outside the allowlist.
+    func testSupportedTransactionTypesParse() {
+        let supported: [String] = [
+            "{\"TransactionType\":\"Payment\",\"Account\":\"rAcc\",\"Destination\":\"rDest\",\"Amount\":\"1000000\"}",
+            "{\"TransactionType\":\"OfferCreate\",\"Account\":\"rAcc\",\"TakerGets\":\"5000000\",\"TakerPays\":{\"value\":\"10\",\"currency\":\"USD\",\"issuer\":\"rIssuer\"}}",
+            "{\"TransactionType\":\"OfferCancel\",\"Account\":\"rAcc\",\"OfferSequence\":42}",
+            "{\"TransactionType\":\"TrustSet\",\"Account\":\"rAcc\",\"LimitAmount\":{\"value\":\"1000\",\"currency\":\"USD\",\"issuer\":\"rIssuer\"}}"
+        ]
+        for json in supported {
+            XCTAssertNotNil(parse(json), "expected a supported type to parse: \(json)")
+        }
+    }
+
+    /// An unsupported type must fail closed even when it carries fields the
+    /// decoder knows how to read — rendering a partial card would hide the
+    /// security-sensitive terms (RegularKey, SignerEntries, flags) it does not.
+    func testUnsupportedTransactionTypeReturnsNil() {
+        // SetRegularKey carrying a Destination + Amount: the exact dangerous
+        // case where a partial card would look complete while hiding RegularKey.
+        XCTAssertNil(parse("""
+        {"TransactionType":"SetRegularKey","Account":"rAcc","Destination":"rDest","Amount":"1000000","RegularKey":"rKey"}
+        """))
+        XCTAssertNil(parse("""
+        {"TransactionType":"SignerListSet","Account":"rAcc","SignerQuorum":2}
+        """))
+        XCTAssertNil(parse("""
+        {"TransactionType":"AccountSet","Account":"rAcc","SetFlag":1}
+        """))
+    }
 }

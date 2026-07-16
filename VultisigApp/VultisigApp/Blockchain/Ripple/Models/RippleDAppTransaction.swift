@@ -59,11 +59,21 @@ struct RippleDAppTransaction: Equatable {
 
     private static let dropsPerXrp = BigInt(1_000_000)
 
+    /// The only `TransactionType`s this decoder renders in full — the types
+    /// whose value-bearing terms it actually understands. Any other type
+    /// (e.g. `SetRegularKey`, `SignerListSet`, `AccountSet`) is routed to the
+    /// raw-JSON fallback instead of a confident-looking partial card that would
+    /// omit the security-sensitive terms a co-signer must review.
+    static let supportedTransactionTypes: Set<String> = [
+        "Payment", "OfferCreate", "OfferCancel", "TrustSet"
+    ]
+
     static func parse(rawJson: String) -> RippleDAppTransaction? {
         guard let data = rawJson.data(using: .utf8),
               let object = try? JSONSerialization.jsonObject(with: data),
               let tx = object as? [String: Any],
-              let transactionType = tx["TransactionType"] as? String else {
+              let transactionType = tx["TransactionType"] as? String,
+              supportedTransactionTypes.contains(transactionType) else {
             return nil
         }
 
