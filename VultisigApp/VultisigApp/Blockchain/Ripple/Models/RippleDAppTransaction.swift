@@ -109,16 +109,26 @@ struct RippleDAppTransaction: Equatable {
 
     // MARK: - Helpers
 
+    /// Upper bound on the length of a native drops string before conversion.
+    /// XRPL's max drops is 100_000_000_000_000_000 (10^17, 18 digits); a 20-char
+    /// budget covers that plus a leading sign and slack, while rejecting a
+    /// pathologically long string (a cheap DoS / nonsense value) before it ever
+    /// reaches `BigInt`.
+    private static let maxDropsStringLength = 20
+
     /// Decodes an XRPL amount. Returns `nil` when the value is present but not
-    /// decodable (a numeric-looking drops string that isn't numeric, or an
-    /// issued-currency object missing currency/issuer/value).
+    /// decodable: a drops string that is over-long or non-numeric, or an
+    /// issued-currency object missing currency/issuer/value or carrying a
+    /// non-numeric `value`.
     private static func parseAmount(_ value: Any?) -> Amount? {
         if let drops = value as? String {
-            guard let dropsInt = BigInt(drops) else { return nil }
+            guard drops.count <= maxDropsStringLength,
+                  let dropsInt = BigInt(drops) else { return nil }
             return .native(xrp: formatDrops(dropsInt))
         }
         if let iou = value as? [String: Any] {
             guard let iouValue = iou["value"] as? String,
+                  isDecimalNumber(iouValue),
                   let currency = iou["currency"] as? String,
                   let issuer = iou["issuer"] as? String else {
                 return nil
@@ -126,6 +136,16 @@ struct RippleDAppTransaction: Equatable {
             return .issued(value: iouValue, currency: decodeCurrency(currency), issuer: issuer)
         }
         return nil
+    }
+
+    /// Whether a string is a valid decimal number in the XRPL issued-amount
+    /// grammar: an optional sign, an integer and/or fraction, and an optional
+    /// exponent. Fails closed on non-numeric tokens and on non-finite words
+    /// ("inf"/"nan") that a lenient `Decimal`/`Double` parse would otherwise
+    /// accept.
+    private static func isDecimalNumber(_ string: String) -> Bool {
+        let pattern = "^[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)([eE][+-]?[0-9]+)?$"
+        return string.range(of: pattern, options: .regularExpression) != nil
     }
 
     /// Renders XRP drops (base 10^6) as a trimmed decimal string.
