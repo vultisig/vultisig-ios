@@ -149,6 +149,12 @@ final class RateProvider {
         let newRateIds = Set(newRates.map { $0.id })
         rates = rates.filter { !newRateIds.contains($0.id) }.union(newRates)
 
+        // The in-memory cache is what rendering reads, and it has already
+        // changed — announce it even if the persistence below throws, or a
+        // failed write would leave the UI showing fiat that contradicts the
+        // cache until the next refresh.
+        defer { ratesDidChange.send() }
+
         // Update existing or insert new rates
         for rate in newRates {
             let rateId = rate.id // Capture the value outside the predicate
@@ -168,6 +174,5 @@ final class RateProvider {
         }
 
         try Storage.shared.modelContext.save()
-        ratesDidChange.send()
     }
 }
