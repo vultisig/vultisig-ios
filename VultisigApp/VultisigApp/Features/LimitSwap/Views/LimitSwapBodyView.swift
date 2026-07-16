@@ -42,12 +42,13 @@ private enum LimitFocusField: Hashable {
 }
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
-/// SegmentedControl is set to Limit. **Uniswap-style flat layout**: the price
-/// card ("When 1 <sell> is worth <price> <buy>" + Market/+1%/+5%/+10% pills) on
-/// top, the asset swap form (Sell + swap button + Buy) below it, then the expiry
-/// card, then the inline notices, with the Place-Order CTA pinned to the bottom.
-/// No collapse/expand — every input is visible at once, so the price and the
-/// amount it applies to are never hidden behind a chevron.
+/// SegmentedControl is set to Limit. **Uniswap-style flat layout**: the asset
+/// swap form (Sell + swap button + Buy) on top, the price card ("When 1 <sell>
+/// is worth <price> <buy>" + Market/+1%/+5%/+10% pills) below it, then the
+/// expiry card, then the inline notices, with the Place-Order CTA pinned to the
+/// bottom — the user picks what they're trading before stating the condition it
+/// executes under. No collapse/expand — every input is visible at once, so the
+/// price and the amount it applies to are never hidden behind a chevron.
 ///
 /// All business logic lives in `LimitSwapFormViewModel`; this view is
 /// declarative. The price field always edits `draft.targetPrice` in the target
@@ -87,15 +88,12 @@ struct LimitSwapBodyView: View {
         VStack(spacing: 12) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
-                    LimitPriceCard(
-                        vm: vm,
-                        priceText: $priceText,
-                        usdText: $usdText,
-                        focusedField: $focusedField,
-                        onPickFromAsset: onPickFromAsset,
-                        onPickToAsset: onPickToAsset
-                    )
-
+                    // Asset selection comes first: the user picks what they're
+                    // trading before stating the condition it executes under.
+                    // The price card still names both assets ("When 1 BTC is
+                    // worth X ETH") because that sentence IS the condition —
+                    // its chips label the price's units and double as shortcuts
+                    // to the same pickers.
                     LimitAssetSwapForm(
                         vm: vm,
                         fromCoin: fromCoin,
@@ -105,6 +103,15 @@ struct LimitSwapBodyView: View {
                         onPickFromAsset: onPickFromAsset,
                         onPickToAsset: onPickToAsset,
                         onSwapAssets: onSwapAssets
+                    )
+
+                    LimitPriceCard(
+                        vm: vm,
+                        priceText: $priceText,
+                        usdText: $usdText,
+                        focusedField: $focusedField,
+                        onPickFromAsset: onPickFromAsset,
+                        onPickToAsset: onPickToAsset
                     )
 
                     LimitExpiryCard(vm: vm)
