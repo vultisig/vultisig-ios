@@ -577,11 +577,32 @@ class SolanaService {
     /// Not cached — must reflect a just-submitted stake/unstake and freshly
     /// accrued rewards; the UI refreshes on appear.
     func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] {
-        let response = try await httpClient.request(
+        // Discover the owner's stake-account pubkeys via getProgramAccounts, but
+        // take ONLY the addresses from it. Many RPC providers serve
+        // getProgramAccounts from a lagging secondary index, so its parsed
+        // delegation/deactivation fields flip between refreshes right after a
+        // stake/unstake (observed on the Defi screen). Each account's live state is
+        // re-read below with getAccountInfo — a direct bank read with no index lag.
+        let discovery = try await httpClient.request(
             api(.getStakeAccountsByOwner(staker: owner, pubkeyOnly: false)),
             responseType: SolanaGetProgramAccountsResponse.self
         )
-        return response.data.result.compactMap { SolanaStakeAccount(programAccount: $0) }
+        let pubkeys = discovery.data.result.map(\.pubkey)
+        guard !pubkeys.isEmpty else { return [] }
+
+        let resolved = try await withThrowingTaskGroup(of: (String, SolanaStakeAccount?).self) { group in
+            for pubkey in pubkeys {
+                group.addTask { [self] in (pubkey, try await fetchSolanaStakeAccount(address: pubkey)) }
+            }
+            var byPubkey: [String: SolanaStakeAccount] = [:]
+            for try await (pubkey, account) in group {
+                byPubkey[pubkey] = account
+            }
+            return byPubkey
+        }
+        // Preserve discovery order; drop any that stopped resolving (e.g. closed
+        // between discovery and the follow-up read).
+        return pubkeys.compactMap { resolved[$0] }
     }
 
     /// Full parsed info for a single stake account.
