@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-03-09.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 
@@ -32,8 +33,47 @@ class VaultDetailViewModel: ObservableObject {
 
     private let bannerStore: PromoBannerDismissalStoring
 
-    init(bannerStore: PromoBannerDismissalStoring = PromoBannerDismissalStore.shared) {
+    /// The vault `rows` currently projects. Held so a rate arrival can rebuild the
+    /// projection without waiting for the next `updateBalance(vault:)` call.
+    private weak var rowsVault: Vault?
+    private var cancellables = Set<AnyCancellable>()
+
+    init(
+        bannerStore: PromoBannerDismissalStoring = PromoBannerDismissalStore.shared,
+        rateProvider: RateProvider = .shared
+    ) {
         self.bannerStore = bannerStore
+
+        // `rows` bakes fiat into a formatted string, so it is inert to a rate
+        // landing afterwards. Without this subscription the only rebuild happens
+        // at the tail of `updateBalance`'s network refresh, so the per-chain fiat
+        // stays at "$0.00" for the whole balance round trip — and never updates at
+        // all when that task is cancelled by a re-entrant refresh. Rebuilding here
+        // is pure and network-free.
+        rateProvider.ratesDidChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.rebuildRowsForRateChange() }
+            .store(in: &cancellables)
+    }
+
+    /// Recomputes the projection's fiat against the currently cached rates,
+    /// **keeping the current row order**.
+    ///
+    /// `chainRows(vault:)` orders by fiat descending, and rates land once per
+    /// chain group, so re-sorting here would reshuffle the list under the user
+    /// several times per refresh. A rate arriving should refresh the values, not
+    /// reorder — the authoritative fiat-desc re-sort stays on `updateBalance`'s
+    /// tail, which keeps the deliberate "no stale-then-fresh double reorder"
+    /// behaviour intact. No-ops when nothing changed.
+    private func rebuildRowsForRateChange() {
+        guard let vault = rowsVault, !rows.isEmpty else { return }
+        let byChain = Dictionary(
+            logic.chainRows(vault: vault).map { ($0.chain, $0) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        let rebuilt = rows.compactMap { byChain[$0.chain] }
+        guard rebuilt.count == rows.count, rebuilt != rows else { return }
+        rows = rebuilt
     }
 
     func filteredChains(in vault: Vault) -> [Chain] {
@@ -65,6 +105,7 @@ class VaultDetailViewModel: ObservableObject {
         // auto-discovery adds non-native coins to existing chains, so the
         // chain set is unchanged and the list does not reshuffle.
         let membershipChanged = Set(vault.chainsWithCoins) != Set(chains)
+        rowsVault = vault
         if chains.isEmpty || chainsVaultPubKeyECDSA != vault.pubKeyECDSA || membershipChanged {
             chains = logic.sortedChains(vault: vault)
             rows = logic.chainRows(vault: vault)
@@ -93,6 +134,7 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     func groupChains(vault: Vault) {
+        rowsVault = vault
         chains = logic.sortedChains(vault: vault)
         rows = logic.chainRows(vault: vault)
         chainsVaultPubKeyECDSA = vault.pubKeyECDSA
