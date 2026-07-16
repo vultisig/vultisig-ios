@@ -71,7 +71,7 @@ struct LimitOrderFill: Equatable, Sendable {
         // clamp rather than report >100% if it ever does.
         guard filled < deposit else { return 1 }
         let scaled = (filled * Self.fractionScale) / deposit
-        return Decimal(string: String(scaled)).map { $0 / Decimal(string: String(Self.fractionScale))! }
+        return Decimal(string: String(scaled)).map { $0 / Decimal(Self.fractionScaleValue) }
     }
 
     /// True when the order has filled in part but not in full — the remainder is
@@ -112,7 +112,11 @@ struct LimitOrderFill: Equatable, Sendable {
 
     /// Fixed-point scale for the display fraction — 6 dp is far finer than any
     /// percentage the UI renders.
-    private static let fractionScale = BigInt(1_000_000)
+    ///
+    /// Declared once as an `Int` and widened at each use site, so the integer
+    /// scaling and the `Decimal` division that undoes it can never drift apart.
+    private static let fractionScaleValue = 1_000_000
+    private static let fractionScale = BigInt(fractionScaleValue)
 }
 
 // MARK: - Expiry countdown
