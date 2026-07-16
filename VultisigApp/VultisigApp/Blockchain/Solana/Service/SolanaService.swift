@@ -577,26 +577,22 @@ class SolanaService {
     /// Not cached — must reflect a just-submitted stake/unstake and freshly
     /// accrued rewards; the UI refreshes on appear.
     func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] {
-        // Discover the owner's stake accounts via getProgramAccounts. We prefer to
-        // re-read each account's live state with getAccountInfo below: many RPC
-        // providers serve getProgramAccounts from a lagging secondary index, so its
-        // parsed delegation/deactivation fields flip between refreshes right after a
-        // stake/unstake (observed on the Defi screen). getAccountInfo is a direct
-        // bank read with no index lag.
-        //
-        // But we KEEP the discovery row as a fallback: a just-created stake account
-        // may not be visible to getAccountInfo yet (it hasn't propagated to the node
-        // the follow-up read hits), and must not drop off the list in that window.
+        // Discover the owner's stake-account pubkeys via getProgramAccounts, but
+        // take ONLY the addresses from it. Many RPC providers serve
+        // getProgramAccounts from a lagging secondary index, so its parsed
+        // delegation/deactivation fields flip between refreshes right after a
+        // stake/unstake (observed on the Defi screen). Each account's live state is
+        // re-read below with getAccountInfo — a direct bank read with no index lag.
         let discovery = try await httpClient.request(
             api(.getStakeAccountsByOwner(staker: owner, pubkeyOnly: false)),
             responseType: SolanaGetProgramAccountsResponse.self
         )
-        let discovered = discovery.data.result.compactMap { SolanaStakeAccount(programAccount: $0) }
-        guard !discovered.isEmpty else { return [] }
+        let pubkeys = discovery.data.result.map(\.pubkey)
+        guard !pubkeys.isEmpty else { return [] }
 
-        let fresh = try await withThrowingTaskGroup(of: (String, SolanaStakeAccount?).self) { group in
-            for account in discovered {
-                group.addTask { [self] in (account.pubkey, try await fetchSolanaStakeAccount(address: account.pubkey)) }
+        let resolved = try await withThrowingTaskGroup(of: (String, SolanaStakeAccount?).self) { group in
+            for pubkey in pubkeys {
+                group.addTask { [self] in (pubkey, try await fetchSolanaStakeAccount(address: pubkey)) }
             }
             var byPubkey: [String: SolanaStakeAccount] = [:]
             for try await (pubkey, account) in group {
@@ -604,10 +600,9 @@ class SolanaService {
             }
             return byPubkey
         }
-        // Prefer the fresh getAccountInfo read; fall back to the discovery row when
-        // getAccountInfo hasn't caught up yet (e.g. a just-staked account). Preserve
-        // discovery order.
-        return discovered.map { fresh[$0.pubkey] ?? $0 }
+        // Preserve discovery order; drop any that stopped resolving (e.g. closed
+        // between discovery and the follow-up read).
+        return pubkeys.compactMap { resolved[$0] }
     }
 
     /// Full parsed info for a single stake account.
