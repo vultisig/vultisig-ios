@@ -127,12 +127,27 @@ enum LimitOrderFormatting {
     /// No fractional digits: the number is a reassurance ("some of it went
     /// through"), and `39.7%` implies a precision that a streaming fill, still
     /// moving, does not have.
+    ///
+    /// A strictly partial fraction is clamped into `1%...99%`. Rounding to no
+    /// fractional digits would otherwise let a dust fill read `0%` and a
+    /// near-complete one read `100%` — each stating the exact opposite of what
+    /// is true, on an order whose remainder is still resting. The clamp only
+    /// ever moves a value that is already strictly between the boundaries, so
+    /// a true `0` and a true `1` still render exactly.
     static func percent(_ fraction: Decimal) -> String? {
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
         formatter.maximumFractionDigits = 0
-        return formatter.string(from: NSDecimalNumber(decimal: fraction))
+        let display = (fraction > 0 && fraction < 1)
+            ? min(max(fraction, minPartialFraction), maxPartialFraction)
+            : fraction
+        return formatter.string(from: NSDecimalNumber(decimal: display))
     }
+
+    /// The clamp bounds, as exact `Decimal` quotients — a `Decimal` built from
+    /// a floating-point literal would not be exactly 1/100.
+    private static let minPartialFraction = Decimal(1) / Decimal(100)
+    private static let maxPartialFraction = Decimal(99) / Decimal(100)
 
     /// A compact, coarsening duration: `"2d 3h"`, `"11h 32m"`, `"45m"`, `"30s"`.
     ///

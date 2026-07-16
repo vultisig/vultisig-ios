@@ -93,7 +93,28 @@ final class LimitOrderStatusDisplayTests: XCTestCase {
         )
 
         XCTAssertEqual(display.kind, .inProgress)
-        XCTAssertNotNil(display.detail, "A sub-1% fill is still a partial fill")
+        XCTAssertEqual(
+            display.detail,
+            String(format: "limitSwap.progress.filledFormat".localized, "1%"),
+            "A sub-1% fill is clamped up to 1% rather than reading as untouched"
+        )
+    }
+
+    /// The mirror of the dust case: a fill just short of complete must not
+    /// round up to `100%` while the remainder is still resting.
+    func testNearCompletePartialFillDoesNotReadAsFullyFilled() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .resting,
+            details: makeDetails(status: .pending, deposit: "1000000", filledIn: "999999", filledOut: "999999"),
+            errorMessage: nil
+        )
+
+        XCTAssertEqual(display.kind, .inProgress)
+        XCTAssertEqual(
+            display.detail,
+            String(format: "limitSwap.progress.filledFormat".localized, "99%"),
+            "A 99.9999% fill is clamped down to 99% rather than reading as complete"
+        )
     }
 
     // MARK: - Terminal-but-not-filled is not a failure

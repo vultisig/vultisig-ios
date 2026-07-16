@@ -256,6 +256,22 @@ final class LimitOrderFormattingTests: XCTestCase {
         XCTAssertEqual(LimitOrderFormatting.percent(Decimal(string: "0.4")!), "40%")
     }
 
+    func testPercentClampsStrictlyPartialFractionsAwayFromTheBoundaries() {
+        // Rounding alone would report the opposite of the truth at both ends:
+        // untouched on an order that has started, complete on one still resting.
+        XCTAssertEqual(LimitOrderFormatting.percent(Decimal(string: "0.000001")!), "1%")
+        XCTAssertEqual(LimitOrderFormatting.percent(Decimal(string: "0.004")!), "1%")
+        XCTAssertEqual(LimitOrderFormatting.percent(Decimal(string: "0.999999")!), "99%")
+        XCTAssertEqual(LimitOrderFormatting.percent(Decimal(string: "0.997")!), "99%")
+    }
+
+    func testPercentKeepsTheExactBoundariesExact() {
+        // The clamp must only move values that are strictly between 0 and 1 —
+        // a genuinely untouched or genuinely complete order still says so.
+        XCTAssertEqual(LimitOrderFormatting.percent(0), "0%")
+        XCTAssertEqual(LimitOrderFormatting.percent(1), "100%")
+    }
+
     func testCompactDurationCoarsensWithScale() {
         XCTAssertEqual(LimitOrderFormatting.compactDuration(2 * 86400 + 3 * 3600), "2d 3h")
         XCTAssertEqual(LimitOrderFormatting.compactDuration(11 * 3600 + 32 * 60), "11h 32m")
