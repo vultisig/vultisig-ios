@@ -53,9 +53,9 @@ struct SignRippleDisplayView: View {
         case let .amount(amount):
             switch amount {
             case let .native(xrp):
-                row(label: field.labelKey.localized, value: "\(xrp) XRP")
+                row(label: field.labelKey.localized, value: "\(xrp) XRP", valueFont: Theme.fonts.priceBodyS)
             case let .issued(value, currency, issuer):
-                row(label: field.labelKey.localized, value: "\(value) \(currency)")
+                row(label: field.labelKey.localized, value: "\(value) \(currency)", valueFont: Theme.fonts.priceBodyS)
                 row(label: "rippleFieldIssuer".localized, value: issuer, mono: true)
             }
         }
@@ -74,7 +74,8 @@ struct SignRippleDisplayView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             Text(signRipple.rawJson)
-                .font(.system(size: 11, design: .monospaced))
+                .font(Theme.fonts.caption12)
+                .monospaced()
                 .foregroundStyle(Theme.colors.turquoise)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -95,14 +96,20 @@ struct SignRippleDisplayView: View {
             .foregroundStyle(Theme.colors.textPrimary)
     }
 
-    private func row(label: String, value: String, mono: Bool = false) -> some View {
+    private func row(
+        label: String,
+        value: String,
+        valueFont: Font = Theme.fonts.caption12,
+        mono: Bool = false
+    ) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text(label)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer(minLength: 8)
             Text(value)
-                .font(mono ? .system(size: 11, design: .monospaced) : Theme.fonts.caption12)
+                .font(valueFont)
+                .monospaced(mono)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.trailing)
                 .textSelection(.enabled)
