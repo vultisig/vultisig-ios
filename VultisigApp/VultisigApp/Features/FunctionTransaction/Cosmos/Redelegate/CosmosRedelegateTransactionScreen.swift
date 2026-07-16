@@ -134,7 +134,7 @@ struct CosmosRedelegateTransactionScreen: View {
 
     private func cooldownNotice(message: String) -> some View {
         HStack(spacing: 8) {
-            Icon(named: "info", color: Theme.colors.alertWarning, size: 16)
+            Icon(named: "circle-info", color: Theme.colors.alertWarning, size: 16)
             Text(message)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)

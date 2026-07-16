@@ -56,7 +56,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
             }
             if viewModel.hitBatchCapWarning {
                 HStack(spacing: 8) {
-                    Icon(named: "info", color: Theme.colors.alertWarning, size: 14)
+                    Icon(named: "circle-info", color: Theme.colors.alertWarning, size: 14)
                     Text(String(
                         format: "cosmosStakingClaimRewardsCapMessage".localized,
                         CosmosWithdrawRewardsTransactionViewModel.maxBatchSize
@@ -152,7 +152,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
 
             if !viewModel.hasSufficientBalanceForFee {
                 HStack(spacing: 8) {
-                    Icon(named: "info", color: Theme.colors.alertError, size: 14)
+                    Icon(named: "circle-info", color: Theme.colors.alertError, size: 14)
                     Text(String(
                         format: "cosmosStakingInsufficientGas".localized,
                         viewModel.coin.ticker

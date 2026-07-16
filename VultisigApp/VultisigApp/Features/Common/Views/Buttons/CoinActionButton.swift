@@ -48,8 +48,8 @@ struct CoinActionButton: View {
 }
 
 #Preview {
-    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: true) {}
-    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: false) {}
-    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: true) {}.disabled(true)
-    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: false) {}.disabled(true)
+    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: true) {}
+    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: false) {}
+    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: true) {}.disabled(true)
+    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: false) {}.disabled(true)
 }
