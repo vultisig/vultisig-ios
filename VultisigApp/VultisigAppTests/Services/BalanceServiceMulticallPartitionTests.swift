@@ -132,11 +132,15 @@ final class BalanceServiceMulticallPartitionTests: XCTestCase {
 
     // MARK: - The preservation mechanism itself
 
-    func testUpdateWithoutRawBalanceIsSkippedByTheWritePath() {
-        // `applyBalanceUpdates` filters on `hasUpdates` and additionally guards the
-        // write with `if let rawBalance`. This is what makes "no update" mean "keep
-        // the last known balance" — and what the per-coin retry falls back on when
-        // it fails too.
+    func testUpdateWithoutRawBalanceReportsNothingToWrite() {
+        // `hasUpdates` is the predicate `applyBalanceUpdates` filters on
+        // (`for update in updates where update.hasUpdates`), so a nil rawBalance
+        // reporting `false` here is what makes "no update" mean "keep the last
+        // known balance". This asserts the predicate only — the end-to-end
+        // fetchEvmBatchBalances -> fallbackPerCoin -> applyBalanceUpdates
+        // integration is not unit-testable (EvmService is a non-injectable enum
+        // factory) and was verified at runtime instead, against a live batch with
+        // a deliberately reverting sub-call.
         let update = BalanceService.CoinBalanceUpdate(
             coinId: "eth-coin",
             rawBalance: nil,
