@@ -147,13 +147,21 @@ func marketProbeAmount(
     return probe
 }
 
-/// Preferred default SOURCE chain for the **limit-swap entry only**. The shared
-/// market default sorts alphabetically (`SwapCoinsResolver` picks the first held
-/// coin), which lands on a cheap source like RUNE and presents an
-/// untradeable-looking RUNE→BTC default. Prefer a high-value, liquid,
-/// THORChain-routable native source the vault actually holds — BTC, then ETH —
-/// skipping any candidate that collides with the target chain (which would be a
-/// self-pair).
+/// Preferred default SOURCE chain for the **limit-swap entry only**.
+///
+/// Two different situations arrive here as the same `marketDefaultChain`, and
+/// `isSourceExplicit` is what tells them apart:
+///
+/// - **No intent** (`false`) — the shared market default sorts alphabetically
+///   (`SwapCoinsResolver` picks the first held coin), which lands on a cheap
+///   source like RUNE and presents an untradeable-looking RUNE→BTC default. Here
+///   we prefer a high-value, liquid, THORChain-routable native source the vault
+///   actually holds — BTC, then ETH — skipping any candidate that collides with
+///   the target chain (which would be a self-pair).
+/// - **Explicit intent** (`true`) — the user entered the swap from a specific
+///   chain/coin, so that source is a real choice, not an alphabetical accident.
+///   Honor it whenever it is usable, and only fall back to the preference above
+///   when it isn't (unroutable, or a self-pair with the target).
 ///
 /// **Never returns `targetChain` while any held, THORChain-routable alternative
 /// native source exists** (a same-chain source→target is not THORChain-routable).
@@ -163,9 +171,17 @@ func marketProbeAmount(
 /// vault `Coin`. Does NOT change the shared market default.
 func preferredLimitSourceChain(
     marketDefaultChain: Chain,
+    isSourceExplicit: Bool,
     targetChain: Chain,
     availableNativeChains: Set<Chain>
 ) -> Chain {
+    // 0. An explicitly chosen source is real user intent — keep it when it's
+    //    usable (THORChain-routable and not a self-pair). Same rule as step 2;
+    //    intent is what promotes it above the BTC/ETH preference. An unusable
+    //    explicit source falls through rather than seeding an unplaceable order.
+    if isSourceExplicit, marketDefaultChain != targetChain, isThorchainRoutable(chain: marketDefaultChain) {
+        return marketDefaultChain
+    }
     // 1. High-value routable sources the vault holds (BTC → ETH), excluding a
     //    self-pair with the target. (BTC/ETH are always THORChain-routable.)
     for candidate in [Chain.bitcoin, .ethereum]
@@ -198,10 +214,20 @@ func preferredLimitSourceChain(
 /// back to the market default when the preferred chain isn't held (or already is
 /// the market default). Pure so the "held + non-colliding with target" guarantee
 /// is directly testable. Does NOT change the shared market default.
-func limitDefaultSourceCoin(marketDefault: Coin, targetCoin: Coin, vaultCoins: [Coin]) -> Coin {
+///
+/// `isSourceExplicit` marks `marketDefault` as a source the user actually chose
+/// (entered the swap from) rather than an alphabetical fallback — see
+/// `preferredLimitSourceChain`.
+func limitDefaultSourceCoin(
+    marketDefault: Coin,
+    isSourceExplicit: Bool,
+    targetCoin: Coin,
+    vaultCoins: [Coin]
+) -> Coin {
     let availableNativeChains = Set(vaultCoins.filter { $0.isNativeToken }.map(\.chain))
     let chain = preferredLimitSourceChain(
         marketDefaultChain: marketDefault.chain,
+        isSourceExplicit: isSourceExplicit,
         targetChain: targetCoin.chain,
         availableNativeChains: availableNativeChains
     )
