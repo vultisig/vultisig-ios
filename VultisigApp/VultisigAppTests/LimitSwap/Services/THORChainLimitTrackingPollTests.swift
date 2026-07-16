@@ -298,6 +298,41 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
     }
 
+    /// On a CO-SIGNER there is no local `LimitOrder` behind the row, so the row
+    /// mirror is not a mirror at all — it is the only terminal state this device
+    /// will ever persist. If it fails, the order must stay tracked: releasing it
+    /// would strand the row non-terminal for the rest of the session with
+    /// nothing left to correct it.
+    func testACoSignerOrderIsNotReleasedWhenTheRowWriteFails() async {
+        let env = TestEnv(queueBody: .empty, outcome: .filled)
+        env.orders.error = LimitOrderStorageError.notFound(id: "ABC123_vault-pub")
+        env.storage.shouldThrowOnUpdate = true
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(
+            env.service.trackedOrderCountForTesting,
+            1,
+            "keep it, so a later poll can retry the only write this device has"
+        )
+    }
+
+    /// The counterpart: with the row write landing, a co-signer's order IS
+    /// terminal and must still be released. Holding it open on the strength of
+    /// a missing local order would peg the row at "resting" for good — the very
+    /// thing the `notFound` branch exists to prevent.
+    func testACoSignerOrderIsReleasedOnceTheRowWriteLands() async {
+        let env = TestEnv(queueBody: .empty, outcome: .filled)
+        env.orders.error = LimitOrderStorageError.notFound(id: "ABC123_vault-pub")
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.storage.observedUiStatuses.last, .completed, "the row is the whole picture here")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0, "terminal — stop tracking")
+    }
+
     /// A later poll completes the write that previously failed.
     func testAFailedTerminalWriteIsRetriedOnALaterPoll() async {
         let env = TestEnv(queueBody: .empty, outcome: .filled)
@@ -556,6 +591,9 @@ private final class StubOutcomeResolver: LimitOrderOutcomeResolving {
 private final class RecordingTrackingStorage: SwapTrackingStorage {
     private(set) var observedUiStatuses: [SwapTrackingUiStatus] = []
     var inFlight: [TransactionHistoryData] = []
+    var shouldThrowOnUpdate = false
+
+    struct UpdateError: Error {}
 
     func updateSwapTrackingStatus(
         txHash _: String,
@@ -565,6 +603,7 @@ private final class RecordingTrackingStorage: SwapTrackingStorage {
         uiStatus: SwapTrackingUiStatus,
         polledAt _: Date
     ) throws {
+        if shouldThrowOnUpdate { throw UpdateError() }
         observedUiStatuses.append(uiStatus)
     }
 

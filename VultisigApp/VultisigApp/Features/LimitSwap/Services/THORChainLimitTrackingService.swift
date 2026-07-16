@@ -371,6 +371,11 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         entry: ThorchainLimitSwapQueueEntry?
     ) -> Bool {
         let state = entry?.swap.state
+        // Whether this device holds the authoritative `LimitOrder` record. On a
+        // co-signer it does not, which changes what a failed row mirror means
+        // below: with no local order behind it, the row is not a mirror of the
+        // truth, it IS the truth.
+        var hasLocalOrder = true
         do {
             try orders.recordObservation(
                 inboundTxHash: order.txHash,
@@ -397,6 +402,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             // no local order record for. That's not a failed write — there is
             // nothing here to write to, and the row IS the whole picture on this
             // device. Retrying forever would peg the row at "resting" for good.
+            hasLocalOrder = false
             logger.debug("No local limit order for \(order.txHash, privacy: .public) — mirroring onto the row only")
         } catch {
             logger.error("Failed to record limit-order observation: \(error.localizedDescription, privacy: .public)")
@@ -415,10 +421,20 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 polledAt: Date()
             )
         } catch {
-            // The row is a mirror of `LimitOrder`, which now holds the truth.
-            // A failed mirror is worth knowing about but doesn't invalidate the
-            // authoritative write, so it doesn't hold the order open.
+            // Normally the row is a mirror of `LimitOrder`, which now holds the
+            // truth. A failed mirror is worth knowing about but doesn't
+            // invalidate the authoritative write, so it doesn't hold the order
+            // open.
             logger.error("Failed to mirror limit status onto the row: \(error.localizedDescription, privacy: .public)")
+            // On a CO-SIGNER there is no local order behind the row, so this
+            // write was not a mirror of anything — it was the only persisted
+            // terminal state this device will ever have. Reporting success
+            // would release the order and strand the row as non-terminal for
+            // the rest of the session, with nothing left to correct it. Stay
+            // tracked and ask again.
+            if !hasLocalOrder {
+                return false
+            }
         }
 
         uiStatusByTxHash[order.txHash] = uiStatus
