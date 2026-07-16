@@ -87,8 +87,12 @@ enum Multicall3 {
     /// Decodes the `(bool success, bytes returnData)[]` returned by `aggregate3`,
     /// in the same order the calls were built. Each entry is the `uint256` parsed
     /// from `returnData`, or `nil` when the sub-call failed or returned fewer than
-    /// 32 bytes — the caller maps `nil` to a `0` balance, reproducing today's
-    /// per-call "balance check failed → 0" fallback.
+    /// 32 bytes.
+    ///
+    /// `nil` means "this read failed", NOT "the wallet holds zero" — the two must
+    /// stay distinguishable all the way to the write. A failed read has to preserve
+    /// the last known balance (what the per-coin path does), whereas a genuine zero
+    /// is a legitimate balance to persist. See `mapBalances`.
     static func decodeAggregate3Results(hex: String) -> [BigInt?] {
         guard let data = Data(hexString: hex.stripHexPrefix()) else { return [] }
         let bytes = [UInt8](data)
@@ -152,6 +156,46 @@ enum Multicall3 {
         }
 
         return results
+    }
+
+    // MARK: - Result mapping
+
+    /// Maps `decodeAggregate3Results` output back onto the inputs that produced it,
+    /// in the order `fetchERC20Balances` builds the calls: the optional native
+    /// `getEthBalance` first, then one `balanceOf` per contract address.
+    ///
+    /// Preserves the success/failure distinction the decoder encodes as `nil`: a
+    /// failed sub-call is **omitted** from `balances` (and leaves `native` nil)
+    /// rather than being recorded as `0`, so the caller can retry just that coin
+    /// instead of persisting a bogus zero over a funded one. A sub-call that
+    /// genuinely returned `0` **is** recorded — an empty wallet is a real balance.
+    ///
+    /// Returns `nil` when `decoded` doesn't match the call plan, which the caller
+    /// treats as a whole-batch failure.
+    static func mapBalances(
+        decoded: [BigInt?],
+        includeNative: Bool,
+        contractAddresses: [String]
+    ) -> (native: BigInt?, balances: [String: BigInt])? {
+        let expectedCount = (includeNative ? 1 : 0) + contractAddresses.count
+        guard decoded.count == expectedCount else { return nil }
+
+        var index = 0
+        var native: BigInt?
+        if includeNative {
+            native = decoded[index]
+            index += 1
+        }
+
+        var balances: [String: BigInt] = [:]
+        for contractAddress in contractAddresses {
+            if let value = decoded[index] {
+                balances[contractAddress] = value
+            }
+            index += 1
+        }
+
+        return (native, balances)
     }
 
     // MARK: - Hex helpers
