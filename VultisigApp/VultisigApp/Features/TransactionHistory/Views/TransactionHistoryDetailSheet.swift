@@ -364,18 +364,13 @@ struct TransactionHistoryDetailSheet: View {
         )
     }
 
-    /// `40% · 0.005 WBTC received` — what the order has actually paid out.
+    /// `40% · 0.005 WBTC received`, only while a partial fill is the story.
     ///
-    /// Shown on a FULL fill too, not just a partial one. The from/to pair
-    /// cannot stand in for it: those cards render `toAmountCrypto`, which is
-    /// written once at placement from the quote and is never revised by the
-    /// tracker, so on a filled order it still shows the minimum payout that was
-    /// asked for rather than the amount that actually arrived.
-    ///
-    /// Hidden at 0%: there is genuinely nothing to report.
+    /// Hidden on a full fill: that's the ordinary `Successful` case and the
+    /// from/to pair already tells it. Hidden at 0%: there is nothing to report.
     private func filledRowValue(_ order: LimitOrderDetails) -> String? {
-        guard let fraction = order.fillFraction,
-              fraction > 0,
+        guard order.isPartiallyFilled,
+              let fraction = order.fillFraction,
               let percent = LimitOrderFormatting.percent(fraction) else {
             return nil
         }
