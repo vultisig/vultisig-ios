@@ -105,4 +105,41 @@ final class IconAssetResolutionTests: XCTestCase {
             assertResolves(DeviceInfo.iconName(for: signer), "DeviceInfo.iconName(for: \"\(signer)\")")
         }
     }
+
+    /// `VaultIconTypeView.iconName` is a `Bool` ternary, not an enum, so both
+    /// branches are pinned explicitly.
+    ///
+    /// This is the one site with form: a rename left it returning the pre-V3
+    /// `"lightning"` and shipped a blank Fast Vault icon until review caught it.
+    /// Reading through the real computed property (rather than restating the two
+    /// names) is what makes this catch the next one.
+    func testVaultIconTypeViewIconsResolve() {
+        for isFastVault in [true, false] {
+            let view = VaultIconTypeView(isFastVault: isFastVault)
+            assertResolves(view.iconName, "VaultIconTypeView(isFastVault: \(isFastVault)).iconName")
+        }
+    }
+
+    /// `ForegroundNotificationData.TransactionType` carries associated values, so
+    /// it cannot be `CaseIterable` and the cases are listed by hand.
+    ///
+    /// Note the weaker guarantee: a new case forces a compiler error in
+    /// `iconName`'s exhaustive switch, which makes someone choose an icon — but
+    /// nothing forces them to add it here, so this list must be extended by hand.
+    func testEveryForegroundNotificationIconResolves() {
+        let transactionTypes: [ForegroundNotificationData.TransactionType] = [
+            .swap(description: ""),
+            .send(description: ""),
+            .generic(body: "")
+        ]
+        for transactionType in transactionTypes {
+            let data = ForegroundNotificationData(
+                transactionType: transactionType,
+                vaultName: "",
+                isFastVault: false,
+                deeplinkURL: URL(fileURLWithPath: "/")
+            )
+            assertResolves(data.iconName, "ForegroundNotificationData(\(transactionType)).iconName")
+        }
+    }
 }

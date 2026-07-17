@@ -9,7 +9,7 @@ This script recovers most of what a type-safe API would have given us.
 It reports three things:
 
   (a) icon-name literals that resolve to no imageset  -- would-be blank rectangles
-  (b) imagesets under Icons/ that nothing references  -- dead art
+  (b) imagesets under Icons/ whose name appears in NO string literal -- likely dead art
   (c) imageset names duplicated anywhere in the catalog -- silent shadowing
 
 Run via `make lint-icons`.
@@ -26,8 +26,19 @@ a name the Crypto/ token logos already own is the concrete way to hit it.
 HONESTY NOTE -- THIS SCRIPT IS ~95% ACCURATE AND IS *NOT* SOUND.
 =============================================================================
 
-Direction (b) is reliable: the catalog is a closed set and names are exact
-strings, so a reverse lookup has no false negatives.
+Direction (b) is deliberately CONSERVATIVE. It asks whether the name appears as
+ANY string literal anywhere -- not whether it appears in an *icon position*. So
+it has no false positives (it will never call live art dead), but it does have
+false negatives: dead art whose name collides with any other string survives.
+`function.imageset` sat dead behind `"function".localized` (a localization key,
+not an icon) until a hand audit found it.
+
+DO NOT "fix" this by checking icon-position refs instead. The looseness is
+load-bearing: five live icons are reached only in ways the matcher cannot see --
+`Icon(named: isSelected ? "folder-filled" : "folder")` and its ternary siblings
+(chevron-left, eye-closed), and `[(title, subtitle, icon)]` tuple arrays (lock,
+signature). Tightening (b) reports all five as dead and invites deleting real
+art. Verify a (b) hit by hand before removing anything.
 
 Direction (a) is the valuable direction and cannot be made sound. The blocker
 is fundamental: **Swift has no type distinguishing an icon-name String from
