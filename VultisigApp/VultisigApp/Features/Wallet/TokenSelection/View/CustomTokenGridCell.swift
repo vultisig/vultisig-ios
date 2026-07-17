@@ -14,7 +14,7 @@ struct CustomTokenGridCell: View {
         Button(action: action) {
             VStack(spacing: 10) {
                 VStack {
-                    Icon(named: "plus-large", size: 40)
+                    Icon(.plusLarge, size: 40)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(

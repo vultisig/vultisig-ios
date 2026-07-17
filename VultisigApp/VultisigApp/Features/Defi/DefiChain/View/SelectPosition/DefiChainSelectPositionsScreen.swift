@@ -163,7 +163,7 @@ private struct PositionNotFoundEmptyStateView: View {
     var body: some View {
         VStack {
             VStack(spacing: 12) {
-                Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
+                Icon(.crypto, color: Theme.colors.primaryAccent4, size: 24)
                 Text("noPositionsFound")
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)

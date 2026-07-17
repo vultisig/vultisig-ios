@@ -12,6 +12,6 @@ protocol CarouselBannerType: Identifiable, Hashable {
     var title: String { get }
     var subtitle: String { get }
     var buttonTitle: String { get }
-    var image: String { get }
+    var image: ImageResource { get }
     var background: String? { get }
 }

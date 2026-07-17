@@ -90,7 +90,7 @@ struct AddFolderScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title3)
             HStack {
-                ToolbarButton(image: "x", type: .outline) {
+                ToolbarButton(image: .x, type: .outline) {
                     onClose()
                 }
             }

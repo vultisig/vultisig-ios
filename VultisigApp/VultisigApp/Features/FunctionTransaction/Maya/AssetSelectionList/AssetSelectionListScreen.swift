@@ -45,7 +45,7 @@ struct AssetSelectionListScreen: View {
         .screenBackButtonHidden()
         .screenToolbar {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .x) {
                     isPresented.toggle()
                 }
             }

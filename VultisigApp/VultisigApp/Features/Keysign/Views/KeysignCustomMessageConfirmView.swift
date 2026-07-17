@@ -99,7 +99,7 @@ struct KeysignCustomMessageConfirmView: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isMessageExpanded ? 180 : 0))
                 }
             }
@@ -163,7 +163,7 @@ struct KeysignCustomMessageConfirmView: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
                 }
             }
@@ -199,7 +199,7 @@ struct KeysignCustomMessageConfirmView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(textColor)
                 if isWarning {
-                    Icon(named: "triangle-alert", color: textColor, size: 14)
+                    Icon(.triangleAlert, color: textColor, size: 14)
                 }
             }
         }

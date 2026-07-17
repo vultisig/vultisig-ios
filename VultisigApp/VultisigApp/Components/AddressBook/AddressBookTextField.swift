@@ -62,7 +62,7 @@ struct AddressBookTextField: View {
         Button {
             pasteAddress()
         } label: {
-            Icon(named: "copy", color: Theme.colors.textPrimary, size: 20)
+            Icon(.copy, color: Theme.colors.textPrimary, size: 20)
         }
     }
 
@@ -70,7 +70,7 @@ struct AddressBookTextField: View {
         Button {
             showScanner.toggle()
         } label: {
-            Icon(named: "camera", color: Theme.colors.textPrimary, size: 20)
+            Icon(.camera, color: Theme.colors.textPrimary, size: 20)
         }
     }
 
@@ -78,7 +78,7 @@ struct AddressBookTextField: View {
         Button {
             showImagePicker.toggle()
         } label: {
-            Icon(named: "image-plus", color: Theme.colors.textPrimary, size: 20)
+            Icon(.imagePlus, color: Theme.colors.textPrimary, size: 20)
         }
     }
 

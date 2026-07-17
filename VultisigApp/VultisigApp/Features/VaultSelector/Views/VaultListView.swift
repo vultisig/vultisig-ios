@@ -91,7 +91,7 @@ struct VaultListView: View {
                 .font(Theme.fonts.title3)
 
             HStack {
-                ToolbarButton(image: "check", type: .confirmation) {
+                ToolbarButton(image: .check, type: .confirmation) {
                     withAnimation {
                         isEditing.toggle()
                     }
@@ -104,7 +104,7 @@ struct VaultListView: View {
     var defaultHeader: some View {
         HStack(spacing: 8) {
             #if os(macOS)
-            ToolbarButton(image: "chevron-right", type: .outline) {
+            ToolbarButton(image: .chevronRight, type: .outline) {
                 isPresented.toggle()
             }
             .rotationEffect(.radians(.pi))
@@ -118,12 +118,12 @@ struct VaultListView: View {
                     .font(Theme.fonts.caption12)
             }
             Spacer()
-            ToolbarButton(image: "pencil", type: .outline) {
+            ToolbarButton(image: .pencil, type: .outline) {
                 withAnimation {
                     isEditing.toggle()
                 }
             }
-            ToolbarButton(image: "plus", type: .confirmation, action: onAddVault)
+            ToolbarButton(image: .plus, type: .confirmation, action: onAddVault)
         }
         .padding(.leading, 8)
     }
@@ -165,7 +165,7 @@ struct VaultListView: View {
         ListBottomSection(content: {
             PrimaryButton(
                 title: "addFolder",
-                leadingIcon: "folder-plus",
+                leadingIcon: .folderPlus,
                 type: .secondary,
                 action: onAddFolder
             )

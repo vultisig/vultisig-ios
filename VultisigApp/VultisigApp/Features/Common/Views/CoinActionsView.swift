@@ -27,6 +27,7 @@ struct CoinActionsView: View {
     }
 
     var body: some View {
+        Image(.arrow)
         HStack(spacing: calculatedSpacing) {
             ForEach(actions, id: \.self) { action in
                 VStack {

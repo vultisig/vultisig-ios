@@ -27,7 +27,7 @@ struct QBTCClaimSelectionView: View {
                         InfoBannerView(
                             description: errorMessage,
                             type: .error,
-                            leadingIcon: "exclamationmark.triangle.fill"
+                            leadingIcon: .triangleAlert
                         )
                     }
 

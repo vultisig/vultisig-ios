@@ -67,7 +67,7 @@ struct AssetSelectionGridCell: View {
 
     var selectedOverlay: some View {
         ZStack(alignment: .bottomTrailing) {
-            Icon(named: "check", color: Theme.colors.alertSuccess, size: 8)
+            Icon(.check, color: Theme.colors.alertSuccess, size: 8)
                 .padding(8)
                 .background(
                     UnevenRoundedRectangle(

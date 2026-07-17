@@ -157,7 +157,7 @@ struct StakingTransactionScreen<VM: StakingFormViewModel, Sheet: View>: View {
     private func noticeView(_ notice: StakingNotice) -> some View {
         switch notice {
         case .info(let message):
-            InfoBannerView(description: message, type: .info, leadingIcon: "circle-info")
+            InfoBannerView(description: message, type: .info, leadingIcon: .circleInfo)
         case .insufficientFee(let ticker):
             InsufficientFeeNotice(ticker: ticker)
         }

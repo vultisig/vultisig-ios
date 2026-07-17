@@ -56,7 +56,7 @@ struct SwapChainPickerView: View {
         .padding(.horizontal, 16)
         .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .x) {
                     showSheet.toggle()
                 }
             }

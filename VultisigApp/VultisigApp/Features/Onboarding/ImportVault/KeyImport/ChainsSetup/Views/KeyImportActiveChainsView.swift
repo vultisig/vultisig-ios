@@ -28,7 +28,7 @@ struct KeyImportActiveChainsView: View {
         VStack(spacing: 24) {
             Spacer()
             CircleIcon(
-                icon: "active-chain",
+                icon: .activeChain,
                 color: Theme.colors.alertSuccess
             )
             VStack(spacing: 12) {
@@ -82,7 +82,7 @@ struct KeyImportActiveChainsView: View {
                     Button(action: onCustomize) {
                         HStack(spacing: 8) {
                             Icon(
-                                named: "magic-pen",
+                                .magicPen,
                                 color: Theme.colors.textPrimary,
                                 size: 16
                             )

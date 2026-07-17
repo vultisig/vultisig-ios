@@ -149,7 +149,7 @@ struct DefiChainMainScreen: View {
             SegmentedControl(selection: $viewModel.selectedPosition, items: viewModel.positions)
                 .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
+            CircularAccessoryIconButton(icon: .cryptoWalletPen, type: .secondary) {
                 showPositionSelection.toggle()
             }
         }

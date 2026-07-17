@@ -198,9 +198,8 @@ struct TronDashboardView: View {
             HStack(spacing: 12) {
                 DefiButton(
                     title: NSLocalizedString("tronUnfreezeButton", comment: "Unfreeze"),
-                    icon: "minus",
+                    icon: .minus,
                     type: .outline,
-                    isSystemIcon: true,
                     action: {
                         router.navigate(to: TronRoute.unfreeze(
                             vault: vault,
@@ -213,8 +212,7 @@ struct TronDashboardView: View {
 
                 DefiButton(
                     title: NSLocalizedString("tronFreezeButton", comment: "Freeze"),
-                    icon: "plus",
-                    isSystemIcon: true,
+                    icon: .plus,
                     action: { router.navigate(to: TronRoute.freeze(vault: vault)) }
                 )
                 .disabled(model.availableBalance <= 0)

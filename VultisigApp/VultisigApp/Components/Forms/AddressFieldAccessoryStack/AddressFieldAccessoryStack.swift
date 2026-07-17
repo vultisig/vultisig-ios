@@ -30,13 +30,13 @@ struct AddressFieldAccessoryStack: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            AddressFieldAccessoryButton(icon: "copy-2") {
+            AddressFieldAccessoryButton(icon: .copy2) {
                 pasteAddress()
             }
-            AddressFieldAccessoryButton(icon: "camera") {
+            AddressFieldAccessoryButton(icon: .camera) {
                 showScanner.toggle()
             }
-            AddressFieldAccessoryButton(icon: "book") {
+            AddressFieldAccessoryButton(icon: .book) {
                 showAddressBookSheet.toggle()
             }
         }

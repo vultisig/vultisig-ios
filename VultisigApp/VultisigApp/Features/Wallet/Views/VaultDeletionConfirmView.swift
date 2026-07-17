@@ -47,7 +47,7 @@ struct VaultDeletionConfirmView: View {
     var header: some View {
         VStack(spacing: 8) {
             Icon(
-                named: "triangle-alert",
+                .triangleAlert,
                 color: Theme.colors.alertError,
                 size: 22
             ).padding(.bottom, 6)

@@ -8,20 +8,20 @@
 import SwiftUI
 
 struct ActionBannerView: View {
-    let icon: String?
+    let icon: ImageResource?
     let title: String
     let subtitle: String
     let buttonTitle: String
-    let buttonIcon: String?
+    let buttonIcon: ImageResource?
     let showsActionButton: Bool
     let action: () -> Void
 
     init(
-        icon: String? = nil,
+        icon: ImageResource? = nil,
         title: String,
         subtitle: String,
         buttonTitle: String,
-        buttonIcon: String? = nil,
+        buttonIcon: ImageResource? = nil,
         showsActionButton: Bool = true,
         action: @escaping () -> Void
     ) {
@@ -38,7 +38,7 @@ struct ActionBannerView: View {
         VStack(spacing: 0) {
             GradientListSeparator()
             VStack(spacing: 12) {
-                Icon(named: icon ?? "crypto-outline", color: Theme.colors.primaryAccent4, size: 24)
+                Icon(icon ?? .cryptoOutline, color: Theme.colors.primaryAccent4, size: 24)
                 VStack(spacing: 8) {
                     Text(title)
                         .foregroundStyle(Theme.colors.textPrimary)

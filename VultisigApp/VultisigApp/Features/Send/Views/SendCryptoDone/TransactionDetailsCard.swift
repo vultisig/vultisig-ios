@@ -109,7 +109,7 @@ struct TransactionDetailsCard: View {
             ))
         } label: {
             HStack(spacing: 6) {
-                Icon(named: "plus", color: Theme.colors.alertSuccess, size: 16)
+                Icon(.plus, color: Theme.colors.alertSuccess, size: 16)
 
                 Text("addToAddressBook".localized)
                     .font(Theme.fonts.caption10)

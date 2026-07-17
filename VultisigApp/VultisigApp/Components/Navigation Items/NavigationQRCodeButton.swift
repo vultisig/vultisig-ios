@@ -10,7 +10,7 @@ import SwiftUI
 struct NavigationQRCodeButton: View {
     var body: some View {
         Icon(
-            named: "qrcode",
+            .qrcode,
             color: Theme.colors.textPrimary,
             size: 16
         ).padding(8)

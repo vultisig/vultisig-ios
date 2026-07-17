@@ -32,7 +32,7 @@ struct AssetSelectionFormCell: View {
                 }
 
                 Icon(
-                    named: "chevron-right",
+                    .chevronRight,
                     color: Theme.colors.textPrimary,
                     size: 20
                 )

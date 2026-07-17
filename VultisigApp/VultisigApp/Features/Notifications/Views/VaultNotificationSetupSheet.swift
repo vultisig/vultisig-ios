@@ -13,7 +13,7 @@ struct VaultNotificationSetupSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             VStack(spacing: 12) {
-                VaultSetupStepIcon(state: .active, icon: "bell")
+                VaultSetupStepIcon(state: .active, icon: .bell)
                     .padding(.vertical, 8)
                 Text("enablePushNotifications".localized)
                     .font(Theme.fonts.title2)

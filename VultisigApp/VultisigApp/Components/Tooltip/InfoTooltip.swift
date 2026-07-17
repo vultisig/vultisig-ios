@@ -31,7 +31,7 @@ struct InfoTooltip: View {
                 Spacer()
 
                 Button(action: onDismiss) {
-                    Icon(named: "x", color: Theme.colors.textButtonDisabled, size: 20)
+                    Icon(.x, color: Theme.colors.textButtonDisabled, size: 20)
                 }
             }
 

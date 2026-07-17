@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct AddressFieldAccessoryButton: View {
-    let icon: String
+    let icon: ImageResource
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Icon(named: icon, color: Theme.colors.textSecondary, size: 20)
+            Icon(icon, color: Theme.colors.textSecondary, size: 20)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
@@ -29,6 +29,6 @@ struct AddressFieldAccessoryButton: View {
 }
 
 #Preview {
-    AddressFieldAccessoryButton(icon: "camera") { }
-    AddressFieldAccessoryButton(icon: "copy") { }
+    AddressFieldAccessoryButton(icon: .camera) { }
+    AddressFieldAccessoryButton(icon: .copy) { }
 }

@@ -16,7 +16,7 @@ struct InsufficientFeeNotice: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Icon(named: "circle-info", color: Theme.colors.alertError, size: 14)
+            Icon(.circleInfo, color: Theme.colors.alertError, size: 14)
             Text(String(format: "cosmosStakingInsufficientFeeBalance".localized, ticker))
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.alertError)

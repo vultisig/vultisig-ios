@@ -67,7 +67,7 @@ struct SignRippleDisplayView: View {
         VStack(alignment: .leading, spacing: 12) {
             header
             HStack(alignment: .top, spacing: 8) {
-                Icon(named: "triangle-alert", color: Theme.colors.alertWarning, size: 16)
+                Icon(.triangleAlert, color: Theme.colors.alertWarning, size: 16)
                 Text("rippleUndecodedNotice".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.alertWarning)

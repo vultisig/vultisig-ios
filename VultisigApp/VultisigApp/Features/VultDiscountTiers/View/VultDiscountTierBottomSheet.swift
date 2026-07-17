@@ -104,7 +104,7 @@ struct VultDiscountTierBottomSheet: View {
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .x) {
                     isPresented.toggle()
                 }
             }

@@ -54,7 +54,7 @@ struct VaultAdvancedSettingsScreen: View {
             Button {
                 router.navigate(to: VaultRoute.reshare(vault: vault))
             } label: {
-                SettingsCommonOptionView(icon: "share", title: "reshare".localized, subtitle: "reshareVault".localized)
+                SettingsCommonOptionView(icon: .share, title: "reshare".localized, subtitle: "reshareVault".localized)
             }
         }
     }
@@ -92,7 +92,7 @@ struct VaultAdvancedSettingsScreen: View {
                 }
             } label: {
                 SettingsCommonOptionView(
-                    icon: "atom-shield",
+                    icon: .atomShield,
                     title: "dilithiumKeygen".localized,
                     subtitle: "dilithiumKeygenSubtitle".localized
                 )
@@ -104,7 +104,7 @@ struct VaultAdvancedSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.customMessage(vault: vault))
         } label: {
-            SettingsCommonOptionView(icon: "file-pen", title: "sign".localized, subtitle: "signCustomMessage".localized)
+            SettingsCommonOptionView(icon: .filePen, title: "sign".localized, subtitle: "signCustomMessage".localized)
         }
     }
 
@@ -113,7 +113,7 @@ struct VaultAdvancedSettingsScreen: View {
             router.navigate(to: VaultRoute.onChainSecurity)
         } label: {
             SettingsCommonOptionView(
-                icon: "folder-lock",
+                icon: .folderLock,
                 title: "vaultSettingsSecurityTitle".localized,
                 subtitle: "vaultSettingsSecuritySubtitle".localized
             )
@@ -125,13 +125,13 @@ struct VaultAdvancedSettingsScreen: View {
             handleCustomRPCTap()
         } label: {
             SettingsOptionView(
-                icon: "signal-tower",
+                icon: .signalTower,
                 title: "settingsAdvancedCustomRPC",
                 subtitle: "customRPCSubtitle".localized,
                 showSeparator: false,
                 titleAccessory: { VultTierBadge() },
                 trailingView: {
-                    Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)
                 }
             )
         }

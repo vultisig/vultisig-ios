@@ -57,7 +57,7 @@ struct FolderDetailView: View {
     var header: some View {
         HStack(spacing: 16) {
             ToolbarButton(
-                image: "chevron-right",
+                image: .chevronRight,
                 type: .outline,
                 action: onBack
             )
@@ -72,7 +72,7 @@ struct FolderDetailView: View {
             }
             Spacer()
             ToolbarButton(
-                image: "pencil",
+                image: .pencil,
                 type: .outline,
                 action: onEditFolder
             )

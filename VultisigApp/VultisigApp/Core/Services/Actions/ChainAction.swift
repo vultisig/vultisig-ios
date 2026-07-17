@@ -49,24 +49,24 @@ enum CoinAction: String, Codable, CaseIterable {
         }
     }
 
-    var buttonIcon: String {
+    var buttonIcon: ImageResource {
         switch self {
         case .send:
-            "arrow-up-right"
+            .arrowUpRight
         case .swap:
-            "arrow-left-right"
+            .arrowLeftRight
         case .deposit:
-            "action"
+            .action
         case .bridge:
-            "action"
+            .action
         case .memo:
-            "action"
+            .action
         case .buy:
-            "bag-plus"
+            .bagPlus
         case .sell:
-            "bag-plus"
+            .bagPlus
         case .receive:
-            "arrow-down-to-line"
+            .arrowDownToLine
         }
     }
 

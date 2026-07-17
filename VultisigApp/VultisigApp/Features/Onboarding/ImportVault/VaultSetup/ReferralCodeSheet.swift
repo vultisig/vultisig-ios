@@ -46,7 +46,7 @@ struct ReferralCodeSheet: View {
         .padding(.horizontal, 24)
         .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .x) {
                     isPresented.toggle()
                 }
                 .supportsLiquidGlass { view, isSupported in

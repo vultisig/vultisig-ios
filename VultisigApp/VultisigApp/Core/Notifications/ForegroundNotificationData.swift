@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct ForegroundNotificationData: Equatable {
     enum TransactionType: Equatable {
@@ -17,14 +18,14 @@ struct ForegroundNotificationData: Equatable {
     let isFastVault: Bool
     let deeplinkURL: URL
 
-    var iconName: String {
+    var iconName: ImageResource {
         switch transactionType {
         case .swap:
-            return "repeat-left-right"
+            return .repeatLeftRight
         case .send:
-            return "arrow-up-from-line"
+            return .arrowUpFromLine
         case .generic:
-            return "bell"
+            return .bell
         }
     }
 

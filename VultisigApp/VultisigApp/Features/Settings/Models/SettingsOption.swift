@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct SettingsOptionGroup: Identifiable {
     var id: String { title }
@@ -80,42 +81,42 @@ enum SettingsOption: String, Identifiable, CaseIterable {
         }
     }
 
-    var icon: String? {
+    var icon: ImageResource? {
         switch self {
         case .vaultSettings:
-            return "gear"
+            return .gear
         case .vultDiscountTiers:
-            return "coins"
+            return .coins
         case .language:
-            return "language"
+            return .language
         case .currency:
-            return "circle-dollar"
+            return .circleDollar
         case .notifications:
-            return "bell"
+            return .bell
         case .addressBook:
-            return "book-bookmark"
+            return .bookBookmark
         case .referralCode:
-            return "megaphone"
+            return .megaphone
         case .faq:
-            return "bubble-question"
+            return .bubbleQuestion
         case .education:
-            return "books"
+            return .books
         case .checkForUpdates:
-            return "cloud-upload"
+            return .cloudUpload
         case .shareApp:
-            return "share-2"
+            return .share2
         case .twitter:
-            return "twitter"
+            return .twitter
         case .discord:
-            return "discord"
+            return .discord
         case .github:
-            return "github"
+            return .github
         case .website:
-            return "globe"
+            return .globe
         case .privacyPolicy:
-            return "secure"
+            return .secure
         case .termsOfService:
-            return "notebook-text"
+            return .notebookText
         }
     }
 

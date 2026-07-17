@@ -12,7 +12,7 @@ struct LocalModeDisclaimer: View {
         InfoBannerView(
             description: "youAreInLocalMode".localized,
             type: .info,
-            leadingIcon: "cloud-off",
+            leadingIcon: .cloudOff,
             iconColor: Theme.colors.primaryAccent4
         )
     }

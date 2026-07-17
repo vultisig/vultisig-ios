@@ -12,11 +12,11 @@ struct DeviceInfo: Hashable {
     var Index: Int
     var Signer: String
 
-    static func iconName(for signer: String) -> String {
+    static func iconName(for signer: String) -> ImageResource {
         let laptopSigners = ["windows", "extension", "mac"]
         let isLaptopSigner = laptopSigners.contains {
             signer.lowercased().contains($0)
         }
-        return isLaptopSigner ? "laptop" : "phone"
+        return isLaptopSigner ? .laptop : .phone
     }
 }

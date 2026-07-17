@@ -10,13 +10,13 @@ import SwiftUI
 struct OnboardingInformationRowView: View {
     let title: String
     let subtitle: String
-    let icon: String
+    let icon: ImageResource
     var highlightedText: String? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             Icon(
-                named: icon,
+                icon,
                 color: Theme.colors.alertInfo,
                 size: 24
             )
@@ -51,6 +51,6 @@ struct OnboardingInformationRowView: View {
     OnboardingInformationRowView(
         title: "atLeastOneDevice".localized,
         subtitle: "atLeastOneDeviceSubtitle".localized,
-        icon: "devices"
+        icon: .devices
     )
 }

@@ -55,11 +55,11 @@ struct OnboardingYourVaultSetupScreen: View {
             .offset(x: -48)
     }
 
-    var informationRows: [(title: String, subtitle: String, icon: String)] {
+    var informationRows: [(title: String, subtitle: String, icon: ImageResource)] {
         [
-            (feature1Title, feature1Description, "signature"),
-            (feature2Title, feature2Description, "shield-check-filled"),
-            (feature3Title, feature3Description, "lock")
+            (feature1Title, feature1Description, .signature),
+            (feature2Title, feature2Description, .shieldCheckFilled),
+            (feature3Title, feature3Description, .lock)
         ]
     }
 

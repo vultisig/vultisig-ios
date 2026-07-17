@@ -54,7 +54,7 @@ struct ChainDetailHeaderView: View {
                     .foregroundStyle(Color(hex: "5180FC"))
                     .font(Theme.fonts.caption12)
                 Icon(
-                    named: "copy",
+                    .copy,
                     color: Color(hex: "5180FC"),
                     size: 16
                 )

@@ -43,7 +43,7 @@ struct TronResourcesInfoSheet: View {
         .presentationDragIndicator(.visible)
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .x) {
                     onDismiss?()
                 }
             }
@@ -80,7 +80,7 @@ struct TronResourcesInfoSheet: View {
         VStack(spacing: 12) {
             accordionSection(
                 resource: .bandwidth,
-                icon: "gauge-2",
+                icon: .gauge2,
                 title: "tronBandwidth".localized,
                 accentColor: Theme.colors.alertSuccess,
                 description: "tronBandwidthDescription".localized
@@ -88,7 +88,7 @@ struct TronResourcesInfoSheet: View {
 
             accordionSection(
                 resource: .energy,
-                icon: "bolt",
+                icon: .bolt,
                 title: "tronEnergy".localized,
                 accentColor: Theme.colors.alertWarning,
                 description: "tronEnergyDescription".localized
@@ -98,7 +98,7 @@ struct TronResourcesInfoSheet: View {
 
     private func accordionSection(
         resource: TronResourceType,
-        icon: String,
+        icon: ImageResource,
         title: String,
         accentColor: Color,
         description: String
@@ -157,7 +157,7 @@ struct TronResourcesInfoSheet: View {
         )
     }
 
-    private func iconChip(icon: String, accentColor: Color) -> some View {
+    private func iconChip(icon: ImageResource, accentColor: Color) -> some View {
         Image(icon)
             .renderingMode(.template)
             .resizable()

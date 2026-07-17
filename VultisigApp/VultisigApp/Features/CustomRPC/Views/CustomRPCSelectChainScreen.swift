@@ -113,7 +113,7 @@ private struct CustomRPCChainGridCell: View {
     /// around the badge instead of being broken by it.
     private var editedOverlay: some View {
         ZStack(alignment: .bottomTrailing) {
-            Icon(named: "pencil", color: Theme.colors.textPrimary, size: 8)
+            Icon(.pencil, color: Theme.colors.textPrimary, size: 8)
                 .padding(8)
                 .background(
                     UnevenRoundedRectangle(

@@ -23,7 +23,7 @@ struct SwapAssetsButton: View {
                 if isLoading {
                     CircularProgressIndicator(size: 20)
                 } else {
-                    Icon(named: "arrow-bottom-top", color: Theme.colors.textPrimary, size: 18)
+                    Icon(.arrowBottomTop, color: Theme.colors.textPrimary, size: 18)
                 }
             }
             .frame(width: 34, height: 34)

@@ -27,7 +27,7 @@ struct TonPoolCard: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .lineLimit(1)
                         if pool.verified {
-                            Icon(named: "shield-check-filled", color: Theme.colors.alertSuccess, size: 14)
+                            Icon(.shieldCheckFilled, color: Theme.colors.alertSuccess, size: 14)
                         }
                     }
                     Text(sublineText)
@@ -41,7 +41,7 @@ struct TonPoolCard: View {
                     .foregroundStyle(Theme.colors.alertSuccess)
                     .lineLimit(1)
                 if isSelected {
-                    Icon(named: "check", color: Theme.colors.alertSuccess, size: 16)
+                    Icon(.check, color: Theme.colors.alertSuccess, size: 16)
                 }
             }
             .padding(.horizontal, 14)

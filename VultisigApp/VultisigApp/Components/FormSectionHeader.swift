@@ -51,7 +51,7 @@ struct FormSectionHeader<ValueView: View>: View {
                         valueView()
                             .showIf(showValue)
                         Spacer()
-                        Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
+                        Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)
                     }
                 case .hidden:
                     Spacer()

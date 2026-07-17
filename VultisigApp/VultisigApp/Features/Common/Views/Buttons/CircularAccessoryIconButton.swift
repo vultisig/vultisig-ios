@@ -13,11 +13,11 @@ struct CircularAccessoryIconButton: View {
         case secondary
     }
 
-    let icon: String
+    let icon: ImageResource
     let type: ButtonType
     var action: () -> Void
 
-    init(icon: String, type: ButtonType = .primary, action: @escaping () -> Void) {
+    init(icon: ImageResource, type: ButtonType = .primary, action: @escaping () -> Void) {
         self.icon = icon
         self.type = type
         self.action = action
@@ -34,7 +34,7 @@ struct CircularAccessoryIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Icon(named: icon, color: iconColor, size: 16)
+            Icon(icon, color: iconColor, size: 16)
                 .padding(12)
                 .background(Circle().fill(Theme.colors.bgButtonSecondary))
         }
@@ -44,8 +44,8 @@ struct CircularAccessoryIconButton: View {
 
 #Preview {
     ScrollView {
-        CircularAccessoryIconButton(icon: "gear") {}
-        CircularAccessoryIconButton(icon: "x") {}
+        CircularAccessoryIconButton(icon: .gear) {}
+        CircularAccessoryIconButton(icon: .x) {}
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Theme.colors.bgPrimary)

@@ -18,7 +18,23 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
 
     var id: String { rawValue }
     var name: String { rawValue.capitalized }
-    var icon: String { "vult-\(rawValue)" }
+
+    var icon: ImageResource {
+        switch self {
+        case .bronze:
+            .vultBronze
+        case .silver:
+            .vultSilver
+        case .gold:
+            .vultGold
+        case .platinum:
+            .vultPlatinum
+        case .diamond:
+            .vultDiamond
+        case .ultimate:
+            .vultUltimate
+        }
+    }
 
     var bpsDiscount: Int {
         switch self {

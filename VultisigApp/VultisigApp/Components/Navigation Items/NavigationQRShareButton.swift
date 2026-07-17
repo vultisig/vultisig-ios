@@ -25,7 +25,7 @@ struct NavigationQRShareButton: View {
     var body: some View {
         if let image = viewModel.renderedImage {
             CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) { onShare in
-                ToolbarButton(image: "share", action: onShare)
+                ToolbarButton(image: .share, action: onShare)
             }
         }
     }

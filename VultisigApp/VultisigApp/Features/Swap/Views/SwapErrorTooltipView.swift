@@ -48,7 +48,7 @@ struct SwapErrorTooltipView: View {
         Button {
             onDismissTooltip()
         } label: {
-            Icon(named: "circle-warning", color: .white, size: circleIconSize)
+            Icon(.circleWarning, color: .white, size: circleIconSize)
                 .padding(circleIconPadding)
                 .background(Circle().fill(Theme.colors.alertError))
         }

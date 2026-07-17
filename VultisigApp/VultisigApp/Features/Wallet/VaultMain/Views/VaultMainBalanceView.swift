@@ -44,7 +44,7 @@ struct VaultMainBalanceView: View {
     var toggleBalanceVisibilityButton: some View {
         HStack(spacing: 4) {
             Icon(
-                named: homeViewModel.hideVaultBalance ? "eye-open" : "eye-closed",
+                homeViewModel.hideVaultBalance ? .eyeOpen : .eyeClosed,
                 color: Color(hex: "5180FC"),
                 size: 16
             )

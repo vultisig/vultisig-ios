@@ -208,10 +208,10 @@ struct VaultMainScreen: View {
             }
             .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: "magnifier") {
+            CircularAccessoryIconButton(icon: .magnifier) {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
+            CircularAccessoryIconButton(icon: .cryptoWalletPen, type: .secondary) {
                 showChainSelection.toggle()
             }
             .showIf(viewModel.canShowChainSelection(vault: vault))

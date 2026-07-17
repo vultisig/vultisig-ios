@@ -133,7 +133,7 @@ struct VaultPairDetailCard: View {
                     }
                     Spacer()
                     if !isForSharing {
-                        Icon(named: "copy", color: Theme.colors.textPrimary, size: 17)
+                        Icon(.copy, color: Theme.colors.textPrimary, size: 17)
                     }
                 }
             }
@@ -165,7 +165,7 @@ struct VaultPairDetailCard: View {
                 }
                 Spacer()
                 Icon(
-                    named: iconName(for: signer),
+                    iconName(for: signer),
                     color: Theme.colors.textTertiary,
                     size: 24
                 )
@@ -204,7 +204,7 @@ struct VaultPairDetailCard: View {
         return part + space + vaultIndex + space + of + space + totalCount
     }
 
-    func iconName(for signer: String) -> String {
+    func iconName(for signer: String) -> ImageResource {
         DeviceInfo.iconName(for: signer)
     }
 }

@@ -11,7 +11,7 @@ struct CoinActionButton: View {
     @Environment(\.isEnabled) var isEnabled
 
     let title: String
-    let icon: String
+    let icon: ImageResource
     let isHighlighted: Bool
     var action: () -> Void
 
@@ -23,7 +23,7 @@ struct CoinActionButton: View {
         Button(action: action) {
             VStack(spacing: 8) {
                 Icon(
-                    named: icon,
+                    icon,
                     color: Theme.colors.textPrimary,
                     size: 20
                 )
@@ -48,8 +48,8 @@ struct CoinActionButton: View {
 }
 
 #Preview {
-    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: true) {}
-    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: false) {}
-    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: true) {}.disabled(true)
-    CoinActionButton(title: "Swap", icon: "arrow-left-right", isHighlighted: false) {}.disabled(true)
+    CoinActionButton(title: "Swap", icon: .arrowLeftRight, isHighlighted: true) {}
+    CoinActionButton(title: "Swap", icon: .arrowLeftRight, isHighlighted: false) {}
+    CoinActionButton(title: "Swap", icon: .arrowLeftRight, isHighlighted: true) {}.disabled(true)
+    CoinActionButton(title: "Swap", icon: .arrowLeftRight, isHighlighted: false) {}.disabled(true)
 }

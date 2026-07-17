@@ -184,7 +184,7 @@ private struct ReshareOptionCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Icon(
-                    named: "chevron-right-small",
+                    .chevronRightSmall,
                     color: Theme.colors.textPrimary,
                     size: 20
                 )

@@ -81,7 +81,7 @@ struct ReferralInitialScreen: View {
 
     var saveReferralCard: some View {
         ReferralEntryCard(
-            iconName: "megaphone",
+            iconName: .megaphone,
             title: "saveReferralCardTitle".localized,
             description: String(format: "saveReferralCardBody".localized, referredSavePercentage),
             highlightedText: referredSavePercentage,
@@ -95,7 +95,7 @@ struct ReferralInitialScreen: View {
     var createReferralCard: some View {
         if referralViewModel.hasReferralCode {
             ReferralEntryCard(
-                iconName: "image-avatar-sparkle",
+                iconName: .imageAvatarSparkle,
                 title: "myReferralCardTitle".localized,
                 description: "myReferralCardBody".localized,
                 highlightedText: nil,
@@ -105,7 +105,7 @@ struct ReferralInitialScreen: View {
             }
         } else {
             ReferralEntryCard(
-                iconName: "image-avatar-sparkle",
+                iconName: .imageAvatarSparkle,
                 title: "createReferralCardTitle".localized,
                 description: String(format: "createYourCodeAndEarn".localized, createSavePercentage),
                 highlightedText: createSavePercentage,
@@ -118,7 +118,7 @@ struct ReferralInitialScreen: View {
 }
 
 private struct ReferralEntryCard: View {
-    let iconName: String
+    let iconName: ImageResource
     let title: String
     let description: String
     let highlightedText: String?
@@ -130,7 +130,7 @@ private struct ReferralEntryCard: View {
             HStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
-                        Icon(named: iconName, color: Theme.colors.primaryAccent4, size: 24)
+                        Icon(iconName, color: Theme.colors.primaryAccent4, size: 24)
                         Text(title)
                             .font(Theme.fonts.title3)
                             .foregroundStyle(Theme.colors.textPrimary)
@@ -144,7 +144,7 @@ private struct ReferralEntryCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Icon(
-                    named: "chevron-right",
+                    .chevronRight,
                     color: Theme.colors.textPrimary,
                     size: 20
                 )

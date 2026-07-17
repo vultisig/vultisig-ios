@@ -34,7 +34,7 @@ struct SignBitcoinDisplayView: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
             }

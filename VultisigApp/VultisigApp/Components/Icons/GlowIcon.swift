@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct GlowIcon: View {
-    let icon: String
+    let icon: ImageResource
 
     var body: some View {
         Icon(
-            named: icon,
+            icon,
             color: Theme.colors.alertInfo,
             size: 20
         )
@@ -29,5 +29,5 @@ struct GlowIcon: View {
 }
 
 #Preview {
-    GlowIcon(icon: "import-seedphrase")
+    GlowIcon(icon: .importSeedphrase)
 }

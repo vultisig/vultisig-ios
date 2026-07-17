@@ -87,7 +87,7 @@ struct AddressBookCell: View {
     }
 
     var rearrangeIcon: some View {
-        Icon(named: "grip-dots-vertical", color: Theme.colors.textSecondary)
+        Icon(.gripDotsVertical, color: Theme.colors.textSecondary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -103,7 +103,7 @@ struct AddressBookCell: View {
     }
 
     var deleteIconLabel: some View {
-        Icon(named: "trash", color: Theme.colors.textTertiary)
+        Icon(.trash, color: Theme.colors.textTertiary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }

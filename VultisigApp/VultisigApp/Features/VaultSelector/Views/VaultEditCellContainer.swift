@@ -25,7 +25,7 @@ struct VaultEditCellContainer<Content: View>: View {
 
     var icon: some View {
         Icon(
-            named: "line-3-horizontal",
+            .line3Horizontal,
             color: Theme.colors.textTertiary,
             size: 16
         )

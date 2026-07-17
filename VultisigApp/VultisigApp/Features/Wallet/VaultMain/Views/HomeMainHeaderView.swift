@@ -80,11 +80,9 @@ struct HomeMainHeaderView: View {
             RefreshToolbarButton(onRefresh: onRefresh)
             #endif
 
-            ToolbarButton(image: "clock.arrow.circlepath", action: historyAction) { _ in
-                Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
-            }
-            .accessibilityIdentifier(AccessibilityID.Home.historyButton)
-            ToolbarButton(image: "gear", action: settingsAction)
+            ToolbarButton(image: .clockRotateClockwise, action: historyAction)
+                .accessibilityIdentifier(AccessibilityID.Home.historyButton)
+            ToolbarButton(image: .gear, action: settingsAction)
                 .accessibilityIdentifier(AccessibilityID.Home.settingsButton)
         }
     }

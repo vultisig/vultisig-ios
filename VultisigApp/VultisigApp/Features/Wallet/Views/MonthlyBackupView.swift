@@ -61,7 +61,7 @@ struct MonthlyBackupView: View {
                 Button {
                     isPresented = false
                 } label: {
-                    Image("x")
+                    Image(.x)
                 }
                 .padding(.horizontal, 16)
                 .offset(y: 2)

@@ -63,7 +63,7 @@ private struct WithErrorModifier: ViewModifier {
                     }
                     .crossPlatformToolbar("") {
                         CustomToolbarItem(placement: .trailing) {
-                            ToolbarButton(image: "x") {
+                            ToolbarButton(image: .x) {
                                 presentableError = nil
                             }
                         }

@@ -57,7 +57,7 @@ struct CustomRPCDetailScreen: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Button(action: paste) {
-                    Icon(named: "copy-2", color: Theme.colors.textPrimary, size: 20)
+                    Icon(.copy2, color: Theme.colors.textPrimary, size: 20)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("paste".localized)

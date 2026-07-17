@@ -48,7 +48,7 @@ struct SettingFAQCell: View {
 
     var chevron: some View {
         Icon(
-            named: "chevron-down",
+            .chevronDown,
             color: Theme.colors.textTertiary,
             size: 16
         )

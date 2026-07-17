@@ -55,7 +55,7 @@ struct VultDiscountTiersScreen: View {
         .screenEdgeInsets(.init(bottom: 0))
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "globus") {
+                ToolbarButton(image: .globus) {
                     openURL(StaticURL.VultisigVultURL)
                 }
             }

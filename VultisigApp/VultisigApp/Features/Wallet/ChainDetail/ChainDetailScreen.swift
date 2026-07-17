@@ -299,10 +299,10 @@ struct ChainDetailScreen: View {
             }
             .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: "magnifier") {
+            CircularAccessoryIconButton(icon: .magnifier) {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
+            CircularAccessoryIconButton(icon: .cryptoWalletPen, type: .secondary) {
                 showManageTokens = true
             }
         }

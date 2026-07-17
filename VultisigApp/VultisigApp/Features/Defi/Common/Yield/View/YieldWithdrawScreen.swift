@@ -52,20 +52,20 @@ struct YieldWithdrawScreen: View {
     private var customView: some View {
         VStack(spacing: 12) {
             if let error = viewModel.error {
-                InfoBannerView(description: error.localizedDescription, type: .error, leadingIcon: "triangle-alert")
+                InfoBannerView(description: error.localizedDescription, type: .error, leadingIcon: .triangleAlert)
             }
             if viewModel.provider.hasWindowedRedemption {
                 InfoBannerView(
                     description: "yieldRedemptionWindowNote".localized,
                     type: .info,
-                    leadingIcon: "circle-info"
+                    leadingIcon: .circleInfo
                 )
             }
             if viewModel.nativeGasBalance <= 0 {
                 InfoBannerView(
                     description: presentation.ethRequiredKey.localized,
                     type: .warning,
-                    leadingIcon: "triangle-alert"
+                    leadingIcon: .triangleAlert
                 )
             }
         }

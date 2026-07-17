@@ -10,8 +10,8 @@ import SwiftUI
 struct VaultIconTypeView: View {
     let isFastVault: Bool
 
-    var iconName: String {
-        isFastVault ? "bolt" : "shield"
+    var iconName: ImageResource {
+        isFastVault ? .bolt : .shield
     }
 
     var iconColor: Color {
@@ -19,7 +19,7 @@ struct VaultIconTypeView: View {
     }
 
     var body: some View {
-        Icon(named: iconName, color: iconColor, size: 16)
+        Icon(iconName, color: iconColor, size: 16)
     }
 }
 

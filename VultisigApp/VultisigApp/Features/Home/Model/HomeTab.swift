@@ -5,6 +5,8 @@
 //  Created by Gaston Mazzeo on 11/09/2025.
 //
 
+import SwiftUI
+
 enum HomeTab: TabBarItem, CaseIterable {
     case wallet
     case defi
@@ -22,14 +24,14 @@ enum HomeTab: TabBarItem, CaseIterable {
         }
     }
 
-    var icon: String {
+    var icon: ImageResource {
         switch self {
         case .wallet:
-            "wallet"
+            .wallet
         case .defi:
-            "coins-add"
+            .coinsAdd
         case .camera:
-            "camera-2"
+            .camera2
         }
     }
 
