@@ -69,7 +69,7 @@ struct GroupedChainCellView: View {
                                 Text(truncatedAddress)
                                     .font(Theme.fonts.caption12)
                                     .foregroundStyle(Theme.colors.textTertiary)
-                                Icon(.copies3Filled, color: Theme.colors.textTertiary, size: 12)
+                                Icon(.copies3, color: Theme.colors.textTertiary, size: 12)
                             }
                         }.buttonStyle(.plain)
                     }

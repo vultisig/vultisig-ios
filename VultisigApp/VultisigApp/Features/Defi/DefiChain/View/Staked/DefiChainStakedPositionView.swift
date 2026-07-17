@@ -221,10 +221,10 @@ struct DefiChainStakedPositionView: View {
 
     var compoundButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: removeButonTitle, icon: .circleMinus, type: .secondary) {
+            DefiButton(title: removeButonTitle, icon: removeButonIcon, type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
-            DefiButton(title: addButonTitle, icon: .circlePlus) {
+            DefiButton(title: addButonTitle, icon: addButonIcon) {
                 onStake()
             }.disabled(stakeDisabled)
         }
@@ -232,10 +232,10 @@ struct DefiChainStakedPositionView: View {
 
     var defaultButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: removeButonTitle, icon: .circleMinus, type: .secondary) {
+            DefiButton(title: removeButonTitle, icon: removeButonIcon, type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
-            DefiButton(title: addButonTitle, icon: .circlePlus) {
+            DefiButton(title: addButonTitle, icon: addButonIcon) {
                 onStake()
             }.disabled(stakeDisabled)
         }
@@ -256,6 +256,26 @@ struct DefiChainStakedPositionView: View {
             "remove".localized
         default:
             "unstake".localized
+        }
+    }
+
+    // Icons follow the same add/remove vs stake/unstake split as the titles:
+    // MayaChain reads as add/remove, everything else as stake/unstake.
+    var addButonIcon: ImageResource {
+        switch position.coin.chain {
+        case .mayaChain:
+            .circlePlus
+        default:
+            .layersPlus
+        }
+    }
+
+    var removeButonIcon: ImageResource {
+        switch position.coin.chain {
+        case .mayaChain:
+            .circleMinus
+        default:
+            .layersMinus
         }
     }
 
