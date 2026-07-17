@@ -27,7 +27,7 @@ enum HomeTab: TabBarItem, CaseIterable {
     var icon: ImageResource {
         switch self {
         case .wallet:
-            .wallet
+            .walletFilled
         case .defi:
             .nodes
         case .camera:
