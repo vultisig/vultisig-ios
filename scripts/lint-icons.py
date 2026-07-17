@@ -26,12 +26,21 @@ Run via `make lint-icons`.
 an `Icon`). Those cannot be made type-safe by us short of migrating each to
 `Image(.symbol)`, so they keep a real linter's worth of value.
 
-The check is now SOUND for those call sites rather than heuristic. It matches
-only the three unambiguous asset APIs by name; it no longer has to guess
-whether an arbitrary `foo(icon:)` label carries an asset name or an SF Symbol,
-because an asset-name-carrying parameter is `ImageResource`-typed now and holds
-no literal at all. `Image(systemName:)` is excluded by construction: a
-different argument label, a different API.
+The check is now sound for the literal call sites it covers, rather than
+heuristic. It matches only the three unambiguous asset APIs by name; it no
+longer has to guess whether an arbitrary `foo(icon:)` label carries an asset
+name or an SF Symbol, because an asset-name-carrying parameter is
+`ImageResource`-typed now and holds no literal at all. `Image(systemName:)` is
+excluded by construction: a different argument label, a different API.
+
+Because the API is unambiguous, EVERY name is now checked -- including dotted
+ones. The old script skipped anything containing "." as presumed-SF-Symbol.
+That is precisely how `InfoBannerView(leadingIcon: "exclamationmark.triangle.fill")`
+-- an SF Symbol handed to an asset-only wrapper -- rendered a blank rectangle
+undetected. There is no dotted-name exemption here.
+
+What it does NOT cover: a name assembled at runtime (`"chain-" + chainIcon` in
+AsyncImageView) is still opaque to it, and always will be.
 
 The old standing weakness -- "a new wrapper with a new argument label escapes
 silently" -- is gone for icons. A new wrapper takes `ImageResource`, so the
@@ -71,8 +80,14 @@ invisible to any static scan; it is now an explicit `switch` returning
 NO Contents.json in this catalog sets `provides-namespace`, so folder groups are
 purely organisational and asset names are flat and global. Two imagesets sharing
 a name make the reference ambiguous, and the generator emits ONE symbol for the
-pair -- so the type system cannot see this either. (c) is the only check here
-that the compiler does not subsume.
+pair -- so the type system cannot see this either.
+
+None of (a), (b) or (c) is subsumed by the compiler: (a) covers a String API
+SwiftUI still exposes, (b) asks a question about the catalog rather than the
+code, and (c) is invisible at the type level because the duplicate pair
+collapses into a single symbol. What the compiler DID subsume -- and what is
+therefore gone from this script -- is checking `Icon(named:)` literals and
+guessing which namespace a wrapper's String belonged to.
 """
 
 from __future__ import annotations
@@ -87,7 +102,6 @@ ICONS_ROOT = ASSETS_ROOT / "Icons"
 SWIFT_ROOT = REPO_ROOT / "VultisigApp"
 
 STRING_LIT = re.compile(r'"([^"\\\n]*)"')
-ASSET_NAME = re.compile(r"[A-Za-z0-9_-]+")
 IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
@@ -219,11 +233,17 @@ def main() -> int:
     refs, tokens = collect(sources)
 
     # (a) bare Image(...) literals resolving to nothing.
+    #
+    # Every name is checked, including dotted ones. The old script skipped names
+    # containing "." on the assumption that a dotted name is an SF Symbol headed
+    # for an SF API -- that assumption is what let
+    # `InfoBannerView(leadingIcon: "exclamationmark.triangle.fill")` render a
+    # blank rectangle for months. It no longer applies: `Image(_:)` is the asset
+    # API, so a dotted name here is either a real dotted asset (`LI.FI`) or a
+    # typo. Both are things we want to hear about.
     unresolved: dict[str, set[tuple[Path, int]]] = {}
     for name, path, ln in refs:
         if not name or name in catalog:
-            continue
-        if not ASSET_NAME.fullmatch(name):  # sentences, hex, format strings, etc.
             continue
         unresolved.setdefault(name, set()).add((path, ln))
 
