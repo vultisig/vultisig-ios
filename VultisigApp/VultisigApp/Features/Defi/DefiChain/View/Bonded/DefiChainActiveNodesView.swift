@@ -26,7 +26,7 @@ struct DefiChainActiveNodesView: View {
                         .font(Theme.fonts.bodySMedium)
                     Spacer()
 
-                    Icon(named: "chevron-down", color: Theme.colors.textPrimary, size: 20)
+                    Icon(.chevronDown, color: Theme.colors.textPrimary, size: 20)
                         .rotationEffect(.radians(isExpanded ? .pi : .zero))
                         .animation(.interpolatingSpring, value: isExpanded)
                 }

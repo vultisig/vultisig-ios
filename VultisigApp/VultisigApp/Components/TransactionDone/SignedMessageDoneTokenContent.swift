@@ -105,7 +105,7 @@ struct SignedMessageDoneTokenContent: View {
                     .foregroundStyle(textColor)
                     .font(Theme.fonts.bodySMedium)
                 if isWarning {
-                    Icon(named: "triangle-alert", color: textColor, size: 14)
+                    Icon(.triangleWarning, color: textColor, size: 14)
                 }
             }
         }

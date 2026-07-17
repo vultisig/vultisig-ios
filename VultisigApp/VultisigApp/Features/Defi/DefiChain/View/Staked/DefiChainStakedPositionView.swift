@@ -97,7 +97,7 @@ struct DefiChainStakedPositionView: View {
 
                     if isCompound {
                         Button(action: openAutocompounderInfo) {
-                            Icon(named: "circle-info", color: Theme.colors.textTertiary, size: 14)
+                            Icon(.circleInfo, color: Theme.colors.textTertiary, size: 14)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("autocompounderInfo".localized)
@@ -128,7 +128,7 @@ struct DefiChainStakedPositionView: View {
     var rewardsSection: some View {
         if let apr = position.apr {
             HStack(spacing: 4) {
-                Icon(named: "percent", size: 16)
+                Icon(.circlePercentage, size: 16)
                 Text("apr".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -157,7 +157,7 @@ struct DefiChainStakedPositionView: View {
     var nextPayoutView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "calendar-days", color: Theme.colors.textTertiary, size: 16)
+                Icon(.calendarDays, color: Theme.colors.textTertiary, size: 16)
                 Text("nextPayout".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -173,7 +173,7 @@ struct DefiChainStakedPositionView: View {
     var estimatedRewardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "trophy", color: Theme.colors.textTertiary, size: 16)
+                Icon(.trophy, color: Theme.colors.textTertiary, size: 16)
                 Text("estimatedReward".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -221,10 +221,10 @@ struct DefiChainStakedPositionView: View {
 
     var compoundButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: removeButonTitle, icon: "minus-circle", type: .secondary) {
+            DefiButton(title: removeButonTitle, icon: .circleMinus, type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
-            DefiButton(title: addButonTitle, icon: "plus-circle") {
+            DefiButton(title: addButonTitle, icon: .circlePlus) {
                 onStake()
             }.disabled(stakeDisabled)
         }
@@ -232,10 +232,10 @@ struct DefiChainStakedPositionView: View {
 
     var defaultButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: removeButonTitle, icon: "minus-circle", type: .secondary) {
+            DefiButton(title: removeButonTitle, icon: .circleMinus, type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
-            DefiButton(title: addButonTitle, icon: "plus-circle") {
+            DefiButton(title: addButonTitle, icon: .circlePlus) {
                 onStake()
             }.disabled(stakeDisabled)
         }
@@ -261,10 +261,10 @@ struct DefiChainStakedPositionView: View {
 
     var indexButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "redeem".localized, icon: "minus-circle", type: .secondary) {
+            DefiButton(title: "redeem".localized, icon: .circleMinus, type: .secondary) {
                 onUnstake() // Use onUnstake for redeem action
             }.disabled(unstakeDisabled)
-            DefiButton(title: "mint".localized, icon: "plus-circle") {
+            DefiButton(title: "mint".localized, icon: .circlePlus) {
                 onStake() // Use onStake for mint action
             }.disabled(stakeDisabled)
         }

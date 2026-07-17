@@ -34,10 +34,10 @@ struct VaultSetupScreen: View {
         _viewModel = StateObject(wrappedValue: VaultSetupViewModel(setupType: setupType ?? .fast))
     }
 
-    private var stepIcons: [String] {
-        var icons = ["feather"]
+    private var stepIcons: [ImageResource] {
+        var icons: [ImageResource] = [.feather]
         if viewModel.showFastSignFields {
-            icons.append(contentsOf: ["email", "focus-lock"])
+            icons.append(contentsOf: [.envelopeFilled, .lockPassword])
         }
         return icons
     }
@@ -108,10 +108,10 @@ struct VaultSetupScreen: View {
         .screenBackButtonHidden(true)
         .screenToolbar {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "chevron.left") {
+                ToolbarButton(image: .chevronLeft) {
                     handleBack()
                 } iconContent: { _ in
-                    Icon(named: "chevron.left", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                    Icon(.chevronLeft, color: Theme.colors.textPrimary, size: 20)
                         .offset(x: -1)
                 }
             }
@@ -339,7 +339,7 @@ struct VaultSetupScreen: View {
         HStack(spacing: 4) {
             if !viewModel.referralField.value.isEmpty && viewModel.referralField.valid {
                 Icon(
-                    named: "check",
+                    .check,
                     color: Theme.colors.alertSuccess,
                     size: 16
                 )

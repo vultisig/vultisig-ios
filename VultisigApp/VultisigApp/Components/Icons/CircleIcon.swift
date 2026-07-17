@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct CircleIcon: View {
-    let icon: String
+    let icon: ImageResource
     let color: Color
 
     var body: some View {
         Icon(
-            named: icon,
+            icon,
             color: color,
             size: 27
         )
@@ -29,7 +29,7 @@ struct CircleIcon: View {
 
 #Preview {
     CircleIcon(
-        icon: "active-chain",
+        icon: .activeChain,
         color: Theme.colors.alertError
     )
 }

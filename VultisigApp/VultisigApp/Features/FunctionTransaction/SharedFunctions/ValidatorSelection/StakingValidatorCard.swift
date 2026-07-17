@@ -35,7 +35,7 @@ struct StakingValidatorCard: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(1)
                 if isSelected {
-                    Icon(named: "check", color: Theme.colors.alertSuccess, size: 16)
+                    Icon(.check, color: Theme.colors.alertSuccess, size: 16)
                 }
             }
             .padding(.horizontal, 14)

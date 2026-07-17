@@ -28,7 +28,7 @@ struct CreateReferralDetailsView: View {
         .screenTitle("createReferral".localized)
         .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "circle-info") {
+                ToolbarButton(image: .circleInfo) {
                     showTooltip.toggle()
                 }
             }

@@ -9,17 +9,17 @@ import SwiftUI
 
 struct VaultSetupStepIcon: View {
     let state: VaultSetupStepState
-    let icon: String
+    let icon: ImageResource
     let isSmall: Bool
 
-    init(state: VaultSetupStepState, icon: String, isSmall: Bool = false) {
+    init(state: VaultSetupStepState, icon: ImageResource, isSmall: Bool = false) {
         self.state = state
         self.icon = icon
         self.isSmall = isSmall
     }
 
     var body: some View {
-        Icon(named: icon, color: iconColor, size: iconSize, isSystem: false)
+        Icon(icon, color: iconColor, size: iconSize)
             .padding(padding)
             .if(state == .active) {
                 $0.background(alignment: .bottom) { shadowView }
@@ -88,9 +88,9 @@ enum VaultSetupStepState: Equatable {
 #Preview {
     Screen {
         VStack {
-            VaultSetupStepIcon(state: .valid, icon: "feather")
-            VaultSetupStepIcon(state: .active, icon: "email")
-            VaultSetupStepIcon(state: .inactive, icon: "focus-lock")
+            VaultSetupStepIcon(state: .valid, icon: .feather)
+            VaultSetupStepIcon(state: .active, icon: .envelopeFilled)
+            VaultSetupStepIcon(state: .inactive, icon: .lockPassword)
         }
     }
 }

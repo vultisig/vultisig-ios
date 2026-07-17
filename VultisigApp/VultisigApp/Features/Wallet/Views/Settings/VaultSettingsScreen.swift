@@ -96,7 +96,7 @@ struct VaultSettingsScreen: View {
 
     var fastSigningBiometrics: some View {
         SettingsOptionView(
-            icon: "lightning",
+            icon: .bolt,
             title: "biometricsFastSigning".localized,
             showSeparator: false
         ) {
@@ -111,7 +111,7 @@ struct VaultSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.passwordHint(vault: vault))
         } label: {
-            SettingsCommonOptionView(icon: "message-square-lock", title: "passwordHint".localized, subtitle: "setOrUpdateHint".localized)
+            SettingsCommonOptionView(icon: .inputPasswordEdit, title: "passwordHint".localized, subtitle: "setOrUpdateHint".localized)
         }
     }
 
@@ -119,7 +119,7 @@ struct VaultSettingsScreen: View {
         Button {
             router.navigate(to: VaultRoute.vaultDetails(vault: vault, devicesInfo: devicesInfo))
         } label: {
-            SettingsCommonOptionView(icon: "circle-info", title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
+            SettingsCommonOptionView(icon: .circleInfo, title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
         }
     }
 
@@ -132,7 +132,7 @@ struct VaultSettingsScreen: View {
             }
         } label: {
             SettingsCommonOptionView(
-                icon: "hard-drive-upload",
+                icon: .cloudDownload,
                 title: "backupVaultShareTitle".localized,
                 subtitle: "backupVaultShareDescription".localized,
                 showSeparator: false
@@ -145,7 +145,7 @@ struct VaultSettingsScreen: View {
             router.navigate(to: VaultRoute.renameVault(vault: vault, vaults: vaults, folders: folders))
         } label: {
             SettingsCommonOptionView(
-                icon: "pencil",
+                icon: .penWritingFilled,
                 title: "rename".localized,
                 subtitle: "renameVault".localized,
                 showSeparator: vault.isFastVault
@@ -158,7 +158,7 @@ struct VaultSettingsScreen: View {
             router.navigate(to: VaultRoute.deleteVault(vault: vault, devicesInfo: devicesInfo))
         } label: {
             SettingsCommonOptionView(
-                icon: "trash",
+                icon: .trash,
                 title: "delete".localized,
                 subtitle: "deleteVault".localized,
                 type: .alert,
@@ -173,7 +173,7 @@ struct VaultSettingsScreen: View {
             showUpgradeYourVaultSheet = true
         } label: {
             SettingsCommonOptionView(
-                icon: "arrow-up-from-dot",
+                icon: .cloudUpload,
                 title: "migrate".localized,
                 subtitle: "migrateVault".localized
             )
@@ -185,7 +185,7 @@ struct VaultSettingsScreen: View {
             router.navigate(to: VaultRoute.advancedSettings(vault: vault))
         } label: {
             SettingsCommonOptionView(
-                icon: "folder-key",
+                icon: .folderKey,
                 title: "advanced".localized,
                 subtitle: "advancedDescription".localized,
                 showSeparator: false

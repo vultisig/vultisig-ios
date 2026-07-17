@@ -14,7 +14,7 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -eo pipefail -c
 
-.PHONY: help bootstrap generate open build-check test ui_test
+.PHONY: help bootstrap generate open build-check test ui_test lint-icons
 
 # Paths
 VULTISIG_APP_DIR := VultisigApp
@@ -101,3 +101,6 @@ ui_test: ## Run UI tests
 		-destination '$(DESTINATION)' \
 		-skipPackagePluginValidation \
 		CODE_SIGNING_ALLOWED=NO
+
+lint-icons: ## Lint asset-catalog icon usage (unknown-asset literals, dead art, duplicate names)
+	@python3 scripts/lint-icons.py

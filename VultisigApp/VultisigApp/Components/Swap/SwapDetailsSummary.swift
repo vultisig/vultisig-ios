@@ -106,7 +106,7 @@ struct SwapDetailsSummary: View {
 
     var chevron: some View {
         Icon(
-            named: "chevron-down-small",
+            .chevronDown,
             color: Theme.colors.textSecondary,
             size: 12
         )

@@ -11,10 +11,10 @@ enum NotificationBannerStyle {
     case success
     case error
 
-    var iconName: String {
+    var iconName: ImageResource {
         switch self {
-        case .success: "check"
-        case .error: "x"
+        case .success: .check
+        case .error: .xmark
         }
     }
 
@@ -63,7 +63,7 @@ struct NotificationBannerView: View {
                         .frame(width: 18, height: 18)
                         .rotationEffect(.radians(-.pi / 2))
                         .animation(animation.delay(progressDelay), value: progress)
-                    Icon(named: style.iconName, color: style.accentColor, size: 9)
+                    Icon(style.iconName, color: style.accentColor, size: 9)
                 }
 
                 Text(text)

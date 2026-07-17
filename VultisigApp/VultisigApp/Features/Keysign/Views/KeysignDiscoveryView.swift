@@ -177,7 +177,7 @@ struct KeysignDiscoveryView: View {
             notifyVaultDevices()
         } label: {
             HStack(spacing: 6) {
-                Icon(named: "bell", color: Theme.colors.alertInfo, size: 16)
+                Icon(.bell, color: Theme.colors.alertInfo, size: 16)
                 Text(isDisabled
                      ? String(format: "resendNotificationIn".localized, resendCountdownFormatted)
                      : "resendNotification".localized

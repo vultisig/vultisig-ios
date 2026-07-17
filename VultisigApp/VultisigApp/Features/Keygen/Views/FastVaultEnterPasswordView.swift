@@ -32,7 +32,7 @@ struct FastVaultEnterPasswordView: View {
         VStack(spacing: 10) {
             // Icon
             Icon(
-                named: "focus-lock",
+                .lockPassword,
                 color: Theme.colors.primaryAccent4,
                 size: 32
             )
@@ -63,7 +63,7 @@ struct FastVaultEnterPasswordView: View {
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
 
-                        Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                        Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                             .rotationEffect(.degrees(showHint ? 180 : 0))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,7 +99,7 @@ struct FastVaultEnterPasswordView: View {
         .presentationBackground(Theme.colors.bgPrimary)
 #else
         .overlay(
-            ToolbarButton(image: "x", action: { dismiss() })
+            ToolbarButton(image: .xmark, action: { dismiss() })
                 .padding(.top, 16)
                 .padding(.trailing, 16),
             alignment: .topTrailing
