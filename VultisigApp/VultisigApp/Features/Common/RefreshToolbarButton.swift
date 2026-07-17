@@ -14,7 +14,7 @@ struct RefreshToolbarButton: View {
     @State private var disabled = false
 
     var body: some View {
-        ToolbarButton(image: "refresh", action: onPress) { icon in
+        ToolbarButton(image: .refresh, action: onPress) { icon in
             icon
                 .rotationEffect(.degrees(isRefreshing ? 360 : 0))
         }

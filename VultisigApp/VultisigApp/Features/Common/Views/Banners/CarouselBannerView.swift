@@ -94,7 +94,7 @@ private struct CarouselBannerCloseButton: View {
 
     var icon: some View {
         Icon(
-            named: "cross-small",
+            .crossSmall,
             color: Theme.colors.textPrimary,
             size: 16
         )

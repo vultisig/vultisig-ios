@@ -74,7 +74,7 @@ struct DevicesSelectionView<Overlay: View>: View {
 
     private var tipView: some View {
         HStack(spacing: 8) {
-            Icon(named: "lightbulb", size: 12)
+            Icon(.lightbulb, size: 12)
             Text(tipText)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)

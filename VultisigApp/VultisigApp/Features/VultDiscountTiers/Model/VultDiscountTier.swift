@@ -18,7 +18,25 @@ enum VultDiscountTier: String, Identifiable, CaseIterable, Comparable {
 
     var id: String { rawValue }
     var name: String { rawValue.capitalized }
-    var icon: String { "vult-\(rawValue)" }
+
+    /// Spelled out per case rather than interpolated from `rawValue`: the asset symbols are
+    /// resolved at compile time, so renaming or dropping a badge fails the build here.
+    var icon: ImageResource {
+        switch self {
+        case .bronze:
+            .vultBronze
+        case .silver:
+            .vultSilver
+        case .gold:
+            .vultGold
+        case .platinum:
+            .vultPlatinum
+        case .diamond:
+            .vultDiamond
+        case .ultimate:
+            .vultUltimate
+        }
+    }
 
     var bpsDiscount: Int {
         switch self {

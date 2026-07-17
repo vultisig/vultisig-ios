@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct IconButton: View {
-    let icon: String
+    let icon: ImageResource
     let isLoading: Bool
     let type: ButtonType
     let size: ButtonSize
     let action: () -> Void
 
     init(
-        icon: String,
+        icon: ImageResource,
         isLoading: Bool = false,
         type: ButtonType = .primary,
         size: ButtonSize = .medium,
@@ -46,12 +46,12 @@ struct IconButton: View {
 
 #Preview {
     VStack {
-        IconButton(icon: "chevron-right", type: .primary, size: .medium) {}
-        IconButton(icon: "chevron-right", type: .primary, size: .small) {}
-        IconButton(icon: "chevron-right", type: .primary, size: .mini) {}
+        IconButton(icon: .chevronRight, type: .primary, size: .medium) {}
+        IconButton(icon: .chevronRight, type: .primary, size: .small) {}
+        IconButton(icon: .chevronRight, type: .primary, size: .mini) {}
 
-        IconButton(icon: "chevron-right", type: .secondary, size: .medium) {}
-        IconButton(icon: "chevron-right", type: .secondary, size: .small) {}
-        IconButton(icon: "chevron-right", type: .secondary, size: .mini) {}
+        IconButton(icon: .chevronRight, type: .secondary, size: .medium) {}
+        IconButton(icon: .chevronRight, type: .secondary, size: .small) {}
+        IconButton(icon: .chevronRight, type: .secondary, size: .mini) {}
     }
 }

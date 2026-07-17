@@ -124,7 +124,7 @@ struct SwapCoinPickerView: View {
         }
         .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     showSheet.toggle()
                 }
             }

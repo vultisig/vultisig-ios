@@ -79,7 +79,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     for: "amount",
                     with: tokenDisplay,
                     color: input.tokenDisplayIsUnlimited ? Theme.colors.alertWarning : nil,
-                    trailingIcon: input.tokenDisplayIsUnlimited ? "triangle-alert" : nil
+                    trailingIcon: input.tokenDisplayIsUnlimited ? .triangleWarning : nil
                 )
                 Separator()
             }
@@ -165,7 +165,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         image: String? = nil,
         isMultiLine: Bool = false,
         color: Color? = nil,
-        trailingIcon: String? = nil
+        trailingIcon: ImageResource? = nil
     ) -> some View {
         HStack(spacing: 4) {
             Text(title.localized)
@@ -220,7 +220,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .multilineTextAlignment(.trailing)
                         .frame(maxWidth: image == nil ? .infinity : nil, alignment: .trailing)
                     if let trailingIcon {
-                        Icon(named: trailingIcon, color: color ?? Theme.colors.alertWarning, size: 14)
+                        Icon(trailingIcon, color: color ?? Theme.colors.alertWarning, size: 14)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -296,7 +296,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
                 }
             }

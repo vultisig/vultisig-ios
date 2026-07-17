@@ -97,7 +97,7 @@ struct YieldDepositScreen: View {
             InfoBannerView(
                 description: viewModel.minimumDepositText,
                 type: .info,
-                leadingIcon: "circle-info"
+                leadingIcon: .circleInfo
             )
         }
     }

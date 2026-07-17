@@ -33,7 +33,7 @@ struct SearchTextField: View {
     var body: some View {
         HStack(spacing: 0) {
             Icon(
-                named: "magnifying-glass",
+                .magnifier,
                 color: Theme.colors.textSecondary,
                 size: 16
             )
@@ -85,7 +85,7 @@ struct SearchTextField: View {
             guard let pasted = ClipboardManager.pasteFromClipboard() else { return }
             value = pasted
         } label: {
-            Icon(named: "copy-2", color: Theme.colors.textSecondary, size: 20)
+            Icon(.clone, color: Theme.colors.textSecondary, size: 20)
         }
         .buttonStyle(.plain)
     }

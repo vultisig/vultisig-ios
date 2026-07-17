@@ -56,17 +56,17 @@ struct VaultBackupPasswordOptionsScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
 
-            boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: "lock-keyhole-open")
+            boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: .lockFilled)
 
-            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: "folder-lock")
+            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: .folderLock)
 
-            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: "file-warning")
+            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: .fileAlert)
         }
     }
 
-    func boxedText(_ text: String, highlighted: String, icon: String) -> some View {
+    func boxedText(_ text: String, highlighted: String, icon: ImageResource) -> some View {
         HStack(spacing: 12) {
-            Icon(named: icon, color: Theme.colors.primaryAccent4, size: 24)
+            Icon(icon, color: Theme.colors.primaryAccent4, size: 24)
             HighlightedText(text: String(format: text.localized, highlighted), highlightedText: highlighted) {
                 $0.foregroundColor = Theme.colors.textTertiary
                 $0.font = Theme.fonts.footnote

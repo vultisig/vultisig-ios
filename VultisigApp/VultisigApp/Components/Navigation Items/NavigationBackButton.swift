@@ -13,7 +13,7 @@ struct NavigationBackButton: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        ToolbarButton(image: "chevron-right", action: { dismiss() })
+        ToolbarButton(image: .chevronRight, action: { dismiss() })
             .rotationEffect(.radians(.pi))
     }
 }

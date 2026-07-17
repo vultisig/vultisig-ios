@@ -133,10 +133,10 @@ struct DefiMainScreen: View {
             }
             .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: "magnifying-glass") {
+            CircularAccessoryIconButton(icon: .magnifier) {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
+            CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
                 showChainSelection.toggle()
             }
         }

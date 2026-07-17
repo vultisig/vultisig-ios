@@ -9,7 +9,7 @@ import SwiftUI
 
 protocol TabBarItem: Hashable, Identifiable {
     var name: String { get }
-    var icon: String { get }
+    var icon: ImageResource { get }
     var accessibilityID: String? { get }
 }
 

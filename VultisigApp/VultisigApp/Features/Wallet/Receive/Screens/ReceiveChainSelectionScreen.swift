@@ -46,7 +46,7 @@ struct ReceiveChainSelectionScreen: View {
         .screenBackButtonHidden()
         .screenToolbar {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     isPresented.toggle()
                 }
             }

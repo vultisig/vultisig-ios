@@ -130,7 +130,7 @@ struct CommonTextField<TrailingView: View>: View {
             text = ""
         } label: {
             Icon(
-                named: "circle-x-fill",
+                .circleXmarkFilled,
                 color: Theme.colors.textTertiary,
                 size: 16
             )

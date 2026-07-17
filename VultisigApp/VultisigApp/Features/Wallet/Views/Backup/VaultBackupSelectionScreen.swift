@@ -85,7 +85,7 @@ struct VaultBackupSelectionScreen: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
-                Icon(named: "chevron-right", color: Theme.colors.textTertiary)
+                Icon(.chevronRight, color: Theme.colors.textTertiary)
             }
             switch type {
             case .single(let vault):

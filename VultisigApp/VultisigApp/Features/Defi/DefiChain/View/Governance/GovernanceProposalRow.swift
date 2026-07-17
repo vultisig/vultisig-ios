@@ -30,7 +30,7 @@ struct GovernanceMyVoteBadge: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Icon(named: "check", color: choice.tallyColor, size: 12)
+            Icon(.check, color: choice.tallyColor, size: 12)
             Text(String(format: "governanceYouVoted".localized, choice.displayTitle))
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(choice.tallyColor)
@@ -97,14 +97,14 @@ struct GovernanceProposalRow: View {
             } else if proposal.status.isActive,
                       let countdown = QBTCGovernanceFormat.votingCountdown(endTime: proposal.votingEndTime) {
                 HStack(spacing: 4) {
-                    Icon(named: "clock", color: Theme.colors.textTertiary, size: 12, isSystem: true)
+                    Icon(.clock, color: Theme.colors.textTertiary, size: 12)
                     Text(countdown)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
             Spacer()
-            Icon(named: "chevron-right", color: Theme.colors.textTertiary, size: 16)
+            Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)
         }
     }
 }

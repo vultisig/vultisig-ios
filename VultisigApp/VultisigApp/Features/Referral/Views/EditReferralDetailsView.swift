@@ -126,7 +126,7 @@ struct EditReferralDetailsView: View {
                 HStack {
                     selectedAsset
                     Spacer()
-                    Icon(named: "arrow", color: Theme.colors.textPrimary, size: 24)
+                    Icon(.chevronRight, color: Theme.colors.textPrimary, size: 24)
                 }
             }
         }

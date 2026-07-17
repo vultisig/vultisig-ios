@@ -38,7 +38,7 @@ struct BottomSheetContainer<Content: BottomSheetContentView>: View {
             Button {
                 isPresented = false
             } label: {
-                Icon(named: "x", color: Theme.colors.textPrimary, size: 16)
+                Icon(.xmark, color: Theme.colors.textPrimary, size: 16)
                     .padding(8)
                     .contentShape(Rectangle())
             }

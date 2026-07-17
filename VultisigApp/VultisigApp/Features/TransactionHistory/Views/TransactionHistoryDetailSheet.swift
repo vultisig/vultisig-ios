@@ -50,7 +50,7 @@ struct TransactionHistoryDetailSheet: View {
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             #if os(macOS)
                 CustomToolbarItem(placement: .leading) {
-                    ToolbarButton(image: "x") {
+                    ToolbarButton(image: .xmark) {
                         dismiss()
                     }
                 }
