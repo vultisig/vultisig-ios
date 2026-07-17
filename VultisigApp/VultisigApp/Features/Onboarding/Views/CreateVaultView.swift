@@ -117,7 +117,7 @@ struct CreateVaultView: View {
     var importVaultButton: some View {
         PrimaryButton(
             title: "import",
-            leadingIcon: .circleOpenArrowDown,
+            leadingIcon: .rectArrowDownRight,
             trailingView: { newTag },
             type: .secondary,
             action: { showImportSelectionSheet = true }
@@ -240,13 +240,13 @@ extension CreateVaultView {
     }
 
     var scanPhoneButton: some View {
-        PrimaryButton(title: "scanQRStartScreen", leadingIcon: .qrcode, type: .secondary) {
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: .cameraFilled, type: .secondary) {
             showSheet = true
         }
     }
 
     var scanMacButton: some View {
-        PrimaryButton(title: "scanQRStartScreen", leadingIcon: .qrcode, type: .secondary) {
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: .cameraFilled, type: .secondary) {
             navigateToGeneralQRImport = true
         }
     }
@@ -265,7 +265,7 @@ extension CreateVaultView {
     }
 
     var scanButton: some View {
-        PrimaryButton(title: "scanQRStartScreen", leadingIcon: .qrcode, type: .secondary) {
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: .cameraFilled, type: .secondary) {
             navigateToScanQR = true
         }
     }
