@@ -141,6 +141,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 } else if let signSui = input.keysignPayload?.signSui {
                     Separator()
                     SignSuiDisplayView(signSui: signSui)
+                } else if let signRipple = input.keysignPayload?.signRipple {
+                    Separator()
+                    SignRippleDisplayView(signRipple: signRipple)
                 }
             }
         }
@@ -241,6 +244,15 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .font(Theme.fonts.bodyMMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 8)
+        } else if input.keysignPayload?.signRipple != nil {
+            // signRipple carries the dApp transaction in raw JSON — an
+            // OfferCreate or cross-currency Payment has no simple to_amount to
+            // show. Use a neutral title; the decoded terms render below.
+            Text("rippleTransaction".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyMMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
         } else {
             VStack(spacing: 8) {
                 Text(NSLocalizedString("youreSending", comment: ""))
@@ -333,6 +345,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     var shouldShowAmountRow: Bool {
         // signSui carries no to_amount; the value lives in the PTB bytes.
         if input.keysignPayload?.signSui != nil {
+            return false
+        }
+        // signRipple carries the amount inside the raw JSON (and offers have no
+        // amount at all); the decoded terms render it below.
+        if input.keysignPayload?.signRipple != nil {
             return false
         }
         switch input.hero {

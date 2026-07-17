@@ -1,0 +1,232 @@
+//
+//  RippleDAppTransactionParserTests.swift
+//  VultisigAppTests
+//
+//  Pins the display-only decode of a dApp-supplied XRPL transaction
+//  (`RippleDAppTransaction.parse`): field order, native-drops vs
+//  issued-currency amounts, 40-hex currency → ASCII decode, and the
+//  fail-closed `nil` fallback on malformed / present-but-undecodable input.
+//  Mirrors the Windows `parseRippleTx`.
+//
+
+@testable import VultisigApp
+import XCTest
+
+final class RippleDAppTransactionParserTests: XCTestCase {
+
+    private func parse(_ json: String) -> RippleDAppTransaction? {
+        RippleDAppTransaction.parse(rawJson: json)
+    }
+
+    private func field(_ tx: RippleDAppTransaction, _ labelKey: String) -> RippleDAppTransaction.Value? {
+        tx.fields.first { $0.labelKey == labelKey }?.value
+    }
+
+    // MARK: - Native drops Payment
+
+    func testNativeDropsPayment() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000"}
+        """))
+
+        XCTAssertEqual(tx.transactionType, "Payment")
+        XCTAssertEqual(field(tx, "rippleFieldDestination"), .text("rDest"))
+        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.native(xrp: "1")))
+
+        // Field order: Destination precedes Amount.
+        XCTAssertEqual(tx.fields.map(\.labelKey), ["rippleFieldDestination", "rippleFieldAmount"])
+    }
+
+    func testNativeDropsFractionalXrp() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1500000"}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.native(xrp: "1.5")))
+    }
+
+    // MARK: - Cross-currency Payment (issued currency + 40-hex decode)
+
+    func testCrossCurrencyPaymentWithSendMaxAndHexCurrency() throws {
+        // Amount is an issued currency whose code is the 40-hex encoding of
+        // "TST"; SendMax is native drops. Both must decode, in order.
+        let hexTST = "5453540000000000000000000000000000000000"
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"10","currency":"\(hexTST)","issuer":"rIssuer"},"SendMax":"2000000"}
+        """))
+
+        XCTAssertEqual(tx.transactionType, "Payment")
+        XCTAssertEqual(tx.fields.map(\.labelKey), ["rippleFieldDestination", "rippleFieldAmount", "rippleFieldSendMax"])
+        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.issued(value: "10", currency: "TST", issuer: "rIssuer")))
+        XCTAssertEqual(field(tx, "rippleFieldSendMax"), .amount(.native(xrp: "2")))
+    }
+
+    func testStandardCurrencyCodePassthrough() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"42","currency":"USD","issuer":"rIssuer"}}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.issued(value: "42", currency: "USD", issuer: "rIssuer")))
+    }
+
+    // MARK: - OfferCreate
+
+    func testOfferCreateTakerGetsAndTakerPays() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"OfferCreate","Account":"rAcc","TakerGets":"5000000","TakerPays":{"value":"10","currency":"USD","issuer":"rIssuer"}}
+        """))
+
+        XCTAssertEqual(tx.transactionType, "OfferCreate")
+        XCTAssertNil(field(tx, "rippleFieldDestination"), "OfferCreate carries no Destination")
+        XCTAssertEqual(tx.fields.map(\.labelKey), ["rippleFieldTakerGets", "rippleFieldTakerPays"])
+        XCTAssertEqual(field(tx, "rippleFieldTakerGets"), .amount(.native(xrp: "5")))
+        XCTAssertEqual(field(tx, "rippleFieldTakerPays"), .amount(.issued(value: "10", currency: "USD", issuer: "rIssuer")))
+    }
+
+    // MARK: - Integer metadata fields
+
+    func testDestinationTagRow() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","DestinationTag":12345}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldDestinationTag"), .text("12345"))
+        // Tag row comes after the amount rows.
+        XCTAssertEqual(tx.fields.map(\.labelKey), ["rippleFieldDestination", "rippleFieldAmount", "rippleFieldDestinationTag"])
+    }
+
+    func testOfferSequenceRow() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"OfferCancel","Account":"rAcc","OfferSequence":42}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldOfferSequence"), .text("42"))
+    }
+
+    func testTrustSetLimitAmount() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"}}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldTrustLimit"), .amount(.issued(value: "1000", currency: "USD", issuer: "rIssuer")))
+    }
+
+    // MARK: - Malformed / fail-closed → nil
+
+    func testInvalidJsonReturnsNil() {
+        XCTAssertNil(parse("not json {{{"))
+    }
+
+    func testNonObjectReturnsNil() {
+        XCTAssertNil(parse("[1,2,3]"))
+    }
+
+    func testMissingTransactionTypeReturnsNil() {
+        XCTAssertNil(parse("""
+        {"Account":"rAcc","Destination":"rDest","Amount":"1000000"}
+        """))
+    }
+
+    /// A present Amount that is a JSON number (not a drops string) can't be
+    /// decoded → the whole parse fails closed to nil (never hide value behind a
+    /// seemingly-complete screen).
+    func testPresentButUndecodableNumericAmountReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":123}
+        """))
+    }
+
+    func testPresentButNonNumericDropsReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"abc"}
+        """))
+    }
+
+    func testIssuedAmountMissingValueReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"currency":"USD","issuer":"rIssuer"}}
+        """))
+    }
+
+    // MARK: - Transaction-type allowlist
+
+    /// Every supported type decodes; a partial decode is never rendered for a
+    /// type outside the allowlist.
+    func testSupportedTransactionTypesParse() {
+        let supported: [String] = [
+            "{\"TransactionType\":\"Payment\",\"Account\":\"rAcc\",\"Destination\":\"rDest\",\"Amount\":\"1000000\"}",
+            "{\"TransactionType\":\"OfferCreate\",\"Account\":\"rAcc\",\"TakerGets\":\"5000000\",\"TakerPays\":{\"value\":\"10\",\"currency\":\"USD\",\"issuer\":\"rIssuer\"}}",
+            "{\"TransactionType\":\"OfferCancel\",\"Account\":\"rAcc\",\"OfferSequence\":42}",
+            "{\"TransactionType\":\"TrustSet\",\"Account\":\"rAcc\",\"LimitAmount\":{\"value\":\"1000\",\"currency\":\"USD\",\"issuer\":\"rIssuer\"}}"
+        ]
+        for json in supported {
+            XCTAssertNotNil(parse(json), "expected a supported type to parse: \(json)")
+        }
+    }
+
+    /// An unsupported type must fail closed even when it carries fields the
+    /// decoder knows how to read — rendering a partial card would hide the
+    /// security-sensitive terms (RegularKey, SignerEntries, flags) it does not.
+    func testUnsupportedTransactionTypeReturnsNil() {
+        // SetRegularKey carrying a Destination + Amount: the exact dangerous
+        // case where a partial card would look complete while hiding RegularKey.
+        XCTAssertNil(parse("""
+        {"TransactionType":"SetRegularKey","Account":"rAcc","Destination":"rDest","Amount":"1000000","RegularKey":"rKey"}
+        """))
+        XCTAssertNil(parse("""
+        {"TransactionType":"SignerListSet","Account":"rAcc","SignerQuorum":2}
+        """))
+        XCTAssertNil(parse("""
+        {"TransactionType":"AccountSet","Account":"rAcc","SetFlag":1}
+        """))
+    }
+
+    // MARK: - Amount validation (over-long drops / non-numeric IOU value)
+
+    /// A drops string one character past the 20-char budget is rejected before
+    /// BigInt conversion — pins the off-by-one at the boundary.
+    func testOverLongDropsReturnsNil() {
+        let justOverBudget = String(repeating: "9", count: 21)
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"\(justOverBudget)"}
+        """))
+
+        let farOverBudget = String(repeating: "9", count: 40)
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"\(farOverBudget)"}
+        """))
+    }
+
+    /// A drops string exactly at the 20-char budget still parses.
+    func testMaxLengthDropsParses() throws {
+        // 20 characters — the length budget's upper bound.
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"10000000000000000000"}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldAmount"), .amount(.native(xrp: "10000000000000")))
+    }
+
+    /// A non-numeric IOU `value` fails closed.
+    func testNonNumericIssuedValueReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"abc","currency":"USD","issuer":"rIssuer"}}
+        """))
+        // A number with trailing garbage is not a valid decimal.
+        XCTAssertNil(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"10abc","currency":"USD","issuer":"rIssuer"}}
+        """))
+    }
+
+    /// Fractional and signed decimal IOU values remain valid.
+    func testFractionalAndSignedIssuedValuesParse() throws {
+        let fractional = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"0.5","currency":"USD","issuer":"rIssuer"}}
+        """))
+        XCTAssertEqual(field(fractional, "rippleFieldAmount"), .amount(.issued(value: "0.5", currency: "USD", issuer: "rIssuer")))
+
+        let scientific = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"1e-5","currency":"USD","issuer":"rIssuer"}}
+        """))
+        XCTAssertEqual(field(scientific, "rippleFieldAmount"), .amount(.issued(value: "1e-5", currency: "USD", issuer: "rIssuer")))
+
+        let signed = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"-1.5","currency":"USD","issuer":"rIssuer"}}
+        """))
+        XCTAssertEqual(field(signed, "rippleFieldAmount"), .amount(.issued(value: "-1.5", currency: "USD", issuer: "rIssuer")))
+    }
+}

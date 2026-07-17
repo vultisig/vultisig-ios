@@ -25,7 +25,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     MARKETING_VERSION: "1.42"
-    CURRENT_PROJECT_VERSION: "66"
+    CURRENT_PROJECT_VERSION: "67"
     ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
@@ -57,12 +57,15 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to the merged `main` commit that adds `RippleSpecific.destination_tag`
-    # (optional uint32) — the first-class XRPL DestinationTag field. Consumed here
-    # via dual-write: the initiator writes the tag into BOTH this field AND the
-    # legacy memo carrier, and signers prefer the field, falling back to the memo,
-    # so mixed-version device pairs stay byte-identical in MPC keysign.
-    revision: 2b92938e269ab44d735dabb30b1779a254f42143
+    # Pinned to the merged `main` commit that adds `SignRipple { string raw_json }`
+    # at `sign_ripple = 46` in `KeysignPayload.sign_data` — the XRPL dApp
+    # co-signer passthrough field. This commit is a linear descendant of the
+    # earlier `RippleSpecific.destination_tag` (optional uint32) pin, so it keeps
+    # that first-class XRPL DestinationTag field: the initiator dual-writes the
+    # tag into BOTH the field AND the legacy memo carrier, and signers prefer the
+    # field, falling back to the memo, so mixed-version device pairs stay
+    # byte-identical in MPC keysign.
+    revision: c91f2ea7db5eb03cf6bb637da19e4ed93b07dc46
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →

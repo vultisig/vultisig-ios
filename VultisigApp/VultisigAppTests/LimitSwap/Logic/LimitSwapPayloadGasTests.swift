@@ -101,10 +101,46 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         let rune = nativeCoin(chain: .thorChain, ticker: "RUNE", decimals: 8)
         let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
         let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
-        // Market default RUNE→ETH; BTC held and != target → BTC preferred.
-        let resolved = limitDefaultSourceCoin(marketDefault: rune, targetCoin: eth, vaultCoins: [rune, eth, btc])
+        // Inherited alphabetical default RUNE→ETH; BTC held and != target → BTC preferred.
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: rune,
+            isSourceExplicit: false,
+            targetCoin: eth,
+            vaultCoins: [rune, eth, btc]
+        )
         XCTAssertEqual(resolved.chain, .bitcoin)
         XCTAssertEqual(resolved.ticker, "BTC")
+    }
+
+    func testLimitDefaultSourceHonorsExplicitRuneSourceOverBTCPreference() {
+        // Entered the swap from THORChain: RUNE is an explicit choice, so the
+        // limit entry keeps it instead of silently switching the source to BTC.
+        let rune = nativeCoin(chain: .thorChain, ticker: "RUNE", decimals: 8)
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: rune,
+            isSourceExplicit: true,
+            targetCoin: eth,
+            vaultCoins: [rune, eth, btc]
+        )
+        XCTAssertEqual(resolved.chain, .thorChain)
+        XCTAssertEqual(resolved.ticker, "RUNE")
+    }
+
+    func testLimitDefaultSourceFallsBackWhenExplicitSourceIsUnroutable() {
+        // Explicit SOL source can't be encoded into a THORChain memo — fall back
+        // to the BTC preference rather than seeding an unplaceable order.
+        let sol = nativeCoin(chain: .solana, ticker: "SOL", decimals: 9)
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: sol,
+            isSourceExplicit: true,
+            targetCoin: eth,
+            vaultCoins: [sol, eth, btc]
+        )
+        XCTAssertEqual(resolved.chain, .bitcoin)
     }
 
     func testLimitDefaultSourceAvoidsSameChainSelfPair() {
@@ -113,7 +149,28 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
         let usdc = tokenCoin(chain: .ethereum, ticker: "USDC", decimals: 6)
         let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
-        let resolved = limitDefaultSourceCoin(marketDefault: eth, targetCoin: usdc, vaultCoins: [eth, usdc, btc])
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: eth,
+            isSourceExplicit: false,
+            targetCoin: usdc,
+            vaultCoins: [eth, usdc, btc]
+        )
+        XCTAssertEqual(resolved.chain, .bitcoin)
+    }
+
+    func testLimitDefaultSourceAvoidsSelfPairEvenWhenSourceIsExplicit() {
+        // The buy-VULT entry passes an explicit ETH source with an Ethereum-side
+        // target: intent can't make a same-chain pair routable, so it still
+        // resolves to a held routable source (BTC).
+        let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let vult = tokenCoin(chain: .ethereum, ticker: "VULT", decimals: 18)
+        let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: eth,
+            isSourceExplicit: true,
+            targetCoin: vult,
+            vaultCoins: [eth, vult, btc]
+        )
         XCTAssertEqual(resolved.chain, .bitcoin)
     }
 
@@ -122,7 +179,12 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         // keep the market default rather than inventing an unheld source.
         let eth = nativeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
         let usdc = tokenCoin(chain: .ethereum, ticker: "USDC", decimals: 6)
-        let resolved = limitDefaultSourceCoin(marketDefault: eth, targetCoin: usdc, vaultCoins: [eth, usdc])
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: eth,
+            isSourceExplicit: false,
+            targetCoin: usdc,
+            vaultCoins: [eth, usdc]
+        )
         XCTAssertEqual(resolved.chain, .ethereum)
         XCTAssertEqual(resolved.ticker, "ETH")
     }
@@ -131,7 +193,12 @@ final class LimitSwapPayloadGasTests: XCTestCase {
         // Neither BTC nor ETH held; market default (LTC) isn't the target → keep it.
         let ltc = nativeCoin(chain: .litecoin, ticker: "LTC", decimals: 8)
         let btc = nativeCoin(chain: .bitcoin, ticker: "BTC", decimals: 8)
-        let resolved = limitDefaultSourceCoin(marketDefault: ltc, targetCoin: btc, vaultCoins: [ltc])
+        let resolved = limitDefaultSourceCoin(
+            marketDefault: ltc,
+            isSourceExplicit: false,
+            targetCoin: btc,
+            vaultCoins: [ltc]
+        )
         XCTAssertEqual(resolved.chain, .litecoin)
     }
 

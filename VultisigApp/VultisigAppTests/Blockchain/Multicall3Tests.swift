@@ -120,4 +120,104 @@ final class Multicall3Tests: XCTestCase {
         XCTAssertTrue(Multicall3.decodeAggregate3Results(hex: "0x").isEmpty)
         XCTAssertTrue(Multicall3.decodeAggregate3Results(hex: "not-hex").isEmpty)
     }
+
+    // MARK: - mapBalances
+    //
+    // `aggregate3` returns success at the top level even when a sub-call fails, so
+    // this mapping is the only place a partial failure can be told apart from a
+    // genuine zero. Collapsing the two here persists an empty balance over a
+    // funded coin, with no throw and no fallback to catch it.
+
+    func testMapBalancesOmitsFailedSubCallRatherThanZeroingIt() {
+        // USDC's sub-call failed (nil). It must be ABSENT — not present-as-zero —
+        // so the caller retries it instead of writing 0 over a funded coin.
+        let mapped = Multicall3.mapBalances(
+            decoded: [BigInt(500), nil, BigInt(200)],
+            includeNative: false,
+            contractAddresses: ["0xDAI", "0xUSDC", "0xWBTC"]
+        )
+
+        XCTAssertNil(mapped?.balances["0xUSDC"], "a failed sub-call must not be recorded at all")
+        XCTAssertFalse(mapped?.balances.keys.contains("0xUSDC") ?? true, "absent, not zero")
+        XCTAssertEqual(mapped?.balances["0xDAI"], BigInt(500), "siblings still resolve")
+        XCTAssertEqual(mapped?.balances["0xWBTC"], BigInt(200), "siblings still resolve")
+    }
+
+    func testMapBalancesKeepsGenuineZeroBalance() {
+        // An empty wallet is a real balance and must survive as 0 — the fix must
+        // not "preserve" its way into never writing zeroes.
+        let mapped = Multicall3.mapBalances(
+            decoded: [BigInt(0), nil],
+            includeNative: false,
+            contractAddresses: ["0xEMPTY", "0xFAILED"]
+        )
+
+        XCTAssertEqual(mapped?.balances["0xEMPTY"], BigInt(0), "a genuine zero is a real balance")
+        XCTAssertTrue(mapped?.balances.keys.contains("0xEMPTY") ?? false)
+        XCTAssertFalse(mapped?.balances.keys.contains("0xFAILED") ?? true)
+    }
+
+    func testMapBalancesFailedNativeCallIsNilWhileTokensResolve() {
+        let mapped = Multicall3.mapBalances(
+            decoded: [nil, BigInt(42)],
+            includeNative: true,
+            contractAddresses: ["0xDAI"]
+        )
+
+        XCTAssertNil(mapped?.native, "a failed native read must not become a 0 balance")
+        XCTAssertEqual(mapped?.balances["0xDAI"], BigInt(42))
+    }
+
+    func testMapBalancesNativeZeroIsDistinctFromNativeFailure() {
+        let zero = Multicall3.mapBalances(decoded: [BigInt(0)], includeNative: true, contractAddresses: [])
+        let failed = Multicall3.mapBalances(decoded: [nil], includeNative: true, contractAddresses: [])
+
+        XCTAssertEqual(zero?.native, BigInt(0))
+        XCTAssertNil(failed?.native)
+    }
+
+    func testMapBalancesAssignsResultsInCallOrderWithNativeFirst() {
+        // Order is the contract: native getEthBalance first, then one balanceOf per
+        // contract in the order given. A drift here silently swaps balances between
+        // tokens.
+        let mapped = Multicall3.mapBalances(
+            decoded: [BigInt(1), BigInt(2), BigInt(3)],
+            includeNative: true,
+            contractAddresses: ["0xA", "0xB"]
+        )
+
+        XCTAssertEqual(mapped?.native, BigInt(1))
+        XCTAssertEqual(mapped?.balances["0xA"], BigInt(2))
+        XCTAssertEqual(mapped?.balances["0xB"], BigInt(3))
+    }
+
+    func testMapBalancesCountMismatchReturnsNilSoCallerFallsBack() {
+        // A short decode must read as a whole-batch failure, never as a partial
+        // success that zeroes the missing tail.
+        XCTAssertNil(Multicall3.mapBalances(decoded: [], includeNative: false, contractAddresses: ["0xA"]))
+        XCTAssertNil(Multicall3.mapBalances(decoded: [BigInt(1)], includeNative: true, contractAddresses: ["0xA"]))
+        XCTAssertNil(Multicall3.mapBalances(decoded: [BigInt(1), BigInt(2)], includeNative: false, contractAddresses: ["0xA"]))
+    }
+
+    func testMapBalancesDecodedFailureRoundTripsFromRealAggregate3Response() {
+        // End-to-end over the pure pair: the mixed success/failure/success fixture
+        // decoded above must land as "middle token absent", not "middle token 0".
+        let response = "0x"
+            + w(0x20) + w(3)
+            + w(0x60) + w(0xe0) + w(0x140)
+            + w(1) + w(0x40) + w(0x20) + w(100)   // success 100
+            + w(0) + w(0x40) + w(0)               // failure
+            + w(1) + w(0x40) + w(0x20) + w(200)   // success 200
+
+        let decoded = Multicall3.decodeAggregate3Results(hex: response)
+        let mapped = Multicall3.mapBalances(
+            decoded: decoded,
+            includeNative: false,
+            contractAddresses: ["0xA", "0xB", "0xC"]
+        )
+
+        XCTAssertEqual(mapped?.balances["0xA"], BigInt(100))
+        XCTAssertFalse(mapped?.balances.keys.contains("0xB") ?? true, "the failed sub-call must not surface as 0")
+        XCTAssertEqual(mapped?.balances["0xC"], BigInt(200))
+    }
 }

@@ -14,7 +14,7 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -eo pipefail -c
 
-.PHONY: help bootstrap generate build-check lint-icons test ui_test
+.PHONY: help bootstrap generate open build-check lint-icons test ui_test
 
 # Paths
 VULTISIG_APP_DIR := VultisigApp
@@ -41,6 +41,7 @@ help: ## List all targets
 	@echo "Available targets:"
 	@echo "  make bootstrap   — install XcodeGen + SwiftLint (via Homebrew) and generate the Xcode project"
 	@echo "  make generate    — regenerate VultisigApp.xcodeproj from VultisigApp/project.yml"
+	@echo "  make open        — regenerate the project and open it in Xcode"
 	@echo "  make build-check — compile-only build check (for automation; tails 20 lines of output)"
 	@echo "  make lint-icons  — check icon-name literals against the asset catalog (no build needed)"
 	@echo "  make test        — run unit tests on iOS simulator ($(APP_SCHEME) scheme)"
@@ -72,6 +73,9 @@ generate: ## Regenerate the Xcode project from project.yml
 		exit 1; \
 	fi
 	@cd $(VULTISIG_APP_DIR) && xcodegen generate --spec project.yml
+
+open: generate ## Regenerate the project and open it in Xcode
+	@cd $(VULTISIG_APP_DIR) && open $(PROJECT)
 
 build-check: generate ## Compile-only build check (no tests). Used by automation skills.
 	@cd $(VULTISIG_APP_DIR) && xcodebuild build \
