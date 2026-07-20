@@ -1453,6 +1453,8 @@
 "vultisig-referrals" = "Vultisig 추천";
 "vultisigCommunity" = "Vultisig 커뮤니티";
 "vultisigEducation" = "Vultisig 교육";
+"vultisigFee" = "Vultisig 수수료";
+"vultisigFeePercentage" = "Vultisig 수수료 (%.2f%%)";
 "vultisigWebsite" = "Vultisig 웹사이트";
 "vultTierBadge" = "VULT 등급";
 "waitChurnedOutNode" = "노드가 처른될 때까지 기다리세요";

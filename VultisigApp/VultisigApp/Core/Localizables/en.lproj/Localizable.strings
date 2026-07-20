@@ -1490,6 +1490,8 @@
 "vultisig-referrals" = "Vultisig Referrals";
 "vultisigCommunity" = "Vultisig Community";
 "vultisigEducation" = "Vultisig Education";
+"vultisigFee" = "Vultisig Fee";
+"vultisigFeePercentage" = "Vultisig Fee (%.2f%%)";
 "vultisigWebsite" = "Vultisig Website";
 "vultTierBadge" = "VULT TIER";
 "waitChurnedOutNode" = "Wait until Node is churned out";

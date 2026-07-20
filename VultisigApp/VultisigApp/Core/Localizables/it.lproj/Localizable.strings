@@ -1492,6 +1492,8 @@
 "vultisig-referrals" = "Vultisig Inviti";
 "vultisigCommunity" = "Comunità Vultisig";
 "vultisigEducation" = "Vultisig Education";
+"vultisigFee" = "Commissione Vultisig";
+"vultisigFeePercentage" = "Commissione Vultisig (%.2f%%)";
 "vultisigWebsite" = "Sito Web Vultisig";
 "vultTierBadge" = "LIVELLO VULT";
 "waitChurnedOutNode" = "Attendi fino a quando il Nodo non viene escluso";

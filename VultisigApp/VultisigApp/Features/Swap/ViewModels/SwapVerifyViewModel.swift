@@ -113,7 +113,8 @@ final class SwapVerifyViewModel {
                     updated = updated.with(
                         quote: result.quote,
                         vultDiscountBps: result.vultDiscountBps,
-                        referralDiscountBps: result.referralDiscountBps
+                        referralDiscountBps: result.referralDiscountBps,
+                        isReferred: result.isReferred
                     )
                 }
             }

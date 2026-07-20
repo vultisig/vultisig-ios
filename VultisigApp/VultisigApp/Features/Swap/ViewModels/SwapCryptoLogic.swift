@@ -442,27 +442,80 @@ enum SwapCryptoLogic {
         }
     }
 
-    static func swapFeeLabel(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin, fromAmount: String) -> String {
-        guard let quote else { return "swapFee".localized }
-
-        let feeFiat: Decimal
-        if let evmFee = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) {
-            feeFiat = evmFee
-        } else {
-            switch quote {
-            case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-                let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
-                feeFiat = toCoin.fiat(decimal: feeAmt)
-            default:
-                return String(format: "swapFeePercentage".localized, 0.0)
-            }
+    /// Affiliate (Vultisig) fee component in fiat — money Vultisig receives,
+    /// itemized separately from the protocol's outbound/liquidity fees. The
+    /// source per route: native THOR/Maya `fees.affiliate`, EVM aggregator
+    /// `tx.swapFee`, Jupiter `platformFee`. SwapKit's flat affiliate is baked
+    /// into the quoted rate (not a separable line item), so it contributes
+    /// nothing to the itemized fiat total. `.zero` (not empty) for a real
+    /// affiliate route charging 0 — the Ultimate/waiver case keeps a $0.00 row.
+    static func affiliateFeeFiat(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Decimal {
+        guard let quote else { return .zero }
+        switch quote {
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+            let feeDecimal = q.fees.affiliate.toDecimal() / pow(10, 8)
+            return toCoin.fiat(decimal: feeDecimal)
+        case .oneinch, .kyberswap, .lifi:
+            let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            let feeDecimal = coin.decimal(for: quote.evmSwapFeeBigInt ?? .zero)
+            return coin.fiat(decimal: feeDecimal)
+        case let .jupiter(_, _, platformFee):
+            // `platformFee` is already denominated in `toCoin` units.
+            return toCoin.fiat(decimal: platformFee ?? 0)
+        case .swapkit:
+            return .zero
         }
+    }
 
-        let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
-        guard inputFiat > 0 else { return "swapFee".localized }
+    /// Label for the "Vultisig Fee (X.XX%)" affiliate row. The percentage source
+    /// depends on the route:
+    /// - Native THOR/Maya: derived from the effective affiliate bps actually sent
+    ///   on the quote request (`THORChainSwaps.effectiveAffiliateFeeBps`), so the
+    ///   shown % equals what the node charged — and reconciles with `fees.affiliate`
+    ///   by construction, rather than a lossy `fee/input` fiat division.
+    /// - SwapKit: a flat 0.50% baked into the quoted rate (no per-tx fee field).
+    /// - EVM aggregators / Jupiter: the affiliate amount comes from a route field
+    ///   (`tx.swapFee` / `platformFee`), so the % is derived from that amount and
+    ///   matches the amount shown for the route.
+    static func swapFeeLabel(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: String,
+        vultDiscountBps: Int,
+        isReferred: Bool
+    ) -> String {
+        guard let quote else { return "vultisigFee".localized }
 
-        let percentage = (feeFiat / inputFiat) * 100
-        return String(format: "swapFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            // All three THORChain services build affiliate params via
+            // `ThorchainService.affiliateParams`, which applies the referred
+            // split whenever a code is present.
+            let bps = THORChainSwaps.effectiveAffiliateFeeBps(
+                discountBps: vultDiscountBps,
+                isReferred: isReferred
+            )
+            return String(format: "vultisigFeePercentage".localized, Double(bps) / 100.0)
+        case .mayachain:
+            // MayaChain's affiliate params ignore the referral code entirely
+            // (`MayachainService.affiliateParams(referredCode _:)`), so it always
+            // sends the single standard rate — never the referred split.
+            let bps = THORChainSwaps.effectiveAffiliateFeeBps(
+                discountBps: vultDiscountBps,
+                isReferred: false
+            )
+            return String(format: "vultisigFeePercentage".localized, Double(bps) / 100.0)
+        case .swapkit:
+            return String(format: "vultisigFeePercentage".localized, Double(THORChainSwaps.swapKitAffiliateFeeBps) / 100.0)
+        case .oneinch, .kyberswap, .lifi, .jupiter:
+            let feeFiat = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
+            guard inputFiat > 0 else { return "vultisigFee".localized }
+            let percentage = (feeFiat / inputFiat) * 100
+            return String(format: "vultisigFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
+        }
     }
 
     static func outboundFeeString(quote: SwapQuote?, toCoin: Coin) -> String {

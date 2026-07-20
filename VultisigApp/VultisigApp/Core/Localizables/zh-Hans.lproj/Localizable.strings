@@ -1492,6 +1492,8 @@
 "vultisig-referrals" = "Vultisig 推荐";
 "vultisigCommunity" = "Vultisig 社区";
 "vultisigEducation" = "Vultisig 教育";
+"vultisigFee" = "Vultisig 费用";
+"vultisigFeePercentage" = "Vultisig 费用 (%.2f%%)";
 "vultisigWebsite" = "Vultisig 网站";
 "vultTierBadge" = "VULT 等级";
 "waitChurnedOutNode" = "等待节点被淘汰";

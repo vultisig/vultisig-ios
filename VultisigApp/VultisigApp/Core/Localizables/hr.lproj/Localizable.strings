@@ -1492,6 +1492,8 @@
 "vultisig-referrals" = "Vultisig Preporuke";
 "vultisigCommunity" = "Vultisig zajednica";
 "vultisigEducation" = "Edukacija Vultisig";
+"vultisigFee" = "Vultisig naknada";
+"vultisigFeePercentage" = "Vultisig naknada (%.2f%%)";
 "vultisigWebsite" = "Web stranica Vultisig";
 "vultTierBadge" = "VULT RAZINA";
 "waitChurnedOutNode" = "Pričekajte dok čvor ne bude isključen";

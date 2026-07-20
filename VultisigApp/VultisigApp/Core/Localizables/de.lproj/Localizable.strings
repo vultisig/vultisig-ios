@@ -1492,6 +1492,8 @@
 "vultisig-referrals" = "Vultisig Empfehlungen";
 "vultisigCommunity" = "Vultisig -Gemeinschaft";
 "vultisigEducation" = "Vultisig -Bildung";
+"vultisigFee" = "Vultisig-Gebühr";
+"vultisigFeePercentage" = "Vultisig-Gebühr (%.2f%%)";
 "vultisigWebsite" = "Vultisig -Website";
 "vultTierBadge" = "VULT-STUFE";
 "waitChurnedOutNode" = "Warten Sie, bis der Knoten ausgeschieden ist";

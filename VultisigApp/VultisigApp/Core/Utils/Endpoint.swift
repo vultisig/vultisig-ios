@@ -317,7 +317,7 @@ class Endpoint {
     }
 
     static func bps(for discount: Int, affiliateFeeRate: Int) -> Int {
-        max(0, affiliateFeeRate - discount)
+        THORChainSwaps.discountedAffiliateBps(baseBps: affiliateFeeRate, discountBps: discount)
     }
 
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
