@@ -32,6 +32,13 @@ extension TransactionStatusPoller: TransactionHistoryNativePoller {}
 @MainActor
 class TransactionHistoryViewModel: ObservableObject {
     @Published var transactions: [TransactionHistoryData] = []
+    /// Limit orders for this vault, keyed by UPPERCASED inbound tx hash.
+    ///
+    /// The row and the order are two tables: `TransactionHistoryItem` carries
+    /// no target price, expiry or fill split, and `LimitOrder` carries no coin
+    /// logos or fiat. The Limit Orders tab needs both, so they're joined on the
+    /// inbound hash at render time.
+    @Published var limitOrdersByTxHash: [String: LimitOrderDetails] = [:]
     @Published var selectedTab: TransactionHistoryTab = .overview
     @Published var selectedAssetFilters: Set<String> = []
     @Published var showAssetFilter = false
@@ -43,6 +50,7 @@ class TransactionHistoryViewModel: ObservableObject {
     let chainFilter: Chain?
 
     private let storage = TransactionHistoryStorage.shared
+    private let limitOrderStorage = LimitOrderStorageService()
     private let poller: TransactionHistoryNativePoller
     private let registry: SwapTrackingRegistry
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
@@ -68,17 +76,81 @@ class TransactionHistoryViewModel: ObservableObject {
     // MARK: - Loading
 
     func load() {
+        fetchRows()
+        pollInProgressTransactions()
+        resumeSwapTracking()
+        loadLimitOrders()
+    }
+
+    /// Re-read both tables after the limit tracker observes something.
+    ///
+    /// Rows AND orders, never just orders. They are two halves of one sentence
+    /// — the card's headline status comes from the ROW's tracking status while
+    /// its progress line and the sheet's Filled/Refunded rows come from the
+    /// ORDER. Refreshing only the order would let the sheet say "Refunded ·
+    /// 600.12 RUNE" under a headline still reading "In progress": two
+    /// statements about the same funds, disagreeing, on screen at once.
+    ///
+    /// Deliberately does NOT re-poll or re-resume tracking — the tracker is
+    /// what triggered this, and `load()`'s polling side effects have no place
+    /// on a data-changed notification.
+    func reloadAfterLimitOrderChange() {
+        fetchRows()
+        loadLimitOrders()
+    }
+
+    private func fetchRows() {
         do {
             if let chain = chainFilter {
                 transactions = try storage.fetchByChain(pubKeyECDSA: pubKeyECDSA, chainRawValue: chain.rawValue)
             } else {
                 transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
-            pollInProgressTransactions()
-            resumeSwapTracking()
         } catch {
             logger.error("Failed to load: \(error)")
         }
+        reconcileSelectedDetail()
+    }
+
+    /// Re-point an open detail sheet at the row we just re-read.
+    ///
+    /// `selectedDetail` is a value-type SNAPSHOT handed to the sheet when it
+    /// was presented, so refreshing `transactions` does not reach it. Left
+    /// alone, a sheet open across a tracker write keeps its old row while its
+    /// order-derived rows update underneath — the headline stuck on "In
+    /// progress" above a freshly-rendered "Refunded · 600.12 RUNE". Same
+    /// reconciliation `updateTransaction` already does for the native poller.
+    ///
+    /// A row that vanished leaves the sheet as-is rather than yanking it out
+    /// from under the user.
+    private func reconcileSelectedDetail() {
+        guard let current = selectedDetail,
+              let fresh = transactions.first(where: { $0.id == current.id }),
+              fresh != current else {
+            return
+        }
+        selectedDetail = fresh
+    }
+
+    /// Re-reads the order table. Cheap — an in-memory relationship read.
+    func loadLimitOrders() {
+        limitOrdersByTxHash = limitOrderStorage.fetchDetailsByTxHash(pubKeyECDSA: pubKeyECDSA)
+    }
+
+    /// Test-only — drives the reconcile without standing up SwiftData, which
+    /// `fetchRows` needs and a unit test can't provide.
+    func reconcileSelectedDetailForTesting() {
+        reconcileSelectedDetail()
+    }
+
+    /// The order behind a row, if this device has one.
+    ///
+    /// `nil` for a non-limit row, and for a limit row on a CO-SIGNER: only the
+    /// device that placed the order persists a `LimitOrder`. The surfaces
+    /// degrade to what the row itself knows rather than inventing a price.
+    func limitOrder(for tx: TransactionHistoryData) -> LimitOrderDetails? {
+        guard tx.type == .limit else { return nil }
+        return limitOrdersByTxHash[tx.txHash.uppercased()]
     }
 
     func refresh() async {
@@ -191,7 +263,15 @@ class TransactionHistoryViewModel: ObservableObject {
         case .overview:
             break
         case .swaps:
+            // Limit orders are deliberately NOT included: `.swap` means a swap
+            // that executed, `.limit` means an order that may never execute.
             result = result.filter { $0.type == .swap }
+        case .limitOrders:
+            // Every order, in whatever state — resting, filled, expired,
+            // cancelled. No status sectioning; the existing date grouping
+            // applies here exactly as it does on the other tabs, and the card
+            // carries the status.
+            result = result.filter { $0.type == .limit }
         case .send:
             result = result.filter { $0.type == .send || $0.type == .approve }
         }

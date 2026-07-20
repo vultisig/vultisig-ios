@@ -39,6 +39,24 @@ struct TransactionHistoryScreen: View {
         .onDisappear {
             viewModel.stopPolling()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .limitOrdersDidChange)) { _ in
+            // `LimitOrder` is a nested `@Model` array on the vault, and
+            // in-place mutations of those don't propagate to an
+            // `@ObservedObject` here — so without this the tracker's writes
+            // (fill progress, expiry countdown, terminal status) would be
+            // invisible until the screen was rebuilt.
+            //
+            // Hopped to the next main-actor turn on purpose. The tracker writes
+            // `LimitOrder` FIRST (it's authoritative) and mirrors the coarse
+            // status onto the tx-history row second; this notification is
+            // posted by that first write and delivered synchronously. Reloading
+            // inline would therefore read the row from BEFORE the mirror and
+            // pin the card's headline one poll behind its own detail rows.
+            // Yielding lets the tracker finish both writes first.
+            Task { @MainActor in
+                viewModel.reloadAfterLimitOrderChange()
+            }
+        }
         .crossPlatformSheet(item: $viewModel.selectedDetail) { detail in
             detailSheet(for: detail)
         }
@@ -179,7 +197,7 @@ struct TransactionHistoryScreen: View {
     }
 
     private func cardView(for tx: TransactionHistoryData) -> some View {
-        TransactionHistoryCardView(transaction: tx)
+        TransactionHistoryCardView(transaction: tx, limitOrder: viewModel.limitOrder(for: tx))
     }
 
     private var emptyState: some View {
@@ -198,6 +216,6 @@ struct TransactionHistoryScreen: View {
     // MARK: - Detail Sheet
 
     private func detailSheet(for detail: TransactionHistoryData) -> some View {
-        TransactionHistoryDetailSheet(transaction: detail)
+        TransactionHistoryDetailSheet(transaction: detail, limitOrder: viewModel.limitOrder(for: detail))
     }
 }

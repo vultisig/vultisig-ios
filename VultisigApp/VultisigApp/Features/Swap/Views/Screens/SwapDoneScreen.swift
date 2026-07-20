@@ -17,7 +17,11 @@
 //  Limit orders ride the same screen (`transaction.isLimit`): the
 //  detail slot shows the "find your order in Transaction History"
 //  banner and `onAppear` persists the `LimitOrderRecord` with the
-//  broadcast hash spliced in.
+//  broadcast hash spliced in. Their status comes from
+//  `LimitOrderPoller` (the source-chain poller would confirm the inbound
+//  DEPOSIT and call a resting order successful), and the `.limitOrder`
+//  verb re-casts the header copy in terms of the order rather than the
+//  transaction.
 //
 //  Audit (Mediator.shared.stop): the pre-refactor screen kicked off a
 //  5-second-delayed `Mediator.shared.stop()` here. Confirmed redundant
@@ -148,7 +152,12 @@ struct SwapDoneScreen: View {
                 ? FeeDisplay(crypto: transaction.limitNetworkFeeString, fiat: transaction.limitNetworkFeeFiat)
                 : FeeDisplay(crypto: transaction.totalFeeString, fiat: ""),
             keysignPayload: nil,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            // Re-casts the status header in terms of the ORDER ("Order placed
+            // / Resting until your price is met") instead of the transaction
+            // ("Transaction successful"), which is what the generic copy would
+            // claim about an order that has not filled.
+            verb: transaction.isLimit ? .limitOrder : .send
         )
     }
 
@@ -197,7 +206,24 @@ struct SwapDoneScreen: View {
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: transaction.fromCoin.chain, txid: hash),
             // Limit orders carry no market quote (`quote == nil`), so fall back to
             // the fixed provider — a placed `=<` order always routes through THORChain.
-            provider: transaction.isLimit ? "THORChain" : (transaction.quote?.displayName ?? "")
+            provider: transaction.isLimit ? "THORChain" : (transaction.quote?.displayName ?? ""),
+            // A resting limit order must not be arbitrated by the native
+            // source-chain poller: that poller confirms the *inbound deposit*
+            // and would flip the row to `.successful` within minutes, while the
+            // order can rest unfilled for 12-72h. Tracking metadata is what
+            // makes the registry resolve a service for this row, which is the
+            // condition both `TransactionHistoryViewModel` and
+            // `TransactionStatusPoller` gate native polling on.
+            //
+            // Passed inline (rather than a follow-up `attachSwapTracking`, the
+            // SwapKit path) so the row can never exist untracked: everything
+            // needed is known at record time.
+            swapTracking: transaction.isLimit
+                ? THORChainLimitTrackingService.metadata(
+                    broadcastHash: hash,
+                    sourceChain: transaction.fromCoin.chain
+                )
+                : nil
         )
     }
 
@@ -243,27 +269,5 @@ struct SwapDoneScreen: View {
             // doesn't surface — broadcast already succeeded.
             logger.warning("Failed to persist limit order: \(error.localizedDescription, privacy: .public)")
         }
-    }
-}
-
-private extension LimitOrderRecord {
-    /// Returns a copy with the inbound tx hash filled in. Used by the
-    /// done screen to splice the broadcast result into the record before
-    /// handing it to `LimitOrderStorageService.persist`.
-    func with(inboundTxHash: String) -> LimitOrderRecord {
-        LimitOrderRecord(
-            inboundTxHash: inboundTxHash,
-            sourceAsset: sourceAsset,
-            sourceAmount: sourceAmount,
-            sourceDecimals: sourceDecimals,
-            targetAsset: targetAsset,
-            destAddress: destAddress,
-            targetPrice: targetPrice,
-            expiryBlocks: expiryBlocks,
-            createdAt: createdAt,
-            status: status,
-            memo: memo,
-            expiryHours: expiryHours
-        )
     }
 }

@@ -42,7 +42,7 @@ enum TransactionHistoryRecording {
         // Cosigner: the full `KeysignPayload` carries the swap-or-send
         // discriminator + amounts. Delegate to the recorder helper.
         if let keysignPayload = payload.keysignPayload,
-           keysignPayload.swapPayload != nil {
+           Self.routesThroughKeysignRecorder(keysignPayload) {
             guard let vault = lookupVault(pubKeyECDSA: payload.pubKeyECDSA) else { return }
             TransactionHistoryRecorder.shared.recordFromKeysignPayload(
                 txHash: payload.hash,
@@ -73,6 +73,25 @@ enum TransactionHistoryRecording {
             chain: payload.coin.chain,
             explorerLink: payload.explorerLink
         )
+    }
+
+    /// Whether a cosigner payload must be recorded via
+    /// `recordFromKeysignPayload` rather than the plain `recordSend` fallback.
+    ///
+    /// A swap payload is the obvious trigger. A LIMIT ORDER qualifies even
+    /// without one: a native-source (`RUNE`/`BTC`/…) order is a plain deposit
+    /// whose `=<` memo is the entire order, so `swapPayload == nil`. Routed to
+    /// `recordSend` it becomes a send row carrying no tracking metadata —
+    /// missing from the Limit Orders tab, and left to the native poller, which
+    /// reports the order Successful the moment the inbound deposit confirms.
+    /// The memo is the only evidence a co-signer has that this is an order at
+    /// all.
+    ///
+    /// Pure and `static` so the routing can be pinned by tests: the recorder it
+    /// guards is a `private init()` singleton that writes to SwiftData, so the
+    /// wired path itself isn't reachable from a unit test.
+    static func routesThroughKeysignRecorder(_ keysignPayload: KeysignPayload) -> Bool {
+        keysignPayload.swapPayload != nil || isLimitSwapMemo(keysignPayload.memo)
     }
 
     @MainActor

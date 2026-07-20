@@ -82,6 +82,11 @@ struct JoinKeysignDoneView: View {
                 fee: FeeDisplay(crypto: fees.feeCrypto, fiat: fees.feeFiat),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA,
+                // A NATIVE-source limit order carries no swap payload, so it
+                // lands on the Send branch. Without the verb the header would
+                // call a resting order a completed transaction — the same lie
+                // the initiator screen fixes, just on the peer device.
+                verb: isLimitSwapMemo(keysignPayload.memo) ? .limitOrder : .send,
                 dappMetadata: viewModel.dappMetadata
             ),
             statusService: DoneStatusServiceFactory.cosigner(
@@ -109,6 +114,9 @@ struct JoinKeysignDoneView: View {
                 fee: FeeDisplay(crypto: "", fiat: ""),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA,
+                // An ERC20-source limit order rides a swap payload (for the
+                // router's `depositWithExpiry`) and so lands here.
+                verb: isLimitSwapMemo(keysignPayload.memo) ? .limitOrder : .send,
                 dappMetadata: viewModel.dappMetadata
             ),
             statusService: DoneStatusServiceFactory.cosigner(

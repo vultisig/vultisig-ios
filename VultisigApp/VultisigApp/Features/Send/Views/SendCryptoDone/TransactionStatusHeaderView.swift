@@ -85,7 +85,7 @@ struct TransactionStatusHeaderView: View {
             case .confirmed:
                 CustomHighlightText(
                     verb.successfulKey.localized,
-                    highlight: "transactionSuccessfulHighlight".localized,
+                    highlight: verb.successfulHighlightKey.localized,
                     style: LinearGradient.primaryGradientHorizontal
                 )
                 .foregroundStyle(Theme.colors.textPrimary)
@@ -93,7 +93,7 @@ struct TransactionStatusHeaderView: View {
             case .timeout, .failed:
                 HighlightedText(
                     text: verb.failedKey.localized,
-                    highlightedText: "transactionFailedHighlight".localized
+                    highlightedText: verb.failedHighlightKey.localized
                 ) { text in
                     text.foregroundColor = Theme.colors.textPrimary
                     text.font = Theme.fonts.bodyLMedium
@@ -108,12 +108,16 @@ struct TransactionStatusHeaderView: View {
 
     @ViewBuilder
     var statusDescription: some View {
-        if case let .failed(reason) = status {
-            Text(reason)
-                .foregroundStyle(Theme.colors.textTertiary)
-                .font(Theme.fonts.bodySMedium)
-                .multilineTextAlignment(.center)
+        Group {
+            if case let .failed(reason) = status {
+                Text(reason)
+            } else if let detailKey = verb.detailKey(for: status) {
+                Text(detailKey.localized)
+            }
         }
+        .foregroundStyle(Theme.colors.textTertiary)
+        .font(Theme.fonts.bodySMedium)
+        .multilineTextAlignment(.center)
     }
 
     var pulsingCircle: some View {

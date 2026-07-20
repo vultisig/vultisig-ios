@@ -40,15 +40,34 @@ enum SwapTrackingUiStatus: String, Codable, Sendable, Hashable {
     /// rendered identically to `failed` but kept distinct so we can surface
     /// "tracker unavailable, check explorer" copy and analytics.
     case unknownPendingExtended
+    /// A THORChain limit order sitting unfilled in the advanced-swap queue.
+    ///
+    /// Distinct from `pending`/`swapping`, which both mean "on its way": a
+    /// resting order is waiting for a PRICE that may never arrive, and can sit
+    /// for 12-72h by design. Collapsing it into `pending` would be survivable,
+    /// but it would leave the UI unable to say the one thing that matters about
+    /// this state — nothing is wrong, and nothing is moving.
+    case resting
+    /// A limit order whose TTL elapsed before it filled. Terminal; the unfilled
+    /// remainder is refunded.
+    case expired
+    /// A limit order the user cancelled. Terminal.
+    ///
+    /// Client-side only, and unreachable until the cancel flow ships: the chain
+    /// cannot tell us this later — `EventLimitSwapClose` (which carries the
+    /// authoritative reason) is emitted in EndBlock, exposed by no THORNode REST
+    /// route and unindexed by Midgard. If we don't record it at the moment we
+    /// do it, it is not recoverable.
+    case cancelled
 }
 
 extension SwapTrackingUiStatus {
     /// Terminal states never get polled again.
     var isTerminal: Bool {
         switch self {
-        case .completed, .refunded, .failed, .unknownPendingExtended:
+        case .completed, .refunded, .failed, .unknownPendingExtended, .expired, .cancelled:
             return true
-        case .pending, .swapping:
+        case .pending, .swapping, .resting:
             return false
         }
     }

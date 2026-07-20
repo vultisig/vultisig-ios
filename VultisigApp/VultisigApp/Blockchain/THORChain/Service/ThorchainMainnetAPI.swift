@@ -63,6 +63,15 @@ struct ThorchainMainnetAPI: TargetType {
             toleranceBps: String?
         )
         case tcyStaker(address: String)
+        /// `/thorchain/queue/limit_swaps[?sender=<addr>]` — every limit (`=<`)
+        /// order currently RESTING in the advanced-swap queue, with each
+        /// order's expiry countdown and fill state.
+        ///
+        /// Polled as a list rather than per-hash: one call covers all of an
+        /// address's resting orders. `sender` is the SOURCE-CHAIN address, so a
+        /// vault with orders from several source chains needs one call per
+        /// source address in play — still far fewer than one per order.
+        case limitSwapQueue(sender: String?)
 
         // MARK: RPC node (different host)
         case networkStatus
@@ -82,6 +91,7 @@ struct ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .mimir, .poolInfo, .pools,
              .securedAssets, .poolLiquidityProvider, .swapQuote, .tcyStaker,
+             .limitSwapQueue,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
             // host (balances / account / inbound addresses, the primary balance
@@ -134,6 +144,8 @@ struct ThorchainMainnetAPI: TargetType {
             return "/thorchain/quote/swap"
         case .tcyStaker(let addr):
             return "/thorchain/tcy_staker/\(addr)"
+        case .limitSwapQueue:
+            return "/thorchain/queue/limit_swaps"
         case .networkStatus:
             return "/status"
         case .tcyAutoCompoundStatus:
@@ -162,6 +174,12 @@ struct ThorchainMainnetAPI: TargetType {
              .poolLiquidityProvider, .tcyStaker, .networkStatus,
              .tcyAutoCompoundStatus, .resolveTNS:
             return .requestPlain
+
+        case .limitSwapQueue(let sender):
+            // Unfiltered, the queue returns EVERY resting order on the network.
+            // Always scope it to the sender when we have one.
+            guard let sender, !sender.isEmpty else { return .requestPlain }
+            return .requestParameters(["sender": sender], .urlEncoding)
 
         case .allDenomMetadata:
             return .requestParameters(["pagination.limit": "1000"], .urlEncoding)

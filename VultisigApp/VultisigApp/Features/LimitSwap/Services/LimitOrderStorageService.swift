@@ -53,6 +53,7 @@ struct LimitOrderStorageService {
             expiryBlocks: record.expiryBlocks,
             createdAt: record.createdAt,
             status: record.status,
+            minOutputOverride: record.minOutputOverride,
             vault: vault
         )
         Storage.shared.modelContext.insert(model)
@@ -66,6 +67,24 @@ struct LimitOrderStorageService {
         vault.limitOrders.sorted(by: { $0.createdAt > $1.createdAt })
     }
 
+    /// This vault's orders as Sendable snapshots, keyed by inbound tx hash
+    /// (UPPERCASED).
+    ///
+    /// Uppercased because this map is joined against `TransactionHistoryData.txHash`,
+    /// and hex case is not semantic — the casing a row was broadcast under need
+    /// not match the casing anything else stores. A case-sensitive join here
+    /// would silently miss, and the order card would fall back to showing no
+    /// target price at all rather than failing visibly.
+    @MainActor
+    func fetchDetailsByTxHash(for vault: Vault) -> [String: LimitOrderDetails] {
+        Dictionary(
+            vault.limitOrders.map { ($0.inboundTxHash.uppercased(), $0.details) },
+            // An inbound hash identifies one order, so a collision means two
+            // rows claim the same order. Keep the newest — it observed last.
+            uniquingKeysWith: { first, second in first.createdAt >= second.createdAt ? first : second }
+        )
+    }
+
     /// In-place status update. Throws if the given id isn't on this vault.
     @MainActor
     func updateStatus(of orderId: String, to status: LimitOrderStatus, in vault: Vault) throws {
@@ -74,6 +93,74 @@ struct LimitOrderStorageService {
         }
         order.statusRawValue = status.rawValue
         try saveAndNotify()
+    }
+
+    /// Records an on-chain observation of an order: its status and its fill
+    /// split, in one save.
+    ///
+    /// Status and amounts are written together on purpose. They are read
+    /// together — "Expired · 40% filled" is one statement — and persisting them
+    /// separately would leave a window where the row claims a status its
+    /// amounts contradict.
+    ///
+    /// A `nil` amount means "not observed this poll" and LEAVES the stored value
+    /// alone; it never overwrites a known split with unknown. That matters at
+    /// exactly the moment it's hardest to re-fetch: an order goes terminal by
+    /// disappearing from the queue, and the last good observation is all we will
+    /// ever have.
+    ///
+    /// `timeToExpiryBlocks` follows the same rule and is stamped with
+    /// `observedAt` when present — the pair is what makes the expiry chip a live
+    /// countdown rather than a stale number.
+    @MainActor
+    func recordObservation(
+        of orderId: String,
+        status: LimitOrderStatus,
+        depositAmount: String? = nil,
+        filledInAmount: String? = nil,
+        filledOutAmount: String? = nil,
+        timeToExpiryBlocks: Int? = nil,
+        observedAt: Date = Date(),
+        in vault: Vault
+    ) throws {
+        guard let order = vault.limitOrders.first(where: { $0.id == orderId }) else {
+            throw LimitOrderStorageError.notFound(id: orderId)
+        }
+        order.statusRawValue = status.rawValue
+        if let depositAmount { order.depositAmount = depositAmount }
+        if let filledInAmount { order.filledInAmount = filledInAmount }
+        if let filledOutAmount { order.filledOutAmount = filledOutAmount }
+        if let timeToExpiryBlocks {
+            order.timeToExpiryBlocks = timeToExpiryBlocks
+            // Stamped together — a countdown without its anchor is unusable, so
+            // the two must never be written apart.
+            order.expiryObservedAt = observedAt
+        }
+        try saveAndNotify()
+    }
+
+    /// Convenience for callers that hold a vault's public key rather than the
+    /// `@Model` — the tx-history viewmodel is keyed by `pubKeyECDSA`.
+    ///
+    /// Returns `[:]` when the vault can't be resolved. Unlike the write path,
+    /// a read that comes up empty is not dangerous: the order cards simply fall
+    /// back to what the row itself knows, rather than showing something wrong.
+    @MainActor
+    func fetchDetailsByTxHash(pubKeyECDSA: String) -> [String: LimitOrderDetails] {
+        guard let vault = try? Self.vault(pubKeyECDSA: pubKeyECDSA) else { return [:] }
+        return fetchDetailsByTxHash(for: vault)
+    }
+
+    /// A fetch failure propagates rather than collapsing into "no such vault":
+    /// callers that WRITE must be able to tell the two apart, because only one
+    /// of them means it is safe to stop retrying.
+    @MainActor
+    static func vault(pubKeyECDSA: String) throws -> Vault? {
+        guard let modelContext = Storage.shared.modelContext else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        let descriptor = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == pubKeyECDSA })
+        return try modelContext.fetch(descriptor).first
     }
 
     @MainActor

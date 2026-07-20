@@ -184,7 +184,12 @@ final class TransactionHistoryStorage {
         case .completed:
             item.statusRawValue = TransactionHistoryStatus.successful.rawValue
             item.completedAt = polledAt
-        case .refunded, .failed:
+        case .refunded, .failed, .expired, .cancelled:
+            // The coarse row vocabulary is successful / error / inProgress, so
+            // an order that ended without filling collapses to `error` — the
+            // same bucket a refund already lands in. The row is a summary; the
+            // precise outcome (and any partial fill) lives on `LimitOrder`,
+            // which is authoritative for orders.
             item.statusRawValue = TransactionHistoryStatus.error.rawValue
             item.completedAt = polledAt
         case .unknownPendingExtended:
@@ -195,8 +200,10 @@ final class TransactionHistoryStorage {
             // poll; if native polling reaches a terminal first that path
             // writes the coarse status itself.
             break
-        case .pending, .swapping:
-            // Keep `inProgress` — the on-chain row already starts there.
+        case .pending, .swapping, .resting:
+            // Keep `inProgress` — the on-chain row already starts there. A
+            // resting order is genuinely in progress: it is waiting for a price,
+            // which is the whole point of it.
             break
         }
         try modelContext.save()

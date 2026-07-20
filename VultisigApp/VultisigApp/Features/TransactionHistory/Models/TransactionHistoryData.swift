@@ -11,6 +11,19 @@ enum TransactionHistoryType: String, Codable, Sendable, Hashable {
     case send
     case swap
     case approve
+    /// A THORChain limit (`=<`) order — a RESTING order, not a swap that
+    /// happened.
+    ///
+    /// Its own case rather than a flag on `.swap`, because nothing else on the
+    /// row can tell the two apart: a limit order and a genuine THORChain
+    /// *market* swap both carry `swapProvider == "THORChain"`. Without this,
+    /// the Limit Orders tab could only be filtered by a predicate that also
+    /// catches market swaps.
+    ///
+    /// It also gives native-source co-signer orders somewhere honest to live —
+    /// they carry no swap payload and so used to be recorded as plain `send`
+    /// rows.
+    case limit
 }
 
 // MARK: - Status Enum
@@ -131,12 +144,24 @@ extension TransactionHistoryData {
     }
 
     /// The iOS UI state, derived from whatever tracking data has been
-    /// persisted. Falls back to `pending` when no poll has been recorded yet.
-    /// Today only SwapKit has a tracker integration, so the mapping table
-    /// lives in `SwapKitTrackingStatusMapper`; future providers add their
-    /// own mappers and a dispatch on `providerKind` will route here.
+    /// persisted.
+    ///
+    /// Dispatches on `providerKind`, because the same stored string means
+    /// different things per provider: a limit order's statuses come from
+    /// `LimitOrderStatus` and include states SwapKit has no word for (resting,
+    /// expired). Routing every row through SwapKit's table would silently
+    /// mistranslate them — an unrecognised value falls through to `pending`
+    /// there, so a resting order and an expired one would render identically.
+    ///
+    /// Each provider's mapper owns its own fallback.
     var swapTrackingUiStatus: SwapTrackingUiStatus {
-        SwapKitTrackingStatusMapper.map(trackingStatus: swapTracking?.latestTrackingStatus)
+        let latest = swapTracking?.latestTrackingStatus
+        switch swapTracking?.providerKind {
+        case THORChainLimitTrackingService.providerKind:
+            return THORChainLimitTrackingStatusMapper.map(trackingStatus: latest)
+        default:
+            return SwapKitTrackingStatusMapper.map(trackingStatus: latest)
+        }
     }
 
     /// SwapKit's public block-explorer deep link. Only available for rows
