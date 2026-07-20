@@ -654,6 +654,10 @@
 "limitSwap.asset" = "Asset";
 "limitSwap.buy" = "Compra";
 "limitSwap.cancel.duplicateWarning" = "Hai un altro ordine attivo con la stessa coppia e lo stesso prezzo. THORChain annulla prima la corrispondenza più vecchia, quindi questa operazione potrebbe chiudere quell'ordine invece di questo.";
+"limitSwap.cancel.error.chainNotRoutable" = "L'annullamento da %@ non è ancora supportato.";
+"limitSwap.cancel.error.dustUnavailable" = "Non è stato possibile confermare l'importo minimo richiesto da questa rete. Riprova a breve: il tuo ordine non è interessato.";
+"limitSwap.cancel.error.memoTooLong" = "Questo ordine non può essere annullato dalla sua chain di origine: il messaggio di annullamento è troppo lungo per quella rete. Verrà comunque rimborsato automaticamente alla scadenza.";
+"limitSwap.cancel.error.noInboundAddress" = "THORChain al momento non accetta transazioni su questa chain. Riprova a breve: il tuo ordine non è interessato.";
 "limitSwap.cancel.explanation" = "L'annullamento chiude questo ordine e rimborsa la parte non ancora eseguita. Quanto già eseguito resta eseguito e non viene restituito. Questa operazione comporta una commissione di rete THORChain.";
 "limitSwap.cancel.orderLabel" = "Ordine";
 "limitSwap.cancel.title" = "Annulla ordine";

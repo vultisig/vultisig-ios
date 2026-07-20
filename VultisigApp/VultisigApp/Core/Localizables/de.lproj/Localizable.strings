@@ -654,6 +654,10 @@
 "limitSwap.asset" = "Asset";
 "limitSwap.buy" = "Kaufen";
 "limitSwap.cancel.duplicateWarning" = "Sie haben eine weitere offene Order mit demselben Paar und Preis. THORChain storniert zuerst die älteste Übereinstimmung, daher wird möglicherweise jene Order statt dieser geschlossen.";
+"limitSwap.cancel.error.chainNotRoutable" = "Stornieren wird von %@ noch nicht unterstützt.";
+"limitSwap.cancel.error.dustUnavailable" = "Der von diesem Netzwerk geforderte Mindestbetrag konnte nicht bestätigt werden. Versuchen Sie es in Kürze erneut — Ihre Order bleibt unberührt.";
+"limitSwap.cancel.error.memoTooLong" = "Diese Order kann nicht über ihre Quell-Chain storniert werden: Die Stornierungsnachricht ist für dieses Netzwerk zu lang. Sie wird bei Ablauf weiterhin automatisch erstattet.";
+"limitSwap.cancel.error.noInboundAddress" = "THORChain akzeptiert derzeit keine Transaktionen auf dieser Chain. Versuchen Sie es in Kürze erneut — Ihre Order bleibt unberührt.";
 "limitSwap.cancel.explanation" = "Durch das Stornieren wird diese Order geschlossen und der noch nicht ausgeführte Teil erstattet. Bereits ausgeführte Anteile bleiben bestehen und werden nicht zurückerstattet. Dafür fällt eine THORChain-Netzwerkgebühr an.";
 "limitSwap.cancel.orderLabel" = "Order";
 "limitSwap.cancel.title" = "Order stornieren";

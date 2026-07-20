@@ -654,6 +654,10 @@
 "limitSwap.asset" = "资产";
 "limitSwap.buy" = "买入";
 "limitSwap.cancel.duplicateWarning" = "您还有另一个相同交易对和价格的挂单。THORChain 会优先取消最早匹配的订单，因此本次操作可能会关闭那个订单而非此订单。";
+"limitSwap.cancel.error.chainNotRoutable" = "暂不支持从 %@ 取消订单。";
+"limitSwap.cancel.error.dustUnavailable" = "无法确认此网络所需的最低金额。请稍后重试——您的订单不受影响。";
+"limitSwap.cancel.error.memoTooLong" = "此订单无法从其源链取消：取消消息对该网络而言过长。到期时仍会自动退款。";
+"limitSwap.cancel.error.noInboundAddress" = "THORChain 目前不接受此链上的交易。请稍后重试——您的订单不受影响。";
 "limitSwap.cancel.explanation" = "取消将关闭此订单并退还尚未成交的部分。已成交的部分将保持不变，不会退回。此操作需支付一次 THORChain 网络手续费。";
 "limitSwap.cancel.orderLabel" = "订单";
 "limitSwap.cancel.title" = "取消订单";
