@@ -38,33 +38,75 @@ final class AddressServiceTests: XCTestCase {
 
     // MARK: - Terra vs Terra Classic
 
-    func testTerraAddressDoesNotAutoSwitchWhenVaultHoldsBothChains() {
+    /// From a chain that cannot hold the address at all, land in the Terra
+    /// family rather than sitting still. Which of the two is unknowable from
+    /// the address, so vault order breaks the tie.
+    func testTerraAddressSwitchesToFirstHeldTerraChain() {
         let vault = SendFormFixture.makeVault(coins: [makeLUNA(), makeLUNC()])
 
-        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .bitcoin)
+        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .thorChain)
 
-        XCTAssertNil(detected)
+        XCTAssertEqual(detected, .terra)
     }
 
-    func testTerraAddressDoesNotAutoSwitchWhenVaultHoldsOnlyTerraClassic() {
+    /// Same holdings, opposite vault order. Pins that the tie-break is vault
+    /// order and NOT `CoinType.allCases` order — WalletCore declares `terra`
+    /// before `terraV2`, so an enum-order implementation would answer
+    /// `.terraClassic` for this case *and* the one above.
+    func testTerraAddressTieBreakFollowsVaultOrderNotCoinTypeOrder() {
+        let vault = SendFormFixture.makeVault(coins: [makeLUNC(), makeLUNA()])
+
+        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .thorChain)
+
+        XCTAssertEqual(detected, .terraClassic)
+    }
+
+    func testTerraAddressSwitchesToTerraClassicWhenItIsTheOnlyOneHeld() {
         let vault = SendFormFixture.makeVault(coins: [makeLUNC()])
 
-        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .bitcoin)
+        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .thorChain)
 
-        XCTAssertNil(detected)
+        XCTAssertEqual(detected, .terraClassic)
     }
 
-    func testTerraAddressDoesNotAutoSwitchWhenVaultHoldsOnlyTerra() {
+    func testTerraAddressSwitchesToTerraWhenItIsTheOnlyOneHeld() {
         let vault = SendFormFixture.makeVault(coins: [makeLUNA()])
 
+        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .thorChain)
+
+        XCTAssertEqual(detected, .terra)
+    }
+
+    /// Already inside the family: the current-chain check keeps the form put,
+    /// so a Terra Classic user pasting a `terra1…` address is never flipped to
+    /// Terra V2 — the case where a silent guess would cost real money.
+    func testTerraAddressDoesNotSwitchWhenAlreadyOnTerraClassic() {
+        let vault = SendFormFixture.makeVault(coins: [makeLUNA(), makeLUNC()])
+
+        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .terraClassic)
+
+        XCTAssertNil(detected)
+    }
+
+    func testTerraAddressDoesNotSwitchWhenAlreadyOnTerra() {
+        let vault = SendFormFixture.makeVault(coins: [makeLUNA(), makeLUNC()])
+
+        let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .terra)
+
+        XCTAssertNil(detected)
+    }
+
+    func testTerraAddressReturnsNilWhenNoTerraChainIsHeld() {
+        let vault = SendFormFixture.makeVault(coins: [SendFormFixture.makeBTC()])
+
         let detected = AddressService.detectChain(from: terraAddress, vault: vault, currentChain: .bitcoin)
 
         XCTAssertNil(detected)
     }
 
-    /// Precondition for everything above: the fixture really is ambiguous, and
-    /// validates on both networks. Without this the `XCTAssertNil` assertions
-    /// would also pass on an address that simply failed every validator.
+    /// Precondition for the family tests: the fixture really is ambiguous and
+    /// validates on both networks. Without this, a merely-invalid address
+    /// would satisfy the same assertions for the wrong reason.
     func testTerraFixtureValidatesOnBothTerraChains() {
         XCTAssertTrue(AddressService.validateAddress(address: terraAddress, chain: .terra))
         XCTAssertTrue(AddressService.validateAddress(address: terraAddress, chain: .terraClassic))
@@ -145,8 +187,29 @@ final class AddressServiceTests: XCTestCase {
 
     // MARK: - EVM
 
-    func testEvmAddressNeverAutoSwitches() {
+    /// From a non-EVM chain, land in the EVM family rather than leaving the
+    /// form on a chain that cannot hold a `0x…` address.
+    func testEvmAddressSwitchesToFirstHeldEvmChainFromANonEvmChain() {
         let vault = SendFormFixture.makeVault(coins: [SendFormFixture.makeETH(), SendFormFixture.makeBTC()])
+
+        let detected = AddressService.detectChain(from: evmAddress, vault: vault, currentChain: .bitcoin)
+
+        XCTAssertEqual(detected, .ethereum)
+    }
+
+    /// Still never switches *between* EVM chains: every EVM chain accepts every
+    /// `0x…` address, so the current-chain check returns nil before the family
+    /// guard is reached. Arbitrum stays Arbitrum even though the vault holds ETH.
+    func testEvmAddressDoesNotSwitchWhenAlreadyOnAnEvmChain() {
+        let vault = SendFormFixture.makeVault(coins: [SendFormFixture.makeETH(), SendFormFixture.makeBTC()])
+
+        let detected = AddressService.detectChain(from: evmAddress, vault: vault, currentChain: .arbitrum)
+
+        XCTAssertNil(detected)
+    }
+
+    func testEvmAddressReturnsNilWhenNoEvmChainIsHeld() {
+        let vault = SendFormFixture.makeVault(coins: [SendFormFixture.makeBTC()])
 
         let detected = AddressService.detectChain(from: evmAddress, vault: vault, currentChain: .bitcoin)
 
