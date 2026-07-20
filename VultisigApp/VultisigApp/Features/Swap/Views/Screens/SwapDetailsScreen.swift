@@ -459,37 +459,15 @@ struct SwapDetailsScreen: View {
 extension SwapDetailsScreen {
     func handlePercentageSelection(_ percentage: Int) {
         detailsViewModel.showAllPercentageButtons = false
-        let decimalsToUse: Int = 4
 
-        switch percentage {
-        case 25:
-            let amount = (detailsViewModel.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
-            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        case 50:
-            let amount = (detailsViewModel.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
-            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        case 75:
-            let amount = (detailsViewModel.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
-            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        case 100:
-            let fromCoin = detailsViewModel.fromCoin
-            if fromCoin.isNativeToken {
-                let fee = detailsViewModel.fee
-                let amountLessFee = fromCoin.rawBalance.toBigInt() - fee
-                let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: fromCoin.decimals) / pow(10, fromCoin.decimals)
-                let amount = amountLessFeeDecimal.truncated(toPlaces: decimalsToUse)
-                detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            } else {
-                let amount = fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
-                detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            }
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        default:
-            break
-        }
+        guard let amount = SwapCryptoLogic.percentageAmountText(
+            percentage: percentage,
+            fromCoin: detailsViewModel.fromCoin,
+            fee: detailsViewModel.fee
+        ) else { return }
+
+        detailsViewModel.fromAmount = amount
+        detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
     }
 
     // MARK: - Market / Limit tabs

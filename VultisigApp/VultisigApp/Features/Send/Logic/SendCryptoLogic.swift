@@ -198,10 +198,15 @@ enum SendCryptoLogic {
 
     /// Apply a percentage (0–100) to a max amount string. Used by the
     /// "25% / 50% / 75%" preset buttons in the Details screen.
+    ///
+    /// Send starts from a fee-adjusted max *amount* rather than a raw balance,
+    /// so it can't reuse `PercentageAmountLogic.amountText` wholesale — but the
+    /// precision rule is shared, so Send, Swap and Limit Swap all round a preset
+    /// to the same number of places.
     static func applyPercentage(maxAmount: String, percentage: Double, coinDecimals: Int) -> String {
         let multiplier = Decimal(percentage) / 100
         let target = maxAmount.toDecimal() * multiplier
-        let digits = coinDecimals > 8 ? 8 : coinDecimals
+        let digits = PercentageAmountLogic.decimalPlaces(coinDecimals: coinDecimals)
         return formatAmountInput(target, digits: digits)
     }
 

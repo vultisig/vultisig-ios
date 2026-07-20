@@ -190,18 +190,19 @@ final class LimitSwapFormViewModel {
     }
 
     /// Formatted amount text for `pct`% of the source coin's balance, mirroring
-    /// the market swap's percentage buttons (same `balance × pct/100`,
-    /// truncated to 4 places). The view assigns this to the source-amount field,
-    /// whose `onChange` funnels it back into `draft.sourceAmount`.
+    /// the market swap's percentage buttons — both go through
+    /// `PercentageAmountLogic`, so the two flows share one precision rule.
     ///
     /// Phase-1 limit sources are native, and — matching the market
     /// (`show100 = !isNativeToken`) — native sources only expose 25/50/75, never
     /// a 100/Max button, so no gas headroom is reserved at input time; the
     /// deposit fee is applied later in the shared verify/keysign path.
     func sourceAmountText(forPercentage pct: Int, of coin: Coin) -> String {
-        let fraction = Decimal(min(max(pct, 0), 100)) / 100
-        let amount = (coin.balanceDecimal * fraction).truncated(toPlaces: 4)
-        return amount.formatToDecimal(digits: 4)
+        PercentageAmountLogic.amountText(
+            percentage: pct,
+            rawBalance: coin.rawBalance.toBigInt(),
+            coinDecimals: coin.decimals
+        )
     }
 
     func targetPriceChanged(_ price: Decimal) {
