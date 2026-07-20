@@ -17,12 +17,10 @@ enum RpcServiceError: LocalizedError {
 
 /// Validation for substrate `author_submitExtrinsic` broadcast results.
 ///
-/// `RpcService.sendRPCRequest` returns a non-matched RPC `error.message` as a
-/// plain string (so the base client can surface duplicate-broadcast sentinels
-/// without throwing). For broadcasts that means a rejection like
-/// `"Invalid extrinsic"` arrives where a hash is expected. Polkadot and
-/// Bittensor route their result through this validator so an error string
-/// throws instead of being persisted and polled as a fake txid.
+/// `RpcService.sendRPCRequest` returns a sentinel for duplicate broadcasts so
+/// callers can recover the locally computed transaction hash. Polkadot and
+/// Bittensor route successful results through this validator to ensure only a
+/// real extrinsic hash or that sentinel is persisted and polled as a txid.
 enum SubstrateBroadcast {
     /// Sentinel `RpcService.sendRPCRequest` returns when an extrinsic is
     /// rejected as a duplicate (already known / already imported). Callers
@@ -30,8 +28,7 @@ enum SubstrateBroadcast {
     static let alreadyBroadcastedSentinel = "Transaction already broadcasted."
 
     /// Returns `result` when it is an accepted broadcast — the 32-byte extrinsic
-    /// hash (`0x` + 64 hex) or the duplicate sentinel — otherwise throws, since
-    /// any other value is an error message the node returned in place of a hash.
+    /// hash (`0x` + 64 hex) or the duplicate sentinel — otherwise throws.
     static func validatedHash(_ result: String) throws -> String {
         if result == alreadyBroadcastedSentinel {
             return result
@@ -44,8 +41,9 @@ enum SubstrateBroadcast {
     }
 }
 
-/// Classifies a JSON-RPC broadcast `error.message` as a *true* duplicate — the
-/// signed tx is already in the mempool or on-chain — versus a genuine rejection.
+/// Classifies a JSON-RPC broadcast error message or detail as a *true*
+/// duplicate — the signed tx is already in the mempool or on-chain — versus a
+/// genuine rejection.
 ///
 /// Only exact duplicate signals count. Substrings that used to match here caused
 /// rejections to be reported as success: `"known"` matched every `"unknown …"`
@@ -53,6 +51,11 @@ enum SubstrateBroadcast {
 /// message means the tx may never have been submitted, and a bare `"already"`
 /// matched almost anything. Those are excluded on purpose.
 enum BroadcastErrorClassifier {
+    /// RPC methods that submit a signed transaction. Only these may recover a
+    /// duplicate error as success — a duplicate-looking error from a read call
+    /// (e.g. `state_getStorage`) must throw, not return the sentinel.
+    static let broadcastMethods: Set<String> = ["author_submitExtrinsic", "eth_sendRawTransaction"]
+
     static func isDuplicateBroadcast(_ message: String) -> Bool {
         let message = message.lowercased()
         return message.contains("already known")
@@ -66,9 +69,6 @@ enum BroadcastErrorClassifier {
 }
 
 class RpcService {
-    // swiftlint:disable:next no_raw_urlsession
-    private let session = URLSession.shared
-
     internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
 
     init(_ rpcEndpoint: String) {
@@ -107,33 +107,32 @@ class RpcService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
 
-        do {
-            // swiftlint:disable:next no_raw_urlsession
-            let (data, _) = try await URLSession.shared.data(for: request)
+        // swiftlint:disable:next no_raw_urlsession
+        let (data, _) = try await URLSession.shared.data(for: request)
 
-            guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                let responsePreview = String(data: data.prefix(200), encoding: .utf8) ?? "Unable to decode as string"
-                throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response. Preview: \(responsePreview)")
-            }
-
-            if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                if BroadcastErrorClassifier.isDuplicateBroadcast(message) {
-                    return try decode(SubstrateBroadcast.alreadyBroadcastedSentinel)
-                }
-
-                return try decode(message)
-
-            } else if let result = response["result"] {
-                return try decode(result)
-            } else {
-                throw RpcServiceError.rpcError(code: 500, message: "Unknown error")
-            }
-        } catch {
-            print(payload)
-            print(error.localizedDescription)
-            throw error
+        guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            let responsePreview = String(data: data.prefix(200), encoding: .utf8) ?? "Unable to decode as string"
+            throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response. Preview: \(responsePreview)")
         }
 
+        if let error = response["error"] as? [String: Any] {
+            let code = error["code"] as? Int ?? -1
+            let message = error["message"] as? String ?? "Unknown RPC error"
+            let dataMessage = error["data"] as? String
+            let detail = dataMessage.flatMap { $0.isEmpty ? nil : $0 } ?? message
+
+            if BroadcastErrorClassifier.broadcastMethods.contains(method),
+               BroadcastErrorClassifier.isDuplicateBroadcast(message)
+                || BroadcastErrorClassifier.isDuplicateBroadcast(detail) {
+                return try decode(SubstrateBroadcast.alreadyBroadcastedSentinel)
+            }
+
+            throw RpcServiceError.rpcError(code: code, message: detail)
+        } else if let result = response["result"] {
+            return try decode(result)
+        } else {
+            throw RpcServiceError.rpcError(code: 500, message: "Unknown error")
+        }
     }
 
     func intRpcCall(method: String, params: [Any], endpoint: String? = nil) async throws -> BigInt {
@@ -154,9 +153,6 @@ class RpcService {
 
     func strRpcCall(method: String, params: [Any], endpoint: String? = nil) async throws -> String {
         return try await sendRPCRequest(method: method, params: params, endpoint: endpoint) { result in
-
-            print(result)
-
             guard let resultString = result as? String else {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to String")
             }
