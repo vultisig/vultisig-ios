@@ -1289,6 +1289,7 @@
 "swaps" = "Scambi";
 "swapSecuredAssetBadge" = "Garantito";
 "swapSecuredAssetInvalidDestination" = "La destinazione dello swap dell'asset protetto non è un indirizzo %1$@ valido (%2$@).";
+"swapSlippageToleranceTooTight" = "Il prezzo ha superato la tua tolleranza di slippage. Aumenta l'impostazione dello slippage nelle impostazioni di scambio oppure prova con un importo inferiore.";
 "swapTrackingLink" = "Link di tracciamento dello scambio";
 "swapTradingHalted" = "La negoziazione di questo asset è temporaneamente sospesa. Riprova più tardi.";
 "swapTXHash" = "Hash Tx dello scambio";

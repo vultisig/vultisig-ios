@@ -1289,6 +1289,7 @@
 "swaps" = "兑换";
 "swapSecuredAssetBadge" = "担保";
 "swapSecuredAssetInvalidDestination" = "受保护资产兑换的目标地址不是有效的 %1$@ 地址（%2$@）。";
+"swapSlippageToleranceTooTight" = "价格波动超出了您的滑点容忍度。请在交换设置中调高滑点，或尝试更小的金额。";
 "swapTrackingLink" = "交换跟踪链接";
 "swapTradingHalted" = "该资产的交易已暂时停止，请稍后再试。";
 "swapTXHash" = "交换交易哈希";
