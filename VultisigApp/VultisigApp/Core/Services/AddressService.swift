@@ -24,7 +24,7 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .mayaChain && $0.isNativeToken }) ? .mayaChain : nil
         }
 
-        // Special handling for ThorChain Stagenet
+        // Special handling for ThorChain Chainnet
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor") {
             return vault.coins.contains(where: { $0.chain == .thorChainChainnet && $0.isNativeToken }) ? .thorChainChainnet : nil
         }
@@ -37,6 +37,13 @@ struct AddressService {
         // Special handling for qBTC
         if AnyAddress.isValidBech32(string: address, coin: .cosmos, hrp: "qbtc") {
             return vault.coins.contains(where: { $0.chain == .qbtc && $0.isNativeToken }) ? .qbtc : nil
+        }
+
+        // Terra and Terra Classic share the bech32 HRP `terra`, so an address
+        // cannot identify which network it belongs to. Don't auto-switch —
+        // same policy as EVM below.
+        if AnyAddress.isValidBech32(string: address, coin: .terraV2, hrp: "terra") {
+            return nil
         }
 
         // Special handling for Bittensor (SS58 prefix 42)
@@ -52,13 +59,15 @@ struct AddressService {
 
         // Iterate through all WalletCore CoinTypes to find matching address
         for coinType in CoinType.allCases {
-            if coinType.validate(address: address) {
-                // Map CoinType to Vultisig Chain
-                if let chain = Chain.allCases.first(where: { $0.coinType == coinType }) {
-                    // Only return if chain exists in vault with native token
-                    return vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) ? chain : nil
-                }
+            guard coinType.validate(address: address) else { continue }
+            // Map CoinType to Vultisig Chain
+            guard let chain = Chain.allCases.first(where: { $0.coinType == coinType }) else { continue }
+            // Only return if chain exists in vault with native token
+            if vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) {
+                return chain
             }
+            // Mapped chain isn't in the vault — keep looking rather than giving up,
+            // in case another CoinType also validates this address.
         }
 
         return nil
