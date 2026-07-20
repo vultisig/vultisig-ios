@@ -191,7 +191,9 @@ enum SendCryptoLogic {
         let maxRaw = spendable / divisor
 
         let scaled = maxRaw / pow(10, coin.decimals)
-        return scaled < .zero ? 0 : scaled.truncated(toPlaces: coin.decimals - 1)
+        // Full precision, matching `Coin.getMaxValue`: the fixed-point solve
+        // already funds the burn tax, so there is nothing left to pad against.
+        return scaled < .zero ? 0 : scaled.truncated(toPlaces: coin.decimals)
     }
 
     /// Apply a percentage (0–100) to a max amount string. Used by the
