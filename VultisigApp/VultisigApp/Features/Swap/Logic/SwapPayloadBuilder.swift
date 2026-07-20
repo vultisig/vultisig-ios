@@ -82,7 +82,7 @@ extension SwapCryptoLogic {
     /// `now` parameterised so tests can pin the 15-minute expiration deterministically.
     ///
     /// The on-chain minimum-output floor is enforced by the `LIM` field inside
-    /// the node-returned `quote.memo` (driven by the `tolerance_bps` we send on
+    /// the node-returned `quote.memo` (driven by the `liquidity_tolerance_bps` we send on
     /// the quote request); that memo is what gets signed verbatim. The
     /// `toAmountLimit` / `streamingQuantity` fields here travel in the proto
     /// payload for cross-device display — we mirror the node's derivation so
@@ -94,7 +94,7 @@ extension SwapCryptoLogic {
         toAmountDecimal: Decimal,
         quote: ThorchainSwapQuote,
         provider: SwapProvider,
-        toleranceBps: Int = SwapService.defaultThorchainToleranceBps,
+        toleranceBps: Int = SwapService.defaultLiquidityToleranceBps,
         now: Date = Date()
     ) -> THORChainSwapPayload {
         let vaultAddress = quote.inboundAddress ?? fromCoin.address
