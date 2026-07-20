@@ -653,6 +653,10 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain ha pausado las operaciones. Inténtalo más tarde.";
 "limitSwap.asset" = "Activo";
 "limitSwap.buy" = "Comprar";
+"limitSwap.cancel.duplicateWarning" = "Tienes otra orden activa con el mismo par y precio. THORChain cancela primero la coincidencia más antigua, por lo que esto podría cerrar esa orden en lugar de esta.";
+"limitSwap.cancel.explanation" = "Cancelar cierra esta orden y reembolsa la parte que aún no se ha ejecutado. Lo que ya se ejecutó permanece ejecutado y no se devuelve. Esto cuesta una comisión de red de THORChain.";
+"limitSwap.cancel.orderLabel" = "Orden";
+"limitSwap.cancel.title" = "Cancelar orden";
 "limitSwap.confirmation.byteCapError.format" = "Memo demasiado largo: %d bytes (máx %d). Prueba con una dirección de destino más corta o una fuente no UTXO.";
 "limitSwap.detail.copyTxHash" = "Copiar hash de TX";
 "limitSwap.detail.filled" = "Ejecutado";

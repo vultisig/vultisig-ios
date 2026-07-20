@@ -36,6 +36,13 @@ enum FunctionTransactionType: Hashable {
     /// existing pool the position is staked into; `poolImplementation` resolves
     /// the withdraw comment; `stakedAmount` is shown for confirmation.
     case tonUnstake(coin: CoinMeta, poolAddress: String, poolImplementation: String?, stakedAmount: Decimal)
+    /// Cancel a resting THORChain limit order — an `m=<` `MsgDeposit` with a
+    /// modified target of `0`.
+    ///
+    /// Deep-linked from the order's detail sheet with the assets and amounts
+    /// already resolved, so unlike the other cases it needs no picker or amount
+    /// form: `request` is complete on arrival and the screen only confirms it.
+    case cancelLimitOrder(coin: CoinMeta, request: LimitOrderCancelRequest)
 
     var coins: [CoinMeta] {
         switch self {
@@ -70,6 +77,8 @@ enum FunctionTransactionType: Hashable {
         case .tonStake(let coin, _, _):
             return [coin]
         case .tonUnstake(let coin, _, _, _):
+            return [coin]
+        case .cancelLimitOrder(let coin, _):
             return [coin]
         }
     }

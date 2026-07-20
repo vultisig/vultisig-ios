@@ -651,6 +651,10 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain의 거래가 일시 중지되었습니다. 나중에 다시 시도하세요.";
 "limitSwap.asset" = "자산";
 "limitSwap.buy" = "매수";
+"limitSwap.cancel.duplicateWarning" = "같은 페어와 가격의 대기 중인 주문이 하나 더 있습니다. THORChain은 가장 오래된 일치 항목을 먼저 취소하므로, 이 주문 대신 해당 주문이 종료될 수 있습니다.";
+"limitSwap.cancel.explanation" = "취소하면 이 주문이 종료되고 아직 체결되지 않은 부분이 환불됩니다. 이미 체결된 부분은 그대로 유지되며 반환되지 않습니다. THORChain 네트워크 수수료가 한 번 부과됩니다.";
+"limitSwap.cancel.orderLabel" = "주문";
+"limitSwap.cancel.title" = "주문 취소";
 "limitSwap.confirmation.byteCapError.format" = "메모가 너무 깁니다: %d바이트(최대 %d). 더 짧은 대상 주소 또는 비 UTXO 소스를 사용해 보세요.";
 "limitSwap.detail.copyTxHash" = "TX 해시 복사";
 "limitSwap.detail.filled" = "체결";

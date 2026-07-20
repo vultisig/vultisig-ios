@@ -653,6 +653,10 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain je pauzirao trgovanje. Pokušajte kasnije.";
 "limitSwap.asset" = "Imovina";
 "limitSwap.buy" = "Kupi";
+"limitSwap.cancel.duplicateWarning" = "Imate još jedan aktivan nalog s istim parom i cijenom. THORChain prvo otkazuje najstariji podudarni nalog, pa bi ovo moglo zatvoriti taj nalog umjesto ovoga.";
+"limitSwap.cancel.explanation" = "Otkazivanje zatvara ovaj nalog i vraća dio koji još nije izvršen. Ono što je već izvršeno ostaje izvršeno i ne vraća se. Ovo košta jednu THORChain mrežnu naknadu.";
+"limitSwap.cancel.orderLabel" = "Nalog";
+"limitSwap.cancel.title" = "Otkaži nalog";
 "limitSwap.confirmation.byteCapError.format" = "Memo predugačak: %d bajtova (najviše %d). Pokušaj kraću odredišnu adresu ili izvor koji nije UTXO.";
 "limitSwap.detail.copyTxHash" = "Kopiraj TX hash";
 "limitSwap.detail.filled" = "Izvršeno";

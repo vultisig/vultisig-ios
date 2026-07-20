@@ -227,6 +227,17 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .cancelLimitOrder(let coin, let request):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CancelLimitOrderTransactionScreen(
+                        viewModel: CancelLimitOrderTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            request: request
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .tonUnstake(let coin, let poolAddress, let poolImplementation, let stakedAmount):
                 resolvingCoin(coinMeta: coin) { coin in
                     TonUnstakeTransactionScreen(
