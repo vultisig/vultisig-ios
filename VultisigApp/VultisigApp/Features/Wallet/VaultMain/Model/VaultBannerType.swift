@@ -84,16 +84,16 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         }
     }
 
-    var image: String {
+    var image: ImageResource {
         switch self {
         case .upgradeVault:
-            "upgrade-vault-banner-icon"
+            .upgradeVaultBannerIcon
         case .backupVault:
-            "backup-vault-banner-icon"
+            .backupVaultBannerIcon
         case .buyVult:
-            "buy-vult-banner-icon"
+            .buyVultBannerIcon
         case .followVultisig:
-            "follow-vultisig-banner-icon"
+            .followVultisigBannerIcon
         }
     }
 

@@ -55,7 +55,7 @@ struct MacOSToolbarView<Content: View>: View {
             // Leading
             HStack(spacing: 8) {
                 if showsBackButton {
-                    ToolbarButton(image: "chevron-right", action: {
+                    ToolbarButton(image: .chevronRight, action: {
                         dismiss()
                     })
                     .rotationEffect(.radians(.pi))

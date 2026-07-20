@@ -36,7 +36,7 @@ struct VaultPairDetailView: View {
             CustomToolbarItem(placement: .trailing) {
                 if let renderedImage = viewModel.renderedImage {
                     CrossPlatformShareButton(image: renderedImage, caption: imageName) { onShare in
-                        ToolbarButton(image: "share", action: onShare)
+                        ToolbarButton(image: .upload4, action: onShare)
                     }
                 } else {
                     ProgressView()

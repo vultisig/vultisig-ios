@@ -10,12 +10,12 @@ import SwiftUI
 protocol FilledSegmentedControlType: Identifiable {
     var id: Int { get }
     var title: String { get }
-    var icon: String? { get }
+    var icon: ImageResource? { get }
     var iconSelectedTint: Color? { get }
 }
 
 extension FilledSegmentedControlType {
-    var icon: String? { nil }
+    var icon: ImageResource? { nil }
     var iconSelectedTint: Color? { nil }
 }
 

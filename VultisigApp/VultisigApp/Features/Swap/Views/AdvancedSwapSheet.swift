@@ -102,7 +102,7 @@ struct AdvancedSwapSheet: View {
 
             VStack(spacing: 0) {
                 AdvancedSwapMainRow(
-                    icon: "slippage",
+                    icon: .bolt,
                     title: "slippageTolerance".localized,
                     value: settings.slippage.displayValue
                 ) {
@@ -112,7 +112,7 @@ struct AdvancedSwapSheet: View {
                 if isGasLimitSupported {
                     Separator()
                     AdvancedSwapMainRow(
-                        icon: "gas",
+                        icon: .gasPump,
                         title: "gasLimit".localized,
                         value: gasLimitValue
                     ) {
@@ -123,7 +123,7 @@ struct AdvancedSwapSheet: View {
                 if vm.canSelectProvider {
                     Separator()
                     AdvancedSwapMainRow(
-                        icon: "route",
+                        icon: .branchOut,
                         title: "selectRoute".localized,
                         value: selectRouteValue
                     ) {
@@ -137,7 +137,7 @@ struct AdvancedSwapSheet: View {
                 if !vm.isSecuredMint {
                     Separator()
                     AdvancedSwapMainRow(
-                        icon: "external-recipient",
+                        icon: .clone2,
                         title: "useExternalRecipient".localized,
                         value: externalRecipientValue
                     ) {
@@ -203,7 +203,7 @@ struct AdvancedSwapSheetHeader: View {
                 .foregroundStyle(Theme.colors.textPrimary)
 
             HStack {
-                ToolbarButton(image: showBack ? "chevron-left" : "x", type: .outline, action: onClose)
+                ToolbarButton(image: showBack ? .chevronLeft : .xmark, type: .outline, action: onClose)
                 Spacer()
             }
         }
@@ -215,7 +215,7 @@ struct AdvancedSwapSheetHeader: View {
 // MARK: - Main row
 
 struct AdvancedSwapMainRow: View {
-    let icon: String
+    let icon: ImageResource
     let title: String
     let value: String
     let action: () -> Void
@@ -223,7 +223,7 @@ struct AdvancedSwapMainRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Icon(named: icon, color: Theme.colors.textPrimary, size: 16, isSystem: false)
+                Icon(icon, color: Theme.colors.textPrimary, size: 16)
                 Text(title)
                     .font(Theme.fonts.bodySRegular)
                     .foregroundStyle(Theme.colors.textSecondary)
@@ -232,7 +232,7 @@ struct AdvancedSwapMainRow: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .lineLimit(1)
-                Icon(named: "chevron-right-small", color: Theme.colors.textTertiary, size: 20)
+                Icon(.chevronRightSmall, color: Theme.colors.textTertiary, size: 20)
             }
             .padding(24)
             .contentShape(Rectangle())

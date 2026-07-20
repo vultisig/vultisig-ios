@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsCommonOptionView: View {
-    let icon: String?
+    let icon: ImageResource?
     let title: String
     let subtitle: String?
     let description: String?
@@ -16,7 +16,7 @@ struct SettingsCommonOptionView: View {
     let showSeparator: Bool
 
     init(
-        icon: String?,
+        icon: ImageResource?,
         title: String,
         subtitle: String? = nil,
         description: String? = nil,
@@ -50,7 +50,7 @@ struct SettingsCommonOptionView: View {
         }
 
         Icon(
-            named: "chevron-right",
+            .chevronRight,
             color: Theme.colors.textTertiary,
             size: 16
         )

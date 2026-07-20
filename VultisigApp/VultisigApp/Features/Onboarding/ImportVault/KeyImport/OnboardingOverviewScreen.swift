@@ -156,21 +156,21 @@ struct OnboardingOverviewScreen: View {
             OnboardingInformationRowView(
                 title: row1Title,
                 subtitle: row1Subtitle,
-                icon: "cloud-upload-filled",
+                icon: .cloudUpload,
                 highlightedText: row1HighlightedText
             )
 
             OnboardingInformationRowView(
                 title: "storeBackupsSeparately".localized,
                 subtitle: row2Subtitle,
-                icon: "arrow-split"
+                icon: .split3
             )
 
             if content.showsOldBackupsRow {
                 OnboardingInformationRowView(
                     title: "oldBackupsWontWork".localized,
                     subtitle: "oldBackupsWontWorkDescription".localized,
-                    icon: "page-cross-text"
+                    icon: .fileXmark
                 )
             }
         }

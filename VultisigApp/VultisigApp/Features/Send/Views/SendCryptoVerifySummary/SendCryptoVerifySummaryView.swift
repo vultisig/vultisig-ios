@@ -79,7 +79,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     for: "amount",
                     with: tokenDisplay,
                     color: input.tokenDisplayIsUnlimited ? Theme.colors.alertWarning : nil,
-                    trailingIcon: input.tokenDisplayIsUnlimited ? "triangle-alert" : nil
+                    trailingIcon: input.tokenDisplayIsUnlimited ? .triangleWarning : nil
                 )
                 Separator()
             }
@@ -141,6 +141,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 } else if let signSui = input.keysignPayload?.signSui {
                     Separator()
                     SignSuiDisplayView(signSui: signSui)
+                } else if let signRipple = input.keysignPayload?.signRipple {
+                    Separator()
+                    SignRippleDisplayView(signRipple: signRipple)
                 }
             }
         }
@@ -162,7 +165,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         image: String? = nil,
         isMultiLine: Bool = false,
         color: Color? = nil,
-        trailingIcon: String? = nil
+        trailingIcon: ImageResource? = nil
     ) -> some View {
         HStack(spacing: 4) {
             Text(title.localized)
@@ -217,7 +220,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .multilineTextAlignment(.trailing)
                         .frame(maxWidth: image == nil ? .infinity : nil, alignment: .trailing)
                     if let trailingIcon {
-                        Icon(named: trailingIcon, color: color ?? Theme.colors.alertWarning, size: 14)
+                        Icon(trailingIcon, color: color ?? Theme.colors.alertWarning, size: 14)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -237,6 +240,15 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             // baked into the PTB bytes. Show a neutral title instead of a
             // misleading "0 SUI" send card; the decoded PTB renders below.
             Text("suiTransaction".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyMMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
+        } else if input.keysignPayload?.signRipple != nil {
+            // signRipple carries the dApp transaction in raw JSON — an
+            // OfferCreate or cross-currency Payment has no simple to_amount to
+            // show. Use a neutral title; the decoded terms render below.
+            Text("rippleTransaction".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyMMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -284,7 +296,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
                 }
             }
@@ -333,6 +345,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     var shouldShowAmountRow: Bool {
         // signSui carries no to_amount; the value lives in the PTB bytes.
         if input.keysignPayload?.signSui != nil {
+            return false
+        }
+        // signRipple carries the amount inside the raw JSON (and offers have no
+        // amount at all); the decoded terms render it below.
+        if input.keysignPayload?.signRipple != nil {
             return false
         }
         switch input.hero {

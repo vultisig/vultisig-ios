@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct IconButtonView: View {
-    let icon: String
+    let icon: ImageResource
     let isLoading: Bool
 
     init(
-        icon: String,
+        icon: ImageResource,
         isLoading: Bool = false
     ) {
         self.icon = icon
@@ -24,11 +24,11 @@ struct IconButtonView: View {
             ProgressView()
                 .scaleEffect(0.7)
         } else {
-            Icon(named: icon)
+            Icon(icon)
         }
     }
 }
 
 #Preview {
-    IconButtonView(icon: "chevron-right")
+    IconButtonView(icon: .chevronRight)
 }

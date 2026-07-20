@@ -31,7 +31,7 @@ struct PasswordVerifyReminderView: View {
     var body: some View {
         VStack(spacing: 16) {
             Icon(
-                named: "focus-lock",
+                .lockPassword,
                 color: Theme.colors.primaryAccent4,
                 size: 32
             )
@@ -99,7 +99,7 @@ struct PasswordVerifyReminderView: View {
                         .foregroundStyle(Theme.colors.textTertiary)
 
                     Icon(
-                        named: "chevron-down",
+                        .chevronDown,
                         color: Theme.colors.textTertiary,
                         size: 16
                     )

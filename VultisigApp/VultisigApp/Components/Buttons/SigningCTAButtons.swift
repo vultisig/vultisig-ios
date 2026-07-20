@@ -53,7 +53,7 @@ struct SigningCTAButtons: View {
             PrimaryButton(
                 title: "paired".localized,
                 leadingView: {
-                    Icon(named: "devices", color: pairedIconColor, size: 20)
+                    Icon(.laptopMobile, color: pairedIconColor, size: 20)
                 },
                 type: .secondary,
                 size: .medium,

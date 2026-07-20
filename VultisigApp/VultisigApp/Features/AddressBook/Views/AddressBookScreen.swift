@@ -122,11 +122,11 @@ struct AddressBookScreen: View {
     @ViewBuilder
     var navigationButton: some View {
         if isEditing {
-            ToolbarButton(image: "check", type: .confirmation) {
+            ToolbarButton(image: .check, type: .confirmation) {
                 toggleEdit()
             }
         } else {
-            ToolbarButton(image: "pencil") {
+            ToolbarButton(image: .penWritingFilled) {
                 toggleEdit()
             }
         }

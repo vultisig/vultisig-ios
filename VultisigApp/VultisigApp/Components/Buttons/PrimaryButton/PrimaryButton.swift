@@ -103,7 +103,7 @@ extension PrimaryButton where LeadingView == EmptyView, TrailingView == EmptyVie
 extension PrimaryButton where LeadingView == Icon, TrailingView == EmptyView {
     init(
         title: String,
-        leadingIcon: String,
+        leadingIcon: ImageResource,
         isLoading: Bool = false,
         type: ButtonType = .primary,
         size: ButtonSize = .medium,
@@ -114,7 +114,7 @@ extension PrimaryButton where LeadingView == Icon, TrailingView == EmptyView {
     ) {
         self.init(
             title: title,
-            leadingView: { Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15) },
+            leadingView: { Icon(leadingIcon, color: Theme.colors.textPrimary, size: 15) },
             trailingView: { EmptyView() },
             isLoading: isLoading,
             type: type,
@@ -132,7 +132,7 @@ extension PrimaryButton where LeadingView == Icon, TrailingView == EmptyView {
 extension PrimaryButton where LeadingView == EmptyView, TrailingView == Icon {
     init(
         title: String,
-        trailingIcon: String,
+        trailingIcon: ImageResource,
         isLoading: Bool = false,
         type: ButtonType = .primary,
         size: ButtonSize = .medium,
@@ -144,7 +144,7 @@ extension PrimaryButton where LeadingView == EmptyView, TrailingView == Icon {
         self.init(
             title: title,
             leadingView: { EmptyView() },
-            trailingView: { Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15) },
+            trailingView: { Icon(trailingIcon, color: Theme.colors.textPrimary, size: 15) },
             isLoading: isLoading,
             type: type,
             size: size,
@@ -161,8 +161,8 @@ extension PrimaryButton where LeadingView == EmptyView, TrailingView == Icon {
 extension PrimaryButton where LeadingView == Icon, TrailingView == Icon {
     init(
         title: String,
-        leadingIcon: String,
-        trailingIcon: String,
+        leadingIcon: ImageResource,
+        trailingIcon: ImageResource,
         isLoading: Bool = false,
         type: ButtonType = .primary,
         size: ButtonSize = .medium,
@@ -173,8 +173,8 @@ extension PrimaryButton where LeadingView == Icon, TrailingView == Icon {
     ) {
         self.init(
             title: title,
-            leadingView: { Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15) },
-            trailingView: { Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15) },
+            leadingView: { Icon(leadingIcon, color: Theme.colors.textPrimary, size: 15) },
+            trailingView: { Icon(trailingIcon, color: Theme.colors.textPrimary, size: 15) },
             isLoading: isLoading,
             type: type,
             size: size,
@@ -220,7 +220,7 @@ extension PrimaryButton where TrailingView == EmptyView {
 extension PrimaryButton where LeadingView == Icon {
     init(
         title: String,
-        leadingIcon: String,
+        leadingIcon: ImageResource,
         @ViewBuilder trailingView: () -> TrailingView,
         isLoading: Bool = false,
         type: ButtonType = .primary,
@@ -232,7 +232,7 @@ extension PrimaryButton where LeadingView == Icon {
     ) {
         self.init(
             title: title,
-            leadingView: { Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15) },
+            leadingView: { Icon(leadingIcon, color: Theme.colors.textPrimary, size: 15) },
             trailingView: trailingView,
             isLoading: isLoading,
             type: type,

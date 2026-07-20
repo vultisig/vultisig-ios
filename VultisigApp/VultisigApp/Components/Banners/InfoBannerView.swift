@@ -17,11 +17,11 @@ enum InfoBannerType {
 struct InfoBannerView: View {
     let description: String
     let type: InfoBannerType
-    let leadingIcon: String?
+    let leadingIcon: ImageResource?
     let iconColor: Color?
     let onClose: (() -> Void)?
 
-    init(description: String, type: InfoBannerType, leadingIcon: String?, iconColor: Color? = nil, onClose: (() -> Void)? = nil) {
+    init(description: String, type: InfoBannerType, leadingIcon: ImageResource?, iconColor: Color? = nil, onClose: (() -> Void)? = nil) {
         self.description = description
         self.type = type
         self.leadingIcon = leadingIcon
@@ -32,7 +32,7 @@ struct InfoBannerView: View {
     var body: some View {
         HStack(spacing: 12) {
             if let leadingIcon {
-                Icon(named: leadingIcon, color: iconColor ?? fontColor, size: 16)
+                Icon(leadingIcon, color: iconColor ?? fontColor, size: 16)
             }
 
             Text(description)
@@ -45,7 +45,7 @@ struct InfoBannerView: View {
             if let onClose {
                 Spacer()
                 Button(action: onClose) {
-                    Icon(named: "x", color: Theme.colors.textSecondary, size: 12)
+                    Icon(.xmark, color: Theme.colors.textSecondary, size: 12)
                         .padding(8)
                         .background(Circle().fill(Theme.colors.bgSurface2))
                 }

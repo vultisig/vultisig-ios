@@ -14,7 +14,7 @@ enum SettingsOptionViewType {
 }
 
 struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
-    let icon: String?
+    let icon: ImageResource?
     let title: String
     let subtitle: String?
     let type: SettingsOptionViewType
@@ -23,7 +23,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
     let trailingView: () -> TrailingView
 
     init(
-        icon: String?,
+        icon: ImageResource?,
         title: String,
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,
@@ -73,7 +73,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 if let icon {
-                    Icon(named: icon, color: iconColor, size: 20)
+                    Icon(icon, color: iconColor, size: 20)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -108,7 +108,7 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
 
 extension SettingsOptionView where TitleAccessory == EmptyView {
     init(
-        icon: String?,
+        icon: ImageResource?,
         title: String,
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,

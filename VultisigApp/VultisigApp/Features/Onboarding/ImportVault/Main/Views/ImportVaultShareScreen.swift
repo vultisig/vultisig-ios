@@ -70,7 +70,7 @@ struct ImportVaultShareScreen: View {
         Button {
             resetData()
         } label: {
-            Icon(named: "x", color: Theme.colors.textPrimary, size: 16)
+            Icon(.xmark, color: Theme.colors.textPrimary, size: 16)
                 .padding(6)
                 .background(Circle().fill(Theme.colors.bgSurface2))
         }

@@ -1,8 +1,6 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="traffic-cone">
-<path id="Vector" d="M15.3426 8.40039H8.65625" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Vector_2" d="M17.2717 14.4004H6.72852" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Vector_3" d="M20.3996 20.4004H3.59961" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Vector_4" d="M4.80078 20.3996L9.93318 4.43241C10.0928 3.93561 10.5548 3.59961 11.0756 3.59961H12.926C13.4468 3.59961 13.9088 3.93561 14.0684 4.43241L19.2008 20.3996" stroke="#FFC25C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</g>
+<path id="Vector" d="M15.3426 8.40039H8.65625" stroke="#F0F4FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M17.2717 14.4004H6.72852" stroke="#F0F4FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M20.3996 20.4004H3.59961" stroke="#F0F4FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M4.80078 20.3996L9.93318 4.43241C10.0928 3.93561 10.5548 3.59961 11.0756 3.59961H12.926C13.4468 3.59961 13.9088 3.93561 14.0684 4.43241L19.2008 20.3996" stroke="#F0F4FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

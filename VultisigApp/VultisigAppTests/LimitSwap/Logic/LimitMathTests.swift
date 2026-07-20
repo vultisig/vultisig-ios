@@ -293,10 +293,15 @@ final class LimitMathTests: XCTestCase {
 
     // MARK: - preferredLimitSourceChain (limit-entry default source)
 
+    // The BTC/ETH preference below applies to the NO-INTENT default only — an
+    // inherited alphabetical market default (`isSourceExplicit: false`). The
+    // explicit-intent contract is covered in the section after this one.
+
     func testPreferredLimitSourcePrefersBTCWhenHeld() {
         // Market default lands on RUNE; BTC is held and isn't the target → BTC.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .thorChain,
+            isSourceExplicit: false,
             targetChain: .ethereum,
             availableNativeChains: [.bitcoin, .thorChain]
         )
@@ -307,6 +312,7 @@ final class LimitMathTests: XCTestCase {
         // Default RUNE→BTC: BTC is the target, so skip it and pick ETH → ETH→BTC.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .thorChain,
+            isSourceExplicit: false,
             targetChain: .bitcoin,
             availableNativeChains: [.bitcoin, .ethereum, .thorChain]
         )
@@ -316,6 +322,7 @@ final class LimitMathTests: XCTestCase {
     func testPreferredLimitSourcePrefersBTCOverETHWhenBothHeld() {
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .thorChain,
+            isSourceExplicit: false,
             targetChain: .thorChain,
             availableNativeChains: [.bitcoin, .ethereum]
         )
@@ -327,6 +334,7 @@ final class LimitMathTests: XCTestCase {
         // keep the market default rather than inventing an unheld source.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .litecoin,
+            isSourceExplicit: false,
             targetChain: .bitcoin,
             availableNativeChains: [.litecoin, .thorChain]
         )
@@ -336,6 +344,7 @@ final class LimitMathTests: XCTestCase {
     func testPreferredLimitSourceKeepsMarketDefaultWhenItIsAlreadyBTC() {
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .bitcoin,
+            isSourceExplicit: false,
             targetChain: .ethereum,
             availableNativeChains: [.bitcoin]
         )
@@ -348,6 +357,7 @@ final class LimitMathTests: XCTestCase {
         // self-pair — pick another held native chain instead.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .ethereum,
+            isSourceExplicit: false,
             targetChain: .ethereum,
             availableNativeChains: [.ethereum, .thorChain]
         )
@@ -360,6 +370,7 @@ final class LimitMathTests: XCTestCase {
         // unavoidable — return the market default rather than an unheld chain.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .ethereum,
+            isSourceExplicit: false,
             targetChain: .ethereum,
             availableNativeChains: [.ethereum]
         )
@@ -372,6 +383,7 @@ final class LimitMathTests: XCTestCase {
         // it) — fall back to the market default instead.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .ethereum,
+            isSourceExplicit: false,
             targetChain: .ethereum,
             availableNativeChains: [.ethereum, .solana]
         )
@@ -383,10 +395,88 @@ final class LimitMathTests: XCTestCase {
         // must pick the routable alternate rather than seed the unroutable default.
         let chain = preferredLimitSourceChain(
             marketDefaultChain: .solana,
+            isSourceExplicit: false,
             targetChain: .ethereum,
             availableNativeChains: [.solana, .litecoin]
         )
         XCTAssertEqual(chain, .litecoin)
+    }
+
+    // MARK: - preferredLimitSourceChain (explicit user intent)
+
+    func testPreferredLimitSourceHonorsExplicitThorchainSource() {
+        // Entering the swap from THORChain chain detail is real user intent: the
+        // Limit tab must keep RUNE as the source instead of silently switching to
+        // BTC, even though BTC is held and would win the no-intent preference.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .thorChain,
+            isSourceExplicit: true,
+            targetChain: .bitcoin,
+            availableNativeChains: [.bitcoin, .ethereum, .thorChain]
+        )
+        XCTAssertEqual(chain, .thorChain)
+    }
+
+    func testPreferredLimitSourceHonorsExplicitNonPreferredSource() {
+        // Any explicitly chosen routable source is honored, not just THORChain —
+        // the BTC/ETH preference must not override an intentional LTC entry.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .litecoin,
+            isSourceExplicit: true,
+            targetChain: .ethereum,
+            availableNativeChains: [.bitcoin, .ethereum, .litecoin]
+        )
+        XCTAssertEqual(chain, .litecoin)
+    }
+
+    func testPreferredLimitSourceFallsBackWhenExplicitSourceIsUnroutable() {
+        // Explicit but NOT THORChain-routable (SOL): honoring it would seed an
+        // unplaceable order, so fall back to the BTC/ETH preference.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .solana,
+            isSourceExplicit: true,
+            targetChain: .ethereum,
+            availableNativeChains: [.bitcoin, .ethereum, .solana]
+        )
+        XCTAssertEqual(chain, .bitcoin)
+    }
+
+    func testPreferredLimitSourceFallsBackWhenExplicitSourceIsUnroutableTON() {
+        // Same rule for a second unroutable chain, with no BTC/ETH held → the
+        // routable alternate (LTC) wins over the unplaceable explicit source.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .ton,
+            isSourceExplicit: true,
+            targetChain: .ethereum,
+            availableNativeChains: [.ton, .litecoin]
+        )
+        XCTAssertEqual(chain, .litecoin)
+    }
+
+    func testPreferredLimitSourceAvoidsSelfPairWhenExplicitSourceEqualsTarget() {
+        // Explicit ETH source with an Ethereum target (e.g. the buy-VULT entry:
+        // explicit ETH → VULT on Ethereum) is a self-pair — intent can't make it
+        // routable, so fall through to a held routable source instead.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .ethereum,
+            isSourceExplicit: true,
+            targetChain: .ethereum,
+            availableNativeChains: [.bitcoin, .ethereum]
+        )
+        XCTAssertNotEqual(chain, .ethereum)
+        XCTAssertEqual(chain, .bitcoin)
+    }
+
+    func testPreferredLimitSourceExplicitSelfPairFallsBackToMarketDefaultWhenNothingElseHeld() {
+        // Degenerate: explicit source == target and no other routable native is
+        // held — a self-pair is unavoidable, so keep the concrete market default.
+        let chain = preferredLimitSourceChain(
+            marketDefaultChain: .ethereum,
+            isSourceExplicit: true,
+            targetChain: .ethereum,
+            availableNativeChains: [.ethereum]
+        )
+        XCTAssertEqual(chain, .ethereum)
     }
 
     // MARK: - isUserUsdPriceEdit (USD field feedback suppression)

@@ -26,12 +26,12 @@ enum TronResourceType: String, CaseIterable, FilledSegmentedControlType {
         displayName
     }
 
-    var icon: String? {
+    var icon: ImageResource? {
         switch self {
         case .bandwidth:
-            return "gauge"
+            return .gauge
         case .energy:
-            return "lightning"
+            return .bolt
         }
     }
 

@@ -32,7 +32,7 @@ struct VaultServerBackupScreen: View {
                         InfoBannerView(
                             description: viewModel.alertErrorDescription ?? "",
                             type: .error,
-                            leadingIcon: "triangle-alert"
+                            leadingIcon: .triangleWarning
                         )
                         .transition(.verticalGrowAndFade)
                         .showIf(showAlert)

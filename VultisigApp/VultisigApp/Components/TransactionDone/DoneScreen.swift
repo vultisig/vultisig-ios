@@ -285,7 +285,7 @@ struct DoneDetailContent: View {
                 HStack {
                     Text("transactionDetails".localized)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textSecondary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textSecondary, size: 16)
                         .rotationEffect(.degrees(isTransactionDetailsExpanded ? 180 : 0))
                 }
                 .contentShape(Rectangle())

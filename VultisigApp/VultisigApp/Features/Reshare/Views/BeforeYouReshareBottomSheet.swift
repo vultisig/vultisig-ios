@@ -44,19 +44,19 @@ struct BeforeYouReshareBottomSheet: View, BottomSheetProperties {
     var warningCards: some View {
         VStack(spacing: 10) {
             ReshareWarningCard(
-                icon: "file-tree",
+                icon: .fileTree,
                 title: "newBackupsCreatedTitle".localized,
                 subtitle: "newBackupsCreatedDescription".localized
             )
 
             ReshareWarningCard(
-                icon: "traffic-cone",
+                icon: .trafficCone,
                 title: "oldBackupsOnlyWorkTogetherTitle".localized,
                 subtitle: "oldBackupsOnlyWorkTogetherDescription".localized
             )
 
             ReshareWarningCard(
-                icon: "circles-5",
+                icon: .circles5,
                 title: "requiredCosignersOnlineTitle".localized,
                 subtitle: "requiredCosignersOnlineDescription".localized
             )
@@ -65,14 +65,14 @@ struct BeforeYouReshareBottomSheet: View, BottomSheetProperties {
 }
 
 private struct ReshareWarningCard: View {
-    let icon: String
+    let icon: ImageResource
     let title: String
     let subtitle: String
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Icon(
-                named: icon,
+                icon,
                 color: Theme.colors.alertWarning,
                 size: 24
             )

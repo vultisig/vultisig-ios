@@ -11,7 +11,7 @@ struct ChainNotFoundEmptyStateView: View {
     var body: some View {
         VStack {
             VStack(spacing: 12) {
-                Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
+                Icon(.circleDashed, color: Theme.colors.primaryAccent4, size: 24)
                 Text("noChainsFound")
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)

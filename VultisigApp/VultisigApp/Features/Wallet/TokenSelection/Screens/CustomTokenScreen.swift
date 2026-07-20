@@ -46,7 +46,7 @@ struct CustomTokenScreen: View {
                             showPasteButton: true,
                             placeholder: searchPlaceholder
                         )
-                        CircularAccessoryIconButton(icon: "search-menu") {
+                        CircularAccessoryIconButton(icon: .searchArea) {
                             Task {
                                 await fetchTokenInfo()
                             }
@@ -72,7 +72,7 @@ struct CustomTokenScreen: View {
             }
             .crossPlatformToolbar(showsBackButton: false) {
                 CustomToolbarItem(placement: .leading) {
-                    ToolbarButton(image: "x") {
+                    ToolbarButton(image: .xmark) {
                         onClose()
                     }
                 }

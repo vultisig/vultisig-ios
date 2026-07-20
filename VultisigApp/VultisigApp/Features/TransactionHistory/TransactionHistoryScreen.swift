@@ -87,7 +87,7 @@ struct TransactionHistoryScreen: View {
 
             Spacer()
 
-            CircularAccessoryIconButton(icon: "magnifying-glass") {
+            CircularAccessoryIconButton(icon: .magnifier) {
                 viewModel.showAssetFilter = true
             }
         }
@@ -202,7 +202,7 @@ struct TransactionHistoryScreen: View {
 
     private var emptyState: some View {
         ActionBannerView(
-            icon: "calendar-days",
+            icon: .calendarDays,
             title: "noTransactionsYet".localized,
             subtitle: "noTransactionsYetSubtitle".localized,
             buttonTitle: "",

@@ -318,14 +318,19 @@ struct SwapDetailsScreen: View {
         }
     }
 
-    /// Source coin the **limit** entry seeds with. The shared market default
-    /// sorts alphabetically (lands on RUNE), which reads as an untradeable
-    /// RUNE→BTC default; prefer a high-value routable native source the vault
-    /// holds (BTC → ETH) that doesn't collide with the target. Limit-entry only
-    /// — the shared market `detailsViewModel.fromCoin` is unchanged.
+    /// Source coin the **limit** entry seeds with. Limit-entry only — the shared
+    /// market `detailsViewModel.fromCoin` is unchanged.
+    ///
+    /// A non-nil `fromCoin` means the user entered the swap from a specific
+    /// chain/coin, so the source is an explicit choice to honor. When it's nil the
+    /// source is `SwapCoinsResolver`'s alphabetical fallback (lands on RUNE, which
+    /// reads as an untradeable RUNE→BTC default), so prefer a high-value routable
+    /// native source the vault holds (BTC → ETH) instead. `detailsViewModel`
+    /// resolves the same optional the same way (`initialFromCoin ?? defaultFromCoin`).
     private var limitInitialFromCoin: Coin {
         limitDefaultSourceCoin(
             marketDefault: detailsViewModel.fromCoin,
+            isSourceExplicit: fromCoin != nil,
             targetCoin: detailsViewModel.toCoin,
             vaultCoins: vault.coins
         )
@@ -342,7 +347,7 @@ struct SwapDetailsScreen: View {
     }
 
     var advancedSettingsButton: some View {
-        ToolbarButton(image: "sliders", type: .outline) {
+        ToolbarButton(image: .slidersVertical, type: .outline) {
             handleAdvancedSettingsTap()
         }
         .accessibilityLabel("advancedSettings".localized)

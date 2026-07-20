@@ -50,7 +50,7 @@ struct TokenCellView: View {
                         .contentTransition(.numericText())
                         .animation(.interpolatingSpring, value: coin.balanceStringWithTicker)
                 }
-                Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
+                Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 16)
             }
         }
         .padding(.horizontal, 16)

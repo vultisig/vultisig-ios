@@ -48,7 +48,7 @@ class BalanceService {
 
     /// Value type to identify a coin for balance fetching without holding SwiftData model references
     /// Reuses CoinMeta and adds only the minimal additional fields needed for balance operations
-    private struct CoinIdentifier: Hashable {
+    struct CoinIdentifier: Hashable {
         let coinId: String
         let coinMeta: CoinMeta
         let address: String
@@ -66,7 +66,7 @@ class BalanceService {
     }
 
     /// Value type containing balance update data for a specific coin
-    private struct CoinBalanceUpdate {
+    struct CoinBalanceUpdate {
         let coinId: String
         let rawBalance: String?
         let stakedBalance: String?
@@ -198,6 +198,13 @@ class BalanceService {
     /// Multicall3 call. On any thrown error (network blip, unexpected decode, or
     /// a failed runtime gate) the whole group degrades to the per-coin path, so a
     /// batch failure never zeroes balances — it just reverts to today's behaviour.
+    ///
+    /// A **partial** failure doesn't throw: `aggregate3` reports success at the top
+    /// level while an individual sub-call reports `success = false`, so the thrown
+    /// path above never fires and only the per-coin retry below saves the affected
+    /// coin from a bogus `0`. Coins whose sub-call failed are re-fetched
+    /// individually; that path preserves the last known balance if it fails too.
+    ///
     /// EVM chains carry no staked/bonded balances, so the batch produces only
     /// `rawBalance`, identical to the per-coin path.
     private func fetchEvmBatchBalances(chain: Chain, address: String, coins: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
@@ -223,23 +230,64 @@ class BalanceService {
                 includeNative: !nativeCoins.isEmpty
             )
 
-            var updates: [CoinBalanceUpdate] = []
-            updates.reserveCapacity(coins.count)
+            let (updates, failed) = Self.partitionBatchResult(
+                native: result.native,
+                balances: result.balances,
+                nativeCoins: nativeCoins,
+                tokenCoins: tokenCoins
+            )
 
-            for coin in nativeCoins {
-                let value = result.native ?? 0
-                updates.append(CoinBalanceUpdate(coinId: coin.coinId, rawBalance: String(value), stakedBalance: nil, bondedNodes: nil, error: nil))
-            }
-            for coin in tokenCoins {
-                let value = result.balances[coin.coinMeta.contractAddress] ?? 0
-                updates.append(CoinBalanceUpdate(coinId: coin.coinId, rawBalance: String(value), stakedBalance: nil, bondedNodes: nil, error: nil))
-            }
+            guard !failed.isEmpty else { return updates }
 
-            return updates
+            // Silence here is what let a zeroed balance ship unnoticed — say so.
+            logger.warning("Multicall3 sub-call failed for \(failed.map { $0.ticker }.joined(separator: ", ")) on \(chain.name); retrying per-coin")
+            return updates + (await fallbackPerCoin(failed))
         } catch {
             logger.warning("Multicall3 batch failed for \(chain.name); falling back to per-coin: \(error.localizedDescription)")
             return await fallbackPerCoin(coins)
         }
+    }
+
+    /// Splits a Multicall3 batch result into balance updates that are ready to
+    /// write and the coins whose sub-call failed and must be retried per-coin.
+    ///
+    /// The distinction this preserves is the whole point: a coin absent from
+    /// `balances` (or a nil `native`) had its read fail and yields **no update**,
+    /// so `applyBalanceUpdates` skips it and its last known balance survives. A
+    /// coin that genuinely returned `0` yields a real `0` update — an empty wallet
+    /// must still render as empty.
+    static func partitionBatchResult(
+        native: BigInt?,
+        balances: [String: BigInt],
+        nativeCoins: [CoinIdentifier],
+        tokenCoins: [CoinIdentifier]
+    ) -> (updates: [CoinBalanceUpdate], failed: [CoinIdentifier]) {
+        var updates: [CoinBalanceUpdate] = []
+        updates.reserveCapacity(nativeCoins.count + tokenCoins.count)
+        var failed: [CoinIdentifier] = []
+
+        func resolve(_ coin: CoinIdentifier, _ value: BigInt?) {
+            guard let value else {
+                failed.append(coin)
+                return
+            }
+            updates.append(CoinBalanceUpdate(
+                coinId: coin.coinId,
+                rawBalance: String(value),
+                stakedBalance: nil,
+                bondedNodes: nil,
+                error: nil
+            ))
+        }
+
+        for coin in nativeCoins {
+            resolve(coin, native)
+        }
+        for coin in tokenCoins {
+            resolve(coin, balances[coin.coinMeta.contractAddress])
+        }
+
+        return (updates, failed)
     }
 
     /// Per-coin path used when a Multicall3 batch is unavailable or fails. Fans

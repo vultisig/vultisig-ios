@@ -54,7 +54,7 @@ struct PeerCell: View {
             .frame(width: 32, height: 32)
             .overlay(
                 Icon(
-                    named: DeviceInfo.iconName(for: id),
+                    DeviceInfo.iconName(for: id),
                     color: Theme.colors.alertSuccess,
                     size: 16
                 )

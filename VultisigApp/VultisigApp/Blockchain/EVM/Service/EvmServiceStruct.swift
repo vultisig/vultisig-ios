@@ -218,8 +218,14 @@ struct EvmServiceStruct {
     /// to Multicall3 `aggregate3`. When `includeNative` is set, a `getEthBalance`
     /// call is prepended so the native balance comes back in the same round-trip.
     /// Every sub-call uses `allowFailure = true`, so a reverting/garbage contract
-    /// maps to `0` instead of failing its siblings (mirrors today's per-call
-    /// fallback). Order is the contract for mapping results back to inputs.
+    /// fails on its own without taking its siblings down. Order is the contract for
+    /// mapping results back to inputs.
+    ///
+    /// A failed sub-call is **absent** from `balances` (and leaves `native` nil)
+    /// rather than reported as `0`: `aggregate3` returns success at the top level
+    /// even when an individual sub-call fails, so this is the only signal the
+    /// caller gets, and collapsing it to `0` would persist an empty balance over a
+    /// funded coin. Callers must retry an absent entry per-coin.
     func fetchERC20Balances(
         contractAddresses: [String],
         walletAddress: String,
@@ -242,26 +248,17 @@ struct EvmServiceStruct {
         let resultHex = try await rpcService.strRpcCall(method: "eth_call", params: params)
         let decoded = Multicall3.decodeAggregate3Results(hex: resultHex)
 
-        // A short/garbage decode would silently zero balances; treat it as a batch
+        // A short/garbage decode would silently drop balances; treat it as a batch
         // failure so the caller falls back to the per-token path.
-        guard decoded.count == calls.count else {
+        guard let mapped = Multicall3.mapBalances(
+            decoded: decoded,
+            includeNative: includeNative,
+            contractAddresses: contractAddresses
+        ) else {
             throw RpcEvmServiceError.rpcError(code: -1, message: "Unexpected Multicall3 result count")
         }
 
-        var index = 0
-        var native: BigInt?
-        if includeNative {
-            native = decoded[index] ?? 0
-            index += 1
-        }
-
-        var balances: [String: BigInt] = [:]
-        for contractAddress in contractAddresses {
-            balances[contractAddress] = decoded[index] ?? 0
-            index += 1
-        }
-
-        return (native, balances)
+        return mapped
     }
 
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {

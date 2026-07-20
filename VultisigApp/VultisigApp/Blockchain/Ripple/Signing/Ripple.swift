@@ -37,6 +37,27 @@ enum RippleHelper {
             )
         }
 
+        // dApp-supplied XRPL transactions (OfferCreate / cross-currency Payment
+        // / OfferCancel / TrustSet) arrive as raw JSON in `signRipple`.
+        // WalletCore signs that JSON verbatim through its Ripple `rawJson` path
+        // (the same path the text-memo case below uses), so every co-signer
+        // rebuilds an identical signing input and produces byte-identical bytes
+        // — we never reconstruct an `opPayment` from `toAddress` / `toAmount`.
+        // Offers carry an empty `toAddress`, so this branch sits BEFORE the
+        // `toAddress` guard. Fails closed before signing (see
+        // `dappSigningInput`) so a co-signer never signs a tx that spends an
+        // account other than its own vault, nor a Payment whose destination /
+        // amount drifts from the reviewed values.
+        if let signRipple = keysignPayload.signRipple {
+            return try dappSigningInput(
+                keysignPayload: keysignPayload,
+                rawJson: signRipple.rawJson,
+                gas: gas,
+                sequence: sequence,
+                lastLedgerSequence: lastLedgerSequence
+            )
+        }
+
         guard AnyAddress(string: keysignPayload.toAddress, coin: .xrp) != nil else {
             throw HelperError.runtimeError("fail to get to address")
         }
@@ -169,6 +190,147 @@ enum RippleHelper {
         logger.info("Creating XRP payment, destinationTag: \(destinationTag.map(String.init) ?? "none", privacy: .public), lastLedgerSequence: \(lastLedgerSequence)")
 
         return try input.serializedData()
+    }
+
+    /// Builds the signing input for a dApp-supplied XRPL transaction carried
+    /// verbatim in `signRipple.rawJson`, and fails closed before signing.
+    ///
+    /// Ports the SDK resolver (`core/mpc/keysign/signingInputs/resolvers/
+    /// ripple.ts`): the raw JSON is signed as-is (WalletCore canonicalizes it,
+    /// so byte-parity with the extension/SDK follows from the identical
+    /// envelope + JSON), but only after two defence-in-depth checks so a
+    /// co-signer never blind-signs someone else's transaction:
+    /// 1. `Account` must equal this vault's derived XRP address.
+    /// 2. A `Payment` (the only type expressible by the reviewed
+    ///    `toAddress`/`toAmount`) must bind its `Destination` to `toAddress`
+    ///    and its `Amount` to `toAmount` — native drops or, for an
+    ///    issued-currency object, currency + issuer + value against the
+    ///    reviewed coin's token id. Offers, escrows and trust lines pass on the
+    ///    `Account` check alone (they carry no reviewed toAddress/toAmount).
+    private static func dappSigningInput(
+        keysignPayload: KeysignPayload,
+        rawJson: String,
+        gas: UInt64,
+        sequence: UInt64,
+        lastLedgerSequence: UInt64
+    ) throws -> Data {
+        guard !rawJson.isEmpty else {
+            throw HelperError.runtimeError("signRipple keysign payload is missing rawJson")
+        }
+        guard let jsonData = rawJson.data(using: .utf8),
+              let parsed = try? JSONSerialization.jsonObject(with: jsonData) else {
+            throw HelperError.runtimeError("signRipple rawJson is not valid JSON")
+        }
+        guard let tx = parsed as? [String: Any] else {
+            throw HelperError.runtimeError("signRipple rawJson is not a transaction object")
+        }
+
+        // Fail closed: the transaction must spend from the signing vault.
+        guard tx["Account"] as? String == keysignPayload.coin.address else {
+            throw HelperError.runtimeError("signRipple rawJson Account does not match the signing account")
+        }
+
+        // Payments are expressible by the payload metadata, so bind them to the
+        // reviewed destination and amount. Other types (offers / trust lines /
+        // escrows) are not reconstructable from toAddress/toAmount and pass on
+        // the Account check alone.
+        if tx["TransactionType"] as? String == "Payment" {
+            try bindPaymentToReviewedValues(tx: tx, keysignPayload: keysignPayload)
+        }
+
+        guard let publicKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+            throw HelperError.runtimeError("invalid hex public key")
+        }
+        guard let publicKey = PublicKey(data: publicKeyData, type: .secp256k1) else {
+            throw HelperError.runtimeError("invalid public key data")
+        }
+
+        // Narrow the proto-relayed envelope values with `exactly:` so a hostile
+        // out-of-range fee / sequence / ledger sequence throws (fail closed)
+        // rather than trapping the signer. Real XRPL values always fit.
+        guard let fee = Int64(exactly: gas) else {
+            throw HelperError.runtimeError("signRipple fee is out of range")
+        }
+        guard let sequence32 = UInt32(exactly: sequence) else {
+            throw HelperError.runtimeError("signRipple sequence is out of range")
+        }
+        guard let lastLedgerSequence32 = UInt32(exactly: lastLedgerSequence) else {
+            throw HelperError.runtimeError("signRipple lastLedgerSequence is out of range")
+        }
+
+        let input = RippleSigningInput.with {
+            $0.fee = fee
+            $0.sequence = sequence32
+            $0.account = keysignPayload.coin.address
+            $0.publicKey = publicKey.data
+            $0.lastLedgerSequence = lastLedgerSequence32
+            $0.rawJson = rawJson
+        }
+
+        logger.info("Creating XRP dApp rawJson transaction, lastLedgerSequence: \(lastLedgerSequence)")
+
+        return try input.serializedData()
+    }
+
+    /// Fail-closed binding for a dApp `Payment`: `Destination` must equal the
+    /// reviewed `toAddress`, and `Amount` must equal the reviewed `toAmount`
+    /// (native drops string, or an issued-currency object matched to the coin's
+    /// Ripple token id). Any parse failure in the issued-currency helpers is
+    /// caught and surfaced as an amount mismatch — the signer rejects, never
+    /// crashes. Mirrors the SDK `getRawJson` Payment branch.
+    private static func bindPaymentToReviewedValues(
+        tx: [String: Any],
+        keysignPayload: KeysignPayload
+    ) throws {
+        guard tx["Destination"] as? String == keysignPayload.toAddress else {
+            throw HelperError.runtimeError("signRipple rawJson Destination does not match the reviewed toAddress")
+        }
+
+        let amountMismatch = HelperError.runtimeError("signRipple rawJson Amount does not match the reviewed toAmount")
+        let coin = keysignPayload.coin
+
+        if let dropsString = tx["Amount"] as? String {
+            // Native XRP: Amount is a drops string.
+            guard coin.isNativeToken, dropsString == keysignPayload.toAmount.description else {
+                throw amountMismatch
+            }
+        } else if let iou = tx["Amount"] as? [String: Any] {
+            // Issued currency: bind currency + issuer + numeric value to the
+            // reviewed coin's Ripple token id ("<currencyCode>.<issuer>").
+            guard !coin.isNativeToken, !coin.contractAddress.isEmpty else {
+                throw amountMismatch
+            }
+            do {
+                let token = try RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress)
+                guard let iouCurrency = iou["currency"] as? String,
+                      let iouIssuer = iou["issuer"] as? String,
+                      let iouValue = iou["value"] as? String else {
+                    throw amountMismatch
+                }
+                let currencyMatches = try RippleIssuedCurrency.toXrplCurrencyCode(iouCurrency)
+                    == RippleIssuedCurrency.toXrplCurrencyCode(token.currency)
+                let issuerMatches = iouIssuer == token.issuer
+                let reviewedValue = try RippleIssuedCurrency.parseIssuedCurrencyValue(
+                    RippleIssuedCurrency.formatIssuedCurrencyValue(
+                        amount: keysignPayload.toAmount,
+                        decimals: coin.decimals
+                    )
+                )
+                let valueMatches = try RippleIssuedCurrency.parseIssuedCurrencyValue(iouValue) == reviewedValue
+                guard currencyMatches, issuerMatches, valueMatches else {
+                    throw amountMismatch
+                }
+            } catch let error as HelperError {
+                throw error
+            } catch {
+                // Any parse failure (bad token id, currency code too long,
+                // malformed value / exponent) is a mismatch, not a crash.
+                throw amountMismatch
+            }
+        } else {
+            // Missing or unrepresentable Amount.
+            throw amountMismatch
+        }
     }
 
     /// Raw-JSON signing input carrying a text memo as an on-chain XRPL `Memos`
