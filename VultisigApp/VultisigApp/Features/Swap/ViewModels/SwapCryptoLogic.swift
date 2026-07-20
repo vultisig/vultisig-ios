@@ -63,7 +63,52 @@ enum SwapCryptoLogic {
     }
 
     static func amountInCoinDecimal(fromAmount: String, fromCoin: Coin) -> BigInt {
-        fromCoin.raw(for: fromAmount.toDecimal())
+        let amount = fromAmount.toDecimal()
+        let raw = fromCoin.raw(for: amount)
+
+        // `raw(for:)` rounds UP, and the amount text round-trips through
+        // `NumberFormatter`, which keeps only ~16 significant digits and rounds
+        // half-up. A 100% preset on an 18-decimal asset therefore parses back a
+        // hair ABOVE the balance and would broadcast more base units than the
+        // wallet holds — a transaction the chain rejects.
+        //
+        // This is the broadcast amount, so the invariant is simply that it can
+        // never exceed the balance. Over-spends are caught elsewhere, on a
+        // separate `Decimal` path (`balanceError` compares `fromAmount` against
+        // `balanceDecimal` and never calls this), so capping here hides nothing
+        // from the insufficient-funds check.
+        //
+        // Skip the cap at zero. `Coin.init` seeds `rawBalance` to `String.zero`
+        // ("0"), so a coin whose balance hasn't loaded is indistinguishable
+        // from a genuinely empty wallet — there is no separate unloaded
+        // sentinel to branch on. Capping on zero would therefore zero out a
+        // valid amount every time the swap form renders before balances land,
+        // which is the far worse failure: an empty wallet is already rejected
+        // by `balanceError` on the `Decimal` path above.
+        let rawBalance = fromCoin.rawBalance.toBigInt()
+        guard rawBalance > 0 else { return raw }
+        return min(raw, rawBalance)
+    }
+
+    /// Amount string for a "25 / 50 / 75 / 100%" preset on the swap source
+    /// coin, or `nil` for a percentage the buttons don't offer.
+    ///
+    /// A native 100% has to leave the network fee behind; every other preset is
+    /// a straight fraction of the balance. Lives here rather than in the view
+    /// so the math is testable on its own.
+    static func percentageAmountText(percentage: Int, fromCoin: Coin, fee: BigInt) -> String? {
+        guard [25, 50, 75, 100].contains(percentage) else { return nil }
+
+        let rawBalance = fromCoin.rawBalance.toBigInt()
+        let spendable = percentage == 100 && fromCoin.isNativeToken
+            ? max(rawBalance - fee, .zero)
+            : rawBalance
+
+        return PercentageAmountLogic.amountText(
+            percentage: percentage,
+            rawBalance: spendable,
+            coinDecimals: fromCoin.decimals
+        )
     }
 
     // MARK: - Quote-derived

@@ -57,6 +57,22 @@ class CardanoHelper {
     /// note in the wiki spec.
     static let minLovelaceOnTokenOutput: UInt64 = 1_500_000
 
+    /// Decimal places used when a validation message quotes a suggested
+    /// "Send Max" amount. ADA carries 6 decimals and `Coin.getMaxValue` fills
+    /// the full precision, so the suggestion must quote all 6 — quoting fewer
+    /// would advertise a smaller amount than Max actually sends.
+    private static let adaDisplayDecimals = 6
+
+    /// What "Send Max" would actually send: balance minus fee, matching
+    /// `SendCryptoLogic.computeMaxAmount`. Quoting the raw balance instead
+    /// advertises more ADA than Max can deliver — on a 10 ADA balance with a
+    /// 0.5 ADA fee it would promise 10 where Max sends 9.5.
+    private static func sendMaxSuggestionADA(totalBalance: BigInt, estimatedFee: BigInt) -> String {
+        let maxLovelaces = Swift.max(BigInt(0), totalBalance - estimatedFee)
+        let truncated = maxLovelaces.toADA.truncated(toPlaces: adaDisplayDecimals)
+        return truncated.formatToDecimal(digits: adaDisplayDecimals)
+    }
+
     /// Validate Cardano transaction meets UTXO requirements for both send amount and remaining balance
     /// 
     /// Cardano UTXO Validation Rules:
@@ -98,14 +114,11 @@ class CardanoHelper {
         // 2. Check sufficient balance
         let totalNeeded = sendAmount + estimatedFee
         if totalBalance < totalNeeded {
-            // For MAX amount display, truncate to 5 decimal places to match getMaxValue behavior
-            let totalBalanceDecimal = totalBalance.toADA
-            let truncatedBalance = totalBalanceDecimal.truncated(toPlaces: 5) // ADA has 6 decimals, so decimals - 1 = 5
-            let totalBalanceADA = truncatedBalance.formatToDecimal(digits: 5)
+            let sendMaxADA = sendMaxSuggestionADA(totalBalance: totalBalance, estimatedFee: estimatedFee)
 
             // Recommend Send Max for insufficient balance
             if totalBalance > estimatedFee && totalBalance > 0 {
-                return (false, "Insufficient balance. 💡 Try 'Send Max' to send \(totalBalanceADA) ADA instead.")
+                return (false, "Insufficient balance. 💡 Try 'Send Max' to send \(sendMaxADA) ADA instead.")
             } else {
                 let availableADA = totalBalance.toADAString
                 return (false, "Insufficient balance (\(availableADA) ADA). You need more ADA to complete this transaction.")
@@ -115,13 +128,10 @@ class CardanoHelper {
         // 3. Check remaining balance (change) meets minimum UTXO requirement
         let remainingBalance = totalBalance - sendAmount - estimatedFee
         if remainingBalance > 0 && remainingBalance < minUTXOValue {
-            // For MAX amount display, truncate to 5 decimal places to match getMaxValue behavior
-            let totalBalanceDecimal = totalBalance.toADA
-            let truncatedBalance = totalBalanceDecimal.truncated(toPlaces: 5) // ADA has 6 decimals, so decimals - 1 = 5
-            let totalBalanceADA = truncatedBalance.formatToDecimal(digits: 5)
+            let sendMaxADA = sendMaxSuggestionADA(totalBalance: totalBalance, estimatedFee: estimatedFee)
 
             // Always recommend Send Max for change issues - simplest solution
-            return (false, "This amount would leave too little change. 💡 Try 'Send Max' (\(totalBalanceADA) ADA) to avoid this issue.")
+            return (false, "This amount would leave too little change. 💡 Try 'Send Max' (\(sendMaxADA) ADA) to avoid this issue.")
         }
 
         return (true, nil)
@@ -139,12 +149,9 @@ class CardanoHelper {
         let lowBalanceThreshold: BigInt = 3_500_000 // 3.5 ADA in lovelaces
 
         if totalBalance <= lowBalanceThreshold && totalBalance > estimatedFee {
-            // For MAX amount display, truncate to 5 decimal places to match getMaxValue behavior
-            let totalBalanceDecimal = totalBalance.toADA
-            let truncatedBalance = totalBalanceDecimal.truncated(toPlaces: 5) // ADA has 6 decimals, so decimals - 1 = 5
-            let totalBalanceADA = truncatedBalance.formatToDecimal(digits: 5)
+            let sendMaxADA = sendMaxSuggestionADA(totalBalance: totalBalance, estimatedFee: estimatedFee)
 
-            return (true, "💡 Low balance detected. Consider 'Send Max' (\(totalBalanceADA) ADA) to avoid change issues.")
+            return (true, "💡 Low balance detected. Consider 'Send Max' (\(sendMaxADA) ADA) to avoid change issues.")
         }
 
         return (false, nil)

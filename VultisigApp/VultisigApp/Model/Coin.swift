@@ -326,7 +326,12 @@ class Coin: ObservableObject, Codable, Hashable {
         let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
 
-        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1)
+        // Truncate to the coin's full precision. Shaving a digit off here used
+        // to strand up to one unit-of-last-place of dust on every Max send.
+        // No anti-overshoot margin is needed: `rawBalance - fee` is exact BigInt
+        // arithmetic and cannot overshoot, and the native Max is independently
+        // re-derived against a fresh balance + fee on the Verify screen.
+        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals)
     }
 
     var balanceInFiatDecimal: Decimal {

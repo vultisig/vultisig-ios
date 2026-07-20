@@ -1,175 +1,234 @@
-import XCTest
+//
+//  SwapPercentageTests.swift
+//  VultisigAppTests
+//
+//  Coverage for the "25 / 50 / 75 / 100%" swap presets. Exercises the
+//  production helpers — `PercentageAmountLogic` and
+//  `SwapCryptoLogic.percentageAmountText` — rather than re-deriving the math,
+//  so a regression in the rule fails here.
+//
+
 import BigInt
+import XCTest
 @testable import VultisigApp
 
-// `formatToDecimal` uses `Locale.current`, so hardcoded `.`-separated
-// expected strings fail on simulators in comma-decimal locales (e.g. de_DE).
+// The amount text carries the current locale's decimal separator, so hardcoded
+// `.`-separated expectations fail on comma-decimal simulators (e.g. de_DE).
 // `.localeDecimal` rewrites the expected value with the current separator.
 private extension String {
     var localeDecimal: String {
-        let sep = Locale.current.decimalSeparator ?? "."
-        return replacingOccurrences(of: ".", with: sep)
+        let separator = Locale.current.decimalSeparator ?? "."
+        return replacingOccurrences(of: ".", with: separator)
     }
 }
 
-/// Tests the pure `Decimal` math + `formatToDecimal` formatting used when a
-/// user selects a 25/50/75/100% amount for a swap. This file validates the
-/// *intended* rule (`max(4, coin.decimals)`, capped at 9 for EVM chains).
-///
-/// Note: `SwapDetailsScreen.handlePercentageSelection` currently hardcodes
-/// `decimalsToUse: Int = 4` for every coin, so BTC/ETH amounts are truncated
-/// to 4 decimals in the UI today. Aligning the UI with this rule is tracked
-/// in the Swap flow rewrite (docs/refactors/10-swap-rewrite.md). Until then
-/// these tests verify the formatter+math primitives in isolation; they do
-/// not exercise the live UI behavior.
-class SwapPercentageTests: XCTestCase {
+@MainActor
+final class SwapPercentageTests: XCTestCase {
 
-    func testBTCPercentageCalculation() {
-        // Create a mock Bitcoin coin with 8 decimals
-        let btcMeta = CoinMeta(
-            chain: .bitcoin,
-            ticker: "BTC",
-            logo: "btc",
-            decimals: 8,
-            priceProviderId: "bitcoin",
-            contractAddress: "",
-            isNativeToken: true
-        )
+    // MARK: - Precision rule
 
-        let btcCoin = Coin(asset: btcMeta, address: "test", hexPublicKey: "test")
-
-        // Set a small balance: 0.00021322 BTC (21322 satoshis)
-        btcCoin.rawBalance = "21322"
-
-        // Test 25% calculation
-        let balance = btcCoin.balanceDecimal
-        let twentyFivePercent = balance * 0.25
-        let formattedAmount = twentyFivePercent.formatToDecimal(digits: 8)
-
-        // Should be 0.00005330 BTC, not 0.0001
-        XCTAssertEqual(formattedAmount, "0.0000533".localeDecimal, "25% of 0.00021322 BTC should be 0.00005330")
-
-        // Test with the actual implementation's logic (using max(4, decimals))
-        let decimalsToUse = max(4, btcCoin.decimals)
-        XCTAssertEqual(decimalsToUse, 8, "For BTC, should use 8 decimals")
-
-        // Test all percentages
-        let testCases: [(percentage: Double, expected: String)] = [
-            (0.25, "0.0000533"),
-            (0.50, "0.00010661"),
-            (0.75, "0.00015991"),
-            (1.00, "0.00021322")
-        ]
-
-        for testCase in testCases {
-            let calculatedAmount = (balance * Decimal(testCase.percentage)).formatToDecimal(digits: decimalsToUse)
-            XCTAssertEqual(
-                calculatedAmount,
-                testCase.expected.localeDecimal,
-                "\(Int(testCase.percentage * 100))% of 0.00021322 BTC should be \(testCase.expected)"
-            )
-        }
+    func testDecimalPlacesCapsAtEightAndNeverExceedsTheAsset() {
+        XCTAssertEqual(PercentageAmountLogic.decimalPlaces(coinDecimals: 0), 0)
+        XCTAssertEqual(PercentageAmountLogic.decimalPlaces(coinDecimals: 2), 2)
+        XCTAssertEqual(PercentageAmountLogic.decimalPlaces(coinDecimals: 6), 6)
+        XCTAssertEqual(PercentageAmountLogic.decimalPlaces(coinDecimals: 8), 8)
+        XCTAssertEqual(PercentageAmountLogic.decimalPlaces(coinDecimals: 9), 8)
+        XCTAssertEqual(PercentageAmountLogic.decimalPlaces(coinDecimals: 18), 8)
     }
 
-    func testETHPercentageCalculation() {
-        // Create a mock Ethereum coin with 18 decimals
-        let ethMeta = CoinMeta(
-            chain: .ethereum,
-            ticker: "ETH",
-            logo: "eth",
-            decimals: 18,
-            priceProviderId: "ethereum",
-            contractAddress: "",
-            isNativeToken: true
-        )
+    // MARK: - BTC: the reported bug
 
-        let ethCoin = Coin(asset: ethMeta, address: "test", hexPublicKey: "test")
+    /// 25% of 0.00021322 BTC is 0.000053305 — below the old hardcoded 4-decimal
+    /// floor, so the button used to produce a zero-value swap.
+    func testBtcSmallBalancePercentagesAreNonZero() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
 
-        // Set balance: 0.00894077 ETH
-        ethCoin.rawBalance = "8940770000000000" // in wei
+        XCTAssertEqual(text(25, btc), "0.0000533".localeDecimal)
+        XCTAssertEqual(text(50, btc), "0.00010661".localeDecimal)
+        XCTAssertEqual(text(75, btc), "0.00015991".localeDecimal)
+        XCTAssertEqual(text(100, btc), "0.00021322".localeDecimal)
 
-        let balance = ethCoin.balanceDecimal
-
-        // For EVM chains with 18 decimals, should cap at 9
-        let decimalsToUse: Int
-        if ethCoin.chainType == .EVM {
-            decimalsToUse = min(9, max(4, ethCoin.decimals))
-        } else {
-            decimalsToUse = max(4, ethCoin.decimals)
-        }
-
-        XCTAssertEqual(decimalsToUse, 9, "For ETH (EVM), should cap at 9 decimals")
-
-        // Test 25% calculation with capped decimals
-        let twentyFivePercent = (balance * 0.25).formatToDecimal(digits: decimalsToUse)
-        XCTAssertEqual(twentyFivePercent, "0.002235192".localeDecimal, "25% calculation should be capped at 9 decimals")
+        XCTAssertNotEqual(text(25, btc), "0", "25% must not truncate away to a zero-value swap")
     }
 
-    func testEVMDecimalCapping() {
-        // Test various EVM tokens with different decimals
-
-        // USDC - 6 decimals (should use 6)
-        let usdcMeta = CoinMeta(
-            chain: .ethereum,
-            ticker: "USDC",
-            logo: "usdc",
-            decimals: 6,
-            priceProviderId: "usd-coin",
-            contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-            isNativeToken: false
-        )
-
-        let usdcCoin = Coin(asset: usdcMeta, address: "test", hexPublicKey: "test")
-        let usdcDecimalsToUse = min(9, max(4, usdcCoin.decimals))
-        XCTAssertEqual(usdcDecimalsToUse, 6, "USDC should use 6 decimals")
-
-        // WBTC on Ethereum - 8 decimals (should use 8)
-        let wbtcMeta = CoinMeta(
-            chain: .ethereum,
-            ticker: "WBTC",
-            logo: "wbtc",
-            decimals: 8,
-            priceProviderId: "wrapped-bitcoin",
-            contractAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
-            isNativeToken: false
-        )
-
-        let wbtcCoin = Coin(asset: wbtcMeta, address: "test", hexPublicKey: "test")
-        let wbtcDecimalsToUse = min(9, max(4, wbtcCoin.decimals))
-        XCTAssertEqual(wbtcDecimalsToUse, 8, "WBTC should use 8 decimals")
-
-        // DAI - 18 decimals (should cap at 9)
-        let daiMeta = CoinMeta(
-            chain: .ethereum,
-            ticker: "DAI",
-            logo: "dai",
-            decimals: 18,
-            priceProviderId: "dai",
-            contractAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-            isNativeToken: false
-        )
-
-        let daiCoin = Coin(asset: daiMeta, address: "test", hexPublicKey: "test")
-        let daiDecimalsToUse = min(9, max(4, daiCoin.decimals))
-        XCTAssertEqual(daiDecimalsToUse, 9, "DAI should cap at 9 decimals")
+    func testBtcNativeHundredPercentReservesTheNetworkFee() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
+        XCTAssertEqual(text(100, btc, fee: BigInt(1_000)), "0.00020322".localeDecimal)
     }
 
-    func testNonEVMCoins() {
-        // Test that non-EVM coins are not capped
+    func testNativeHundredPercentFloorsAtZeroWhenFeeExceedsBalance() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
+        XCTAssertEqual(text(100, btc, fee: BigInt(50_000)), "0")
+    }
 
-        // Solana - 9 decimals
-        let solMeta = CoinMeta(
-            chain: .solana,
-            ticker: "SOL",
-            logo: "sol",
-            decimals: 9,
-            priceProviderId: "solana",
-            contractAddress: "",
-            isNativeToken: true
+    // MARK: - 100% strands nothing
+
+    func testNonNativeHundredPercentReturnsTheExactFullBalance() {
+        let wbtc = makeCoin(.ethereum, ticker: "WBTC", decimals: 8, isNative: false, rawBalance: "21322")
+        XCTAssertEqual(text(100, wbtc, fee: BigInt(1_000)), "0.00021322".localeDecimal)
+    }
+
+    /// The old 4-decimal truncation stranded up to 9_999 base units of an
+    /// 8-decimal token on every Max.
+    func testNonNativeHundredPercentDoesNotStrandSubUnitDust() {
+        let wbtc = makeCoin(.ethereum, ticker: "WBTC", decimals: 8, isNative: false, rawBalance: "123459999")
+        XCTAssertEqual(text(100, wbtc), "1.23459999".localeDecimal)
+    }
+
+    // MARK: - Other precisions
+
+    func testUsdcSixDecimals() {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "1234567")
+
+        XCTAssertEqual(text(25, usdc), "0.308641".localeDecimal)
+        XCTAssertEqual(text(50, usdc), "0.617283".localeDecimal)
+        XCTAssertEqual(text(100, usdc), "1.234567".localeDecimal)
+    }
+
+    /// 18-decimal assets: fractional presets stop at the 8-place cap, while
+    /// 100% still hands back every last wei.
+    func testEighteenDecimalTokenCapsFractionsAtEightPlacesButNotHundredPercent() {
+        let dai = makeCoin(.ethereum, ticker: "DAI", decimals: 18, isNative: false, rawBalance: "1234567890123456789")
+
+        XCTAssertEqual(text(25, dai), "0.30864197".localeDecimal)
+        XCTAssertEqual(text(75, dai), "0.92592591".localeDecimal)
+        XCTAssertEqual(text(100, dai), "1.234567890123456789".localeDecimal)
+    }
+
+    /// The case that rules out a `max(4, decimals)` floor: a 2-decimal asset
+    /// cannot represent 4 places, so a preset must never claim them.
+    func testSubFourDecimalAssetIsNotPaddedBeyondItsPrecision() {
+        let coin = makeCoin(.ethereum, ticker: "LOWDP", decimals: 2, isNative: false, rawBalance: "12345")
+
+        XCTAssertEqual(text(25, coin), "30.86".localeDecimal)
+        XCTAssertEqual(text(50, coin), "61.72".localeDecimal)
+        XCTAssertEqual(text(100, coin), "123.45".localeDecimal)
+    }
+
+    func testZeroDecimalAssetHasNoFractionalPart() {
+        let coin = makeCoin(.ethereum, ticker: "ZERODP", decimals: 0, isNative: false, rawBalance: "12345")
+        XCTAssertEqual(text(100, coin), "12345")
+    }
+
+    // MARK: - Unsupported input
+
+    func testUnsupportedPercentageReturnsNil() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
+        XCTAssertNil(SwapCryptoLogic.percentageAmountText(percentage: 33, fromCoin: btc, fee: 0))
+        XCTAssertNil(SwapCryptoLogic.percentageAmountText(percentage: 0, fromCoin: btc, fee: 0))
+    }
+
+    func testZeroBalanceReturnsZero() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "0")
+        XCTAssertEqual(text(50, btc), "0")
+    }
+
+    // MARK: - Raw conversion clamp
+
+    /// `Coin.raw(for:)` rounds UP and the amount field round-trips through a
+    /// Double-backed `NumberFormatter`, so a full-precision 18-decimal balance
+    /// parses back slightly high. Unclamped that converts to more base units
+    /// than the wallet holds and the swap fails on chain.
+    func testHundredPercentOfEighteenDecimalBalanceConvertsToExactlyRawBalance() throws {
+        let rawBalance = "1234567890123456789"
+        let dai = makeCoin(.ethereum, ticker: "DAI", decimals: 18, isNative: false, rawBalance: rawBalance)
+        let expected = BigInt(rawBalance) ?? .zero
+        let amount = try XCTUnwrap(text(100, dai))
+
+        XCTAssertGreaterThan(
+            dai.raw(for: amount.toDecimal()),
+            expected,
+            "precondition: the unclamped conversion overshoots the balance"
         )
+        XCTAssertEqual(
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: amount, fromCoin: dai),
+            expected
+        )
+    }
 
-        let solCoin = Coin(asset: solMeta, address: "test", hexPublicKey: "test")
-        let solDecimalsToUse = max(4, solCoin.decimals)
-        XCTAssertEqual(solDecimalsToUse, 9, "SOL should use full 9 decimals without capping")
+    func testHundredPercentOfEightDecimalBalanceConvertsToExactlyRawBalance() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
+        XCTAssertEqual(
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: text(100, btc) ?? "", fromCoin: btc),
+            BigInt(21_322)
+        )
+    }
+
+    /// The broadcast amount is capped at the balance in every case, not just
+    /// for the presets — the chain rejects anything larger.
+    func testAmountAboveBalanceNeverBroadcastsMoreThanTheBalance() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
+        XCTAssertEqual(
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "0.001", fromCoin: btc),
+            BigInt(21_322)
+        )
+    }
+
+    /// Capping the broadcast amount must not hide an over-spend: the
+    /// insufficient-funds check runs on a separate `Decimal` path and still
+    /// rejects the same input.
+    func testCappingDoesNotHideOverSpendFromTheBalanceCheck() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "21322")
+        XCTAssertEqual(
+            SwapCryptoLogic.balanceError(fromCoin: btc, feeCoin: btc, fromAmount: "0.001", fee: 0),
+            .insufficientFunds
+        )
+    }
+
+    /// A balance that hasn't loaded yet must not cap a legitimate amount to
+    /// zero — this is also what `SwapCryptoLogicTests` pins for an unset
+    /// balance.
+    func testUnloadedBalanceDoesNotCapTheAmount() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "")
+        XCTAssertEqual(
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "1.5", fromCoin: btc),
+            BigInt(150_000_000)
+        )
+    }
+
+    /// "0" is the unloaded state, not a distinguishable empty wallet, so it
+    /// must NOT cap. `Coin.init` seeds `rawBalance` to `String.zero`, so every
+    /// coin reads "0" until a balance lands; capping there would zero out a
+    /// valid amount whenever the form renders before balances arrive.
+    func testZeroRawBalanceDoesNotCapTheAmount() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "0")
+        XCTAssertEqual(
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "1.5", fromCoin: btc),
+            BigInt(150_000_000)
+        )
+    }
+
+    /// Pins the premise of the guard above: a freshly built coin carries "0",
+    /// not "". If `Coin.init` ever gains a distinct unloaded sentinel, this
+    /// fails and the cap can then tell the two states apart.
+    func testFreshCoinSeedsRawBalanceToZeroString() {
+        let coin = Coin(
+            asset: CoinMeta.make(chain: .bitcoin, ticker: "BTC", decimals: 8, isNativeToken: true),
+            address: "test-address-BTC",
+            hexPublicKey: ""
+        )
+        XCTAssertEqual(coin.rawBalance, "0")
+    }
+
+    // MARK: - Helpers
+
+    private func text(_ percentage: Int, _ coin: Coin, fee: BigInt = 0) -> String? {
+        SwapCryptoLogic.percentageAmountText(percentage: percentage, fromCoin: coin, fee: fee)
+    }
+
+    private func makeCoin(
+        _ chain: Chain,
+        ticker: String,
+        decimals: Int,
+        isNative: Bool,
+        rawBalance: String
+    ) -> Coin {
+        let coin = Coin(
+            asset: CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative),
+            address: "test-address-\(ticker)",
+            hexPublicKey: ""
+        )
+        coin.rawBalance = rawBalance
+        return coin
     }
 }
