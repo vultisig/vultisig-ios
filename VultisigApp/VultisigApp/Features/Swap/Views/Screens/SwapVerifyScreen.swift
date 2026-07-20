@@ -142,20 +142,48 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if currentTransaction.showFees {
+                // Vultisig Fee (affiliate component only). The label carries the
+                // effective affiliate %, the value the fiat amount — sourced from
+                // `fees.affiliate`, never THORChain's composite `fees.total`.
+                if currentTransaction.showAffiliateFeeRow {
+                    separator
+                    affiliateFeeRow
+                        .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
+                }
+
+                // Protocol Fee (native THOR/Maya outbound).
+                if !currentTransaction.outboundFeeString.isEmpty {
                     separator
                     getValueCell(
-                        for: "swapFee",
-                        with: currentTransaction.swapFeeString,
-                        bracketValue: nil
+                        for: "swap.protocol_fee",
+                        with: currentTransaction.outboundFeeString
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
+                // VULT tier saving (with the tier badge).
+                if !currentTransaction.vultDiscount.isEmpty {
+                    separator
+                    vultDiscountRow
+                }
+
+                // Referral saving.
+                if !currentTransaction.referralDiscount.isEmpty {
+                    separator
+                    referralDiscountRow
+                }
+
+                // Price Impact (only when the provider reports slippage).
+                if !currentTransaction.priceImpactString.isEmpty {
+                    separator
+                    priceImpactRow
+                }
+
+                // Total Fee — reconciles to Network + Vultisig + Protocol.
                 if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
-                        for: "maxTotalFee",
+                        for: "totalFee",
                         with: currentTransaction.totalFeeString
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
@@ -396,6 +424,85 @@ struct SwapVerifyScreen: View {
         if !currentTransaction.isLimit {
             SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
         }
+    }
+
+    /// "Vultisig Fee (X.XX%)" affiliate row. The label is already localized (it
+    /// embeds the percentage), so it's rendered verbatim rather than through a
+    /// key lookup.
+    private var affiliateFeeRow: some View {
+        HStack(spacing: 4) {
+            Text(currentTransaction.swapFeeLabel)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.baseAffiliateFee)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var vultDiscountRow: some View {
+        HStack(spacing: 4) {
+            vultTierIcon
+
+            Text(currentTransaction.vultDiscountLabel)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.vultDiscount)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var vultTierIcon: some View {
+        if let tier = VultDiscountTier.from(bpsDiscount: currentTransaction.vultDiscountBps) {
+            Image(tier.icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+        } else {
+            Image(systemName: "star.circle.fill")
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.turquoise)
+        }
+    }
+
+    private var referralDiscountRow: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "megaphone.fill")
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.primaryAccent4)
+
+            Text(currentTransaction.referralDiscountLabel)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.referralDiscount)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var priceImpactRow: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.priceImpactString)
+                .foregroundStyle(currentTransaction.priceImpactColor)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     func getValueCell(

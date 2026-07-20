@@ -192,7 +192,7 @@ extension SwapTransaction {
 // MARK: - Convenience computed helpers
 //
 // Sugar over the primitive-taking SwapCryptoLogic free functions so view code
-// reads `transaction.swapFeeString` instead of spelling out the args.
+// reads `transaction.baseAffiliateFee` instead of spelling out the args.
 
 extension SwapTransaction {
     private var fromAmountString: String { fromAmount.description }
@@ -297,18 +297,12 @@ extension SwapTransaction {
         SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: mode)
     }
 
-    /// Whether an expandable fee breakdown has any rows to show. Mirrors the
-    /// rows the swap fee surfaces emit (swap fee and/or network gas), so a
+    /// Whether an expandable fee breakdown has any itemized rows to show, so the
     /// "Total fee" chevron is only offered when expanding reveals something.
-    /// `showTotalFees` can be true while both components are suppressed — for
-    /// quote-driven EVM swaps `totalFeeString` keys off `fee` while `showGas`
-    /// keys off `gas`, a distinct gas price.
+    /// Mirrors the itemized rows the Done breakdown emits (network gas, the
+    /// Vultisig affiliate row, the protocol/outbound row).
     var hasFeeBreakdown: Bool {
-        showFees || showGas
-    }
-
-    var swapFeeString: String {
-        SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        showGas || showAffiliateFeeRow || !outboundFeeString.isEmpty
     }
 
     var swapGasString: String {

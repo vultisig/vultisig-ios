@@ -199,7 +199,7 @@ struct SwapDetailsSummary: View {
 
     var outboundFee: some View {
         getSummaryCell(
-            leadingText: "swap.outbound_fee",
+            leadingText: "swap.protocol_fee",
             trailingText: outboundFeeString
         )
     }
