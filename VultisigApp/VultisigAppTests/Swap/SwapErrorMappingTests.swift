@@ -109,4 +109,57 @@ final class SwapErrorMappingTests: XCTestCase {
         let error = MayachainSwapError(code: 3, error: "pool does not exist")
         XCTAssertEqual(SwapService.mapMayachainSwapError(error).errorDescription, "noLiquidityPool".localized)
     }
+
+    // MARK: - Price-limit rejection → actionable slippage message
+
+    func testThorchainPriceLimitRejectionMapsToSlippageTooTight() {
+        // Verbatim THORNode body captured from a live /quote/swap rejection.
+        let error = ThorchainSwapError(
+            code: 3,
+            message: "failed to simulate swap: failed to simulate handler: emit asset 42579895573 less than price limit 340083366993: invalid request"
+        )
+        XCTAssertEqual(
+            SwapService.mapThorchainSwapError(error).errorDescription,
+            "swapSlippageToleranceTooTight".localized
+        )
+    }
+
+    func testMayachainPriceLimitRejectionMapsToSlippageTooTight() {
+        // Verbatim Mayanode body — a shorter shape than THORChain's, which is why
+        // the classifier matches the common "less than price limit" substring.
+        let error = MayachainSwapError(
+            code: 3,
+            error: "failed to simulate swap: emit asset 336029740 less than price limit 340582434"
+        )
+        XCTAssertEqual(
+            SwapService.mapMayachainSwapError(error).errorDescription,
+            "swapSlippageToleranceTooTight".localized
+        )
+    }
+
+    func testPriceLimitRejectionIsCaseInsensitive() {
+        let error = ThorchainSwapError(code: 3, message: "Emit asset 1 LESS THAN PRICE LIMIT 2")
+        XCTAssertEqual(
+            SwapService.mapThorchainSwapError(error).errorDescription,
+            "swapSlippageToleranceTooTight".localized
+        )
+    }
+
+    func testPriceLimitRejectionNoLongerLeaksRawNodeString() {
+        // Regression guard: this body used to fall through to `.serverError`,
+        // showing the untranslated node text verbatim.
+        let raw = "failed to simulate swap: emit asset 336029740 less than price limit 340582434"
+        let error = MayachainSwapError(code: 3, error: raw)
+        XCTAssertNotEqual(SwapService.mapMayachainSwapError(error).errorDescription, raw)
+    }
+
+    func testHaltOutranksPriceLimit() {
+        // A halted pool that also trips the price-limit check must still surface
+        // as the retryable halt message — the halt check runs first.
+        let error = ThorchainSwapError(
+            code: 3,
+            message: "trading is halted: emit asset 1 less than price limit 2"
+        )
+        XCTAssertEqual(SwapService.mapThorchainSwapError(error).errorDescription, "swapTradingHalted".localized)
+    }
 }

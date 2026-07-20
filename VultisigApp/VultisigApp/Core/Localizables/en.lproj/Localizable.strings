@@ -1264,6 +1264,7 @@
 "swaps" = "Swaps";
 "swapSecuredAssetBadge" = "Secured";
 "swapSecuredAssetInvalidDestination" = "Secured-asset swap destination is not a valid %1$@ address (%2$@).";
+"swapSlippageToleranceTooTight" = "Price moved beyond your slippage tolerance. Increase the slippage setting in swap settings, or try a smaller amount.";
 "swapTrackingLink" = "Swap tracking link";
 "swapTradingHalted" = "Trading for this asset is temporarily halted. Please try again later.";
 "swapTXHash" = "Swap Tx Hash";

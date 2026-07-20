@@ -726,6 +726,13 @@ extension SwapService {
             // This typically means no liquidity pool exists for this token pair.
             return .noLiquidityPool
         }
+        if message.localizedCaseInsensitiveContains("less than price limit") {
+            // The node simulated the swap and its output landed under the `LIM`
+            // floor derived from the slippage tolerance we sent. Raw, this reads
+            // as "emit asset N less than price limit M" — meaningless to a user.
+            // Surface it as the actionable slippage message instead.
+            return .slippageToleranceTooTight
+        }
         return nil
     }
 
