@@ -78,8 +78,13 @@ enum SwapCryptoLogic {
         // `balanceDecimal` and never calls this), so capping here hides nothing
         // from the insufficient-funds check.
         //
-        // A zero `rawBalance` means the balance hasn't loaded yet rather than
-        // an empty wallet; capping to it would zero out a valid amount.
+        // Skip the cap at zero. `Coin.init` seeds `rawBalance` to `String.zero`
+        // ("0"), so a coin whose balance hasn't loaded is indistinguishable
+        // from a genuinely empty wallet — there is no separate unloaded
+        // sentinel to branch on. Capping on zero would therefore zero out a
+        // valid amount every time the swap form renders before balances land,
+        // which is the far worse failure: an empty wallet is already rejected
+        // by `balanceError` on the `Decimal` path above.
         let rawBalance = fromCoin.rawBalance.toBigInt()
         guard rawBalance > 0 else { return raw }
         return min(raw, rawBalance)

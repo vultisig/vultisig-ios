@@ -186,6 +186,30 @@ final class SwapPercentageTests: XCTestCase {
         )
     }
 
+    /// "0" is the unloaded state, not a distinguishable empty wallet, so it
+    /// must NOT cap. `Coin.init` seeds `rawBalance` to `String.zero`, so every
+    /// coin reads "0" until a balance lands; capping there would zero out a
+    /// valid amount whenever the form renders before balances arrive.
+    func testZeroRawBalanceDoesNotCapTheAmount() {
+        let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true, rawBalance: "0")
+        XCTAssertEqual(
+            SwapCryptoLogic.amountInCoinDecimal(fromAmount: "1.5", fromCoin: btc),
+            BigInt(150_000_000)
+        )
+    }
+
+    /// Pins the premise of the guard above: a freshly built coin carries "0",
+    /// not "". If `Coin.init` ever gains a distinct unloaded sentinel, this
+    /// fails and the cap can then tell the two states apart.
+    func testFreshCoinSeedsRawBalanceToZeroString() {
+        let coin = Coin(
+            asset: CoinMeta.make(chain: .bitcoin, ticker: "BTC", decimals: 8, isNativeToken: true),
+            address: "test-address-BTC",
+            hexPublicKey: ""
+        )
+        XCTAssertEqual(coin.rawBalance, "0")
+    }
+
     // MARK: - Helpers
 
     private func text(_ percentage: Int, _ coin: Coin, fee: BigInt = 0) -> String? {
