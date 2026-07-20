@@ -263,7 +263,7 @@ struct SwapDoneSummaryCard: View {
                 getCell(title: transaction.swapFeeLabel, value: transaction.baseAffiliateFee)
             }
             // Protocol Fee (native THOR/Maya outbound).
-            if !transaction.outboundFeeString.isEmpty {
+            if transaction.showProtocolFeeRow {
                 getCell(title: "swap.protocol_fee", value: transaction.outboundFeeString)
             }
         }

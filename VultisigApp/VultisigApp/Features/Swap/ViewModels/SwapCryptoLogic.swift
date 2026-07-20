@@ -562,6 +562,15 @@ enum SwapCryptoLogic {
         }
     }
 
+    /// Whether the "Protocol Fee" (native outbound) row should render: a native
+    /// THOR/Maya route carrying an outbound fee. Suppressed for a secured mint —
+    /// its synthetic ~1:1 quote reports a zero outbound that is not a real
+    /// protocol fee, so the row would otherwise show a spurious `$0.00`.
+    static func showProtocolFeeRow(quote: SwapQuote?, toCoin: Coin, mode: SwapMode) -> Bool {
+        guard mode != .securedMint else { return false }
+        return !outboundFeeString(quote: quote, toCoin: toCoin).isEmpty
+    }
+
     // MARK: - Discounts
 
     static func vultDiscountLabel(vultDiscountBps: Int) -> String {

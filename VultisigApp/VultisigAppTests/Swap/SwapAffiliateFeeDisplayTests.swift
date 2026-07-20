@@ -192,6 +192,27 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         XCTAssertTrue(SwapCryptoLogic.showAffiliateFeeRow(quote: makeJupiterQuote(platformFee: Decimal(string: "0.01")), mode: .standard))
     }
 
+    func testShowProtocolFeeRowFalseForSecuredMint() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCPROT", decimals: 8, isNative: true)
+        // Secured mint's synthetic quote reports a zero outbound that is not a
+        // real protocol fee, so the row must be suppressed (no spurious $0.00).
+        let quote = SwapQuote.thorchain(makeThorQuote(outbound: "0"))
+        XCTAssertFalse(SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: btc, mode: .securedMint))
+    }
+
+    func testShowProtocolFeeRowTrueForNativeSwap() {
+        let btc = makeCoin(.bitcoin, ticker: "BTCPROT2", decimals: 8, isNative: true)
+        let quote = SwapQuote.thorchain(makeThorQuote(outbound: "2000000"))
+        XCTAssertTrue(SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: btc, mode: .standard))
+    }
+
+    func testShowProtocolFeeRowFalseForNonNativeRoute() {
+        let usdc = makeCoin(.solana, ticker: "USDCPR", decimals: 6, isNative: false)
+        // Jupiter / EVM aggregators have no native protocol outbound fee.
+        let quote = makeJupiterQuote(platformFee: Decimal(string: "0.01"))
+        XCTAssertFalse(SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: usdc, mode: .standard))
+    }
+
     // MARK: - Total-fee reconciliation (Network + affiliate + outbound, no liquidity)
 
     func testTotalFeeReconcilesAndDropsLiquidity() {

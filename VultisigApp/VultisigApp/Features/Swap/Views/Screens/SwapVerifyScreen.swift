@@ -152,7 +152,7 @@ struct SwapVerifyScreen: View {
                 }
 
                 // Protocol Fee (native THOR/Maya outbound).
-                if !currentTransaction.outboundFeeString.isEmpty {
+                if currentTransaction.showProtocolFeeRow {
                     separator
                     getValueCell(
                         for: "swap.protocol_fee",

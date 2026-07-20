@@ -297,12 +297,17 @@ extension SwapTransaction {
         SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: mode)
     }
 
+    /// Whether the "Protocol Fee" (native outbound) row should render.
+    var showProtocolFeeRow: Bool {
+        SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: toCoin, mode: mode)
+    }
+
     /// Whether an expandable fee breakdown has any itemized rows to show, so the
     /// "Total fee" chevron is only offered when expanding reveals something.
     /// Mirrors the itemized rows the Done breakdown emits (network gas, the
     /// Vultisig affiliate row, the protocol/outbound row).
     var hasFeeBreakdown: Bool {
-        showGas || showAffiliateFeeRow || !outboundFeeString.isEmpty
+        showGas || showAffiliateFeeRow || showProtocolFeeRow
     }
 
     var swapGasString: String {

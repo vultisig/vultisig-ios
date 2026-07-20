@@ -596,6 +596,11 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: isSecuredMint ? .securedMint : .standard)
     }
 
+    /// Whether the "Protocol Fee" (native outbound) row should render.
+    var showProtocolFeeRow: Bool {
+        SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: toCoin, mode: isSecuredMint ? .securedMint : .standard)
+    }
+
     var swapFeeString: String {
         SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
     }
