@@ -653,6 +653,7 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain ha sospeso gli scambi. Riprova più tardi.";
 "limitSwap.asset" = "Asset";
 "limitSwap.buy" = "Compra";
+"limitSwap.cancel.donatedDust" = "Annullare da questa chain richiede l'invio di %@, che THORChain trattiene. I fondi del tuo ordine vengono rimborsati per intero.";
 "limitSwap.cancel.duplicateWarning" = "Hai un altro ordine attivo con la stessa coppia e lo stesso prezzo. THORChain annulla prima la corrispondenza più vecchia, quindi questa operazione potrebbe chiudere quell'ordine invece di questo.";
 "limitSwap.cancel.error.chainNotRoutable" = "L'annullamento da %@ non è ancora supportato.";
 "limitSwap.cancel.error.dustUnavailable" = "Non è stato possibile confermare l'importo minimo richiesto da questa rete. Riprova a breve: il tuo ordine non è interessato.";
@@ -661,7 +662,9 @@
 "limitSwap.cancel.explanation" = "L'annullamento chiude questo ordine e rimborsa la parte non ancora eseguita. Quanto già eseguito resta eseguito e non viene restituito. Questa operazione comporta una commissione di rete THORChain.";
 "limitSwap.cancel.orderLabel" = "Ordine";
 "limitSwap.cancel.title" = "Annulla ordine";
+"limitSwap.cancel.unavailableChain" = "L'annullamento dalla chain con cui è stato finanziato questo ordine non è supportato. Verrà rimborsato automaticamente alla scadenza.";
 "limitSwap.cancel.unavailableLegacyOrder" = "Questo ordine è stato creato prima che l'annullamento nell'app fosse disponibile, quindi i suoi dettagli non possono essere verificati.";
+"limitSwap.cancel.unavailableMemoTooLong" = "Questo ordine non può essere annullato dalla sua chain di origine: il messaggio di annullamento è troppo lungo per quella rete. Verrà rimborsato automaticamente alla scadenza.";
 "limitSwap.cancel.unavailableMismatch" = "I dettagli di questo ordine non corrispondono a quanto riportato da THORChain, quindi non può essere annullato in sicurezza.";
 "limitSwap.cancel.unavailableNoRune" = "Aggiungi RUNE a questo vault per annullare gli ordini limite: l'annullamento viene inviato da THORChain.";
 "limitSwap.confirmation.byteCapError.format" = "Memo troppo lungo: %d byte (max %d). Prova con un indirizzo di destinazione più corto o una sorgente non UTXO.";

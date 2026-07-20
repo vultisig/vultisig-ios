@@ -122,15 +122,18 @@ enum LimitOrderCancelBlocker: Equatable, Sendable {
     /// never recorded. Fails closed: we would rather grey the button out than
     /// guess at the amounts the matcher keys on.
     case missingSignedData
-    /// Placed by depositing on an L1 chain, so its `FromAddress` is an L1
-    /// address and a `MsgDeposit` from our THOR address can never match it.
+    /// The order was funded from a chain THORChain cannot route, so there is no
+    /// inbound vault to send the cancel to.
+    case unsupportedSourceChain
+    /// The cancel memo does not fit the source chain's per-transaction budget.
     ///
-    /// NOTE: such an order is not permanently uncancellable at the protocol
-    /// level — THORNode also accepts `m=<` from the Bifrost observed-tx path, so
-    /// a transaction sent from the original L1 address would cancel it. We
-    /// simply do not build that path (and its attached dust is donated to the
-    /// pool). The copy must not claim the order can never be cancelled.
-    case notThorchainSourced
+    /// In practice this is an ERC20 target from a UTXO source: two full
+    /// contract-suffixed assets plus two exact amounts overflow the 80-byte
+    /// `OP_RETURN` cap, and NOTHING in a cancel memo can be shortened — the
+    /// amounts define the ratio bucket, short codes are rejected by
+    /// `cosmos.ParseCoins`, and this memo type skips `fuzzyAssetMatch`. The
+    /// order still refunds automatically at expiry.
+    case memoTooLongForSourceChain
     /// What we recorded at signing and what the queue reports disagree.
     ///
     /// One of the two is wrong and there is no way to tell which. Signing either
@@ -174,8 +177,13 @@ func limitOrderCancelEligibility(_ details: LimitOrderDetails) -> LimitOrderCanc
           let sourceChain = Chain(rawValue: sourceChainRawValue) else {
         return .blocked(.missingSignedData)
     }
-    guard sourceChain == .thorChain else {
-        return .blocked(.notThorchainSourced)
+    // Both routes are supported: a THORChain-sourced order cancels via
+    // `MsgDeposit` from the vault's THOR address, and an L1-sourced order
+    // cancels by sending the same memo from the chain that funded it — THORNode
+    // dispatches `m=<` from the Bifrost observed-tx path too. What matters is
+    // only that THORChain can route the source chain at all.
+    guard sourceChain == .thorChain || isThorchainRoutable(chain: sourceChain) else {
+        return .blocked(.unsupportedSourceChain)
     }
     // Bound in two steps rather than `flatMap(BigInt.init)`: an unapplied
     // `BigInt.init` is ambiguous here (this codebase carries radix/hex
@@ -216,14 +224,25 @@ func limitOrderCancelEligibility(_ details: LimitOrderDetails) -> LimitOrderCanc
         }
     }
 
-    return .cancellable(
-        LimitOrderCancelInputs(
-            sourceAsset: details.sourceAsset,
-            sourceAmount1e8: signedSourceAmount,
-            targetAsset: details.targetAsset,
-            tradeTarget: signedTradeTarget
-        )
+    let inputs = LimitOrderCancelInputs(
+        sourceAsset: details.sourceAsset,
+        sourceAmount1e8: signedSourceAmount,
+        targetAsset: details.targetAsset,
+        tradeTarget: signedTradeTarget
     )
+
+    // The memo has to be buildable AND fit the chain it will be sent from.
+    // Checked here rather than at the point of signing so the button is never
+    // offered for an order that cannot actually be cancelled — the whole reason
+    // this predicate exists.
+    guard let memo = try? buildCancelLimitSwapMemo(inputs) else {
+        return .blocked(.missingSignedData)
+    }
+    guard limitOrderCancelMemoFits(memo, sourceChainKind: sourceChain.chainType) else {
+        return .blocked(.memoTooLongForSourceChain)
+    }
+
+    return .cancellable(inputs)
 }
 
 // MARK: - Duplicate detection

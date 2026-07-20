@@ -28,7 +28,7 @@ struct CancelLimitOrderTransactionScreen: View {
             title: "limitSwap.cancel.title".localized,
             fixedHeight: false,
             validForm: $validForm,
-            isContinueDisabled: !viewModel.hasSufficientBalance,
+            isContinueDisabled: viewModel.transactionBuilder == nil,
             onContinue: onContinue
         ) {
             VStack(alignment: .leading, spacing: 16) {
@@ -56,6 +56,23 @@ struct CancelLimitOrderTransactionScreen: View {
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
 
+                // ⚠️ Stated with the exact amount, before signing. An L1 cancel
+                // must attach a coin for Bifrost to observe it at all, and
+                // THORNode donates whatever arrives to the pool with no refund
+                // path. On DOGE that is two whole coins — a generic "network
+                // fees apply" would be actively misleading.
+                if let donated = viewModel.donatedAmountDisplay {
+                    WarningView(text: String(format: "limitSwap.cancel.donatedDust".localized, donated))
+                }
+
+                if let resolutionError = viewModel.resolutionError {
+                    WarningView(text: resolutionError)
+                }
+
+                if let balanceError = viewModel.balanceErrorMessage {
+                    WarningView(text: balanceError)
+                }
+
                 if viewModel.hasDuplicateWarning {
                     // THORChain addresses orders by (assets, ratio) + sender and
                     // cancels the FIRST match — never by tx hash. With more than
@@ -71,6 +88,7 @@ struct CancelLimitOrderTransactionScreen: View {
                 Spacer()
             }
         }
+        .task { await viewModel.onLoad() }
     }
 
     @ViewBuilder

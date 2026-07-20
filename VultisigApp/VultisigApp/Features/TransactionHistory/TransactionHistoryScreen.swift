@@ -233,22 +233,34 @@ struct TransactionHistoryScreen: View {
             // whether the ORDER is cancellable. Resolved here because only the
             // screen can see the vault; the sheet renders a disabled button with
             // a reason rather than an enabled one whose tap does nothing.
-            canSendCancel: cancelSigningCoin != nil,
+            canSendCancel: cancelSigningCoin(for: viewModel.limitOrder(for: detail)) != nil,
             onCancelOrder: startCancel
         )
     }
 
-    /// The vault's canonical RUNE coin, which is what signs the cancel deposit.
+    /// The coin that signs this order's cancel — which chain it comes from
+    /// depends on how the order was funded.
     ///
-    /// `isRune` rather than `chain == .thorChain && isNativeToken`: the latter
-    /// admits any THORChain coin flagged native, so duplicated or malformed
-    /// persisted coin data could hand the transaction flow a `CoinMeta` that
+    /// A THORChain-sourced order cancels via `MsgDeposit` from RUNE. Everything
+    /// else cancels by sending the memo from the chain that funded it, so it
+    /// needs that chain's NATIVE gas coin — never the order's own asset, since
+    /// a cancel moves no tokens.
+    ///
+    /// `isRune` rather than `chain == .thorChain && isNativeToken` for the THOR
+    /// case: the latter admits any THORChain coin flagged native, so duplicated
+    /// or malformed persisted coin data could hand the flow a `CoinMeta` that
     /// isn't RUNE at all.
-    private var cancelSigningCoin: Coin? {
-        guard let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA) else {
+    private func cancelSigningCoin(for order: LimitOrderDetails?) -> Coin? {
+        guard let order,
+              let rawValue = order.sourceChainRawValue,
+              let sourceChain = Chain(rawValue: rawValue),
+              let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA) else {
             return nil
         }
-        return vault.coins.first(where: { $0.isRune })
+        if sourceChain == .thorChain {
+            return vault.coins.first(where: { $0.isRune })
+        }
+        return vault.coins.first(where: { $0.chain == sourceChain && $0.isNativeToken })
     }
 
     /// Dismiss the sheet, THEN navigate — in that order, and not concurrently.
@@ -261,7 +273,7 @@ struct TransactionHistoryScreen: View {
     private func startCancel(_ order: LimitOrderDetails) {
         guard let request = viewModel.cancelRequest(for: order),
               let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA),
-              let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+              let signingCoin = cancelSigningCoin(for: order) else {
             // Unreachable in practice — the button is only enabled when both the
             // order and `cancelSigningCoin` check out — but a state change under
             // the user must not navigate to a half-built screen.
@@ -270,7 +282,7 @@ struct TransactionHistoryScreen: View {
         }
         pendingCancelRoute = FunctionCallRoute.functionTransaction(
             vault: vault,
-            transactionType: .cancelLimitOrder(coin: runeCoin.toCoinMeta(), request: request)
+            transactionType: .cancelLimitOrder(coin: signingCoin.toCoinMeta(), request: request)
         )
         viewModel.selectedDetail = nil
     }

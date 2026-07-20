@@ -2,17 +2,33 @@
 //  LimitOrderCancelPayloadAssembler.swift
 //  VultisigApp
 //
-//  Builds the signable payload for cancelling a limit order FROM the L1 chain
-//  that funded it — a dust transfer to THORChain's inbound vault carrying the
-//  `m=<` memo, observed by Bifrost and dispatched to the same modify handler a
-//  native `MsgDeposit` reaches.
+//  Resolves WHERE an L1-originated cancel is sent and WHAT it must carry: a
+//  dust transfer to THORChain's inbound vault carrying the `m=<` memo, observed
+//  by Bifrost and dispatched to the same modify handler a native `MsgDeposit`
+//  reaches.
 //
-//  Separate from `buildLimitSwapKeysignPayload` (which PLACES an order) rather
-//  than parameterised into it, because almost none of that function survives
-//  contact with a cancel: no ERC20/router branch, no LIM, no advanced-swap-queue
-//  gate, and a send-shaped rather than swap-shaped chain-specific fetch. What
-//  the two genuinely share is inbound-vault resolution, which is extracted
-//  below so the halt/pause filter cannot drift between them.
+//  Only the resolution lives here. Building and signing the transaction itself
+//  goes through the ordinary function-call send pipeline, which already handles
+//  a memo-bearing native transfer on every supported chain — including EVM gas
+//  estimation against the memo (`fetchSpecificForEVM` → `estimateGasLimit(tx:)`,
+//  which passes `tx.memo` and takes `max(120000, estimate)`). A bespoke
+//  assembler was written first and then removed: it would have needed its own
+//  copy of the keysign ceremony navigation, and duplicating that to gain nothing
+//  is how the fast-vault and paired-sign branches drift apart.
+//
+//  One known imprecision, deliberately left alone: `estimateGasLimit` estimates
+//  against `.anyAddress` rather than the resolved inbound vault. For a plain
+//  value transfer carrying a memo that is immaterial — base 21,000 plus ~40
+//  bytes of calldata sits far under the 120,000 floor the estimate is maxed
+//  against. It would only start to matter if an Asgard inbound address were
+//  ever a contract rather than a plain account.
+//
+//  The `EnableAdvSwapQueue` mimir gate deliberately does NOT apply to a cancel.
+//  Placement is gated and must be — a `=<` signed while the queue is disabled
+//  can be treated as a market swap and execute at the wrong price. A cancel has
+//  the opposite risk profile: if the mimir flips off while an order rests, the
+//  order still exists and the user still needs a way out. Nothing here consults
+//  it, and nothing should.
 //
 
 import BigInt
@@ -21,19 +37,7 @@ import Foundation
 enum LimitOrderCancelAssemblyError: Error, Equatable, LocalizedError {
     case sourceChainNotRoutable(Chain)
     case noInboundAddressForChain(String)
-    /// The memo does not fit the source chain's per-transaction budget, and
-    /// unlike a placement memo there is nothing in it that may be shortened.
-    /// Overwhelmingly this is an ERC20 target from a UTXO source.
-    case memoTooLongForSourceChain(actual: Int, limit: Int)
     case dust(LimitOrderCancelDustError)
-    /// The coin handed in was not the chain's native gas asset.
-    ///
-    /// Enforced rather than merely documented because the failure is silent and
-    /// expensive: a token coin here would build a plain ERC20 transfer to the
-    /// Asgard vault carrying an `m=<` memo. THORChain does not credit tokens
-    /// arriving outside a router `depositWithExpiry`, so the tokens would be
-    /// stranded on the vault and the order would remain resting.
-    case sourceCoinNotNative(Chain)
 
     var errorDescription: String? {
         switch self {
@@ -41,11 +45,7 @@ enum LimitOrderCancelAssemblyError: Error, Equatable, LocalizedError {
             return String(format: "limitSwap.cancel.error.chainNotRoutable".localized, chain.name)
         case .noInboundAddressForChain:
             return "limitSwap.cancel.error.noInboundAddress".localized
-        case .memoTooLongForSourceChain:
-            return "limitSwap.cancel.error.memoTooLong".localized
         case .dust:
-            return "limitSwap.cancel.error.dustUnavailable".localized
-        case .sourceCoinNotNative:
             return "limitSwap.cancel.error.dustUnavailable".localized
         }
     }
@@ -96,74 +96,4 @@ func limitOrderCancelDust(for sourceCoin: Coin, inbound: InboundAddress) throws 
     } catch let error as LimitOrderCancelDustError {
         throw LimitOrderCancelAssemblyError.dust(error)
     }
-}
-
-/// Build the signable payload for an L1-originated cancel.
-///
-/// - Parameter sourceCoin: the vault's NATIVE gas coin on the order's source
-///   chain — never the order's own asset. A cancel moves no tokens, so even an
-///   ERC20-funded order is cancelled with a native dust transfer: no router, no
-///   approve, no `depositWithExpiry`.
-///
-/// ⚠️ **Deliberately NOT gated on the `EnableAdvSwapQueue` mimir.** Placement is
-/// gated, and must be — a `=<` order signed while the queue is disabled can be
-/// treated as a market swap and execute at the wrong price. A CANCEL has the
-/// opposite risk profile: if the mimir flips off while an order is resting, the
-/// order still exists and the user still needs a way out. Gating this would
-/// strand them with funds committed and no exit.
-@MainActor
-func buildLimitOrderCancelKeysignPayload(
-    sourceCoin: Coin,
-    memo: String,
-    vault: Vault
-) async throws -> KeysignPayload {
-    // Enforced first, and before any network call. A token coin here would
-    // build a plain transfer to the Asgard vault, which THORChain does not
-    // credit outside a router deposit — the tokens would simply be stranded.
-    // The doc comment above is not sufficient protection for that.
-    guard sourceCoin.isNativeToken else {
-        throw LimitOrderCancelAssemblyError.sourceCoinNotNative(sourceCoin.chain)
-    }
-
-    // Checked before any network call: this is a property of the memo and the
-    // chain, so failing here costs nothing and gives an honest reason.
-    let byteLimit = limitMemoByteLimit(for: sourceCoin.chain.chainType)
-    guard limitOrderCancelMemoFits(memo, sourceChainKind: sourceCoin.chain.chainType) else {
-        throw LimitOrderCancelAssemblyError.memoTooLongForSourceChain(
-            actual: memo.utf8.count,
-            limit: byteLimit
-        )
-    }
-
-    let inbound = try await resolveThorchainInboundVault(for: sourceCoin.chain)
-    let dust = try limitOrderCancelDust(for: sourceCoin, inbound: inbound)
-
-    // Send-shaped, not swap-shaped. `fetchSwapBlockChainSpecific` exists to size
-    // a deposit that moves real value through a router; this is a plain
-    // memo-bearing transfer, and the send path additionally runs
-    // `resolveEVMSendGasLimit`, which sizes gas against the real recipient and
-    // the memo. A long memo under a flat gas default reverts on-chain with the
-    // keysign already spent.
-    let chainSpecific = try await BlockChainService.shared.fetchSendBlockChainSpecific(
-        coin: sourceCoin,
-        toAddress: inbound.address,
-        amount: dust,
-        memo: memo,
-        sendMaxAmount: false,
-        isDeposit: false,
-        transactionType: .unspecified,
-        gasLimit: nil,
-        customGasLimit: nil,
-        feeMode: .default,
-        fromAddress: sourceCoin.address
-    )
-
-    return try await KeysignPayloadFactory().buildTransfer(
-        coin: sourceCoin,
-        toAddress: inbound.address,
-        amount: dust,
-        memo: memo,
-        chainSpecific: chainSpecific,
-        vault: vault
-    )
 }

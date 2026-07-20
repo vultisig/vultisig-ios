@@ -653,6 +653,7 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain 已暂停交易。请稍后重试。";
 "limitSwap.asset" = "资产";
 "limitSwap.buy" = "买入";
+"limitSwap.cancel.donatedDust" = "从此链取消需要发送 %@，该金额由 THORChain 保留。您订单本身的资金将全额退还。";
 "limitSwap.cancel.duplicateWarning" = "您还有另一个相同交易对和价格的挂单。THORChain 会优先取消最早匹配的订单，因此本次操作可能会关闭那个订单而非此订单。";
 "limitSwap.cancel.error.chainNotRoutable" = "暂不支持从 %@ 取消订单。";
 "limitSwap.cancel.error.dustUnavailable" = "无法确认此网络所需的最低金额。请稍后重试——您的订单不受影响。";
@@ -661,7 +662,9 @@
 "limitSwap.cancel.explanation" = "取消将关闭此订单并退还尚未成交的部分。已成交的部分将保持不变，不会退回。此操作需支付一次 THORChain 网络手续费。";
 "limitSwap.cancel.orderLabel" = "订单";
 "limitSwap.cancel.title" = "取消订单";
+"limitSwap.cancel.unavailableChain" = "不支持从此订单的出资链取消。到期时将自动退款。";
 "limitSwap.cancel.unavailableLegacyOrder" = "此订单创建于应用内取消功能推出之前，因此无法验证其详细信息。";
+"limitSwap.cancel.unavailableMemoTooLong" = "此订单无法从其源链取消——取消消息对该网络而言过长。到期时将自动退款。";
 "limitSwap.cancel.unavailableMismatch" = "此订单的详细信息与 THORChain 报告的内容不一致，因此无法安全取消。";
 "limitSwap.cancel.unavailableNoRune" = "请向此保险库添加 RUNE 以取消限价订单——取消操作通过 THORChain 发送。";
 "limitSwap.confirmation.byteCapError.format" = "备注过长：%d 字节（最多 %d）。请尝试更短的目标地址或非 UTXO 源。";

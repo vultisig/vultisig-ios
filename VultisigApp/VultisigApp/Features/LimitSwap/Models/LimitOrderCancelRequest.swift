@@ -27,6 +27,11 @@ struct LimitOrderCancelRequest: Hashable, Sendable {
     let memo: String
     let sourceAsset: String
     let targetAsset: String
+    /// `Chain.rawValue` the order was funded from — decides HOW the cancel is
+    /// sent. THORChain-sourced orders cancel via a `MsgDeposit` from the vault's
+    /// THOR address; every other chain cancels by sending the same memo from
+    /// that chain, which THORNode observes through Bifrost.
+    let sourceChainRawValue: String
     /// Other RESTING orders that share this one's THORChain bucket.
     ///
     /// Non-zero means the cancel may close a different order than the one the

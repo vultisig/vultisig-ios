@@ -133,40 +133,6 @@ final class LimitOrderCancelPayloadAssemblerTests: XCTestCase {
         XCTAssertTrue(limitOrderCancelMemoFits(memo, sourceChainKind: Chain.ethereum.chainType))
     }
 
-    // MARK: - Native-coin requirement
-
-    /// ⚠️ A token coin would build a plain ERC20 transfer to the Asgard vault.
-    /// THORChain does not credit tokens arriving outside a router deposit, so
-    /// they would be stranded and the order would stay resting. Enforced, not
-    /// merely documented.
-    func testATokenSourceCoinIsRejectedBeforeAnyNetworkWork() async {
-        let token = Coin(
-            asset: CoinMeta(
-                chain: .ethereum,
-                ticker: "USDC",
-                logo: "usdc",
-                decimals: 6,
-                priceProviderId: "usd-coin",
-                contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                isNativeToken: false
-            ),
-            address: "0xabc",
-            hexPublicKey: "HexPublicKeyExample"
-        )
-        do {
-            _ = try await buildLimitOrderCancelKeysignPayload(
-                sourceCoin: token,
-                memo: "m=<:1THOR.RUNE:1BTC.BTC:0",
-                vault: .example
-            )
-            XCTFail("expected a native-coin failure")
-        } catch let error as LimitOrderCancelAssemblyError {
-            XCTAssertEqual(error, .sourceCoinNotNative(.ethereum))
-        } catch {
-            XCTFail("unexpected error \(error)")
-        }
-    }
-
     // MARK: - Routability
 
     func testNonRoutableSourceChainIsRejected() async {

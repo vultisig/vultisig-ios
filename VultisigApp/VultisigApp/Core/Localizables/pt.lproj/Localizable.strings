@@ -653,6 +653,7 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "A THORChain pausou as negociações. Tente novamente mais tarde.";
 "limitSwap.asset" = "Ativo";
 "limitSwap.buy" = "Comprar";
+"limitSwap.cancel.donatedDust" = "Cancelar a partir desta cadeia exige o envio de %@, que a THORChain retém. Os fundos da sua ordem são reembolsados na totalidade.";
 "limitSwap.cancel.duplicateWarning" = "Tem outra ordem ativa com o mesmo par e preço. A THORChain cancela primeiro a correspondência mais antiga, pelo que isto pode encerrar essa ordem em vez desta.";
 "limitSwap.cancel.error.chainNotRoutable" = "O cancelamento a partir de %@ ainda não é suportado.";
 "limitSwap.cancel.error.dustUnavailable" = "Não foi possível confirmar o montante mínimo exigido por esta rede. Tente novamente em breve — a sua ordem não é afetada.";
@@ -661,7 +662,9 @@
 "limitSwap.cancel.explanation" = "Cancelar encerra esta ordem e reembolsa a parte que ainda não foi executada. O que já foi executado permanece executado e não é devolvido. Isto custa uma taxa de rede da THORChain.";
 "limitSwap.cancel.orderLabel" = "Ordem";
 "limitSwap.cancel.title" = "Cancelar ordem";
+"limitSwap.cancel.unavailableChain" = "O cancelamento a partir da cadeia com que esta ordem foi financiada não é suportado. Será reembolsada automaticamente ao expirar.";
 "limitSwap.cancel.unavailableLegacyOrder" = "Esta ordem foi criada antes de o cancelamento na aplicação estar disponível, pelo que os seus detalhes não podem ser verificados.";
+"limitSwap.cancel.unavailableMemoTooLong" = "Esta ordem não pode ser cancelada a partir da sua cadeia de origem — a mensagem de cancelamento é demasiado longa para essa rede. Será reembolsada automaticamente ao expirar.";
 "limitSwap.cancel.unavailableMismatch" = "Os detalhes desta ordem não correspondem ao que a THORChain reporta, pelo que não pode ser cancelada com segurança.";
 "limitSwap.cancel.unavailableNoRune" = "Adicione RUNE a este cofre para cancelar ordens limite — o cancelamento é enviado a partir da THORChain.";
 "limitSwap.confirmation.byteCapError.format" = "Memo muito longo: %d bytes (máx %d). Tente um endereço de destino mais curto ou uma origem não UTXO.";

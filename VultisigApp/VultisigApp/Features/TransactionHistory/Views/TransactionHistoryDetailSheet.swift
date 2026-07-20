@@ -522,14 +522,13 @@ struct TransactionHistoryDetailSheet: View {
     /// - `.missingSignedData` / `.signedDataDisagreesWithChain` → disabled, with
     ///   a reason. Both are permanent for a given order, so an explanation is
     ///   worth more than an absent button the user goes hunting for.
+    /// - `.unsupportedSourceChain` / `.memoTooLongForSourceChain` → disabled,
+    ///   with a reason. Both are permanent for a given order and both are
+    ///   genuinely explainable, so an absent button would just send the user
+    ///   hunting. The memo case in particular has a reassuring answer: the
+    ///   order still refunds itself at expiry.
     /// - `.terminal` → nothing. A closed order has nothing to cancel, and the
     ///   status row above already says so.
-    /// - `.notThorchainSourced` → nothing, **for now**. An L1-funded order IS
-    ///   cancellable by sending the `m=<` from its own chain; that path is built
-    ///   in this same PR, and writing disabled-state copy for a state about to
-    ///   become actionable would only be torn up. Once L1 lands this arm goes
-    ///   away and its narrower successors (unsupported source chain, memo too
-    ///   long for a UTXO source) get their copy written once.
     @ViewBuilder
     private var cancelOrderButton: some View {
         if let order = limitOrder {
@@ -548,7 +547,11 @@ struct TransactionHistoryDetailSheet: View {
                 disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder")
             case .blocked(.signedDataDisagreesWithChain):
                 disabledCancelButton(reason: "limitSwap.cancel.unavailableMismatch")
-            case .blocked(.terminal), .blocked(.notThorchainSourced):
+            case .blocked(.unsupportedSourceChain):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableChain")
+            case .blocked(.memoTooLongForSourceChain):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableMemoTooLong")
+            case .blocked(.terminal):
                 EmptyView()
             }
         }

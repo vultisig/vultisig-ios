@@ -163,6 +163,7 @@ class TransactionHistoryViewModel: ObservableObject {
     /// bucket fails silently.
     func cancelRequest(for order: LimitOrderDetails) -> LimitOrderCancelRequest? {
         guard case let .cancellable(inputs) = limitOrderCancelEligibility(order),
+              let sourceChainRawValue = order.sourceChainRawValue,
               let memo = try? buildCancelLimitSwapMemo(inputs) else {
             return nil
         }
@@ -176,6 +177,7 @@ class TransactionHistoryViewModel: ObservableObject {
             memo: memo,
             sourceAsset: order.sourceAsset,
             targetAsset: order.targetAsset,
+            sourceChainRawValue: sourceChainRawValue,
             duplicateRestingOrderCount: duplicates.count
         )
     }

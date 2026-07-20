@@ -40,15 +40,40 @@ struct CancelLimitOrderTransactionBuilder: TransactionBuilder {
     /// order's identity attached, so a confirmed broadcast can be attributed
     /// back to the right row.
     let request: LimitOrderCancelRequest
+    /// `nil` for a THORChain-sourced cancel (a `MsgDeposit` has no destination
+    /// and attaches nothing). For an L1-sourced cancel, the Asgard inbound vault
+    /// and the dust that must ride along for Bifrost to observe it.
+    let l1Destination: LimitOrderCancelL1Destination?
 
     var memo: String { request.memo }
     var limitCancelContext: LimitOrderCancelRequest? { request }
 
-    var amount: String { "0" }
+    /// Zero for THORChain (see the donation note above). For L1 the dust is
+    /// mandatory: Bifrost drops a zero-value transaction before it ever becomes
+    /// a `MsgObservedTxIn`, so a cancel carrying nothing is simply never seen.
+    var amount: String { l1Destination?.dustDecimalString ?? "0" }
     var sendMaxAmount: Bool { false }
 
+    /// ⚠️ Populated ONLY for the THORChain route. **Do not "simplify" this to
+    /// always-populated or always-empty — it breaks in a different way in each
+    /// direction, and neither failure is visible from the call site.**
+    ///
+    /// `SendCryptoLogic.isDeposit` is "dictionary non-empty AND chain is not
+    /// UTXO/Ripple/Solana".
+    ///
+    /// - Populate it for THORChain, or `isDeposit` is false and the `m=<` memo
+    ///   is signed as a plain `MsgSend`: a 0-RUNE self-transfer that broadcasts
+    ///   successfully, costs a fee, and cancels nothing.
+    /// - Leave it EMPTY for an EVM L1 source, or `isDeposit` turns true for
+    ///   Ethereum and the transaction is built as a THORChain deposit on a chain
+    ///   that has no such message type.
+    ///
+    /// UTXO sources are excluded by chain type either way, so EVM is the case
+    /// that actually depends on the empty branch — which is exactly why it looks
+    /// removable and is not.
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
+        guard l1Destination == nil else { return dict }
         dict.set("Action", "Cancel limit order")
         dict.set("From", request.sourceAsset)
         dict.set("To", request.targetAsset)
@@ -58,7 +83,8 @@ struct CancelLimitOrderTransactionBuilder: TransactionBuilder {
 
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
-    /// Empty, like every other THORChain `MsgDeposit` function call — the
-    /// deposit's destination is the protocol module, resolved at signing.
-    var toAddress: String { "" }
+    /// Empty for the THORChain route, like every other `MsgDeposit` function
+    /// call — the destination is the protocol module, resolved at signing. For
+    /// L1 it is the live Asgard inbound vault.
+    var toAddress: String { l1Destination?.inboundAddress ?? "" }
 }
