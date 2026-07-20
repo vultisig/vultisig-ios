@@ -64,9 +64,6 @@ enum BroadcastErrorClassifier {
 }
 
 class RpcService {
-    // swiftlint:disable:next no_raw_urlsession
-    private let session = URLSession.shared
-
     internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
 
     init(_ rpcEndpoint: String) {
