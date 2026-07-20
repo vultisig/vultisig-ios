@@ -590,6 +590,12 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
     }
 
+    /// Whether the itemized "Vultisig Fee" affiliate row should render (every
+    /// market swap route, even at 0%; not secured mints or limit orders).
+    var showAffiliateFeeRow: Bool {
+        SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: isSecuredMint ? .securedMint : .standard)
+    }
+
     var swapFeeString: String {
         SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
     }

@@ -291,6 +291,12 @@ extension SwapTransaction {
         SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
     }
 
+    /// Whether the itemized "Vultisig Fee" affiliate row should render (every
+    /// market swap route, even at 0%; not secured mints or limit orders).
+    var showAffiliateFeeRow: Bool {
+        SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: mode)
+    }
+
     /// Whether an expandable fee breakdown has any rows to show. Mirrors the
     /// rows the swap fee surfaces emit (swap fee and/or network gas), so a
     /// "Total fee" chevron is only offered when expanding reveals something.

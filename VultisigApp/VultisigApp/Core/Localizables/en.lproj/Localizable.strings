@@ -1206,11 +1206,13 @@
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
 "swap" = "Swap";
 "swap.duration.instant" = "Instant";
+"swap.included_in_rate" = "included in quoted rate";
 "swap.outbound_fee" = "Outbound Fee";
 "swap.price_impact" = "Price Impact";
 "swap.price_impact.average" = "Average";
 "swap.price_impact.good" = "Good";
 "swap.price_impact.high" = "High";
+"swap.protocol_fee" = "Protocol Fee";
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Market";

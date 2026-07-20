@@ -1208,11 +1208,13 @@
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
 "swap.duration.instant" = "Trenutno";
+"swap.included_in_rate" = "uključeno u ponuđeni tečaj";
 "swap.outbound_fee" = "Izlazna naknada";
 "swap.price_impact" = "Utjecaj na cijenu";
 "swap.price_impact.average" = "Srednje";
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
+"swap.protocol_fee" = "Naknada protokola";
 "swap.referral_discount" = "Preporuka (-%d bps)";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Tržište";

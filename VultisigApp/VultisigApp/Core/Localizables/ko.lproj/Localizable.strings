@@ -1171,11 +1171,13 @@
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";
 "swap" = "스왑";
 "swap.duration.instant" = "즉시";
+"swap.included_in_rate" = "제시된 환율에 포함됨";
 "swap.outbound_fee" = "아웃바운드 수수료";
 "swap.price_impact" = "가격 영향";
 "swap.price_impact.average" = "보통";
 "swap.price_impact.good" = "양호";
 "swap.price_impact.high" = "높음";
+"swap.protocol_fee" = "프로토콜 수수료";
 "swap.referral_discount" = "추천 (-%d bps)";
 "swap.tab.limit" = "지정가";
 "swap.tab.market" = "시장";

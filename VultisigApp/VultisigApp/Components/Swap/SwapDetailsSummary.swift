@@ -17,7 +17,7 @@ struct SwapDetailsSummary: View {
 
     private var hasExpandableFees: Bool {
         vm.showGas ||
-        !vm.baseAffiliateFee.isEmpty ||
+        vm.showAffiliateFeeRow ||
         !outboundFeeString.isEmpty ||
         !vm.vultDiscount.isEmpty ||
         !vm.referralDiscount.isEmpty ||
@@ -120,7 +120,7 @@ struct SwapDetailsSummary: View {
                 swapGas
             }
 
-            if !vm.baseAffiliateFee.isEmpty {
+            if vm.showAffiliateFeeRow {
                 affiliateFee
             }
 
