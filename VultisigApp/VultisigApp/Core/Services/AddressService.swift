@@ -24,7 +24,7 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .mayaChain && $0.isNativeToken }) ? .mayaChain : nil
         }
 
-        // Special handling for ThorChain Stagenet
+        // Special handling for ThorChain Chainnet
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor") {
             return vault.coins.contains(where: { $0.chain == .thorChainChainnet && $0.isNativeToken }) ? .thorChainChainnet : nil
         }
@@ -39,29 +39,55 @@ struct AddressService {
             return vault.coins.contains(where: { $0.chain == .qbtc && $0.isNativeToken }) ? .qbtc : nil
         }
 
+        // Terra and Terra Classic share the bech32 HRP `terra` and derive
+        // identical addresses from the same key, so the address cannot say
+        // which network it belongs to. The current-chain check above already
+        // leaves the form alone when the user is on either Terra chain, so
+        // reaching here means the selected chain cannot hold this address at
+        // all — landing in the Terra family beats leaving the form somewhere
+        // the address is outright invalid. Which of the two is a guess, broken
+        // by vault order.
+        if AnyAddress.isValidBech32(string: address, coin: .terraV2, hrp: "terra") {
+            return firstHeldChain(in: vault) { $0 == .terra || $0 == .terraClassic }
+        }
+
         // Special handling for Bittensor (SS58 prefix 42)
         if BittensorHelper.isValidAddress(address) {
             return vault.coins.contains(where: { $0.chain == .bittensor && $0.isNativeToken }) ? .bittensor : nil
         }
 
-        // Check if it's an EVM address - don't auto-switch for safety
+        // Every EVM chain accepts every 0x address, so which one is a guess.
+        // The current-chain check above already leaves the form alone when the
+        // user is on any EVM chain — so reaching here means they are not, and
+        // switching into the family is a move between families, not between
+        // EVM chains. Which one is broken by vault order.
         if isEVMAddress(address) {
-            // Don't auto-switch between EVM chains for safety
-            return nil
+            return firstHeldChain(in: vault) { $0.chainType == .EVM }
         }
 
         // Iterate through all WalletCore CoinTypes to find matching address
         for coinType in CoinType.allCases {
-            if coinType.validate(address: address) {
-                // Map CoinType to Vultisig Chain
-                if let chain = Chain.allCases.first(where: { $0.coinType == coinType }) {
-                    // Only return if chain exists in vault with native token
-                    return vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) ? chain : nil
-                }
+            guard coinType.validate(address: address) else { continue }
+            // Map CoinType to Vultisig Chain
+            guard let chain = Chain.allCases.first(where: { $0.coinType == coinType }) else { continue }
+            // Only return if chain exists in vault with native token
+            if vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) {
+                return chain
             }
+            // Mapped chain isn't in the vault — keep looking rather than giving up,
+            // in case another CoinType also validates this address.
         }
 
         return nil
+    }
+
+    /// First chain the vault actually holds a native coin on that satisfies
+    /// `matches`, in vault order. Used to break ties for address families whose
+    /// members are indistinguishable from the address itself (EVM, Terra):
+    /// vault order is not a real signal about the address, only a stable and
+    /// predictable way to pick a member the user can actually spend from.
+    private static func firstHeldChain(in vault: Vault, where matches: (Chain) -> Bool) -> Chain? {
+        vault.coins.first { $0.isNativeToken && matches($0.chain) }?.chain
     }
 
     /// Checks if an address is an EVM address (0x followed by 40 hex characters)
