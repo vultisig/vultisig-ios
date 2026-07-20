@@ -24,6 +24,13 @@ protocol TransactionBuilder {
     /// staking builders (delegate today); every other builder uses the default
     /// `nil`.
     var solanaStakingPayload: SolanaStakingPayload? { get }
+    /// The limit order this transaction cancels. Populated only by
+    /// `CancelLimitOrderTransactionBuilder`; every other builder uses `nil`.
+    ///
+    /// Carried so the done screen can record that a cancel was broadcast for
+    /// this specific order — the memo alone identifies the order only to
+    /// THORChain, not to our own table.
+    var limitCancelContext: LimitOrderCancelRequest? { get }
 }
 
 extension TransactionBuilder {
@@ -34,6 +41,9 @@ extension TransactionBuilder {
 
     /// Default — only Solana staking builders override this.
     var solanaStakingPayload: SolanaStakingPayload? { nil }
+
+    /// Default — only the limit-order cancel builder overrides this.
+    var limitCancelContext: LimitOrderCancelRequest? { nil }
 
     /// Builds the immutable `SendTransaction` struct directly. `gas` /
     /// `fee` and runtime-only fields default to the construction-time
@@ -62,7 +72,8 @@ extension TransactionBuilder {
             wasmContractPayload: wasmContractPayload,
             feeCoin: SendTransaction.resolveFeeCoin(coin: coin, vault: vault),
             cosmosStakingPayload: cosmosStakingPayload,
-            solanaStakingPayload: solanaStakingPayload
+            solanaStakingPayload: solanaStakingPayload,
+            limitCancelContext: limitCancelContext
         )
     }
 }

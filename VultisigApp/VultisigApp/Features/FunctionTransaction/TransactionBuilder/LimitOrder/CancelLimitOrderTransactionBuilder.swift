@@ -34,14 +34,15 @@ import VultisigCommonData
 /// them also has to exist for the transaction to be built as a deposit.
 struct CancelLimitOrderTransactionBuilder: TransactionBuilder {
     let coin: Coin
-    /// Pre-built by `buildCancelLimitSwapMemo` from the exact integers recorded
-    /// at signing. Passed in rather than rebuilt here so the eligibility check
-    /// and the signed memo cannot disagree.
-    let memo: String
-    /// Shown on the verify screen so the user can see WHICH order is being
-    /// cancelled — the memo alone is unreadable.
-    let sourceAssetDisplay: String
-    let targetAssetDisplay: String
+    /// The order being cancelled, resolved before navigation. Its `memo` was
+    /// built by `buildCancelLimitSwapMemo` from the exact integers recorded at
+    /// signing; carrying the whole request rather than just the memo keeps the
+    /// order's identity attached, so a confirmed broadcast can be attributed
+    /// back to the right row.
+    let request: LimitOrderCancelRequest
+
+    var memo: String { request.memo }
+    var limitCancelContext: LimitOrderCancelRequest? { request }
 
     var amount: String { "0" }
     var sendMaxAmount: Bool { false }
@@ -49,8 +50,8 @@ struct CancelLimitOrderTransactionBuilder: TransactionBuilder {
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("Action", "Cancel limit order")
-        dict.set("From", sourceAssetDisplay)
-        dict.set("To", targetAssetDisplay)
+        dict.set("From", request.sourceAsset)
+        dict.set("To", request.targetAsset)
         dict.set("memo", memo)
         return dict
     }

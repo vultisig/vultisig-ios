@@ -45,11 +45,6 @@ final class CancelLimitOrderTransactionViewModel: ObservableObject {
 
     var transactionBuilder: TransactionBuilder? {
         guard hasSufficientBalance else { return nil }
-        return CancelLimitOrderTransactionBuilder(
-            coin: coin,
-            memo: request.memo,
-            sourceAssetDisplay: request.sourceAsset,
-            targetAssetDisplay: request.targetAsset
-        )
+        return CancelLimitOrderTransactionBuilder(coin: coin, request: request)
     }
 }

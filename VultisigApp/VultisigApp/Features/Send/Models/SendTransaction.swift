@@ -195,6 +195,15 @@ struct SendTransaction: Hashable {
     let memoFunctionDictionary: [String: String]
     let wasmContractPayload: WasmExecuteContractPayload?
 
+    /// The limit order this transaction cancels, when it is a cancel.
+    ///
+    /// Local-only on iOS — like `cosmosStakingPayload`, it does not round-trip
+    /// through the proto-mappable `KeysignMessage` bridge. It exists so the done
+    /// screen can attribute a confirmed broadcast back to a specific
+    /// `LimitOrder` row; the `m=<` memo identifies the order to THORChain but
+    /// says nothing about our own storage key.
+    let limitCancelContext: LimitOrderCancelRequest?
+
     /// Native coin that pays for gas — `coin` itself for native sends, the
     /// chain's native sibling (e.g. ETH for a USDC source) otherwise.
     /// Precomputed at construction so Verify/Done don't need the vault's
@@ -242,7 +251,8 @@ extension SendTransaction {
             lhs.wasmContractPayload == rhs.wasmContractPayload &&
             lhs.feeCoinSnapshot == rhs.feeCoinSnapshot &&
             lhs.cosmosStakingPayload == rhs.cosmosStakingPayload &&
-            lhs.solanaStakingPayload == rhs.solanaStakingPayload
+            lhs.solanaStakingPayload == rhs.solanaStakingPayload &&
+            lhs.limitCancelContext == rhs.limitCancelContext
     }
 
     func hash(into hasher: inout Hasher) {
@@ -269,6 +279,7 @@ extension SendTransaction {
         hasher.combine(feeCoinSnapshot)
         hasher.combine(cosmosStakingPayload)
         hasher.combine(solanaStakingPayload)
+        hasher.combine(limitCancelContext)
     }
 }
 
@@ -296,7 +307,8 @@ extension SendTransaction {
         wasmContractPayload: WasmExecuteContractPayload?,
         feeCoin: Coin,
         cosmosStakingPayload: CosmosStakingPayload? = nil,
-        solanaStakingPayload: SolanaStakingPayload? = nil
+        solanaStakingPayload: SolanaStakingPayload? = nil,
+        limitCancelContext: LimitOrderCancelRequest? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -324,6 +336,7 @@ extension SendTransaction {
         self.feeCoinSnapshot = SendCoinSnapshot(coin: feeCoin)
         self.cosmosStakingPayload = cosmosStakingPayload
         self.solanaStakingPayload = solanaStakingPayload
+        self.limitCancelContext = limitCancelContext
     }
 }
 
@@ -452,7 +465,18 @@ extension SendTransaction {
             wasmContractPayload: resolvedWasmContractPayload,
             feeCoin: feeCoin ?? self.feeCoin,
             cosmosStakingPayload: resolvedCosmosStakingPayload,
-            solanaStakingPayload: resolvedSolanaStakingPayload
+            solanaStakingPayload: resolvedSolanaStakingPayload,
+            // Carried through unconditionally — `copy` is not offered an
+            // override for it. The function-call flow calls `copy(gas:)` after
+            // fetching chain-specific gas, and dropping the context there would
+            // silently detach a confirmed cancel from the order it cancels.
+            //
+            // This codebase has already been bitten by exactly this: the
+            // done-screen copy in `LimitOrderRecord.with(inboundTxHash:)`
+            // silently dropped `minOutputOverride`, which carries the same doc
+            // comment warning. A field-by-field copy is the shape that invites
+            // it — every new field is one someone must remember to add here.
+            limitCancelContext: limitCancelContext
         )
     }
 

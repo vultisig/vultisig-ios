@@ -12,8 +12,11 @@
 //  `DoneStatusServiceFactory.send`.
 //
 
+import OSLog
 import SwiftData
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "send-done-screen")
 
 struct SendDoneScreen: View {
     let vault: Vault
@@ -27,6 +30,9 @@ struct SendDoneScreen: View {
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
 
+    @State private var didRecordCancelBroadcast = false
+    private let limitStorage = LimitOrderStorageService()
+
     var body: some View {
         if let tx {
             DoneScreen(
@@ -39,6 +45,33 @@ struct SendDoneScreen: View {
                 ),
                 navigationTitle: "overview".localized
             )
+            .onAppear { recordCancelBroadcastIfNeeded(tx: tx) }
+        }
+    }
+
+    /// Attribute a CONFIRMED cancel broadcast back to the order it cancels.
+    ///
+    /// Guarded on a non-empty hash, which is what separates "the ceremony
+    /// finished" from "the transaction actually went out" — the same guard
+    /// `SwapDoneScreen` uses before persisting a placed order. A failed or
+    /// abandoned keysign never reaches here with a hash, so the order is left
+    /// resting, which is correct.
+    ///
+    /// Idempotent via `didRecordCancelBroadcast`: this screen can re-appear.
+    @MainActor
+    private func recordCancelBroadcastIfNeeded(tx: SendTransaction) {
+        guard !didRecordCancelBroadcast,
+              let context = tx.limitCancelContext,
+              !hash.isEmpty else { return }
+        didRecordCancelBroadcast = true
+        do {
+            try limitStorage.recordCancelBroadcast(of: context.orderId, txHash: hash, in: vault)
+        } catch {
+            // Non-fatal: the cancel is already on-chain. Worst case the order
+            // later reads "Refunded" instead of "Cancelled" — wrong label, right
+            // outcome — so this must not surface as an error over a successful
+            // broadcast.
+            logger.warning("Failed to record cancel broadcast: \(error.localizedDescription, privacy: .public)")
         }
     }
 

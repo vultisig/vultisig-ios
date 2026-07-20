@@ -93,6 +93,24 @@ final class LimitOrder {
     /// and disables cancelling rather than signing a guess.
     var observedTradeTarget: String?
 
+    /// Hash of the `m=<` transaction we broadcast to cancel this order, once
+    /// that broadcast is confirmed. `nil` means no cancel was ever sent.
+    ///
+    /// **This is an INTENT record, not the outcome.** The order is deliberately
+    /// left `.pending` when a cancel is broadcast, rather than being marked
+    /// `.cancelled` optimistically, because a cancel that addresses the wrong
+    /// ratio bucket is accepted by the chain, costs a fee, and cancels nothing —
+    /// the feature's whole failure mode. Marking the order cancelled on
+    /// broadcast would render that failure invisible: the order would read
+    /// "Cancelled" while still resting and still able to fill.
+    ///
+    /// So the tracker keeps polling. When the order actually leaves the queue,
+    /// the presence of this hash is what turns the observed refund into
+    /// `.cancelled` rather than `.refunded`. If the cancel silently did nothing,
+    /// the order stays visibly resting — which is the truth, and the only way
+    /// the user finds out.
+    var cancelBroadcastHash: String?
+
     /// `Chain.rawValue` of the coin the order was funded with.
     ///
     /// Needed because cancelling is creator-only and our cancel is a `MsgDeposit`
