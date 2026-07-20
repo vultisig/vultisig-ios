@@ -36,6 +36,19 @@ struct CustomMessagePayload: Codable, Hashable {
             // misrouted method (e.g. eth_signTypedData_v4) must not flip us
             // into the EIP-712 path for a Cardano payload.
             return [data.hexString]
+        } else if chain.lowercased() == "ripple" {
+            // XRPL off-chain message signing (GemWallet signMessage /
+            // ripple-keypairs): the signed digest is SHA-512-half — the first
+            // 32 bytes of SHA-512 — of the message bytes. Mirrors the `ripple`
+            // branch of getCustomMessageHex.ts in vultisig-windows
+            // (`sha512(bytes).slice(0, 32)`), rendered as lowercase hex with no
+            // 0x prefix. Note this is the bare SHA-512-half of the message: the
+            // `TXN\0` prefix + uppercasing that Ripple.swift applies belong to
+            // the transaction-ID path, not here. Placed before the method
+            // branches, like Cardano, so a misrouted method can't pull an XRPL
+            // payload into the keccak/EIP-712 path.
+            let digest = Data(Hash.sha512(data: data).prefix(32))
+            return [digest.hexString]
         } else if method == "eth_signTypedData_v4" {
             // Handle eth_signTypedData_v4 (EIP-712)
             return keysignMessagesForTypedData()
