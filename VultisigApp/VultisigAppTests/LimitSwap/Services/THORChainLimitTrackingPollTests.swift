@@ -557,6 +557,7 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
         depositAmount: String?,
         filledInAmount: String?,
         filledOutAmount: String?,
+        observedTradeTarget _: String?,
         timeToExpiryBlocks: Int?
     ) throws {
         if let error { throw error }

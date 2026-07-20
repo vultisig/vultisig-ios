@@ -556,6 +556,11 @@ final class LimitSwapFormViewModel {
         // signed order.
         let memo: String
         let effectiveMinOutput: Decimal
+        // The EFFECTIVE LIM, not the `targetPrice`-derived one: when byte-fitting
+        // rounds the LIM up, the rounded value is what the memo carries and
+        // therefore what THORChain indexes the order by. A future cancel has to
+        // reproduce it exactly or it addresses a bucket the order isn't in.
+        let signedTradeTarget: BigInt
         do {
             let fitted = try buildFittedLimitSwapMemo(
                 inputs,
@@ -563,6 +568,7 @@ final class LimitSwapFormViewModel {
             )
             memo = fitted.memo
             effectiveMinOutput = limNaturalOutput(fitted.effectiveLim)
+            signedTradeTarget = fitted.effectiveLim
         } catch let error as LimitSwapMemoError {
             switch error {
             case let .memoExceedsByteLimit(actual, limit):
@@ -595,7 +601,17 @@ final class LimitSwapFormViewModel {
             status: .pending,
             memo: memo,
             expiryHours: draft.expiryHours,
-            minOutputOverride: effectiveMinOutput
+            minOutputOverride: effectiveMinOutput,
+            // Captured here because this is the only moment all three are known
+            // exactly. `sourceAmount` on the record is in the coin's NATIVE
+            // decimals; THORChain indexes the order in 1e8, and the same
+            // conversion the quote endpoint uses is the one the chain applies.
+            sourceAmount1e8: ThorchainService.thorchainQuoteAmount(
+                sourceAmount: draft.sourceAmount,
+                sourceDecimals: draft.fromAsset.decimals
+            ).description,
+            tradeTarget: signedTradeTarget.description,
+            sourceChainRawValue: draft.fromAsset.chain.rawValue
         )
         return (memo, record)
     }

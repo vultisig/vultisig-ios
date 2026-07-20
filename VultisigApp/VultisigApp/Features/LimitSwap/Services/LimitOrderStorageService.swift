@@ -54,6 +54,9 @@ struct LimitOrderStorageService {
             createdAt: record.createdAt,
             status: record.status,
             minOutputOverride: record.minOutputOverride,
+            sourceAmount1e8: record.sourceAmount1e8,
+            tradeTarget: record.tradeTarget,
+            sourceChainRawValue: record.sourceChainRawValue,
             vault: vault
         )
         Storage.shared.modelContext.insert(model)
@@ -119,6 +122,7 @@ struct LimitOrderStorageService {
         depositAmount: String? = nil,
         filledInAmount: String? = nil,
         filledOutAmount: String? = nil,
+        observedTradeTarget: String? = nil,
         timeToExpiryBlocks: Int? = nil,
         observedAt: Date = Date(),
         in vault: Vault
@@ -128,6 +132,7 @@ struct LimitOrderStorageService {
         }
         order.statusRawValue = status.rawValue
         if let depositAmount { order.depositAmount = depositAmount }
+        if let observedTradeTarget { order.observedTradeTarget = observedTradeTarget }
         if let filledInAmount { order.filledInAmount = filledInAmount }
         if let filledOutAmount { order.filledOutAmount = filledOutAmount }
         if let timeToExpiryBlocks {

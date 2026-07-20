@@ -22,6 +22,8 @@ protocol LimitOrderObserving {
     ///   - pubKeyECDSA: identifies the owning vault.
     ///   - amounts: `nil` means "not observed" and must leave any stored value
     ///     untouched.
+    ///   - observedTradeTarget: the queue's own `trade_target`, cross-checked
+    ///     against the value recorded at signing before a cancel is built.
     ///   - timeToExpiryBlocks: the queue's live countdown; `nil` means "not
     ///     observed" and follows the same rule.
     func recordObservation(
@@ -31,6 +33,7 @@ protocol LimitOrderObserving {
         depositAmount: String?,
         filledInAmount: String?,
         filledOutAmount: String?,
+        observedTradeTarget: String?,
         timeToExpiryBlocks: Int?
     ) throws
 }
@@ -60,6 +63,7 @@ struct LimitOrderObserver: LimitOrderObserving {
         depositAmount: String?,
         filledInAmount: String?,
         filledOutAmount: String?,
+        observedTradeTarget: String?,
         timeToExpiryBlocks: Int?
     ) throws {
         guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
@@ -72,6 +76,7 @@ struct LimitOrderObserver: LimitOrderObserving {
             depositAmount: depositAmount,
             filledInAmount: filledInAmount,
             filledOutAmount: filledOutAmount,
+            observedTradeTarget: observedTradeTarget,
             timeToExpiryBlocks: timeToExpiryBlocks,
             in: vault
         )

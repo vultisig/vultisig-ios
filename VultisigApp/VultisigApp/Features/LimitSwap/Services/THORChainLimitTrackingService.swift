@@ -384,6 +384,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 depositAmount: state?.deposit,
                 filledInAmount: state?.inAmount,
                 filledOutAmount: state?.outAmount,
+                observedTradeTarget: entry?.swap.tradeTarget,
                 // Every numeric field on this endpoint arrives as a string. An
                 // unparseable countdown is dropped rather than defaulted: `0`
                 // would render "expired" on an order that is resting fine.

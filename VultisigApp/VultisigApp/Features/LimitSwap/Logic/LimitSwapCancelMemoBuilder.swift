@@ -1,0 +1,330 @@
+//
+//  LimitSwapCancelMemoBuilder.swift
+//  VultisigApp
+//
+//  Builds THORChain's `m=<` modify-limit-swap memo in its CANCEL form, and
+//  decides whether a given order may be cancelled at all.
+//
+//  Verified against THORNode `develop` (`x/thorchain/memo/memo_modify_limit_swap.go`,
+//  `handler_modify_limit_swap.go`, `keeper/v1/keeper_adv_swap_queue.go`).
+//  The GitHub mirror is stale; gitlab.com/thorchain/thornode is authoritative.
+//
+
+import BigInt
+import Foundation
+
+/// THORChain's modify-limit-swap memo prefix. Distinct from `limitSwapMemoPrefix`
+/// (`=<:`), which PLACES an order — `m=<:` modifies one that is already resting.
+/// Shared by the builder and `isModifyLimitSwapMemo` so the two can't drift.
+let modifyLimitSwapMemoPrefix = "m=<:"
+
+/// True when `memo` MODIFIES a resting order — which includes, but is not
+/// limited to, cancelling it.
+///
+/// Named for what it actually matches. A cancel is the special case where the
+/// memo's final field is `0`; a non-zero final field re-targets the order
+/// instead. This app only ever builds the cancel form (modify is out of scope),
+/// so in practice the two coincide here — but a predicate that says "cancel"
+/// while matching any modification is the kind of small lie that outlives the
+/// assumption that made it true.
+///
+/// Prefix-matched: everything after the prefix is the order's addressing payload.
+func isModifyLimitSwapMemo(_ memo: String?) -> Bool {
+    memo?.hasPrefix(modifyLimitSwapMemoPrefix) ?? false
+}
+
+/// The `ModifiedTargetAmount` that means "cancel".
+///
+/// THORNode's handler branches on `msg.ModifiedTargetAmount.IsZero()` — verbatim
+/// comment: *"the target is being modified to zero, which is interpreted as a
+/// cancel"*. Any non-zero value MODIFIES the order's trade target instead, which
+/// is a different feature we deliberately do not build.
+private let cancelModifiedTargetAmount = "0"
+
+/// Everything the cancel memo needs, already reduced to the exact integers
+/// THORChain itself holds. Held as `BigInt` rather than `String` so a caller
+/// cannot hand this an unparsed or negative value.
+struct LimitOrderCancelInputs: Equatable, Sendable {
+    /// THORChain memo form of the order's SOURCE asset.
+    ///
+    /// ⚠️ Must be the asset's **secured** denom (`eth-usdc-0xa0b…`) when the
+    /// source is a secured asset — never its layer-1 form (`ETH.USDC-0XA0B…`).
+    /// `MsgModifyLimitSwap.ValidateBasic` enforces
+    /// `From.IsChain(Source.Asset.GetChain())`, and `Asset.GetChain()` returns
+    /// `THORChain` **only** when the asset is a synth, trade or secured asset.
+    /// Emitting the layer-1 form makes `GetChain()` report `ETH`, and the cancel
+    /// — sent from a THOR address — is then rejected outright at validation.
+    /// `thorchainMemoAsset` already emits the secured denom verbatim.
+    let sourceAsset: String
+    /// The order's deposited source amount in THORChain's 1e8 fixed point.
+    let sourceAmount1e8: BigInt
+    /// THORChain memo form of the order's TARGET asset.
+    let targetAsset: String
+    /// The order's ORIGINAL trade target (the LIM the placement memo encoded),
+    /// in the target asset's 1e8 fixed point.
+    let tradeTarget: BigInt
+}
+
+enum LimitSwapCancelMemoError: Error, Equatable {
+    /// An amount was zero or negative. Both amounts are part of the ratio the
+    /// matcher keys on, and a zero trade target would additionally make
+    /// THORNode's `getRatio` return the sentinel `"0"` bucket.
+    case nonPositiveAmount
+    case emptyAsset
+}
+
+/// Build the `m=<` memo that cancels a resting limit order.
+///
+/// Wire layout, exactly three fields after the prefix:
+///
+///     m=<:<SRC_AMOUNT><SRC_ASSET>:<TRADE_TARGET><TGT_ASSET>:0
+///
+/// Both coins are `<amount><ASSET>` with **no space** — THORNode's `getCoin`
+/// scans leading digits and splices the space back in before parsing.
+///
+/// ⚠️ **Amounts are PLAIN decimal integers — never `compressLim`'d.** The
+/// placement memo's LIM goes through `getUintWithScientificNotation`, which
+/// understands `544e6`; these coin amounts go through `cosmos.ParseCoins` /
+/// `common.ParseCoin`, which do NOT. A compressed amount here fails to parse and
+/// the cancel is rejected. The two memos look similar and are not.
+///
+/// ⚠️ **Why both amounts must be exact.** THORNode does not compare the amounts
+/// directly. It builds an index key from
+/// `(layer1Source > layer1Target / rewriteRatio(18, sourceAmount × 1e8 / tradeTarget))`
+/// and then scans that bucket for a swap whose `FromAddress` matches the sender,
+/// taking the FIRST match. The amounts are load-bearing only through that
+/// integer division — but one unit of drift in either lands in a different
+/// bucket, and a cancel that matches nothing is indistinguishable from a
+/// successful one from the client's side. Hence `LimitOrderCancelInputs` is fed
+/// from values captured at signing and cross-checked against the queue, never
+/// re-derived. See `limitOrderCancelEligibility`.
+func buildCancelLimitSwapMemo(_ inputs: LimitOrderCancelInputs) throws -> String {
+    guard !inputs.sourceAsset.isEmpty, !inputs.targetAsset.isEmpty else {
+        throw LimitSwapCancelMemoError.emptyAsset
+    }
+    guard inputs.sourceAmount1e8 > 0, inputs.tradeTarget > 0 else {
+        throw LimitSwapCancelMemoError.nonPositiveAmount
+    }
+    let source = "\(inputs.sourceAmount1e8.description)\(inputs.sourceAsset)"
+    let target = "\(inputs.tradeTarget.description)\(inputs.targetAsset)"
+    return "\(modifyLimitSwapMemoPrefix)\(source):\(target):\(cancelModifiedTargetAmount)"
+}
+
+// MARK: - Eligibility
+
+/// Why an order cannot be cancelled from this app. Each case maps to its own
+/// user-facing explanation — a disabled button with no reason is worse than no
+/// button.
+enum LimitOrderCancelBlocker: Equatable, Sendable {
+    /// The order has already closed. Nothing left to cancel.
+    case terminal
+    /// The order predates the fields cancelling needs, or its source chain was
+    /// never recorded. Fails closed: we would rather grey the button out than
+    /// guess at the amounts the matcher keys on.
+    case missingSignedData
+    /// Placed by depositing on an L1 chain, so its `FromAddress` is an L1
+    /// address and a `MsgDeposit` from our THOR address can never match it.
+    ///
+    /// NOTE: such an order is not permanently uncancellable at the protocol
+    /// level — THORNode also accepts `m=<` from the Bifrost observed-tx path, so
+    /// a transaction sent from the original L1 address would cancel it. We
+    /// simply do not build that path (and its attached dust is donated to the
+    /// pool). The copy must not claim the order can never be cancelled.
+    case notThorchainSourced
+    /// What we recorded at signing and what the queue reports disagree.
+    ///
+    /// One of the two is wrong and there is no way to tell which. Signing either
+    /// would be a guess whose failure mode is silent — the cancel simply matches
+    /// nothing and looks like it worked.
+    case signedDataDisagreesWithChain
+}
+
+enum LimitOrderCancelEligibility: Equatable, Sendable {
+    case cancellable(LimitOrderCancelInputs)
+    case blocked(LimitOrderCancelBlocker)
+
+    var blocker: LimitOrderCancelBlocker? {
+        switch self {
+        case .cancellable: return nil
+        case let .blocked(blocker): return blocker
+        }
+    }
+
+    var isCancellable: Bool { blocker == nil }
+}
+
+/// Decide whether `details` describes an order this app can cancel, and if so
+/// with which exact amounts.
+///
+/// **Fails closed at every unknown.** The failure this guards against is not a
+/// crash or an error dialog — it is a cancel that is accepted, costs a fee, and
+/// silently matches no order at all. Every branch that cannot prove the amounts
+/// are the ones THORChain holds returns `.blocked`.
+func limitOrderCancelEligibility(_ details: LimitOrderDetails) -> LimitOrderCancelEligibility {
+    guard !details.isTerminal else {
+        return .blocked(.terminal)
+    }
+    // `LimitOrder` carries no chain field, and `sourceAsset` alone cannot stand
+    // in for one: a SECURED asset source is THORChain-placed but its memo asset
+    // is a bare denom (`eth-usdc-0xa0b…`) with no `THOR.` prefix, while a
+    // `THOR.`-prefixed string tells us nothing about where the deposit came
+    // from. So the source chain is recorded explicitly at placement; `nil` means
+    // the order predates that and is treated as not cancellable.
+    guard let sourceChainRawValue = details.sourceChainRawValue,
+          let sourceChain = Chain(rawValue: sourceChainRawValue) else {
+        return .blocked(.missingSignedData)
+    }
+    guard sourceChain == .thorChain else {
+        return .blocked(.notThorchainSourced)
+    }
+    // Bound in two steps rather than `flatMap(BigInt.init)`: an unapplied
+    // `BigInt.init` is ambiguous here (this codebase carries radix/hex
+    // initializer overloads that also match `(String) -> BigInt?`), which is the
+    // same footgun already documented for `Int.init` on the tracking path.
+    guard let signedSourceAmountText = details.sourceAmount1e8,
+          let signedTradeTargetText = details.tradeTarget,
+          let signedSourceAmount = BigInt(signedSourceAmountText),
+          let signedTradeTarget = BigInt(signedTradeTargetText),
+          signedSourceAmount > 0, signedTradeTarget > 0 else {
+        return .blocked(.missingSignedData)
+    }
+
+    // Cross-check against what THORChain itself reports, when it has reported
+    // anything. `state.deposit` IS the swap's `Tx.Coins[0].Amount` (THORNode
+    // assigns it verbatim), and `trade_target` IS `msg.TradeTarget` — i.e. the
+    // exact pair the matcher's ratio is computed from. Absence is NOT
+    // disagreement: an order placed seconds ago has not been polled yet, and
+    // refusing to cancel it until the first poll lands would be a worse failure
+    // than the one this check prevents.
+    // An observation that is PRESENT but unparseable blocks, exactly as a
+    // mismatch does. "Absent" and "present but not understood" are different
+    // claims: the first is a poll that hasn't happened, the second means the
+    // wire carried something this code does not model — a protocol change, most
+    // likely — and proceeding would sign amounts we failed to verify. THORChain
+    // amounts are `cosmos.Uint` decimal strings, so this should never fire; if
+    // it does, that IS the signal.
+    if let observedDepositText = details.fill.depositAmount {
+        guard let observedDeposit = BigInt(observedDepositText),
+              observedDeposit == signedSourceAmount else {
+            return .blocked(.signedDataDisagreesWithChain)
+        }
+    }
+    if let observedTradeTargetText = details.observedTradeTarget {
+        guard let observedTradeTarget = BigInt(observedTradeTargetText),
+              observedTradeTarget == signedTradeTarget else {
+            return .blocked(.signedDataDisagreesWithChain)
+        }
+    }
+
+    return .cancellable(
+        LimitOrderCancelInputs(
+            sourceAsset: details.sourceAsset,
+            sourceAmount1e8: signedSourceAmount,
+            targetAsset: details.targetAsset,
+            tradeTarget: signedTradeTarget
+        )
+    )
+}
+
+// MARK: - Duplicate detection
+
+/// Other RESTING orders that the same cancel memo would also address.
+///
+/// THORNode addresses orders by **(layer-1 source asset, layer-1 target asset,
+/// ratio) + `FromAddress`**, never by tx hash, and takes the FIRST match in the
+/// bucket — verbatim: *"If multiple swaps exist with the same source/target for
+/// a user, only the first is modified."* So two orders that reduce to the same
+/// inputs are not independently cancellable, and the user has to be told that
+/// the one they tapped may not be the one that closes.
+///
+/// Compared on THORNode's actual bucket key, NOT on equal amounts: two orders
+/// with different deposits and different trade targets collide whenever their
+/// ratio is the same (sell 1 and sell 2 at the same price land in one bucket).
+/// Comparing amounts for equality would silently under-report exactly the
+/// duplicates the user most needs warning about.
+///
+/// Assets are layer-1-normalized before comparison, because THORNode's key is.
+/// A synth, trade or secured representation and the plain L1 asset all collapse
+/// to the same key on-chain, so comparing the memo strings verbatim would miss
+/// a pair that really does collide — and the whole point of this warning is that
+/// the order the user tapped may not be the one that closes.
+func duplicateRestingLimitOrders(
+    of target: LimitOrderDetails,
+    among orders: [LimitOrderDetails]
+) -> [LimitOrderDetails] {
+    guard case let .cancellable(targetInputs) = limitOrderCancelEligibility(target) else {
+        return []
+    }
+    let targetKey = thorchainLimitOrderBucketKey(targetInputs)
+    return orders
+        .filter { $0.id != target.id }
+        .filter { candidate in
+            guard case let .cancellable(inputs) = limitOrderCancelEligibility(candidate) else {
+                return false
+            }
+            return thorchainLimitOrderBucketKey(inputs) == targetKey
+        }
+        .sorted { $0.createdAt < $1.createdAt }
+}
+
+/// Reproduces THORNode's adv-swap-queue index key for a limit order — the tuple
+/// that decides which orders are mutually indistinguishable to a cancel.
+///
+/// Mirrors `getAdvSwapQueueIndexKey` + `getRatio` + `rewriteRatio`:
+///
+///     ratio = (sourceAmount × 1e8) / tradeTarget      // integer division
+///     key   = "<source>><target>/<ratio padded or truncated to 18 chars>/"
+///
+/// The 18-character normalization is not cosmetic — THORNode zero-pads short
+/// ratios so the keys sort in numeric order, and **truncates** longer ones from
+/// the right, which deliberately collapses very large ratios into one bucket.
+/// Both behaviours have to be reproduced or the duplicate warning disagrees with
+/// the chain at exactly the extremes where it matters.
+func thorchainLimitOrderBucketKey(_ inputs: LimitOrderCancelInputs) -> String {
+    let ratio = (inputs.sourceAmount1e8 * BigInt(10).power(Coin.thorchainFixedPointExponent)) / inputs.tradeTarget
+    let source = thorchainLayer1MemoAsset(inputs.sourceAsset)
+    let target = thorchainLayer1MemoAsset(inputs.targetAsset)
+    return "\(source)>\(target)/\(rewriteThorchainRatio(ratio.description))/"
+}
+
+/// Collapse a memo asset string to its layer-1 form, the way THORNode's
+/// `Asset.GetLayer1Asset()` does when it builds the queue index key.
+///
+/// On their side this just clears the synth/trade/secured flags while keeping
+/// chain, symbol and ticker; on the wire those three flavours are spelled with
+/// `/`, `~` and `-` respectively where the L1 asset uses `.`. So the rule is:
+/// the FIRST separator becomes `.`, and the result is upper-cased (secured
+/// denoms arrive lower-case).
+///
+/// An asset already in L1 form is left alone — its first separator is the `.`
+/// itself, and the `-` in a contract-suffixed asset like `ETH.USDC-0XA0B…`
+/// comes after it, so it must not be touched.
+///
+/// This is an APPROXIMATION, and deliberately only used for the duplicate
+/// WARNING — never to build a memo. It is tuned to over-report rather than
+/// under-report: telling a user two orders might be confused when they wouldn't
+/// be is a mild annoyance, while missing a real collision means the wrong order
+/// closes with no warning at all.
+func thorchainLayer1MemoAsset(_ asset: String) -> String {
+    let separators: Set<Character> = ["/", "~", "-", "."]
+    guard let index = asset.firstIndex(where: { separators.contains($0) }),
+          asset[index] != "." else {
+        return asset.uppercased()
+    }
+    return (asset[asset.startIndex..<index] + "." + asset[asset.index(after: index)...]).uppercased()
+}
+
+/// THORNode's `ratioLength` — "a value of 18 means that granularity is maxed out
+/// at 1 trillion to 1 ratio" (verbatim). Changing it on their side is a kvstore
+/// migration, so it is safe to pin.
+private let thorchainRatioLength = 18
+
+private func rewriteThorchainRatio(_ ratio: String) -> String {
+    if ratio.count < thorchainRatioLength {
+        return String(repeating: "0", count: thorchainRatioLength - ratio.count) + ratio
+    }
+    if ratio.count > thorchainRatioLength {
+        return String(ratio.prefix(thorchainRatioLength))
+    }
+    return ratio
+}

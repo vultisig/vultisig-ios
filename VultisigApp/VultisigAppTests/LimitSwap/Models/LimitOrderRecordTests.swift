@@ -27,7 +27,14 @@ final class LimitOrderRecordTests: XCTestCase {
             status: .filled,
             memo: "=<:BTC.BTC:bc1qexampledestaddress:1.5e6",
             expiryHours: 72,
-            minOutputOverride: Decimal(string: "0.00512345")!
+            minOutputOverride: Decimal(string: "0.00512345")!,
+            // Populated so `testWithInboundTxHashPreservesEveryOtherField`
+            // actually covers them — left at their `nil` default they would
+            // match trivially even if `with` dropped them, which is precisely
+            // the bug class that test exists to catch.
+            sourceAmount1e8: "60012000000",
+            tradeTarget: "512345",
+            sourceChainRawValue: Chain.thorChain.rawValue
         )
     }
 

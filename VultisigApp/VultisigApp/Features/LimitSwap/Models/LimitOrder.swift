@@ -67,6 +67,41 @@ final class LimitOrder {
     var timeToExpiryBlocks: Int?
     var expiryObservedAt: Date?
 
+    /// The exact pair the CANCEL memo has to reproduce, captured at signing.
+    ///
+    /// THORChain addresses a resting order by a bucket key derived from
+    /// `(sourceAmount × 1e8) / tradeTarget`, so a cancel must reproduce both
+    /// integers exactly or it lands in a different bucket and silently matches
+    /// nothing. Neither is recoverable after the fact: `sourceAmount` above is in
+    /// the source coin's NATIVE decimals (the memo needs 1e8), and the effective
+    /// LIM — which is what was actually signed, and differs from the
+    /// `targetPrice`-derived value whenever byte-fitting rounded it up — exists
+    /// only in the placement memo, which this table does not store.
+    ///
+    /// BigInt-as-string like the fill amounts. `nil` on orders placed before
+    /// cancelling existed, which makes them uncancellable — the intended
+    /// fail-closed behaviour, not a gap.
+    var sourceAmount1e8: String?
+    var tradeTarget: String?
+
+    /// The queue's own `swap.trade_target`, recorded so it can be cross-checked
+    /// against `tradeTarget` above. (`state.deposit`, already stored as
+    /// `depositAmount`, is the matching cross-check for `sourceAmount1e8` — it
+    /// IS the swap's `Tx.Coins[0].Amount`.)
+    ///
+    /// A disagreement means one of the two is wrong with no way to tell which,
+    /// and disables cancelling rather than signing a guess.
+    var observedTradeTarget: String?
+
+    /// `Chain.rawValue` of the coin the order was funded with.
+    ///
+    /// Needed because cancelling is creator-only and our cancel is a `MsgDeposit`
+    /// from the vault's THOR address — it can only ever match an order that was
+    /// itself placed from the THORChain side. `sourceAsset` cannot answer this: a
+    /// SECURED asset source is THORChain-placed yet carries a bare denom with no
+    /// `THOR.` prefix. `nil` (pre-existing orders) is treated as not cancellable.
+    var sourceChainRawValue: String?
+
     @Relationship(inverse: \Vault.limitOrders) var vault: Vault?
 
     init(
@@ -82,6 +117,9 @@ final class LimitOrder {
         createdAt: Date,
         status: LimitOrderStatus,
         minOutputOverride: Decimal? = nil,
+        sourceAmount1e8: String? = nil,
+        tradeTarget: String? = nil,
+        sourceChainRawValue: String? = nil,
         vault: Vault
     ) {
         self.id = id
@@ -96,6 +134,9 @@ final class LimitOrder {
         self.createdAt = createdAt
         self.statusRawValue = status.rawValue
         self.minOutputOverride = minOutputOverride
+        self.sourceAmount1e8 = sourceAmount1e8
+        self.tradeTarget = tradeTarget
+        self.sourceChainRawValue = sourceChainRawValue
         self.vault = vault
     }
 
@@ -139,7 +180,11 @@ final class LimitOrder {
             status: status,
             minOutputOverride: minOutputOverride,
             fill: fill,
-            expiry: expiry
+            expiry: expiry,
+            sourceAmount1e8: sourceAmount1e8,
+            tradeTarget: tradeTarget,
+            observedTradeTarget: observedTradeTarget,
+            sourceChainRawValue: sourceChainRawValue
         )
     }
 }
@@ -194,6 +239,13 @@ struct LimitOrderRecord: Hashable, Sendable {
     /// `limitOrderExpectedOutput`. When set, the Verify/Done "min payout" shows
     /// the EXACT figure the order was signed with (what you see is what you sign).
     let minOutputOverride: Decimal?
+    /// The exact integers a future CANCEL memo must reproduce, and the chain the
+    /// order was funded from. Captured here because signing time is the only
+    /// moment all three are known exactly — see the matching properties on
+    /// `LimitOrder`. `nil` keeps the order uncancellable rather than guessed at.
+    let sourceAmount1e8: String?
+    let tradeTarget: String?
+    let sourceChainRawValue: String?
 
     init(
         inboundTxHash: String,
@@ -208,7 +260,10 @@ struct LimitOrderRecord: Hashable, Sendable {
         status: LimitOrderStatus = .pending,
         memo: String = "",
         expiryHours: Int = 0,
-        minOutputOverride: Decimal? = nil
+        minOutputOverride: Decimal? = nil,
+        sourceAmount1e8: String? = nil,
+        tradeTarget: String? = nil,
+        sourceChainRawValue: String? = nil
     ) {
         self.inboundTxHash = inboundTxHash
         self.sourceAsset = sourceAsset
@@ -223,6 +278,9 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.memo = memo
         self.expiryHours = expiryHours
         self.minOutputOverride = minOutputOverride
+        self.sourceAmount1e8 = sourceAmount1e8
+        self.tradeTarget = tradeTarget
+        self.sourceChainRawValue = sourceChainRawValue
     }
 
     /// Returns a copy with the inbound TX hash spliced in. The record is built
@@ -246,7 +304,10 @@ struct LimitOrderRecord: Hashable, Sendable {
             status: status,
             memo: memo,
             expiryHours: expiryHours,
-            minOutputOverride: minOutputOverride
+            minOutputOverride: minOutputOverride,
+            sourceAmount1e8: sourceAmount1e8,
+            tradeTarget: tradeTarget,
+            sourceChainRawValue: sourceChainRawValue
         )
     }
 }

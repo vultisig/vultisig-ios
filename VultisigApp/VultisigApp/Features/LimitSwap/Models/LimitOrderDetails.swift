@@ -173,6 +173,53 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     /// has closed (a terminal order is gone from the queue and has no countdown
     /// left to report).
     let expiry: LimitOrderExpiry?
+    /// The exact integers a cancel memo must reproduce (captured at signing),
+    /// the chain the order was funded from, and the queue's own trade target for
+    /// cross-checking. All optional and all fail closed — see
+    /// `limitOrderCancelEligibility`, which is the only thing that should read
+    /// them.
+    let sourceAmount1e8: String?
+    let tradeTarget: String?
+    let observedTradeTarget: String?
+    let sourceChainRawValue: String?
+
+    /// Spelled out rather than left to the memberwise synthesis so the
+    /// cancel-related fields can default to `nil` — every existing construction
+    /// site describes an order that simply predates cancelling, and defaulting
+    /// them keeps "not known" as the thing a caller has to opt OUT of.
+    init(
+        id: String,
+        inboundTxHash: String,
+        sourceAsset: String,
+        targetAsset: String,
+        targetPrice: Decimal,
+        expiryBlocks: Int,
+        createdAt: Date,
+        status: LimitOrderStatus,
+        minOutputOverride: Decimal?,
+        fill: LimitOrderFill,
+        expiry: LimitOrderExpiry?,
+        sourceAmount1e8: String? = nil,
+        tradeTarget: String? = nil,
+        observedTradeTarget: String? = nil,
+        sourceChainRawValue: String? = nil
+    ) {
+        self.id = id
+        self.inboundTxHash = inboundTxHash
+        self.sourceAsset = sourceAsset
+        self.targetAsset = targetAsset
+        self.targetPrice = targetPrice
+        self.expiryBlocks = expiryBlocks
+        self.createdAt = createdAt
+        self.status = status
+        self.minOutputOverride = minOutputOverride
+        self.fill = fill
+        self.expiry = expiry
+        self.sourceAmount1e8 = sourceAmount1e8
+        self.tradeTarget = tradeTarget
+        self.observedTradeTarget = observedTradeTarget
+        self.sourceChainRawValue = sourceChainRawValue
+    }
 
     var fillFraction: Decimal? { fill.fillFraction }
 

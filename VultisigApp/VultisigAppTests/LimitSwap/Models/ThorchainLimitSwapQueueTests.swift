@@ -38,6 +38,10 @@ final class ThorchainLimitSwapQueueTests: XCTestCase {
         XCTAssertEqual(entry.blocksSinceCreated, "4131")
         XCTAssertEqual(entry.swap.tx.id, "ABC123")
         XCTAssertEqual(entry.swap.tx.fromAddress, "thor1sender")
+        // `trade_target` is `MsgSwap.TradeTarget` verbatim — half of the pair
+        // THORChain addresses a resting order by, and the cross-check that
+        // guards a cancel memo built from locally-recorded values.
+        XCTAssertEqual(entry.swap.tradeTarget, "15979057441")
         XCTAssertEqual(entry.swap.state?.deposit, "37556623288")
         XCTAssertEqual(entry.swap.state?.inAmount, "0")
         XCTAssertEqual(entry.swap.state?.outAmount, "0")

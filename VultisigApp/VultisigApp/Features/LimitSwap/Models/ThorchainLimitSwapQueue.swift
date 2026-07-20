@@ -58,10 +58,20 @@ struct ThorchainLimitSwapQueueEntry: Decodable, Equatable {
 struct ThorchainQueuedSwap: Decodable, Equatable {
     let tx: ThorchainQueuedSwapTx
     let state: ThorchainQueuedSwapState?
+    /// The order's trade target (the LIM its placement memo encoded), in the
+    /// target asset's 1e8 fixed point. This is `MsgSwap.TradeTarget` verbatim.
+    ///
+    /// Read for one reason: it is half of the pair THORChain addresses a resting
+    /// order by, so it cross-checks the value we recorded at signing before a
+    /// cancel is built from it. (`state.deposit` is the other half — THORNode
+    /// assigns it from `Tx.Coins[0].Amount`.) A mismatch disables cancelling
+    /// rather than signing a memo that would match nothing.
+    let tradeTarget: String?
 
     enum CodingKeys: String, CodingKey {
         case tx
         case state
+        case tradeTarget = "trade_target"
     }
 }
 
