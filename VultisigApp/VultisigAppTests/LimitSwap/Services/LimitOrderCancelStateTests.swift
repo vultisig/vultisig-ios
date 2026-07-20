@@ -30,7 +30,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
             destAddress: "bc1qdest",
             targetPrice: 1,
             expiryBlocks: 14_400,
-            createdAt: Date(timeIntervalSince1970: 1_000_000),
+            createdAt: Date(),
             status: status,
             vault: .example
         )

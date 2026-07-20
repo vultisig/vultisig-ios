@@ -30,9 +30,16 @@ final class CancelLimitOrderTransactionBuilderTests: XCTestCase {
     ) -> CancelLimitOrderTransactionBuilder {
         CancelLimitOrderTransactionBuilder(
             coin: Self.rune,
-            memo: memo,
-            sourceAssetDisplay: "THOR.RUNE",
-            targetAssetDisplay: "BTC.BTC"
+            request: LimitOrderCancelRequest(
+                orderId: "order-1",
+                inboundTxHash: "ABC123",
+                memo: memo,
+                sourceAsset: "THOR.RUNE",
+                targetAsset: "BTC.BTC",
+                sourceChainRawValue: Chain.thorChain.rawValue,
+                duplicateRestingOrderCount: 0
+            ),
+            l1Destination: nil
         )
     }
 

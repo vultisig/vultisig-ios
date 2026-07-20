@@ -139,9 +139,16 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         XCTAssertTrue(limitOrderCancelEligibility(details).isCancellable)
     }
 
-    func testL1SourcedOrderIsNotCancellable() {
+    /// A BTC-funded order is cancellable from BTC — THORNode dispatches `m=<`
+    /// from the Bifrost observed-tx path as well as from a native deposit.
+    func testL1SourcedOrderOnARoutableChainIsCancellable() {
         let details = makeDetails(sourceChainRawValue: Chain.bitcoin.rawValue)
-        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .notThorchainSourced)
+        XCTAssertTrue(limitOrderCancelEligibility(details).isCancellable)
+    }
+
+    func testUnroutableSourceChainIsNotCancellable() {
+        let details = makeDetails(sourceChainRawValue: Chain.solana.rawValue)
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .unsupportedSourceChain)
     }
 
     func testOrderWithNoRecordedSourceChainIsNotCancellable() {
@@ -245,9 +252,9 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         let target = makeDetails(id: "a")
         let otherPair = makeDetails(id: "b", targetAsset: "ETH.ETH")
         let terminal = makeDetails(id: "c", status: .filled)
-        let l1 = makeDetails(id: "d", sourceChainRawValue: Chain.bitcoin.rawValue)
+        let unroutable = makeDetails(id: "d", sourceChainRawValue: Chain.solana.rawValue)
 
-        let duplicates = duplicateRestingLimitOrders(of: target, among: [target, otherPair, terminal, l1])
+        let duplicates = duplicateRestingLimitOrders(of: target, among: [target, otherPair, terminal, unroutable])
         XCTAssertTrue(duplicates.isEmpty)
     }
 
@@ -262,7 +269,7 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
     }
 
     func testAnUncancellableOrderReportsNoDuplicates() {
-        let target = makeDetails(id: "a", sourceChainRawValue: Chain.bitcoin.rawValue)
+        let target = makeDetails(id: "a", sourceChainRawValue: Chain.solana.rawValue)
         let peer = makeDetails(id: "b")
         XCTAssertTrue(duplicateRestingLimitOrders(of: target, among: [target, peer]).isEmpty)
     }

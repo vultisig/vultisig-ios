@@ -34,19 +34,57 @@ final class LimitOrderCancelEnablementTests: XCTestCase {
         XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .terminal)
     }
 
-    /// TEMPORARY arm. An L1-funded order is cancellable in principle — by
-    /// sending the `m=<` from its own chain — and that path is built later in
-    /// this same change. When it lands, this expectation changes from "blocked"
-    /// to "cancellable via the L1 route", and this test is the thing that should
-    /// fail loudly if the arm is removed without replacing its coverage.
-    func testL1SourcedOrderIsBlockedUntilTheL1RouteExists() {
+    /// The L1 route has landed: an order funded on a THORChain-routable chain is
+    /// cancellable by sending the `m=<` from that chain.
+    ///
+    /// This replaces the temporary arm that asserted `.notThorchainSourced`,
+    /// which was written to fail loudly the moment L1 support arrived. It did.
+    func testL1SourcedOrderOnARoutableChainIsCancellable() {
         for chain in [Chain.bitcoin, .ethereum, .dogecoin, .litecoin] {
+            XCTAssertTrue(
+                limitOrderCancelEligibility(makeDetails(sourceChainRawValue: chain.rawValue)).isCancellable,
+                "\(chain.rawValue) source should be cancellable from its own chain"
+            )
+        }
+    }
+
+    /// A chain THORChain cannot route has no inbound vault to send a cancel to.
+    func testUnroutableSourceChainIsBlocked() {
+        for chain in [Chain.solana, .ton, .polkadot] {
             XCTAssertEqual(
                 limitOrderCancelEligibility(makeDetails(sourceChainRawValue: chain.rawValue)).blocker,
-                .notThorchainSourced,
+                .unsupportedSourceChain,
                 "\(chain.rawValue) source"
             )
         }
+    }
+
+    /// ⚠️ Nothing in a cancel memo can be shortened, so an ERC20 target from a
+    /// UTXO source simply does not fit the 80-byte `OP_RETURN` cap.
+    func testErc20TargetFromAUtxoSourceIsBlocked() {
+        let details = makeDetails(
+            targetAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            sourceChainRawValue: Chain.bitcoin.rawValue
+        )
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .memoTooLongForSourceChain)
+    }
+
+    /// ⚠️ The order is deliberately left `.pending` after a cancel broadcasts,
+    /// so `isTerminal` alone would leave the button live and let the user pay
+    /// the fee — and on L1 donate the dust — again, for a memo that lands in the
+    /// identical ratio bucket.
+    func testAnOrderWithACancelAlreadyBroadcastIsBlocked() {
+        let details = makeDetails(cancelBroadcastHash: "CANCELTX")
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .cancelAlreadyBroadcast)
+    }
+
+    /// Terminal still wins: a closed order is closed regardless.
+    func testTerminalTakesPrecedenceOverAnOutstandingCancel() {
+        let details = makeDetails(status: .filled, cancelBroadcastHash: "CANCELTX")
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .terminal)
     }
 
     func testLegacyOrderWithoutRecordedAmountsIsBlocked() {
@@ -85,16 +123,18 @@ final class LimitOrderCancelEnablementTests: XCTestCase {
 
     private func makeDetails(
         status: LimitOrderStatus = .pending,
+        targetAsset: String = "BTC.BTC",
         depositAmount: String? = nil,
         sourceAmount1e8: String? = "100000000",
         tradeTarget: String? = "15979057441",
-        sourceChainRawValue: String? = Chain.thorChain.rawValue
+        sourceChainRawValue: String? = Chain.thorChain.rawValue,
+        cancelBroadcastHash: String? = nil
     ) -> LimitOrderDetails {
         LimitOrderDetails(
             id: "order-1",
             inboundTxHash: "HASH",
             sourceAsset: "THOR.RUNE",
-            targetAsset: "BTC.BTC",
+            targetAsset: targetAsset,
             targetPrice: 1,
             expiryBlocks: 14_400,
             createdAt: Date(timeIntervalSince1970: 1_000_000),
@@ -109,7 +149,8 @@ final class LimitOrderCancelEnablementTests: XCTestCase {
             sourceAmount1e8: sourceAmount1e8,
             tradeTarget: tradeTarget,
             observedTradeTarget: nil,
-            sourceChainRawValue: sourceChainRawValue
+            sourceChainRawValue: sourceChainRawValue,
+            cancelBroadcastHash: cancelBroadcastHash
         )
     }
 }

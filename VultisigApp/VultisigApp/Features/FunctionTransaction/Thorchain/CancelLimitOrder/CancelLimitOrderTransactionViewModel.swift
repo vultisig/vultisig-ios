@@ -61,7 +61,10 @@ final class CancelLimitOrderTransactionViewModel: ObservableObject {
             let destination = LimitOrderCancelL1Destination(
                 inboundAddress: inbound.address,
                 dust: dust,
-                dustDecimalString: natural.formatForDisplay(maxDecimals: coin.decimals),
+                // Exact, not display-formatted: this string IS the transaction
+                // amount. Rounding it down can drop the dust below THORChain's
+                // threshold, where Bifrost ignores the transaction entirely.
+                dustDecimalString: exactNaturalUnitsString(dust, decimals: coin.decimals),
                 dustDisplay: AmountFormatter.formatCryptoAmount(value: natural, coin: coin.toCoinMeta())
             )
 
@@ -125,6 +128,27 @@ final class CancelLimitOrderTransactionViewModel: ObservableObject {
     /// the cancel may close a different order than the one the user opened.
     var hasDuplicateWarning: Bool {
         request.duplicateRestingOrderCount > 0
+    }
+
+    /// Re-check the order against storage RIGHT BEFORE signing.
+    ///
+    /// The request was snapshotted before navigation, and the confirmation
+    /// screen can sit open indefinitely. In that window the order can fill,
+    /// expire, or have a cancel recorded against it — none of which the snapshot
+    /// knows. Signing a cancel for an order that already closed spends a fee
+    /// (and on L1 donates dust) for a memo that can no longer match anything.
+    ///
+    /// The MEMO is deliberately not rebuilt: it was fixed at snapshot time so
+    /// the eligibility decision and the signed bytes cannot drift. This only
+    /// asks whether that decision still holds.
+    func isStillCancellable() -> Bool {
+        guard let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: vault.pubKeyECDSA),
+              let order = vault.limitOrders.first(where: { $0.id == request.orderId }) else {
+            // No local order — a co-signer, or a row this device does not own.
+            // The original eligibility check is the best information available.
+            return true
+        }
+        return limitOrderCancelEligibility(order.details).isCancellable
     }
 
     /// `nil` until everything the signer needs is in hand. For L1 that includes

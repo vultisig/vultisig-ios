@@ -202,7 +202,8 @@ final class LimitOrder {
             sourceAmount1e8: sourceAmount1e8,
             tradeTarget: tradeTarget,
             observedTradeTarget: observedTradeTarget,
-            sourceChainRawValue: sourceChainRawValue
+            sourceChainRawValue: sourceChainRawValue,
+            cancelBroadcastHash: cancelBroadcastHash
         )
     }
 }

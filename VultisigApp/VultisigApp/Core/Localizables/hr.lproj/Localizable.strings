@@ -653,13 +653,14 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain je pauzirao trgovanje. Pokušajte kasnije.";
 "limitSwap.asset" = "Imovina";
 "limitSwap.buy" = "Kupi";
+"limitSwap.cancel.alreadyRequested" = "Za ovaj je nalog otkazivanje već poslano i čeka potvrdu.";
 "limitSwap.cancel.donatedDust" = "Otkazivanje s ove mreže zahtijeva slanje iznosa %@ koji THORChain zadržava. Sredstva vašeg naloga vraćaju se u cijelosti.";
 "limitSwap.cancel.duplicateWarning" = "Imate još jedan aktivan nalog s istim parom i cijenom. THORChain prvo otkazuje najstariji podudarni nalog, pa bi ovo moglo zatvoriti taj nalog umjesto ovoga.";
 "limitSwap.cancel.error.chainNotRoutable" = "Otkazivanje s mreže %@ još nije podržano.";
 "limitSwap.cancel.error.dustUnavailable" = "Nije bilo moguće potvrditi minimalni iznos koji ova mreža zahtijeva. Pokušajte ponovno uskoro — vaš nalog ostaje nepromijenjen.";
-"limitSwap.cancel.error.memoTooLong" = "Ovaj se nalog ne može otkazati s izvorne mreže: poruka za otkazivanje predugačka je za tu mrežu. I dalje će se automatski vratiti po isteku.";
 "limitSwap.cancel.error.noInboundAddress" = "THORChain trenutačno ne prihvaća transakcije na ovoj mreži. Pokušajte ponovno uskoro — vaš nalog ostaje nepromijenjen.";
 "limitSwap.cancel.explanation" = "Otkazivanje zatvara ovaj nalog i vraća dio koji još nije izvršen. Ono što je već izvršeno ostaje izvršeno i ne vraća se. Ovo košta jednu THORChain mrežnu naknadu.";
+"limitSwap.cancel.orderChanged" = "Ovaj se nalog promijenio dok ste ga pregledavali. Zatvorite ovaj zaslon i provjerite trenutačni status.";
 "limitSwap.cancel.orderLabel" = "Nalog";
 "limitSwap.cancel.title" = "Otkaži nalog";
 "limitSwap.cancel.unavailableChain" = "Otkazivanje s mreže kojom je ovaj nalog financiran nije podržano. Sredstva će se automatski vratiti po isteku.";

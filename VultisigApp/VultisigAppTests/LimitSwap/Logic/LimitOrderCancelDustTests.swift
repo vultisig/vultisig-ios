@@ -139,6 +139,45 @@ final class LimitOrderCancelDustTests: XCTestCase {
         }
     }
 
+    // MARK: - Exact natural-units rendering
+
+    /// ⚠️ This string becomes the transaction amount. A display formatter would
+    /// round it, and dust rounded below THORChain's threshold is silently
+    /// ignored by Bifrost — tx confirms, fee spent, nothing cancelled.
+    func testRendersSmallEighteenDecimalAmountsWithoutRounding() {
+        // 1e10 wei = 0.00000001 ETH — already at the edge of 8-dp display.
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(10).power(10), decimals: 18), "0.00000001")
+        // One wei must not vanish.
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(1), decimals: 18), "0.000000000000000001")
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(3), decimals: 18), "0.000000000000000003")
+    }
+
+    func testRendersWholeAndFractionalAmounts() {
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(200_000_000), decimals: 8), "2")
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(2000), decimals: 8), "0.00002")
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(150_000_000), decimals: 8), "1.5")
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(0), decimals: 8), "0")
+    }
+
+    func testZeroDecimalsPassesThrough() {
+        XCTAssertEqual(exactNaturalUnitsString(BigInt(1234), decimals: 0), "1234")
+    }
+
+    /// The round trip back to base units must be lossless — that is the whole
+    /// point of not going through a formatter.
+    func testRoundTripsBackToTheSameBaseUnits() {
+        for (raw, decimals) in [(BigInt(1), 18), (BigInt(10).power(10), 18),
+                                (BigInt(2000), 8), (BigInt(200_000_000), 8)] {
+            let text = exactNaturalUnitsString(raw, decimals: decimals)
+            let parts = text.split(separator: ".", maxSplits: 1)
+            let whole = BigInt(String(parts[0])) ?? 0
+            let fractionText = parts.count > 1 ? String(parts[1]) : ""
+            let padded = fractionText + String(repeating: "0", count: decimals - fractionText.count)
+            let fraction = padded.isEmpty ? BigInt(0) : (BigInt(padded) ?? 0)
+            XCTAssertEqual(whole * BigInt(10).power(decimals) + fraction, raw, "\(text)")
+        }
+    }
+
     // MARK: - Memo length
 
     /// A gas-asset pair is comfortably inside even the 80-byte UTXO cap.

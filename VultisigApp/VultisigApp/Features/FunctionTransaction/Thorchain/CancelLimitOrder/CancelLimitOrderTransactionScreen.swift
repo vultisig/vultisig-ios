@@ -73,6 +73,10 @@ struct CancelLimitOrderTransactionScreen: View {
                     WarningView(text: balanceError)
                 }
 
+                if let staleOrderMessage {
+                    WarningView(text: staleOrderMessage)
+                }
+
                 if viewModel.hasDuplicateWarning {
                     // THORChain addresses orders by (assets, ratio) + sender and
                     // cancels the FIRST match — never by tx hash. With more than
@@ -107,8 +111,16 @@ struct CancelLimitOrderTransactionScreen: View {
         }
     }
 
+    @State private var staleOrderMessage: String?
+
     private func onContinue() {
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
+        // Re-checked here, not just at navigation time: the order can fill,
+        // expire, or already have a cancel recorded while this screen is open.
+        guard viewModel.isStillCancellable() else {
+            staleOrderMessage = "limitSwap.cancel.orderChanged".localized
+            return
+        }
         onVerify(transactionBuilder)
     }
 }

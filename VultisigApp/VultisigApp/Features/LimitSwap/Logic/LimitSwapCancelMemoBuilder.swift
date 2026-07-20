@@ -122,6 +122,16 @@ enum LimitOrderCancelBlocker: Equatable, Sendable {
     /// never recorded. Fails closed: we would rather grey the button out than
     /// guess at the amounts the matcher keys on.
     case missingSignedData
+    /// A cancel for this order has already been broadcast and is waiting to be
+    /// observed.
+    ///
+    /// The order stays `.pending` on purpose — that is what keeps a cancel that
+    /// silently matched nothing visible rather than papered over. But `.pending`
+    /// alone would also leave the button live, letting the user pay the fee (and
+    /// on L1 donate the dust) again for an identical memo that would land in the
+    /// identical ratio bucket. Self-resolving: the order leaves `.pending` when
+    /// it closes, whichever way it closes.
+    case cancelAlreadyBroadcast
     /// The order was funded from a chain THORChain cannot route, so there is no
     /// inbound vault to send the cancel to.
     case unsupportedSourceChain
@@ -166,6 +176,9 @@ enum LimitOrderCancelEligibility: Equatable, Sendable {
 func limitOrderCancelEligibility(_ details: LimitOrderDetails) -> LimitOrderCancelEligibility {
     guard !details.isTerminal else {
         return .blocked(.terminal)
+    }
+    guard details.cancelBroadcastHash == nil else {
+        return .blocked(.cancelAlreadyBroadcast)
     }
     // `LimitOrder` carries no chain field, and `sourceAsset` alone cannot stand
     // in for one: a SECURED asset source is THORChain-placed but its memo asset

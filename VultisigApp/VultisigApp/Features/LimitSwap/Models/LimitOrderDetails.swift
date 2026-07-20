@@ -182,6 +182,11 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     let tradeTarget: String?
     let observedTradeTarget: String?
     let sourceChainRawValue: String?
+    /// Set once a cancel has been CONFIRMED broadcast for this order. The order
+    /// is deliberately left `.pending` at that point (see `LimitOrder`), so this
+    /// is the only thing distinguishing "resting, untouched" from "resting, with
+    /// a cancel already on-chain".
+    let cancelBroadcastHash: String?
 
     /// Spelled out rather than left to the memberwise synthesis so the
     /// cancel-related fields can default to `nil` — every existing construction
@@ -202,7 +207,8 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
         sourceAmount1e8: String? = nil,
         tradeTarget: String? = nil,
         observedTradeTarget: String? = nil,
-        sourceChainRawValue: String? = nil
+        sourceChainRawValue: String? = nil,
+        cancelBroadcastHash: String? = nil
     ) {
         self.id = id
         self.inboundTxHash = inboundTxHash
@@ -219,6 +225,7 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
         self.tradeTarget = tradeTarget
         self.observedTradeTarget = observedTradeTarget
         self.sourceChainRawValue = sourceChainRawValue
+        self.cancelBroadcastHash = cancelBroadcastHash
     }
 
     var fillFraction: Decimal? { fill.fillFraction }

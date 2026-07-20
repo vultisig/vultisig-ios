@@ -37,6 +37,7 @@ final class CancelLimitOrderTransactionViewModelTests: XCTestCase {
                 memo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0",
                 sourceAsset: "THOR.RUNE",
                 targetAsset: "BTC.BTC",
+                sourceChainRawValue: Chain.thorChain.rawValue,
                 duplicateRestingOrderCount: duplicates
             )
         )

@@ -162,3 +162,36 @@ func limitOrderCancelDustCeiling(for chain: Chain) -> Decimal {
 func limitOrderCancelMemoFits(_ memo: String, sourceChainKind: ChainType) -> Bool {
     memo.utf8.count <= limitMemoByteLimit(for: sourceChainKind)
 }
+
+// MARK: - Exact base-units → natural-units string
+
+/// Render `value` in the coin's natural units EXACTLY, as a plain decimal
+/// string, using only integer arithmetic on the digits.
+///
+/// ⚠️ **Never use a display formatter for this.** The result is handed to the
+/// send pipeline as the transaction's amount, and this codebase's display
+/// helpers round (and `String.toDecimal()` parses through a Double-backed
+/// `NumberFormatter`, which loses precision past ~16 significant digits). An
+/// 18-decimal chain's dust threshold is a small number with many decimal
+/// places: rounded at display precision it can shrink, and a dust amount that
+/// shrinks below THORChain's `dust_threshold` is silently ignored by Bifrost —
+/// the transaction confirms, the fee is spent, and nothing is cancelled.
+///
+/// Locale-independent by construction: it never goes through a formatter, so a
+/// comma-decimal locale cannot corrupt it either.
+func exactNaturalUnitsString(_ value: BigInt, decimals: Int) -> String {
+    guard decimals > 0 else { return value.description }
+    let digits = value.description
+    let negative = digits.hasPrefix("-")
+    let magnitude = negative ? String(digits.dropFirst()) : digits
+    let padded = String(repeating: "0", count: max(0, decimals + 1 - magnitude.count)) + magnitude
+    let splitIndex = padded.index(padded.endIndex, offsetBy: -decimals)
+    let whole = String(padded[..<splitIndex])
+    // Trailing zeros are cosmetic here, but trimming them keeps the amount
+    // identical to what the user is shown and avoids a needlessly long string.
+    let fraction = String(padded[splitIndex...]).replacingOccurrences(
+        of: "0+$", with: "", options: .regularExpression
+    )
+    let sign = negative ? "-" : ""
+    return fraction.isEmpty ? "\(sign)\(whole)" : "\(sign)\(whole).\(fraction)"
+}

@@ -651,13 +651,14 @@
 "limitSwap.assemblyError.thorchainTradingPaused" = "THORChain의 거래가 일시 중지되었습니다. 나중에 다시 시도하세요.";
 "limitSwap.asset" = "자산";
 "limitSwap.buy" = "매수";
+"limitSwap.cancel.alreadyRequested" = "이 주문에 대한 취소가 이미 전송되었으며 확인을 기다리고 있습니다.";
 "limitSwap.cancel.donatedDust" = "이 체인에서 취소하려면 %@를 전송해야 하며, 이는 THORChain이 보유합니다. 주문 자금은 전액 환불됩니다.";
 "limitSwap.cancel.duplicateWarning" = "같은 페어와 가격의 대기 중인 주문이 하나 더 있습니다. THORChain은 가장 오래된 일치 항목을 먼저 취소하므로, 이 주문 대신 해당 주문이 종료될 수 있습니다.";
 "limitSwap.cancel.error.chainNotRoutable" = "%@에서의 취소는 아직 지원되지 않습니다.";
 "limitSwap.cancel.error.dustUnavailable" = "이 네트워크가 요구하는 최소 금액을 확인할 수 없습니다. 잠시 후 다시 시도하세요. 주문에는 영향이 없습니다.";
-"limitSwap.cancel.error.memoTooLong" = "이 주문은 원본 체인에서 취소할 수 없습니다. 취소 메시지가 해당 네트워크에 비해 너무 깁니다. 만료 시 자동으로 환불됩니다.";
 "limitSwap.cancel.error.noInboundAddress" = "현재 THORChain이 이 체인의 거래를 받지 않고 있습니다. 잠시 후 다시 시도하세요. 주문에는 영향이 없습니다.";
 "limitSwap.cancel.explanation" = "취소하면 이 주문이 종료되고 아직 체결되지 않은 부분이 환불됩니다. 이미 체결된 부분은 그대로 유지되며 반환되지 않습니다. THORChain 네트워크 수수료가 한 번 부과됩니다.";
+"limitSwap.cancel.orderChanged" = "검토하는 동안 이 주문이 변경되었습니다. 이 화면을 닫고 현재 상태를 확인하세요.";
 "limitSwap.cancel.orderLabel" = "주문";
 "limitSwap.cancel.title" = "주문 취소";
 "limitSwap.cancel.unavailableChain" = "이 주문에 자금을 공급한 체인에서는 취소가 지원되지 않습니다. 만료 시 자동으로 환불됩니다.";

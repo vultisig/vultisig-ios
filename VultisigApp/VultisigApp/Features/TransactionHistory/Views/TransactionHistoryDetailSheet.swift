@@ -547,6 +547,8 @@ struct TransactionHistoryDetailSheet: View {
                 disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder")
             case .blocked(.signedDataDisagreesWithChain):
                 disabledCancelButton(reason: "limitSwap.cancel.unavailableMismatch")
+            case .blocked(.cancelAlreadyBroadcast):
+                disabledCancelButton(reason: "limitSwap.cancel.alreadyRequested")
             case .blocked(.unsupportedSourceChain):
                 disabledCancelButton(reason: "limitSwap.cancel.unavailableChain")
             case .blocked(.memoTooLongForSourceChain):
