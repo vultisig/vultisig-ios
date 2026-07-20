@@ -43,6 +43,25 @@ final class RpcServiceErrorTests: XCTestCase {
         )
     }
 
+    func testNonBroadcastMethodDoesNotRecoverDuplicateError() async {
+        // A duplicate-looking error from a read call must throw, not return the
+        // broadcast sentinel (which a caller could misread as a valid result).
+        RpcServiceErrorStubProtocol.responseData = Data(
+            #"{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"already imported"}}"#.utf8
+        )
+
+        let service = RpcService("https://\(Self.stubHost)/rpc")
+
+        do {
+            let result = try await service.strRpcCall(method: "state_getStorage", params: ["0x00"])
+            XCTFail("Expected RPC error, got \(result)")
+        } catch let RpcServiceError.rpcError(_, message) {
+            XCTAssertEqual(message, "already imported")
+        } catch {
+            XCTFail("Expected RpcServiceError.rpcError, got \(error)")
+        }
+    }
+
     private func assertRPCError(expectedCode: Int, expectedMessage: String) async {
         let service = RpcService("https://\(Self.stubHost)/rpc")
 

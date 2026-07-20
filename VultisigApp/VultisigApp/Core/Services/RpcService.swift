@@ -51,6 +51,11 @@ enum SubstrateBroadcast {
 /// message means the tx may never have been submitted, and a bare `"already"`
 /// matched almost anything. Those are excluded on purpose.
 enum BroadcastErrorClassifier {
+    /// RPC methods that submit a signed transaction. Only these may recover a
+    /// duplicate error as success — a duplicate-looking error from a read call
+    /// (e.g. `state_getStorage`) must throw, not return the sentinel.
+    static let broadcastMethods: Set<String> = ["author_submitExtrinsic", "eth_sendRawTransaction"]
+
     static func isDuplicateBroadcast(_ message: String) -> Bool {
         let message = message.lowercased()
         return message.contains("already known")
@@ -116,7 +121,8 @@ class RpcService {
             let dataMessage = error["data"] as? String
             let detail = dataMessage.flatMap { $0.isEmpty ? nil : $0 } ?? message
 
-            if BroadcastErrorClassifier.isDuplicateBroadcast(message)
+            if BroadcastErrorClassifier.broadcastMethods.contains(method),
+               BroadcastErrorClassifier.isDuplicateBroadcast(message)
                 || BroadcastErrorClassifier.isDuplicateBroadcast(detail) {
                 return try decode(SubstrateBroadcast.alreadyBroadcastedSentinel)
             }

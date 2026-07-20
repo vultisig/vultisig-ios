@@ -49,7 +49,8 @@ struct RpcServiceStruct {
                 let detail = dataMessage.flatMap { $0.isEmpty ? nil : $0 } ?? message
 
                 // Special handling for transaction broadcast errors
-                if BroadcastErrorClassifier.isDuplicateBroadcast(message)
+                if BroadcastErrorClassifier.broadcastMethods.contains(method),
+                   BroadcastErrorClassifier.isDuplicateBroadcast(message)
                     || BroadcastErrorClassifier.isDuplicateBroadcast(detail) {
                     return try decode(SubstrateBroadcast.alreadyBroadcastedSentinel)
                 }
