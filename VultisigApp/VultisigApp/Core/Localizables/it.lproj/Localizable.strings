@@ -657,6 +657,9 @@
 "limitSwap.cancel.explanation" = "L'annullamento chiude questo ordine e rimborsa la parte non ancora eseguita. Quanto già eseguito resta eseguito e non viene restituito. Questa operazione comporta una commissione di rete THORChain.";
 "limitSwap.cancel.orderLabel" = "Ordine";
 "limitSwap.cancel.title" = "Annulla ordine";
+"limitSwap.cancel.unavailableLegacyOrder" = "Questo ordine è stato creato prima che l'annullamento nell'app fosse disponibile, quindi i suoi dettagli non possono essere verificati.";
+"limitSwap.cancel.unavailableMismatch" = "I dettagli di questo ordine non corrispondono a quanto riportato da THORChain, quindi non può essere annullato in sicurezza.";
+"limitSwap.cancel.unavailableNoRune" = "Aggiungi RUNE a questo vault per annullare gli ordini limite: l'annullamento viene inviato da THORChain.";
 "limitSwap.confirmation.byteCapError.format" = "Memo troppo lungo: %d byte (max %d). Prova con un indirizzo di destinazione più corto o una sorgente non UTXO.";
 "limitSwap.detail.copyTxHash" = "Copia hash TX";
 "limitSwap.detail.filled" = "Eseguito";

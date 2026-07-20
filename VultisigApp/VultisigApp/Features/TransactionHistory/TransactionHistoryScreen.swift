@@ -3,12 +3,19 @@
 //  VultisigApp
 //
 
+import OSLog
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "transaction-history-screen")
 
 struct TransactionHistoryScreen: View {
     @StateObject private var viewModel: TransactionHistoryViewModel
 
     @Environment(\.openURL) var openURL
+    @Environment(\.router) var router
+
+    /// A cancel route parked while the detail sheet dismisses. See `startCancel`.
+    @State private var pendingCancelRoute: FunctionCallRoute?
 
     init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
         _viewModel = StateObject(wrappedValue: TransactionHistoryViewModel(
@@ -57,7 +64,10 @@ struct TransactionHistoryScreen: View {
                 viewModel.reloadAfterLimitOrderChange()
             }
         }
-        .crossPlatformSheet(item: $viewModel.selectedDetail) { detail in
+        .crossPlatformSheet(
+            item: $viewModel.selectedDetail,
+            onDismiss: navigateToPendingCancelIfNeeded
+        ) { detail in
             detailSheet(for: detail)
         }
         .crossPlatformSheet(isPresented: $viewModel.showAssetFilter) {
@@ -216,6 +226,58 @@ struct TransactionHistoryScreen: View {
     // MARK: - Detail Sheet
 
     private func detailSheet(for detail: TransactionHistoryData) -> some View {
-        TransactionHistoryDetailSheet(transaction: detail, limitOrder: viewModel.limitOrder(for: detail))
+        TransactionHistoryDetailSheet(
+            transaction: detail,
+            limitOrder: viewModel.limitOrder(for: detail),
+            // Whether this DEVICE can send a cancel at all, independent of
+            // whether the ORDER is cancellable. Resolved here because only the
+            // screen can see the vault; the sheet renders a disabled button with
+            // a reason rather than an enabled one whose tap does nothing.
+            canSendCancel: cancelSigningCoin != nil,
+            onCancelOrder: startCancel
+        )
+    }
+
+    /// The vault's canonical RUNE coin, which is what signs the cancel deposit.
+    ///
+    /// `isRune` rather than `chain == .thorChain && isNativeToken`: the latter
+    /// admits any THORChain coin flagged native, so duplicated or malformed
+    /// persisted coin data could hand the transaction flow a `CoinMeta` that
+    /// isn't RUNE at all.
+    private var cancelSigningCoin: Coin? {
+        guard let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA) else {
+            return nil
+        }
+        return vault.coins.first(where: { $0.isRune })
+    }
+
+    /// Dismiss the sheet, THEN navigate — in that order, and not concurrently.
+    ///
+    /// The router pushes onto the navigation stack this screen sits in, which is
+    /// behind the presented sheet. Clearing `selectedDetail` only STARTS an
+    /// animated dismissal, so pushing in the same turn races it and the
+    /// destination can be dropped entirely. The route is parked and replayed
+    /// from the sheet's `onDismiss`, once dismissal has actually settled.
+    private func startCancel(_ order: LimitOrderDetails) {
+        guard let request = viewModel.cancelRequest(for: order),
+              let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA),
+              let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+            // Unreachable in practice — the button is only enabled when both the
+            // order and `cancelSigningCoin` check out — but a state change under
+            // the user must not navigate to a half-built screen.
+            logger.error("Cancel tapped but the request could not be assembled")
+            return
+        }
+        pendingCancelRoute = FunctionCallRoute.functionTransaction(
+            vault: vault,
+            transactionType: .cancelLimitOrder(coin: runeCoin.toCoinMeta(), request: request)
+        )
+        viewModel.selectedDetail = nil
+    }
+
+    private func navigateToPendingCancelIfNeeded() {
+        guard let route = pendingCancelRoute else { return }
+        pendingCancelRoute = nil
+        router.navigate(to: route)
     }
 }

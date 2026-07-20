@@ -12,6 +12,19 @@ struct TransactionHistoryDetailSheet: View {
     /// `TransactionHistoryItem`. `nil` on a co-signer, which never persists a
     /// `LimitOrder`; the sheet degrades to what the row itself knows.
     var limitOrder: LimitOrderDetails?
+    /// Whether this DEVICE can send a cancel — i.e. the vault resolves and holds
+    /// the RUNE coin that signs it. Independent of whether the ORDER qualifies.
+    ///
+    /// Defaults to `true` so the many call sites that never show a limit order
+    /// stay unchanged; the button is gated on the order's own eligibility first.
+    var canSendCancel: Bool = true
+    /// Invoked when the user taps Cancel Order.
+    ///
+    /// A callback rather than a `router.navigate` from inside the sheet: the
+    /// router pushes onto the stack BEHIND this sheet, so navigating from here
+    /// would look like the tap did nothing until the sheet was dismissed. The
+    /// presenting screen dismisses first, then navigates.
+    var onCancelOrder: ((LimitOrderDetails) -> Void)?
 
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -53,6 +66,7 @@ struct TransactionHistoryDetailSheet: View {
                 }
                 detailRows
                 actionButtons
+                cancelOrderButton
                 if transaction.swapKitTrackerURL != nil {
                     swapKitTrackerButton
                 }
@@ -471,12 +485,6 @@ struct TransactionHistoryDetailSheet: View {
     /// A limit order pairs "View on Explorer" with "Copy TX Hash" — the inbound
     /// hash IS the order's identity on-chain, so it is the one thing a user
     /// needs to hand to anyone asking about their order.
-    ///
-    /// Slot note: "Cancel Order" belongs directly BELOW this row, full width,
-    /// and is resting-only (`limitOrder?.isTerminal == false`). It is not built
-    /// here — cancelling means constructing an `m=<` MsgDeposit, which is its
-    /// own change. The layout leaves room for it rather than pretending: an
-    /// always-visible button that does nothing would be worse than its absence.
     @ViewBuilder
     private var actionButtons: some View {
         if isLimit {
@@ -501,6 +509,61 @@ struct TransactionHistoryDetailSheet: View {
     private var copyHashButton: some View {
         PrimaryButton(title: "limitSwap.detail.copyTxHash", type: .secondary) {
             ClipboardManager.copyToClipboard(transaction.txHash)
+        }
+    }
+
+    // MARK: - Cancel Order
+
+    /// Full width, directly below the explorer/copy row.
+    ///
+    /// Rendered only for states the user can act on or needs explained:
+    ///
+    /// - cancellable → the live button.
+    /// - `.missingSignedData` / `.signedDataDisagreesWithChain` → disabled, with
+    ///   a reason. Both are permanent for a given order, so an explanation is
+    ///   worth more than an absent button the user goes hunting for.
+    /// - `.terminal` → nothing. A closed order has nothing to cancel, and the
+    ///   status row above already says so.
+    /// - `.notThorchainSourced` → nothing, **for now**. An L1-funded order IS
+    ///   cancellable by sending the `m=<` from its own chain; that path is built
+    ///   in this same PR, and writing disabled-state copy for a state about to
+    ///   become actionable would only be torn up. Once L1 lands this arm goes
+    ///   away and its narrower successors (unsupported source chain, memo too
+    ///   long for a UTXO source) get their copy written once.
+    @ViewBuilder
+    private var cancelOrderButton: some View {
+        if let order = limitOrder {
+            switch limitOrderCancelEligibility(order) {
+            case .cancellable where !canSendCancel:
+                // The order qualifies but this device can't sign the cancel.
+                // Shown disabled with a reason rather than enabled-and-inert:
+                // a tap that silently does nothing is unrecoverable, because
+                // nothing on screen tells the user to add RUNE to the vault.
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableNoRune")
+            case .cancellable:
+                PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {
+                    onCancelOrder?(order)
+                }
+            case .blocked(.missingSignedData):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder")
+            case .blocked(.signedDataDisagreesWithChain):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableMismatch")
+            case .blocked(.terminal), .blocked(.notThorchainSourced):
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func disabledCancelButton(reason: String) -> some View {
+        VStack(spacing: 8) {
+            PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {}
+                .disabled(true)
+                .opacity(0.5)
+            Text(reason.localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
         }
     }
 

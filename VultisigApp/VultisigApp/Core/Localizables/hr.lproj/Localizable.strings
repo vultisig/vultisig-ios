@@ -657,6 +657,9 @@
 "limitSwap.cancel.explanation" = "Otkazivanje zatvara ovaj nalog i vraća dio koji još nije izvršen. Ono što je već izvršeno ostaje izvršeno i ne vraća se. Ovo košta jednu THORChain mrežnu naknadu.";
 "limitSwap.cancel.orderLabel" = "Nalog";
 "limitSwap.cancel.title" = "Otkaži nalog";
+"limitSwap.cancel.unavailableLegacyOrder" = "Ovaj je nalog kreiran prije nego što je otkazivanje u aplikaciji bilo dostupno, pa se njegovi podaci ne mogu provjeriti.";
+"limitSwap.cancel.unavailableMismatch" = "Podaci ovog naloga ne odgovaraju onome što prijavljuje THORChain, pa se ne može sigurno otkazati.";
+"limitSwap.cancel.unavailableNoRune" = "Dodajte RUNE u ovaj sef za otkazivanje limit naloga — otkazivanje se šalje s THORChaina.";
 "limitSwap.confirmation.byteCapError.format" = "Memo predugačak: %d bajtova (najviše %d). Pokušaj kraću odredišnu adresu ili izvor koji nije UTXO.";
 "limitSwap.detail.copyTxHash" = "Kopiraj TX hash";
 "limitSwap.detail.filled" = "Izvršeno";

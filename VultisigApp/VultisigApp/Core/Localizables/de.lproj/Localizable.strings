@@ -657,6 +657,9 @@
 "limitSwap.cancel.explanation" = "Durch das Stornieren wird diese Order geschlossen und der noch nicht ausgeführte Teil erstattet. Bereits ausgeführte Anteile bleiben bestehen und werden nicht zurückerstattet. Dafür fällt eine THORChain-Netzwerkgebühr an.";
 "limitSwap.cancel.orderLabel" = "Order";
 "limitSwap.cancel.title" = "Order stornieren";
+"limitSwap.cancel.unavailableLegacyOrder" = "Diese Order wurde erstellt, bevor das Stornieren in der App verfügbar war, daher können ihre Details nicht überprüft werden.";
+"limitSwap.cancel.unavailableMismatch" = "Die Details dieser Order stimmen nicht mit den Angaben von THORChain überein, daher kann sie nicht sicher storniert werden.";
+"limitSwap.cancel.unavailableNoRune" = "Fügen Sie diesem Vault RUNE hinzu, um Limit-Orders zu stornieren — die Stornierung wird über THORChain gesendet.";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";
 "limitSwap.detail.copyTxHash" = "TX-Hash kopieren";
 "limitSwap.detail.filled" = "Ausgeführt";

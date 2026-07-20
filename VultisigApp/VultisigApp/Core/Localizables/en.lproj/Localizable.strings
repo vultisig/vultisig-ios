@@ -655,6 +655,9 @@
 "limitSwap.cancel.explanation" = "Cancelling closes this order and refunds the part that hasn't filled yet. Anything already filled stays filled and is not returned. This costs one THORChain network fee.";
 "limitSwap.cancel.orderLabel" = "Order";
 "limitSwap.cancel.title" = "Cancel Order";
+"limitSwap.cancel.unavailableLegacyOrder" = "This order was placed before in-app cancelling was available, so its details can't be verified.";
+"limitSwap.cancel.unavailableMismatch" = "This order's details don't match what THORChain reports, so it can't be cancelled safely.";
+"limitSwap.cancel.unavailableNoRune" = "Add RUNE to this vault to cancel limit orders — the cancellation is sent from THORChain.";
 "limitSwap.confirmation.byteCapError.format" = "Memo too long: %d bytes (max %d). Try a shorter destination address or a non-UTXO source.";
 "limitSwap.detail.copyTxHash" = "Copy TX Hash";
 "limitSwap.detail.filled" = "Filled";
