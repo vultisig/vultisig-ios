@@ -54,16 +54,35 @@ enum LimitOrderCancelPresentation {
         )
     }
 
-    /// Hero for a CO-SIGNER's keysign summary.
+    /// Hero for a CO-SIGNER's screens.
     ///
     /// Keyed on the memo because that is all a co-signing device has: it holds a
     /// `KeysignPayload`, never the initiator's `SendTransaction`. No caption —
     /// the assets are inside the memo in their full THORChain spelling, which is
     /// not what the rest of the app shows an order under, and half-translating
     /// them here would invite a mismatch.
-    static func hero(forSignedMemo memo: String?) -> HeroContent? {
+    ///
+    /// ⚠️ `attached` must be passed whenever the payload actually moves value.
+    /// A co-signer is signing too, and on the L1 route what moves is dust
+    /// THORChain donates to the pool with no refund path — up to two whole DOGE.
+    /// Retitling the hero without carrying the amount would hide that money on
+    /// the one screen where the co-signer decides whether to join.
+    static func hero(forSignedMemo memo: String?, attached: HeroCoinAmount? = nil) -> HeroContent? {
         guard isModifyLimitSwapMemo(memo) else { return nil }
-        return .title(text: title, caption: nil)
+        guard let attached else { return .title(text: title, caption: nil) }
+        return .send(title: title, coin: attached)
+    }
+
+    /// What a co-signer is about to give away, or `nil` when the cancel attaches
+    /// nothing (the THORChain route, where zero is the correct and intended
+    /// amount).
+    static func attachedDust(in payload: KeysignPayload?) -> HeroCoinAmount? {
+        guard let payload, isModifyLimitSwapMemo(payload.memo), payload.toAmount > 0 else { return nil }
+        return HeroCoinAmount(
+            amount: payload.toAmountDecimal.formatForDisplay(),
+            ticker: payload.coin.ticker,
+            logo: payload.coin.logo
+        )
     }
 
     /// Whether a transaction about to be signed is a limit-order cancel, judged

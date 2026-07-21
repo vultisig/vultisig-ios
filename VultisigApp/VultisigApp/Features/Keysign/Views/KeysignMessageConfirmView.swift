@@ -56,15 +56,19 @@ struct KeysignMessageConfirmView: View {
                         // simulation-derived hero: a cancel's dust transfer
                         // simulates as an ordinary send, which is exactly the
                         // reading this replaces.
-                        hero: LimitOrderCancelPresentation.hero(forSignedMemo: viewModel.keysignPayload?.memo)
-                            ?? viewModel.heroContent,
+                        hero: LimitOrderCancelPresentation.hero(
+                            forSignedMemo: viewModel.keysignPayload?.memo,
+                            attached: LimitOrderCancelPresentation.attachedDust(in: viewModel.keysignPayload)
+                        ) ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
                         vault: viewModel.vault,
                         dappMetadata: viewModel.dappMetadata
                     ),
                     securityScannerState: $viewModel.securityScannerState
-                )
+                ) {
+                    cancelLimitOrderDisclosure
+                }
 
                 PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                     viewModel.joinKeysignCommittee()
@@ -85,6 +89,22 @@ struct KeysignMessageConfirmView: View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
             .font(Theme.fonts.bodyLMedium)
+    }
+
+    /// ⚠️ The dust an L1 cancel attaches is donated to the pool with no refund
+    /// path — up to two whole DOGE. The initiator is told so on Verify, and a
+    /// co-signer is signing the same transaction, so they are told here. Derived
+    /// from the payload alone, because that is all this device has.
+    @ViewBuilder
+    private var cancelLimitOrderDisclosure: some View {
+        if let attached = LimitOrderCancelPresentation.attachedDust(in: viewModel.keysignPayload) {
+            WarningView(
+                text: String(
+                    format: "limitSwap.cancel.donatedDust".localized,
+                    "\(attached.amount) \(attached.ticker)"
+                )
+            )
+        }
     }
 
     /// Reconstructs the LP `memoFunctionDictionary` from a THORChain LP add/remove memo so the

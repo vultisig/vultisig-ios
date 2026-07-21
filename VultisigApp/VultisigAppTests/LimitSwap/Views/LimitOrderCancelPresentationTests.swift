@@ -67,6 +67,36 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
         XCTAssertNil(caption)
     }
 
+    /// ⚠️ A co-signer is signing too, and on the L1 route what moves is dust
+    /// THORChain donates to the pool with no refund path — up to two whole DOGE.
+    /// Retitling the hero must not take that amount off the screen where the
+    /// co-signer decides whether to join.
+    func testACoSignerStillSeesTheDustAnL1CancelGivesAway() {
+        let attached = HeroCoinAmount(amount: "2", ticker: "DOGE", logo: "doge")
+
+        guard case let .send(title, coin)? = LimitOrderCancelPresentation.hero(
+            forSignedMemo: "m=<:100000000DOGE.DOGE:15979057441BTC.BTC:0",
+            attached: attached
+        ) else {
+            return XCTFail("expected the dust to survive the retitling")
+        }
+
+        XCTAssertEqual(title, "limitSwap.cancel.verify.title".localized)
+        XCTAssertEqual(coin.amount, "2")
+        XCTAssertEqual(coin.ticker, "DOGE")
+    }
+
+    /// The THORChain route attaches nothing, and zero is the correct amount
+    /// there — so there is nothing to disclose and nothing to show.
+    func testAThorchainCancelHasNoDustToDisclose() {
+        guard case .title? = LimitOrderCancelPresentation.hero(
+            forSignedMemo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0",
+            attached: nil
+        ) else {
+            return XCTFail("expected a title hero")
+        }
+    }
+
     /// ⚠️ A PLACEMENT (`=<:`) is a different memo type and must not be swept up:
     /// its own vocabulary talks about the order coming to rest.
     func testAPlacementMemoIsNotTreatedAsACancel() {
