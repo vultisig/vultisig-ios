@@ -12,9 +12,16 @@ import SwiftData
 /// keyed on two coins. Before the split, a vault holding the auto-compounding
 /// position saw it under the single "RUJI" toggle — without this, that card
 /// would silently vanish until the user found the new "sRUJI" entry in the
-/// position picker. Adding the coin is enough on its own: the card only
-/// materialises once the vault actually holds the receipt, because the
-/// interactor skips positions whose coin is absent from the vault.
+/// position picker.
+///
+/// Widening the position list is all this does; it deliberately does NOT insert
+/// the sRUJI coin into `vault.coins` the way the picker's save does. THORChain
+/// token discovery already adds `x/staking-x/ruji` for every vault that holds
+/// it — which is why the receipt shows in the wallet list today — so the card
+/// materialises on its own for exactly the vaults that have a position, and
+/// vaults that never auto-compounded gain nothing to render. Writing the coin
+/// in would instead put a zero-balance sRUJI row in the wallet list of every
+/// RUJI staker.
 ///
 /// Idempotency comes from `AppMigrationService` (Keychain-versioned, runs once)
 /// and is reinforced by the contains-check, so a user who deliberately turns
