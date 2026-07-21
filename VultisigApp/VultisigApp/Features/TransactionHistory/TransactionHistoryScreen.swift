@@ -14,8 +14,22 @@ struct TransactionHistoryScreen: View {
     @Environment(\.openURL) var openURL
     @Environment(\.router) var router
 
-    /// A cancel route parked while the detail sheet dismisses. See `startCancel`.
-    @State private var pendingCancelRoute: FunctionCallRoute?
+    /// A cancel parked while the detail sheet dismisses. See `startCancel`.
+    @State private var pendingCancel: PendingLimitOrderCancel?
+    /// True while the cancel is being priced on its way to Verify.
+    @State private var isPreparingCancel = false
+    /// Surfaced when a cancel cannot be assembled at all — no inbound vault, no
+    /// dust floor, no priced fee. There is nothing safe to sign in that state, so
+    /// the flow stops here rather than showing a half-built Verify screen.
+    @State private var cancelError: HelperError?
+
+    /// What `startCancel` resolved before dismissing the sheet, replayed once the
+    /// dismissal settles.
+    private struct PendingLimitOrderCancel {
+        let coin: Coin
+        let vault: Vault
+        let request: LimitOrderCancelRequest
+    }
 
     init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
         _viewModel = StateObject(wrappedValue: TransactionHistoryViewModel(
@@ -66,9 +80,17 @@ struct TransactionHistoryScreen: View {
         }
         .crossPlatformSheet(
             item: $viewModel.selectedDetail,
-            onDismiss: navigateToPendingCancelIfNeeded
+            onDismiss: prepareAndPresentPendingCancel
         ) { detail in
             detailSheet(for: detail)
+        }
+        .withLoading(isLoading: $isPreparingCancel)
+        .alert(item: $cancelError) { error in
+            Alert(
+                title: Text("error".localized),
+                message: Text(error.localizedDescription),
+                dismissButton: .default(Text("ok".localized))
+            )
         }
         .crossPlatformSheet(isPresented: $viewModel.showAssetFilter) {
             TransactionHistoryAssetFilterView(
@@ -272,12 +294,13 @@ struct TransactionHistoryScreen: View {
         return vault.coins.first(where: { $0.chain == sourceChain && $0.isNativeToken })
     }
 
-    /// Dismiss the sheet, THEN navigate — in that order, and not concurrently.
+    /// Dismiss the sheet, THEN prepare and navigate — in that order, and not
+    /// concurrently.
     ///
     /// The router pushes onto the navigation stack this screen sits in, which is
     /// behind the presented sheet. Clearing `selectedDetail` only STARTS an
     /// animated dismissal, so pushing in the same turn races it and the
-    /// destination can be dropped entirely. The route is parked and replayed
+    /// destination can be dropped entirely. The cancel is parked and replayed
     /// from the sheet's `onDismiss`, once dismissal has actually settled.
     private func startCancel(_ order: LimitOrderDetails) {
         guard let request = viewModel.cancelRequest(for: order),
@@ -289,16 +312,41 @@ struct TransactionHistoryScreen: View {
             logger.error("Cancel tapped but the request could not be assembled")
             return
         }
-        pendingCancelRoute = FunctionCallRoute.functionTransaction(
-            vault: vault,
-            transactionType: .cancelLimitOrder(coin: signingCoin.toCoinMeta(), request: request)
-        )
+        pendingCancel = PendingLimitOrderCancel(coin: signingCoin, vault: vault, request: request)
         viewModel.selectedDetail = nil
     }
 
-    private func navigateToPendingCancelIfNeeded() {
-        guard let route = pendingCancelRoute else { return }
-        pendingCancelRoute = nil
-        router.navigate(to: route)
+    /// Price the cancel and push straight to Verify.
+    ///
+    /// There is no confirmation screen in between: a cancel arrives from the
+    /// order card with its assets, amounts and memo already fixed, so it has no
+    /// editable field and nothing left to decide. Same shape as the Solana
+    /// unstake/withdraw rows, which build their transaction here and go straight
+    /// to Verify. Everything the removed screen said now rides on the request's
+    /// disclosures and renders on Verify, above the signing button.
+    private func prepareAndPresentPendingCancel() {
+        guard let pending = pendingCancel else { return }
+        pendingCancel = nil
+        Task { @MainActor in
+            isPreparingCancel = true
+            defer { isPreparingCancel = false }
+            do {
+                let tx = try await LimitOrderCancelPreparer().prepare(
+                    coin: pending.coin,
+                    vault: pending.vault,
+                    request: pending.request
+                )
+                router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: pending.vault))
+            } catch {
+                // Surfaced rather than swallowed: without an inbound vault, a
+                // verified dust floor and a priced fee there is no safe cancel to
+                // build, and a tap that silently does nothing is unrecoverable.
+                logger.error("Failed to prepare the cancel: \(error.localizedDescription, privacy: .public)")
+                cancelError = .runtimeError(
+                    (error as? LocalizedError)?.errorDescription
+                        ?? "limitSwap.cancel.error.dustUnavailable".localized
+                )
+            }
+        }
     }
 }
