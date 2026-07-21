@@ -181,6 +181,15 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     let sourceAmount1e8: String?
     let tradeTarget: String?
     let observedTradeTarget: String?
+    /// The assets spelled for a cancel memo — full EVM contract addresses —
+    /// captured at signing, and as the queue reports them. `sourceAsset` /
+    /// `targetAsset` above carry the PLACEMENT spelling, which abbreviates an
+    /// EVM contract to 6 characters and cannot be un-abbreviated. Only
+    /// `limitOrderCancelEligibility` should read these.
+    let sourceAssetFull: String?
+    let targetAssetFull: String?
+    let observedSourceAsset: String?
+    let observedTargetAsset: String?
     let sourceChainRawValue: String?
     /// Set once a cancel has been CONFIRMED broadcast for this order. The order
     /// is deliberately left `.pending` at that point (see `LimitOrder`), so this
@@ -207,6 +216,10 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
         sourceAmount1e8: String? = nil,
         tradeTarget: String? = nil,
         observedTradeTarget: String? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
+        observedSourceAsset: String? = nil,
+        observedTargetAsset: String? = nil,
         sourceChainRawValue: String? = nil,
         cancelBroadcastHash: String? = nil
     ) {
@@ -224,6 +237,10 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
         self.sourceAmount1e8 = sourceAmount1e8
         self.tradeTarget = tradeTarget
         self.observedTradeTarget = observedTradeTarget
+        self.sourceAssetFull = sourceAssetFull
+        self.targetAssetFull = targetAssetFull
+        self.observedSourceAsset = observedSourceAsset
+        self.observedTargetAsset = observedTargetAsset
         self.sourceChainRawValue = sourceChainRawValue
         self.cancelBroadcastHash = cancelBroadcastHash
     }

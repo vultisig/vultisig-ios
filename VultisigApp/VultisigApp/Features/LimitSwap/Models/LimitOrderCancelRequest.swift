@@ -25,6 +25,11 @@ struct LimitOrderCancelRequest: Hashable, Sendable {
     let inboundTxHash: String
     /// The `m=<` memo, already built and validated.
     let memo: String
+    /// DISPLAY ONLY — the order's assets in their placement spelling, which
+    /// abbreviates an EVM contract to 6 characters and is what the rest of the
+    /// app shows. The assets the memo above actually carries are spelled in
+    /// full; they are not the same string and these must never be used to
+    /// rebuild it.
     let sourceAsset: String
     let targetAsset: String
     /// `Chain.rawValue` the order was funded from — decides HOW the cancel is

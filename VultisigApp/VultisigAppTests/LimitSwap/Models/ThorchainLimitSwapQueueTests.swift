@@ -48,6 +48,64 @@ final class ThorchainLimitSwapQueueTests: XCTestCase {
         XCTAssertEqual(entry.swap.state?.failedSwapReasons, [])
     }
 
+    /// ⚠️ The assets THORChain itself holds for the order — i.e. AFTER
+    /// `fuzzyAssetMatch` expanded whatever the placement memo abbreviated. This
+    /// is the only place a cancel can read the full contract back from, so the
+    /// keys are pinned.
+    func testDecodesTheAssetsTheOrderIsIndexedUnder() throws {
+        let json = """
+        {"limit_swaps":[
+          {"time_to_expiry_blocks":"100",
+           "swap":{"tx":{"id":"ASSETS1","from_address":"thor1sender",
+                         "coins":[{"asset":"THOR.RUNE","amount":"370939666"}],
+                         "memo":"=<:ETH.USDC-06EB48:0x03c4:167889485/14400/0"},
+                   "target_asset":"ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+                   "trade_target":"167889485",
+                   "state":{"deposit":"370939666","in":"0","out":"0"}}}
+        ]}
+        """
+
+        let swap = try XCTUnwrap(decode(ThorchainLimitSwapQueueResponse.self, json).limitSwaps?.first?.swap)
+
+        XCTAssertEqual(swap.tx.coins?.first?.asset?.memoForm, "THOR.RUNE")
+        XCTAssertEqual(swap.tx.coins?.first?.amount, "370939666")
+        XCTAssertEqual(
+            swap.targetAsset?.memoForm,
+            "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            "the placement memo said ETH.USDC-06EB48; the order is indexed under the resolved asset"
+        )
+    }
+
+    /// A `common.Asset` marshalled as a protobuf message rather than through its
+    /// own `MarshalJSON` arrives as an object of chain/symbol/flags. Which shape
+    /// a route emits is a property of its marshaller, and this decoder feeds a
+    /// string we then SIGN — so both are accepted rather than guessed at.
+    func testDecodesAnAssetGivenInItsExpandedObjectForm() throws {
+        let json = """
+        {"limit_swaps":[
+          {"swap":{"tx":{"id":"OBJ1","coins":[
+                     {"asset":{"chain":"ETH","symbol":"USDC-0XA0B8","ticker":"USDC","secured":true},"amount":"1"}]},
+                   "target_asset":{"chain":"BTC","symbol":"BTC","ticker":"BTC","synth":false,"trade":false,"secured":false}}}
+        ]}
+        """
+
+        let swap = try XCTUnwrap(decode(ThorchainLimitSwapQueueResponse.self, json).limitSwaps?.first?.swap)
+
+        XCTAssertEqual(swap.tx.coins?.first?.asset?.memoForm, "ETH-USDC-0XA0B8", "secured uses `-`")
+        XCTAssertEqual(swap.targetAsset?.memoForm, "BTC.BTC", "no flags set means layer-1 `.`")
+    }
+
+    /// An entry with no assets at all must still decode: the cancel path treats
+    /// their absence as "not observed", never as an empty asset.
+    func testDecodesAnEntryWithNoAssets() throws {
+        let json = #"{"limit_swaps":[{"swap":{"tx":{"id":"NOASSETS"}}}]}"#
+
+        let swap = try XCTUnwrap(decode(ThorchainLimitSwapQueueResponse.self, json).limitSwaps?.first?.swap)
+
+        XCTAssertNil(swap.tx.coins)
+        XCTAssertNil(swap.targetAsset)
+    }
+
     /// The response is an object wrapping the list. Decoding it as a bare array
     /// is the obvious mistake and would fail at runtime against mainnet.
     func testDecodingRejectsABareArrayShape() {

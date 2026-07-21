@@ -47,6 +47,13 @@ private let cancelModifiedTargetAmount = "0"
 struct LimitOrderCancelInputs: Equatable, Sendable {
     /// THORChain memo form of the order's SOURCE asset.
     ///
+    /// ⚠️ Must carry the token's **full** contract address
+    /// (`ETH.USDC-0XA0B86991…`), never the placement memo's 6-character
+    /// abbreviation. `ModifyLimitSwapMemo` is the one inbound memo type
+    /// `processOneTxIn` does not run through `fuzzyAssetMatch`, so an
+    /// abbreviation is taken literally and keys a bucket the order was never
+    /// indexed under.
+    ///
     /// ⚠️ Must be the asset's **secured** denom (`eth-usdc-0xa0b…`) when the
     /// source is a secured asset — never its layer-1 form (`ETH.USDC-0XA0B…`).
     /// `MsgModifyLimitSwap.ValidateBasic` enforces
@@ -54,11 +61,12 @@ struct LimitOrderCancelInputs: Equatable, Sendable {
     /// `THORChain` **only** when the asset is a synth, trade or secured asset.
     /// Emitting the layer-1 form makes `GetChain()` report `ETH`, and the cancel
     /// — sent from a THOR address — is then rejected outright at validation.
-    /// `thorchainMemoAsset` already emits the secured denom verbatim.
+    /// `thorchainCancelMemoAsset` emits both correctly.
     let sourceAsset: String
     /// The order's deposited source amount in THORChain's 1e8 fixed point.
     let sourceAmount1e8: BigInt
-    /// THORChain memo form of the order's TARGET asset.
+    /// THORChain memo form of the order's TARGET asset, under the same
+    /// full-contract rule as `sourceAsset`.
     let targetAsset: String
     /// The order's ORIGINAL trade target (the LIM the placement memo encoded),
     /// in the target asset's 1e8 fixed point.
@@ -71,6 +79,52 @@ enum LimitSwapCancelMemoError: Error, Equatable {
     /// THORNode's `getRatio` return the sentinel `"0"` bucket.
     case nonPositiveAmount
     case emptyAsset
+    /// An asset carried a truncated token identifier — the placement memo's
+    /// 6-character contract suffix, most likely.
+    ///
+    /// Structural, not advisory. This memo type skips `fuzzyAssetMatch`, so the
+    /// abbreviation is never expanded: the cancel is accepted by the chain,
+    /// costs a fee, addresses a bucket no order was indexed under, and cancels
+    /// nothing. The builder refuses rather than letting those bytes exist.
+    case abbreviatedAsset
+}
+
+/// Shortest token identifier suffix a cancel memo will accept.
+///
+/// An EVM contract is 42 characters (`0X` + 40 hex) and the placement memo's
+/// abbreviation is 6, so anything in between is a wide, unambiguous gap. Fixed
+/// at a length rather than an exact `0X…` pattern so a future asset flavour with
+/// a differently-shaped full identifier is not rejected out of hand — the job
+/// here is to catch truncation, not to validate contract syntax.
+private let minimumFullTokenIdentifierLength = 20
+
+/// Whether a THORChain memo asset carries a token identifier that has been
+/// truncated — `ETH.USDC-06EB48` rather than `ETH.USDC-0XA0B86991…`.
+///
+/// The chain prefix has to be stripped first, and cannot simply be assumed to
+/// end at a `.`: a SECURED asset spells the whole thing with `-`, so a secured
+/// native denom is `btc-btc` and a secured token is `eth-usdc-0xa0b…`. Reading
+/// the tail after the last `-` would call the first of those truncated and make
+/// every secured-native order uncancellable.
+///
+/// So: drop everything up to the first separator (`.` layer-1, `/` synth, `~`
+/// trade, `-` secured) — that is the chain — and look at the SYMBOL that
+/// follows. A symbol is `TICKER` or `TICKER-<identifier>`, and only the second
+/// form can be truncated. `BTC.BTC`, `THOR.RUNE`, `THOR.TCY` and `btc-btc` all
+/// carry no identifier at all and are full by construction, which is what keeps
+/// a pre-existing order with native legs cancellable.
+func thorchainMemoAssetIsAbbreviated(_ asset: String) -> Bool {
+    let separators: Set<Character> = [".", "/", "~", "-"]
+    let symbol: Substring
+    if let chainEnd = asset.firstIndex(where: { separators.contains($0) }) {
+        symbol = asset[asset.index(after: chainEnd)...]
+    } else {
+        symbol = asset[...]
+    }
+    // A contract carries no `-` of its own, so the first one inside the symbol
+    // is the identifier's separator.
+    guard let identifierStart = symbol.firstIndex(of: "-") else { return false }
+    return symbol[symbol.index(after: identifierStart)...].count < minimumFullTokenIdentifierLength
 }
 
 /// Build the `m=<` memo that cancels a resting limit order.
@@ -81,6 +135,17 @@ enum LimitSwapCancelMemoError: Error, Equatable {
 ///
 /// Both coins are `<amount><ASSET>` with **no space** — THORNode's `getCoin`
 /// scans leading digits and splices the space back in before parsing.
+///
+/// ⚠️ **Assets are spelled in FULL — never with the placement memo's
+/// 6-character contract suffix.** `processOneTxIn` runs every other inbound memo
+/// through `fuzzyAssetMatch`, which is what lets a placement say
+/// `ETH.USDC-06EB48` and still be indexed under
+/// `ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48`. `ModifyLimitSwapMemo`
+/// is the exception: its asset string is used verbatim to build the lookup key.
+/// A cancel repeating the placement's abbreviation therefore addresses a bucket
+/// that, by construction, holds nothing — and THORChain answers with
+/// `could not find matching limit swap`. Enforced, not merely documented, by
+/// `thorchainMemoAssetIsAbbreviated` below.
 ///
 /// ⚠️ **Amounts are PLAIN decimal integers — never `compressLim`'d.** The
 /// placement memo's LIM goes through `getUintWithScientificNotation`, which
@@ -104,6 +169,10 @@ func buildCancelLimitSwapMemo(_ inputs: LimitOrderCancelInputs) throws -> String
     }
     guard inputs.sourceAmount1e8 > 0, inputs.tradeTarget > 0 else {
         throw LimitSwapCancelMemoError.nonPositiveAmount
+    }
+    guard !thorchainMemoAssetIsAbbreviated(inputs.sourceAsset),
+          !thorchainMemoAssetIsAbbreviated(inputs.targetAsset) else {
+        throw LimitSwapCancelMemoError.abbreviatedAsset
     }
     let source = "\(inputs.sourceAmount1e8.description)\(inputs.sourceAsset)"
     let target = "\(inputs.tradeTarget.description)\(inputs.targetAsset)"
@@ -150,6 +219,31 @@ enum LimitOrderCancelBlocker: Equatable, Sendable {
     /// would be a guess whose failure mode is silent — the cancel simply matches
     /// nothing and looks like it worked.
     case signedDataDisagreesWithChain
+}
+
+/// Which spelling of one of the order's assets a cancel memo may use.
+///
+/// Three sources, in decreasing order of how much they prove:
+///
+/// 1. **The queue's own report** (`observed`) — the string THORChain built this
+///    order's index entry from, after `fuzzyAssetMatch` resolved whatever the
+///    placement memo abbreviated. Authoritative by construction, and the only
+///    source for an order placed before the full form was recorded.
+/// 2. **The full form captured at signing** (`signed`) — derived locally from
+///    the coin's own contract address, so it is exact whenever it exists.
+/// 3. **The stored placement spelling** (`stored`) — usable ONLY when it carries
+///    no truncated token identifier, which makes it full by construction. That
+///    covers every native leg (`BTC.BTC`, `THOR.RUNE`) and every secured denom.
+///
+/// Returns `nil` when none of the three yields a spelling that can be signed —
+/// the fail-closed answer, and the one a legacy EVM-token leg lands on until the
+/// queue has been polled once.
+func limitOrderCancelMemoAsset(stored: String, signed: String?, observed: String?) -> String? {
+    if let observed = observed?.trimmedNonEmpty {
+        return observed
+    }
+    return signed?.trimmedNonEmpty
+        ?? (thorchainMemoAssetIsAbbreviated(stored) ? nil : stored.trimmedNonEmpty)
 }
 
 enum LimitOrderCancelEligibility: Equatable, Sendable {
@@ -237,10 +331,29 @@ func limitOrderCancelEligibility(_ details: LimitOrderDetails) -> LimitOrderCanc
         }
     }
 
+    // The ASSETS are resolved the same way the amounts are: from what THORChain
+    // reports, falling back to what was recorded locally, and blocking when
+    // neither can produce the full spelling. The stored `sourceAsset` /
+    // `targetAsset` are the PLACEMENT strings and are lossy — a 6-character
+    // contract suffix cannot be expanded back — so they are usable only when
+    // they carry no truncated identifier at all.
+    guard let sourceAsset = limitOrderCancelMemoAsset(
+        stored: details.sourceAsset,
+        signed: details.sourceAssetFull,
+        observed: details.observedSourceAsset
+    ),
+    let targetAsset = limitOrderCancelMemoAsset(
+        stored: details.targetAsset,
+        signed: details.targetAssetFull,
+        observed: details.observedTargetAsset
+    ) else {
+        return .blocked(.missingSignedData)
+    }
+
     let inputs = LimitOrderCancelInputs(
-        sourceAsset: details.sourceAsset,
+        sourceAsset: sourceAsset,
         sourceAmount1e8: signedSourceAmount,
-        targetAsset: details.targetAsset,
+        targetAsset: targetAsset,
         tradeTarget: signedTradeTarget
     )
 

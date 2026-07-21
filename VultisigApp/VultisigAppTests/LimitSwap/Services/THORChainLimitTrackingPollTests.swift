@@ -58,6 +58,34 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(observation?.filledOutAmount, "25")
     }
 
+    /// ⚠️ The assets THORChain resolved the order to are recorded on every
+    /// resting poll. They are the ONLY way to recover the full contract address
+    /// a cancel memo has to spell out — the placement memo's abbreviation is
+    /// not reversible — and so the only thing that makes an order placed before
+    /// that was recorded locally cancellable at all.
+    func testTheResolvedAssetsAreRecordedFromTheQueue() async {
+        let env = TestEnv(queueBody: .restingWithResolvedAssets(hash: "ABC123"))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        let observation = env.orders.observations.last
+        XCTAssertEqual(observation?.observedSourceAsset, "THOR.RUNE")
+        XCTAssertEqual(observation?.observedTargetAsset, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
+    }
+
+    /// Most entries carry no assets we can read, and that is not an error: `nil`
+    /// means "not observed" and must leave any stored value alone.
+    func testAbsentAssetsAreRecordedAsNotObserved() async {
+        let env = TestEnv(queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertNil(env.orders.observations.last?.observedSourceAsset)
+        XCTAssertNil(env.orders.observations.last?.observedTargetAsset)
+    }
+
     /// The expiry countdown is persisted alongside the split. Without it the
     /// detail sheet has no honest way to say how long an order has left — the
     /// stored TTL is a guess that assumes the deposit queued the instant it was
@@ -473,11 +501,23 @@ private enum QueueBody {
     case restingWithExpiry(hash: String, expiryBlocks: String)
     /// A 200 whose `limit_swaps` key is absent.
     case unrecognisedEnvelope
+    /// A resting order carrying the assets THORChain resolved it to — the
+    /// placement memo's `ETH.USDC-06EB48` expanded to its full contract.
+    case restingWithResolvedAssets(hash: String)
 
     var json: String {
         switch self {
         case .empty:
             return #"{"limit_swaps":[]}"#
+        case let .restingWithResolvedAssets(hash):
+            return """
+            {"limit_swaps":[{"time_to_expiry_blocks":"39069",
+              "swap":{"tx":{"id":"\(hash)","from_address":"thor1sender",
+                            "coins":[{"asset":"THOR.RUNE","amount":"370939666"}]},
+                      "target_asset":"ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+                      "trade_target":"167889485",
+                      "state":{"deposit":"370939666","in":"0","out":"0","failed_swap_reasons":[]}}}]}
+            """
         case let .restingWithExpiry(hash, expiryBlocks):
             return """
             {"limit_swaps":[{"time_to_expiry_blocks":"\(expiryBlocks)",
@@ -540,6 +580,8 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
         let depositAmount: String?
         let filledInAmount: String?
         let filledOutAmount: String?
+        let observedSourceAsset: String?
+        let observedTargetAsset: String?
         let timeToExpiryBlocks: Int?
     }
 
@@ -558,6 +600,8 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
         filledInAmount: String?,
         filledOutAmount: String?,
         observedTradeTarget _: String?,
+        observedSourceAsset: String?,
+        observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
     ) throws {
         if let error { throw error }
@@ -568,6 +612,8 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
             depositAmount: depositAmount,
             filledInAmount: filledInAmount,
             filledOutAmount: filledOutAmount,
+            observedSourceAsset: observedSourceAsset,
+            observedTargetAsset: observedTargetAsset,
             timeToExpiryBlocks: timeToExpiryBlocks
         ))
     }

@@ -56,6 +56,8 @@ struct LimitOrderStorageService {
             minOutputOverride: record.minOutputOverride,
             sourceAmount1e8: record.sourceAmount1e8,
             tradeTarget: record.tradeTarget,
+            sourceAssetFull: record.sourceAssetFull,
+            targetAssetFull: record.targetAssetFull,
             sourceChainRawValue: record.sourceChainRawValue,
             vault: vault
         )
@@ -158,6 +160,8 @@ struct LimitOrderStorageService {
         filledInAmount: String? = nil,
         filledOutAmount: String? = nil,
         observedTradeTarget: String? = nil,
+        observedSourceAsset: String? = nil,
+        observedTargetAsset: String? = nil,
         timeToExpiryBlocks: Int? = nil,
         observedAt: Date = Date(),
         in vault: Vault
@@ -168,6 +172,8 @@ struct LimitOrderStorageService {
         order.statusRawValue = Self.reconcile(observed: status, with: order).rawValue
         if let depositAmount { order.depositAmount = depositAmount }
         if let observedTradeTarget { order.observedTradeTarget = observedTradeTarget }
+        if let observedSourceAsset { order.observedSourceAsset = observedSourceAsset }
+        if let observedTargetAsset { order.observedTargetAsset = observedTargetAsset }
         if let filledInAmount { order.filledInAmount = filledInAmount }
         if let filledOutAmount { order.filledOutAmount = filledOutAmount }
         if let timeToExpiryBlocks {

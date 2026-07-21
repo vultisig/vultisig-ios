@@ -83,6 +83,18 @@ struct LimitSwapAsset: Equatable {
             isNativeToken: isNativeToken
         )
     }
+
+    /// The same asset spelled the way a CANCEL memo must spell it — full
+    /// contract address for EVM tokens. Captured at signing because
+    /// `memoSymbol`'s 6-character abbreviation cannot be reversed afterwards.
+    var cancelMemoSymbol: String? {
+        thorchainCancelMemoAsset(
+            chain: chain,
+            ticker: ticker,
+            contractAddress: contractAddress,
+            isNativeToken: isNativeToken
+        )
+    }
 }
 
 extension LimitSwapAsset {

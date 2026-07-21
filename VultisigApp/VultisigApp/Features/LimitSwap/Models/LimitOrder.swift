@@ -84,6 +84,22 @@ final class LimitOrder {
     var sourceAmount1e8: String?
     var tradeTarget: String?
 
+    /// The order's assets spelled the way a CANCEL memo must spell them: EVM
+    /// tokens with their FULL contract address, captured at signing.
+    ///
+    /// `sourceAsset` / `targetAsset` above hold the PLACEMENT spelling, which
+    /// abbreviates an EVM contract to its last 6 characters. That is correct
+    /// there — THORNode expands it through `fuzzyAssetMatch` — and fatal in a
+    /// cancel, which is the one inbound memo type that skips fuzzy matching: the
+    /// abbreviation is taken literally and keys a bucket no order was indexed
+    /// under. The abbreviation is not reversible, so the long form has to be
+    /// recorded while the contract address is still in hand.
+    ///
+    /// `nil` on orders placed before this existed; the queue's own report is the
+    /// fallback, and cancelling is blocked when neither is available.
+    var sourceAssetFull: String?
+    var targetAssetFull: String?
+
     /// The queue's own `swap.trade_target`, recorded so it can be cross-checked
     /// against `tradeTarget` above. (`state.deposit`, already stored as
     /// `depositAmount`, is the matching cross-check for `sourceAmount1e8` — it
@@ -92,6 +108,16 @@ final class LimitOrder {
     /// A disagreement means one of the two is wrong with no way to tell which,
     /// and disables cancelling rather than signing a guess.
     var observedTradeTarget: String?
+
+    /// The assets as THORChain itself reports them for this order —
+    /// `swap.tx.coins[0].asset` and `swap.target_asset`, i.e. AFTER fuzzy
+    /// matching resolved whatever the placement memo abbreviated.
+    ///
+    /// Authoritative by construction: these are the strings the order's index
+    /// entry was built from. They both rescue orders placed before
+    /// `sourceAssetFull` existed and cross-check the ones that have it.
+    var observedSourceAsset: String?
+    var observedTargetAsset: String?
 
     /// Hash of the `m=<` transaction we broadcast to cancel this order, once
     /// that broadcast is confirmed. `nil` means no cancel was ever sent.
@@ -137,6 +163,8 @@ final class LimitOrder {
         minOutputOverride: Decimal? = nil,
         sourceAmount1e8: String? = nil,
         tradeTarget: String? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
         sourceChainRawValue: String? = nil,
         vault: Vault
     ) {
@@ -154,6 +182,8 @@ final class LimitOrder {
         self.minOutputOverride = minOutputOverride
         self.sourceAmount1e8 = sourceAmount1e8
         self.tradeTarget = tradeTarget
+        self.sourceAssetFull = sourceAssetFull
+        self.targetAssetFull = targetAssetFull
         self.sourceChainRawValue = sourceChainRawValue
         self.vault = vault
     }
@@ -202,6 +232,10 @@ final class LimitOrder {
             sourceAmount1e8: sourceAmount1e8,
             tradeTarget: tradeTarget,
             observedTradeTarget: observedTradeTarget,
+            sourceAssetFull: sourceAssetFull,
+            targetAssetFull: targetAssetFull,
+            observedSourceAsset: observedSourceAsset,
+            observedTargetAsset: observedTargetAsset,
             sourceChainRawValue: sourceChainRawValue,
             cancelBroadcastHash: cancelBroadcastHash
         )
@@ -264,6 +298,13 @@ struct LimitOrderRecord: Hashable, Sendable {
     /// `LimitOrder`. `nil` keeps the order uncancellable rather than guessed at.
     let sourceAmount1e8: String?
     let tradeTarget: String?
+    /// The assets spelled for a CANCEL memo — full EVM contract addresses. The
+    /// placement spelling in `sourceAsset` / `targetAsset` abbreviates them and
+    /// the abbreviation cannot be reversed, so the long form is captured here
+    /// while the contract is still known. See the matching properties on
+    /// `LimitOrder`.
+    let sourceAssetFull: String?
+    let targetAssetFull: String?
     let sourceChainRawValue: String?
 
     init(
@@ -282,6 +323,8 @@ struct LimitOrderRecord: Hashable, Sendable {
         minOutputOverride: Decimal? = nil,
         sourceAmount1e8: String? = nil,
         tradeTarget: String? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
         sourceChainRawValue: String? = nil
     ) {
         self.inboundTxHash = inboundTxHash
@@ -299,6 +342,8 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.minOutputOverride = minOutputOverride
         self.sourceAmount1e8 = sourceAmount1e8
         self.tradeTarget = tradeTarget
+        self.sourceAssetFull = sourceAssetFull
+        self.targetAssetFull = targetAssetFull
         self.sourceChainRawValue = sourceChainRawValue
     }
 
@@ -326,6 +371,8 @@ struct LimitOrderRecord: Hashable, Sendable {
             minOutputOverride: minOutputOverride,
             sourceAmount1e8: sourceAmount1e8,
             tradeTarget: tradeTarget,
+            sourceAssetFull: sourceAssetFull,
+            targetAssetFull: targetAssetFull,
             sourceChainRawValue: sourceChainRawValue
         )
     }

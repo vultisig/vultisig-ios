@@ -23,6 +23,77 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         XCTAssertEqual(memo, "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0")
     }
 
+    /// ⚠️ Regression for the 2026-07-21 mainnet rehearsal: the cancel was
+    /// REJECTED (`could not find matching limit swap`) because the target asset
+    /// carried the PLACEMENT memo's 6-character contract suffix. That form is
+    /// resolved by `fuzzyAssetMatch` when an order is placed, but `m=<` is the
+    /// one inbound memo type that skips fuzzy matching, so the abbreviation
+    /// keyed a bucket the order was never indexed under.
+    ///
+    /// The byte-exact memo the rejected one should have been.
+    func testBuildsCancelMemoWithTheFullContractForAnEvmTarget() throws {
+        let memo = try buildCancelLimitSwapMemo(
+            LimitOrderCancelInputs(
+                sourceAsset: "THOR.RUNE",
+                sourceAmount1e8: BigInt(370_939_666),
+                targetAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+                tradeTarget: BigInt(167_889_485)
+            )
+        )
+
+        XCTAssertEqual(
+            memo,
+            "m=<:370939666THOR.RUNE:167889485ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0"
+        )
+        XCTAssertEqual(memo.utf8.count, 85)
+    }
+
+    /// The builder REFUSES the abbreviated spelling rather than trusting callers
+    /// to pass the long one — on either leg. An ERC20-sourced order has the
+    /// identical bug and would fail the identical way.
+    func testRejectsAnAbbreviatedContractAssetOnEitherLeg() {
+        let abbreviatedTarget = LimitOrderCancelInputs(
+            sourceAsset: "THOR.RUNE",
+            sourceAmount1e8: BigInt(370_939_666),
+            targetAsset: "ETH.USDC-06EB48",
+            tradeTarget: BigInt(167_889_485)
+        )
+        XCTAssertThrowsError(try buildCancelLimitSwapMemo(abbreviatedTarget)) { error in
+            XCTAssertEqual(error as? LimitSwapCancelMemoError, .abbreviatedAsset)
+        }
+
+        let abbreviatedSource = LimitOrderCancelInputs(
+            sourceAsset: "ETH.USDC-06EB48",
+            sourceAmount1e8: BigInt(370_939_666),
+            targetAsset: "THOR.RUNE",
+            tradeTarget: BigInt(167_889_485)
+        )
+        XCTAssertThrowsError(try buildCancelLimitSwapMemo(abbreviatedSource)) { error in
+            XCTAssertEqual(error as? LimitSwapCancelMemoError, .abbreviatedAsset)
+        }
+    }
+
+    /// The abbreviation detector has to leave every legitimate spelling alone —
+    /// a false positive here makes a perfectly cancellable order uncancellable.
+    func testAbbreviationDetectionAcceptsEveryFullSpelling() {
+        for asset in [
+            "THOR.RUNE", "BTC.BTC", "ETH.ETH", "GAIA.ATOM", "THOR.TCY",
+            "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "ETH~USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            // ⚠️ A SECURED asset spells the whole identifier with `-`, so a
+            // secured NATIVE denom is chain + ticker and nothing else. Reading
+            // the tail after the last `-` would call these truncated and make
+            // every secured-native order permanently uncancellable.
+            "btc-btc", "eth-eth", "BTC-BTC", "doge-doge"
+        ] {
+            XCTAssertFalse(thorchainMemoAssetIsAbbreviated(asset), asset)
+        }
+        for asset in ["ETH.USDC-06EB48", "BSC.TWT-508003", "ETH.USDC-", "eth-usdc-06eb48"] {
+            XCTAssertTrue(thorchainMemoAssetIsAbbreviated(asset), asset)
+        }
+    }
+
     /// A secured-asset source keeps its bare `-` denom. Normalizing it to the
     /// layer-1 form would make THORNode's `Asset.GetChain()` report the L1 chain,
     /// and `ValidateBasic` would then reject a cancel sent from a THOR address.
@@ -235,6 +306,90 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         )
     }
 
+    // MARK: - Asset resolution
+
+    /// The rescue path for the order the failed rehearsal left resting: its
+    /// stored target asset is the lossy `ETH.USDC-06EB48` and it predates
+    /// `targetAssetFull`, so the queue's own report is the only source of the
+    /// full contract — and it is authoritative, being the string THORChain
+    /// built the order's index entry from.
+    func testAQueueObservedAssetSuppliesTheFullContractForALegacyOrder() throws {
+        let details = makeDetails(
+            targetAsset: "ETH.USDC-06EB48",
+            sourceChainRawValue: Chain.thorChain.rawValue,
+            observedTargetAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+        )
+
+        guard case let .cancellable(inputs) = limitOrderCancelEligibility(details) else {
+            return XCTFail("expected cancellable")
+        }
+        XCTAssertEqual(inputs.targetAsset, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
+        XCTAssertFalse(try buildCancelLimitSwapMemo(inputs).contains("06EB48:"))
+    }
+
+    /// An order placed after this change carries the full form itself, so it is
+    /// cancellable in the window before the first queue poll lands.
+    func testTheSignedFullFormIsUsedBeforeTheQueueHasReported() throws {
+        let details = makeDetails(
+            targetAsset: "ETH.USDC-06EB48",
+            targetAssetFull: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+        )
+
+        guard case let .cancellable(inputs) = limitOrderCancelEligibility(details) else {
+            return XCTFail("expected cancellable")
+        }
+        XCTAssertEqual(inputs.targetAsset, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
+    }
+
+    /// ⚠️ The whole point: with only the truncated spelling available, there is
+    /// nothing safe to sign. Blocked — never the 6-character form, which is
+    /// accepted by the chain, costs a fee and cancels nothing.
+    func testAnAbbreviatedAssetWithNoFullFormAnywhereBlocks() {
+        let details = makeDetails(targetAsset: "ETH.USDC-06EB48")
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .missingSignedData)
+    }
+
+    /// An ERC20 SOURCE has the identical bug, and blocks the identical way.
+    func testAnAbbreviatedSourceAssetWithNoFullFormBlocks() {
+        let details = makeDetails(
+            sourceAsset: "ETH.USDC-06EB48",
+            sourceChainRawValue: Chain.ethereum.rawValue
+        )
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .missingSignedData)
+    }
+
+    /// A native leg carries no token identifier to truncate, so the stored
+    /// placement spelling IS the full spelling. Orders placed before any of this
+    /// existed stay cancellable whenever both legs are native.
+    func testNativeLegsStayCancellableWithNoRecordedFullForm() throws {
+        let details = makeDetails(sourceAsset: "THOR.RUNE", targetAsset: "BTC.BTC")
+
+        guard case let .cancellable(inputs) = limitOrderCancelEligibility(details) else {
+            return XCTFail("expected cancellable")
+        }
+        XCTAssertEqual(try buildCancelLimitSwapMemo(inputs), "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0")
+    }
+
+    /// A secured denom is already the full on-chain identifier, so it needs no
+    /// rescue — and must not be normalized on the way through.
+    func testASecuredDenomIsAcceptedVerbatimWithoutAFullForm() throws {
+        for denom in [
+            "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            // A secured NATIVE asset carries no contract at all. Its short tail
+            // is the ticker, not a truncation.
+            "btc-btc"
+        ] {
+            let details = makeDetails(sourceAsset: denom)
+
+            guard case let .cancellable(inputs) = limitOrderCancelEligibility(details) else {
+                return XCTFail("expected \(denom) to be cancellable")
+            }
+            XCTAssertEqual(inputs.sourceAsset, denom)
+        }
+    }
+
     // MARK: - Duplicate detection
 
     func testDuplicatesAreDetectedByRatioNotByEqualAmounts() {
@@ -347,7 +502,11 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         sourceAmount1e8: String? = "100000000",
         tradeTarget: String? = "15979057441",
         observedTradeTarget: String? = nil,
-        sourceChainRawValue: String? = Chain.thorChain.rawValue
+        sourceChainRawValue: String? = Chain.thorChain.rawValue,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
+        observedSourceAsset: String? = nil,
+        observedTargetAsset: String? = nil
     ) -> LimitOrderDetails {
         LimitOrderDetails(
             id: id,
@@ -368,6 +527,10 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
             sourceAmount1e8: sourceAmount1e8,
             tradeTarget: tradeTarget,
             observedTradeTarget: observedTradeTarget,
+            sourceAssetFull: sourceAssetFull,
+            targetAssetFull: targetAssetFull,
+            observedSourceAsset: observedSourceAsset,
+            observedTargetAsset: observedTargetAsset,
             sourceChainRawValue: sourceChainRawValue
         )
     }

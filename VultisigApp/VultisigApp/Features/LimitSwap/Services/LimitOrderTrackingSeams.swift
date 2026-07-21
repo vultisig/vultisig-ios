@@ -24,6 +24,9 @@ protocol LimitOrderObserving {
     ///     untouched.
     ///   - observedTradeTarget: the queue's own `trade_target`, cross-checked
     ///     against the value recorded at signing before a cancel is built.
+    ///   - observedSourceAsset/observedTargetAsset: the assets as THORChain
+    ///     itself holds them, i.e. with any abbreviation the placement memo
+    ///     carried already resolved. A cancel memo has to spell them in full.
     ///   - timeToExpiryBlocks: the queue's live countdown; `nil` means "not
     ///     observed" and follows the same rule.
     func recordObservation(
@@ -34,6 +37,8 @@ protocol LimitOrderObserving {
         filledInAmount: String?,
         filledOutAmount: String?,
         observedTradeTarget: String?,
+        observedSourceAsset: String?,
+        observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
     ) throws
 }
@@ -64,6 +69,8 @@ struct LimitOrderObserver: LimitOrderObserving {
         filledInAmount: String?,
         filledOutAmount: String?,
         observedTradeTarget: String?,
+        observedSourceAsset: String?,
+        observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
     ) throws {
         guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
@@ -77,6 +84,8 @@ struct LimitOrderObserver: LimitOrderObserving {
             filledInAmount: filledInAmount,
             filledOutAmount: filledOutAmount,
             observedTradeTarget: observedTradeTarget,
+            observedSourceAsset: observedSourceAsset,
+            observedTargetAsset: observedTargetAsset,
             timeToExpiryBlocks: timeToExpiryBlocks,
             in: vault
         )

@@ -385,6 +385,12 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 filledInAmount: state?.inAmount,
                 filledOutAmount: state?.outAmount,
                 observedTradeTarget: entry?.swap.tradeTarget,
+                // The assets THORChain resolved this order to. Empty strings are
+                // dropped rather than stored: a blank asset is not an
+                // observation, and persisting one would overwrite a good value
+                // with something no memo can be built from.
+                observedSourceAsset: entry?.swap.tx.coins?.first?.asset?.memoForm.trimmedNonEmpty,
+                observedTargetAsset: entry?.swap.targetAsset?.memoForm.trimmedNonEmpty,
                 // Every numeric field on this endpoint arrives as a string. An
                 // unparseable countdown is dropped rather than defaulted: `0`
                 // would render "expired" on an order that is resting fine.

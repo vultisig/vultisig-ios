@@ -333,6 +333,8 @@ private final class InertLimitOrderObserver: LimitOrderObserving {
         filledInAmount _: String?,
         filledOutAmount _: String?,
         observedTradeTarget _: String?,
+        observedSourceAsset _: String?,
+        observedTargetAsset _: String?,
         timeToExpiryBlocks _: Int?
     ) throws {}
 }

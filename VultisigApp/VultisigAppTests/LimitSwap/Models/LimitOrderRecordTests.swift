@@ -34,6 +34,8 @@ final class LimitOrderRecordTests: XCTestCase {
             // the bug class that test exists to catch.
             sourceAmount1e8: "60012000000",
             tradeTarget: "512345",
+            sourceAssetFull: "THOR.RUNE",
+            targetAssetFull: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
             sourceChainRawValue: Chain.thorChain.rawValue
         )
     }
@@ -79,5 +81,15 @@ final class LimitOrderRecordTests: XCTestCase {
         let spliced = record.with(inboundTxHash: "ABC123")
 
         XCTAssertEqual(spliced, makeFullyPopulatedRecord(inboundTxHash: "ABC123"))
+    }
+
+    /// ⚠️ The cancel-spelling assets ride the same copy. Losing the target's
+    /// full contract here would leave the order cancellable only once the queue
+    /// has been polled — and, before that, not at all.
+    func testWithInboundTxHashPreservesTheCancelAssetSpellings() {
+        let spliced = makeFullyPopulatedRecord().with(inboundTxHash: "ABC123")
+
+        XCTAssertEqual(spliced.sourceAssetFull, "THOR.RUNE")
+        XCTAssertEqual(spliced.targetAssetFull, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
     }
 }

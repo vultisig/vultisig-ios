@@ -611,6 +611,15 @@ final class LimitSwapFormViewModel {
                 sourceDecimals: draft.fromAsset.decimals
             ).description,
             tradeTarget: signedTradeTarget.description,
+            // The same two assets, spelled with their FULL contract address.
+            // `sourceAsset`/`targetAsset` above carry the placement spelling,
+            // which truncates an EVM contract to 6 characters — correct there
+            // (THORNode fuzzy-matches it) and fatal in a cancel, which is the
+            // one inbound memo type that skips fuzzy matching. The truncation is
+            // irreversible, so the long form has to be taken here, while the
+            // contract address is still in hand.
+            sourceAssetFull: draft.fromAsset.cancelMemoSymbol,
+            targetAssetFull: draft.toAsset.cancelMemoSymbol,
             sourceChainRawValue: draft.fromAsset.chain.rawValue
         )
         return (memo, record)
