@@ -773,10 +773,13 @@ final class SendDetailsViewModel {
     /// TRON self-send guard (parity with android DefaultSendStrategy): a plain
     /// transfer whose destination is the sender's own address just burns fees.
     /// Staking ops (freeze/unfreeze) are self-directed by design, so they're
-    /// excluded via the existing `isStakingOperation` flag.
+    /// excluded via the existing `isStakingOperation` flag. Compares against
+    /// `fromAddress` — the sender `makeTransaction()` actually signs with, which
+    /// a hydrated seed can decouple from `coin.address` — so the guard tracks the
+    /// real sender rather than an assumed-equal default.
     func validateNotSelfSend() -> Bool {
         guard coin.chain == .tron, !isStakingOperation else { return true }
-        guard toAddress == coin.address else { return true }
+        guard toAddress == fromAddress else { return true }
         setAddressError(message: "sameAddressError")
         return false
     }

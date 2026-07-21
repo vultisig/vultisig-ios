@@ -298,6 +298,27 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertTrue(vm.validateNotSelfSend())
     }
 
+    /// The guard keys on `fromAddress` (the sender `makeTransaction()` signs
+    /// with), not `coin.address`. A hydrated seed can decouple the two, so a
+    /// self-send to the *actual* sender must still be blocked even when it
+    /// differs from `coin.address`.
+    func testValidateNotSelfSendKeysOnFromAddressWhenHydratedApart() {
+        let trx = SendFormFixture.makeTRX()
+        let vm = SendFormFixture.make(coin: trx)
+        vm.fromAddress = "TXhydratedSender0000000000000000000"
+
+        // To == the real sender (fromAddress) but != coin.address → blocked.
+        vm.toAddress = vm.fromAddress
+        XCTAssertFalse(vm.validateNotSelfSend())
+        XCTAssertEqual(vm.errorMessage, "sameAddressError")
+
+        // To == coin.address but != the real sender → not a self-send → allowed.
+        let vm2 = SendFormFixture.make(coin: SendFormFixture.makeTRX())
+        vm2.fromAddress = "TXhydratedSender0000000000000000000"
+        vm2.toAddress = vm2.coin.address
+        XCTAssertTrue(vm2.validateNotSelfSend())
+    }
+
     /// End-to-end: a TRON send whose destination equals the sender is rejected
     /// by `validateForm()` with `sameAddressError`, and the guard fires BEFORE
     /// the balance check (balance comfortably covers the amount, so only the
