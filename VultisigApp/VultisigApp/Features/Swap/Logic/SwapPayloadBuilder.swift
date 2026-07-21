@@ -166,7 +166,10 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress ?? fromCoin.address,
                 amount: amountInCoin,
-                memo: quote.memo,
+                memo: ThorchainMemoLimit.compressed(
+                    quote.memo,
+                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
+                ),
                 chainSpecific: chainSpecific,
                 swapPayload: .mayachain(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
@@ -187,7 +190,10 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress,
                 amount: amountInCoin,
-                memo: quote.memo,
+                memo: ThorchainMemoLimit.compressed(
+                    quote.memo,
+                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
+                ),
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchain(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
@@ -208,7 +214,10 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress,
                 amount: amountInCoin,
-                memo: quote.memo,
+                memo: ThorchainMemoLimit.compressed(
+                    quote.memo,
+                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
+                ),
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchainChainnet(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
@@ -229,7 +238,10 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress,
                 amount: amountInCoin,
-                memo: quote.memo,
+                memo: ThorchainMemoLimit.compressed(
+                    quote.memo,
+                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
+                ),
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchainStagenet(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
