@@ -324,7 +324,10 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
             return XCTFail("expected cancellable")
         }
         XCTAssertEqual(inputs.targetAsset, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
-        XCTAssertFalse(try buildCancelLimitSwapMemo(inputs).contains("06EB48:"))
+        // Not `contains("06EB48")` — the full contract ENDS in those characters,
+        // which is the whole reason the abbreviation is so easy to mistake for
+        // the real thing. The truncated form is `<TICKER>-<6 chars>`.
+        XCTAssertFalse(try buildCancelLimitSwapMemo(inputs).contains("USDC-06EB48"))
     }
 
     /// An order placed after this change carries the full form itself, so it is
