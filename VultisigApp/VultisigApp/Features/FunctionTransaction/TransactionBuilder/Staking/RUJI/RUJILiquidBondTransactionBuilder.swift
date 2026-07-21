@@ -20,14 +20,6 @@ struct RUJILiquidBondTransactionBuilder: TransactionBuilder {
     let amount: String
     let sendMaxAmount: Bool
 
-    /// Bonded amount in whole base units of `x/ruji`. Rounds DOWN: the amount
-    /// field does not cap to the coin's 8 dp, and `CosmosCoin.amount` must be an
-    /// integer base-unit string or the execute is malformed. Never round up —
-    /// funding more base units than held would fail on-chain.
-    var rawAmount: String {
-        String(coin.decimalToCrypto(value: amount.toDecimal()).toInt())
-    }
-
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
@@ -39,14 +31,24 @@ struct RUJILiquidBondTransactionBuilder: TransactionBuilder {
     var transactionType: VSTransactionType { .genericContract }
 
     var wasmContractPayload: WasmExecuteContractPayload? {
-        WasmExecuteContractPayload(
+        // Rounds DOWN to whole base units of `x/ruji`: the amount field does not
+        // cap to the coin's 8 dp, and `CosmosCoin.amount` must be an integer
+        // base-unit string or the execute is malformed. Never round up — funding
+        // more base units than held would fail on-chain.
+        let units = coin.decimalToCrypto(value: amount.toDecimal()).toInt()
+        // Sub-base-unit dust truncates to zero, which the amount validator lets
+        // through (it only rejects an exact zero). Bonding zero funds is a no-op
+        // that still costs a fee, so refuse to build it. Mirrors the unbond side.
+        guard units >= 1 else { return nil }
+
+        return WasmExecuteContractPayload(
             senderAddress: coin.address,
             contractAddress: Self.destinationAddress,
             executeMsg: """
             { "liquid": { "bond": {} } }
             """,
             coins: [CosmosCoin(
-                amount: rawAmount,
+                amount: String(units),
                 denom: coin.contractAddress
             )]
         )

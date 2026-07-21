@@ -87,6 +87,18 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
         XCTAssertFalse(funds.amount.contains("."), "funds amount must be an integer base-unit string")
     }
 
+    /// The amount validator only rejects an exact zero, so sub-base-unit dust
+    /// reaches the builder. Bonding zero funds is a no-op that still costs a
+    /// fee, so no payload is produced — mirroring the unbond side.
+    func testLiquidBondProducesNoPayloadBelowOneBaseUnit() {
+        let builder = RUJILiquidBondTransactionBuilder(
+            coin: Self.makeRujiCoin(),
+            amount: "0.000000009",
+            sendMaxAmount: false
+        )
+        XCTAssertNil(builder.wasmContractPayload)
+    }
+
     // MARK: - Auto-compounding unstake (liquid.unbond)
 
     func testLiquidUnbondEmitsLiquidUnbondMessage() throws {
@@ -164,6 +176,30 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
         let funds = try XCTUnwrap(payload.coins.first)
         XCTAssertEqual(funds.denom, Self.bondDenom)
         XCTAssertEqual(funds.amount, "1000000000")
+    }
+
+    /// `CosmosCoin.amount` must be an integer base-unit string; a fractional one
+    /// is a malformed execute. The bonded builder used to stringify the raw
+    /// `Decimal`, so 9 dp produced `"112345678.9"`.
+    func testBondedStakeFundsWithAnIntegerBaseUnitString() throws {
+        let builder = RUJIStakeTransactionBuilder(
+            coin: Self.makeRujiCoin(),
+            amount: "1.123456789",
+            sendMaxAmount: false
+        )
+        let payload = try XCTUnwrap(builder.wasmContractPayload)
+        let funds = try XCTUnwrap(payload.coins.first)
+        XCTAssertEqual(funds.amount, "112345678")
+        XCTAssertFalse(funds.amount.contains("."), "funds amount must be an integer base-unit string")
+    }
+
+    func testBondedStakeProducesNoPayloadBelowOneBaseUnit() {
+        let builder = RUJIStakeTransactionBuilder(
+            coin: Self.makeRujiCoin(),
+            amount: "0.000000009",
+            sendMaxAmount: false
+        )
+        XCTAssertNil(builder.wasmContractPayload)
     }
 
     /// The bonded position holds no receipt token, so its withdrawal names the
