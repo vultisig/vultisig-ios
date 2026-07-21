@@ -1536,6 +1536,7 @@
 "withdrawAmount" = "Podignite %@";
 "withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
 "withdrawPercentage" = "Postotak povlačenja";
+"withdrawRewards" = "Povuci nagrade za %@";
 "withdrawSecuredAssetError" = "Za povlačenje %@, prvo morate dodati %@ kovanicu u svoj trezor. Idite u postavke trezora i dodajte %@ za nastavak.";
 "wrongPassword" = "Pogrešna lozinka";
 "wrongVaultPassword" = "Pogrešna lozinka trezora. Molim vas, pokušajte ponovo.";

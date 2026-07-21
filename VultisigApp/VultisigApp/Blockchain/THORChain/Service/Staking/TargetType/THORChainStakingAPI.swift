@@ -99,6 +99,9 @@ enum THORChainStakingAPI: TargetType {
                     }
                   }
                 }
+                liquidSize {
+                  amount
+                }
                 pendingRevenue {
                   amount
                   asset {

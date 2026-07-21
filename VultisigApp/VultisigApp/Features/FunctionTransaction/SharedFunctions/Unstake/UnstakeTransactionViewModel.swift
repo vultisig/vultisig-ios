@@ -46,10 +46,21 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         if isAutocompound {
             Task { @MainActor in
                 await fetchAutocompoundBalance()
+                guard receiptBalanceIsAvailableAmount else { return }
                 self.availableAmount = autocompoundBalance
                 self.setupAmountField()
             }
         }
+    }
+
+    /// Whether the auto-compound receipt balance is also the amount shown to the
+    /// user. True for TCY and bRUNE, whose staked cards render receipt units
+    /// directly. RUJI's compounded card renders the RUJI-denominated value of the
+    /// receipt, so its ceiling stays the amount the card was showing and the
+    /// receipt balance is used only to size the redeemed shares — otherwise the
+    /// sheet would offer a smaller maximum than the card it was opened from.
+    private var receiptBalanceIsAvailableAmount: Bool {
+        coin.ticker.uppercased() != "RUJI"
     }
 
     var transactionBuilder: TransactionBuilder? {
@@ -73,6 +84,25 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 sendMaxAmount: isMaxAmount
             )
         case "RUJI":
+            // RUJI's two positions unstake through completely different messages:
+            // the auto-compounding one redeems sRUJI receipt shares with
+            // `liquid.unbond`, the bonded one withdraws RUJI with
+            // `account.withdraw`. Both arrive here on the RUJI coin because the
+            // compounded card maps sRUJI back to its bond coin.
+            if isAutocompound {
+                // The redemption spends receipt shares, and unlike TCY/bRUNE the
+                // share balance is not what bounds the amount field — so nothing
+                // else stops a zero here. A zero means the read is still in flight,
+                // failed, or the position is empty; all three would build a wasm
+                // execute carrying no funds.
+                guard autocompoundBalance > 0 else { return nil }
+                return RUJILiquidUnbondTransactionBuilder(
+                    coin: coin,
+                    percentage: Int(percentageSelected ?? percentageFromAmount),
+                    receiptShares: autocompoundBalance,
+                    sendMaxAmount: isMaxAmount
+                )
+            }
             return RUJIUnstakeTransactionBuilder(
                 coin: coin,
                 amount: amountField.value,
@@ -124,6 +154,18 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 amount = try await ThorchainService.shared.fetchBRuneAutoCompoundAmount(address: coin.address)
             } catch {
                 logger.error("Failed to fetch ybRUNE autocompound balance: \(error.localizedDescription, privacy: .private)")
+                amount = .zero
+            }
+            self.autocompoundBalance = coin.valueWithDecimals(value: amount)
+        case "RUJI":
+            // The sRUJI receipt share balance — what `liquid.unbond` spends. Not a
+            // display value: shares are worth more than 1 RUJI each and drift
+            // further apart as the pool compounds.
+            let amount: Decimal
+            do {
+                amount = try await ThorchainService.shared.fetchRujiStakingReceiptAmount(address: coin.address)
+            } catch {
+                logger.error("Failed to fetch sRUJI receipt balance: \(error.localizedDescription, privacy: .private)")
                 amount = .zero
             }
             self.autocompoundBalance = coin.valueWithDecimals(value: amount)

@@ -201,7 +201,7 @@ enum StakePositionType: String, Codable, Equatable {
 
     static func defaultType(for coin: CoinMeta) -> StakePositionType {
         switch coin.ticker.uppercased() {
-        case "STCY", "YBRUNE":
+        case "STCY", "YBRUNE", "SRUJI":
             return .compound
         case "YRUNE", "YTCY":
             return .index

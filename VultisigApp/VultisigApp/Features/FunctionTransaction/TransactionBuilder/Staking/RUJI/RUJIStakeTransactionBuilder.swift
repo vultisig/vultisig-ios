@@ -14,8 +14,12 @@ struct RUJIStakeTransactionBuilder: TransactionBuilder {
     let amount: String
     let sendMaxAmount: Bool
 
+    /// Bonded amount in whole base units of `x/ruji`. Rounds DOWN: the amount
+    /// field does not cap to the coin's 8 dp, and `CosmosCoin.amount` must be an
+    /// integer base-unit string or the execute is malformed. Never round up —
+    /// funding more base units than held would fail on-chain.
     var rawAmount: String {
-        coin.decimalToCrypto(value: amount.toDecimal()).description
+        String(coin.decimalToCrypto(value: amount.toDecimal()).toInt())
     }
 
     var memo: String {
@@ -33,7 +37,12 @@ struct RUJIStakeTransactionBuilder: TransactionBuilder {
     }
 
     var wasmContractPayload: WasmExecuteContractPayload? {
-        WasmExecuteContractPayload(
+        // Sub-base-unit dust truncates to zero, which the amount validator lets
+        // through (it only rejects an exact zero). Bonding zero funds is a no-op
+        // that still costs a fee, so refuse to build it.
+        guard rawAmount != "0" else { return nil }
+
+        return WasmExecuteContractPayload(
             senderAddress: coin.address,
             contractAddress: Self.destinationAddress,
             executeMsg: """

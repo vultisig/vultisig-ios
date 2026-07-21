@@ -1536,6 +1536,7 @@
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowOutboundFee" = "Valor abaixo da taxa de saída — retire pelo menos %@ %@ para cobrir os custos da rede";
 "withdrawPercentage" = "Porcentagem de saque";
+"withdrawRewards" = "Sacar recompensas de %@";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Senha incorreta";
 "wrongVaultPassword" = "Senha do cofre errada. Por favor, tente novamente.";

@@ -1536,6 +1536,7 @@
 "withdrawAmount" = "%@ abheben";
 "withdrawBelowOutboundFee" = "Betrag unter Ausgangsgebühr — mindestens %@ %@ abheben, um Netzwerkkosten zu decken";
 "withdrawPercentage" = "Abhebungsprozentsatz";
+"withdrawRewards" = "%@-Belohnungen abheben";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Falsches Passwort";
 "wrongVaultPassword" = "Falsches Gewölbekennwort. Bitte versuchen Sie es erneut.";
