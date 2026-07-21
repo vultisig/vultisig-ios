@@ -57,7 +57,7 @@ struct LimitOrderCancelPreparer {
         if let destination {
             disclosures = try await l1Disclosures(coin: coin, vault: vault, request: request, destination: destination)
         } else {
-            disclosures = thorchainDisclosures(coin: coin)
+            disclosures = limitOrderCancelThorchainDisclosures(for: coin)
         }
 
         let builder = CancelLimitOrderTransactionBuilder(
@@ -141,14 +141,19 @@ struct LimitOrderCancelPreparer {
         }
     }
 
-    /// A THORChain cancel attaches nothing, so its deposit gas is the whole cost.
-    private func thorchainDisclosures(coin: Coin) -> LimitOrderCancelDisclosures {
-        LimitOrderCancelDisclosures(
-            donatedAmount: nil,
-            balanceObjection: nil,
-            canAffordCancel: coin.balanceDecimal >= limitOrderCancelThorchainFee(decimals: coin.decimals)
-        )
-    }
+}
+
+/// Disclosures for the THORChain route: nothing is donated, and the deposit gas
+/// is the entire cost — the cancel attaches no coins at all.
+///
+/// Free and pure so the affordability boundary is asserted directly, without the
+/// network the L1 route needs.
+func limitOrderCancelThorchainDisclosures(for coin: Coin) -> LimitOrderCancelDisclosures {
+    LimitOrderCancelDisclosures(
+        donatedAmount: nil,
+        balanceObjection: nil,
+        canAffordCancel: coin.balanceDecimal >= limitOrderCancelThorchainFee(decimals: coin.decimals)
+    )
 }
 
 /// The deposit gas a THORChain cancel is signed with, in human units.
@@ -158,6 +163,25 @@ struct LimitOrderCancelPreparer {
 /// at signing regardless of what was fetched.
 func limitOrderCancelThorchainFee(decimals: Int) -> Decimal {
     Decimal(THORChainConstants.depositGasBaseUnits) / pow(Decimal(10), decimals)
+}
+
+/// The verdict of the pre-sign re-check.
+enum LimitOrderCancelRecheck: Equatable {
+    /// Re-checked against the stored order, and it can still be cancelled.
+    case stillEligible
+    /// Re-checked, and the order changed under the user — it filled, expired, or
+    /// already has a cancel against it.
+    case orderChanged
+    /// Storage was read and holds no such order, so there was nothing to
+    /// re-check. Signing is permitted — a device that does not own the row has
+    /// only the original eligibility decision to go on, and blocking it would
+    /// make the cancel unreachable there forever — but this is deliberately NOT
+    /// `.stillEligible`: nothing was verified, and the enum should not claim it
+    /// was.
+    case noLocalOrder
+    /// The re-check could not be performed at all, because storage could not be
+    /// read. NOT a verdict about the order.
+    case unverifiable
 }
 
 /// Re-check an order against storage RIGHT BEFORE its cancel is signed.
@@ -171,13 +195,29 @@ func limitOrderCancelThorchainFee(decimals: Int) -> Decimal {
 /// The MEMO is deliberately not rebuilt: it was fixed at snapshot time so the
 /// eligibility decision and the signed bytes cannot drift. This only asks whether
 /// that decision still holds.
+///
+/// ⚠️ **Three-valued, because a `try?` here fails OPEN on the one guard that
+/// exists to stop a stale cancel.** `LimitOrderStorageService.vault` throws when
+/// there is no model context, and collapsing that into "no local order" would
+/// wave the signature through on the grounds that we could not look. A vault we
+/// DID read that simply holds no such order is different — that is a row this
+/// device does not own, there is nothing to re-check, and the original
+/// eligibility decision is the best information available.
 @MainActor
-func limitOrderCancelIsStillEligible(_ request: LimitOrderCancelRequest, pubKeyECDSA: String) -> Bool {
-    guard let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA),
-          let order = vault.limitOrders.first(where: { $0.id == request.orderId }) else {
-        // No local order — a co-signer, or a row this device does not own. The
-        // original eligibility check is the best information available.
-        return true
+func limitOrderCancelRecheck(
+    _ request: LimitOrderCancelRequest,
+    pubKeyECDSA: String
+) -> LimitOrderCancelRecheck {
+    let vault: Vault?
+    do {
+        vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA)
+    } catch {
+        logger.error("Could not re-read storage before signing a cancel: \(error.localizedDescription, privacy: .public)")
+        return .unverifiable
     }
-    return limitOrderCancelEligibility(order.details).isCancellable
+    guard let vault else { return .unverifiable }
+    guard let order = vault.limitOrders.first(where: { $0.id == request.orderId }) else {
+        return .noLocalOrder
+    }
+    return limitOrderCancelEligibility(order.details).isCancellable ? .stillEligible : .orderChanged
 }

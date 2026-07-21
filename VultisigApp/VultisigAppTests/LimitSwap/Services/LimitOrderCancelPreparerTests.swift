@@ -30,24 +30,43 @@ final class LimitOrderCancelPreparerTests: XCTestCase {
         )
     }
 
-    /// A dust balance is NOT sufficient. Gating on "> 0" would send the user to a
-    /// Verify screen that fails at payload construction, with nothing on screen
-    /// explaining why.
+    /// A dust balance is NOT sufficient, and the DISCLOSURE says so — asserted
+    /// through the value Verify actually reads, not through the arithmetic
+    /// behind it. Gating on "> 0" would send the user to a Verify screen that
+    /// fails at payload construction, with nothing on screen explaining why.
     func testDustBalanceCannotAffordTheDepositFee() {
-        let fee = limitOrderCancelThorchainFee(decimals: 8)
-
         for balance in ["0", "1", String(THORChainConstants.depositGasBaseUnits - 1)] {
-            XCTAssertLessThan(makeRune(balance: balance).balanceDecimal, fee, "balance \(balance)")
+            let disclosures = limitOrderCancelThorchainDisclosures(for: makeRune(balance: balance))
+
+            XCTAssertFalse(disclosures.canAffordCancel, "balance \(balance)")
         }
     }
 
     /// Exactly the fee is enough — a THORChain cancel attaches no coins, so the
-    /// deposit gas is the entire cost.
+    /// deposit gas is the entire cost. Pinned at the exact boundary because an
+    /// off-by-one here either blocks a cancel the user can pay for or waves
+    /// through one they cannot.
     func testExactlyTheFeeIsAffordable() {
-        XCTAssertGreaterThanOrEqual(
-            makeRune(balance: String(THORChainConstants.depositGasBaseUnits)).balanceDecimal,
-            limitOrderCancelThorchainFee(decimals: 8)
+        let atTheFee = limitOrderCancelThorchainDisclosures(
+            for: makeRune(balance: String(THORChainConstants.depositGasBaseUnits))
         )
+        let justOver = limitOrderCancelThorchainDisclosures(
+            for: makeRune(balance: String(THORChainConstants.depositGasBaseUnits + 1))
+        )
+
+        XCTAssertTrue(atTheFee.canAffordCancel)
+        XCTAssertTrue(justOver.canAffordCancel)
+    }
+
+    /// The THORChain route attaches nothing, so it has no dust to disclose and
+    /// no route-specific objection to raise — affordability is the whole story.
+    func testTheThorchainRouteDisclosesNoDustAndNoObjection() {
+        let disclosures = limitOrderCancelThorchainDisclosures(
+            for: makeRune(balance: String(THORChainConstants.depositGasBaseUnits))
+        )
+
+        XCTAssertNil(disclosures.donatedAmount)
+        XCTAssertNil(disclosures.balanceObjection)
     }
 
     // MARK: - The disclosures that moved onto Verify
@@ -110,7 +129,101 @@ final class LimitOrderCancelPreparerTests: XCTestCase {
         XCTAssertNil(makeRequest().disclosures)
     }
 
+    // MARK: - The pre-sign re-check, and what it will not claim
+
+    /// The ordinary path: the row is there and still cancellable.
+    func testARestingOrderStillInStorageIsStillEligible() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault(pubKey: "vault-pub")
+        let order = try LimitOrderStorageService().persist(makeCancellableRecord(), for: vault)
+
+        XCTAssertEqual(
+            limitOrderCancelRecheck(makeRequest(orderId: order.id), pubKeyECDSA: "vault-pub"),
+            .stillEligible
+        )
+    }
+
+    /// ⚠️ The guard's whole purpose. The order went terminal while the screen
+    /// sat open, so the cancel must be refused — a memo for a closed order still
+    /// costs a fee and, on L1, donates dust.
+    func testAnOrderThatWentTerminalIsReportedAsChanged() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault(pubKey: "vault-pub")
+        let order = try LimitOrderStorageService().persist(makeCancellableRecord(), for: vault)
+        order.statusRawValue = LimitOrderStatus.filled.rawValue
+
+        XCTAssertEqual(
+            limitOrderCancelRecheck(makeRequest(orderId: order.id), pubKeyECDSA: "vault-pub"),
+            .orderChanged
+        )
+    }
+
+    /// A vault that WAS read and holds no such row. Signing is permitted — a
+    /// device without the row has only the original decision to go on — but the
+    /// verdict is not `.stillEligible`, because nothing was actually checked.
+    func testAReadableVaultWithoutTheOrderIsNotClaimedToBeVerified() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        _ = TestStore.makeVault(pubKey: "vault-pub")
+
+        let verdict = limitOrderCancelRecheck(makeRequest(orderId: "not-in-this-vault"), pubKeyECDSA: "vault-pub")
+
+        XCTAssertEqual(verdict, .noLocalOrder)
+        XCTAssertNotEqual(verdict, .stillEligible, "nothing was verified, so nothing may be claimed")
+    }
+
+    /// ⚠️ And the branch that must never be confused with the one above: storage
+    /// was readable but holds no such vault, so the check did not happen. "We
+    /// could not look" is not permission to sign.
+    func testAVaultTheStoreCannotProduceIsUnverifiableRatherThanEligible() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let verdict = limitOrderCancelRecheck(makeRequest(), pubKeyECDSA: "no-such-vault")
+
+        XCTAssertEqual(verdict, .unverifiable)
+        XCTAssertNotEqual(verdict, .noLocalOrder, "an absent VAULT is not an absent ORDER")
+        XCTAssertNotEqual(verdict, .stillEligible)
+    }
+
+    /// ⚠️ The exact condition that produced the original bug: no model context,
+    /// so `LimitOrderStorageService.vault` THROWS. The old `try?` swallowed that
+    /// into "no local order", which returns eligible — the guard failing open at
+    /// precisely the moment it could not do its job.
+    func testAThrownStoreLookupIsUnverifiableRatherThanEligible() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        Storage.shared.modelContext = nil
+
+        let verdict = limitOrderCancelRecheck(makeRequest(), pubKeyECDSA: "vault-pub")
+
+        XCTAssertEqual(verdict, .unverifiable)
+        XCTAssertNotEqual(verdict, .stillEligible, "a lookup that threw is not a licence to sign")
+        XCTAssertNotEqual(verdict, .noLocalOrder)
+    }
+
     // MARK: - Helpers
+
+    /// A record whose persisted form passes `limitOrderCancelEligibility` — the
+    /// exact 1e8 amounts, the source chain, and assets that carry no truncated
+    /// token identifier.
+    private func makeCancellableRecord() -> LimitOrderRecord {
+        LimitOrderRecord(
+            inboundTxHash: "ABC123",
+            sourceAsset: "THOR.RUNE",
+            sourceAmount: "100000000",
+            sourceDecimals: 8,
+            targetAsset: "BTC.BTC",
+            destAddress: "bc1qdest",
+            targetPrice: 1,
+            expiryBlocks: 14_400,
+            sourceAmount1e8: "100000000",
+            tradeTarget: "15979057441",
+            sourceChainRawValue: Chain.thorChain.rawValue
+        )
+    }
 
     private func makeRune(balance: String) -> Coin {
         let asset = CoinMeta(
@@ -127,9 +240,9 @@ final class LimitOrderCancelPreparerTests: XCTestCase {
         return coin
     }
 
-    private func makeRequest(duplicates: Int = 0) -> LimitOrderCancelRequest {
+    private func makeRequest(duplicates: Int = 0, orderId: String = "order-1") -> LimitOrderCancelRequest {
         LimitOrderCancelRequest(
-            orderId: "order-1",
+            orderId: orderId,
             inboundTxHash: "ABC123",
             memo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0",
             sourceAsset: "THOR.RUNE",

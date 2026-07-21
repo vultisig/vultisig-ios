@@ -225,13 +225,27 @@ struct FunctionCallVerifyScreen: View {
     /// through a scanner sheet for a transaction that will be refused anyway.
     private func isCancelStillEligible() -> Bool {
         guard let cancel = transaction.limitCancelContext else { return true }
-        guard limitOrderCancelIsStillEligible(cancel, pubKeyECDSA: vault.pubKeyECDSA) else {
+        switch limitOrderCancelRecheck(cancel, pubKeyECDSA: vault.pubKeyECDSA) {
+        case .stillEligible, .noLocalOrder:
+            // `.noLocalOrder` is permitted explicitly, and only because there is
+            // nothing better available: a device that does not hold the row has
+            // only the original eligibility decision to go on, and refusing here
+            // would put the cancel permanently out of its reach.
+            staleOrderMessage = nil
+            return true
+        case .orderChanged:
             staleOrderMessage = "limitSwap.cancel.orderChanged".localized
             fastPasswordPresented = false
             return false
+        case .unverifiable:
+            // The check did not happen, so nothing is known about the order —
+            // and saying "this order changed" would be a claim we cannot make.
+            // Refuse either way: this guard is what stops a filled or expired
+            // order being cancelled from a stale screen.
+            staleOrderMessage = "limitSwap.cancel.unavailableVaultUnreadable".localized
+            fastPasswordPresented = false
+            return false
         }
-        staleOrderMessage = nil
-        return true
     }
 
     func signAndMoveToNextView() {
