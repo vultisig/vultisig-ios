@@ -81,10 +81,28 @@ private extension THORChainStakingService {
             return .empty
         }
 
-        // 2. Parse staked amount
+        // 2. Parse the bonded amount — the position that accrues claimable USDC.
         let stakedAmount = BigInt(stake.bonded.amount) ?? .zero
         let stakedDecimal = Decimal(string: stakedAmount.description) ?? 0
         let stakedFinal = stakedDecimal / pow(10, 8) // RUJI has 8 decimals
+
+        // 2b. Parse the auto-compounding amount. `liquidSize` is the sRUJI receipt
+        // valued in RUJI at the pool's current share price, which is what the
+        // Rujira app shows; the raw on-chain receipt balance is a share count and
+        // would understate the position. Independent of `bonded` — an account can
+        // hold both — so this never falls back to it.
+        //
+        // The field is non-null in the Rujira schema and is the only source for the
+        // auto-compounding position, so a missing or unparseable value means a
+        // partial response, not an empty position. Fail closed like the guards
+        // above rather than report a zero that would erase a live position.
+        guard let liquidSize = stake.liquidSize,
+              let liquidSizeRaw = liquidSize.amount,
+              let liquidSizeAmount = BigInt(liquidSizeRaw),
+              let liquidSizeDecimal = Decimal(string: liquidSizeAmount.description) else {
+            throw StakingError.invalidResponse
+        }
+        let liquidSizeFinal = liquidSizeDecimal / pow(10, 8)
 
         // 3. Parse rewards
         let rewardsAmount = BigInt(stake.pendingRevenue?.amount ?? "0") ?? .zero
@@ -108,6 +126,7 @@ private extension THORChainStakingService {
 
         return StakingDetails(
             stakedAmount: stakedFinal,
+            autoCompoundAmount: liquidSizeFinal,
             apr: apr,
             estimatedReward: nil, // Not available for RUJI
             nextPayoutDate: nil, // Not available for RUJI
@@ -140,6 +159,7 @@ private extension THORChainStakingService {
 
         return StakingDetails(
             stakedAmount: stakedDecimal,
+            autoCompoundAmount: 0, // TCY's auto-compound side is read on-chain, not here
             apr: apr,
             estimatedReward: estimatedReward,
             nextPayoutDate: nextPayout,
