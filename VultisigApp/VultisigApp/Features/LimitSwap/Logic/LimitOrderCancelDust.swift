@@ -156,9 +156,18 @@ func limitOrderCancelDustCeiling(for chain: Chain) -> Decimal {
 ///
 /// So this is a yes/no gate, not a fitting routine. In practice gas-asset pairs
 /// land around 37–44 bytes and fit anywhere; an ERC20 target from a UTXO source
-/// reaches 85–91 bytes and cannot fit the 80-byte `OP_RETURN` cap. Reference
+/// reaches 83–91 bytes and cannot fit the 80-byte `OP_RETURN` cap. Reference
 /// memos (`r:<id>`) are the real fix for that and need their own registration
 /// transaction — deliberately out of scope here.
+///
+/// ⚠️ **Measure the memo that will actually be SIGNED.** A contract address is
+/// 42 characters against the 6 the placement memo abbreviates it to, so sizing
+/// the abbreviated spelling understates a cancel by 36 bytes per token leg —
+/// enough to pass a UTXO source that then cannot possibly fit. The 2026-07-21
+/// rehearsal sized 49 bytes for a memo that is 85; the gate said yes about a
+/// string that was never going to be broadcast. `limitOrderCancelEligibility`
+/// is the only caller and it builds the memo from the resolved full spellings
+/// immediately before this — keep it that way.
 func limitOrderCancelMemoFits(_ memo: String, sourceChainKind: ChainType) -> Bool {
     memo.utf8.count <= limitMemoByteLimit(for: sourceChainKind)
 }

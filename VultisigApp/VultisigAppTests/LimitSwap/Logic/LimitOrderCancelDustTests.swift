@@ -215,6 +215,46 @@ final class LimitOrderCancelDustTests: XCTestCase {
         XCTAssertTrue(limitOrderCancelMemoFits(memo, sourceChainKind: .EVM))
     }
 
+    /// ⚠️ The gate has to be handed the memo that will actually be signed.
+    ///
+    /// The 2026-07-21 rehearsal measured the abbreviated spelling — 49 bytes for
+    /// a memo that is 85 — so the difference is not cosmetic: it is 36 bytes per
+    /// token leg, which is exactly the margin that decides a UTXO source. Sized
+    /// short, the gate passes a cancel it should block, and the user pays a fee
+    /// for a truncated `OP_RETURN` that can never match.
+    func testTheAbbreviatedSpellingWouldHavePassedAGateTheFullOneFails() throws {
+        let abbreviated = "m=<:123456789BTC.BTC:9876543210ETH.USDC-06EB48:0"
+        let full = try buildCancelLimitSwapMemo(
+            LimitOrderCancelInputs(
+                sourceAsset: "BTC.BTC",
+                sourceAmount1e8: BigInt(123_456_789),
+                targetAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+                tradeTarget: BigInt(9_876_543_210)
+            )
+        )
+
+        XCTAssertTrue(limitOrderCancelMemoFits(abbreviated, sourceChainKind: .UTXO))
+        XCTAssertFalse(limitOrderCancelMemoFits(full, sourceChainKind: .UTXO))
+        XCTAssertEqual(full.utf8.count - abbreviated.utf8.count, 36, "one contract, spelled out")
+    }
+
+    /// The rehearsal's own pair, from THORChain: 85 bytes is nowhere near the
+    /// 250-byte budget a `MsgDeposit` has, so spelling the asset out costs this
+    /// route nothing.
+    func testTheRehearsalMemoFitsAThorchainSourceComfortably() throws {
+        let memo = try buildCancelLimitSwapMemo(
+            LimitOrderCancelInputs(
+                sourceAsset: "THOR.RUNE",
+                sourceAmount1e8: BigInt(370_939_666),
+                targetAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+                tradeTarget: BigInt(167_889_485)
+            )
+        )
+
+        XCTAssertEqual(memo.utf8.count, 85)
+        XCTAssertTrue(limitOrderCancelMemoFits(memo, sourceChainKind: Chain.thorChain.chainType))
+    }
+
     /// The generated-memo tests above prove realistic cases but not the boundary
     /// itself, which is where an off-by-one would actually bite.
     func testTheUtxoBoundaryIsInclusiveAtEightyBytes() {
