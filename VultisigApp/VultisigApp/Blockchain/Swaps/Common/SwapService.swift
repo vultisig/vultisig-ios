@@ -636,14 +636,14 @@ private extension SwapService {
         slippageBps: Int?
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let (quote, fee, platformFee) = try await service.fetchQuote(
+        let (quote, fee, platformFee, feeOnInput) = try await service.fetchQuote(
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount,
             vultTierDiscount: vultTierDiscount,
             slippageBps: slippageBps
         )
-        return .jupiter(quote, fee: fee, platformFee: platformFee)
+        return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
     }
 }
 

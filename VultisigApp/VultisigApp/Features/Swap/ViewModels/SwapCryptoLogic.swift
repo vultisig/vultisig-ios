@@ -88,7 +88,7 @@ enum SwapCryptoLogic {
             default:
                 return fee ?? 0
             }
-        case let .jupiter(_, fee, _):
+        case let .jupiter(_, fee, _, _):
             // Jupiter exposes no network fee at quote time; fall back to the
             // Solana-source plan fee carried in `thorchainFee`
             // (`chainSpecific.gas`), the same way Send computes it.
@@ -137,7 +137,7 @@ enum SwapCryptoLogic {
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
-        case let .jupiter(quote, _, _):
+        case let .jupiter(quote, _, _, _):
             // `outAmount` is already net of the affiliate fee (deducted from the
             // output and reported separately), so it's what the user receives —
             // same as LiFi above. Do NOT subtract the fee again.
@@ -448,14 +448,15 @@ enum SwapCryptoLogic {
     ///
     /// The one exception is a Jupiter swap whose OUTPUT is native SOL: Jupiter
     /// collects the affiliate fee on the INPUT mint there (wrapped-SOL outputs
-    /// have no fee ATA), so `platformFee` is deliberately `nil` — the amount is
-    /// never surfaced in `toCoin` units. Rather than render a misleading `$0.00`
-    /// (the real fee is non-zero), the row is suppressed for that case, on both
-    /// the form and verify (kept symmetric). Every other Jupiter route (token
-    /// output) carries `platformFee` and shows the row normally.
+    /// have no fee ATA), so the amount is never surfaced in `toCoin` units
+    /// (`feeOnInput == true`). Rather than render a misleading `$0.00` (the real
+    /// fee is non-zero), the row is suppressed for that case, on both the form
+    /// and verify (kept symmetric). A token-output Jupiter route always shows the
+    /// row — including at 0.00% / $0.00 for the Ultimate tier, where the fee is
+    /// on the output mint and simply zero.
     static func showAffiliateFeeRow(quote: SwapQuote?, mode: SwapMode) -> Bool {
         guard let quote, mode != .securedMint else { return false }
-        if case let .jupiter(_, _, platformFee) = quote, platformFee == nil {
+        if case let .jupiter(_, _, _, feeOnInput) = quote, feeOnInput {
             return false
         }
         return true
@@ -464,23 +465,36 @@ enum SwapCryptoLogic {
     /// Affiliate (Vultisig) fee component in fiat — money Vultisig receives,
     /// itemized separately from the protocol's outbound/liquidity fees. The
     /// source per route: native THOR/Maya `fees.affiliate`, EVM aggregator
-    /// `tx.swapFee`, Jupiter `platformFee`. SwapKit's flat affiliate is baked
-    /// into the quoted rate (not a separable line item), so it contributes
-    /// nothing to the itemized fiat total. `.zero` (not empty) for a real
-    /// affiliate route charging 0 — the Ultimate/waiver case keeps a $0.00 row.
+    /// `tx.swapFee`, LiFi (EVM `tx.swapFee`, Solana the integrator fraction of
+    /// the output), Jupiter `platformFee`. SwapKit's flat affiliate is baked into
+    /// the quoted rate (not a separable line item), so it contributes nothing to
+    /// the itemized fiat total. `.zero` (not empty) for a real affiliate route
+    /// charging 0 — the Ultimate/waiver case keeps a $0.00 row.
     static func affiliateFeeFiat(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Decimal {
         guard let quote else { return .zero }
         switch quote {
         case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
             let feeDecimal = q.fees.affiliate.toDecimal() / pow(10, 8)
             return toCoin.fiat(decimal: feeDecimal)
-        case .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap:
             let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
             let feeDecimal = coin.decimal(for: quote.evmSwapFeeBigInt ?? .zero)
             return coin.fiat(decimal: feeDecimal)
-        case let .jupiter(_, _, platformFee):
-            // `platformFee` is already denominated in `toCoin` units.
-            return toCoin.fiat(decimal: platformFee ?? 0)
+        case let .lifi(evmQuote, _, integratorFee):
+            // EVM LiFi carries the fee as a token amount in `tx.swapFee`. Solana
+            // LiFi deliberately reports `swapFee` "0" and charges the integrator
+            // fee as a fraction of the output amount instead — so fall back to
+            // that, or the fee row and Total would drop the charged fee.
+            if let evmFee = quote.evmSwapFeeBigInt {
+                let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+                return coin.fiat(decimal: coin.decimal(for: evmFee))
+            }
+            let outAmount = toCoin.decimal(for: BigInt(evmQuote.dstAmount) ?? .zero)
+            return toCoin.fiat(decimal: outAmount * (integratorFee ?? 0))
+        case let .jupiter(_, _, platformFee, _):
+            // `platformFee` is already denominated in `toCoin` units (0 when the
+            // fee is on the input mint or none is charged).
+            return toCoin.fiat(decimal: platformFee)
         case .swapkit:
             return .zero
         }

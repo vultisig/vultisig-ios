@@ -163,7 +163,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         setPrice(2, for: usdc) // 1 USDC = $2 for the test
         // platformFee 0.02 USDC × $2 = $0.04 (hardcoded so a silent rate-seeding
         // failure would fail the test rather than pass at $0.00 on both sides).
-        let quote = makeJupiterQuote(platformFee: Decimal(2) / Decimal(100))
+        let quote = makeJupiterQuote(platformFee: Decimal(2) / Decimal(100), feeOnInput: false)
         let value = SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol)
         XCTAssertEqual(value, (Decimal(4) / Decimal(100)).formatToFiat(includeCurrencySymbol: true))
     }
@@ -183,13 +183,51 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
     }
 
     func testShowAffiliateFeeRowFalseForNativeSolJupiter() {
-        // platformFee == nil ⇒ fee taken on the input mint (native-SOL output);
-        // amount isn't surfaced, so suppress rather than show a misleading $0.00.
-        XCTAssertFalse(SwapCryptoLogic.showAffiliateFeeRow(quote: makeJupiterQuote(platformFee: nil), mode: .standard))
+        // feeOnInput ⇒ fee taken on the input mint (native-SOL output); the
+        // amount isn't surfaced in toCoin units, so suppress rather than show a
+        // misleading $0.00.
+        XCTAssertFalse(SwapCryptoLogic.showAffiliateFeeRow(quote: makeJupiterQuote(platformFee: 0, feeOnInput: true), mode: .standard))
     }
 
     func testShowAffiliateFeeRowTrueForTokenJupiter() {
-        XCTAssertTrue(SwapCryptoLogic.showAffiliateFeeRow(quote: makeJupiterQuote(platformFee: Decimal(string: "0.01")), mode: .standard))
+        let quote = makeJupiterQuote(platformFee: Decimal(string: "0.01") ?? 0, feeOnInput: false)
+        XCTAssertTrue(SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: .standard))
+    }
+
+    func testShowAffiliateFeeRowTrueForUltimateTokenJupiter() {
+        // Ultimate tier, token output: the fee is on the OUTPUT mint but zero.
+        // The row must still show (0.00% / $0.00), NOT be suppressed like the
+        // input-mint (native-SOL) case.
+        XCTAssertTrue(SwapCryptoLogic.showAffiliateFeeRow(quote: makeJupiterQuote(platformFee: 0, feeOnInput: false), mode: .standard))
+    }
+
+    func testBaseAffiliateFeeUltimateTokenJupiterShowsZero() {
+        let sol = makeCoin(.solana, ticker: "SOLJUP0", decimals: 9, isNative: true)
+        let usdc = makeCoin(.solana, ticker: "USDCJUP0", decimals: 6, isNative: false)
+        setPrice(2, for: usdc)
+        let value = SwapCryptoLogic.baseAffiliateFee(
+            quote: makeJupiterQuote(platformFee: 0, feeOnInput: false), fromCoin: sol, toCoin: usdc, feeCoin: sol
+        )
+        XCTAssertEqual(value, Decimal(0).formatToFiat(includeCurrencySymbol: true))
+    }
+
+    func testAffiliateFeeFiatLifiSolanaUsesIntegratorFee() {
+        let sol = makeCoin(.solana, ticker: "SOLLIFI", decimals: 9, isNative: true)
+        let usdc = makeCoin(.solana, ticker: "USDCLIFI", decimals: 6, isNative: false)
+        setPrice(1, for: usdc) // 1 USDC = $1
+        // LiFi-Solana: swapFee "0"; integrator fee 0.005 of the 100-USDC output
+        // (dstAmount 100_000_000 at 6 dp) → 0.5 USDC → $0.50. Must appear in the
+        // row and the Total (network 0 + affiliate 0.5 + outbound 0).
+        let quote = makeLiFiSolanaQuote(integratorFee: Decimal(5) / Decimal(1000), dstAmount: "100000000")
+        let expected = (Decimal(5) / Decimal(10)).formatToFiat(includeCurrencySymbol: true)
+        XCTAssertEqual(SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol), expected)
+        XCTAssertEqual(
+            SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol, fee: .zero),
+            expected
+        )
+        // NOT $0.00 — the old evmSwapFeeBigInt-only path dropped the integrator fee.
+        XCTAssertNotEqual(SwapCryptoLogic.baseAffiliateFee(quote: quote, fromCoin: sol, toCoin: usdc, feeCoin: sol),
+                          Decimal(0).formatToFiat(includeCurrencySymbol: true))
     }
 
     func testShowProtocolFeeRowFalseForSecuredMint() {
@@ -209,7 +247,7 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
     func testShowProtocolFeeRowFalseForNonNativeRoute() {
         let usdc = makeCoin(.solana, ticker: "USDCPR", decimals: 6, isNative: false)
         // Jupiter / EVM aggregators have no native protocol outbound fee.
-        let quote = makeJupiterQuote(platformFee: Decimal(string: "0.01"))
+        let quote = makeJupiterQuote(platformFee: Decimal(string: "0.01") ?? 0, feeOnInput: false)
         XCTAssertFalse(SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: usdc, mode: .standard))
     }
 
@@ -308,12 +346,26 @@ final class SwapAffiliateFeeDisplayTests: XCTestCase {
         )
     }
 
-    private func makeJupiterQuote(platformFee: Decimal?) -> SwapQuote {
+    private func makeJupiterQuote(platformFee: Decimal, feeOnInput: Bool) -> SwapQuote {
         let evm = EVMQuote(
             dstAmount: "1000000",
             tx: EVMQuote.Transaction(from: "from", to: "mint", data: "data", value: "0", gasPrice: "0", gas: 0)
         )
-        return .jupiter(evm, fee: nil, platformFee: platformFee)
+        return .jupiter(evm, fee: nil, platformFee: platformFee, feeOnInput: feeOnInput)
+    }
+
+    /// LiFi-Solana quote fixture: `swapFee` is "0" and the affiliate fee is
+    /// carried as `integratorFee` (a fraction of the output amount), mirroring
+    /// `LiFiService`'s Solana branch.
+    private func makeLiFiSolanaQuote(integratorFee: Decimal, dstAmount: String) -> SwapQuote {
+        let evm = EVMQuote(
+            dstAmount: dstAmount,
+            tx: EVMQuote.Transaction(
+                from: "from", to: "to", data: "0x", value: "0", gasPrice: "0", gas: 0,
+                swapFee: "0", swapFeeTokenContract: ""
+            )
+        )
+        return .lifi(evm, fee: nil, integratorFee: integratorFee)
     }
 
     private func makeSwapKitQuote() -> SwapQuote {
