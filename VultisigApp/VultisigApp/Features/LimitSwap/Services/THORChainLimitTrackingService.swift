@@ -61,6 +61,33 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     private static let backoffInitial: TimeInterval = 30
     /// Never sleep longer than this between polls.
     private static let backoffCap: TimeInterval = 5 * 60
+    /// How many CONSECUTIVE polls must report an order missing before its
+    /// absence is read as a closure.
+    ///
+    /// ⚠️ Absence is this tracker's only terminal signal, and it is not always
+    /// true. The queue is reached through a load-balancing gateway whose backends
+    /// are not always in sync: one has been observed answering
+    /// `queue/limit_swaps?sender=…` with `total: 0`, and then `total: 1` a minute
+    /// later, for an order that never left the queue and still had ~13,889 blocks
+    /// of TTL. That response is well-formed and PRESENT — the `limit_swaps` key
+    /// exists and the array is genuinely empty — so nothing at the decoding layer
+    /// can tell it from a real closure. (The same lag surfaces elsewhere as
+    /// `refusing quote on node with stale state`.)
+    ///
+    /// The valuable half is self-correcting: an order that reappears resets its
+    /// streak, and reappearing is exactly the stale-backend signature.
+    ///
+    /// **Two, not three.** Three does not defeat what this actually guards
+    /// against — a backend that is persistently behind, which connection reuse
+    /// can pin consecutive requests to — so the extra poll buys little; only
+    /// corroboration from a different source would, and that is a larger change.
+    /// Against it, every additional required poll delays a genuine closure by a
+    /// full cycle, and this feature's cancel attribution is time-sensitive:
+    /// `LimitOrderStorageService.reconcile` credits a cancel only while the TTL
+    /// demonstrably has not elapsed, so waiting longer actively degrades it. Two
+    /// costs a minute and closes the single-blip window — the one that has
+    /// actually been observed.
+    private static let absencePollsBeforeClosing = 2
 
     private let httpClient: HTTPClientProtocol
     private let storage: SwapTrackingStorage
@@ -94,6 +121,13 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     /// A failed cancel is never in here: its record is withdrawn on the spot, so
     /// there is nothing left to re-check.
     private var settledCancelHashes: Set<String> = []
+    /// Consecutive polls that have found each order missing from the queue,
+    /// keyed by `txHash`. Absent means "seen resting on the last poll".
+    ///
+    /// Only advanced by a poll that actually answered: a network failure or an
+    /// unrecognised envelope returns before reconciliation, so neither counts as
+    /// evidence of absence.
+    private var absentPollStreaks: [String: Int] = [:]
 
     init(
         httpClient: HTTPClientProtocol,
@@ -146,6 +180,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
     func stop(txHash: String) {
         guard let order = tracked.removeValue(forKey: txHash) else { return }
+        absentPollStreaks.removeValue(forKey: txHash)
         stopPollingIfSenderIdle(order.sender)
     }
 
@@ -184,6 +219,9 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     var trackedOrderCountForTesting: Int { tracked.count }
     var isActiveForTesting: Bool { isActive }
     var activeSenderPollCountForTesting: Int { senderTasks.count }
+    /// So tests drive exactly the number of polls the rule requires rather than
+    /// hardcoding a number that would quietly stop matching it.
+    static var absencePollsBeforeClosingForTesting: Int { absencePollsBeforeClosing }
 
     /// Drives exactly one poll cycle for `sender`, bypassing the schedule, so
     /// tests can exercise the state machine without sleeping.
@@ -290,8 +328,13 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
     /// Compare what the queue reports against what we're tracking.
     ///
-    /// Presence means resting. ABSENCE means the order closed — the only
-    /// terminal signal the queue gives.
+    /// Presence means resting. ABSENCE means the order closed — the only terminal
+    /// signal the queue gives, and one a desynced backend can fabricate, so it
+    /// has to be seen on `absencePollsBeforeClosing` consecutive polls before it
+    /// is acted on. Until then the order keeps whatever state it already has:
+    /// nothing is written, so the last good resting observation — its fill split
+    /// and its expiry countdown — is left exactly as it was, and no third
+    /// "possibly gone" state is invented.
     private func reconcile(
         sender: String,
         resting: [ThorchainLimitSwapQueueEntry],
@@ -306,6 +349,12 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
         for order in tracked.values where order.sender == sender {
             if let entry = restingByHash[order.txHash.uppercased()] {
+                // Back in the queue, so any absence recorded earlier was wrong.
+                // This reset is the self-correcting half of the guard, and a
+                // reappearance is the stale-backend signature itself.
+                if let streak = absentPollStreaks.removeValue(forKey: order.txHash) {
+                    logger.info("Limit order \(order.txHash, privacy: .public) is back in the queue after \(streak, privacy: .public) absent poll(s) — that absence was not a closure")
+                }
                 // Re-check the cancel record BEFORE recording the observation,
                 // not after. `observeResting` reconciles against that record — a
                 // present hash is what makes a resting order read `.cancelling` —
@@ -318,6 +367,20 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 }
                 observeResting(order: order, entry: entry)
             } else {
+                // Clamped once corroborated. An order can stay absent for many
+                // polls without being released — an outcome Midgard has not
+                // indexed yet, or a write that failed — and the streak is only
+                // ever compared against the threshold, so counting past it
+                // measures nothing and grows without bound.
+                let streak = min((absentPollStreaks[order.txHash] ?? 0) + 1, Self.absencePollsBeforeClosing)
+                absentPollStreaks[order.txHash] = streak
+                guard streak >= Self.absencePollsBeforeClosing else {
+                    // Uncorroborated. Nothing is written and nothing is
+                    // released — the order keeps the state and the last resting
+                    // observation it already had, and we ask again.
+                    logger.info("Limit order \(order.txHash, privacy: .public) missing from the queue on absent poll \(streak, privacy: .public) of \(Self.absencePollsBeforeClosing, privacy: .public) — not treating it as closed yet")
+                    continue
+                }
                 guard await observeClosed(order: order, sender: sender, token: token) else {
                     // Superseded mid-reconcile — the live generation owns these
                     // orders now, and will re-poll them itself.
@@ -554,6 +617,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
     private func release(_ order: TrackedOrder) {
         tracked.removeValue(forKey: order.txHash)
+        absentPollStreaks.removeValue(forKey: order.txHash)
     }
 
     /// Back off after a failed poll: `backoffInitial`, then doubling to

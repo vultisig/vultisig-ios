@@ -19,6 +19,19 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
 
     private let sender = "thor1sender"
 
+    /// Drives enough polls for an absence to be corroborated.
+    ///
+    /// An order missing from the queue is no longer acted on the first time it is
+    /// missed — a desynced gateway backend returns a well-formed empty list — so
+    /// the tests that exercise a genuine closure have to observe it as many times
+    /// as the rule requires. Read from the rule itself rather than hardcoded, so
+    /// changing the threshold cannot silently leave these testing the old one.
+    private func pollUntilAbsenceIsCorroborated(_ env: TestEnv) async {
+        for _ in 0..<THORChainLimitTrackingService.absencePollsBeforeClosingForTesting {
+            await env.service.pollOnceForTesting(sender: sender)
+        }
+    }
+
     // MARK: - Resting
 
     func testAnOrderStillInTheQueueIsRecordedAsResting() async {
@@ -259,7 +272,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         )
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(env.cancelVerifier.verifyCount, 0)
         XCTAssertTrue(env.cancelIntents.clearedHashes.isEmpty)
@@ -314,7 +327,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         let env = TestEnv(queueBody: .empty, outcome: .filled)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         let observation = env.orders.observations.last
         XCTAssertEqual(observation?.status, .filled)
@@ -361,13 +374,114 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1, "and it must stay tracked")
     }
 
+    // MARK: - An absence has to be corroborated before it counts
+
+    /// ⚠️ Absence is the tracker's only terminal signal, and it is not always
+    /// true. The gateway load-balances across backends and at least one is
+    /// desynced: the same `queue/limit_swaps?sender=…` call has answered
+    /// `total: 0` and then `total: 1` a minute later, for an order that never
+    /// left the queue. That response is well-formed and PRESENT, so nothing at
+    /// the decoding layer separates it from a real closure — only corroboration
+    /// does.
+    func testASingleAbsentPollDoesNotCloseAnOrder() async {
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.outcomes.resolveCount, 0, "must not even ask on one blip")
+        XCTAssertTrue(env.orders.observations.isEmpty, "nothing is written, so the last resting observation stands")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1, "and it stays tracked")
+    }
+
+    /// The order keeps the state it already had while an absence is
+    /// uncorroborated — no third "possibly gone" state is invented, and the
+    /// stored fill split and expiry countdown are left exactly as they were.
+    func testAnUncorroboratedAbsenceLeavesTheLastRestingObservationAlone() async {
+        let env = TestEnv(queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "400", outAmount: "25"))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+        await env.service.pollOnceForTesting(sender: sender)
+        let afterResting = env.orders.observations.count
+
+        env.http.body = QueueBody.empty.json
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.orders.observations.count, afterResting, "no write at all")
+        XCTAssertEqual(env.orders.observations.last?.depositAmount, "1000")
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .resting)
+    }
+
+    /// Corroborated across consecutive polls, the absence is acted on as before.
+    func testAnAbsenceSeenOnConsecutivePollsClosesTheOrder() async {
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await pollUntilAbsenceIsCorroborated(env)
+
+        XCTAssertEqual(env.orders.observations.last?.status, .refunded)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+    }
+
+    /// ⚠️ The self-correcting half, and the valuable one. An order that comes
+    /// BACK is proof the earlier absence was wrong — that reappearance is the
+    /// stale-backend signature — so the streak resets and the order is never
+    /// closed on the strength of two absences that were not consecutive.
+    func testAnOrderReappearingResetsTheAbsenceStreak() async {
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        // Blip.
+        await env.service.pollOnceForTesting(sender: sender)
+        // Back — the stale backend rotated out.
+        env.http.body = QueueBody.resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0").json
+        await env.service.pollOnceForTesting(sender: sender)
+        // Blip again, much later. On its own this is still only one absence.
+        env.http.body = QueueBody.empty.json
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.outcomes.resolveCount, 0, "two non-consecutive absences prove nothing")
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .resting)
+    }
+
+    /// The unrecognised-envelope guard still short-circuits ahead of all of
+    /// this: a response we cannot read is not an absence, so it must not even
+    /// count towards one.
+    func testAnUnrecognisedEnvelopeDoesNotCountTowardsAnAbsence() async {
+        let env = TestEnv(queueBody: .unrecognisedEnvelope, outcome: .refunded)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        // As many unreadable responses as the rule would need of real absences.
+        await pollUntilAbsenceIsCorroborated(env)
+        // Then one genuine absence, which on its own is still not enough.
+        env.http.body = QueueBody.empty.json
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.outcomes.resolveCount, 0)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+    }
+
+    /// A network failure is not evidence either — the poll never answered.
+    func testANetworkFailureDoesNotCountTowardsAnAbsence() async {
+        let env = TestEnv(queueBody: .empty, outcome: .refunded)
+        env.http.shouldThrow = true
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await pollUntilAbsenceIsCorroborated(env)
+        env.http.shouldThrow = false
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.outcomes.resolveCount, 0)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
+    }
+
     // MARK: - Disappearance → terminal, on evidence
 
     func testAnOrderThatLeavesTheQueueAndFilledIsCompleted() async {
         let env = TestEnv(queueBody: .empty, outcome: .filled)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(env.orders.observations.last?.status, .filled)
         XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .completed)
@@ -381,7 +495,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         let env = TestEnv(queueBody: .empty, outcome: .refunded)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(env.orders.observations.last?.status, .refunded)
         XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .refunded)
@@ -397,7 +511,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
 
         env.http.body = QueueBody.empty.json
         env.outcomes.outcome = .refunded
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         let terminal = env.orders.observations.last
         XCTAssertEqual(terminal?.status, .refunded)
@@ -414,7 +528,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         let env = TestEnv(queueBody: .empty, outcome: .unresolved)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertNotEqual(env.orders.observations.last?.status, .refunded)
         XCTAssertNotEqual(env.orders.observations.last?.status, .filled)
@@ -425,7 +539,8 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
     func testAnUnresolvedOrderIsResolvedOnALaterPoll() async {
         let env = TestEnv(queueBody: .empty, outcome: .unresolved)
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
+        XCTAssertGreaterThan(env.outcomes.resolveCount, 0, "the absence IS corroborated — only the cause is unknown")
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
 
         env.outcomes.outcome = .filled
@@ -487,7 +602,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         env.orders.shouldThrow = true
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1, "keep it, so a later poll can retry the write")
     }
@@ -500,7 +615,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         env.orders.error = LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: "vault-pub")
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1)
     }
@@ -516,7 +631,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         env.storage.shouldThrowOnUpdate = true
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(
             env.service.trackedOrderCountForTesting,
@@ -534,7 +649,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         env.orders.error = LimitOrderStorageError.notFound(id: "ABC123_vault-pub")
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
 
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         XCTAssertEqual(env.storage.observedUiStatuses.last, .completed, "the row is the whole picture here")
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 0, "terminal — stop tracking")
@@ -545,7 +660,7 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         let env = TestEnv(queueBody: .empty, outcome: .filled)
         env.orders.shouldThrow = true
         env.service.start(tx: env.makeRow(txHash: "ABC123"))
-        await env.service.pollOnceForTesting(sender: sender)
+        await pollUntilAbsenceIsCorroborated(env)
 
         env.orders.shouldThrow = false
         await env.service.pollOnceForTesting(sender: sender)
