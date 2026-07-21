@@ -235,15 +235,50 @@ enum LimitOrderCancelBlocker: Equatable, Sendable {
 ///    no truncated token identifier, which makes it full by construction. That
 ///    covers every native leg (`BTC.BTC`, `THOR.RUNE`) and every secured denom.
 ///
-/// Returns `nil` when none of the three yields a spelling that can be signed —
-/// the fail-closed answer, and the one a legacy EVM-token leg lands on until the
+/// `.unknown` when none of the three yields a spelling that can be signed — the
+/// fail-closed answer, and the one a legacy EVM-token leg lands on until the
 /// queue has been polled once.
-func limitOrderCancelMemoAsset(stored: String, signed: String?, observed: String?) -> String? {
-    if let observed = observed?.trimmedNonEmpty {
-        return observed
-    }
-    return signed?.trimmedNonEmpty
+///
+/// `.disagrees` when a local spelling and the chain's own DISAGREE. One of the
+/// two is wrong and there is no way to tell which, so neither is signed. This is
+/// the check that would have caught the 2026-07-21 rehearsal before it cost a
+/// fee: the amounts were compared against the queue and matched, the assets were
+/// not compared at all, and the assets were the whole problem.
+///
+/// Compared case-insensitively because case carries no meaning here and the two
+/// sources disagree on it by convention: this app emits a secured denom
+/// lower-case, THORChain reports it upper-case, and `common.ParseCoin`
+/// upper-cases whatever it is given. Anything beyond case is a real difference.
+func limitOrderCancelMemoAsset(
+    stored: String,
+    signed: String?,
+    observed: String?
+) -> LimitOrderCancelAssetResolution {
+    let local = signed?.trimmedNonEmpty
         ?? (thorchainMemoAssetIsAbbreviated(stored) ? nil : stored.trimmedNonEmpty)
+    guard let observed = observed?.trimmedNonEmpty else {
+        return local.map { .resolved($0) } ?? .unknown
+    }
+    guard let local else {
+        // No local spelling to check it against — the legacy EVM-token case,
+        // rescued by the only source that still holds the full contract.
+        return .resolved(observed)
+    }
+    guard local.caseInsensitiveCompare(observed) == .orderedSame else {
+        return .disagrees
+    }
+    // Proven equal bar case, so the local spelling is kept: it is the exact
+    // byte form this app derived and its tests pin.
+    return .resolved(local)
+}
+
+/// Which spelling of an asset a cancel memo may use, or why there isn't one.
+enum LimitOrderCancelAssetResolution: Equatable {
+    case resolved(String)
+    /// What we hold and what the chain reports are not the same asset.
+    case disagrees
+    /// No source can supply the full spelling.
+    case unknown
 }
 
 enum LimitOrderCancelEligibility: Equatable, Sendable {
@@ -331,23 +366,34 @@ func limitOrderCancelEligibility(_ details: LimitOrderDetails) -> LimitOrderCanc
         }
     }
 
-    // The ASSETS are resolved the same way the amounts are: from what THORChain
-    // reports, falling back to what was recorded locally, and blocking when
-    // neither can produce the full spelling. The stored `sourceAsset` /
-    // `targetAsset` are the PLACEMENT strings and are lossy — a 6-character
+    // The ASSETS get the same treatment as the amounts: resolved against what
+    // THORChain reports, and blocked on a disagreement. The stored `sourceAsset`
+    // / `targetAsset` are the PLACEMENT strings and are lossy — a 6-character
     // contract suffix cannot be expanded back — so they are usable only when
     // they carry no truncated identifier at all.
-    guard let sourceAsset = limitOrderCancelMemoAsset(
+    //
+    // ⚠️ Comparing the assets is what the 2026-07-21 rehearsal needed and did
+    // not have. The amounts were cross-checked and agreed; the assets were never
+    // compared, and the asset was the entire defect. A check that verifies
+    // everything except the field that broke is a check that reports "all clear"
+    // on the way to a rejected transaction.
+    let sourceResolution = limitOrderCancelMemoAsset(
         stored: details.sourceAsset,
         signed: details.sourceAssetFull,
         observed: details.observedSourceAsset
-    ),
-    let targetAsset = limitOrderCancelMemoAsset(
+    )
+    let targetResolution = limitOrderCancelMemoAsset(
         stored: details.targetAsset,
         signed: details.targetAssetFull,
         observed: details.observedTargetAsset
-    ) else {
-        return .blocked(.missingSignedData)
+    )
+    guard case let .resolved(sourceAsset) = sourceResolution,
+          case let .resolved(targetAsset) = targetResolution else {
+        return .blocked(
+            sourceResolution == .disagrees || targetResolution == .disagrees
+                ? .signedDataDisagreesWithChain
+                : .missingSignedData
+        )
     }
 
     let inputs = LimitOrderCancelInputs(

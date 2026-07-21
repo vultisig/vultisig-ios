@@ -393,6 +393,92 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         }
     }
 
+    // MARK: - Asset cross-check against the queue
+
+    /// ⚠️ The check the 2026-07-21 rehearsal needed. The amounts were compared
+    /// against the queue and agreed; the assets were never compared, and the
+    /// asset was the entire defect.
+    func testAnAssetTheChainDisagreesWithBlocksCancelling() {
+        let details = makeDetails(
+            targetAsset: "ETH.USDC-06EB48",
+            targetAssetFull: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            observedTargetAsset: "ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7"
+        )
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .signedDataDisagreesWithChain)
+    }
+
+    /// The source leg is checked too — an order can be misidentified from either
+    /// end.
+    func testASourceAssetTheChainDisagreesWithBlocksCancelling() {
+        let details = makeDetails(observedSourceAsset: "BTC.BTC")
+
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .signedDataDisagreesWithChain)
+    }
+
+    /// Case is not a disagreement. This app emits a secured denom lower-case and
+    /// THORChain reports it upper-case; `common.ParseCoin` upper-cases either,
+    /// so blocking on that would strand every secured-asset order.
+    func testCaseDifferencesAreNotADisagreement() throws {
+        let details = makeDetails(
+            sourceAsset: "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            observedSourceAsset: "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+        )
+
+        guard case let .cancellable(inputs) = limitOrderCancelEligibility(details) else {
+            return XCTFail("expected cancellable")
+        }
+        XCTAssertEqual(
+            inputs.sourceAsset,
+            "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "the locally derived byte form is kept once the two are proven equal"
+        )
+    }
+
+    /// Nothing to compare against is not a disagreement — an order placed
+    /// seconds ago has not been polled yet.
+    func testAnUnobservedAssetIsNotADisagreement() {
+        let details = makeDetails(
+            targetAsset: "ETH.USDC-06EB48",
+            targetAssetFull: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+        )
+
+        XCTAssertTrue(limitOrderCancelEligibility(details).isCancellable)
+    }
+
+    /// The resolution table, asserted directly — every arm of it decides whether
+    /// a cancel is signed, blocked, or greyed out with the wrong explanation.
+    func testTheAssetResolutionTable() {
+        let full = "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+
+        XCTAssertEqual(
+            limitOrderCancelMemoAsset(stored: "ETH.USDC-06EB48", signed: full, observed: nil),
+            .resolved(full)
+        )
+        XCTAssertEqual(
+            limitOrderCancelMemoAsset(stored: "ETH.USDC-06EB48", signed: nil, observed: full),
+            .resolved(full)
+        )
+        XCTAssertEqual(
+            limitOrderCancelMemoAsset(stored: "BTC.BTC", signed: nil, observed: nil),
+            .resolved("BTC.BTC")
+        )
+        XCTAssertEqual(
+            limitOrderCancelMemoAsset(stored: "ETH.USDC-06EB48", signed: nil, observed: nil),
+            .unknown
+        )
+        XCTAssertEqual(
+            limitOrderCancelMemoAsset(stored: "BTC.BTC", signed: nil, observed: "ETH.ETH"),
+            .disagrees
+        )
+        // Empty strings are absence, not an asset: a blank observation must not
+        // read as a disagreement with a perfectly good local spelling.
+        XCTAssertEqual(
+            limitOrderCancelMemoAsset(stored: "BTC.BTC", signed: nil, observed: "  "),
+            .resolved("BTC.BTC")
+        )
+    }
+
     // MARK: - Duplicate detection
 
     func testDuplicatesAreDetectedByRatioNotByEqualAmounts() {
