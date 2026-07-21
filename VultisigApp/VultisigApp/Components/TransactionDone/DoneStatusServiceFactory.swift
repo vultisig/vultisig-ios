@@ -22,6 +22,11 @@ import Foundation
 
 enum DoneStatusServiceFactory {
 
+    /// - Note: a limit-order CANCEL is matched first. It needs a poller that can
+    ///   see the transaction's own `code` — a `MsgDeposit` the handler refuses
+    ///   produces no Midgard action, so `ChainPoller` would report nothing at
+    ///   all for the one failure this feature has to surface — and it is the
+    ///   only place the cancel is credited to the order it names.
     @MainActor
     static func send(
         txHash: String,
@@ -29,7 +34,15 @@ enum DoneStatusServiceFactory {
         tx: SendTransaction?,
         vault: Vault
     ) -> DoneStatusService {
-        DoneStatusService(poller: ChainPoller(
+        if let cancelContext = tx?.limitCancelContext {
+            return DoneStatusService(poller: LimitOrderCancelPoller(
+                txHash: txHash,
+                chain: chain,
+                request: cancelContext,
+                pubKeyECDSA: vault.pubKeyECDSA
+            ))
+        }
+        return DoneStatusService(poller: ChainPoller(
             txHash: txHash,
             chain: chain,
             coinTicker: tx?.coin.ticker,

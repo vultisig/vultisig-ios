@@ -659,6 +659,7 @@
 "limitSwap.cancel.error.chainNotRoutable" = "暂不支持从 %@ 取消订单。";
 "limitSwap.cancel.error.dustUnavailable" = "无法确认此网络所需的最低金额。请稍后重试——您的订单不受影响。";
 "limitSwap.cancel.error.noInboundAddress" = "THORChain 目前不接受此链上的交易。请稍后重试——您的订单不受影响。";
+"limitSwap.cancel.error.rejected" = "THORChain 拒绝了此次取消。您的订单未发生变化，仍可取消。";
 "limitSwap.cancel.explanation" = "取消将关闭此订单并退还尚未成交的部分。已成交的部分将保持不变，不会退回。此操作需支付一次 THORChain 网络手续费。";
 "limitSwap.cancel.orderChanged" = "您查看期间此订单已发生变化。请关闭此页面并查看其当前状态。";
 "limitSwap.cancel.orderLabel" = "订单";

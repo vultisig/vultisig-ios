@@ -659,6 +659,7 @@
 "limitSwap.cancel.error.chainNotRoutable" = "Otkazivanje s mreže %@ još nije podržano.";
 "limitSwap.cancel.error.dustUnavailable" = "Nije bilo moguće potvrditi minimalni iznos koji ova mreža zahtijeva. Pokušajte ponovno uskoro — vaš nalog ostaje nepromijenjen.";
 "limitSwap.cancel.error.noInboundAddress" = "THORChain trenutačno ne prihvaća transakcije na ovoj mreži. Pokušajte ponovno uskoro — vaš nalog ostaje nepromijenjen.";
+"limitSwap.cancel.error.rejected" = "THORChain je odbio ovo otkazivanje. Vaš nalog je nepromijenjen i još se može otkazati.";
 "limitSwap.cancel.explanation" = "Otkazivanje zatvara ovaj nalog i vraća dio koji još nije izvršen. Ono što je već izvršeno ostaje izvršeno i ne vraća se. Ovo košta jednu THORChain mrežnu naknadu.";
 "limitSwap.cancel.orderChanged" = "Ovaj se nalog promijenio dok ste ga pregledavali. Zatvorite ovaj zaslon i provjerite trenutačni status.";
 "limitSwap.cancel.orderLabel" = "Nalog";

@@ -100,7 +100,57 @@ struct LimitOrderStorageService {
         try saveAndNotify()
     }
 
-    /// Records that a cancel transaction was CONFIRMED BROADCAST for this order.
+    /// The cancel transaction recorded against this order, if any.
+    ///
+    /// Read by the tracker so it can re-verify that transaction on-chain and
+    /// withdraw the record if it turns out to have failed.
+    @MainActor
+    func pendingCancelBroadcast(of orderId: String, in vault: Vault) -> String? {
+        vault.limitOrders.first(where: { $0.id == orderId })?.cancelBroadcastHash
+    }
+
+    /// Withdraw a cancel record whose transaction did NOT succeed on-chain.
+    ///
+    /// ⚠️ The self-heal for the failure the rehearsal found. A cancel can be
+    /// included in a block and still be REFUSED by the handler — THORChain
+    /// answered `could not find matching limit swap` with a non-zero code — and
+    /// a record kept on that basis is doubly wrong: it disables the Cancel
+    /// button for good on an order that is still resting and still cancellable,
+    /// and it leaves a later closure ready to be labelled "Cancelled" when
+    /// nothing was cancelled.
+    ///
+    /// Reverts a `.cancelled` label along with the hash. That label is only ever
+    /// derived from this record (see `reconcile`), so a record withdrawn takes
+    /// its conclusion with it — back to `.refunded`, the observable fact, which
+    /// is what the tracker would have written on its own.
+    ///
+    /// - Parameter expecting: compare-and-set. The caller looked the hash up,
+    ///   went to the network to check it, and is acting on an answer that is by
+    ///   then several seconds old; a different hash stored in the meantime is a
+    ///   different cancel, and withdrawing IT on the strength of the old one's
+    ///   failure would unblock a cancel that is genuinely in flight. Any
+    ///   mismatch is a no-op — the newer record's own verification will settle
+    ///   it.
+    @MainActor
+    func clearCancelBroadcast(of orderId: String, expecting txHash: String, in vault: Vault) throws {
+        guard let order = vault.limitOrders.first(where: { $0.id == orderId }) else {
+            throw LimitOrderStorageError.notFound(id: orderId)
+        }
+        guard order.cancelBroadcastHash == txHash else { return }
+        order.cancelBroadcastHash = nil
+        if order.status == .cancelled {
+            order.statusRawValue = LimitOrderStatus.refunded.rawValue
+        }
+        try saveAndNotify()
+    }
+
+    /// Records that a cancel transaction SUCCEEDED on-chain for this order.
+    ///
+    /// ⚠️ **Called on a confirmed-successful transaction, never on a broadcast.**
+    /// A hash proves only that bytes were accepted for inclusion. The 2026-07-21
+    /// rehearsal produced a hash, landed in a block, and was refused by the
+    /// handler — recording that would have disabled the button on an order that
+    /// was still resting, and pre-labelled its eventual closure "Cancelled".
     ///
     /// Compare-and-set on `.pending`: an order that has already gone terminal is
     /// left exactly as it is. The window is real — an order can fill or expire

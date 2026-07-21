@@ -659,6 +659,7 @@
 "limitSwap.cancel.error.chainNotRoutable" = "O cancelamento a partir de %@ ainda não é suportado.";
 "limitSwap.cancel.error.dustUnavailable" = "Não foi possível confirmar o montante mínimo exigido por esta rede. Tente novamente em breve — a sua ordem não é afetada.";
 "limitSwap.cancel.error.noInboundAddress" = "A THORChain não está a aceitar transações nesta cadeia neste momento. Tente novamente em breve — a sua ordem não é afetada.";
+"limitSwap.cancel.error.rejected" = "A THORChain rejeitou este cancelamento. A sua ordem está inalterada e ainda pode ser cancelada.";
 "limitSwap.cancel.explanation" = "Cancelar encerra esta ordem e reembolsa a parte que ainda não foi executada. O que já foi executado permanece executado e não é devolvido. Isto custa uma taxa de rede da THORChain.";
 "limitSwap.cancel.orderChanged" = "Esta ordem mudou enquanto a analisava. Feche este ecrã e verifique o estado atual.";
 "limitSwap.cancel.orderLabel" = "Ordem";

@@ -657,6 +657,7 @@
 "limitSwap.cancel.error.chainNotRoutable" = "Cancelling isn't supported from %@ yet.";
 "limitSwap.cancel.error.dustUnavailable" = "Couldn't confirm the minimum amount this network requires. Try again shortly — your order is unaffected.";
 "limitSwap.cancel.error.noInboundAddress" = "THORChain isn't accepting transactions on this chain right now. Try again shortly — your order is unaffected.";
+"limitSwap.cancel.error.rejected" = "THORChain rejected this cancellation. Your order is unchanged and can still be cancelled.";
 "limitSwap.cancel.explanation" = "Cancelling closes this order and refunds the part that hasn't filled yet. Anything already filled stays filled and is not returned. This costs one THORChain network fee.";
 "limitSwap.cancel.orderChanged" = "This order changed while you were reviewing it. Close this screen and check its current status.";
 "limitSwap.cancel.orderLabel" = "Order";

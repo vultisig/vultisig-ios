@@ -659,6 +659,7 @@
 "limitSwap.cancel.error.chainNotRoutable" = "Stornieren wird von %@ noch nicht unterstützt.";
 "limitSwap.cancel.error.dustUnavailable" = "Der von diesem Netzwerk geforderte Mindestbetrag konnte nicht bestätigt werden. Versuchen Sie es in Kürze erneut — Ihre Order bleibt unberührt.";
 "limitSwap.cancel.error.noInboundAddress" = "THORChain akzeptiert derzeit keine Transaktionen auf dieser Chain. Versuchen Sie es in Kürze erneut — Ihre Order bleibt unberührt.";
+"limitSwap.cancel.error.rejected" = "THORChain hat diese Stornierung abgelehnt. Ihre Order ist unverändert und kann weiterhin storniert werden.";
 "limitSwap.cancel.explanation" = "Durch das Stornieren wird diese Order geschlossen und der noch nicht ausgeführte Teil erstattet. Bereits ausgeführte Anteile bleiben bestehen und werden nicht zurückerstattet. Dafür fällt eine THORChain-Netzwerkgebühr an.";
 "limitSwap.cancel.orderChanged" = "Diese Order hat sich während der Prüfung geändert. Schließen Sie diesen Bildschirm und prüfen Sie den aktuellen Status.";
 "limitSwap.cancel.orderLabel" = "Order";

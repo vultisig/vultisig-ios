@@ -236,6 +236,97 @@ final class LimitOrderCancelStateTests: XCTestCase {
         }
     }
 
+    // MARK: - Withdrawing a record whose transaction failed
+
+    /// ⚠️ The self-heal. The 2026-07-21 rehearsal's cancel was recorded on its
+    /// broadcast hash and then REFUSED by the chain — which greys the button out
+    /// for good on an order that is still resting. Withdrawing the record is
+    /// what makes it retryable.
+    func testClearingACancelRecordReEnablesCancelling() throws {
+        let vault = Vault.example
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().clearCancelBroadcast(
+            of: "order-1", expecting: "CANCELTX", in: vault
+        )
+
+        XCTAssertNil(order.cancelBroadcastHash)
+        XCTAssertEqual(order.status, .pending, "still resting, and cancellable again")
+    }
+
+    /// ⚠️ Compare-and-set. The caller's verdict is seconds old by the time it
+    /// lands, and a different hash stored since is a different cancel that the
+    /// verdict says nothing about.
+    func testClearingIsANoOpWhenADifferentCancelIsOnRecord() throws {
+        let vault = Vault.example
+        let order = makeOrder(cancelBroadcastHash: "NEWCANCEL")
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().clearCancelBroadcast(
+            of: "order-1", expecting: "OLDCANCEL", in: vault
+        )
+
+        XCTAssertEqual(order.cancelBroadcastHash, "NEWCANCEL")
+    }
+
+    /// A `.cancelled` label is only ever DERIVED from the record (see
+    /// `reconcile`), so withdrawing the record has to take its conclusion with
+    /// it — back to the observable fact.
+    func testClearingACancelRecordRevertsACancelledLabelToRefunded() throws {
+        let vault = Vault.example
+        let order = makeOrder(status: .cancelled, cancelBroadcastHash: "CANCELTX")
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().clearCancelBroadcast(
+            of: "order-1", expecting: "CANCELTX", in: vault
+        )
+
+        XCTAssertEqual(order.status, .refunded)
+        XCTAssertNil(order.cancelBroadcastHash)
+    }
+
+    /// Every other status is left exactly as it is — a fill is not a cancel
+    /// gone wrong.
+    func testClearingACancelRecordLeavesOtherStatusesAlone() throws {
+        for status in [LimitOrderStatus.filled, .refunded, .expired] {
+            let vault = Vault.example
+            let order = makeOrder(status: status, cancelBroadcastHash: "CANCELTX")
+            vault.limitOrders = [order]
+
+            try LimitOrderStorageService().clearCancelBroadcast(
+                of: "order-1", expecting: "CANCELTX", in: vault
+            )
+
+            XCTAssertEqual(order.status, status, "\(status) must survive")
+        }
+    }
+
+    func testClearingAnOrderWithNoCancelRecordIsANoOp() throws {
+        let vault = Vault.example
+        let order = makeOrder()
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().clearCancelBroadcast(
+            of: "order-1", expecting: "CANCELTX", in: vault
+        )
+
+        XCTAssertNil(order.cancelBroadcastHash)
+        XCTAssertEqual(order.status, .pending)
+    }
+
+    func testReadingBackTheRecordedCancelHash() throws {
+        let vault = Vault.example
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+        vault.limitOrders = [order]
+
+        XCTAssertEqual(
+            LimitOrderStorageService().pendingCancelBroadcast(of: "order-1", in: vault),
+            "CANCELTX"
+        )
+        XCTAssertNil(LimitOrderStorageService().pendingCancelBroadcast(of: "nope", in: vault))
+    }
+
     func testRecordingABroadcastForAnUnknownOrderThrows() {
         let vault = Vault.example
         vault.limitOrders = []

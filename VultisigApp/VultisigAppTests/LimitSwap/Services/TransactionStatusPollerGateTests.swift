@@ -26,7 +26,9 @@ final class TransactionStatusPollerGateTests: XCTestCase {
             httpClient: NoopHTTPClient(),
             storage: NoopTrackingStorage(),
             orders: NoopLimitOrderObserver(),
-            outcomes: NoopOutcomeResolver()
+            outcomes: NoopOutcomeResolver(),
+            cancelIntents: NoopCancelIntentStore(),
+            cancelVerifier: NoopCancelVerifier()
         ))
         return registry
     }
@@ -176,6 +178,20 @@ private final class NoopLimitOrderObserver: LimitOrderObserving {
         observedTargetAsset _: String?,
         timeToExpiryBlocks _: Int?
     ) throws {}
+}
+
+@MainActor
+private final class NoopCancelIntentStore: LimitOrderCancelIntentStoring {
+    func pendingCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String) -> String? { nil }
+    func recordCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash _: String) throws {}
+    func clearCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, expecting _: String) throws {}
+}
+
+@MainActor
+private final class NoopCancelVerifier: LimitOrderCancelVerifying {
+    func verifyCancelTransaction(txHash _: String, chain _: Chain) async -> LimitOrderCancelTxOutcome { // swiftlint:disable:this async_without_await
+        .unresolved
+    }
 }
 
 @MainActor

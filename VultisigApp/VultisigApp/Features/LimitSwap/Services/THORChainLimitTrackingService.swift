@@ -44,7 +44,9 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         httpClient: HTTPClient(),
         storage: TransactionHistoryStorage.shared,
         orders: LimitOrderObserver(),
-        outcomes: MidgardLimitOutcomeResolver()
+        outcomes: MidgardLimitOutcomeResolver(),
+        cancelIntents: LimitOrderCancelIntentStore(),
+        cancelVerifier: LimitOrderCancelVerifier()
     )
 
     /// Latest UI status per `txHash`, observable by views that want to react
@@ -64,6 +66,8 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     private let storage: SwapTrackingStorage
     private let orders: LimitOrderObserving
     private let outcomes: LimitOrderOutcomeResolving
+    private let cancelIntents: LimitOrderCancelIntentStoring
+    private let cancelVerifier: LimitOrderCancelVerifying
     private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-limit-tracking")
 
     /// Rows this service owns, keyed by `txHash`.
@@ -83,17 +87,28 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     /// failure wait `backoffInitial` rather than double the healthy cadence.
     private var senderBackoff: [String: TimeInterval] = [:]
     private var isActive: Bool = true
+    /// Cancel transactions this device has already settled a verdict on, so a
+    /// still-resting order is not re-checked on every one-minute poll for the
+    /// whole time it takes THORChain to actually drop it from the queue.
+    ///
+    /// A failed cancel is never in here: its record is withdrawn on the spot, so
+    /// there is nothing left to re-check.
+    private var settledCancelHashes: Set<String> = []
 
     init(
         httpClient: HTTPClientProtocol,
         storage: SwapTrackingStorage,
         orders: LimitOrderObserving,
-        outcomes: LimitOrderOutcomeResolving
+        outcomes: LimitOrderOutcomeResolving,
+        cancelIntents: LimitOrderCancelIntentStoring,
+        cancelVerifier: LimitOrderCancelVerifying
     ) {
         self.httpClient = httpClient
         self.storage = storage
         self.orders = orders
         self.outcomes = outcomes
+        self.cancelIntents = cancelIntents
+        self.cancelVerifier = cancelVerifier
     }
 
     // MARK: - SwapTrackingService
@@ -292,6 +307,9 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         for order in tracked.values where order.sender == sender {
             if let entry = restingByHash[order.txHash.uppercased()] {
                 observeResting(order: order, entry: entry)
+                guard await verifyPendingCancel(order: order, sender: sender, token: token) else {
+                    return PollOutcome(shouldStop: true, nextDelay: 0)
+                }
             } else {
                 guard await observeClosed(order: order, sender: sender, token: token) else {
                     // Superseded mid-reconcile — the live generation owns these
@@ -314,6 +332,67 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     /// resting.
     private func observeResting(order: TrackedOrder, entry: ThorchainLimitSwapQueueEntry) {
         write(order: order, status: .pending, uiStatus: .resting, entry: entry)
+    }
+
+    /// Re-check the cancel transaction recorded against a STILL-RESTING order,
+    /// and withdraw the record if that transaction failed.
+    ///
+    /// ⚠️ The self-heal for the failure a broadcast hash cannot describe. A
+    /// cancel can be included in a block and still be REFUSED by the handler —
+    /// THORChain answers `could not find matching limit swap` with a non-zero
+    /// code — and a record kept on that basis disables the Cancel button for
+    /// good on an order that is still resting, and pre-labels its eventual
+    /// closure "Cancelled". The done screen verifies before recording, but it
+    /// only runs while it is on screen: an app killed mid-verification, or an
+    /// order whose record predates that check, is repaired here instead.
+    ///
+    /// Only for RESTING orders, and that is not an optimisation. Once an order
+    /// leaves the queue the record has already done its work — `reconcile` read
+    /// it to tell a cancellation from a plain refund — and withdrawing it then
+    /// would rewrite settled history from a lookup that may simply have been
+    /// rate-limited.
+    ///
+    /// - Returns: `false` if this task was superseded while the lookup was in
+    ///   flight, meaning the caller must stop rather than act on it.
+    private func verifyPendingCancel(order: TrackedOrder, sender: String, token: UUID?) async -> Bool {
+        guard let sourceChain = order.sourceChain,
+              let cancelHash = cancelIntents.pendingCancelBroadcast(
+                  inboundTxHash: order.txHash,
+                  pubKeyECDSA: order.pubKeyECDSA
+              ),
+              !settledCancelHashes.contains(cancelHash) else {
+            return true
+        }
+        let outcome = await cancelVerifier.verifyCancelTransaction(txHash: cancelHash, chain: sourceChain)
+        guard isCurrentGeneration(sender: sender, token: token) else { return false }
+        switch outcome {
+        case .succeeded, .delivered:
+            // Settled as far as this device can ever know. `.delivered` will not
+            // become anything else on a re-ask either — THORChain's verdict on
+            // an L1 cancel is not observable — so re-checking an immutable
+            // receipt every minute buys nothing.
+            settledCancelHashes.insert(cancelHash)
+        case .unresolved:
+            // Not an answer. Ask again next poll rather than withdraw a record
+            // on a rate limit.
+            break
+        case let .failed(reason):
+            logger.error("Cancel \(cancelHash, privacy: .public) failed on-chain — withdrawing the record: \(reason, privacy: .public)")
+            do {
+                // Compare-and-set on the hash we actually verified: the lookup
+                // above is a network round-trip, and a cancel recorded in the
+                // meantime is a different transaction that this verdict says
+                // nothing about.
+                try cancelIntents.clearCancelBroadcast(
+                    inboundTxHash: order.txHash,
+                    pubKeyECDSA: order.pubKeyECDSA,
+                    expecting: cancelHash
+                )
+            } catch {
+                logger.error("Failed to withdraw the cancel record: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+        return true
     }
 
     /// Gone from the queue, so it closed — but the queue never says why.

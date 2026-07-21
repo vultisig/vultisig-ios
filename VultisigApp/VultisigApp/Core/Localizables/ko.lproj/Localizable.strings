@@ -657,6 +657,7 @@
 "limitSwap.cancel.error.chainNotRoutable" = "%@에서의 취소는 아직 지원되지 않습니다.";
 "limitSwap.cancel.error.dustUnavailable" = "이 네트워크가 요구하는 최소 금액을 확인할 수 없습니다. 잠시 후 다시 시도하세요. 주문에는 영향이 없습니다.";
 "limitSwap.cancel.error.noInboundAddress" = "현재 THORChain이 이 체인의 거래를 받지 않고 있습니다. 잠시 후 다시 시도하세요. 주문에는 영향이 없습니다.";
+"limitSwap.cancel.error.rejected" = "THORChain이 이 취소를 거부했습니다. 주문은 변경되지 않았으며 계속 취소할 수 있습니다.";
 "limitSwap.cancel.explanation" = "취소하면 이 주문이 종료되고 아직 체결되지 않은 부분이 환불됩니다. 이미 체결된 부분은 그대로 유지되며 반환되지 않습니다. THORChain 네트워크 수수료가 한 번 부과됩니다.";
 "limitSwap.cancel.orderChanged" = "검토하는 동안 이 주문이 변경되었습니다. 이 화면을 닫고 현재 상태를 확인하세요.";
 "limitSwap.cancel.orderLabel" = "주문";

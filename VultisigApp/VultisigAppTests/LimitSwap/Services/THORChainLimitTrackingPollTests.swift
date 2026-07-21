@@ -86,6 +86,136 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertNil(env.orders.observations.last?.observedTargetAsset)
     }
 
+    // MARK: - Self-healing a cancel record whose transaction failed
+
+    /// ⚠️ The repair for the 2026-07-21 rehearsal. That cancel was included in a
+    /// block and REFUSED by the handler, but the app had already recorded it —
+    /// which greys the Cancel button out for good on an order that is still
+    /// resting, and leaves the eventual closure ready to be labelled
+    /// "Cancelled". Seeing the order still in the queue is exactly the moment to
+    /// re-check the transaction and withdraw the record.
+    func testACancelRecordWhoseTransactionFailedIsWithdrawn() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .failed(reason: "could not find matching limit swap: internal error")
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.cancelIntents.clearedHashes, ["ABC123"])
+        XCTAssertNil(env.cancelIntents.pending, "a refused cancel must not keep the button disabled")
+    }
+
+    /// A cancel the chain accepted stays on record — it is what turns the
+    /// eventual closure into "Cancelled" rather than "Refunded".
+    func testASuccessfulCancelRecordIsKept() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .succeeded
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertTrue(env.cancelIntents.clearedHashes.isEmpty)
+        XCTAssertEqual(env.cancelIntents.pending, "CANCELTX")
+    }
+
+    /// …and is not re-checked on every subsequent poll. The order can rest for
+    /// blocks after a successful cancel; asking the chain the same settled
+    /// question once a minute is pure noise.
+    func testAVerifiedCancelIsNotReCheckedOnLaterPolls() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .succeeded
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.cancelVerifier.verifyCount, 1)
+    }
+
+    /// ⚠️ Compare-and-set. The verification is a network round-trip, so its
+    /// verdict is seconds old by the time it lands; a DIFFERENT cancel recorded
+    /// in the meantime is a different transaction the old verdict says nothing
+    /// about, and withdrawing it would unblock a cancel that is genuinely in
+    /// flight.
+    func testAFailedVerdictDoesNotWithdrawADifferentCancelRecordedSince() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "OLDCANCEL",
+            cancelOutcome: .failed(reason: "could not find matching limit swap: internal error")
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+        // The substitution happens DURING the lookup — which is the whole race.
+        // Recording it beforehand would just be verifying the newer hash.
+        env.cancelVerifier.onVerify = { [intents = env.cancelIntents] in
+            try? intents.recordCancelBroadcast(
+                inboundTxHash: "ABC123", pubKeyECDSA: "vault-pub", txHash: "NEWCANCEL"
+            )
+        }
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.cancelIntents.pending, "NEWCANCEL", "the newer cancel survives")
+        XCTAssertTrue(env.cancelIntents.clearedHashes.isEmpty)
+    }
+
+    /// ⚠️ An unanswerable lookup is not a failure. Withdrawing the record on a
+    /// rate limit or an unindexed transaction would re-enable the button on an
+    /// order that IS being cancelled, and invite the user to pay a second fee.
+    func testAnUnresolvedLookupLeavesTheCancelRecordAlone() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .unresolved
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertTrue(env.cancelIntents.clearedHashes.isEmpty)
+        XCTAssertEqual(env.cancelIntents.pending, "CANCELTX")
+        // Still unsettled, so the next poll must ask again.
+        await env.service.pollOnceForTesting(sender: sender)
+        XCTAssertEqual(env.cancelVerifier.verifyCount, 2)
+    }
+
+    /// Orders with no cancel on record cost nothing — the vast majority.
+    func testNoCancelRecordMeansNoLookupAtAll() async {
+        let env = TestEnv(queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"))
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.cancelVerifier.verifyCount, 0)
+    }
+
+    /// A CLOSED order's record is left alone. By then it has already done its
+    /// work — `reconcile` read it to tell a cancellation from a plain refund —
+    /// and withdrawing it would rewrite settled history from a lookup that may
+    /// simply have been rate-limited.
+    func testAClosedOrdersCancelRecordIsNotReExamined() async {
+        let env = TestEnv(
+            queueBody: .empty,
+            outcome: .refunded,
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .failed(reason: "whatever")
+        )
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.cancelVerifier.verifyCount, 0)
+        XCTAssertTrue(env.cancelIntents.clearedHashes.isEmpty)
+    }
+
     /// The expiry countdown is persisted alongside the split. Without it the
     /// detail sheet has no honest way to say how long an order has left — the
     /// stored TTL is a guess that assumes the deposit queued the instant it was
@@ -433,22 +563,34 @@ private struct TestEnv {
     let storage: RecordingTrackingStorage
     let orders: RecordingLimitOrderObserver
     let outcomes: StubOutcomeResolver
+    let cancelIntents: RecordingCancelIntentStore
+    let cancelVerifier: StubCancelVerifier
     let service: THORChainLimitTrackingService
 
     /// - Parameter scheduled: leave `false` (the default) to suppress the
     ///   background poll loop `start` would otherwise kick off, so each test
     ///   drives cycles itself via `pollOnceForTesting` and asserts on exactly
     ///   the requests it caused. Pass `true` only to exercise scheduling.
-    init(queueBody: QueueBody, outcome: LimitOrderOutcome = .unresolved, scheduled: Bool = false) {
+    init(
+        queueBody: QueueBody,
+        outcome: LimitOrderOutcome = .unresolved,
+        scheduled: Bool = false,
+        pendingCancelHash: String? = nil,
+        cancelOutcome: LimitOrderCancelTxOutcome = .unresolved
+    ) {
         http = StubQueueHTTPClient(body: queueBody.json)
         storage = RecordingTrackingStorage()
         orders = RecordingLimitOrderObserver()
         outcomes = StubOutcomeResolver(outcome: outcome)
+        cancelIntents = RecordingCancelIntentStore(pending: pendingCancelHash)
+        cancelVerifier = StubCancelVerifier(outcome: cancelOutcome)
         service = THORChainLimitTrackingService(
             httpClient: http,
             storage: storage,
             orders: orders,
-            outcomes: outcomes
+            outcomes: outcomes,
+            cancelIntents: cancelIntents,
+            cancelVerifier: cancelVerifier
         )
         if !scheduled {
             service.setActive(false)
@@ -616,6 +758,52 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
             observedTargetAsset: observedTargetAsset,
             timeToExpiryBlocks: timeToExpiryBlocks
         ))
+    }
+}
+
+@MainActor
+private final class RecordingCancelIntentStore: LimitOrderCancelIntentStoring {
+    private(set) var pending: String?
+    private(set) var clearedHashes: [String] = []
+    var clearShouldThrow = false
+
+    struct ClearError: Error {}
+
+    init(pending: String?) {
+        self.pending = pending
+    }
+
+    func pendingCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String) -> String? { pending }
+
+    func recordCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash: String) throws {
+        pending = txHash
+    }
+
+    func clearCancelBroadcast(inboundTxHash: String, pubKeyECDSA _: String, expecting txHash: String) throws {
+        if clearShouldThrow { throw ClearError() }
+        // Mirrors the production compare-and-set.
+        guard pending == txHash else { return }
+        clearedHashes.append(inboundTxHash)
+        pending = nil
+    }
+}
+
+@MainActor
+private final class StubCancelVerifier: LimitOrderCancelVerifying {
+    var outcome: LimitOrderCancelTxOutcome
+    /// Runs INSIDE the lookup, so a test can model state changing while the
+    /// verdict is in flight.
+    var onVerify: (() -> Void)?
+    private(set) var verifyCount = 0
+
+    init(outcome: LimitOrderCancelTxOutcome) {
+        self.outcome = outcome
+    }
+
+    func verifyCancelTransaction(txHash _: String, chain _: Chain) async -> LimitOrderCancelTxOutcome { // swiftlint:disable:this async_without_await
+        verifyCount += 1
+        onVerify?()
+        return outcome
     }
 }
 

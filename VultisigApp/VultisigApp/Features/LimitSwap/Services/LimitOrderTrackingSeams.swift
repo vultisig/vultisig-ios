@@ -92,6 +92,63 @@ struct LimitOrderObserver: LimitOrderObserving {
     }
 }
 
+// MARK: - The cancel record
+
+/// Reads and writes the cancel transaction recorded against an order.
+///
+/// Separate from `LimitOrderObserving` because it is written from a different
+/// place for a different reason: an observation is what the queue reports, a
+/// cancel record is what THIS device did and then verified on-chain.
+@MainActor
+protocol LimitOrderCancelIntentStoring {
+    func pendingCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String) -> String?
+    /// Only ever called for a transaction already confirmed SUCCESSFUL on-chain.
+    func recordCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws
+    /// Withdraw a record whose transaction failed. Compare-and-set on
+    /// `expecting`, so a newer cancel recorded while the old one was being
+    /// verified is not withdrawn on the old one's verdict.
+    func clearCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, expecting txHash: String) throws
+}
+
+@MainActor
+struct LimitOrderCancelIntentStore: LimitOrderCancelIntentStoring {
+    private let storage = LimitOrderStorageService()
+
+    func pendingCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String) -> String? {
+        guard let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            return nil
+        }
+        return storage.pendingCancelBroadcast(of: orderId(inboundTxHash, pubKeyECDSA), in: vault)
+    }
+
+    func recordCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        try storage.recordCancelBroadcast(
+            of: orderId(inboundTxHash, pubKeyECDSA),
+            txHash: txHash,
+            in: vault
+        )
+    }
+
+    func clearCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, expecting txHash: String) throws {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        try storage.clearCancelBroadcast(
+            of: orderId(inboundTxHash, pubKeyECDSA),
+            expecting: txHash,
+            in: vault
+        )
+    }
+
+    /// The `LimitOrder` primary key, built the same way `persist` builds it.
+    private func orderId(_ inboundTxHash: String, _ pubKeyECDSA: String) -> String {
+        "\(inboundTxHash)_\(pubKeyECDSA)"
+    }
+}
+
 // MARK: - Resolving why an order closed
 
 /// Why an order left the queue.
