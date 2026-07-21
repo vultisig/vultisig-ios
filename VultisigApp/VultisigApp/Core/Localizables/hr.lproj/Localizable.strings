@@ -668,7 +668,7 @@
 "limitSwap.cancel.unavailableLegacyOrder" = "Ovaj je nalog kreiran prije nego što je otkazivanje u aplikaciji bilo dostupno, pa se njegovi podaci ne mogu provjeriti.";
 "limitSwap.cancel.unavailableMemoTooLong" = "Ovaj se nalog ne može otkazati s izvorne mreže — poruka za otkazivanje predugačka je za tu mrežu. Sredstva će se automatski vratiti po isteku.";
 "limitSwap.cancel.unavailableMismatch" = "Podaci ovog naloga ne odgovaraju onome što prijavljuje THORChain, pa se ne može sigurno otkazati.";
-"limitSwap.cancel.unavailableNoRune" = "Dodajte RUNE u ovaj sef za otkazivanje limit naloga — otkazivanje se šalje s THORChaina.";
+"limitSwap.cancel.unavailableNoSigningAsset" = "Dodajte %1$@ u ovaj sef kako biste otkazali ovaj nalog — otkazivanje se šalje s mreže %2$@.";
 "limitSwap.confirmation.byteCapError.format" = "Memo predugačak: %d bajtova (najviše %d). Pokušaj kraću odredišnu adresu ili izvor koji nije UTXO.";
 "limitSwap.detail.copyTxHash" = "Kopiraj TX hash";
 "limitSwap.detail.filled" = "Izvršeno";

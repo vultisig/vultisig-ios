@@ -668,7 +668,7 @@
 "limitSwap.cancel.unavailableLegacyOrder" = "Diese Order wurde erstellt, bevor das Stornieren in der App verfügbar war, daher können ihre Details nicht überprüft werden.";
 "limitSwap.cancel.unavailableMemoTooLong" = "Diese Order kann nicht über ihre Quell-Chain storniert werden — die Stornierungsnachricht ist für dieses Netzwerk zu lang. Sie wird bei Ablauf automatisch erstattet.";
 "limitSwap.cancel.unavailableMismatch" = "Die Details dieser Order stimmen nicht mit den Angaben von THORChain überein, daher kann sie nicht sicher storniert werden.";
-"limitSwap.cancel.unavailableNoRune" = "Fügen Sie diesem Vault RUNE hinzu, um Limit-Orders zu stornieren — die Stornierung wird über THORChain gesendet.";
+"limitSwap.cancel.unavailableNoSigningAsset" = "Fügen Sie %1$@ zu diesem Vault hinzu, um diese Order zu stornieren — die Stornierung wird über %2$@ gesendet.";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";
 "limitSwap.detail.copyTxHash" = "TX-Hash kopieren";
 "limitSwap.detail.filled" = "Ausgeführt";

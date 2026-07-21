@@ -12,12 +12,18 @@ struct TransactionHistoryDetailSheet: View {
     /// `TransactionHistoryItem`. `nil` on a co-signer, which never persists a
     /// `LimitOrder`; the sheet degrades to what the row itself knows.
     var limitOrder: LimitOrderDetails?
-    /// Whether this DEVICE can send a cancel — i.e. the vault resolves and holds
-    /// the RUNE coin that signs it. Independent of whether the ORDER qualifies.
+    /// The asset this DEVICE is missing in order to send the cancel, or `nil`
+    /// when it can sign. Independent of whether the ORDER qualifies.
     ///
-    /// Defaults to `true` so the many call sites that never show a limit order
+    /// Carries the asset rather than a bare "can/can't" flag because the two
+    /// routes need different funds and telling a user the wrong one is worse
+    /// than telling them nothing: a cancel for a THORChain-sourced order is paid
+    /// in RUNE, while a BTC-funded order's cancel is sent from Bitcoin and never
+    /// touches THORChain's fee at all.
+    ///
+    /// Defaults to `nil` so the many call sites that never show a limit order
     /// stay unchanged; the button is gated on the order's own eligibility first.
-    var canSendCancel: Bool = true
+    var missingCancelSigningAsset: LimitOrderCancelSigningAsset?
     /// Invoked when the user taps Cancel Order.
     ///
     /// A callback rather than a `router.navigate` from inside the sheet: the
@@ -533,39 +539,52 @@ struct TransactionHistoryDetailSheet: View {
     private var cancelOrderButton: some View {
         if let order = limitOrder {
             switch limitOrderCancelEligibility(order) {
-            case .cancellable where !canSendCancel:
-                // The order qualifies but this device can't sign the cancel.
-                // Shown disabled with a reason rather than enabled-and-inert:
-                // a tap that silently does nothing is unrecoverable, because
-                // nothing on screen tells the user to add RUNE to the vault.
-                disabledCancelButton(reason: "limitSwap.cancel.unavailableNoRune")
+            case .cancellable where missingCancelSigningAsset != nil:
+                // The order qualifies but this device cannot sign the cancel.
+                // Shown disabled with a reason rather than enabled-and-inert: a
+                // tap that silently does nothing is unrecoverable, because
+                // nothing on screen would say what is missing.
+                //
+                // Named per route. A BTC-funded order's cancel is sent from
+                // Bitcoin, so telling that user to add RUNE is advice that fixes
+                // nothing — which is what this said before the L1 route existed.
+                disabledCancelButton(
+                    reason: String(
+                        format: "limitSwap.cancel.unavailableNoSigningAsset".localized,
+                        missingCancelSigningAsset?.ticker ?? "",
+                        missingCancelSigningAsset?.chainName ?? ""
+                    )
+                )
             case .cancellable:
                 PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {
                     onCancelOrder?(order)
                 }
             case .blocked(.missingSignedData):
-                disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder")
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder".localized)
             case .blocked(.signedDataDisagreesWithChain):
-                disabledCancelButton(reason: "limitSwap.cancel.unavailableMismatch")
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableMismatch".localized)
             case .blocked(.cancelAlreadyBroadcast):
-                disabledCancelButton(reason: "limitSwap.cancel.alreadyRequested")
+                disabledCancelButton(reason: "limitSwap.cancel.alreadyRequested".localized)
             case .blocked(.unsupportedSourceChain):
-                disabledCancelButton(reason: "limitSwap.cancel.unavailableChain")
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableChain".localized)
             case .blocked(.memoTooLongForSourceChain):
-                disabledCancelButton(reason: "limitSwap.cancel.unavailableMemoTooLong")
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableMemoTooLong".localized)
             case .blocked(.terminal):
                 EmptyView()
             }
         }
     }
 
+    /// - Parameter reason: already localized. One arm formats a value into its
+    ///   copy, and a helper that localizes for you cannot express that without
+    ///   the call sites drifting into two conventions.
     @ViewBuilder
     private func disabledCancelButton(reason: String) -> some View {
         VStack(spacing: 8) {
             PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {}
                 .disabled(true)
                 .opacity(0.5)
-            Text(reason.localized)
+            Text(reason)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)

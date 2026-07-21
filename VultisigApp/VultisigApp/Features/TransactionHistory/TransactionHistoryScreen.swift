@@ -226,16 +226,25 @@ struct TransactionHistoryScreen: View {
     // MARK: - Detail Sheet
 
     private func detailSheet(for detail: TransactionHistoryData) -> some View {
-        TransactionHistoryDetailSheet(
+        let order = viewModel.limitOrder(for: detail)
+        return TransactionHistoryDetailSheet(
             transaction: detail,
-            limitOrder: viewModel.limitOrder(for: detail),
-            // Whether this DEVICE can send a cancel at all, independent of
-            // whether the ORDER is cancellable. Resolved here because only the
-            // screen can see the vault; the sheet renders a disabled button with
-            // a reason rather than an enabled one whose tap does nothing.
-            canSendCancel: cancelSigningCoin(for: viewModel.limitOrder(for: detail)) != nil,
+            limitOrder: order,
+            // What this DEVICE would need in order to send a cancel at all,
+            // independent of whether the ORDER is cancellable. Resolved here
+            // because only the screen can see the vault; the sheet renders a
+            // disabled button naming the missing asset rather than an enabled
+            // one whose tap does nothing.
+            missingCancelSigningAsset: missingCancelSigningAsset(for: order),
             onCancelOrder: startCancel
         )
+    }
+
+    /// The asset the vault is missing to cancel this order, or `nil` when it can
+    /// sign — which is also the answer for a row that is not a limit order.
+    private func missingCancelSigningAsset(for order: LimitOrderDetails?) -> LimitOrderCancelSigningAsset? {
+        guard let order, cancelSigningCoin(for: order) == nil else { return nil }
+        return limitOrderCancelSigningAsset(for: order)
     }
 
     /// The coin that signs this order's cancel — which chain it comes from
