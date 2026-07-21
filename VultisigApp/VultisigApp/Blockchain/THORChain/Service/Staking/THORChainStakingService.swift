@@ -9,8 +9,15 @@ import BigInt
 import Foundation
 import OSLog
 
+/// Read side of THORChain ecosystem staking, abstracted so callers can be driven
+/// without the network. `THORChainStakingService.shared` is the production
+/// implementation.
+protocol THORChainStakingProviding {
+    func fetchStakingDetails(coinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String) async throws -> StakingDetails
+}
+
 /// Service for fetching staking details for THORChain ecosystem coins (RUJI and TCY)
-class THORChainStakingService {
+class THORChainStakingService: THORChainStakingProviding {
     static let shared = THORChainStakingService()
 
     private let httpClient: HTTPClient
@@ -45,7 +52,10 @@ class THORChainStakingService {
     /// - Returns: StakingDetails with amount, APR, rewards, etc.
     func fetchStakingDetails(coinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String) async throws -> StakingDetails {
         switch coinMeta.ticker.uppercased() {
-        case "RUJI":
+        case "RUJI", "SRUJI":
+            // One pool, two positions: the bonded amount and the auto-compounding
+            // amount both come from the same account query, so the sRUJI receipt
+            // resolves against the RUJI pool rather than a pool of its own.
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
             return try await fetchTcyStakingDetails(coinMeta: coinMeta, runeCoinMeta: runeCoinMeta, address: address)
