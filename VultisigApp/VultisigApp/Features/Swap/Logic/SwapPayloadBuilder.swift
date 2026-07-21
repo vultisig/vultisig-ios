@@ -600,7 +600,7 @@ extension SwapCryptoLogic {
                 throw SwapKitError.unsupportedTxType(txType)
             }
 
-        case let .jupiter(evmQuote, _, _):
+        case let .jupiter(evmQuote, _, _, _):
             // Jupiter rides the proven SwapKit-Solana signing path: the base64
             // Solana wire tx lives in `quote.tx.data`, routed via
             // `SwapPayload.generic` to `SolanaSwaps`, which refreshes only the

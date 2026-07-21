@@ -1232,11 +1232,13 @@
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";
 "swap" = "Tausch";
 "swap.duration.instant" = "Sofort";
+"swap.included_in_rate" = "im angebotenen Kurs enthalten";
 "swap.outbound_fee" = "Ausgangsgebühr";
 "swap.price_impact" = "Preisauswirkung";
 "swap.price_impact.average" = "Mittel";
 "swap.price_impact.good" = "Gut";
 "swap.price_impact.high" = "Hoch";
+"swap.protocol_fee" = "Protokollgebühr";
 "swap.referral_discount" = "Empfehlung (-%d bps)";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Markt";
@@ -1517,6 +1519,8 @@
 "vultisig-referrals" = "Vultisig Empfehlungen";
 "vultisigCommunity" = "Vultisig -Gemeinschaft";
 "vultisigEducation" = "Vultisig -Bildung";
+"vultisigFee" = "Vultisig-Gebühr";
+"vultisigFeePercentage" = "Vultisig-Gebühr (%.2f%%)";
 "vultisigWebsite" = "Vultisig -Website";
 "vultTierBadge" = "VULT-STUFE";
 "waitChurnedOutNode" = "Warten Sie, bis der Knoten ausgeschieden ist";

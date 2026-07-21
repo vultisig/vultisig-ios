@@ -217,7 +217,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             quote: .jupiter(
                 makeSolanaEVMQuote(base64: "AQIDBA=="),
                 fee: nil,
-                platformFee: Decimal(string: "0.5")
+                platformFee: Decimal(string: "0.5") ?? .zero,
+                feeOnInput: false
             )
         )
 

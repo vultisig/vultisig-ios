@@ -79,6 +79,14 @@ struct SwapTransaction: Hashable {
     let vultDiscountBps: Int
     let referralDiscountBps: Int
 
+    /// Whether a referral code was active when this quote was fetched. Used by
+    /// the route-aware affiliate-percentage label to reproduce the exact
+    /// `affiliate_bps` the request builder sent — a clean bit, because
+    /// `referralDiscountBps` collapses to 0 in DEBUG (base rate 0) even when
+    /// referred. `var` with a default so the memberwise init stays source-
+    /// compatible; set once at construction, never mutated (immutable hand-off).
+    var isReferred: Bool = false
+
     /// Source-chain broadcast-gas ESTIMATE for a placed LIMIT order, in the fee
     /// coin's smallest units. A dedicated field — NOT the market `thorchainFee`,
     /// whose meaning is the THORChain protocol/outbound fee that feeds
@@ -154,7 +162,8 @@ extension SwapTransaction {
         gasLimit: BigInt? = nil,
         thorchainFee: BigInt? = nil,
         vultDiscountBps: Int? = nil,
-        referralDiscountBps: Int? = nil
+        referralDiscountBps: Int? = nil,
+        isReferred: Bool? = nil
     ) -> SwapTransaction {
         SwapTransaction(
             fromCoin: fromCoin,
@@ -172,6 +181,7 @@ extension SwapTransaction {
             thorchainFee: thorchainFee ?? self.thorchainFee,
             vultDiscountBps: vultDiscountBps ?? self.vultDiscountBps,
             referralDiscountBps: referralDiscountBps ?? self.referralDiscountBps,
+            isReferred: isReferred ?? self.isReferred,
             networkFeeEstimate: networkFeeEstimate,
             feeCoin: feeCoin,
             advancedSettings: advancedSettings
@@ -182,7 +192,7 @@ extension SwapTransaction {
 // MARK: - Convenience computed helpers
 //
 // Sugar over the primitive-taking SwapCryptoLogic free functions so view code
-// reads `transaction.swapFeeString` instead of spelling out the args.
+// reads `transaction.baseAffiliateFee` instead of spelling out the args.
 
 extension SwapTransaction {
     private var fromAmountString: String { fromAmount.description }
@@ -281,18 +291,23 @@ extension SwapTransaction {
         SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
     }
 
-    /// Whether an expandable fee breakdown has any rows to show. Mirrors the
-    /// rows the swap fee surfaces emit (swap fee and/or network gas), so a
-    /// "Total fee" chevron is only offered when expanding reveals something.
-    /// `showTotalFees` can be true while both components are suppressed — for
-    /// quote-driven EVM swaps `totalFeeString` keys off `fee` while `showGas`
-    /// keys off `gas`, a distinct gas price.
-    var hasFeeBreakdown: Bool {
-        showFees || showGas
+    /// Whether the itemized "Vultisig Fee" affiliate row should render (every
+    /// market swap route, even at 0%; not secured mints or limit orders).
+    var showAffiliateFeeRow: Bool {
+        SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: mode)
     }
 
-    var swapFeeString: String {
-        SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+    /// Whether the "Protocol Fee" (native outbound) row should render.
+    var showProtocolFeeRow: Bool {
+        SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: toCoin, mode: mode)
+    }
+
+    /// Whether an expandable fee breakdown has any itemized rows to show, so the
+    /// "Total fee" chevron is only offered when expanding reveals something.
+    /// Mirrors the itemized rows the Done breakdown emits (network gas, the
+    /// Vultisig affiliate row, the protocol/outbound row).
+    var hasFeeBreakdown: Bool {
+        showGas || showAffiliateFeeRow || showProtocolFeeRow
     }
 
     var swapGasString: String {
@@ -338,7 +353,10 @@ extension SwapTransaction {
     }
 
     var swapFeeLabel: String {
-        SwapCryptoLogic.swapFeeLabel(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fromAmount: fromAmountString)
+        SwapCryptoLogic.swapFeeLabel(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmountString, vultDiscountBps: vultDiscountBps, isReferred: isReferred
+        )
     }
 
     var outboundFeeString: String {

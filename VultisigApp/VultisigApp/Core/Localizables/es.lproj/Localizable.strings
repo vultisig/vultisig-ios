@@ -1232,11 +1232,13 @@
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";
 "swap" = "Intercambio";
 "swap.duration.instant" = "Instantáneo";
+"swap.included_in_rate" = "incluido en la tarifa cotizada";
 "swap.outbound_fee" = "Tarifa de Salida";
 "swap.price_impact" = "Impacto del Precio";
 "swap.price_impact.average" = "Medio";
 "swap.price_impact.good" = "Bueno";
 "swap.price_impact.high" = "Alto";
+"swap.protocol_fee" = "Comisión de protocolo";
 "swap.referral_discount" = "Referido (-%d bps)";
 "swap.tab.limit" = "Límite";
 "swap.tab.market" = "Mercado";
@@ -1517,6 +1519,8 @@
 "vultisig-referrals" = "Vultisig Referidos";
 "vultisigCommunity" = "Comunidad Vultisig";
 "vultisigEducation" = "Educación Vultisig";
+"vultisigFee" = "Comisión de Vultisig";
+"vultisigFeePercentage" = "Comisión de Vultisig (%.2f%%)";
 "vultisigWebsite" = "Sitio web de Vultisig";
 "vultTierBadge" = "NIVEL VULT";
 "waitChurnedOutNode" = "Espera hasta que el Nodo sea desvinculado";
