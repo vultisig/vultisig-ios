@@ -676,6 +676,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "Esta orden no se puede cancelar desde su cadena de origen: el mensaje de cancelación es demasiado largo para esa red. Se reembolsará automáticamente al expirar.";
 "limitSwap.cancel.unavailableMismatch" = "Los datos de esta orden no coinciden con los que informa THORChain, por lo que no se puede cancelar de forma segura.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "Añade %1$@ a esta bóveda para cancelar esta orden: la cancelación se envía desde %2$@.";
+"limitSwap.cancel.unavailableVaultUnreadable" = "No se ha podido comprobar esta bóveda ahora mismo. Inténtalo de nuevo en breve: tu orden no se ve afectada.";
 "limitSwap.cancel.verify.title" = "Estás cancelando una orden límite";
 "limitSwap.confirmation.byteCapError.format" = "Memo demasiado largo: %d bytes (máx %d). Prueba con una dirección de destino más corta o una fuente no UTXO.";
 "limitSwap.detail.copyTxHash" = "Copiar hash de TX";

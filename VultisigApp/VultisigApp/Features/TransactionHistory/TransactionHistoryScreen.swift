@@ -252,46 +252,39 @@ struct TransactionHistoryScreen: View {
         return TransactionHistoryDetailSheet(
             transaction: detail,
             limitOrder: order,
-            // What this DEVICE would need in order to send a cancel at all,
+            // What this DEVICE can say about signing a cancel at all,
             // independent of whether the ORDER is cancellable. Resolved here
             // because only the screen can see the vault; the sheet renders a
-            // disabled button naming the missing asset rather than an enabled
-            // one whose tap does nothing.
-            missingCancelSigningAsset: missingCancelSigningAsset(for: order),
+            // disabled button with a reason rather than an enabled one whose
+            // tap does nothing.
+            cancelSigningAvailability: cancelSigningAvailability(for: order),
             onCancelOrder: startCancel
         )
     }
 
-    /// The asset the vault is missing to cancel this order, or `nil` when it can
-    /// sign — which is also the answer for a row that is not a limit order.
-    private func missingCancelSigningAsset(for order: LimitOrderDetails?) -> LimitOrderCancelSigningAsset? {
-        guard let order, cancelSigningCoin(for: order) == nil else { return nil }
-        return limitOrderCancelSigningAsset(for: order)
-    }
-
-    /// The coin that signs this order's cancel — which chain it comes from
-    /// depends on how the order was funded.
+    /// Whether this vault can sign `order`'s cancel, or `nil` for a row that is
+    /// not a limit order at all.
     ///
-    /// A THORChain-sourced order cancels via `MsgDeposit` from RUNE. Everything
-    /// else cancels by sending the memo from the chain that funded it, so it
-    /// needs that chain's NATIVE gas coin — never the order's own asset, since
-    /// a cancel moves no tokens.
-    ///
-    /// `isRune` rather than `chain == .thorChain && isNativeToken` for the THOR
-    /// case: the latter admits any THORChain coin flagged native, so duplicated
-    /// or malformed persisted coin data could hand the flow a `CoinMeta` that
-    /// isn't RUNE at all.
-    private func cancelSigningCoin(for order: LimitOrderDetails?) -> Coin? {
-        guard let order,
-              let rawValue = order.sourceChainRawValue,
-              let sourceChain = Chain(rawValue: rawValue),
-              let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA) else {
-            return nil
+    /// ⚠️ The lookup is done here, with its failure kept distinct from its
+    /// answer. `LimitOrderStorageService.vault` both throws (no model context)
+    /// and returns `nil` (no such vault), and a `try?` would flatten both into
+    /// the same "no coin" as a vault that genuinely lacks RUNE. That flattening
+    /// is what would put "add RUNE to this vault" in front of someone whose
+    /// vault holds plenty of it and simply could not be read.
+    private func cancelSigningAvailability(
+        for order: LimitOrderDetails?
+    ) -> LimitOrderCancelSigningAvailability? {
+        guard let order else { return nil }
+        let vault: Vault?
+        do {
+            vault = try LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA)
+        } catch {
+            logger.error(
+                "Could not read the vault to check the cancel signing asset: \(error.localizedDescription, privacy: .public)"
+            )
+            vault = nil
         }
-        if sourceChain == .thorChain {
-            return vault.coins.first(where: { $0.isRune })
-        }
-        return vault.coins.first(where: { $0.chain == sourceChain && $0.isNativeToken })
+        return limitOrderCancelSigningAvailability(for: order, in: vault)
     }
 
     /// Dismiss the sheet, THEN prepare and navigate — in that order, and not
@@ -303,11 +296,14 @@ struct TransactionHistoryScreen: View {
     /// destination can be dropped entirely. The cancel is parked and replayed
     /// from the sheet's `onDismiss`, once dismissal has actually settled.
     private func startCancel(_ order: LimitOrderDetails) {
+        // Availability is resolved from the vault THIS guard already loaded, not
+        // by asking again. A second lookup can fail where the first succeeded,
+        // which would refuse a cancel the button had just offered.
         guard let request = viewModel.cancelRequest(for: order),
               let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: viewModel.pubKeyECDSA),
-              let signingCoin = cancelSigningCoin(for: order) else {
-            // Unreachable in practice — the button is only enabled when both the
-            // order and `cancelSigningCoin` check out — but a state change under
+              case let .available(signingCoin) = limitOrderCancelSigningAvailability(for: order, in: vault) else {
+            // Unreachable in practice — the button is only live when both the
+            // order and the signing coin check out — but a state change under
             // the user must not navigate to a half-built screen.
             logger.error("Cancel tapped but the request could not be assembled")
             return

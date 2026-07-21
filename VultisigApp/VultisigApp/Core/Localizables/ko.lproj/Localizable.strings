@@ -674,6 +674,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "이 주문은 원본 체인에서 취소할 수 없습니다. 취소 메시지가 해당 네트워크에 비해 너무 깁니다. 만료 시 자동으로 환불됩니다.";
 "limitSwap.cancel.unavailableMismatch" = "이 주문의 세부 정보가 THORChain에서 보고한 내용과 일치하지 않아 안전하게 취소할 수 없습니다.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "이 주문을 취소하려면 이 볼트에 %1$@을(를) 추가하세요. 취소는 %2$@에서 전송됩니다.";
+"limitSwap.cancel.unavailableVaultUnreadable" = "지금은 이 볼트를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요. 주문에는 영향이 없습니다.";
 "limitSwap.cancel.verify.title" = "리밋 주문을 취소합니다";
 "limitSwap.confirmation.byteCapError.format" = "메모가 너무 깁니다: %d바이트(최대 %d). 더 짧은 대상 주소 또는 비 UTXO 소스를 사용해 보세요.";
 "limitSwap.detail.copyTxHash" = "TX 해시 복사";

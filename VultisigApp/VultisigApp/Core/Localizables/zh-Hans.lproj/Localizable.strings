@@ -676,6 +676,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "此订单无法从其源链取消——取消消息对该网络而言过长。到期时将自动退款。";
 "limitSwap.cancel.unavailableMismatch" = "此订单的详细信息与 THORChain 报告的内容不一致，因此无法安全取消。";
 "limitSwap.cancel.unavailableNoSigningAsset" = "请向此保险库添加 %1$@ 以取消此订单——取消交易将从 %2$@ 发出。";
+"limitSwap.cancel.unavailableVaultUnreadable" = "目前无法检查此保险库。请稍后重试——您的订单不受影响。";
 "limitSwap.cancel.verify.title" = "您正在取消限价订单";
 "limitSwap.confirmation.byteCapError.format" = "备注过长：%d 字节（最多 %d）。请尝试更短的目标地址或非 UTXO 源。";
 "limitSwap.detail.copyTxHash" = "复制交易哈希";

@@ -61,7 +61,108 @@ final class LimitOrderCancelSigningAssetTests: XCTestCase {
         XCTAssertNil(limitOrderCancelSigningAsset(for: makeDetails(sourceChainRawValue: "notAChain")))
     }
 
+    // MARK: - Missing is not the same as unreadable
+
+    /// The vault was read and holds the coin: nothing to say, button live.
+    @MainActor
+    func testAVaultHoldingTheSigningCoinCanSign() {
+        let vault = makeVault(coins: [makeRune()])
+
+        guard case let .available(coin) = limitOrderCancelSigningAvailability(
+            for: makeDetails(sourceChain: .thorChain),
+            in: vault
+        ) else {
+            return XCTFail("expected the RUNE it holds to resolve")
+        }
+        XCTAssertTrue(coin.isRune)
+    }
+
+    /// The vault was read and demonstrably lacks it. This is the ONLY case that
+    /// earns "add %@ to this vault".
+    @MainActor
+    func testAVaultWithoutTheSigningCoinReportsItMissingByName() {
+        let vault = makeVault(coins: [])
+
+        guard case let .missing(asset) = limitOrderCancelSigningAvailability(
+            for: makeDetails(sourceChain: .thorChain),
+            in: vault
+        ) else {
+            return XCTFail("expected a named missing asset")
+        }
+        XCTAssertEqual(asset.ticker, "RUNE")
+    }
+
+    /// ⚠️ The defect this covers. A vault that could not be READ produces the
+    /// same absent coin as one that genuinely lacks it, and the two deserve
+    /// opposite messages: telling someone to add RUNE when the lookup merely
+    /// failed sends them to acquire a coin they may already hold. Fail closed —
+    /// say nothing prescriptive about an unknown.
+    @MainActor
+    func testAnUnreadableVaultIsUnknownRatherThanMissing() {
+        let availability = limitOrderCancelSigningAvailability(
+            for: makeDetails(sourceChain: .thorChain),
+            in: nil
+        )
+
+        XCTAssertEqual(availability, .unknown)
+        XCTAssertNotEqual(
+            availability,
+            .missing(LimitOrderCancelSigningAsset(ticker: "RUNE", chainName: "THORChain")),
+            "an unread vault must never be reported as lacking a specific asset"
+        )
+    }
+
+    /// An L1-sourced order needs its own chain's gas coin, and RUNE in the vault
+    /// does not satisfy it.
+    @MainActor
+    func testRuneDoesNotSatisfyAnL1SourcedOrder() {
+        let vault = makeVault(coins: [makeRune()])
+
+        guard case let .missing(asset) = limitOrderCancelSigningAvailability(
+            for: makeDetails(sourceChain: .bitcoin),
+            in: vault
+        ) else {
+            return XCTFail("expected BTC to be reported missing")
+        }
+        XCTAssertEqual(asset.ticker, "BTC")
+    }
+
+    /// No recorded source chain: there is no asset to name, so nothing is
+    /// claimed. The eligibility predicate already blocks the order for a better
+    /// reason.
+    @MainActor
+    func testAnOrderWithNoSourceChainIsUnknownEvenWithAReadableVault() {
+        XCTAssertEqual(
+            limitOrderCancelSigningAvailability(
+                for: makeDetails(sourceChainRawValue: nil),
+                in: makeVault(coins: [makeRune()])
+            ),
+            .unknown
+        )
+    }
+
     // MARK: - Helpers
+
+    @MainActor
+    private func makeVault(coins: [Coin]) -> Vault {
+        let vault = Vault(name: "test-vault")
+        vault.coins = coins
+        return vault
+    }
+
+    @MainActor
+    private func makeRune() -> Coin {
+        let asset = CoinMeta(
+            chain: .thorChain,
+            ticker: "RUNE",
+            logo: "rune",
+            decimals: 8,
+            priceProviderId: "thorchain",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        return Coin(asset: asset, address: "thor1sender", hexPublicKey: "HexPublicKeyExample")
+    }
 
     private func makeDetails(sourceChain: Chain) -> LimitOrderDetails {
         makeDetails(sourceChainRawValue: sourceChain.rawValue)

@@ -12,18 +12,22 @@ struct TransactionHistoryDetailSheet: View {
     /// `TransactionHistoryItem`. `nil` on a co-signer, which never persists a
     /// `LimitOrder`; the sheet degrades to what the row itself knows.
     var limitOrder: LimitOrderDetails?
-    /// The asset this DEVICE is missing in order to send the cancel, or `nil`
-    /// when it can sign. Independent of whether the ORDER qualifies.
+    /// What this DEVICE can say about signing the cancel, independent of whether
+    /// the ORDER qualifies. `nil` for a row that is not a limit order — and, if
+    /// it ever reaches the button with an order in hand, treated as `.unknown`
+    /// rather than waved through.
     ///
-    /// Carries the asset rather than a bare "can/can't" flag because the two
-    /// routes need different funds and telling a user the wrong one is worse
-    /// than telling them nothing: a cancel for a THORChain-sourced order is paid
-    /// in RUNE, while a BTC-funded order's cancel is sent from Bitcoin and never
+    /// Three-valued rather than an optional asset, because "the vault lacks
+    /// RUNE" and "the vault could not be read" produce the same absent coin and
+    /// deserve opposite messages — only the first earns "add RUNE". And the
+    /// missing case carries the asset rather than a bare flag because the two
+    /// routes need different funds: a THORChain-sourced order's cancel is paid
+    /// in RUNE, while a BTC-funded order's is sent from Bitcoin and never
     /// touches THORChain's fee at all.
     ///
     /// Defaults to `nil` so the many call sites that never show a limit order
     /// stay unchanged; the button is gated on the order's own eligibility first.
-    var missingCancelSigningAsset: LimitOrderCancelSigningAsset?
+    var cancelSigningAvailability: LimitOrderCancelSigningAvailability?
     /// Invoked when the user taps Cancel Order.
     ///
     /// A callback rather than a `router.navigate` from inside the sheet: the
@@ -539,26 +543,8 @@ struct TransactionHistoryDetailSheet: View {
     private var cancelOrderButton: some View {
         if let order = limitOrder {
             switch limitOrderCancelEligibility(order) {
-            case .cancellable where missingCancelSigningAsset != nil:
-                // The order qualifies but this device cannot sign the cancel.
-                // Shown disabled with a reason rather than enabled-and-inert: a
-                // tap that silently does nothing is unrecoverable, because
-                // nothing on screen would say what is missing.
-                //
-                // Named per route. A BTC-funded order's cancel is sent from
-                // Bitcoin, so telling that user to add RUNE is advice that fixes
-                // nothing — which is what this said before the L1 route existed.
-                disabledCancelButton(
-                    reason: String(
-                        format: "limitSwap.cancel.unavailableNoSigningAsset".localized,
-                        missingCancelSigningAsset?.ticker ?? "",
-                        missingCancelSigningAsset?.chainName ?? ""
-                    )
-                )
             case .cancellable:
-                PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {
-                    onCancelOrder?(order)
-                }
+                cancelButton(for: order)
             case .blocked(.missingSignedData):
                 disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder".localized)
             case .blocked(.signedDataDisagreesWithChain):
@@ -572,6 +558,45 @@ struct TransactionHistoryDetailSheet: View {
             case .blocked(.terminal):
                 EmptyView()
             }
+        }
+    }
+
+    /// The order qualifies — now, can this DEVICE sign for it?
+    ///
+    /// - `.available` → the live button.
+    /// - `.missing` → disabled, naming the asset to add. Named per route: a
+    ///   BTC-funded order's cancel is sent from Bitcoin, so telling that user to
+    ///   add RUNE is advice that fixes nothing.
+    /// - ⚠️ `.unknown` → disabled, and deliberately NOT prescriptive. The vault
+    ///   could not be read, so we do not know whether anything is missing;
+    ///   naming an asset here would tell someone to acquire a coin they may
+    ///   already hold. Say what is true — we could not check — and leave it there.
+    /// - `nil` joins `.unknown`. This is only reached with an order in hand, and
+    ///   the presenting screen resolves availability for every order it shows,
+    ///   so a `nil` here means the two disagree — which is itself something we
+    ///   cannot prove anything from. Failing OPEN on it would hand back the
+    ///   enabled-but-inert button this whole branch exists to avoid.
+    ///
+    /// Disabled with a reason rather than enabled-and-inert throughout: a tap
+    /// that silently does nothing is unrecoverable, because nothing on screen
+    /// would say why.
+    @ViewBuilder
+    private func cancelButton(for order: LimitOrderDetails) -> some View {
+        switch cancelSigningAvailability {
+        case .available:
+            PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {
+                onCancelOrder?(order)
+            }
+        case let .missing(asset):
+            disabledCancelButton(
+                reason: String(
+                    format: "limitSwap.cancel.unavailableNoSigningAsset".localized,
+                    asset.ticker,
+                    asset.chainName
+                )
+            )
+        case .unknown, .none:
+            disabledCancelButton(reason: "limitSwap.cancel.unavailableVaultUnreadable".localized)
         }
     }
 

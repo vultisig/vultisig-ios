@@ -676,6 +676,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "Diese Order kann nicht über ihre Quell-Chain storniert werden — die Stornierungsnachricht ist für dieses Netzwerk zu lang. Sie wird bei Ablauf automatisch erstattet.";
 "limitSwap.cancel.unavailableMismatch" = "Die Details dieser Order stimmen nicht mit den Angaben von THORChain überein, daher kann sie nicht sicher storniert werden.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "Fügen Sie %1$@ zu diesem Vault hinzu, um diese Order zu stornieren — die Stornierung wird über %2$@ gesendet.";
+"limitSwap.cancel.unavailableVaultUnreadable" = "Dieses Vault konnte gerade nicht geprüft werden. Versuche es in Kürze erneut — deine Order ist davon nicht betroffen.";
 "limitSwap.cancel.verify.title" = "Du stornierst eine Limit-Order";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";
 "limitSwap.detail.copyTxHash" = "TX-Hash kopieren";
