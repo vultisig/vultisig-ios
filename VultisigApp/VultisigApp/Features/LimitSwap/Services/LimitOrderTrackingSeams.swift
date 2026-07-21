@@ -29,6 +29,10 @@ protocol LimitOrderObserving {
     ///     carried already resolved. A cancel memo has to spell them in full.
     ///   - timeToExpiryBlocks: the queue's live countdown; `nil` means "not
     ///     observed" and follows the same rule.
+    /// - Returns: the status actually recorded, which is not always the one
+    ///   observed — a still-resting order with a confirmed cancel against it is
+    ///   stored as `.cancelling`. The caller mirrors THIS onto the tx-history
+    ///   row so the row and the authoritative order table say the same thing.
     func recordObservation(
         inboundTxHash: String,
         pubKeyECDSA: String,
@@ -40,7 +44,7 @@ protocol LimitOrderObserving {
         observedSourceAsset: String?,
         observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
-    ) throws
+    ) throws -> LimitOrderStatus
 }
 
 enum LimitOrderObservingError: Error, Equatable {
@@ -72,12 +76,12 @@ struct LimitOrderObserver: LimitOrderObserving {
         observedSourceAsset: String?,
         observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
-    ) throws {
+    ) throws -> LimitOrderStatus {
         guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
             logger.error("No vault for pubKey — cannot record limit-order observation")
             throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
         }
-        try storage.recordObservation(
+        return try storage.recordObservation(
             of: "\(inboundTxHash)_\(pubKeyECDSA)",
             status: status,
             depositAmount: depositAmount,

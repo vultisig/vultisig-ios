@@ -714,6 +714,7 @@
 "limitSwap.progress.filledFormat" = "%@ eseguito";
 "limitSwap.sell" = "Vendi";
 "limitSwap.status.cancelled" = "Annullato";
+"limitSwap.status.cancelling" = "Annullamento…";
 "limitSwap.status.expired" = "Scaduto";
 "limitSwap.status.refunded" = "Rimborsato";
 "limitSwap.typePill" = "Limite";

@@ -714,6 +714,7 @@
 "limitSwap.progress.filledFormat" = "%@ izvršeno";
 "limitSwap.sell" = "Prodaj";
 "limitSwap.status.cancelled" = "Otkazano";
+"limitSwap.status.cancelling" = "Otkazivanje…";
 "limitSwap.status.expired" = "Isteklo";
 "limitSwap.status.refunded" = "Vraćeno";
 "limitSwap.typePill" = "Limit";

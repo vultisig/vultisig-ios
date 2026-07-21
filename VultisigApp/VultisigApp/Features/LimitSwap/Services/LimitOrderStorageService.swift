@@ -119,10 +119,13 @@ struct LimitOrderStorageService {
     /// and it leaves a later closure ready to be labelled "Cancelled" when
     /// nothing was cancelled.
     ///
-    /// Reverts a `.cancelled` label along with the hash. That label is only ever
-    /// derived from this record (see `reconcile`), so a record withdrawn takes
-    /// its conclusion with it — back to `.refunded`, the observable fact, which
-    /// is what the tracker would have written on its own.
+    /// Reverts the labels the record produced along with the hash. Both
+    /// `.cancelling` and `.cancelled` are derived from it and from nothing else
+    /// (see `reconcile`), so a record withdrawn takes its conclusions with it:
+    /// a still-resting order goes back to `.pending` — which re-enables its
+    /// Cancel button, the point of the self-heal — and a closed one back to
+    /// `.refunded`, the observable fact the tracker would have written on its
+    /// own.
     ///
     /// - Parameter expecting: compare-and-set. The caller looked the hash up,
     ///   went to the network to check it, and is acting on an answer that is by
@@ -138,8 +141,13 @@ struct LimitOrderStorageService {
         }
         guard order.cancelBroadcastHash == txHash else { return }
         order.cancelBroadcastHash = nil
-        if order.status == .cancelled {
+        switch order.status {
+        case .cancelling:
+            order.statusRawValue = LimitOrderStatus.pending.rawValue
+        case .cancelled:
             order.statusRawValue = LimitOrderStatus.refunded.rawValue
+        case .pending, .filled, .refunded, .expired:
+            break
         }
         try saveAndNotify()
     }
@@ -161,12 +169,17 @@ struct LimitOrderStorageService {
     /// Deliberately does NOT set `.cancelled`. See `LimitOrder.cancelBroadcastHash`:
     /// a cancel that matches nothing is accepted by the chain and does nothing,
     /// so the order stays resting until the queue confirms it actually closed.
+    /// It does move a still-resting order to `.cancelling` — a NON-terminal
+    /// state that says our transaction landed and says nothing about the order.
     /// `.refunded` is accepted as well as `.pending`, and reconciled on the spot.
     /// The tracker can observe the cancel-induced closure BEFORE this runs — the
     /// done screen renders a moment after broadcast, but a force-quit or a
     /// backgrounded app can let a poll land first. Rejecting `.refunded` would
     /// then drop the hash on the floor and leave a successfully cancelled order
     /// reading "Refunded" forever, with nothing left to correct it.
+    ///
+    /// `.cancelling` is accepted too, purely so a re-record of the same
+    /// transaction is a no-op rather than a silently dropped write.
     ///
     /// `.filled`, `.expired` and `.cancelled` are still refused: those are
     /// outcomes the cancel demonstrably did not cause.
@@ -175,7 +188,7 @@ struct LimitOrderStorageService {
         guard let order = vault.limitOrders.first(where: { $0.id == orderId }) else {
             throw LimitOrderStorageError.notFound(id: orderId)
         }
-        guard order.status == .pending || order.status == .refunded else { return }
+        guard order.status == .pending || order.status == .refunded || order.status == .cancelling else { return }
         order.cancelBroadcastHash = txHash
         // Re-run reconciliation against what is already recorded. A `.pending`
         // order is unchanged by this; an already-observed `.refunded` closure is
@@ -202,6 +215,14 @@ struct LimitOrderStorageService {
     /// `timeToExpiryBlocks` follows the same rule and is stamped with
     /// `observedAt` when present — the pair is what makes the expiry chip a live
     /// countdown rather than a stale number.
+    ///
+    /// - Returns: the status actually STORED, which is `reconcile`'s verdict on
+    ///   the observation, not the observation itself. The caller mirrors this
+    ///   onto the tx-history row: returning the raw observation instead would
+    ///   leave the row saying "pending" for an order the authoritative table
+    ///   calls `.cancelling`, and the two tables disagreeing is the failure this
+    ///   mirror exists to avoid.
+    @discardableResult
     @MainActor
     func recordObservation(
         of orderId: String,
@@ -215,11 +236,12 @@ struct LimitOrderStorageService {
         timeToExpiryBlocks: Int? = nil,
         observedAt: Date = Date(),
         in vault: Vault
-    ) throws {
+    ) throws -> LimitOrderStatus {
         guard let order = vault.limitOrders.first(where: { $0.id == orderId }) else {
             throw LimitOrderStorageError.notFound(id: orderId)
         }
-        order.statusRawValue = Self.reconcile(observed: status, with: order).rawValue
+        let effective = Self.reconcile(observed: status, with: order)
+        order.statusRawValue = effective.rawValue
         if let depositAmount { order.depositAmount = depositAmount }
         if let observedTradeTarget { order.observedTradeTarget = observedTradeTarget }
         if let observedSourceAsset { order.observedSourceAsset = observedSourceAsset }
@@ -233,6 +255,7 @@ struct LimitOrderStorageService {
             order.expiryObservedAt = observedAt
         }
         try saveAndNotify()
+        return effective
     }
 
     /// Reconcile an observed outcome against what this device knows it did.
@@ -245,9 +268,13 @@ struct LimitOrderStorageService {
     /// told apart. Without it a user who cancelled would be shown "Refunded".
     ///
     /// Narrow on purpose:
-    /// - only `.refunded` is reinterpreted. A `.filled` observation stands, and
-    ///   must: an order that filled before the cancel landed genuinely filled,
-    ///   and relabelling that as cancelled would misreport where the funds went.
+    /// - only `.refunded` is reinterpreted as an OUTCOME. A `.filled`
+    ///   observation stands, and must: an order that filled before the cancel
+    ///   landed genuinely filled, and relabelling that as cancelled would
+    ///   misreport where the funds went.
+    /// - a `.pending` observation — the order is still in the queue — becomes
+    ///   `.cancelling`, which is not an outcome at all: it is the confirmed
+    ///   cancel TRANSACTION made visible while the order carries on resting.
     /// - only when a cancel was actually broadcast for THIS order.
     /// - **and only if the order did not simply run out of time.**
     ///
@@ -295,12 +322,17 @@ struct LimitOrderStorageService {
         with order: LimitOrder,
         now: Date = Date()
     ) -> LimitOrderStatus {
-        guard observed == .refunded,
-              order.cancelBroadcastHash != nil,
-              closedBeforeExpiryWasPossible(order, now: now) else {
+        guard order.cancelBroadcastHash != nil else { return observed }
+        switch observed {
+        case .pending:
+            // Still in the queue, with a confirmed cancel transaction against
+            // it. The user gets an acknowledgement; the order keeps resting.
+            return .cancelling
+        case .refunded:
+            return closedBeforeExpiryWasPossible(order, now: now) ? .cancelled : .refunded
+        case .cancelling, .filled, .expired, .cancelled:
             return observed
         }
-        return .cancelled
     }
 
     /// True when the order's TTL demonstrably had NOT elapsed at `now`, so the

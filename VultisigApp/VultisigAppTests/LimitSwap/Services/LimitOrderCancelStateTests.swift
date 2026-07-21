@@ -195,14 +195,85 @@ final class LimitOrderCancelStateTests: XCTestCase {
         let order = makeOrder(cancelBroadcastHash: "CANCELTX")
 
         XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .expired, with: order), .expired)
-        XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .pending, with: order), .pending)
+        XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .cancelled, with: order), .cancelled)
+    }
+
+    // MARK: - `.cancelling` — our transaction, not the order's fate
+
+    /// The order is still in the queue and this device has a cancel confirmed
+    /// on-chain against it. That is worth showing — and it is a statement about
+    /// the TRANSACTION, so it must not be terminal.
+    func testARestingOrderWithAConfirmedCancelBecomesCancelling() {
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+
+        XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .pending, with: order), .cancelling)
+    }
+
+    /// Without a cancel of our own there is nothing to say.
+    func testARestingOrderWithoutACancelStaysPending() {
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(observed: .pending, with: makeOrder()),
+            .pending
+        )
+    }
+
+    /// ⚠️ The inviolable property. `.cancelling` describes our transaction, so it
+    /// must keep the order in every resting surface: still tracked, still able
+    /// to fill, still counting down. The moment it reads as terminal it is the
+    /// false success this feature exists to prevent.
+    func testCancellingIsNotTerminal() {
+        XCTAssertFalse(makeOrder(status: .cancelling).details.isTerminal)
+        XCTAssertFalse(THORChainLimitTrackingStatusMapper.map(.cancelling).isTerminal)
+    }
+
+    /// A cancelling order that FILLS filled. The cancel simply lost the race,
+    /// and saying otherwise would misreport where the funds went.
+    func testACancellingOrderThatFillsIsReportedAsFilled() {
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX", blocksToExpiry: 10)
+
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(observed: .filled, with: order, now: Self.observedAt),
+            .filled
+        )
+    }
+
+    /// A cancelling order that leaves the queue past its TTL is ambiguous, and
+    /// ambiguity never credits the cancel — same rule as a `.pending` one.
+    func testACancellingOrderClosingPastItsTTLIsStillOnlyRefunded() {
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX", blocksToExpiry: 10)
+
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(
+                observed: .refunded,
+                with: order,
+                now: Self.observedAt.addingTimeInterval(600)
+            ),
+            .refunded
+        )
+    }
+
+    /// ⚠️ Forward compatibility. A build that predates `.cancelling` reads the
+    /// stored string through `LimitOrderStatus(rawValue:) ?? .pending`, so an
+    /// unrecognised status degrades to a live, still-polled order — never to a
+    /// terminal one it would never revisit.
+    func testAnUnrecognisedStoredStatusDegradesToPendingRatherThanTerminal() {
+        let order = makeOrder()
+        order.statusRawValue = "someStatusThisBuildHasNeverHeardOf"
+
+        XCTAssertEqual(order.status, .pending)
+        XCTAssertFalse(order.details.isTerminal)
+        XCTAssertFalse(
+            THORChainLimitTrackingStatusMapper.map(trackingStatus: "someStatusThisBuildHasNeverHeardOf").isTerminal
+        )
     }
 
     // MARK: - Broadcast recording
 
-    /// Broadcasting a cancel must NOT mark the order cancelled. A cancel that
-    /// addresses the wrong ratio bucket is accepted, costs a fee, and cancels
-    /// nothing; marking it cancelled here would hide exactly that failure.
+    /// Recording a confirmed cancel must NOT mark the order cancelled. A cancel
+    /// that addresses the wrong ratio bucket is accepted, costs a fee, and
+    /// cancels nothing; marking it cancelled here would hide exactly that
+    /// failure. `.cancelling` acknowledges the transaction and nothing more —
+    /// and stays non-terminal, so the order remains visibly resting.
     func testRecordingABroadcastLeavesTheOrderRestingRatherThanCancelled() throws {
         let vault = Vault.example
         let order = makeOrder()
@@ -213,7 +284,8 @@ final class LimitOrderCancelStateTests: XCTestCase {
         )
 
         XCTAssertEqual(order.cancelBroadcastHash, "CANCELTX")
-        XCTAssertEqual(order.status, .pending, "a broadcast cancel is an intent, not an outcome")
+        XCTAssertEqual(order.status, .cancelling, "a confirmed cancel tx is not a closed order")
+        XCTAssertFalse(order.details.isTerminal)
     }
 
     /// The order can fill or expire between the tap and the ceremony finishing.
@@ -253,6 +325,23 @@ final class LimitOrderCancelStateTests: XCTestCase {
 
         XCTAssertNil(order.cancelBroadcastHash)
         XCTAssertEqual(order.status, .pending, "still resting, and cancellable again")
+    }
+
+    /// The same self-heal seen through the visible state: a `.cancelling` order
+    /// whose transaction turns out to have failed drops back to `.pending`, with
+    /// its Cancel button live again. The label is only ever derived from the
+    /// record, so withdrawing the record has to take it with it.
+    func testClearingACancelRecordReturnsACancellingOrderToPending() throws {
+        let vault = Vault.example
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX")
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().clearCancelBroadcast(
+            of: "order-1", expecting: "CANCELTX", in: vault
+        )
+
+        XCTAssertNil(order.cancelBroadcastHash)
+        XCTAssertEqual(order.status, .pending)
     }
 
     /// ⚠️ Compare-and-set. The caller's verdict is seconds old by the time it

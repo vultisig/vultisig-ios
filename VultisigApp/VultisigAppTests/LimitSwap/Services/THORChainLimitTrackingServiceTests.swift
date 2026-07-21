@@ -330,7 +330,7 @@ private final class InertLimitOrderObserver: LimitOrderObserving {
     func recordObservation(
         inboundTxHash _: String,
         pubKeyECDSA _: String,
-        status _: LimitOrderStatus,
+        status: LimitOrderStatus,
         depositAmount _: String?,
         filledInAmount _: String?,
         filledOutAmount _: String?,
@@ -338,7 +338,7 @@ private final class InertLimitOrderObserver: LimitOrderObserving {
         observedSourceAsset _: String?,
         observedTargetAsset _: String?,
         timeToExpiryBlocks _: Int?
-    ) throws {}
+    ) throws -> LimitOrderStatus { status }
 }
 
 @MainActor

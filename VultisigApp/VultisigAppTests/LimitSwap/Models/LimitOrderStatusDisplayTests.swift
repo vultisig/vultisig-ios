@@ -134,6 +134,46 @@ final class LimitOrderStatusDisplayTests: XCTestCase {
         }
     }
 
+    // MARK: - Cancelling reads as waiting, never as done
+
+    /// ⚠️ The property the whole `.cancelling` state rests on. It is a statement
+    /// about OUR transaction; if it ever renders as success or as a closed
+    /// order it reintroduces the false success this feature exists to prevent.
+    func testCancellingIsNeitherSuccessNorClosed() {
+        let display = LimitOrderStatusDisplay.make(uiStatus: .cancelling, details: nil, errorMessage: nil)
+
+        XCTAssertEqual(display.kind, .cancelling)
+        XCTAssertNotEqual(display.kind, .successful)
+        XCTAssertNotEqual(display.kind, .failed)
+        for reason in [LimitOrderStatusDisplay.ClosedReason.refunded, .expired, .cancelled] {
+            XCTAssertNotEqual(display.kind, .closedUnfilled(reason))
+        }
+    }
+
+    /// The copy has to be its own line — reusing "Cancelled" would be the lie,
+    /// and reusing "In progress" would drop the acknowledgement the state exists
+    /// to give.
+    func testCancellingHasItsOwnTitleDistinctFromCancelled() {
+        let cancelling = LimitOrderStatusDisplay.make(uiStatus: .cancelling, details: nil, errorMessage: nil)
+        let cancelled = LimitOrderStatusDisplay.make(uiStatus: .cancelled, details: nil, errorMessage: nil)
+
+        XCTAssertEqual(cancelling.title, "limitSwap.status.cancelling".localized)
+        XCTAssertFalse(cancelling.title.isEmpty)
+        XCTAssertNotEqual(cancelling.title, cancelled.title)
+        XCTAssertNotEqual(cancelling.title, "inProgress".localized)
+    }
+
+    /// A partial fill on an order being cancelled is still a partial fill.
+    func testCancellingKeepsTheProgressDetail() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .cancelling,
+            details: makeDetails(status: .cancelling, deposit: "1000", filledIn: "400", filledOut: "50"),
+            errorMessage: nil
+        )
+
+        XCTAssertEqual(display.detail, String(format: "limitSwap.progress.filledFormat".localized, "40%"))
+    }
+
     func testOnlyFailedSurfacesTheRawErrorMessage() {
         // On-chain error text belongs to a real failure. Attaching it to an
         // expiry would explain a normal outcome as a fault.

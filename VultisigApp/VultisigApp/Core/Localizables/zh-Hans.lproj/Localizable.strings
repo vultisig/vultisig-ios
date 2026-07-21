@@ -714,6 +714,7 @@
 "limitSwap.progress.filledFormat" = "已成交 %@";
 "limitSwap.sell" = "卖出";
 "limitSwap.status.cancelled" = "已取消";
+"limitSwap.status.cancelling" = "正在取消…";
 "limitSwap.status.expired" = "已过期";
 "limitSwap.status.refunded" = "已退回";
 "limitSwap.typePill" = "限价";

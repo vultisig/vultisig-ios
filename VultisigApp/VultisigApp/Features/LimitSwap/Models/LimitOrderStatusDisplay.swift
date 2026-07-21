@@ -28,6 +28,16 @@ struct LimitOrderStatusDisplay: Equatable {
     enum Kind: Equatable {
         /// Placed and live. Includes partially-filled.
         case inProgress
+        /// A cancel transaction for this order has been confirmed on-chain and
+        /// the order has not yet left the queue.
+        ///
+        /// ⚠️ **A flavour of in-progress, never of success.** It says what we
+        /// asked for, not what happened: the order is still resting and can
+        /// still fill, because THORChain accepts a cancel that matches nothing.
+        /// It is a separate kind purely so the copy can say "Cancelling…" — it
+        /// must keep the in-progress styling, and it must never be treated as
+        /// terminal.
+        case cancelling
         /// Filled.
         case successful
         /// Terminal, did not fill (in whole or in part), funds returned. NOT a
@@ -69,6 +79,11 @@ struct LimitOrderStatusDisplay: Equatable {
         switch uiStatus {
         case .resting, .pending, .swapping, .unknownPendingExtended:
             return LimitOrderStatusDisplay(kind: .inProgress, detail: progressDetail(details))
+        case .cancelling:
+            // Same second line as any other live order — a partial fill on an
+            // order being cancelled is still a partial fill, and hiding it would
+            // suggest the cancel already undid something.
+            return LimitOrderStatusDisplay(kind: .cancelling, detail: progressDetail(details))
         case .completed:
             // A full fill needs no second line — the amount pair above it
             // already tells the whole story.
@@ -105,6 +120,10 @@ struct LimitOrderStatusDisplay: Equatable {
         switch kind {
         case .inProgress:
             return "inProgress".localized
+        case .cancelling:
+            // Present continuous on purpose: the sentence has to read as
+            // waiting, not as done.
+            return "limitSwap.status.cancelling".localized
         case .successful:
             return "successful".localized
         case .closedUnfilled(.refunded):

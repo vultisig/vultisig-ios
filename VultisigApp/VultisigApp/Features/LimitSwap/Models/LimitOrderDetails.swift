@@ -251,7 +251,12 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     /// (the live expiry chip; later, the Cancel action).
     var isTerminal: Bool {
         switch status {
-        case .pending:
+        case .pending, .cancelling:
+            // `.cancelling` is in-flight, not closed. The cancel transaction
+            // succeeded; the ORDER has not been observed leaving the queue and
+            // may still fill. Calling it terminal here would drop it out of the
+            // resting surfaces, stop its countdown, and let the tracker release
+            // it — leaving a live order stranded with nothing to correct it.
             return false
         case .filled, .refunded, .expired, .cancelled:
             return true

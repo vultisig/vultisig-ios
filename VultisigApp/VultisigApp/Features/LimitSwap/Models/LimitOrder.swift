@@ -242,8 +242,36 @@ final class LimitOrder {
     }
 }
 
+/// - Note: persisted as a raw `String` on `LimitOrder.statusRawValue`, and read
+///   back through `LimitOrderStatus(rawValue:) ?? .pending`. That fallback is
+///   what makes adding a case here a lightweight SwiftData change: a build that
+///   predates `.cancelling` reads it as `.pending` — resting, non-terminal, and
+///   still polled — rather than as an unknown terminal state it would never
+///   revisit.
 enum LimitOrderStatus: String, Codable, Equatable {
     case pending
+    /// A cancel transaction for this order has been confirmed SUCCESSFUL
+    /// on-chain, and the order has not yet left the queue.
+    ///
+    /// ⚠️ **Not terminal, and not a claim about the order.** It describes OUR
+    /// transaction — the one thing we have actually confirmed — never the
+    /// order's fate. THORChain accepts a cancel that addresses the wrong ratio
+    /// bucket, charges for it, and closes nothing; the order is still resting
+    /// and can still fill. So an order in this state keeps its place in the
+    /// resting list, keeps its expiry countdown, and keeps being polled, and
+    /// the only exits are observations:
+    ///
+    /// | Observed | Result |
+    /// |---|---|
+    /// | leaves the queue, TTL demonstrably NOT elapsed | `.cancelled` |
+    /// | leaves the queue at/after its TTL (ambiguous) | `.refunded` |
+    /// | fills | `.filled` — never relabelled |
+    /// | the cancel transaction turns out to have failed | back to `.pending` |
+    ///
+    /// It must never be styled as terminal or as success. The moment it reads
+    /// as "done" it reintroduces the false success this whole feature exists to
+    /// prevent — just sourced from our own optimism instead of the chain's.
+    case cancelling
     case filled
     /// The order closed and the funds came back — the observable fact.
     ///

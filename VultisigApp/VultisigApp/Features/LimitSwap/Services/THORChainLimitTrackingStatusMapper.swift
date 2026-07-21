@@ -35,6 +35,12 @@ enum THORChainLimitTrackingStatusMapper {
         case .pending:
             // "Pending" on a limit order means resting in the queue, unfilled.
             return .resting
+        case .cancelling:
+            // Still resting — a confirmed cancel transaction is not a closed
+            // order. Kept as its own non-terminal state rather than folded into
+            // `.resting` so the row can say "Cancelling…" without ever implying
+            // the order is done.
+            return .cancelling
         case .filled:
             return .completed
         case .refunded:

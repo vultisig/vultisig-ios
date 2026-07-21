@@ -29,7 +29,34 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
 
         XCTAssertEqual(env.orders.observations.last?.status, .pending)
         XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .resting)
+        XCTAssertEqual(env.storage.mirroredTrackingStatuses.last, "pending")
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 1, "still resting — keep tracking it")
+    }
+
+    /// ⚠️ The row mirrors the status the order table STORED, not the raw
+    /// observation. A resting order with a confirmed cancel against it is
+    /// reconciled to `.cancelling`; mirroring "pending" instead would leave the
+    /// row and the authoritative table describing the same order differently,
+    /// and the row's status is what the surfaces read after a relaunch.
+    func testARestingOrderReconciledToCancellingIsMirroredAsCancelling() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .succeeded
+        )
+        env.orders.effectiveStatus = .cancelling
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(env.orders.observations.last?.status, .pending, "the OBSERVATION is still 'in the queue'")
+        XCTAssertEqual(env.storage.mirroredTrackingStatuses.last, "cancelling")
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .cancelling)
+        XCTAssertEqual(
+            env.service.trackedOrderCountForTesting,
+            1,
+            "cancelling is not terminal — the order is still resting and must keep being polled"
+        )
     }
 
     /// The queue is polled ONCE per sender, not once per order — that's the
@@ -106,6 +133,28 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
 
         XCTAssertEqual(env.cancelIntents.clearedHashes, ["ABC123"])
         XCTAssertNil(env.cancelIntents.pending, "a refused cancel must not keep the button disabled")
+    }
+
+    /// ⚠️ Order matters. The resting observation is reconciled against the cancel
+    /// record — a present hash is what makes a resting order read
+    /// "Cancelling…" — so it has to be recorded AFTER the record has been
+    /// re-checked. The other way round persists and mirrors `.cancelling` on the
+    /// strength of a hash the same cycle then withdraws, leaving the row
+    /// contradicting the order it mirrors until the next poll repairs it.
+    func testTheCancelRecordIsReCheckedBeforeTheRestingObservationIsRecorded() async {
+        let env = TestEnv(
+            queueBody: .resting(hash: "ABC123", deposit: "1000", inAmount: "0", outAmount: "0"),
+            pendingCancelHash: "CANCELTX",
+            cancelOutcome: .failed(reason: "could not find matching limit swap: internal error")
+        )
+        var observationsAtVerifyTime: Int?
+        env.cancelVerifier.onVerify = { observationsAtVerifyTime = env.orders.observations.count }
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await env.service.pollOnceForTesting(sender: sender)
+
+        XCTAssertEqual(observationsAtVerifyTime, 0, "the record is verified before anything is written")
+        XCTAssertEqual(env.orders.observations.count, 1, "and the observation still lands")
     }
 
     /// A cancel the chain accepted stays on record — it is what turns the
@@ -731,6 +780,12 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
     var shouldThrow = false
     /// A specific error to throw, when the test cares which one.
     var error: Error?
+    /// Status to report as STORED, when the test wants to model the store
+    /// reconciling an observation into something else (e.g. a still-resting
+    /// order with a confirmed cancel becoming `.cancelling`). `nil` echoes the
+    /// observation back, which is what the real store does with nothing to
+    /// reconcile.
+    var effectiveStatus: LimitOrderStatus?
 
     struct WriteError: Error {}
 
@@ -745,7 +800,7 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
         observedSourceAsset: String?,
         observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
-    ) throws {
+    ) throws -> LimitOrderStatus {
         if let error { throw error }
         if shouldThrow { throw WriteError() }
         observations.append(Observation(
@@ -758,6 +813,7 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
             observedTargetAsset: observedTargetAsset,
             timeToExpiryBlocks: timeToExpiryBlocks
         ))
+        return effectiveStatus ?? status
     }
 }
 
@@ -825,6 +881,9 @@ private final class StubOutcomeResolver: LimitOrderOutcomeResolving {
 @MainActor
 private final class RecordingTrackingStorage: SwapTrackingStorage {
     private(set) var observedUiStatuses: [SwapTrackingUiStatus] = []
+    /// The status strings mirrored onto the row, so a test can assert the row
+    /// and the authoritative order table say the same thing.
+    private(set) var mirroredTrackingStatuses: [String?] = []
     var inFlight: [TransactionHistoryData] = []
     var shouldThrowOnUpdate = false
 
@@ -834,12 +893,13 @@ private final class RecordingTrackingStorage: SwapTrackingStorage {
         txHash _: String,
         pubKeyECDSA _: String,
         latestStatus _: String?,
-        latestTrackingStatus _: String?,
+        latestTrackingStatus: String?,
         uiStatus: SwapTrackingUiStatus,
         polledAt _: Date
     ) throws {
         if shouldThrowOnUpdate { throw UpdateError() }
         observedUiStatuses.append(uiStatus)
+        mirroredTrackingStatuses.append(latestTrackingStatus)
     }
 
     func touchSwapTrackingLastPolled(txHash _: String, pubKeyECDSA _: String, polledAt _: Date) throws {}

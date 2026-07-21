@@ -122,7 +122,10 @@ final class LimitOrderPoller: DoneStatusPoller {
         switch ui {
         case .none:
             return .broadcasted(estimatedTime: estimatedTime)
-        case .resting, .pending, .swapping, .unknownPendingExtended:
+        case .resting, .pending, .swapping, .unknownPendingExtended, .cancelling:
+            // `.cancelling` stays `.pending` for the same reason `.resting`
+            // does: the order is still live in the queue. A confirmed cancel
+            // transaction is not a closed order.
             return .pending
         case .completed:
             return .confirmed

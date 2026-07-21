@@ -124,7 +124,11 @@ struct TransactionHistoryCardView: View {
     /// for the green of "filled".
     static func limitStatusColor(_ kind: LimitOrderStatusDisplay.Kind) -> Color {
         switch kind {
-        case .inProgress:
+        case .inProgress, .cancelling:
+            // `.cancelling` shares the in-progress tint deliberately. It is a
+            // live order with a request in flight; any colour that reads as an
+            // outcome — the success green, or the amber of a closed order —
+            // would announce a result nothing has observed.
             return Theme.colors.textTertiary
         case .successful:
             return Theme.colors.alertSuccess

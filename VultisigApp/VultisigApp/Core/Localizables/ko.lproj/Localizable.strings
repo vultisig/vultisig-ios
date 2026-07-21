@@ -712,6 +712,7 @@
 "limitSwap.progress.filledFormat" = "%@ 체결";
 "limitSwap.sell" = "매도";
 "limitSwap.status.cancelled" = "취소됨";
+"limitSwap.status.cancelling" = "취소 중…";
 "limitSwap.status.expired" = "만료됨";
 "limitSwap.status.refunded" = "반환됨";
 "limitSwap.typePill" = "지정가";

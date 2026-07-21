@@ -70,13 +70,23 @@ final class LimitOrderCancelEnablementTests: XCTestCase {
         XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .memoTooLongForSourceChain)
     }
 
-    /// ⚠️ The order is deliberately left `.pending` after a cancel broadcasts,
-    /// so `isTerminal` alone would leave the button live and let the user pay
-    /// the fee — and on L1 donate the dust — again, for a memo that lands in the
-    /// identical ratio bucket.
+    /// ⚠️ The order is deliberately left NON-TERMINAL after a cancel is
+    /// confirmed, so `isTerminal` alone would leave the button live and let the
+    /// user pay the fee — and on L1 donate the dust — again, for a memo that
+    /// lands in the identical ratio bucket.
     func testAnOrderWithACancelAlreadyBroadcastIsBlocked() {
         let details = makeDetails(cancelBroadcastHash: "CANCELTX")
 
+        XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .cancelAlreadyBroadcast)
+    }
+
+    /// The same guard seen through the visible state. A `.cancelling` order is
+    /// NOT terminal — it is still resting and can still fill — so the block has
+    /// to come from the cancel record, and it has to still come.
+    func testACancellingOrderIsBlockedButNotBecauseItIsTerminal() {
+        let details = makeDetails(status: .cancelling, cancelBroadcastHash: "CANCELTX")
+
+        XCTAssertFalse(details.isTerminal)
         XCTAssertEqual(limitOrderCancelEligibility(details).blocker, .cancelAlreadyBroadcast)
     }
 

@@ -200,10 +200,14 @@ final class TransactionHistoryStorage {
             // poll; if native polling reaches a terminal first that path
             // writes the coarse status itself.
             break
-        case .pending, .swapping, .resting:
+        case .pending, .swapping, .resting, .cancelling:
             // Keep `inProgress` — the on-chain row already starts there. A
             // resting order is genuinely in progress: it is waiting for a price,
-            // which is the whole point of it.
+            // which is the whole point of it. `.cancelling` belongs here for the
+            // same reason: the cancel transaction landed, but the order itself
+            // is still in the queue and can still fill, so collapsing it into
+            // `error` (where closed orders go) would report an outcome nothing
+            // has observed.
             break
         }
         try modelContext.save()

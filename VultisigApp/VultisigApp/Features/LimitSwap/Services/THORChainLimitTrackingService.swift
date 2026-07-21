@@ -306,10 +306,17 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
         for order in tracked.values where order.sender == sender {
             if let entry = restingByHash[order.txHash.uppercased()] {
-                observeResting(order: order, entry: entry)
+                // Re-check the cancel record BEFORE recording the observation,
+                // not after. `observeResting` reconciles against that record — a
+                // present hash is what makes a resting order read `.cancelling` —
+                // so verifying second would persist and mirror `.cancelling` on
+                // the strength of a hash this very cycle then withdraws, leaving
+                // the row saying "Cancelling…" for an order whose authoritative
+                // record is back to `.pending` until the next poll repairs it.
                 guard await verifyPendingCancel(order: order, sender: sender, token: token) else {
                     return PollOutcome(shouldStop: true, nextDelay: 0)
                 }
+                observeResting(order: order, entry: entry)
             } else {
                 guard await observeClosed(order: order, sender: sender, token: token) else {
                     // Superseded mid-reconcile — the live generation owns these
@@ -331,7 +338,10 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     /// Still queued: record the fill split and the expiry countdown, and keep it
     /// resting.
     private func observeResting(order: TrackedOrder, entry: ThorchainLimitSwapQueueEntry) {
-        write(order: order, status: .pending, uiStatus: .resting, entry: entry)
+        // `.pending` is the OBSERVATION — the order is in the queue. The store
+        // may reconcile it to `.cancelling` if this device has a confirmed
+        // cancel against it; either way the order stays non-terminal and tracked.
+        write(order: order, status: .pending, entry: entry)
     }
 
     /// Re-check the cancel transaction recorded against a STILL-RESTING order,
@@ -416,13 +426,15 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             // Almost always Midgard indexing lag. Stay resting; ask next poll.
             logger.debug("Limit order \(order.txHash, privacy: .public) left the queue; outcome not resolvable yet")
         case .filled:
-            if write(order: order, status: .filled, uiStatus: .completed, entry: nil) {
+            if write(order: order, status: .filled, entry: nil) {
                 release(order)
             }
         case .refunded:
             // Recorded as refunded, not expired: the funds coming back is what
-            // we observed; a TTL elapsing is a cause we can't corroborate.
-            if write(order: order, status: .refunded, uiStatus: .refunded, entry: nil) {
+            // we observed; a TTL elapsing is a cause we can't corroborate. The
+            // store promotes it to `.cancelled` only when this device holds a
+            // confirmed cancel AND the TTL demonstrably had not elapsed.
+            if write(order: order, status: .refunded, entry: nil) {
                 release(order)
             }
         }
@@ -436,6 +448,12 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     /// observation is the final word on how much of it filled — and a countdown
     /// for a closed order is meaningless.
     ///
+    /// The row mirrors the status the order table actually STORED, which is not
+    /// always the one observed: a still-resting order with a confirmed cancel
+    /// against it is reconciled to `.cancelling`. Mirroring the raw observation
+    /// would leave the row calling that order "pending" — and the row's UI
+    /// status is what the surfaces read after a relaunch.
+    ///
     /// - Returns: whether the AUTHORITATIVE write landed. The caller must not
     ///   release an order on `false`: dropping it after a failed write would
     ///   leave `LimitOrder` permanently non-terminal with nothing left to
@@ -446,7 +464,6 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     private func write(
         order: TrackedOrder,
         status: LimitOrderStatus,
-        uiStatus: SwapTrackingUiStatus,
         entry: ThorchainLimitSwapQueueEntry?
     ) -> Bool {
         let state = entry?.swap.state
@@ -455,8 +472,11 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         // below: with no local order behind it, the row is not a mirror of the
         // truth, it IS the truth.
         var hasLocalOrder = true
+        // Defaults to the observation, which is the right answer on a co-signer:
+        // with no local order there is nothing to reconcile against.
+        var effectiveStatus = status
         do {
-            try orders.recordObservation(
+            effectiveStatus = try orders.recordObservation(
                 inboundTxHash: order.txHash,
                 pubKeyECDSA: order.pubKeyECDSA,
                 status: status,
@@ -495,14 +515,19 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             return false
         }
 
+        // Derived from the stored status rather than passed in: the mapper is
+        // the single definition of what a `LimitOrderStatus` looks like on a
+        // row, and a separately-supplied UI status is a second copy of that
+        // table waiting to disagree with it.
+        let uiStatus = THORChainLimitTrackingStatusMapper.map(effectiveStatus)
         do {
             try storage.updateSwapTrackingStatus(
                 txHash: order.txHash,
                 pubKeyECDSA: order.pubKeyECDSA,
-                latestStatus: status.rawValue,
+                latestStatus: effectiveStatus.rawValue,
                 // The row's tracking vocabulary IS `LimitOrderStatus` — see
                 // `THORChainLimitTrackingStatusMapper`.
-                latestTrackingStatus: status.rawValue,
+                latestTrackingStatus: effectiveStatus.rawValue,
                 uiStatus: uiStatus,
                 polledAt: Date()
             )

@@ -191,15 +191,17 @@ enum LimitOrderCancelBlocker: Equatable, Sendable {
     /// never recorded. Fails closed: we would rather grey the button out than
     /// guess at the amounts the matcher keys on.
     case missingSignedData
-    /// A cancel for this order has already been broadcast and is waiting to be
-    /// observed.
+    /// A cancel for this order has already succeeded on-chain and is waiting to
+    /// be observed in the queue.
     ///
-    /// The order stays `.pending` on purpose — that is what keeps a cancel that
-    /// silently matched nothing visible rather than papered over. But `.pending`
-    /// alone would also leave the button live, letting the user pay the fee (and
-    /// on L1 donate the dust) again for an identical memo that would land in the
-    /// identical ratio bucket. Self-resolving: the order leaves `.pending` when
-    /// it closes, whichever way it closes.
+    /// The order stays NON-TERMINAL on purpose — `.cancelling` — because that is
+    /// what keeps a cancel that silently matched nothing visible rather than
+    /// papered over. But a live order would also leave the button live, letting
+    /// the user pay the fee (and on L1 donate the dust) again for an identical
+    /// memo that would land in the identical ratio bucket. This blocker is the
+    /// guard; `.cancelling` is the same fact with a face the user can read.
+    /// Self-resolving in both directions: the order leaves `.cancelling` when it
+    /// closes, and drops back to `.pending` if the cancel record is withdrawn.
     case cancelAlreadyBroadcast
     /// The order was funded from a chain THORChain cannot route, so there is no
     /// inbound vault to send the cancel to.

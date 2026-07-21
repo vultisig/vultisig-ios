@@ -59,6 +59,16 @@ enum SwapTrackingUiStatus: String, Codable, Sendable, Hashable {
     /// route and unindexed by Midgard. If we don't record it at the moment we
     /// do it, it is not recoverable.
     case cancelled
+    /// A limit order whose CANCEL transaction has been confirmed successful
+    /// on-chain, and which has not yet left the queue.
+    ///
+    /// ⚠️ **Non-terminal, deliberately.** It is a statement about our own
+    /// transaction, not about the order: a cancel can be accepted by the chain
+    /// and still match nothing, leaving the order resting and able to fill. So
+    /// the row keeps its in-progress coarse status and the tracker keeps
+    /// polling; only an observed closure resolves it. See
+    /// `LimitOrderStatus.cancelling`.
+    case cancelling
 }
 
 extension SwapTrackingUiStatus {
@@ -67,7 +77,7 @@ extension SwapTrackingUiStatus {
         switch self {
         case .completed, .refunded, .failed, .unknownPendingExtended, .expired, .cancelled:
             return true
-        case .pending, .swapping, .resting:
+        case .pending, .swapping, .resting, .cancelling:
             return false
         }
     }
