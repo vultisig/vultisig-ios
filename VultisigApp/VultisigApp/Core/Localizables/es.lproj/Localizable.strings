@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "No se pudo decodificar esta transacción. Revisa cuidadosamente el JSON sin procesar antes de firmar.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "La dirección de destino debe ser diferente de la dirección de origen.";
 "sameDeviceShareError" = "Misma compartir bóveda";
 "sameDeviceShareErrorDescription" = "Cambie la compartición para firmar. Dos dispositivos no pueden usar la misma bóveda compartida para firmar conjuntamente.";
 "sameNameFolderDescription" = "Elija un nombre único para la carpeta e inténtelo de nuevo.";

@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "无法解码此交易。签名前请仔细核对原始 JSON。";
 "routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
 "rune" = "RUNE";
+"sameAddressError" = "收件人地址必须与发件人地址不同";
 "sameDeviceShareError" = "相同的保险库份额";
 "sameDeviceShareErrorDescription" = "请更改份额以签名。两台设备不能使用相同的保险库份额进行联合签名。";
 "sameNameFolderDescription" = "该文件夹名称已存在。尝试一个新的";

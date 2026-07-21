@@ -78,12 +78,7 @@ class TronService {
         let expiration = nowMillis + oneHourMillis
 
         let calculatedFee = try await calculateTronFee(coin: coin, to: to, memo: memo, isSwap: isSwap)
-        // For native transfers with a fully bandwidth-discounted fee (calculatedFee == 0),
-        // fall back to the coin's static `feeDefault` so the UI displays a non-zero "Fees"
-        // line. Contract paths (TRC20 / native swap) always return a non-zero feeLimit
-        // from `calculateTronFee` so they bypass this branch.
-        let finalFee = calculatedFee == 0 ? coin.feeDefault.toBigInt() : calculatedFee
-        let estimation = String(finalFee)
+        let estimation = String(calculatedFee)
 
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
@@ -193,7 +188,13 @@ class TronService {
             if isSwap {
                 transactionFee = Self.defaultContractFeeLimit(energyPrice: energyPrice)
             } else {
-                transactionFee = (try? await calculateNativeTrxFee(coin: coin)) ?? .zero
+                // A *successfully computed* 0 means sufficient bandwidth — a
+                // genuinely free transfer, surfaced as 0. But a thrown error
+                // (transient account-resource / chain-parameter fetch failure)
+                // is indistinguishable from that once collapsed to `.zero`,
+                // which would render a real transfer as falsely free. Fall back
+                // to the coin's conservative static fee only on that error path.
+                transactionFee = (try? await calculateNativeTrxFee(coin: coin)) ?? coin.feeDefault.toBigInt()
             }
         } else {
             transactionFee = await calculateTrc20FeeLimit(coin: coin, to: to, energyPrice: energyPrice)

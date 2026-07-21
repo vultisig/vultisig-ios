@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "Não foi possível decodificar esta transação. Revise cuidadosamente o JSON bruto antes de assinar.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "O endereço de destino deve ser diferente do endereço de origem";
 "sameDeviceShareError" = "Mesmo compartilhamento de cofre";
 "sameDeviceShareErrorDescription" = "Por favor, altere a partilha para assinar. Dois dispositivos não podem usar a mesma partilha do cofre para co-assinar.";
 "sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
