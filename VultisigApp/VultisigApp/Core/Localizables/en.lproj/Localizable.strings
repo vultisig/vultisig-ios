@@ -1036,6 +1036,7 @@
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "The to address must be different from the from address";
 "sameDeviceShareError" = "Same vault share";
 "sameDeviceShareErrorDescription" = "Please change the share to sign. Two devices cannot use the same vault share for co-signing.";
 "sameNameFolderDescription" = "That folder name already exists. Try a new one.";

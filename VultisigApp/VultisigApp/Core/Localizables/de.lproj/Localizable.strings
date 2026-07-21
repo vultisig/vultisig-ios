@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "Diese Transaktion konnte nicht dekodiert werden. Überprüfe das rohe JSON sorgfältig, bevor du signierst.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "Die Empfängeradresse muss sich von der Absenderadresse unterscheiden.";
 "sameDeviceShareError" = "Gleicher Tresor Teil";
 "sameDeviceShareErrorDescription" = "Bitte ändern Sie die Freigabe zum Signieren. Zwei Geräte können nicht dieselbe Tresorfreigabe zum gemeinsamen Signieren verwenden.";
 "sameNameFolderDescription" = "Bitte wähle einen einzigartigen Namen für den Ordner und versuche es erneut.";

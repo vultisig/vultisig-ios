@@ -259,6 +259,64 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         XCTAssertTrue(vm.showAlert)
     }
 
+    // MARK: - TRON self-send guard (validateNotSelfSend)
+
+    func testValidateNotSelfSendFailsForTronSameAddress() {
+        let trx = SendFormFixture.makeTRX()
+        let vm = SendFormFixture.make(coin: trx)
+        vm.toAddress = trx.address
+
+        XCTAssertFalse(vm.validateNotSelfSend())
+        XCTAssertEqual(vm.errorMessage, "sameAddressError")
+        XCTAssertTrue(vm.showAddressAlert)
+    }
+
+    func testValidateNotSelfSendPassesForTronStakingOperation() {
+        let trx = SendFormFixture.makeTRX()
+        let vm = SendFormFixture.make(coin: trx)
+        vm.toAddress = trx.address
+        vm.isStakingOperation = true
+
+        XCTAssertTrue(vm.validateNotSelfSend(),
+                      "Freeze/unfreeze are self-directed by design — staking ops are excluded")
+    }
+
+    func testValidateNotSelfSendPassesForTronDifferentAddress() {
+        let trx = SendFormFixture.makeTRX()
+        let vm = SendFormFixture.make(coin: trx)
+        vm.toAddress = "TKt9bGgWeFFu2yRgULxRhmiBADuoEoadq8"
+
+        XCTAssertTrue(vm.validateNotSelfSend())
+    }
+
+    func testValidateNotSelfSendPassesForNonTronSameAddress() {
+        // Guard is TRON-scoped (Android parity) — an EVM self-send is NOT blocked here.
+        let eth = SendFormFixture.makeETH()
+        let vm = SendFormFixture.make(coin: eth)
+        vm.toAddress = eth.address
+
+        XCTAssertTrue(vm.validateNotSelfSend())
+    }
+
+    /// End-to-end: a TRON send whose destination equals the sender is rejected
+    /// by `validateForm()` with `sameAddressError`, and the guard fires BEFORE
+    /// the balance check (balance comfortably covers the amount, so only the
+    /// self-send rule can reject). A passthrough address resolver is injected so
+    /// `validateAddressResolved()` passes regardless of WalletCore's base58
+    /// checksum — isolating the self-send guard, which is what this test pins.
+    func testValidateFormBlocksTronSelfSend() async {
+        let trx = SendFormFixture.makeTRX(rawBalance: "1000000000") // 1000 TRX
+        let vm = SendFormFixture.make(coin: trx, addressResolver: { input, _ in input })
+        vm.toAddress = trx.address
+        vm.amount = "1"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertEqual(vm.errorMessage, "sameAddressError")
+        XCTAssertTrue(vm.showAddressAlert)
+    }
+
     func testValidateFormStopsAtFirstFailure() async {
         // Cosmos chain + pending tx + empty amount + bad address: only the
         // first failure (pending) should fire its setter.

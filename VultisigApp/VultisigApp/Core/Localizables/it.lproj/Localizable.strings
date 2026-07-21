@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "Impossibile decodificare questa transazione. Controlla attentamente il JSON grezzo prima di firmare.";
 "routerNotAvailable" = "Router non disponibile per approvazioni su %@. Riprova più tardi.";
 "rune" = "RUNE";
+"sameAddressError" = "L'indirizzo del destinatario deve essere diverso dall'indirizzo del mittente";
 "sameDeviceShareError" = "Stessa condivisione del Vault";
 "sameDeviceShareErrorDescription" = "Modifica la condivisione per firmare. Due dispositivi non possono usare la stessa condivisione del vault per la co-firma.";
 "sameNameFolderDescription" = "Si prega di scegliere un nome univoco per la cartella e riprovare.";

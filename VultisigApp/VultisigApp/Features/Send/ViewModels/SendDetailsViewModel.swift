@@ -770,6 +770,17 @@ final class SendDetailsViewModel {
         return true
     }
 
+    /// TRON self-send guard (parity with android DefaultSendStrategy): a plain
+    /// transfer whose destination is the sender's own address just burns fees.
+    /// Staking ops (freeze/unfreeze) are self-directed by design, so they're
+    /// excluded via the existing `isStakingOperation` flag.
+    func validateNotSelfSend() -> Bool {
+        guard coin.chain == .tron, !isStakingOperation else { return true }
+        guard toAddress == coin.address else { return true }
+        setAddressError(message: "sameAddressError")
+        return false
+    }
+
     /// Rejects amount + fee > balance for the source coin. TRON staking is
     /// short-circuited because the validation already ran in
     /// `Tron{Freeze,Unfreeze}View` and the on-screen balance reflects it.
@@ -900,6 +911,7 @@ final class SendDetailsViewModel {
         // embedded tag 0) skip validation on prefill paths that never went
         // through the screen's format check.
         guard await validateAddressResolved() else { return false }
+        guard validateNotSelfSend() else { return false }
         guard validateRippleTagAndMemo() else { return false }
         guard await validateRippleRequireDest() else { return false }
         guard validateBalance() else { return false }

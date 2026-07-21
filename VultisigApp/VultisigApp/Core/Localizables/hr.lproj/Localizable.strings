@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "Ovu transakciju nije bilo moguće dekodirati. Pažljivo pregledajte neobrađeni JSON prije potpisivanja.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "Adresa primatelja mora se razlikovati od adrese pošiljatelja";
 "sameDeviceShareError" = "Isti udio trezora";
 "sameDeviceShareErrorDescription" = "Molimo promijenite dionicu za potpis. Dva uređaja ne mogu koristiti isti dio trezora za zajedničko potpisivanje.";
 "sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
