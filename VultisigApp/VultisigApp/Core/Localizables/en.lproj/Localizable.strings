@@ -653,6 +653,13 @@
 "limitSwap.buy" = "Buy";
 "limitSwap.cancel.alreadyRequested" = "A cancellation for this order has already been sent and is waiting to be confirmed.";
 "limitSwap.cancel.donatedDust" = "Cancelling from this chain requires sending %@, which THORChain keeps. Your order's own funds are refunded in full.";
+"limitSwap.cancel.done.failed" = "Cancellation failed";
+"limitSwap.cancel.done.failedHighlight" = "failed";
+"limitSwap.cancel.done.pending" = "Cancellation pending";
+"limitSwap.cancel.done.sent" = "Cancellation sent";
+"limitSwap.cancel.done.sentDetail" = "Your order stays open until THORChain confirms it closed.";
+"limitSwap.cancel.done.sentHighlight" = "sent";
+"limitSwap.cancel.done.submitted" = "Cancellation submitted";
 "limitSwap.cancel.duplicateWarning" = "You have another resting order with the same pair and price. THORChain cancels the oldest match first, so this may close that order instead of this one.";
 "limitSwap.cancel.error.chainNotRoutable" = "Cancelling isn't supported from %@ yet.";
 "limitSwap.cancel.error.dustUnavailable" = "Couldn't confirm the minimum amount this network requires. Try again shortly — your order is unaffected.";
@@ -667,6 +674,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "This order can't be cancelled from its source chain — the cancellation message is too long for that network. It will refund automatically when it expires.";
 "limitSwap.cancel.unavailableMismatch" = "This order's details don't match what THORChain reports, so it can't be cancelled safely.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "Add %1$@ to this vault to cancel this order — the cancellation is sent from %2$@.";
+"limitSwap.cancel.verify.title" = "You're cancelling a limit order";
 "limitSwap.confirmation.byteCapError.format" = "Memo too long: %d bytes (max %d). Try a shorter destination address or a non-UTXO source.";
 "limitSwap.detail.copyTxHash" = "Copy TX Hash";
 "limitSwap.detail.filled" = "Filled";

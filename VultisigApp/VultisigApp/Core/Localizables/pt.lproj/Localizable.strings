@@ -655,6 +655,13 @@
 "limitSwap.buy" = "Comprar";
 "limitSwap.cancel.alreadyRequested" = "Já foi enviado um cancelamento para esta ordem e aguarda confirmação.";
 "limitSwap.cancel.donatedDust" = "Cancelar a partir desta cadeia exige o envio de %@, que a THORChain retém. Os fundos da sua ordem são reembolsados na totalidade.";
+"limitSwap.cancel.done.failed" = "Cancelamento falhou";
+"limitSwap.cancel.done.failedHighlight" = "falhou";
+"limitSwap.cancel.done.pending" = "Cancelamento pendente";
+"limitSwap.cancel.done.sent" = "Cancelamento enviado";
+"limitSwap.cancel.done.sentDetail" = "A tua ordem permanece aberta até a THORChain confirmar o fecho.";
+"limitSwap.cancel.done.sentHighlight" = "enviado";
+"limitSwap.cancel.done.submitted" = "Cancelamento submetido";
 "limitSwap.cancel.duplicateWarning" = "Tem outra ordem ativa com o mesmo par e preço. A THORChain cancela primeiro a correspondência mais antiga, pelo que isto pode encerrar essa ordem em vez desta.";
 "limitSwap.cancel.error.chainNotRoutable" = "O cancelamento a partir de %@ ainda não é suportado.";
 "limitSwap.cancel.error.dustUnavailable" = "Não foi possível confirmar o montante mínimo exigido por esta rede. Tente novamente em breve — a sua ordem não é afetada.";
@@ -669,6 +676,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "Esta ordem não pode ser cancelada a partir da sua cadeia de origem — a mensagem de cancelamento é demasiado longa para essa rede. Será reembolsada automaticamente ao expirar.";
 "limitSwap.cancel.unavailableMismatch" = "Os detalhes desta ordem não correspondem ao que a THORChain reporta, pelo que não pode ser cancelada com segurança.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "Adicione %1$@ a este cofre para cancelar esta ordem — o cancelamento é enviado a partir de %2$@.";
+"limitSwap.cancel.verify.title" = "Estás a cancelar uma ordem limite";
 "limitSwap.confirmation.byteCapError.format" = "Memo muito longo: %d bytes (máx %d). Tente um endereço de destino mais curto ou uma origem não UTXO.";
 "limitSwap.detail.copyTxHash" = "Copiar hash da TX";
 "limitSwap.detail.filled" = "Executado";

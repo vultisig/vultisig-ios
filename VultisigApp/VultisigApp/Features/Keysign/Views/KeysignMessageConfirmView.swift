@@ -50,7 +50,14 @@ struct KeysignMessageConfirmView: View {
                         amountFiat: lpDictionary == nil ? viewModel.getAmountFiat() : "",
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
-                        hero: viewModel.heroContent,
+                        // A co-signer sees only the payload, so the `m=<` memo is
+                        // what identifies a limit-order cancel — the same thing
+                        // THORChain reads. It takes precedence over the
+                        // simulation-derived hero: a cancel's dust transfer
+                        // simulates as an ordinary send, which is exactly the
+                        // reading this replaces.
+                        hero: LimitOrderCancelPresentation.hero(forSignedMemo: viewModel.keysignPayload?.memo)
+                            ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
                         vault: viewModel.vault,

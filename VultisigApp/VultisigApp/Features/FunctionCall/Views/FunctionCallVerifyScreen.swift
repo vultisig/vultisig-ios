@@ -94,7 +94,13 @@ struct FunctionCallVerifyScreen: View {
                 feeFiat: depositViewModel.feesInReadable(tx: transaction, vault: vault),
                 coinImage: transaction.coin.logo,
                 amount: getAmount(),
-                coinTicker: transaction.coin.ticker
+                coinTicker: transaction.coin.ticker,
+                // A limit-order cancel is not a send, and the generic header
+                // would call it one — "You're sending 0 RUNE" on the THORChain
+                // route, or "You're sending 2 DOGE" on the L1 one, where the two
+                // DOGE are dust donated to the pool. `nil` for everything else,
+                // which keeps the existing presentation.
+                hero: LimitOrderCancelPresentation.hero(for: transaction)
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
         ) {

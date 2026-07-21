@@ -655,6 +655,13 @@
 "limitSwap.buy" = "Comprar";
 "limitSwap.cancel.alreadyRequested" = "Ya se ha enviado una cancelación para esta orden y está pendiente de confirmación.";
 "limitSwap.cancel.donatedDust" = "Cancelar desde esta cadena requiere enviar %@, que THORChain retiene. Los fondos de tu orden se reembolsan íntegramente.";
+"limitSwap.cancel.done.failed" = "Cancelación fallida";
+"limitSwap.cancel.done.failedHighlight" = "fallida";
+"limitSwap.cancel.done.pending" = "Cancelación pendiente";
+"limitSwap.cancel.done.sent" = "Cancelación enviada";
+"limitSwap.cancel.done.sentDetail" = "Tu orden sigue abierta hasta que THORChain confirme que se cerró.";
+"limitSwap.cancel.done.sentHighlight" = "enviada";
+"limitSwap.cancel.done.submitted" = "Cancelación emitida";
 "limitSwap.cancel.duplicateWarning" = "Tienes otra orden activa con el mismo par y precio. THORChain cancela primero la coincidencia más antigua, por lo que esto podría cerrar esa orden en lugar de esta.";
 "limitSwap.cancel.error.chainNotRoutable" = "Cancelar desde %@ aún no es compatible.";
 "limitSwap.cancel.error.dustUnavailable" = "No se pudo confirmar el importe mínimo que exige esta red. Inténtalo de nuevo en unos instantes: tu orden no se ve afectada.";
@@ -669,6 +676,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "Esta orden no se puede cancelar desde su cadena de origen: el mensaje de cancelación es demasiado largo para esa red. Se reembolsará automáticamente al expirar.";
 "limitSwap.cancel.unavailableMismatch" = "Los datos de esta orden no coinciden con los que informa THORChain, por lo que no se puede cancelar de forma segura.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "Añade %1$@ a esta bóveda para cancelar esta orden: la cancelación se envía desde %2$@.";
+"limitSwap.cancel.verify.title" = "Estás cancelando una orden límite";
 "limitSwap.confirmation.byteCapError.format" = "Memo demasiado largo: %d bytes (máx %d). Prueba con una dirección de destino más corta o una fuente no UTXO.";
 "limitSwap.detail.copyTxHash" = "Copiar hash de TX";
 "limitSwap.detail.filled" = "Ejecutado";

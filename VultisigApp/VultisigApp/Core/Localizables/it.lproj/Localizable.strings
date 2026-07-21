@@ -655,6 +655,13 @@
 "limitSwap.buy" = "Compra";
 "limitSwap.cancel.alreadyRequested" = "Un annullamento per questo ordine è già stato inviato ed è in attesa di conferma.";
 "limitSwap.cancel.donatedDust" = "Annullare da questa chain richiede l'invio di %@, che THORChain trattiene. I fondi del tuo ordine vengono rimborsati per intero.";
+"limitSwap.cancel.done.failed" = "Annullamento non riuscito";
+"limitSwap.cancel.done.failedHighlight" = "non riuscito";
+"limitSwap.cancel.done.pending" = "Annullamento in attesa";
+"limitSwap.cancel.done.sent" = "Annullamento inviato";
+"limitSwap.cancel.done.sentDetail" = "Il tuo ordine resta aperto finché THORChain non conferma la chiusura.";
+"limitSwap.cancel.done.sentHighlight" = "inviato";
+"limitSwap.cancel.done.submitted" = "Annullamento trasmesso";
 "limitSwap.cancel.duplicateWarning" = "Hai un altro ordine attivo con la stessa coppia e lo stesso prezzo. THORChain annulla prima la corrispondenza più vecchia, quindi questa operazione potrebbe chiudere quell'ordine invece di questo.";
 "limitSwap.cancel.error.chainNotRoutable" = "L'annullamento da %@ non è ancora supportato.";
 "limitSwap.cancel.error.dustUnavailable" = "Non è stato possibile confermare l'importo minimo richiesto da questa rete. Riprova a breve: il tuo ordine non è interessato.";
@@ -669,6 +676,7 @@
 "limitSwap.cancel.unavailableMemoTooLong" = "Questo ordine non può essere annullato dalla sua chain di origine: il messaggio di annullamento è troppo lungo per quella rete. Verrà rimborsato automaticamente alla scadenza.";
 "limitSwap.cancel.unavailableMismatch" = "I dettagli di questo ordine non corrispondono a quanto riportato da THORChain, quindi non può essere annullato in sicurezza.";
 "limitSwap.cancel.unavailableNoSigningAsset" = "Aggiungi %1$@ a questo vault per cancellare questo ordine: la cancellazione viene inviata da %2$@.";
+"limitSwap.cancel.verify.title" = "Stai annullando un ordine limite";
 "limitSwap.confirmation.byteCapError.format" = "Memo troppo lungo: %d byte (max %d). Prova con un indirizzo di destinazione più corto o una sorgente non UTXO.";
 "limitSwap.detail.copyTxHash" = "Copia hash TX";
 "limitSwap.detail.filled" = "Eseguito";
