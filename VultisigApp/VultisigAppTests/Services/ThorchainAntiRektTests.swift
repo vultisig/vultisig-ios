@@ -81,8 +81,12 @@ final class ThorchainAntiRektTests: XCTestCase {
         XCTAssertEqual(result.expectedAmountOut, streaming.expectedAmountOut)
         XCTAssertEqual(mock.callCount, 1, "Streaming must be fetched at 101 bps with a 1% threshold")
         XCTAssertEqual(
-            mock.lastToleranceBps, SwapService.defaultThorchainToleranceBps,
-            "Streaming quote carries the same tolerance_bps as rapid (Auto default = 0 → omitted; node imposes no LIM)"
+            mock.lastLiquidityToleranceBps, SwapService.defaultLiquidityToleranceBps,
+            "Streaming re-quote must carry the same liquidity_tolerance_bps as rapid, so the upgraded quote's memo LIM matches what the user was shown"
+        )
+        XCTAssertEqual(
+            SwapService.defaultLiquidityToleranceBps, 100,
+            "Auto slippage sends liquidity_tolerance_bps=100, so the node bakes a floor(expected × 0.99) LIM into the memo instead of leaving the swap unprotected"
         )
     }
 
@@ -263,7 +267,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
     private(set) var callCount = 0
     private(set) var lastInterval: Int?
     private(set) var lastStreamingQuantity: Int?
-    private(set) var lastToleranceBps: Int?
+    private(set) var lastLiquidityToleranceBps: Int?
 
     init(response: Result<ThorchainSwapQuote, Error>) {
         self.response = response
@@ -276,7 +280,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         amount _: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode _: String,
         vultTierDiscount _: Int
     ) async throws -> ThorchainSwapQuote {
@@ -284,7 +288,7 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         callCount += 1
         lastInterval = interval
         lastStreamingQuantity = streamingQuantity
-        lastToleranceBps = toleranceBps
+        lastLiquidityToleranceBps = liquidityToleranceBps
         return try response.get()
     }
 }

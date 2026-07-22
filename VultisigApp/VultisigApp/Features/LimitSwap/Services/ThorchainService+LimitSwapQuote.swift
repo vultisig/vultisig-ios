@@ -38,7 +38,7 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
             streamingQuantity: 0,
             // No minimum-output limit on the reference quote — this fetch only
             // derives the market price for the form, it never broadcasts.
-            toleranceBps: 0,
+            liquidityToleranceBps: 0,
             referredCode: "",
             vultTierDiscount: 0
         )
