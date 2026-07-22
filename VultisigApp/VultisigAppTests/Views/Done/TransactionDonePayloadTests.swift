@@ -33,14 +33,17 @@ final class TransactionDonePayloadTests: XCTestCase {
         XCTAssertTrue(transaction.hasFeeBreakdown)
     }
 
-    func testHasFeeBreakdownFalseWhenComponentsSuppressed() {
-        // Zero gas + a zero-fee quote => both `showGas` and `showFees` are
-        // false, so expanding would reveal nothing. The gate must be false so
-        // the card renders the total as a plain row with no chevron.
+    func testHasFeeBreakdownTrueForNativeSwapAffiliateRow() {
+        // A native swap always carries the itemized Vultisig Fee row (shown even
+        // at $0.00 for the Ultimate/100%-waiver user) plus a Protocol Fee row, so
+        // the Done-card breakdown chevron is meaningful even with zero gas and a
+        // zero-fee quote. `showFees` (the old composite predicate) stays false —
+        // the breakdown no longer keys off it.
         let transaction = makeThorchainTransaction(gas: 0)
         XCTAssertFalse(transaction.showGas)
         XCTAssertFalse(transaction.showFees)
-        XCTAssertFalse(transaction.hasFeeBreakdown)
+        XCTAssertTrue(transaction.showAffiliateFeeRow)
+        XCTAssertTrue(transaction.hasFeeBreakdown)
     }
 
     private func makeThorchainTransaction(gas: BigInt) -> SwapTransaction {

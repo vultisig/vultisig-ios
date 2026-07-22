@@ -76,7 +76,8 @@ struct DefaultSwapInteractor: SwapInteractor {
             quote: fetched.best,
             allQuotes: fetched.ranked,
             vultDiscountBps: vultDiscountBps,
-            referralDiscountBps: referralDiscountBps
+            referralDiscountBps: referralDiscountBps,
+            isReferred: !referredCode.isEmpty
         )
     }
 

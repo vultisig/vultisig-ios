@@ -1064,6 +1064,7 @@
 "rippleUndecodedNotice" = "No se pudo decodificar esta transacción. Revisa cuidadosamente el JSON sin procesar antes de firmar.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "La dirección de destino debe ser diferente de la dirección de origen.";
 "sameDeviceShareError" = "Misma compartir bóveda";
 "sameDeviceShareErrorDescription" = "Cambie la compartición para firmar. Dos dispositivos no pueden usar la misma bóveda compartida para firmar conjuntamente.";
 "sameNameFolderDescription" = "Elija un nombre único para la carpeta e inténtelo de nuevo.";
@@ -1257,11 +1258,13 @@
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";
 "swap" = "Intercambio";
 "swap.duration.instant" = "Instantáneo";
+"swap.included_in_rate" = "incluido en la tarifa cotizada";
 "swap.outbound_fee" = "Tarifa de Salida";
 "swap.price_impact" = "Impacto del Precio";
 "swap.price_impact.average" = "Medio";
 "swap.price_impact.good" = "Bueno";
 "swap.price_impact.high" = "Alto";
+"swap.protocol_fee" = "Comisión de protocolo";
 "swap.referral_discount" = "Referido (-%d bps)";
 "swap.tab.limit" = "Límite";
 "swap.tab.market" = "Mercado";
@@ -1542,6 +1545,8 @@
 "vultisig-referrals" = "Vultisig Referidos";
 "vultisigCommunity" = "Comunidad Vultisig";
 "vultisigEducation" = "Educación Vultisig";
+"vultisigFee" = "Comisión de Vultisig";
+"vultisigFeePercentage" = "Comisión de Vultisig (%.2f%%)";
 "vultisigWebsite" = "Sitio web de Vultisig";
 "vultTierBadge" = "NIVEL VULT";
 "waitChurnedOutNode" = "Espera hasta que el Nodo sea desvinculado";
@@ -1561,6 +1566,7 @@
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowOutboundFee" = "Monto por debajo de la tarifa de salida — retira al menos %@ %@ para cubrir los costos de red";
 "withdrawPercentage" = "Porcentaje de retiro";
+"withdrawRewards" = "Retirar recompensas de %@";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Contraseña incorrecta";
 "wrongVaultPassword" = "Contraseña de bóveda incorrecta. Por favor, intente de nuevo.";

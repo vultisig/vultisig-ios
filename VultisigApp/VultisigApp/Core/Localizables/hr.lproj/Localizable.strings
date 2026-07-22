@@ -1064,6 +1064,7 @@
 "rippleUndecodedNotice" = "Ovu transakciju nije bilo moguće dekodirati. Pažljivo pregledajte neobrađeni JSON prije potpisivanja.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "Adresa primatelja mora se razlikovati od adrese pošiljatelja";
 "sameDeviceShareError" = "Isti udio trezora";
 "sameDeviceShareErrorDescription" = "Molimo promijenite dionicu za potpis. Dva uređaja ne mogu koristiti isti dio trezora za zajedničko potpisivanje.";
 "sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
@@ -1257,11 +1258,13 @@
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
 "swap.duration.instant" = "Trenutno";
+"swap.included_in_rate" = "uključeno u ponuđeni tečaj";
 "swap.outbound_fee" = "Izlazna naknada";
 "swap.price_impact" = "Utjecaj na cijenu";
 "swap.price_impact.average" = "Srednje";
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
+"swap.protocol_fee" = "Naknada protokola";
 "swap.referral_discount" = "Preporuka (-%d bps)";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Tržište";
@@ -1542,6 +1545,8 @@
 "vultisig-referrals" = "Vultisig Preporuke";
 "vultisigCommunity" = "Vultisig zajednica";
 "vultisigEducation" = "Edukacija Vultisig";
+"vultisigFee" = "Vultisig naknada";
+"vultisigFeePercentage" = "Vultisig naknada (%.2f%%)";
 "vultisigWebsite" = "Web stranica Vultisig";
 "vultTierBadge" = "VULT RAZINA";
 "waitChurnedOutNode" = "Pričekajte dok čvor ne bude isključen";
@@ -1561,6 +1566,7 @@
 "withdrawAmount" = "Podignite %@";
 "withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
 "withdrawPercentage" = "Postotak povlačenja";
+"withdrawRewards" = "Povuci nagrade za %@";
 "withdrawSecuredAssetError" = "Za povlačenje %@, prvo morate dodati %@ kovanicu u svoj trezor. Idite u postavke trezora i dodajte %@ za nastavak.";
 "wrongPassword" = "Pogrešna lozinka";
 "wrongVaultPassword" = "Pogrešna lozinka trezora. Molim vas, pokušajte ponovo.";

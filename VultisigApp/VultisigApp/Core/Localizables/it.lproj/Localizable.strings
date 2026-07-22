@@ -1064,6 +1064,7 @@
 "rippleUndecodedNotice" = "Impossibile decodificare questa transazione. Controlla attentamente il JSON grezzo prima di firmare.";
 "routerNotAvailable" = "Router non disponibile per approvazioni su %@. Riprova più tardi.";
 "rune" = "RUNE";
+"sameAddressError" = "L'indirizzo del destinatario deve essere diverso dall'indirizzo del mittente";
 "sameDeviceShareError" = "Stessa condivisione del Vault";
 "sameDeviceShareErrorDescription" = "Modifica la condivisione per firmare. Due dispositivi non possono usare la stessa condivisione del vault per la co-firma.";
 "sameNameFolderDescription" = "Si prega di scegliere un nome univoco per la cartella e riprovare.";
@@ -1257,11 +1258,13 @@
 "supportedFileTypesUpload" = "Tipi di file supportati: .bak, .vult & .zip";
 "swap" = "Scambio";
 "swap.duration.instant" = "Istantaneo";
+"swap.included_in_rate" = "incluso nel tasso quotato";
 "swap.outbound_fee" = "Commissione in Uscita";
 "swap.price_impact" = "Impatto sul Prezzo";
 "swap.price_impact.average" = "Medio";
 "swap.price_impact.good" = "Buono";
 "swap.price_impact.high" = "Alto";
+"swap.protocol_fee" = "Commissione di protocollo";
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.tab.limit" = "Limite";
 "swap.tab.market" = "Mercato";
@@ -1542,6 +1545,8 @@
 "vultisig-referrals" = "Vultisig Inviti";
 "vultisigCommunity" = "Comunità Vultisig";
 "vultisigEducation" = "Vultisig Education";
+"vultisigFee" = "Commissione Vultisig";
+"vultisigFeePercentage" = "Commissione Vultisig (%.2f%%)";
 "vultisigWebsite" = "Sito Web Vultisig";
 "vultTierBadge" = "LIVELLO VULT";
 "waitChurnedOutNode" = "Attendi fino a quando il Nodo non viene escluso";
@@ -1561,6 +1566,7 @@
 "withdrawAmount" = "Preleva %@";
 "withdrawBelowOutboundFee" = "Importo inferiore alla commissione in uscita — preleva almeno %@ %@ per coprire i costi di rete";
 "withdrawPercentage" = "Percentuale di prelievo";
+"withdrawRewards" = "Preleva ricompense di %@";
 "withdrawSecuredAssetError" = "Per prelevare %@, devi prima aggiungere la moneta %@ al tuo vault. Vai nelle impostazioni del vault e aggiungi %@ per continuare.";
 "wrongPassword" = "Password errata";
 "wrongVaultPassword" = "Password di Vault sbagliata. Per favore, riprova.";

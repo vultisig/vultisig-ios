@@ -9,8 +9,15 @@ import BigInt
 import Foundation
 import OSLog
 
+/// Read side of THORChain ecosystem staking, abstracted so callers can be driven
+/// without the network. `THORChainStakingService.shared` is the production
+/// implementation.
+protocol THORChainStakingProviding {
+    func fetchStakingDetails(coinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String) async throws -> StakingDetails
+}
+
 /// Service for fetching staking details for THORChain ecosystem coins (RUJI and TCY)
-class THORChainStakingService {
+class THORChainStakingService: THORChainStakingProviding {
     static let shared = THORChainStakingService()
 
     private let httpClient: HTTPClient
@@ -45,7 +52,10 @@ class THORChainStakingService {
     /// - Returns: StakingDetails with amount, APR, rewards, etc.
     func fetchStakingDetails(coinMeta: CoinMeta, runeCoinMeta: CoinMeta, address: String) async throws -> StakingDetails {
         switch coinMeta.ticker.uppercased() {
-        case "RUJI":
+        case "RUJI", "SRUJI":
+            // One pool, two positions: the bonded amount and the auto-compounding
+            // amount both come from the same account query, so the sRUJI receipt
+            // resolves against the RUJI pool rather than a pool of its own.
             return try await fetchRujiStakingDetails(address: address)
         case "TCY":
             return try await fetchTcyStakingDetails(coinMeta: coinMeta, runeCoinMeta: runeCoinMeta, address: address)
@@ -60,11 +70,19 @@ class THORChainStakingService {
 private extension THORChainStakingService {
     /// Fetch RUJI staking details from GraphQL API
     func fetchRujiStakingDetails(address: String) async throws -> StakingDetails {
-        // 1. Make GraphQL request using HTTPClient
         let target = THORChainStakingAPI.getRujiStaking(address: address)
         let response = try await httpClient.request(target, responseType: AccountRootData.self)
-        let decoded = response.data
+        return try Self.makeRujiStakingDetails(from: response.data)
+    }
+}
 
+extension THORChainStakingService {
+    /// Translates a Rujira account payload into `StakingDetails`, selecting the
+    /// RUJI pool and scaling every amount out of base units.
+    ///
+    /// Pure so the parse is unit-testable without the network round-trip, the
+    /// same way `ThorchainService.parseStakingReceiptAmount` is.
+    static func makeRujiStakingDetails(from decoded: AccountRootData) throws -> StakingDetails {
         // Distinguish "address has no RUJI stake" (genuine empty) from "response is missing /
         // partial" (don't trust it). Returning `.empty` for the latter caused persisted RUJI
         // positions to be silently overwritten with zero on stale GraphQL responses.
@@ -74,6 +92,8 @@ private extension THORChainStakingService {
         guard let stakingV2 = node.stakingV2 else {
             throw StakingError.invalidResponse
         }
+        // `stakingV2` carries an entry per Rujira staking pool the account touches,
+        // and the first is not guaranteed to be RUJI. Select by bond-asset symbol.
         guard let stake = stakingV2.first(where: {
             $0.bonded.asset.metadata?.symbol.uppercased() == "RUJI"
         }) else {
@@ -81,21 +101,45 @@ private extension THORChainStakingService {
             return .empty
         }
 
-        // 2. Parse staked amount
-        let stakedAmount = BigInt(stake.bonded.amount) ?? .zero
-        let stakedDecimal = Decimal(string: stakedAmount.description) ?? 0
+        // Parse the bonded amount — the position that accrues claimable USDC. An
+        // unparseable value is a partial response, not an empty position, and a
+        // spurious zero here is precisely what disables Unstake on a funded card.
+        guard let stakedAmount = BigInt(stake.bonded.amount),
+              let stakedDecimal = Decimal(string: stakedAmount.description) else {
+            throw StakingError.invalidResponse
+        }
         let stakedFinal = stakedDecimal / pow(10, 8) // RUJI has 8 decimals
 
-        // 3. Parse rewards
+        // Parse the auto-compounding amount. `liquidSize` is the sRUJI receipt
+        // valued in RUJI at the pool's current share price, which is what the
+        // Rujira app shows; the raw on-chain receipt balance is a share count and
+        // would understate the position. Independent of `bonded` — an account can
+        // hold both — so this never falls back to it.
+        //
+        // The field is non-null in the Rujira schema and is the only source for the
+        // auto-compounding position, so a missing or unparseable value means a
+        // partial response, not an empty position. Fail closed like the guards
+        // above rather than report a zero that would erase a live position.
+        guard let liquidSize = stake.liquidSize,
+              let liquidSizeRaw = liquidSize.amount,
+              let liquidSizeAmount = BigInt(liquidSizeRaw),
+              let liquidSizeDecimal = Decimal(string: liquidSizeAmount.description) else {
+            throw StakingError.invalidResponse
+        }
+        let liquidSizeFinal = liquidSizeDecimal / pow(10, 8)
+
+        // Parse the claimable revenue. Lenient on purpose, unlike the two amounts
+        // above: revenue is a CTA on an otherwise-complete card, so losing it must
+        // not take the position balances down with it.
         let rewardsAmount = BigInt(stake.pendingRevenue?.amount ?? "0") ?? .zero
         let rewardsDecimal = Decimal(string: rewardsAmount.description) ?? 0
         let rewardsFinal = rewardsDecimal / pow(10, 8) // THORChain normalizes all assets to 8 decimals
 
-        // 4. Parse APR. The fractional-rate conversion (12-decimal Bigint → e.g. 0.0116 for
+        // Parse APR. The fractional-rate conversion (12-decimal Bigint → e.g. 0.0116 for
         // 1.16%) lives on the model itself; see `AccountRootData...APR.fractionalRate`.
         let apr: Double? = stake.pool?.summary?.apr?.fractionalRate
 
-        // 5. Create USDC coin meta for rewards
+        // USDC coin meta for the claimable revenue
         let usdcCoin = CoinMeta(
             chain: .thorChain,
             ticker: "USDC",
@@ -108,6 +152,7 @@ private extension THORChainStakingService {
 
         return StakingDetails(
             stakedAmount: stakedFinal,
+            autoCompoundAmount: liquidSizeFinal,
             apr: apr,
             estimatedReward: nil, // Not available for RUJI
             nextPayoutDate: nil, // Not available for RUJI
@@ -140,6 +185,7 @@ private extension THORChainStakingService {
 
         return StakingDetails(
             stakedAmount: stakedDecimal,
+            autoCompoundAmount: 0, // TCY's auto-compound side is read on-chain, not here
             apr: apr,
             estimatedReward: estimatedReward,
             nextPayoutDate: nextPayout,

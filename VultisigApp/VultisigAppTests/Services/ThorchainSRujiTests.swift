@@ -102,11 +102,12 @@ final class ThorchainSRujiTests: XCTestCase {
         XCTAssertTrue(current.matches(TokensStore.sruji))
     }
 
-    // MARK: - 5. On-chain receipt-balance parse (Staked RUJI DeFi-card source of truth)
+    // MARK: - 5. On-chain receipt-balance parse (sizes the `liquid.unbond` funds)
     //
-    // The Staked RUJI card now derives its amount from the on-chain `x/staking-x/ruji`
-    // bank balance (preferred over the Rujira staking API's `bonded.amount`, which can
-    // report zero even while receipts are held). These pin the parse that feeds it.
+    // The `x/staking-x/ruji` bank balance is the vault's sRUJI SHARE count. It is not a
+    // display value (the auto-compounding card shows the staking API's liquid size, i.e.
+    // those shares valued in RUJI) — it sizes the funds of a `liquid.unbond`, which
+    // spends shares. These pin the parse that feeds it.
 
     func testParseStakingReceiptAmountFindsSRujiByOnChainDenom() throws {
         let json = """

@@ -139,12 +139,13 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(gasFee, UInt64(TronService.defaultContractFeeLimit(energyPrice: 420)))
     }
 
-    /// Native TRX transfer with sufficient bandwidth — bandwidth-discounted
-    /// to 0, then the signing path doesn't write `feeLimit` for plain
-    /// `TransferContract` anyway. `gasFeeEstimation` falls through to
-    /// `coin.feeDefault` for the UI binding (already the prior behavior;
-    /// this test pins that we don't regress it).
-    func testGetBlockInfo_nativeTransfer_returnsZeroForUiFallback() async throws {
+    /// Native TRX transfer with sufficient bandwidth — the daily free-net
+    /// quota covers the 300-byte transfer, so the on-chain fee is genuinely
+    /// 0. `gasFeeEstimation` must report that true 0 (Android parity), not a
+    /// fabricated `coin.feeDefault`. This case is the *only* one where
+    /// `calculateTronFee` returns 0: TRC20 / native-swap / bandwidth-shortfall
+    /// / memo / inactive-destination paths all yield a non-zero fee.
+    func testGetBlockInfo_nativeTransfer_sufficientBandwidth_showsZeroFee() async throws {
         let stub = TronStubHTTPClient()
         stub.stubDefaults(energyUsed: 0)
         // Generous bandwidth — discount kicks in.
@@ -157,9 +158,44 @@ final class TronServiceFeeLimitTests: XCTestCase {
         let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil, isSwap: false)
         let gasFee = extractGasFee(result)
 
-        // Bandwidth-discounted fee is 0, so `getBlockInfo` falls through to
-        // `coin.feeDefault` for the UI binding. For TRX that resolves to
-        // 100_000 sun (0.1 TRX) — see `Coin.feeDefault`.
+        XCTAssertEqual(gasFee, 0)
+    }
+
+    /// Native TRX transfer *without* sufficient bandwidth — the account has no
+    /// free-net quota, so the node consumes the 300-byte bandwidth fee. The
+    /// displayed fee must be the REAL bandwidth cost, not `coin.feeDefault`:
+    /// 300 bytes (`BYTES_PER_COIN_TX`) × 1000 sun (`getTransactionFee` /
+    /// `bandwidthFeePrice`) = 300_000 sun. Memo is 0 (none) and activation is
+    /// 0 (destination "exists" per the stub's getaccount response).
+    func testGetBlockInfo_nativeTransfer_insufficientBandwidth_showsRealBandwidthFee() async throws {
+        let stub = TronStubHTTPClient()
+        // Default getaccountresource has zero available bandwidth.
+        stub.stubDefaults(energyUsed: 0)
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil, isSwap: false)
+        let gasFee = extractGasFee(result)
+
+        XCTAssertEqual(gasFee, 300_000)
+    }
+
+    /// Native TRX transfer where the account-resource fetch FAILS — the true
+    /// bandwidth availability is unknown, so we must not collapse to a false 0
+    /// (which would render a real transfer as free and mislead the max-amount
+    /// calc). The error path falls back to the coin's conservative static fee
+    /// (`coin.feeDefault` = 100_000 sun for TRX), distinct from the genuinely
+    /// free case above which reports a true 0.
+    func testGetBlockInfo_nativeTransfer_resourceFetchError_fallsBackToStaticFee() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.errors["/wallet/getaccountresource"] = HTTPError.invalidResponse
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", memo: nil, isSwap: false)
+        let gasFee = extractGasFee(result)
+
         XCTAssertEqual(gasFee, 100_000)
     }
 

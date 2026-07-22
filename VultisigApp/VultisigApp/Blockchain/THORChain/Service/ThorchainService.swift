@@ -158,7 +158,7 @@ class ThorchainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -176,7 +176,7 @@ class ThorchainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : nil,
             affiliates: affiliates,
             affiliateBps: affiliateBps,
-            toleranceBps: toleranceBps > 0 ? String(toleranceBps) : nil
+            liquidityToleranceBps: liquidityToleranceBps > 0 ? String(liquidityToleranceBps) : nil
         ))
 
         // THORChain returns a typed swap-error body (sometimes with HTTP 200,
@@ -340,12 +340,12 @@ class ThorchainService: ThorchainSwapProvider {
     /// Returns `(nil, nil)` if no affiliate entry should be sent.
     static func affiliateParams(referredCode: String, discountBps: Int) -> (String?, String?) {
         if !referredCode.isEmpty {
-            let feeRate = max(0, THORChainSwaps.referredAffiliateFeeRateBp - discountBps)
+            let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.referredAffiliateFeeRateBp, discountBps: discountBps)
             let addresses = "\(referredCode)/\(THORChainSwaps.affiliateFeeAddress)"
             let bps = "\(THORChainSwaps.referredUserFeeRateBp)/\(feeRate)"
             return (addresses, bps)
         } else {
-            let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+            let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.affiliateFeeRateBp, discountBps: discountBps)
             return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
         }
     }

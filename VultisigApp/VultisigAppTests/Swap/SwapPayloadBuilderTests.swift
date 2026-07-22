@@ -66,62 +66,192 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertEqual(payload.toAddress, "thor-router")
     }
 
-    // MARK: - Minimum-output limit (toAmountLimit) derivation
+    // MARK: - Memo LIM/INTERVAL/QUANTITY parsing
 
-    func testThorchainToAmountLimitAppliesTolerance() {
-        // 1% (100 bps) tolerance off 100_000_000 → 99_000_000.
-        let limit = SwapCryptoLogic.thorchainToAmountLimit(
-            expectedAmountOut: "100000000",
-            toleranceBps: 100
+    func testMemoTermsAutoSlippageMemoAssertsNoFloor() {
+        // Real mainnet memo captured from thornode with no tolerance param:
+        // the node emits LIM 0, i.e. "no minimum output guaranteed".
+        let terms = SwapCryptoLogic.thorchainMemoSwapTerms(
+            from: "=:e:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:0/1/0"
         )
-        XCTAssertEqual(limit, "99000000")
+        XCTAssertEqual(terms.limit, "0", "Auto slippage carries no LIM — the payload must not claim one")
+        XCTAssertEqual(terms.streamingInterval, "1")
+        XCTAssertEqual(terms.streamingQuantity, "0")
     }
 
-    func testThorchainToAmountLimitFloorsFractionalResult() {
-        // 100 bps off 12_345 = 12_221.55 → floored to 12_221.
-        let limit = SwapCryptoLogic.thorchainToAmountLimit(
-            expectedAmountOut: "12345",
-            toleranceBps: 100
+    func testMemoTermsCustomSlippageParsesNodeLimitExactly() {
+        // The node's own floor for tolerance_bps=100 at 0.1 BTC. It is NOT
+        // expected_amount_out × 0.99 (that would be 338179686) — which is why
+        // this value can only come from the memo.
+        let terms = SwapCryptoLogic.thorchainMemoSwapTerms(
+            from: "=:e:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:340077095/1/3"
         )
-        XCTAssertEqual(limit, "12221")
+        XCTAssertEqual(terms.limit, "340077095")
+        XCTAssertEqual(terms.streamingInterval, "1")
+        XCTAssertEqual(terms.streamingQuantity, "3")
     }
 
-    func testThorchainToAmountLimitZeroToleranceKeepsFullAmount() {
-        let limit = SwapCryptoLogic.thorchainToAmountLimit(
-            expectedAmountOut: "500",
-            toleranceBps: 0
+    func testMemoTermsIgnoreTrailingAffiliateAndFeeFields() {
+        // Affiliate + fee fields sit AFTER the triple, so they must not shift it.
+        let terms = SwapCryptoLogic.thorchainMemoSwapTerms(
+            from: "=:BTC.BTC:bc1qexampleaddress:12345/2/4:va:50"
         )
-        XCTAssertEqual(limit, "500")
+        XCTAssertEqual(terms.limit, "12345")
+        XCTAssertEqual(terms.streamingInterval, "2")
+        XCTAssertEqual(terms.streamingQuantity, "4")
     }
 
-    func testThorchainToAmountLimitFallsBackToZeroOnBadInput() {
+    func testMemoTermsUnabbreviatedSwapPrefixAndMissingStreamingFields() {
+        // Full `SWAP:` prefix, rapid swap: LIM present, no `/INTERVAL/QUANTITY`.
+        let terms = SwapCryptoLogic.thorchainMemoSwapTerms(
+            from: "SWAP:ETH.ETH:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:98765"
+        )
+        XCTAssertEqual(terms.limit, "98765")
+        XCTAssertEqual(terms.streamingInterval, "0", "A memo with no streaming spec is a single swap")
+        XCTAssertEqual(terms.streamingQuantity, "0")
+    }
+
+    func testMemoTermsSecuredAssetMemoParsesLimit() {
+        // Secured-asset notation uses `-` inside the asset field, never `:`,
+        // so the triple stays in the 4th field.
+        let terms = SwapCryptoLogic.thorchainMemoSwapTerms(
+            from: "=:BTC-BTC:thor1exampledestination:777/1/0"
+        )
+        XCTAssertEqual(terms.limit, "777")
+        XCTAssertEqual(terms.streamingInterval, "1")
+        XCTAssertEqual(terms.streamingQuantity, "0")
+    }
+
+    func testMemoTermsMayaMemoParsesLimit() {
+        // Maya memos share the THORChain grammar (CACAO uses 1e10 units, but
+        // the parser is unit-agnostic — it mirrors whatever the memo says).
+        let terms = SwapCryptoLogic.thorchainMemoSwapTerms(
+            from: "=:MAYA.CACAO:maya1exampledestination:338900185/3/0"
+        )
+        XCTAssertEqual(terms.limit, "338900185")
+        XCTAssertEqual(terms.streamingInterval, "3")
+        XCTAssertEqual(terms.streamingQuantity, "0")
+    }
+
+    func testMemoTermsFallBackToUnspecifiedOnUnusableMemo() {
+        // Never fall back to expected_amount_out: "0" honestly says "no floor
+        // asserted", a derived number would claim one the memo doesn't carry.
+        for memo in [
+            "",                                       // no memo at all
+            "=:BTC.BTC",                              // truncated before DESTADDR
+            "=:BTC.BTC:bc1qexampleaddress",           // no LIM field
+            "=:BTC.BTC:bc1qexampleaddress:",          // empty LIM field
+            "=:BTC.BTC:bc1qexampleaddress:abc/1/0",   // non-numeric LIM
+            "=:BTC.BTC:bc1qexampleaddress:-5/1/0",    // signed LIM
+            "=:BTC.BTC:bc1qexampleaddress:1.5/1/0",   // fractional LIM
+            "=:BTC.BTC:bc1qexampleaddress: 500/1/0",  // padded LIM is not canonical
+            "=:BTC.BTC:bc1qexampleaddress:١٢٣/1/0",   // non-ASCII numerals
+            "=:BTC.BTC:bc1qexampleaddress:5/1/0/9"    // more terms than the grammar has
+        ] {
+            XCTAssertEqual(
+                SwapCryptoLogic.thorchainMemoSwapTerms(from: memo), .unspecified,
+                "Unusable memo \"\(memo)\" must assert nothing"
+            )
+        }
+    }
+
+    func testMemoTermsRejectNonSwapActions() {
+        // Other THORChain actions lay their fields out differently, so their
+        // 4th field is not a LIM triple even when it happens to be numeric.
+        for memo in [
+            "DONATE:BTC.BTC:bc1qexampleaddress:500",
+            "ADD:BTC.BTC:bc1qexampleaddress:500/1/0",
+            "LOAN+:BTC.BTC:bc1qexampleaddress:500/1/0"
+        ] {
+            XCTAssertEqual(
+                SwapCryptoLogic.thorchainMemoSwapTerms(from: memo), .unspecified,
+                "Non-swap memo \"\(memo)\" must not be read as a swap"
+            )
+        }
+    }
+
+    func testMemoTermsAcceptEverySwapActionSpelling() {
+        // THORChain spells the swap action `SWAP`, `=` or `s`, case-insensitively.
+        for action in ["SWAP", "swap", "=", "s", "S"] {
+            XCTAssertEqual(
+                SwapCryptoLogic.thorchainMemoSwapTerms(
+                    from: "\(action):BTC.BTC:bc1qexampleaddress:500/1/0"
+                ).limit,
+                "500",
+                "\"\(action)\" is a valid swap action spelling"
+            )
+        }
+    }
+
+    func testMemoTermsRejectWholeTripleWhenAnyTermIsUnreadable() {
+        // All-or-nothing: a LIM salvaged from a memo whose grammar we failed to
+        // parse is exactly the false floor this parser exists to avoid.
         XCTAssertEqual(
-            SwapCryptoLogic.thorchainToAmountLimit(expectedAmountOut: "not-a-number", toleranceBps: 100),
-            "0"
-        )
-        XCTAssertEqual(
-            SwapCryptoLogic.thorchainToAmountLimit(expectedAmountOut: "0", toleranceBps: 100),
-            "0"
-        )
-        XCTAssertEqual(
-            SwapCryptoLogic.thorchainToAmountLimit(expectedAmountOut: "1000", toleranceBps: 10_000),
-            "0",
-            "100% tolerance is out of range and must not zero the floor silently to a wrong value"
+            SwapCryptoLogic.thorchainMemoSwapTerms(from: "=:BTC.BTC:bc1qexampleaddress:500/x/7"),
+            .unspecified
         )
     }
 
-    func testBuildThorchainSwapPayloadSetsNonZeroLimit() {
+    // MARK: - Payload wiring of the memo terms
+
+    func testBuildThorchainSwapPayloadTakesLimitAndStreamingFromMemo() {
         let payload = SwapCryptoLogic.buildThorchainSwapPayload(
             fromCoin: makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true),
-            toCoin: makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true),
+            toCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
             fromAmountInCoin: BigInt(100_000_000),
             toAmountDecimal: 1,
-            quote: makeThorQuote(inboundAddress: "thor-vault", router: nil),
-            provider: .thorchain,
-            toleranceBps: 100,
+            quote: makeThorQuote(
+                inboundAddress: "thor-vault",
+                router: nil,
+                memo: "=:e:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:340077095/1/3"
+            ),
             now: fixedNow
         )
-        XCTAssertNotEqual(payload.toAmountLimit, "0", "Payload must carry a real minimum-output limit, not 0")
+        XCTAssertEqual(payload.toAmountLimit, "340077095")
+        XCTAssertEqual(payload.streamingInterval, "1")
+        XCTAssertEqual(payload.streamingQuantity, "3")
+    }
+
+    func testBuildThorchainSwapPayloadReportsNoFloorForAutoSlippage() {
+        // The regression this fixes: the old derivation reported 100% of
+        // expected_amount_out as a guaranteed floor on every Auto swap.
+        let quote = makeThorQuote(
+            inboundAddress: "thor-vault",
+            router: nil,
+            memo: "=:e:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:0/1/0"
+        )
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true),
+            toCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
+            fromAmountInCoin: BigInt(100_000_000),
+            toAmountDecimal: 1,
+            quote: quote,
+            now: fixedNow
+        )
+        XCTAssertEqual(payload.toAmountLimit, "0")
+        XCTAssertNotEqual(
+            payload.toAmountLimit, quote.expectedAmountOut,
+            "A memo with LIM 0 must never report the full expected output as a floor"
+        )
+    }
+
+    func testBuildThorchainSwapPayloadIgnoresMaxStreamingQuantityCeiling() {
+        // `max_streaming_quantity` is the node's capacity ceiling, not the
+        // quantity it baked into the memo — the payload must report the memo's.
+        let payload = SwapCryptoLogic.buildThorchainSwapPayload(
+            fromCoin: makeCoin(.thorChain, ticker: "RUNE", decimals: 8, isNative: true),
+            toCoin: makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true),
+            fromAmountInCoin: BigInt(100_000_000),
+            toAmountDecimal: 1,
+            quote: makeThorQuote(
+                inboundAddress: "thor-vault",
+                router: nil,
+                memo: "=:e:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:0/1/0",
+                maxStreamingQuantity: 42
+            ),
+            now: fixedNow
+        )
+        XCTAssertEqual(payload.streamingQuantity, "0")
     }
 
     // MARK: - MayaChain
@@ -217,7 +347,8 @@ final class SwapPayloadBuilderTests: XCTestCase {
             quote: .jupiter(
                 makeSolanaEVMQuote(base64: "AQIDBA=="),
                 fee: nil,
-                platformFee: Decimal(string: "0.5")
+                platformFee: Decimal(string: "0.5") ?? .zero,
+                feeOnInput: false
             )
         )
 
@@ -513,7 +644,9 @@ final class SwapPayloadBuilderTests: XCTestCase {
 
     private func makeThorQuote(
         inboundAddress: String?,
-        router: String?
+        router: String?,
+        memo: String = "thor-memo",
+        maxStreamingQuantity: Int? = nil
     ) -> ThorchainSwapQuote {
         ThorchainSwapQuote(
             dustThreshold: nil,
@@ -523,7 +656,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
             inboundAddress: inboundAddress,
             inboundConfirmationBlocks: nil,
             inboundConfirmationSeconds: nil,
-            memo: "thor-memo",
+            memo: memo,
             notes: "",
             outboundDelayBlocks: 0,
             outboundDelaySeconds: 0,
@@ -532,7 +665,7 @@ final class SwapPayloadBuilderTests: XCTestCase {
             totalSwapSeconds: nil,
             warning: "",
             router: router,
-            maxStreamingQuantity: nil
+            maxStreamingQuantity: maxStreamingQuantity
         )
     }
 

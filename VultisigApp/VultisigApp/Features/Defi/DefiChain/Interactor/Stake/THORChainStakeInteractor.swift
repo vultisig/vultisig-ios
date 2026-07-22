@@ -10,21 +10,14 @@ import OSLog
 private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-stake-interactor")
 
 struct THORChainStakeInteractor: StakeInteractor {
-    private let stakingService = THORChainStakingService.shared
+    private let stakingService: THORChainStakingProviding
+
+    init(stakingService: THORChainStakingProviding = THORChainStakingService.shared) {
+        self.stakingService = stakingService
+    }
 
     static func scaledAmount(rawAmount: Decimal, decimals: Int) -> Decimal {
         rawAmount / pow(10, decimals)
-    }
-
-    /// Resolves the Staked RUJI amount shown on the DeFi card.
-    ///
-    /// Prefers the on-chain `x/staking-x/ruji` receipt balance (`onChainRaw`, unscaled) —
-    /// the source of truth — over the Rujira staking API's already-scaled `bonded` amount,
-    /// which can report zero even while receipts are held. `onChainRaw == nil` means the
-    /// on-chain read failed, so fall back to `bonded`; a successful zero stays zero.
-    static func resolveRujiStakedAmount(onChainRaw: Decimal?, bonded: Decimal, decimals: Int) -> Decimal {
-        guard let onChainRaw else { return bonded }
-        return scaledAmount(rawAmount: onChainRaw, decimals: decimals)
     }
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
@@ -35,9 +28,7 @@ struct THORChainStakeInteractor: StakeInteractor {
 
         var dtos: [StakePositionData] = []
         for snapshot in snapshots {
-            if let dto = await dto(for: snapshot, runeMeta: runeMeta) {
-                dtos.append(dto)
-            }
+            dtos.append(contentsOf: await positions(for: snapshot, runeMeta: runeMeta))
         }
         return dtos
     }
@@ -72,7 +63,10 @@ private extension THORChainStakeInteractor {
         }
     }
 
-    func dto(for snapshot: CoinSnapshot, runeMeta: CoinMeta) async -> StakePositionData? {
+    /// Positions contributed by one enabled coin. Returns an empty array when the
+    /// read failed or the value is not trustworthy yet — storage upserts only what
+    /// is returned, so the persisted row keeps its last good value.
+    func positions(for snapshot: CoinSnapshot, runeMeta: CoinMeta) async -> [StakePositionData] {
         let ticker = snapshot.meta.ticker.uppercased()
         let type = StakePositionType.defaultType(for: snapshot.meta)
 
@@ -84,7 +78,7 @@ private extension THORChainStakeInteractor {
                     runeCoinMeta: runeMeta,
                     address: snapshot.address
                 )
-                return StakePositionData(
+                return [StakePositionData(
                     coin: snapshot.meta,
                     type: type,
                     amount: details.stakedAmount,
@@ -93,77 +87,92 @@ private extension THORChainStakeInteractor {
                     nextPayout: details.nextPayoutDate,
                     rewards: details.rewards,
                     rewardCoin: details.rewardsCoin
-                )
+                )]
             } catch {
                 logger.error("Error fetching TCY staking details: \(error.localizedDescription, privacy: .private)")
-                return nil
+                return []
             }
 
         case "RUJI":
+            // The BONDED position — staked with `account.bond`, unstaked with
+            // `account.withdraw`, and the only one that accrues manually-claimable
+            // USDC. It is independent of the auto-compounding position below (an
+            // account can hold either, both or neither), so it reports the pool's
+            // `bonded` amount alone and never substitutes the sRUJI receipt for it.
+            // APR and pending revenue ride here because the auto-compounding side
+            // reinvests its revenue instead of making it claimable.
             do {
                 let details = try await stakingService.fetchStakingDetails(
                     coinMeta: snapshot.meta,
                     runeCoinMeta: runeMeta,
                     address: snapshot.address
                 )
-                // The Rujira staking API's `bonded.amount` (surfaced as `details.stakedAmount`)
-                // can report zero even while sRUJI receipts are held on-chain. Prefer the
-                // on-chain `x/staking-x/ruji` receipt balance as the source of truth; a
-                // successful read — including a genuine zero — wins. Fall back to the API
-                // amount only when the on-chain read fails (throws → nil via `try?`).
-                let onChainRaw = try? await ThorchainService.shared.fetchRujiStakingReceiptAmount(address: snapshot.address)
-                let amount = THORChainStakeInteractor.resolveRujiStakedAmount(
-                    onChainRaw: onChainRaw,
-                    bonded: details.stakedAmount,
-                    decimals: snapshot.meta.decimals
-                )
-                return StakePositionData(
+                return [StakePositionData(
                     coin: snapshot.meta,
                     type: type,
-                    amount: amount,
+                    amount: details.stakedAmount,
                     apr: details.apr,
                     estimatedReward: details.estimatedReward,
                     nextPayout: details.nextPayoutDate,
                     rewards: details.rewards,
                     rewardCoin: details.rewardsCoin
-                )
+                )]
             } catch {
                 logger.error("Error fetching RUJI staking details: \(error.localizedDescription, privacy: .private)")
-                return nil
+                return []
+            }
+
+        case "SRUJI":
+            // The AUTO-COMPOUNDING position — staked with `liquid.bond`, unstaked
+            // with `liquid.unbond`, and receipted by the sRUJI vault share. Its
+            // amount is the pool's liquid size, i.e. the receipt valued in RUJI at
+            // the current share price; the raw share count would understate the
+            // position by that factor. Stat-free like sTCY: revenue compounds into
+            // the amount rather than becoming claimable.
+            do {
+                let details = try await stakingService.fetchStakingDetails(
+                    coinMeta: snapshot.meta,
+                    runeCoinMeta: runeMeta,
+                    address: snapshot.address
+                )
+                return [StakePositionData(coin: snapshot.meta, type: type, amount: details.autoCompoundAmount)]
+            } catch {
+                logger.error("Error fetching sRUJI staking details: \(error.localizedDescription, privacy: .private)")
+                return []
             }
 
         case "STCY":
             do {
                 let rawAmount = try await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: snapshot.address)
                 let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: snapshot.meta.decimals)
-                return StakePositionData(coin: snapshot.meta, type: type, amount: amount)
+                return [StakePositionData(coin: snapshot.meta, type: type, amount: amount)]
             } catch {
                 logger.error("Error fetching STCY auto-compound amount: \(error.localizedDescription, privacy: .private)")
-                return nil
+                return []
             }
 
         case "YBRUNE":
             do {
                 let rawAmount = try await ThorchainService.shared.fetchBRuneAutoCompoundAmount(address: snapshot.address)
                 let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: snapshot.meta.decimals)
-                return StakePositionData(coin: snapshot.meta, type: type, amount: amount)
+                return [StakePositionData(coin: snapshot.meta, type: type, amount: amount)]
             } catch {
                 logger.error("Error fetching ybRUNE auto-compound amount: \(error.localizedDescription, privacy: .private)")
-                return nil
+                return []
             }
 
         case "YRUNE", "YTCY":
             // Reads `coin.balanceDecimal` (kept up-to-date by `BalanceService`). Only update the
             // persisted row when balance is non-zero — `BalanceService` may briefly observe zero
             // mid-refresh, which would otherwise clobber a previously good amount.
-            guard snapshot.balance > 0 else { return nil }
-            return StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.balance)
+            guard snapshot.balance > 0 else { return [] }
+            return [StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.balance)]
 
         default:
             // Same rationale as YRUNE/YTCY — `coin.stakedBalanceDecimal` mirrors a chain read
             // that can transiently report zero.
-            guard snapshot.stakedBalance > 0 else { return nil }
-            return StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.stakedBalance)
+            guard snapshot.stakedBalance > 0 else { return [] }
+            return [StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.stakedBalance)]
         }
     }
 }

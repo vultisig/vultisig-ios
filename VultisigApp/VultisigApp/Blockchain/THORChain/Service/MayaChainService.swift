@@ -111,7 +111,7 @@ class MayachainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -130,7 +130,7 @@ class MayachainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantityParam,
             affiliate: affiliate,
             affiliateBps: affiliateBps,
-            toleranceBps: toleranceBps > 0 ? String(toleranceBps) : nil
+            liquidityToleranceBps: liquidityToleranceBps > 0 ? String(liquidityToleranceBps) : nil
         ))
 
         // Maya sometimes returns a structured swap error body with a
@@ -250,7 +250,7 @@ private extension MayachainService {
     /// Returns (affiliateAddress, affiliateBps) as URL-param-ready strings, or (nil, nil)
     /// if no affiliate should be sent.
     static func affiliateParams(referredCode _: String, discountBps: Int) -> (String?, String?) {
-        let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+        let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.affiliateFeeRateBp, discountBps: discountBps)
         return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
     }
 }
