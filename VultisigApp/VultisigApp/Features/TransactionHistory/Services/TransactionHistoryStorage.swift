@@ -74,18 +74,6 @@ final class TransactionHistoryStorage {
 
     // MARK: - Fetch by Type
 
-    func fetchByType(pubKeyECDSA: String, type: TransactionHistoryType) throws -> [TransactionHistoryData] {
-        let typeValue = type.rawValue
-        let predicate = #Predicate<TransactionHistoryItem> { item in
-            item.pubKeyECDSA == pubKeyECDSA && item.typeRawValue == typeValue
-        }
-        let descriptor = FetchDescriptor(
-            predicate: predicate,
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
-        return try modelContext.fetch(descriptor).map { TransactionHistoryData(item: $0) }
-    }
-
     // MARK: - Exists Check
 
     func exists(txHash: String, pubKeyECDSA: String) -> Bool {

@@ -93,10 +93,6 @@ enum CosmosService {
         return await service.fetchIbcDenomTraces(coin: coin)
     }
 
-    func fetchWasmTokenBalances(coin: Coin) async throws -> String {
-        return try await service.fetchWasmTokenBalances(coin: coin.toCoinMeta(), address: coin.address)
-    }
-
     func fetchLatestBlock() async throws -> String {
         return try await service.fetchLatestBlock()
     }

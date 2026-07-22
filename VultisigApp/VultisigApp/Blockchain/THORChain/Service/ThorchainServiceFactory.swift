@@ -13,8 +13,6 @@ protocol ThorchainServiceProtocol {
     func fetchTokens(_ address: String) async throws -> [CoinMeta]
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue?
     func fetchFeePrice() async throws -> UInt64
-    func fetchThorchainInboundAddress(bypassCache: Bool) async -> [InboundAddress]
-    func fetchThorchainInboundAddressOrThrow(bypassCache: Bool) async throws -> [InboundAddress]
     func getTHORChainChainID() async throws -> String
     func ensureTHORChainChainID() -> String
     func broadcastTransaction(jsonString: String) async -> Result<String, Error>

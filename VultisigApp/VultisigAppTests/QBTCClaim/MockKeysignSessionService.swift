@@ -42,11 +42,6 @@ final class MockKeysignSessionService: KeysignSessionServicing {
         if let registerError { throw registerError }
     }
 
-    func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws {
-        calls.append(.kickoffCommittee(session: session, participants: participants))
-        if let kickoffError { throw kickoffError }
-    }
-
     func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String] {
         calls.append(.awaitKeysignStart(session: session, timeout: timeout))
         if let awaitError { throw awaitError }

@@ -87,10 +87,6 @@ struct QRCodePixelGenerator {
         return self.path(size: size, data: data, isOn: true)
     }
 
-    func offPath(size: CGSize, data: QRCode) -> CGPath {
-        return self.path(size: size, data: data, isOn: false)
-    }
-
 #if canImport(UIKit)
     private func convertToUIRectCorner(_ corners: RoundingCorners) -> UIRectCorner {
         var uiCorners: UIRectCorner = []

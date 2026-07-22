@@ -83,10 +83,6 @@ struct ReferralTextField: View {
         }
     }
 
-    private func clearCode() {
-        text = ""
-    }
-
     // Based on thorname docs
     // https://docs.thorchain.org/how-it-works/thorchain-name-service#overview
     private func sanitizeText(_ text: String) {

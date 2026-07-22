@@ -73,24 +73,4 @@ extension SwapInteractor {
     func refreshBalanceOrThrow(for coin: Coin) async throws {
         await updateBalance(for: coin)
     }
-
-    /// Convenience for callers that re-quote an already-valid pair without
-    /// slippage / recipient overrides (e.g. the verify-screen refresh).
-    func fetchQuote(
-        amount: Decimal,
-        fromCoin: Coin,
-        toCoin: Coin,
-        vault: Vault,
-        referredCode: String
-    ) async throws -> SwapQuoteResult? {
-        try await fetchQuote(
-            amount: amount,
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            vault: vault,
-            referredCode: referredCode,
-            slippageBps: nil,
-            recipientAddress: nil
-        )
-    }
 }

@@ -197,19 +197,6 @@ class MayachainService: ThorchainSwapProvider {
         }
     }
 
-    /// Fetch MayaChain inbound addresses (halt flags + gas rates). Mirrors
-    /// `ThorchainService.fetchThorchainInboundAddress`: 5-minute cache, fail-soft
-    /// to an empty array on decode/network error. Pass `bypassCache: true` for the
-    /// sign-time halt re-check, which must never read or write the cache.
-    func fetchInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
-        do {
-            return try await fetchInboundAddressOrThrow(bypassCache: bypassCache)
-        } catch {
-            logger.warning("MayaChain inbound address decoding error: \(error.localizedDescription, privacy: .public)")
-            return []
-        }
-    }
-
     /// Throwing variant of `fetchInboundAddress` for the sign-time fund-safety
     /// gate, which must fail CLOSED: a transport/decode failure has to propagate
     /// so a halt re-check can't be silently misread as "not halted". The fail-soft

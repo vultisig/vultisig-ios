@@ -45,11 +45,6 @@ class SettingsCustomMessageViewModel: ObservableObject {
         state = KeysignState.allCases[currentIndex-1]
     }
 
-    func handleBackTap() {
-        currentIndex-=1
-        state = KeysignState.allCases[currentIndex-1]
-    }
-
     func canGoBack() -> Bool {
         switch state {
         case .done, .keysign:

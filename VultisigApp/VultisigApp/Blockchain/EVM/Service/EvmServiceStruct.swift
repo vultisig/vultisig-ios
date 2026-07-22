@@ -36,42 +36,6 @@ struct EvmServiceStruct {
         return try await rpcService.strRpcCall(method: "eth_getCode", params: [address, "latest"])
     }
 
-    /// Fetches the owner of a contract using ERC-173 owner() function
-    /// Returns nil if the contract doesn't implement owner() or call fails
-    func fetchContractOwner(contractAddress: String) async -> String? {
-        // owner() function selector: 0x8da5cb5b
-        let data = "0x8da5cb5b"
-
-        let params: [Any] = [
-            ["to": contractAddress, "data": data],
-            "latest"
-        ]
-
-        do {
-            let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
-
-            // Result should be a 32-byte hex string (64 chars + 0x prefix)
-            // The address is in the last 20 bytes (40 chars)
-            let cleanedHex = result.stripHexPrefix()
-
-            guard cleanedHex.count >= 40 else {
-                return nil
-            }
-
-            // Extract the last 40 characters (20 bytes = address)
-            let addressHex = String(cleanedHex.suffix(40))
-
-            // Check if it's a zero address
-            if addressHex == String(repeating: "0", count: 40) {
-                return "0x0000000000000000000000000000000000000000"
-            }
-
-            return "0x" + addressHex
-        } catch {
-            return nil
-        }
-    }
-
     // MARK: - Gas Operations
 
     func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
@@ -258,24 +222,6 @@ struct EvmServiceStruct {
         }
 
         return mapped
-    }
-
-    func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
-        let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
-        let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
-
-        let data = "0xdd62ed3e" + paddedOwner + paddedSpender
-        let params: [Any] = [["to": contractAddress, "data": data], "latest"]
-
-        return try await rpcService.intRpcCall(method: "eth_call", params: params)
-    }
-
-    /// Generic read-only `eth_call` returning the raw hex result. Callers decode
-    /// the ABI-encoded return data themselves (used by ERC-7540 vault reads that
-    /// return tuples / multiple words).
-    func callContract(to: String, data: String) async throws -> String {
-        let params: [Any] = [["to": to, "data": data], "latest"]
-        return try await rpcService.strRpcCall(method: "eth_call", params: params)
     }
 
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {

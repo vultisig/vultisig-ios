@@ -77,57 +77,6 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         return try factory.createRecipientSecurityScanner(transaction: transaction)
     }
 
-    func getDisabledProviders() -> [String] {
-        return Array(disabledProviderNames)
-    }
-
-    func getEnabledProviders() -> [String] {
-        let allProviderNames = providers.map { $0.getProviderName() }
-        return allProviderNames.filter { !disabledProviderNames.contains($0) }
-    }
-
-    func disableProviders(_ providersToDisable: [String]) {
-        let allProviderNames = Set(providers.map { $0.getProviderName() })
-        let validProviders = providersToDisable.filter { allProviderNames.contains($0) }
-        let invalidProviders = providersToDisable.filter { !allProviderNames.contains($0) }
-
-        if !invalidProviders.isEmpty {
-            logger.warning("SecurityScanner: Invalid provider names: \(invalidProviders.joined(separator: ", "))")
-        }
-
-        var currentDisabled = disabledProviderNames
-        let disabledCount = validProviders.filter { providerName in
-            let wasInserted = !currentDisabled.contains(providerName)
-            if wasInserted {
-                currentDisabled.insert(providerName)
-            }
-            return wasInserted
-        }.count
-
-        disabledProviderNames = currentDisabled
-
-        if disabledCount > 0 {
-            logger.info("SecurityScanner: Disabled \(disabledCount) providers.")
-        } else {
-            logger.debug("SecurityScanner: No new providers were disabled.")
-        }
-    }
-
-    func enableProviders(_ providersToEnable: [String]) {
-        var currentDisabled = disabledProviderNames
-        let enabledCount = providersToEnable.filter { providerName in
-            return currentDisabled.remove(providerName) != nil
-        }.count
-
-        disabledProviderNames = currentDisabled
-
-        if enabledCount > 0 {
-            logger.info("SecurityScanner: Enabled \(enabledCount) providers.")
-        } else {
-            logger.debug("SecurityScanner: No new providers were enabled.")
-        }
-    }
-
     func getSupportedChainsByFeature() -> [SecurityScannerSupport] {
         return providers.map { provider in
             let features = provider.getSupportedChains().map { (featureType, chains) in

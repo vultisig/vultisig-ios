@@ -65,44 +65,6 @@ struct ParsedPSBT {
 
 enum SwapKitPSBTParser {
 
-    /// Parse a PSBT envelope into the framing structure. The caller supplies
-    /// `expectedInputCount` and `expectedOutputCount` — derived from the
-    /// chain-specific unsigned-tx body parser — so this helper knows how
-    /// many input/output maps to read off the cursor.
-    static func parse(
-        psbtBytes: Data,
-        expectedInputCount: Int,
-        expectedOutputCount: Int
-    ) throws -> ParsedPSBT {
-        guard !psbtBytes.isEmpty else { throw SwapKitPSBTParserError.missingPSBT }
-        var cursor = PSBTCursor(data: psbtBytes)
-        try cursor.expectMagic()
-        let globals = try cursor.readMap()
-        guard let unsignedTx = globals[Data([0x00])] else {
-            // The global `PSBT_GLOBAL_UNSIGNED_TX` is mandatory in BIP-174.
-            // Surface as `truncated` (the same error the BTC signer threw
-            // before the refactor) rather than introducing a new case — the
-            // caller wraps it into the per-chain `missingUnsignedTx`.
-            throw SwapKitPSBTParserError.truncated
-        }
-        var inputMaps: [[Data: Data]] = []
-        inputMaps.reserveCapacity(expectedInputCount)
-        for _ in 0..<expectedInputCount {
-            inputMaps.append(try cursor.readMap())
-        }
-        var outputMaps: [[Data: Data]] = []
-        outputMaps.reserveCapacity(expectedOutputCount)
-        for _ in 0..<expectedOutputCount {
-            outputMaps.append(try cursor.readMap())
-        }
-        return ParsedPSBT(
-            globals: globals,
-            unsignedTxBytes: unsignedTx,
-            inputMaps: inputMaps,
-            outputMaps: outputMaps
-        )
-    }
-
     /// Two-phase variant for signers that don't know the input/output counts
     /// up front — read the header + globals here, then call `readMap()` on
     /// the returned cursor once per input and once per output.

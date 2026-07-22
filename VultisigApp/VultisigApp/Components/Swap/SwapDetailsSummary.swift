@@ -249,24 +249,6 @@ struct SwapDetailsSummary: View {
         .font(Theme.fonts.caption12)
     }
 
-    private func getImage(_ image: String) -> some View {
-        Image(image)
-            .resizable()
-            .frame(width: 16, height: 16)
-    }
-
-    private func getErrorCell(text: String) -> some View {
-        HStack {
-            Text(text)
-                .foregroundStyle(Theme.colors.alertError)
-                .font(Theme.fonts.caption12)
-                .multilineTextAlignment(.leading)
-                .lineSpacing(4)
-
-            Spacer()
-        }
-    }
-
     private var outboundFeeString: String {
         guard let quote = vm.quote else { return .empty }
 

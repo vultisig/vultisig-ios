@@ -114,12 +114,6 @@ public class CryptoPriceService: ObservableObject {
         self.httpClient = httpClient
     }
 
-    func fetchPrices(vault: Vault) async throws {
-        try await fetchPrices(coins: vault.coins)
-        await refresh(vault: vault)
-        await refresh(coins: vault.coins)
-    }
-
     func fetchPrices(coins: [CoinMeta]) async throws {
         let sources = resolveSources(coins: coins)
 
@@ -185,10 +179,6 @@ extension CryptoPriceService {
 }
 
 private extension CryptoPriceService {
-
-    @MainActor func refresh(vault: Vault) {
-        vault.objectWillChange.send()
-    }
 
     @MainActor func refresh(coins: [Coin]) {
         for coin in coins {

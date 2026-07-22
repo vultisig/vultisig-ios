@@ -16,6 +16,5 @@ extension CGMutablePath {
         addCurve(to: endPoint, control1: controlPoint1, control2: controlPoint2)
     }
 
-    @inlinable @inline(__always) func line(to point: CGPoint) { addLine(to: point) }
     @inlinable @inline(__always) func close() { closeSubpath() }
 }

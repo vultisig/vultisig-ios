@@ -137,7 +137,6 @@ private final class FakeSwapKitService: SwapTrackingService {
     static var providerKind: String { "swapKit" }
     var uiStatusByTxHash: [String: SwapTrackingUiStatus] = [:]
     func start(tx: TransactionHistoryData) {}
-    func stop(txHash: String) {}
     func resumeInFlight() async {}
     func setActive(_ active: Bool) {}
 }
@@ -147,7 +146,6 @@ private final class FakeChainflipService: SwapTrackingService {
     static var providerKind: String { "chainflip" }
     var uiStatusByTxHash: [String: SwapTrackingUiStatus] = [:]
     func start(tx: TransactionHistoryData) {}
-    func stop(txHash: String) {}
     func resumeInFlight() async {}
     func setActive(_ active: Bool) {}
 }

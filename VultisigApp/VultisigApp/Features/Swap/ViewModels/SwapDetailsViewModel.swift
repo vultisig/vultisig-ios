@@ -205,13 +205,6 @@ final class SwapDetailsViewModel {
         selectedQuote = quote
     }
 
-    /// Whether `candidate` is the top-ranked (rate-best) quote — the one the list
-    /// tags "Recommended". Defined as the first element of the net-output-sorted
-    /// `allQuotes` so the tag always lands on the row showing the largest output.
-    func isBest(_ candidate: SwapQuote) -> Bool {
-        candidate == allQuotes.first
-    }
-
     /// Quotes for the picker sheet, with the active (selected) quote pinned to
     /// the top; the rest keep their net-output ranking.
     var orderedPickerQuotes: [SwapQuote] {

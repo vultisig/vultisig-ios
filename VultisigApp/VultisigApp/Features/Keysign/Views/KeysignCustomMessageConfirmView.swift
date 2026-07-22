@@ -206,13 +206,4 @@ struct KeysignCustomMessageConfirmView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func getSummaryCell(title: String, value: String) -> some View {
-        HStack {
-            Text(NSLocalizedString(title, comment: "") + ":")
-            Spacer()
-            Text(value)
-        }
-        .font(Theme.fonts.bodyMMedium)
-        .foregroundStyle(Theme.colors.textPrimary)
-    }
 }

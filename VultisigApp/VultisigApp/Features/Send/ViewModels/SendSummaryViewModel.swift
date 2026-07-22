@@ -20,31 +20,6 @@ class SendSummaryViewModel: ObservableObject {
         return "\(formattedAmount) \(tx.toCoin.ticker)"
     }
 
-    func swapFeeString(_ tx: SwapTransaction) -> String {
-        // `tx.gas` is gas price (wei/gas for EVM) — converting it directly to
-        // fiat understates the network fee by ~6 orders of magnitude. `tx.fee`
-        // is the precomputed total payable network fee in the chain's smallest
-        // unit, which is what we actually owe.
-        let networkFee = tx.feeCoin.fiat(value: tx.fee)
-
-        // Limit orders have no market quote — fees reduce to the network fee.
-        guard let quote = tx.quote else {
-            return networkFee.formatToFiat(includeCurrencySymbol: true)
-        }
-
-        if let swapFeeBigInt = quote.evmSwapFeeBigInt {
-            let feeDecimal = tx.feeCoin.decimal(for: swapFeeBigInt)
-            let swapFee = tx.feeCoin.fiat(decimal: feeDecimal)
-            return (swapFee + networkFee).formatToFiat(includeCurrencySymbol: true)
-        }
-
-        guard let inboundFeeDecimal = quote.inboundFeeDecimal(toCoin: tx.toCoin) else { return .empty }
-
-        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + networkFee
-        return fee.formatToFiat(includeCurrencySymbol: true)
-    }
-
     /// Decision 2 win: vault is non-optional on SendTransaction, so the vault
     /// parameter is no longer needed — read it off `tx.vault` directly.
     func feesInReadable(tx: SendTransaction) -> String {
