@@ -46,25 +46,6 @@ class CardanoService {
         return match?.quantity ?? "0"
     }
 
-    func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
-        let response = try await httpClient.request(
-            CardanoAPI.addressUtxos(addresses: [coin.address]),
-            responseType: [CardanoUtxoEntry].self
-        )
-
-        return response.data.compactMap { utxo in
-            guard
-                let valueInt = Int64(utxo.value),
-                let index = UInt32(exactly: utxo.txIndex)
-            else { return nil }
-            return UtxoInfo(
-                hash: utxo.txHash,
-                amount: valueInt,
-                index: index
-            )
-        }
-    }
-
     func getExtendedUTXOs(coin: Coin) async throws -> [CardanoExtendedUtxo] {
         let response = try await httpClient.request(
             CardanoAPI.addressUtxosExtended(addresses: [coin.address]),

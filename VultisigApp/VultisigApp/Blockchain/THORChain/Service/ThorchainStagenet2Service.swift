@@ -18,7 +18,6 @@ class ThorchainStagenetService: ThorchainSwapProvider {
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
-    private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
 
     private init() {}
 
@@ -436,64 +435,6 @@ extension ThorchainStagenetService {
 
 // MARK: - THORChain Stagenet-2 LP Functionality
 extension ThorchainStagenetService {
-
-    func fetchLPPositions(runeAddress: String? = nil, assetAddress: String? = nil) async throws -> [ThorchainLPPosition] {
-        let targetAddress = runeAddress ?? assetAddress
-        guard let address = targetAddress else {
-            throw HelperError.runtimeError("Either rune address or asset address must be provided")
-        }
-
-        let cacheKey = "lp_positions_stagenet2_\(address)"
-        let cacheExpirationMinutes = 2.0
-
-        if let cached = cacheLPPositions.get(cacheKey),
-           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            return cached.data
-        }
-
-        let pools = try await fetchLPPools()
-        var allPositions: [ThorchainLPPosition] = []
-
-        for pool in pools {
-            do {
-                let poolResponse = try await httpClient.request(
-                    ThorchainStagenetAPI.poolLiquidityProvider(env: env, asset: pool.asset, address: address)
-                )
-
-                if poolResponse.response.statusCode == 404 {
-                    continue
-                }
-
-                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolResponse.data) {
-                    if let units = Int64(lpResponse.units), units > 0 {
-                        let position = ThorchainLPPosition(
-                            asset: lpResponse.asset,
-                            runeAddress: runeAddress,
-                            assetAddress: lpResponse.assetAddress,
-                            poolUnits: lpResponse.units,
-                            runeDepositValue: lpResponse.runeDepositValue,
-                            assetDepositValue: lpResponse.assetDepositValue,
-                            runeRedeemValue: nil,
-                            assetRedeemValue: nil,
-                            luvi: nil,
-                            gLPGrowth: nil,
-                            assetGrowthPct: nil
-                        )
-                        allPositions.append(position)
-                    }
-                }
-
-                try await Task.sleep(nanoseconds: 100_000_000)
-
-            } catch {
-                continue
-            }
-        }
-
-        cacheLPPositions.set(cacheKey, (data: allPositions, timestamp: Date()))
-
-        return allPositions
-    }
 
     func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
         let response = try await httpClient.request(
