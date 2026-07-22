@@ -15,8 +15,13 @@ struct THORChainActionsResponse: Codable {
 
 struct MidgardAction: Codable {
     let pools: [String]
+    /// The OUTCOME: `swap`, `limit_swap`, `refund`, `failed`, `contract`, …
     let type: String
-    let status: String  // "success", "pending", "refund"
+    /// ⚠️ The OUTBOUND, not the outcome — only ever `"success"` or `"pending"`.
+    /// A transaction THORChain rejected still carries `"success"` here; what
+    /// rejected it is in `type`. This said `"success", "pending", "refund"`, and
+    /// three separate readers believed it.
+    let status: String
     let `in`: [MidgardTransaction]
     let out: [MidgardTransaction]
     let date: String

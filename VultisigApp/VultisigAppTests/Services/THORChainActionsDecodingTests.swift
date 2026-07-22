@@ -84,10 +84,12 @@ final class THORChainActionsDecodingTests: XCTestCase {
 
     // MARK: - Call site
 
-    /// The code is display-only, and this is the only place it is displayed.
+    /// The code is display-only, and the done screen is the only place it is
+    /// displayed. What the rest of the payload maps to lives in
+    /// `THORChainTransactionStatusMappingTests`.
     func testTheFailureCodeIsRenderedInTheStatusReason() async throws {
         let provider = THORChainTransactionStatusProvider(
-            httpClient: StubActionsHTTPClient(Self.refundAction(code: "\"99\"", status: "refund"))
+            httpClient: StubActionsHTTPClient(Self.failedAction(code: "\"99\""))
         )
 
         let result = try await provider.checkStatus(
@@ -95,7 +97,7 @@ final class THORChainActionsDecodingTests: XCTestCase {
         )
 
         guard case let .failed(reason) = result.status else {
-            return XCTFail("Expected a refunded action to map to .failed, got \(result.status)")
+            return XCTFail("Expected a failed action to map to .failed, got \(result.status)")
         }
         XCTAssertTrue(reason.contains("Code: 99"), reason)
     }
@@ -117,10 +119,10 @@ final class THORChainActionsDecodingTests: XCTestCase {
         """
     }
 
-    private static func refundAction(code: String?, status: String = "success") -> String {
+    private static func refundAction(code: String?) -> String {
         let codeField = code.map { "\"code\":\($0)," } ?? ""
         return """
-        {"actions":[{"pools":[],"type":"refund","status":"\(status)",
+        {"actions":[{"pools":[],"type":"refund","status":"success",
           "in":[{"txID":"ABC123","address":"thor1from","coins":[{"amount":"300000000","asset":"THOR.RUNE"}]}],
           "out":[],"date":"1784733471384558083","height":"27113740",
           "metadata":{"refund":{\(codeField)
