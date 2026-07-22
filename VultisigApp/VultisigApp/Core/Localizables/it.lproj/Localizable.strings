@@ -655,6 +655,7 @@
 "limitSwap.buy" = "Compra";
 "limitSwap.cancel.alreadyRequested" = "Un annullamento per questo ordine è già stato inviato ed è in attesa di conferma.";
 "limitSwap.cancel.donatedDust" = "Annullare da questa chain richiede l'invio di %@, che THORChain trattiene. I fondi del tuo ordine vengono rimborsati per intero.";
+"limitSwap.cancel.donatedDustRow" = "Trattenuto da THORChain";
 "limitSwap.cancel.done.failed" = "Annullamento non riuscito";
 "limitSwap.cancel.done.failedHighlight" = "non riuscito";
 "limitSwap.cancel.done.pending" = "Annullamento in attesa";
@@ -678,6 +679,7 @@
 "limitSwap.cancel.unavailableNoSigningAsset" = "Aggiungi %1$@ a questo vault per cancellare questo ordine: la cancellazione viene inviata da %2$@.";
 "limitSwap.cancel.unavailableVaultUnreadable" = "Non è stato possibile controllare questo vault al momento. Riprova a breve: il tuo ordine non è interessato.";
 "limitSwap.cancel.verify.title" = "Stai annullando un ordine limite";
+"limitSwap.cancel.viewTransaction" = "Visualizza transazione di annullamento";
 "limitSwap.confirmation.byteCapError.format" = "Memo troppo lungo: %d byte (max %d). Prova con un indirizzo di destinazione più corto o una sorgente non UTXO.";
 "limitSwap.detail.copyTxHash" = "Copia hash TX";
 "limitSwap.detail.filled" = "Eseguito";

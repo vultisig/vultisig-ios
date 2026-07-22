@@ -655,6 +655,7 @@
 "limitSwap.buy" = "买入";
 "limitSwap.cancel.alreadyRequested" = "此订单的取消请求已发送，正在等待确认。";
 "limitSwap.cancel.donatedDust" = "从此链取消需要发送 %@，该金额由 THORChain 保留。您订单本身的资金将全额退还。";
+"limitSwap.cancel.donatedDustRow" = "THORChain 保留";
 "limitSwap.cancel.done.failed" = "取消失败";
 "limitSwap.cancel.done.failedHighlight" = "失败";
 "limitSwap.cancel.done.pending" = "取消处理中";
@@ -678,6 +679,7 @@
 "limitSwap.cancel.unavailableNoSigningAsset" = "请向此保险库添加 %1$@ 以取消此订单——取消交易将从 %2$@ 发出。";
 "limitSwap.cancel.unavailableVaultUnreadable" = "目前无法检查此保险库。请稍后重试——您的订单不受影响。";
 "limitSwap.cancel.verify.title" = "您正在取消限价订单";
+"limitSwap.cancel.viewTransaction" = "查看取消交易";
 "limitSwap.confirmation.byteCapError.format" = "备注过长：%d 字节（最多 %d）。请尝试更短的目标地址或非 UTXO 源。";
 "limitSwap.detail.copyTxHash" = "复制交易哈希";
 "limitSwap.detail.filled" = "已成交";

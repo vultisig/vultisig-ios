@@ -13,6 +13,7 @@
 //  ratio bucket, charges for it, and closes nothing.
 //
 
+import BigInt
 import XCTest
 @testable import VultisigApp
 
@@ -34,16 +35,19 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
         XCTAssertEqual(caption, "THOR.RUNE → BTC.BTC")
     }
 
-    /// The L1 route really does move dust, and that dust is unrecoverable, so it
-    /// is shown — under a title that says what it is for.
-    func testAnL1CancelShowsTheDustItActuallySends() {
-        guard case let .send(title, coin)? = LimitOrderCancelPresentation.hero(for: makeCancelTransaction(amount: "2")) else {
-            return XCTFail("expected a send hero for a dust-bearing cancel")
+    /// ⚠️ The L1 route gets the same title hero, with no amount either.
+    ///
+    /// The dust it moves is not a transfer the user is making — it exists so
+    /// Bifrost has an inbound to observe — and a hero built around it reads as
+    /// "you are sending 2 DOGE". It stays disclosed with its exact figure as a
+    /// cost row beside the network fee, which is what it is.
+    func testAnL1CancelAlsoGetsATitleHeroRatherThanASendOfItsDust() {
+        guard case let .title(text, caption)? = LimitOrderCancelPresentation.hero(for: makeCancelTransaction(amount: "2")) else {
+            return XCTFail("expected a title hero for a dust-bearing cancel too")
         }
 
-        XCTAssertEqual(title, "limitSwap.cancel.verify.title".localized)
-        XCTAssertEqual(coin.ticker, "RUNE")
-        XCTAssertFalse(coin.amount.isEmpty)
+        XCTAssertEqual(text, "limitSwap.cancel.verify.title".localized)
+        XCTAssertEqual(caption, "THOR.RUNE → BTC.BTC")
     }
 
     /// Everything that is not a cancel keeps the presentation it already had.
@@ -69,32 +73,26 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
 
     /// ⚠️ A co-signer is signing too, and on the L1 route what moves is dust
     /// THORChain donates to the pool with no refund path — up to two whole DOGE.
-    /// Retitling the hero must not take that amount off the screen where the
-    /// co-signer decides whether to join.
-    func testACoSignerStillSeesTheDustAnL1CancelGivesAway() {
-        let attached = HeroCoinAmount(amount: "2", ticker: "DOGE", logo: "doge")
+    /// That money must still be named on the screen where the co-signer decides
+    /// whether to join; it is `attachedDust` that names it, on its own line,
+    /// rather than the hero.
+    func testTheDustACoSignerGivesAwayIsStillResolvable() {
+        let dust = LimitOrderCancelPresentation.attachedDust(
+            in: makeCancelPayload(memo: "m=<:100000000DOGE.DOGE:15979057441BTC.BTC:0", toAmount: 200_000_000)
+        )
 
-        guard case let .send(title, coin)? = LimitOrderCancelPresentation.hero(
-            forSignedMemo: "m=<:100000000DOGE.DOGE:15979057441BTC.BTC:0",
-            attached: attached
-        ) else {
-            return XCTFail("expected the dust to survive the retitling")
-        }
-
-        XCTAssertEqual(title, "limitSwap.cancel.verify.title".localized)
-        XCTAssertEqual(coin.amount, "2")
-        XCTAssertEqual(coin.ticker, "DOGE")
+        XCTAssertNotNil(dust)
+        XCTAssertFalse(dust?.amount.isEmpty ?? true)
     }
 
     /// The THORChain route attaches nothing, and zero is the correct amount
-    /// there — so there is nothing to disclose and nothing to show.
+    /// there — so there is nothing to disclose.
     func testAThorchainCancelHasNoDustToDisclose() {
-        guard case .title? = LimitOrderCancelPresentation.hero(
-            forSignedMemo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0",
-            attached: nil
-        ) else {
-            return XCTFail("expected a title hero")
-        }
+        let dust = LimitOrderCancelPresentation.attachedDust(
+            in: makeCancelPayload(memo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0", toAmount: 0)
+        )
+
+        XCTAssertNil(dust)
     }
 
     /// ⚠️ A PLACEMENT (`=<:`) is a different memo type and must not be swept up:
@@ -105,6 +103,20 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
         XCTAssertNil(LimitOrderCancelPresentation.hero(forSignedMemo: placement))
         XCTAssertFalse(LimitOrderCancelPresentation.isCancel(memo: placement))
         XCTAssertNil(LimitOrderCancelPresentation.hero(forSignedMemo: nil))
+    }
+
+    /// ⚠️ And a RE-TARGET is not a cancel either, even though it shares the
+    /// `m=<` prefix. THORNode reads the final field: zero closes the order,
+    /// anything else moves it. Calling that "You're cancelling a limit order"
+    /// would describe the opposite of what the user asked for.
+    func testARetargetMemoIsNotTreatedAsACancel() {
+        let retarget = "m=<:100000000THOR.RUNE:15979057441BTC.BTC:16000000000"
+
+        XCTAssertNil(LimitOrderCancelPresentation.hero(forSignedMemo: retarget))
+        XCTAssertFalse(LimitOrderCancelPresentation.isCancel(memo: retarget))
+        XCTAssertNil(
+            LimitOrderCancelPresentation.attachedDust(in: makeCancelPayload(memo: retarget, toAmount: 200_000_000))
+        )
     }
 
     // MARK: - The done screen's verb
@@ -203,6 +215,36 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
                 sourceChainRawValue: Chain.thorChain.rawValue,
                 duplicateRestingOrderCount: 0
             )
+        )
+    }
+
+    private func makeCancelPayload(memo: String, toAmount: BigInt) -> KeysignPayload {
+        KeysignPayload(
+            coin: makeRune(),
+            toAddress: "thor1inbound",
+            toAmount: toAmount,
+            chainSpecific: .THORChain(
+                accountNumber: 1,
+                sequence: 1,
+                fee: 0,
+                isDeposit: true,
+                transactionType: 0
+            ),
+            utxos: [],
+            memo: memo,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "pub",
+            vaultLocalPartyID: "party",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
         )
     }
 }

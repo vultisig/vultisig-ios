@@ -100,12 +100,26 @@ struct FunctionCallVerifyScreen: View {
                 // route, or "You're sending 2 DOGE" on the L1 one, where the two
                 // DOGE are dust donated to the pool. `nil` for everything else,
                 // which keeps the existing presentation.
-                hero: LimitOrderCancelPresentation.hero(for: transaction)
+                hero: LimitOrderCancelPresentation.hero(for: transaction),
+                additionalRows: cancelLimitOrderRows
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
         ) {
             cancelLimitOrderDisclosures
         }
+    }
+
+    /// The dust an L1 cancel attaches, as a cost row beside the network fee.
+    ///
+    /// ⚠️ It used to be a full-width red alert block. The dust is real,
+    /// non-refundable money — THORNode donates whatever arrives with an `m=<` to
+    /// the pool — so it must stay disclosed with its exact amount; but it is a
+    /// normal, expected part of this transaction, and alarm styling made a
+    /// routine charge read as something going wrong. Empty on the THORChain
+    /// route, which attaches nothing.
+    private var cancelLimitOrderRows: [SendCryptoVerifySummaryRow] {
+        guard let donated = transaction.limitCancelContext?.disclosures?.donatedAmount else { return [] }
+        return [SendCryptoVerifySummaryRow(title: "limitSwap.cancel.donatedDustRow", value: donated)]
     }
 
     /// What a limit-order cancel has to say before it is signed.
@@ -115,11 +129,12 @@ struct FunctionCallVerifyScreen: View {
     /// already fixed — so it was removed and its content moved HERE, one step
     /// closer to the signature rather than one step further from it.
     ///
-    /// ⚠️ The donated-dust line is the one that must never be dropped. An L1
-    /// cancel has to attach a coin for Bifrost to observe it at all, and
-    /// THORNode donates whatever arrives to the pool with no refund path. On
-    /// DOGE that is two whole coins of the user's own money, and a generic
-    /// "network fees apply" would be actively misleading.
+    /// ⚠️ The donated dust is still disclosed with its exact amount — it moved
+    /// UP, into the summary card's cost rows (see `cancelLimitOrderRows`), not
+    /// away. An L1 cancel has to attach a coin for Bifrost to observe it at all,
+    /// and THORNode donates whatever arrives to the pool with no refund path; on
+    /// DOGE that is two whole coins of the user's own money. What is left here
+    /// are the things that genuinely warrant a warning.
     @ViewBuilder
     private var cancelLimitOrderDisclosures: some View {
         if let cancel = transaction.limitCancelContext {
@@ -132,10 +147,6 @@ struct FunctionCallVerifyScreen: View {
                 Text("limitSwap.cancel.explanation".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
-
-                if let donated = cancel.disclosures?.donatedAmount {
-                    WarningView(text: String(format: "limitSwap.cancel.donatedDust".localized, donated))
-                }
 
                 if cancel.duplicateRestingOrderCount > 0 {
                     // THORChain addresses orders by (assets, ratio) + sender and

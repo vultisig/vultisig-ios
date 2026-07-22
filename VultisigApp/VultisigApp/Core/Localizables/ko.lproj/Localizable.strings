@@ -653,6 +653,7 @@
 "limitSwap.buy" = "매수";
 "limitSwap.cancel.alreadyRequested" = "이 주문에 대한 취소가 이미 전송되었으며 확인을 기다리고 있습니다.";
 "limitSwap.cancel.donatedDust" = "이 체인에서 취소하려면 %@를 전송해야 하며, 이는 THORChain이 보유합니다. 주문 자금은 전액 환불됩니다.";
+"limitSwap.cancel.donatedDustRow" = "THORChain 보유분";
 "limitSwap.cancel.done.failed" = "취소 실패";
 "limitSwap.cancel.done.failedHighlight" = "실패";
 "limitSwap.cancel.done.pending" = "취소 대기 중";
@@ -676,6 +677,7 @@
 "limitSwap.cancel.unavailableNoSigningAsset" = "이 주문을 취소하려면 이 볼트에 %1$@을(를) 추가하세요. 취소는 %2$@에서 전송됩니다.";
 "limitSwap.cancel.unavailableVaultUnreadable" = "지금은 이 볼트를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요. 주문에는 영향이 없습니다.";
 "limitSwap.cancel.verify.title" = "리밋 주문을 취소합니다";
+"limitSwap.cancel.viewTransaction" = "취소 트랜잭션 보기";
 "limitSwap.confirmation.byteCapError.format" = "메모가 너무 깁니다: %d바이트(최대 %d). 더 짧은 대상 주소 또는 비 UTXO 소스를 사용해 보세요.";
 "limitSwap.detail.copyTxHash" = "TX 해시 복사";
 "limitSwap.detail.filled" = "체결";

@@ -144,6 +144,48 @@ final class LimitSwapCancelMemoBuilderTests: XCTestCase {
         XCTAssertFalse(isModifyLimitSwapMemo(nil))
     }
 
+    /// ⚠️ Two predicates, and behaviour keys on the NARROWER one.
+    ///
+    /// `m=<` covers every modification; only a modified target of zero is a
+    /// cancel, which is the branch THORNode itself takes. Anything that hides a
+    /// transaction, retitles a screen, or suppresses a history row has to read
+    /// the exact form, or the day modify exists a retarget silently inherits a
+    /// cancel's treatment.
+    func testOnlyAZeroModifiedTargetCountsAsACancel() throws {
+        let cancel = try buildCancelLimitSwapMemo(
+            LimitOrderCancelInputs(
+                sourceAsset: "THOR.RUNE",
+                sourceAmount1e8: BigInt(100_000_000),
+                targetAsset: "BTC.BTC",
+                tradeTarget: BigInt(15_979_057_441)
+            )
+        )
+        let retarget = "m=<:100000000THOR.RUNE:15979057441BTC.BTC:16000000000"
+
+        XCTAssertTrue(isCancelLimitSwapMemo(cancel))
+        XCTAssertFalse(isCancelLimitSwapMemo(retarget))
+        XCTAssertTrue(isModifyLimitSwapMemo(retarget), "still a modification, just not a cancel")
+        XCTAssertFalse(isCancelLimitSwapMemo("=<:BTC.BTC:addr:1e8/14400/0"), "a placement is neither")
+        XCTAssertFalse(isCancelLimitSwapMemo(nil))
+        // A trailing separator leaves an EMPTY final field, which is not zero —
+        // splitting without keeping empties would promote the asset before it.
+        XCTAssertFalse(isCancelLimitSwapMemo("m=<:100000000THOR.RUNE:15979057441BTC.BTC:"))
+    }
+
+    /// ⚠️ Compared numerically, the way THORNode's `getUint` reads it.
+    ///
+    /// `"00"` is zero on their side, so a string comparison would call an
+    /// equivalent cancel a retarget — and it would do so quietly, in the code
+    /// that decides whether the transaction gets a history row.
+    func testAZeroModifiedTargetIsReadNumericallyNotTextually() {
+        XCTAssertTrue(isCancelLimitSwapMemo("m=<:100000000THOR.RUNE:15979057441BTC.BTC:00"))
+        XCTAssertTrue(isCancelLimitSwapMemo("m=<:100000000THOR.RUNE:15979057441BTC.BTC:000"))
+        XCTAssertFalse(isCancelLimitSwapMemo("m=<:100000000THOR.RUNE:15979057441BTC.BTC:01"))
+        // A sign must not smuggle its way past an unsigned field.
+        XCTAssertFalse(isCancelLimitSwapMemo("m=<:100000000THOR.RUNE:15979057441BTC.BTC:-0"))
+        XCTAssertFalse(isCancelLimitSwapMemo("m=<:100000000THOR.RUNE:15979057441BTC.BTC:zero"))
+    }
+
     func testThirdFieldIsAlwaysZeroSoTheMemoCancelsRatherThanModifies() throws {
         let memo = try buildCancelLimitSwapMemo(
             LimitOrderCancelInputs(

@@ -79,8 +79,7 @@ struct JoinKeysignDoneView: View {
                 amountCrypto: keysignPayload.toAmountWithTickerString,
                 amountFiat: keysignPayload.toSendAmountFiatString,
                 hero: LimitOrderCancelPresentation.hero(
-                    forSignedMemo: keysignPayload.memo,
-                    attached: LimitOrderCancelPresentation.attachedDust(in: keysignPayload)
+                    forSignedMemo: keysignPayload.memo
                 ) ?? viewModel.heroContent,
                 hash: viewModel.txid,
                 explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),

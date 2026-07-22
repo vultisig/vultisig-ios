@@ -57,8 +57,7 @@ struct KeysignMessageConfirmView: View {
                         // simulates as an ordinary send, which is exactly the
                         // reading this replaces.
                         hero: LimitOrderCancelPresentation.hero(
-                            forSignedMemo: viewModel.keysignPayload?.memo,
-                            attached: LimitOrderCancelPresentation.attachedDust(in: viewModel.keysignPayload)
+                            forSignedMemo: viewModel.keysignPayload?.memo
                         ) ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,

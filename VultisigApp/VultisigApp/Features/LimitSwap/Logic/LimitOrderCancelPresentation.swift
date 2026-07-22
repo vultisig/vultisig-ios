@@ -29,29 +29,23 @@ import Foundation
 
 enum LimitOrderCancelPresentation {
 
-    /// Hero for the initiator's Verify screen, or `nil` when the transaction is
-    /// not a cancel (every other function call keeps its existing presentation).
+    /// Hero for the initiator's Verify and Done screens, or `nil` when the
+    /// transaction is not a cancel (every other function call keeps its existing
+    /// presentation).
+    ///
+    /// ⚠️ **No amount, on either route.** A cancel moves no funds by design: on
+    /// the THORChain route it is a memo-only `MsgDeposit` and the amount is
+    /// literally zero, and on the L1 route the only thing moving is dust that
+    /// exists so Bifrost has something to observe. Neither is a transfer the
+    /// user is making, and a hero built around one reports a figure that is an
+    /// artifact of reusing the send screen.
+    ///
+    /// The dust does not stop being disclosed — it is a cost row in the summary
+    /// card, beside the network fee, where it reads as what it is. See
+    /// `FunctionCallVerifyScreen.cancelLimitOrderRows`.
     static func hero(for transaction: SendTransaction) -> HeroContent? {
         guard let cancel = transaction.limitCancelContext else { return nil }
-        let caption = "\(cancel.sourceAsset) → \(cancel.targetAsset)"
-        guard transaction.amountDecimal > 0 else {
-            // THORChain route: the cancel attaches nothing, on purpose —
-            // anything sent with an `m=<` is donated to the pool. A hero built
-            // around "0 RUNE" would be reporting an amount that exists only as
-            // an artifact of reusing the send screen.
-            return .title(text: title, caption: caption)
-        }
-        // L1 route: the cancel genuinely moves dust, and that dust is
-        // unrecoverable, so it is shown rather than hidden behind a title. The
-        // exact figure and its fate are spelled out in the disclosures below it.
-        return .send(
-            title: title,
-            coin: HeroCoinAmount(
-                amount: transaction.amountDecimal.formatForDisplay(),
-                ticker: transaction.coin.ticker,
-                logo: transaction.coin.logo
-            )
-        )
+        return .title(text: title, caption: "\(cancel.sourceAsset) → \(cancel.targetAsset)")
     }
 
     /// Hero for a CO-SIGNER's screens.
@@ -62,22 +56,21 @@ enum LimitOrderCancelPresentation {
     /// not what the rest of the app shows an order under, and half-translating
     /// them here would invite a mismatch.
     ///
-    /// ⚠️ `attached` must be passed whenever the payload actually moves value.
-    /// A co-signer is signing too, and on the L1 route what moves is dust
-    /// THORChain donates to the pool with no refund path — up to two whole DOGE.
-    /// Retitling the hero without carrying the amount would hide that money on
-    /// the one screen where the co-signer decides whether to join.
-    static func hero(forSignedMemo memo: String?, attached: HeroCoinAmount? = nil) -> HeroContent? {
-        guard isModifyLimitSwapMemo(memo) else { return nil }
-        guard let attached else { return .title(text: title, caption: nil) }
-        return .send(title: title, coin: attached)
+    /// ⚠️ The co-signer's disclosure of the donated dust does not live here.
+    /// It is its own line on the JOIN screen (`KeysignMessageConfirmView`), fed
+    /// by `attachedDust(in:)` — which is the screen where a co-signer decides
+    /// whether to sign, and therefore the screen where that money has to be
+    /// named.
+    static func hero(forSignedMemo memo: String?) -> HeroContent? {
+        guard isCancelLimitSwapMemo(memo) else { return nil }
+        return .title(text: title, caption: nil)
     }
 
     /// What a co-signer is about to give away, or `nil` when the cancel attaches
     /// nothing (the THORChain route, where zero is the correct and intended
     /// amount).
     static func attachedDust(in payload: KeysignPayload?) -> HeroCoinAmount? {
-        guard let payload, isModifyLimitSwapMemo(payload.memo), payload.toAmount > 0 else { return nil }
+        guard let payload, isCancelLimitSwapMemo(payload.memo), payload.toAmount > 0 else { return nil }
         return HeroCoinAmount(
             amount: payload.toAmountDecimal.formatForDisplay(),
             ticker: payload.coin.ticker,
@@ -88,7 +81,7 @@ enum LimitOrderCancelPresentation {
     /// Whether a transaction about to be signed is a limit-order cancel, judged
     /// the way the chain judges it.
     static func isCancel(memo: String?) -> Bool {
-        isModifyLimitSwapMemo(memo)
+        isCancelLimitSwapMemo(memo)
     }
 
     private static var title: String { "limitSwap.cancel.verify.title".localized }

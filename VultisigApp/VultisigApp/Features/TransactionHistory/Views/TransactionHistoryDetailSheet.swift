@@ -77,6 +77,7 @@ struct TransactionHistoryDetailSheet: View {
                 detailRows
                 actionButtons
                 cancelOrderButton
+                cancelTransactionButton
                 if transaction.swapKitTrackerURL != nil {
                     swapKitTrackerButton
                 }
@@ -613,6 +614,27 @@ struct TransactionHistoryDetailSheet: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
+        }
+    }
+
+    /// Where the cancel transaction stays reachable.
+    ///
+    /// A cancel is deliberately given no row of its own in history — it is a
+    /// step in this order's life, not a separate transfer, and the row above is
+    /// the single surface for the whole lifecycle. That makes this sheet the
+    /// only place its hash surfaces, so the ordinary explorer link has to be
+    /// here: the fee it cost and the transaction itself must remain inspectable.
+    ///
+    /// Same chain as the row by construction — a cancel is sent from the chain
+    /// that funded the order, which is the chain the row records.
+    @ViewBuilder
+    private var cancelTransactionButton: some View {
+        if let hash = limitOrder?.cancelBroadcastHash?.nilIfEmpty,
+           let chain = Chain(rawValue: transaction.chainRawValue),
+           let url = URL(string: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash)) {
+            PrimaryButton(title: "limitSwap.cancel.viewTransaction", type: .secondary) {
+                openURL(url)
+            }
         }
     }
 

@@ -655,6 +655,7 @@
 "limitSwap.buy" = "Kaufen";
 "limitSwap.cancel.alreadyRequested" = "Für diese Order wurde bereits eine Stornierung gesendet und wartet auf Bestätigung.";
 "limitSwap.cancel.donatedDust" = "Das Stornieren über diese Chain erfordert das Senden von %@, das THORChain einbehält. Die Mittel Ihrer Order werden vollständig erstattet.";
+"limitSwap.cancel.donatedDustRow" = "Von THORChain einbehalten";
 "limitSwap.cancel.done.failed" = "Stornierung fehlgeschlagen";
 "limitSwap.cancel.done.failedHighlight" = "fehlgeschlagen";
 "limitSwap.cancel.done.pending" = "Stornierung ausstehend";
@@ -678,6 +679,7 @@
 "limitSwap.cancel.unavailableNoSigningAsset" = "Fügen Sie %1$@ zu diesem Vault hinzu, um diese Order zu stornieren — die Stornierung wird über %2$@ gesendet.";
 "limitSwap.cancel.unavailableVaultUnreadable" = "Dieses Vault konnte gerade nicht geprüft werden. Versuchen Sie es in Kürze erneut — Ihre Order bleibt unberührt.";
 "limitSwap.cancel.verify.title" = "Sie stornieren eine Limit-Order";
+"limitSwap.cancel.viewTransaction" = "Stornierungstransaktion anzeigen";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";
 "limitSwap.detail.copyTxHash" = "TX-Hash kopieren";
 "limitSwap.detail.filled" = "Ausgeführt";

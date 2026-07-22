@@ -33,6 +33,35 @@ func isModifyLimitSwapMemo(_ memo: String?) -> Bool {
     memo?.hasPrefix(modifyLimitSwapMemoPrefix) ?? false
 }
 
+/// True when `memo` CANCELS a resting order, rather than merely modifying one.
+///
+/// The distinction is `ModifiedTargetAmount`, the memo's final field: THORNode
+/// branches on `msg.ModifiedTargetAmount.IsZero()` and reads zero as a cancel.
+/// Any other value re-targets the order, which is a different action with a
+/// different outcome and different words for it.
+///
+/// This app only ever builds the cancel form, so today the two coincide — which
+/// is exactly why the looser predicate is not good enough to key behaviour on.
+/// A retarget suppressed from history, or titled "You're cancelling a limit
+/// order", would be a lie the day someone builds modify, and it would be a lie
+/// in a place nobody thought to look.
+func isCancelLimitSwapMemo(_ memo: String?) -> Bool {
+    guard let memo, isModifyLimitSwapMemo(memo) else { return false }
+    // Fields are colon-separated and the modified target is the last of them.
+    // `omittingEmptySubsequences: false` so a trailing `:` yields an empty final
+    // field rather than silently promoting the asset before it.
+    guard let modifiedTarget = memo.split(separator: ":", omittingEmptySubsequences: false).last else {
+        return false
+    }
+    // Compared NUMERICALLY, the way THORNode's `getUint` reads it — `"00"` is
+    // zero there, and a string comparison would call that a retarget. Digits
+    // only, so a sign cannot smuggle `"-0"` past an unsigned field.
+    guard !modifiedTarget.isEmpty, modifiedTarget.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+        return false
+    }
+    return BigInt(String(modifiedTarget)) == 0
+}
+
 /// The `ModifiedTargetAmount` that means "cancel".
 ///
 /// THORNode's handler branches on `msg.ModifiedTargetAmount.IsZero()` — verbatim
