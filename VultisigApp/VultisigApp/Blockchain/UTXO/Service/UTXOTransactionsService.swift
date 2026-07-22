@@ -2,11 +2,8 @@ import SwiftUI
 import WalletCore
 
 enum UTXOTransactionError: Error {
-    case invalidURL
-    case httpError(Int)
     case apiError(String)
     case unexpectedResponse
-    case unknown(Error)
 }
 
 class UTXOTransactionsService: ObservableObject {

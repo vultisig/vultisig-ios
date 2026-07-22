@@ -184,7 +184,6 @@ extension MayaChainAPIService {
         guard isWhitelisted else {
             return MayaBondEligibility(
                 canBond: false,
-                reason: .notWhitelisted,
                 nodeStatus: nodeDetails.status,
                 currentProviders: nodeDetails.bondProviders.providers.count
             )
@@ -196,7 +195,6 @@ extension MayaChainAPIService {
         guard currentProviders < maxProviders else {
             return MayaBondEligibility(
                 canBond: false,
-                reason: .nodeAtCapacity,
                 nodeStatus: nodeDetails.status,
                 currentProviders: currentProviders
             )
@@ -205,7 +203,6 @@ extension MayaChainAPIService {
         // All checks passed
         return MayaBondEligibility(
             canBond: true,
-            reason: nil,
             nodeStatus: nodeDetails.status,
             currentProviders: currentProviders
         )
