@@ -84,12 +84,17 @@ func resolveThorchainInboundVault(for chain: Chain) async throws -> InboundAddre
 /// exact amount they are about to donate BEFORE they sign — everything attached
 /// to an `m=<` is `donateToPool`'d with no refund path, so a generic "network
 /// fees apply" would be actively misleading. On DOGE this is 2 whole DOGE.
+///
+/// ⚠️ `sourceCoin.decimals` is not optional context. `inbound.dust_threshold` is
+/// quoted in THORChain's 1e8 fixed point on every chain; the coin's own
+/// precision is what turns it into the smallest unit the signer needs.
 @MainActor
 func limitOrderCancelDust(for sourceCoin: Coin, inbound: InboundAddress) throws -> BigInt {
     do {
         return try limitOrderCancelDustAmount(
             walletCoreDustFloor: BigInt(sourceCoin.coinType.getFixedDustThreshold()),
             inboundDustThreshold: inbound.dust_threshold,
+            decimals: sourceCoin.decimals,
             ceiling: sourceCoin.raw(for: limitOrderCancelDustCeiling(for: sourceCoin.chain)),
             chainSymbol: ThorchainService.getInboundChainName(for: sourceCoin.chain)
         )

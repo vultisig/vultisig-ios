@@ -10,16 +10,20 @@ import XCTest
 final class LimitOrderCancelDustTests: XCTestCase {
 
     /// Generous by default so the ceiling only participates where a test is
-    /// specifically about it.
+    /// specifically about it. `decimals` defaults to 8 — THORChain's own fixed
+    /// point — which is exactly the value that makes the rescale invisible, so
+    /// every test that cares about it states it.
     private func dust(
         walletCore: BigInt,
         inbound: String?,
-        ceiling: BigInt = BigInt(10).power(30),
+        decimals: Int = 8,
+        ceiling: BigInt = BigInt(10).power(40),
         chain: String = "BTC"
     ) throws -> BigInt {
         try limitOrderCancelDustAmount(
             walletCoreDustFloor: walletCore,
             inboundDustThreshold: inbound,
+            decimals: decimals,
             ceiling: ceiling,
             chainSymbol: chain
         )
@@ -52,10 +56,126 @@ final class LimitOrderCancelDustTests: XCTestCase {
         XCTAssertEqual(amount, BigInt(7) * limitOrderCancelDustSafetyMultiple)
     }
 
+    // MARK: - THORChain's 1e8 units are not the chain's own
+
+    /// ⚠️ **The 2026-07-22 regression, in one assertion.**
+    ///
+    /// THORChain publishes ETH's `dust_threshold` as `1000` — 1e8 units, i.e.
+    /// 0.00001 ETH. Read as if it were already wei, doubling it produced a
+    /// transaction worth 2000 wei (2e-15 ETH). It was signed, broadcast, and
+    /// confirmed on Ethereum; Bifrost never saw an inbound, ~0.00016 ETH of gas
+    /// was burned and the order kept resting. The correct attach is 2e13 wei.
+    func testAnEighteenDecimalChainRescalesTheThresholdOutOfThorchainUnits() throws {
+        let amount = try dust(walletCore: 0, inbound: "1000", decimals: 18, chain: "ETH")
+
+        XCTAssertEqual(amount, BigInt("20000000000000"), "0.00002 ETH")
+        XCTAssertNotEqual(amount, BigInt(2000), "the figure that was actually broadcast")
+    }
+
+    /// The other direction: GAIA carries FEWER decimals than THORChain, so the
+    /// threshold scales down rather than up.
+    func testAChainWithFewerDecimalsThanThorchainScalesTheThresholdDown() throws {
+        // 1,000,000 in 1e8 units is 0.01 ATOM, which is 10,000 uatom.
+        let amount = try dust(walletCore: 0, inbound: "1000000", decimals: 6, chain: "GAIA")
+
+        XCTAssertEqual(amount, BigInt(20_000))
+    }
+
+    /// Scaling DOWN must round up: the threshold is a floor to clear, and
+    /// truncation would land a unit under the very number being satisfied.
+    func testScalingDownRoundsUpSoTheFloorIsStillCleared() {
+        XCTAssertEqual(chainSmallestUnits(fromThorchainBaseUnits: BigInt(1001), decimals: 6), BigInt(11))
+        XCTAssertEqual(chainSmallestUnits(fromThorchainBaseUnits: BigInt(1100), decimals: 6), BigInt(11))
+        XCTAssertEqual(chainSmallestUnits(fromThorchainBaseUnits: BigInt(1), decimals: 6), BigInt(1))
+    }
+
+    /// The identity case — and the reason a UTXO-shaped test suite could not
+    /// have caught any of the above.
+    func testAnEightDecimalChainIsUnchangedByTheRescale() {
+        XCTAssertEqual(chainSmallestUnits(fromThorchainBaseUnits: BigInt(100_000_000), decimals: 8), BigInt(100_000_000))
+    }
+
+    /// Every supported source chain, with the `dust_threshold` THORChain
+    /// actually published on 2026-07-22, asserted in that chain's OWN smallest
+    /// unit — and required to sit under the chain's real ceiling.
+    ///
+    /// The 18- and 6-decimal rows are the load-bearing ones: on the 8-decimal
+    /// chains the rescale is the identity, which is precisely how an entire
+    /// suite of them passed while Ethereum was broken by a factor of 1e10.
+    func testEverySupportedSourceChainAttachesItsOwnSmallestUnits() throws {
+        // (chain, decimals, published 1e8 threshold, expected attach in smallest units)
+        let cases: [(Chain, Int, String, String)] = [
+            (.bitcoin, 8, "1000", "2000"),
+            (.bitcoinCash, 8, "10000", "20000"),
+            (.litecoin, 8, "100000", "200000"),
+            (.dogecoin, 8, "100000000", "200000000"),
+            (.ethereum, 18, "1000", "20000000000000"),
+            (.avalanche, 18, "100000", "2000000000000000"),
+            (.bscChain, 18, "10000", "200000000000000"),
+            (.gaiaChain, 6, "1000000", "20000")
+        ]
+        for (chain, decimals, threshold, expected) in cases {
+            let amount = try dust(
+                walletCore: 0,
+                inbound: threshold,
+                decimals: decimals,
+                ceiling: ceiling(for: chain, decimals: decimals),
+                chain: "\(chain)"
+            )
+
+            XCTAssertEqual(amount, BigInt(expected), "\(chain) attach")
+            XCTAssertGreaterThanOrEqual(
+                amount,
+                minimumObservableInbound(decimals: decimals),
+                "\(chain) attach must be large enough for THORChain to observe"
+            )
+        }
+    }
+
+    // MARK: - Failing loudly rather than sending something invisible
+
+    /// ⚠️ The guard the ETH rehearsal needed. An amount THORChain's own 1e8
+    /// accounting truncates to zero raises no inbound at all — the transaction
+    /// confirms, the fee is spent, and nothing is cancelled. Refusing beats
+    /// quietly bumping it: a value landing here means the pipeline that produced
+    /// it is wrong, and the bare minimum would still be under whatever THORChain
+    /// really requires.
+    func testAnAttachTooSmallForThorchainToObserveIsRefused() {
+        XCTAssertThrowsError(try dust(walletCore: 0, inbound: "0", decimals: 18, chain: "ETH")) { error in
+            XCTAssertEqual(
+                error as? LimitOrderCancelDustError,
+                .dustBelowObservableMinimum(chain: "ETH", computed: "0", minimum: "10000000000")
+            )
+        }
+    }
+
+    /// On an 18-decimal chain the observable minimum works out at 1e10 — the
+    /// same EVM floor the protocol research derived independently from
+    /// `ConvertAmount` truncating below it.
+    func testTheObservableMinimumReproducesTheVerifiedEvmFloor() {
+        XCTAssertEqual(minimumObservableInbound(decimals: 18), BigInt("10000000000"))
+        XCTAssertEqual(minimumObservableInbound(decimals: 8), BigInt(1))
+        XCTAssertEqual(minimumObservableInbound(decimals: 6), BigInt(1))
+    }
+
     /// A zero-value L1 transaction carries no inbound for Bifrost to observe, so
-    /// even a chain reporting no floors at all needs a non-zero output.
-    func testNeverReturnsZero() throws {
-        XCTAssertEqual(try dust(walletCore: 0, inbound: "0"), BigInt(1))
+    /// a chain reporting no floors at all is refused rather than guessed at.
+    func testNeverReturnsZero() {
+        XCTAssertThrowsError(try dust(walletCore: 0, inbound: "0")) { error in
+            XCTAssertEqual(
+                error as? LimitOrderCancelDustError,
+                .dustBelowObservableMinimum(chain: "BTC", computed: "0", minimum: "1")
+            )
+        }
+    }
+
+    func testANegativePrecisionIsRejectedRatherThanRaisedToAPower() {
+        XCTAssertThrowsError(try dust(walletCore: 0, inbound: "1000", decimals: -1)) { error in
+            XCTAssertEqual(
+                error as? LimitOrderCancelDustError,
+                .unusableChainPrecision(chain: "BTC", decimals: -1)
+            )
+        }
     }
 
     /// ⚠️ Fails closed. Guessing low means Bifrost silently ignores the cancel —
@@ -93,28 +213,45 @@ final class LimitOrderCancelDustTests: XCTestCase {
 
     /// Every real chain's normal attach must sit comfortably under its ceiling,
     /// or cancelling would fail on the happy path.
-    func testVerifiedPerChainMinimaSitUnderTheirCeilings() throws {
-        // (chain, decimals, verified minimum attach in smallest units)
+    ///
+    /// ⚠️ LTC and AVAX both publish a 0.001 threshold, so their normal attach is
+    /// 0.002 — over the 0.001 ceiling they used to be given. A ceiling sized
+    /// against the wrong number does not fail safe: it refuses a cancel the user
+    /// is entitled to make.
+    func testEveryChainsPublishedThresholdSitsUnderItsCeiling() throws {
+        // (chain, decimals, published 1e8 threshold)
         let cases: [(Chain, Int, String)] = [
             (.bitcoin, 8, "1000"),
             (.dogecoin, 8, "100000000"),
-            (.litecoin, 8, "10000"),
+            (.litecoin, 8, "100000"),
             (.bitcoinCash, 8, "10000"),
-            (.ethereum, 18, "10000000000"),
-            (.gaiaChain, 6, "10000")
+            (.ethereum, 18, "1000"),
+            (.avalanche, 18, "100000"),
+            (.bscChain, 18, "10000"),
+            (.gaiaChain, 6, "1000000")
         ]
-        for (chain, decimals, minimum) in cases {
-            let ceilingNatural = limitOrderCancelDustCeiling(for: chain)
-            var scaled = ceilingNatural
-            var raw = Decimal()
-            NSDecimalMultiplyByPowerOf10(&raw, &scaled, Int16(decimals), .plain)
-            let ceiling = BigInt(NSDecimalNumber(decimal: raw).stringValue) ?? 0
-
+        for (chain, decimals, threshold) in cases {
             XCTAssertNoThrow(
-                try dust(walletCore: 0, inbound: minimum, ceiling: ceiling, chain: "\(chain)"),
+                try dust(
+                    walletCore: 0,
+                    inbound: threshold,
+                    decimals: decimals,
+                    ceiling: ceiling(for: chain, decimals: decimals),
+                    chain: "\(chain)"
+                ),
                 "\(chain) normal attach must fit under its ceiling"
             )
         }
+    }
+
+    /// The production ceiling for `chain`, in that chain's smallest units —
+    /// mirroring what `limitOrderCancelDust(for:inbound:)` does with
+    /// `Coin.raw(for:)`, without needing a `Coin`.
+    private func ceiling(for chain: Chain, decimals: Int) -> BigInt {
+        var natural = limitOrderCancelDustCeiling(for: chain)
+        var raw = Decimal()
+        NSDecimalMultiplyByPowerOf10(&raw, &natural, Int16(decimals), .plain)
+        return BigInt(NSDecimalNumber(decimal: raw).stringValue) ?? 0
     }
 
     func testANegativeLocalFloorFailsClosedRatherThanBeingIgnored() {

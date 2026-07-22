@@ -23,6 +23,9 @@ enum LimitOrderCancelDustError: Error, Equatable {
     /// and guessing high donates more of the user's funds than necessary.
     case inboundDustThresholdUnavailable(chain: String)
     case malformedInboundDustThreshold(chain: String, value: String)
+    /// The source coin declares a precision that cannot express THORChain's
+    /// threshold at all, so there is no honest amount to attach.
+    case unusableChainPrecision(chain: String, decimals: Int)
     /// The computed dust exceeded what this chain could plausibly require.
     ///
     /// `dust_threshold` is a REMOTE value that directly decides how much of the
@@ -31,6 +34,21 @@ enum LimitOrderCancelDustError: Error, Equatable {
     /// be honoured verbatim and then doubled. Every other floor in this file is
     /// a lower bound; this is the only upper one.
     case dustAmountExceedsCeiling(chain: String, computed: String, ceiling: String)
+    /// The computed dust is too small for THORChain to observe at all.
+    ///
+    /// ⚠️ The loud failure that the 2026-07-22 ETH rehearsal needed and did not
+    /// have. That cancel was signed for **2000 wei** — the 1e8-unit threshold
+    /// used verbatim as an 18-decimal chain's smallest unit — which THORChain's
+    /// `ConvertAmount` truncates to zero. Bifrost never saw an inbound, the
+    /// transaction confirmed on Ethereum, ~0.00016 ETH of gas was burned, and
+    /// the order carried on resting. Nothing distinguished it from success.
+    ///
+    /// Refusing is deliberately preferred over quietly raising the amount: a
+    /// value that lands here means the pipeline that produced it is wrong, and
+    /// bumping it to the bare observable minimum would still be under whatever
+    /// THORChain actually requires — the same silent failure, one order of
+    /// magnitude up.
+    case dustBelowObservableMinimum(chain: String, computed: String, minimum: String)
 }
 
 /// Safety multiple applied over the larger of the two floors.
@@ -66,17 +84,30 @@ let limitOrderCancelDustSafetyMultiple = BigInt(2)
 /// `dust_threshold` had **no readers anywhere in this codebase** before this —
 /// it was decoded off `inbound_addresses` and discarded — which is why the
 /// second floor could be missed entirely.
+///
+/// ⚠️ **The two floors are quoted in different unit systems.** WalletCore's is
+/// already in the chain's own smallest units; THORChain's is in ITS 1e8 fixed
+/// point, on every chain, whatever precision that chain uses. They are only
+/// comparable after `chainSmallestUnits(fromThorchainBaseUnits:decimals:)` — see
+/// `dustBelowObservableMinimum` for what shipping them uncompared cost.
+///
+/// - Parameter decimals: the SOURCE COIN's own precision. Load-bearing, not
+///   cosmetic: it is the entire difference between 2e13 wei and 2000 wei.
 /// - Parameter ceiling: the most this chain could plausibly require, in the same
 ///   smallest units. See `dustAmountExceedsCeiling` — this is the guard against
 ///   a remote value deciding how much of the user's money to give away.
 func limitOrderCancelDustAmount(
     walletCoreDustFloor: BigInt,
     inboundDustThreshold: String?,
+    decimals: Int,
     ceiling: BigInt,
     chainSymbol: String
 ) throws -> BigInt {
     guard let inboundDustThreshold else {
         throw LimitOrderCancelDustError.inboundDustThresholdUnavailable(chain: chainSymbol)
+    }
+    guard decimals >= 0 else {
+        throw LimitOrderCancelDustError.unusableChainPrecision(chain: chainSymbol, decimals: decimals)
     }
     // Both floors are validated, not just the parsed one. A negative local floor
     // would silently lose to `max` and read as "no local requirement", which is
@@ -93,10 +124,23 @@ func limitOrderCancelDustAmount(
             value: "local floor \(walletCoreDustFloor)"
         )
     }
-    let floor = max(walletCoreDustFloor, threshold)
-    // A chain reporting 0 for both floors still needs a non-zero output — a
-    // zero-value L1 transaction carries no inbound for Bifrost to observe.
-    let amount = max(floor * limitOrderCancelDustSafetyMultiple, BigInt(1))
+    // Rescaled BEFORE the comparison. Taking the larger of a 1e8 figure and a
+    // native one is not a comparison at all on any chain whose precision isn't 8.
+    let thresholdInChainUnits = chainSmallestUnits(fromThorchainBaseUnits: threshold, decimals: decimals)
+    let floor = max(walletCoreDustFloor, thresholdInChainUnits)
+    let amount = floor * limitOrderCancelDustSafetyMultiple
+    // A zero-value L1 transaction carries no inbound for Bifrost to observe —
+    // and neither does one whose value truncates to zero in THORChain's own 1e8
+    // accounting, which is the same invisibility arrived at by arithmetic rather
+    // than by a literal zero.
+    let observableMinimum = minimumObservableInbound(decimals: decimals)
+    guard amount >= observableMinimum else {
+        throw LimitOrderCancelDustError.dustBelowObservableMinimum(
+            chain: chainSymbol,
+            computed: amount.description,
+            minimum: observableMinimum.description
+        )
+    }
     guard amount <= ceiling else {
         throw LimitOrderCancelDustError.dustAmountExceedsCeiling(
             chain: chainSymbol,
@@ -105,6 +149,46 @@ func limitOrderCancelDustAmount(
         )
     }
     return amount
+}
+
+/// Re-express an amount THORChain quotes in its own 1e8 fixed point as the
+/// source chain's smallest units.
+///
+/// ⚠️ **Every amount on `inbound_addresses` is 1e8, regardless of the chain.**
+/// THORNode normalises inbound values through `ConvertAmount` on the way in and
+/// publishes its thresholds in that same normalised space. The 8-decimal UTXO
+/// chains make the conversion the identity, which is precisely why reading the
+/// threshold as if it were already native survived a whole test suite and a
+/// mainnet rehearsal: BTC, LTC and DOGE cannot show the bug. An 18-decimal chain
+/// can, and did — 1000 became 2000 wei instead of 2e13.
+///
+/// Rounds UP when the chain carries FEWER decimals than THORChain (GAIA's 6).
+/// The value is a floor that has to be cleared, and truncation would land it a
+/// unit short of exactly the threshold it exists to satisfy.
+func chainSmallestUnits(fromThorchainBaseUnits value: BigInt, decimals: Int) -> BigInt {
+    guard decimals != Coin.thorchainFixedPointExponent else { return value }
+    if decimals > Coin.thorchainFixedPointExponent {
+        return value * BigInt(10).power(decimals - Coin.thorchainFixedPointExponent)
+    }
+    let divisor = BigInt(10).power(Coin.thorchainFixedPointExponent - decimals)
+    let (quotient, remainder) = value.quotientAndRemainder(dividingBy: divisor)
+    return remainder == 0 ? quotient : quotient + 1
+}
+
+/// The smallest amount on a `decimals`-precision chain that THORChain can still
+/// see, in that chain's smallest units.
+///
+/// Anything below this is truncated to zero by `ConvertAmount` on the way into
+/// THORChain's 1e8 accounting, so Bifrost never raises an inbound for it: the
+/// transaction confirms on the source chain, the fee is spent, and THORChain
+/// never learns it happened.
+///
+/// On an 18-decimal chain this evaluates to 1e10 — independently the same figure
+/// the protocol research recorded as the EVM minimum, derived there from
+/// `ConvertAmount` truncating below it.
+func minimumObservableInbound(decimals: Int) -> BigInt {
+    guard decimals > Coin.thorchainFixedPointExponent else { return BigInt(1) }
+    return BigInt(10).power(decimals - Coin.thorchainFixedPointExponent)
 }
 
 /// The most a cancel on `chain` could plausibly need to attach, in NATURAL
@@ -116,24 +200,36 @@ func limitOrderCancelDustAmount(
 /// WalletCore's floor works across all of them — `getFixedDustThreshold()`
 /// returns 0 for every non-UTXO chain, which would collapse any relative bound.
 ///
-/// Set roughly an order of magnitude above each chain's verified minimum: loose
-/// enough that a legitimate threshold change does not break cancelling, tight
-/// enough that a bad value cannot quietly donate a meaningful sum. If a chain
-/// legitimately raises its threshold past this, cancelling fails loudly with the
-/// computed and permitted values — which is the right way to find out.
+/// Set roughly an order of magnitude above each chain's live `dust_threshold`
+/// doubled — the amount a cancel actually attaches. Loose enough that a
+/// legitimate threshold change does not break cancelling, tight enough that a
+/// bad value cannot quietly donate a meaningful sum. If a chain legitimately
+/// raises its threshold past this, cancelling fails loudly with the computed and
+/// permitted values — which is the right way to find out.
+///
+/// ⚠️ Sized against the thresholds `inbound_addresses` actually publishes
+/// (captured 2026-07-22, natural units): DOGE 1, LTC 0.001, AVAX 0.001,
+/// GAIA 0.01, BCH/BSC 0.0001, BTC/ETH 0.00001. The earlier table was sized
+/// against the EVM `ConvertAmount` floor (~1e-8) rather than against these, and
+/// so sat BELOW the real attach on both LTC and AVAX — a legitimate cancel on
+/// either would have been refused outright by the ceiling.
 func limitOrderCancelDustCeiling(for chain: Chain) -> Decimal {
     switch chain {
     case .dogecoin:
-        // The outlier: a 1 DOGE minimum, so 2 DOGE is the normal attach.
+        // The outlier: a 1 DOGE threshold, so 2 DOGE is the normal attach.
         return 10
-    case .bitcoin, .bitcoinCash, .litecoin, .dash, .zcash:
+    case .litecoin, .avalanche:
+        // Both publish a 0.001 threshold, so 0.002 is the normal attach — over
+        // the 0.001 these two used to share with BTC.
+        return Decimal(string: "0.02") ?? 0
+    case .bitcoin, .bitcoinCash, .dash, .zcash:
         return Decimal(string: "0.001") ?? 0
     case .gaiaChain, .noble:
         return Decimal(string: "0.5") ?? 0
     default:
-        // EVM gas assets and anything else: the verified EVM minimum is ~1e-8
-        // of the gas asset, so this is many orders of magnitude of headroom
-        // while still being immaterial in fiat on every supported chain.
+        // ETH (0.00002 attach), BSC (0.0002) and anything else. Immaterial in
+        // fiat on every supported chain while still leaving room for a
+        // threshold that moves by an order of magnitude.
         return Decimal(string: "0.001") ?? 0
     }
 }

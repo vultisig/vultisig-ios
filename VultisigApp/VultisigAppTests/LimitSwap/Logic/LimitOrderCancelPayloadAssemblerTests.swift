@@ -56,6 +56,42 @@ final class LimitOrderCancelPayloadAssemblerTests: XCTestCase {
         XCTAssertEqual(dust, BigInt(2000))
     }
 
+    /// ⚠️ The end-to-end shape of the 2026-07-22 regression: the same inbound row
+    /// read through an 18-decimal coin.
+    ///
+    /// `dust_threshold` is 1e8 on every chain, so the coin's own precision is
+    /// what turns `1000` into 2e13 wei. Read as wei it produced 2000 — a
+    /// transaction that confirmed on Ethereum, was never observed by Bifrost,
+    /// and left the order resting. The natural figure has to read as a real
+    /// number too, since it is what the Verify screen shows.
+    func testEthereumDustIsWeiNotThorchainBaseUnits() throws {
+        let coin = makeCoin(chain: .ethereum, ticker: "ETH", decimals: 18)
+        let dust = try limitOrderCancelDust(for: coin, inbound: makeInbound(chain: "ETH", dustThreshold: "1000"))
+
+        XCTAssertEqual(dust, BigInt("20000000000000"))
+        XCTAssertEqual(coin.decimal(for: dust), Decimal(string: "0.00002") ?? 0)
+        XCTAssertEqual(exactNaturalUnitsString(dust, decimals: coin.decimals), "0.00002")
+    }
+
+    /// GAIA is the only supported source with FEWER decimals than THORChain, so
+    /// it is the only one that exercises the rescale in the other direction.
+    func testGaiaDustIsMicroAtomNotThorchainBaseUnits() throws {
+        let coin = makeCoin(chain: .gaiaChain, ticker: "ATOM", decimals: 6)
+        let dust = try limitOrderCancelDust(for: coin, inbound: makeInbound(chain: "GAIA", dustThreshold: "1000000"))
+
+        XCTAssertEqual(dust, BigInt(20_000), "0.02 ATOM")
+        XCTAssertEqual(exactNaturalUnitsString(dust, decimals: coin.decimals), "0.02")
+    }
+
+    /// LTC publishes a 0.001 threshold, so its normal attach is 0.002 — which
+    /// the ceiling it shared with BTC did not permit.
+    func testLitecoinsNormalAttachIsPermittedByItsCeiling() throws {
+        let coin = makeCoin(chain: .litecoin, ticker: "LTC", decimals: 8)
+        let dust = try limitOrderCancelDust(for: coin, inbound: makeInbound(chain: "LTC", dustThreshold: "100000"))
+
+        XCTAssertEqual(dust, BigInt(200_000), "0.002 LTC")
+    }
+
     /// DOGE is the case worth naming: a 1 DOGE minimum means 2 whole DOGE are
     /// donated per cancel, which the confirmation UI has to state outright.
     func testDogeDustIsTwoWholeCoins() throws {
