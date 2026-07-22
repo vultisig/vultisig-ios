@@ -643,10 +643,7 @@ private extension ThorchainService {
     // MARK: - Models
     enum Errors: Error {
         case tnsEntryNotFound
-        case invalidURL
         case invalidPriceFormat
-        case invalidResponse
-        case apiError(String)
     }
 
 }

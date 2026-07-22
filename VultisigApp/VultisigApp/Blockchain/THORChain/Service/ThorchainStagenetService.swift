@@ -254,10 +254,7 @@ class ThorchainChainnetService: ThorchainSwapProvider {
     // MARK: - Errors
     enum Errors: Error {
         case tnsEntryNotFound
-        case invalidURL
         case invalidPriceFormat
-        case invalidResponse
-        case apiError(String)
     }
 }
 

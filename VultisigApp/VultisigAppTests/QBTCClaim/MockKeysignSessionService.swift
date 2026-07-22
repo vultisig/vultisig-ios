@@ -17,7 +17,6 @@ final class MockKeysignSessionService: KeysignSessionServicing {
 
     enum Call: Equatable {
         case registerAsParticipant(session: KeysignSessionInfo)
-        case kickoffCommittee(session: KeysignSessionInfo, participants: [String])
         case awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval)
         case pollSetupMessage(session: KeysignSessionInfo, messageID: String, timeout: TimeInterval)
     }

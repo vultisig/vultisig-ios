@@ -21,6 +21,26 @@ struct MayaNetworkBondInfo {
     let nextChurnDate: Date?
 }
 
+/// Result of bond eligibility check
+struct MayaBondEligibility {
+    let canBond: Bool
+    let nodeStatus: String
+    let currentProviders: Int
+}
+
+/// Node status for unbonding eligibility
+struct MayaNodeUnbondStatus {
+    let nodeStatus: String
+    let canUnbond: Bool
+
+    var warningMessage: String? {
+        if !canUnbond {
+            return String(format: "nodeActiveCannotUnbond".localized, nodeStatus)
+        }
+        return nil
+    }
+}
+
 /// Reason why bonding is not allowed
 enum MayaBondIneligibilityReason {
     case notWhitelisted
