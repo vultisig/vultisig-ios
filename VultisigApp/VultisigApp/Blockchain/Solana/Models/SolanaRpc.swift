@@ -6,6 +6,12 @@ extension SolanaService {
     }
 
     class SolanaDetailedResult<T: Decodable>: Decodable {
+        let context: SolanaDetailedContext
         let value: T
+    }
+
+    class SolanaDetailedContext: Decodable {
+        let apiVersion: String
+        let slot: Int
     }
 }
