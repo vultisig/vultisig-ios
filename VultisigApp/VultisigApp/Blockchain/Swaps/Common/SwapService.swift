@@ -22,11 +22,21 @@ struct SwapService {
     /// and `vultisig-android` (`STREAMING_SLIPPAGE_THRESHOLD_BPS`).
     static let streamingSlippageThresholdBps = 100
 
-    /// `Auto` slippage default. 0 → `tolerance_bps` is omitted, so the node sets
-    /// no `LIM` and never rejects the quote. A nonzero default blocks legitimate
-    /// swaps: the node gates `tolerance_bps` on the single-swap emit, so any swap
-    /// whose price impact exceeds it is refused. A user-set slippage overrides this.
-    static let defaultThorchainToleranceBps = 0
+    /// `Auto` slippage default, sent as `liquidity_tolerance_bps`. 100 bps = 1%.
+    ///
+    /// The node bakes this into the returned memo as a `LIM` floor of exactly
+    /// `floor(expected_amount_out × (10_000 − bps) / 10_000)`, so an `Auto` swap
+    /// gets on-chain protection instead of settling at any price.
+    ///
+    /// This is *not* the same knob as `tolerance_bps` — the node rejects a
+    /// request carrying both. `tolerance_bps` is gated against the single-swap
+    /// emit while anchored to the feeless price, so it refuses any swap with
+    /// real price impact; `liquidity_tolerance_bps` is immune to price impact
+    /// and yields a clean 1% floor at every size on both THORChain and Maya.
+    ///
+    /// A user-set slippage overrides this, and a user-set 0 still omits the
+    /// parameter entirely (no floor).
+    static let defaultLiquidityToleranceBps = 100
 
     func fetchQuote(
         amount: Decimal,
@@ -428,10 +438,10 @@ private extension SwapService {
             // THORChain expects integer amounts - truncate any floating point residuals
             let truncatedAmount = normalizedAmount.truncated(toPlaces: 0)
 
-            // `Auto` (nil) keeps the conservative default tolerance; a custom
-            // slippage maps directly to `tolerance_bps`, which the node bakes
+            // `Auto` (nil) takes the default 1% tolerance; a custom slippage
+            // maps directly to `liquidity_tolerance_bps`, which the node bakes
             // into the returned memo's `LIM` floor.
-            let toleranceBps = slippageBps ?? Self.defaultThorchainToleranceBps
+            let liquidityToleranceBps = slippageBps ?? Self.defaultLiquidityToleranceBps
 
             // External recipient (when set) becomes the swap's `destination` — the
             // node encodes it into the returned memo, so the swapped funds land at
@@ -451,7 +461,7 @@ private extension SwapService {
                 toAsset: toCoin.swapAsset,
                 amount: truncatedAmount.description,
                 interval: provider.streamingInterval,
-                toleranceBps: toleranceBps,
+                liquidityToleranceBps: liquidityToleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -475,7 +485,7 @@ private extension SwapService {
                 amount: truncatedAmount.description,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount,
-                toleranceBps: toleranceBps
+                liquidityToleranceBps: liquidityToleranceBps
             )
 
             switch service {
@@ -829,7 +839,7 @@ extension SwapService {
         amount: String,
         referredCode: String,
         vultTierDiscount: Int,
-        toleranceBps: Int = SwapService.defaultThorchainToleranceBps
+        liquidityToleranceBps: Int = SwapService.defaultLiquidityToleranceBps
     ) async -> ThorchainSwapQuote {
         guard Self.supportsStreamingFallback(provider) else {
             return rapid
@@ -856,7 +866,7 @@ extension SwapService {
                 amount: amount,
                 interval: 1,
                 streamingQuantity: streamingQuantity,
-                toleranceBps: toleranceBps,
+                liquidityToleranceBps: liquidityToleranceBps,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
