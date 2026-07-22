@@ -250,7 +250,7 @@ private extension MayachainService {
     /// Returns (affiliateAddress, affiliateBps) as URL-param-ready strings, or (nil, nil)
     /// if no affiliate should be sent.
     static func affiliateParams(referredCode _: String, discountBps: Int) -> (String?, String?) {
-        let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+        let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.affiliateFeeRateBp, discountBps: discountBps)
         return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
     }
 }

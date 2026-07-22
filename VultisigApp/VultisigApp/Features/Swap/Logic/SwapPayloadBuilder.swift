@@ -78,32 +78,106 @@ extension SwapCryptoLogic {
         return ERC20ApprovePayload(amount: amount, spender: spender)
     }
 
+    /// The `LIM/INTERVAL/QUANTITY` triple a THORChain/MayaChain swap memo
+    /// carries. Every field is a decimal string in the node's own units and
+    /// semantics; `"0"` is meaningful in all three positions (no output floor,
+    /// no streaming, protocol-chosen sub-swap count) rather than a sentinel.
+    struct ThorchainMemoSwapTerms: Equatable {
+        /// Minimum acceptable output, in the node's base units (THORChain 1e8 —
+        /// the same units as `expected_amount_out`). `"0"` = no floor asserted.
+        let limit: String
+        /// Streaming-swap block interval. `"0"` = a single (rapid) swap.
+        let streamingInterval: String
+        /// Streaming-swap sub-swap count. `"0"` = the protocol picks it.
+        let streamingQuantity: String
+
+        /// What an absent, truncated, or unparseable memo yields: a swap that
+        /// asserts nothing. Every field claims the weakest thing it can.
+        static let unspecified = ThorchainMemoSwapTerms(
+            limit: "0",
+            streamingInterval: "0",
+            streamingQuantity: "0"
+        )
+    }
+
+    /// Read the `LIM/INTERVAL/QUANTITY` triple out of a node-returned
+    /// THORChain/MayaChain swap memo.
+    ///
+    /// Memo grammar: `SWAP:ASSET:DESTADDR:LIM/INTERVAL/QUANTITY[:AFFILIATE:FEE]`,
+    /// with `SWAP` abbreviating to `=` or `s` (e.g. `=:e:0x742d…:0/1/0`). Neither
+    /// ASSET nor DESTADDR can contain a colon, so the triple is always the 4th
+    /// colon-delimited field and optional trailing affiliate/fee fields never
+    /// shift it. A rapid swap may stop after `LIM`; the omitted trailing terms
+    /// then read as `"0"`, matching the node's own reading of a short memo.
+    ///
+    /// Parsing is all-or-nothing: an action that isn't a swap, a triple with a
+    /// term we can't read as a bare decimal integer, or more than three terms
+    /// all yield `.unspecified`. Every one of those means the memo is not the
+    /// grammar we think it is, and a LIM salvaged from a memo we failed to
+    /// understand is exactly the false floor this parser exists to avoid. No
+    /// whitespace is trimmed either — the memo is signed byte-for-byte, so a
+    /// term that isn't already canonical is a term we should not vouch for.
+    static func thorchainMemoSwapTerms(from memo: String) -> ThorchainMemoSwapTerms {
+        let fields = memo.split(separator: ":", omittingEmptySubsequences: false)
+        guard fields.count >= 4, isThorchainSwapAction(fields[0]) else { return .unspecified }
+
+        let terms = fields[3].split(separator: "/", omittingEmptySubsequences: false)
+        guard !terms.isEmpty, terms.count <= 3 else { return .unspecified }
+
+        var parsed = ["0", "0", "0"]
+        for (index, term) in terms.enumerated() {
+            // ASCII digits only — `Character.isNumber` alone also accepts
+            // non-ASCII numerals and fractions, which would sail through here
+            // and land in the proto as an uninterpretable string.
+            guard !term.isEmpty, term.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+                return .unspecified
+            }
+            parsed[index] = String(term)
+        }
+
+        return ThorchainMemoSwapTerms(
+            limit: parsed[0],
+            streamingInterval: parsed[1],
+            streamingQuantity: parsed[2]
+        )
+    }
+
+    /// THORChain and MayaChain both spell the swap action `SWAP`, `=` or `s`,
+    /// case-insensitively. Every other action (`ADD`, `WITHDRAW`, `DONATE`,
+    /// `LOAN+`, …) lays its fields out differently, so its 4th field is not a
+    /// `LIM/INTERVAL/QUANTITY` triple and must not be read as one.
+    private static func isThorchainSwapAction(_ field: Substring) -> Bool {
+        switch field.lowercased() {
+        case "swap", "=", "s":
+            return true
+        default:
+            return false
+        }
+    }
+
     /// Build the THORChain/MayaChain swap payload from primitives + selected quote.
     /// `now` parameterised so tests can pin the 15-minute expiration deterministically.
     ///
-    /// The on-chain minimum-output floor is enforced by the `LIM` field inside
-    /// the node-returned `quote.memo` (driven by the `liquidity_tolerance_bps` we send on
-    /// the quote request); that memo is what gets signed verbatim. The
-    /// `toAmountLimit` / `streamingQuantity` fields here travel in the proto
-    /// payload for cross-device display — we mirror the node's derivation so
-    /// they stay consistent with the signed memo instead of reading `0`.
+    /// `toAmountLimit`, `streamingInterval` and `streamingQuantity` are read
+    /// straight out of `quote.memo`. That memo is signed and broadcast verbatim,
+    /// so its `LIM/INTERVAL/QUANTITY` triple is the only authoritative statement
+    /// of the output floor and streaming plan — neither is derivable from the
+    /// quote's other fields, because the node applies its tolerance parameter to
+    /// a feeless price we never see and bakes its own streaming choice into the
+    /// memo. All three are inert on this device (nothing renders them, no signer
+    /// reads them); they ride the proto so the co-signer sees exactly what the
+    /// memo commits to.
     static func buildThorchainSwapPayload(
         fromCoin: Coin,
         toCoin: Coin,
         fromAmountInCoin: BigInt,
         toAmountDecimal: Decimal,
         quote: ThorchainSwapQuote,
-        provider: SwapProvider,
-        toleranceBps: Int = SwapService.defaultLiquidityToleranceBps,
         now: Date = Date()
     ) -> THORChainSwapPayload {
         let vaultAddress = quote.inboundAddress ?? fromCoin.address
         let expirationTime = now.addingTimeInterval(60 * 15)
-        let toAmountLimit = thorchainToAmountLimit(
-            expectedAmountOut: quote.expectedAmountOut,
-            toleranceBps: toleranceBps
-        )
-        let streamingQuantity = quote.maxStreamingQuantity.map(String.init) ?? "0"
+        let memoTerms = thorchainMemoSwapTerms(from: quote.memo)
         return THORChainSwapPayload(
             fromAddress: fromCoin.address,
             fromCoin: fromCoin,
@@ -112,26 +186,12 @@ extension SwapCryptoLogic {
             routerAddress: quote.router,
             fromAmount: fromAmountInCoin,
             toAmountDecimal: toAmountDecimal,
-            toAmountLimit: toAmountLimit,
-            streamingInterval: String(provider.streamingInterval),
-            streamingQuantity: streamingQuantity,
+            toAmountLimit: memoTerms.limit,
+            streamingInterval: memoTerms.streamingInterval,
+            streamingQuantity: memoTerms.streamingQuantity,
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
             isAffiliate: SwapCryptoLogic.isAffiliate
         )
-    }
-
-    /// Minimum acceptable output, mirroring the node's `LIM` derivation:
-    /// `floor(expectedAmountOut × (10_000 − toleranceBps) / 10_000)`.
-    /// `expectedAmountOut` is the quote's raw integer output (THORChain 1e8
-    /// units). Returns `"0"` when the input can't be parsed or tolerance is out
-    /// of range — the node-side memo `LIM` remains the authoritative floor.
-    static func thorchainToAmountLimit(expectedAmountOut: String, toleranceBps: Int) -> String {
-        guard toleranceBps >= 0, toleranceBps < 10_000,
-              let expected = BigInt(expectedAmountOut), expected > 0 else {
-            return "0"
-        }
-        let limit = expected * BigInt(10_000 - toleranceBps) / BigInt(10_000)
-        return String(limit)
     }
 
     /// Assemble the final `KeysignPayload` for a swap given a finalised
@@ -177,7 +237,6 @@ extension SwapCryptoLogic {
                     fromAmountInCoin: amountInCoin,
                     toAmountDecimal: toDecimal,
                     quote: quote,
-                    provider: .mayachain,
                     now: now
                 )),
                 approvePayload: approvePayload,
@@ -201,7 +260,6 @@ extension SwapCryptoLogic {
                     fromAmountInCoin: amountInCoin,
                     toAmountDecimal: toDecimal,
                     quote: quote,
-                    provider: .thorchain,
                     now: now
                 )),
                 approvePayload: approvePayload,
@@ -225,7 +283,6 @@ extension SwapCryptoLogic {
                     fromAmountInCoin: amountInCoin,
                     toAmountDecimal: toDecimal,
                     quote: quote,
-                    provider: .thorchainChainnet,
                     now: now
                 )),
                 approvePayload: approvePayload,
@@ -249,7 +306,6 @@ extension SwapCryptoLogic {
                     fromAmountInCoin: amountInCoin,
                     toAmountDecimal: toDecimal,
                     quote: quote,
-                    provider: .thorchainStagenet,
                     now: now
                 )),
                 approvePayload: approvePayload,
@@ -612,7 +668,7 @@ extension SwapCryptoLogic {
                 throw SwapKitError.unsupportedTxType(txType)
             }
 
-        case let .jupiter(evmQuote, _, _):
+        case let .jupiter(evmQuote, _, _, _):
             // Jupiter rides the proven SwapKit-Solana signing path: the base64
             // Solana wire tx lives in `quote.tx.data`, routed via
             // `SwapPayload.generic` to `SolanaSwaps`, which refreshes only the

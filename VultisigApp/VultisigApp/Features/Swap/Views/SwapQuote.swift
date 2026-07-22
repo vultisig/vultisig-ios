@@ -18,9 +18,15 @@ enum SwapQuote: Hashable {
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
     /// Jupiter Solana swap. `EVMQuote.tx.data` carries the base64 Solana wire
-    /// transaction (mirrors the SwapKit-Solana shape); `platformFee` is the
-    /// VULT-scaled affiliate fee in `toCoin` units, subtracted in ranking.
-    case jupiter(EVMQuote, fee: BigInt?, platformFee: Decimal?)
+    /// transaction (mirrors the SwapKit-Solana shape). `platformFee` is the
+    /// VULT-scaled affiliate fee in `toCoin` units — 0 when none is charged (the
+    /// Ultimate tier), so a token-output swap still shows an explicit $0.00 row.
+    /// `feeOnInput` is true only when the fee is collected on the INPUT mint —
+    /// native-SOL (wrapped-SOL) outputs, where the amount can't be expressed in
+    /// `toCoin` units — so `platformFee` is 0 there and callers suppress the
+    /// affiliate row rather than render a misleading $0.00. Ranking is
+    /// unaffected: it reads `outAmount`, already net of the fee.
+    case jupiter(EVMQuote, fee: BigInt?, platformFee: Decimal, feeOnInput: Bool)
 
     /// True for the native-protocol routes (THORChain on any network, MayaChain)
     /// that deposit into a THOR/Maya inbound vault, so a source-chain halt can
@@ -59,7 +65,7 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _),
-                .jupiter(let quote, _, _):
+                .jupiter(let quote, _, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
             return response.targetAddress
@@ -82,7 +88,7 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _),
-                .jupiter(let quote, _, _):
+                .jupiter(let quote, _, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
             return response.inboundAddress ?? response.targetAddress
@@ -146,10 +152,10 @@ enum SwapQuote: Hashable {
             let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
             return toAmountDecimal * (integratorFee ?? 0)
-        case .jupiter(_, _, let platformFee):
+        case .jupiter(_, _, let platformFee, _):
             // Jupiter's affiliate platform fee is already denominated in toCoin
-            // units (taken from the output mint).
-            return platformFee ?? .zero
+            // units (0 when none is charged or the fee is taken on the input mint).
+            return platformFee
         case .oneinch, .kyberswap, .swapkit:
             // Fee is in native gas token, not toCoin — handled via evmSwapFeeBigInt
             return .zero
@@ -287,10 +293,11 @@ enum SwapQuote: Hashable {
             hasher.combine(response)
             hasher.combine(fee)
             hasher.combine(subProvider)
-        case .jupiter(let quote, let fee, let platformFee):
+        case .jupiter(let quote, let fee, let platformFee, let feeOnInput):
             hasher.combine(quote)
             hasher.combine(fee)
             hasher.combine(platformFee)
+            hasher.combine(feeOnInput)
         }
     }
 }

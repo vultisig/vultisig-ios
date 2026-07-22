@@ -1038,6 +1038,7 @@
 "rippleUndecodedNotice" = "Não foi possível decodificar esta transação. Revise cuidadosamente o JSON bruto antes de assinar.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "O endereço de destino deve ser diferente do endereço de origem";
 "sameDeviceShareError" = "Mesmo compartilhamento de cofre";
 "sameDeviceShareErrorDescription" = "Por favor, altere a partilha para assinar. Dois dispositivos não podem usar a mesma partilha do cofre para co-assinar.";
 "sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
@@ -1231,11 +1232,13 @@
 "supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak, .vult & .zip";
 "swap" = "Troca";
 "swap.duration.instant" = "Instantâneo";
+"swap.included_in_rate" = "incluída na taxa cotada";
 "swap.outbound_fee" = "Taxa de Saída";
 "swap.price_impact" = "Impacto no Preço";
 "swap.price_impact.average" = "Médio";
 "swap.price_impact.good" = "Bom";
 "swap.price_impact.high" = "Alto";
+"swap.protocol_fee" = "Taxa de protocolo";
 "swap.referral_discount" = "Indicação (-%d bps)";
 "swap.tab.limit" = "Limite";
 "swap.tab.market" = "Mercado";
@@ -1516,6 +1519,8 @@
 "vultisig-referrals" = "Vultisig Indicações";
 "vultisigCommunity" = "Comunidade Vultisig";
 "vultisigEducation" = "Educação Vultisig";
+"vultisigFee" = "Taxa da Vultisig";
+"vultisigFeePercentage" = "Taxa da Vultisig (%.2f%%)";
 "vultisigWebsite" = "Site do Vultisig";
 "vultTierBadge" = "NÍVEL VULT";
 "waitChurnedOutNode" = "Aguarde até que o Nó seja excluído";
@@ -1535,6 +1540,7 @@
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowOutboundFee" = "Valor abaixo da taxa de saída — retire pelo menos %@ %@ para cobrir os custos da rede";
 "withdrawPercentage" = "Porcentagem de saque";
+"withdrawRewards" = "Sacar recompensas de %@";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Senha incorreta";
 "wrongVaultPassword" = "Senha do cofre errada. Por favor, tente novamente.";

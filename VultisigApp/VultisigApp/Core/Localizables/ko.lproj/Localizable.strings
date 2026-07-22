@@ -1036,6 +1036,7 @@
 "rippleUndecodedNotice" = "이 트랜잭션을 디코딩할 수 없습니다. 서명하기 전에 원시 JSON을 주의 깊게 확인하세요.";
 "routerNotAvailable" = "%@에서 승인을 위한 라우터를 사용할 수 없습니다. 나중에 다시 시도하세요.";
 "rune" = "RUNE";
+"sameAddressError" = "받는 주소는 보내는 주소와 달라야 합니다";
 "sameDeviceShareError" = "동일한 볼트 공유";
 "sameDeviceShareErrorDescription" = "서명할 공유를 변경해 주세요. 두 기기는 공동 서명에 동일한 볼트 공유를 사용할 수 없습니다.";
 "sameNameFolderDescription" = "해당 폴더 이름이 이미 존재합니다. 새로운 이름을 시도하세요.";
@@ -1194,11 +1195,13 @@
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";
 "swap" = "스왑";
 "swap.duration.instant" = "즉시";
+"swap.included_in_rate" = "제시된 환율에 포함됨";
 "swap.outbound_fee" = "아웃바운드 수수료";
 "swap.price_impact" = "가격 영향";
 "swap.price_impact.average" = "보통";
 "swap.price_impact.good" = "양호";
 "swap.price_impact.high" = "높음";
+"swap.protocol_fee" = "프로토콜 수수료";
 "swap.referral_discount" = "추천 (-%d bps)";
 "swap.tab.limit" = "지정가";
 "swap.tab.market" = "시장";
@@ -1477,6 +1480,8 @@
 "vultisig-referrals" = "Vultisig 추천";
 "vultisigCommunity" = "Vultisig 커뮤니티";
 "vultisigEducation" = "Vultisig 교육";
+"vultisigFee" = "Vultisig 수수료";
+"vultisigFeePercentage" = "Vultisig 수수료 (%.2f%%)";
 "vultisigWebsite" = "Vultisig 웹사이트";
 "vultTierBadge" = "VULT 등급";
 "waitChurnedOutNode" = "노드가 처른될 때까지 기다리세요";
@@ -1496,6 +1501,7 @@
 "withdrawAmount" = "%@ 출금";
 "withdrawBelowOutboundFee" = "출금 금액이 출금 수수료보다 낮음 — 네트워크 비용을 충당하려면 최소 %@ %@을(를) 출금하세요";
 "withdrawPercentage" = "출금 비율";
+"withdrawRewards" = "%@ 보상 출금";
 "withdrawSecuredAssetError" = "%@을(를) 출금하려면 먼저 볼트에 %@ 코인을 추가해야 합니다. 볼트 설정으로 이동하여 %@을(를) 추가하고 계속하세요.";
 "wrongPassword" = "잘못된 비밀번호";
 "wrongVaultPassword" = "잘못된 볼트 비밀번호입니다. 다시 시도하세요.";

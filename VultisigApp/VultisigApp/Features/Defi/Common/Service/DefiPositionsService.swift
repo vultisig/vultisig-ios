@@ -29,7 +29,11 @@ struct DefiPositionsService {
             [
                 TokensStore.tcy,
                 TokensStore.stcy,
+                // RUJI's two staking positions are independent and are selected
+                // independently: `ruji` is the bonded one (claimable USDC),
+                // `sruji` the auto-compounding one (the receipt it mints).
                 TokensStore.ruji,
+                TokensStore.sruji,
                 TokensStore.yrune,
                 TokensStore.ytcy,
                 // ybRUNE is the auto-compound (`.compound`) position; its card

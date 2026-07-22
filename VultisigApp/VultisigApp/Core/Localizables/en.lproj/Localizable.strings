@@ -1036,6 +1036,7 @@
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
+"sameAddressError" = "The to address must be different from the from address";
 "sameDeviceShareError" = "Same vault share";
 "sameDeviceShareErrorDescription" = "Please change the share to sign. Two devices cannot use the same vault share for co-signing.";
 "sameNameFolderDescription" = "That folder name already exists. Try a new one.";
@@ -1229,11 +1230,13 @@
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
 "swap" = "Swap";
 "swap.duration.instant" = "Instant";
+"swap.included_in_rate" = "included in quoted rate";
 "swap.outbound_fee" = "Outbound Fee";
 "swap.price_impact" = "Price Impact";
 "swap.price_impact.average" = "Average";
 "swap.price_impact.good" = "Good";
 "swap.price_impact.high" = "High";
+"swap.protocol_fee" = "Protocol Fee";
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.tab.limit" = "Limit";
 "swap.tab.market" = "Market";
@@ -1514,6 +1517,8 @@
 "vultisig-referrals" = "Vultisig Referrals";
 "vultisigCommunity" = "Vultisig Community";
 "vultisigEducation" = "Vultisig Education";
+"vultisigFee" = "Vultisig Fee";
+"vultisigFeePercentage" = "Vultisig Fee (%.2f%%)";
 "vultisigWebsite" = "Vultisig Website";
 "vultTierBadge" = "VULT TIER";
 "waitChurnedOutNode" = "Wait until Node is churned out";
@@ -1533,6 +1538,7 @@
 "withdrawAmount" = "Withdraw %@";
 "withdrawBelowOutboundFee" = "Amount below outbound fee — withdraw at least %@ %@ to cover network costs";
 "withdrawPercentage" = "Withdraw Percentage";
+"withdrawRewards" = "Withdraw %@ Rewards";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Wrong password";
 "wrongVaultPassword" = "Wrong vault password. Please, try again.";
