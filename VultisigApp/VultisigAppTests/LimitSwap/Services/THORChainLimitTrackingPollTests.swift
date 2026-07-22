@@ -488,8 +488,8 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 0, "terminal — stop tracking")
     }
 
-    /// Recorded as REFUNDED, not expired. The funds coming back is what we
-    /// observed; "your order expired" is a cause we can't corroborate, and it
+    /// Recorded as REFUNDED, with no cause attached. That is what a closure the
+    /// chain gave no recognised reason for actually is; "your order expired"
     /// would be a fabricated explanation for an order rejected at placement.
     func testAnOrderThatLeavesTheQueueAndRefundedIsRecordedAsRefunded() async {
         let env = TestEnv(queueBody: .empty, outcome: .refunded)
@@ -499,6 +499,33 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
 
         XCTAssertEqual(env.orders.observations.last?.status, .refunded)
         XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .refunded)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
+    }
+
+    /// ⚠️ THORChain's own account of the closure, carried straight through.
+    /// Nothing local is consulted, so an order cancelled from another device —
+    /// or one whose closure beat this app's own cancel poller, which is what
+    /// happened three blocks after placement on 2026-07-22 — is labelled
+    /// correctly.
+    func testAChainReportedCancellationIsRecordedAsCancelled() async {
+        let env = TestEnv(queueBody: .empty, outcome: .cancelled)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await pollUntilAbsenceIsCorroborated(env)
+
+        XCTAssertEqual(env.orders.observations.last?.status, .cancelled)
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .cancelled)
+        XCTAssertEqual(env.service.trackedOrderCountForTesting, 0, "terminal — stop tracking")
+    }
+
+    func testAChainReportedExpiryIsRecordedAsExpired() async {
+        let env = TestEnv(queueBody: .empty, outcome: .expired)
+        env.service.start(tx: env.makeRow(txHash: "ABC123"))
+
+        await pollUntilAbsenceIsCorroborated(env)
+
+        XCTAssertEqual(env.orders.observations.last?.status, .expired)
+        XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .expired)
         XCTAssertEqual(env.service.trackedOrderCountForTesting, 0)
     }
 

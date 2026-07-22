@@ -119,13 +119,22 @@ struct LimitOrderStorageService {
     /// and it leaves a later closure ready to be labelled "Cancelled" when
     /// nothing was cancelled.
     ///
-    /// Reverts the labels the record produced along with the hash. Both
-    /// `.cancelling` and `.cancelled` are derived from it and from nothing else
-    /// (see `reconcile`), so a record withdrawn takes its conclusions with it:
-    /// a still-resting order goes back to `.pending` — which re-enables its
-    /// Cancel button, the point of the self-heal — and a closed one back to
-    /// `.refunded`, the observable fact the tracker would have written on its
-    /// own.
+    /// Reverts the ONE label the record produced: `.cancelling`, which says
+    /// nothing except that our transaction landed, and which goes back to
+    /// `.pending` — re-enabling the Cancel button, the point of the self-heal.
+    ///
+    /// ⚠️ **A terminal label is left alone, including `.cancelled`.** It used to
+    /// be reverted to `.refunded` on the reasoning that `.cancelled` could only
+    /// ever have come from this record. That is no longer true: the tracker
+    /// reads THORChain's own `"limit swap cancelled"` off the refund action
+    /// Midgard indexes, and writes `.cancelled` on that alone. Rewriting it here
+    /// would replace the chain's account of the order with our bookkeeping about
+    /// a transaction — and our transaction failing does not un-cancel an order
+    /// that something else cancelled.
+    ///
+    /// This is reachable only for an order still RESTING in the queue anyway
+    /// (`verifyPendingCancel` is the sole caller and re-checks nothing else), so
+    /// the terminal arms are a guard rather than a path.
     ///
     /// - Parameter expecting: compare-and-set. The caller looked the hash up,
     ///   went to the network to check it, and is acting on an answer that is by
@@ -144,9 +153,7 @@ struct LimitOrderStorageService {
         switch order.status {
         case .cancelling:
             order.statusRawValue = LimitOrderStatus.pending.rawValue
-        case .cancelled:
-            order.statusRawValue = LimitOrderStatus.refunded.rawValue
-        case .pending, .filled, .refunded, .expired:
+        case .pending, .filled, .refunded, .expired, .cancelled:
             break
         }
         try saveAndNotify()
@@ -260,59 +267,52 @@ struct LimitOrderStorageService {
 
     /// Reconcile an observed outcome against what this device knows it did.
     ///
-    /// The queue never says WHY an order closed, so the tracker can only report
-    /// what it saw: the funds came back, i.e. `.refunded`. But if we broadcast a
-    /// cancel for this order, a refund IS that cancel settling — and `EventLimitSwapClose`,
-    /// which carries the authoritative reason, reaches no REST route and no
-    /// Midgard index, so this local knowledge is the ONLY way the two are ever
-    /// told apart. Without it a user who cancelled would be shown "Refunded".
+    /// ⚠️ **This is now a FALLBACK, not the rule.** THORChain's own reason for
+    /// closing an order reaches us through Midgard's refund action, so a
+    /// cancellation normally arrives here already labelled `.cancelled` and
+    /// passes straight through — including one performed on another device or in
+    /// another wallet, which no amount of local bookkeeping could ever have
+    /// attributed. What is left for this function is the two cases the chain
+    /// does not answer:
+    ///
+    /// - a still-RESTING order with a confirmed cancel against it, which is
+    ///   `.cancelling`. Not an outcome at all: it is our own transaction made
+    ///   visible while the order carries on resting, and there is no chain
+    ///   signal for it because nothing has happened to the order yet.
+    /// - a `.refunded` closure carrying no reason we recognise — a missing
+    ///   `metadata.refund.reason`, or a wording THORChain has changed. Then the
+    ///   old local evidence is the only evidence there is.
     ///
     /// Narrow on purpose:
     /// - only `.refunded` is reinterpreted as an OUTCOME. A `.filled`
     ///   observation stands, and must: an order that filled before the cancel
     ///   landed genuinely filled, and relabelling that as cancelled would
     ///   misreport where the funds went.
-    /// - a `.pending` observation — the order is still in the queue — becomes
-    ///   `.cancelling`, which is not an outcome at all: it is the confirmed
-    ///   cancel TRANSACTION made visible while the order carries on resting.
+    /// - `.cancelled` and `.expired` stand too — those came from the chain, and
+    ///   a local record has nothing to add to them.
     /// - only when a cancel was actually broadcast for THIS order.
     /// - **and only if the order did not simply run out of time.**
     ///
-    /// ⚠️ That last guard is what stops this becoming a delayed version of the
-    /// optimistic write it replaced. A cancel that addressed the wrong ratio
-    /// bucket does nothing; hours later the order expires on its own and leaves
-    /// the queue. Without the TTL check, that closure would be credited to the
-    /// cancel and reported as a successful cancellation — telling the user their
-    /// cancel worked when it silently failed and the order ran to expiry. An
-    /// order that reached a terminal state on its own reached it on its own, and
-    /// an outstanding cancel intent does not get to claim credit. Same reasoning
-    /// as `.filled` above.
+    /// ⚠️ That last guard is what stops the fallback becoming a delayed version
+    /// of the optimistic write it replaced. A cancel that addressed the wrong
+    /// ratio bucket does nothing; hours later the order expires on its own and
+    /// leaves the queue. Without the TTL check, that closure would be credited
+    /// to the cancel and reported as a successful cancellation — telling the
+    /// user their cancel worked when it silently failed and the order ran to
+    /// expiry. An order that reached a terminal state on its own reached it on
+    /// its own, and an outstanding cancel intent does not get to claim credit.
     ///
     /// The cancel is credited ONLY when the order provably could not have
     /// expired on its own — i.e. its TTL still has not elapsed at the moment we
     /// observe the closure. Anything else stays `.refunded`.
     ///
-    /// The reasoning is about what the evidence can actually support. A closure
-    /// is observed somewhere in the window between the last time we saw the
-    /// order resting and the poll that found it gone. If the TTL end falls
-    /// inside that window, expiry and cancellation are **indistinguishable** —
-    /// the order could have expired a minute before our cancel landed, or the
-    /// cancel could have closed it a minute before the TTL. Nothing reachable
-    /// from a client separates them: `EventLimitSwapClose` carries the reason
-    /// and reaches no REST route and no Midgard index.
-    ///
-    /// So the ambiguous case reports `.refunded`, which is precisely what that
-    /// case is defined to mean — *"the funds came back, the observable fact"*,
-    /// explicitly distinct from `.expired`, which `LimitOrderStatus` documents
-    /// as "a claim about WHY". Claiming `.expired` here would be the same
-    /// overclaim as claiming `.cancelled`, pointed the other way; the honest
-    /// answer is the one that asserts only what was seen.
-    ///
-    /// The cost is that a genuine cancellation observed long after the fact —
-    /// the app reopened days later — reads "Refunded" rather than "Cancelled".
-    /// That is an under-claim about the cause of an identical funds movement,
-    /// and it is the right direction to be wrong in: it never tells a user an
-    /// action succeeded when it may have silently failed.
+    /// A closure is observed somewhere in the window between the last time we
+    /// saw the order resting and the poll that found it gone. With no reason
+    /// from the chain, and the TTL end falling inside that window, expiry and
+    /// cancellation are indistinguishable from here — the order could have
+    /// expired a minute before our cancel landed, or the cancel could have
+    /// closed it a minute before the TTL. `.refunded` is precisely what that
+    /// case is defined to mean: *"the funds came back, the observable fact"*.
     ///
     /// Pure and `static` so the reinterpretation is unit-testable without
     /// SwiftData.

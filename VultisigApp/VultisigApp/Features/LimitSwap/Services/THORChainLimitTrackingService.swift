@@ -492,11 +492,20 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             if write(order: order, status: .filled, entry: nil) {
                 release(order)
             }
+        case .cancelled, .expired:
+            // THORChain's own account of why it closed the order, read off the
+            // refund action Midgard indexes. Nothing local is consulted: this is
+            // as true for an order cancelled from another device, or another
+            // wallet, as for one this app cancelled itself.
+            if write(order: order, status: outcome == .cancelled ? .cancelled : .expired, entry: nil) {
+                release(order)
+            }
         case .refunded:
-            // Recorded as refunded, not expired: the funds coming back is what
-            // we observed; a TTL elapsing is a cause we can't corroborate. The
-            // store promotes it to `.cancelled` only when this device holds a
-            // confirmed cancel AND the TTL demonstrably had not elapsed.
+            // The funds came back and the chain gave no reason we recognise.
+            // Recorded as the observable fact, and the store may still promote
+            // it to `.cancelled` on the older evidence — a cancel this device
+            // confirmed, against an order whose TTL demonstrably had not
+            // elapsed. That path is now the fallback, not the rule.
             if write(order: order, status: .refunded, entry: nil) {
                 release(order)
             }

@@ -67,7 +67,7 @@ struct LimitOrderCancelPreparer {
         if let destination {
             priced = try await priceL1Cancel(coin: coin, vault: vault, request: request, destination: destination)
         } else {
-            priced = await priceThorchainCancel(coin: coin, vault: vault, request: request)
+            priced = thorchainCancelPricing(for: coin)
         }
 
         let builder = CancelLimitOrderTransactionBuilder(
@@ -157,33 +157,24 @@ struct LimitOrderCancelPreparer {
         }
     }
 
-    /// The THORChain route's cost. Non-fatal on failure, unlike the L1 route:
-    /// a `MsgDeposit`'s fee is a protocol constant this app already knows
-    /// (`limitOrderCancelThorchainDisclosures` prices affordability from it), so
-    /// a failed prefetch costs a fee row that Verify refetches anyway — not the
-    /// balance verdict.
-    private func priceThorchainCancel(
-        coin: Coin,
-        vault: Vault,
-        request: LimitOrderCancelRequest
-    ) async -> PricedCancel {
-        let provisional = CancelLimitOrderTransactionBuilder(
-            coin: coin,
-            request: request,
-            l1Destination: nil
-        ).buildSendTransaction(vault: vault)
-        var gas = provisional.gas
-        do {
-            gas = try await BlockChainService.shared.fetchSpecific(tx: provisional).gas
-        } catch {
-            logger.debug("Cancel gas prefetch failed: \(error.localizedDescription, privacy: .public)")
-        }
+    /// The THORChain route's cost, which needs no network at all.
+    ///
+    /// ⚠️ **Taken from the signing constant, not from a fee fetch.**
+    /// `thorchain.swift` stamps `THORChainConstants.depositGasBaseUnits` onto
+    /// every `MsgDeposit` regardless of what was fetched, so the fetched figure
+    /// is the second number, not this one — and a fetch that FAILS leaves zero
+    /// behind, which is how Verify came to present the cancel as free. This is
+    /// also the figure `limitOrderCancelThorchainDisclosures` prices
+    /// affordability from, so the fee row and the "can you pay for this?"
+    /// verdict cannot disagree.
+    private func thorchainCancelPricing(for coin: Coin) -> PricedCancel {
+        let deposit = BigInt(THORChainConstants.depositGasBaseUnits)
         return PricedCancel(
             disclosures: limitOrderCancelThorchainDisclosures(for: coin),
-            gas: gas,
+            gas: deposit,
             // A THORChain deposit's whole cost IS its gas — there is no separate
             // total — and the fiat fee string reads this on every chain.
-            fee: gas
+            fee: deposit
         )
     }
 

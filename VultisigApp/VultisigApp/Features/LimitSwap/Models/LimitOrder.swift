@@ -263,8 +263,10 @@ enum LimitOrderStatus: String, Codable, Equatable {
     ///
     /// | Observed | Result |
     /// |---|---|
-    /// | leaves the queue, TTL demonstrably NOT elapsed | `.cancelled` |
-    /// | leaves the queue at/after its TTL (ambiguous) | `.refunded` |
+    /// | leaves the queue, chain says `limit swap cancelled` | `.cancelled` |
+    /// | leaves the queue, chain says `limit swap expired` | `.expired` |
+    /// | leaves the queue, no reason we recognise, TTL demonstrably NOT elapsed | `.cancelled` |
+    /// | leaves the queue, no reason we recognise, at/after its TTL | `.refunded` |
     /// | fills | `.filled` — never relabelled |
     /// | the cancel transaction turns out to have failed | back to `.pending` |
     ///
@@ -273,18 +275,31 @@ enum LimitOrderStatus: String, Codable, Equatable {
     /// prevent — just sourced from our own optimism instead of the chain's.
     case cancelling
     case filled
-    /// The order closed and the funds came back — the observable fact.
+    /// The order closed and the funds came back — the observable fact, with no
+    /// cause attached.
     ///
-    /// Distinct from `expired`, which is a claim about WHY: an order rejected at
-    /// placement (halted pool, bad memo) also refunds, seconds in, with no TTL
-    /// elapsed. Nothing reachable from a client distinguishes them — the close
-    /// reason lives in an EndBlock event no REST route exposes, and a closed
-    /// order is already gone from the queue with its expiry countdown. So the
-    /// tracker records this, and doesn't invent the cause.
+    /// Distinct from `expired` and `cancelled`, which are claims about WHY. The
+    /// chain normally answers that question (Midgard's refund action carries
+    /// `"limit swap expired"` / `"limit swap cancelled"` verbatim), so this is
+    /// what is left when it does not: a reason absent from the index, or one
+    /// THORChain has reworded. An order rejected at placement (halted pool, bad
+    /// memo) also refunds, seconds in, with no TTL elapsed — so inventing a
+    /// cause here would be inventing it for that user too.
     case refunded
-    /// The order's TTL elapsed. Only for a caller that can actually corroborate
-    /// expiry — the tracker cannot, and uses `refunded`.
+    /// The order's TTL elapsed — THORChain's own account of the closure, taken
+    /// from the refund action's `reason`.
+    ///
+    /// Never inferred. A client cannot corroborate an expiry on its own: a
+    /// closure is only ever observed somewhere inside the window between two
+    /// polls, and a TTL falling inside that window is indistinguishable from a
+    /// cancellation. What makes this assertable is that the chain says it.
     case expired
+    /// A cancel matched the order and closed it — THORChain's own account,
+    /// again from the refund action's `reason`.
+    ///
+    /// Independent of whether THIS device sent the cancel. An order cancelled
+    /// from another device or another wallet lands here too, which is the point:
+    /// the label describes the order, not our bookkeeping about a transaction.
     case cancelled
 }
 

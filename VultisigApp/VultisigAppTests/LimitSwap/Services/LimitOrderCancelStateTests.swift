@@ -44,13 +44,45 @@ final class LimitOrderCancelStateTests: XCTestCase {
 
     // MARK: - Reconciliation
 
-    /// The queue only ever reports that funds came back. Only this device knows
-    /// it asked for that — `EventLimitSwapClose` carries the reason and reaches
-    /// no REST route, so without this the user who cancelled sees "Refunded".
-    func testRefundOnAnOrderWeCancelledIsReportedAsCancelled() {
+    /// The FALLBACK path: a closure the chain gave no reason we recognise for,
+    /// against an order this device holds a confirmed cancel for. Local
+    /// knowledge is then the only knowledge there is.
+    func testARefundWithNoChainReasonIsCreditedToOurOwnCancel() {
         let order = makeOrder(cancelBroadcastHash: "CANCELTX")
 
         XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .refunded, with: order), .cancelled)
+    }
+
+    /// ⚠️ The bug this whole reading fixes: a cancel this device never recorded.
+    ///
+    /// The order closed three blocks after placement — before the cancel poller
+    /// could confirm the transaction on-chain — so no intent was ever stored,
+    /// and the closure read "Refunded" while THORChain's own index said
+    /// `limit swap cancelled`. The same holds for an order cancelled from
+    /// another device or another wallet, which no local record could ever cover.
+    func testAChainAttributedCancelNeedsNoLocalRecord() {
+        let order = makeOrder(cancelBroadcastHash: nil)
+
+        XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .cancelled, with: order), .cancelled)
+    }
+
+    /// And an expiry the chain reported is not downgraded either. This used to
+    /// be forbidden outright — asserting `.expired` was held to be the same
+    /// overclaim as asserting `.cancelled` — which was true only while no
+    /// authoritative signal was thought to exist.
+    func testAChainAttributedExpiryIsKeptAsExpired() {
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(observed: .expired, with: makeOrder()),
+            .expired
+        )
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(
+                observed: .expired,
+                with: makeOrder(cancelBroadcastHash: "CANCELTX")
+            ),
+            .expired,
+            "our own cancel does not get to overrule the chain"
+        )
     }
 
     func testRefundWithoutACancelStaysRefunded() {
@@ -359,10 +391,14 @@ final class LimitOrderCancelStateTests: XCTestCase {
         XCTAssertEqual(order.cancelBroadcastHash, "NEWCANCEL")
     }
 
-    /// A `.cancelled` label is only ever DERIVED from the record (see
-    /// `reconcile`), so withdrawing the record has to take its conclusion with
-    /// it — back to the observable fact.
-    func testClearingACancelRecordRevertsACancelledLabelToRefunded() throws {
+    /// ⚠️ A `.cancelled` label is no longer derived from the record, so
+    /// withdrawing the record must NOT take it down.
+    ///
+    /// The tracker writes `.cancelled` off THORChain's own
+    /// `"limit swap cancelled"`, and our transaction failing does not un-cancel
+    /// an order that something else cancelled. Reverting here would replace the
+    /// chain's account of the order with our bookkeeping about a transaction.
+    func testClearingACancelRecordLeavesAChainAttributedCancelledLabelAlone() throws {
         let vault = Vault.example
         let order = makeOrder(status: .cancelled, cancelBroadcastHash: "CANCELTX")
         vault.limitOrders = [order]
@@ -371,7 +407,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
             of: "order-1", expecting: "CANCELTX", in: vault
         )
 
-        XCTAssertEqual(order.status, .refunded)
+        XCTAssertEqual(order.status, .cancelled)
         XCTAssertNil(order.cancelBroadcastHash)
     }
 

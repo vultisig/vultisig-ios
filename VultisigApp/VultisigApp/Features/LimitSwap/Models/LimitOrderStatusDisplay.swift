@@ -49,10 +49,11 @@ struct LimitOrderStatusDisplay: Equatable {
     }
 
     /// Why a terminal order didn't fill. Each is reported only when it is what
-    /// we OBSERVED — the tracker records `refunded` and never infers `expired`,
-    /// because a placement rejected outright also refunds within seconds
-    /// without any TTL elapsing, and nothing reachable from a client separates
-    /// the two.
+    /// the CHAIN said — `expired` and `cancelled` come from the reason THORChain
+    /// attaches to the refund action Midgard indexes. `refunded` is the honest
+    /// answer when there is no such reason: a placement rejected outright also
+    /// refunds within seconds without any TTL elapsing, so a cause must never be
+    /// invented for one.
     enum ClosedReason: Equatable {
         case refunded
         case expired
