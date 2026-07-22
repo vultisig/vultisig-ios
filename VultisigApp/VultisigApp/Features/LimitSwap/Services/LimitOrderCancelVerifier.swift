@@ -35,10 +35,17 @@ enum LimitOrderCancelTxOutcome: Equatable, Sendable {
     /// ⚠️ Deliberately not folded into `succeeded`, because it is a weaker
     /// claim: it says the memo was delivered somewhere Bifrost can see it, not
     /// that the order was found. THORChain dispatches an L1 `m=<` from the
-    /// observed-tx path in EndBlock, and its `EventLimitSwapClose` reaches no
-    /// REST route and no Midgard index — so a wrong-bucket cancel on this route
-    /// really is silent, exactly as it appeared to be on THORChain before the
-    /// rehearsal proved otherwise there.
+    /// observed-tx path in EndBlock, which produces no transaction result for a
+    /// client to read — so at the moment of the cancel, a wrong-bucket attempt
+    /// on this route really is silent, exactly as it appeared to be on
+    /// THORChain before the 2026-07-21 rehearsal proved otherwise there.
+    ///
+    /// It is not silent forever, though, and that distinction is worth keeping
+    /// straight: if the cancel DID match, the order's eventual closure carries
+    /// THORChain's own `limit swap cancelled` through Midgard's refund action,
+    /// and the tracker reads it. What this route cannot answer is the question
+    /// asked HERE and NOW — was the message accepted — which is exactly why the
+    /// weaker case exists.
     case delivered
     /// The chain refused it, with its own reason.
     case failed(reason: String)
