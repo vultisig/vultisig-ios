@@ -184,6 +184,46 @@ extension TransactionHistoryData {
     }
 }
 
+// MARK: - Provider Logo
+
+extension TransactionHistoryData {
+    /// Brand-logo asset name for the `via {provider}` badge, or `nil` when the
+    /// stored provider has no recognised brand mapping.
+    var swapProviderLogo: String? {
+        Self.providerLogoAsset(for: swapProvider)
+    }
+
+    /// Maps a persisted swap-provider display name to its brand-logo asset name,
+    /// returning the same asset strings as `SwapQuote.providerLogo`.
+    ///
+    /// We map from the display *string* rather than the enum because transaction
+    /// history persists only the provider's display name (`swapProvider`), never
+    /// the payload-carrying `SwapQuote`/`SwapProvider` value — so the enum isn't
+    /// available at render time. The stored string varies by record path: network
+    /// suffixes (`THORChain-Stagenet`), casing (`Maya protocol` vs `Maya
+    /// Protocol`), and sub-provider suffixes (`SwapKit (Chainflip)`). Matching is
+    /// therefore case-insensitive substring, not exact equality. `nil` for an
+    /// empty/absent name or an unrecognised provider.
+    static func providerLogoAsset(for swapProvider: String?) -> String? {
+        guard let normalized = swapProvider?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased(),
+            !normalized.isEmpty else {
+            return nil
+        }
+
+        if normalized.contains("thorchain") { return "THORChain" }
+        if normalized.contains("maya") { return "Maya protocol" }
+        if normalized.contains("1inch") { return "1Inch" }
+        if normalized.contains("kyber") { return "kyberswap" }
+        if normalized.contains("li.fi") { return "LI.FI" }
+        if normalized.contains("swapkit") { return "swapkit" }
+        if normalized.contains("jupiter") { return "jupiter" }
+
+        return nil
+    }
+}
+
 // MARK: - Conversions
 
 extension TransactionHistoryData {
