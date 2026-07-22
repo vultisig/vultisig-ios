@@ -200,12 +200,6 @@ private extension THORChainStakingService {
         return response.data
     }
 
-    func fetchTcyDistributions(limit: Int) async throws -> [TcyDistribution] {
-        let target = THORChainStakingAPI.getTcyDistributions(limit: limit)
-        let response = try await httpClient.request(target, responseType: [TcyDistribution].self)
-        return response.data
-    }
-
     func fetchTcyUserDistributions(address: String) async throws -> TcyUserDistributionsResponse {
         let target = THORChainStakingAPI.getTcyUserDistributions(address: address)
         let response = try await httpClient.request(target, responseType: TcyUserDistributionsResponse.self)

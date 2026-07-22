@@ -81,22 +81,11 @@ struct ButtonLoader: View {
     }
 }
 
-struct SwapLoader: View {
-    var body: some View {
-        SpinningLineLoader()
-            .scaleEffect(1.2)
-            .frame(width: 60, height: 60)
-            .background(Theme.colors.bgSurface1.opacity(0.9))
-            .cornerRadius(12)
-    }
-}
-
 #Preview {
     VStack(spacing: 20) {
         Loader()
         InlineLoader()
         ButtonLoader()
-        SwapLoader()
         SpinningLineLoader()
     }
 }

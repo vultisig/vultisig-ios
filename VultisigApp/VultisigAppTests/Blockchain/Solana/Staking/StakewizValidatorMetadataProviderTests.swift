@@ -219,12 +219,6 @@ private struct NoAvatarService: KeybaseAvatarServiceProtocol {
     func avatarURL(forIdentity _: String) async -> URL? { nil }
 }
 
-private struct FixedAvatarService: KeybaseAvatarServiceProtocol {
-    let url: URL?
-    // swiftlint:disable:next async_without_await
-    func avatarURL(forIdentity _: String) async -> URL? { url }
-}
-
 /// Counts how many times the Keybase fallback is hit so a test can assert the
 /// per-validator round-trip is skipped when a Stakewiz image is present.
 private actor SpyAvatarService: KeybaseAvatarServiceProtocol {

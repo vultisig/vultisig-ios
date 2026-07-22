@@ -171,59 +171,6 @@ extension MayaChainAPIService {
         return nodeDetails.bondProviders.providers.contains { $0.bondAddress == bondAddress }
     }
 
-    /// Comprehensive bond eligibility check
-    /// - Parameters:
-    ///   - nodeAddress: Maya node address
-    ///   - bondAddress: The potential bond provider's address
-    /// - Returns: BondEligibility result with status and error message if ineligible
-    func checkBondEligibility(nodeAddress: String, bondAddress: String) async throws -> MayaBondEligibility {
-        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
-
-        // Check 1: Is user whitelisted?
-        let isWhitelisted = nodeDetails.bondProviders.providers.contains { $0.bondAddress == bondAddress }
-        guard isWhitelisted else {
-            return MayaBondEligibility(
-                canBond: false,
-                reason: .notWhitelisted,
-                nodeStatus: nodeDetails.status,
-                currentProviders: nodeDetails.bondProviders.providers.count
-            )
-        }
-
-        // Check 2: Does node have capacity?
-        let maxProviders = 8
-        let currentProviders = nodeDetails.bondProviders.providers.count
-        guard currentProviders < maxProviders else {
-            return MayaBondEligibility(
-                canBond: false,
-                reason: .nodeAtCapacity,
-                nodeStatus: nodeDetails.status,
-                currentProviders: currentProviders
-            )
-        }
-
-        // All checks passed
-        return MayaBondEligibility(
-            canBond: true,
-            reason: nil,
-            nodeStatus: nodeDetails.status,
-            currentProviders: currentProviders
-        )
-    }
-
-    /// Get node status for unbond eligibility
-    /// - Parameter nodeAddress: Maya node address
-    /// - Returns: Node status info for unbonding
-    func getNodeStatusForUnbond(nodeAddress: String) async throws -> MayaNodeUnbondStatus {
-        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
-        let canUnbond = nodeDetails.status != "Active" // Can only unbond when node is churned out
-
-        return MayaNodeUnbondStatus(
-            nodeStatus: nodeDetails.status,
-            canUnbond: canUnbond
-        )
-    }
-
     /// Get bonded LP units for a specific node, bond address, and pool asset
     /// - Parameters:
     ///   - nodeAddress: Maya node address

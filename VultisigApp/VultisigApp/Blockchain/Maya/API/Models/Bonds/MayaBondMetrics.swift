@@ -35,28 +35,3 @@ enum MayaBondIneligibilityReason {
         }
     }
 }
-
-/// Result of bond eligibility check
-struct MayaBondEligibility {
-    let canBond: Bool
-    let reason: MayaBondIneligibilityReason?
-    let nodeStatus: String
-    let currentProviders: Int
-
-    var errorMessage: String? {
-        reason?.localizedMessage
-    }
-}
-
-/// Node status for unbonding eligibility
-struct MayaNodeUnbondStatus {
-    let nodeStatus: String
-    let canUnbond: Bool
-
-    var warningMessage: String? {
-        if !canUnbond {
-            return String(format: "nodeActiveCannotUnbond".localized, nodeStatus)
-        }
-        return nil
-    }
-}
