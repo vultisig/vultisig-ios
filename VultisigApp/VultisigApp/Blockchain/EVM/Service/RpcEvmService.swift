@@ -52,13 +52,12 @@ class RpcEvmService: RpcService {
             return [.safeLow: low, .normal: normal, .fast: fast]
         }
 
-        guard !history.isEmpty else {
+        guard let normal = history.median() else {
             let value = try await fetchMaxPriorityFeePerGas()
             return priorityFeesMap(low: value, normal: value, fast: value)
         }
 
         let low = history[0]
-        let normal = history[history.count / 2]
         let fast = history[history.count - 1]
 
         return priorityFeesMap(low: low, normal: normal, fast: fast)
