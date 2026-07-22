@@ -180,6 +180,24 @@ struct TransactionHistoryScreen: View {
         .refreshable {
             await viewModel.refresh()
         }
+        .overlay(alignment: .top) {
+            if !grouped.isEmpty {
+                topGradient
+            }
+        }
+    }
+
+    private var topGradient: some View {
+        LinearGradient(
+            colors: [
+                Theme.colors.bgPrimary,
+                Theme.colors.bgPrimary.opacity(0)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .frame(height: 24)
+        .allowsHitTesting(false)
     }
 
     private var bottomGradient: some View {
