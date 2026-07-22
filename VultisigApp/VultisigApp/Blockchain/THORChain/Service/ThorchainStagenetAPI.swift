@@ -66,7 +66,7 @@ enum ThorchainStagenetAPI: TargetType {
         streamingQuantity: String?,
         affiliates: String?,
         affiliateBps: String?,
-        toleranceBps: String?
+        liquidityToleranceBps: String?
     )
     case broadcast(env: Environment, body: Data)
 
@@ -149,7 +149,7 @@ enum ThorchainStagenetAPI: TargetType {
         case .allDenomMetadata:
             return .requestParameters(["pagination.limit": "1000"], .urlEncoding)
 
-        case .swapQuote(_, let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps, let toleranceBps):
+        case .swapQuote(_, let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps, let liquidityToleranceBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -160,7 +160,7 @@ enum ThorchainStagenetAPI: TargetType {
             if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliates = affiliates { params["affiliate"] = affiliates }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
-            if let toleranceBps = toleranceBps { params["tolerance_bps"] = toleranceBps }
+            if let liquidityToleranceBps = liquidityToleranceBps { params["liquidity_tolerance_bps"] = liquidityToleranceBps }
             return .requestParameters(params, .urlEncoding)
 
         case .broadcast(_, let body):

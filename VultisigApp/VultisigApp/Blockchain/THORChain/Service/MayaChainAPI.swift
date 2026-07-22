@@ -29,7 +29,7 @@ struct MayaChainAPI: TargetType {
             streamingQuantity: String?,
             affiliate: String?,
             affiliateBps: String?,
-            toleranceBps: String?
+            liquidityToleranceBps: String?
         )
         case broadcast(body: Data)
         case pools
@@ -77,7 +77,7 @@ struct MayaChainAPI: TargetType {
         switch endpoint {
         case .balances, .accountNumber, .pools, .inboundAddresses:
             return .requestPlain
-        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliate, let affiliateBps, let toleranceBps):
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliate, let affiliateBps, let liquidityToleranceBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -88,7 +88,7 @@ struct MayaChainAPI: TargetType {
             if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliate = affiliate { params["affiliate"] = affiliate }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
-            if let toleranceBps = toleranceBps { params["tolerance_bps"] = toleranceBps }
+            if let liquidityToleranceBps = liquidityToleranceBps { params["liquidity_tolerance_bps"] = liquidityToleranceBps }
             return .requestParameters(params, .urlEncoding)
         case .broadcast(let body):
             return .requestData(body)

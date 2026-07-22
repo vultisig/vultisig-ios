@@ -111,7 +111,7 @@ class MayachainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -130,7 +130,7 @@ class MayachainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantityParam,
             affiliate: affiliate,
             affiliateBps: affiliateBps,
-            toleranceBps: toleranceBps > 0 ? String(toleranceBps) : nil
+            liquidityToleranceBps: liquidityToleranceBps > 0 ? String(liquidityToleranceBps) : nil
         ))
 
         // Maya sometimes returns a structured swap error body with a
