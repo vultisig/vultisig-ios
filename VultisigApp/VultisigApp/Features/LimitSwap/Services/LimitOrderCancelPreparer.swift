@@ -53,29 +53,41 @@ struct LimitOrderCancelPreparer {
         let isThorchainSourced = Chain(rawValue: request.sourceChainRawValue) == .thorChain
         let destination = isThorchainSourced ? nil : try await resolveDestination(for: coin)
 
-        let disclosures: LimitOrderCancelDisclosures
+        // Priced ONCE, and the same figures decide both the affordability verdict
+        // and the fee rows on Verify.
+        //
+        // ⚠️ They used to be computed twice and only one of them kept. The L1
+        // branch priced a throwaway copy to validate the balance against, then
+        // built the real transaction and stamped only `gas` on it — but
+        // `SendCryptoLogic.gasInReadable` reads `fee` on EVM/UTXO/Cardano, and
+        // `CryptoAmountFormatter.feesInReadable` reads it everywhere. So Verify
+        // showed `0 ETH / $0.00` for a cancel that cost ~0.00016 ETH, on the one
+        // screen where the user agrees to pay it.
+        let priced: PricedCancel
         if let destination {
-            disclosures = try await l1Disclosures(coin: coin, vault: vault, request: request, destination: destination)
+            priced = try await priceL1Cancel(coin: coin, vault: vault, request: request, destination: destination)
         } else {
-            disclosures = limitOrderCancelThorchainDisclosures(for: coin)
+            priced = await priceThorchainCancel(coin: coin, vault: vault, request: request)
         }
 
         let builder = CancelLimitOrderTransactionBuilder(
             coin: coin,
-            request: request.with(disclosures: disclosures),
+            request: request.with(disclosures: priced.disclosures),
             l1Destination: destination
         )
-        var sendTx = builder.buildSendTransaction(vault: vault)
-        do {
-            // Pre-fetch the chain-specific gas so Verify shows a fee immediately.
-            // Mirrors the Solana straight-to-Verify path: it is re-fetched there
-            // anyway, so a failure here is non-fatal.
-            let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
-            sendTx = sendTx.copy(gas: chainSpecific.gas)
-        } catch {
-            logger.debug("Cancel gas prefetch failed: \(error.localizedDescription, privacy: .public)")
-        }
-        return sendTx
+        return builder
+            .buildSendTransaction(vault: vault)
+            .copy(gas: priced.gas, fee: priced.fee)
+    }
+
+    /// A cancel's cost and what has to be said about it, resolved together.
+    private struct PricedCancel {
+        let disclosures: LimitOrderCancelDisclosures
+        /// Per-unit gas. What THORChain's own fee row reads.
+        let gas: BigInt
+        /// TOTAL fee. What EVM, UTXO and Cardano fee rows read, and what every
+        /// fiat fee string reads on every chain.
+        let fee: BigInt
     }
 
     /// The inbound vault address and the dust an L1 cancel must attach.
@@ -110,12 +122,12 @@ struct LimitOrderCancelPreparer {
     /// flow uses, rather than a local `balance > dust` approximation. The dust is
     /// not the whole cost — the chain fee rides on top — and the function-call
     /// verify screen performs no up-front balance check of its own.
-    private func l1Disclosures(
+    private func priceL1Cancel(
         coin: Coin,
         vault: Vault,
         request: LimitOrderCancelRequest,
         destination: LimitOrderCancelL1Destination
-    ) async throws -> LimitOrderCancelDisclosures {
+    ) async throws -> PricedCancel {
         let provisional = CancelLimitOrderTransactionBuilder(
             coin: coin,
             request: request,
@@ -125,10 +137,14 @@ struct LimitOrderCancelPreparer {
             let feeResult = try await verifyLogic.calculateFee(tx: provisional)
             let priced = provisional.copy(gas: feeResult.gas, fee: feeResult.fee)
             let validation = verifyLogic.validateBalanceWithFee(tx: priced)
-            return LimitOrderCancelDisclosures(
-                donatedAmount: destination.dustDisplay,
-                balanceObjection: validation.isValid ? nil : validation.errorMessage?.localized,
-                canAffordCancel: validation.isValid
+            return PricedCancel(
+                disclosures: LimitOrderCancelDisclosures(
+                    donatedAmount: destination.dustDisplay,
+                    balanceObjection: validation.isValid ? nil : validation.errorMessage?.localized,
+                    canAffordCancel: validation.isValid
+                ),
+                gas: feeResult.gas,
+                fee: feeResult.fee
             )
         } catch {
             // Without a priced fee there is no honest balance verdict, and
@@ -139,6 +155,36 @@ struct LimitOrderCancelPreparer {
                 "limitSwap.cancel.error.dustUnavailable".localized
             )
         }
+    }
+
+    /// The THORChain route's cost. Non-fatal on failure, unlike the L1 route:
+    /// a `MsgDeposit`'s fee is a protocol constant this app already knows
+    /// (`limitOrderCancelThorchainDisclosures` prices affordability from it), so
+    /// a failed prefetch costs a fee row that Verify refetches anyway — not the
+    /// balance verdict.
+    private func priceThorchainCancel(
+        coin: Coin,
+        vault: Vault,
+        request: LimitOrderCancelRequest
+    ) async -> PricedCancel {
+        let provisional = CancelLimitOrderTransactionBuilder(
+            coin: coin,
+            request: request,
+            l1Destination: nil
+        ).buildSendTransaction(vault: vault)
+        var gas = provisional.gas
+        do {
+            gas = try await BlockChainService.shared.fetchSpecific(tx: provisional).gas
+        } catch {
+            logger.debug("Cancel gas prefetch failed: \(error.localizedDescription, privacy: .public)")
+        }
+        return PricedCancel(
+            disclosures: limitOrderCancelThorchainDisclosures(for: coin),
+            gas: gas,
+            // A THORChain deposit's whole cost IS its gas — there is no separate
+            // total — and the fiat fee string reads this on every chain.
+            fee: gas
+        )
     }
 
 }
