@@ -133,13 +133,6 @@ struct TcyStakerResponse: Codable {
     let amount: String
 }
 
-/// Response model for TCY distribution (global)
-struct TcyDistribution: Codable {
-    let block: String
-    let amount: String
-    let timestamp: String?
-}
-
 /// Response model for TCY user distributions from Midgard
 struct TcyUserDistributionsResponse: Codable {
     let distributions: [TcyUserDistribution]

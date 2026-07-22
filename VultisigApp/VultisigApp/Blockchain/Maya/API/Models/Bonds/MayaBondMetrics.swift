@@ -40,3 +40,18 @@ struct MayaNodeUnbondStatus {
         return nil
     }
 }
+
+/// Reason why bonding is not allowed
+enum MayaBondIneligibilityReason {
+    case notWhitelisted
+    case nodeAtCapacity
+
+    var localizedMessage: String {
+        switch self {
+        case .notWhitelisted:
+            return "notWhitelistedOnNode".localized
+        case .nodeAtCapacity:
+            return "nodeAtMaxCapacity".localized
+        }
+    }
+}
