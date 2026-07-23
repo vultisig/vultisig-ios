@@ -92,6 +92,33 @@ final class MidgardLimitOutcomeResolverTests: XCTestCase {
         XCTAssertEqual(limitOrderCloseOutcome(refundReason: "  limit swap expired\n"), .expired)
     }
 
+    /// ⚠️ THORChain appends detail to the reason. The live string for a cancelled
+    /// order whose refund is itself struggling is
+    /// `"limit swap cancelled; fail to refund (…): not enough asset to pay for
+    /// fees"`. An exact match would miss this and mislabel a genuine
+    /// cancellation, so the stem is matched by PREFIX.
+    func testACancelledReasonWithAppendedDetailIsStillCancelled() {
+        let live = "limit swap cancelled; fail to refund " +
+            "(20000000 ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48): " +
+            "not enough asset to pay for fees"
+        XCTAssertEqual(limitOrderCloseOutcome(refundReason: live), .cancelled)
+    }
+
+    func testAnExpiredReasonWithAppendedDetailIsStillExpired() {
+        XCTAssertEqual(
+            limitOrderCloseOutcome(refundReason: "limit swap expired; some later detail"),
+            .expired
+        )
+    }
+
+    /// ⚠️ The prefix match stops at a word boundary. A reworded reason that runs
+    /// the stem on into another word is a DIFFERENT reason, so it must stay
+    /// fail-closed at `.refunded` rather than be mislabelled a cancellation.
+    func testAReasonThatMerelyRunsTheStemOnIsNotAMatch() {
+        XCTAssertEqual(limitOrderCloseOutcome(refundReason: "limit swap cancelledness"), .refunded)
+        XCTAssertEqual(limitOrderCloseOutcome(refundReason: "limit swap expiredish"), .refunded)
+    }
+
     // MARK: - Failing closed on anything we don't recognise
 
     /// ⚠️ A reworded reason must cost a LABEL, never produce a wrong one.

@@ -215,10 +215,14 @@ enum LimitOrderOutcome: Equatable {
 /// Midgard's `metadata.refund.reason` for a limit order THORChain closed because
 /// a cancel matched it.
 ///
-/// Matched EXACTLY. Anything else — a reworded string, a reason for some other
-/// kind of refund, nothing at all — falls to `.refunded`, which is what this
-/// tracker reported before the reason was available at all. A protocol change
-/// therefore costs a label, never a wrong one.
+/// Matched by PREFIX. THORChain appends detail to the reason — the live string
+/// for a cancelled order is `"limit swap cancelled; fail to refund (…): not
+/// enough asset to pay for fees"` — so an exact match would miss a genuine
+/// cancellation and mislabel it. Anything that does not START with one of these
+/// — a reworded stem, a reason for some other kind of refund, nothing at all —
+/// falls to `.refunded`, which is what this tracker reported before the reason
+/// was available at all. A protocol change therefore costs a label, never a
+/// wrong one.
 private let limitSwapCancelledReason = "limit swap cancelled"
 private let limitSwapExpiredReason = "limit swap expired"
 
@@ -228,18 +232,38 @@ private let limitSwapExpiredReason = "limit swap expired"
 /// whole of the decision: everything else in the resolver is about telling an
 /// answer from a failure to get one.
 func limitOrderCloseOutcome(refundReason: String?) -> LimitOrderOutcome {
-    let normalized = refundReason?
+    guard let normalized = refundReason?
         .trimmingCharacters(in: .whitespacesAndNewlines)
-        .lowercased()
-    switch normalized {
-    case limitSwapCancelledReason:
-        return .cancelled
-    case limitSwapExpiredReason:
-        return .expired
-    default:
-        // The funds came back and we cannot say why. `.refunded` is exactly
-        // that statement.
+        .lowercased() else {
         return .refunded
+    }
+    if normalized.hasStem(limitSwapCancelledReason) {
+        return .cancelled
+    }
+    if normalized.hasStem(limitSwapExpiredReason) {
+        return .expired
+    }
+    // The funds came back and we cannot say why. `.refunded` is exactly that
+    // statement.
+    return .refunded
+}
+
+private extension String {
+    /// Whether this reason IS `stem` or is `stem` followed by appended detail.
+    ///
+    /// THORChain appends detail behind a separator — `"limit swap cancelled;
+    /// fail to refund …"` — so the match has to be by prefix. But it must stop
+    /// at a word boundary: a reworded reason that merely runs the stem on into
+    /// another word (`"limit swap cancelledness"`) is a DIFFERENT reason and
+    /// must fall to the fail-closed `.refunded`, not be read as a cancellation.
+    func hasStem(_ stem: String) -> Bool {
+        guard hasPrefix(stem) else { return false }
+        guard let boundary = dropFirst(stem.count).first else {
+            return true // exact match — nothing appended
+        }
+        // A genuine suffix starts with a separator (`;`, `:`, whitespace…),
+        // never a letter or digit continuing the word.
+        return !boundary.isLetter && !boundary.isNumber
     }
 }
 
