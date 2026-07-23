@@ -74,7 +74,6 @@
 "availableLPUnits" = "Verfügbare LP-Einheiten";
 "availableNodes" = "Verfügbare Knoten";
 "backup" = "Sicherung";
-"backupBannerButtonTitle" = "Tresor sichern";
 "backupBannerSubtitle" = "Halte den Zugang sicher, speichere online";
 "backupBannerTitle" = "Sichere deinen Tresor";
 "backupDeviceDriver" = "Ihr Gerät ist der Schlüssel";
@@ -140,7 +139,6 @@
 "broadcastRetryStaleNonce" = "Transaktions-Nonce veraltet — Details aktualisiert. Bitte erneut versuchen.";
 "broadcastRetryStaleQuote" = "Angebot abgelaufen — Details aktualisiert. Bitte erneut versuchen.";
 "buy" = "Kaufen";
-"buyVultBannerButtonTitle" = "$VULT kaufen";
 "buyVultBannerSubtitle" = "Und spare bei Swap-Gebühren";
 "buyVultBannerTitle" = "$VULT kaufen";
 "bytes" = "Bytes";
@@ -474,7 +472,6 @@
 "folderName" = "Ordnername";
 "folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";
 "folders" = "Ordner";
-"followVultisigBannerButtonTitle" = "Folge @Vultisig";
 "followVultisigBannerSubtitle" = "Folge uns auf X";
 "followVultisigBannerTitle" = "Vultisig baut mit dir.";
 "foregroundNotificationGeneric" = "Transaktion wartet auf Genehmigung";
