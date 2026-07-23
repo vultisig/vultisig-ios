@@ -74,7 +74,6 @@
 "availableLPUnits" = "Unidades LP Disponibles";
 "availableNodes" = "Nodos Disponibles";
 "backup" = "Respaldar";
-"backupBannerButtonTitle" = "Respaldar Bóveda";
 "backupBannerSubtitle" = "Mantén el acceso seguro, almacena en línea";
 "backupBannerTitle" = "Respalda tu Bóveda";
 "backupDeviceDriver" = "Tu dispositivo es el conductor";
@@ -140,7 +139,6 @@
 "broadcastRetryStaleNonce" = "Nonce de transacción desactualizado — detalles actualizados. Por favor, inténtalo de nuevo.";
 "broadcastRetryStaleQuote" = "Cotización expirada — detalles actualizados. Por favor, inténtalo de nuevo.";
 "buy" = "Comprar";
-"buyVultBannerButtonTitle" = "Comprar $VULT";
 "buyVultBannerSubtitle" = "Y ahorra en comisiones de swap";
 "buyVultBannerTitle" = "Comprar $VULT";
 "bytes" = "bytes";
@@ -474,7 +472,6 @@
 "folderName" = "Nombre de la Carpeta";
 "folderNeedsOneVault" = "La carpeta debe tener al menos un Vault seleccionado.";
 "folders" = "Carpetas";
-"followVultisigBannerButtonTitle" = "Seguir @Vultisig";
 "followVultisigBannerSubtitle" = "Síguenos en X";
 "followVultisigBannerTitle" = "Vultisig está construyendo contigo.";
 "foregroundNotificationGeneric" = "Transacción pendiente de aprobación";

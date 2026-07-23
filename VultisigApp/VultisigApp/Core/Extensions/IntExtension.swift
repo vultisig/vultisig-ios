@@ -17,9 +17,3 @@ extension Int {
         self / 2 != 0
     }
 }
-
-extension Numeric {
-    init(_ pred: Bool) {
-        self = if pred { 1 } else { 0 }
-    }
-}

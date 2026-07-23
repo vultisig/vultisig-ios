@@ -74,7 +74,6 @@
 "availableLPUnits" = "Dostupne LP Jedinice";
 "availableNodes" = "Dostupni Čvorovi";
 "backup" = "Sigurnosna kopija";
-"backupBannerButtonTitle" = "Sigurnosno kopiraj trezor";
 "backupBannerSubtitle" = "Zadrži siguran pristup, pohrani online";
 "backupBannerTitle" = "Napravi sigurnosnu kopiju svog trezora";
 "backupDeviceDriver" = "Vaš uređaj je pokretač";
@@ -140,7 +139,6 @@
 "broadcastRetryStaleNonce" = "Nonce transakcije zastario — detalji ažurirani. Molimo pokušajte ponovno.";
 "broadcastRetryStaleQuote" = "Ponuda istekla — detalji ažurirani. Molimo pokušajte ponovno.";
 "buy" = "Kupi";
-"buyVultBannerButtonTitle" = "Kupi $VULT";
 "buyVultBannerSubtitle" = "I uštedi na naknadama za swap";
 "buyVultBannerTitle" = "Kupi $VULT";
 "bytes" = "bajtovi";
@@ -474,7 +472,6 @@
 "folderName" = "Naziv Mape";
 "folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
 "folders" = "Mape";
-"followVultisigBannerButtonTitle" = "Prati @Vultisig";
 "followVultisigBannerSubtitle" = "Prati nas na X";
 "followVultisigBannerTitle" = "Vultisig gradi s tobom.";
 "foregroundNotificationGeneric" = "Transakcija čeka odobrenje";

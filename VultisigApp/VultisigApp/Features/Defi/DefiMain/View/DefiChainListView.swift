@@ -36,17 +36,20 @@ struct DefiChainListView: View {
     }
 
     var chainList: some View {
-        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-            Button {
-                handleSelection(item)
-            } label: {
-                cell(for: item)
-                    .commonListItemContainer(
-                        index: index,
-                        itemsCount: items.count
-                    )
+        VStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                Button {
+                    handleSelection(item)
+                } label: {
+                    cell(for: item)
+                        .commonListItemContainer(
+                            index: index,
+                            itemsCount: items.count
+                        )
+                }
             }
         }
+        .commonListContainer()
     }
 
     @ViewBuilder

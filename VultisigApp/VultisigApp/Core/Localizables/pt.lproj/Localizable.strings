@@ -74,7 +74,6 @@
 "availableLPUnits" = "Unidades LP Disponíveis";
 "availableNodes" = "Nós Disponíveis";
 "backup" = "Backup";
-"backupBannerButtonTitle" = "Backup do Cofre";
 "backupBannerSubtitle" = "Mantenha o acesso seguro, armazene online";
 "backupBannerTitle" = "Faça Backup do Seu Cofre";
 "backupDeviceDriver" = "Seu dispositivo é o condutor";
@@ -140,7 +139,6 @@
 "broadcastRetryStaleNonce" = "Nonce da transação desatualizado — detalhes atualizados. Por favor, tente novamente.";
 "broadcastRetryStaleQuote" = "Cotação expirada — detalhes atualizados. Por favor, tente novamente.";
 "buy" = "Comprar";
-"buyVultBannerButtonTitle" = "Comprar $VULT";
 "buyVultBannerSubtitle" = "E economize nas taxas de swap";
 "buyVultBannerTitle" = "Comprar $VULT";
 "bytes" = "bytes";
@@ -474,7 +472,6 @@
 "folderName" = "Nome da Pasta";
 "folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
 "folders" = "Pastas";
-"followVultisigBannerButtonTitle" = "Seguir @Vultisig";
 "followVultisigBannerSubtitle" = "Siga-nos no X";
 "followVultisigBannerTitle" = "Vultisig está construindo com você.";
 "foregroundNotificationGeneric" = "Transação pendente de aprovação";

@@ -74,7 +74,6 @@
 "availableLPUnits" = "可用 LP 单位";
 "availableNodes" = "可用节点";
 "backup" = "备份";
-"backupBannerButtonTitle" = "备份保险库";
 "backupBannerSubtitle" = "保持访问安全，在线存储";
 "backupBannerTitle" = "备份您的保险库";
 "backupDeviceDriver" = "您的设备是主导者";
@@ -140,7 +139,6 @@
 "broadcastRetryStaleNonce" = "交易 nonce 已过期 — 详情已刷新。请重试。";
 "broadcastRetryStaleQuote" = "报价已过期 — 详情已刷新。请重试。";
 "buy" = "购买";
-"buyVultBannerButtonTitle" = "购买 $VULT";
 "buyVultBannerSubtitle" = "并节省兑换手续费";
 "buyVultBannerTitle" = "购买 $VULT";
 "bytes" = "字节";
@@ -474,7 +472,6 @@
 "folderName" = "文件夹名称";
 "folderNeedsOneVault" = "文件夹需要至少选择一个保险库";
 "folders" = "文件夹";
-"followVultisigBannerButtonTitle" = "关注 @Vultisig";
 "followVultisigBannerSubtitle" = "在 X 上关注我们";
 "followVultisigBannerTitle" = "Vultisig 与您一起构建";
 "foregroundNotificationGeneric" = "交易待审批";
