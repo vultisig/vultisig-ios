@@ -79,12 +79,13 @@ struct TransactionHistoryCardView: View {
                     // partial-fill progress.
                     limitStatusView
                 } else {
-                    // Live: the in-progress pill, WITHOUT the elapsed timer. The
-                    // timer counts up from broadcast — meaningful for a swap due
-                    // to land in seconds, absurd for an order that rests for
-                    // 12-72h ("In progress... 1440m 12s"). Resting and cancelling
-                    // read identically here by design; "Cancelling…" is
-                    // distinguished on the detail sheet.
+                    // Live: a pill WITHOUT the elapsed timer. The timer counts up
+                    // from broadcast — meaningful for a swap due to land in
+                    // seconds, absurd for an order that rests for 12-72h
+                    // ("In progress... 1440m 12s"). A cancel in flight reads
+                    // "Cancelling…" so the state the user just triggered is
+                    // visible on the list, not only on the detail sheet; a plain
+                    // resting order reads "In progress".
                     limitInProgressChip
                 }
             } else if transaction.status == .inProgress {
@@ -115,11 +116,22 @@ struct TransactionHistoryCardView: View {
         LimitOrderStatusDisplay.effectiveUiStatus(uiStatus: uiStatus, details: limitOrder).isTerminal
     }
 
-    /// The in-progress pill for a LIVE limit order: the shared `inProgressChip`'s
-    /// styling without its elapsed timer. See the routing in `topRow` for why the
-    /// timer is dropped here.
+    /// Whether a live limit order has a cancel in flight. Reads the SAME
+    /// effective status the routing and the detail sheet use, so the pill can't
+    /// say "In progress" while the button and the sheet say "Cancelling".
+    private var isLimitCancelling: Bool {
+        LimitOrderStatusDisplay.effectiveUiStatus(
+            uiStatus: transaction.swapTrackingUiStatus,
+            details: limitOrder
+        ) == .cancelling
+    }
+
+    /// The pill for a LIVE limit order: the shared `inProgressChip`'s styling
+    /// without its elapsed timer. Reads "Cancelling…" once a cancel is in flight
+    /// (the state persists on the order the instant it broadcasts), otherwise
+    /// "In progress". See the routing in `topRow` for why the timer is dropped.
     private var limitInProgressChip: some View {
-        Text("inProgress".localized)
+        Text((isLimitCancelling ? "limitSwap.status.cancelling" : "inProgress").localized)
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.textTertiary)
             .padding(.horizontal, 12)
