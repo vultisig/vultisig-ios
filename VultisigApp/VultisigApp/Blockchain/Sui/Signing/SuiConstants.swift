@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 /// Constants for SUI chain
 enum SuiConstants {
@@ -20,6 +21,21 @@ enum SuiConstants {
 
     /// Canonical fully-qualified type of the native SUI coin (short address form).
     static let nativeCoinType = "0x2::sui::SUI"
+
+    /// Upper bound on the coin objects a single send may reference. Sui rejects a
+    /// transaction whose serialized size exceeds 128 KiB, and a `PaySui` send uses
+    /// its entire input set as the gas payment — which Sui caps at 256 objects. A
+    /// wallet whose balance is spread across thousands of small objects would, if
+    /// every object were referenced, blow past both limits and fail at broadcast
+    /// ("serialized transaction size exceeded maximum"). Staying one under the
+    /// 256-object gas-payment cap keeps every send safely within both limits.
+    static let maxInputCoinObjects = 255
+
+    /// How many of the largest native SUI objects to embed as gas candidates for
+    /// a token send. The signer picks one to pay gas; carrying the largest few
+    /// (rather than all, or just one) keeps the payload small while guaranteeing a
+    /// covering object survives a re-estimated gas budget.
+    static let gasCandidateObjectCount = 5
 }
 
 /// Exact, normalization-aware matching for SUI coin-object types.
@@ -90,6 +106,118 @@ enum SuiCoinType {
             let coinType = coin["coinType"] ?? .empty
             return isNative(coinType) || matches(coinType, tokenType)
         }
+    }
+
+    /// The minimal set of coin objects to embed in the keysign payload for a Sui
+    /// send — exactly what `getPreSignedInputData` will consume.
+    ///
+    /// `payloadCoins` type-filters but keeps *every* matching object; on a wallet
+    /// whose balance is spread across thousands of objects that produces a
+    /// keysign payload too large to relay — the co-signer's poll 404s and the
+    /// initiator's transaction data expires before signing can start. Bounding
+    /// the embedded set to the objects the send actually needs keeps the pairing
+    /// QR / TSS relay message small.
+    ///
+    /// Native send: the largest objects covering `amount + gasBudget` (the input
+    /// set also pays gas). Token send: the largest token objects covering
+    /// `amount`, plus the largest few native SUI objects as gas candidates.
+    static func selectPayloadCoins(
+        _ coins: [[String: String]],
+        isNativeToken: Bool,
+        contractAddress: String,
+        amount: BigInt,
+        gasBudget: BigInt
+    ) -> [[String: String]] {
+        let nativeObjects = coins.filter { isNative($0["coinType"] ?? .empty) }
+
+        if isNativeToken {
+            return selectInputCoins(nativeObjects, covering: amount + gasBudget)
+        }
+
+        let tokenType = expectedType(isNativeToken: isNativeToken, contractAddress: contractAddress)
+        let tokenObjects = coins.filter { matches($0["coinType"] ?? .empty, tokenType) }
+        let selectedTokens = selectInputCoins(tokenObjects, covering: amount)
+        let gasCandidates = Array(
+            nativeObjects
+                .sorted { balance(of: $0) > balance(of: $1) }
+                .prefix(SuiConstants.gasCandidateObjectCount)
+        )
+        return selectedTokens + gasCandidates
+    }
+
+    /// Selects the native SUI coin object that pays gas for a token
+    /// (non-native) send. WalletCore's `Sui.Pay` message carries a *single*
+    /// `gas` object (unlike `PaySui`, whose whole input set is gas-smashed and
+    /// therefore merged), so the choice matters: picking an arbitrary object —
+    /// e.g. the first one the RPC happened to return — fails when that object's
+    /// balance can't cover the budget, even though the wallet holds plenty of
+    /// SUI across other objects.
+    ///
+    /// Mirrors the Android client: choose the *smallest* native SUI object whose
+    /// balance already covers `gasBudget`, so gas is guaranteed payable while the
+    /// larger objects stay available. When no single object covers the budget,
+    /// fall back to the largest object (best effort — strictly better than an
+    /// arbitrary pick). Returns `nil` only when the wallet holds no native SUI
+    /// object at all.
+    static func selectGasObject(_ coins: [[String: String]], gasBudget: BigInt) -> [String: String]? {
+        let suiObjects = coins.filter { isNative($0["coinType"] ?? .empty) }
+        guard !suiObjects.isEmpty else { return nil }
+
+        let covering = suiObjects.filter { balance(of: $0) >= gasBudget }
+        if let smallestCovering = covering.min(by: { balance(of: $0) < balance(of: $1) }) {
+            return smallestCovering
+        }
+        return suiObjects.max(by: { balance(of: $0) < balance(of: $1) })
+    }
+
+    /// Selects the fewest coin objects (largest balance first) that together
+    /// cover `target`, bounded by `maxObjects`.
+    ///
+    /// Passing every owned object into a send is what produces the "serialized
+    /// transaction size exceeded maximum" broadcast failure on wallets whose
+    /// balance is scattered across many objects — and, for a native `PaySui`
+    /// send, also trips Sui's 256-object gas-payment cap. Taking only the largest
+    /// objects needed to fund the send keeps the transaction small while still
+    /// merging a scattered balance: for a native send WalletCore/Sui gas-smashes
+    /// the selected objects into one spendable coin. `target` is the send amount
+    /// plus, for a native send, the gas budget (the native input set also pays
+    /// gas); for a token send it is just the token amount.
+    ///
+    /// Selection is deterministic (balance descending, then `objectID`) so every
+    /// co-signing device selects the identical set and signs the identical
+    /// transaction. If even `maxObjects` largest objects don't reach `target`,
+    /// they are still returned (best effort) — the caller decides how to handle
+    /// an under-funded selection.
+    static func selectInputCoins(
+        _ coins: [[String: String]],
+        covering target: BigInt,
+        maxObjects: Int = SuiConstants.maxInputCoinObjects
+    ) -> [[String: String]] {
+        let sorted = coins.sorted { lhs, rhs in
+            let lhsBalance = balance(of: lhs)
+            let rhsBalance = balance(of: rhs)
+            if lhsBalance != rhsBalance { return lhsBalance > rhsBalance }
+            return (lhs["objectID"] ?? .empty) < (rhs["objectID"] ?? .empty)
+        }
+
+        var selected: [[String: String]] = []
+        var accumulated = BigInt.zero
+        for coin in sorted {
+            // Always keep at least one object so a zero/near-zero-amount send
+            // still has an input; otherwise stop once the target is covered.
+            if !selected.isEmpty && accumulated >= target { break }
+            if selected.count >= maxObjects { break }
+            selected.append(coin)
+            accumulated += balance(of: coin)
+        }
+        return selected
+    }
+
+    /// Parses a coin object's `balance` field (base-unit MIST) as `BigInt`,
+    /// treating a missing or unparseable value as zero.
+    static func balance(of coin: [String: String]) -> BigInt {
+        guard let raw = coin["balance"], let value = BigInt(raw) else { return .zero }
+        return value
     }
 
     /// Collapses a package-address segment to `0x` + hex with leading zeros

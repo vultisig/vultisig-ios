@@ -630,25 +630,36 @@ private extension BlockChainService {
         case .sui:
             let (referenceGasPrice, ownedCoins) = try await sui.getGasInfo(coin: coin)
 
-            // The signer only needs the native SUI objects (for gas, and as the
-            // inputs of a native send) plus the objects of the token being sent.
-            // Embedding every owned object would bloat the keysign payload — and
-            // therefore the pairing QR / TSS relay payload — on heavy wallets.
-            let allCoins = SuiCoinType.payloadCoins(
-                ownedCoins,
-                isNativeToken: coin.isNativeToken,
-                contractAddress: coin.contractAddress
-            )
+            // Embed only the coin objects the send needs — not every owned
+            // object. An unbounded set bloats the keysign payload (pairing QR /
+            // TSS relay message) on wallets whose balance is scattered across
+            // many objects, and the payload then fails to relay: the co-signer's
+            // poll 404s and the initiator's transaction data expires before
+            // signing starts. Selection is deterministic so every device signs
+            // the identical transaction.
+            let sendAmount = amount ?? .zero
+            let defaultBudget = BigInt(3000000)
+
+            func selectCoins(gasBudget: BigInt) -> [[String: String]] {
+                SuiCoinType.selectPayloadCoins(
+                    ownedCoins,
+                    isNativeToken: coin.isNativeToken,
+                    contractAddress: coin.contractAddress,
+                    amount: sendAmount,
+                    gasBudget: gasBudget
+                )
+            }
 
             // Calculate dynamic gas budget using dry run simulation
             let gasBudget: BigInt
             if let amount = amount, amount > 0 {
-                // Create a temporary keysign payload for simulation
+                // Simulate over a covering subset (default budget), so the dry-run
+                // transaction is itself small enough to build on dusty wallets.
                 let tempPayload = KeysignPayload(
                     coin: coin,
                     toAddress: toAddress ?? coin.address, // Use same address for simulation if toAddress is nil
                     toAmount: amount,
-                    chainSpecific: .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: BigInt(3000000)), // Use default for initial payload
+                    chainSpecific: .Sui(referenceGasPrice: referenceGasPrice, coins: selectCoins(gasBudget: defaultBudget), gasBudget: defaultBudget),
                     utxos: [],
                     memo: memo,
                     swapPayload: nil,
@@ -673,27 +684,21 @@ private extension BlockChainService {
                     // Simulate transaction to get accurate gas estimate
                     let (computationCost, storageCost) = try await sui.dryRunTransaction(transactionBytes: txSerialized)
 
-                    // Calculate safe gas budget: (computation + storage) * 1.15 safety margin
+                    // Calculate safe gas budget: (computation + storage) * 1.15 safety margin,
+                    // and ensure the network minimum of 2000.
                     let totalCost = computationCost + storageCost
-                    gasBudget = (totalCost * 115) / 100
-
-                    // Ensure minimum gas budget of 2000 (network requirement)
-                    let finalGasBudget = max(gasBudget, BigInt(2000))
-
-                    return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: finalGasBudget)
+                    gasBudget = max((totalCost * 115) / 100, BigInt(2000))
                 } catch {
                     print("⚠️ Sui dry run failed, using default gas budget: \(error.localizedDescription)")
                     // Fall back to default + 15% safety margin
-                    let defaultBudget = BigInt(3000000)
                     gasBudget = (defaultBudget * 115) / 100
                 }
             } else {
                 // No amount specified, use default with safety margin
-                let defaultBudget = BigInt(3000000)
                 gasBudget = (defaultBudget * 115) / 100
             }
 
-            return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: gasBudget)
+            return .Sui(referenceGasPrice: referenceGasPrice, coins: selectCoins(gasBudget: gasBudget), gasBudget: gasBudget)
 
         case .polkadot:
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)

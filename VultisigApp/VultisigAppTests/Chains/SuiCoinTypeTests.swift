@@ -11,6 +11,7 @@
 //
 
 @testable import VultisigApp
+import BigInt
 import XCTest
 
 final class SuiCoinTypeTests: XCTestCase {
@@ -149,5 +150,180 @@ final class SuiCoinTypeTests: XCTestCase {
             Set(filtered.map { $0["objectID"] }),
             ["0xgas1", "0xgas2", "0xtoken1", "0xtoken2"]
         )
+    }
+
+    // MARK: - Token-send gas-object selection
+
+    private func suiObject(_ id: String, balance: String) -> [String: String] {
+        ["coinType": nativeLong, "objectID": id, "balance": balance]
+    }
+
+    /// A token send pays gas from a single SUI object. When several SUI objects
+    /// cover the budget, the smallest covering one is chosen — gas is guaranteed
+    /// payable while the larger objects stay available for later sends.
+    func testSelectGasObjectPicksSmallestCoveringObject() {
+        let coins = [
+            suiObject("0xbig", balance: "10000000"),
+            suiObject("0xjustEnough", balance: "3000000"),
+            suiObject("0xtooSmall", balance: "1000000")
+        ]
+        let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
+        XCTAssertEqual(selected?["objectID"], "0xjustEnough")
+    }
+
+    /// An object whose balance equals the budget exactly is eligible.
+    func testSelectGasObjectAcceptsExactBudget() {
+        let coins = [
+            suiObject("0xexact", balance: "3000000"),
+            suiObject("0xbig", balance: "9000000")
+        ]
+        let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
+        XCTAssertEqual(selected?["objectID"], "0xexact")
+    }
+
+    /// When no single SUI object covers the budget, fall back to the largest
+    /// object (best effort) rather than an arbitrary one.
+    func testSelectGasObjectFallsBackToLargestWhenNoneCovers() {
+        let coins = [
+            suiObject("0xsmall", balance: "1000000"),
+            suiObject("0xlargest", balance: "2500000"),
+            suiObject("0xmid", balance: "2000000")
+        ]
+        let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
+        XCTAssertEqual(selected?["objectID"], "0xlargest")
+    }
+
+    /// Non-SUI objects never pay gas, even when their balance dwarfs the budget.
+    func testSelectGasObjectIgnoresNonSuiObjects() {
+        let coins = [
+            ["coinType": bridgedCoin, "objectID": "0xtoken", "balance": "999999999"],
+            ["coinType": xSUI, "objectID": "0xlst", "balance": "999999999"]
+        ]
+        XCTAssertNil(SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000)))
+    }
+
+    /// A missing or unparseable `balance` is treated as zero, so such objects
+    /// only win the fallback when nothing better exists.
+    func testSelectGasObjectTreatsMissingBalanceAsZero() {
+        let coins = [
+            ["coinType": nativeLong, "objectID": "0xnoBalance"],
+            suiObject("0xhasBalance", balance: "500000")
+        ]
+        // Neither covers a 3_000_000 budget → largest wins, and the object with
+        // a real balance outranks the zero-balance one.
+        let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
+        XCTAssertEqual(selected?["objectID"], "0xhasBalance")
+    }
+
+    // MARK: - Input-coin selection (transaction-size guard)
+
+    /// Selects the fewest largest objects that cover the target, leaving the rest
+    /// out so the transaction stays small.
+    func testSelectInputCoinsPicksFewestLargestCoveringTarget() {
+        let coins = [
+            suiObject("0xa", balance: "100"),
+            suiObject("0xb", balance: "300"),
+            suiObject("0xc", balance: "200")
+        ]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(450))
+        // 300 + 200 = 500 >= 450; the 100 object is left out.
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xb", "0xc"])
+    }
+
+    /// A single object that already covers the target is selected alone.
+    func testSelectInputCoinsStopsAtFirstCoveringObject() {
+        let coins = [
+            suiObject("0xbig", balance: "1000"),
+            suiObject("0xa", balance: "300"),
+            suiObject("0xb", balance: "200")
+        ]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(500))
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xbig"])
+    }
+
+    /// The object count is capped even when more would be needed to cover the
+    /// target (best effort), so the transaction never exceeds Sui's limits.
+    func testSelectInputCoinsRespectsMaxObjectsCap() {
+        let coins = (0..<10).map { suiObject("0x\($0)", balance: "100") }
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(1000), maxObjects: 3)
+        XCTAssertEqual(selected.count, 3)
+    }
+
+    /// At least one object is always selected, even for a zero target.
+    func testSelectInputCoinsAlwaysSelectsAtLeastOne() {
+        let coins = [suiObject("0xa", balance: "100"), suiObject("0xb", balance: "200")]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: .zero)
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xb"])
+    }
+
+    /// Equal balances tie-break deterministically by objectID, so every
+    /// co-signing device selects the identical set.
+    func testSelectInputCoinsTieBreaksDeterministicallyByObjectID() {
+        let coins = [
+            suiObject("0xc", balance: "100"),
+            suiObject("0xa", balance: "100"),
+            suiObject("0xb", balance: "100")
+        ]
+        let selected = SuiCoinType.selectInputCoins(coins, covering: BigInt(150))
+        // Two needed (100 + 100); ties broken by ascending objectID → 0xa, 0xb.
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xa", "0xb"])
+    }
+
+    // MARK: - Payload coin selection (relay-payload size guard)
+
+    /// A native send embeds only the largest native objects covering amount +
+    /// gas — an LST look-alike and unneeded dust are left out of the payload.
+    func testSelectPayloadCoinsNativeEmbedsOnlyCoveringNativeObjects() {
+        let wallet = [
+            suiObject("0xbig", balance: "5000000000"),
+            suiObject("0xsmall", balance: "1000"),
+            ["coinType": xSUI, "objectID": "0xlst", "balance": "9000000000"]
+        ]
+        let selected = SuiCoinType.selectPayloadCoins(
+            wallet,
+            isNativeToken: true,
+            contractAddress: "",
+            amount: BigInt(1_000_000_000),
+            gasBudget: BigInt(3_000_000)
+        )
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xbig"])
+    }
+
+    /// A dusty native wallet embeds only the few objects the send needs, keeping
+    /// the payload small regardless of how many objects the wallet holds.
+    func testSelectPayloadCoinsNativeBoundsDustyWallet() {
+        var wallet = [suiObject("0xbig", balance: "10000000000")]
+        for i in 0..<600 { wallet.append(suiObject("0xdust\(i)", balance: "1000")) }
+
+        let selected = SuiCoinType.selectPayloadCoins(
+            wallet,
+            isNativeToken: true,
+            contractAddress: "",
+            amount: BigInt(1_000_000_000),
+            gasBudget: BigInt(3_000_000)
+        )
+        XCTAssertEqual(selected.map { $0["objectID"] }, ["0xbig"])
+        XCTAssertLessThanOrEqual(selected.count, SuiConstants.maxInputCoinObjects)
+    }
+
+    /// A token send embeds the covering token objects plus at most the largest
+    /// few native SUI objects as gas candidates — not every SUI object.
+    func testSelectPayloadCoinsTokenEmbedsTokensPlusBoundedGasCandidates() {
+        var wallet = [
+            ["coinType": bridgedCoin, "objectID": "0xtoken", "balance": "1000"]
+        ]
+        for i in 0..<50 { wallet.append(suiObject("0xsui\(i)", balance: "\(i + 1)0000000")) }
+
+        let selected = SuiCoinType.selectPayloadCoins(
+            wallet,
+            isNativeToken: false,
+            contractAddress: bridgedCoin,
+            amount: BigInt(500),
+            gasBudget: BigInt(3_000_000)
+        )
+        let ids = Set(selected.map { $0["objectID"] })
+        XCTAssertTrue(ids.contains("0xtoken"))
+        let gasCount = selected.filter { SuiCoinType.isNative($0["coinType"] ?? "") }.count
+        XCTAssertEqual(gasCount, SuiConstants.gasCandidateObjectCount)
     }
 }
