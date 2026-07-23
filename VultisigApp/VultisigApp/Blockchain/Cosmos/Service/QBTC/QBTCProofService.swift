@@ -17,17 +17,6 @@ final class QBTCProofService {
         self.httpClient = httpClient
     }
 
-    /// Health check. Both `status == "healthy"` and `setup_loaded == true`
-    /// are required for the prover to be considered usable.
-    func health() async throws -> ProofServiceHealth {
-        logger.debug("Checking QBTC proof service health")
-        let response = try await httpClient.request(
-            QBTCProofServiceAPI.health,
-            responseType: ProofServiceHealth.self
-        )
-        return response.data
-    }
-
     /// Generates a PLONK proof of UTXO ownership. Long-running.
     /// The returned hashes are byte-equal to what `QBTCClaimHashes.computeAll`
     /// would produce — they MAY be used directly when assembling

@@ -141,8 +141,6 @@ struct CircleYieldProvider: DefiYieldProvider {
 
     func apy(vault: Vault) async throws -> Decimal? { nil }
 
-    func tvl() async throws -> Decimal? { nil }
-
     func canWithdrawInstantly(vault: Vault, amount: BigInt) async -> Bool { true }
 
     func buildDepositPayload(vault: Vault, amount: BigInt) async throws -> KeysignPayload {

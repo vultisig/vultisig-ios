@@ -506,15 +506,6 @@ extension ThorchainService {
 // MARK: - THORChain LP Functionality
 extension ThorchainService {
 
-    /// Fetch pool information for a specific asset
-    func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let response = try await httpClient.request(
-            mainnet(.poolInfo(asset: asset)),
-            responseType: ThorchainPool.self
-        )
-        return response.data
-    }
-
     /// Get supported pools for LP with caching
     func fetchLPPools() async throws -> [ThorchainPool] {
         let cacheKey = "lp_pools"

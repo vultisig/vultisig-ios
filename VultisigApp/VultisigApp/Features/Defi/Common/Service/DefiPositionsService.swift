@@ -8,10 +8,6 @@
 struct DefiPositionsService {
     private let thorchainService = THORChainAPIService()
 
-    func positionCoins(for chain: Chain) -> [CoinMeta] {
-        bondCoins(for: chain) + stakeCoins(for: chain)
-    }
-
     func bondCoins(for chain: Chain) -> [CoinMeta] {
         switch chain {
         case .thorChain:

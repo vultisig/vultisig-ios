@@ -60,32 +60,6 @@ enum Utils {
         }.resume()
     }
 
-    static func deleteFromServer(urlString: String, headers: [String: String]) {
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
-        for item in headers {
-            request.setValue(item.value, forHTTPHeaderField: item.key)
-        }
-
-        URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                self.logger.error("Failed to send request, error: \(error)")
-                return
-            }
-
-            guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
-                self.logger.error("Invalid response code")
-                return
-            }
-
-        }.resume()
-    }
-
     static func getRequest(urlString: String, headers: [String: String]?, completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
@@ -124,30 +98,6 @@ enum Utils {
             }
 
         }.resume()
-    }
-
-    static func fetchArray<T: Decodable>(from urlString: String) async throws -> [T] {
-        do {
-            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            return try JSONDecoder().decode([T].self, from: data)
-        } catch let error as DecodingError {
-            let errorDescription = handleJsonDecodingError(error)
-            throw DecodingError.custom(description: errorDescription)
-        } catch {
-            throw error
-        }
-    }
-
-    static func fetchObject<T: Decodable>(from urlString: String) async throws -> T {
-        do {
-            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            return try JSONDecoder().decode(T.self, from: data)
-        } catch let error as DecodingError {
-            let errorDescription = handleJsonDecodingError(error)
-            throw DecodingError.custom(description: errorDescription)
-        } catch {
-            throw error
-        }
     }
 
     static func asyncGetRequest(urlString: String, headers: [String: String]? = nil) async throws -> Data {
@@ -214,28 +164,6 @@ enum Utils {
         }.joined()
     }
 
-    static func stringToHex(_ input: String) -> String {
-        input.utf8.map { String(format: "%02x", $0) }.joined()
-    }
-
-    static func getQrImage(data: Any?, size: CGFloat) -> Image {
-        let context = CIContext()
-        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-            return Image(systemName: "xmark")
-        }
-        qrFilter.setValue(data, forKey: "inputMessage")
-        guard let qrCodeImage = qrFilter.outputImage else {
-            return Image(systemName: "xmark")
-        }
-
-        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
-            return Image(systemName: "xmark")
-        }
-
-        return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
-    }
-
     static func parseCryptoURI(_ uri: String) -> (address: String, amount: String, message: String) {
 
         var address: String = .empty
@@ -292,29 +220,6 @@ enum Utils {
         return (address, amount, message)
     }
 
-    static func isIOS() -> Bool {
-        return true
-    }
-
-    static func handleJsonDecodingError(_ error: Error) -> String {
-        let errorDescription: String
-        switch error {
-        case let DecodingError.dataCorrupted(context):
-            errorDescription = "Data corrupted: \(context)"
-        case let DecodingError.keyNotFound(key, context):
-            errorDescription = "Key '\(key)' not found: \(context.debugDescription), path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
-        case let DecodingError.valueNotFound(value, context):
-            errorDescription = "Value '\(value)' not found: \(context.debugDescription), path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
-        case let DecodingError.typeMismatch(type, context):
-            let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
-            errorDescription = "Type '\(type)' mismatch: \(context.debugDescription), path: \(path)"
-        default:
-            errorDescription = "Error: \(error.localizedDescription)"
-        }
-
-        return errorDescription
-    }
-
     static func getChainCode() -> String? {
         var bytes = [UInt8](repeating: 0, count: 32)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
@@ -338,53 +243,6 @@ enum Utils {
                 let resultData = try JSONSerialization.data(withJSONObject: result)
                 return try JSONDecoder().decode(T.self, from: resultData)
             }
-        } catch {
-            print("Error processing JSON: \(error)")
-        }
-        return nil
-    }
-
-    static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String, type: T.Type, mustHaveFields: [String] = []) -> [T]? {
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
-            if let result = getValueFromJson(for: path, in: json) as? [NSDictionary] {
-                var filteredResults: [T] = []
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .secondsSince1970
-                decoder.nonConformingFloatDecodingStrategy = .convertFromString(
-                    positiveInfinity: "Infinity",
-                    negativeInfinity: "-Infinity",
-                    nan: "NaN"
-                )
-
-                for item in result {
-                    var hasAllFields = true
-                    for field in mustHaveFields {
-                        if let value = item.value(forKeyPath: field) as? String, value.isEmpty {
-                            hasAllFields = false
-                            break
-                        } else if item.value(forKeyPath: field) == nil {
-                            hasAllFields = false
-                            break
-                        }
-                    }
-                    if hasAllFields {
-                        let resultData = try JSONSerialization.data(withJSONObject: item)
-                        if let decodedItem = try? decoder.decode(T.self, from: resultData) {
-                            filteredResults.append(decodedItem)
-                        }
-                    }
-                }
-                return filteredResults
-            }
-        } catch let DecodingError.dataCorrupted(context) {
-            print("Error processing JSON: dataCorrupted \(context)")
-        } catch let DecodingError.keyNotFound(key, context) {
-            print("Error processing JSON: keyNotFound \(key) \(context)")
-        } catch let DecodingError.typeMismatch(type, context) {
-            print("Error processing JSON: typeMismatch \(type) \(context)")
-        } catch let DecodingError.valueNotFound(value, context) {
-            print("Error processing JSON: valueNotFound \(value) \(context)")
         } catch {
             print("Error processing JSON: \(error)")
         }

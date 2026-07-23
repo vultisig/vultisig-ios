@@ -39,23 +39,12 @@ class BlockaidScannerService: BlockaidScannerServiceProtocol {
         return Constants.providerName
     }
 
-    func supportsChain(_ chain: Chain, feature: SecurityScannerFeaturesType) -> Bool {
-        guard let supportedChainsByFeature = getSupportedChains()[feature] else {
-            return false
-        }
-
-        return supportedChainsByFeature.contains(chain)
-    }
-
     func getSupportedChains() -> [SecurityScannerFeaturesType: [Chain]] {
         return [
             .scanTransaction: Constants.supportedChains
         ]
     }
 
-    func getSupportedFeatures() -> [SecurityScannerFeaturesType] {
-        return [.scanTransaction]
-    }
 }
 
 // MARK: - Private Scan Methods

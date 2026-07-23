@@ -170,10 +170,6 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
 
-    func setOrder(_ index: Int) {
-        order = index
-    }
-
     // MARK: - DeFi yield providers
 
     /// Whether the user enabled a yield provider in the DeFi tab. Reads the
