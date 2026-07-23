@@ -59,6 +59,9 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
 
     /// A co-signing device never sees the initiator's `SendTransaction`. The
     /// `m=<` prefix is the discriminator, which is also how THORChain reads it.
+    /// The caption names the order's pair, parsed from the memo's own coin legs
+    /// (leading amount digits stripped), matching the initiator's raw-spelling
+    /// `SRC → TGT` caption.
     func testACoSignerRecognisesACancelFromItsMemo() {
         let hero = LimitOrderCancelPresentation.hero(
             forSignedMemo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0"
@@ -68,7 +71,18 @@ final class LimitOrderCancelPresentationTests: XCTestCase {
             return XCTFail("expected a title hero")
         }
         XCTAssertEqual(text, "limitSwap.cancel.verify.title".localized)
-        XCTAssertNil(caption)
+        XCTAssertEqual(caption, "THOR.RUNE → BTC.BTC")
+    }
+
+    /// The pair caption uses each leg's raw THORChain spelling — a secured-asset
+    /// source keeps its lower-case denom, exactly as it rides in the memo.
+    func testTheCancelCaptionUsesTheMemosRawAssetSpelling() {
+        guard case let .title(_, caption)? = LimitOrderCancelPresentation.hero(
+            forSignedMemo: "m=<:200000000DOGE.DOGE:15979057441BTC.BTC:0"
+        ) else {
+            return XCTFail("expected a title hero")
+        }
+        XCTAssertEqual(caption, "DOGE.DOGE → BTC.BTC")
     }
 
     /// ⚠️ A co-signer is signing too, and on the L1 route what moves is dust

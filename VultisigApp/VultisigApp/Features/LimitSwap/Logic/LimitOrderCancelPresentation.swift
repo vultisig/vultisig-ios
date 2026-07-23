@@ -51,10 +51,12 @@ enum LimitOrderCancelPresentation {
     /// Hero for a CO-SIGNER's screens.
     ///
     /// Keyed on the memo because that is all a co-signing device has: it holds a
-    /// `KeysignPayload`, never the initiator's `SendTransaction`. No caption —
-    /// the assets are inside the memo in their full THORChain spelling, which is
-    /// not what the rest of the app shows an order under, and half-translating
-    /// them here would invite a mismatch.
+    /// `KeysignPayload`, never the initiator's `SendTransaction`. The caption is
+    /// the order's asset pair, parsed straight out of the cancel memo — the same
+    /// `SRC → TGT` the initiator's hero shows (`hero(for:)`), and in the same raw
+    /// THORChain spelling, since the initiator sources it from the very strings
+    /// this memo carries. Nothing is translated, so nothing can mismatch; the
+    /// co-signer just sees which order it is closing instead of a bare title.
     ///
     /// ⚠️ The co-signer's disclosure of the donated dust does not live here.
     /// It is its own line on the JOIN screen (`KeysignMessageConfirmView`), fed
@@ -63,7 +65,33 @@ enum LimitOrderCancelPresentation {
     /// named.
     static func hero(forSignedMemo memo: String?) -> HeroContent? {
         guard isCancelLimitSwapMemo(memo) else { return nil }
-        return .title(text: title, caption: nil)
+        return .title(text: title, caption: cancelPairCaption(forMemo: memo))
+    }
+
+    /// The order's asset pair (`SRC → TGT`) parsed out of a cancel memo, or `nil`
+    /// when either leg can't be read.
+    ///
+    /// A cancel memo spells each leg as `<amount><ASSET>` (THORNode's `getCoin`
+    /// splices the two apart), so dropping the leading amount digits leaves the
+    /// THORChain asset string — shown verbatim, matching the initiator.
+    private static func cancelPairCaption(forMemo memo: String?) -> String? {
+        guard let memo else { return nil }
+        // `m=<:<amount><SRC>:<tradeTarget><TGT>:0` — [1] and [2] are the coins.
+        let fields = memo.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
+        guard fields.count >= 3,
+              let source = thorchainAssetAfterAmount(fields[1]),
+              let target = thorchainAssetAfterAmount(fields[2]) else {
+            return nil
+        }
+        return "\(source) → \(target)"
+    }
+
+    /// The asset portion of a `<amount><ASSET>` cancel-memo coin field: the
+    /// leading run of ASCII digits is the amount, everything after it the asset.
+    /// `nil` when no asset remains.
+    private static func thorchainAssetAfterAmount(_ field: String) -> String? {
+        let asset = field.drop(while: { $0.isASCII && $0.isNumber })
+        return asset.isEmpty ? nil : String(asset)
     }
 
     /// What a co-signer is about to give away, or `nil` when the cancel attaches
