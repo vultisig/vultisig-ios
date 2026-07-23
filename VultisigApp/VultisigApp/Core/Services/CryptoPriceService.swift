@@ -336,8 +336,13 @@ private extension CryptoPriceService {
     }
 
     func fetchLifiTokenPrice(contract: String, chain: Chain) async throws -> Rate {
+        guard let chainID = chain.chainID else {
+            logger.warning("No LiFi chain ID for \(chain.ticker), skipping price fetch for \(contract)")
+            return .init(fiat: "usd", crypto: contract, value: 0.0)
+        }
+
         let response = try await httpClient.request(
-            CryptoPriceAPI.lifiTokenPrice(network: chain.ticker, address: contract)
+            CryptoPriceAPI.lifiTokenPrice(network: String(chainID), address: contract)
         )
         if let priceUsd = Utils.extractResultFromJson(fromData: response.data, path: "priceUSD") as? String {
             let price = Double(priceUsd) ?? 0.0
