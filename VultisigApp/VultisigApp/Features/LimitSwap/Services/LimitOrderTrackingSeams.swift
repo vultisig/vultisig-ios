@@ -330,19 +330,32 @@ struct MidgardLimitOutcomeResolver: LimitOrderOutcomeResolving {
             )
             let actions = response.data.actions
             if let refund = actions.first(where: { $0.type.lowercased() == ActionType.refund }) {
-                // ⚠️ Indexed is not settled. `.refunded` / `.cancelled` /
-                // `.expired` all say the funds came back, and a `pending`
-                // refund is one whose outbound has not been sent yet — so wait
-                // a poll rather than say it early.
+                // ⚠️ The `refund` action's REASON is THORChain's authoritative
+                // account of why the order closed, and it is read regardless of
+                // the refund's `status` — pending or settled. Two facts make
+                // that safe:
                 //
-                // And do NOT fall through to the fill below while waiting. An
-                // order that partially filled and THEN closed has both actions
-                // indexed; reading the older one because the newer one is still
-                // pending would report it FILLED, terminally, on the strength
-                // of a fill that was only part of the story.
-                guard refund.status.lowercased() == ActionStatus.success else {
-                    return .unresolved
-                }
+                // • The order IS closed. `observeClosed` only calls this after
+                //   the order's absence from the queue is corroborated across
+                //   two polls, so we are not asking "did it close" — the queue
+                //   already answered that. `status` describes only whether the
+                //   refund OUTBOUND (returning the funds) has landed, a separate
+                //   leg, and must NOT decide the OUTCOME (reading `status` for an
+                //   outcome was the earlier `status`-vs-`type` bug). This order's
+                //   refund outbound is failing on fees and may stay `pending`
+                //   indefinitely; gating on it left the order unresolved forever.
+                //
+                // • The reason does not change as the outbound settles. It is
+                //   set when the refund is created, so reading it while pending
+                //   is not premature about the outcome.
+                //
+                // And a refund — pending or not — must NEVER fall through to the
+                // fill below. An order that partially filled and THEN closed has
+                // both actions indexed; what closed it is the refund, and
+                // reading the older fill would report it FILLED, terminally, on
+                // the strength of a fill that was only part of the story. The
+                // fill split is reported separately, from the queue's own last
+                // observation.
                 let reason = refund.metadata?.refund?.reason
                 let outcome = limitOrderCloseOutcome(refundReason: reason)
                 if outcome == .refunded {

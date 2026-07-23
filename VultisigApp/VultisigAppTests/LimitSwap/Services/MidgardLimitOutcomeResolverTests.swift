@@ -137,29 +137,52 @@ final class MidgardLimitOutcomeResolverTests: XCTestCase {
         XCTAssertEqual(outcome, .refunded)
     }
 
-    // MARK: - Non-answers must never become outcomes
+    // MARK: - A refund is the closure reason, even while its outbound is pending
 
-    /// ⚠️ Indexed is not settled. `refunded` / `cancelled` / `expired` all say
-    /// the funds came back, and a `pending` refund is one whose outbound has not
-    /// been sent — so it waits a poll rather than saying it early.
-    func testARefundWhoseOutboundHasNotSettledIsNotYetAnOutcome() async {
+    /// ⚠️ The order is ALREADY closed by the time this runs — `observeClosed`
+    /// corroborates its absence from the queue across two polls first. A refund
+    /// action's `reason` is THORChain's authoritative account of WHY it closed,
+    /// set when the refund is created; the `status` says only whether the refund
+    /// OUTBOUND (returning the funds) has landed, a separate leg. So a `pending`
+    /// refund still resolves the outcome — reading `status` for the outcome
+    /// would leave an order whose refund is stuck (this real one is failing on
+    /// fees) unresolved forever.
+    func testAPendingRefundStillResolvesFromItsReason() async {
         let outcome = await resolve(
             .body(Self.refund(reason: "limit swap cancelled", status: "pending"))
         )
 
-        XCTAssertEqual(outcome, .unresolved)
+        XCTAssertEqual(outcome, .cancelled)
     }
 
-    /// ⚠️ And it must not fall back to the FILL while it waits. An order that
-    /// partially filled and then closed has both actions indexed; reading the
-    /// older one because the newer is still pending would report it filled,
-    /// terminally, on the strength of part of the story.
-    func testAPendingRefundDoesNotFallBackToAnEarlierPartialFill() async {
+    /// The real order that surfaced this bug: an EVM-sourced cancel whose refund
+    /// outbound is itself failing on fees, so it stays `pending`, carrying the
+    /// full reason string with THORChain's appended detail. Bug 2 (prefix) and
+    /// Bug 3 (pending) together must resolve it `.cancelled`, not `.unresolved`.
+    func testThePendingRefundOfTheRealCancelledOrderResolvesCancelled() async {
+        let live = "limit swap cancelled; fail to refund " +
+            "(20000000 ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48): " +
+            "not enough asset to pay for fees"
+
+        let outcome = await resolve(.body(Self.refund(reason: live, status: "pending")))
+
+        XCTAssertEqual(outcome, .cancelled)
+    }
+
+    /// ⚠️ The invariant that MUST survive Bug 3: a refund, pending or settled,
+    /// never falls through to an earlier partial fill. An order that partially
+    /// filled and then closed indexes both actions; what closed it is the
+    /// refund, so this resolves to the refund's reason (`.expired`) and NEVER
+    /// `.filled`. The fill split is reported separately, from the queue's own
+    /// last observation.
+    func testAPendingRefundResolvesFromItsReasonAndNeverFallsBackToTheFill() async {
         let outcome = await resolve(.body(Self.refundAfterPartialFill(refundStatus: "pending")))
 
-        XCTAssertEqual(outcome, .unresolved)
+        XCTAssertEqual(outcome, .expired)
         XCTAssertNotEqual(outcome, .filled)
     }
+
+    // MARK: - Non-answers must never become outcomes
 
     func testAPendingSwapIsNotYetAFill() async {
         let outcome = await resolve(.body(Self.swapAction(status: "pending")))
