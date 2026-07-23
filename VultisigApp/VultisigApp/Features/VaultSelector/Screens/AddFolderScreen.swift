@@ -61,16 +61,20 @@ struct AddFolderScreen: View {
     }
 
     var vaultsList: some View {
-        ForEach(Array(filteredVaults.enumerated()), id: \.element) { index, vault in
-            AddFolderVaultCellView(
-                vault: vault,
-                isSelected: folderViewModel.selectedVaults.contains(vault),
-                onSelection: {
-                    handleSelection(vault: vault, isSelected: $0)
-                }
-            )
-            .commonListItemContainer(index: index, itemsCount: filteredVaults.count)
+        VStack(spacing: 0) {
+            ForEach(Array(filteredVaults.enumerated()), id: \.element) { index, vault in
+                AddFolderVaultCellView(
+                    vault: vault,
+                    isSelected: folderViewModel.selectedVaults.contains(vault),
+                    onSelection: {
+                        handleSelection(vault: vault, isSelected: $0)
+                    }
+                )
+                .commonListItemContainer(index: index, itemsCount: filteredVaults.count)
+            }
         }
+        .commonListContainer()
+        .plainListItem()
     }
 
     var saveButton: some View {

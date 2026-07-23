@@ -39,7 +39,6 @@ struct ReceiveChainSelectionScreen: View {
                         emptyMessage
                     }
                 }
-                .cornerRadius(12)
             }
         }
         .screenTitle("selectChain".localized)
@@ -83,6 +82,7 @@ struct ReceiveChainSelectionScreen: View {
                     .commonListItemContainer(index: offset, itemsCount: filteredChains.count)
             }
         }
+        .commonListContainer()
     }
 
     func cell(for chain: Chain) -> some View {
