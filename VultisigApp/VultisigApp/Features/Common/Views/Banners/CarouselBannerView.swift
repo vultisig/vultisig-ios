@@ -23,18 +23,25 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
     }
 
     var body: some View {
-        if let tileIcon = banner.tileIcon {
-            compactBanner(icon: tileIcon)
-        } else {
-            legacyBanner
+        // The whole card is the primary action. It's a `Button` (not a bare
+        // `onTapGesture`) so the close button — layered on top as a sibling
+        // overlay — reliably wins its own hit region: two buttons hit-test to
+        // the frontmost, whereas `onTapGesture` + `Button` can both fire.
+        Button(action: action) {
+            card
+        }
+        .buttonStyle(.plain)
+        .overlay(alignment: .topTrailing) {
+            // Figma places the 40pt glass close button 10pt from the banner's
+            // top-right edge (its content offsets past the 20pt padding).
+            CarouselBannerCloseButton(action: onClose)
+                .padding(10)
         }
     }
 
-    // MARK: - Compact icon-tile layout (Figma "Banners New 2026")
-
-    func compactBanner(icon: ImageResource) -> some View {
+    var card: some View {
         HStack(spacing: 12) {
-            iconTile(icon)
+            iconTile
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(banner.title)
@@ -58,15 +65,10 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .contentShape(RoundedRectangle(cornerRadius: 24))
-        .onTapGesture(perform: action)
-        .overlay(alignment: .topTrailing) {
-            CarouselBannerCloseButton(action: onClose)
-                .padding(8)
-        }
     }
 
-    func iconTile(_ icon: ImageResource) -> some View {
-        Icon(icon, color: Theme.colors.textPrimary, size: 20)
+    var iconTile: some View {
+        Icon(banner.icon, color: banner.iconColor, size: 20)
             .frame(width: 41, height: 41)
             .background(Theme.colors.bgSurface2)
             .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -74,53 +76,6 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
             )
-    }
-
-    // MARK: - Legacy illustration + button layout
-
-    var legacyBanner: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(banner.title)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: true, vertical: false)
-                    Text(banner.subtitle)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                }
-
-                PrimaryButton(
-                    title: banner.buttonTitle,
-                    type: .primarySuccess,
-                    size: .mini,
-                    action: action
-                )
-                .frame(maxWidth: 100, alignment: .leading)
-                .buttonStyle(.borderless)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Spacer()
-
-            CarouselBannerCloseButton(action: onClose)
-        }
-        .padding(8)
-        .background(backgroundView)
-        .containerStyle()
-    }
-
-    @ViewBuilder
-    var backgroundView: some View {
-        switch banner {
-        case let type as VaultBannerType:
-            VaultBannerBackground(type: type)
-        default:
-            Theme.colors.bgPrimary
-        }
     }
 }
 
@@ -159,10 +114,10 @@ private struct CarouselBannerCloseButton: View {
 
 #Preview {
     VStack(spacing: 16) {
-        CarouselBannerView(banner: VaultBannerType.backupVault) {} onClose: {}
-            .frame(height: 128)
-        CarouselBannerView(banner: VaultBannerType.buyVult) {} onClose: {}
-            .frame(height: 128)
+        ForEach(VaultBannerType.allCases) { banner in
+            CarouselBannerView(banner: banner) {} onClose: {}
+                .frame(height: 128)
+        }
     }
     .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

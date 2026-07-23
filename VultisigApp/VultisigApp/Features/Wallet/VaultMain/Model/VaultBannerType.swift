@@ -71,51 +71,25 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         }
     }
 
-    var buttonTitle: String {
+    var icon: ImageResource {
         switch self {
         case .upgradeVault:
-            "upgradeNow".localized
-        case .backupVault:
-            "backupBannerButtonTitle".localized
-        case .buyVult:
-            "buyVultBannerButtonTitle".localized
-        case .followVultisig:
-            "followVultisigBannerButtonTitle".localized
-        }
-    }
-
-    var image: ImageResource {
-        switch self {
-        case .upgradeVault:
-            .upgradeVaultBannerIcon
-        case .backupVault:
-            .backupVaultBannerIcon
-        case .buyVult:
-            .buyVultBannerIcon
-        case .followVultisig:
-            .followVultisigBannerIcon
-        }
-    }
-
-    var background: String? {
-        switch self {
-        case .upgradeVault:
-            nil
-        case .backupVault:
-            "backup-vault-banner-background"
-        case .buyVult:
-            nil
-        case .followVultisig:
-            "follow-vultisig-banner-background"
-        }
-    }
-
-    var tileIcon: ImageResource? {
-        switch self {
+            .circleArrowUp
         case .backupVault:
             .cloudUpload
-        case .upgradeVault, .buyVult, .followVultisig:
-            nil
+        case .buyVult:
+            .logoOutline
+        case .followVultisig:
+            .iconX
+        }
+    }
+
+    var iconColor: Color {
+        switch self {
+        case .upgradeVault:
+            Theme.colors.alertInfo
+        case .backupVault, .buyVult, .followVultisig:
+            Theme.colors.textPrimary
         }
     }
 }
