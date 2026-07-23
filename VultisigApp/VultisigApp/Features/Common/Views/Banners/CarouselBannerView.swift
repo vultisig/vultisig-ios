@@ -23,6 +23,62 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
     }
 
     var body: some View {
+        if let tileIcon = banner.tileIcon {
+            compactBanner(icon: tileIcon)
+        } else {
+            legacyBanner
+        }
+    }
+
+    // MARK: - Compact icon-tile layout (Figma "Banners New 2026")
+
+    func compactBanner(icon: ImageResource) -> some View {
+        HStack(spacing: 12) {
+            iconTile(icon)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(banner.title)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .multilineTextAlignment(.leading)
+                Text(banner.subtitle)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .background(Theme.colors.bgSurface1)
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .contentShape(RoundedRectangle(cornerRadius: 24))
+        .onTapGesture(perform: action)
+        .overlay(alignment: .topTrailing) {
+            CarouselBannerCloseButton(action: onClose)
+                .padding(8)
+        }
+    }
+
+    func iconTile(_ icon: ImageResource) -> some View {
+        Icon(icon, color: Theme.colors.textPrimary, size: 20)
+            .frame(width: 41, height: 41)
+            .background(Theme.colors.bgSurface2)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
+            )
+    }
+
+    // MARK: - Legacy illustration + button layout
+
+    var legacyBanner: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -102,10 +158,13 @@ private struct CarouselBannerCloseButton: View {
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
+        CarouselBannerView(banner: VaultBannerType.backupVault) {} onClose: {}
+            .frame(height: 128)
         CarouselBannerView(banner: VaultBannerType.buyVult) {} onClose: {}
+            .frame(height: 128)
     }
+    .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     .background(Theme.colors.bgPrimary)
-
 }

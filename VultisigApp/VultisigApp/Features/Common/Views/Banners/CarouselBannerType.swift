@@ -14,4 +14,12 @@ protocol CarouselBannerType: Identifiable, Hashable {
     var buttonTitle: String { get }
     var image: ImageResource { get }
     var background: String? { get }
+    /// When non-nil, the banner renders the compact icon-tile layout with this
+    /// glyph in the leading tile (no CTA button, flat surface + border). When
+    /// nil, the banner uses the legacy illustration + button layout.
+    var tileIcon: ImageResource? { get }
+}
+
+extension CarouselBannerType {
+    var tileIcon: ImageResource? { nil }
 }

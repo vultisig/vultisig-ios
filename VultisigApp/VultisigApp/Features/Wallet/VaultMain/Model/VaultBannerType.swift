@@ -109,6 +109,15 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "follow-vultisig-banner-background"
         }
     }
+
+    var tileIcon: ImageResource? {
+        switch self {
+        case .backupVault:
+            .cloudUpload
+        case .upgradeVault, .buyVult, .followVultisig:
+            nil
+        }
+    }
 }
 
 /// Per-banner rule governing how long a dismissal suppresses a promo banner.
