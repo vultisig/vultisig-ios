@@ -184,6 +184,21 @@ extension TransactionHistoryData {
     }
 }
 
+// MARK: - Provider Logo
+
+extension TransactionHistoryData {
+    /// Brand-logo asset name for the `via {provider}` badge, or `nil` when the
+    /// stored provider has no recognised brand mapping.
+    ///
+    /// History persists only the provider's display *name* (`swapProvider`), not
+    /// the payload-carrying quote, so we resolve it back to the shared
+    /// `SwapProviderKind` — the single source of truth both this badge and the
+    /// live swap screens read their logo from.
+    var swapProviderLogo: String? {
+        swapProvider.flatMap { SwapProviderKind(persistedName: $0)?.providerLogo }
+    }
+}
+
 // MARK: - Conversions
 
 extension TransactionHistoryData {
