@@ -31,7 +31,7 @@ struct SwapChainCell: View {
     var label: some View {
         VStack(spacing: 0) {
             content
-            GradientListSeparator()
+            Separator(color: Theme.colors.borderLight, opacity: 1)
         }
         .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
