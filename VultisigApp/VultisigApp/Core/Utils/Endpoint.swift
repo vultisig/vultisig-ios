@@ -9,26 +9,6 @@ import Foundation
 
 class Endpoint {
 
-    enum SwapChain {
-        case thorchain
-        case thorchainChainnet
-        case thorchainStagenet
-        case maya
-
-        var baseUrl: String {
-            switch self {
-            case .thorchain:
-                return "https://gateway.liquify.com/chain/thorchain_api/thorchain"
-            case .thorchainChainnet:
-                return "https://chainnet-thornode.thorchain.network/thorchain"
-            case .thorchainStagenet:
-                return "https://stagenet-thornode.thorchain.network/thorchain"
-            case .maya:
-                return "https://mayanode.mayachain.info/mayachain"
-            }
-        }
-    }
-
     static let vultisigApiProxy = "https://api.vultisig.com"
     static let vultisigNotification = "https://api.vultisig.com/notification"
     static let supportDocumentLink = "https://docs.vultisig.com/vultisig-app-actions/managing-your-vault/vault-backup#recovering-a-lost-device"

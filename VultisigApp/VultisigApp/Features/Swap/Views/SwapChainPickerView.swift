@@ -94,7 +94,12 @@ struct SwapChainPickerView: View {
                 )
             }
         }
-        .cornerRadius(12)
+        .background(Theme.colors.bgSurface1)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
 
     var emptyMessage: some View {

@@ -86,7 +86,7 @@ struct SwapCoinPickerView: View {
             .padding(.horizontal, 16)
 
             VStack(spacing: 12) {
-                GradientListSeparator()
+                Separator(color: Theme.colors.borderLight, opacity: 1)
                 Text("selectChain".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -162,7 +162,12 @@ struct SwapCoinPickerView: View {
                 }
             }
         }
-        .cornerRadius(12)
+        .background(Theme.colors.bgSurface1)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
 
     var emptyMessage: some View {
@@ -226,7 +231,7 @@ struct SwapCoinPickerView: View {
                     .frame(width: itemSize)
                     .background(
                         Capsule()
-                            .strokeBorder(Theme.colors.bgSurface2, lineWidth: 1)
+                            .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
                             .fill(Theme.colors.bgPrimary)
                     )
                     .padding(.horizontal, 4)
