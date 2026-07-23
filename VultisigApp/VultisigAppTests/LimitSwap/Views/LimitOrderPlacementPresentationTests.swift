@@ -186,11 +186,11 @@ final class LimitOrderPlacementPresentationTests: XCTestCase {
         )
     }
 
-    /// A LIM too large to represent as a `Decimal` must not render a false zero
-    /// minimum / zero price — the whole display is rejected so the co-signer
-    /// falls back to the generic hero.
-    func testALimBeyondDecimalRangeIsRejected() {
-        let hugeLim = String(repeating: "9", count: 120)
+    /// An absurdly large LIM — hostile or malformed — is rejected outright rather
+    /// than rendering a nonsense giant minimum / price. (`Decimal` holds such
+    /// values, so a representability check alone would NOT catch it.)
+    func testAnAbsurdlyLargeLimRejectsTheDisplay() {
+        let hugeLim = String(repeating: "9", count: 31) // over the digit cap
         XCTAssertNil(
             LimitOrderPlacementPresentation.display(
                 for: makePlacementPayload(
@@ -200,6 +200,74 @@ final class LimitOrderPlacementPresentationTests: XCTestCase {
                 )
             )
         )
+    }
+
+    /// Both a huge decoded magnitude AND a huge raw field are rejected — the
+    /// former so no absurd figure renders, the latter before any unbounded
+    /// `BigInt` parse.
+    func testDecodeCompressedLimBoundsMagnitudeAndLength() {
+        XCTAssertNil(decodeCompressedLim("1e80")) // sci decodes past the digit cap
+        XCTAssertNil(decodeCompressedLim(String(repeating: "9", count: 31))) // 31-digit magnitude
+        XCTAssertNil(decodeCompressedLim(String(repeating: "9", count: 5000))) // over the field-length cap
+        XCTAssertEqual(
+            decodeCompressedLim(String(repeating: "9", count: 30)),
+            BigInt(String(repeating: "9", count: 30))
+        )
+    }
+
+    /// ⚠️ The fund-safety guarantee: a memo recognized as a placement whose
+    /// details can't be reconstructed still shows the LIMIT title — never the
+    /// caller's generic deposit/swap hero, which is the blind-signing this
+    /// prevents.
+    func testARecognizedPlacementFallsBackToTheLimitTitleNotTheGenericHero() {
+        // Oversized LIM ⇒ `display` is nil, but the memo is still a placement.
+        let hero = LimitOrderPlacementPresentation.hero(
+            memo: "=<:ETH.ETH:0xabc:16e100/7200/0:vi:50",
+            display: nil
+        )
+        guard case let .title(text, caption)? = hero else {
+            return XCTFail("a recognized placement must keep a limit title")
+        }
+        XCTAssertEqual(text, "limitSwap.verify.title".localized)
+        XCTAssertNil(caption)
+
+        // Not a placement ⇒ no hero, so the caller's own hero is used.
+        XCTAssertNil(LimitOrderPlacementPresentation.hero(memo: "m=<:1THOR.RUNE:1BTC.BTC:0", display: nil))
+        XCTAssertNil(LimitOrderPlacementPresentation.hero(memo: nil, display: nil))
+    }
+
+    /// When the details DO reconstruct, the hero is the full swap hero from the
+    /// display, not the title fallback.
+    func testAReconstructedPlacementHeroIsTheSwapHero() {
+        let payload = makePlacementPayload(
+            memo: "=<:ETH.ETH:0x1234567890abcdef1234567890abcdef12345678:16e8/7200/0:vi:50",
+            coin: makeCoin(chain: .bitcoin, ticker: "BTC", logo: "btc", decimals: 8),
+            toAmount: 100_000_000
+        )
+        let display = LimitOrderPlacementPresentation.display(for: payload)
+        guard case .swap? = LimitOrderPlacementPresentation.hero(memo: payload.memo, display: display) else {
+            return XCTFail("expected the reconstructed swap hero")
+        }
+    }
+
+    /// A positive price too small to state at 8dp is omitted rather than shown
+    /// as a fabricated `0` — but the hero's real min-payout amount survives.
+    func testAVanishinglySmallPriceOmitsTheRowButKeepsTheHero() {
+        // 1e9 USDT sold, LIM 1 ⇒ min output 1e-8 BTC ⇒ price 1e-17 → "0".
+        let display = LimitOrderPlacementPresentation.display(
+            for: makePlacementPayload(
+                memo: "=<:BTC.BTC:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq:1/7200/0:vi:50",
+                coin: makeCoin(chain: .ethereum, ticker: "USDT", logo: "usdt", decimals: 6, contract: "0xdAC17F958D2ee523a2206206994597C13D831ec7", isNative: false),
+                toAmount: 1_000_000_000_000_000
+            )
+        )
+
+        XCTAssertNotNil(display)
+        XCTAssertNil(display?.targetPriceValue)
+        guard case let .swap(_, _, to)? = display?.hero else {
+            return XCTFail("the hero and its min-payout amount must survive")
+        }
+        XCTAssertEqual(to.amount, "0.00000001")
     }
 
     // MARK: - Memo parsing primitives

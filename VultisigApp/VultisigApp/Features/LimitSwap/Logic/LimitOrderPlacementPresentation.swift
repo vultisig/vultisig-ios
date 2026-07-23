@@ -43,8 +43,12 @@ enum LimitOrderPlacementPresentation {
         /// pair.
         let hero: HeroContent
         /// The order's guaranteed price, written like the initiator's row:
-        /// `1 <source> = <price> <target>`.
-        let targetPriceValue: String
+        /// `1 <source> = <price> <target>` — or `nil` when the price is a
+        /// positive value too small to state at display precision (it would
+        /// format to `0`), so the screen omits the row rather than show a
+        /// fabricated zero. The hero's source → minimum-payout pair still carries
+        /// the real amounts.
+        let targetPriceValue: String?
         /// The order's lifetime, e.g. `12h` — or `nil` when the memo's block
         /// interval isn't a whole number of hours (which no order this app
         /// builds ever is), so the screen omits the row rather than show a
@@ -73,21 +77,19 @@ enum LimitOrderPlacementPresentation {
 
         // LIM is the guaranteed-minimum output in THORChain's 1e8 fixed point,
         // target-asset agnostic — `limNaturalOutput` is the same conversion the
-        // initiator's "you receive" figure uses.
-        //
-        // `limNaturalOutput` returns 0 for a LIM too large to represent as a
-        // `Decimal`. A memo can carry any integer, so a hostile one could push
-        // the LIM past that range; showing the resulting 0 minimum / 0 price
-        // would be a fabricated figure on a signing screen. Reject instead, so
-        // the co-signer falls back to the generic (still honest) hero rather
-        // than a false zero.
+        // initiator's "you receive" figure uses. `parsePlacementMemo` has already
+        // bounded the LIM's magnitude (`maxLimDigits`), so this stays a sane
+        // number. The `> 0` guard is defense-in-depth: a `limNaturalOutput` of 0
+        // for a positive LIM would mean an unrepresentable conversion, and a 0
+        // minimum on a signing screen reads as "fill at any price" — reject and
+        // fall back to the limit title rather than show that.
         let minOutput = limNaturalOutput(parsed.lim)
         guard minOutput > 0 else { return nil }
         let targetPrice = minOutput / sourceAmount
         let sourceTicker = payload.coin.ticker
 
         let hero = HeroContent.swap(
-            title: "limitSwap.verify.title".localized,
+            title: placementTitle,
             from: HeroCoinAmount(
                 amount: sourceAmount.formatForDisplay(),
                 ticker: sourceTicker,
@@ -105,20 +107,57 @@ enum LimitOrderPlacementPresentation {
 
         return Display(
             hero: hero,
-            targetPriceValue: String(
-                format: "limitSwap.detail.targetPriceFormat".localized,
-                sourceTicker,
-                targetPrice.formatForDisplay(),
-                parsed.targetTicker
+            targetPriceValue: targetPriceRow(
+                price: targetPrice,
+                sourceTicker: sourceTicker,
+                targetTicker: parsed.targetTicker
             ),
             expiryValue: parsed.expiryHours.map { "\($0)h" }
         )
+    }
+
+    /// The hero for a co-signer's Verify screen, or `nil` when the payload is not
+    /// a placement.
+    ///
+    /// ⚠️ **Always a limit-order hero for a recognized `=<:` memo.** When the full
+    /// details reconstruct, it is the swap hero from `display`. When they do NOT
+    /// — an out-of-range or malformed LIM, a zero deposit — it falls back to the
+    /// limit TITLE, never to the caller's generic simulation hero: on a signing
+    /// screen a co-signer must still see that it is placing a limit order rather
+    /// than a plain deposit/swap. Mirrors `LimitOrderCancelPresentation.hero`,
+    /// which likewise titles every cancel memo even when nothing else resolves.
+    /// Takes the already-computed `display` so the reconstruction isn't repeated.
+    static func hero(memo: String?, display: Display?) -> HeroContent? {
+        guard isLimitSwapMemo(memo) else { return nil }
+        return display?.hero ?? .title(text: placementTitle, caption: nil)
     }
 
     /// Whether a memo about to be signed places a limit order — the co-signer
     /// side of the `=<:` discriminator.
     static func isPlacement(memo: String?) -> Bool {
         isLimitSwapMemo(memo)
+    }
+
+    private static var placementTitle: String { "limitSwap.verify.title".localized }
+
+    /// Format the target-price row, or `nil` when the price is positive but too
+    /// small to state at display precision.
+    ///
+    /// `formatForDisplay` truncates toward zero at 8 fractional digits, so a
+    /// genuine floor below `0.00000001` per source unit would render as `0` — a
+    /// fabricated zero price on a signing screen. The visibility test is NUMERIC
+    /// (the price's own 8-dp truncation), not a scan of the formatted string: a
+    /// locale with non-ASCII digits (e.g. Arabic-Indic `٠`) would let a formatted
+    /// zero slip past a character check. When it can't be stated, omit the row;
+    /// the hero's source → minimum-payout pair still carries the true amounts.
+    private static func targetPriceRow(price: Decimal, sourceTicker: String, targetTicker: String) -> String? {
+        guard price.truncated(toPlaces: Coin.thorchainFixedPointExponent) > 0 else { return nil }
+        return String(
+            format: "limitSwap.detail.targetPriceFormat".localized,
+            sourceTicker,
+            price.formatForDisplay(),
+            targetTicker
+        )
     }
 
     /// The fields a placement hero needs, parsed out of the `=<:` memo.
@@ -188,25 +227,54 @@ enum LimitOrderPlacementPresentation {
 /// exceed `Decimal`'s range are caught downstream by the `minOutput > 0` guard.
 private let maxCompressedLimExponent = 80
 
+/// Longest raw LIM field this will parse. Purely a parse-time DoS bound: it caps
+/// the plain-decimal string (and any mantissa) before `BigInt(_:)` is handed it,
+/// so a hostile multi-megabyte digit run can't force an unbounded allocation on
+/// a co-signer.
+private let maxLimFieldLength = 40
+
+/// Largest number of digits a DECODED LIM may have. A LIM is a 1e8 fixed-point
+/// amount, so even an astronomically large order stays far under 30 digits
+/// (`6e11` = 12 in the real fixtures); a value with more is hostile or malformed
+/// and would render an absurd minimum / target price on the signing screen.
+///
+/// This — not `Decimal` representability — is the effective magnitude bound:
+/// `Decimal` happily holds values well past 10^100, so a `limNaturalOutput`
+/// conversion of a huge LIM yields a giant number rather than the zero one might
+/// expect. The digit cap rejects it outright so `hero(memo:display:)` falls back
+/// to the plain limit title instead of a nonsense figure.
+private let maxLimDigits = 30
+
 /// Decode a memo LIM field back to its integer value, inverting `compressLim`.
 ///
 /// The LIM is written either as a plain decimal (`1600000000`) or in THORChain's
 /// `<mantissa>e<exponent>` shorthand (`16e8`), which `compressLim` emits when it
 /// is strictly shorter. Both decode to the same integer. Returns `nil` for
-/// anything that is neither form (a negative or oversized exponent, non-digits)
-/// so a malformed or hostile memo doesn't fabricate a price or exhaust memory.
+/// anything that is neither form (a negative or oversized exponent, non-digits,
+/// an over-long field, or an out-of-range magnitude) so a malformed or hostile
+/// memo doesn't fabricate a price or exhaust memory.
 func decodeCompressedLim(_ field: String) -> BigInt? {
+    // Bound the raw length before any parse — guards the plain-decimal path,
+    // which would otherwise hand an unbounded digit string straight to BigInt.
+    guard !field.isEmpty, field.count <= maxLimFieldLength else { return nil }
+
+    let value: BigInt
     if let plain = BigInt(field) {
-        return plain
+        value = plain
+    } else {
+        let parts = field.lowercased().split(separator: "e", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count == 2,
+              let mantissa = BigInt(parts[0]),
+              let exponent = Int(parts[1]),
+              exponent >= 0, exponent <= maxCompressedLimExponent else {
+            return nil
+        }
+        value = mantissa * BigInt(10).power(exponent)
     }
-    let parts = field.lowercased().split(separator: "e", omittingEmptySubsequences: false).map(String.init)
-    guard parts.count == 2,
-          let mantissa = BigInt(parts[0]),
-          let exponent = Int(parts[1]),
-          exponent >= 0, exponent <= maxCompressedLimExponent else {
-        return nil
-    }
-    return mantissa * BigInt(10).power(exponent)
+
+    // Reject a non-positive or absurdly large magnitude — see `maxLimDigits`.
+    guard value > 0, value.description.count <= maxLimDigits else { return nil }
+    return value
 }
 
 /// The plain ticker inside a THORChain memo asset — `ETH.ETH` → `ETH`,

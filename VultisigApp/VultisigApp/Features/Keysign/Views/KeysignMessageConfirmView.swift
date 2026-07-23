@@ -64,7 +64,10 @@ struct KeysignMessageConfirmView: View {
                         // reading this replaces.
                         hero: LimitOrderCancelPresentation.hero(
                             forSignedMemo: viewModel.keysignPayload?.memo
-                        ) ?? placement?.hero ?? viewModel.heroContent,
+                        ) ?? LimitOrderPlacementPresentation.hero(
+                            memo: viewModel.keysignPayload?.memo,
+                            display: placement
+                        ) ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
                         vault: viewModel.vault,
@@ -138,9 +141,10 @@ struct KeysignMessageConfirmView: View {
         placement: LimitOrderPlacementPresentation.Display?
     ) -> [SendCryptoVerifySummaryRow] {
         if let placement {
-            var rows = [
-                SendCryptoVerifySummaryRow(title: "limitSwap.detail.target", value: placement.targetPriceValue)
-            ]
+            var rows: [SendCryptoVerifySummaryRow] = []
+            if let targetPrice = placement.targetPriceValue {
+                rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.detail.target", value: targetPrice))
+            }
             if let expiry = placement.expiryValue {
                 rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.expiry", value: expiry))
             }
