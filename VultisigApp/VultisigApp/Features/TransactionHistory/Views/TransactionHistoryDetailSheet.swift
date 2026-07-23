@@ -12,6 +12,29 @@ struct TransactionHistoryDetailSheet: View {
     /// `TransactionHistoryItem`. `nil` on a co-signer, which never persists a
     /// `LimitOrder`; the sheet degrades to what the row itself knows.
     var limitOrder: LimitOrderDetails?
+    /// What this DEVICE can say about signing the cancel, independent of whether
+    /// the ORDER qualifies. `nil` for a row that is not a limit order — and, if
+    /// it ever reaches the button with an order in hand, treated as `.unknown`
+    /// rather than waved through.
+    ///
+    /// Three-valued rather than an optional asset, because "the vault lacks
+    /// RUNE" and "the vault could not be read" produce the same absent coin and
+    /// deserve opposite messages — only the first earns "add RUNE". And the
+    /// missing case carries the asset rather than a bare flag because the two
+    /// routes need different funds: a THORChain-sourced order's cancel is paid
+    /// in RUNE, while a BTC-funded order's is sent from Bitcoin and never
+    /// touches THORChain's fee at all.
+    ///
+    /// Defaults to `nil` so the many call sites that never show a limit order
+    /// stay unchanged; the button is gated on the order's own eligibility first.
+    var cancelSigningAvailability: LimitOrderCancelSigningAvailability?
+    /// Invoked when the user taps Cancel Order.
+    ///
+    /// A callback rather than a `router.navigate` from inside the sheet: the
+    /// router pushes onto the stack BEHIND this sheet, so navigating from here
+    /// would look like the tap did nothing until the sheet was dismissed. The
+    /// presenting screen dismisses first, then navigates.
+    var onCancelOrder: ((LimitOrderDetails) -> Void)?
 
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -53,6 +76,8 @@ struct TransactionHistoryDetailSheet: View {
                 }
                 detailRows
                 actionButtons
+                cancelOrderButton
+                cancelTransactionButton
                 if transaction.swapKitTrackerURL != nil {
                     swapKitTrackerButton
                 }
@@ -471,12 +496,6 @@ struct TransactionHistoryDetailSheet: View {
     /// A limit order pairs "View on Explorer" with "Copy TX Hash" — the inbound
     /// hash IS the order's identity on-chain, so it is the one thing a user
     /// needs to hand to anyone asking about their order.
-    ///
-    /// Slot note: "Cancel Order" belongs directly BELOW this row, full width,
-    /// and is resting-only (`limitOrder?.isTerminal == false`). It is not built
-    /// here — cancelling means constructing an `m=<` MsgDeposit, which is its
-    /// own change. The layout leaves room for it rather than pretending: an
-    /// always-visible button that does nothing would be worse than its absence.
     @ViewBuilder
     private var actionButtons: some View {
         if isLimit {
@@ -501,6 +520,121 @@ struct TransactionHistoryDetailSheet: View {
     private var copyHashButton: some View {
         PrimaryButton(title: "limitSwap.detail.copyTxHash", type: .secondary) {
             ClipboardManager.copyToClipboard(transaction.txHash)
+        }
+    }
+
+    // MARK: - Cancel Order
+
+    /// Full width, directly below the explorer/copy row.
+    ///
+    /// Rendered only for states the user can act on or needs explained:
+    ///
+    /// - cancellable → the live button.
+    /// - `.missingSignedData` / `.signedDataDisagreesWithChain` → disabled, with
+    ///   a reason. Both are permanent for a given order, so an explanation is
+    ///   worth more than an absent button the user goes hunting for.
+    /// - `.unsupportedSourceChain` / `.memoTooLongForSourceChain` → disabled,
+    ///   with a reason. Both are permanent for a given order and both are
+    ///   genuinely explainable, so an absent button would just send the user
+    ///   hunting. The memo case in particular has a reassuring answer: the
+    ///   order still refunds itself at expiry.
+    /// - `.terminal` → nothing. A closed order has nothing to cancel, and the
+    ///   status row above already says so.
+    @ViewBuilder
+    private var cancelOrderButton: some View {
+        if let order = limitOrder {
+            switch limitOrderCancelEligibility(order) {
+            case .cancellable:
+                cancelButton(for: order)
+            case .blocked(.missingSignedData):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableLegacyOrder".localized)
+            case .blocked(.signedDataDisagreesWithChain):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableMismatch".localized)
+            case .blocked(.cancelAlreadyBroadcast):
+                disabledCancelButton(reason: "limitSwap.cancel.alreadyRequested".localized)
+            case .blocked(.unsupportedSourceChain):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableChain".localized)
+            case .blocked(.memoTooLongForSourceChain):
+                disabledCancelButton(reason: "limitSwap.cancel.unavailableMemoTooLong".localized)
+            case .blocked(.terminal):
+                EmptyView()
+            }
+        }
+    }
+
+    /// The order qualifies — now, can this DEVICE sign for it?
+    ///
+    /// - `.available` → the live button.
+    /// - `.missing` → disabled, naming the asset to add. Named per route: a
+    ///   BTC-funded order's cancel is sent from Bitcoin, so telling that user to
+    ///   add RUNE is advice that fixes nothing.
+    /// - ⚠️ `.unknown` → disabled, and deliberately NOT prescriptive. The vault
+    ///   could not be read, so we do not know whether anything is missing;
+    ///   naming an asset here would tell someone to acquire a coin they may
+    ///   already hold. Say what is true — we could not check — and leave it there.
+    /// - `nil` joins `.unknown`. This is only reached with an order in hand, and
+    ///   the presenting screen resolves availability for every order it shows,
+    ///   so a `nil` here means the two disagree — which is itself something we
+    ///   cannot prove anything from. Failing OPEN on it would hand back the
+    ///   enabled-but-inert button this whole branch exists to avoid.
+    ///
+    /// Disabled with a reason rather than enabled-and-inert throughout: a tap
+    /// that silently does nothing is unrecoverable, because nothing on screen
+    /// would say why.
+    @ViewBuilder
+    private func cancelButton(for order: LimitOrderDetails) -> some View {
+        switch cancelSigningAvailability {
+        case .available:
+            PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {
+                onCancelOrder?(order)
+            }
+        case let .missing(asset):
+            disabledCancelButton(
+                reason: String(
+                    format: "limitSwap.cancel.unavailableNoSigningAsset".localized,
+                    asset.ticker,
+                    asset.chainName
+                )
+            )
+        case .unknown, .none:
+            disabledCancelButton(reason: "limitSwap.cancel.unavailableVaultUnreadable".localized)
+        }
+    }
+
+    /// - Parameter reason: already localized. One arm formats a value into its
+    ///   copy, and a helper that localizes for you cannot express that without
+    ///   the call sites drifting into two conventions.
+    @ViewBuilder
+    private func disabledCancelButton(reason: String) -> some View {
+        VStack(spacing: 8) {
+            PrimaryButton(title: "limitSwap.cancel.title", type: .secondary) {}
+                .disabled(true)
+                .opacity(0.5)
+            Text(reason)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    /// Where the cancel transaction stays reachable.
+    ///
+    /// A cancel is deliberately given no row of its own in history — it is a
+    /// step in this order's life, not a separate transfer, and the row above is
+    /// the single surface for the whole lifecycle. That makes this sheet the
+    /// only place its hash surfaces, so the ordinary explorer link has to be
+    /// here: the fee it cost and the transaction itself must remain inspectable.
+    ///
+    /// Same chain as the row by construction — a cancel is sent from the chain
+    /// that funded the order, which is the chain the row records.
+    @ViewBuilder
+    private var cancelTransactionButton: some View {
+        if let hash = limitOrder?.cancelBroadcastHash?.nilIfEmpty,
+           let chain = Chain(rawValue: transaction.chainRawValue),
+           let url = URL(string: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash)) {
+            PrimaryButton(title: "limitSwap.cancel.viewTransaction", type: .secondary) {
+                openURL(url)
+            }
         }
     }
 

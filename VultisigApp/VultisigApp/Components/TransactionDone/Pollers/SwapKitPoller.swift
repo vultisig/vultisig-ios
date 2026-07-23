@@ -181,7 +181,7 @@ final class SwapKitPoller: DoneStatusPoller {
             return .failed(reason: "swapKitStatusRefundedReason".localized)
         case .failed:
             return .failed(reason: "swapKitStatusFailedReason".localized)
-        case .resting, .expired, .cancelled:
+        case .resting, .expired, .cancelled, .cancelling:
             // THORChain limit-order states. Unreachable here: this mapper only
             // ever sees rows the SwapKit poller owns, and limit orders are
             // routed to `LimitOrderPoller` by `DoneStatusServiceFactory`.

@@ -170,6 +170,20 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
         }
     }
 
+    /// Cancel every running poller and drop the whole registry. A hard
+    /// teardown for the global reset: unlike `suspendAll()` (which keeps the
+    /// registry so foreground can resume), nothing survives, so a later
+    /// `resumeInFlight` starts only from what SwiftData still holds — which,
+    /// after a reset, is nothing.
+    func stopAllTracking() {
+        for (_, entry) in pollers {
+            entry.task?.cancel()
+        }
+        pollers.removeAll()
+        uiStatusByTxHash.removeAll()
+        logger.info("Stopped all SwapKit pollers (reset)")
+    }
+
     // MARK: - Public helpers (SwapKit-specific)
 
     /// One-shot refresh — fires a single `/track` request immediately
@@ -276,8 +290,16 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
                 SwapKitAPI.track(request),
                 responseType: SwapKitTrackingResponse.self
             )
+            // `stopAllTracking()` (the global reset) cancels this task while the
+            // request is in flight. A late response must not write status or the
+            // observable cache back for a row that is being deleted. `handleFailure`
+            // already guards on the poller registry; success needs an explicit
+            // check because `forceRefresh` legitimately calls `pollOnce` without a
+            // registered poller.
+            if Task.isCancelled { return PollOutcome(shouldStop: true, nextDelay: 0) }
             return handleSuccess(txHash: txHash, pubKeyECDSA: pubKeyECDSA, response: response.data)
         } catch {
+            if Task.isCancelled { return PollOutcome(shouldStop: true, nextDelay: 0) }
             return handleFailure(txHash: txHash, pubKeyECDSA: pubKeyECDSA, error: error)
         }
     }

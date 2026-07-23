@@ -22,8 +22,17 @@ protocol LimitOrderObserving {
     ///   - pubKeyECDSA: identifies the owning vault.
     ///   - amounts: `nil` means "not observed" and must leave any stored value
     ///     untouched.
+    ///   - observedTradeTarget: the queue's own `trade_target`, cross-checked
+    ///     against the value recorded at signing before a cancel is built.
+    ///   - observedSourceAsset/observedTargetAsset: the assets as THORChain
+    ///     itself holds them, i.e. with any abbreviation the placement memo
+    ///     carried already resolved. A cancel memo has to spell them in full.
     ///   - timeToExpiryBlocks: the queue's live countdown; `nil` means "not
     ///     observed" and follows the same rule.
+    /// - Returns: the status actually recorded, which is not always the one
+    ///   observed — a still-resting order with a confirmed cancel against it is
+    ///   stored as `.cancelling`. The caller mirrors THIS onto the tx-history
+    ///   row so the row and the authoritative order table say the same thing.
     func recordObservation(
         inboundTxHash: String,
         pubKeyECDSA: String,
@@ -31,8 +40,11 @@ protocol LimitOrderObserving {
         depositAmount: String?,
         filledInAmount: String?,
         filledOutAmount: String?,
+        observedTradeTarget: String?,
+        observedSourceAsset: String?,
+        observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
-    ) throws
+    ) throws -> LimitOrderStatus
 }
 
 enum LimitOrderObservingError: Error, Equatable {
@@ -60,21 +72,102 @@ struct LimitOrderObserver: LimitOrderObserving {
         depositAmount: String?,
         filledInAmount: String?,
         filledOutAmount: String?,
+        observedTradeTarget: String?,
+        observedSourceAsset: String?,
+        observedTargetAsset: String?,
         timeToExpiryBlocks: Int?
-    ) throws {
+    ) throws -> LimitOrderStatus {
         guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
             logger.error("No vault for pubKey — cannot record limit-order observation")
             throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
         }
-        try storage.recordObservation(
+        return try storage.recordObservation(
             of: "\(inboundTxHash)_\(pubKeyECDSA)",
             status: status,
             depositAmount: depositAmount,
             filledInAmount: filledInAmount,
             filledOutAmount: filledOutAmount,
+            observedTradeTarget: observedTradeTarget,
+            observedSourceAsset: observedSourceAsset,
+            observedTargetAsset: observedTargetAsset,
             timeToExpiryBlocks: timeToExpiryBlocks,
             in: vault
         )
+    }
+}
+
+// MARK: - The cancel record
+
+/// Reads and writes the cancel transaction recorded against an order.
+///
+/// Separate from `LimitOrderObserving` because it is written from a different
+/// place for a different reason: an observation is what the queue reports, a
+/// cancel record is what THIS device did and then verified on-chain.
+@MainActor
+protocol LimitOrderCancelIntentStoring {
+    func pendingCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String) -> String?
+    /// Called on a confirmed BROADCAST — a non-empty cancel hash — to move the
+    /// order into `.cancelling`. A refusal the chain reports later is undone via
+    /// `clearCancelBroadcast`.
+    func recordCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws
+    /// Called once the cancel transaction is verified `.succeeded` / `.delivered`,
+    /// marking it CONFIRMED on-chain. Only a confirmed cancel may be credited a
+    /// no-reason refund by `reconcile`; a bare broadcast can show `.cancelling`
+    /// but never a terminal `.cancelled`.
+    func confirmCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws
+    /// Withdraw a record whose transaction failed. Compare-and-set on
+    /// `expecting`, so a newer cancel recorded while the old one was being
+    /// verified is not withdrawn on the old one's verdict.
+    func clearCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, expecting txHash: String) throws
+}
+
+@MainActor
+struct LimitOrderCancelIntentStore: LimitOrderCancelIntentStoring {
+    private let storage = LimitOrderStorageService()
+
+    func pendingCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String) -> String? {
+        guard let vault = try? LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            return nil
+        }
+        return storage.pendingCancelBroadcast(of: orderId(inboundTxHash, pubKeyECDSA), in: vault)
+    }
+
+    func recordCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        try storage.recordCancelBroadcast(
+            of: orderId(inboundTxHash, pubKeyECDSA),
+            txHash: txHash,
+            in: vault
+        )
+    }
+
+    func confirmCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        try storage.confirmCancelBroadcast(
+            of: orderId(inboundTxHash, pubKeyECDSA),
+            txHash: txHash,
+            in: vault
+        )
+    }
+
+    func clearCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, expecting txHash: String) throws {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        try storage.clearCancelBroadcast(
+            of: orderId(inboundTxHash, pubKeyECDSA),
+            expecting: txHash,
+            in: vault
+        )
+    }
+
+    /// The `LimitOrder` primary key, built the same way `persist` builds it.
+    private func orderId(_ inboundTxHash: String, _ pubKeyECDSA: String) -> String {
+        "\(inboundTxHash)_\(pubKeyECDSA)"
     }
 }
 
@@ -82,28 +175,96 @@ struct LimitOrderObserver: LimitOrderObserving {
 
 /// Why an order left the queue.
 ///
-/// The queue tells us THAT an order closed (it disappears) but never WHY:
-/// `EventLimitSwapClose` carries the authoritative reason, but it is emitted in
-/// EndBlock — exposed by no THORNode REST route and unindexed by Midgard. So the
-/// outcome is resolved separately, from the inbound tx's settlement.
+/// The queue tells us THAT an order closed (it disappears) but never WHY. The
+/// reason comes from Midgard, which indexes the closure as a `refund` action and
+/// carries THORChain's own words on it as `metadata.refund.reason` — verbatim
+/// `"limit swap cancelled"` or `"limit swap expired"`.
+///
+/// > This design was originally built on the belief that no such signal existed
+/// > — that `EventLimitSwapClose` was EndBlock-only, reachable through no REST
+/// > route and unindexed by Midgard, and that a cancellation was therefore
+/// > client knowledge or nothing. That was wrong, and a great deal of hedging
+/// > downstream of it was hedging against a problem that is not there.
 enum LimitOrderOutcome: Equatable {
     /// The order executed — an outbound in the target asset settled.
     case filled
-    /// The order settled as a REFUND: the funds came back.
+    /// The order settled as a REFUND, with no reason we recognise attached.
     ///
-    /// Deliberately not called "expired". A refund is what we can observe; an
-    /// expiry is an inference about WHY, and the two aren't the same — a
-    /// placement rejected outright (halted pool, bad memo) refunds within
-    /// seconds without any TTL elapsing. Telling that user their order "expired"
-    /// would be a fabricated explanation of their own funds' history.
-    ///
-    /// Separating them would need TTL corroboration the tracker doesn't carry:
-    /// a closed order is gone from the queue, taking its expiry countdown with
-    /// it. So we report the fact and not the story.
+    /// Deliberately not called "expired". A refund is what we observed; an
+    /// expiry is a claim about WHY, and the two aren't the same — a placement
+    /// rejected outright (halted pool, bad memo) also refunds, within seconds,
+    /// with no TTL elapsed. This is the fail-closed answer for a reason string
+    /// that is missing or that THORChain has since reworded: today's behaviour,
+    /// which a future protocol change degrades INTO rather than through.
     case refunded
+    /// THORChain closed the order because a cancel matched it — its own words,
+    /// `"limit swap cancelled"`.
+    ///
+    /// Independent of whether THIS device sent that cancel, which is the point:
+    /// an order cancelled from another device, or from a different wallet
+    /// entirely, is labelled correctly here and could not be before.
+    case cancelled
+    /// THORChain closed the order because its TTL elapsed — its own words,
+    /// `"limit swap expired"`.
+    case expired
     /// Not knowable yet. NOT a state — the caller must keep the order resting
     /// and ask again, never guess.
     case unresolved
+}
+
+/// Midgard's `metadata.refund.reason` for a limit order THORChain closed because
+/// a cancel matched it.
+///
+/// Matched by PREFIX. THORChain appends detail to the reason — the live string
+/// for a cancelled order is `"limit swap cancelled; fail to refund (…): not
+/// enough asset to pay for fees"` — so an exact match would miss a genuine
+/// cancellation and mislabel it. Anything that does not START with one of these
+/// — a reworded stem, a reason for some other kind of refund, nothing at all —
+/// falls to `.refunded`, which is what this tracker reported before the reason
+/// was available at all. A protocol change therefore costs a label, never a
+/// wrong one.
+private let limitSwapCancelledReason = "limit swap cancelled"
+private let limitSwapExpiredReason = "limit swap expired"
+
+/// Read THORChain's own account of why an order closed.
+///
+/// Pure, and separate from the HTTP that fetches it, because this mapping is the
+/// whole of the decision: everything else in the resolver is about telling an
+/// answer from a failure to get one.
+func limitOrderCloseOutcome(refundReason: String?) -> LimitOrderOutcome {
+    guard let normalized = refundReason?
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .lowercased() else {
+        return .refunded
+    }
+    if normalized.hasStem(limitSwapCancelledReason) {
+        return .cancelled
+    }
+    if normalized.hasStem(limitSwapExpiredReason) {
+        return .expired
+    }
+    // The funds came back and we cannot say why. `.refunded` is exactly that
+    // statement.
+    return .refunded
+}
+
+private extension String {
+    /// Whether this reason IS `stem` or is `stem` followed by appended detail.
+    ///
+    /// THORChain appends detail behind a separator — `"limit swap cancelled;
+    /// fail to refund …"` — so the match has to be by prefix. But it must stop
+    /// at a word boundary: a reworded reason that merely runs the stem on into
+    /// another word (`"limit swap cancelledness"`) is a DIFFERENT reason and
+    /// must fall to the fail-closed `.refunded`, not be read as a cancellation.
+    func hasStem(_ stem: String) -> Bool {
+        guard hasPrefix(stem) else { return false }
+        guard let boundary = dropFirst(stem.count).first else {
+            return true // exact match — nothing appended
+        }
+        // A genuine suffix starts with a separator (`;`, `:`, whitespace…),
+        // never a letter or digit continuing the word.
+        return !boundary.isLetter && !boundary.isNumber
+    }
 }
 
 @MainActor
@@ -111,22 +272,49 @@ protocol LimitOrderOutcomeResolving {
     func resolveOutcome(inboundTxHash: String, sourceChain: Chain) async -> LimitOrderOutcome
 }
 
-/// Resolves the outcome from Midgard, reading the indexed action's status.
+/// Resolves the outcome from Midgard, keyed on the action's TYPE and, for a
+/// closure, on THORChain's own reason for it.
 ///
-/// Midgard indexes a filled limit order as a successful swap and a lapsed one as
-/// a refund, which is exactly the "did it fill?" question. (It drops the close
-/// REASON entirely — `limit_swap_close` is an explicit no-op in its mux — which
-/// is a question we are not asking here.)
+/// Midgard indexes an order's whole life against its placement hash: a
+/// `limit_swap` action when it is placed, a `swap` when it executes, and a
+/// `refund` when it closes unfilled — the last of which carries
+/// `metadata.refund.reason`, verbatim `"limit swap cancelled"` or
+/// `"limit swap expired"`.
 ///
-/// Reads `action.status` directly rather than going through
+/// ⚠️ **`type`, never `status`.** Midgard's `status` is only ever `success` or
+/// `pending` and describes whether the OUTBOUND settled, not what happened to
+/// the order. This read `status` and compared it against `"refund"` — a value
+/// that field never takes — so a closed order matched `"success"` and resolved
+/// as FILLED, whether it had filled, expired or been cancelled. A resting
+/// order's placement action alone would have done the same.
+///
+/// A `refund` outranks a `swap` when both are present: that is a partial fill
+/// followed by a closure, and what closed the order is the refund. The fill
+/// split is reported separately, from the queue's own last observation.
+///
+/// Reads the actions directly rather than going through
 /// `THORChainTransactionStatusProvider`. That provider folds HTTP 429 and 5xx
 /// into `.failed`, which suits a poller that keeps polling — but here `.failed`
-/// would mean "refunded", so a rate limit or a bad gateway would irreversibly
-/// mark a live resting order expired. The distinction between "the chain says
-/// refund" and "Midgard didn't answer" is the entire safety property of this
-/// type, and it must not be inferred from an abstraction that discards it.
+/// would mean "closed", so a rate limit or a bad gateway would irreversibly
+/// close a live resting order. The distinction between "the chain says refund"
+/// and "Midgard didn't answer" is the entire safety property of this type, and
+/// it must not be inferred from an abstraction that discards it.
 @MainActor
 struct MidgardLimitOutcomeResolver: LimitOrderOutcomeResolving {
+    /// Midgard action types. `limitSwap` is the PLACEMENT and is deliberately
+    /// not an outcome — an order that is still resting has exactly this and
+    /// nothing else.
+    private enum ActionType {
+        static let refund = "refund"
+        static let swap = "swap"
+    }
+
+    /// The only two values Midgard's `status` takes. It says whether the
+    /// OUTBOUND settled — not what happened to the order.
+    private enum ActionStatus {
+        static let success = "success"
+    }
+
     private let httpClient: HTTPClientProtocol
     private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-outcome-resolver")
 
@@ -140,20 +328,53 @@ struct MidgardLimitOutcomeResolver: LimitOrderOutcomeResolving {
                 THORChainTransactionStatusAPI.getActions(txHash: inboundTxHash, chain: sourceChain),
                 responseType: THORChainActionsResponse.self
             )
-            guard let action = response.data.actions.first else {
-                // Not indexed yet.
-                return .unresolved
+            let actions = response.data.actions
+            if let refund = actions.first(where: { $0.type.lowercased() == ActionType.refund }) {
+                // ⚠️ The `refund` action's REASON is THORChain's authoritative
+                // account of why the order closed, and it is read regardless of
+                // the refund's `status` — pending or settled. Two facts make
+                // that safe:
+                //
+                // • The order IS closed. `observeClosed` only calls this after
+                //   the order's absence from the queue is corroborated across
+                //   two polls, so we are not asking "did it close" — the queue
+                //   already answered that. `status` describes only whether the
+                //   refund OUTBOUND (returning the funds) has landed, a separate
+                //   leg, and must NOT decide the OUTCOME (reading `status` for an
+                //   outcome was the earlier `status`-vs-`type` bug). This order's
+                //   refund outbound is failing on fees and may stay `pending`
+                //   indefinitely; gating on it left the order unresolved forever.
+                //
+                // • The reason does not change as the outbound settles. It is
+                //   set when the refund is created, so reading it while pending
+                //   is not premature about the outcome.
+                //
+                // And a refund — pending or not — must NEVER fall through to the
+                // fill below. An order that partially filled and THEN closed has
+                // both actions indexed; what closed it is the refund, and
+                // reading the older fill would report it FILLED, terminally, on
+                // the strength of a fill that was only part of the story. The
+                // fill split is reported separately, from the queue's own last
+                // observation.
+                let reason = refund.metadata?.refund?.reason
+                let outcome = limitOrderCloseOutcome(refundReason: reason)
+                if outcome == .refunded {
+                    // Worth noticing: either THORChain reworded a reason we key
+                    // on, or this refund is one we have never seen. Both mean
+                    // the label degrades to `.refunded`, which is safe, and both
+                    // are things we would rather find out about than not.
+                    logger.info("Limit order \(inboundTxHash, privacy: .public) refunded with an unrecognised reason: \(reason ?? "<none>", privacy: .public)")
+                }
+                return outcome
             }
-            switch action.status.lowercased() {
-            case "success":
+            if actions.contains(where: {
+                $0.type.lowercased() == ActionType.swap && $0.status.lowercased() == ActionStatus.success
+            }) {
                 return .filled
-            case "refund":
-                return .refunded
-            default:
-                // "pending", or a status we don't recognise. Either way, not an
-                // answer — ask again.
-                return .unresolved
             }
+            // Only the placement action, an outbound still in flight, or nothing
+            // at all — either way, not an answer yet.
+            return .unresolved
         } catch {
             // Rate limits, server errors, timeouts, decode failures. None of
             // these are outcomes; treating any of them as one would close a

@@ -223,16 +223,27 @@ enum SendCryptoLogic {
 
     // MARK: - Display: fees
 
-    /// Human-readable gas/fee row. EVM, UTXO and Cardano show the total `fee`
-    /// (a true amount) in the native coin, matching the joining device's
-    /// `JoinKeysignGasViewModel`. Everything else shows `gas` (per-unit).
-    /// Caller resolves `gasNativeCoin` — for native sends it's the same coin;
-    /// for ERC20s it's the EVM-native sibling looked up against the vault.
+    /// Which of a transaction's two fee figures its chain quotes a fee in.
+    ///
+    /// EVM, UTXO and Cardano price a transaction as a TOTAL (`fee`), matching
+    /// the joining device's `JoinKeysignGasViewModel`; everything else quotes a
+    /// per-unit `gas` that IS the whole cost.
+    ///
+    /// ⚠️ Shared so that a crypto fee row and the fiat figure printed beside it
+    /// cannot be derived from different numbers. Pricing an EVM row off `gas`
+    /// values a gwei gas PRICE as though it were the whole fee, which rounds to
+    /// `$0.00` next to a crypto figure that says otherwise.
+    static func displayFee(coin: Coin, gas: BigInt, fee: BigInt) -> BigInt {
+        let usesTotalFee = coin.chainType == .EVM || coin.chainType == .UTXO || coin.chainType == .Cardano
+        return usesTotalFee ? fee : gas
+    }
+
+    /// Human-readable gas/fee row, in the native coin. Caller resolves
+    /// `gasNativeCoin` — for native sends it's the same coin; for ERC20s it's
+    /// the EVM-native sibling looked up against the vault.
     static func gasInReadable(coin: Coin, gasNativeCoin: Coin, gas: BigInt, fee: BigInt) -> String {
         let decimals = gasNativeCoin.decimals
-        let usesTotalFee = coin.chainType == .EVM || coin.chainType == .UTXO || coin.chainType == .Cardano
-        let feeToDisplay = usesTotalFee ? fee : gas
-        let feeDecimal = Decimal(feeToDisplay)
+        let feeDecimal = Decimal(displayFee(coin: coin, gas: gas, fee: fee))
 
         return "\((feeDecimal / pow(10, decimals)).formatToDecimal(digits: decimals).description) \(gasNativeCoin.ticker)"
     }

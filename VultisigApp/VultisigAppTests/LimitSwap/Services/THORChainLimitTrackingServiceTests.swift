@@ -161,6 +161,43 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         XCTAssertEqual(service.trackedOrderCountForTesting, 0)
     }
 
+    // MARK: - stopAllTracking (global reset teardown)
+
+    /// The global "Reset Transaction History" teardown drops EVERY tracked
+    /// order and cancels EVERY sender poll task — unlike `setActive(false)`,
+    /// which keeps `tracked` so foreground can resume. Nothing is left behind.
+    func testStopAllTrackingReleasesEveryOrderAndCancelsEverySenderPoll() {
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
+        service.start(tx: Self.makeLimitTx(txHash: "limit-1"))
+        // A second sender exercises the multi-task teardown path.
+        service.start(tx: Self.makeLimitTx(txHash: "limit-2", fromAddress: "thor1other"))
+        XCTAssertEqual(service.trackedOrderCountForTesting, 2)
+        XCTAssertEqual(service.activeSenderPollCountForTesting, 2)
+
+        service.stopAllTracking()
+
+        XCTAssertEqual(service.trackedOrderCountForTesting, 0)
+        XCTAssertEqual(service.activeSenderPollCountForTesting, 0)
+        XCTAssertTrue(service.uiStatusByTxHash.isEmpty)
+    }
+
+    /// After a reset the rows are deleted, so a resume that re-reads an empty
+    /// store resurrects nothing.
+    func testResumeInFlightAfterStopAllTrackingStartsNothingWhenStoreIsEmpty() async {
+        let storage = FakeLimitTrackingStorage()
+        storage.inFlight = [Self.makeLimitTx(txHash: "limit-1")]
+        let service = Self.makeService(storage: storage)
+        await service.resumeInFlight()
+        XCTAssertEqual(service.trackedOrderCountForTesting, 1)
+
+        service.stopAllTracking()
+        storage.inFlight = []
+        await service.resumeInFlight()
+
+        XCTAssertEqual(service.trackedOrderCountForTesting, 0)
+        XCTAssertEqual(service.activeSenderPollCountForTesting, 0)
+    }
+
     // MARK: - resumeInFlight
 
     func testResumeInFlightTakesUpOnlyThisProvidersNonTerminalRows() async {
@@ -212,7 +249,9 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
             httpClient: InertHTTPClient(),
             storage: storage,
             orders: InertLimitOrderObserver(),
-            outcomes: InertOutcomeResolver()
+            outcomes: InertOutcomeResolver(),
+            cancelIntents: InertCancelIntentStore(),
+            cancelVerifier: InertCancelVerifier()
         )
     }
 
@@ -233,6 +272,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         providerKind: String = "thorchainLimit",
         latestTrackingStatus: String? = nil,
         includeTracking: Bool = true,
+        fromAddress: String = "thor1from",
         metadata: SwapTrackingMetadataData? = nil
     ) -> TransactionHistoryData {
         TransactionHistoryData(
@@ -248,7 +288,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
             coinChainLogo: nil,
             amountCrypto: "600.12",
             amountFiat: "1000",
-            fromAddress: "thor1from",
+            fromAddress: fromAddress,
             toAddress: "bc1qto",
             toCoinTicker: "BTC",
             toCoinLogo: "btc",
@@ -328,12 +368,30 @@ private final class InertLimitOrderObserver: LimitOrderObserving {
     func recordObservation(
         inboundTxHash _: String,
         pubKeyECDSA _: String,
-        status _: LimitOrderStatus,
+        status: LimitOrderStatus,
         depositAmount _: String?,
         filledInAmount _: String?,
         filledOutAmount _: String?,
+        observedTradeTarget _: String?,
+        observedSourceAsset _: String?,
+        observedTargetAsset _: String?,
         timeToExpiryBlocks _: Int?
-    ) throws {}
+    ) throws -> LimitOrderStatus { status }
+}
+
+@MainActor
+private final class InertCancelIntentStore: LimitOrderCancelIntentStoring {
+    func pendingCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String) -> String? { nil }
+    func recordCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash _: String) throws {}
+    func confirmCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash _: String) throws {}
+    func clearCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, expecting _: String) throws {}
+}
+
+@MainActor
+private final class InertCancelVerifier: LimitOrderCancelVerifying {
+    func verifyCancelTransaction(txHash _: String, chain _: Chain) async -> LimitOrderCancelTxOutcome { // swiftlint:disable:this async_without_await
+        .unresolved
+    }
 }
 
 @MainActor

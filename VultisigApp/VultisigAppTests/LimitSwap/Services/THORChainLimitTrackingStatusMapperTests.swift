@@ -42,10 +42,20 @@ final class THORChainLimitTrackingStatusMapperTests: XCTestCase {
         XCTAssertTrue(SwapTrackingUiStatus.cancelled.isTerminal)
     }
 
+    /// ⚠️ `.cancelling` is our own transaction landing, not the order closing.
+    /// It has to stay NON-terminal or the tracker releases a live order and
+    /// nothing is left to correct it.
+    func testCancellingMapsToCancellingAndIsNotTerminal() {
+        XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(.cancelling), .cancelling)
+        XCTAssertFalse(SwapTrackingUiStatus.cancelling.isTerminal)
+        XCTAssertNotEqual(SwapTrackingUiStatus.cancelling, .cancelled)
+    }
+
     /// The wire vocabulary is `LimitOrderStatus.rawValue` — one source, so the
     /// row can't contradict the order it mirrors.
     func testMapsEveryLimitOrderStatusRawValue() {
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "pending"), .resting)
+        XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "cancelling"), .cancelling)
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "filled"), .completed)
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "expired"), .expired)
         XCTAssertEqual(THORChainLimitTrackingStatusMapper.map(trackingStatus: "cancelled"), .cancelled)

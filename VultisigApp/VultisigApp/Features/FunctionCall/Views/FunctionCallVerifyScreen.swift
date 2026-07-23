@@ -19,6 +19,8 @@ struct FunctionCallVerifyScreen: View {
     @State var fastVaultPassword: String = ""
     @State var isForReferral = false
     @State private var error: HelperError?
+    /// Set when the pre-sign re-check finds the order is no longer cancellable.
+    @State private var staleOrderMessage: String?
 
     var body: some View {
         Screen {
@@ -92,15 +94,95 @@ struct FunctionCallVerifyScreen: View {
                 feeFiat: depositViewModel.feesInReadable(tx: transaction, vault: vault),
                 coinImage: transaction.coin.logo,
                 amount: getAmount(),
-                coinTicker: transaction.coin.ticker
+                coinTicker: transaction.coin.ticker,
+                // A limit-order cancel is not a send, and the generic header
+                // would call it one — "You're sending 0 RUNE" on the THORChain
+                // route, or "You're sending 2 DOGE" on the L1 one, where the two
+                // DOGE are dust donated to the pool. `nil` for everything else,
+                // which keeps the existing presentation.
+                hero: LimitOrderCancelPresentation.hero(for: transaction),
+                additionalRows: cancelLimitOrderRows
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
-        )
+        ) {
+            cancelLimitOrderDisclosures
+        }
+    }
+
+    /// The dust an L1 cancel attaches, as a cost row beside the network fee.
+    ///
+    /// ⚠️ It used to be a full-width red alert block. The dust is real,
+    /// non-refundable money — THORNode donates whatever arrives with an `m=<` to
+    /// the pool — so it must stay disclosed with its exact amount; but it is a
+    /// normal, expected part of this transaction, and alarm styling made a
+    /// routine charge read as something going wrong. Empty on the THORChain
+    /// route, which attaches nothing.
+    private var cancelLimitOrderRows: [SendCryptoVerifySummaryRow] {
+        guard let donated = transaction.limitCancelContext?.disclosures?.donatedAmount else { return [] }
+        return [SendCryptoVerifySummaryRow(title: "limitSwap.cancel.donatedDustRow", value: donated)]
+    }
+
+    /// What a limit-order cancel has to say before it is signed.
+    ///
+    /// These used to be an intermediate confirmation screen. That screen had no
+    /// editable field — a cancel arrives with its assets, amounts and memo
+    /// already fixed — so it was removed and its content moved HERE, one step
+    /// closer to the signature rather than one step further from it.
+    ///
+    /// ⚠️ The donated dust is still disclosed with its exact amount — it moved
+    /// UP, into the summary card's cost rows (see `cancelLimitOrderRows`), not
+    /// away. An L1 cancel has to attach a coin for Bifrost to observe it at all,
+    /// and THORNode donates whatever arrives to the pool with no refund path; on
+    /// DOGE that is two whole coins of the user's own money. What is left here
+    /// are the things that genuinely warrant a warning.
+    @ViewBuilder
+    private var cancelLimitOrderDisclosures: some View {
+        if let cancel = transaction.limitCancelContext {
+            VStack(alignment: .leading, spacing: 16) {
+                // What actually happens on-chain: the order closes, anything
+                // already filled stays paid out, and the unfilled remainder is
+                // refunded. Said plainly because a user cancelling a partially
+                // filled order otherwise has no way to know the filled part is
+                // not coming back.
+                Text("limitSwap.cancel.explanation".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+
+                if cancel.duplicateRestingOrderCount > 0 {
+                    // THORChain addresses orders by (assets, ratio) + sender and
+                    // cancels the FIRST match — never by tx hash. With more than
+                    // one identical resting order we genuinely cannot promise
+                    // which closes, so we say so rather than implying certainty.
+                    WarningView(text: "limitSwap.cancel.duplicateWarning".localized)
+                }
+
+                if let balanceObjection = cancel.disclosures?.balanceObjection {
+                    WarningView(text: balanceObjection)
+                }
+
+                if let staleOrderMessage {
+                    WarningView(text: staleOrderMessage)
+                }
+
+                if cancel.disclosures?.canAffordCancel == false {
+                    InsufficientFeeNotice(ticker: transaction.coin.chain.ticker)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// True when signing must be refused outright. Only the balance verdict
+    /// qualifies: everything else on this screen is a disclosure the user is
+    /// entitled to weigh for themselves.
+    private var isSigningBlocked: Bool {
+        transaction.limitCancelContext?.disclosures?.canAffordCancel == false
     }
 
     var pairedSignButton: some View {
         SigningCTAButtons(
             isFastVault: vault.isFastVault,
+            isDisabled: isSigningBlocked,
             singleSignTitle: "signTransaction",
             onFastSign: { fastPasswordPresented = true },
             onPairedSign: {
@@ -131,13 +213,56 @@ struct FunctionCallVerifyScreen: View {
     }
 
     private func onSignPress() {
+        guard !isSigningBlocked, isCancelStillEligible() else { return }
         let canSign = depositVerifyViewModel.validateSecurityScanner()
         if canSign {
             signAndMoveToNextView()
         }
     }
 
+    /// Re-check a limit-order cancel against storage immediately before signing.
+    ///
+    /// The order was snapshotted before navigation and this screen can sit open
+    /// indefinitely; in that window the order can fill, expire, or already have a
+    /// cancel recorded against it. Signing then spends a fee — and on L1 donates
+    /// dust — for a memo that can no longer match anything.
+    ///
+    /// Called from BOTH gates, and the duplication is deliberate.
+    /// `signAndMoveToNextView` is the true last word — the security-scanner sheet
+    /// continues straight into it, and that sheet exists precisely to make the
+    /// user stop and read, so an unbounded amount of time can pass between the
+    /// tap and the signature. Checking in `onSignPress` as well only buys earlier
+    /// feedback: the user is told the order changed instead of being walked
+    /// through a scanner sheet for a transaction that will be refused anyway.
+    private func isCancelStillEligible() -> Bool {
+        guard let cancel = transaction.limitCancelContext else { return true }
+        switch limitOrderCancelRecheck(cancel, pubKeyECDSA: vault.pubKeyECDSA) {
+        case .stillEligible, .noLocalOrder:
+            // `.noLocalOrder` is permitted explicitly, and only because there is
+            // nothing better available: a device that does not hold the row has
+            // only the original eligibility decision to go on, and refusing here
+            // would put the cancel permanently out of its reach.
+            staleOrderMessage = nil
+            return true
+        case .orderChanged:
+            staleOrderMessage = "limitSwap.cancel.orderChanged".localized
+            fastPasswordPresented = false
+            return false
+        case .unverifiable:
+            // The check did not happen, so nothing is known about the order —
+            // and saying "this order changed" would be a claim we cannot make.
+            // Refuse either way: this guard is what stops a filled or expired
+            // order being cancelled from a stale screen.
+            staleOrderMessage = "limitSwap.cancel.unavailableVaultUnreadable".localized
+            fastPasswordPresented = false
+            return false
+        }
+    }
+
     func signAndMoveToNextView() {
+        // The last gate before the ceremony starts, and the only one the
+        // security-scanner continuation passes through.
+        guard !isSigningBlocked, isCancelStillEligible() else { return }
         Task {
             do {
                 let result = try await depositVerifyViewModel.createKeysignPayload(tx: transaction)

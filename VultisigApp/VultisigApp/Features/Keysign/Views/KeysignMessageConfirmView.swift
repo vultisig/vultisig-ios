@@ -29,6 +29,12 @@ struct KeysignMessageConfirmView: View {
                 // tag row) while a genuine text memo (combo / memo-only) shows.
                 // XRP SWAPS keep the raw memo (their on-chain routing memo).
                 let isRipplePlainPayment = ripplePayload?.coin.chain == .ripple && ripplePayload?.swapPayload == nil
+                // A limit-order PLACEMENT, reconstructed from the `=<:` memo the
+                // way the cancel path reads its `m=<:` one. When present it takes
+                // precedence over the generic simulation hero, which would show a
+                // co-signer a plain deposit/swap rather than the resting order it
+                // is actually signing. `nil` for every non-placement memo.
+                let placement = LimitOrderPlacementPresentation.display(for: viewModel.keysignPayload)
                 SendCryptoVerifySummaryView(
                     input: SendCryptoVerifySummary(
                         fromName: viewModel.vault.name,
@@ -50,14 +56,30 @@ struct KeysignMessageConfirmView: View {
                         amountFiat: lpDictionary == nil ? viewModel.getAmountFiat() : "",
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
-                        hero: viewModel.heroContent,
+                        // A co-signer sees only the payload, so the `m=<` memo is
+                        // what identifies a limit-order cancel — the same thing
+                        // THORChain reads. It takes precedence over the
+                        // simulation-derived hero: a cancel's dust transfer
+                        // simulates as an ordinary send, which is exactly the
+                        // reading this replaces.
+                        hero: LimitOrderCancelPresentation.hero(
+                            forSignedMemo: viewModel.keysignPayload?.memo
+                        ) ?? LimitOrderPlacementPresentation.hero(
+                            memo: viewModel.keysignPayload?.memo,
+                            display: placement
+                        ) ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
                         vault: viewModel.vault,
-                        dappMetadata: viewModel.dappMetadata
+                        dappMetadata: viewModel.dappMetadata,
+                        // Target price + expiry for a placement — the initiator's
+                        // limit Verify rows, as cost-style rows beneath the fee.
+                        additionalRows: limitOrderSummaryRows(placement: placement)
                     ),
                     securityScannerState: $viewModel.securityScannerState
-                )
+                ) {
+                    limitOrderDisclosures
+                }
 
                 PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                     viewModel.joinKeysignCommittee()
@@ -78,6 +100,63 @@ struct KeysignMessageConfirmView: View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
             .font(Theme.fonts.bodyLMedium)
+    }
+
+    /// What a limit-order CANCEL says before it is signed — the initiator's
+    /// "what cancelling does" explanation (`FunctionCallVerifyScreen`), verbatim
+    /// static copy a co-signer can show from the payload alone: the order closes,
+    /// anything already filled stays paid out, the unfilled remainder is refunded,
+    /// for one network fee.
+    ///
+    /// ⚠️ The donated dust is NOT here. It moved UP into the summary card's cost
+    /// rows (`limitOrderSummaryRows`, "Kept by THORChain"), matching the initiator
+    /// — which deliberately stopped alarm-styling a routine, fully-disclosed
+    /// charge. The initiator's other cancel disclosures (duplicate-order warning,
+    /// balance objection, stale-order / insufficient-fee notices) are OMITTED
+    /// here: each needs the vault's OTHER stored orders or a live balance /
+    /// eligibility check that a co-signer, holding only this payload, cannot do.
+    @ViewBuilder
+    private var limitOrderDisclosures: some View {
+        if LimitOrderCancelPresentation.isCancel(memo: viewModel.keysignPayload?.memo) {
+            Text("limitSwap.cancel.explanation".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Cost-style rows shown beneath the network fee for a limit order, mirroring
+    /// the initiator's Verify.
+    ///
+    /// - PLACEMENT: the target price (`1 <source> = <price> <target>`) and, when
+    ///   the memo's interval is a whole number of hours, the expiry.
+    /// - CANCEL: the dust an L1 cancel donates to the pool with no refund path,
+    ///   framed as the cost it is ("Kept by THORChain") rather than a red alert —
+    ///   the same reframing the initiator made in
+    ///   `FunctionCallVerifyScreen.cancelLimitOrderRows`. Nothing on the THORChain
+    ///   route, which attaches no dust.
+    ///
+    /// Empty for every other transaction, so no other path changes.
+    private func limitOrderSummaryRows(
+        placement: LimitOrderPlacementPresentation.Display?
+    ) -> [SendCryptoVerifySummaryRow] {
+        if let placement {
+            var rows: [SendCryptoVerifySummaryRow] = []
+            if let targetPrice = placement.targetPriceValue {
+                rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.detail.target", value: targetPrice))
+            }
+            if let expiry = placement.expiryValue {
+                rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.expiry", value: expiry))
+            }
+            return rows
+        }
+        if let dust = LimitOrderCancelPresentation.attachedDust(in: viewModel.keysignPayload) {
+            return [SendCryptoVerifySummaryRow(
+                title: "limitSwap.cancel.donatedDustRow",
+                value: "\(dust.amount) \(dust.ticker)"
+            )]
+        }
+        return []
     }
 
     /// Reconstructs the LP `memoFunctionDictionary` from a THORChain LP add/remove memo so the

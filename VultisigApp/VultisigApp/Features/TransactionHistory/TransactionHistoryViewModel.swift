@@ -153,6 +153,35 @@ class TransactionHistoryViewModel: ObservableObject {
         return limitOrdersByTxHash[tx.txHash.uppercased()]
     }
 
+    /// Resolve everything a cancel needs, or `nil` if this order cannot be
+    /// cancelled from here.
+    ///
+    /// Built on THIS side of the navigation rather than in the confirmation
+    /// screen so the eligibility decision and the memo that gets signed are
+    /// made together, from one snapshot of the order. Re-deriving the memo
+    /// later would let the two drift, and a cancel memo addressing the wrong
+    /// bucket fails silently.
+    func cancelRequest(for order: LimitOrderDetails) -> LimitOrderCancelRequest? {
+        guard case let .cancellable(inputs) = limitOrderCancelEligibility(order),
+              let sourceChainRawValue = order.sourceChainRawValue,
+              let memo = try? buildCancelLimitSwapMemo(inputs) else {
+            return nil
+        }
+        let duplicates = duplicateRestingLimitOrders(
+            of: order,
+            among: Array(limitOrdersByTxHash.values)
+        )
+        return LimitOrderCancelRequest(
+            orderId: order.id,
+            inboundTxHash: order.inboundTxHash,
+            memo: memo,
+            sourceAsset: order.sourceAsset,
+            targetAsset: order.targetAsset,
+            sourceChainRawValue: sourceChainRawValue,
+            duplicateRestingOrderCount: duplicates.count
+        )
+    }
+
     func refresh() async {
         load()
         // Pull-to-refresh forces an immediate poll for every in-flight

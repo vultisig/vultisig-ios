@@ -58,10 +58,30 @@ struct ThorchainLimitSwapQueueEntry: Decodable, Equatable {
 struct ThorchainQueuedSwap: Decodable, Equatable {
     let tx: ThorchainQueuedSwapTx
     let state: ThorchainQueuedSwapState?
+    /// The order's TARGET asset as THORChain itself holds it — i.e. AFTER
+    /// `fuzzyAssetMatch` expanded whatever abbreviation the placement memo
+    /// carried.
+    ///
+    /// This is the only place the full identifier can be read back. A placement
+    /// memo may say `ETH.USDC-06EB48`; the order is indexed under
+    /// `ETH.USDC-0XA0B8…`, and a cancel — the one inbound memo type that skips
+    /// fuzzy matching — has to spell it the long way or it keys an empty bucket.
+    let targetAsset: ThorchainWireAsset?
+    /// The order's trade target (the LIM its placement memo encoded), in the
+    /// target asset's 1e8 fixed point. This is `MsgSwap.TradeTarget` verbatim.
+    ///
+    /// Read for one reason: it is half of the pair THORChain addresses a resting
+    /// order by, so it cross-checks the value we recorded at signing before a
+    /// cancel is built from it. (`state.deposit` is the other half — THORNode
+    /// assigns it from `Tx.Coins[0].Amount`.) A mismatch disables cancelling
+    /// rather than signing a memo that would match nothing.
+    let tradeTarget: String?
 
     enum CodingKeys: String, CodingKey {
         case tx
         case state
+        case tradeTarget = "trade_target"
+        case targetAsset = "target_asset"
     }
 }
 
@@ -71,11 +91,68 @@ struct ThorchainQueuedSwapTx: Decodable, Equatable {
     let id: String
     let fromAddress: String?
     let memo: String?
+    /// What was actually deposited, as THORChain resolved it. `coins[0]` is the
+    /// swap's source coin — `state.deposit` is this entry's amount, assigned
+    /// verbatim — so `coins[0].asset` is the SOURCE half of the pair a cancel
+    /// memo has to name in full.
+    let coins: [ThorchainQueuedCoin]?
 
     enum CodingKeys: String, CodingKey {
         case id
         case fromAddress = "from_address"
         case memo
+        case coins
+    }
+}
+
+struct ThorchainQueuedCoin: Decodable, Equatable {
+    let asset: ThorchainWireAsset?
+    let amount: String?
+}
+
+/// A `common.Asset` off the wire, reduced to the string a memo spells it with.
+///
+/// Decodes BOTH shapes deliberately. THORNode's queriers render assets through
+/// `Asset.MarshalJSON`, i.e. as the flat string `ETH.USDC-0XA0B8…`; but the same
+/// message marshalled by protobuf-JSON comes out as an object of its
+/// chain/symbol/flags fields. Which one a given route uses is a property of that
+/// route's marshaller, not of the type, and this decoder is the only reader of
+/// an asset whose exact spelling we then SIGN. Accepting both costs a dozen
+/// lines; guessing wrong costs a cancel that silently matches nothing.
+struct ThorchainWireAsset: Decodable, Equatable {
+    /// The asset as a memo spells it — `THOR.RUNE`, `ETH.USDC-0XA0B8…`,
+    /// `ETH-USDC-0XA0B8…` (secured), `ETH/USDC-0XA0B8…` (synth).
+    let memoForm: String
+
+    private enum CodingKeys: String, CodingKey {
+        case chain
+        case symbol
+        case synth
+        case trade
+        case secured
+    }
+
+    init(from decoder: Decoder) throws {
+        if let text = try? decoder.singleValueContainer().decode(String.self) {
+            memoForm = text
+            return
+        }
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let chain = try container.decode(String.self, forKey: .chain)
+        let symbol = try container.decode(String.self, forKey: .symbol)
+        // Mirrors `common.Asset.String()`: one separator per flavour, and the
+        // layer-1 `.` when none of the flags is set.
+        let separator: String
+        if try container.decodeIfPresent(Bool.self, forKey: .synth) == true {
+            separator = "/"
+        } else if try container.decodeIfPresent(Bool.self, forKey: .trade) == true {
+            separator = "~"
+        } else if try container.decodeIfPresent(Bool.self, forKey: .secured) == true {
+            separator = "-"
+        } else {
+            separator = "."
+        }
+        memoForm = "\(chain)\(separator)\(symbol)"
     }
 }
 

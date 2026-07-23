@@ -7,20 +7,30 @@
 
 import Foundation
 
-/// Midgard Action Status → App Status Mapping
+/// Midgard action → app status.
 ///
-/// Canonical mapping (authoritative):
-/// - action.status == "success" => AppStatus = SUCCESS (confirmed)
-/// - action.status == "pending" => AppStatus = PENDING
-/// - action.status == "refund" => AppStatus = FAILED_REFUNDED
+/// ⚠️ **The outcome is `action.type`. `action.status` is the OUTBOUND.**
+/// `status` takes exactly two values, `success` and `pending`, and says whether
+/// the outbound legs have been sent — never whether the transaction did what it
+/// was asked to. A message THORChain rejected is indexed as
+/// `{"type": "failed", "status": "success"}`, so reading `status` reports a
+/// refusal as a confirmation, on the very screen that exists to tell the user
+/// what happened.
 ///
-/// Reason fields (display-only; do not affect canonical mapping):
-/// When AppStatus = FAILED_REFUNDED:
-/// - Primary failure reason: action.metadata.refund.reason OR action.metadata.failed.reason
-/// - Optional reason code: action.metadata.refund.code OR action.metadata.failed.code
-/// - Optional memo: action.metadata.failed.memo
-/// - Outbound tx(s): action.out[] (typically refund outbounds)
+/// - `type == "failed"` => FAILED, carrying THORChain's own reason for it
+/// - `status == "pending"` => PENDING, the outbound has not been sent yet
+/// - anything else => CONFIRMED
 struct THORChainTransactionStatusProvider: TransactionStatusProvider {
+    /// The one action type that is an outcome this app must report as such.
+    private enum ActionType {
+        static let failed = "failed"
+    }
+
+    /// The only two values Midgard's `status` takes; it describes the OUTBOUND.
+    private enum ActionStatus {
+        static let success = "success"
+    }
+
     private let httpClient: HTTPClientProtocol
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
@@ -34,9 +44,9 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
                 responseType: THORChainActionsResponse.self
             )
 
-            // Check if we have any actions for this txid
-            guard let action = response.data.actions.first else {
-                // No actions found for this transaction
+            let actions = response.data.actions
+            guard let newest = actions.first else {
+                // Midgard has not indexed this transaction yet.
                 return TransactionStatusResult(
                     status: .notFound,
                     blockNumber: nil,
@@ -44,11 +54,13 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
                 )
             }
 
-            // Parse block height
-            let blockNum = Int(action.height)
+            // ⚠️ A `failed` action anywhere on the page outranks the newest one.
+            // The query is `?txid=`, so every action here describes the SAME
+            // transaction — one saying the chain refused it settles the
+            // question, wherever it sits in the ordering.
+            let action = actions.first { $0.type.lowercased() == ActionType.failed } ?? newest
 
-            // Canonical mapping based on action.status
-            return mapActionToStatus(action: action, blockNumber: blockNum)
+            return mapActionToStatus(action: action, blockNumber: Int(action.height))
 
         } catch let error as HTTPError {
             return try handleHTTPError(error)
@@ -56,66 +68,64 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
     }
 
     private func mapActionToStatus(action: MidgardAction, blockNumber: Int?) -> TransactionStatusResult {
-        switch action.status.lowercased() {
-        case "success":
-            // Action completed successfully
+        // ⚠️ Checked before `status`, and deliberately: the failure is already
+        // final. A `failed` action whose outbound is still pending is one whose
+        // REFUND has not been sent yet — the verdict is not still to come, and
+        // waiting for the refund leg to land would report a rejected
+        // transaction as in-flight until the poller gave up on it.
+        if action.type.lowercased() == ActionType.failed {
             return TransactionStatusResult(
-                status: .confirmed,
+                status: .failed(reason: failureReason(metadata: action.metadata)),
                 blockNumber: blockNumber,
                 confirmations: nil
             )
+        }
 
-        case "pending":
-            // Action is still pending (outbound txs not yet processed)
-            return TransactionStatusResult(
-                status: .pending,
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
-
-        case "refund":
-            // Action was refunded (failed and refunded)
-            let failureReason = buildRefundReason(metadata: action.metadata)
-            return TransactionStatusResult(
-                status: .failed(reason: failureReason),
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
-
-        default:
-            // Unknown status - treat as pending
+        // `pending`, or any status Midgard adds later: not something to call an
+        // outcome on, so the poller keeps polling.
+        guard action.status.lowercased() == ActionStatus.success else {
             return TransactionStatusResult(
                 status: .pending,
                 blockNumber: blockNumber,
                 confirmations: nil
             )
         }
+
+        // Every other settled type — `swap`, `limit_swap`, `send`, `refund`.
+        //
+        // `refund` included, which reads odd and is intentional: this provider
+        // serves every THORChain transaction, and a refund is a legitimate,
+        // non-failed outcome elsewhere (a swap returned over its slip limit, a
+        // limit order closing unfilled). The limit-order tracker reads refunds
+        // itself, from `MidgardLimitOutcomeResolver`, and labels them there.
+        // Nothing here can tell those apart, and calling all of them failures
+        // would put a red screen in front of flows this change never looked at.
+        return TransactionStatusResult(
+            status: .confirmed,
+            blockNumber: blockNumber,
+            confirmations: nil
+        )
     }
 
-    private func buildRefundReason(metadata: MidgardActionMetadata?) -> String {
-        var parts: [String] = ["Transaction refunded"]
+    /// THORChain's own account of the refusal, verbatim — `reason` is the
+    /// THORNode error string and `code` its tag, both from `metadata.failed`,
+    /// which is the block a `failed` action carries.
+    ///
+    /// `metadata.failed.memo` is deliberately not shown: it is the memo this
+    /// app itself sent, echoed back, and it explains nothing the user did not
+    /// already do.
+    private func failureReason(metadata: MidgardActionMetadata?) -> String {
+        var parts: [String] = []
 
-        // Priority 1: refund.reason
-        if let refundReason = metadata?.refund?.reason {
-            parts.append("Reason: \(refundReason)")
-        } else if let failedReason = metadata?.failed?.reason {
-            // Priority 2: failed.reason
-            parts.append("Reason: \(failedReason)")
+        if let reason = metadata?.failed?.reason?.trimmedNonEmpty {
+            parts.append("Reason: \(reason)")
+        }
+        if let code = metadata?.failed?.code?.trimmedNonEmpty {
+            parts.append("Code: \(code)")
         }
 
-        // Optional code (refund.code OR failed.code)
-        if let refundCode = metadata?.refund?.code {
-            parts.append("Code: \(refundCode)")
-        } else if let failedCode = metadata?.failed?.code {
-            parts.append("Code: \(failedCode)")
-        }
-
-        // Optional memo
-        if let memo = metadata?.failed?.memo, !memo.isEmpty {
-            parts.append("Memo: \(memo)")
-        }
-
-        return parts.joined(separator: ", ")
+        guard !parts.isEmpty else { return "Transaction failed on THORChain" }
+        return (["Transaction failed"] + parts).joined(separator: ", ")
     }
 
     /// Maps HTTP failures to a status.

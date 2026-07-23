@@ -51,14 +51,24 @@ enum SwapTrackingUiStatus: String, Codable, Sendable, Hashable {
     /// A limit order whose TTL elapsed before it filled. Terminal; the unfilled
     /// remainder is refunded.
     case expired
-    /// A limit order the user cancelled. Terminal.
+    /// A limit order that was cancelled. Terminal.
     ///
-    /// Client-side only, and unreachable until the cancel flow ships: the chain
-    /// cannot tell us this later — `EventLimitSwapClose` (which carries the
-    /// authoritative reason) is emitted in EndBlock, exposed by no THORNode REST
-    /// route and unindexed by Midgard. If we don't record it at the moment we
-    /// do it, it is not recoverable.
+    /// Read from the chain, not from local bookkeeping: Midgard indexes the
+    /// closure as a refund action carrying THORChain's own
+    /// `"limit swap cancelled"`. So this is reachable for an order cancelled on
+    /// another device, or in another wallet, and it survives an app that was not
+    /// running when the cancel landed.
     case cancelled
+    /// A limit order whose CANCEL transaction has been confirmed successful
+    /// on-chain, and which has not yet left the queue.
+    ///
+    /// ⚠️ **Non-terminal, deliberately.** It is a statement about our own
+    /// transaction, not about the order: a cancel can be accepted by the chain
+    /// and still match nothing, leaving the order resting and able to fill. So
+    /// the row keeps its in-progress coarse status and the tracker keeps
+    /// polling; only an observed closure resolves it. See
+    /// `LimitOrderStatus.cancelling`.
+    case cancelling
 }
 
 extension SwapTrackingUiStatus {
@@ -67,7 +77,7 @@ extension SwapTrackingUiStatus {
         switch self {
         case .completed, .refunded, .failed, .unknownPendingExtended, .expired, .cancelled:
             return true
-        case .pending, .swapping, .resting:
+        case .pending, .swapping, .resting, .cancelling:
             return false
         }
     }

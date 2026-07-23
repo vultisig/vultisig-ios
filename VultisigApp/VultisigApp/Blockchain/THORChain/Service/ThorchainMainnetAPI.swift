@@ -73,6 +73,18 @@ struct ThorchainMainnetAPI: TargetType {
         /// source address in play — still far fewer than one per order.
         case limitSwapQueue(sender: String?)
 
+        /// `/cosmos/tx/v1beta1/txs/<hash>` — a broadcast transaction's RESULT,
+        /// i.e. its `code` and `raw_log`.
+        ///
+        /// Distinct from the Midgard-backed status path every other THORChain
+        /// surface uses, and deliberately so. Midgard indexes swap ACTIONS; a
+        /// `MsgDeposit` whose handler rejects the message produces no action at
+        /// all, so Midgard reports "not found" forever and the failure is
+        /// invisible. The Cosmos tx endpoint carries the non-zero code and the
+        /// chain's own reason — which for a limit-order cancel is the difference
+        /// between "your order is closed" and "nothing was cancelled".
+        case transaction(hash: String)
+
         // MARK: RPC node (different host)
         case networkStatus
 
@@ -91,7 +103,7 @@ struct ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .mimir, .poolInfo, .pools,
              .securedAssets, .poolLiquidityProvider, .swapQuote, .tcyStaker,
-             .limitSwapQueue,
+             .limitSwapQueue, .transaction,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
             // host (balances / account / inbound addresses, the primary balance
@@ -146,6 +158,8 @@ struct ThorchainMainnetAPI: TargetType {
             return "/thorchain/tcy_staker/\(addr)"
         case .limitSwapQueue:
             return "/thorchain/queue/limit_swaps"
+        case .transaction(let hash):
+            return "/cosmos/tx/v1beta1/txs/\(hash)"
         case .networkStatus:
             return "/status"
         case .tcyAutoCompoundStatus:
@@ -172,7 +186,7 @@ struct ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
              .inboundAddresses, .mimir, .poolInfo, .pools, .securedAssets,
              .poolLiquidityProvider, .tcyStaker, .networkStatus,
-             .tcyAutoCompoundStatus, .resolveTNS:
+             .tcyAutoCompoundStatus, .resolveTNS, .transaction:
             return .requestPlain
 
         case .limitSwapQueue(let sender):

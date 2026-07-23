@@ -67,6 +67,109 @@ final class LimitOrder {
     var timeToExpiryBlocks: Int?
     var expiryObservedAt: Date?
 
+    /// The exact pair the CANCEL memo has to reproduce, captured at signing.
+    ///
+    /// THORChain addresses a resting order by a bucket key derived from
+    /// `(sourceAmount × 1e8) / tradeTarget`, so a cancel must reproduce both
+    /// integers exactly or it lands in a different bucket and silently matches
+    /// nothing. Neither is recoverable after the fact: `sourceAmount` above is in
+    /// the source coin's NATIVE decimals (the memo needs 1e8), and the effective
+    /// LIM — which is what was actually signed, and differs from the
+    /// `targetPrice`-derived value whenever byte-fitting rounded it up — exists
+    /// only in the placement memo, which this table does not store.
+    ///
+    /// BigInt-as-string like the fill amounts. `nil` on orders placed before
+    /// cancelling existed, which makes them uncancellable — the intended
+    /// fail-closed behaviour, not a gap.
+    var sourceAmount1e8: String?
+    var tradeTarget: String?
+
+    /// The order's assets spelled the way a CANCEL memo must spell them: EVM
+    /// tokens with their FULL contract address, captured at signing.
+    ///
+    /// `sourceAsset` / `targetAsset` above hold the PLACEMENT spelling, which
+    /// abbreviates an EVM contract to its last 6 characters. That is correct
+    /// there — THORNode expands it through `fuzzyAssetMatch` — and fatal in a
+    /// cancel, which is the one inbound memo type that skips fuzzy matching: the
+    /// abbreviation is taken literally and keys a bucket no order was indexed
+    /// under. The abbreviation is not reversible, so the long form has to be
+    /// recorded while the contract address is still in hand.
+    ///
+    /// `nil` on orders placed before this existed; the queue's own report is the
+    /// fallback, and cancelling is blocked when neither is available.
+    var sourceAssetFull: String?
+    var targetAssetFull: String?
+
+    /// The queue's own `swap.trade_target`, recorded so it can be cross-checked
+    /// against `tradeTarget` above. (`state.deposit`, already stored as
+    /// `depositAmount`, is the matching cross-check for `sourceAmount1e8` — it
+    /// IS the swap's `Tx.Coins[0].Amount`.)
+    ///
+    /// A disagreement means one of the two is wrong with no way to tell which,
+    /// and disables cancelling rather than signing a guess.
+    var observedTradeTarget: String?
+
+    /// The assets as THORChain itself reports them for this order —
+    /// `swap.tx.coins[0].asset` and `swap.target_asset`, i.e. AFTER fuzzy
+    /// matching resolved whatever the placement memo abbreviated.
+    ///
+    /// Authoritative by construction: these are the strings the order's index
+    /// entry was built from. They both rescue orders placed before
+    /// `sourceAssetFull` existed and cross-check the ones that have it.
+    var observedSourceAsset: String?
+    var observedTargetAsset: String?
+
+    /// Hash of the `m=<` transaction we broadcast to cancel this order, stored
+    /// once that broadcast is confirmed (a non-empty hash). `nil` means no cancel
+    /// was ever sent.
+    ///
+    /// **This is an INTENT record, not a terminal outcome.** On a confirmed
+    /// broadcast the order moves to the NON-terminal `.cancelling` — a statement
+    /// about OUR transaction, made visible immediately — never to `.cancelled`. A
+    /// cancel that addresses the wrong ratio bucket is accepted by the chain,
+    /// costs a fee, and cancels nothing; labelling the ORDER cancelled on the
+    /// strength of this hash would render that failure invisible, so it is never
+    /// done. The terminal `.cancelled`/`.expired`/`.refunded` label comes from
+    /// THORChain's own reason via Midgard, not from this hash.
+    ///
+    /// So the tracker keeps polling a `.cancelling` order. The hash's only pull on
+    /// the terminal label is the fallback in `reconcile`: a closure the chain
+    /// gave no reason we recognise for, observed while the order demonstrably
+    /// could not yet have expired, is credited to this cancel as `.cancelled`
+    /// rather than `.refunded`. A cancel the chain refuses has this hash
+    /// withdrawn, dropping the order back to `.pending`; if it silently did
+    /// nothing, the order stays visibly resting — the truth, and the only way the
+    /// user finds out.
+    var cancelBroadcastHash: String?
+
+    /// Whether the recorded cancel (`cancelBroadcastHash`) has been CONFIRMED on
+    /// its own chain — `.succeeded` on the THORChain route, `.delivered` on an L1
+    /// route — as opposed to merely broadcast.
+    ///
+    /// The split exists because entry into `.cancelling` and the terminal
+    /// `.cancelled` label now happen at different times. The order enters
+    /// `.cancelling` on BROADCAST (block-independent, so the in-flight state is
+    /// observable at all), but the no-reason `.refunded → .cancelled` fallback in
+    /// `reconcile` may credit only a CONFIRMED cancel: a broadcast the chain
+    /// later refuses must never let an unrelated refund be relabelled "Cancelled".
+    /// Gating that terminal promotion on this flag keeps the fallback exactly as
+    /// safe as it was when the hash itself was confirmation-gated. A genuine
+    /// cancel needs no flag on the common path — its closure carries THORChain's
+    /// own `limit swap cancelled`, read directly by the primary chain-reason path.
+    ///
+    /// `nil` and `false` both mean "not confirmed". Optional, so it rides
+    /// SwiftData lightweight migration.
+    var cancelConfirmedOnChain: Bool?
+
+    /// `Chain.rawValue` of the coin the order was funded with.
+    ///
+    /// Needed because cancelling is creator-only and our cancel is a `MsgDeposit`
+    /// from the vault's THOR address — it can only ever match an order that was
+    /// itself placed from the THORChain side. `sourceAsset` cannot answer this: a
+    /// SECURED asset source is THORChain-placed yet carries a bare denom with no
+    /// `THOR.` prefix. `nil` (pre-existing orders) is treated as not cancellable.
+    var sourceChainRawValue: String?
+
     @Relationship(inverse: \Vault.limitOrders) var vault: Vault?
 
     init(
@@ -82,6 +185,11 @@ final class LimitOrder {
         createdAt: Date,
         status: LimitOrderStatus,
         minOutputOverride: Decimal? = nil,
+        sourceAmount1e8: String? = nil,
+        tradeTarget: String? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
+        sourceChainRawValue: String? = nil,
         vault: Vault
     ) {
         self.id = id
@@ -96,6 +204,11 @@ final class LimitOrder {
         self.createdAt = createdAt
         self.statusRawValue = status.rawValue
         self.minOutputOverride = minOutputOverride
+        self.sourceAmount1e8 = sourceAmount1e8
+        self.tradeTarget = tradeTarget
+        self.sourceAssetFull = sourceAssetFull
+        self.targetAssetFull = targetAssetFull
+        self.sourceChainRawValue = sourceChainRawValue
         self.vault = vault
     }
 
@@ -139,26 +252,78 @@ final class LimitOrder {
             status: status,
             minOutputOverride: minOutputOverride,
             fill: fill,
-            expiry: expiry
+            expiry: expiry,
+            sourceAmount1e8: sourceAmount1e8,
+            tradeTarget: tradeTarget,
+            observedTradeTarget: observedTradeTarget,
+            sourceAssetFull: sourceAssetFull,
+            targetAssetFull: targetAssetFull,
+            observedSourceAsset: observedSourceAsset,
+            observedTargetAsset: observedTargetAsset,
+            sourceChainRawValue: sourceChainRawValue,
+            cancelBroadcastHash: cancelBroadcastHash
         )
     }
 }
 
+/// - Note: persisted as a raw `String` on `LimitOrder.statusRawValue`, and read
+///   back through `LimitOrderStatus(rawValue:) ?? .pending`. That fallback is
+///   what makes adding a case here a lightweight SwiftData change: a build that
+///   predates `.cancelling` reads it as `.pending` — resting, non-terminal, and
+///   still polled — rather than as an unknown terminal state it would never
+///   revisit.
 enum LimitOrderStatus: String, Codable, Equatable {
     case pending
-    case filled
-    /// The order closed and the funds came back — the observable fact.
+    /// A cancel transaction for this order has BROADCAST — a confirmed, non-empty
+    /// hash — and the order has not yet left the queue.
     ///
-    /// Distinct from `expired`, which is a claim about WHY: an order rejected at
-    /// placement (halted pool, bad memo) also refunds, seconds in, with no TTL
-    /// elapsed. Nothing reachable from a client distinguishes them — the close
-    /// reason lives in an EndBlock event no REST route exposes, and a closed
-    /// order is already gone from the queue with its expiry countdown. So the
-    /// tracker records this, and doesn't invent the cause.
+    /// ⚠️ **Not terminal, and not a claim about the order.** It describes OUR
+    /// transaction — the one thing we have actually confirmed — never the
+    /// order's fate. THORChain accepts a cancel that addresses the wrong ratio
+    /// bucket, charges for it, and closes nothing; the order is still resting
+    /// and can still fill. So an order in this state keeps its place in the
+    /// resting list, keeps its expiry countdown, and keeps being polled, and
+    /// the only exits are observations:
+    ///
+    /// | Observed | Result |
+    /// |---|---|
+    /// | leaves the queue, chain says `limit swap cancelled` | `.cancelled` |
+    /// | leaves the queue, chain says `limit swap expired` | `.expired` |
+    /// | leaves the queue, no reason we recognise, TTL demonstrably NOT elapsed | `.cancelled` |
+    /// | leaves the queue, no reason we recognise, at/after its TTL | `.refunded` |
+    /// | fills | `.filled` — never relabelled |
+    /// | the cancel transaction turns out to have failed | back to `.pending` |
+    ///
+    /// It must never be styled as terminal or as success. The moment it reads
+    /// as "done" it reintroduces the false success this whole feature exists to
+    /// prevent — just sourced from our own optimism instead of the chain's.
+    case cancelling
+    case filled
+    /// The order closed and the funds came back — the observable fact, with no
+    /// cause attached.
+    ///
+    /// Distinct from `expired` and `cancelled`, which are claims about WHY. The
+    /// chain normally answers that question (Midgard's refund action carries
+    /// `"limit swap expired"` / `"limit swap cancelled"` verbatim), so this is
+    /// what is left when it does not: a reason absent from the index, or one
+    /// THORChain has reworded. An order rejected at placement (halted pool, bad
+    /// memo) also refunds, seconds in, with no TTL elapsed — so inventing a
+    /// cause here would be inventing it for that user too.
     case refunded
-    /// The order's TTL elapsed. Only for a caller that can actually corroborate
-    /// expiry — the tracker cannot, and uses `refunded`.
+    /// The order's TTL elapsed — THORChain's own account of the closure, taken
+    /// from the refund action's `reason`.
+    ///
+    /// Never inferred. A client cannot corroborate an expiry on its own: a
+    /// closure is only ever observed somewhere inside the window between two
+    /// polls, and a TTL falling inside that window is indistinguishable from a
+    /// cancellation. What makes this assertable is that the chain says it.
     case expired
+    /// A cancel matched the order and closed it — THORChain's own account,
+    /// again from the refund action's `reason`.
+    ///
+    /// Independent of whether THIS device sent the cancel. An order cancelled
+    /// from another device or another wallet lands here too, which is the point:
+    /// the label describes the order, not our bookkeeping about a transaction.
     case cancelled
 }
 
@@ -194,6 +359,20 @@ struct LimitOrderRecord: Hashable, Sendable {
     /// `limitOrderExpectedOutput`. When set, the Verify/Done "min payout" shows
     /// the EXACT figure the order was signed with (what you see is what you sign).
     let minOutputOverride: Decimal?
+    /// The exact integers a future CANCEL memo must reproduce, and the chain the
+    /// order was funded from. Captured here because signing time is the only
+    /// moment all three are known exactly — see the matching properties on
+    /// `LimitOrder`. `nil` keeps the order uncancellable rather than guessed at.
+    let sourceAmount1e8: String?
+    let tradeTarget: String?
+    /// The assets spelled for a CANCEL memo — full EVM contract addresses. The
+    /// placement spelling in `sourceAsset` / `targetAsset` abbreviates them and
+    /// the abbreviation cannot be reversed, so the long form is captured here
+    /// while the contract is still known. See the matching properties on
+    /// `LimitOrder`.
+    let sourceAssetFull: String?
+    let targetAssetFull: String?
+    let sourceChainRawValue: String?
 
     init(
         inboundTxHash: String,
@@ -208,7 +387,12 @@ struct LimitOrderRecord: Hashable, Sendable {
         status: LimitOrderStatus = .pending,
         memo: String = "",
         expiryHours: Int = 0,
-        minOutputOverride: Decimal? = nil
+        minOutputOverride: Decimal? = nil,
+        sourceAmount1e8: String? = nil,
+        tradeTarget: String? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
+        sourceChainRawValue: String? = nil
     ) {
         self.inboundTxHash = inboundTxHash
         self.sourceAsset = sourceAsset
@@ -223,6 +407,11 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.memo = memo
         self.expiryHours = expiryHours
         self.minOutputOverride = minOutputOverride
+        self.sourceAmount1e8 = sourceAmount1e8
+        self.tradeTarget = tradeTarget
+        self.sourceAssetFull = sourceAssetFull
+        self.targetAssetFull = targetAssetFull
+        self.sourceChainRawValue = sourceChainRawValue
     }
 
     /// Returns a copy with the inbound TX hash spliced in. The record is built
@@ -246,7 +435,12 @@ struct LimitOrderRecord: Hashable, Sendable {
             status: status,
             memo: memo,
             expiryHours: expiryHours,
-            minOutputOverride: minOutputOverride
+            minOutputOverride: minOutputOverride,
+            sourceAmount1e8: sourceAmount1e8,
+            tradeTarget: tradeTarget,
+            sourceAssetFull: sourceAssetFull,
+            targetAssetFull: targetAssetFull,
+            sourceChainRawValue: sourceChainRawValue
         )
     }
 }

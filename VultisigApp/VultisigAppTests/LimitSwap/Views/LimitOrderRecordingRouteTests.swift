@@ -63,7 +63,84 @@ final class LimitOrderRecordingRouteTests: XCTestCase {
         XCTAssertTrue(TransactionHistoryRecording.routesThroughKeysignRecorder(payload))
     }
 
+    // MARK: - A cancel gets no row of its own
+
+    /// ⚠️ A cancel is a step in an order's life, not a transfer. Recorded, it
+    /// becomes a standalone "Send 0 RUNE" — or a send of dust on the L1 route —
+    /// with nothing connecting it to the order it closes, while the order's own
+    /// row already narrates the whole lifecycle.
+    func testACancelIsNotRecordedAsItsOwnRow() {
+        XCTAssertTrue(TransactionHistoryRecording.isLimitOrderCancel(makeDonePayload(memo: cancelMemo)))
+    }
+
+    /// A CO-SIGNER has only the payload, so the memo has to be read from there
+    /// too — the done screen's own `memo` can be empty before it resolves.
+    func testACosignersCancelIsRecognisedFromTheKeysignPayload() {
+        let payload = makeDonePayload(
+            memo: "",
+            keysignPayload: makePayload(memo: cancelMemo, swapPayload: nil)
+        )
+
+        XCTAssertTrue(TransactionHistoryRecording.isLimitOrderCancel(payload))
+    }
+
+    /// ⚠️ The two prefixes are disjoint and mean opposite things. A PLACEMENT
+    /// (`=<:`) must keep its row — that row IS the order.
+    func testAPlacementIsStillRecorded() {
+        XCTAssertFalse(TransactionHistoryRecording.isLimitOrderCancel(makeDonePayload(memo: limitMemo)))
+        XCTAssertFalse(
+            TransactionHistoryRecording.isLimitOrderCancel(
+                makeDonePayload(memo: "", keysignPayload: makePayload(memo: limitMemo, swapPayload: nil))
+            )
+        )
+    }
+
+    /// ⚠️ `m=<` also covers RE-TARGETING a resting order, which moves the order
+    /// rather than closing it and has every reason to appear in history. Only a
+    /// modified target of zero is a cancel — THORNode branches on exactly that.
+    ///
+    /// This app builds only the cancel form today, so the loose and the exact
+    /// predicate coincide. That is precisely why keying behaviour on the loose
+    /// one is not good enough: the day modify exists, a retarget would vanish
+    /// from history somewhere nobody thought to look.
+    func testARetargetIsNotACancelAndKeepsItsRow() {
+        let retarget = "m=<:100000000THOR.RUNE:15979057441BTC.BTC:16000000000"
+
+        XCTAssertFalse(TransactionHistoryRecording.isLimitOrderCancel(makeDonePayload(memo: retarget)))
+        XCTAssertFalse(isCancelLimitSwapMemo(retarget))
+        XCTAssertTrue(isModifyLimitSwapMemo(retarget), "it IS a modification — just not a cancel")
+        XCTAssertTrue(isCancelLimitSwapMemo(cancelMemo))
+    }
+
+    func testOrdinarySendsAreStillRecorded() {
+        for memo in ["", "SWAP:BTC.BTC:bc1qexample", "=:BTC.BTC:bc1qexample", "+:BTC.BTC", "hello"] {
+            XCTAssertFalse(
+                TransactionHistoryRecording.isLimitOrderCancel(makeDonePayload(memo: memo)),
+                "\(memo) is not a cancel"
+            )
+        }
+    }
+
     // MARK: - Fixtures
+
+    private let cancelMemo = "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0"
+
+    private func makeDonePayload(memo: String, keysignPayload: KeysignPayload? = nil) -> TransactionDonePayload {
+        TransactionDonePayload(
+            coin: .example,
+            amountCrypto: "0 RUNE",
+            amountFiat: "",
+            hash: "CANCELTX",
+            explorerLink: "",
+            memo: memo,
+            isSend: true,
+            fromAddress: "thor1from",
+            toAddress: "",
+            fee: FeeDisplay(crypto: "", fiat: ""),
+            keysignPayload: keysignPayload,
+            pubKeyECDSA: "pub"
+        )
+    }
 
     private func makeThorchainPayload() -> THORChainSwapPayload {
         THORChainSwapPayload(

@@ -5,6 +5,23 @@
 
 import Foundation
 
+/// How a token's contract address is spelled inside a THORChain memo asset.
+enum THORChainMemoAssetContractForm {
+    /// The last 6 characters of the contract, uppercased.
+    ///
+    /// Only safe on memos THORNode resolves through `fuzzyAssetMatch`, which
+    /// expands the abbreviation back to the pool's full asset. Saves ~36 bytes,
+    /// which matters against the 80-byte `OP_RETURN` cap.
+    case abbreviatedSuffix
+    /// The whole contract address, uppercased.
+    ///
+    /// Mandatory for `m=<`: `ModifyLimitSwapMemo` is the one inbound memo type
+    /// `processOneTxIn` does NOT run through `fuzzyAssetMatch`, so the
+    /// abbreviation is taken literally, keys a bucket no order was indexed
+    /// under, and the cancel matches nothing.
+    case fullContract
+}
+
 /// Build a THORChain memo asset string for a given chain + ticker (+ token contract).
 ///
 /// - Native: `<CHAIN>.<TICKER>` (e.g. `BTC.BTC`, `ETH.ETH`, `THOR.RUNE`).
@@ -13,12 +30,52 @@ import Foundation
 ///   convention used by the market-swap proto path
 ///   (`THORChainSwapPayload.swapAsset(for:source:false)`).
 ///
+/// ⚠️ This is the PLACEMENT spelling and it is lossy. Use
+/// `thorchainCancelMemoAsset` for anything THORNode does not fuzzy-match.
+///
 /// Returns `nil` for chains not currently routable through THORChain.
 func thorchainMemoAsset(
     chain: Chain,
     ticker: String,
     contractAddress: String,
     isNativeToken: Bool
+) -> String? {
+    thorchainMemoAsset(
+        chain: chain,
+        ticker: ticker,
+        contractAddress: contractAddress,
+        isNativeToken: isNativeToken,
+        contractForm: .abbreviatedSuffix
+    )
+}
+
+/// The same asset written the way a CANCEL (`m=<`) memo must spell it: EVM
+/// tokens carry their full contract address.
+///
+/// Native assets (`BTC.BTC`, `THOR.RUNE`) and THORChain secured denoms
+/// (`eth-usdc-0xa0b…`) are byte-identical to the placement form — neither has an
+/// abbreviation to expand — so this differs only where it has to.
+func thorchainCancelMemoAsset(
+    chain: Chain,
+    ticker: String,
+    contractAddress: String,
+    isNativeToken: Bool
+) -> String? {
+    thorchainMemoAsset(
+        chain: chain,
+        ticker: ticker,
+        contractAddress: contractAddress,
+        isNativeToken: isNativeToken,
+        contractForm: .fullContract
+    )
+}
+
+private func thorchainMemoAsset(
+    chain: Chain,
+    ticker: String,
+    contractAddress: String,
+    isNativeToken: Bool,
+    contractForm: THORChainMemoAssetContractForm
 ) -> String? {
     guard let prefix = thorchainChainPrefix(for: chain) else {
         return nil
@@ -52,17 +109,33 @@ func thorchainMemoAsset(
         // suffix guard below and returned `nil`, so RUNE→TCY was a dead tap.
         return "\(prefix).\(normalizedTicker)"
     }
-    // Non-THOR token form: `<CHAIN>.<TICKER>-<SUFFIX>` where SUFFIX is the last 6
-    // chars of the contract address. Reject too-short or whitespace-only contracts
-    // so the memo never gains a trailing `-` (or worse, a malformed suffix).
+    // Non-THOR token form: `<CHAIN>.<TICKER>-<SUFFIX>`. Reject too-short or
+    // whitespace-only contracts so the memo never gains a trailing `-` (or
+    // worse, a malformed suffix).
     guard normalized.count >= 6 else { return nil }
-    let suffix = normalized.suffix(6).uppercased()
+    let suffix: String
+    switch contractForm {
+    case .abbreviatedSuffix:
+        suffix = normalized.suffix(6).uppercased()
+    case .fullContract:
+        suffix = normalized.uppercased()
+    }
     return "\(prefix).\(normalizedTicker)-\(suffix)"
 }
 
 /// Convenience overload over `Coin`.
 func thorchainMemoAsset(for coin: Coin) -> String? {
     thorchainMemoAsset(
+        chain: coin.chain,
+        ticker: coin.ticker,
+        contractAddress: coin.contractAddress,
+        isNativeToken: coin.isNativeToken
+    )
+}
+
+/// Convenience overload over `Coin` for the CANCEL spelling.
+func thorchainCancelMemoAsset(for coin: Coin) -> String? {
+    thorchainCancelMemoAsset(
         chain: coin.chain,
         ticker: coin.ticker,
         contractAddress: coin.contractAddress,

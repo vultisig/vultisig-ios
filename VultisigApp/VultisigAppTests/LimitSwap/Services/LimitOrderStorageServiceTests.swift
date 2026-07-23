@@ -60,7 +60,57 @@ final class LimitOrderStorageServiceTests: XCTestCase {
         XCTAssertNil(order.minOutputOverride)
     }
 
+    /// ⚠️ The full-contract spelling a cancel memo needs has to reach the table.
+    /// Dropped here, an EVM-token leg is uncancellable until the queue reports
+    /// the asset itself.
+    func testPersistRoundTripsTheCancelAssetSpellings() throws {
+        let record = makeRecord(
+            inboundTxHash: "abc123",
+            sourceAssetFull: "BTC.BTC",
+            targetAssetFull: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+        )
+
+        let order = try service.persist(record, for: vault)
+
+        XCTAssertEqual(order.sourceAssetFull, "BTC.BTC")
+        XCTAssertEqual(order.targetAssetFull, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
+    }
+
     // MARK: - recordObservation
+
+    /// The queue's own spelling of the assets is authoritative — it is what the
+    /// order's index entry was built from — so it is recorded on every poll.
+    func testRecordObservationStoresTheAssetsTheChainReports() throws {
+        let order = try service.persist(makeRecord(inboundTxHash: "abc123"), for: vault)
+
+        try service.recordObservation(
+            of: order.id,
+            status: .pending,
+            observedSourceAsset: "THOR.RUNE",
+            observedTargetAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            in: vault
+        )
+
+        XCTAssertEqual(order.observedSourceAsset, "THOR.RUNE")
+        XCTAssertEqual(order.observedTargetAsset, "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48")
+    }
+
+    /// `nil` is "not observed this poll" and must never clobber a good value —
+    /// same rule as the fill split, and it matters at the same moment: a
+    /// terminal write carries no assets at all.
+    func testRecordObservationLeavesStoredAssetsAloneWhenNotObserved() throws {
+        let order = try service.persist(makeRecord(inboundTxHash: "abc123"), for: vault)
+        try service.recordObservation(
+            of: order.id, status: .pending,
+            observedSourceAsset: "THOR.RUNE", observedTargetAsset: "BTC.BTC",
+            in: vault
+        )
+
+        try service.recordObservation(of: order.id, status: .refunded, in: vault)
+
+        XCTAssertEqual(order.observedSourceAsset, "THOR.RUNE")
+        XCTAssertEqual(order.observedTargetAsset, "BTC.BTC")
+    }
 
     func testRecordObservationWritesStatusAndFillSplitTogether() throws {
         let order = try service.persist(makeRecord(inboundTxHash: "abc123"), for: vault)
@@ -391,7 +441,9 @@ final class LimitOrderStorageServiceTests: XCTestCase {
     private func makeRecord(
         inboundTxHash: String,
         createdAt: Date = Date(),
-        minOutputOverride: Decimal? = nil
+        minOutputOverride: Decimal? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil
     ) -> LimitOrderRecord {
         LimitOrderRecord(
             inboundTxHash: inboundTxHash,
@@ -404,7 +456,9 @@ final class LimitOrderStorageServiceTests: XCTestCase {
             expiryBlocks: 14400,
             createdAt: createdAt,
             status: .pending,
-            minOutputOverride: minOutputOverride
+            minOutputOverride: minOutputOverride,
+            sourceAssetFull: sourceAssetFull,
+            targetAssetFull: targetAssetFull
         )
     }
 }

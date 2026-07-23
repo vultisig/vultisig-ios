@@ -396,7 +396,7 @@ enum THORChainHelper {
         }
 
         return WalletCore.CosmosFee.with {
-            $0.gas = 20_000_000
+            $0.gas = THORChainConstants.depositGasBaseUnits
         }
     }
 }
