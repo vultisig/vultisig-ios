@@ -55,6 +55,10 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            // Reserve room for the close button overlaid at the top-trailing
+            // corner (40pt control, 10pt inset → ~50pt from the edge) so long
+            // localized copy wraps before it instead of running underneath.
+            .padding(.trailing, 32)
         }
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
