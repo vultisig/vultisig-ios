@@ -214,6 +214,24 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         }
     }
 
+    /// Cancel every sender poll task and drop ALL in-memory tracking state —
+    /// `tracked`, the per-sender tasks/tokens/backoff, the absence streaks, the
+    /// settled-cancel set, and the observable UI cache. A hard teardown for the
+    /// global reset, distinct from `setActive(false)`, which keeps `tracked` so
+    /// foreground can resume. Nothing is left to resume from here: the rows
+    /// these tasks poll are being deleted, and a `resumeInFlight` after a reset
+    /// re-reads an empty table and starts nothing.
+    func stopAllTracking() {
+        for sender in Array(senderTasks.keys) {
+            cancelPolling(sender: sender)
+        }
+        tracked.removeAll()
+        absentPollStreaks.removeAll()
+        settledCancelHashes.removeAll()
+        uiStatusByTxHash.removeAll()
+        logger.info("Stopped all limit-order tracking (reset)")
+    }
+
     // MARK: - Test-only inspection
 
     var trackedOrderCountForTesting: Int { tracked.count }

@@ -1165,6 +1165,10 @@
 "settingsAdvancedForcedSwapProvider" = "Force swap provider";
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedManage" = "관리";
+"settingsAdvancedResetTransactionHistory" = "거래 내역 초기화";
+"settingsAdvancedResetTransactionHistoryButton" = "초기화";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "모든 볼트의 로컬 거래 내역과 추적 중인 모든 리밋 주문을 영구적으로 삭제하고 추적을 중단합니다. 이 앱에 표시되는 내용만 지워지며 자금, 키 또는 온체인에 남아 있는 주문에는 영향을 주지 않습니다. THORChain에 아직 열려 있는 리밋 주문은 그대로 유지되며, 여기서 추적만 중단됩니다. 이 작업은 취소할 수 없습니다.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "거래 내역을 초기화할까요?";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit 토큰 캐시 지우기";
 "share" = "공유";
 "shareOf" = "%d/%d 공유";

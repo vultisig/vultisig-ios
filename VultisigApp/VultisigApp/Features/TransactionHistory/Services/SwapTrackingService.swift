@@ -40,4 +40,12 @@ protocol SwapTrackingService: AnyObject {
     /// Toggle the global active flag — pauses polling when the app is
     /// backgrounded, resumes when it returns to foreground.
     func setActive(_ active: Bool)
+
+    /// Hard-stop tracking for EVERY row this provider owns and drop all
+    /// in-memory tracking state. Unlike `setActive(false)` — which cancels the
+    /// running tasks but keeps the registry so foreground can resume — this is
+    /// a teardown with nothing to resume from. Used by the global "Reset
+    /// Transaction History" action, which deletes the rows these tasks would
+    /// otherwise keep polling (and writing back into).
+    func stopAllTracking()
 }

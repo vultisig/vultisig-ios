@@ -1168,6 +1168,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "Apenas Jupiter";
 "settingsAdvancedManage" = "Gerir";
+"settingsAdvancedResetTransactionHistory" = "Repor histórico de transações";
+"settingsAdvancedResetTransactionHistoryButton" = "Repor";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "Isto elimina permanentemente todo o histórico de transações local e todas as ordens limite acompanhadas de todos os cofres, e deixa de as acompanhar. Só limpa o que esta aplicação mostra — não afeta os seus fundos, chaves nem quaisquer ordens abertas na cadeia. Uma ordem limite ainda aberta na THORChain continua aberta; aqui apenas deixa de a acompanhar. Isto não pode ser anulado.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "Repor o histórico de transações?";
 "settingsAdvancedSwapKitClearTokensCache" = "Limpar cache de tokens do SwapKit";
 "share" = "Compartilhar";
 "shareOf" = "compartilhar %d de %d";

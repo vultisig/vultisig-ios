@@ -1166,6 +1166,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "Jupiter only";
 "settingsAdvancedManage" = "Manage";
+"settingsAdvancedResetTransactionHistory" = "Reset Transaction History";
+"settingsAdvancedResetTransactionHistoryButton" = "Reset";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "This permanently deletes all local transaction history and all tracked limit orders across every vault, and stops tracking them. It only clears what this app shows — it does not affect your funds, keys, or any orders resting on-chain. A limit order still open on THORChain stays open; you just stop tracking it here. This cannot be undone.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "Reset transaction history?";
 "settingsAdvancedSwapKitClearTokensCache" = "Clear SwapKit tokens cache";
 "share" = "Share";
 "shareOf" = "share %d of %d";

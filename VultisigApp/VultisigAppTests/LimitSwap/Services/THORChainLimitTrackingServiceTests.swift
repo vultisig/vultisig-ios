@@ -161,6 +161,43 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         XCTAssertEqual(service.trackedOrderCountForTesting, 0)
     }
 
+    // MARK: - stopAllTracking (global reset teardown)
+
+    /// The global "Reset Transaction History" teardown drops EVERY tracked
+    /// order and cancels EVERY sender poll task — unlike `setActive(false)`,
+    /// which keeps `tracked` so foreground can resume. Nothing is left behind.
+    func testStopAllTrackingReleasesEveryOrderAndCancelsEverySenderPoll() {
+        let service = Self.makeService(storage: FakeLimitTrackingStorage())
+        service.start(tx: Self.makeLimitTx(txHash: "limit-1"))
+        // A second sender exercises the multi-task teardown path.
+        service.start(tx: Self.makeLimitTx(txHash: "limit-2", fromAddress: "thor1other"))
+        XCTAssertEqual(service.trackedOrderCountForTesting, 2)
+        XCTAssertEqual(service.activeSenderPollCountForTesting, 2)
+
+        service.stopAllTracking()
+
+        XCTAssertEqual(service.trackedOrderCountForTesting, 0)
+        XCTAssertEqual(service.activeSenderPollCountForTesting, 0)
+        XCTAssertTrue(service.uiStatusByTxHash.isEmpty)
+    }
+
+    /// After a reset the rows are deleted, so a resume that re-reads an empty
+    /// store resurrects nothing.
+    func testResumeInFlightAfterStopAllTrackingStartsNothingWhenStoreIsEmpty() async {
+        let storage = FakeLimitTrackingStorage()
+        storage.inFlight = [Self.makeLimitTx(txHash: "limit-1")]
+        let service = Self.makeService(storage: storage)
+        await service.resumeInFlight()
+        XCTAssertEqual(service.trackedOrderCountForTesting, 1)
+
+        service.stopAllTracking()
+        storage.inFlight = []
+        await service.resumeInFlight()
+
+        XCTAssertEqual(service.trackedOrderCountForTesting, 0)
+        XCTAssertEqual(service.activeSenderPollCountForTesting, 0)
+    }
+
     // MARK: - resumeInFlight
 
     func testResumeInFlightTakesUpOnlyThisProvidersNonTerminalRows() async {
@@ -235,6 +272,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
         providerKind: String = "thorchainLimit",
         latestTrackingStatus: String? = nil,
         includeTracking: Bool = true,
+        fromAddress: String = "thor1from",
         metadata: SwapTrackingMetadataData? = nil
     ) -> TransactionHistoryData {
         TransactionHistoryData(
@@ -250,7 +288,7 @@ final class THORChainLimitTrackingServiceTests: XCTestCase {
             coinChainLogo: nil,
             amountCrypto: "600.12",
             amountFiat: "1000",
-            fromAddress: "thor1from",
+            fromAddress: fromAddress,
             toAddress: "bc1qto",
             toCoinTicker: "BTC",
             toCoinLogo: "btc",

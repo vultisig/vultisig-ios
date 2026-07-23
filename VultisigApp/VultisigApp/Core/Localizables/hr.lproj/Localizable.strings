@@ -1168,6 +1168,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "Samo Jupiter";
 "settingsAdvancedManage" = "Upravljaj";
+"settingsAdvancedResetTransactionHistory" = "Poništi povijest transakcija";
+"settingsAdvancedResetTransactionHistoryButton" = "Poništi";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "Ovo trajno briše svu lokalnu povijest transakcija i sve praćene limit naloge iz svih trezora te prestaje s njihovim praćenjem. Briše samo ono što ova aplikacija prikazuje — ne utječe na vaša sredstva, ključeve ni na naloge otvorene na lancu. Limit nalog koji je i dalje otvoren na THORChainu ostaje otvoren; ovdje ga samo prestajete pratiti. Ovo se ne može poništiti.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "Poništiti povijest transakcija?";
 "settingsAdvancedSwapKitClearTokensCache" = "Očisti predmemoriju SwapKit tokena";
 "share" = "Podijeli";
 "shareOf" = "podijelite %d od %d";

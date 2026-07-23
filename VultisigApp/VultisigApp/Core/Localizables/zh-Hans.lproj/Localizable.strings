@@ -1168,6 +1168,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "仅 Jupiter";
 "settingsAdvancedManage" = "管理";
+"settingsAdvancedResetTransactionHistory" = "重置交易记录";
+"settingsAdvancedResetTransactionHistoryButton" = "重置";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "这将永久删除所有保险库的全部本地交易记录和所有已跟踪的限价单，并停止跟踪它们。此操作仅清除本应用显示的内容，不会影响你的资金、密钥或任何链上挂单。仍在 THORChain 上挂着的限价单依然有效，你只是不再在此跟踪它。此操作无法撤销。";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "重置交易记录？";
 "settingsAdvancedSwapKitClearTokensCache" = "清除 SwapKit 代币缓存";
 "share" = "分享";
 "shareOf" = "份额 %d / %d";

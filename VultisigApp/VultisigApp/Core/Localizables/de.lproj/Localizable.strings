@@ -1168,6 +1168,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "Nur Jupiter";
 "settingsAdvancedManage" = "Verwalten";
+"settingsAdvancedResetTransactionHistory" = "Transaktionsverlauf zurücksetzen";
+"settingsAdvancedResetTransactionHistoryButton" = "Zurücksetzen";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "Dies löscht dauerhaft den gesamten lokalen Transaktionsverlauf und alle verfolgten Limit-Orders aller Vaults und beendet deren Verfolgung. Es wird nur das gelöscht, was diese App anzeigt – Ihre Gelder, Schlüssel oder auf der Blockchain offenen Orders sind nicht betroffen. Eine noch offene Limit-Order auf THORChain bleibt offen; Sie verfolgen sie hier nur nicht mehr. Dies kann nicht rückgängig gemacht werden.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "Transaktionsverlauf zurücksetzen?";
 "settingsAdvancedSwapKitClearTokensCache" = "SwapKit-Token-Cache leeren";
 "share" = "Teilen";
 "shareOf" = "Anteil %d von %d";

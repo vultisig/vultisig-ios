@@ -1168,6 +1168,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "Solo Jupiter";
 "settingsAdvancedManage" = "Gestisci";
+"settingsAdvancedResetTransactionHistory" = "Reimposta cronologia transazioni";
+"settingsAdvancedResetTransactionHistoryButton" = "Reimposta";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "Questo elimina definitivamente tutta la cronologia delle transazioni locale e tutti gli ordini limite tracciati di ogni vault, e ne interrompe il tracciamento. Cancella solo ciò che questa app mostra: non influisce sui tuoi fondi, sulle chiavi o su eventuali ordini aperti sulla catena. Un ordine limite ancora aperto su THORChain resta aperto; qui smetti solo di tracciarlo. L'operazione non può essere annullata.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "Reimpostare la cronologia delle transazioni?";
 "settingsAdvancedSwapKitClearTokensCache" = "Cancella la cache dei token di SwapKit";
 "share" = "Condividi";
 "shareOf" = "Condividi %d di %d";

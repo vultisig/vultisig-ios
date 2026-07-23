@@ -1168,6 +1168,10 @@
 "settingsAdvancedForcedSwapProviderAll" = "All providers";
 "settingsAdvancedForcedSwapProviderJupiter" = "Solo Jupiter";
 "settingsAdvancedManage" = "Gestionar";
+"settingsAdvancedResetTransactionHistory" = "Restablecer historial de transacciones";
+"settingsAdvancedResetTransactionHistoryButton" = "Restablecer";
+"settingsAdvancedResetTransactionHistoryConfirmMessage" = "Esto elimina permanentemente todo el historial de transacciones local y todas las órdenes límite rastreadas de todas las bóvedas, y deja de rastrearlas. Solo borra lo que muestra esta app: no afecta a tus fondos, claves ni a ninguna orden abierta en la cadena. Una orden límite aún abierta en THORChain sigue abierta; simplemente dejas de rastrearla aquí. Esto no se puede deshacer.";
+"settingsAdvancedResetTransactionHistoryConfirmTitle" = "¿Restablecer el historial de transacciones?";
 "settingsAdvancedSwapKitClearTokensCache" = "Borrar caché de tokens de SwapKit";
 "share" = "Compartir";
 "shareOf" = "Compartir %d de %d";

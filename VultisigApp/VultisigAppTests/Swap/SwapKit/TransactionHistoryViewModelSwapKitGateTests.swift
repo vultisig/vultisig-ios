@@ -218,8 +218,9 @@ private final class SpyNativePoller: TransactionHistoryNativePoller {
 private final class FakeTrackingService: SwapTrackingService {
     static var providerKind: String { "swapKit" }
     var uiStatusByTxHash: [String: SwapTrackingUiStatus] = [:]
-    func start(tx: TransactionHistoryData) {}
-    func stop(txHash: String) {}
-    func resumeInFlight() async {}
-    func setActive(_ active: Bool) {}
+    func start(tx _: TransactionHistoryData) {}
+    func stop(txHash _: String) {}
+    func resumeInFlight() async {} // swiftlint:disable:this async_without_await
+    func setActive(_: Bool) {}
+    func stopAllTracking() {}
 }
