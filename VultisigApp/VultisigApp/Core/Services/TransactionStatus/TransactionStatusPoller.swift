@@ -115,6 +115,13 @@ final class TransactionStatusPoller: ObservableObject {
                         chain: chain
                     )
 
+                    // `stopAll()` (e.g. the global reset) cancels this task while
+                    // the status request is in flight. A late result must not be
+                    // written back or published for a row that is being deleted —
+                    // re-check cancellation after the await, not just at the top
+                    // of the loop.
+                    if Task.isCancelled { break }
+
                     if let result, let historyStatus = self?.mapToHistoryStatus(result) {
                         var errorMessage: String? = nil
                         if case let .failed(reason) = result.status {
@@ -155,6 +162,12 @@ final class TransactionStatusPoller: ObservableObject {
         activeTasks[txHash]?.cancel()
         activeTasks.removeValue(forKey: txHash)
         taskTokens.removeValue(forKey: txHash)
+    }
+
+    func stopAll() {
+        activeTasks.values.forEach { $0.cancel() }
+        activeTasks.removeAll()
+        taskTokens.removeAll()
     }
 
     private func cleanupTask(txHash: String, token: UUID) {

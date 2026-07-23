@@ -26,7 +26,10 @@ enum FunctionTransactionType: Hashable {
     ///
     /// Note: Solana unstake/withdraw are NOT routed here — they have no editable
     /// field, so `DefiChainMainScreen` builds the tx and pushes straight to
-    /// Verify, skipping the confirm screen.
+    /// Verify, skipping the confirm screen. A THORChain limit-order CANCEL
+    /// follows the same pattern from `TransactionHistoryScreen`: it is
+    /// deep-linked from the order card with its assets, amounts and memo already
+    /// fixed, so it has nothing to confirm that Verify cannot say better.
     case solanaDelegate(coin: CoinMeta)
     /// TON nominator-pool stake. `poolAddress`/`poolImplementation` are the
     /// existing pool for add-more, or `nil` for a first-time stake (the picker
@@ -36,7 +39,6 @@ enum FunctionTransactionType: Hashable {
     /// existing pool the position is staked into; `poolImplementation` resolves
     /// the withdraw comment; `stakedAmount` is shown for confirmation.
     case tonUnstake(coin: CoinMeta, poolAddress: String, poolImplementation: String?, stakedAmount: Decimal)
-
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):

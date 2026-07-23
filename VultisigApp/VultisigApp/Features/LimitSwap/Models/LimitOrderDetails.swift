@@ -173,6 +173,77 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     /// has closed (a terminal order is gone from the queue and has no countdown
     /// left to report).
     let expiry: LimitOrderExpiry?
+    /// The exact integers a cancel memo must reproduce (captured at signing),
+    /// the chain the order was funded from, and the queue's own trade target for
+    /// cross-checking. All optional and all fail closed — see
+    /// `limitOrderCancelEligibility`, which is the only thing that should read
+    /// them.
+    let sourceAmount1e8: String?
+    let tradeTarget: String?
+    let observedTradeTarget: String?
+    /// The assets spelled for a cancel memo — full EVM contract addresses —
+    /// captured at signing, and as the queue reports them. `sourceAsset` /
+    /// `targetAsset` above carry the PLACEMENT spelling, which abbreviates an
+    /// EVM contract to 6 characters and cannot be un-abbreviated. Only
+    /// `limitOrderCancelEligibility` should read these.
+    let sourceAssetFull: String?
+    let targetAssetFull: String?
+    let observedSourceAsset: String?
+    let observedTargetAsset: String?
+    let sourceChainRawValue: String?
+    /// Set once a cancel has been CONFIRMED broadcast for this order. The order
+    /// is deliberately left `.pending` at that point (see `LimitOrder`), so this
+    /// is the only thing distinguishing "resting, untouched" from "resting, with
+    /// a cancel already on-chain".
+    let cancelBroadcastHash: String?
+
+    /// Spelled out rather than left to the memberwise synthesis so the
+    /// cancel-related fields can default to `nil` — every existing construction
+    /// site describes an order that simply predates cancelling, and defaulting
+    /// them keeps "not known" as the thing a caller has to opt OUT of.
+    init(
+        id: String,
+        inboundTxHash: String,
+        sourceAsset: String,
+        targetAsset: String,
+        targetPrice: Decimal,
+        expiryBlocks: Int,
+        createdAt: Date,
+        status: LimitOrderStatus,
+        minOutputOverride: Decimal?,
+        fill: LimitOrderFill,
+        expiry: LimitOrderExpiry?,
+        sourceAmount1e8: String? = nil,
+        tradeTarget: String? = nil,
+        observedTradeTarget: String? = nil,
+        sourceAssetFull: String? = nil,
+        targetAssetFull: String? = nil,
+        observedSourceAsset: String? = nil,
+        observedTargetAsset: String? = nil,
+        sourceChainRawValue: String? = nil,
+        cancelBroadcastHash: String? = nil
+    ) {
+        self.id = id
+        self.inboundTxHash = inboundTxHash
+        self.sourceAsset = sourceAsset
+        self.targetAsset = targetAsset
+        self.targetPrice = targetPrice
+        self.expiryBlocks = expiryBlocks
+        self.createdAt = createdAt
+        self.status = status
+        self.minOutputOverride = minOutputOverride
+        self.fill = fill
+        self.expiry = expiry
+        self.sourceAmount1e8 = sourceAmount1e8
+        self.tradeTarget = tradeTarget
+        self.observedTradeTarget = observedTradeTarget
+        self.sourceAssetFull = sourceAssetFull
+        self.targetAssetFull = targetAssetFull
+        self.observedSourceAsset = observedSourceAsset
+        self.observedTargetAsset = observedTargetAsset
+        self.sourceChainRawValue = sourceChainRawValue
+        self.cancelBroadcastHash = cancelBroadcastHash
+    }
 
     var fillFraction: Decimal? { fill.fillFraction }
 
@@ -180,7 +251,12 @@ struct LimitOrderDetails: Equatable, Sendable, Identifiable {
     /// (the live expiry chip; later, the Cancel action).
     var isTerminal: Bool {
         switch status {
-        case .pending:
+        case .pending, .cancelling:
+            // `.cancelling` is in-flight, not closed. The cancel transaction
+            // succeeded; the ORDER has not been observed leaving the queue and
+            // may still fill. Calling it terminal here would drop it out of the
+            // resting surfaces, stop its countdown, and let the tracker release
+            // it — leaving a live order stranded with nothing to correct it.
             return false
         case .filled, .refunded, .expired, .cancelled:
             return true

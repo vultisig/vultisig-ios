@@ -28,6 +28,16 @@ struct LimitOrderStatusDisplay: Equatable {
     enum Kind: Equatable {
         /// Placed and live. Includes partially-filled.
         case inProgress
+        /// A cancel transaction for this order has BROADCAST (a non-empty hash)
+        /// and the order has not yet left the queue.
+        ///
+        /// ⚠️ **A flavour of in-progress, never of success.** It says what we
+        /// asked for, not what happened: the order is still resting and can
+        /// still fill, because THORChain accepts a cancel that matches nothing.
+        /// It is a separate kind purely so the copy can say "Cancelling…" — it
+        /// must keep the in-progress styling, and it must never be treated as
+        /// terminal.
+        case cancelling
         /// Filled.
         case successful
         /// Terminal, did not fill (in whole or in part), funds returned. NOT a
@@ -39,10 +49,11 @@ struct LimitOrderStatusDisplay: Equatable {
     }
 
     /// Why a terminal order didn't fill. Each is reported only when it is what
-    /// we OBSERVED — the tracker records `refunded` and never infers `expired`,
-    /// because a placement rejected outright also refunds within seconds
-    /// without any TTL elapsing, and nothing reachable from a client separates
-    /// the two.
+    /// the CHAIN said — `expired` and `cancelled` come from the reason THORChain
+    /// attaches to the refund action Midgard indexes. `refunded` is the honest
+    /// answer when there is no such reason: a placement rejected outright also
+    /// refunds within seconds without any TTL elapsing, so a cause must never be
+    /// invented for one.
     enum ClosedReason: Equatable {
         case refunded
         case expired
@@ -56,19 +67,27 @@ struct LimitOrderStatusDisplay: Equatable {
     // MARK: - Derivation
 
     /// - Parameters:
-    ///   - uiStatus: the limit provider's fine-grained status.
-    ///   - details: the order snapshot, for the fill split. `nil` when the
-    ///     order record isn't available (a co-signer never persists one) — the
-    ///     status still resolves, just without progress.
+    ///   - uiStatus: the tx-history ROW's fine-grained status — a mirror of the
+    ///     order that lags it by up to a poll.
+    ///   - details: the order snapshot. Carries the fill split AND, now, the
+    ///     authoritative status: `LimitOrder` is the source of truth and the row
+    ///     only mirrors it, so when both are present the order's own status wins.
+    ///     `nil` when the order record isn't available (a co-signer never
+    ///     persists one) — the row status is then all there is.
     ///   - errorMessage: the row's error text, shown only for a real failure.
     static func make(
         uiStatus: SwapTrackingUiStatus,
         details: LimitOrderDetails?,
         errorMessage: String?
     ) -> LimitOrderStatusDisplay {
-        switch uiStatus {
+        switch effectiveUiStatus(uiStatus: uiStatus, details: details) {
         case .resting, .pending, .swapping, .unknownPendingExtended:
             return LimitOrderStatusDisplay(kind: .inProgress, detail: progressDetail(details))
+        case .cancelling:
+            // Same second line as any other live order — a partial fill on an
+            // order being cancelled is still a partial fill, and hiding it would
+            // suggest the cancel already undid something.
+            return LimitOrderStatusDisplay(kind: .cancelling, detail: progressDetail(details))
         case .completed:
             // A full fill needs no second line — the amount pair above it
             // already tells the whole story.
@@ -84,6 +103,28 @@ struct LimitOrderStatusDisplay: Equatable {
             // there is some.
             return LimitOrderStatusDisplay(kind: .failed, detail: errorMessage?.nilIfEmpty)
         }
+    }
+
+    /// The status to actually render/route on, resolving the row against the
+    /// order it mirrors. The single source of truth for "what state is this
+    /// order in" — used by the display here AND by the card's pill routing, so
+    /// the card, the detail sheet, and the Cancel button cannot disagree.
+    ///
+    /// `LimitOrder` is authoritative and the row lags it: a cancel recorded on
+    /// broadcast flips the ORDER to `.cancelling` at once, but the row is not
+    /// re-mirrored until the tracker's next poll. So the order's own status wins
+    /// whenever we hold it — EXCEPT `.failed`, the one row state `LimitOrderStatus`
+    /// cannot express (the mapper never emits it), which is left to speak for
+    /// itself rather than be overridden by a still-`.pending` order. A co-signer
+    /// holds no order and reads the row.
+    static func effectiveUiStatus(
+        uiStatus: SwapTrackingUiStatus,
+        details: LimitOrderDetails?
+    ) -> SwapTrackingUiStatus {
+        if let details, uiStatus != .failed {
+            return THORChainLimitTrackingStatusMapper.map(details.status)
+        }
+        return uiStatus
     }
 
     /// `"40% filled"`, or `nil` when the order hasn't partially filled.
@@ -105,6 +146,10 @@ struct LimitOrderStatusDisplay: Equatable {
         switch kind {
         case .inProgress:
             return "inProgress".localized
+        case .cancelling:
+            // Present continuous on purpose: the sentence has to read as
+            // waiting, not as done.
+            return "limitSwap.status.cancelling".localized
         case .successful:
             return "successful".localized
         case .closedUnfilled(.refunded):

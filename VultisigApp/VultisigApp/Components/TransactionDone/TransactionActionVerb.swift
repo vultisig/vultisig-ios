@@ -26,6 +26,15 @@ enum TransactionActionVerb: Hashable {
     /// flow can tell, so the whole vocabulary is re-cast in terms of the
     /// order: submitted → placed (resting) → filled, or not filled.
     case limitOrder
+    /// The transaction that CANCELS a resting limit order.
+    ///
+    /// Distinct from `.limitOrder`, and the distinction is the point. That verb
+    /// talks about the order; this one talks about the `m=<` transaction, which
+    /// is the only thing this screen can honestly report on. THORChain accepts a
+    /// cancel that addresses the wrong ratio bucket, charges for it, and closes
+    /// nothing — so a confirmed cancel transaction is NOT a cancelled order, and
+    /// the generic "Transaction successful" would be read as one.
+    case cancelLimitOrder
 
     var broadcastedKey: String {
         switch self {
@@ -33,6 +42,7 @@ enum TransactionActionVerb: Hashable {
         case .claim: return "claimBroadcasted"
         case .sign: return "messageSigned"
         case .limitOrder: return "limitSwap.done.status.submitted"
+        case .cancelLimitOrder: return "limitSwap.cancel.done.submitted"
         }
     }
 
@@ -42,15 +52,21 @@ enum TransactionActionVerb: Hashable {
         case .claim: return "claimPending"
         case .sign: return "messageSigned"
         case .limitOrder: return "limitSwap.done.status.resting"
+        case .cancelLimitOrder: return "limitSwap.cancel.done.pending"
         }
     }
 
+    /// Note for `.cancelLimitOrder`: "sent", not "cancelled".
+    ///
+    /// What succeeded is the transaction. Whether the ORDER closed is decided by
+    /// the queue, minutes or blocks later, and the detail line below says so.
     var successfulKey: String {
         switch self {
         case .send: return "transactionSuccessful"
         case .claim: return "claimSuccessful"
         case .sign: return "messageSigned"
         case .limitOrder: return "limitSwap.done.status.filled"
+        case .cancelLimitOrder: return "limitSwap.cancel.done.sent"
         }
     }
 
@@ -67,6 +83,7 @@ enum TransactionActionVerb: Hashable {
         case .claim: return "claimFailed"
         case .sign: return "messageSignFailed"
         case .limitOrder: return "limitSwap.done.status.closed"
+        case .cancelLimitOrder: return "limitSwap.cancel.done.failed"
         }
     }
 
@@ -78,6 +95,7 @@ enum TransactionActionVerb: Hashable {
         switch self {
         case .send, .claim, .sign: return "transactionSuccessfulHighlight"
         case .limitOrder: return "limitSwap.done.status.filledHighlight"
+        case .cancelLimitOrder: return "limitSwap.cancel.done.sentHighlight"
         }
     }
 
@@ -86,6 +104,7 @@ enum TransactionActionVerb: Hashable {
         switch self {
         case .send, .claim, .sign: return "transactionFailedHighlight"
         case .limitOrder: return "limitSwap.done.status.closedHighlight"
+        case .cancelLimitOrder: return "limitSwap.cancel.done.failedHighlight"
         }
     }
 
@@ -101,6 +120,13 @@ enum TransactionActionVerb: Hashable {
         case (.limitOrder, .pending):
             // The one line that stops "Order placed" reading as "done".
             return "limitSwap.done.status.restingDetail"
+        case (.cancelLimitOrder, .confirmed):
+            // ⚠️ The one line that stops a successful cancel TRANSACTION reading
+            // as a cancelled ORDER. THORChain accepts a cancel that matches
+            // nothing, so the order stays open until the queue says otherwise —
+            // and this is the only place the user is told that before they walk
+            // away from the screen.
+            return "limitSwap.cancel.done.sentDetail"
         default:
             return nil
         }

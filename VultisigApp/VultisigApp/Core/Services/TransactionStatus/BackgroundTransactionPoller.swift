@@ -45,4 +45,11 @@ class BackgroundTransactionPoller: ObservableObject {
         }
     }
 
+    /// Stop all background polling
+    func stopAllPolling() {
+        for (_, viewModel) in pollingViewModels {
+            viewModel.stopPolling()
+        }
+        pollingViewModels.removeAll()
+    }
 }

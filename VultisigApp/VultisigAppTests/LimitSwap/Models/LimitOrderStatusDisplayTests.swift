@@ -134,6 +134,87 @@ final class LimitOrderStatusDisplayTests: XCTestCase {
         }
     }
 
+    // MARK: - Cancelling reads as waiting, never as done
+
+    /// ⚠️ The property the whole `.cancelling` state rests on. It is a statement
+    /// about OUR transaction; if it ever renders as success or as a closed
+    /// order it reintroduces the false success this feature exists to prevent.
+    func testCancellingIsNeitherSuccessNorClosed() {
+        let display = LimitOrderStatusDisplay.make(uiStatus: .cancelling, details: nil, errorMessage: nil)
+
+        XCTAssertEqual(display.kind, .cancelling)
+        XCTAssertNotEqual(display.kind, .successful)
+        XCTAssertNotEqual(display.kind, .failed)
+        for reason in [LimitOrderStatusDisplay.ClosedReason.refunded, .expired, .cancelled] {
+            XCTAssertNotEqual(display.kind, .closedUnfilled(reason))
+        }
+    }
+
+    /// The copy has to be its own line — reusing "Cancelled" would be the lie,
+    /// and reusing "In progress" would drop the acknowledgement the state exists
+    /// to give.
+    func testCancellingHasItsOwnTitleDistinctFromCancelled() {
+        let cancelling = LimitOrderStatusDisplay.make(uiStatus: .cancelling, details: nil, errorMessage: nil)
+        let cancelled = LimitOrderStatusDisplay.make(uiStatus: .cancelled, details: nil, errorMessage: nil)
+
+        XCTAssertEqual(cancelling.title, "limitSwap.status.cancelling".localized)
+        XCTAssertFalse(cancelling.title.isEmpty)
+        XCTAssertNotEqual(cancelling.title, cancelled.title)
+        XCTAssertNotEqual(cancelling.title, "inProgress".localized)
+    }
+
+    /// ⚠️ The split-brain fix. The tx-history ROW lags the order it mirrors: a
+    /// cancel recorded on broadcast flips the ORDER to `.cancelling` at once, but
+    /// the row is not re-mirrored until the tracker's next poll. The display must
+    /// follow the authoritative order, so the card and detail sheet say
+    /// "Cancelling…" the instant the Cancel button reports the order is
+    /// cancelling — not a poll later, and never contradicting the button.
+    func testAStaleRestingRowStillShowsCancellingWhenTheOrderIsCancelling() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .resting, // the row hasn't caught up yet
+            details: makeDetails(status: .cancelling, deposit: "1000", filledIn: "0", filledOut: "0"),
+            errorMessage: nil
+        )
+
+        XCTAssertEqual(display.kind, .cancelling, "the order's own status wins over the lagging row")
+    }
+
+    /// The mirror direction: once the order actually closes, its terminal status
+    /// wins even if the row still reads a resting state.
+    func testAClosedOrderWinsOverAStaleRestingRow() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .resting,
+            details: makeDetails(status: .cancelled, deposit: "1000", filledIn: "0", filledOut: "0"),
+            errorMessage: nil
+        )
+
+        XCTAssertEqual(display.kind, .closedUnfilled(.cancelled))
+    }
+
+    /// `.failed` is the one row state the order status cannot express, so a
+    /// genuinely-failed row is NOT overridden by a still-`.pending` order record.
+    func testAFailedRowIsNotOverriddenByAPendingOrder() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .failed,
+            details: makeDetails(status: .pending, deposit: "1000", filledIn: "0", filledOut: "0"),
+            errorMessage: "handler blew up"
+        )
+
+        XCTAssertEqual(display.kind, .failed)
+        XCTAssertEqual(display.detail, "handler blew up")
+    }
+
+    /// A partial fill on an order being cancelled is still a partial fill.
+    func testCancellingKeepsTheProgressDetail() {
+        let display = LimitOrderStatusDisplay.make(
+            uiStatus: .cancelling,
+            details: makeDetails(status: .cancelling, deposit: "1000", filledIn: "400", filledOut: "50"),
+            errorMessage: nil
+        )
+
+        XCTAssertEqual(display.detail, String(format: "limitSwap.progress.filledFormat".localized, "40%"))
+    }
+
     func testOnlyFailedSurfacesTheRawErrorMessage() {
         // On-chain error text belongs to a real failure. Attaching it to an
         // expiry would explain a normal outcome as a fault.

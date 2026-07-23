@@ -128,6 +128,58 @@ final class THORChainAssetSymbolTests: XCTestCase {
         )
     }
 
+    // MARK: - Cancel spelling (full contract)
+
+    /// ⚠️ A cancel memo is the one inbound memo THORNode does not fuzzy-match,
+    /// so the abbreviation above would key a bucket no order was indexed under.
+    /// Same asset, spelled the long way.
+    func testCancelMemoAssetKeepsTheWholeContractAddress() {
+        XCTAssertEqual(
+            thorchainCancelMemoAsset(
+                chain: .ethereum,
+                ticker: "USDC",
+                contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                isNativeToken: false
+            ),
+            "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+        )
+    }
+
+    /// Native assets have no contract to abbreviate, so both spellings agree —
+    /// which is what keeps orders with only native legs cancellable without any
+    /// recorded long form.
+    func testCancelMemoAssetMatchesThePlacementFormForNativeAssets() {
+        for (chain, ticker) in [(Chain.bitcoin, "BTC"), (.ethereum, "ETH"), (.thorChain, "RUNE"), (.dogecoin, "DOGE")] {
+            XCTAssertEqual(
+                thorchainCancelMemoAsset(chain: chain, ticker: ticker, contractAddress: "", isNativeToken: true),
+                thorchainMemoAsset(chain: chain, ticker: ticker, contractAddress: "", isNativeToken: true),
+                "\(ticker)"
+            )
+        }
+    }
+
+    /// A THOR secured denom is already the full on-chain identifier. It must be
+    /// emitted verbatim — normalizing it to the layer-1 form makes THORNode's
+    /// `Asset.GetChain()` report the L1 chain, and `ValidateBasic` then rejects
+    /// a cancel sent from a THOR address outright.
+    func testCancelMemoAssetLeavesASecuredDenomUntouched() {
+        let denom = "eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+        XCTAssertEqual(
+            thorchainCancelMemoAsset(chain: .thorChain, ticker: "USDC", contractAddress: denom, isNativeToken: false),
+            denom
+        )
+    }
+
+    func testCancelMemoAssetRejectsUnroutableChainsAndEmptyTickers() {
+        XCTAssertNil(
+            thorchainCancelMemoAsset(chain: .solana, ticker: "SOL", contractAddress: "", isNativeToken: true)
+        )
+        XCTAssertNil(
+            thorchainCancelMemoAsset(chain: .ethereum, ticker: " ", contractAddress: "0xabc", isNativeToken: false)
+        )
+    }
+
     // MARK: - THOR secured assets (raw denom, matching Coin.swapAsset)
 
     func testThorSecuredAssetMemoUsesRawDenom() {
