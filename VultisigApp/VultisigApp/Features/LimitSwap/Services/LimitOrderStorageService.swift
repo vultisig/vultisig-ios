@@ -150,6 +150,9 @@ struct LimitOrderStorageService {
         }
         guard order.cancelBroadcastHash == txHash else { return }
         order.cancelBroadcastHash = nil
+        // The confirmation flag belongs to that hash; a withdrawn cancel is no
+        // longer confirmed, and a later cancel starts from unconfirmed.
+        order.cancelConfirmedOnChain = nil
         switch order.status {
         case .cancelling:
             order.statusRawValue = LimitOrderStatus.pending.rawValue
@@ -159,13 +162,43 @@ struct LimitOrderStorageService {
         try saveAndNotify()
     }
 
-    /// Records that a cancel transaction SUCCEEDED on-chain for this order.
+    /// Marks the recorded cancel as CONFIRMED on-chain, then reconciles.
     ///
-    /// ⚠️ **Called on a confirmed-successful transaction, never on a broadcast.**
-    /// A hash proves only that bytes were accepted for inclusion. The 2026-07-21
-    /// rehearsal produced a hash, landed in a block, and was refused by the
-    /// handler — recording that would have disabled the button on an order that
-    /// was still resting, and pre-labelled its eventual closure "Cancelled".
+    /// Called once the cancel transaction is verified — `.succeeded` on the
+    /// THORChain route, `.delivered` on an L1 route — by the done-screen poller or
+    /// the tracker's re-check. Confirmation is what unlocks the no-reason
+    /// `.refunded → .cancelled` fallback in `reconcile`: until it lands, a
+    /// merely-broadcast cancel shows `.cancelling` but can never produce a
+    /// terminal `.cancelled` from local evidence.
+    ///
+    /// Compare-and-set on the hash: a cancel recorded since is a different
+    /// transaction this confirmation says nothing about. Re-reconciles so a
+    /// `.refunded` closure already observed while the cancel was unconfirmed is
+    /// promoted the moment confirmation arrives (still subject to the TTL rule).
+    @MainActor
+    func confirmCancelBroadcast(of orderId: String, txHash: String, in vault: Vault) throws {
+        guard let order = vault.limitOrders.first(where: { $0.id == orderId }) else {
+            throw LimitOrderStorageError.notFound(id: orderId)
+        }
+        guard order.cancelBroadcastHash == txHash else { return }
+        order.cancelConfirmedOnChain = true
+        order.statusRawValue = Self.reconcile(observed: order.status, with: order).rawValue
+        try saveAndNotify()
+    }
+
+    /// Records the cancel transaction against this order and moves a resting
+    /// order into `.cancelling`.
+    ///
+    /// ⚠️ **Called on a confirmed BROADCAST — a non-empty hash — not on an
+    /// on-chain result.** Entering `.cancelling` here, block-independently, is
+    /// what makes the in-flight state observable at all; gating it on the chain's
+    /// answer left it unseen for a fast cancel (see `LimitOrderCancelPoller`).
+    /// This is safe only because the hash no longer labels the CLOSURE: the
+    /// terminal `.cancelled`/`.expired`/`.refunded` label comes from THORChain's
+    /// own reason (via `reconcile` and the tracker), so an optimistic hash yields
+    /// the NON-terminal `.cancelling` and never a false terminal "Cancelled". A
+    /// cancel the chain later refuses has its record withdrawn by
+    /// `clearCancelBroadcast`, driven from either the poller or the tracker.
     ///
     /// Compare-and-set on `.pending`: an order that has already gone terminal is
     /// left exactly as it is. The window is real — an order can fill or expire
@@ -177,13 +210,15 @@ struct LimitOrderStorageService {
     /// a cancel that matches nothing is accepted by the chain and does nothing,
     /// so the order stays resting until the queue confirms it actually closed.
     /// It does move a still-resting order to `.cancelling` — a NON-terminal
-    /// state that says our transaction landed and says nothing about the order.
-    /// `.refunded` is accepted as well as `.pending`, and reconciled on the spot.
-    /// The tracker can observe the cancel-induced closure BEFORE this runs — the
-    /// done screen renders a moment after broadcast, but a force-quit or a
-    /// backgrounded app can let a poll land first. Rejecting `.refunded` would
-    /// then drop the hash on the floor and leave a successfully cancelled order
-    /// reading "Refunded" forever, with nothing left to correct it.
+    /// state that says our transaction went out and says nothing about the order.
+    /// `.refunded` is accepted as well as `.pending`: the tracker can observe the
+    /// closure BEFORE this runs — the done screen renders a moment after
+    /// broadcast, but a force-quit or a backgrounded app can let a poll land
+    /// first — and rejecting `.refunded` would drop the hash on the floor, so a
+    /// cancel that CONFIRMS moments later could never promote the already-observed
+    /// closure. Storing the hash keeps that door open; the promotion itself still
+    /// waits for `confirmCancelBroadcast`, so recording onto a `.refunded` order
+    /// leaves it `.refunded` for now, never optimistically `.cancelled`.
     ///
     /// `.cancelling` is accepted too, purely so a re-record of the same
     /// transaction is a no-op rather than a silently dropped write.
@@ -196,11 +231,20 @@ struct LimitOrderStorageService {
             throw LimitOrderStorageError.notFound(id: orderId)
         }
         guard order.status == .pending || order.status == .refunded || order.status == .cancelling else { return }
+        if order.cancelBroadcastHash != txHash {
+            // A newly-recorded broadcast is a DIFFERENT, not-yet-confirmed cancel.
+            // Confirmation belongs to a specific hash (see `confirmCancelBroadcast`),
+            // so a prior hash's confirmation must not carry onto this one — else a
+            // merely-broadcast replacement could claim a no-reason refund the old
+            // cancel earned. Cleared here; re-recording the SAME hash keeps it.
+            order.cancelConfirmedOnChain = nil
+        }
         order.cancelBroadcastHash = txHash
         // Re-run reconciliation against what is already recorded. A `.pending`
-        // order is unchanged by this; an already-observed `.refunded` closure is
-        // promoted now that we know a cancel caused it (still subject to the
-        // TTL precedence in `reconcile`).
+        // order becomes `.cancelling`; a `.refunded` closure already observed
+        // stays `.refunded` — the broadcast is not yet confirmed, and only a
+        // CONFIRMED cancel may claim a no-reason refund (see `reconcile` and
+        // `confirmCancelBroadcast`).
         order.statusRawValue = Self.reconcile(observed: order.status, with: order).rawValue
         try saveAndNotify()
     }
@@ -302,9 +346,13 @@ struct LimitOrderStorageService {
     /// expiry. An order that reached a terminal state on its own reached it on
     /// its own, and an outstanding cancel intent does not get to claim credit.
     ///
-    /// The cancel is credited ONLY when the order provably could not have
-    /// expired on its own — i.e. its TTL still has not elapsed at the moment we
-    /// observe the closure. Anything else stays `.refunded`.
+    /// The cancel is credited ONLY when it was CONFIRMED on-chain AND the order
+    /// provably could not have expired on its own — its TTL still has not elapsed
+    /// at the moment we observe the closure. A merely-broadcast cancel, or a
+    /// closure at/after the TTL, stays `.refunded`. Confirmation is a distinct
+    /// requirement because `.cancelling` is now entered on BROADCAST, before the
+    /// chain's verdict; the terminal promotion must not be, or a cancel the chain
+    /// refuses could relabel an unrelated refund "Cancelled".
     ///
     /// A closure is observed somewhere in the window between the last time we
     /// saw the order resting and the poll that found it gone. With no reason
@@ -325,11 +373,27 @@ struct LimitOrderStorageService {
         guard order.cancelBroadcastHash != nil else { return observed }
         switch observed {
         case .pending:
-            // Still in the queue, with a confirmed cancel transaction against
-            // it. The user gets an acknowledgement; the order keeps resting.
+            // Still in the queue, with a cancel BROADCAST against it. The user
+            // gets an acknowledgement the instant it goes out; the order keeps
+            // resting. Deliberately on the broadcast alone — this is the
+            // non-terminal, non-success state the whole feature hangs on being
+            // visible, and it makes no claim the chain has to have confirmed.
             return .cancelling
         case .refunded:
-            return closedBeforeExpiryWasPossible(order, now: now) ? .cancelled : .refunded
+            // ⚠️ The terminal fallback, and the one place the cancel hash pulls
+            // on a TERMINAL label. It fires only when the cancel was CONFIRMED
+            // on-chain — never on a bare broadcast. Entry into `.cancelling` is
+            // optimistic (broadcast); this promotion is not, because a broadcast
+            // the chain later refuses must never turn an unrelated refund into a
+            // false "Cancelled". That is exactly the safety the hash carried by
+            // itself back when it was only ever written after confirmation.
+            //
+            // A cancel THORChain itself reports (`limit swap cancelled`) does not
+            // reach here at all — it arrives as `.cancelled` and passes straight
+            // through the case below, confirmed or not, because that is the
+            // chain's own account and needs no local corroboration.
+            let confirmed = order.cancelConfirmedOnChain == true
+            return confirmed && closedBeforeExpiryWasPossible(order, now: now) ? .cancelled : .refunded
         case .cancelling, .filled, .expired, .cancelled:
             return observed
         }

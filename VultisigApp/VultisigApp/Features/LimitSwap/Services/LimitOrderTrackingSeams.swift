@@ -106,8 +106,15 @@ struct LimitOrderObserver: LimitOrderObserving {
 @MainActor
 protocol LimitOrderCancelIntentStoring {
     func pendingCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String) -> String?
-    /// Only ever called for a transaction already confirmed SUCCESSFUL on-chain.
+    /// Called on a confirmed BROADCAST — a non-empty cancel hash — to move the
+    /// order into `.cancelling`. A refusal the chain reports later is undone via
+    /// `clearCancelBroadcast`.
     func recordCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws
+    /// Called once the cancel transaction is verified `.succeeded` / `.delivered`,
+    /// marking it CONFIRMED on-chain. Only a confirmed cancel may be credited a
+    /// no-reason refund by `reconcile`; a bare broadcast can show `.cancelling`
+    /// but never a terminal `.cancelled`.
+    func confirmCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws
     /// Withdraw a record whose transaction failed. Compare-and-set on
     /// `expecting`, so a newer cancel recorded while the old one was being
     /// verified is not withdrawn on the old one's verdict.
@@ -130,6 +137,17 @@ struct LimitOrderCancelIntentStore: LimitOrderCancelIntentStoring {
             throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
         }
         try storage.recordCancelBroadcast(
+            of: orderId(inboundTxHash, pubKeyECDSA),
+            txHash: txHash,
+            in: vault
+        )
+    }
+
+    func confirmCancelBroadcast(inboundTxHash: String, pubKeyECDSA: String, txHash: String) throws {
+        guard let vault = try LimitOrderStorageService.vault(pubKeyECDSA: pubKeyECDSA) else {
+            throw LimitOrderObservingError.vaultUnavailable(pubKeyECDSA: pubKeyECDSA)
+        }
+        try storage.confirmCancelBroadcast(
             of: orderId(inboundTxHash, pubKeyECDSA),
             txHash: txHash,
             in: vault

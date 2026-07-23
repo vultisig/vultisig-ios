@@ -65,6 +65,11 @@ final class THORChainLimitTrackingPollTests: XCTestCase {
         XCTAssertEqual(env.orders.observations.last?.status, .pending, "the OBSERVATION is still 'in the queue'")
         XCTAssertEqual(env.storage.mirroredTrackingStatuses.last, "cancelling")
         XCTAssertEqual(env.service.uiStatusByTxHash["ABC123"], .cancelling)
+        // The verified cancel is persisted as CONFIRMED, so a later no-reason
+        // refund of this order may be credited to it. Entry into `.cancelling`
+        // happened on broadcast; this is the confirmation that unlocks the
+        // terminal fallback.
+        XCTAssertEqual(env.cancelIntents.confirmedHashes, ["CANCELTX"])
         XCTAssertEqual(
             env.service.trackedOrderCountForTesting,
             1,
@@ -963,6 +968,7 @@ private final class RecordingLimitOrderObserver: LimitOrderObserving {
 private final class RecordingCancelIntentStore: LimitOrderCancelIntentStoring {
     private(set) var pending: String?
     private(set) var clearedHashes: [String] = []
+    private(set) var confirmedHashes: [String] = []
     var clearShouldThrow = false
 
     struct ClearError: Error {}
@@ -975,6 +981,12 @@ private final class RecordingCancelIntentStore: LimitOrderCancelIntentStoring {
 
     func recordCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash: String) throws {
         pending = txHash
+    }
+
+    func confirmCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash: String) throws {
+        // Mirrors the production compare-and-set.
+        guard pending == txHash else { return }
+        confirmedHashes.append(txHash)
     }
 
     func clearCancelBroadcast(inboundTxHash: String, pubKeyECDSA _: String, expecting txHash: String) throws {

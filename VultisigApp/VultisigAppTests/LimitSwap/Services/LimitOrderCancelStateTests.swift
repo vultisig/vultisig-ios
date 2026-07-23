@@ -18,6 +18,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
     private func makeOrder(
         status: LimitOrderStatus = .pending,
         cancelBroadcastHash: String? = nil,
+        cancelConfirmed: Bool = false,
         blocksToExpiry: Int? = nil
     ) -> LimitOrder {
         let order = LimitOrder(
@@ -35,6 +36,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
             vault: .example
         )
         order.cancelBroadcastHash = cancelBroadcastHash
+        order.cancelConfirmedOnChain = cancelConfirmed
         if let blocksToExpiry {
             order.timeToExpiryBlocks = blocksToExpiry
             order.expiryObservedAt = Self.observedAt
@@ -45,12 +47,27 @@ final class LimitOrderCancelStateTests: XCTestCase {
     // MARK: - Reconciliation
 
     /// The FALLBACK path: a closure the chain gave no reason we recognise for,
-    /// against an order this device holds a confirmed cancel for. Local
-    /// knowledge is then the only knowledge there is.
-    func testARefundWithNoChainReasonIsCreditedToOurOwnCancel() {
-        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+    /// against an order this device holds a CONFIRMED cancel for. Local knowledge
+    /// is then the only knowledge there is.
+    func testARefundWithNoChainReasonIsCreditedToOurOwnConfirmedCancel() {
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX", cancelConfirmed: true)
 
         XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .refunded, with: order), .cancelled)
+    }
+
+    /// ⚠️ THE fund-safety invariant of the broadcast-time entry. The cancel hash
+    /// is set on BROADCAST, before the chain's verdict; a no-reason refund must
+    /// NOT be credited to a cancel that is only broadcast — that is precisely how
+    /// a cancel the chain later refuses would relabel an unrelated refund as a
+    /// false terminal "Cancelled". Only confirmation unlocks the fallback.
+    func testARefundIsNeverCreditedToAMerelyBroadcastCancel() {
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX", cancelConfirmed: false)
+
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(observed: .refunded, with: order),
+            .refunded,
+            "an unconfirmed cancel must never produce a terminal .cancelled"
+        )
     }
 
     /// ⚠️ The bug this whole reading fixes: a cancel this device never recorded.
@@ -108,8 +125,9 @@ final class LimitOrderCancelStateTests: XCTestCase {
     /// later the order expires on its own. Crediting that closure to the cancel
     /// would tell the user their cancel worked when it silently failed.
     func testClosureAtOrAfterExpiryIsNotCreditedToTheCancel() {
-        // 10 blocks x 6s = 60s of runway from the anchor.
-        let order = makeOrder(cancelBroadcastHash: "CANCELTX", blocksToExpiry: 10)
+        // 10 blocks x 6s = 60s of runway from the anchor. Confirmed on-chain, so
+        // it is the TTL alone — not a missing confirmation — that blocks credit.
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX", cancelConfirmed: true, blocksToExpiry: 10)
 
         let atExpiry = Self.observedAt.addingTimeInterval(60)
         let afterExpiry = Self.observedAt.addingTimeInterval(600)
@@ -129,7 +147,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
     /// The mirror case: still inside the TTL, so the cancel really is the reason
     /// the order closed.
     func testClosureBeforeExpiryWithACancelOnRecordIsCancelled() {
-        let order = makeOrder(cancelBroadcastHash: "CANCELTX", blocksToExpiry: 10)
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX", cancelConfirmed: true, blocksToExpiry: 10)
         let beforeExpiry = Self.observedAt.addingTimeInterval(30)
 
         XCTAssertEqual(
@@ -157,7 +175,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
     /// different route.
     func testAnUnobservedExpiryFallsBackToTheNominalDeadline() {
         // 14,400 blocks x 6s = 24h from `createdAt`.
-        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX", cancelConfirmed: true)
         let wellPastNominalTTL = order.createdAt.addingTimeInterval(25 * 3600)
 
         XCTAssertEqual(
@@ -167,7 +185,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
     }
 
     func testAnUnobservedExpiryStillAllowsCancelAttributionInsideTheTTL() {
-        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+        let order = makeOrder(cancelBroadcastHash: "CANCELTX", cancelConfirmed: true)
         let wellInsideTTL = order.createdAt.addingTimeInterval(60)
 
         XCTAssertEqual(
@@ -182,9 +200,12 @@ final class LimitOrderCancelStateTests: XCTestCase {
 
     /// The tracker can observe the closure BEFORE the done screen records the
     /// broadcast — a force-quit or a backgrounded app between signing and the
-    /// done screen is enough. Refusing to record onto `.refunded` would drop the
-    /// hash and leave a successful cancel reading "Refunded" forever.
-    func testABroadcastRecordedAfterTheClosureWasAlreadyObservedStillReconciles() throws {
+    /// done screen is enough. Recording the broadcast onto an already-`.refunded`
+    /// order stores the hash but leaves it `.refunded`: the broadcast is not yet
+    /// confirmed, and only a confirmed cancel may claim a no-reason refund. What
+    /// storing the hash buys is the ability to promote it the moment confirmation
+    /// lands — the next step.
+    func testABroadcastRecordedAfterTheClosureLeavesItRefundedUntilConfirmed() throws {
         let vault = Vault.example
         let order = makeOrder(status: .refunded)
         vault.limitOrders = [order]
@@ -194,11 +215,69 @@ final class LimitOrderCancelStateTests: XCTestCase {
         )
 
         XCTAssertEqual(order.cancelBroadcastHash, "CANCELTX")
+        XCTAssertEqual(order.status, .refunded, "a bare broadcast never promotes a closure")
+
+        // Confirmation arrives (the poller or the tracker verified the tx). Now
+        // the already-observed closure is credited to our cancel — inside the TTL.
+        try LimitOrderStorageService().confirmCancelBroadcast(
+            of: "order-1", txHash: "CANCELTX", in: vault
+        )
+
+        XCTAssertEqual(order.cancelConfirmedOnChain, true)
         XCTAssertEqual(order.status, .cancelled)
     }
 
-    /// …but only inside the TTL. Past it the cause is unknowable, whichever
-    /// order the two writes happen to land in.
+    /// ⚠️ Confirmation belongs to a specific hash. Recording a DIFFERENT cancel
+    /// hash over a confirmed one must reset the confirmation — otherwise the new,
+    /// merely-broadcast cancel would inherit the old one's confirmation and could
+    /// claim a no-reason refund it never earned.
+    func testRecordingADifferentHashClearsAPriorConfirmation() throws {
+        let vault = Vault.example
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "OLDCANCEL", cancelConfirmed: true)
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().recordCancelBroadcast(
+            of: "order-1", txHash: "NEWCANCEL", in: vault
+        )
+
+        XCTAssertEqual(order.cancelBroadcastHash, "NEWCANCEL")
+        XCTAssertNotEqual(order.cancelConfirmedOnChain, true, "a new broadcast is unconfirmed")
+        XCTAssertEqual(
+            LimitOrderStorageService.reconcile(observed: .refunded, with: order),
+            .refunded,
+            "the unconfirmed replacement must not claim a no-reason refund"
+        )
+    }
+
+    /// Re-recording the SAME hash keeps its confirmation — it is the same tx.
+    func testReRecordingTheSameHashKeepsConfirmation() throws {
+        let vault = Vault.example
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX", cancelConfirmed: true)
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().recordCancelBroadcast(
+            of: "order-1", txHash: "CANCELTX", in: vault
+        )
+
+        XCTAssertEqual(order.cancelConfirmedOnChain, true)
+    }
+
+    /// Confirming a cancel whose hash was superseded is a no-op — compare-and-set.
+    func testConfirmingIsANoOpWhenADifferentCancelIsOnRecord() throws {
+        let vault = Vault.example
+        let order = makeOrder(status: .refunded, cancelBroadcastHash: "NEWCANCEL")
+        vault.limitOrders = [order]
+
+        try LimitOrderStorageService().confirmCancelBroadcast(
+            of: "order-1", txHash: "OLDCANCEL", in: vault
+        )
+
+        XCTAssertNotEqual(order.cancelConfirmedOnChain, true, "a mismatched confirm must not mark it confirmed")
+        XCTAssertEqual(order.status, .refunded)
+    }
+
+    /// …but only inside the TTL. Past it the cause is unknowable, and even a
+    /// CONFIRMED cancel does not get to claim the closure.
     func testALateBroadcastRecordDoesNotClaimAnAmbiguousClosure() throws {
         let vault = Vault.example
         let order = makeOrder(status: .refunded)
@@ -208,8 +287,12 @@ final class LimitOrderCancelStateTests: XCTestCase {
         try LimitOrderStorageService().recordCancelBroadcast(
             of: "order-1", txHash: "CANCELTX", in: vault
         )
-
         XCTAssertEqual(order.status, .refunded)
+
+        try LimitOrderStorageService().confirmCancelBroadcast(
+            of: "order-1", txHash: "CANCELTX", in: vault
+        )
+        XCTAssertEqual(order.status, .refunded, "past the TTL, confirmation still cannot claim the closure")
     }
 
     /// A fill is never reinterpreted, whatever else is true of the order.
@@ -272,7 +355,9 @@ final class LimitOrderCancelStateTests: XCTestCase {
     /// A cancelling order that leaves the queue past its TTL is ambiguous, and
     /// ambiguity never credits the cancel — same rule as a `.pending` one.
     func testACancellingOrderClosingPastItsTTLIsStillOnlyRefunded() {
-        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX", blocksToExpiry: 10)
+        let order = makeOrder(
+            status: .cancelling, cancelBroadcastHash: "CANCELTX", cancelConfirmed: true, blocksToExpiry: 10
+        )
 
         XCTAssertEqual(
             LimitOrderStorageService.reconcile(
@@ -282,6 +367,29 @@ final class LimitOrderCancelStateTests: XCTestCase {
             ),
             .refunded
         )
+    }
+
+    /// ⚠️ The ordering race the broadcast-time entry introduces: the order is
+    /// already `.cancelling` (set on broadcast) when the tracker observes the
+    /// closure. A chain-attributed cancellation wins — correctly — and it wins
+    /// from the OBSERVED reason, not from the hash. This is the terminal label
+    /// the whole reversal depends on staying chain-authoritative: `.cancelled`
+    /// here is `reconcile` passing the chain's verdict through, never inferring
+    /// it from `cancelBroadcastHash != nil`.
+    func testACancellingOrderTheChainAttributesToACancelBecomesCancelled() {
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX")
+
+        XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .cancelled, with: order), .cancelled)
+    }
+
+    /// The mirror race: a `.cancelling` order the chain reports as EXPIRED is
+    /// expired. The chain's account outranks our in-flight transaction — our
+    /// cancel simply lost to the TTL — and, again, the label follows the observed
+    /// reason rather than the hash.
+    func testACancellingOrderTheChainReportsExpiredBecomesExpired() {
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX")
+
+        XCTAssertEqual(LimitOrderStorageService.reconcile(observed: .expired, with: order), .expired)
     }
 
     /// ⚠️ Forward compatibility. A build that predates `.cancelling` reads the
@@ -348,7 +456,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
     /// what makes it retryable.
     func testClearingACancelRecordReEnablesCancelling() throws {
         let vault = Vault.example
-        let order = makeOrder(cancelBroadcastHash: "CANCELTX")
+        let order = makeOrder(status: .cancelling, cancelBroadcastHash: "CANCELTX", cancelConfirmed: true)
         vault.limitOrders = [order]
 
         try LimitOrderStorageService().clearCancelBroadcast(
@@ -356,6 +464,7 @@ final class LimitOrderCancelStateTests: XCTestCase {
         )
 
         XCTAssertNil(order.cancelBroadcastHash)
+        XCTAssertNil(order.cancelConfirmedOnChain, "the confirmation belongs to the withdrawn hash")
         XCTAssertEqual(order.status, .pending, "still resting, and cancellable again")
     }
 

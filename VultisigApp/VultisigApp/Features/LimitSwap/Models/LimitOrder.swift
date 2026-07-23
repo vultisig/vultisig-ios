@@ -119,23 +119,47 @@ final class LimitOrder {
     var observedSourceAsset: String?
     var observedTargetAsset: String?
 
-    /// Hash of the `m=<` transaction we broadcast to cancel this order, once
-    /// that broadcast is confirmed. `nil` means no cancel was ever sent.
+    /// Hash of the `m=<` transaction we broadcast to cancel this order, stored
+    /// once that broadcast is confirmed (a non-empty hash). `nil` means no cancel
+    /// was ever sent.
     ///
-    /// **This is an INTENT record, not the outcome.** The order is deliberately
-    /// left `.pending` when a cancel is broadcast, rather than being marked
-    /// `.cancelled` optimistically, because a cancel that addresses the wrong
-    /// ratio bucket is accepted by the chain, costs a fee, and cancels nothing —
-    /// the feature's whole failure mode. Marking the order cancelled on
-    /// broadcast would render that failure invisible: the order would read
-    /// "Cancelled" while still resting and still able to fill.
+    /// **This is an INTENT record, not a terminal outcome.** On a confirmed
+    /// broadcast the order moves to the NON-terminal `.cancelling` — a statement
+    /// about OUR transaction, made visible immediately — never to `.cancelled`. A
+    /// cancel that addresses the wrong ratio bucket is accepted by the chain,
+    /// costs a fee, and cancels nothing; labelling the ORDER cancelled on the
+    /// strength of this hash would render that failure invisible, so it is never
+    /// done. The terminal `.cancelled`/`.expired`/`.refunded` label comes from
+    /// THORChain's own reason via Midgard, not from this hash.
     ///
-    /// So the tracker keeps polling. When the order actually leaves the queue,
-    /// the presence of this hash is what turns the observed refund into
-    /// `.cancelled` rather than `.refunded`. If the cancel silently did nothing,
-    /// the order stays visibly resting — which is the truth, and the only way
-    /// the user finds out.
+    /// So the tracker keeps polling a `.cancelling` order. The hash's only pull on
+    /// the terminal label is the fallback in `reconcile`: a closure the chain
+    /// gave no reason we recognise for, observed while the order demonstrably
+    /// could not yet have expired, is credited to this cancel as `.cancelled`
+    /// rather than `.refunded`. A cancel the chain refuses has this hash
+    /// withdrawn, dropping the order back to `.pending`; if it silently did
+    /// nothing, the order stays visibly resting — the truth, and the only way the
+    /// user finds out.
     var cancelBroadcastHash: String?
+
+    /// Whether the recorded cancel (`cancelBroadcastHash`) has been CONFIRMED on
+    /// its own chain — `.succeeded` on the THORChain route, `.delivered` on an L1
+    /// route — as opposed to merely broadcast.
+    ///
+    /// The split exists because entry into `.cancelling` and the terminal
+    /// `.cancelled` label now happen at different times. The order enters
+    /// `.cancelling` on BROADCAST (block-independent, so the in-flight state is
+    /// observable at all), but the no-reason `.refunded → .cancelled` fallback in
+    /// `reconcile` may credit only a CONFIRMED cancel: a broadcast the chain
+    /// later refuses must never let an unrelated refund be relabelled "Cancelled".
+    /// Gating that terminal promotion on this flag keeps the fallback exactly as
+    /// safe as it was when the hash itself was confirmation-gated. A genuine
+    /// cancel needs no flag on the common path — its closure carries THORChain's
+    /// own `limit swap cancelled`, read directly by the primary chain-reason path.
+    ///
+    /// `nil` and `false` both mean "not confirmed". Optional, so it rides
+    /// SwiftData lightweight migration.
+    var cancelConfirmedOnChain: Bool?
 
     /// `Chain.rawValue` of the coin the order was funded with.
     ///
@@ -250,8 +274,8 @@ final class LimitOrder {
 ///   revisit.
 enum LimitOrderStatus: String, Codable, Equatable {
     case pending
-    /// A cancel transaction for this order has been confirmed SUCCESSFUL
-    /// on-chain, and the order has not yet left the queue.
+    /// A cancel transaction for this order has BROADCAST — a confirmed, non-empty
+    /// hash — and the order has not yet left the queue.
     ///
     /// ⚠️ **Not terminal, and not a claim about the order.** It describes OUR
     /// transaction — the one thing we have actually confirmed — never the

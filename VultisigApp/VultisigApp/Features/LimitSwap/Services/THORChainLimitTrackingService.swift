@@ -440,11 +440,26 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         guard isCurrentGeneration(sender: sender, token: token) else { return false }
         switch outcome {
         case .succeeded, .delivered:
-            // Settled as far as this device can ever know. `.delivered` will not
-            // become anything else on a re-ask either — THORChain's verdict on
-            // an L1 cancel is not observable — so re-checking an immutable
-            // receipt every minute buys nothing.
-            settledCancelHashes.insert(cancelHash)
+            // Persist the confirmation FIRST, so `reconcile`'s no-reason refund
+            // fallback may credit this cancel a later closure. Entry into
+            // `.cancelling` happened on broadcast; this terminal promotion waits
+            // for exactly this verdict.
+            do {
+                try cancelIntents.confirmCancelBroadcast(
+                    inboundTxHash: order.txHash,
+                    pubKeyECDSA: order.pubKeyECDSA,
+                    txHash: cancelHash
+                )
+                // Only NOW mark it settled. `.delivered` will not become anything
+                // else on a re-ask either — THORChain's verdict on an L1 cancel is
+                // not observable — so re-checking an immutable receipt every
+                // minute buys nothing. But if the confirmation write above threw,
+                // the hash is deliberately left un-settled so the next poll
+                // retries the persistence rather than skipping it forever.
+                settledCancelHashes.insert(cancelHash)
+            } catch {
+                logger.error("Failed to record cancel confirmation: \(error.localizedDescription, privacy: .public)")
+            }
         case .unresolved:
             // Not an answer. Ask again next poll rather than withdraw a record
             // on a rate limit.

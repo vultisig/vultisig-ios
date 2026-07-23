@@ -2,27 +2,33 @@
 //  LimitOrderCancelPoller.swift
 //  VultisigApp
 //
-//  `DoneStatusPoller` for the transaction that CANCELS a limit order, and the
-//  only place a cancel is credited to the order it names.
+//  `DoneStatusPoller` for the transaction that CANCELS a limit order. It moves
+//  the order into `.cancelling` the instant the cancel keysign broadcasts, then
+//  watches that transaction so it can undo the move if the chain refuses it.
 //
-//  Two things made this its own poller rather than a screen-level side effect:
+//  **Entry into `.cancelling` is on broadcast, not on confirmation.** A confirmed
+//  broadcast — a non-empty hash, the same signal `SendDoneScreen`/`SwapDoneScreen`
+//  use to know a tx went out — is what enters `.cancelling`. Gating it on the
+//  chain's answer instead left `.cancelling` unobservable for a fast cancel:
+//  worst on the L1 route, where the dust tx does not mine for ~12s and THORChain
+//  has usually pulled the order from the queue by then, so the tracker resolves
+//  `.pending → .cancelled` straight from the chain's reason and the in-flight
+//  state is never seen. Broadcast time is block-independent, and it runs before
+//  the user can tap Done and tear this poller down.
 //
-//  1. **A broadcast is not an outcome.** The cancel used to be recorded from
-//     `onAppear` on the strength of a non-empty hash. The 2026-07-21 mainnet
-//     rehearsal returned a hash, landed in a block, and was refused by
-//     THORChain's handler — so the app recorded a cancel that never happened,
-//     which permanently disabled the button on an order that was still resting
-//     and left its eventual closure ready to be labelled "Cancelled".
-//  2. **The generic poller cannot see the refusal.** For a THORChain source the
-//     `ChainPoller` reads Midgard actions, and a rejected `MsgDeposit` produces
-//     no action at all — so the header would sit on "pending" until it timed
-//     out, saying nothing, while the failure was plainly readable in the
-//     transaction's own `code` and `raw_log`.
+//  Safe only because the cancel hash no longer labels the CLOSURE. `.cancelling`
+//  is a statement about OUR transaction, never the order's fate; the terminal
+//  `.cancelled`/`.expired`/`.refunded` label comes from THORChain's own reason
+//  (via Midgard), so an optimistic hash can show the in-flight state but can
+//  never manufacture a false terminal "Cancelled".
 //
-//  The order stays `.pending` throughout either way. This never claims the order
-//  CLOSED — only the queue can say that, by the order disappearing from it. What
-//  a success here buys is the right to interpret that later closure as a
-//  cancellation rather than a plain refund.
+//  The failure half stays. A `MsgDeposit` the handler refuses produces no Midgard
+//  action, so the generic `ChainPoller` would sit on "pending" forever — only
+//  this poller reads the transaction's own `code`/`raw_log`. On a refusal it
+//  WITHDRAWS the record, dropping the order back to `.pending` with its Cancel
+//  button live again. The same self-heal runs independently in the tracker
+//  (`verifyPendingCancel`) for an app that left this screen before the chain
+//  answered.
 //
 
 import Foundation
@@ -66,6 +72,11 @@ final class LimitOrderCancelPoller: DoneStatusPoller {
 
     func start(onStatus: @escaping (TransactionStatus) -> Void) {
         guard pollTask == nil else { return }
+        // Enter `.cancelling` NOW, on this confirmed broadcast — synchronously,
+        // before the poll task or any user tap. This is the only entry into
+        // `.cancelling`; see the file header for why it must not wait for the
+        // chain's answer.
+        recordCancelBroadcast()
         let deadline = Date().addingTimeInterval(config.maxWaitTime)
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -74,22 +85,26 @@ final class LimitOrderCancelPoller: DoneStatusPoller {
                 if Task.isCancelled { return }
                 switch outcome {
                 case .succeeded, .delivered:
-                    // `.delivered` is the weaker of the two and is recorded all
-                    // the same: on the L1 route THORChain's verdict is not
-                    // observable at all, so a confirmed delivery is the best
-                    // evidence that route can ever produce. What stops it
-                    // becoming a false "Cancelled" is downstream —
-                    // `LimitOrderStorageService.reconcile` credits a cancel only
-                    // when the order demonstrably could NOT have expired on its
-                    // own, and never relabels a fill.
-                    self.recordCancel()
+                    // Already recorded `.cancelling` on broadcast; now the chain
+                    // has confirmed the transaction. Mark it confirmed — that is
+                    // what unlocks `reconcile`'s terminal fallback, so a genuine
+                    // cancel whose closure the chain reports with no reason we
+                    // recognise can still be credited. `.delivered` (the L1
+                    // route's strongest answer, since THORChain's verdict on it is
+                    // not observable) counts as confirmation here; the guard
+                    // against over-claiming is downstream, in `reconcile`'s TTL
+                    // rule, which never relabels a fill and never credits a
+                    // closure the order could have reached by expiry.
+                    self.confirmCancelBroadcast()
                     onStatus(.confirmed)
                     return
                 case let .failed(reason):
-                    // Nothing is recorded. The order keeps its live Cancel
-                    // button, which is the point: the user has to be able to
-                    // try again, and the chain's own words are the only
-                    // explanation of why they must.
+                    // The chain refused the cancel. Withdraw the record so the
+                    // order drops out of `.cancelling` back to `.pending` and its
+                    // Cancel button goes live again — the user has to be able to
+                    // retry, and the chain's own words are the only explanation
+                    // of why they must.
+                    self.revertCancelBroadcast()
                     self.logger.error("Cancel \(self.txHash, privacy: .public) failed on-chain")
                     onStatus(.failed(reason: reason))
                     return
@@ -113,13 +128,24 @@ final class LimitOrderCancelPoller: DoneStatusPoller {
         pollTask = nil
     }
 
-    /// Attribute the confirmed cancel back to the order it cancels.
+    /// Move the order into `.cancelling` and store the cancel hash, on the
+    /// strength of this confirmed broadcast.
     ///
-    /// Non-fatal on failure: the transaction already succeeded on-chain, so the
-    /// worst case is the order later reading "Refunded" instead of "Cancelled" —
-    /// the wrong label on the right outcome. Surfacing an error over a
-    /// successful cancel would be the more misleading of the two.
-    private func recordCancel() {
+    /// The store's `recordCancelBroadcast` is compare-and-set on a non-terminal
+    /// order, so a race — the order filled or expired between the tap and this
+    /// call — is a no-op rather than a resurrection, and re-recording the same
+    /// transaction is idempotent.
+    ///
+    /// Non-fatal on failure: the transaction went out regardless, and the worst
+    /// case is the order not showing "Cancelling…" until the tracker's next poll
+    /// reconciles it. Surfacing an error over a broadcast that succeeded would be
+    /// the more misleading of the two.
+    private func recordCancelBroadcast() {
+        // A non-empty hash is what makes this a confirmed broadcast — the same
+        // bar the verifier sets. An empty hash is no broadcast at all, and
+        // recording `""` would enter `.cancelling` and block the button on a
+        // cancel that never went out.
+        guard !txHash.isEmpty else { return }
         do {
             try intents.recordCancelBroadcast(
                 inboundTxHash: request.inboundTxHash,
@@ -127,7 +153,45 @@ final class LimitOrderCancelPoller: DoneStatusPoller {
                 txHash: txHash
             )
         } catch {
-            logger.warning("Failed to record confirmed cancel: \(error.localizedDescription, privacy: .public)")
+            logger.warning("Failed to record cancel broadcast: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Mark the recorded cancel CONFIRMED on-chain, on the strength of a
+    /// `.succeeded` (THORChain) or `.delivered` (L1) verdict.
+    ///
+    /// This is what lets a later no-reason refund be credited to the cancel; the
+    /// broadcast record alone never can. Compare-and-set on the hash, and
+    /// non-fatal on failure — the tracker's `verifyPendingCancel` confirms the
+    /// same record independently.
+    private func confirmCancelBroadcast() {
+        do {
+            try intents.confirmCancelBroadcast(
+                inboundTxHash: request.inboundTxHash,
+                pubKeyECDSA: pubKeyECDSA,
+                txHash: txHash
+            )
+        } catch {
+            logger.warning("Failed to confirm cancel broadcast: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Withdraw the record for a cancel the chain refused, returning the order to
+    /// `.pending`.
+    ///
+    /// Compare-and-set on the hash we verified: a cancel recorded since is a
+    /// different transaction this verdict says nothing about. Non-fatal on
+    /// failure — the tracker's `verifyPendingCancel` re-checks and withdraws the
+    /// same record independently.
+    private func revertCancelBroadcast() {
+        do {
+            try intents.clearCancelBroadcast(
+                inboundTxHash: request.inboundTxHash,
+                pubKeyECDSA: pubKeyECDSA,
+                expecting: txHash
+            )
+        } catch {
+            logger.warning("Failed to withdraw the failed cancel record: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

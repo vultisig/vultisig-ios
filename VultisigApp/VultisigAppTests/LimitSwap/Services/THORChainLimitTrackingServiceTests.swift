@@ -345,6 +345,7 @@ private final class InertLimitOrderObserver: LimitOrderObserving {
 private final class InertCancelIntentStore: LimitOrderCancelIntentStoring {
     func pendingCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String) -> String? { nil }
     func recordCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash _: String) throws {}
+    func confirmCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, txHash _: String) throws {}
     func clearCancelBroadcast(inboundTxHash _: String, pubKeyECDSA _: String, expecting _: String) throws {}
 }
 
