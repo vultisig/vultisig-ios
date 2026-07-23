@@ -29,6 +29,12 @@ struct KeysignMessageConfirmView: View {
                 // tag row) while a genuine text memo (combo / memo-only) shows.
                 // XRP SWAPS keep the raw memo (their on-chain routing memo).
                 let isRipplePlainPayment = ripplePayload?.coin.chain == .ripple && ripplePayload?.swapPayload == nil
+                // A limit-order PLACEMENT, reconstructed from the `=<:` memo the
+                // way the cancel path reads its `m=<:` one. When present it takes
+                // precedence over the generic simulation hero, which would show a
+                // co-signer a plain deposit/swap rather than the resting order it
+                // is actually signing. `nil` for every non-placement memo.
+                let placement = LimitOrderPlacementPresentation.display(for: viewModel.keysignPayload)
                 SendCryptoVerifySummaryView(
                     input: SendCryptoVerifySummary(
                         fromName: viewModel.vault.name,
@@ -58,11 +64,14 @@ struct KeysignMessageConfirmView: View {
                         // reading this replaces.
                         hero: LimitOrderCancelPresentation.hero(
                             forSignedMemo: viewModel.keysignPayload?.memo
-                        ) ?? viewModel.heroContent,
+                        ) ?? placement?.hero ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
                         vault: viewModel.vault,
-                        dappMetadata: viewModel.dappMetadata
+                        dappMetadata: viewModel.dappMetadata,
+                        // Target price + expiry for a placement — the initiator's
+                        // limit Verify rows, as cost-style rows beneath the fee.
+                        additionalRows: limitOrderSummaryRows(placement: placement)
                     ),
                     securityScannerState: $viewModel.securityScannerState
                 ) {
@@ -104,6 +113,25 @@ struct KeysignMessageConfirmView: View {
                 )
             )
         }
+    }
+
+    /// Cost-style rows shown beneath the network fee for a limit order.
+    ///
+    /// For a PLACEMENT this mirrors the initiator's limit Verify: the target
+    /// price (`1 <source> = <price> <target>`) and, when the memo's interval is a
+    /// whole number of hours, the expiry. Empty for every other transaction, so
+    /// no other path changes.
+    private func limitOrderSummaryRows(
+        placement: LimitOrderPlacementPresentation.Display?
+    ) -> [SendCryptoVerifySummaryRow] {
+        guard let placement else { return [] }
+        var rows = [
+            SendCryptoVerifySummaryRow(title: "limitSwap.detail.target", value: placement.targetPriceValue)
+        ]
+        if let expiry = placement.expiryValue {
+            rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.expiry", value: expiry))
+        }
+        return rows
     }
 
     /// Reconstructs the LP `memoFunctionDictionary` from a THORChain LP add/remove memo so the
