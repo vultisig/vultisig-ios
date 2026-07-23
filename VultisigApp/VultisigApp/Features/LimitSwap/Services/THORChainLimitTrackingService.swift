@@ -149,7 +149,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
 
     func start(tx: TransactionHistoryData) {
         guard isOwnedByThisProvider(tx) else {
-            logger.debug("Skipping non-limit row \(tx.txHash, privacy: .public)")
+            logger.debug("[LIMITTRACK] Skipping non-limit row \(tx.txHash, privacy: .public)")
             return
         }
         // Seed from whatever was last persisted so a view mounting before the
@@ -157,14 +157,14 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         // right state rather than a default.
         uiStatusByTxHash[tx.txHash] = tx.swapTrackingUiStatus
         guard !tx.swapTrackingUiStatus.isTerminal else {
-            logger.debug("Skipping terminal limit row \(tx.txHash, privacy: .public)")
+            logger.debug("[LIMITTRACK] Skipping terminal limit row \(tx.txHash, privacy: .public)")
             return
         }
         // The queue is addressed by the SOURCE-CHAIN sender. With no sender
         // there is nothing to poll — leave the row alone rather than fetch the
         // entire network's queue.
         guard !tx.fromAddress.isEmpty else {
-            logger.error("Limit row \(tx.txHash, privacy: .public) has no sender address — cannot track")
+            logger.error("[LIMITTRACK] Limit row \(tx.txHash, privacy: .public) has no sender address — cannot track")
             return
         }
         guard tracked[tx.txHash] == nil else { return }
@@ -191,7 +191,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         do {
             inFlight = try storage.fetchInFlightSwapTracking(providerKind: Self.providerKind)
         } catch {
-            logger.error("Failed to fetch in-flight limit orders: \(error.localizedDescription, privacy: .public)")
+            logger.error("[LIMITTRACK] Failed to fetch in-flight limit orders: \(error.localizedDescription, privacy: .public)")
             return
         }
         for tx in inFlight {
@@ -229,7 +229,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
         absentPollStreaks.removeAll()
         settledCancelHashes.removeAll()
         uiStatusByTxHash.removeAll()
-        logger.info("Stopped all limit-order tracking (reset)")
+        logger.info("[LIMITTRACK] Stopped all limit-order tracking (reset)")
     }
 
     // MARK: - Test-only inspection
@@ -323,12 +323,18 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 // understand, NOT an empty queue. Reading it as empty would
                 // close every one of this sender's orders at once. Back off and
                 // ask again.
-                logger.error("Limit queue response carried no limit_swaps key — treating as unknown, not empty")
+                logger.error("[LIMITTRACK] Limit queue response carried no limit_swaps key — treating as unknown, not empty")
                 return backoff(sender: sender)
             }
+            // Per-poll heartbeat so a HEALTHY resting poll is visible — the
+            // reconcile branches only log on a change (absence, reappearance,
+            // closure), so without this a working tracker looks silent. `notice`
+            // so it surfaces without enabling debug logging.
+            let trackedForSender = tracked.values.filter { $0.sender == sender }.count
+            logger.notice("[LIMITTRACK] poll sender=\(sender, privacy: .public) tracked=\(trackedForSender, privacy: .public) queueReturned=\(resting.count, privacy: .public)")
             return await reconcile(sender: sender, resting: resting, token: token)
         } catch {
-            logger.debug("Limit queue poll failed: \(error.localizedDescription, privacy: .public)")
+            logger.notice("[LIMITTRACK] Limit queue poll failed: \(error.localizedDescription, privacy: .public)")
             guard isCurrentGeneration(sender: sender, token: token) else {
                 return PollOutcome(shouldStop: true, nextDelay: 0)
             }
@@ -371,7 +377,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 // This reset is the self-correcting half of the guard, and a
                 // reappearance is the stale-backend signature itself.
                 if let streak = absentPollStreaks.removeValue(forKey: order.txHash) {
-                    logger.info("Limit order \(order.txHash, privacy: .public) is back in the queue after \(streak, privacy: .public) absent poll(s) — that absence was not a closure")
+                    logger.notice("[LIMITTRACK] Limit order \(order.txHash, privacy: .public) is back in the queue after \(streak, privacy: .public) absent poll(s) — that absence was not a closure")
                 }
                 // Re-check the cancel record BEFORE recording the observation,
                 // not after. `observeResting` reconciles against that record — a
@@ -396,7 +402,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                     // Uncorroborated. Nothing is written and nothing is
                     // released — the order keeps the state and the last resting
                     // observation it already had, and we ask again.
-                    logger.info("Limit order \(order.txHash, privacy: .public) missing from the queue on absent poll \(streak, privacy: .public) of \(Self.absencePollsBeforeClosing, privacy: .public) — not treating it as closed yet")
+                    logger.notice("[LIMITTRACK] Limit order \(order.txHash, privacy: .public) missing from the queue on absent poll \(streak, privacy: .public) of \(Self.absencePollsBeforeClosing, privacy: .public) — not treating it as closed yet")
                     continue
                 }
                 guard await observeClosed(order: order, sender: sender, token: token) else {
@@ -476,14 +482,14 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                 // retries the persistence rather than skipping it forever.
                 settledCancelHashes.insert(cancelHash)
             } catch {
-                logger.error("Failed to record cancel confirmation: \(error.localizedDescription, privacy: .public)")
+                logger.error("[LIMITTRACK] Failed to record cancel confirmation: \(error.localizedDescription, privacy: .public)")
             }
         case .unresolved:
             // Not an answer. Ask again next poll rather than withdraw a record
             // on a rate limit.
             break
         case let .failed(reason):
-            logger.error("Cancel \(cancelHash, privacy: .public) failed on-chain — withdrawing the record: \(reason, privacy: .public)")
+            logger.error("[LIMITTRACK] Cancel \(cancelHash, privacy: .public) failed on-chain — withdrawing the record: \(reason, privacy: .public)")
             do {
                 // Compare-and-set on the hash we actually verified: the lookup
                 // above is a network round-trip, and a cancel recorded in the
@@ -495,7 +501,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
                     expecting: cancelHash
                 )
             } catch {
-                logger.error("Failed to withdraw the cancel record: \(error.localizedDescription, privacy: .public)")
+                logger.error("[LIMITTRACK] Failed to withdraw the cancel record: \(error.localizedDescription, privacy: .public)")
             }
         }
         return true
@@ -510,17 +516,21 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     ///   was in flight, meaning the caller must stop rather than act on it.
     private func observeClosed(order: TrackedOrder, sender: String, token: UUID?) async -> Bool {
         guard let sourceChain = order.sourceChain else {
-            logger.error("Limit order \(order.txHash, privacy: .public) has no source chain — cannot resolve outcome")
+            logger.error("[LIMITTRACK] Limit order \(order.txHash, privacy: .public) has no source chain — cannot resolve outcome")
             return true
         }
         let outcome = await outcomes.resolveOutcome(inboundTxHash: order.txHash, sourceChain: sourceChain)
         // The lookup is a network round-trip: re-check before writing or
         // releasing anything on the strength of it.
         guard isCurrentGeneration(sender: sender, token: token) else { return false }
+        // Visible at `notice` so the moment of resolution — the exact thing that
+        // was invisible while debugging a stuck order — shows up without turning
+        // on debug logging.
+        logger.notice("[LIMITTRACK] observeClosed \(order.txHash, privacy: .public) resolved outcome=\(String(describing: outcome), privacy: .public)")
         switch outcome {
         case .unresolved:
             // Almost always Midgard indexing lag. Stay resting; ask next poll.
-            logger.debug("Limit order \(order.txHash, privacy: .public) left the queue; outcome not resolvable yet")
+            logger.debug("[LIMITTRACK] Limit order \(order.txHash, privacy: .public) left the queue; outcome not resolvable yet")
         case .filled:
             if write(order: order, status: .filled, entry: nil) {
                 release(order)
@@ -614,9 +624,9 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             // nothing here to write to, and the row IS the whole picture on this
             // device. Retrying forever would peg the row at "resting" for good.
             hasLocalOrder = false
-            logger.debug("No local limit order for \(order.txHash, privacy: .public) — mirroring onto the row only")
+            logger.debug("[LIMITTRACK] No local limit order for \(order.txHash, privacy: .public) — mirroring onto the row only")
         } catch {
-            logger.error("Failed to record limit-order observation: \(error.localizedDescription, privacy: .public)")
+            logger.error("[LIMITTRACK] Failed to record limit-order observation: \(error.localizedDescription, privacy: .public)")
             return false
         }
 
@@ -641,7 +651,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
             // truth. A failed mirror is worth knowing about but doesn't
             // invalidate the authoritative write, so it doesn't hold the order
             // open.
-            logger.error("Failed to mirror limit status onto the row: \(error.localizedDescription, privacy: .public)")
+            logger.error("[LIMITTRACK] Failed to mirror limit status onto the row: \(error.localizedDescription, privacy: .public)")
             // On a CO-SIGNER there is no local order behind the row, so this
             // write was not a mirror of anything — it was the only persisted
             // terminal state this device will ever have. Reporting success
