@@ -58,6 +58,28 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Payload-free provider identity — the single source of truth for this
+    /// quote's brand logo and display name. Network variants collapse to their
+    /// base kind; `displayName` re-adds the `-Chainnet`/`-Stagenet` suffix.
+    var kind: SwapProviderKind {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return .thorchain
+        case .mayachain:
+            return .maya
+        case .oneinch:
+            return .oneInch
+        case .kyberswap:
+            return .kyberSwap
+        case .lifi:
+            return .lifi
+        case .swapkit:
+            return .swapkit
+        case .jupiter:
+            return .jupiter
+        }
+    }
+
     var router: String? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
@@ -97,49 +119,22 @@ enum SwapQuote: Hashable {
 
     var displayName: String? {
         switch self {
-        case .thorchain:
-            return "THORChain"
+        // Network variants keep their suffix on top of the base brand name; the
+        // sub-provider (e.g. Chainflip on SwapKit) stays on the payload for
+        // routing/explorer links, so the display name stays the clean brand.
         case .thorchainChainnet:
-            return "THORChain-Chainnet"
+            return "\(kind.displayName)-Chainnet"
         case .thorchainStagenet:
-            return "THORChain-Stagenet"
-        case .mayachain:
-            return "Maya protocol"
-        case .oneinch:
-            return "1Inch"
-        case .kyberswap:
-            return "KyberSwap"
-        case .lifi:
-            return "LI.FI"
-        case .swapkit:
-            // The sub-provider (e.g. Chainflip) is carried on the payload for
-            // routing/explorer links; the display name stays the clean brand.
-            return "SwapKit"
-        case .jupiter:
-            return "Jupiter"
+            return "\(kind.displayName)-Stagenet"
+        default:
+            return kind.displayName
         }
     }
 
-    /// Brand-logo asset name for the provider (in `Crypto/`), matching the
-    /// imageset filenames. Providers without a bundled logo (KyberSwap, SwapKit)
-    /// fall back to `AsyncImageView`'s monogram.
+    /// Brand-logo asset name for the provider (in `Crypto/`). Sourced from the
+    /// shared `SwapProviderKind`, so it can't drift from Transaction History.
     var providerLogo: String {
-        switch self {
-        case .thorchain, .thorchainChainnet, .thorchainStagenet:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .oneinch:
-            return "1Inch"
-        case .lifi:
-            return "LI.FI"
-        case .kyberswap:
-            return "kyberswap"
-        case .swapkit:
-            return "swapkit"
-        case .jupiter:
-            return "jupiter"
-        }
+        kind.providerLogo
     }
 
     func inboundFeeDecimal(toCoin: Coin) -> Decimal? {

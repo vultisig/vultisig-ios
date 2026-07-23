@@ -46,32 +46,6 @@ struct SendDetailsSeed: Hashable {
     let memoFunctionDictionary: [String: String]
     let wasmContractPayload: WasmExecuteContractPayload?
 
-    static func empty(coin: Coin, vault: Vault, hasPreselectedCoin: Bool) -> SendDetailsSeed {
-        SendDetailsSeed(
-            coin: coin,
-            vault: vault,
-            hasPreselectedCoin: hasPreselectedCoin,
-            fromAddress: coin.address,
-            toAddress: "",
-            toAddressLabel: nil,
-            lastResolvedAddress: nil,
-            amount: "",
-            amountInFiat: "",
-            memo: "",
-            gas: .zero,
-            fee: .zero,
-            feeMode: .default,
-            estimatedGasLimit: nil,
-            customGasLimit: nil,
-            customByteFee: nil,
-            sendMaxAmount: false,
-            isStakingOperation: false,
-            transactionType: .unspecified,
-            memoFunctionDictionary: [:],
-            wasmContractPayload: nil
-        )
-    }
-
     /// Builds an empty seed prefilled with the deeplink/scanner fields used
     /// by `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
     /// rides on the route value instead of mutating a long-lived form.

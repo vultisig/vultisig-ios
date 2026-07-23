@@ -61,20 +61,12 @@ enum FunctionCallFixture {
         makeCoin(.thorChain, ticker: "TCY", decimals: 8, isNative: false, rawBalance: rawBalance, address: thorAddress)
     }
 
-    static func makeCACAO(rawBalance: String = "10000000000") -> Coin {
-        makeCoin(.mayaChain, ticker: "CACAO", decimals: 10, isNative: true, rawBalance: rawBalance, address: mayaAddress)
-    }
-
     static func makeATOM(rawBalance: String = "10000000") -> Coin {
         makeCoin(.gaiaChain, ticker: "ATOM", decimals: 6, isNative: true, rawBalance: rawBalance, address: cosmosAddress)
     }
 
     static func makeKUJI(rawBalance: String = "10000000") -> Coin {
         makeCoin(.kujira, ticker: "KUJI", decimals: 6, isNative: true, rawBalance: rawBalance, address: kujiAddress)
-    }
-
-    static func makeTON(rawBalance: String = "2000000000") -> Coin {
-        makeCoin(.ton, ticker: "TON", decimals: 9, isNative: true, rawBalance: rawBalance, address: tonAddress)
     }
 
     static func makeBTC(rawBalance: String = "100000000") -> Coin {

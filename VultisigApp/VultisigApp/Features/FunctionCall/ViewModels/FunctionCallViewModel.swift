@@ -31,11 +31,6 @@ class FunctionCallViewModel: ObservableObject {
 
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
 
-    func stopMediator() {
-        self.mediator.stop()
-        logger.info("mediator server stopped.")
-    }
-
     /// The fiat figure printed beside the crypto fee row.
     ///
     /// ⚠️ Priced off the SAME figure that row is, via `SendCryptoLogic.displayFee`.

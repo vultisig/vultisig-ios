@@ -27,12 +27,6 @@ final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable>: @un
         }
     }
 
-    func allKeysInOrder() -> [Key] {
-        return queue.sync {
-            return Array(dictionary.keys)
-        }
-    }
-
     func clear() {
         queue.async(flags: .barrier) {
             self.dictionary.removeAll()

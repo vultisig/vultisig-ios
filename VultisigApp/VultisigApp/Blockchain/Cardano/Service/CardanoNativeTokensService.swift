@@ -103,9 +103,6 @@ actor CardanoNativeTokensService {
         return metadata
     }
 
-    func clearCache() {
-        assetInfoCache.removeAll()
-    }
 }
 
 enum CardanoNativeTokensServiceError: Error, Equatable {

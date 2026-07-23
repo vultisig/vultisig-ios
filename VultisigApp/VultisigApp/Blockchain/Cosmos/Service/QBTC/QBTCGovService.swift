@@ -16,7 +16,6 @@ import OSLog
 
 protocol QBTCGovServiceProtocol: Sendable {
     func fetchProposals(status: CosmosGovProposalStatus?) async throws -> [CosmosGovProposal]
-    func fetchProposal(id: UInt64) async throws -> CosmosGovProposal?
     func fetchTally(id: UInt64) async throws -> CosmosGovTallyResult
     func fetchMyVote(id: UInt64, voter: String) async throws -> CosmosGovVote?
     func fetchGovParams() async throws -> CosmosGovParams
@@ -53,14 +52,6 @@ struct QBTCGovService: QBTCGovServiceProtocol {
             responseType: CosmosGovProposalsResponse.self
         )
         return response.data.toProposals()
-    }
-
-    func fetchProposal(id: UInt64) async throws -> CosmosGovProposal? {
-        let response = try await httpClient.request(
-            QBTCChainAPI.govProposal(id: id),
-            responseType: CosmosGovProposalResponse.self
-        )
-        return response.data.toProposal()
     }
 
     func fetchTally(id: UInt64) async throws -> CosmosGovTallyResult {

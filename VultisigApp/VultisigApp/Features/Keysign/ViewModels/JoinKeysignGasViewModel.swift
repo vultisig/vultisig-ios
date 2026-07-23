@@ -77,11 +77,6 @@ struct JoinKeysignGasViewModel {
         return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
     }
 
-    func getJoinedCalculatedNetworkFee(payload: KeysignPayload) -> String {
-        let fees = getCalculatedNetworkFee(payload: payload)
-        return fees.feeCrypto + " (~\(fees.feeFiat))"
-    }
-
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
         // Try to get native coin from vault first (has up-to-date price data)
         if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain) {

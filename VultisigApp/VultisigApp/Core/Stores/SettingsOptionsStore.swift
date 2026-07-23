@@ -123,21 +123,6 @@ enum SettingsAPRPeriod: String, CaseIterable {
     case oneHundredDays = "100d"
     case oneYear = "365d"
 
-    func description() -> String {
-        switch self {
-        case .oneDay:
-            return "apr1Day".localized
-        case .oneWeek:
-            return "apr1Week".localized
-        case .oneMonth:
-            return "apr1Month".localized
-        case .oneHundredDays:
-            return "apr100Days".localized
-        case .oneYear:
-            return "apr1Year".localized
-        }
-    }
-
     static var current: SettingsAPRPeriod {
         get {
             if let periodString = UserDefaults.standard.string(forKey: "aprPeriod"),

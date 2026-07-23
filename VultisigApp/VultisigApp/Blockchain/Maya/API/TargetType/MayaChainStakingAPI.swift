@@ -85,44 +85,6 @@ struct MayaCacaoPoolMemberResponse: Codable {
     }
 }
 
-/// Response model for CACAO pool history
-struct MayaCacaoPoolHistoryResponse: Codable {
-    let intervals: [CacaoPoolInterval]
-    let meta: CacaoPoolMeta
-}
-
-struct CacaoPoolInterval: Codable {
-    let count: String
-    let endTime: String
-    let startTime: String
-    let units: String
-
-    enum CodingKeys: String, CodingKey {
-        case count
-        case endTime
-        case startTime
-        case units
-    }
-}
-
-struct CacaoPoolMeta: Codable {
-    let endCount: String
-    let endTime: String
-    let endUnits: String
-    let startCount: String
-    let startTime: String
-    let startUnits: String
-
-    enum CodingKeys: String, CodingKey {
-        case endCount
-        case endTime
-        case endUnits
-        case startCount
-        case startTime
-        case startUnits
-    }
-}
-
 /// Response model for Maya pool
 struct MayaPoolResponse: Codable {
     let asset: String

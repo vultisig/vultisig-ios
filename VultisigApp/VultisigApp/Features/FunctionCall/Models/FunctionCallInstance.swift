@@ -114,54 +114,6 @@ enum FunctionCallInstance {
         }
     }
 
-    @MainActor
-    func toDictionary() -> ThreadSafeDictionary<String, String> {
-        switch self {
-        case .rebond(let memo):
-            return memo.toDictionary()
-        case .bondMaya(let memo):
-            return memo.toDictionary()
-        case .unbondMaya(let memo):
-            return memo.toDictionary()
-        case .leave(let memo):
-            return memo.toDictionary()
-        case .custom(let memo):
-            return memo.toDictionary()
-        case .vote(let memo):
-            return memo.toDictionary()
-        case .cosmosIBC(let memo):
-            return memo.toDictionary()
-        case .merge(let memo):
-            return memo.toDictionary()
-        case .unmerge(let memo):
-            return memo.toDictionary()
-        case .theSwitch(let memo):
-            return memo.toDictionary()
-        case .addThorLP(let memo):
-            return memo.toDictionary()
-        case .securedAsset(let memo):
-            return memo.toDictionary()
-        case .withdrawSecuredAsset(let memo):
-            return memo.toDictionary()
-        }
-    }
-
-    @MainActor
-    func getTransactionType() -> VSTransactionType {
-        switch self {
-        case .vote:
-            return VSTransactionType.vote
-        case .cosmosIBC:
-            return VSTransactionType.ibcTransfer
-        case .merge:
-            return VSTransactionType.thorMerge
-        case .unmerge:
-            return VSTransactionType.thorUnmerge
-        default:
-            return .unspecified
-        }
-    }
-
     /// Submit-time validity gate. Threads the active coin to every
     /// sub-model so the amount-against-balance check is part of the
     /// same predicate the Continue button reads — no no-arg path can

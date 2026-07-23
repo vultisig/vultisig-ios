@@ -18,7 +18,6 @@ class ThorchainStagenetService: ThorchainSwapProvider {
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
-    private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
 
     private init() {}
 
@@ -171,14 +170,6 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         return UInt64(response.data.native_tx_fee_rune) ?? 0
     }
 
-    func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
-        do {
-            return try await fetchThorchainInboundAddressOrThrow(bypassCache: bypassCache)
-        } catch {
-            return []
-        }
-    }
-
     /// Throwing variant for the sign-time fail-closed gate — see
     /// `ThorchainService.fetchThorchainInboundAddressOrThrow`.
     func fetchThorchainInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
@@ -260,10 +251,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
     // MARK: - Errors
     enum Errors: Error {
         case tnsEntryNotFound
-        case invalidURL
         case invalidPriceFormat
-        case invalidResponse
-        case apiError(String)
     }
 }
 
@@ -290,21 +278,6 @@ extension ThorchainStagenetService {
         } catch {
             return 0.0
         }
-    }
-
-    func assetExistsInPools(assetName: String) async -> Bool {
-        do {
-            _ = try await fetchAssetPrice(assetName: assetName)
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    func formatAssetName(chain: Chain, symbol: String) -> String {
-        let chainCode = (chain == .thorChainChainnet || chain == .thorChainStagenet) ? "THOR" : chain.rawValue.uppercased()
-        let assetSymbol = symbol.uppercased()
-        return "\(chainCode).\(assetSymbol)"
     }
 
     private func fetchAssetPrice(assetName: String) async throws -> Double {
@@ -436,110 +409,6 @@ extension ThorchainStagenetService {
 
 // MARK: - THORChain Stagenet-2 LP Functionality
 extension ThorchainStagenetService {
-
-    func fetchLPPositions(runeAddress: String? = nil, assetAddress: String? = nil) async throws -> [ThorchainLPPosition] {
-        let targetAddress = runeAddress ?? assetAddress
-        guard let address = targetAddress else {
-            throw HelperError.runtimeError("Either rune address or asset address must be provided")
-        }
-
-        let cacheKey = "lp_positions_stagenet2_\(address)"
-        let cacheExpirationMinutes = 2.0
-
-        if let cached = cacheLPPositions.get(cacheKey),
-           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            return cached.data
-        }
-
-        let pools = try await fetchLPPools()
-        var allPositions: [ThorchainLPPosition] = []
-
-        for pool in pools {
-            do {
-                let poolResponse = try await httpClient.request(
-                    ThorchainStagenetAPI.poolLiquidityProvider(env: env, asset: pool.asset, address: address)
-                )
-
-                if poolResponse.response.statusCode == 404 {
-                    continue
-                }
-
-                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolResponse.data) {
-                    if let units = Int64(lpResponse.units), units > 0 {
-                        let position = ThorchainLPPosition(
-                            asset: lpResponse.asset,
-                            runeAddress: runeAddress,
-                            assetAddress: lpResponse.assetAddress,
-                            poolUnits: lpResponse.units,
-                            runeDepositValue: lpResponse.runeDepositValue,
-                            assetDepositValue: lpResponse.assetDepositValue,
-                            runeRedeemValue: nil,
-                            assetRedeemValue: nil,
-                            luvi: nil,
-                            gLPGrowth: nil,
-                            assetGrowthPct: nil
-                        )
-                        allPositions.append(position)
-                    }
-                }
-
-                try await Task.sleep(nanoseconds: 100_000_000)
-
-            } catch {
-                continue
-            }
-        }
-
-        cacheLPPositions.set(cacheKey, (data: allPositions, timestamp: Date()))
-
-        return allPositions
-    }
-
-    func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let response = try await httpClient.request(
-            ThorchainStagenetAPI.poolInfo(env: env, asset: asset),
-            responseType: ThorchainPool.self
-        )
-        return response.data
-    }
-
-    func fetchLPPools() async throws -> [ThorchainPool] {
-        let cacheKey = "lp_pools_stagenet2"
-        let cacheExpirationMinutes = 5.0
-
-        if let cached = cacheLPPools.get(cacheKey),
-           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            return cached.data
-        }
-
-        return try await withRetry(maxAttempts: 3) {
-            let response = try await httpClient.request(
-                ThorchainStagenetAPI.pools(env: env),
-                responseType: [ThorchainPool].self
-            )
-            let availablePools = response.data.filter { $0.status == "Available" }
-            cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
-            return availablePools
-        }
-    }
-
-    private func withRetry<T>(maxAttempts: Int = 3, retryDelay: TimeInterval = 1.0, operation: () async throws -> T) async throws -> T {
-        var lastError: Error?
-
-        for attempt in 1...maxAttempts {
-            do {
-                return try await operation()
-            } catch {
-                lastError = error
-                if attempt < maxAttempts {
-                    let delay = retryDelay * pow(2.0, Double(attempt - 1))
-                    try await Task.sleep(for: .seconds(delay))
-                }
-            }
-        }
-
-        throw lastError ?? HelperError.runtimeError("Unknown error after \(maxAttempts) attempts")
-    }
 
     // MARK: - TCY Staking Methods (Not supported on Stagenet-2)
     // swiftlint:disable:next unused_parameter async_without_await

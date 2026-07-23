@@ -306,10 +306,6 @@ final class FunctionCallWithdrawSecuredAsset {
         return dict
     }
 
-    func getAssetTicker() -> String {
-        selectedSecuredAsset.value.isEmpty ? Self.initialItemForDropdownText : selectedSecuredAsset.value
-    }
-
     func toSendTransaction(
         coin: Coin,
         vault: Vault,

@@ -174,11 +174,6 @@ private final class StubGovService: QBTCGovServiceProtocol, @unchecked Sendable 
     }
 
     // swiftlint:disable:next async_without_await
-    func fetchProposal(id: UInt64) async throws -> CosmosGovProposal? {
-        proposals.first { $0.id == id }
-    }
-
-    // swiftlint:disable:next async_without_await
     func fetchTally(id: UInt64) async throws -> CosmosGovTallyResult {
         if tallyError { throw StubGovServiceError() }
         return tallies[id] ?? .zero

@@ -146,10 +146,6 @@ class SolanaService {
         return nil
     }
 
-    func getSolanaBalance(coin: Coin) async throws -> String {
-        try await getSolanaBalance(coin: coin.toCoinMeta(), address: coin.address)
-    }
-
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             let response = try await httpClient.request(
@@ -582,16 +578,6 @@ class SolanaService {
             responseType: SolanaGetProgramAccountsResponse.self
         )
         return response.data.result.compactMap { SolanaStakeAccount(programAccount: $0) }
-    }
-
-    /// Full parsed info for a single stake account.
-    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount? {
-        let response = try await httpClient.request(
-            api(.getStakeAccountInfo(address: address)),
-            responseType: SolanaGetStakeAccountInfoResponse.self
-        )
-        guard let value = response.data.result.value else { return nil }
-        return SolanaStakeAccount(pubkey: address, accountInfo: value)
     }
 
     /// Current epoch info, cached 45s.

@@ -323,9 +323,6 @@ struct ChainDetailScreen: View {
 }
 
 private extension ChainDetailScreen {
-    func onRefreshButton() {
-        refresh()
-    }
 
     func refresh() {
         Task {

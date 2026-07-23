@@ -852,10 +852,6 @@ enum SwapCryptoLogic {
         return nil
     }
 
-    static func isSufficientBalance(fromCoin: Coin, feeCoin: Coin, fromAmount: String, fee: BigInt) -> Bool {
-        balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee) == nil
-    }
-
     static func validateForm(
         fromCoin: Coin,
         toCoin: Coin,

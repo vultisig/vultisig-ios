@@ -9,10 +9,8 @@ import Foundation
 
 class CosmosBalanceResponse: Codable {
     var balances: [CosmosBalance]
-    var pagination: CosmosBalancePagination
 
-    init(balances: [CosmosBalance], pagination: CosmosBalancePagination) {
+    init(balances: [CosmosBalance]) {
         self.balances = balances
-        self.pagination = pagination
     }
 }
