@@ -69,36 +69,41 @@ enum SwapProviderKind: Equatable {
     ///
     /// Transaction History stores only the display name, and it varies by record
     /// path — network suffixes (`THORChain-Stagenet`), casing (`Maya protocol`
-    /// vs `Maya Protocol`), and sub-provider suffixes (`SwapKit (Chainflip)`) —
-    /// so matching is case-insensitive substring, not exact equality. An
-    /// empty/absent or unrecognised name yields `nil`.
+    /// vs `Maya Protocol`), and sub-provider suffixes (`SwapKit (Chainflip)`).
+    /// Persisted names are always `<Brand>` plus an optional SEPARATED qualifier,
+    /// so we match the brand as a prefix whose following character (if any) is a
+    /// non-alphanumeric boundary. That way real suffix forms resolve while
+    /// near-matches (`SwapKitty`, `not-thorchain`, `mayachain`) fall through to
+    /// `nil` and get the monogram fallback. An empty/absent or unrecognised name
+    /// yields `nil`.
     init?(persistedName raw: String) {
         let normalized = raw
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
         guard !normalized.isEmpty else { return nil }
 
-        // SwapKit is checked first: its sub-provider strings carry the underlying
-        // protocol in parentheses (e.g. "SwapKit (THORChain)"), and the outer
-        // brand is what we render. Markers are the full brand token, not a loose
-        // prefix — `thorchain` not `thor` (which is a substring of "Author"), and
-        // `li.fi` with the dot not `lifi` (a substring of "amplifier").
-        if normalized.contains("swapkit") {
-            self = .swapkit
-        } else if normalized.contains("thorchain") {
-            self = .thorchain
-        } else if normalized.contains("maya") {
-            self = .maya
-        } else if normalized.contains("1inch") {
-            self = .oneInch
-        } else if normalized.contains("kyber") {
-            self = .kyberSwap
-        } else if normalized.contains("li.fi") {
-            self = .lifi
-        } else if normalized.contains("jupiter") {
-            self = .jupiter
-        } else {
-            return nil
+        // SwapKit is first so a sub-provider string that names its underlying
+        // protocol (e.g. "SwapKit (THORChain)") resolves to the outer SwapKit
+        // brand, not the inner protocol.
+        let tokens: [(String, SwapProviderKind)] = [
+            ("swapkit", .swapkit),
+            ("thorchain", .thorchain),
+            ("maya", .maya),
+            ("1inch", .oneInch),
+            ("kyberswap", .kyberSwap),
+            ("li.fi", .lifi),
+            ("jupiter", .jupiter)
+        ]
+
+        for (token, kind) in tokens where normalized.hasPrefix(token) {
+            let next = normalized.dropFirst(token.count).first
+            let isBoundary = next.map { !($0.isLetter || $0.isNumber) } ?? true
+            if isBoundary {
+                self = kind
+                return
+            }
         }
+
+        return nil
     }
 }

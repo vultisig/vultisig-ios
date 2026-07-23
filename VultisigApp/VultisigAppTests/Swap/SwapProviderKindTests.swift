@@ -92,6 +92,15 @@ final class SwapProviderKindTests: XCTestCase {
         XCTAssertNil(SwapProviderKind(persistedName: "SomeUnknownProvider"))
     }
 
+    /// A brand token that continues into more letters is a different word, not a
+    /// qualified variant, so it must not resolve — the char after the brand
+    /// prefix has to be a non-alphanumeric boundary.
+    func testInitRejectsNearMatchesWithoutABoundary() {
+        for name in ["SwapKitty", "not-thorchain", "mayachain"] {
+            XCTAssertNil(SwapProviderKind(persistedName: name), "for \(name)")
+        }
+    }
+
     /// `li.fi` must match with the dot, not the bare `lifi` substring, which
     /// appears inside unrelated words such as "amplifier".
     func testInitDoesNotFalseMatchLifiSubstring() {
