@@ -57,10 +57,6 @@ final class DilithiumKeygen {
         self.setupMessage = setupMessage
     }
 
-    func getSetupMessage() -> [UInt8] {
-        return self.setupMessage
-    }
-
     func getKeyshare() -> DilithiumKeyshare? {
         return self.keyshare
     }

@@ -81,20 +81,6 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
         derivationPath(for: .solana)
     }
 
-    /// Checks if a chain has multiple derivation options with balances
-    func hasMultipleDerivations(for chain: Chain) -> Bool {
-        guard let _ = alternativeDerivations[chain] else {
-            return false
-        }
-        // Check if we found multiple balance results for this chain during scanning
-        return chainBalanceResults.filter { $0.chain == chain }.count > 1
-    }
-
-    /// Checks if a chain has alternative derivation paths defined
-    func hasAlternativeDerivations(for chain: Chain) -> Bool {
-        return alternativeDerivations[chain] != nil
-    }
-
     /// Updates the derivation path for a specific chain
     func selectDerivationPath(_ path: DerivationPath, for chain: Chain) {
         // Find the chain balance result and update it
@@ -395,15 +381,4 @@ private extension KeyImportChainsSetupViewModel {
         }
     }
 
-    func generateAddress(for chain: Chain, wallet: HDWallet) -> String? {
-        let privateKey = wallet.getKeyForCoin(coin: chain.coinType)
-        let pubKey = privateKey.getPublicKey(coinType: chain.coinType).data.hexString
-        return try? CoinFactory.generateAddress(
-            chain: chain,
-            publicKeyECDSA: pubKey,
-            publicKeyEdDSA: pubKey,
-            hexChainCode: wallet.rootChainCodeHex(),
-            isDerived: true
-        )
-    }
 }

@@ -51,11 +51,6 @@ final class SwapTrackingRegistry {
         }
     }
 
-    /// Test-only — drop every registered service so test cases start clean.
-    func removeAllForTesting() {
-        services.removeAll()
-    }
-
     /// Test-only — count of currently-registered services.
     var registeredCountForTesting: Int { services.count }
 }

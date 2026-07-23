@@ -147,10 +147,4 @@ extension QBTCClaimOrchestrator {
         )
     }
 
-    /// Backwards-compatible alias for FastVault wiring. Older callers
-    /// (the v1 ViewModel) used `makeProduction()`.
-    @MainActor
-    static func makeProduction() -> QBTCClaimOrchestrator {
-        makeFastVault()
-    }
 }

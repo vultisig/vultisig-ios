@@ -157,12 +157,6 @@ final class TransactionStatusPoller: ObservableObject {
         taskTokens.removeValue(forKey: txHash)
     }
 
-    func stopAll() {
-        activeTasks.values.forEach { $0.cancel() }
-        activeTasks.removeAll()
-        taskTokens.removeAll()
-    }
-
     private func cleanupTask(txHash: String, token: UUID) {
         guard taskTokens[txHash] == token else { return }
         activeTasks.removeValue(forKey: txHash)

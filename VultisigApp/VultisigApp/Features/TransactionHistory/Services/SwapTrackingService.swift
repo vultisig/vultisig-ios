@@ -30,9 +30,6 @@ protocol SwapTrackingService: AnyObject {
     /// or the row isn't owned by this provider.
     func start(tx: TransactionHistoryData)
 
-    /// Stop polling this specific row. Idempotent.
-    func stop(txHash: String)
-
     /// Resume polling for every non-terminal row matching this provider.
     /// Called at app launch and on scene-active.
     func resumeInFlight() async

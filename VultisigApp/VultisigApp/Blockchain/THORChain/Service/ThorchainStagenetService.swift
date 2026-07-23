@@ -172,14 +172,6 @@ class ThorchainChainnetService: ThorchainSwapProvider {
         return UInt64(response.data.native_tx_fee_rune) ?? 0
     }
 
-    func fetchThorchainInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
-        do {
-            return try await fetchThorchainInboundAddressOrThrow(bypassCache: bypassCache)
-        } catch {
-            return []
-        }
-    }
-
     /// Throwing variant for the sign-time fail-closed gate — see
     /// `ThorchainService.fetchThorchainInboundAddressOrThrow`.
     func fetchThorchainInboundAddressOrThrow(bypassCache: Bool = false) async throws -> [InboundAddress] {
@@ -421,52 +413,6 @@ extension ThorchainChainnetService {
 
 // MARK: - THORChain Stagenet LP Functionality
 extension ThorchainChainnetService {
-
-    func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let response = try await httpClient.request(
-            ThorchainStagenetAPI.poolInfo(env: env, asset: asset),
-            responseType: ThorchainPool.self
-        )
-        return response.data
-    }
-
-    func fetchLPPools() async throws -> [ThorchainPool] {
-        let cacheKey = "lp_pools_stagenet"
-        let cacheExpirationMinutes = 5.0
-
-        if let cached = cacheLPPools.get(cacheKey),
-           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            return cached.data
-        }
-
-        return try await withRetry(maxAttempts: 3) {
-            let response = try await httpClient.request(
-                ThorchainStagenetAPI.pools(env: env),
-                responseType: [ThorchainPool].self
-            )
-            let availablePools = response.data.filter { $0.status == "Available" }
-            cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
-            return availablePools
-        }
-    }
-
-    private func withRetry<T>(maxAttempts: Int = 3, retryDelay: TimeInterval = 1.0, operation: () async throws -> T) async throws -> T {
-        var lastError: Error?
-
-        for attempt in 1...maxAttempts {
-            do {
-                return try await operation()
-            } catch {
-                lastError = error
-                if attempt < maxAttempts {
-                    let delay = retryDelay * pow(2.0, Double(attempt - 1))
-                    try await Task.sleep(for: .seconds(delay))
-                }
-            }
-        }
-
-        throw lastError ?? HelperError.runtimeError("Unknown error after \(maxAttempts) attempts")
-    }
 
     // MARK: - TCY Staking Methods (Not supported on Stagenet)
     // swiftlint:disable:next unused_parameter async_without_await

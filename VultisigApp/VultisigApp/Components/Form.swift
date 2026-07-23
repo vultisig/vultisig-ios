@@ -43,11 +43,4 @@ extension Form {
         }
     }
 
-    func clearForm() {
-        form.forEach {
-            $0.touched = false
-            $0.value = ""
-            $0.error = nil
-        }
-    }
 }

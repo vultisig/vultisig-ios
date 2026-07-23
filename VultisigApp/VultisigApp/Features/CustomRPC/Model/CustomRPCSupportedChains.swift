@@ -60,7 +60,4 @@ enum CustomRPCSupportedChains {
         .polkadot
     ]
 
-    static func isSupported(_ chain: Chain) -> Bool {
-        all.contains(chain)
-    }
 }

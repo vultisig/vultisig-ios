@@ -118,29 +118,4 @@ extension ThorchainService {
         try await fetchStakingReceiptAmount(address: address, denom: TokensStore.sruji.contractAddress)
     }
 
-    func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {
-        do {
-            let raw = try await httpClient.request(mainnet(.tcyAutoCompoundStatus))
-            guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
-                  let dataBase64 = json["data"] as? String,
-                  let decoded = Data(base64Encoded: dataBase64),
-                  let status = try JSONSerialization.jsonObject(with: decoded) as? [String: Any],
-                  let liquidBondSizeStr = status["liquid_bond_size"] as? String,
-                  let liquidBondSharesStr = status["liquid_bond_shares"] as? String,
-                  let liquidBondSize = UInt64(liquidBondSizeStr),
-                  let liquidBondShares = UInt64(liquidBondSharesStr) else {
-                return (.zero, .zero)
-            }
-
-            let sizeDecimal = Decimal(liquidBondSize)
-            let sharesDecimal = Decimal(liquidBondShares)
-            let sharePrice = sharesDecimal > 0 ? sizeDecimal / sharesDecimal : .zero
-
-            return (sharePrice, sharesDecimal)
-        } catch {
-            print("Error fetching auto-compound status: \(error.localizedDescription)")
-            return (.zero, .zero)
-        }
-    }
-
 }

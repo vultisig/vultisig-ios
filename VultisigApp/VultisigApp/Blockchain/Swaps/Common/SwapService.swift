@@ -38,26 +38,6 @@ struct SwapService {
     /// parameter entirely (no floor).
     static let defaultLiquidityToleranceBps = 100
 
-    func fetchQuote(
-        amount: Decimal,
-        fromCoin: Coin,
-        toCoin: Coin,
-        isAffiliate: Bool,
-        referredCode: String,
-        vultTierDiscount: Int
-    ) async throws -> SwapQuote {
-        try await fetchQuotes(
-            amount: amount,
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            isAffiliate: isAffiliate,
-            referredCode: referredCode,
-            vultTierDiscount: vultTierDiscount,
-            slippageBps: nil,
-            recipientAddress: nil
-        ).best
-    }
-
     /// Fetch every eligible provider in parallel and return the full ranked set alongside the
     /// auto-selected winner. The winner is still chosen by `selectBestQuote` (net output + banded
     /// provider preference); `ranked` is the same candidate pool sorted best→worst by

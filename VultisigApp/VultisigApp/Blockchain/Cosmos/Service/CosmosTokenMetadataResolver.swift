@@ -247,15 +247,6 @@ actor CosmosTokenMetadataResolver {
         }
     }
 
-    /// Public test seam. Production callers use the singleton and never
-    /// need to flush.
-    func clearCacheForTests() {
-        metadataCache.removeAll()
-        traceCache.removeAll()
-        ibcDenomCache.removeAll()
-        cw20Cache.removeAll()
-    }
-
     // MARK: - Decoders (pure)
 
     /// Mirrors the SDK's `decimalsFromMeta` byte-for-byte — see

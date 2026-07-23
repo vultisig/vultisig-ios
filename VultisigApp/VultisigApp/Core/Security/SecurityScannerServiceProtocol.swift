@@ -35,22 +35,6 @@ protocol SecurityScannerServiceProtocol {
     /// - Returns: SecurityScannerTransaction ready for scanning
     func createRecipientSecurityScannerTransaction(transaction: SwapTransaction) throws -> SecurityScannerTransaction
 
-    /// Get list of disabled provider names
-    /// - Returns: Array of disabled provider names
-    func getDisabledProviders() -> [String]
-
-    /// Get list of enabled provider names
-    /// - Returns: Array of enabled provider names
-    func getEnabledProviders() -> [String]
-
-    /// Disable specific security providers
-    /// - Parameter providersToDisable: Array of provider names to disable
-    func disableProviders(_ providersToDisable: [String])
-
-    /// Enable specific security providers
-    /// - Parameter providersToEnable: Array of provider names to enable
-    func enableProviders(_ providersToEnable: [String])
-
     /// Get supported chains by feature for all providers
     /// - Returns: Array of SecurityScannerSupport objects
     func getSupportedChainsByFeature() -> [SecurityScannerSupport]

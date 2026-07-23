@@ -151,16 +151,6 @@ extension MayaChainAPIService {
         return cacaoValue / pow(10, 10) // Convert from base units to CACAO
     }
 
-    /// Validate if a node can accept more bond providers
-    /// - Parameter nodeAddress: Maya node address
-    /// - Returns: True if node has capacity for more bond providers
-    func validateNodeBondCapacity(nodeAddress: String) async throws -> Bool {
-        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
-        let currentProviders = nodeDetails.bondProviders.providers.count
-        let maxProviders = 8 // Maximum bond providers per node (per Maya docs)
-        return currentProviders < maxProviders
-    }
-
     /// Check if a bond address is whitelisted on a node
     /// - Parameters:
     ///   - nodeAddress: Maya node address

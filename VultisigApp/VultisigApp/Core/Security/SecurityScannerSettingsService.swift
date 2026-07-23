@@ -9,7 +9,6 @@ import SwiftUI
 
 protocol SecurityScannerSettingsServiceProtocol {
     var isEnabled: Bool { get }
-    func saveSecurityScannerStatus(enable: Bool)
 }
 
 struct SecurityScannerSettingsService: SecurityScannerSettingsServiceProtocol {

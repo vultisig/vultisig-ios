@@ -83,13 +83,4 @@ actor TTLCache<Key: Hashable, Value> {
         entries[key] = Entry(value: value, fetchedAt: fetchedAt)
     }
 
-    /// Drop all entries and cancel any in-flight fetches. The next `value(for:)`
-    /// refetches regardless of TTL.
-    func clearCache() {
-        entries.removeAll()
-        for task in inFlight.values {
-            task.cancel()
-        }
-        inFlight.removeAll()
-    }
 }
