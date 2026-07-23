@@ -300,10 +300,14 @@ struct TransactionHistoryCardView: View {
     private var viaBadge: some View {
         if let provider = transaction.swapProvider {
             HStack(spacing: 8) {
+                // The badge is "via {provider}", so its icon is the swapper's
+                // brand logo — like the route/details screen — not the source
+                // coin. Falls back to the raw provider name (monogram via
+                // `ticker`) when the provider has no bundled brand asset.
                 AsyncImageView(
-                    logo: transaction.coinLogo,
+                    logo: transaction.swapProviderLogo ?? provider,
                     size: CGSize(width: 16, height: 16),
-                    ticker: transaction.coinTicker,
+                    ticker: provider,
                     tokenChainLogo: nil
                 )
 
