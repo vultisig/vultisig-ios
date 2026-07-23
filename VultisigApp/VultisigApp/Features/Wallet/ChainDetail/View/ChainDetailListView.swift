@@ -21,17 +21,20 @@ struct ChainDetailListView: View {
     }
 
     var tokensList: some View {
-        ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
-            Button {
-                onPress(token)
-            } label: {
-                TokenCellView(coin: token)
-                    .commonListItemContainer(
-                        index: index,
-                        itemsCount: viewModel.filteredTokens.count
-                    )
+        VStack(spacing: 0) {
+            ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
+                Button {
+                    onPress(token)
+                } label: {
+                    TokenCellView(coin: token)
+                        .commonListItemContainer(
+                            index: index,
+                            itemsCount: viewModel.filteredTokens.count
+                        )
+                }
             }
         }
+        .commonListContainer()
     }
 
     var addTokensView: some View {
