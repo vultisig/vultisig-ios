@@ -50,7 +50,7 @@ struct LimitOrderCancelPreparer {
         vault: Vault,
         request: LimitOrderCancelRequest
     ) async throws -> SendTransaction {
-        let isThorchainSourced = Chain(rawValue: request.sourceChainRawValue) == .thorChain
+        let isThorchainSourced = limitOrderCancelIsThorchainSourced(sourceChainRawValue: request.sourceChainRawValue)
         let destination = isThorchainSourced ? nil : try await resolveDestination(for: coin)
 
         // Priced ONCE, and the same figures decide both the affordability verdict
@@ -178,6 +178,23 @@ struct LimitOrderCancelPreparer {
         )
     }
 
+}
+
+/// Whether an order funded on `sourceChainRawValue` cancels via the native
+/// `MsgDeposit` route rather than an L1 dust send.
+///
+/// All three THORChain variants count — mainnet, Chainnet and Stagenet all sign
+/// a cancel the same way. Matching mainnet alone routed a Stagenet/Chainnet-funded
+/// order into `resolveDestination(for:)`, which resolves an L1 inbound vault for
+/// a chain that isn't one and throws `sourceChainNotRoutable` — cancel blocked
+/// outright for those orders.
+func limitOrderCancelIsThorchainSourced(sourceChainRawValue: String) -> Bool {
+    switch Chain(rawValue: sourceChainRawValue) {
+    case .thorChain, .thorChainChainnet, .thorChainStagenet:
+        return true
+    default:
+        return false
+    }
 }
 
 /// Disclosures for the THORChain route: nothing is donated, and the deposit gas

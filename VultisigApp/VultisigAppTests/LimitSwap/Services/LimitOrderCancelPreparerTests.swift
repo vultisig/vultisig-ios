@@ -69,6 +69,29 @@ final class LimitOrderCancelPreparerTests: XCTestCase {
         XCTAssertNil(disclosures.balanceObjection)
     }
 
+    // MARK: - Which route a source chain signs a cancel through
+
+    /// All three THORChain variants sign a cancel the same way. Missing
+    /// Chainnet/Stagenet here routed those orders into the L1 destination
+    /// resolver, which throws for a chain that isn't an L1 at all — cancel
+    /// blocked outright for a Stagenet- or Chainnet-funded order.
+    func testAllThreeThorchainVariantsRouteNative() {
+        for chain in [Chain.thorChain, .thorChainChainnet, .thorChainStagenet] {
+            XCTAssertTrue(
+                limitOrderCancelIsThorchainSourced(sourceChainRawValue: chain.rawValue),
+                "\(chain) must sign via the native MsgDeposit route"
+            )
+        }
+    }
+
+    func testAnL1SourceRoutesToTheDustSend() {
+        XCTAssertFalse(limitOrderCancelIsThorchainSourced(sourceChainRawValue: Chain.bitcoin.rawValue))
+    }
+
+    func testAnUnknownSourceChainDoesNotRouteNative() {
+        XCTAssertFalse(limitOrderCancelIsThorchainSourced(sourceChainRawValue: "not-a-real-chain"))
+    }
+
     // MARK: - The disclosures that moved onto Verify
 
     /// ⚠️ The one that must never be dropped. An L1 cancel has to attach a coin
