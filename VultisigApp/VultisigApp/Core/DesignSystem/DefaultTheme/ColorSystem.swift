@@ -9,15 +9,20 @@ import SwiftUI
 
 struct ColorSystem: ColorSystemProtocol {
     var bgButtonPrimary: Color { .init(hex: "33E6BF") }
-    var bgButtonSecondary: Color { .init(hex: "061B3A") }
+    var bgButtonSecondary: Color { .init(hex: "11284A") }
     var bgButtonTertiary: Color { .init(hex: "2155DF") }
 
     // Hover on Figma
     var bgButtonPrimaryPressed: Color { .init(hex: "0FBF93") }
-    var bgButtonSecondaryPressed: Color { .init(hex: "0E2A41") }
+    var bgButtonSecondaryPressed: Color { .init(hex: "0D1E38") }
     var bgButtonTertiaryPressed: Color { .init(hex: "1E6AD1") }
 
     var bgButtonDisabled: Color { .init(hex: "0B1A3A") }
+
+    // Inset bevel for the 2026 button treatment: a light hairline along the top
+    // inner edge and a dark hairline along the bottom inner edge.
+    var buttonBevelLight: Color { .init(hex: "FFFFFF").opacity(0.1) }
+    var buttonBevelDark: Color { .init(hex: "0F1C3E") }
 
     var textButtonDark: Color { .init(hex: "02122B") }
     var textButtonLight: Color { .init(hex: "F0F4FC") }

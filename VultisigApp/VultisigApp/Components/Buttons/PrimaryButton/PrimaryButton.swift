@@ -275,7 +275,7 @@ extension PrimaryButton where LeadingView == EmptyView {
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
         PrimaryButton(title: "Continue", type: .primary, size: .medium) {}
         PrimaryButton(title: "Continue", type: .primary, size: .small) {}
         PrimaryButton(title: "Continue", type: .primary, size: .mini) {}
@@ -283,5 +283,10 @@ extension PrimaryButton where LeadingView == EmptyView {
         PrimaryButton(title: "Continue", type: .secondary, size: .medium) {}
         PrimaryButton(title: "Continue", type: .secondary, size: .small) {}
         PrimaryButton(title: "Continue", type: .secondary, size: .mini) {}
+        PrimaryButton(title: "Continue", type: .secondary, size: .medium) {}
+            .disabled(true)
     }
+    .padding(24)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Theme.colors.bgPrimary)
 }
