@@ -73,12 +73,20 @@ struct TransactionHistoryCardView: View {
             Spacer()
 
             if transaction.type == .limit {
-                // Limit orders never show the elapsed-time chip. It counts up
-                // from broadcast, which is meaningful for a swap that should
-                // land in seconds and absurd for an order designed to rest for
-                // 12-72h ("In progress... 1440m 12s"). The order's own status
-                // line carries the truth instead, including fill progress.
-                limitStatusView
+                if isLimitTerminal {
+                    // Closed: the two-line status line carries the outcome and
+                    // its colour (filled / closed-unfilled / failed), plus any
+                    // partial-fill progress.
+                    limitStatusView
+                } else {
+                    // Live: the in-progress pill, WITHOUT the elapsed timer. The
+                    // timer counts up from broadcast — meaningful for a swap due
+                    // to land in seconds, absurd for an order that rests for
+                    // 12-72h ("In progress... 1440m 12s"). Resting and cancelling
+                    // read identically here by design; "Cancelling…" is
+                    // distinguished on the detail sheet.
+                    limitInProgressChip
+                }
             } else if transaction.status == .inProgress {
                 inProgressChip
             } else {
@@ -89,12 +97,44 @@ struct TransactionHistoryCardView: View {
 
     // MARK: - Limit Order Status
 
+    /// Whether this limit order has closed. Reads the authoritative order when we
+    /// hold it — the same source the Cancel button and the status label read, so
+    /// they cannot disagree — and falls back to the row's mirror for a co-signer,
+    /// which never persists a `LimitOrder`.
+    private var isLimitTerminal: Bool {
+        Self.isLimitTerminal(limitOrder: limitOrder, uiStatus: transaction.swapTrackingUiStatus)
+    }
+
+    /// Pure so the routing can be pinned by tests. Resolves through the SAME
+    /// effective-status resolver the detail sheet and status label use, so the
+    /// pill routing here cannot disagree with them about whether an order is
+    /// live — including the `.failed` exception. The authoritative order wins over
+    /// the row it mirrors: a resting order that is `.cancelling` is still live and
+    /// shows the in-progress pill the instant the order says so, not a poll later.
+    static func isLimitTerminal(limitOrder: LimitOrderDetails?, uiStatus: SwapTrackingUiStatus) -> Bool {
+        LimitOrderStatusDisplay.effectiveUiStatus(uiStatus: uiStatus, details: limitOrder).isTerminal
+    }
+
+    /// The in-progress pill for a LIVE limit order: the shared `inProgressChip`'s
+    /// styling without its elapsed timer. See the routing in `topRow` for why the
+    /// timer is dropped here.
+    private var limitInProgressChip: some View {
+        Text("inProgress".localized)
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textTertiary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Theme.colors.bgPrimary)
+            .cornerRadius(99)
+    }
+
     /// Two-line status: the state, and beneath it the progress.
     ///
     /// This is the mock's existing two-line status slot (used there for an
     /// error message), reused verbatim — a partially-filled order is still
     /// in progress, so its percentage is a qualifier on the status line rather
-    /// than a new component.
+    /// than a new component. Shown only once the order is TERMINAL — a live
+    /// order shows the pill above.
     @ViewBuilder
     private var limitStatusView: some View {
         let display = LimitOrderStatusDisplay.make(
