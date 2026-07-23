@@ -26,13 +26,13 @@ struct TransactionHistoryScreen: View {
                 content
             }
             .padding(.bottom, 32)
-        }
-        .ignoresSafeArea(edges: .bottom)
-        .overlay(alignment: .bottom) {
-            bottomGradient
+            .overlay(alignment: .bottom) {
+                bottomGradient
+            }
         }
         .screenTitle("transactionHistory".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .ignoresSafeArea(edges: .bottom)
         .onAppear {
             viewModel.load()
         }
@@ -91,6 +91,7 @@ struct TransactionHistoryScreen: View {
                 viewModel.showAssetFilter = true
             }
         }
+        .padding(.bottom, 4)
     }
 
     // MARK: - Asset Filter Chips
