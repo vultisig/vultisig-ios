@@ -139,182 +139,27 @@ class Endpoint {
     static let tronWalletApi = "https://api.vultisig.com/tron"
 
     static func getExplorerByCoinURL(coin: Coin) -> String? {
-        // For native tokens, show the address page
+        // For native tokens, show the address page.
         guard !coin.isNativeToken else {
             return ExplorerLinkBuilder.getExplorerByAddressURL(chain: coin.chain, address: coin.address)
         }
 
-        // For tokens, show the token/contract page
-        let contractAddress = coin.contractAddress
+        guard let config = ExplorerLinkBuilder.explorers[coin.chain] else { return nil }
 
-        switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
-            // UTXO chains don't have tokens, return address
-            return ExplorerLinkBuilder.getExplorerByAddressURL(chain: coin.chain, address: coin.address)
-        case .thorChain:
-            // For THORChain tokens, show the address with the token
-            return "https://runescan.io/address/\(coin.address)"
-        case .thorChainChainnet:
-            return "https://runescan.io/address/\(coin.address)?network=chainnet"
-        case .thorChainStagenet:
-            return "https://runescan.io/address/\(coin.address)?network=stagenet"
-        case .solana:
-            return "https://orb.helius.dev/address/\(contractAddress)"
-        case .ethereum:
-            return "https://etherscan.io/token/\(contractAddress)"
-        case .ethereumSepolia:
-            return "https://sepolia.etherscan.io/token/\(contractAddress)"
-        case .gaiaChain:
-            // Cosmos tokens use IBC denoms, show address page
-            return "https://www.mintscan.io/cosmos/address/\(coin.address)"
-        case .dydx:
-            return "https://www.mintscan.io/dydx/address/\(coin.address)"
-        case .kujira:
-            return "https://finder.kujira.network/kaiyo-1/address/\(coin.address)"
-        case .avalanche:
-            return "https://snowtrace.io/token/\(contractAddress)"
-        case .bscChain:
-            return "https://bscscan.com/token/\(contractAddress)"
-        case .mayaChain:
-            return "https://www.explorer.mayachain.info/address/\(coin.address)"
-        case .arbitrum:
-            return "https://arbiscan.io/token/\(contractAddress)"
-        case .base:
-            return "https://basescan.org/token/\(contractAddress)"
-        case .optimism:
-            return "https://optimistic.etherscan.io/token/\(contractAddress)"
-        case .polygon, .polygonV2:
-            return "https://polygonscan.com/token/\(contractAddress)"
-        case .blast:
-            return "https://blastscan.io/token/\(contractAddress)"
-        case .cronosChain:
-            return "https://cronoscan.com/token/\(contractAddress)"
-        case .sui:
-            return "https://suiscan.xyz/mainnet/coin/\(contractAddress)"
-        case .polkadot:
-            return "https://assethub-polkadot.subscan.io/account/\(coin.address)"
-        case .bittensor:
-            return "https://taostats.io/account/\(coin.address)"
-        case .zksync:
-            return "https://explorer.zksync.io/token/\(contractAddress)"
-        case .ton:
-            return "https://tonviewer.com/\(contractAddress)"
-        case .osmosis:
-            return "https://www.mintscan.io/osmosis/address/\(coin.address)"
-        case .terra:
-            return "https://www.mintscan.io/terra/address/\(coin.address)"
-        case .terraClassic:
-            return "https://finder.terra.money/classic/address/\(coin.address)"
-        case .noble:
-            return "https://www.mintscan.io/noble/address/\(coin.address)"
-        case .ripple:
-            // XRP doesn't have traditional tokens in the same way
-            return "https://xrpscan.com/account/\(coin.address)"
-        case .akash:
-            return "https://www.mintscan.io/akash/address/\(coin.address)"
-        case .tron:
-            return "https://tronscan.org/#/token20/\(contractAddress)"
-        case .cardano:
-            // Cardano native assets
-            return "https://cardanoscan.io/token/\(contractAddress)"
-        case .mantle:
-            return "https://mantlescan.xyz/token/\(contractAddress)"
-        case .hyperliquid:
-            return "https://hypurrscan.io/token/\(contractAddress)"
-        case .sei:
-            return "https://seiscan.io/token/\(contractAddress)"
-        case .qbtc:
-            return nil
+        // Chains with a dedicated contract/token page build it from the contract
+        // address; the rest reuse the holder's address page (UTXO and Cosmos
+        // chains have no per-token page). qBTC is the sole exception: it exposes
+        // an address explorer but no token page, so a non-native token has none.
+        if let token = config.token {
+            return token(coin.contractAddress)
         }
+        guard coin.chain != .qbtc else { return nil }
+        return config.address(coin.address)
     }
 
     static func getExplorerByAddressURLByGroup(chain: Chain?, address: String) -> String? {
-        switch chain {
-        case .thorChain:
-            return "https://runescan.io/address/\(address)"
-        case .thorChainChainnet:
-            return "https://runescan.io/address/\(address)?network=chainnet"
-        case .thorChainStagenet:
-            return "https://runescan.io/address/\(address)?network=stagenet"
-        case .solana:
-            return "https://orb.helius.dev/address/\(address)"
-        case .ethereum:
-            return "https://etherscan.io/address/\(address)"
-        case .ethereumSepolia:
-            return "https://sepolia.etherscan.io/address/\(address)"
-        case .gaiaChain:
-            return "https://www.mintscan.io/cosmos/address/\(address)"
-        case .dydx:
-            return "https://www.mintscan.io/dydx/address/\(address)"
-        case .kujira:
-            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
-        case .avalanche:
-            return "https://snowtrace.io/address/\(address)"
-        case .bscChain:
-            return "https://bscscan.com/address/\(address)"
-        case .bitcoin:
-            return "https://mempool.space/address/\(address)"
-        case .bitcoinCash:
-            return "https://explorer.bitcoin.com/bch/address/\(address)"
-        case .litecoin:
-            return "https://blockchair.com/litecoin/address/\(address)"
-        case .dogecoin:
-            return "https://blockchair.com/dogecoin/address/\(address)"
-        case .dash:
-            return "https://blockchair.com/dash/address/\(address)"
-        case .zcash:
-            return "https://blockchair.com/zcash/address/\(address)"
-        case .mayaChain:
-            return "https://www.explorer.mayachain.info/address/\(address)"
-        case .arbitrum:
-            return "https://arbiscan.io/address/\(address)"
-        case .base:
-            return "https://basescan.org/address/\(address)" // Hypothetical URL
-        case .optimism:
-            return "https://optimistic.etherscan.io/address/\(address)"
-        case .polygon, .polygonV2:
-            return "https://polygonscan.com/address/\(address)"
-        case .blast:
-            return "https://blastscan.io/address/\(address)"
-        case .cronosChain:
-            return "https://cronoscan.com/address/\(address)"
-        case .sui:
-            return "https://suiscan.xyz/mainnet/address/\(address)"
-        case .polkadot:
-            return "https://assethub-polkadot.subscan.io/account/\(address)"
-        case .zksync:
-            return "https://explorer.zksync.io/address/\(address)"
-        case .ton:
-            return "https://tonviewer.com/\(address)"
-        case .osmosis:
-            return "https://www.mintscan.io/osmosis/address/\(address)"
-        case .terra:
-            return "https://www.mintscan.io/terra/address/\(address)"
-        case .terraClassic:
-            return "https://finder.terra.money/classic/address/\(address)"
-        case .noble:
-            return "https://www.mintscan.io/noble/address/\(address)"
-        case .ripple:
-            return "https://xrpscan.com/account/\(address)"
-        case .akash:
-            return "https://www.mintscan.io/akash/address/\(address)"
-        case .tron:
-            return "https://tronscan.org/#/address/\(address)"
-        case .cardano:
-            return "https://cardanoscan.io/address/\(address)"
-        case .mantle:
-            return "https://mantlescan.xyz/address/\(address)"
-        case .hyperliquid:
-            return "https://hypurrscan.io/address/\(address)"
-        case .sei:
-            return "https://seiscan.io/address/\(address)"
-        case .qbtc:
-            return "https://explorer.qbtc.net/qbtc/account/\(address)"
-        case .bittensor:
-            return "https://taostats.io/account/\(address)"
-        case .none:
-            return nil
-        }
+        guard let chain else { return nil }
+        return ExplorerLinkBuilder.getExplorerByAddressURL(chain: chain, address: address)
     }
 
     // MARK: - Agent
