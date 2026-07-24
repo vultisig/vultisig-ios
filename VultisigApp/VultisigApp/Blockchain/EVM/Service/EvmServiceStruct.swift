@@ -195,6 +195,22 @@ struct EvmServiceStruct {
         multicall3Address: String,
         includeNative: Bool
     ) async throws -> (native: BigInt?, balances: [String: BigInt]) {
+        try await Self.fetchERC20Balances(
+            contractAddresses: contractAddresses,
+            walletAddress: walletAddress,
+            multicall3Address: multicall3Address,
+            includeNative: includeNative,
+            rpcService: rpcService
+        )
+    }
+
+    static func fetchERC20Balances(
+        contractAddresses: [String],
+        walletAddress: String,
+        multicall3Address: String,
+        includeNative: Bool,
+        rpcService: RpcServiceStruct
+    ) async throws -> (native: BigInt?, balances: [String: BigInt]) {
         let paddedWallet = String(walletAddress.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
 
         var calls: [(target: String, callData: String)] = []
@@ -367,13 +383,14 @@ struct EvmServiceStruct {
         }
 
         if let multicall3Address = Multicall3.address(for: nativeToken.chain),
-           let balances = await batchedTokenBalances(
-               of: knownTokens,
-               address: address,
+           let result = try? await fetchERC20Balances(
+               contractAddresses: knownTokens.map(\.contractAddress),
+               walletAddress: address,
                multicall3Address: multicall3Address,
+               includeNative: false,
                rpcService: rpcService
            ) {
-            return knownTokens.filter { (balances[$0.contractAddress] ?? 0) > 0 }
+            return knownTokens.filter { (result.balances[$0.contractAddress] ?? 0) > 0 }
         }
 
         var tokensWithBalance: [CoinMeta] = []
@@ -411,33 +428,6 @@ struct EvmServiceStruct {
         }
 
         return tokensWithBalance
-    }
-
-    /// All `balanceOf` reads in one Multicall3 `aggregate3` eth_call. Returns nil
-    /// on any batch failure so discovery falls back to the per-token walk.
-    private static func batchedTokenBalances(
-        of tokens: [CoinMeta],
-        address: String,
-        multicall3Address: String,
-        rpcService: RpcServiceStruct
-    ) async -> [String: BigInt]? {
-        let paddedWallet = String(address.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
-        let calls = tokens.map { (target: $0.contractAddress, callData: "0x" + Multicall3.balanceOfSelector + paddedWallet) }
-        let calldata = Multicall3.encodeAggregate3(calls: calls)
-        let params: [Any] = [["to": multicall3Address, "data": calldata], "latest"]
-
-        guard let resultHex = try? await rpcService.strRpcCall(method: "eth_call", params: params) else {
-            return nil
-        }
-        let decoded = Multicall3.decodeAggregate3Results(hex: resultHex)
-        guard let mapped = Multicall3.mapBalances(
-            decoded: decoded,
-            includeNative: false,
-            contractAddresses: tokens.map(\.contractAddress)
-        ) else {
-            return nil
-        }
-        return mapped.balances
     }
 
     // MARK: - ENS Resolution
