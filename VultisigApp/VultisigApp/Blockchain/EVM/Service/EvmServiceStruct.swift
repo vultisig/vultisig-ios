@@ -421,6 +421,16 @@ struct EvmServiceStruct {
             return []
         }
 
+        if let multicall3Address = Multicall3.address(for: nativeToken.chain),
+           let balances = await batchedTokenBalances(
+               of: knownTokens,
+               address: address,
+               multicall3Address: multicall3Address,
+               rpcService: rpcService
+           ) {
+            return knownTokens.filter { (balances[$0.contractAddress] ?? 0) > 0 }
+        }
+
         var tokensWithBalance: [CoinMeta] = []
 
         // Check balance for each known token in parallel
@@ -456,6 +466,33 @@ struct EvmServiceStruct {
         }
 
         return tokensWithBalance
+    }
+
+    /// All `balanceOf` reads in one Multicall3 `aggregate3` eth_call. Returns nil
+    /// on any batch failure so discovery falls back to the per-token walk.
+    private static func batchedTokenBalances(
+        of tokens: [CoinMeta],
+        address: String,
+        multicall3Address: String,
+        rpcService: RpcServiceStruct
+    ) async -> [String: BigInt]? {
+        let paddedWallet = String(address.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+        let calls = tokens.map { (target: $0.contractAddress, callData: "0x" + Multicall3.balanceOfSelector + paddedWallet) }
+        let calldata = Multicall3.encodeAggregate3(calls: calls)
+        let params: [Any] = [["to": multicall3Address, "data": calldata], "latest"]
+
+        guard let resultHex = try? await rpcService.strRpcCall(method: "eth_call", params: params) else {
+            return nil
+        }
+        let decoded = Multicall3.decodeAggregate3Results(hex: resultHex)
+        guard let mapped = Multicall3.mapBalances(
+            decoded: decoded,
+            includeNative: false,
+            contractAddresses: tokens.map(\.contractAddress)
+        ) else {
+            return nil
+        }
+        return mapped.balances
     }
 
     // MARK: - ENS Resolution
