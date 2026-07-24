@@ -774,6 +774,7 @@
 "mintCoin" = "Kovaj %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"missingEncryptionKey" = "Nedostaje ključ za šifriranje. Pokušajte ponovno.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
 "modules" = "Moduli";

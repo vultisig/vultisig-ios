@@ -182,6 +182,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
 
         if let fastVaultPassword, let coin {
+            guard let encryptionKeyHex = self.encryptionKeyHex, !encryptionKeyHex.isEmpty else {
+                self.status = .FailToStart
+                self.errorMessage = "missingEncryptionKey".localized
+                return
+            }
+
             // when fast sign, always using relay server
             serverAddr = Endpoint.vultisigRelay
 
@@ -190,7 +196,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     publicKeyEcdsa: vault.pubKeyECDSA,
                     keysignMessages: self.keysignMessages,
                     sessionID: self.sessionID,
-                    hexEncryptionKey: self.encryptionKeyHex!,
+                    hexEncryptionKey: encryptionKeyHex,
                     derivePath: coin.coinType.derivationPath(),
                     isECDSA: coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword,
@@ -255,7 +261,13 @@ class KeysignDiscoveryViewModel: ObservableObject {
         return selections.count >= (vault.getThreshold() + 1)
     }
 
-    @MainActor func startKeysign(vault: Vault) -> KeysignInput {
+    @MainActor func startKeysign(vault: Vault) -> KeysignInput? {
+        guard let encryptionKeyHex, !encryptionKeyHex.isEmpty else {
+            status = .FailToStart
+            errorMessage = "missingEncryptionKey".localized
+            return nil
+        }
+
         kickoffKeysign(allParticipants: self.selections.map { $0 })
         participantDiscovery?.stop()
 
@@ -268,7 +280,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
-            encryptionKeyHex: encryptionKeyHex ?? "",
+            encryptionKeyHex: encryptionKeyHex,
             isInitiateDevice: true
         )
     }

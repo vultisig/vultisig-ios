@@ -772,6 +772,7 @@
 "mintCoin" = "%@ 민트";
 "mintSecuredAsset" = "보안 자산 민트 (SECURE+)";
 "mintTransaction" = "2. 보안 자산 민트 트랜잭션";
+"missingEncryptionKey" = "암호화 키가 없습니다. 다시 시도해 주세요.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "시드 문구의 12개 또는 24개 단어를 입력하세요";
 "modules" = "모듈";
