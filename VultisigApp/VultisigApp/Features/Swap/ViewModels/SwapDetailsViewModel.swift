@@ -96,6 +96,10 @@ final class SwapDetailsViewModel {
     var gasLimit: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
+    /// Whether a referral code is active for the current quote. Route-aware
+    /// affiliate-% display keys off this clean bit (not `referralDiscountBps`,
+    /// which is 0 in DEBUG even when referred).
+    var isReferred: Bool = false
 
     // MARK: - UI state (details-screen-only)
 
@@ -199,13 +203,6 @@ final class SwapDetailsViewModel {
     /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
         selectedQuote = quote
-    }
-
-    /// Whether `candidate` is the top-ranked (rate-best) quote — the one the list
-    /// tags "Recommended". Defined as the first element of the net-output-sorted
-    /// `allQuotes` so the tag always lands on the row showing the largest output.
-    func isBest(_ candidate: SwapQuote) -> Bool {
-        candidate == allQuotes.first
     }
 
     /// Quotes for the picker sheet, with the active (selected) quote pinned to
@@ -425,6 +422,7 @@ final class SwapDetailsViewModel {
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
+            isReferred: isReferred,
             feeCoin: feeCoin,
             advancedSettings: resolvedAdvancedSettings
         )
@@ -585,6 +583,17 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
     }
 
+    /// Whether the itemized "Vultisig Fee" affiliate row should render (every
+    /// market swap route, even at 0%; not secured mints or limit orders).
+    var showAffiliateFeeRow: Bool {
+        SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: isSecuredMint ? .securedMint : .standard)
+    }
+
+    /// Whether the "Protocol Fee" (native outbound) row should render.
+    var showProtocolFeeRow: Bool {
+        SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: toCoin, mode: isSecuredMint ? .securedMint : .standard)
+    }
+
     var swapFeeString: String {
         SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
     }
@@ -614,7 +623,10 @@ extension SwapDetailsViewModel {
     }
 
     var swapFeeLabel: String {
-        SwapCryptoLogic.swapFeeLabel(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fromAmount: fromAmount)
+        SwapCryptoLogic.swapFeeLabel(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps, isReferred: isReferred
+        )
     }
 
     var outboundFeeString: String {
@@ -689,6 +701,7 @@ private extension SwapDetailsViewModel {
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
+            isReferred = false
             error = nil
             isLoadingQuotes = false
             isLoadingFees = false
@@ -711,6 +724,7 @@ private extension SwapDetailsViewModel {
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
+            isReferred = false
         }
         error = nil
         isLoadingQuotes = true
@@ -768,6 +782,7 @@ private extension SwapDetailsViewModel {
             quotedAmount = fromAmount
             vultDiscountBps = 0
             referralDiscountBps = 0
+            isReferred = false
             return
         }
 
@@ -795,6 +810,7 @@ private extension SwapDetailsViewModel {
                 quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
+                isReferred = result.isReferred
             }
         } catch {
             // Ignore cancellation from a superseding amount edit — surfacing it

@@ -15,7 +15,7 @@ protocol ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote
@@ -28,7 +28,7 @@ extension ThorchainSwapProvider {
         toAsset: String,
         amount: String,
         interval: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -39,7 +39,7 @@ extension ThorchainSwapProvider {
             amount: amount,
             interval: interval,
             streamingQuantity: 0,
-            toleranceBps: toleranceBps,
+            liquidityToleranceBps: liquidityToleranceBps,
             referredCode: referredCode,
             vultTierDiscount: vultTierDiscount
         )

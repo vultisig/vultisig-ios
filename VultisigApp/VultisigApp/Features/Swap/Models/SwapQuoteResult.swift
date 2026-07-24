@@ -17,16 +17,24 @@ struct SwapQuoteResult: Equatable {
     let allQuotes: [SwapQuote]
     let vultDiscountBps: Int
     let referralDiscountBps: Int
+    /// Whether a referral code was active for this fetch (`!referredCode.isEmpty`).
+    /// Kept as a clean bit rather than inferred from `referralDiscountBps`, which
+    /// collapses to 0 in DEBUG (base affiliate rate is 0) even when a code is
+    /// present. Drives the route-aware affiliate-percentage label so the shown %
+    /// matches the `affiliate_bps` the request builder actually sent.
+    let isReferred: Bool
 
     init(
         quote: SwapQuote,
         allQuotes: [SwapQuote]? = nil,
         vultDiscountBps: Int,
-        referralDiscountBps: Int
+        referralDiscountBps: Int,
+        isReferred: Bool = false
     ) {
         self.quote = quote
         self.allQuotes = allQuotes ?? [quote]
         self.vultDiscountBps = vultDiscountBps
         self.referralDiscountBps = referralDiscountBps
+        self.isReferred = isReferred
     }
 }

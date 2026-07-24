@@ -18,9 +18,15 @@ enum SwapQuote: Hashable {
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     case swapkit(SwapKitSwapResponse, fee: BigInt?, subProvider: String)
     /// Jupiter Solana swap. `EVMQuote.tx.data` carries the base64 Solana wire
-    /// transaction (mirrors the SwapKit-Solana shape); `platformFee` is the
-    /// VULT-scaled affiliate fee in `toCoin` units, subtracted in ranking.
-    case jupiter(EVMQuote, fee: BigInt?, platformFee: Decimal?)
+    /// transaction (mirrors the SwapKit-Solana shape). `platformFee` is the
+    /// VULT-scaled affiliate fee in `toCoin` units — 0 when none is charged (the
+    /// Ultimate tier), so a token-output swap still shows an explicit $0.00 row.
+    /// `feeOnInput` is true only when the fee is collected on the INPUT mint —
+    /// native-SOL (wrapped-SOL) outputs, where the amount can't be expressed in
+    /// `toCoin` units — so `platformFee` is 0 there and callers suppress the
+    /// affiliate row rather than render a misleading $0.00. Ranking is
+    /// unaffected: it reads `outAmount`, already net of the fee.
+    case jupiter(EVMQuote, fee: BigInt?, platformFee: Decimal, feeOnInput: Bool)
 
     /// True for the native-protocol routes (THORChain on any network, MayaChain)
     /// that deposit into a THOR/Maya inbound vault, so a source-chain halt can
@@ -52,6 +58,28 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// Payload-free provider identity — the single source of truth for this
+    /// quote's brand logo and display name. Network variants collapse to their
+    /// base kind; `displayName` re-adds the `-Chainnet`/`-Stagenet` suffix.
+    var kind: SwapProviderKind {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            return .thorchain
+        case .mayachain:
+            return .maya
+        case .oneinch:
+            return .oneInch
+        case .kyberswap:
+            return .kyberSwap
+        case .lifi:
+            return .lifi
+        case .swapkit:
+            return .swapkit
+        case .jupiter:
+            return .jupiter
+        }
+    }
+
     var router: String? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
@@ -59,7 +87,7 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _),
-                .jupiter(let quote, _, _):
+                .jupiter(let quote, _, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
             return response.targetAddress
@@ -82,7 +110,7 @@ enum SwapQuote: Hashable {
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
                 .kyberswap(let quote, _),
-                .jupiter(let quote, _, _):
+                .jupiter(let quote, _, _, _):
             return quote.tx.to
         case .swapkit(let response, _, _):
             return response.inboundAddress ?? response.targetAddress
@@ -91,49 +119,22 @@ enum SwapQuote: Hashable {
 
     var displayName: String? {
         switch self {
-        case .thorchain:
-            return "THORChain"
+        // Network variants keep their suffix on top of the base brand name; the
+        // sub-provider (e.g. Chainflip on SwapKit) stays on the payload for
+        // routing/explorer links, so the display name stays the clean brand.
         case .thorchainChainnet:
-            return "THORChain-Chainnet"
+            return "\(kind.displayName)-Chainnet"
         case .thorchainStagenet:
-            return "THORChain-Stagenet"
-        case .mayachain:
-            return "Maya protocol"
-        case .oneinch:
-            return "1Inch"
-        case .kyberswap:
-            return "KyberSwap"
-        case .lifi:
-            return "LI.FI"
-        case .swapkit:
-            // The sub-provider (e.g. Chainflip) is carried on the payload for
-            // routing/explorer links; the display name stays the clean brand.
-            return "SwapKit"
-        case .jupiter:
-            return "Jupiter"
+            return "\(kind.displayName)-Stagenet"
+        default:
+            return kind.displayName
         }
     }
 
-    /// Brand-logo asset name for the provider (in `Crypto/`), matching the
-    /// imageset filenames. Providers without a bundled logo (KyberSwap, SwapKit)
-    /// fall back to `AsyncImageView`'s monogram.
+    /// Brand-logo asset name for the provider (in `Crypto/`). Sourced from the
+    /// shared `SwapProviderKind`, so it can't drift from Transaction History.
     var providerLogo: String {
-        switch self {
-        case .thorchain, .thorchainChainnet, .thorchainStagenet:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .oneinch:
-            return "1Inch"
-        case .lifi:
-            return "LI.FI"
-        case .kyberswap:
-            return "kyberswap"
-        case .swapkit:
-            return "swapkit"
-        case .jupiter:
-            return "jupiter"
-        }
+        kind.providerLogo
     }
 
     func inboundFeeDecimal(toCoin: Coin) -> Decimal? {
@@ -146,10 +147,10 @@ enum SwapQuote: Hashable {
             let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
             return toAmountDecimal * (integratorFee ?? 0)
-        case .jupiter(_, _, let platformFee):
+        case .jupiter(_, _, let platformFee, _):
             // Jupiter's affiliate platform fee is already denominated in toCoin
-            // units (taken from the output mint).
-            return platformFee ?? .zero
+            // units (0 when none is charged or the fee is taken on the input mint).
+            return platformFee
         case .oneinch, .kyberswap, .swapkit:
             // Fee is in native gas token, not toCoin — handled via evmSwapFeeBigInt
             return .zero
@@ -287,10 +288,11 @@ enum SwapQuote: Hashable {
             hasher.combine(response)
             hasher.combine(fee)
             hasher.combine(subProvider)
-        case .jupiter(let quote, let fee, let platformFee):
+        case .jupiter(let quote, let fee, let platformFee, let feeOnInput):
             hasher.combine(quote)
             hasher.combine(fee)
             hasher.combine(platformFee)
+            hasher.combine(feeOnInput)
         }
     }
 }

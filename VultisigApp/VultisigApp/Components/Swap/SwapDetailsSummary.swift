@@ -17,8 +17,8 @@ struct SwapDetailsSummary: View {
 
     private var hasExpandableFees: Bool {
         vm.showGas ||
-        !vm.baseAffiliateFee.isEmpty ||
-        !outboundFeeString.isEmpty ||
+        vm.showAffiliateFeeRow ||
+        vm.showProtocolFeeRow ||
         !vm.vultDiscount.isEmpty ||
         !vm.referralDiscount.isEmpty ||
         !vm.priceImpactString.isEmpty
@@ -120,11 +120,11 @@ struct SwapDetailsSummary: View {
                 swapGas
             }
 
-            if !vm.baseAffiliateFee.isEmpty {
+            if vm.showAffiliateFeeRow {
                 affiliateFee
             }
 
-            if !outboundFeeString.isEmpty {
+            if vm.showProtocolFeeRow {
                 outboundFee
             }
 
@@ -199,7 +199,7 @@ struct SwapDetailsSummary: View {
 
     var outboundFee: some View {
         getSummaryCell(
-            leadingText: "swap.outbound_fee",
+            leadingText: "swap.protocol_fee",
             trailingText: outboundFeeString
         )
     }
@@ -247,24 +247,6 @@ struct SwapDetailsSummary: View {
                 .redacted(reason: detailsViewModel.isLoading ? .placeholder : [])
         }
         .font(Theme.fonts.caption12)
-    }
-
-    private func getImage(_ image: String) -> some View {
-        Image(image)
-            .resizable()
-            .frame(width: 16, height: 16)
-    }
-
-    private func getErrorCell(text: String) -> some View {
-        HStack {
-            Text(text)
-                .foregroundStyle(Theme.colors.alertError)
-                .font(Theme.fonts.caption12)
-                .multilineTextAlignment(.leading)
-                .lineSpacing(4)
-
-            Spacer()
-        }
     }
 
     private var outboundFeeString: String {

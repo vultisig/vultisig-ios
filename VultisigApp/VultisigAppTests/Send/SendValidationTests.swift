@@ -234,7 +234,7 @@ final class SendValidationTests: XCTestCase {
         // Acceptance: the MAX-send reserve equals the balance-calc reserve.
         // Fixture models an OwnerCount > 0 account — total 12 XRP with a
         // 1 + 5 × 0.2 = 2 XRP reserve nets rawBalance 8.6 XRP (drops are
-        // 6-decimals; getMaxValue truncates to 5 dp). With the reserve-net
+        // 6-decimals; getMaxValue truncates to the coin's full 6 dp). With the reserve-net
         // balance R and fee f, MAX == R − f exactly — no second static 1 XRP.
         let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6, isNative: true,
                            rawBalance: "8600000")

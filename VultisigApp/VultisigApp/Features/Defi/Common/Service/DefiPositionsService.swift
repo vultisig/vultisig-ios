@@ -8,10 +8,6 @@
 struct DefiPositionsService {
     private let thorchainService = THORChainAPIService()
 
-    func positionCoins(for chain: Chain) -> [CoinMeta] {
-        bondCoins(for: chain) + stakeCoins(for: chain)
-    }
-
     func bondCoins(for chain: Chain) -> [CoinMeta] {
         switch chain {
         case .thorChain:
@@ -29,7 +25,11 @@ struct DefiPositionsService {
             [
                 TokensStore.tcy,
                 TokensStore.stcy,
+                // RUJI's two staking positions are independent and are selected
+                // independently: `ruji` is the bonded one (claimable USDC),
+                // `sruji` the auto-compounding one (the receipt it mints).
                 TokensStore.ruji,
+                TokensStore.sruji,
                 TokensStore.yrune,
                 TokensStore.ytcy,
                 // ybRUNE is the auto-compound (`.compound`) position; its card

@@ -12,8 +12,10 @@ final class TransactionHistoryStorage {
 
     private let modelContext: ModelContext
 
-    private init() {
-        self.modelContext = Storage.shared.modelContext
+    /// `shared` uses the app's `Storage.shared.modelContext`. The initializer
+    /// takes the context so tests can inject an in-memory container.
+    init(modelContext: ModelContext = Storage.shared.modelContext) {
+        self.modelContext = modelContext
     }
 
     // MARK: - Save
@@ -23,6 +25,25 @@ final class TransactionHistoryStorage {
 
         let item = data.toItem()
         modelContext.insert(item)
+        try modelContext.save()
+    }
+
+    // MARK: - Delete All
+
+    /// Remove every stored transaction-history row across ALL vaults. Used by
+    /// the global "Reset Transaction History" action.
+    ///
+    /// Deleted per object rather than with a batch store delete so each row's
+    /// `swapTracking` metadata is cascade-deleted through the relationship (a
+    /// batch `delete(model:)` bypasses cascade rules and would orphan it), and
+    /// so the in-memory context stays consistent for anything still holding a
+    /// row. Callers must stop all polling FIRST — an in-flight poll writing a
+    /// status back mid-delete would resurrect a row.
+    func deleteAll() throws {
+        let items = try modelContext.fetch(FetchDescriptor<TransactionHistoryItem>())
+        for item in items {
+            modelContext.delete(item)
+        }
         try modelContext.save()
     }
 
@@ -73,18 +94,6 @@ final class TransactionHistoryStorage {
     }
 
     // MARK: - Fetch by Type
-
-    func fetchByType(pubKeyECDSA: String, type: TransactionHistoryType) throws -> [TransactionHistoryData] {
-        let typeValue = type.rawValue
-        let predicate = #Predicate<TransactionHistoryItem> { item in
-            item.pubKeyECDSA == pubKeyECDSA && item.typeRawValue == typeValue
-        }
-        let descriptor = FetchDescriptor(
-            predicate: predicate,
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
-        return try modelContext.fetch(descriptor).map { TransactionHistoryData(item: $0) }
-    }
 
     // MARK: - Exists Check
 
@@ -184,7 +193,12 @@ final class TransactionHistoryStorage {
         case .completed:
             item.statusRawValue = TransactionHistoryStatus.successful.rawValue
             item.completedAt = polledAt
-        case .refunded, .failed:
+        case .refunded, .failed, .expired, .cancelled:
+            // The coarse row vocabulary is successful / error / inProgress, so
+            // an order that ended without filling collapses to `error` — the
+            // same bucket a refund already lands in. The row is a summary; the
+            // precise outcome (and any partial fill) lives on `LimitOrder`,
+            // which is authoritative for orders.
             item.statusRawValue = TransactionHistoryStatus.error.rawValue
             item.completedAt = polledAt
         case .unknownPendingExtended:
@@ -195,8 +209,14 @@ final class TransactionHistoryStorage {
             // poll; if native polling reaches a terminal first that path
             // writes the coarse status itself.
             break
-        case .pending, .swapping:
-            // Keep `inProgress` — the on-chain row already starts there.
+        case .pending, .swapping, .resting, .cancelling:
+            // Keep `inProgress` — the on-chain row already starts there. A
+            // resting order is genuinely in progress: it is waiting for a price,
+            // which is the whole point of it. `.cancelling` belongs here for the
+            // same reason: the cancel transaction landed, but the order itself
+            // is still in the queue and can still fill, so collapsing it into
+            // `error` (where closed orders go) would report an outcome nothing
+            // has observed.
             break
         }
         try modelContext.save()

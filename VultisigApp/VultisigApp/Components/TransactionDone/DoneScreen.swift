@@ -125,8 +125,23 @@ struct DoneScreen<
                 .frame(maxHeight: isExpanded ? 0 : .infinity)
         }
         .onAppear {
-            statusService.start()
+            // Record BEFORE starting the poller, not after.
+            //
+            // A tracking-backed poller attaches to the tx-history ROW: it reads
+            // the row back from storage and hands it to its tracking service
+            // (`LimitOrderPoller`), or attaches metadata to it
+            // (`SwapKitPoller`, whose storage call no-ops when the parent row
+            // is absent). Started first, it finds nothing and the tracker never
+            // runs — leaving the header frozen on its seed status while the
+            // order or swap actually progresses.
+            //
+            // Only the cosigner paths record from here; the Send/Swap
+            // initiators pre-record in their own screen layer for exactly this
+            // reason (see `SwapDoneScreen.init`). Recording is idempotent —
+            // `storage.save` short-circuits on an existing row — so ordering it
+            // first is safe for every caller.
             TransactionHistoryRecording.record(payload: input)
+            statusService.start()
         }
         .onDisappear { statusService.stop() }
         .task { await revealAfterHold() }
@@ -312,52 +327,3 @@ extension EnvironmentValues {
         set { self[NotifyHashCopiedKey.self] = newValue }
     }
 }
-
-// MARK: - Previews
-
-#if DEBUG
-/// Preview-only status backend — surfaces a fixed status and never polls,
-/// so the staged reveal can be exercised in the canvas without a live tx.
-private struct PreviewDoneStatusPoller: DoneStatusPoller {
-    let initialStatus: TransactionStatus
-    func start(onStatus _: @escaping (TransactionStatus) -> Void) { }
-    func stop() { }
-}
-
-private func previewDonePayload() -> TransactionDonePayload {
-    TransactionDonePayload(
-        coin: .example,
-        amountCrypto: "0.5 ETH",
-        amountFiat: "1234.56",
-        hash: "0x8f3ac1b29e7d5640",
-        explorerLink: "",
-        memo: "",
-        isSend: true,
-        fromAddress: "0x1A2b3C4d5E6f7089",
-        toAddress: "0x90aB81cD72eF6350",
-        fee: FeeDisplay(crypto: "0.00021 ETH", fiat: "$0.62"),
-        keysignPayload: nil,
-        pubKeyECDSA: ""
-    )
-}
-
-@MainActor
-private func previewDoneScreen(_ status: TransactionStatus) -> some View {
-    DoneScreen(
-        input: previewDonePayload(),
-        statusService: DoneStatusService(poller: PreviewDoneStatusPoller(initialStatus: status)),
-        navigationTitle: "overview".localized
-    )
-    .environmentObject(AppViewModel())
-}
-
-// Re-run the preview (⌘-Option-P / the refresh button) to replay the
-// hero → settle-up reveal.
-#Preview("Staged reveal · broadcasted") {
-    previewDoneScreen(.broadcasted(estimatedTime: "~5 sec"))
-}
-
-#Preview("Staged reveal · confirmed") {
-    previewDoneScreen(.confirmed)
-}
-#endif

@@ -11,7 +11,8 @@ import SwiftUI
 protocol CarouselBannerType: Identifiable, Hashable {
     var title: String { get }
     var subtitle: String { get }
-    var buttonTitle: String { get }
-    var image: ImageResource { get }
-    var background: String? { get }
+    /// Glyph shown in the leading icon tile.
+    var icon: ImageResource { get }
+    /// Tint applied to `icon`.
+    var iconColor: Color { get }
 }

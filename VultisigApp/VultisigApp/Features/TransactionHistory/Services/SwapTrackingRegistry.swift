@@ -51,9 +51,13 @@ final class SwapTrackingRegistry {
         }
     }
 
-    /// Test-only — drop every registered service so test cases start clean.
-    func removeAllForTesting() {
-        services.removeAll()
+    /// Hard-stop tracking on every registered service, dropping all in-memory
+    /// tracking state. Fans the global reset out to both the SwapKit tracker
+    /// and the THORChain limit tracker without the caller naming either.
+    func stopAllTracking() {
+        for service in services.values {
+            service.stopAllTracking()
+        }
     }
 
     /// Test-only — count of currently-registered services.

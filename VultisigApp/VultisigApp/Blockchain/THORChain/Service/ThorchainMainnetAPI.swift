@@ -60,9 +60,30 @@ struct ThorchainMainnetAPI: TargetType {
             streamingQuantity: String?,
             affiliates: String?,
             affiliateBps: String?,
-            toleranceBps: String?
+            liquidityToleranceBps: String?
         )
         case tcyStaker(address: String)
+        /// `/thorchain/queue/limit_swaps[?sender=<addr>]` — every limit (`=<`)
+        /// order currently RESTING in the advanced-swap queue, with each
+        /// order's expiry countdown and fill state.
+        ///
+        /// Polled as a list rather than per-hash: one call covers all of an
+        /// address's resting orders. `sender` is the SOURCE-CHAIN address, so a
+        /// vault with orders from several source chains needs one call per
+        /// source address in play — still far fewer than one per order.
+        case limitSwapQueue(sender: String?)
+
+        /// `/cosmos/tx/v1beta1/txs/<hash>` — a broadcast transaction's RESULT,
+        /// i.e. its `code` and `raw_log`.
+        ///
+        /// Distinct from the Midgard-backed status path every other THORChain
+        /// surface uses, and deliberately so. Midgard indexes swap ACTIONS; a
+        /// `MsgDeposit` whose handler rejects the message produces no action at
+        /// all, so Midgard reports "not found" forever and the failure is
+        /// invisible. The Cosmos tx endpoint carries the non-zero code and the
+        /// chain's own reason — which for a limit-order cancel is the difference
+        /// between "your order is closed" and "nothing was cancelled".
+        case transaction(hash: String)
 
         // MARK: RPC node (different host)
         case networkStatus
@@ -82,6 +103,7 @@ struct ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
              .networkInfo, .inboundAddresses, .mimir, .poolInfo, .pools,
              .securedAssets, .poolLiquidityProvider, .swapQuote, .tcyStaker,
+             .limitSwapQueue, .transaction,
              .tcyAutoCompoundStatus:
             // CosmWasm smart-query lives on the REST/LCD host, not RPC. The LCD
             // host (balances / account / inbound addresses, the primary balance
@@ -134,6 +156,10 @@ struct ThorchainMainnetAPI: TargetType {
             return "/thorchain/quote/swap"
         case .tcyStaker(let addr):
             return "/thorchain/tcy_staker/\(addr)"
+        case .limitSwapQueue:
+            return "/thorchain/queue/limit_swaps"
+        case .transaction(let hash):
+            return "/cosmos/tx/v1beta1/txs/\(hash)"
         case .networkStatus:
             return "/status"
         case .tcyAutoCompoundStatus:
@@ -160,13 +186,19 @@ struct ThorchainMainnetAPI: TargetType {
         case .balances, .accountNumber, .denomMetadata, .networkInfo,
              .inboundAddresses, .mimir, .poolInfo, .pools, .securedAssets,
              .poolLiquidityProvider, .tcyStaker, .networkStatus,
-             .tcyAutoCompoundStatus, .resolveTNS:
+             .tcyAutoCompoundStatus, .resolveTNS, .transaction:
             return .requestPlain
+
+        case .limitSwapQueue(let sender):
+            // Unfiltered, the queue returns EVERY resting order on the network.
+            // Always scope it to the sender when we have one.
+            guard let sender, !sender.isEmpty else { return .requestPlain }
+            return .requestParameters(["sender": sender], .urlEncoding)
 
         case .allDenomMetadata:
             return .requestParameters(["pagination.limit": "1000"], .urlEncoding)
 
-        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps, let toleranceBps):
+        case .swapQuote(let from, let to, let amount, let dest, let interval, let streamingQuantity, let affiliates, let affiliateBps, let liquidityToleranceBps):
             var params: [String: Any] = [
                 "from_asset": from,
                 "to_asset": to,
@@ -177,7 +209,7 @@ struct ThorchainMainnetAPI: TargetType {
             if let streamingQuantity = streamingQuantity { params["streaming_quantity"] = streamingQuantity }
             if let affiliates = affiliates { params["affiliate"] = affiliates }
             if let affiliateBps = affiliateBps { params["affiliate_bps"] = affiliateBps }
-            if let toleranceBps = toleranceBps { params["tolerance_bps"] = toleranceBps }
+            if let liquidityToleranceBps = liquidityToleranceBps { params["liquidity_tolerance_bps"] = liquidityToleranceBps }
             return .requestParameters(params, .urlEncoding)
 
         case .rujiGraphQL(let query):

@@ -79,11 +79,6 @@ actor BlockchairService {
         logger.info("Cleared UTXO cache for \(coin.chain.name) address: \(coin.address)")
     }
 
-    /// Clear all UTXO cache
-    func clearAllUTXOCache() {
-        blockchairData.clear()
-        logger.info("Cleared all UTXO cache")
-    }
 }
 
 private extension BlockchairService {

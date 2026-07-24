@@ -107,38 +107,15 @@ extension ThorchainService {
         try await fetchStakingReceiptAmount(address: address, denom: TokensStore.ybrune.contractAddress)
     }
 
-    /// Fetches the user's `x/staking-x/ruji` (staked RUJI receipt) balance from THORNode.
+    /// Fetches the user's `x/staking-x/ruji` (sRUJI receipt) balance from THORNode.
     ///
-    /// The DeFi Staked RUJI card prefers this on-chain receipt balance over the Rujira
-    /// staking API's `bonded.amount`, which can report zero even while receipts are held.
+    /// This is a count of vault SHARES, not RUJI — the share price drifts above 1 RUJI
+    /// as the pool compounds — so it is not a display value. It sizes the funds of a
+    /// `liquid.unbond`, which spends receipt shares; the amount shown on the
+    /// auto-compounding card comes from the staking API's liquid size instead.
     /// Sibling of `fetchTcyAutoCompoundAmount` / `fetchBRuneAutoCompoundAmount`.
     func fetchRujiStakingReceiptAmount(address: String) async throws -> Decimal {
         try await fetchStakingReceiptAmount(address: address, denom: TokensStore.sruji.contractAddress)
-    }
-
-    func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {
-        do {
-            let raw = try await httpClient.request(mainnet(.tcyAutoCompoundStatus))
-            guard let json = try JSONSerialization.jsonObject(with: raw.data) as? [String: Any],
-                  let dataBase64 = json["data"] as? String,
-                  let decoded = Data(base64Encoded: dataBase64),
-                  let status = try JSONSerialization.jsonObject(with: decoded) as? [String: Any],
-                  let liquidBondSizeStr = status["liquid_bond_size"] as? String,
-                  let liquidBondSharesStr = status["liquid_bond_shares"] as? String,
-                  let liquidBondSize = UInt64(liquidBondSizeStr),
-                  let liquidBondShares = UInt64(liquidBondSharesStr) else {
-                return (.zero, .zero)
-            }
-
-            let sizeDecimal = Decimal(liquidBondSize)
-            let sharesDecimal = Decimal(liquidBondShares)
-            let sharePrice = sharesDecimal > 0 ? sizeDecimal / sharesDecimal : .zero
-
-            return (sharePrice, sharesDecimal)
-        } catch {
-            print("Error fetching auto-compound status: \(error.localizedDescription)")
-            return (.zero, .zero)
-        }
     }
 
 }

@@ -190,18 +190,19 @@ final class LimitSwapFormViewModel {
     }
 
     /// Formatted amount text for `pct`% of the source coin's balance, mirroring
-    /// the market swap's percentage buttons (same `balance × pct/100`,
-    /// truncated to 4 places). The view assigns this to the source-amount field,
-    /// whose `onChange` funnels it back into `draft.sourceAmount`.
+    /// the market swap's percentage buttons — both go through
+    /// `PercentageAmountLogic`, so the two flows share one precision rule.
     ///
     /// Phase-1 limit sources are native, and — matching the market
     /// (`show100 = !isNativeToken`) — native sources only expose 25/50/75, never
     /// a 100/Max button, so no gas headroom is reserved at input time; the
     /// deposit fee is applied later in the shared verify/keysign path.
     func sourceAmountText(forPercentage pct: Int, of coin: Coin) -> String {
-        let fraction = Decimal(min(max(pct, 0), 100)) / 100
-        let amount = (coin.balanceDecimal * fraction).truncated(toPlaces: 4)
-        return amount.formatToDecimal(digits: 4)
+        PercentageAmountLogic.amountText(
+            percentage: pct,
+            rawBalance: coin.rawBalance.toBigInt(),
+            coinDecimals: coin.decimals
+        )
     }
 
     func targetPriceChanged(_ price: Decimal) {
@@ -555,6 +556,11 @@ final class LimitSwapFormViewModel {
         // signed order.
         let memo: String
         let effectiveMinOutput: Decimal
+        // The EFFECTIVE LIM, not the `targetPrice`-derived one: when byte-fitting
+        // rounds the LIM up, the rounded value is what the memo carries and
+        // therefore what THORChain indexes the order by. A future cancel has to
+        // reproduce it exactly or it addresses a bucket the order isn't in.
+        let signedTradeTarget: BigInt
         do {
             let fitted = try buildFittedLimitSwapMemo(
                 inputs,
@@ -562,6 +568,7 @@ final class LimitSwapFormViewModel {
             )
             memo = fitted.memo
             effectiveMinOutput = limNaturalOutput(fitted.effectiveLim)
+            signedTradeTarget = fitted.effectiveLim
         } catch let error as LimitSwapMemoError {
             switch error {
             case let .memoExceedsByteLimit(actual, limit):
@@ -594,7 +601,26 @@ final class LimitSwapFormViewModel {
             status: .pending,
             memo: memo,
             expiryHours: draft.expiryHours,
-            minOutputOverride: effectiveMinOutput
+            minOutputOverride: effectiveMinOutput,
+            // Captured here because this is the only moment all three are known
+            // exactly. `sourceAmount` on the record is in the coin's NATIVE
+            // decimals; THORChain indexes the order in 1e8, and the same
+            // conversion the quote endpoint uses is the one the chain applies.
+            sourceAmount1e8: ThorchainService.thorchainQuoteAmount(
+                sourceAmount: draft.sourceAmount,
+                sourceDecimals: draft.fromAsset.decimals
+            ).description,
+            tradeTarget: signedTradeTarget.description,
+            // The same two assets, spelled with their FULL contract address.
+            // `sourceAsset`/`targetAsset` above carry the placement spelling,
+            // which truncates an EVM contract to 6 characters — correct there
+            // (THORNode fuzzy-matches it) and fatal in a cancel, which is the
+            // one inbound memo type that skips fuzzy matching. The truncation is
+            // irreversible, so the long form has to be taken here, while the
+            // contract address is still in hand.
+            sourceAssetFull: draft.fromAsset.cancelMemoSymbol,
+            targetAssetFull: draft.toAsset.cancelMemoSymbol,
+            sourceChainRawValue: draft.fromAsset.chain.rawValue
         )
         return (memo, record)
     }

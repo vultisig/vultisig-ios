@@ -127,65 +127,6 @@ extension PrimaryButton where LeadingView == Icon, TrailingView == EmptyView {
     }
 }
 
-// MARK: - Trailing icon string
-
-extension PrimaryButton where LeadingView == EmptyView, TrailingView == Icon {
-    init(
-        title: String,
-        trailingIcon: ImageResource,
-        isLoading: Bool = false,
-        type: ButtonType = .primary,
-        size: ButtonSize = .medium,
-        reserveTrailingIconSpace: Bool = false,
-        supportsLongPress: Bool = false,
-        longPressProgress: Binding<CGFloat> = .constant(0),
-        action: @escaping () -> Void
-    ) {
-        self.init(
-            title: title,
-            leadingView: { EmptyView() },
-            trailingView: { Icon(trailingIcon, color: Theme.colors.textPrimary, size: 15) },
-            isLoading: isLoading,
-            type: type,
-            size: size,
-            reserveTrailingIconSpace: reserveTrailingIconSpace,
-            supportsLongPress: supportsLongPress,
-            longPressProgress: longPressProgress,
-            action: action
-        )
-    }
-}
-
-// MARK: - Both icon strings
-
-extension PrimaryButton where LeadingView == Icon, TrailingView == Icon {
-    init(
-        title: String,
-        leadingIcon: ImageResource,
-        trailingIcon: ImageResource,
-        isLoading: Bool = false,
-        type: ButtonType = .primary,
-        size: ButtonSize = .medium,
-        reserveTrailingIconSpace: Bool = false,
-        supportsLongPress: Bool = false,
-        longPressProgress: Binding<CGFloat> = .constant(0),
-        action: @escaping () -> Void
-    ) {
-        self.init(
-            title: title,
-            leadingView: { Icon(leadingIcon, color: Theme.colors.textPrimary, size: 15) },
-            trailingView: { Icon(trailingIcon, color: Theme.colors.textPrimary, size: 15) },
-            isLoading: isLoading,
-            type: type,
-            size: size,
-            reserveTrailingIconSpace: reserveTrailingIconSpace,
-            supportsLongPress: supportsLongPress,
-            longPressProgress: longPressProgress,
-            action: action
-        )
-    }
-}
-
 // MARK: - Leading view only
 
 extension PrimaryButton where TrailingView == EmptyView {
@@ -245,37 +186,8 @@ extension PrimaryButton where LeadingView == Icon {
     }
 }
 
-// MARK: - Trailing view only
-
-extension PrimaryButton where LeadingView == EmptyView {
-    init(
-        title: String,
-        @ViewBuilder trailingView: () -> TrailingView,
-        isLoading: Bool = false,
-        type: ButtonType = .primary,
-        size: ButtonSize = .medium,
-        reserveTrailingIconSpace: Bool = false,
-        supportsLongPress: Bool = false,
-        longPressProgress: Binding<CGFloat> = .constant(0),
-        action: @escaping () -> Void
-    ) {
-        self.init(
-            title: title,
-            leadingView: { EmptyView() },
-            trailingView: trailingView,
-            isLoading: isLoading,
-            type: type,
-            size: size,
-            reserveTrailingIconSpace: reserveTrailingIconSpace,
-            supportsLongPress: supportsLongPress,
-            longPressProgress: longPressProgress,
-            action: action
-        )
-    }
-}
-
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
         PrimaryButton(title: "Continue", type: .primary, size: .medium) {}
         PrimaryButton(title: "Continue", type: .primary, size: .small) {}
         PrimaryButton(title: "Continue", type: .primary, size: .mini) {}
@@ -283,5 +195,10 @@ extension PrimaryButton where LeadingView == EmptyView {
         PrimaryButton(title: "Continue", type: .secondary, size: .medium) {}
         PrimaryButton(title: "Continue", type: .secondary, size: .small) {}
         PrimaryButton(title: "Continue", type: .secondary, size: .mini) {}
+        PrimaryButton(title: "Continue", type: .secondary, size: .medium) {}
+            .disabled(true)
     }
+    .padding(24)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Theme.colors.bgPrimary)
 }

@@ -15,8 +15,13 @@ struct THORChainActionsResponse: Codable {
 
 struct MidgardAction: Codable {
     let pools: [String]
+    /// The OUTCOME: `swap`, `limit_swap`, `refund`, `failed`, `contract`, …
     let type: String
-    let status: String  // "success", "pending", "refund"
+    /// ⚠️ The OUTBOUND, not the outcome — only ever `"success"` or `"pending"`.
+    /// A transaction THORChain rejected still carries `"success"` here; what
+    /// rejected it is in `type`. This said `"success", "pending", "refund"`, and
+    /// three separate readers believed it.
+    let status: String
     let `in`: [MidgardTransaction]
     let out: [MidgardTransaction]
     let date: String
@@ -48,13 +53,73 @@ struct MidgardActionMetadata: Codable {
 
 struct RefundMetadata: Codable {
     let reason: String?
-    let code: Int?
+    /// Quoted on the wire — see `decodeMidgardNumberIfPresent`.
+    let code: String?
     let memo: String?
     let networkFees: [MidgardCoin]?
+
+    enum CodingKeys: String, CodingKey {
+        case reason
+        case code
+        case memo
+        case networkFees
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        reason = try container.decodeIfPresent(String.self, forKey: .reason)
+        code = try container.decodeMidgardNumberIfPresent(forKey: .code)
+        memo = try container.decodeIfPresent(String.self, forKey: .memo)
+        networkFees = try container.decodeIfPresent([MidgardCoin].self, forKey: .networkFees)
+    }
 }
 
 struct FailedMetadata: Codable {
     let reason: String?
-    let code: Int?
+    /// Quoted on the wire — see `decodeMidgardNumberIfPresent`.
+    let code: String?
     let memo: String?
+
+    enum CodingKeys: String, CodingKey {
+        case reason
+        case code
+        case memo
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        reason = try container.decodeIfPresent(String.self, forKey: .reason)
+        code = try container.decodeMidgardNumberIfPresent(forKey: .code)
+        memo = try container.decodeIfPresent(String.self, forKey: .memo)
+    }
+}
+
+private extension KeyedDecodingContainer {
+    /// ⚠️ Midgard quotes its numerics. Every other number in this payload —
+    /// `count`, `height`, `date`, coin `amount` — arrives as a string, and so
+    /// does a failure code: `"code": "99"`. Typing it `Int` did not merely lose
+    /// one field, it threw, and a throw anywhere aborts the decode of the WHOLE
+    /// actions page — so a single failed action stopped status polling for every
+    /// transaction in it.
+    ///
+    /// Kept as a `String` because that is the wire form and the app only ever
+    /// displays it. Decoded leniently anyway: Midgard's schema calls these
+    /// integers even though it serialises strings, and given what one type
+    /// mismatch costs here, accepting a bare number as well is worth four lines.
+    func decodeMidgardNumberIfPresent(forKey key: Key) throws -> String? {
+        guard contains(key), try !decodeNil(forKey: key) else { return nil }
+        if let string = try? decode(String.self, forKey: key) {
+            return string
+        }
+        if let number = try? decode(Int64.self, forKey: key) {
+            return String(number)
+        }
+        throw DecodingError.typeMismatch(
+            String.self,
+            DecodingError.Context(
+                codingPath: codingPath + [key],
+                debugDescription: "Expected a quoted or bare number"
+            )
+        )
+    }
 }

@@ -15,6 +15,10 @@ struct SettingActionCell: View {
     let title: String
     let icon: String
     let buttonLabel: String
+    /// Button style. Defaults to `.secondary`; a destructive action passes
+    /// `.alert` so the button renders in `Theme.colors.alertError` from the
+    /// design system rather than a hardcoded colour.
+    var buttonType: ButtonType = .secondary
     let action: () -> Void
 
     var body: some View {
@@ -26,7 +30,7 @@ struct SettingActionCell: View {
                 .font(Theme.fonts.bodySRegular)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
-            PrimaryButton(title: buttonLabel, type: .secondary, size: .mini, action: action)
+            PrimaryButton(title: buttonLabel, type: buttonType, size: .mini, action: action)
                 .fixedSize()
         }
         .padding(12)

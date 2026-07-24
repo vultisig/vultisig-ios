@@ -8,30 +8,6 @@
 import Foundation
 
 class Endpoint {
-    private static func encodePathComponent(_ value: String) -> String {
-        let disallowSlash = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
-        return value.addingPercentEncoding(withAllowedCharacters: disallowSlash) ?? value
-    }
-
-    enum SwapChain {
-        case thorchain
-        case thorchainChainnet
-        case thorchainStagenet
-        case maya
-
-        var baseUrl: String {
-            switch self {
-            case .thorchain:
-                return "https://gateway.liquify.com/chain/thorchain_api/thorchain"
-            case .thorchainChainnet:
-                return "https://chainnet-thornode.thorchain.network/thorchain"
-            case .thorchainStagenet:
-                return "https://stagenet-thornode.thorchain.network/thorchain"
-            case .maya:
-                return "https://mayanode.mayachain.info/mayachain"
-            }
-        }
-    }
 
     static let vultisigApiProxy = "https://api.vultisig.com"
     static let vultisigNotification = "https://api.vultisig.com/notification"
@@ -54,115 +30,11 @@ class Endpoint {
 
     // OFFICIAL BLOCKAID API ENDPOINTS (Working ✅)
 
-    /// EVM Endpoints
-    static func blockaidEVMJSONRPCScan() -> String {
-        return "\(blockaidApiBase)/evm/json-rpc/scan"
-    }
-
-    static func blockaidEVMTransactionScan() -> String {
-        return "\(blockaidApiBase)/evm/transaction/scan"
-    }
-
-    static func blockaidEVMTransactionRawScan() -> String {
-        return "\(blockaidApiBase)/evm/transaction/raw/scan"
-    }
-
-    static func blockaidEVMAddressScan() -> String {
-        return "\(blockaidApiBase)/evm/address/scan"
-    }
-
-    static func blockaidEVMUserOperationScan() -> String {
-        return "\(blockaidApiBase)/evm/user-operation/scan"
-    }
-
-    /// Site Scanning
-    static func blockaidSiteScan() -> String {
-        return "\(blockaidApiBase)/site/scan"
-    }
-
-    /// Token Scanning
-    static func blockaidTokenScan() -> String {
-        return "\(blockaidApiBase)/token/scan"
-    }
-
-    /// Multi-Chain Support
-    static func blockaidBitcoinTransactionRaw() -> String {
-        return "\(blockaidApiBase)/bitcoin/transaction/raw"
-    }
-
-    static func blockaidSolanaAddressScan() -> String {
-        return "\(blockaidApiBase)/solana/address/scan"
-    }
-
-    static func blockaidSolanaMessageScan() -> String {
-        return "\(blockaidApiBase)/solana/message/scan"
-    }
-
-    static func blockaidStarknetTransactionScan() -> String {
-        return "\(blockaidApiBase)/starknet/transaction/scan"
-    }
-
-    static func blockaidStellarAddressScan() -> String {
-        return "\(blockaidApiBase)/stellar/address/scan"
-    }
-
-    static func blockaidStellarTransactionScan() -> String {
-        return "\(blockaidApiBase)/stellar/transaction/scan"
-    }
-
-    static func blockaidSuiAddressScan() -> String {
-        return "\(blockaidApiBase)/sui/address/scan"
-    }
-
-    static func blockaidSuiTransactionScan() -> String {
-        return "\(blockaidApiBase)/sui/transaction/scan"
-    }
-
-    /// Chain-Agnostic
-    static func blockaidChainAgnosticTransaction() -> String {
-        return "\(blockaidApiBase)/chain-agnostic/transaction"
-    }
-
-    /// Enterprise Features
-    static func blockaidExchangeProtectionWithdrawal() -> String {
-        return "\(blockaidApiBase)/exchange-protection/withdrawal"
-    }
-
-    /// Legacy endpoint methods (for backward compatibility)
-    static func blockaidAddressScan() -> String {
-        return blockaidEVMAddressScan()
-    }
-
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
-
-    static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/auth/accounts/\(address)"
-    }
-
-    static func fetchThorchainDenomMetadata(denom: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
-    }
-
-    static func fetchThorchainAllDenomMetadata() -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
-    }
 
     static let thorchainNetworkInfo = "https://gateway.liquify.com/chain/thorchain_rpc/status".asUrl
 
-    /// Stagenet endpoints
-    static func fetchAccountNumberThorchainChainnet(_ address: String) -> String {
-        "https://chainnet-thornode.thorchain.network/auth/accounts/\(address)"
-    }
-
     static let fetchThorchainChainnetNetworkInfoNineRealms = "https://chainnet-thornode.thorchain.network/thorchain/network"
-
-    static func fetchThorchainChainnetDenomMetadata(denom: String) -> String {
-        "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
-    }
-
-    static func fetchThorchainChainnetAllDenomMetadata() -> String {
-        "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
-    }
 
     static let thorchainChainnetNetworkInfo = "https://chainnet-rpc.thorchain.network/status".asUrl
 
@@ -170,92 +42,13 @@ class Endpoint {
 
     static let broadcastTransactionThorchainChainnet = "https://chainnet-thornode.thorchain.network/cosmos/tx/v1beta1/txs"
 
-    static func fetchAccountNumberMayachain(_ address: String) -> String {
-        "https://mayanode.mayachain.info/auth/accounts/\(address)"
-    }
-
-    static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchAccountBalanceThorchainChainnet(address: String) -> String {
-        "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchAccountBalanceMayachain(address: String) -> String {
-        "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    /// Fetch pool info for any THORChain asset
-    static func fetchPoolInfo(asset: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/thorchain/pool/\(asset)"
-    }
-
-    static func fetchChainnetPoolInfo(asset: String) -> String {
-        "https://chainnet-thornode.thorchain.network/thorchain/pool/\(asset)"
-    }
-
-    static func fetchTcyStakedAmount(address: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/thorchain/tcy_staker/\(address)"
-    }
-
-    static func fetchTcyAutoCompoundStatus() -> String {
-        // Cosmos SDK / CosmWasm paths route through `thorchain_api` on the
-        // Liquify gateway; `thorchain_rpc` only serves Tendermint RPC.
-        "https://gateway.liquify.com/chain/thorchain_api/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
-    }
-
-    static func fetchTcyAutoCompoundBalance(address: String) -> String {
-        // Query user's sTCY balance using cosmos bank API - URL encode the denom
-        "https://gateway.liquify.com/chain/thorchain_api/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
-    }
-
-    static func fetchYRunePrice() -> String {
-        "https://thorchain.ibs.team/api/cosmwasm/wasm/v1/contract/thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt/smart/eyJzdGF0dXMiOiB7fX0="
-    }
-
-    static func fetchYtcyPrice() -> String {
-        "https://thorchain.ibs.team/api/cosmwasm/wasm/v1/contract/thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px/smart/eyJzdGF0dXMiOiB7fX0="
-    }
-
-    static func fetchThorchainMergedAssets() -> String {
-        "https://api.vultisig.com/ruji/api/graphql"
-    }
-
-    static func fetchMayaChainPoolInfo(asset: String) -> String {
-        "https://mayanode.mayachain.info/mayachain/pool/\(encodePathComponent(asset))"
-    }
-
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
-
-    /// THORChain LP endpoints
-    static func fetchThorchainPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_api/thorchain/pool/\(asset)/liquidity_provider/\(address)"
-    }
 
     static let fetchThorchainPools = "https://gateway.liquify.com/chain/thorchain_api/thorchain/pools"
 
-    /// THORChain Stagenet LP endpoints
-    static func fetchThorchainChainnetPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://chainnet-thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
-    }
-
     static let fetchThorchainChainnetPools = "https://chainnet-thornode.thorchain.network/thorchain/pools"
 
-    /// THORChain Stagenet-2 endpoints (sthor prefix, stagenet-thornode.thorchain.network)
-    static func fetchAccountNumberThorchainStagenet(_ address: String) -> String {
-        "https://stagenet-thornode.thorchain.network/auth/accounts/\(address)"
-    }
-
     static let fetchThorchainStagenetNetworkInfoNineRealms = "https://stagenet-thornode.thorchain.network/thorchain/network"
-
-    static func fetchThorchainStagenetDenomMetadata(denom: String) -> String {
-        "https://stagenet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
-    }
-
-    static func fetchThorchainStagenetAllDenomMetadata() -> String {
-        "https://stagenet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
-    }
 
     static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.thorchain.network/status".asUrl
 
@@ -263,66 +56,7 @@ class Endpoint {
 
     static let broadcastTransactionThorchainStagenet = "https://stagenet-thornode.thorchain.network/cosmos/tx/v1beta1/txs"
 
-    static func fetchAccountBalanceThorchainStagenet(address: String) -> String {
-        "https://stagenet-thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
-    }
-
-    static func fetchStagenetPoolInfo(asset: String) -> String {
-        "https://stagenet-thornode.thorchain.network/thorchain/pool/\(asset)"
-    }
-
-    /// THORChain Stagenet-2 LP endpoints
-    static func fetchThorchainStagenetPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://stagenet-thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
-    }
-
     static let fetchThorchainStagenetPools = "https://stagenet-thornode.thorchain.network/thorchain/pools"
-
-    static func fetchSwapQuoteThorchain(
-        chain: SwapChain,
-        address: String,
-        fromAsset: String,
-        toAsset: String,
-        amount: String,
-        interval: String,
-        streamingQuantity: String = "",
-        referredCode: String,
-        vultTierDiscount: Int
-    ) -> URL {
-        let affiliateParams = buildAffiliateParams(chain: chain, referredCode: referredCode, discountBps: vultTierDiscount)
-        let streamingQuantityParam = streamingQuantity.isEmpty ? "" : "&streaming_quantity=\(streamingQuantity)"
-        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(streamingQuantityParam)\(affiliateParams)".asUrl
-    }
-
-    static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
-        var affiliateParams: [(affiliate: String, bps: String)] = []
-
-        if (chain == .thorchain || chain == .thorchainChainnet) && !referredCode.isEmpty {
-            // THORChain supports nested affiliates
-            let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
-            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
-        } else {
-            // No referral code — single affiliate
-            let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)
-            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
-        }
-
-        guard !affiliateParams.isEmpty else { return .empty }
-
-        let affiliates = affiliateParams.map(\.affiliate).joined(separator: "/")
-        let affiliateBps = affiliateParams.map(\.bps).joined(separator: "/")
-
-        return "&affiliate=\(affiliates)&affiliate_bps=\(affiliateBps)"
-    }
-
-    static func bps(for discount: Int, affiliateFeeRate: Int) -> Int {
-        max(0, affiliateFeeRate - discount)
-    }
-
-    static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
-        "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
-    }
 
     static let avalancheServiceRpcService = "https://api.vultisig.com/avax/"
 
@@ -385,78 +119,11 @@ class Endpoint {
     /// Bittensor RPC endpoint for JSON-RPC calls (nonce, blockHash, specVersion, etc.)
     static let bittensorServiceRpc = "https://bittensor-finney.api.onfinality.io/public"
 
-    static func fetchMemoInfo(hash: String) -> URL {
-        return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
-    }
-
-    static func fetchFourByteSignature(hexSignature: String) -> URL {
-        return "https://www.4byte.directory/api/v1/signatures/?format=json&hex_signature=\(hexSignature)&ordering=created_at".asUrl
-    }
-
-    static func bitcoinLabelTxHash(_ value: String) -> String {
-        "https://mempool.space/tx/\(value)"
-    }
-
-    static func litecoinLabelTxHash(_ value: String) -> String {
-        "https://litecoinspace.org/tx/\(value)"
-    }
-
     static func blockchairStats(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/stats".asUrl
     }
 
-    static func ethereumLabelTxHash(_ value: String) -> String {
-        "https://etherscan.io/tx/\(value)"
-    }
-
-    static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
-        "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
-    }
-
-    static func coinGeckoCoinsList() -> URL {
-        "\(vultisigApiProxy)/coingeicko/api/v3/coins/list?include_platform=true&status=active".asUrl
-    }
-
-    static func fetchLifiTokenPrice(network: String, address: String) -> URL {
-        let url = "https://li.quest/v1/token?chain=\(network.lowercased())&token=\(address)"
-        return url.asUrl
-    }
-
-    static func fetchTokenPrice(network: String, addresses: [String], currencies: String) -> URL {
-        let addresses = addresses.joined(separator: ",")
-        let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(currencies)"
-        return url.asUrl
-    }
-
-    static func fetchTokensInfo(network: String, addresses: [String]) -> String {
-        let addresses = addresses.joined(separator: ",")
-        return "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/multi/\(addresses)"
-    }
-
-    static func fetchEthereumTransactions(_ userAddress: String) -> String {
-        "https://sepolia.etherscan.io/tx/\(userAddress)"
-    }
-
     // MARK: - Circle MSCA Endpoints
-
-    static func fetchBitcoinTransactions(_ userAddress: String) -> String {
-        "https://mempool.space/api/address/\(userAddress)/txs"
-    }
-
-    static func fetchLitecoinTransactions(_ userAddress: String) -> String {
-        "https://litecoinspace.org/api/address/\(userAddress)/txs"
-    }
-
-    static func bscLabelTxHash(_ value: String) -> String {
-        "https://bscscan.com/tx/\(value)"
-    }
-
-    static func resolveTNS(name: String, chain: Chain = .thorChain) -> URL {
-        let baseUrl = (chain == .thorChainChainnet || chain == .thorChainStagenet)
-            ? "https://stagenet-midgard.thorchain.network"
-            : "https://gateway.liquify.com/chain/thorchain_midgard"
-        return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
-    }
 
     /// Base URL for the QBTC PLONK proof service (vultisig-proxied).
     /// SDK default is `https://proof.qbtc.network`; we use the proxied URL
@@ -469,18 +136,6 @@ class Endpoint {
     /// `/cosmos/base/tendermint/v1beta1/blocks/latest`,
     /// `/qbtc/v1/params/{name}`, `/cosmos/tx/v1beta1/txs`. See `QBTCChainAPI`.
     static let qbtcRestBaseURL = "https://api.vultisig.com/qbtc-rpc"
-
-    static func getSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
-    }
-
-    static func getStagenetSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
-    }
-
-    static func thorchainNodeExplorerURL(_ address: String) -> String {
-        return "https://thorchain.net/node/\(address)"
-    }
 
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
     static let tronWalletApi = "https://api.vultisig.com/tron"
@@ -673,65 +328,11 @@ class Endpoint {
     static let agentBackendUrl = "https://agent.vultisig.com"
     static let verifierUrl = "https://verifier.vultisig.com"
 
-    static func agentConversations() -> String {
-        "\(agentBackendUrl)/agent/conversations"
-    }
-
-    static func agentConversationsList() -> String {
-        "\(agentBackendUrl)/agent/conversations/list"
-    }
-
-    static func agentConversation(id: String) -> String {
-        let safeId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
-        return "\(agentBackendUrl)/agent/conversations/\(safeId)"
-    }
-
-    static func agentConversationMessages(id: String) -> String {
-        let safeId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
-        return "\(agentBackendUrl)/agent/conversations/\(safeId)/messages"
-    }
-
-    static func agentStarters() -> String {
-        "\(agentBackendUrl)/agent/starters"
-    }
-
-    /// Verifier auth
-    static func verifierAuth() -> String {
-        "\(verifierUrl)/auth"
-    }
-
-    static func verifierAuthRefresh() -> String {
-        "\(verifierUrl)/auth/refresh"
-    }
-
-    static func verifierAuthMe() -> String {
-        "\(verifierUrl)/auth/me"
-    }
-
-    static func verifierAuthRevokeAll() -> String {
-        "\(verifierUrl)/auth/tokens/all"
-    }
-
     // Referral
 
     static let ReferralBase = "https://gateway.liquify.com/chain/thorchain_api/thorchain"
     static let ReferralFees = "https://gateway.liquify.com/chain/thorchain_api/thorchain/network"
 
-    static func checkNameAvailability(for code: String) -> String {
-        ReferralBase + "/thorname/lookup/\(code)"
-    }
-
-    static func getUserDetails(for code: String) -> String {
-        ReferralBase + "/thorname/\(code)"
-    }
-
-    static func reverseLookup(for address: String) -> String {
-        ReferralBase + "/thorname/lookup/\(address)"
-    }
-
-    static func nameLookup(for name: String) -> String {
-        "https://gateway.liquify.com/chain/thorchain_midgard/v2/thorname/lookup/\(name)"
-    }
 }
 
 private extension String {

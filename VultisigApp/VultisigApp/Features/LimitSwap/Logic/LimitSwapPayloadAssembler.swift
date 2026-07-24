@@ -267,10 +267,11 @@ func buildLimitSwapKeysignPayload(
 /// only cross-device SWAP display — the co-signer's "you receive" row — so a
 /// resting limit order shows its LIM floor rather than 0. Signing and every
 /// fund-safety gate ignore it (they read `transaction` / `toCoin.address`), so
-/// its exact value can never affect what is signed. `toAmountLimit` stays "0":
-/// it drives only the WalletCore native-RUNE `THORChainSwap.build` min-output
-/// arg, which an ERC20 `depositWithExpiry` never reaches, and nothing displays
-/// it.
+/// its exact value can never affect what is signed. `toAmountLimit` and the two
+/// streaming fields stay "0": nothing on this device reads them and no signer
+/// consumes them — they exist only to travel in the cross-device proto. For a
+/// resting limit order that is also the honest value, since the order's floor
+/// lives in the `=<` memo on `KeysignPayload.memo`, not here.
 ///
 /// `expirationTime` is the router's ON-CHAIN tx-execution deadline
 /// (`require(block.timestamp < expiry)` inside `depositWithExpiry`) — a guard

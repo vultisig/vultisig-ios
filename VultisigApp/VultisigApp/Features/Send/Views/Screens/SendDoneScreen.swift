@@ -43,10 +43,18 @@ struct SendDoneScreen: View {
     }
 
     private func payload(for tx: SendTransaction) -> TransactionDonePayload {
-        TransactionDonePayload(
+        // A limit-order cancel is not a send. Its own verb reports on the
+        // TRANSACTION — which is all this screen can honestly speak to — and
+        // says in as many words that the order stays open until the queue
+        // confirms it closed. The generic "Transaction successful" would be
+        // read as "your order is cancelled", which is precisely the claim
+        // THORChain has not made yet.
+        let isCancel = tx.limitCancelContext != nil
+        return TransactionDonePayload(
             coin: tx.coin,
             amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
             amountFiat: tx.amountInFiat,
+            hero: LimitOrderCancelPresentation.hero(for: tx),
             hash: hash,
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash),
             memo: tx.memo,
@@ -62,7 +70,8 @@ struct SendDoneScreen: View {
             ),
             fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx)),
             keysignPayload: keysignPayload,
-            pubKeyECDSA: vault.pubKeyECDSA
+            pubKeyECDSA: vault.pubKeyECDSA,
+            verb: isCancel ? .cancelLimitOrder : .send
         )
     }
 }

@@ -209,16 +209,6 @@ struct SettingsCustomMessageView: View {
         }
     }
 
-    var backButton: some View {
-        return Button {
-            viewModel.handleBackTap()
-        } label: {
-            NavigationBlankBackButton()
-        }
-        .opacity(viewModel.state == .done ? 0 : 1)
-        .disabled(viewModel.state == .done)
-    }
-
     var signButtonEnabled: Bool {
         return !method.isEmpty && !message.isEmpty
     }

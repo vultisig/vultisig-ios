@@ -48,6 +48,7 @@ struct VultisigApp: App {
         // the tx-history viewmodel and the native status poller can route by
         // `providerKind`. New providers register here.
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+        SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
 
         // Register every destination-token provider with the shared registry
         // so the swap coin picker can aggregate destination tokens from

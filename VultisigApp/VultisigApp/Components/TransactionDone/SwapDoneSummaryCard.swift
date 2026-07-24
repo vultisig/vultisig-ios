@@ -250,14 +250,21 @@ struct SwapDoneSummaryCard: View {
 
     private func expandableFees(_ transaction: SwapTransaction) -> some View {
         VStack(spacing: 4) {
-            if transaction.showFees {
-                getCell(title: "swapFee", value: transaction.swapFeeString)
-            }
             if transaction.showGas {
                 getCell(
                     title: "networkFee",
                     value: "\(transaction.swapGasString)(\(transaction.approveFeeString))"
                 )
+            }
+            // Vultisig Fee (affiliate only) — matches the reconciled Total, so the
+            // breakdown no longer shows THORChain's composite as the swap fee. The
+            // label is already localized (embeds the %), so it's used verbatim.
+            if transaction.showAffiliateFeeRow {
+                getCell(title: transaction.swapFeeLabel, value: transaction.baseAffiliateFee)
+            }
+            // Protocol Fee (native THOR/Maya outbound).
+            if transaction.showProtocolFeeRow {
+                getCell(title: "swap.protocol_fee", value: transaction.outboundFeeString)
             }
         }
     }

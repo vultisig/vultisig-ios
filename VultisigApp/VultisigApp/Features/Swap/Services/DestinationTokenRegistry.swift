@@ -56,12 +56,6 @@ final class DestinationTokenRegistry {
         return buckets
     }
 
-    /// Test-only — drop every registered provider so test cases start
-    /// clean.
-    func removeAllForTesting() {
-        providers.removeAll()
-    }
-
     /// Test-only — count of currently-registered providers.
     var registeredCountForTesting: Int { providers.count }
 }

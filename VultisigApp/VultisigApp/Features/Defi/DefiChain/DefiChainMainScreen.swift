@@ -403,6 +403,8 @@ struct DefiChainMainScreen: View {
             return TokensStore.tcy
         case "YBRUNE":
             return TokensStore.brune
+        case "SRUJI":
+            return TokensStore.ruji
         default:
             return compoundCoin
         }

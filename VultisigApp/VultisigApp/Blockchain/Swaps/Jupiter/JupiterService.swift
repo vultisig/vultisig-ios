@@ -62,7 +62,7 @@ struct JupiterService {
         fromAmount: BigInt,
         vultTierDiscount: Int,
         slippageBps: Int?
-    ) async throws -> (quote: EVMQuote, fee: BigInt?, platformFee: Decimal?) {
+    ) async throws -> (quote: EVMQuote, fee: BigInt?, platformFee: Decimal, feeOnInput: Bool) {
         let inputMint = jupiterMint(for: fromCoin)
         let outputMint = jupiterMint(for: toCoin)
 
@@ -104,14 +104,15 @@ struct JupiterService {
             feeAccount: feeAccount
         )
 
-        // `platformFee` is denominated in the fee mint. Surface it for display
-        // only when the fee mint is the output mint (so it's in `toCoin` units);
-        // for the input-mint case (native-SOL outputs) it would be
-        // mis-denominated, so omit it. Ranking uses `outAmount` (already net of
-        // the fee) regardless of which mint the fee is taken in.
-        let platformFee = feeMint == outputMint
-            ? platformFeeDecimal(from: quoteResponse, toCoin: toCoin)
-            : nil
+        // `platformFee` is denominated in the fee mint. It's surfaceable in
+        // `toCoin` units only when the fee mint IS the output mint. For the
+        // input-mint case (native-SOL outputs) it would be mis-denominated, so
+        // it's flagged `feeOnInput` and reported as 0 — display suppresses the
+        // affiliate row there rather than show a misleading amount. A zero
+        // output-mint fee (Ultimate tier) is a real 0, shown as a $0.00 row.
+        // Ranking uses `outAmount` (already net of the fee) regardless.
+        let feeOnInput = feeMint != outputMint
+        let platformFee: Decimal = feeOnInput ? .zero : (platformFeeDecimal(from: quoteResponse, toCoin: toCoin) ?? .zero)
 
         let evmQuote = EVMQuote(
             dstAmount: quoteResponse.outAmount,
@@ -124,7 +125,7 @@ struct JupiterService {
                 gas: 0
             )
         )
-        return (evmQuote, nil, platformFee)
+        return (evmQuote, nil, platformFee, feeOnInput)
     }
 
     /// The mint Jupiter expects for a coin: the SPL contract address, or wrapped

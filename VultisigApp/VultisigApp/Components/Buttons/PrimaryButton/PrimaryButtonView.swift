@@ -72,48 +72,6 @@ extension PrimaryButtonView where LeadingView == EmptyView, TrailingView == Empt
     }
 }
 
-// MARK: - Leading icon string
-
-extension PrimaryButtonView where LeadingView == Icon, TrailingView == EmptyView {
-    init(
-        title: String,
-        leadingIcon: ImageResource,
-        isLoading: Bool = false,
-        paddingLeading: CGFloat = 0,
-        reserveTrailingIconSpace: Bool = false
-    ) {
-        self.init(
-            title: title,
-            leadingView: { Icon(leadingIcon, color: Theme.colors.textPrimary, size: 15) },
-            trailingView: { EmptyView() },
-            isLoading: isLoading,
-            paddingLeading: paddingLeading,
-            reserveTrailingIconSpace: reserveTrailingIconSpace
-        )
-    }
-}
-
-// MARK: - Trailing icon string
-
-extension PrimaryButtonView where LeadingView == EmptyView, TrailingView == Icon {
-    init(
-        title: String,
-        trailingIcon: ImageResource,
-        isLoading: Bool = false,
-        paddingLeading: CGFloat = 0,
-        reserveTrailingIconSpace: Bool = false
-    ) {
-        self.init(
-            title: title,
-            leadingView: { EmptyView() },
-            trailingView: { Icon(trailingIcon, color: Theme.colors.textPrimary, size: 15) },
-            isLoading: isLoading,
-            paddingLeading: paddingLeading,
-            reserveTrailingIconSpace: reserveTrailingIconSpace
-        )
-    }
-}
-
 #Preview {
     PrimaryButtonView(title: "Next")
 }

@@ -115,6 +115,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             getValueCell(for: "estNetworkFee", with: input.feeCrypto, secondRowText: input.feeFiat)
                 .blur(radius: input.isCalculatingFee ? 1 : 0)
 
+            // Costs the fee row cannot express — see `additionalRows`. Placed
+            // directly under it because that is what they are: part of what this
+            // transaction costs, read in the same breath.
+            ForEach(input.additionalRows) { row in
+                Separator()
+                getValueCell(for: row.title, with: row.value)
+            }
+
             Group {
                 if let signDirect = input.keysignPayload?.signDirect {
                     Separator()

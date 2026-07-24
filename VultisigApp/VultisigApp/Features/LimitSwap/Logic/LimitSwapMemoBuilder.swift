@@ -19,11 +19,27 @@ func buildLimitSwapMemo(_ inputs: LimitSwapInputs) throws -> String {
     return composeLimitSwapMemo(limString: compressLim(lim), inputs: inputs, interval: interval)
 }
 
+/// THORChain's limit-swap memo prefix. The limit-ness of an order lives ONLY in
+/// its memo (`=<:…` vs the market path's `=>:…`), so this prefix is the sole
+/// on-the-wire discriminator — which makes it the only thing a co-signer, who
+/// sees just a `KeysignPayload`, can key off to tell a resting order from a
+/// market swap. Shared by the builder and `isLimitSwapMemo` so the two can't
+/// drift apart.
+let limitSwapMemoPrefix = "=<:"
+
+/// True when `memo` places a THORChain limit order.
+///
+/// Prefix-matched, not equality-matched: everything after the prefix is order
+/// payload (target asset, destination, LIM, expiry, affiliate).
+func isLimitSwapMemo(_ memo: String?) -> Bool {
+    memo?.hasPrefix(limitSwapMemoPrefix) ?? false
+}
+
 /// Assemble the `=<` memo string from a (pre-formatted) LIM field and the order
 /// inputs. Single source of the wire layout so the exact-precision path and the
 /// byte-fitting path (`buildFittedLimitSwapMemo`) can't drift.
 private func composeLimitSwapMemo(limString: String, inputs: LimitSwapInputs, interval: Int) -> String {
-    "=<:\(inputs.targetAsset):\(inputs.destAddress):\(limString)/\(interval)/0:\(inputs.affiliate):\(inputs.affiliateBps)"
+    "\(limitSwapMemoPrefix)\(inputs.targetAsset):\(inputs.destAddress):\(limString)/\(interval)/0:\(inputs.affiliate):\(inputs.affiliateBps)"
 }
 
 /// Maximum the minimum-output (LIM) may be rounded UP to make an over-long memo

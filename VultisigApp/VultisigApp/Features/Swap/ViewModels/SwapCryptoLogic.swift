@@ -63,7 +63,52 @@ enum SwapCryptoLogic {
     }
 
     static func amountInCoinDecimal(fromAmount: String, fromCoin: Coin) -> BigInt {
-        fromCoin.raw(for: fromAmount.toDecimal())
+        let amount = fromAmount.toDecimal()
+        let raw = fromCoin.raw(for: amount)
+
+        // `raw(for:)` rounds UP, and the amount text round-trips through
+        // `NumberFormatter`, which keeps only ~16 significant digits and rounds
+        // half-up. A 100% preset on an 18-decimal asset therefore parses back a
+        // hair ABOVE the balance and would broadcast more base units than the
+        // wallet holds — a transaction the chain rejects.
+        //
+        // This is the broadcast amount, so the invariant is simply that it can
+        // never exceed the balance. Over-spends are caught elsewhere, on a
+        // separate `Decimal` path (`balanceError` compares `fromAmount` against
+        // `balanceDecimal` and never calls this), so capping here hides nothing
+        // from the insufficient-funds check.
+        //
+        // Skip the cap at zero. `Coin.init` seeds `rawBalance` to `String.zero`
+        // ("0"), so a coin whose balance hasn't loaded is indistinguishable
+        // from a genuinely empty wallet — there is no separate unloaded
+        // sentinel to branch on. Capping on zero would therefore zero out a
+        // valid amount every time the swap form renders before balances land,
+        // which is the far worse failure: an empty wallet is already rejected
+        // by `balanceError` on the `Decimal` path above.
+        let rawBalance = fromCoin.rawBalance.toBigInt()
+        guard rawBalance > 0 else { return raw }
+        return min(raw, rawBalance)
+    }
+
+    /// Amount string for a "25 / 50 / 75 / 100%" preset on the swap source
+    /// coin, or `nil` for a percentage the buttons don't offer.
+    ///
+    /// A native 100% has to leave the network fee behind; every other preset is
+    /// a straight fraction of the balance. Lives here rather than in the view
+    /// so the math is testable on its own.
+    static func percentageAmountText(percentage: Int, fromCoin: Coin, fee: BigInt) -> String? {
+        guard [25, 50, 75, 100].contains(percentage) else { return nil }
+
+        let rawBalance = fromCoin.rawBalance.toBigInt()
+        let spendable = percentage == 100 && fromCoin.isNativeToken
+            ? max(rawBalance - fee, .zero)
+            : rawBalance
+
+        return PercentageAmountLogic.amountText(
+            percentage: percentage,
+            rawBalance: spendable,
+            coinDecimals: fromCoin.decimals
+        )
     }
 
     // MARK: - Quote-derived
@@ -88,7 +133,7 @@ enum SwapCryptoLogic {
             default:
                 return fee ?? 0
             }
-        case let .jupiter(_, fee, _):
+        case let .jupiter(_, fee, _, _):
             // Jupiter exposes no network fee at quote time; fall back to the
             // Solana-source plan fee carried in `thorchainFee`
             // (`chainSpecific.gas`), the same way Send computes it.
@@ -137,7 +182,7 @@ enum SwapCryptoLogic {
         case let .oneinch(quote, _), let .lifi(quote, _, _), let .kyberswap(quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
-        case let .jupiter(quote, _, _):
+        case let .jupiter(quote, _, _, _):
             // `outAmount` is already net of the affiliate fee (deducted from the
             // output and reported separately), so it's what the user receives —
             // same as LiFi above. Do NOT subtract the fee again.
@@ -374,18 +419,18 @@ enum SwapCryptoLogic {
         fee == .zero
     }
 
+    /// Reconciled total fee = Network + Vultisig(affiliate) + Protocol(outbound),
+    /// matching the itemized rows shown on the Verify/Details/Done screens.
+    /// Deliberately NOT `fees.total`: that composite also carries the
+    /// `asset`/liquidity slippage, which is already reflected in the quoted
+    /// output amount and must not be double-counted (Android's reference,
+    /// `SwapQuoteManager.kt`, reconciles the same way).
     static func totalFeeString(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin, fee: BigInt) -> String {
+        guard quote != nil else { return .empty }
         let networkFee = feeCoin.fiat(gas: fee)
-
-        if let evmFee = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) {
-            return (evmFee + networkFee).formatToFiat(includeCurrencySymbol: true)
-        }
-
-        guard let inboundFee = inboundFeeDecimal(quote: quote, toCoin: toCoin) else { return .empty }
-
-        let inboundFeeRaw = toCoin.raw(for: inboundFee)
-        let providerFee = toCoin.fiat(value: inboundFeeRaw)
-        return (providerFee + networkFee).formatToFiat(includeCurrencySymbol: true)
+        let affiliateFee = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+        let outboundFee = outboundFeeFiat(quote: quote, toCoin: toCoin)
+        return (networkFee + affiliateFee + outboundFee).formatToFiat(includeCurrencySymbol: true)
     }
 
     // MARK: - Display: limit-order network fee
@@ -424,65 +469,165 @@ enum SwapCryptoLogic {
         return formatter.string(from: fromDate, to: toDate) ?? .empty
     }
 
+    /// Trailing value for the "Vultisig Fee" affiliate row. The affiliate
+    /// component ONLY, sourced per route from `affiliateFeeFiat` — never the
+    /// composite `fees.total`. Returns `$0.00` (not empty) for a real affiliate
+    /// route charging zero, so the Ultimate/100%-waiver user still sees the row;
+    /// SwapKit's flat 0.50% is baked into the quoted rate, so it shows an
+    /// "included in quoted rate" note instead of a separate amount. `.empty`
+    /// only when there is no quote — row visibility is gated by
+    /// `showAffiliateFeeRow`, not by this string being empty.
     static func baseAffiliateFee(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> String {
         guard let quote else { return .empty }
-
-        if let evmFee = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) {
-            return evmFee.formatToFiat(includeCurrencySymbol: true)
+        if case .swapkit = quote {
+            return "swap.included_in_rate".localized
         }
+        return affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            .formatToFiat(includeCurrencySymbol: true)
+    }
 
+    /// Whether the "Vultisig Fee" affiliate row should render. Every real market
+    /// swap route has an affiliate concept (shown even at 0% for the Ultimate
+    /// waiver), but a secured mint is a ~1:1 SECURE+ deposit with no affiliate
+    /// and a limit order carries no market quote.
+    ///
+    /// The one exception is a Jupiter swap whose OUTPUT is native SOL: Jupiter
+    /// collects the affiliate fee on the INPUT mint there (wrapped-SOL outputs
+    /// have no fee ATA), so the amount is never surfaced in `toCoin` units
+    /// (`feeOnInput == true`). Rather than render a misleading `$0.00` (the real
+    /// fee is non-zero), the row is suppressed for that case, on both the form
+    /// and verify (kept symmetric). A token-output Jupiter route always shows the
+    /// row — including at 0.00% / $0.00 for the Ultimate tier, where the fee is
+    /// on the output mint and simply zero.
+    static func showAffiliateFeeRow(quote: SwapQuote?, mode: SwapMode) -> Bool {
+        guard let quote, mode != .securedMint else { return false }
+        if case let .jupiter(_, _, _, feeOnInput) = quote, feeOnInput {
+            return false
+        }
+        return true
+    }
+
+    /// Affiliate (Vultisig) fee component in fiat — money Vultisig receives,
+    /// itemized separately from the protocol's outbound/liquidity fees. The
+    /// source per route: native THOR/Maya `fees.affiliate`, EVM aggregator
+    /// `tx.swapFee`, LiFi (EVM `tx.swapFee`, Solana the integrator fraction of
+    /// the output), Jupiter `platformFee`. SwapKit's flat affiliate is baked into
+    /// the quoted rate (not a separable line item), so it contributes nothing to
+    /// the itemized fiat total. `.zero` (not empty) for a real affiliate route
+    /// charging 0 — the Ultimate/waiver case keeps a $0.00 row.
+    static func affiliateFeeFiat(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin) -> Decimal {
+        guard let quote else { return .zero }
         switch quote {
         case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            let feeAmount = q.fees.affiliate.toDecimal()
-            guard feeAmount > 0 else { return .empty }
-            let feeDecimal = feeAmount / pow(10, 8)
-            return toCoin.fiat(decimal: feeDecimal).formatToFiat(includeCurrencySymbol: true)
-        default:
-            return .empty
+            let feeDecimal = q.fees.affiliate.toDecimal() / pow(10, 8)
+            return toCoin.fiat(decimal: feeDecimal)
+        case .oneinch, .kyberswap:
+            let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            let feeDecimal = coin.decimal(for: quote.evmSwapFeeBigInt ?? .zero)
+            return coin.fiat(decimal: feeDecimal)
+        case let .lifi(evmQuote, _, integratorFee):
+            // EVM LiFi carries the fee as a token amount in `tx.swapFee`. Solana
+            // LiFi deliberately reports `swapFee` "0" and charges the integrator
+            // fee as a fraction of the output amount instead — so fall back to
+            // that, or the fee row and Total would drop the charged fee.
+            if let evmFee = quote.evmSwapFeeBigInt {
+                let coin = swapFeeCoin(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+                return coin.fiat(decimal: coin.decimal(for: evmFee))
+            }
+            let outAmount = toCoin.decimal(for: BigInt(evmQuote.dstAmount) ?? .zero)
+            return toCoin.fiat(decimal: outAmount * (integratorFee ?? 0))
+        case let .jupiter(_, _, platformFee, _):
+            // `platformFee` is already denominated in `toCoin` units (0 when the
+            // fee is on the input mint or none is charged).
+            return toCoin.fiat(decimal: platformFee)
+        case .swapkit:
+            return .zero
         }
     }
 
-    static func swapFeeLabel(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin, feeCoin: Coin, fromAmount: String) -> String {
-        guard let quote else { return "swapFee".localized }
+    /// Label for the "Vultisig Fee (X.XX%)" affiliate row. The percentage source
+    /// depends on the route:
+    /// - Native THOR/Maya: derived from the effective affiliate bps actually sent
+    ///   on the quote request (`THORChainSwaps.effectiveAffiliateFeeBps`), so the
+    ///   shown % equals what the node charged — and reconciles with `fees.affiliate`
+    ///   by construction, rather than a lossy `fee/input` fiat division.
+    /// - SwapKit: a flat 0.50% baked into the quoted rate (no per-tx fee field).
+    /// - EVM aggregators / Jupiter: the affiliate amount comes from a route field
+    ///   (`tx.swapFee` / `platformFee`), so the % is derived from that amount and
+    ///   matches the amount shown for the route.
+    static func swapFeeLabel(
+        quote: SwapQuote?,
+        fromCoin: Coin,
+        toCoin: Coin,
+        feeCoin: Coin,
+        fromAmount: String,
+        vultDiscountBps: Int,
+        isReferred: Bool
+    ) -> String {
+        guard let quote else { return "vultisigFee".localized }
 
-        let feeFiat: Decimal
-        if let evmFee = evmSwapFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin) {
-            feeFiat = evmFee
-        } else {
-            switch quote {
-            case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-                let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
-                feeFiat = toCoin.fiat(decimal: feeAmt)
-            default:
-                return String(format: "swapFeePercentage".localized, 0.0)
-            }
+        switch quote {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet:
+            // All three THORChain services build affiliate params via
+            // `ThorchainService.affiliateParams`, which applies the referred
+            // split whenever a code is present.
+            let bps = THORChainSwaps.effectiveAffiliateFeeBps(
+                discountBps: vultDiscountBps,
+                isReferred: isReferred
+            )
+            return String(format: "vultisigFeePercentage".localized, Double(bps) / 100.0)
+        case .mayachain:
+            // MayaChain's affiliate params ignore the referral code entirely
+            // (`MayachainService.affiliateParams(referredCode _:)`), so it always
+            // sends the single standard rate — never the referred split.
+            let bps = THORChainSwaps.effectiveAffiliateFeeBps(
+                discountBps: vultDiscountBps,
+                isReferred: false
+            )
+            return String(format: "vultisigFeePercentage".localized, Double(bps) / 100.0)
+        case .swapkit:
+            return String(format: "vultisigFeePercentage".localized, Double(THORChainSwaps.swapKitAffiliateFeeBps) / 100.0)
+        case .oneinch, .kyberswap, .lifi, .jupiter:
+            let feeFiat = affiliateFeeFiat(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
+            let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
+            guard inputFiat > 0 else { return "vultisigFee".localized }
+            let percentage = (feeFiat / inputFiat) * 100
+            return String(format: "vultisigFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
         }
+    }
 
-        let inputFiat = fromCoin.fiat(decimal: fromAmountDecimal(fromAmount: fromAmount))
-        guard inputFiat > 0 else { return "swapFee".localized }
-
-        let percentage = (feeFiat / inputFiat) * 100
-        return String(format: "swapFeePercentage".localized, NSDecimalNumber(decimal: percentage).doubleValue)
+    /// Protocol outbound-fee component in fiat (denominated in the output asset),
+    /// native THOR/Maya only. `.zero` for every other route. The `asset`/liquidity
+    /// slippage component of `fees.total` is deliberately excluded — it is already
+    /// reflected in the quoted output amount, so folding it into the fee total
+    /// would double-count it.
+    static func outboundFeeFiat(quote: SwapQuote?, toCoin: Coin) -> Decimal {
+        guard let quote else { return .zero }
+        switch quote {
+        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
+            return toCoin.fiat(decimal: q.fees.outbound.toDecimal() / pow(10, 8))
+        default:
+            return .zero
+        }
     }
 
     static func outboundFeeString(quote: SwapQuote?, toCoin: Coin) -> String {
         guard let quote else { return .empty }
-
-        var outboundFeeString: String?
-        let feeDecimals = 8 // THORChain standard
-
         switch quote {
-        case let .thorchain(q), let .thorchainChainnet(q), let .thorchainStagenet(q), let .mayachain(q):
-            outboundFeeString = q.fees.outbound
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return outboundFeeFiat(quote: quote, toCoin: toCoin).formatToFiat(includeCurrencySymbol: true)
         default:
             return .empty
         }
+    }
 
-        guard let outboundFeeString else { return .empty }
-        let feeAmount = outboundFeeString.toDecimal()
-        let feeDecimal = feeAmount / pow(10, feeDecimals)
-        // Outbound fee is denominated in the output asset.
-        return toCoin.fiat(decimal: feeDecimal).formatToFiat(includeCurrencySymbol: true)
+    /// Whether the "Protocol Fee" (native outbound) row should render: a native
+    /// THOR/Maya route carrying an outbound fee. Suppressed for a secured mint —
+    /// its synthetic ~1:1 quote reports a zero outbound that is not a real
+    /// protocol fee, so the row would otherwise show a spurious `$0.00`.
+    static func showProtocolFeeRow(quote: SwapQuote?, toCoin: Coin, mode: SwapMode) -> Bool {
+        guard mode != .securedMint else { return false }
+        return !outboundFeeString(quote: quote, toCoin: toCoin).isEmpty
     }
 
     // MARK: - Discounts
@@ -705,10 +850,6 @@ enum SwapCryptoLogic {
             }
         }
         return nil
-    }
-
-    static func isSufficientBalance(fromCoin: Coin, feeCoin: Coin, fromAmount: String, fee: BigInt) -> Bool {
-        balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee) == nil
     }
 
     static func validateForm(

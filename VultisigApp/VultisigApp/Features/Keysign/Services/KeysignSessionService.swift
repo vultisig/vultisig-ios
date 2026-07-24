@@ -71,7 +71,6 @@ enum KeysignSessionServiceError: LocalizedError {
 @MainActor
 protocol KeysignSessionServicing: AnyObject {
     func registerAsParticipant(session: KeysignSessionInfo) async throws
-    func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws
     func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String]
     func pollSetupMessage(session: KeysignSessionInfo, messageID: String, timeout: TimeInterval) async throws -> Data
 }

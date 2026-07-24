@@ -15,6 +15,7 @@ final class TransactionStatusPoller: ObservableObject {
 
     private let service = TransactionStatusService.shared
     private let recorder = TransactionHistoryRecorder.shared
+    private let historyStorage = TransactionHistoryStorage.shared
     private var activeTasks: [String: Task<Void, Never>] = [:]
     private var taskTokens: [String: UUID] = [:]
     private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-status-poller")
@@ -34,6 +35,10 @@ final class TransactionStatusPoller: ObservableObject {
     /// caller can't accidentally re-introduce the dual-polling regression
     /// that lets a source-chain confirmation overwrite a still-in-flight
     /// cross-chain swap as `.successful`.
+    ///
+    /// Kept even though the core `poll(txHash:…)` now enforces the same gate:
+    /// this overload already holds the row, so it answers without a refetch
+    /// and reports the decision back through its `Bool` return.
     @discardableResult
     func poll(
         tx: TransactionHistoryData,
@@ -56,6 +61,11 @@ final class TransactionStatusPoller: ObservableObject {
     }
 
     /// Start polling a transaction. Calls `onUpdate` on the main actor when status changes.
+    ///
+    /// Enforces the swap-tracker gate itself rather than trusting callers to.
+    /// This is the single choke point every native poll funnels through — the
+    /// typed `poll(tx:)` overload included — so a caller that only has a hash
+    /// (`pollPendingTransactions`) can't route around it.
     func poll(
         txHash: String,
         chain: Chain,
@@ -64,6 +74,10 @@ final class TransactionStatusPoller: ObservableObject {
         onUpdate: @escaping (TransactionHistoryStatus, String?) -> Void
     ) {
         guard activeTasks[txHash] == nil else { return }
+        guard !isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) else {
+            logger.debug("Skipping native poll for swap-tracked tx \(txHash) — tracker is authoritative")
+            return
+        }
 
         let token = UUID()
         taskTokens[txHash] = token
@@ -72,6 +86,16 @@ final class TransactionStatusPoller: ObservableObject {
         let task = Task { [weak self] in
             while !Task.isCancelled {
                 do {
+                    // Ownership is re-checked before every write, not just at
+                    // start. A poll that legitimately began under
+                    // `trackerOutage` must not still be holding the pen when the
+                    // tracker recovers — the gate has to hold for the write, and
+                    // the write is what the user sees.
+                    guard self?.isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) != true else {
+                        self?.logger.debug("Tracker regained authority mid-poll for \(txHash) — standing down")
+                        break
+                    }
+
                     let elapsed = Date().timeIntervalSince(createdAt)
                     if elapsed >= config.maxWaitTime {
                         let timeoutMessage = "timeout".localized
@@ -91,10 +115,24 @@ final class TransactionStatusPoller: ObservableObject {
                         chain: chain
                     )
 
+                    // `stopAll()` (e.g. the global reset) cancels this task while
+                    // the status request is in flight. A late result must not be
+                    // written back or published for a row that is being deleted —
+                    // re-check cancellation after the await, not just at the top
+                    // of the loop.
+                    if Task.isCancelled { break }
+
                     if let result, let historyStatus = self?.mapToHistoryStatus(result) {
                         var errorMessage: String? = nil
                         if case let .failed(reason) = result.status {
                             errorMessage = reason
+                        }
+                        // Re-checked after the await: the status fetch is a
+                        // network round-trip, and the tracker can take ownership
+                        // while it is in flight.
+                        guard self?.isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) != true else {
+                            self?.logger.debug("Tracker took authority during status fetch for \(txHash) — discarding result")
+                            break
                         }
                         self?.recorder.updateStatus(
                             txHash: txHash,
@@ -148,6 +186,43 @@ final class TransactionStatusPoller: ObservableObject {
         } catch {
             logger.error("Failed to fetch pending transactions: \(error)")
         }
+    }
+
+    private func isOwnedByTracker(txHash: String, pubKeyECDSA: String) -> Bool {
+        let tx: TransactionHistoryData?
+        do {
+            tx = try historyStorage.fetchTransaction(txHash: txHash, pubKeyECDSA: pubKeyECDSA)
+        } catch {
+            // A fetch failure is NOT the same as "no such row", so don't let it
+            // collapse into one silently. Both fall open (below), but only this
+            // one means the store is unreadable — in which case the status write
+            // this gate is protecting would fail against that same store anyway.
+            logger.error("Tracker-gate lookup failed for \(txHash, privacy: .public); treating as untracked: \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+        return Self.isTrackerAuthoritative(for: tx, registry: .shared)
+    }
+
+    /// Whether a registered `SwapTrackingService` owns this row and is
+    /// currently authoritative for it — i.e. native polling must stand down.
+    ///
+    /// Pure, and separated from the fetch, so the decision is testable without
+    /// the poller's singletons or its network-backed polling task.
+    ///
+    /// - A row with no history entry (or an unreadable store) is `nil` here and
+    ///   treated as UNOWNED, so ordinary sends still poll. The gate must only
+    ///   ever *withhold* native polling from rows a tracker actually drives —
+    ///   failing the other way would silently stop every send from confirming.
+    /// - `trackerOutage == true` hands authority back: the tracker has been
+    ///   unavailable long enough that a source-chain confirmation beats no
+    ///   signal at all.
+    static func isTrackerAuthoritative(
+        for tx: TransactionHistoryData?,
+        registry: SwapTrackingRegistry
+    ) -> Bool {
+        guard let tx else { return false }
+        return registry.service(for: tx) != nil
+            && tx.swapTracking?.trackerOutage != true
     }
 
     /// Returns a terminal TransactionHistoryStatus if the result is terminal, nil if still pending.

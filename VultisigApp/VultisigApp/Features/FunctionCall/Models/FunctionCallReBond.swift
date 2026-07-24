@@ -31,11 +31,6 @@ final class FunctionCallReBond {
     /// `FunctionCallInstance.amount` switch for `.rebond`.
     var amount: Decimal { .zero }
 
-    func balance(for coin: Coin) -> String {
-        let balance = coin.balanceDecimal.formatForDisplay()
-        return String(format: "balanceInParentheses".localized, balance, coin.ticker.uppercased())
-    }
-
     func validate(against coin: Coin) {
         if coin.chain != .thorChain || !coin.isNativeToken {
             customErrorMessage = "rebondRequiresRune".localized
