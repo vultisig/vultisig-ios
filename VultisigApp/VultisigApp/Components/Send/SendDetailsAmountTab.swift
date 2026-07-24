@@ -28,7 +28,13 @@ struct SendDetailsAmountTab: View {
     }
 
     var content: some View {
-        SendFormExpandableSection(isExpanded: isExpanded) {
+        SendFormExpandableSection(
+            isExpanded: isExpanded,
+            cornerRadius: 24,
+            horizontalPadding: 16,
+            verticalPadding: 20,
+            backgroundColor: Theme.colors.bgPrimary
+        ) {
             titleSection
         } content: {
             VStack(spacing: 16) {
@@ -71,7 +77,7 @@ struct SendDetailsAmountTab: View {
     }
 
     var separator: some View {
-        LinearSeparator()
+        Separator(color: Theme.colors.borderLight, opacity: 1)
     }
 
     var showGasSelector: Bool {

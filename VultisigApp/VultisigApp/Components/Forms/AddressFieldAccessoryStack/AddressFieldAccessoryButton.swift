@@ -9,6 +9,15 @@ import SwiftUI
 
 struct AddressFieldAccessoryButton: View {
     let icon: ImageResource
+    /// Per-corner radii. Defaults to a uniform 8; the accessory row overrides
+    /// the outer bottom corners to 16 so the stack echoes the card's rounded
+    /// bottom edge.
+    var cornerRadii = RectangleCornerRadii(
+        topLeading: 8,
+        bottomLeading: 8,
+        bottomTrailing: 8,
+        topTrailing: 8
+    )
     let action: () -> Void
 
     var body: some View {
@@ -18,7 +27,7 @@ struct AddressFieldAccessoryButton: View {
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
+                    UnevenRoundedRectangle(cornerRadii: cornerRadii)
                         .inset(by: 0.5)
                         .fill(Theme.colors.bgSurface1)
                         .stroke(Theme.colors.borderLight)

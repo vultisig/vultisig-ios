@@ -12,6 +12,7 @@ struct AddressTextField: View {
     let label: String
     let coin: Coin
     @Binding var error: String?
+    var errorStyle: CommonTextFieldErrorStyle = .error
     var onAddressResult: (AddressResult?) -> Void
 
     var body: some View {
@@ -22,7 +23,8 @@ struct AddressTextField: View {
                 placeholder: "enterAddressHere".localized,
                 error: $error,
                 isScrollable: true,
-                labelStyle: .secondary
+                labelStyle: .secondary,
+                errorStyle: errorStyle
             )
             .submitLabel(.next)
             .disableAutocorrection(true)
