@@ -583,6 +583,7 @@
 "invalidIntegerError" = "无效的整数数量";
 "invalidLPUnits" = "无效的 LP 单位";
 "invalidOperatorFee" = "无效的运营商费用";
+"invalidRecipientAddressError" = "该收款人不是此链的有效地址";
 "invalidVaultData" = "无效的保险库数据";
 "Italian" = "意大利语";
 "iUnderstand" = "我了解";

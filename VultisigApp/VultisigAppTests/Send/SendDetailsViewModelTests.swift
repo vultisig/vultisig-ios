@@ -459,4 +459,176 @@ final class SendDetailsViewModelTests: XCTestCase {
         // Reaching here without crashing is the assertion.
         XCTAssertTrue(true)
     }
+
+    // MARK: - Invalid-recipient inline error (#4861)
+    //
+    // The recipient field must be a first-class, chain-general, user-facing
+    // gate: a definitive resolution failure shows a clear inline error and
+    // keeps Next disabled *with that visible reason*, and a valid replacement
+    // clears it. `showAddressAlert` gates the inline message under the field;
+    // `errorMessage` carries the localization key the field renders.
+
+    // A real ETH transaction id (0x + 64 hex) — the exact "txid pasted into the
+    // recipient field" case from the issue. It is not a 40-hex address, so it
+    // can never be a valid recipient.
+    private let ethTransactionId =
+        "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"
+
+    func testMarkInvalidRecipientSurfacesInlineErrorForEthTxid() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = ethTransactionId
+
+        vm.markInvalidRecipient()
+
+        XCTAssertTrue(vm.showAddressAlert, "A definitive invalid recipient must show the inline error.")
+        XCTAssertEqual(vm.errorMessage, "invalidRecipientAddressError")
+        XCTAssertFalse((vm.errorMessage ?? "").isEmpty, "The inline error must carry a non-empty message.")
+    }
+
+    func testMarkInvalidRecipientIgnoresEmptyAddress() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = ""
+
+        vm.markInvalidRecipient()
+
+        XCTAssertFalse(vm.showAddressAlert, "An empty field is not an invalid recipient — no error under a blank input.")
+    }
+
+    func testValidateFormFlagsInvalidEthRecipientTxid() async {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH(rawBalance: "1000000000000000000"))
+        vm.toAddress = ethTransactionId
+        vm.amount = "0.1"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid, "A txid recipient must never pass form validation.")
+        XCTAssertTrue(vm.showAddressAlert)
+        XCTAssertFalse((vm.errorMessage ?? "").isEmpty)
+    }
+
+    func testValidateFormFlagsInvalidCosmosRecipient() async {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeATOM())
+        vm.toAddress = "cosmos1invalidrecipientvalue"
+        vm.amount = "0.1"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertTrue(vm.showAddressAlert)
+        XCTAssertFalse((vm.errorMessage ?? "").isEmpty)
+    }
+
+    func testValidateFormFlagsInvalidUtxoRecipient() async {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeBTC())
+        vm.toAddress = "notabitcoinaddress"
+        vm.amount = "0.001"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertTrue(vm.showAddressAlert)
+        XCTAssertFalse((vm.errorMessage ?? "").isEmpty)
+    }
+
+    func testValidateFormFlagsInvalidSolanaRecipient() async {
+        let sol = SendFormFixture.makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true, rawBalance: "1000000000")
+        let vm = SendFormFixture.make(coin: sol)
+        vm.toAddress = "not-a-solana-address"
+        vm.amount = "0.1"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertTrue(vm.showAddressAlert)
+        XCTAssertFalse((vm.errorMessage ?? "").isEmpty)
+    }
+
+    func testValidateFormFlagsInvalidXrpRecipient() async {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeXRP())
+        vm.toAddress = "notarippleaddress"
+        vm.amount = "1"
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertFalse(isValid)
+        XCTAssertTrue(vm.showAddressAlert)
+        XCTAssertFalse((vm.errorMessage ?? "").isEmpty)
+    }
+
+    func testValidRecipientReplacementClearsInlineError() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = ethTransactionId
+        vm.markInvalidRecipient()
+        XCTAssertTrue(vm.showAddressAlert)
+
+        // User replaces the txid with a valid ETH address — the sync format
+        // check that fires on every edit must clear the inline error.
+        vm.toAddress = "0x1111111111111111111111111111111111111111"
+
+        XCTAssertTrue(vm.isValidAddressFormat(), "A plain valid ETH address must pass the format check.")
+        XCTAssertFalse(vm.showAddressAlert, "A valid replacement recipient clears the inline error.")
+        XCTAssertNil(vm.errorMessage)
+    }
+
+    func testValidRecipientReplacementEnablesForm() async {
+        // Passthrough resolver: `AddressService.resolveInput` rejects otherwise-
+        // valid addresses in unit tests, so inject an identity resolver to
+        // exercise the happy path end-to-end.
+        let eth = SendFormFixture.makeETH(rawBalance: "1000000000000000000")
+        let vm = SendFormFixture.make(coin: eth, addressResolver: { input, _ in input })
+        vm.markInvalidRecipient()          // simulate a prior invalid-recipient state
+        vm.toAddress = "0x1111111111111111111111111111111111111111"
+        vm.amount = "0.1"
+        vm.gas = BigInt(21_000)
+        vm.fee = BigInt(21_000)
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertTrue(isValid, "A valid recipient must enable the flow.")
+        XCTAssertFalse(vm.showAddressAlert, "The inline error must not survive a valid submission.")
+    }
+
+    // MARK: - Regression: name-service recipients must not error prematurely
+
+    func testEnsNameResolvesWithoutInlineError() async {
+        let resolved = "0x1111111111111111111111111111111111111111"
+        let eth = SendFormFixture.makeETH(rawBalance: "1000000000000000000")
+        let vm = SendFormFixture.make(coin: eth, addressResolver: { _, _ in resolved })
+        vm.toAddress = "vitalik.eth"
+        vm.amount = "0.1"
+        vm.gas = BigInt(21_000)
+        vm.fee = BigInt(21_000)
+
+        let isValid = await vm.validateForm()
+
+        XCTAssertTrue(isValid, "A resolvable ENS name is a valid recipient.")
+        XCTAssertFalse(vm.showAddressAlert, "ENS names must never flash the invalid-recipient error.")
+    }
+
+    func testMarkInvalidRecipientIfUnresolvableFlagsEthTxid() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = ethTransactionId
+
+        vm.markInvalidRecipientIfUnresolvable()
+
+        XCTAssertTrue(vm.showAddressAlert, "A paste that can never resolve must flag immediately.")
+    }
+
+    func testMarkInvalidRecipientIfUnresolvableSkipsEnsName() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = "vitalik.eth"
+
+        vm.markInvalidRecipientIfUnresolvable()
+
+        XCTAssertFalse(vm.showAddressAlert, "ENS names are left to async resolution, not flagged on paste.")
+    }
+
+    func testMarkInvalidRecipientIfUnresolvableSkipsValidAddress() {
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
+        vm.toAddress = "0x1111111111111111111111111111111111111111"
+
+        vm.markInvalidRecipientIfUnresolvable()
+
+        XCTAssertFalse(vm.showAddressAlert, "A valid same-chain address must not be flagged on paste.")
+    }
 }

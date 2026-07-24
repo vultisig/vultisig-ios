@@ -581,6 +581,7 @@
 "invalidIntegerError" = "유효하지 않은 정수 금액";
 "invalidLPUnits" = "유효하지 않은 LP 단위";
 "invalidOperatorFee" = "유효하지 않은 운영자 수수료";
+"invalidRecipientAddressError" = "이 수신자는 이 체인에 유효한 주소가 아닙니다.";
 "invalidVaultData" = "유효하지 않은 볼트 데이터";
 "Italian" = "이탈리아어";
 "iUnderstand" = "이해합니다";

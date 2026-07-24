@@ -583,6 +583,7 @@
 "invalidIntegerError" = "Importo intero non valido";
 "invalidLPUnits" = "Unità LP non valide";
 "invalidOperatorFee" = "Commissione operatore non valida";
+"invalidRecipientAddressError" = "Quel destinatario non è un indirizzo valido per questa catena.";
 "invalidVaultData" = "Dati del caveau non validi";
 "Italian" = "Italiano";
 "iUnderstand" = "Ho capito";
