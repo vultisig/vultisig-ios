@@ -50,6 +50,7 @@ final class ChainSwapAvailabilityTests: XCTestCase {
         .zcash: true,
         .mantle: true,
         .hyperliquid: true,
+        .robinhood: true,
         .tron: true,
         .cardano: true,
         .sui: true,

@@ -729,7 +729,7 @@ private extension BlockChainService {
                 gas: fee
             )
 
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let feeService = try EthereumFeeService(chain: coin.chain)
             let fee = try await feeService.calculateFees(chain: coin.chain,
