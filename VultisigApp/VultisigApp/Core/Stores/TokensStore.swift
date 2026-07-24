@@ -150,7 +150,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "AAOI",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x521cf887e6531c6f667b5bc4d896e5d9bfe8eb2e.png",
+            logo: "https://financialmodelingprep.com/image-stock/AAOI.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x521Cf887E6531c6F667b5BC4D896E5d9bfE8EB2E",
@@ -159,7 +159,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "AAPL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xaf3d76f1834a1d425780943c99ea8a608f8a93f9.png",
+            logo: "https://financialmodelingprep.com/image-stock/AAPL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
@@ -168,7 +168,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "AMAT",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x36046893810a7e7fce501229d57dc3fc8c8716d0.png",
+            logo: "https://financialmodelingprep.com/image-stock/AMAT.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
@@ -177,7 +177,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "AMD",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x86923f96303d656e4aa86d9d42d1e57ad2023fdc.png",
+            logo: "https://financialmodelingprep.com/image-stock/AMD.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC",
@@ -186,7 +186,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "AMZN",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x12f190a9f9d7d37a250758b26824b97ce941bf54.png",
+            logo: "https://financialmodelingprep.com/image-stock/AMZN.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x12f190a9F9d7D37a250758b26824B97CE941bF54",
@@ -195,7 +195,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "APLD",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xb8dbf92f9741c9ac1c32115e78581f23509916fd.png",
+            logo: "https://financialmodelingprep.com/image-stock/APLD.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xb8DBf92F9741c9ac1c32115E78581f23509916FD",
@@ -204,7 +204,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "ASML",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x47f93d52cbec7c6d2cfc080e154002370a60daea.png",
+            logo: "https://financialmodelingprep.com/image-stock/ASML.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
@@ -213,7 +213,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "ASTS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x1af6446f07eb1d97c546afc8c9544cbdf3ad5137.png",
+            logo: "https://financialmodelingprep.com/image-stock/ASTS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x1AF6446f07eb1d97c546AFC8c9544cBDF3AD5137",
@@ -222,7 +222,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "AVGO",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x156e175dd063a8ce274c50654ef40e0032b3fbcf.png",
+            logo: "https://financialmodelingprep.com/image-stock/AVGO.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
@@ -231,7 +231,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "BA",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x4d21483a44bf67a86b77e3da301411880797d452.png",
+            logo: "https://financialmodelingprep.com/image-stock/BA.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x4D21483a44Bf67a86b77E3dA301411880797D452",
@@ -240,7 +240,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "BABA",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xad25ac6c84d497db898fa1e8387bf6af3532a1c4.png",
+            logo: "https://financialmodelingprep.com/image-stock/BABA.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xad25Ac6C84D497db898fa1E8387bf6Af3532a1c4",
@@ -249,7 +249,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "BE",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x822cc93ffd030293e9842c30bbd678f530701867.png",
+            logo: "https://financialmodelingprep.com/image-stock/BE.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x822CC93fFD030293E9842c30BBD678F530701867",
@@ -258,7 +258,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CBRS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x5c90450bbb4273d7b2f17cf6917aeb237a569679.png",
+            logo: "https://financialmodelingprep.com/image-stock/CBRS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x5c90450Bbb4273D7b2f17CF6917AEB237A569679",
@@ -267,7 +267,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CCL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x9651342cea770ae9a2969ba2a52611523146aef9.png",
+            logo: "https://financialmodelingprep.com/image-stock/CCL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
@@ -276,7 +276,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CELH",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x8cf07c5a878945185d327aaa6e33faa95f95e7bf.png",
+            logo: "https://financialmodelingprep.com/image-stock/CELH.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x8cF07C5A878945185d327aAa6e33FAa95F95e7bF",
@@ -285,7 +285,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CLSK",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xcbb95bbf36099d34da091dc6fa6f49efa257cee3.png",
+            logo: "https://financialmodelingprep.com/image-stock/CLSK.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xcBB95BBF36099d34dA091dc6Fa6F49EfA257Cee3",
@@ -294,7 +294,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "COIN",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x6330d8c3178a418788df01a47479c0ce7ccf450b.png",
+            logo: "https://financialmodelingprep.com/image-stock/COIN.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x6330D8C3178a418788dF01a47479c0ce7CCF450b",
@@ -303,7 +303,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "COST",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x4ea005168d7f09a7a0ba9d1def21a479950e44c2.png",
+            logo: "https://financialmodelingprep.com/image-stock/COST.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
@@ -312,7 +312,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CRCL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5.png",
+            logo: "https://financialmodelingprep.com/image-stock/CRCL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5",
@@ -321,7 +321,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CRWD",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xea72ecca2d0f6bfa1394dbbcff85b52cd4233931.png",
+            logo: "https://financialmodelingprep.com/image-stock/CRWD.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
@@ -330,7 +330,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "CRWV",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x5f10a1c971b69e47e059e1dc91901b59b3fb49c3.png",
+            logo: "https://financialmodelingprep.com/image-stock/CRWV.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x5f10A1C971B69e47e059e1dC91901B59b3fB49C3",
@@ -339,7 +339,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "DDOG",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x27c99fbde9d0d2aa4f4bfb4943f237843ddf6958.png",
+            logo: "https://financialmodelingprep.com/image-stock/DDOG.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x27c99fBde9D0d2AA4f4Bfb4943f237843DdF6958",
@@ -348,7 +348,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "DELL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x941ae714ec6d8130c7b75d67160ca08f1e7d11dd.png",
+            logo: "https://financialmodelingprep.com/image-stock/DELL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
@@ -357,7 +357,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "ELF",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x39ec44bee4f6a116c6f9b8de566848a985c53c60.png",
+            logo: "https://financialmodelingprep.com/image-stock/ELF.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x39EC44Bee4F6A116c6F9B8De566848a985C53C60",
@@ -366,7 +366,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "EWY",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x7f0abef0c07280f82c6a08ead09ded6bae2c13fc.png",
+            logo: "https://financialmodelingprep.com/image-stock/EWY.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x7f0aBeF0C07280F82c6a08ead09dEd6BAE2C13Fc",
@@ -375,7 +375,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "F",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x25c288e6d899b9bc30160965ad9644c67e73be0c.png",
+            logo: "https://financialmodelingprep.com/image-stock/F.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
@@ -384,7 +384,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "FLNC",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x282e87451e10fa6679bc7d76c69be44cd3fc777c.png",
+            logo: "https://financialmodelingprep.com/image-stock/FLNC.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x282e87451E10fA6679BC7D76C69BE44cD3fC777C",
@@ -393,7 +393,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "FUTU",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xeb30663bdff0622ef4e4e5cbb4e975f19f33f51d.png",
+            logo: "https://financialmodelingprep.com/image-stock/FUTU.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xeB30663bDFf0622Ef4e4E5cBb4E975F19f33f51D",
@@ -402,7 +402,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "GLW",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x7c04e6a3368f2a1de3874f0e80d2e0a1a9915da6.png",
+            logo: "https://financialmodelingprep.com/image-stock/GLW.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x7c04E6A3368F2A1DE3874f0e80d2e0A1a9915da6",
@@ -411,7 +411,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "GME",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x1b0e319c6a659f002271b69db8a7df2f911c153e.png",
+            logo: "https://financialmodelingprep.com/image-stock/GME.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x1b0E319c6A659F002271B69dB8A7df2F911c153E",
@@ -420,7 +420,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "GOOGL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3.png",
+            logo: "https://financialmodelingprep.com/image-stock/GOOGL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
@@ -429,7 +429,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "INOD",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xf1953dab6fad537488d5a022361ffaa8b4c95ec6.png",
+            logo: "https://financialmodelingprep.com/image-stock/INOD.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xf1953DAB6FaD537488d5A022361FfAa8B4c95eC6",
@@ -438,7 +438,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "INTC",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xc72b96e0e48ecd4dc75e1e45396e26300bc39681.png",
+            logo: "https://financialmodelingprep.com/image-stock/INTC.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xc72b96e0E48ecd4DC75E1e45396e26300BC39681",
@@ -447,7 +447,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "INTU",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x56d23bee5f41a7120170b0c603dae30128e460e9.png",
+            logo: "https://financialmodelingprep.com/image-stock/INTU.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x56d23beE5f41A7120170b0c603Dae30128e460e9",
@@ -456,7 +456,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "IONQ",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x558378e000d634a36593e338ebacdd6207640efe.png",
+            logo: "https://financialmodelingprep.com/image-stock/IONQ.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x558378E000D634A36593E338eBacdd6207640EfE",
@@ -465,7 +465,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "IREN",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xf0ab0c93be6f41369d302e55db1a96b3c430212d.png",
+            logo: "https://financialmodelingprep.com/image-stock/IREN.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xF0AB0c93bE6F41369d302e55db1A96b3c430212D",
@@ -474,7 +474,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "LITE",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x8ef20885f94e3d9bc7eb3080279188bd5ed7c08c.png",
+            logo: "https://financialmodelingprep.com/image-stock/LITE.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x8eF20885F94e3D9bc7eB3080279188Bd5ED7c08C",
@@ -483,7 +483,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "LLY",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x8005d266423c7ea827372c9c864491e5786600ea.png",
+            logo: "https://financialmodelingprep.com/image-stock/LLY.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x8005d266423c7ea827372c9c864491e5786600ea",
@@ -492,7 +492,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "LULU",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x4e62068525ab11fe768e29dfd00ef909b9803016.png",
+            logo: "https://financialmodelingprep.com/image-stock/LULU.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x4e62068525Ab11FE768e29dfD00ef909B9803016",
@@ -501,7 +501,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "LUNR",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xa5d4968421ba94814be3b136b15cf422101ac1a3.png",
+            logo: "https://financialmodelingprep.com/image-stock/LUNR.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xa5D4968421bA94814Be3B136b15cf422101aC1a3",
@@ -510,7 +510,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "MDB",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xddf2266b79abf0b48898959b0ed6e6adf512be74.png",
+            logo: "https://financialmodelingprep.com/image-stock/MDB.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xDdf2266b79abf0B48898959B0ed6E6adf512be74",
@@ -519,7 +519,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "META",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xc0d6457c16cc70d6790dd43521c899c87ce02f35.png",
+            logo: "https://financialmodelingprep.com/image-stock/META.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
@@ -528,7 +528,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "MRVL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x62fd0668e10d8b72339be2dcf7643001688ff13b.png",
+            logo: "https://financialmodelingprep.com/image-stock/MRVL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x62fd0668e10D8B72339BE2DCF7643001688ff13B",
@@ -537,7 +537,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "MSFT",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xe93237c50d904957cf27e7b1133b510c669c2e74.png",
+            logo: "https://financialmodelingprep.com/image-stock/MSFT.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
@@ -546,7 +546,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "MSTR",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xec262a75e413fafd0df80480274532c79d42da09.png",
+            logo: "https://financialmodelingprep.com/image-stock/MSTR.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xec262a75e413fAfD0dF80480274532C79D42da09",
@@ -555,7 +555,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "MU",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xff080c8ce2e5feadaca0da81314ae59d232d4afd.png",
+            logo: "https://financialmodelingprep.com/image-stock/MU.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
@@ -564,7 +564,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "MXL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x48961813349333209994750ffa89b3c5c22ec969.png",
+            logo: "https://financialmodelingprep.com/image-stock/MXL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x48961813349333209994750ffA89b3c5C22eC969",
@@ -573,7 +573,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NBIS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x9d9c6684f596f66a64c030b93a886d51fd4d7931.png",
+            logo: "https://financialmodelingprep.com/image-stock/NBIS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x9D9c6684F596F66a64C030B93A886D51Fd4D7931",
@@ -582,7 +582,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NFLX",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xe0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8.png",
+            logo: "https://financialmodelingprep.com/image-stock/NFLX.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xE0444EF8BF4eD74f74FD73686e2ddF4C1c5591E8",
@@ -591,7 +591,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NNE",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xbef75684c43c4ea7bd18dd532a2244674ee8b926.png",
+            logo: "https://financialmodelingprep.com/image-stock/NNE.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xBEF75684C43c4ea7BD18Dd532a2244674Ee8b926",
@@ -600,7 +600,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NOW",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x0c3260af4b8f13a69c4c2dfb84fd667890cdfa14.png",
+            logo: "https://financialmodelingprep.com/image-stock/NOW.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x0C3260aF4B8f13a69c4c2dFb84fD667890CDFa14",
@@ -609,7 +609,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NU",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x408c14038a04f7bd235329e26d2bf569ee20e250.png",
+            logo: "https://financialmodelingprep.com/image-stock/NU.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x408c14038a04f7bD235329E26d2bf569ee20e250",
@@ -618,7 +618,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NVDA",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec.png",
+            logo: "https://financialmodelingprep.com/image-stock/NVDA.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
@@ -627,7 +627,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "NVTS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xbe6702d7b70315376dc48a3293f24f0982f86386.png",
+            logo: "https://financialmodelingprep.com/image-stock/NVTS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xbE6702d7b70315376dC48a3293f24f0982F86386",
@@ -636,7 +636,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "ORCL",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xb0992820e760d836549ba69bc7598b4af75dee03.png",
+            logo: "https://financialmodelingprep.com/image-stock/ORCL.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xb0992820E760d836549ba69BC7598b4af75dEE03",
@@ -654,7 +654,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "PENG",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x9b23573b156b52565012f5ce02cdf60afbaa70be.png",
+            logo: "https://financialmodelingprep.com/image-stock/PENG.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x9b23573b156B52565012F5cE02CDF60AFBaa70Be",
@@ -663,7 +663,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "PLTR",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a.png",
+            logo: "https://financialmodelingprep.com/image-stock/PLTR.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
@@ -672,7 +672,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "POET",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xcf6b2d875361be807eafa57458c80f28521f9333.png",
+            logo: "https://financialmodelingprep.com/image-stock/POET.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xcf6B2D875361be807EAfa57458c80f28521F9333",
@@ -681,7 +681,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "PR",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x4189f0c66ebbb0bfef1c31f763131361ef32f77c.png",
+            logo: "https://financialmodelingprep.com/image-stock/PR.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
@@ -690,7 +690,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "QBTS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xc583c60aef9dc401da72cec1b404743a93cea1cc.png",
+            logo: "https://financialmodelingprep.com/image-stock/QBTS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xC583c60aeF9Dc401Da72cEC1B404743a93cea1Cc",
@@ -699,7 +699,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "QCOM",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x0f17206447090e464c277571124dd2688e48aea9.png",
+            logo: "https://financialmodelingprep.com/image-stock/QCOM.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x0f17206447090e464C277571124dD2688E48AEA9",
@@ -708,7 +708,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "QQQ",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xd5f3879160bc7c32ebb4dc785f8a4f505888de68.png",
+            logo: "https://financialmodelingprep.com/image-stock/QQQ.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
@@ -717,7 +717,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "QUBT",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x59818904ab4ce163b3ce4ffb64f2d6ca02c434b4.png",
+            logo: "https://financialmodelingprep.com/image-stock/QUBT.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x59818904ab4cE163b3cE4FfB64f2D6Ca02c434B4",
@@ -726,7 +726,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "RBLX",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xf0c4bf4c582cb3836e98394b1d4e7b7281101be8.png",
+            logo: "https://financialmodelingprep.com/image-stock/RBLX.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xF0C4BF4C582cb3836e98394b1d4e7B7281101bE8",
@@ -735,7 +735,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "RDDT",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x05b37fb53a299a1b874a619e1c4c404d52c36f4c.png",
+            logo: "https://financialmodelingprep.com/image-stock/RDDT.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x05b37Fb53A299a1b874A619e1c4C404D52C36F4C",
@@ -744,7 +744,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "RDW",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x92ef19e82bd8ff36661de838d5eae7e5cef0effe.png",
+            logo: "https://financialmodelingprep.com/image-stock/RDW.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x92Ef19E82bD8fF36661DE838D5eaE7e5CEF0EfFE",
@@ -753,7 +753,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "RGTI",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x284358abc07f9359f19f4b5b4ac91901be2597ba.png",
+            logo: "https://financialmodelingprep.com/image-stock/RGTI.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x284358abc07F9359f19f4b5b4aC91901Be2597Ba",
@@ -762,7 +762,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "RIVN",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xb1bf26c1d20ff267a4f93550d1e0d06ac40a114b.png",
+            logo: "https://financialmodelingprep.com/image-stock/RIVN.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xB1BF26c1D20ff267A4f93550d1E0d06ac40a114B",
@@ -771,7 +771,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "RKLB",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x3b14c39e89d60d627b42a1a4ca45b5bb45fc12e2.png",
+            logo: "https://financialmodelingprep.com/image-stock/RKLB.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x3b14C39E89D60D627b42a1A4CA45b5bb45Fc12e2",
@@ -780,7 +780,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SATS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x95052ddcd5dc25641657424a8cf04834997e1730.png",
+            logo: "https://financialmodelingprep.com/image-stock/SATS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x95052ddcd5DC25641657424A8Cf04834997E1730",
@@ -789,7 +789,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SGOV",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x92fd66527192e3e61d4ddd13322aa222de86f9b5.png",
+            logo: "https://financialmodelingprep.com/image-stock/SGOV.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
@@ -798,7 +798,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SHOP",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xf53f66751b1eff985311b693531e3290f600c410.png",
+            logo: "https://financialmodelingprep.com/image-stock/SHOP.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xF53F66751B1Eff985311b693531E3290F600c410",
@@ -816,7 +816,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SLV",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x411efb0e7f985935daec3d4c3ebaea0d0ad7d89f.png",
+            logo: "https://financialmodelingprep.com/image-stock/SLV.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x411eFb0E7f985935DAec3D4C3ebaEa0d0AD7D89f",
@@ -825,7 +825,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SMCI",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xc01aa1fecec0605b13bc84874ff7256c0f5f562a.png",
+            logo: "https://financialmodelingprep.com/image-stock/SMCI.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xc01aA1fECeC0605b13bc84874ff7256C0f5F562a",
@@ -834,7 +834,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SNDK",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xb90a19ff0af67f7779aff50a882a9cff42446400.png",
+            logo: "https://financialmodelingprep.com/image-stock/SNDK.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xB90A19fF0Af67f7779afF50A882A9CfF42446400",
@@ -843,7 +843,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SOFI",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x98e75885157c80992a8d41b696d8c9c6fb30a926.png",
+            logo: "https://financialmodelingprep.com/image-stock/SOFI.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x98E75885157C80992A8D41b696D8c9C6Fb30A926",
@@ -852,7 +852,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SOXX",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x75742c18bc1f1c5c5f448f4c9d9c6f66dafaaa38.png",
+            logo: "https://financialmodelingprep.com/image-stock/SOXX.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
@@ -861,7 +861,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SPCX",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea.png",
+            logo: "https://financialmodelingprep.com/image-stock/SPCX.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa",
@@ -870,7 +870,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SPMO",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xad622320e520de39e72d41ef07438c3fd3354875.png",
+            logo: "https://financialmodelingprep.com/image-stock/SPMO.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xAd622320e520de39e72d41EF07438C3Fd3354875",
@@ -879,7 +879,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "SPY",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x117cc2133c37b721f49de2a7a74833232b3b4c0c.png",
+            logo: "https://financialmodelingprep.com/image-stock/SPY.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
@@ -897,7 +897,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "TSLA",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x322f0929c4625ed5bad873c95208d54e1c003b2d.png",
+            logo: "https://financialmodelingprep.com/image-stock/TSLA.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
@@ -906,7 +906,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "TSM",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x58ffe4a942d3885baa22d7520691f611ef09e7aa.png",
+            logo: "https://financialmodelingprep.com/image-stock/TSM.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
@@ -915,7 +915,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "TTWO",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x5e81213613b6b86eab4c6c50d718d34359459786.png",
+            logo: "https://financialmodelingprep.com/image-stock/TTWO.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x5e81213613b6B86EaB4c6c50d718d34359459786",
@@ -924,7 +924,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "UMC",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x0e6e67ba88e7b5d9b67636a215c76779b948de79.png",
+            logo: "https://financialmodelingprep.com/image-stock/UMC.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x0E6e67Ba88e7b5d9B67636A215c76779B948dE79",
@@ -933,7 +933,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "UPS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xf23250dac154d05bb671cb0d0ebef3c635c79ce2.png",
+            logo: "https://financialmodelingprep.com/image-stock/UPS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
@@ -942,7 +942,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "USAR",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xd917b029c761d264c6a312bbbcda868658ef86a6.png",
+            logo: "https://financialmodelingprep.com/image-stock/USAR.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xd917B029C761D264c6A312BBbcDA868658eF86a6",
@@ -960,7 +960,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "WDAY",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x82da4646242e1d962e96e932269dc644c94a9caa.png",
+            logo: "https://financialmodelingprep.com/image-stock/WDAY.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x82DA4646242e1D962e96e932269Dc644c94a9CaA",
@@ -969,7 +969,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "XLK",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x15cd20759ce7f3285c29a319de2d1a2e098c6f43.png",
+            logo: "https://financialmodelingprep.com/image-stock/XLK.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
@@ -987,7 +987,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "XOM",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0xf9b46d3d1b22199d4d1025a9cedb540a33f1a2d5.png",
+            logo: "https://financialmodelingprep.com/image-stock/XOM.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
@@ -996,7 +996,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "ZM",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x44c4f142009036cf477ed2d09932051843137cf1.png",
+            logo: "https://financialmodelingprep.com/image-stock/ZM.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x44c4F142009036cF477eD2d09932051843137CF1",
@@ -1005,7 +1005,7 @@ class TokensStore {
         CoinMeta(
             chain: .robinhood,
             ticker: "ZS",
-            logo: "https://cdn.robinhood.com/ncw_assets/logos/0x7dc013eb55e436f30d7ed1afe4e36d6e45e3c3f7.png",
+            logo: "https://financialmodelingprep.com/image-stock/ZS.png",
             decimals: 18,
             priceProviderId: "",
             contractAddress: "0x7dc013eB55e436f30d7ED1AFE4E36d6e45e3c3f7",
