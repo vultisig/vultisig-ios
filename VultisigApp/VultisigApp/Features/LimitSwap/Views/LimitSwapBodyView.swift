@@ -757,7 +757,9 @@ private struct LimitAssetRow: View {
             chainName: asset.chain.name,
             onTapChain: onPickAsset,
             coinLogo: asset.logo,
-            coinChainLogo: asset.chainLogo,
+            // No chain badge on a native asset (its icon already is the chain) —
+            // matches the Market card, which passes a nil `coin.tokenChainLogo`.
+            coinChainLogo: asset.isNativeToken ? nil : asset.chainLogo,
             ticker: asset.ticker,
             onTapCoin: onPickAsset,
             balance: kind == .sell ? "\(coin.balanceString) \(coin.ticker)" : nil,
