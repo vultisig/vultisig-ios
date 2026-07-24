@@ -89,7 +89,7 @@ class EthereumFeeService {
         case .avalanche:
             return originalPriorityFee
 
-        case .arbitrum, .mantle:
+        case .arbitrum, .mantle, .robinhood:
             return BigInt.zero
 
         case .base, .blast, .optimism:
