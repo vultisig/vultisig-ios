@@ -37,6 +37,7 @@ public protocol FontSystemProtocol {
 
     var priceLargeTitle: Font { get }
     var priceTitle1: Font { get }
+    var priceTitle2: Font { get }
     var priceBodyS: Font { get }
     var priceBodyL: Font { get }
     var priceFootnote: Font { get }

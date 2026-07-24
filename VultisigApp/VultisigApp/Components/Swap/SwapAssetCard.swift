@@ -64,7 +64,11 @@ struct SwapAssetCard<Focus: Hashable>: View {
             content
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        // Fixed card height (Figma cards are 333×112; 116 is the smallest that fits
+        // the Satoshi-22 amount + 36pt coin pill + 16 padding/spacing without
+        // clipping — Sell needs 115, Buy 113). Constant regardless of content, with
+        // the content pinned top-leading (header row on top) like the Figma.
+        .frame(maxWidth: .infinity, minHeight: 116, maxHeight: 116, alignment: .topLeading)
         .background(
             NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
                 .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
@@ -119,7 +123,7 @@ struct SwapAssetCard<Focus: Hashable>: View {
             Spacer(minLength: 12)
             VStack(alignment: .trailing, spacing: 6) {
                 amountView
-                    .font(Theme.fonts.priceTitle1)
+                    .font(Theme.fonts.priceTitle2)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.trailing)
                 Text(fiat)
