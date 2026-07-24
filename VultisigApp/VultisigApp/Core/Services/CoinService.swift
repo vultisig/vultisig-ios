@@ -222,42 +222,8 @@ struct CoinService {
     }
 
     static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
-        var tokens: [CoinMeta] = []
-        switch nativeCoin.chain.chainType {
-        case .EVM:
-            let service = try EvmService.getService(forChain: nativeCoin.chain)
-            tokens = try await service.getTokens(nativeToken: nativeCoin, address: address)
-        case .Solana:
-            tokens = try await SolanaService.shared.fetchTokens(for: address)
-        case .Sui:
-            tokens = try await SuiService.shared.getAllTokensWithMetadata(address: address)
-        case .THORChain:
-            switch nativeCoin.chain {
-            case .thorChain, .thorChainChainnet, .thorChainStagenet:
-                let service = ThorchainServiceFactory.getService(for: nativeCoin.chain)
-                tokens = try await service.fetchTokens(address)
-            case .mayaChain:
-                tokens = try await MayachainService.shared.fetchTokens(address)
-            default:
-                tokens = []
-            }
-        case .Cosmos where CosmosCoinFinder.allowlistedChains.contains(nativeCoin.chain):
-            // Terra + TerraClassic auto-discover held bank denoms via the
-            // Cosmos finder. Hidden-by-default denoms are surfaced separately
-            // through `addDiscoveredHiddenTokens` so they don't pollute the
-            // visible coin list — only `!isHidden` discoveries land here.
-            let discovered = try await CosmosCoinFinder.shared.discoverBankDenoms(
-                chain: nativeCoin.chain,
-                address: address
-            )
-            tokens = discovered
-                .filter { !$0.isHidden }
-                .map { $0.toCoinMeta(chain: nativeCoin.chain) }
-        default:
-            tokens = []
-        }
-
-        return tokens
+        let discoverer = TokenDiscovererRegistry.discoverer(for: nativeCoin.chain)
+        return try await discoverer.discoverTokens(nativeCoin: nativeCoin, address: address)
     }
 
     /// Migrate coins and hidden tokens that reference stale contract addresses.
