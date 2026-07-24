@@ -670,7 +670,8 @@ private struct LimitAssetSwapForm: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 8) {
+            // Shared with the notch-center inset so the toggle seats in a full circle.
+            VStack(spacing: swapCardSpacing) {
                 LimitAssetRow(
                     kind: .sell,
                     coin: fromCoin,
@@ -846,9 +847,10 @@ private struct LimitAssetRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             // Sell is the base shape (bottom notch, 24 top / 12 bottom); Buy is the
-            // same shape rotated 180° (notch on top, 12 top / 24 bottom) so the
-            // shared toggle seats in the real cutout where the rows meet.
-            NotchedRectangle()
+            // same shape rotated 180° (notch on top, 12 top / 24 bottom). The notch
+            // center is inset half the inter-row gap so both rows' notches meet as
+            // one full circle around the shared toggle where the rows meet.
+            NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
                 .rotationEffect(.degrees(kind == .sell ? 0 : 180))
         )

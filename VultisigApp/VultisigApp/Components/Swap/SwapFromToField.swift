@@ -67,17 +67,18 @@ struct SwapFromToField: View {
     }
 
     /// The card is a `NotchedRectangle` (24 outer / 12 inner corners, concave
-    /// semicircle on the bottom edge). The "to" card is the same shape rotated
-    /// 180°, which flips the corners (24/12 → 12/24) and moves the notch to the
-    /// top edge so the shared toggle seats in the real cutout of both cards.
+    /// cutout on the bottom edge). The "to" card is the same shape rotated 180°,
+    /// which flips the corners (24/12 → 12/24) and moves the notch to the top edge.
+    /// The notch center is inset half the inter-card gap so both cards' notches
+    /// meet as one full circle around the shared toggle.
     var notchedBackground: some View {
-        NotchedRectangle()
+        NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
             .foregroundStyle(Theme.colors.bgSurface1)
             .rotationEffect(.degrees(title == "from" ? 0 : 180))
     }
 
     var notchedBorder: some View {
-        NotchedRectangle()
+        NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
             .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             .rotationEffect(.degrees(title == "from" ? 0 : 180))
     }

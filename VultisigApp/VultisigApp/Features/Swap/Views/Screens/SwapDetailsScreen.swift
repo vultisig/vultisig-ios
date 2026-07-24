@@ -210,7 +210,8 @@ struct SwapDetailsScreen: View {
     }
 
     var amountFields: some View {
-        VStack(spacing: 12) {
+        // Shared with the notch-center inset so the toggle seats in a full circle.
+        VStack(spacing: swapCardSpacing) {
             swapFromField
             swapToField
         }
