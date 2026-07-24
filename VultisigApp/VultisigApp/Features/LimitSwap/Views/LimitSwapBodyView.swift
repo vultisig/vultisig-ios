@@ -747,112 +747,26 @@ private struct LimitAssetRow: View {
     let onPickAsset: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                HStack(spacing: 6) {
-                    Text(kind.labelKey.localized)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-
-                    Button(action: onPickAsset) {
-                        HStack(spacing: 4) {
-                            if !asset.chainLogo.isEmpty {
-                                AsyncImageView(
-                                    logo: asset.chainLogo,
-                                    size: CGSize(width: 16, height: 16),
-                                    ticker: asset.chain.ticker,
-                                    tokenChainLogo: nil
-                                )
-                            }
-                            Text(asset.chain.name)
-                                .font(Theme.fonts.caption12)
-                                .foregroundStyle(Theme.colors.textPrimary)
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(Theme.colors.textTertiary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                Spacer()
-
-                if kind == .sell {
-                    Text("\(coin.balanceString) \(coin.ticker)")
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                }
-            }
-
-            HStack(alignment: .center) {
-                Button(action: onPickAsset) {
-                    HStack(spacing: 8) {
-                        if !asset.logo.isEmpty {
-                            AsyncImageView(
-                                logo: asset.logo,
-                                size: CGSize(width: 36, height: 36),
-                                ticker: asset.ticker,
-                                tokenChainLogo: asset.chainLogo
-                            )
-                        }
-                        Text(asset.ticker)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    }
-                    .padding(.leading, 6)
-                    .padding(.trailing, 12)
-                    .padding(.vertical, 6)
-                    .background(Theme.colors.bgSurface2)
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-
-                Spacer(minLength: 12)
-
-                VStack(alignment: .trailing, spacing: 6) {
-                    if let editableFocus {
-                        TextField("0", text: $amountText.decimalOnly())
-                            // `.plain` strips macOS's default bordered chrome (the
-                            // dark bezel box); iOS is unaffected. Matches the market
-                            // amount field.
-                            .textFieldStyle(.plain)
-                            .font(Theme.fonts.title2)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .multilineTextAlignment(.trailing)
-                            .lineLimit(1)
-                            .focused(focusedField, equals: editableFocus)
-                            #if os(iOS)
-                            .keyboardType(.decimalPad)
-                            #endif
-                    } else {
-                        Text(amountText)
-                            .font(Theme.fonts.title2)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
-
-                    Text(fiatLine)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                }
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            // Sell is the base shape (bottom notch, 24 top / 12 bottom); Buy is the
-            // same shape rotated 180° (notch on top, 12 top / 24 bottom). The notch
-            // center is inset half the inter-row gap so both rows' notches meet as
-            // one full circle around the shared toggle where the rows meet.
-            NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
-                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
-                .rotationEffect(.degrees(kind == .sell ? 0 : 180))
+        // Both the chain chip and the coin pill open the same asset picker in the
+        // Limit form, so `onTapChain` and `onTapCoin` share `onPickAsset`. Balance
+        // is shown only on the Sell row (the Buy amount is computed). The editable
+        // Sell field participates in the form's single keyboard toolbar via `focus`.
+        SwapAssetCard<LimitFocusField>(
+            label: kind.labelKey.localized,
+            chainLogo: asset.chainLogo,
+            chainName: asset.chain.name,
+            onTapChain: onPickAsset,
+            coinLogo: asset.logo,
+            coinChainLogo: asset.chainLogo,
+            ticker: asset.ticker,
+            onTapCoin: onPickAsset,
+            balance: kind == .sell ? "\(coin.balanceString) \(coin.ticker)" : nil,
+            amount: $amountText,
+            isEditable: editableFocus != nil,
+            focus: focusedField,
+            focusValue: editableFocus,
+            fiat: fiatLine,
+            isSecondRow: kind == .buy
         )
     }
 
