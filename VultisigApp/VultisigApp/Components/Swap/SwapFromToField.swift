@@ -27,8 +27,8 @@ struct SwapFromToField: View {
             content
         }
         .padding(16)
-        .background(unevenRectangle)
-        .overlay(unevenRectangleBorder)
+        .background(notchedBackground)
+        .overlay(notchedBorder)
         .onLoad {
             referredViewModel.setData()
         }
@@ -66,30 +66,20 @@ struct SwapFromToField: View {
             .foregroundStyle(Theme.colors.textTertiary)
     }
 
-    var unevenRectangle: some View {
-        UnevenRoundedRectangle(
-            cornerRadii: .init(
-                topLeading: 24,
-                bottomLeading: 12,
-                bottomTrailing: 12,
-                topTrailing: 24
-            )
-        )
-        .foregroundStyle(Theme.colors.bgSurface1)
-        .rotationEffect(.degrees(title=="from" ? 0 : 180))
+    /// The card is a `NotchedRectangle` (24 outer / 12 inner corners, concave
+    /// semicircle on the bottom edge). The "to" card is the same shape rotated
+    /// 180°, which flips the corners (24/12 → 12/24) and moves the notch to the
+    /// top edge so the shared toggle seats in the real cutout of both cards.
+    var notchedBackground: some View {
+        NotchedRectangle()
+            .foregroundStyle(Theme.colors.bgSurface1)
+            .rotationEffect(.degrees(title == "from" ? 0 : 180))
     }
 
-    var unevenRectangleBorder: some View {
-        UnevenRoundedRectangle(
-            cornerRadii: .init(
-                topLeading: 24,
-                bottomLeading: 12,
-                bottomTrailing: 12,
-                topTrailing: 24
-            )
-        )
-        .stroke(Theme.colors.bgSurface2, lineWidth: 1)
-        .rotationEffect(.degrees(title=="from" ? 0 : 180))
+    var notchedBorder: some View {
+        NotchedRectangle()
+            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+            .rotationEffect(.degrees(title == "from" ? 0 : 180))
     }
 
     var fromToChain: some View {

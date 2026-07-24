@@ -13,7 +13,8 @@ import SwiftUI
 /// from/to fields are a stacked PAIR that must read as one unit (24 outside, 12
 /// where they meet) — a standalone card has no neighbour to meet, so it takes the
 /// outer 24 on all corners. The paired Sell/Buy rows below keep the uneven
-/// pairing shape (see `LimitAssetRowKind.cornerRadii`).
+/// pairing shape via `NotchedRectangle` (24 outside / 12 where they meet), so the
+/// shared toggle seats in a real cutout instead of page-colored paint.
 private let limitSectionCornerRadius: CGFloat = 24
 
 /// Corner radius for the inline notice/warning rows. Deliberately NOT the section
@@ -725,16 +726,6 @@ private enum LimitAssetRowKind {
     var labelKey: String {
         self == .sell ? "limitSwap.sell" : "limitSwap.buy"
     }
-
-    var cornerRadii: RectangleCornerRadii {
-        // Mirrors the Figma — Sell rounded top-heavy, Buy bottom-heavy.
-        switch self {
-        case .sell:
-            return .init(topLeading: 24, bottomLeading: 12, bottomTrailing: 12, topTrailing: 24)
-        case .buy:
-            return .init(topLeading: 12, bottomLeading: 24, bottomTrailing: 24, topTrailing: 12)
-        }
-    }
 }
 
 private struct LimitAssetRow: View {
@@ -854,12 +845,12 @@ private struct LimitAssetRow: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            UnevenRoundedRectangle(cornerRadii: kind.cornerRadii)
-                .fill(Color.clear)
-                .overlay(
-                    UnevenRoundedRectangle(cornerRadii: kind.cornerRadii)
-                        .stroke(Theme.colors.borderLight, lineWidth: 1)
-                )
+            // Sell is the base shape (bottom notch, 24 top / 12 bottom); Buy is the
+            // same shape rotated 180° (notch on top, 12 top / 24 bottom) so the
+            // shared toggle seats in the real cutout where the rows meet.
+            NotchedRectangle()
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+                .rotationEffect(.degrees(kind == .sell ? 0 : 180))
         )
     }
 
