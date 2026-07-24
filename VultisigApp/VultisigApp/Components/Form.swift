@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 protocol Form: AnyObject {
     var validForm: Bool { get set }
     var form: [FormField] { get }

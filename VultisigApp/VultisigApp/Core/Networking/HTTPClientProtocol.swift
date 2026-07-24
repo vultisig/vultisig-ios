@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol defining the HTTP client interface
-protocol HTTPClientProtocol {
+protocol HTTPClientProtocol: Sendable {
     /// Performs a network request and returns raw data
     /// - Parameter target: The target defining the request configuration
     /// - Returns: HTTPResponse containing raw data and HTTP response

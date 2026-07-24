@@ -97,7 +97,7 @@ struct THORChainBondInteractor: BondInteractor {
     }
 
     // swiftlint:disable:next async_without_await
-    func canAddBond(vault _: Vault) async -> Bool {
+    func canAddBond() async -> Bool {
         return true
     }
 }

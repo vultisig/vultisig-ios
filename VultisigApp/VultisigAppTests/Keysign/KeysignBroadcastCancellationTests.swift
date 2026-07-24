@@ -12,6 +12,7 @@
 
 @testable import VultisigApp
 import BigInt
+import os
 import XCTest
 
 @MainActor
@@ -31,11 +32,9 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
         }
 
         let behavior: Behavior
-        private let lock = NSLock()
-        private var _callCount = 0
+        private let callCountLock = OSAllocatedUnfairLock(initialState: 0)
         var callCount: Int {
-            lock.lock(); defer { lock.unlock() }
-            return _callCount
+            callCountLock.withLock { $0 }
         }
 
         /// Fulfilled the first time the checker is invoked. Lets a test wait
@@ -50,10 +49,10 @@ final class KeysignBroadcastCancellationTests: XCTestCase {
 
         func checkTransactionStatus(txHash _: String, chain _: Chain) async throws -> TransactionStatusResult {
             await Task.yield()
-            lock.lock()
-            _callCount += 1
-            let isFirst = _callCount == 1
-            lock.unlock()
+            let isFirst = callCountLock.withLock { count in
+                count += 1
+                return count == 1
+            }
             if isFirst { firstCall?.fulfill() }
 
             switch behavior {
