@@ -11,8 +11,19 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     let isExpanded: Bool
     /// Corner radius of the section's bordered container. Defaults to the shared
     /// value used across every Send/Function form; callers that need to match a
-    /// different Figma card radius (e.g. the limit-swap accordion) override it.
+    /// different Figma card radius (e.g. the limit-swap accordion, or the 2026
+    /// Send-details cards) override it.
     let cornerRadius: CGFloat
+    /// Inner horizontal padding of the bordered container. Defaults to the shared
+    /// value; the 2026 Send-details cards use 16.
+    let horizontalPadding: CGFloat
+    /// Inner vertical padding of the bordered container. Defaults to the shared
+    /// value; the 2026 Send-details cards use 20.
+    let verticalPadding: CGFloat
+    /// Optional fill behind the bordered container. `nil` keeps the container
+    /// transparent (the shared default); the 2026 Send-details cards fill it
+    /// with the page background so the card reads as a bordered panel.
+    let backgroundColor: Color?
     let header: () -> Header
     let content: () -> Content
 
@@ -24,11 +35,17 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     init(
         isExpanded: Bool,
         cornerRadius: CGFloat = 12,
+        horizontalPadding: CGFloat = 16,
+        verticalPadding: CGFloat = 16,
+        backgroundColor: Color? = nil,
         @ViewBuilder header: @escaping () -> Header,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.isExpanded = isExpanded
         self.cornerRadius = cornerRadius
+        self.horizontalPadding = horizontalPadding
+        self.verticalPadding = verticalPadding
+        self.backgroundColor = backgroundColor
         self.header = header
         self.content = content
         self._isExpandedInternal = State(initialValue: isExpanded)
@@ -42,7 +59,9 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
                 .transition(.verticalGrowAndFade)
                 .showIf(isExpandedInternal)
         }
-        .padding(16)
+        .padding(.horizontal, horizontalPadding)
+        .padding(.vertical, verticalPadding)
+        .background(fill)
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(Theme.colors.border, lineWidth: 1)
@@ -53,6 +72,14 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         }
         .onLoad {
             animate()
+        }
+    }
+
+    @ViewBuilder
+    private var fill: some View {
+        if let backgroundColor {
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(backgroundColor)
         }
     }
 
