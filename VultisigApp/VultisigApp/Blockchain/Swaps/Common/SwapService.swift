@@ -468,18 +468,7 @@ private extension SwapService {
                 liquidityToleranceBps: liquidityToleranceBps
             )
 
-            switch service {
-            case _ as ThorchainService:
-                return .thorchain(quote)
-            case _ as ThorchainChainnetService:
-                return .thorchainChainnet(quote)
-            case _ as ThorchainStagenetService:
-                return .thorchainStagenet(quote)
-            case _ as MayachainService:
-                return .mayachain(quote)
-            default:
-                return .thorchain(quote)
-            }
+            return service.makeSwapQuote(quote)
         } catch let error as ThorchainSwapError {
             logger.error("THORChain swap error: code=\(error.code, privacy: .public), message=\(error.message, privacy: .public)")
             throw Self.mapThorchainSwapError(error)

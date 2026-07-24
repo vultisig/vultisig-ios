@@ -39,6 +39,10 @@ class ThorchainService: ThorchainSwapProvider {
         self.httpClient = httpClient
     }
 
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .thorchain(quote)
+    }
+
     /// The override-aware THORChain LCD host. Falls back to the default host
     /// when no override is set. Exposed so the broadcast path can reuse it. The
     /// single `.thorChain` override intentionally replaces both the LCD and RPC

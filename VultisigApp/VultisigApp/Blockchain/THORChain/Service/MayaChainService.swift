@@ -29,6 +29,10 @@ class MayachainService: ThorchainSwapProvider {
         self.resolver = resolver
     }
 
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .mayachain(quote)
+    }
+
     /// The override-aware Mayanode host. Falls back to the default host when no
     /// override is set.
     private var resolvedHost: URL {

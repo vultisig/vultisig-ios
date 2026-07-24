@@ -223,6 +223,35 @@ final class ThorchainAntiRektTests: XCTestCase {
         XCTAssertEqual(mock.callCount, 0, "Maya is out of scope and must not trigger a second fetch")
     }
 
+    // MARK: - makeSwapQuote network tagging
+
+    func testMakeSwapQuoteTagsEachServiceWithItsNetworkCase() {
+        // Pins the concrete-service → SwapQuote-case mapping. The network
+        // (mainnet / chainnet / stagenet) is carried only by the service type,
+        // so a future edit that drops or misroutes a case regresses here.
+        let quote = makeQuote(expectedAmountOut: "100", feesTotal: "0")
+
+        guard case .thorchain(let thorMapped) = ThorchainService.shared.makeSwapQuote(quote) else {
+            return XCTFail("ThorchainService must map to .thorchain")
+        }
+        XCTAssertEqual(thorMapped, quote)
+
+        guard case .thorchainChainnet(let chainnetMapped) = ThorchainChainnetService.shared.makeSwapQuote(quote) else {
+            return XCTFail("ThorchainChainnetService must map to .thorchainChainnet")
+        }
+        XCTAssertEqual(chainnetMapped, quote)
+
+        guard case .thorchainStagenet(let stagenetMapped) = ThorchainStagenetService.shared.makeSwapQuote(quote) else {
+            return XCTFail("ThorchainStagenetService must map to .thorchainStagenet")
+        }
+        XCTAssertEqual(stagenetMapped, quote)
+
+        guard case .mayachain(let mayaMapped) = MayachainService.shared.makeSwapQuote(quote) else {
+            return XCTFail("MayachainService must map to .mayachain")
+        }
+        XCTAssertEqual(mayaMapped, quote)
+    }
+
     // MARK: - Helpers
 
     private func makeQuote(
@@ -290,5 +319,9 @@ private final class MockSwapProvider: ThorchainSwapProvider {
         lastStreamingQuantity = streamingQuantity
         lastLiquidityToleranceBps = liquidityToleranceBps
         return try response.get()
+    }
+
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .thorchain(quote)
     }
 }
