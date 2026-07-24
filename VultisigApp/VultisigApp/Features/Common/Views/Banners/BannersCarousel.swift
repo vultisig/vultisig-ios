@@ -158,7 +158,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         )
 
         // Start the removal animation
-        withAnimation(.easeInOut(duration: 0.4)) {
+        _ = withAnimation(.easeInOut(duration: 0.4)) {
             bannersToRemove.insert(AnyHashable(banner.id))
         }
 

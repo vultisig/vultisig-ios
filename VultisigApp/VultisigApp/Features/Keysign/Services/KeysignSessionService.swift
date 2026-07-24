@@ -77,8 +77,12 @@ protocol KeysignSessionServicing: AnyObject {
 
 @MainActor
 final class KeysignSessionService: KeysignSessionServicing {
-    private let mediator: Mediator
-    private let fastVaultService: FastVaultService
+    // nonisolated(unsafe): set once in `nonisolated init` (required so this
+    // type can be built as a default-argument value from other @MainActor
+    // types' nonisolated default-argument contexts), then only ever read
+    // from this class's @MainActor-isolated methods.
+    private nonisolated(unsafe) let mediator: Mediator
+    private nonisolated(unsafe) let fastVaultService: FastVaultService
     private let httpClient: HTTPClientProtocol
     private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-session")
 
