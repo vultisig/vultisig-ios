@@ -382,6 +382,9 @@ struct EvmServiceStruct {
             return []
         }
 
+        // An entry absent from `balances` is a failed sub-call, not a zero
+        // balance — only trust the batch when every token came back; otherwise
+        // fall through to the per-token walk below.
         if let multicall3Address = Multicall3.address(for: nativeToken.chain),
            let result = try? await fetchERC20Balances(
                contractAddresses: knownTokens.map(\.contractAddress),
@@ -389,7 +392,8 @@ struct EvmServiceStruct {
                multicall3Address: multicall3Address,
                includeNative: false,
                rpcService: rpcService
-           ) {
+           ),
+           knownTokens.allSatisfy({ result.balances[$0.contractAddress] != nil }) {
             return knownTokens.filter { (result.balances[$0.contractAddress] ?? 0) > 0 }
         }
 
