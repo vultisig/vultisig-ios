@@ -29,11 +29,13 @@ struct SwapAssetsButton: View {
             .frame(width: 34, height: 34)
             .background(Circle().fill(Theme.colors.bgButtonTertiary))
             .padding(2)
-            .background(Circle().fill(Theme.colors.bgPrimary))
             .rotationEffect(.degrees(rotated ? 180 : 0))
             .animation(.spring, value: rotated)
         }
-        .background(Circle().fill(Theme.colors.bgPrimary))
+        // The 2pt gap between the tertiary disc and this stroke ring is
+        // transparent — it reveals the real NotchedRectangle cavity behind the
+        // button (was previously two page-colored `bgPrimary` circles faking a
+        // hole, which only worked over a solid background).
         .overlay(Circle().stroke(Theme.colors.bgSurface2))
     }
 }

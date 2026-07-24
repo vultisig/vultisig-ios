@@ -206,9 +206,6 @@ struct SwapDetailsScreen: View {
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
-
-            filler.offset(x: -28)
-            filler.offset(x: 28)
         }
     }
 
@@ -249,12 +246,6 @@ struct SwapDetailsScreen: View {
             detailsViewModel: detailsViewModel,
             handlePercentageSelection: nil
         )
-    }
-
-    var filler: some View {
-        Rectangle()
-            .frame(width: 12, height: 10)
-            .foregroundStyle(Theme.colors.bgPrimary)
     }
 
     var summary: some View {
