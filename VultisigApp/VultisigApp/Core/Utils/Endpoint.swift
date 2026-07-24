@@ -352,6 +352,8 @@ class Endpoint {
 
     static let seiServiceRpcService = "https://evm-rpc.sei-apis.com"
 
+    static let robinhoodServiceRpcService = "https://rpc.mainnet.chain.robinhood.com"
+
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
 
     static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {
@@ -568,6 +570,8 @@ class Endpoint {
             return "https://hypurrscan.io/token/\(contractAddress)"
         case .sei:
             return "https://seiscan.io/token/\(contractAddress)"
+        case .robinhood:
+            return "https://robinhoodchain.blockscout.com/token/\(contractAddress)"
         case .qbtc:
             return nil
         }
@@ -653,6 +657,8 @@ class Endpoint {
             return "https://hypurrscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
+        case .robinhood:
+            return "https://robinhoodchain.blockscout.com/address/\(address)"
         case .qbtc:
             return "https://explorer.qbtc.net/qbtc/account/\(address)"
         case .bittensor:

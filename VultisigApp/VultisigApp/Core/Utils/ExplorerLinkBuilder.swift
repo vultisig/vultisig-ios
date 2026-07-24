@@ -207,6 +207,8 @@ enum ExplorerLinkBuilder {
             return "https://hypurrscan.io/tx/\(txid)"
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
+        case .robinhood:
+            return "https://robinhoodchain.blockscout.com/tx/\(txid)"
         case .qbtc:
             return "https://explorer.qbtc.net/qbtc/tx/\(txid)"
         }
@@ -294,6 +296,8 @@ enum ExplorerLinkBuilder {
             return "https://hypurrscan.io/address/\(address)"
         case .sei:
             return "https://seiscan.io/address/\(address)"
+        case .robinhood:
+            return "https://robinhoodchain.blockscout.com/address/\(address)"
         case .bittensor:
             return "https://taostats.io/account/\(address)"
         case .qbtc:

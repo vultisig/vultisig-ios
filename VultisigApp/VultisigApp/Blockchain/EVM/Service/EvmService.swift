@@ -24,6 +24,7 @@ enum EvmService {
     case mantle
     case hyperliquid
     case sei
+    case robinhood
     case tron
 
     // MARK: - Constants
@@ -70,6 +71,8 @@ enum EvmService {
             return .hyperliquid
         case .sei:
             return .sei
+        case .robinhood:
+            return .robinhood
         case .tron:
             return .tron
         default:
@@ -129,6 +132,8 @@ enum EvmService {
             return .hyperliquid
         case .sei:
             return .sei
+        case .robinhood:
+            return .robinhood
         case .tron:
             return .tron
         }

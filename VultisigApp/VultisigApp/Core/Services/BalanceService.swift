@@ -489,7 +489,7 @@ class BalanceService {
         case .sui:
             return try await sui.getBalance(coin: coin, address: address)
 
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:
             let service = try EvmService.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin, address: address)
 

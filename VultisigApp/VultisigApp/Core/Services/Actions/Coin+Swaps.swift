@@ -191,6 +191,8 @@ extension Coin {
             return [.thorchain, .swapkit]
         case .ton, .cardano, .sui:
             return [.swapkit]
+        case .robinhood:
+            return [.lifi, .kyberswap(chain), .swapkit]
         case .polkadot, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
             return []
         }

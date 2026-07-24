@@ -36,7 +36,7 @@ extension Chain {
 extension Chain {
     var canBuy: Bool {
         switch self {
-        case .kujira, .blast, .terra, .terraClassic, .osmosis, .akash, .noble, .mayaChain, .thorChainChainnet, .thorChainStagenet, .hyperliquid, .sei, .qbtc, .bittensor:
+        case .kujira, .blast, .terra, .terraClassic, .osmosis, .akash, .noble, .mayaChain, .thorChainChainnet, .thorChainStagenet, .hyperliquid, .sei, .robinhood, .qbtc, .bittensor:
             return false
         case .thorChain, .solana, .ethereum, .avalanche, .base, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .gaiaChain,
                 .cronosChain, .sui, .polkadot, .zksync, .dydx, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle:
@@ -125,6 +125,8 @@ extension Chain {
             return "HYPE"
         case .sei:
             return "SEI"
+        case .robinhood:
+            return "ROBINHOOD"
         case .qbtc:
             return "QBTC"
         case .bittensor:

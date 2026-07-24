@@ -118,6 +118,11 @@ struct EvmServiceConfig {
             rpcEndpoint: Endpoint.seiServiceRpcService,
             tokenProvider: .standard
         ),
+        .robinhood: EvmServiceConfig(
+            chain: .robinhood,
+            rpcEndpoint: Endpoint.robinhoodServiceRpcService,
+            tokenProvider: .standard
+        ),
         .tron: EvmServiceConfig(
             chain: .tron,
             rpcEndpoint: Endpoint.tronEvmServiceRpc,

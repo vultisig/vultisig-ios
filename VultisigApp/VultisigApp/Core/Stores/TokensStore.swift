@@ -103,6 +103,15 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
+            chain: .robinhood,
+            ticker: "ETH",
+            logo: "eth",
+            decimals: 18,
+            priceProviderId: "ethereum",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .sei,
             ticker: "SEI",
             logo: "sei",
