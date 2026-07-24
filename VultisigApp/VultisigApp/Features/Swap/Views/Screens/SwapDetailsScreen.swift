@@ -206,14 +206,12 @@ struct SwapDetailsScreen: View {
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
-
-            filler.offset(x: -28)
-            filler.offset(x: 28)
         }
     }
 
     var amountFields: some View {
-        VStack(spacing: 12) {
+        // Shared with the notch-center inset so the toggle seats in a full circle.
+        VStack(spacing: swapCardSpacing) {
             swapFromField
             swapToField
         }
@@ -249,12 +247,6 @@ struct SwapDetailsScreen: View {
             detailsViewModel: detailsViewModel,
             handlePercentageSelection: nil
         )
-    }
-
-    var filler: some View {
-        Rectangle()
-            .frame(width: 12, height: 10)
-            .foregroundStyle(Theme.colors.bgPrimary)
     }
 
     var summary: some View {

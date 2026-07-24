@@ -29,11 +29,8 @@ struct SwapAssetsButton: View {
             .frame(width: 34, height: 34)
             .background(Circle().fill(Theme.colors.bgButtonTertiary))
             .padding(2)
-            .background(Circle().fill(Theme.colors.bgPrimary))
             .rotationEffect(.degrees(rotated ? 180 : 0))
             .animation(.spring, value: rotated)
         }
-        .background(Circle().fill(Theme.colors.bgPrimary))
-        .overlay(Circle().stroke(Theme.colors.bgSurface2))
     }
 }

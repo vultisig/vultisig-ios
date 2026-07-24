@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+/// Market-swap adapter over the shared `SwapAssetCard`. Maps the Market
+/// `SwapDetailsViewModel` / `Coin` / `Chain` state onto the presentational card
+/// and keeps the Market-only keystroke side-effects (immediate-vs-debounced quote
+/// fetch) here, out of the shared card. The public init is unchanged so
+/// `SwapDetailsScreen` keeps working as-is.
 struct SwapFromToField: View {
     let title: String
     let vault: Vault
@@ -21,134 +26,49 @@ struct SwapFromToField: View {
 
     @StateObject var referredViewModel = ReferredViewModel()
 
+    private var isFromField: Bool { title == "from" }
+
     var body: some View {
-        VStack(spacing: 16) {
-            header
-            content
-        }
-        .padding(16)
-        .background(unevenRectangle)
-        .overlay(unevenRectangleBorder)
+        SwapAssetCard<Never>(
+            label: NSLocalizedString(title, comment: ""),
+            chainLogo: selectedChain?.logo ?? "",
+            chainName: selectedChain?.name ?? "",
+            onTapChain: { showNetworkSelectSheet = true },
+            coinLogo: coin.logo,
+            coinChainLogo: coin.tokenChainLogo,
+            ticker: coin.ticker,
+            onTapCoin: { showCoinSelectSheet = true },
+            // Market shows the balance on both the From and To rows.
+            balance: "\(coin.balanceString) \(coin.ticker)",
+            amount: $amount,
+            isEditable: isFromField,
+            // Runs on USER edits only (not the programmatic percentage-button set,
+            // which would otherwise double-fetch and clear the selected pill).
+            onEdit: isFromField ? handleAmountEdit : nil,
+            fiat: fiatAmount.formatToFiat(includeCurrencySymbol: true),
+            isSecondRow: !isFromField
+        )
+        // Crossfade the To amount + its fiat as the quote lands (the To value is
+        // never skeletoned — it always carries the `~` estimate then the firm
+        // amount). Matches the pre-adapter behavior.
+        .animation(.easeInOut(duration: 0.25), value: amount)
+        .animation(.easeInOut(duration: 0.25), value: fiatAmount)
         .onLoad {
             referredViewModel.setData()
         }
     }
 
-    var header: some View {
-        HStack(spacing: 8) {
-            fromToLabel
-            fromToChain
-            Spacer()
-            balance
-        }
-    }
-
-    var content: some View {
-        HStack {
-            fromToCoin
-            Spacer()
-            VStack(spacing: 6) {
-                fromToAmountField
-                fiatBalance
-            }
-        }
-    }
-
-    var fromToLabel: some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-    }
-
-    var balance: some View {
-        Text("\(coin.balanceString) \(coin.ticker)")
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-    }
-
-    var unevenRectangle: some View {
-        UnevenRoundedRectangle(
-            cornerRadii: .init(
-                topLeading: 24,
-                bottomLeading: 12,
-                bottomTrailing: 12,
-                topTrailing: 24
-            )
+    private func handleAmountEdit(oldValue: String, newValue: String) {
+        // A multi-character jump (paste, autofill, or clearing the field to a
+        // value) is a discrete action — fetch immediately instead of waiting out
+        // the keystroke debounce. Single-char edits stay debounced.
+        let immediate = abs(newValue.count - oldValue.count) > 1
+        detailsViewModel.updateFromAmount(
+            vault: vault,
+            referredCode: referredViewModel.savedReferredCode,
+            immediate: immediate
         )
-        .foregroundStyle(Theme.colors.bgSurface1)
-        .rotationEffect(.degrees(title=="from" ? 0 : 180))
-    }
-
-    var unevenRectangleBorder: some View {
-        UnevenRoundedRectangle(
-            cornerRadii: .init(
-                topLeading: 24,
-                bottomLeading: 12,
-                bottomTrailing: 12,
-                topTrailing: 24
-            )
-        )
-        .stroke(Theme.colors.bgSurface2, lineWidth: 1)
-        .rotationEffect(.degrees(title=="from" ? 0 : 180))
-    }
-
-    var fromToChain: some View {
-        Button {
-            showNetworkSelectSheet = true
-        } label: {
-            SwapFromToChain(chain: selectedChain)
-        }
-    }
-
-    var fromToCoin: some View {
-        Button {
-            showCoinSelectSheet = true
-        } label: {
-            fromToCoinLabel
-        }
-    }
-
-    var fromToCoinLabel: some View {
-        SwapFromToCoin(coin: coin)
-    }
-
-    var fromToAmountField: some View {
-        Group {
-            SwapCryptoAmountTextField(amount: $amount) { oldValue, newValue in
-                if title=="from" {
-                    // A multi-character jump (paste, autofill, or clearing the
-                    // field to a value) is a discrete action — fetch immediately
-                    // instead of waiting out the keystroke debounce. Single-char
-                    // edits stay debounced for free typing.
-                    let immediate = abs(newValue.count - oldValue.count) > 1
-                    detailsViewModel.updateFromAmount(
-                        vault: vault,
-                        referredCode: referredViewModel.savedReferredCode,
-                        immediate: immediate
-                    )
-                    detailsViewModel.showAllPercentageButtons = true
-                }
-            }
-            .disabled(title=="to")
-        }
-        // The "to" amount is never skeletoned: it always carries a value — the
-        // `~`-indicative estimate while the quote loads, replaced by the firm
-        // amount once it lands. Only the swap-details summary (provider, fees)
-        // shows the loading skeleton.
-        .animation(.easeInOut(duration: 0.25), value: amount)
-    }
-
-    var fiatBalance: some View {
-        Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .opacity(isFiatVisible() ? 1 : 0)
-            .animation(.easeInOut(duration: 0.25), value: fiatAmount)
-    }
-
-    private func isFiatVisible() -> Bool {
-        !amount.isEmpty && amount != "0"
+        detailsViewModel.showAllPercentageButtons = true
     }
 }
 
