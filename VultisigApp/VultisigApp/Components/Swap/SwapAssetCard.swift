@@ -26,7 +26,10 @@ struct SwapAssetCard<Focus: Hashable>: View {
     let onTapChain: () -> Void
 
     let coinLogo: String
-    let coinChainLogo: String
+    /// Chain badge overlaid on the coin icon. `nil` (a native coin) shows no badge;
+    /// pass the value through as-is rather than coercing to `""`, which would render
+    /// an empty badge.
+    let coinChainLogo: String?
     let ticker: String
     let onTapCoin: () -> Void
 
@@ -37,6 +40,11 @@ struct SwapAssetCard<Focus: Hashable>: View {
     @Binding var amount: String
     let isEditable: Bool
     var placeholder: String = "0"
+    /// Fires ONLY on a user edit of the editable field (typed/pasted), with the
+    /// old and new text — never on a programmatic `amount` change. The adapter puts
+    /// its form-specific side effects here so a programmatic set (e.g. a percentage
+    /// button) doesn't re-trigger them.
+    var onEdit: ((_ old: String, _ new: String) -> Void)?
 
     /// Optional keyboard-accessory focus wiring (Limit only). Both must be set for
     /// the editable field to bind to the form's `@FocusState`.
@@ -169,7 +177,12 @@ struct SwapAssetCard<Focus: Hashable>: View {
         // decimal pad enforces this for free; macOS has no keypad.
         let decimal = Binding<String>(
             get: { amount },
-            set: { if $0.isDecimalInput() { amount = $0 } }
+            set: { newValue in
+                guard newValue.isDecimalInput() else { return }
+                let old = amount
+                amount = newValue
+                onEdit?(old, newValue)
+            }
         )
         let field = TextField(placeholder, text: decimal)
             .textFieldStyle(.plain)
@@ -200,7 +213,7 @@ struct SwapAssetCard<Focus: Hashable>: View {
                     chainName: "Ethereum",
                     onTapChain: {},
                     coinLogo: "",
-                    coinChainLogo: "",
+                    coinChainLogo: nil,
                     ticker: "USDT",
                     onTapCoin: {},
                     balance: "12,200.52 USDT",
@@ -215,7 +228,7 @@ struct SwapAssetCard<Focus: Hashable>: View {
                     chainName: "Bitcoin",
                     onTapChain: {},
                     coinLogo: "",
-                    coinChainLogo: "",
+                    coinChainLogo: nil,
                     ticker: "BTC",
                     onTapCoin: {},
                     balance: nil,
