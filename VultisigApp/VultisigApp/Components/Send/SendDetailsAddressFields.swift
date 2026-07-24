@@ -93,6 +93,13 @@ struct SendDetailsAddressFields: View {
                 viewModel.errorMessage = nil
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
+            } else {
+                // Paste/QR/address-book value that neither matches the current
+                // chain nor one we can switch to. A same-chain-valid value
+                // advances via the shared `toAddress` onChange; an ENS/TNS name
+                // still needs async resolution. Only a value that can never
+                // resolve is flagged now, so Next is disabled *with a reason*.
+                viewModel.markInvalidRecipientIfUnresolvable()
             }
         }
     }

@@ -581,6 +581,7 @@
 "invalidIntegerError" = "Invalid integer amount";
 "invalidLPUnits" = "Invalid LP units";
 "invalidOperatorFee" = "Invalid operator fee";
+"invalidRecipientAddressError" = "That recipient is not a valid address for this chain.";
 "invalidVaultData" = "Invalid vault data";
 "Italian" = "Italian";
 "iUnderstand" = "I understand";

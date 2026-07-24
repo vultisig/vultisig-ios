@@ -583,6 +583,7 @@
 "invalidIntegerError" = "Nevažeći cijeli broj";
 "invalidLPUnits" = "Nevažeće LP jedinice";
 "invalidOperatorFee" = "Nevažeća naknada operatora";
+"invalidRecipientAddressError" = "Taj primatelj nije važeća adresa za ovaj lanac.";
 "invalidVaultData" = "Nevažeći podaci spremišta";
 "Italian" = "Talijanski";
 "iUnderstand" = "Razumijem";
