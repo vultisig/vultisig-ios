@@ -33,14 +33,14 @@ final class RujiDualPositionWiringTests: XCTestCase {
     func testCompoundedCardMapsBackToTheRujiBondCoin() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
-        let screen = DefiChainMainScreen(vault: TestStore.makeVault(), chain: .thorChain)
+        let model = DefiChainScreenModel(vault: TestStore.makeVault(), chain: .thorChain)
 
-        XCTAssertEqual(screen.stakeCoin(for: TokensStore.sruji), TokensStore.ruji)
+        XCTAssertEqual(model.stakeCoin(for: TokensStore.sruji), TokensStore.ruji)
         // Unchanged siblings.
-        XCTAssertEqual(screen.stakeCoin(for: TokensStore.stcy), TokensStore.tcy)
-        XCTAssertEqual(screen.stakeCoin(for: TokensStore.ybrune), TokensStore.brune)
+        XCTAssertEqual(model.stakeCoin(for: TokensStore.stcy), TokensStore.tcy)
+        XCTAssertEqual(model.stakeCoin(for: TokensStore.ybrune), TokensStore.brune)
         // A non-compound coin maps to itself.
-        XCTAssertEqual(screen.stakeCoin(for: TokensStore.ruji), TokensStore.ruji)
+        XCTAssertEqual(model.stakeCoin(for: TokensStore.ruji), TokensStore.ruji)
     }
 
     /// The two cards are keyed on different denoms, which is what gives them
