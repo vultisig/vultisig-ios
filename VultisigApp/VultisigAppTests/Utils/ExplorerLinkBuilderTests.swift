@@ -306,4 +306,35 @@ final class ExplorerLinkBuilderTests: XCTestCase {
             "https://explorer.qbtc.net/qbtc/account/addr"
         )
     }
+
+    // MARK: - Bitcoin Cash explorer host consistency
+
+    /// Bitcoin Cash transaction and address links must resolve to the same
+    /// explorer host across every code path. The address host had drifted:
+    /// `Endpoint.getExplorerByAddressURLByGroup` pointed at explorer.bitcoin.com
+    /// while the tx URL and `ExplorerLinkBuilder.getExplorerByAddressURL` both
+    /// used blockchair. Lock all three to blockchair so tx + address agree.
+    func testBitcoinCashExplorerHostsAreConsistent() {
+        let address = "bitcoincash:qtestaddress"
+
+        let txHost = URL(
+            string: ExplorerLinkBuilder.getExplorerURL(chain: .bitcoinCash, txid: txHash)
+        )?.host
+        let addressHost = ExplorerLinkBuilder
+            .getExplorerByAddressURL(chain: .bitcoinCash, address: address)
+            .flatMap { URL(string: $0)?.host }
+        let groupAddressHost = Endpoint
+            .getExplorerByAddressURLByGroup(chain: .bitcoinCash, address: address)
+            .flatMap { URL(string: $0)?.host }
+
+        XCTAssertEqual(txHost, "blockchair.com")
+        XCTAssertEqual(addressHost, "blockchair.com")
+        XCTAssertEqual(groupAddressHost, "blockchair.com")
+        XCTAssertEqual(txHost, addressHost, "BCH tx and address hosts must match")
+        XCTAssertEqual(
+            addressHost,
+            groupAddressHost,
+            "BCH address hosts must match across both explorer functions"
+        )
+    }
 }
