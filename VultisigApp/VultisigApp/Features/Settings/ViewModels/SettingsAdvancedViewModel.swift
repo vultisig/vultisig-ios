@@ -19,8 +19,8 @@ final class SettingsAdvancedViewModel: ObservableObject {
 
     private let resetService: TransactionHistoryResetting
 
-    init(resetService: TransactionHistoryResetting = TransactionHistoryResetService.shared) {
-        self.resetService = resetService
+    init(resetService: TransactionHistoryResetting? = nil) {
+        self.resetService = resetService ?? TransactionHistoryResetService.shared
     }
 
     /// Ask for confirmation. Deliberately does not delete anything.

@@ -51,9 +51,10 @@ final class SwapKitPoller: DoneStatusPoller {
         transaction: SwapTransaction,
         txHash: String,
         pubKeyECDSA: String,
-        tracker: SwapKitTrackingService = .shared
+        tracker: SwapKitTrackingService? = nil
     ) -> SwapKitPoller {
-        SwapKitPoller(
+        let tracker = tracker ?? .shared
+        return SwapKitPoller(
             txHash: txHash,
             sourceChain: transaction.fromCoin.chain,
             tracker: tracker,
@@ -85,9 +86,10 @@ final class SwapKitPoller: DoneStatusPoller {
         sourceChain: Chain,
         txHash: String,
         pubKeyECDSA: String,
-        tracker: SwapKitTrackingService = .shared
+        tracker: SwapKitTrackingService? = nil
     ) -> SwapKitPoller {
-        SwapKitPoller(
+        let tracker = tracker ?? .shared
+        return SwapKitPoller(
             txHash: txHash,
             sourceChain: sourceChain,
             tracker: tracker,

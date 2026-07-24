@@ -55,7 +55,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     private static let removedChainMigrations: [String: Chain] = [
         "thorChainStagenet2": .thorChainStagenet,
         "thorChainChainnet": .thorChain,
-        "polygon": .polygonV2,
+        "polygon": .polygonV2
     ]
 
     init(from decoder: Decoder) throws {
