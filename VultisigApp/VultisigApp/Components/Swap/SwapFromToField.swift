@@ -27,8 +27,7 @@ struct SwapFromToField: View {
             content
         }
         .padding(16)
-        .background(notchedBackground)
-        .overlay(notchedBorder)
+        .background(notchedBorder)
         .onLoad {
             referredViewModel.setData()
         }
@@ -66,20 +65,15 @@ struct SwapFromToField: View {
             .foregroundStyle(Theme.colors.textTertiary)
     }
 
-    /// The card is a `NotchedRectangle` (24 outer / 12 inner corners, concave
-    /// cutout on the bottom edge). The "to" card is the same shape rotated 180°,
-    /// which flips the corners (24/12 → 12/24) and moves the notch to the top edge.
-    /// The notch center is inset half the inter-card gap so both cards' notches
-    /// meet as one full circle around the shared toggle.
-    var notchedBackground: some View {
-        NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
-            .foregroundStyle(Theme.colors.bgSurface1)
-            .rotationEffect(.degrees(title == "from" ? 0 : 180))
-    }
-
+    /// Transparent card matching the Limit form: no fill, just a `borderLight`
+    /// bordered `NotchedRectangle` (24 outer / 12 inner corners, concave cutout on
+    /// the bottom edge). The "to" card is the same shape rotated 180° (corners flip
+    /// 24/12 → 12/24, notch moves to the top edge). The notch center is inset half
+    /// the inter-card gap so both cards' notches meet as one full circle around the
+    /// shared toggle.
     var notchedBorder: some View {
         NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
-            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+            .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
             .rotationEffect(.degrees(title == "from" ? 0 : 180))
     }
 

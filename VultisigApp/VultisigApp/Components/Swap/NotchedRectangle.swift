@@ -27,36 +27,48 @@ struct NotchedRectangle: Shape {
     var topTrailingRadius: CGFloat = 24
     var bottomLeadingRadius: CGFloat = 12
     var bottomTrailingRadius: CGFloat = 12
-    /// Radius of the semicircular cavity. ≈ the toggle button's outer radius plus
-    /// a hairline gap so the button's stroke ring reads as seated in the notch.
-    var notchRadius: CGFloat = 21
+    /// Radius of the notch cavity: `SwapAssetsButton`'s outer radius (~19 — its
+    /// 34pt label + 2pt padding) plus the intended 8pt moat between the button's
+    /// stroke ring and the cutout, so the coupling to the button size is discoverable.
+    var notchRadius: CGFloat = 27
     /// How far below the bottom edge (into the inter-card gap) the notch circle's
     /// center sits. Set to half the gap between the two stacked cards so both
     /// cards' notches become caps of one circle centered on the toggle. `0` keeps
     /// a pure edge-centered semicircle.
     var notchCenterInset: CGFloat = 0
+    /// Inset applied via `InsettableShape`/`strokeBorder` so the whole 1pt border
+    /// sits inside the bounds — a center-stroked line's outer half would be clipped
+    /// at the frame edge once the card has no fill to hide it.
+    var insetAmount: CGFloat = 0
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
+        // Inset the working rect and shrink the OUTER corners by the same amount so
+        // the whole stroke sits inside the bounds (strokeBorder). The notch circle
+        // is kept inset-invariant (see below), so the two stacked cards keep sharing
+        // exactly one circle instead of drifting apart by the inset.
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
         // Clamp so unusual/compact frames can't reverse segments or push the
         // corners and notch past each other: corners fit within half the smaller
         // side, and the notch stays on the bottom edge between the bottom corners
         // (and no deeper than the card).
         let maxCorner = max(0, min(rect.width, rect.height) / 2)
-        let tl = clamp(topLeadingRadius, upperBound: maxCorner)
-        let tr = clamp(topTrailingRadius, upperBound: maxCorner)
-        let bl = clamp(bottomLeadingRadius, upperBound: maxCorner)
-        let br = clamp(bottomTrailingRadius, upperBound: maxCorner)
+        let tl = clamp(topLeadingRadius - insetAmount, upperBound: maxCorner)
+        let tr = clamp(topTrailingRadius - insetAmount, upperBound: maxCorner)
+        let bl = clamp(bottomLeadingRadius - insetAmount, upperBound: maxCorner)
+        let br = clamp(bottomTrailingRadius - insetAmount, upperBound: maxCorner)
         let bottomRoom = min(rect.midX - (rect.minX + bl), (rect.maxX - br) - rect.midX)
+        // Keep the notch circle INSET-INVARIANT: its radius is not reduced, and its
+        // center is pinned in frame space by adding `insetAmount` back into the drop
+        // to undo the rect inset. So the notch circle is identical whether or not the
+        // shape is stroke-inset — the mirrored (rotated-180°) card computes the same
+        // circle, and with the drop = half the inter-card gap the two coincide into
+        // ONE full hole around the toggle (not a stadium). `notchCenterInset == 0`
+        // (no inset) reduces to the original edge-centered semicircle. The circle
+        // meets the bottom edge `halfChord` either side of center; `beta` is the tilt
+        // of those crossings off horizontal.
         let notch = clamp(notchRadius, upperBound: min(bottomRoom, rect.height))
-        // Drop the notch circle's center below the bottom edge, into the inter-card
-        // gap, by `notchCenterInset`. The mirrored (rotated-180°) card does the same,
-        // so the two cards' notches become caps of ONE circle centered on the gap —
-        // the toggle then seats in a full round hole, not a stadium. `drop == 0`
-        // reduces exactly to the original edge-centered semicircle. The circle meets
-        // the bottom edge `halfChord` either side of center; `beta` is the tilt of
-        // those crossings off horizontal.
-        let drop = clamp(notchCenterInset, upperBound: notch)
+        let drop = clamp(notchCenterInset + insetAmount, upperBound: notch)
         let halfChord = (notch * notch - drop * drop).squareRoot()
         let beta = notch > 0 ? asin(Double(drop / notch)) : 0
 
@@ -109,6 +121,14 @@ struct NotchedRectangle: Shape {
     }
 }
 
+extension NotchedRectangle: InsettableShape {
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var shape = self
+        shape.insetAmount += amount
+        return shape
+    }
+}
+
 #Preview {
     ZStack {
         Theme.colors.bgPrimary
@@ -118,14 +138,14 @@ struct NotchedRectangle: Shape {
                     .foregroundStyle(Theme.colors.bgSurface1)
                     .overlay(
                         NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
-                            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+                            .strokeBorder(Theme.colors.bgSurface2, lineWidth: 1)
                     )
                     .frame(height: 96)
                 NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
                     .foregroundStyle(Theme.colors.bgSurface1)
                     .overlay(
                         NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
-                            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+                            .strokeBorder(Theme.colors.bgSurface2, lineWidth: 1)
                     )
                     .rotationEffect(.degrees(180))
                     .frame(height: 96)

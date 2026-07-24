@@ -851,7 +851,7 @@ private struct LimitAssetRow: View {
             // center is inset half the inter-row gap so both rows' notches meet as
             // one full circle around the shared toggle where the rows meet.
             NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
-                .stroke(Theme.colors.borderLight, lineWidth: 1)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
                 .rotationEffect(.degrees(kind == .sell ? 0 : 180))
         )
     }
