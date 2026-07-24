@@ -327,24 +327,31 @@ private extension CryptoPriceService {
 
             // now lets try to find the price for the notFoundPricesOnCoingecko
             for contract in contractsNotFoundOnCoingecko {
-                let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain)
-                rates.append(lifiRate)
+                if let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain) {
+                    rates.append(lifiRate)
+                }
             }
 
             try await RateProvider.shared.save(rates: rates)
         }
     }
 
-    func fetchLifiTokenPrice(contract: String, chain: Chain) async throws -> Rate {
-        let response = try await httpClient.request(
-            CryptoPriceAPI.lifiTokenPrice(network: chain.ticker, address: contract)
-        )
-        if let priceUsd = Utils.extractResultFromJson(fromData: response.data, path: "priceUSD") as? String {
-            let price = Double(priceUsd) ?? 0.0
-            return .init(fiat: "usd", crypto: contract, value: price)
+    func fetchLifiTokenPrice(contract: String, chain: Chain) async throws -> Rate? {
+        guard let chainID = chain.chainID else {
+            logger.warning("No LiFi chain ID for \(chain.ticker), skipping price fetch for \(contract)")
+            return nil
         }
 
-        return .init(fiat: "usd", crypto: contract, value: 0.0)
+        let response = try await httpClient.request(
+            CryptoPriceAPI.lifiTokenPrice(network: String(chainID), address: contract)
+        )
+        guard let priceUsd = Utils.extractResultFromJson(fromData: response.data, path: "priceUSD") as? String,
+              let price = Double(priceUsd) else {
+            logger.warning("No LiFi price found for \(contract) on chain \(chain.ticker)")
+            return nil
+        }
+
+        return .init(fiat: "usd", crypto: contract, value: price)
     }
 
     func mapRates(response: [String: [String: Double]]) -> [Rate] {
