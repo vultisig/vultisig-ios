@@ -516,6 +516,46 @@ final class SwapPayloadBuilderTests: XCTestCase {
         XCTAssertNil(SwapCryptoLogic.buildApprovePayload(fromCoin: usdc, amount: 100, quote: nil))
     }
 
+    // MARK: - Missing-quote guard (internal error, not a money error)
+
+    func testBuildSwapKeysignPayloadThrowsInternalErrorWhenQuoteMissing() async {
+        // A market transaction with no quote is an internal/state inconsistency
+        // (limit orders build their payload via `LimitSwapPayloadAssembler`).
+        // It must surface as the internal `unexpectedError`, never as the money
+        // error `insufficientFunds`.
+        let vault = makeVault()
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        let transaction = SwapTransaction(
+            fromCoin: usdc,
+            toCoin: eth,
+            fromAmount: 100,
+            kind: .market(nil),
+            gas: 0,
+            gasLimit: 0,
+            thorchainFee: 0,
+            vultDiscountBps: 0,
+            referralDiscountBps: 0,
+            feeCoin: eth,
+            advancedSettings: .default
+        )
+
+        do {
+            _ = try await SwapCryptoLogic.buildSwapKeysignPayload(
+                transaction: transaction,
+                chainSpecific: ethereumChainSpecific(),
+                vault: vault,
+                now: fixedNow
+            )
+            XCTFail("Expected a throw for a missing market quote")
+        } catch let error as SwapCryptoLogic.Errors {
+            XCTAssertEqual(error, .unexpectedError)
+            XCTAssertNotEqual(error, .insufficientFunds, "A nil quote must not surface as a money error")
+        } catch {
+            XCTFail("Expected SwapCryptoLogic.Errors.unexpectedError, got \(error)")
+        }
+    }
+
     // MARK: - Fixtures
 
     private func makeVault() -> Vault {

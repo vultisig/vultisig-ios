@@ -478,7 +478,11 @@ private extension SwapService {
         } catch let error as SwapError {
             throw error
         } catch {
-            throw SwapError.swapAmountTooSmall
+            // Any error not classified above (timeout, TLS, decode, node 5xx)
+            // is unknown here — surface the real error instead of a confident
+            // "amount too small" money verdict the app cannot actually justify.
+            logger.error("Cross-chain quote failed with unclassified error: \(error.localizedDescription, privacy: .public)")
+            throw error
         }
     }
 

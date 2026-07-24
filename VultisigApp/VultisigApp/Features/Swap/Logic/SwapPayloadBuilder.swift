@@ -9,6 +9,9 @@
 
 import BigInt
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-payload-builder")
 
 extension SwapCryptoLogic {
 
@@ -49,15 +52,31 @@ extension SwapCryptoLogic {
                     planFee = BigInt(plan.fee)
                 }
 
-                if planFee <= 0 && fromAmount > 0 {
-                    throw Errors.insufficientFunds
+                // A non-positive planned fee is an anomalous planner result, not
+                // a funding verdict: fail closed with an internal error rather
+                // than reserving a zero network fee downstream (or, as before,
+                // inferring "insufficient funds" from it).
+                guard planFee > 0 || fromAmount <= 0 else {
+                    logger.error("UTXO/Cardano fee planner returned a non-positive fee")
+                    throw Errors.unexpectedError
                 }
                 return planFee
+            } catch let error as KeysignPayloadFactory.Errors {
+                // The UTXO/Cardano transfer builder raises typed funding errors
+                // (notEnoughUTXO / utxoTooSmall / utxoSelectionFailed) — trust
+                // them as the authoritative "insufficient funds" signal.
+                throw error
+            } catch let error as Errors {
+                // Our own internal verdict (e.g. the non-positive-fee guard
+                // above) is already correctly typed — rethrow without relabeling.
+                throw error
             } catch {
-                if error is KeysignPayloadFactory.Errors {
-                    throw error
-                }
-                throw Errors.insufficientFunds
+                // Any other failure (fee-plan build, decode, transport) is not a
+                // funding verdict — log and surface the real error instead of
+                // inferring "insufficient funds" (previously also inferred from a
+                // non-positive planned fee).
+                logger.error("UTXO/Cardano swap-fee planning failed: \(error.localizedDescription, privacy: .public)")
+                throw error
             }
 
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
@@ -214,9 +233,11 @@ extension SwapCryptoLogic {
         )
 
         // Limit orders never reach this builder — they construct their
-        // payload via `LimitSwapPayloadAssembler`. Guard for symmetry.
+        // payload via `LimitSwapPayloadAssembler`. A missing quote here is an
+        // internal/state inconsistency, not a funding problem, so surface it as
+        // an internal error rather than a confident "insufficient funds" verdict.
         guard let quote = transaction.quote else {
-            throw Errors.insufficientFunds
+            throw Errors.unexpectedError
         }
 
         switch quote {
@@ -313,6 +334,13 @@ extension SwapCryptoLogic {
             )
 
         case let .oneinch(evmQuote, _), let .lifi(evmQuote, _, _), let .kyberswap(evmQuote, _):
+            // Never stamp the signed payload with a guessed provider. All three
+            // grouped cases resolve `swapProviderId` to a concrete non-nil value
+            // by construction; a nil here is an internal inconsistency, not a
+            // reason to silently default to 1inch.
+            guard let provider = quote.swapProviderId else {
+                throw Errors.unexpectedError
+            }
             // Attribute the affiliate fee to its coin so peers holding only
             // the serialized payload (the co-signer has no live quote) don't
             // guess. `swapFeeCoin` is what the initiator's own fiat display
@@ -337,7 +365,7 @@ extension SwapCryptoLogic {
                 fromAmount: amountInCoin,
                 toAmountDecimal: toDecimal,
                 quote: evmQuote,
-                provider: quote.swapProviderId ?? .oneInch,
+                provider: provider,
                 swapFeeChain: swapFeeChain,
                 swapFeeTokenId: swapFeeTokenId,
                 swapFeeDecimals: swapFeeDecimals

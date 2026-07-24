@@ -858,14 +858,11 @@ private extension SwapDetailsViewModel {
 
             logger.warning("Update fees error: \(error.localizedDescription)")
 
-            switch error {
-            case KeysignPayloadFactory.Errors.notEnoughUTXOError,
-                 KeysignPayloadFactory.Errors.utxoTooSmallError,
-                 KeysignPayloadFactory.Errors.utxoSelectionFailedError:
-                self.error = error
-            default:
-                self.error = SwapCryptoLogic.Errors.insufficientGas
-            }
+            // Surface the real failure. Typed UTXO errors already flow through
+            // unchanged; every other error (timeout, decode, TLS, node 5xx) was
+            // previously relabeled as `insufficientGas` — a confident money
+            // verdict the app cannot actually justify.
+            self.error = error
         }
     }
 }
