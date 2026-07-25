@@ -5,7 +5,6 @@
 //  Created by Gaston Mazzeo on 17/10/2025.
 //
 
-import BigInt
 import SwiftUI
 
 struct DefiChainMainScreen: View {
@@ -20,6 +19,7 @@ struct DefiChainMainScreen: View {
     @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
     @StateObject private var solanaStakeViewModel: SolanaStakeDefiViewModel
     @StateObject private var governanceViewModel: QBTCGovernanceViewModel
+    @StateObject private var screenModel: DefiChainScreenModel
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
@@ -40,28 +40,11 @@ struct DefiChainMainScreen: View {
         self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
         self._solanaStakeViewModel = StateObject(wrappedValue: SolanaStakeDefiViewModel(vault: vault))
         self._governanceViewModel = StateObject(wrappedValue: QBTCGovernanceViewModel())
+        self._screenModel = StateObject(wrappedValue: DefiChainScreenModel(vault: vault, chain: chain))
     }
 
     private var nativeCoin: Coin? {
         vault.nativeCoin(for: chain)
-    }
-
-    /// Whether the native coin balance can cover a governance vote's flat tx
-    /// fee. A vote is an on-chain tx that costs gas, so a 0/dust-balance user
-    /// would otherwise walk verify → ML-DSA keysign only for the broadcast to
-    /// fail. We compare the raw balance against the chain's flat `min_tx_fee`
-    /// (`CosmosStakingConfig`, the single source of truth for QBTC fee). The
-    /// fee is the exact flat floor — `min_gas_price` is 0 on qbtc-testnet, so
-    /// gas is free and the fee doesn't vary by message — so this is a precise
-    /// pre-flight, not an approximation. Gates both vote entry points and
-    /// greys the vote controls with a hint.
-    var canCoverVoteFee: Bool {
-        guard let nativeCoin else { return false }
-        guard let feeAmount = try? CosmosStakingConfig.feeAmount(for: chain) else {
-            // No fee config for this chain — don't block (non-QBTC fallback).
-            return true
-        }
-        return nativeCoin.rawBalance.toBigInt() >= BigInt(feeAmount)
     }
 
     /// Surfaced via the `.withBanner(...)` toast modifier. Only Bond surfaces a refresh error
@@ -213,7 +196,7 @@ struct DefiChainMainScreen: View {
                     onWeightedVote: { proposal, options in
                         onGovernanceWeightedVote(proposal: proposal, options: options)
                     },
-                    canVote: canCoverVoteFee
+                    canVote: screenModel.canCoverVoteFee(nativeCoin: nativeCoin)
                 )
             }
         }
@@ -332,149 +315,40 @@ struct DefiChainMainScreen: View {
     }
 
     func onStake(position: StakePosition) {
-        if position.coin.chain == .ton {
-            // Add-more reuses the existing pool; a first-time stake (no pool yet)
-            // routes with `nil` so the screen prompts for the pool address.
-            onTransactionToPresent(.tonStake(
-                coin: position.coin,
-                poolAddress: position.poolAddress,
-                poolImplementation: position.poolImplementation
-            ))
-            return
-        }
-        switch position.type {
-        case .stake:
-            onTransactionToPresent(.stake(coin: position.coin, isAutocompound: false))
-        case .compound:
-            onTransactionToPresent(.stake(coin: stakeCoin(for: position.coin), isAutocompound: true))
-        case .index:
-            onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
-        }
+        onTransactionToPresent(screenModel.stakeTransactionType(for: position))
     }
 
     func onUnstake(position: StakePosition) {
-        if position.coin.chain == .ton {
-            guard let poolAddress = position.poolAddress, !poolAddress.isEmpty else { return }
-            onTransactionToPresent(
-                .tonUnstake(
-                    coin: position.coin,
-                    poolAddress: poolAddress,
-                    poolImplementation: position.poolImplementation,
-                    stakedAmount: position.amount
-                )
-            )
-            return
-        }
-        switch position.type {
-        case .stake:
-            onTransactionToPresent(
-                .unstake(
-                    coin: position.coin,
-                    isAutocompound: false,
-                    availableToUnstake: position.availableToUnstake
-                )
-            )
-        case .compound:
-            onTransactionToPresent(
-                .unstake(
-                    coin: stakeCoin(for: position.coin),
-                    isAutocompound: true,
-                    availableToUnstake: position.amount
-                )
-            )
-        case .index:
-            onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
-        }
+        guard let type = screenModel.unstakeTransactionType(for: position) else { return }
+        onTransactionToPresent(type)
     }
 
     func onTransfer(position: StakePosition) {
-        guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin }) else {
-            return
-        }
+        guard let coin = screenModel.transferCoin(for: position) else { return }
         router.navigate(to: HomeRoute.vaultAction(
             action: .send(coin: coin, hasPreselectedCoin: true),
             vault: vault
         ))
     }
 
-    func stakeCoin(for compoundCoin: CoinMeta) -> CoinMeta {
-        switch compoundCoin.ticker.uppercased() {
-        case "STCY":
-            return TokensStore.tcy
-        case "YBRUNE":
-            return TokensStore.brune
-        case "SRUJI":
-            return TokensStore.ruji
-        default:
-            return compoundCoin
-        }
-    }
-
-    func coin(for yCoin: CoinMeta) -> CoinMeta {
-        let coin: CoinMeta
-        switch yCoin {
-        case TokensStore.yrune:
-            coin = TokensStore.rune
-        case TokensStore.ytcy:
-            coin = TokensStore.tcy
-        default:
-            coin = TokensStore.rune
-        }
-        return coin
-    }
-
-    /// Builds a single-option QBTC governance vote tx straight from the
-    /// proposal + chosen option and pushes it to the existing verify → ML-DSA
-    /// keysign flow. The memo (`QBTC_VOTE:<OPTION>:<ID>`) is what
-    /// `QBTCHelper.buildMsgVote` consumes; the dictionary is display-only so
-    /// verify reads "Vote <OPTION> on Proposal #N" rather than the raw memo.
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
-        guard let nativeCoin, canCoverVoteFee else { return }
-        let memo = QBTCGovVoteMemo.singleVote(proposalID: proposal.id, choice: choice)
-        let displayDictionary: [String: String] = [
-            "action": "governanceVoteAction".localized,
-            "vote": choice.displayTitle,
-            "proposal": String(format: "governanceProposalNumber".localized, String(proposal.id))
-        ]
-        let tx = SendTransaction.empty(coin: nativeCoin, vault: vault).copy(
-            memo: memo,
-            transactionType: .vote,
-            memoFunctionDictionary: displayDictionary
-        )
+        guard let tx = screenModel.makeGovernanceVoteTransaction(proposal: proposal, choice: choice) else { return }
         router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
     }
 
-    /// Builds a weighted QBTC governance vote tx from per-option weights and
-    /// pushes it to verify → ML-DSA keysign. The memo
-    /// (`QBTC_VOTEW:<ID>:OPT=W,...`) is what `QBTCHelper.buildMsgVoteWeighted`
-    /// consumes; weights are passed as plain decimals and the helper
-    /// canonicalizes them to the 18-decimal `cosmos.Dec` form.
     func onGovernanceWeightedVote(proposal: CosmosGovProposal, options: [CosmosGovVoteOption]) {
-        guard let nativeCoin, canCoverVoteFee, !options.isEmpty else { return }
-        let memo = QBTCGovVoteMemo.weightedVote(proposalID: proposal.id, options: options)
-        let displayValue = QBTCGovVoteMemo.weightedDisplayValue(options: options)
-        let displayDictionary: [String: String] = [
-            "action": "governanceVoteAction".localized,
-            "vote": displayValue,
-            "proposal": String(format: "governanceProposalNumber".localized, String(proposal.id))
-        ]
-        let tx = SendTransaction.empty(coin: nativeCoin, vault: vault).copy(
-            memo: memo,
-            transactionType: .vote,
-            memoFunctionDictionary: displayDictionary
-        )
+        guard let tx = screenModel.makeGovernanceWeightedVoteTransaction(proposal: proposal, options: options) else {
+            return
+        }
         router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {
         Task { @MainActor in
-            let vaultCoins = vault.coins.map { $0.toCoinMeta() }
-            let shouldAdd = type.coins.contains { !vaultCoins.contains($0) }
-
-            if shouldAdd {
+            if screenModel.needsCoinAddition(for: type) {
                 isLoading = true
                 do {
-                    try await CoinService.addToChain(assets: type.coins, to: vault)
+                    try await screenModel.addCoins(for: type)
                 } catch {
                     self.error = HelperError.runtimeError("Failed to add coins")
                     isLoading = false
@@ -493,21 +367,13 @@ struct DefiChainMainScreen: View {
     /// Builds the unsigned tx and pushes straight to Verify — used by the Solana
     /// unstake/withdraw rows, which have no editable field and are already gated
     /// upstream (active/activating for unstake, fully inactive for withdraw), so
-    /// the intermediate confirm screen would be redundant. Mirrors
-    /// `FunctionTransactionScreen.onVerify`: pre-fetch the chain-specific gas so
-    /// Verify shows the fee immediately; it is re-fetched there anyway, so a
-    /// failure here is non-fatal.
+    /// the intermediate confirm screen would be redundant. The chain-specific
+    /// gas is pre-fetched inside the model so Verify shows the fee immediately.
     func presentVerify(for builder: TransactionBuilder) {
         Task { @MainActor in
             isLoading = true
             defer { isLoading = false }
-            var sendTx = builder.buildSendTransaction(vault: vault)
-            do {
-                let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
-                sendTx = sendTx.copy(gas: chainSpecific.gas)
-            } catch {
-                // Non-fatal: gas is re-fetched during Verify.
-            }
+            let sendTx = await screenModel.buildVerifyTransaction(for: builder)
             router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }
@@ -618,6 +484,7 @@ private extension DefiChainMainScreen {
         bondViewModel.update(vault: vault)
         lpsViewModel.update(vault: vault)
         stakeViewModel.update(vault: vault)
+        screenModel.update(vault: vault)
     }
 }
 
