@@ -21,6 +21,10 @@ class ThorchainChainnetService: ThorchainSwapProvider {
 
     private init() {}
 
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .thorchainChainnet(quote)
+    }
+
     // MARK: - Helpers
 
     /// The environment for this service is fixed at `.chainnet` — the file

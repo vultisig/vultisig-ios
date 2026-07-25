@@ -21,6 +21,10 @@ class ThorchainStagenetService: ThorchainSwapProvider {
 
     private init() {}
 
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .thorchainStagenet(quote)
+    }
+
     // MARK: - Helpers
 
     /// The environment for this service is `.stagenet` — Vultisig's internal
