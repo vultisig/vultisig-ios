@@ -266,7 +266,10 @@ enum CoinGeckoPlatform {
         .optimism: "optimistic-ethereum",
         .bscChain: "binance-smart-chain",
         .zksync: "zksync",
-        .mantle: "mantle"
+        .mantle: "mantle",
+        .cronosChain: "cronos",
+        .hyperliquid: "hyperliquid",
+        .sei: "sei-network"
     ]
 
     static func id(for chain: Chain) -> String {

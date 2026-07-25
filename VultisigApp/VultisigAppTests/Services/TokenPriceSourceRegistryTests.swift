@@ -61,6 +61,9 @@ final class TokenPriceSourceRegistryTests: XCTestCase {
         XCTAssertEqual(CoinGeckoPlatform.id(for: .bscChain), "binance-smart-chain")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .zksync), "zksync")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .mantle), "mantle")
+        XCTAssertEqual(CoinGeckoPlatform.id(for: .cronosChain), "cronos")
+        XCTAssertEqual(CoinGeckoPlatform.id(for: .hyperliquid), "hyperliquid")
+        XCTAssertEqual(CoinGeckoPlatform.id(for: .sei), "sei-network")
     }
 
     func test_coinGeckoPlatform_nonEvmChainsMapToEmpty() {
