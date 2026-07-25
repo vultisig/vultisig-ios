@@ -55,7 +55,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         vm.toAddress = "not-a-real-btc-address"
         let isValid = await vm.validateForm()
         XCTAssertFalse(isValid)
-        XCTAssertEqual(vm.errorMessage, "invalidAddressError")
+        XCTAssertEqual(vm.errorMessage, "invalidRecipientAddressError")
         XCTAssertTrue(vm.showAddressAlert)
     }
 
@@ -78,7 +78,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         // we at least confirmed validation rejected — the precise error label
         // depends on AddressService internals and isn't the test's contract.
         XCTAssertTrue(
-            vm.errorMessage == "walletBalanceExceededError" || vm.errorMessage == "invalidAddressError",
+            vm.errorMessage == "walletBalanceExceededError" || vm.errorMessage == "invalidRecipientAddressError",
             "Expected balance or address error, got \(vm.errorMessage ?? "nil")"
         )
     }
@@ -98,7 +98,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         // Either gas-balance branch fires (insufficientGasTokenError) or
         // address-format check rejects first. Both are rejections.
         XCTAssertTrue(
-            (vm.errorMessage?.contains("ETH") ?? false) || vm.errorMessage == "invalidAddressError",
+            (vm.errorMessage?.contains("ETH") ?? false) || vm.errorMessage == "invalidRecipientAddressError",
             "Expected ETH-gas error or invalid-address rejection, got \(vm.errorMessage ?? "nil")"
         )
     }
@@ -213,7 +213,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         let vm = SendFormFixture.make()
         vm.toAddress = ""
         XCTAssertFalse(vm.validateAddressFormat())
-        XCTAssertEqual(vm.errorMessage, "invalidAddressError")
+        XCTAssertEqual(vm.errorMessage, "invalidRecipientAddressError")
         XCTAssertTrue(vm.showAddressAlert)
     }
 
@@ -221,7 +221,7 @@ final class SendDetailsViewModelValidationTests: XCTestCase {
         let vm = SendFormFixture.make(coin: SendFormFixture.makeETH())
         vm.toAddress = "not-a-valid-eth-address"
         XCTAssertFalse(vm.validateAddressFormat())
-        XCTAssertEqual(vm.errorMessage, "invalidAddressError")
+        XCTAssertEqual(vm.errorMessage, "invalidRecipientAddressError")
     }
 
     func testValidateBalanceShortCircuitsForTronStaking() {

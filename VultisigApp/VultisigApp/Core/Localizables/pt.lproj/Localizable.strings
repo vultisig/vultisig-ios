@@ -583,6 +583,7 @@
 "invalidIntegerError" = "Quantidade inteira inválida";
 "invalidLPUnits" = "Unidades LP inválidas";
 "invalidOperatorFee" = "Taxa de operador inválida";
+"invalidRecipientAddressError" = "Esse destinatário não é um endereço válido para essa cadeia.";
 "invalidVaultData" = "Dados do cofre inválidos";
 "Italian" = "Italiano";
 "iUnderstand" = "Eu entendo";
