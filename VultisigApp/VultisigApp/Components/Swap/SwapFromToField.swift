@@ -50,9 +50,10 @@ struct SwapFromToField: View {
         )
         // Crossfade the To amount + its fiat as the quote lands (the To value is
         // never skeletoned — it always carries the `~` estimate then the firm
-        // amount). Matches the pre-adapter behavior.
-        .animation(.easeInOut(duration: 0.25), value: amount)
-        .animation(.easeInOut(duration: 0.25), value: fiatAmount)
+        // amount). Matches the pre-adapter behavior. The From field is excluded so
+        // typing isn't animated.
+        .animation(isFromField ? nil : .easeInOut(duration: 0.25), value: amount)
+        .animation(isFromField ? nil : .easeInOut(duration: 0.25), value: fiatAmount)
         .onLoad {
             referredViewModel.setData()
         }
