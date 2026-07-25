@@ -11,6 +11,14 @@ enum CommonTextFieldSize {
     case normal, small
 }
 
+/// How the field renders its invalid state. `.error` is the shared default
+/// (red border + red caption). `.warning` uses the softer amber treatment the
+/// 2026 redesign applies to the recipient-address field: a 0.5px amber border
+/// and a 12pt amber caption.
+enum CommonTextFieldErrorStyle {
+    case error, warning
+}
+
 struct CommonTextField<TrailingView: View>: View {
     @Environment(\.isEnabled) var isEnabled
     @Binding var text: String
@@ -23,6 +31,7 @@ struct CommonTextField<TrailingView: View>: View {
     let isScrollable: Bool
     let labelStyle: TextFieldLabelStyle
     let size: CommonTextFieldSize
+    let errorStyle: CommonTextFieldErrorStyle
 
     let trailingView: () -> TrailingView
 
@@ -37,6 +46,7 @@ struct CommonTextField<TrailingView: View>: View {
         isScrollable: Bool = false,
         labelStyle: TextFieldLabelStyle = .primary,
         size: CommonTextFieldSize = .normal,
+        errorStyle: CommonTextFieldErrorStyle = .error,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
@@ -49,6 +59,7 @@ struct CommonTextField<TrailingView: View>: View {
         self.trailingView = trailingView
         self.labelStyle = labelStyle
         self.size = size
+        self.errorStyle = errorStyle
         self._isValid = isValid
     }
 
@@ -62,7 +73,8 @@ struct CommonTextField<TrailingView: View>: View {
         showErrorText: Bool = true,
         isScrollable: Bool = false,
         labelStyle: TextFieldLabelStyle = .primary,
-        size: CommonTextFieldSize = .normal
+        size: CommonTextFieldSize = .normal,
+        errorStyle: CommonTextFieldErrorStyle = .error
     ) where TrailingView == EmptyView {
         self.init(
             text: text,
@@ -75,6 +87,7 @@ struct CommonTextField<TrailingView: View>: View {
             isScrollable: isScrollable,
             labelStyle: labelStyle,
             size: size,
+            errorStyle: errorStyle,
             trailingView: { EmptyView() }
         )
     }
@@ -107,7 +120,7 @@ struct CommonTextField<TrailingView: View>: View {
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(borderColor, lineWidth: 1)
+                        .stroke(borderColor, lineWidth: borderWidth)
                 )
                 .autocorrectionDisabled()
                 .borderlessTextFieldStyle()
@@ -115,8 +128,8 @@ struct CommonTextField<TrailingView: View>: View {
 
                 if let error, showErrorText {
                     Text(error.localized)
-                        .foregroundStyle(Theme.colors.alertError)
-                        .font(Theme.fonts.footnote)
+                        .foregroundStyle(errorCaptionColor)
+                        .font(errorCaptionFont)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -139,12 +152,48 @@ struct CommonTextField<TrailingView: View>: View {
         .opacity(text.isEmpty ? 0 : 1)
     }
 
+    var hasError: Bool {
+        error != nil && error != .empty
+    }
+
+    var invalidColor: Color {
+        switch errorStyle {
+        case .error:
+            return Theme.colors.alertError
+        case .warning:
+            return Theme.colors.alertWarning
+        }
+    }
+
     var borderColor: Color {
         if let isValid, isValid {
             return Theme.colors.alertSuccess
         }
 
-        return (error != nil && error != .empty) ? Theme.colors.alertError : Theme.colors.border
+        return hasError ? invalidColor : Theme.colors.border
+    }
+
+    var borderWidth: CGFloat {
+        guard hasError else { return 1 }
+        switch errorStyle {
+        case .error:
+            return 1
+        case .warning:
+            return 0.5
+        }
+    }
+
+    var errorCaptionColor: Color {
+        invalidColor
+    }
+
+    var errorCaptionFont: Font {
+        switch errorStyle {
+        case .error:
+            return Theme.fonts.footnote
+        case .warning:
+            return Theme.fonts.caption12
+        }
     }
 
     @ViewBuilder
