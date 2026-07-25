@@ -102,8 +102,14 @@ struct SendDetailsScreen: View {
                 viewModel.addressSetupDone = resolved
                 if resolved {
                     viewModel.onSelect(tab: .amount)
-                } else if viewModel.selectedTab == .amount {
-                    viewModel.onSelect(tab: .address)
+                } else {
+                    // Definitive resolution failure on a non-empty recipient:
+                    // keep Next disabled *with a visible reason* instead of
+                    // silently. `markInvalidRecipient` no-ops on an empty field.
+                    viewModel.markInvalidRecipient()
+                    if viewModel.selectedTab == .amount {
+                        viewModel.onSelect(tab: .address)
+                    }
                 }
                 viewModel.debouncedValidateAmount()
             }

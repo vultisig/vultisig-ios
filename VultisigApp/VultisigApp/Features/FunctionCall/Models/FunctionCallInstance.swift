@@ -7,8 +7,6 @@
 
 import BigInt
 import Foundation
-import SwiftUI
-import VultisigCommonData
 
 enum FunctionCallInstance {
     case rebond(FunctionCallReBond)
@@ -25,160 +23,57 @@ enum FunctionCallInstance {
     case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
 
+    /// The active sub-model, type-erased to the shared surface. Every
+    /// accessor below forwards through here so the closed set is switched
+    /// exactly once instead of once per accessor.
+    @MainActor
+    var model: any FunctionCallSubModel {
+        switch self {
+        case .rebond(let memo): return memo
+        case .bondMaya(let memo): return memo
+        case .unbondMaya(let memo): return memo
+        case .leave(let memo): return memo
+        case .custom(let memo): return memo
+        case .vote(let memo): return memo
+        case .cosmosIBC(let memo): return memo
+        case .merge(let memo): return memo
+        case .unmerge(let memo): return memo
+        case .theSwitch(let memo): return memo
+        case .addThorLP(let memo): return memo
+        case .securedAsset(let memo): return memo
+        case .withdrawSecuredAsset(let memo): return memo
+        }
+    }
+
     @MainActor
     var description: String {
-        switch self {
-        case .rebond(let memo):
-            return memo.description
-        case .bondMaya(let memo):
-            return memo.description
-        case .unbondMaya(let memo):
-            return memo.description
-        case .leave(let memo):
-            return memo.description
-        case .custom(let memo):
-            return memo.description
-        case .vote(let memo):
-            return memo.description
-        case .cosmosIBC(let memo):
-            return memo.description
-        case .merge(let memo):
-            return memo.description
-        case .unmerge(let memo):
-            return memo.description
-        case .theSwitch(let memo):
-            return memo.description
-        case .addThorLP(let memo):
-            return memo.description
-        case .securedAsset(let memo):
-            return memo.description
-        case .withdrawSecuredAsset(let memo):
-            return memo.description
-        }
+        model.description
     }
 
     @MainActor
     var amount: Decimal {
-        switch self {
-        case .rebond:
-            return 0  // REBOND must send 0 RUNE in the transaction
-        case .bondMaya(let memo):
-            return memo.amount
-        case .unbondMaya:
-            return 1 / pow(10, 8)
-        case .leave:
-            return .zero
-        case .custom(let memo):
-            return memo.amount
-        case .vote:
-            return .zero
-        case .cosmosIBC(let memo):
-            return memo.amount
-        case .merge(let memo):
-            return memo.amount
-        case .unmerge(let memo):
-            return memo.amount  // Now amount contains the shares as Decimal
-        case .theSwitch(let memo):
-            return memo.amount
-        case .addThorLP(let memo):
-            return memo.amount
-        case .securedAsset(let memo):
-            return memo.amount
-        case .withdrawSecuredAsset(let memo):
-            return memo.amount
-        }
+        model.amount
     }
 
     @MainActor
     var toAddress: String? {
-        switch self {
-        case .cosmosIBC(let memo):
-            return memo.destinationAddress
-        case .merge(let memo):
-            return memo.destinationAddress
-        case .unmerge(let memo):
-            return memo.destinationAddress
-        case .theSwitch(let memo):
-            return memo.destinationAddress
-        case .addThorLP(let memo):
-            // For addThorLP, return the inbound address that was set by fetchInboundAddress()
-            // This is essential for Bitcoin and other chains to know where to send funds
-            return memo.toAddress.isEmpty ? nil : memo.toAddress
-        case .securedAsset(let memo):
-            // For secured assets (MINT), return the inbound address
-            return memo.toAddress.isEmpty ? nil : memo.toAddress
-        case .withdrawSecuredAsset:
-            return nil // Withdraw is done via MsgDeposit on THORChain
-        default:
-            return nil
-        }
+        model.resolvedToAddress
     }
 
     /// Submit-time validity gate. Threads the active coin to every
     /// sub-model so the amount-against-balance check is part of the
     /// same predicate the Continue button reads — no no-arg path can
     /// drift past `amount <= balance` again. Sub-models that don't
-    /// need the coin keep their existing `isTheFormValid` body and the
-    /// parameter just falls through.
+    /// need the coin bridge to their existing `isTheFormValid` body and
+    /// the parameter just falls through.
     @MainActor
     func isFormValid(for coin: Coin) -> Bool {
-        switch self {
-        // No coin-balance guard: REBOND burns zero RUNE — the optional
-        // rebond amount is memo-only, never an on-chain transfer.
-        case .rebond(let memo):
-            return memo.isTheFormValid
-        // No user-editable amount field — BOND sends a fixed amount.
-        case .bondMaya(let memo):
-            return memo.isTheFormValid
-        // No user-editable amount field — UNBOND sends a fixed dust amount.
-        case .unbondMaya(let memo):
-            return memo.isTheFormValid
-        // No amount: LEAVE burns zero RUNE, unbonds via the memo alone.
-        case .leave(let memo):
-            return memo.isTheFormValid
-        case .custom(let memo):
-            return memo.isFormValid(for: coin)
-        // No amount: vote transactions carry zero value.
-        case .vote(let memo):
-            return memo.isTheFormValid
-        case .cosmosIBC(let memo):
-            return memo.isFormValid(for: coin)
-        case .merge(let memo):
-            return memo.isFormValid(for: coin)
-        // Amount is a share quantity validated against the merged-position
-        // balance (`availableBalance`), not the coin balance.
-        case .unmerge(let memo):
-            return memo.isTheFormValid
-        case .theSwitch(let memo):
-            return memo.isFormValid(for: coin)
-        // Balance is checked internally against the sub-model's owned coin
-        // (mutated by the pool dropdown), not the passed-in coin.
-        case .addThorLP(let memo):
-            return memo.isTheFormValid
-        // Balance is checked internally against the sub-model's owned coin.
-        case .securedAsset(let memo):
-            return memo.isTheFormValid
-        // Amount is validated against the selected secured-asset balance,
-        // not the coin balance.
-        case .withdrawSecuredAsset(let memo):
-            return memo.isTheFormValid
-        }
+        model.isFormValid(for: coin)
     }
 
     @MainActor
     var customErrorMessage: String? {
-        switch self {
-        case .rebond(let memo):
-            return memo.customErrorMessage
-        case .addThorLP(let memo):
-            return memo.customErrorMessage
-        case .securedAsset(let memo):
-            return memo.customErrorMessage
-        case .withdrawSecuredAsset(let memo):
-            return memo.customErrorMessage
-        default:
-            return nil
-        }
+        model.submitErrorMessage
     }
 
     @MainActor
@@ -204,20 +99,8 @@ enum FunctionCallInstance {
         }
     }
 
-    @MainActor
-    var wasmContractPayload: WasmExecuteContractPayload? {
-        switch self {
-        case .securedAsset:
-            return nil // Secured assets don't use WASM contracts
-        case .withdrawSecuredAsset:
-            return nil // Withdraw secured assets don't use WASM contracts
-        default:
-            return nil
-        }
-    }
-
     /// Build the immutable `SendTransaction` for the active sub-model.
-    /// After PR3 (C-2e), every case dispatches through its typed
+    /// Every case dispatches through its typed
     /// `toSendTransaction(coin:vault:gas:)` method.
     @MainActor
     func toSendTransaction(
@@ -225,33 +108,6 @@ enum FunctionCallInstance {
         vault: Vault,
         gas: BigInt
     ) -> SendTransaction {
-        switch self {
-        case .rebond(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .bondMaya(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .unbondMaya(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .leave(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .custom(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .vote(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .cosmosIBC(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .merge(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .unmerge(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .theSwitch(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .addThorLP(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .securedAsset(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        case .withdrawSecuredAsset(let memo):
-            return memo.toSendTransaction(coin: coin, vault: vault, gas: gas)
-        }
+        model.toSendTransaction(coin: coin, vault: vault, gas: gas)
     }
 }

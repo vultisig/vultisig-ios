@@ -127,6 +127,11 @@ final class SendDetailsViewModel {
 
     // MARK: - Cancellation
     @ObservationIgnored private var addressResolutionTask: Task<Void, Never>?
+    /// Monotonic token bumped on every new/cancelled resolution request. The
+    /// resolver may not honor `Task` cancellation, so the async body compares
+    /// this before publishing — a stale verdict must never overwrite the
+    /// pending (`nil`) state and flash an error on the current input.
+    @ObservationIgnored private var addressResolutionGeneration = 0
     @ObservationIgnored private var amountValidationTask: Task<Void, Never>?
 
     /// Background fee refine for the native-coin Max path. Exposed so the UI
@@ -365,17 +370,31 @@ final class SendDetailsViewModel {
     /// — `validateToAddress` must complete before any `loadGasInfo` call.
     func debouncedResolveAddress() {
         addressResolutionTask?.cancel()
+        addressResolutionGeneration &+= 1
         isAddressResolved = nil
+        // Resolution is pending — keep the inline error cleared so it doesn't
+        // flash while the user is still typing; a definitive failure re-shows it.
+        showAddressAlert = false
+        let generation = addressResolutionGeneration
         addressResolutionTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(1))
             guard let self, !Task.isCancelled else { return }
-            isAddressResolved = await validateToAddress()
+            // Resolve through the generation-guarded path: a late/uncancelled
+            // resolver must neither publish a stale verdict nor rewrite
+            // `toAddress` over a newer recipient the user has since typed.
+            guard let resolved = await self.resolveToAddressIfCurrent(generation: generation) else { return }
+            self.isAddressResolved = resolved
         }
     }
 
     func cancelAddressResolution() {
         addressResolutionTask?.cancel()
+        addressResolutionGeneration &+= 1
         isAddressResolved = nil
+        // Dropping the in-flight verdict returns to the pending state — clear
+        // any stale inline error so editing the recipient never leaves a
+        // no-longer-true message on screen.
+        showAddressAlert = false
     }
 
     /// XRP address seam: when the destination input is a mainnet X-address,
@@ -415,29 +434,91 @@ final class SendDetailsViewModel {
         addressSetupDone = false
         toAddressLabel = nil
         lastResolvedAddress = nil
+        // An empty field is not an "invalid recipient" — drop any inline error
+        // so it doesn't hang under a blank input.
+        showAddressAlert = false
         rippleTag.releaseLockedTag()
+    }
+
+    /// Surfaces the chain-general "invalid recipient" inline error under the
+    /// destination field, so a definitive resolution failure disables Continue
+    /// *with a visible reason* rather than silently. No-op for an empty field:
+    /// the empty state is owned by `onToAddressCleared`, and an error under a
+    /// blank input would just be noise. The error clears on correction — a
+    /// valid format (`isValidAddressFormat`), a cleared field
+    /// (`onToAddressCleared`), or a fresh resolution attempt
+    /// (`cancelAddressResolution` / `debouncedResolveAddress`) all reset it.
+    func markInvalidRecipient() {
+        guard !toAddress.isEmpty else { return }
+        setAddressError(message: "invalidRecipientAddressError")
+    }
+
+    /// Paste / QR / address-book commit that did not switch chains: surface the
+    /// inline error only for a value that can never resolve to a valid
+    /// recipient. A value that is valid for the current chain, or a name-service
+    /// candidate (ENS/`.sol`, or a THORChain-family TNS name) that async
+    /// resolution might still resolve, is deliberately left alone so those never
+    /// flash an error before the async path (`isAddressResolved`) reaches a
+    /// definitive verdict.
+    func markInvalidRecipientIfUnresolvable() {
+        guard !toAddress.isEmpty else { return }
+        guard !AddressService.validateAddress(address: toAddress, chain: coin.chain) else { return }
+        guard !toAddress.isENSNameService() else { return }
+        let resolvesNames: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
+        guard !resolvesNames.contains(coin.chain) else { return }
+        markInvalidRecipient()
     }
 
     func validateToAddress() async -> Bool {
         guard !toAddress.isEmpty else { return false }
         normalizeRippleXAddressIfNeeded()
+        let originalInput = toAddress
         do {
-            let originalInput = toAddress
             let resolvedAddress = try await addressResolver(originalInput, coin.chain)
-            if originalInput != resolvedAddress {
-                toAddress = resolvedAddress
-                toAddressLabel = originalInput
-                lastResolvedAddress = resolvedAddress
-            } else if originalInput != lastResolvedAddress {
-                toAddressLabel = nil
-                lastResolvedAddress = nil
-            }
-            isNamespaceResolved = true
+            commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
             return true
         } catch {
             isNamespaceResolved = false
             return false
         }
+    }
+
+    /// Generation-guarded resolution for the debounced background task. Resolves
+    /// the current input but commits *nothing* — neither the address rewrite nor
+    /// the verdict — when a newer request has bumped `addressResolutionGeneration`
+    /// during the (possibly network-bound) await. Because `addressResolver` may
+    /// not honor `Task` cancellation, this guard is what prevents a late verdict
+    /// from clobbering a recipient the user has since re-typed. Returns `nil`
+    /// when the request was superseded.
+    private func resolveToAddressIfCurrent(generation: Int) async -> Bool? {
+        guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
+        let originalInput = toAddress
+        do {
+            let resolvedAddress = try await addressResolver(originalInput, coin.chain)
+            guard addressResolutionGeneration == generation else { return nil }
+            commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
+            return true
+        } catch {
+            guard addressResolutionGeneration == generation else { return nil }
+            isNamespaceResolved = false
+            return false
+        }
+    }
+
+    /// Applies a successful resolution to the address fields. Shared by the
+    /// synchronous-await path (`validateToAddress`) and the generation-guarded
+    /// background path so both commit identically.
+    private func commitResolvedAddress(originalInput: String, resolvedAddress: String) {
+        if originalInput != resolvedAddress {
+            toAddress = resolvedAddress
+            toAddressLabel = originalInput
+            lastResolvedAddress = resolvedAddress
+        } else if originalInput != lastResolvedAddress {
+            toAddressLabel = nil
+            lastResolvedAddress = nil
+        }
+        isNamespaceResolved = true
     }
 
     func isValidAddressFormat() -> Bool {
@@ -756,7 +837,7 @@ final class SendDetailsViewModel {
     /// Rejects malformed addresses for the current coin's chain.
     func validateAddressFormat() -> Bool {
         guard isValidAddressFormat() else {
-            setAddressError(message: "invalidAddressError")
+            setAddressError(message: "invalidRecipientAddressError")
             return false
         }
         return true
@@ -764,7 +845,7 @@ final class SendDetailsViewModel {
 
     func validateAddressResolved() async -> Bool {
         guard await validateToAddress() else {
-            setAddressError(message: "invalidAddressError")
+            setAddressError(message: "invalidRecipientAddressError")
             return false
         }
         return true

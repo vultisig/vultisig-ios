@@ -255,7 +255,7 @@ class Endpoint {
         case .bitcoin:
             return "https://mempool.space/address/\(address)"
         case .bitcoinCash:
-            return "https://explorer.bitcoin.com/bch/address/\(address)"
+            return "https://blockchair.com/bitcoin-cash/address/\(address)"
         case .litecoin:
             return "https://blockchair.com/litecoin/address/\(address)"
         case .dogecoin:

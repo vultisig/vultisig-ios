@@ -39,12 +39,12 @@ final class LimitOrderPoller: DoneStatusPoller {
         txHash: String,
         pubKeyECDSA: String,
         sourceChain: Chain,
-        tracker: THORChainLimitTrackingService = .shared
+        tracker: THORChainLimitTrackingService? = nil
     ) {
         self.txHash = txHash
         self.pubKeyECDSA = pubKeyECDSA
         self.estimatedTime = ChainStatusConfig.config(for: sourceChain).estimatedTime
-        self.tracker = tracker
+        self.tracker = tracker ?? .shared
         self.initialStatus = .broadcasted(estimatedTime: estimatedTime)
     }
 
