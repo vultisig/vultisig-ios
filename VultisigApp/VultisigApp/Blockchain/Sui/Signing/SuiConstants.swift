@@ -22,6 +22,9 @@ enum SuiConstants {
     /// Canonical fully-qualified type of the native SUI coin (short address form).
     static let nativeCoinType = "0x2::sui::SUI"
 
+    /// Budget used to price the initial dry-run transaction.
+    static let defaultGasBudget = BigInt(3_000_000)
+
     /// Upper bound on the coin objects a single send may reference. Sui rejects a
     /// transaction whose serialized size exceeds 128 KiB, and a `PaySui` send uses
     /// its entire input set as the gas payment — which Sui caps at 256 objects. A
@@ -36,6 +39,13 @@ enum SuiConstants {
     /// (rather than all, or just one) keeps the payload small while guaranteeing a
     /// covering object survives a re-estimated gas budget.
     static let gasCandidateObjectCount = 5
+
+    /// Keep the final payload at least as well funded as the transaction that was
+    /// priced during the dry run. A lower refined budget must not remove objects
+    /// that were present in the simulated input set.
+    static func payloadSelectionGasBudget(for gasBudget: BigInt) -> BigInt {
+        max(defaultGasBudget, gasBudget)
+    }
 }
 
 /// Exact, normalization-aware matching for SUI coin-object types.
@@ -50,20 +60,17 @@ enum SuiConstants {
 /// after normalizing only the address segment.
 enum SuiCoinType {
 
-    /// Normalizes a fully-qualified coin type for exact comparison: lowercases the
-    /// whole string and collapses the package-address segment to a canonical
-    /// `0x`-prefixed, leading-zero-stripped form. The module/struct segments are
-    /// compared case-insensitively but otherwise left intact.
+    /// Normalizes a fully-qualified coin type for exact comparison by collapsing
+    /// only the package-address segment to a canonical lowercased,
+    /// leading-zero-stripped form. Move module and struct identifiers remain
+    /// case-sensitive because `::coin::USDC` and `::coin::usdc` are distinct
+    /// types.
     static func normalize(_ coinType: String) -> String {
-        let lowered = coinType.lowercased()
-        let segments = lowered.split(separator: ":", omittingEmptySubsequences: false)
-        // Expected form is `address::module::struct` -> 5 segments around the two `::`.
-        guard let addressSegment = segments.first, !addressSegment.isEmpty else {
-            return lowered
+        guard let separator = coinType.range(of: "::") else {
+            return normalizeAddress(coinType)
         }
-        let normalizedAddress = normalizeAddress(String(addressSegment))
-        let remainder = lowered.dropFirst(addressSegment.count)
-        return normalizedAddress + remainder
+        let address = String(coinType[..<separator.lowerBound])
+        return normalizeAddress(address) + String(coinType[separator.lowerBound...])
     }
 
     /// Returns whether two fully-qualified coin types refer to the same coin,
@@ -87,36 +94,14 @@ enum SuiCoinType {
         return matches(coinType, SuiConstants.nativeCoinType)
     }
 
-    /// Filters a set of owned coin objects down to exactly what a SUI send
-    /// serializes into the keysign payload: the native SUI objects (always
-    /// needed — they pay gas, and for a native send they are also the inputs)
-    /// plus, for a token send, the objects of the token being sent. Every other
-    /// owned object (unrelated memecoins / LSTs) is dropped so the payload — and
-    /// therefore the pairing QR and TSS relay payload — stays small.
-    ///
-    /// `getPreSignedInputData` performs the same selection on this set, so the
-    /// filtered output is exactly the inputs the signer consumes.
-    static func payloadCoins(
-        _ coins: [[String: String]],
-        isNativeToken: Bool,
-        contractAddress: String
-    ) -> [[String: String]] {
-        let tokenType = expectedType(isNativeToken: isNativeToken, contractAddress: contractAddress)
-        return coins.filter { coin in
-            let coinType = coin["coinType"] ?? .empty
-            return isNative(coinType) || matches(coinType, tokenType)
-        }
-    }
-
     /// The minimal set of coin objects to embed in the keysign payload for a Sui
     /// send — exactly what `getPreSignedInputData` will consume.
     ///
-    /// `payloadCoins` type-filters but keeps *every* matching object; on a wallet
-    /// whose balance is spread across thousands of objects that produces a
-    /// keysign payload too large to relay — the co-signer's poll 404s and the
-    /// initiator's transaction data expires before signing can start. Bounding
-    /// the embedded set to the objects the send actually needs keeps the pairing
-    /// QR / TSS relay message small.
+    /// Embedding every matching object on a wallet whose balance is spread across
+    /// thousands of objects produces a keysign payload too large to relay — the
+    /// co-signer's poll 404s and the initiator's transaction data expires before
+    /// signing can start. Bounding the set to the objects the send actually needs
+    /// keeps the pairing QR / TSS relay message small.
     ///
     /// Native send: the largest objects covering `amount + gasBudget` (the input
     /// set also pays gas). Token send: the largest token objects covering
@@ -135,11 +120,19 @@ enum SuiCoinType {
         }
 
         let tokenType = expectedType(isNativeToken: isNativeToken, contractAddress: contractAddress)
-        let tokenObjects = coins.filter { matches($0["coinType"] ?? .empty, tokenType) }
+        let tokenObjects = coins.filter {
+            let coinType = $0["coinType"] ?? .empty
+            return matches(coinType, tokenType) && !isNative(coinType)
+        }
         let selectedTokens = selectInputCoins(tokenObjects, covering: amount)
         let gasCandidates = Array(
             nativeObjects
-                .sorted { balance(of: $0) > balance(of: $1) }
+                .sorted { lhs, rhs in
+                    let lhsBalance = balance(of: lhs)
+                    let rhsBalance = balance(of: rhs)
+                    if lhsBalance != rhsBalance { return lhsBalance > rhsBalance }
+                    return objectID(of: lhs) < objectID(of: rhs)
+                }
                 .prefix(SuiConstants.gasCandidateObjectCount)
         )
         return selectedTokens + gasCandidates
@@ -153,21 +146,27 @@ enum SuiCoinType {
     /// balance can't cover the budget, even though the wallet holds plenty of
     /// SUI across other objects.
     ///
-    /// Mirrors the Android client: choose the *smallest* native SUI object whose
-    /// balance already covers `gasBudget`, so gas is guaranteed payable while the
-    /// larger objects stay available. When no single object covers the budget,
-    /// fall back to the largest object (best effort — strictly better than an
-    /// arbitrary pick). Returns `nil` only when the wallet holds no native SUI
-    /// object at all.
+    /// Mirrors the Android and SDK clients: choose the *smallest* native SUI
+    /// object whose balance already covers `gasBudget`, then use `objectID` as the
+    /// deterministic tie-break. Returns `nil` when no single object can pay gas.
     static func selectGasObject(_ coins: [[String: String]], gasBudget: BigInt) -> [String: String]? {
-        let suiObjects = coins.filter { isNative($0["coinType"] ?? .empty) }
-        guard !suiObjects.isEmpty else { return nil }
+        coins
+            .filter {
+                isNative($0["coinType"] ?? .empty) && balance(of: $0) >= gasBudget
+            }
+            .min { lhs, rhs in
+                let lhsBalance = balance(of: lhs)
+                let rhsBalance = balance(of: rhs)
+                if lhsBalance != rhsBalance { return lhsBalance < rhsBalance }
+                return objectID(of: lhs) < objectID(of: rhs)
+            }
+    }
 
-        let covering = suiObjects.filter { balance(of: $0) >= gasBudget }
-        if let smallestCovering = covering.min(by: { balance(of: $0) < balance(of: $1) }) {
-            return smallestCovering
-        }
-        return suiObjects.max(by: { balance(of: $0) < balance(of: $1) })
+    /// Returns whether the selected objects cover the required target.
+    static func covers(_ coins: [[String: String]], target: BigInt) -> Bool {
+        return coins.reduce(BigInt.zero) { partialResult, coin in
+            partialResult + balance(of: coin)
+        } >= target
     }
 
     /// Selects the fewest coin objects (largest balance first) that together
@@ -197,7 +196,7 @@ enum SuiCoinType {
             let lhsBalance = balance(of: lhs)
             let rhsBalance = balance(of: rhs)
             if lhsBalance != rhsBalance { return lhsBalance > rhsBalance }
-            return (lhs["objectID"] ?? .empty) < (rhs["objectID"] ?? .empty)
+            return objectID(of: lhs) < objectID(of: rhs)
         }
 
         var selected: [[String: String]] = []
@@ -220,10 +219,15 @@ enum SuiCoinType {
         return value
     }
 
+    private static func objectID(of coin: [String: String]) -> String {
+        coin["objectID"] ?? .empty
+    }
+
     /// Collapses a package-address segment to `0x` + hex with leading zeros
     /// stripped, so `0x0000…0002` and `0x2` compare equal.
     private static func normalizeAddress(_ address: String) -> String {
-        let hex = address.hasPrefix("0x") ? String(address.dropFirst(2)) : address
+        let lowered = address.lowercased()
+        let hex = lowered.hasPrefix("0x") ? String(lowered.dropFirst(2)) : lowered
         let trimmed = String(hex.drop { $0 == "0" })
         return "0x" + (trimmed.isEmpty ? "0" : trimmed)
     }

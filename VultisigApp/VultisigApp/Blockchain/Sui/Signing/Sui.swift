@@ -36,6 +36,12 @@ enum SuiHelper {
             throw HelperError.runtimeError("getPreSignedInputData fail to get SUI transaction information from RPC")
         }
 
+        guard let amountValue = UInt64(exactly: keysignPayload.toAmount),
+              let gasBudgetValue = UInt64(exactly: gasBudget),
+              let referenceGasPriceValue = UInt64(exactly: referenceGasPrice) else {
+            throw HelperError.runtimeError("SUI transaction amount or gas values are out of range")
+        }
+
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .sui) else {
             throw HelperError.runtimeError("fail to get to address")
         }
@@ -57,32 +63,38 @@ enum SuiHelper {
             // but the transaction stays within Sui's 128 KiB size / 256-gas-object
             // limits instead of referencing every object and failing at broadcast.
             let target = keysignPayload.toAmount + gasBudget
-            let suiCoins = SuiCoinType.selectInputCoins(nativeCoins, covering: target).map(objectRef(from:))
+            let selectedCoins = SuiCoinType.selectInputCoins(nativeCoins, covering: target)
+            guard SuiCoinType.covers(selectedCoins, target: target) else {
+                throw HelperError.runtimeError("Insufficient SUI balance in the selected coin objects")
+            }
+            let suiCoins = try selectedCoins.map(objectRef(from:))
 
             let input = SuiSigningInput.with {
                 $0.paySui = SuiPaySui.with {
                     $0.inputCoins = suiCoins
                     $0.recipients = [toAddress.description]
-                    $0.amounts = [UInt64(keysignPayload.toAmount)]
+                    $0.amounts = [amountValue]
                 }
                 $0.signer = keysignPayload.coin.address
-                $0.gasBudget = UInt64(gasBudget)
-                $0.referenceGasPrice = UInt64(referenceGasPrice)
+                $0.gasBudget = gasBudgetValue
+                $0.referenceGasPrice = referenceGasPriceValue
             }
 
             return try input.serializedData()
 
         } else {
-
-            guard coins.count >= 2 else {
-                throw HelperError.runtimeError("We must have at least one TOKEN and one SUI coin")
-            }
-
             let tokenCoinType = SuiCoinType.expectedType(
                 isNativeToken: keysignPayload.coin.isNativeToken,
                 contractAddress: keysignPayload.coin.contractAddress
             )
-            let tokenCoins = coins.filter { SuiCoinType.matches($0["coinType"] ?? .empty, tokenCoinType) }
+            guard !keysignPayload.coin.contractAddress.isEmpty,
+                  !SuiCoinType.isNative(tokenCoinType) else {
+                throw HelperError.runtimeError("Non-native SUI token transaction has an invalid coin type")
+            }
+            let tokenCoins = coins.filter {
+                let coinType = $0["coinType"] ?? .empty
+                return SuiCoinType.matches(coinType, tokenCoinType) && !SuiCoinType.isNative(coinType)
+            }
             guard !tokenCoins.isEmpty else {
                 throw HelperError.runtimeError("Non-native token transaction requires the token to be present")
             }
@@ -91,7 +103,11 @@ enum SuiHelper {
             // WalletCore's Pay merges the input coins in-PTB before splitting, so a
             // scattered token balance is still spendable while the transaction
             // stays within Sui's size limit instead of referencing every object.
-            let suiCoins = SuiCoinType.selectInputCoins(tokenCoins, covering: keysignPayload.toAmount).map(objectRef(from:))
+            let selectedCoins = SuiCoinType.selectInputCoins(tokenCoins, covering: keysignPayload.toAmount)
+            guard SuiCoinType.covers(selectedCoins, target: keysignPayload.toAmount) else {
+                throw HelperError.runtimeError("Insufficient token balance in the selected SUI coin objects")
+            }
+            let suiCoins = try selectedCoins.map(objectRef(from:))
 
             // A token send pays gas from a single SUI object (WalletCore's
             // `Sui.Pay` gas field is not gas-smashed like `PaySui`), so select
@@ -99,20 +115,20 @@ enum SuiHelper {
             // arbitrary one — otherwise the send fails when the first object is
             // too small even though the wallet holds enough SUI elsewhere.
             guard let gasObjectDict = SuiCoinType.selectGasObject(coins, gasBudget: gasBudget) else {
-                throw HelperError.runtimeError("Non-native token transaction requires at least one SUI coin for gas fees")
+                throw HelperError.runtimeError("No single SUI coin object can cover the gas fee")
             }
-            let gasObject = objectRef(from: gasObjectDict)
+            let gasObject = try objectRef(from: gasObjectDict)
 
             let input = SuiSigningInput.with {
                 $0.pay = SuiPay.with {
                     $0.inputCoins = suiCoins
                     $0.recipients = [toAddress.description]
-                    $0.amounts = [UInt64(keysignPayload.toAmount)]
+                    $0.amounts = [amountValue]
                     $0.gas = gasObject
                 }
                 $0.signer = keysignPayload.coin.address
-                $0.gasBudget = UInt64(gasBudget)
-                $0.referenceGasPrice = UInt64(referenceGasPrice)
+                $0.gasBudget = gasBudgetValue
+                $0.referenceGasPrice = referenceGasPriceValue
             }
 
             return try input.serializedData()
@@ -120,13 +136,19 @@ enum SuiHelper {
 
     }
 
-    /// Builds a WalletCore `SuiObjectRef` from a coin-object dictionary
-    /// (`objectID` / `version` / `objectDigest`), tolerating missing fields.
-    private static func objectRef(from coin: [String: String]) -> SuiObjectRef {
+    /// Builds a WalletCore `SuiObjectRef` from a validated coin-object dictionary.
+    private static func objectRef(from coin: [String: String]) throws -> SuiObjectRef {
+        guard let objectID = coin["objectID"], !objectID.isEmpty,
+              let versionString = coin["version"], let version = UInt64(versionString),
+              let objectDigest = coin["objectDigest"], !objectDigest.isEmpty else {
+            throw HelperError.runtimeError(
+                "Malformed SUI coin object: objectID, version, and objectDigest are required"
+            )
+        }
         var obj = SuiObjectRef()
-        obj.objectID = coin["objectID"] ?? .empty
-        obj.version = UInt64(coin["version"] ?? .zero) ?? UInt64.zero
-        obj.objectDigest = coin["objectDigest"] ?? .empty
+        obj.objectID = objectID
+        obj.version = version
+        obj.objectDigest = objectDigest
         return obj
     }
 

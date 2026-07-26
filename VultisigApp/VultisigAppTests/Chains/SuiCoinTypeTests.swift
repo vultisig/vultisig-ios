@@ -42,8 +42,14 @@ final class SuiCoinTypeTests: XCTestCase {
         XCTAssertTrue(SuiCoinType.matches(nativeShort, nativeLong))
     }
 
-    func testNormalizeIsCaseInsensitive() {
-        XCTAssertTrue(SuiCoinType.matches(bridgedCoin, bridgedCoin.uppercased()))
+    func testNormalizeIgnoresAddressCase() {
+        let uppercaseAddress = "0x5D4B302506645C37FF133B98C4B50A5AE14841659738D6D733D59D0D217A93BF::coin::COIN"
+        XCTAssertTrue(SuiCoinType.matches(bridgedCoin, uppercaseAddress))
+    }
+
+    func testNormalizePreservesMoveIdentifierCase() {
+        let lowercasedStruct = bridgedCoin.replacingOccurrences(of: "::COIN", with: "::coin")
+        XCTAssertFalse(SuiCoinType.matches(bridgedCoin, lowercasedStruct))
     }
 
     func testNormalizeLeavesNonNativeTypesDistinct() {
@@ -94,64 +100,6 @@ final class SuiCoinTypeTests: XCTestCase {
         XCTAssertEqual(gasObjects.map { $0["objectID"] }, ["0xgas"])
     }
 
-    // MARK: - Payload coin filtering (keysign payload / QR bloat guard)
-
-    /// The full set of objects a heavy wallet might own: native SUI, an LST, a
-    /// bridged token, and an unrelated memecoin.
-    private var heterogeneousWallet: [[String: String]] {
-        [
-            ["coinType": nativeLong, "objectID": "0xnative"],
-            ["coinType": xSUI, "objectID": "0xlst"],
-            ["coinType": bridgedCoin, "objectID": "0xtoken"],
-            ["coinType": "0xfeed::moon::MOON", "objectID": "0xmemecoin"]
-        ]
-    }
-
-    /// A native SUI send embeds only the native object — no LST, no bridged
-    /// token, no memecoin — so the keysign payload / QR stays small.
-    func testPayloadCoinsForNativeSendKeepsOnlyNative() {
-        let filtered = SuiCoinType.payloadCoins(
-            heterogeneousWallet,
-            isNativeToken: true,
-            contractAddress: ""
-        )
-        XCTAssertEqual(filtered.map { $0["objectID"] }, ["0xnative"])
-    }
-
-    /// A token send embeds the native SUI objects (gas) and the target token's
-    /// objects only — never other held tokens (LST, memecoin).
-    func testPayloadCoinsForTokenSendKeepsNativeUnionTargetTokenOnly() {
-        let filtered = SuiCoinType.payloadCoins(
-            heterogeneousWallet,
-            isNativeToken: false,
-            contractAddress: bridgedCoin
-        )
-        XCTAssertEqual(Set(filtered.map { $0["objectID"] }), ["0xnative", "0xtoken"])
-        XCTAssertFalse(filtered.contains { $0["objectID"] == "0xlst" })
-        XCTAssertFalse(filtered.contains { $0["objectID"] == "0xmemecoin" })
-    }
-
-    /// Multiple objects of the same target token (and multiple native gas
-    /// objects) are all preserved — filtering by type must not cap object count.
-    func testPayloadCoinsPreservesAllMatchingObjects() {
-        let wallet = [
-            ["coinType": nativeShort, "objectID": "0xgas1"],
-            ["coinType": nativeLong, "objectID": "0xgas2"],
-            ["coinType": bridgedCoin, "objectID": "0xtoken1"],
-            ["coinType": bridgedCoin, "objectID": "0xtoken2"],
-            ["coinType": xSUI, "objectID": "0xlst"]
-        ]
-        let filtered = SuiCoinType.payloadCoins(
-            wallet,
-            isNativeToken: false,
-            contractAddress: bridgedCoin
-        )
-        XCTAssertEqual(
-            Set(filtered.map { $0["objectID"] }),
-            ["0xgas1", "0xgas2", "0xtoken1", "0xtoken2"]
-        )
-    }
-
     // MARK: - Token-send gas-object selection
 
     private func suiObject(_ id: String, balance: String) -> [String: String] {
@@ -181,16 +129,24 @@ final class SuiCoinTypeTests: XCTestCase {
         XCTAssertEqual(selected?["objectID"], "0xexact")
     }
 
-    /// When no single SUI object covers the budget, fall back to the largest
-    /// object (best effort) rather than an arbitrary one.
-    func testSelectGasObjectFallsBackToLargestWhenNoneCovers() {
+    /// A token send fails before keysign when no individual object covers gas.
+    func testSelectGasObjectReturnsNilWhenNoneCovers() {
         let coins = [
             suiObject("0xsmall", balance: "1000000"),
             suiObject("0xlargest", balance: "2500000"),
             suiObject("0xmid", balance: "2000000")
         ]
+        XCTAssertNil(SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000)))
+    }
+
+    func testSelectGasObjectTieBreaksByObjectID() {
+        let coins = [
+            suiObject("0xbbb", balance: "3000000"),
+            suiObject("0xaaa", balance: "3000000"),
+            suiObject("0xbig", balance: "9000000")
+        ]
         let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
-        XCTAssertEqual(selected?["objectID"], "0xlargest")
+        XCTAssertEqual(selected?["objectID"], "0xaaa")
     }
 
     /// Non-SUI objects never pay gas, even when their balance dwarfs the budget.
@@ -202,17 +158,13 @@ final class SuiCoinTypeTests: XCTestCase {
         XCTAssertNil(SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000)))
     }
 
-    /// A missing or unparseable `balance` is treated as zero, so such objects
-    /// only win the fallback when nothing better exists.
+    /// A missing or unparseable `balance` is treated as zero and cannot pay gas.
     func testSelectGasObjectTreatsMissingBalanceAsZero() {
         let coins = [
             ["coinType": nativeLong, "objectID": "0xnoBalance"],
             suiObject("0xhasBalance", balance: "500000")
         ]
-        // Neither covers a 3_000_000 budget → largest wins, and the object with
-        // a real balance outranks the zero-balance one.
-        let selected = SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000))
-        XCTAssertEqual(selected?["objectID"], "0xhasBalance")
+        XCTAssertNil(SuiCoinType.selectGasObject(coins, gasBudget: BigInt(3_000_000)))
     }
 
     // MARK: - Input-coin selection (transaction-size guard)
@@ -325,5 +277,62 @@ final class SuiCoinTypeTests: XCTestCase {
         XCTAssertTrue(ids.contains("0xtoken"))
         let gasCount = selected.filter { SuiCoinType.isNative($0["coinType"] ?? "") }.count
         XCTAssertEqual(gasCount, SuiConstants.gasCandidateObjectCount)
+    }
+
+    func testSelectPayloadCoinsTokenGasCandidatesTieBreakByObjectID() {
+        var wallet = [
+            ["coinType": bridgedCoin, "objectID": "0xtoken", "balance": "1000"]
+        ]
+        ["0xgasF", "0xgasB", "0xgasD", "0xgasA", "0xgasE", "0xgasC"].forEach {
+            wallet.append(suiObject($0, balance: "9000000"))
+        }
+
+        let selected = SuiCoinType.selectPayloadCoins(
+            wallet,
+            isNativeToken: false,
+            contractAddress: bridgedCoin,
+            amount: BigInt(500),
+            gasBudget: SuiConstants.defaultGasBudget
+        )
+        let gasIDs = selected
+            .filter { SuiCoinType.isNative($0["coinType"] ?? "") }
+            .compactMap { $0["objectID"] }
+        XCTAssertEqual(gasIDs, ["0xgasA", "0xgasB", "0xgasC", "0xgasD", "0xgasE"])
+    }
+
+    func testPayloadSelectionBudgetNeverDropsBelowDryRunBudget() {
+        XCTAssertEqual(
+            SuiConstants.payloadSelectionGasBudget(for: BigInt(2_000_000)),
+            SuiConstants.defaultGasBudget
+        )
+        XCTAssertEqual(
+            SuiConstants.payloadSelectionGasBudget(for: BigInt(4_200_000)),
+            BigInt(4_200_000)
+        )
+    }
+
+    func testFinalPayloadSelectionKeepsDryRunCoinSetForLowerRefinedBudget() {
+        let wallet = (1...6).map {
+            suiObject("0x\($0)", balance: "1000000")
+        }
+        let dryRunCoins = SuiCoinType.selectPayloadCoins(
+            wallet,
+            isNativeToken: true,
+            contractAddress: "",
+            amount: BigInt(1_000_000),
+            gasBudget: SuiConstants.defaultGasBudget
+        )
+        let finalCoins = SuiCoinType.selectPayloadCoins(
+            wallet,
+            isNativeToken: true,
+            contractAddress: "",
+            amount: BigInt(1_000_000),
+            gasBudget: SuiConstants.payloadSelectionGasBudget(for: BigInt(2_000_000))
+        )
+
+        XCTAssertEqual(
+            finalCoins.compactMap { $0["objectID"] },
+            dryRunCoins.compactMap { $0["objectID"] }
+        )
     }
 }

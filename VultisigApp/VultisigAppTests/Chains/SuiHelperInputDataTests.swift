@@ -30,7 +30,7 @@ final class SuiHelperInputDataTests: XCTestCase {
 
     // MARK: - Fixtures
 
-    private func makeCoin(isNative: Bool) -> Coin {
+    private func makeCoin(isNative: Bool, contractAddress: String? = nil) -> Coin {
         let key = PrivateKey()
         let publicKey = key.getPublicKeyEd25519()
         let meta = CoinMeta(
@@ -39,7 +39,7 @@ final class SuiHelperInputDataTests: XCTestCase {
             logo: "sui",
             decimals: isNative ? 9 : 8,
             priceProviderId: "sui",
-            contractAddress: isNative ? "" : tokenType,
+            contractAddress: isNative ? "" : (contractAddress ?? tokenType),
             isNativeToken: isNative
         )
         return Coin(
@@ -81,6 +81,15 @@ final class SuiHelperInputDataTests: XCTestCase {
             skipBroadcast: false,
             signData: nil
         )
+    }
+
+    private func assertSigningFails(_ payload: KeysignPayload, containing message: String) {
+        XCTAssertThrowsError(try SuiHelper.getPreSignedInputData(keysignPayload: payload)) { error in
+            XCTAssertTrue(
+                error.localizedDescription.contains(message),
+                "Expected '\(message)' in '\(error.localizedDescription)'"
+            )
+        }
     }
 
     // MARK: - Native send merges the objects it needs
@@ -191,6 +200,35 @@ final class SuiHelperInputDataTests: XCTestCase {
         XCTAssertEqual(paySui.inputCoins.map { $0.objectID }, ["0xnative"])
     }
 
+    func testNativeSendRejectsUnderfundedCappedSelection() {
+        let coin = makeCoin(isNative: true)
+        let coins = (0..<300).map {
+            coinObject("0x\($0)", type: nativeType, balance: "1")
+        }
+        let payload = makePayload(
+            coin: coin,
+            coins: coins,
+            amount: BigInt(1_000),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        assertSigningFails(payload, containing: "Insufficient SUI balance")
+    }
+
+    func testNativeSendRejectsMalformedObjectReference() {
+        let coin = makeCoin(isNative: true)
+        var malformed = coinObject("0xmalformed", type: nativeType, balance: "5000000")
+        malformed.removeValue(forKey: "objectDigest")
+        let payload = makePayload(
+            coin: coin,
+            coins: [malformed],
+            amount: BigInt(1_000_000),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        assertSigningFails(payload, containing: "Malformed SUI coin object")
+    }
+
     // MARK: - Token send selects a covering gas object
 
     /// A token send uses the token's objects as inputs and picks the smallest
@@ -262,5 +300,77 @@ final class SuiHelperInputDataTests: XCTestCase {
         }
         XCTAssertEqual(pay.inputCoins.map { $0.objectID }, ["0xt3"])
         XCTAssertEqual(pay.gas.objectID, "0xgas")
+    }
+
+    func testTokenSendRejectsUnderfundedTokenSelection() {
+        let coin = makeCoin(isNative: false)
+        let coins = [
+            coinObject("0xgas", type: nativeType, balance: "5000000"),
+            coinObject("0xt1", type: tokenType, balance: "100"),
+            coinObject("0xt2", type: tokenType, balance: "200")
+        ]
+        let payload = makePayload(
+            coin: coin,
+            coins: coins,
+            amount: BigInt(400),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        assertSigningFails(payload, containing: "Insufficient token balance")
+    }
+
+    func testTokenSendRejectsGasSplitAcrossUnderfundedObjects() {
+        let coin = makeCoin(isNative: false)
+        let coins = [
+            coinObject("0xgas1", type: nativeType, balance: "2000000"),
+            coinObject("0xgas2", type: nativeType, balance: "2000000"),
+            coinObject("0xtoken", type: tokenType, balance: "1000")
+        ]
+        let payload = makePayload(
+            coin: coin,
+            coins: coins,
+            amount: BigInt(500),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        assertSigningFails(payload, containing: "No single SUI coin object")
+    }
+
+    func testTokenSendGasObjectTieBreaksByObjectID() throws {
+        let coin = makeCoin(isNative: false)
+        let coins = [
+            coinObject("0xbbb", type: nativeType, balance: "3000000"),
+            coinObject("0xaaa", type: nativeType, balance: "3000000"),
+            coinObject("0xtoken", type: tokenType, balance: "1000")
+        ]
+        let payload = makePayload(
+            coin: coin,
+            coins: coins,
+            amount: BigInt(500),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        let inputData = try SuiHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try SuiSigningInput(serializedBytes: inputData)
+
+        guard case .pay(let pay) = input.transactionPayload else {
+            return XCTFail("expected a Pay payload")
+        }
+        XCTAssertEqual(pay.gas.objectID, "0xaaa")
+    }
+
+    func testTokenSendRejectsNativeTypeAsTokenContract() {
+        let coin = makeCoin(isNative: false, contractAddress: SuiConstants.nativeCoinType)
+        let coins = [
+            coinObject("0xgas", type: nativeType, balance: "5000000")
+        ]
+        let payload = makePayload(
+            coin: coin,
+            coins: coins,
+            amount: BigInt(500),
+            gasBudget: BigInt(3_000_000)
+        )
+
+        assertSigningFails(payload, containing: "invalid coin type")
     }
 }

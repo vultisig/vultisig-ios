@@ -638,7 +638,7 @@ private extension BlockChainService {
             // signing starts. Selection is deterministic so every device signs
             // the identical transaction.
             let sendAmount = amount ?? .zero
-            let defaultBudget = BigInt(3000000)
+            let defaultBudget = SuiConstants.defaultGasBudget
 
             func selectCoins(gasBudget: BigInt) -> [[String: String]] {
                 SuiCoinType.selectPayloadCoins(
@@ -689,7 +689,9 @@ private extension BlockChainService {
                     let totalCost = computationCost + storageCost
                     gasBudget = max((totalCost * 115) / 100, BigInt(2000))
                 } catch {
-                    print("⚠️ Sui dry run failed, using default gas budget: \(error.localizedDescription)")
+                    logger.warning(
+                        "Sui dry run failed, using default gas budget: \(error.localizedDescription, privacy: .public)"
+                    )
                     // Fall back to default + 15% safety margin
                     gasBudget = (defaultBudget * 115) / 100
                 }
@@ -698,7 +700,12 @@ private extension BlockChainService {
                 gasBudget = (defaultBudget * 115) / 100
             }
 
-            return .Sui(referenceGasPrice: referenceGasPrice, coins: selectCoins(gasBudget: gasBudget), gasBudget: gasBudget)
+            let selectionBudget = SuiConstants.payloadSelectionGasBudget(for: gasBudget)
+            return .Sui(
+                referenceGasPrice: referenceGasPrice,
+                coins: selectCoins(gasBudget: selectionBudget),
+                gasBudget: gasBudget
+            )
 
         case .polkadot:
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)
