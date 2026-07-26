@@ -39,14 +39,13 @@ struct ReceiveChainSelectionScreen: View {
                         emptyMessage
                     }
                 }
-                .cornerRadius(12)
             }
         }
         .screenTitle("selectChain".localized)
         .screenBackButtonHidden()
         .screenToolbar {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     isPresented.toggle()
                 }
             }
@@ -83,6 +82,7 @@ struct ReceiveChainSelectionScreen: View {
                     .commonListItemContainer(index: offset, itemsCount: filteredChains.count)
             }
         }
+        .commonListContainer()
     }
 
     func cell(for chain: Chain) -> some View {

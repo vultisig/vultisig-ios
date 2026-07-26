@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 protocol Form: AnyObject {
     var validForm: Bool { get set }
     var form: [FormField] { get }
@@ -43,11 +44,4 @@ extension Form {
         }
     }
 
-    func clearForm() {
-        form.forEach {
-            $0.touched = false
-            $0.value = ""
-            $0.error = nil
-        }
-    }
 }

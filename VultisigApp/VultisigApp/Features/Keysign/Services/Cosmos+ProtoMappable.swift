@@ -14,6 +14,7 @@ enum SignData: Codable, Hashable {
     case signTon(SignTon)
     case signBitcoin(SignBitcoin)
     case signSui(SignSui)
+    case signRipple(SignRipple)
 
     init?(proto: VSKeysignPayload.OneOf_SignData) {
         switch proto {
@@ -29,6 +30,8 @@ enum SignData: Codable, Hashable {
             self = .signBitcoin(SignBitcoin(proto: vSSignBitcoin))
         case .signSui(let vSSignSui):
             self = .signSui(SignSui(proto: vSSignSui))
+        case .signRipple(let vSSignRipple):
+            self = .signRipple(SignRipple(proto: vSSignRipple))
         }
     }
 
@@ -46,6 +49,8 @@ enum SignData: Codable, Hashable {
             return .signBitcoin(vSSignBitcoin.mapToProtobuff())
         case .signSui(let vSSignSui):
             return .signSui(vSSignSui.mapToProtobuff())
+        case .signRipple(let vSSignRipple):
+            return .signRipple(vSSignRipple.mapToProtobuff())
         }
     }
 }

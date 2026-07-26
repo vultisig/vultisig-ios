@@ -55,7 +55,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     private static let removedChainMigrations: [String: Chain] = [
         "thorChainStagenet2": .thorChainStagenet,
         "thorChainChainnet": .thorChain,
-        "polygon": .polygonV2,
+        "polygon": .polygonV2
     ]
 
     init(from decoder: Decoder) throws {
@@ -606,22 +606,20 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
 extension Chain {
     var supportsEip1559: Bool {
-        switch self {
-        case .bscChain:
-            return false
-        case .ethereum, .avalanche, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei:
-            return true
-        default:
-            return true
-        }
+        // Every EVM chain we support advertises EIP-1559 fee markets except BSC,
+        // which still uses legacy gas pricing.
+        self != .bscChain
     }
 
-    /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce)
+    /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce).
+    /// Exhaustive on purpose (no `default:`): a newly added nonce/Cosmos-style chain must
+    /// declare its value here or the compiler will flag it, avoiding a silent stale-nonce
+    /// broadcast (this gates `BlockChainService.shouldUseCache` / `setCacheIfAllowed`).
     var supportsPendingTransactions: Bool {
         switch self {
         case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             return true
-        default:
+        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .bittensor:
             return false
         }
     }
@@ -639,6 +637,14 @@ extension Chain {
         default:
             return true
         }
+    }
+
+    /// Whether the Send flow's Destination Tag input should be exposed for
+    /// this chain. XRPL payments carry an optional 32-bit tag that custodial
+    /// services (exchanges) require to credit deposits to the right account —
+    /// only Ripple supports it.
+    var supportsDestinationTag: Bool {
+        self == .ripple
     }
 
     static var keyImportEnabledChains: [Chain] {

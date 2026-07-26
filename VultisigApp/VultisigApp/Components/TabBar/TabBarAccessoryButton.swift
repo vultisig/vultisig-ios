@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct TabBarAccessoryButton: View {
-    let icon: String
+    let icon: ImageResource
     let padding: CGFloat?
     let bgColor: Color?
     var action: () -> Void
 
-    init(icon: String, padding: CGFloat? = nil, bgColor: Color? = nil, action: @escaping () -> Void) {
+    init(icon: ImageResource, padding: CGFloat? = nil, bgColor: Color? = nil, action: @escaping () -> Void) {
         self.icon = icon
         self.padding = padding
         self.bgColor = bgColor
@@ -27,7 +27,7 @@ struct TabBarAccessoryButton: View {
 
     var button: some View {
         Button(action: action) {
-            Icon(named: icon, color: Theme.colors.textSecondary, size: 24)
+            Icon(icon, color: Theme.colors.textSecondary, size: 24)
                 .padding(padding ?? 20)
                 .background(Circle().fill(bgColor ?? Theme.colors.primaryAccent3))
         }

@@ -180,7 +180,7 @@ struct SignSuiDisplayView: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                    Icon(.chevronDown, color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isExpanded.wrappedValue ? 180 : 0))
                 }
                 .padding(16)

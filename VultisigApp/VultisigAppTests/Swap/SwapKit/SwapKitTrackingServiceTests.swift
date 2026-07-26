@@ -299,6 +299,40 @@ final class SwapKitTrackingServiceTests: XCTestCase {
         XCTAssertEqual(service.trackedSwapCountForTesting, 0)
     }
 
+    /// The global "Reset Transaction History" teardown drops EVERY tracked row
+    /// and clears the observable cache — unlike `setActive(false)`, nothing is
+    /// left to resume.
+    func testStopAllTrackingReleasesEveryRowAndClearsTheCache() {
+        let storage = FakeSwapTrackingStorage()
+        let http = StubHTTPClient()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
+
+        service.start(tx: Self.makeSwapKitTx(txHash: "0xaaa"))
+        service.start(tx: Self.makeSwapKitTx(txHash: "0xbbb"))
+        XCTAssertEqual(service.trackedSwapCountForTesting, 2)
+
+        service.stopAllTracking()
+
+        XCTAssertEqual(service.trackedSwapCountForTesting, 0)
+        XCTAssertTrue(service.uiStatusByTxHash.isEmpty)
+    }
+
+    /// After a reset the rows are deleted, so a resume that re-reads an empty
+    /// store must start nothing.
+    func testResumeInFlightAfterStopAllTrackingStartsNothingWhenStoreIsEmpty() async {
+        let storage = FakeSwapTrackingStorage()
+        let http = StubHTTPClient()
+        let service = SwapKitTrackingService(httpClient: http, storage: storage, clock: { Date() })
+
+        service.start(tx: Self.makeSwapKitTx(txHash: "0xaaa"))
+        service.stopAllTracking()
+
+        storage.inFlight = []
+        await service.resumeInFlight()
+
+        XCTAssertEqual(service.trackedSwapCountForTesting, 0)
+    }
+
     func testResumeInFlightStartsAllNonTerminalSwapKitRows() async {
         let storage = FakeSwapTrackingStorage()
         let http = StubHTTPClient()

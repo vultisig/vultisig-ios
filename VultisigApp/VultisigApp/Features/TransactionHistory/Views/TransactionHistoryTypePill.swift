@@ -29,15 +29,19 @@ struct TransactionHistoryTypePill: View {
     private var iconView: some View {
         switch type {
         case .send:
-            Image("send")
+            Image(.arrowToCornerTopRight)
                 .resizable()
                 .frame(width: 12, height: 12)
         case .swap:
-            Image("arrow-rotate-left-right")
+            Image(.refreshAnticlockwise)
                 .resizable()
                 .frame(width: 12, height: 12)
         case .approve:
-            Image("bubble-check")
+            Image(.badgeCheck)
+                .resizable()
+                .frame(width: 12, height: 12)
+        case .limit:
+            Image("clock-rotate-clockwise-3")
                 .resizable()
                 .frame(width: 12, height: 12)
         }
@@ -51,6 +55,8 @@ struct TransactionHistoryTypePill: View {
             return "swap".localized
         case .approve:
             return "approve".localized
+        case .limit:
+            return "limitSwap.typePill".localized
         }
     }
 

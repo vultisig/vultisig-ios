@@ -24,8 +24,8 @@ settings:
     DEVELOPMENT_TEAM: 5BP27CHH4Y
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
-    MARKETING_VERSION: "1.41"
-    CURRENT_PROJECT_VERSION: "65"
+    MARKETING_VERSION: "1.42"
+    CURRENT_PROJECT_VERSION: "67"
     ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
@@ -57,13 +57,15 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to the merged commondata #93 commit on `main`, which adds
-    # `CosmosSpecific.gas_limit`: an optional per-tx signed gas limit derived
-    # from a `/cosmos/tx/v1beta1/simulate` estimate. It is part of the SignDoc,
-    # so the read/honor side is always-on and every co-signing device must apply
-    # it identically; when unset, peers fall back to the static per-chain gas
-    # limit. Enables relayed dynamic Cosmos gas estimation.
-    revision: 03e61a7454be7cebababb6b33708b85077962088
+    # Pinned to the merged `main` commit that adds `SignRipple { string raw_json }`
+    # at `sign_ripple = 46` in `KeysignPayload.sign_data` — the XRPL dApp
+    # co-signer passthrough field. This commit is a linear descendant of the
+    # earlier `RippleSpecific.destination_tag` (optional uint32) pin, so it keeps
+    # that first-class XRPL DestinationTag field: the initiator dual-writes the
+    # tag into BOTH the field AND the legacy memo carrier, and signers prefer the
+    # field, falling back to the memo, so mixed-version device pairs stay
+    # byte-identical in MPC keysign.
+    revision: c91f2ea7db5eb03cf6bb637da19e4ed93b07dc46
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
@@ -229,6 +231,14 @@ targets:
       - path: VultisigAppTests
         excludes:
           - "**/.DS_Store"
+          # Never flatten docs into the test bundle. Fixture directories carry
+          # `README.md` files (e.g. `Fixtures/README.md`, the qbtc-voteweighted
+          # tool README); depending on the XcodeGen version's `dir/**` glob
+          # semantics these can each flatten to the bundle root as `README.md`
+          # and collide ("Multiple commands produce …/README.md") — a clean-build
+          # failure CI hits but an incremental local build can miss. Markdown is
+          # never a test resource, so exclude it wholesale.
+          - "**/*.md"
           # Exclude the fixture JSONs from the generic-sources scan; they're
           # picked up explicitly below as a folder reference so they land at
           # `__fixtures__/*.json` inside the bundle. Without this exclude,

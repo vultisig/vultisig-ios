@@ -447,26 +447,6 @@ struct PeerDiscoveryScreen: View {
         viewModel.startKeygen()
     }
 
-    func disableContinueButton() -> Bool {
-        switch viewModel.tssType {
-        case .Keygen:
-            switch selectedTab {
-            case .fast:
-                return viewModel.selections.count < 2
-            case .active:
-                return viewModel.selections.count < 3
-            case .secure:
-                return viewModel.selections.count < 2
-            }
-        case .Reshare:
-            return viewModel.selections.count < minRequiredDevices
-        case .Migrate, .SingleKeygen:
-            return Set(viewModel.selections) != Set(viewModel.vault.signers)
-        case .KeyImport:
-            return showWaitingOnDevice
-        }
-    }
-
     var showWaitingOnDevice: Bool {
         guard
             let setupType,

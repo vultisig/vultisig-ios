@@ -63,7 +63,7 @@ struct ImportSeedphraseScreen: View {
             VStack(spacing: 0) {
                 VStack(spacing: 32) {
                     VStack(spacing: 12) {
-                        GlowIcon(icon: "import-seedphrase")
+                        GlowIcon(icon: .textOutdentRight)
                             .padding(.bottom, 12)
                         Text("enterYourSeedphrase".localized)
                             .foregroundStyle(Theme.colors.textPrimary)

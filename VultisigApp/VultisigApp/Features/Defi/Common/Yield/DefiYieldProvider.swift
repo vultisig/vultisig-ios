@@ -42,9 +42,6 @@ struct YieldVaultPosition: Hashable {
     let redemptions: [YieldRedemption]
     let lastUpdated: Date
 
-    static func empty() -> YieldVaultPosition {
-        YieldVaultPosition(depositedBalance: .zero, nativeGasBalance: .zero, redemptions: [], lastUpdated: .now)
-    }
 }
 
 /// Provider-specific copy and display flags for the shared yield screens, so the
@@ -148,7 +145,6 @@ protocol DefiYieldProvider {
     // Reads
     func refreshPosition(vault: Vault) async throws -> YieldVaultPosition
     func apy(vault: Vault) async throws -> Decimal?
-    func tvl() async throws -> Decimal?
 
     // Write builders — all return a signable `KeysignPayload`.
 

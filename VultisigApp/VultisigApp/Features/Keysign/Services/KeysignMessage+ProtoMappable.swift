@@ -420,11 +420,16 @@ extension BlockChainSpecific {
                 ttl: value.ttl
             )
         case .ethereumSpecific(let value):
+            // Peer-supplied numeric strings: parse with the failable initializer
+            // so a malformed field decodes to 0 instead of trapping. A garbled
+            // value makes this device build a different tx than the initiator,
+            // so the MPC ceremony fails safe on a signature mismatch rather than
+            // crashing the app.
             self = .Ethereum(
-                maxFeePerGasWei: BigInt(stringLiteral: value.maxFeePerGasWei),
-                priorityFeeWei: BigInt(stringLiteral: value.priorityFee),
+                maxFeePerGasWei: BigInt(value.maxFeePerGasWei) ?? 0,
+                priorityFeeWei: BigInt(value.priorityFee) ?? 0,
                 nonce: value.nonce,
-                gasLimit: BigInt(stringLiteral: value.gasLimit)
+                gasLimit: BigInt(value.gasLimit) ?? 0
             )
         case .thorchainSpecific(let value):
             self = .THORChain(
@@ -450,19 +455,29 @@ extension BlockChainSpecific {
                 gasLimit: value.hasGasLimit ? value.gasLimit : nil
             )
         case .solanaSpecific(let value):
+            // Peer-supplied numeric strings: parse with the failable initializer
+            // so a malformed field decodes to 0 instead of trapping. The signer
+            // substitutes its defaults for non-positive values (see
+            // SolanaHelper.getPreSignedInputData), so 0 == "use default" ==
+            // absent field — the same behavior an old device shows.
             self = .Solana(
                 recentBlockHash: value.recentBlockHash,
-                priorityFee: BigInt(stringLiteral: value.priorityFee),
-                priorityLimit: value.hasComputeLimit ? BigInt(stringLiteral: value.computeLimit) : BigInt(0),
+                priorityFee: BigInt(value.priorityFee) ?? 0,
+                priorityLimit: value.hasComputeLimit ? (BigInt(value.computeLimit) ?? 0) : BigInt(0),
                 fromAddressPubKey: value.fromTokenAssociatedAddress.isEmpty ? nil : value.fromTokenAssociatedAddress,
                 toAddressPubKey: value.toTokenAssociatedAddress.isEmpty ? nil : value.toTokenAssociatedAddress,
                 hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
+            // Peer-supplied numeric string: parse with the failable initializer
+            // so a malformed field decodes to 0 instead of trapping. A garbled
+            // value makes this device build a different tx than the initiator,
+            // so the MPC ceremony fails safe on a signature mismatch rather than
+            // crashing the app.
             self = .Polkadot(
                 recentBlockHash: value.recentBlockHash,
                 nonce: value.nonce,
-                currentBlockNumber: BigInt(stringLiteral: value.currentBlockNumber),
+                currentBlockNumber: BigInt(value.currentBlockNumber) ?? 0,
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
                 genesisHash: value.genesisHash,
@@ -501,7 +516,8 @@ extension BlockChainSpecific {
             self = .Ripple(
                 sequence: value.sequence,
                 gas: value.gas,
-                lastLedgerSequence: value.lastLedgerSequence
+                lastLedgerSequence: value.lastLedgerSequence,
+                destinationTag: value.hasDestinationTag ? value.destinationTag : nil
             )
         case .tronSpecific(let value):
             self = .Tron(
@@ -618,11 +634,16 @@ extension BlockChainSpecific {
                 $0.genesisHash = genesisHash
                 $0.gas = UInt64(gas ?? 0)
             })
-        case .Ripple(let sequence, let gas, let lastLedgerSequence):
+        case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag):
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
                 $0.lastLedgerSequence = lastLedgerSequence
+                // Dual-write: the tag also rides the memo carrier; setting the
+                // first-class field is what a field-preferring signer reads.
+                if let destinationTag {
+                    $0.destinationTag = destinationTag
+                }
             })
 
         case .Tron(

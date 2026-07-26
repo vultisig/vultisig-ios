@@ -101,4 +101,54 @@ final class ThorchainSRujiTests: XCTestCase {
 
         XCTAssertTrue(current.matches(TokensStore.sruji))
     }
+
+    // MARK: - 5. On-chain receipt-balance parse (sizes the `liquid.unbond` funds)
+    //
+    // The `x/staking-x/ruji` bank balance is the vault's sRUJI SHARE count. It is not a
+    // display value (the auto-compounding card shows the staking API's liquid size, i.e.
+    // those shares valued in RUJI) — it sizes the funds of a `liquid.unbond`, which
+    // spends shares. These pin the parse that feeds it.
+
+    func testParseStakingReceiptAmountFindsSRujiByOnChainDenom() throws {
+        let json = """
+        {
+          "balances": [
+            { "denom": "rune", "amount": "1000" },
+            { "denom": "\(onChainDenom)", "amount": "8833889972" }
+          ]
+        }
+        """
+        let amount = try ThorchainService.parseStakingReceiptAmount(
+            data: Data(json.utf8),
+            denom: TokensStore.sruji.contractAddress
+        )
+
+        XCTAssertEqual(amount, Decimal(8_833_889_972))
+    }
+
+    func testParseStakingReceiptAmountReturnsZeroWhenDenomAbsent() throws {
+        // A successful response with no sRUJI receipt is a genuine zero — the card keeps it
+        // (only a request *failure* falls back to the API `bonded` amount).
+        let json = """
+        { "balances": [ { "denom": "rune", "amount": "1000" } ] }
+        """
+        let amount = try ThorchainService.parseStakingReceiptAmount(
+            data: Data(json.utf8),
+            denom: TokensStore.sruji.contractAddress
+        )
+
+        XCTAssertEqual(amount, .zero)
+    }
+
+    func testParseStakingReceiptAmountIgnoresStaleDenom() throws {
+        let json = """
+        { "balances": [ { "denom": "\(staleDenom)", "amount": "123456" } ] }
+        """
+        let amount = try ThorchainService.parseStakingReceiptAmount(
+            data: Data(json.utf8),
+            denom: TokensStore.sruji.contractAddress
+        )
+
+        XCTAssertEqual(amount, .zero)
+    }
 }

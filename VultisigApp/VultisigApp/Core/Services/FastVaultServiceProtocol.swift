@@ -10,7 +10,6 @@
 import Foundation
 
 protocol FastVaultServiceProtocol {
-    func exist(pubKeyECDSA: String) async -> Bool
 }
 
 extension FastVaultService: FastVaultServiceProtocol {}

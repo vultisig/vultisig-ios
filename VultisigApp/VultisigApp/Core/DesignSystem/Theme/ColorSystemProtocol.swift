@@ -19,6 +19,9 @@ public protocol ColorSystemProtocol {
 
     var bgButtonDisabled: Color { get }
 
+    var buttonBevelLight: Color { get }
+    var buttonBevelDark: Color { get }
+
     var textButtonDark: Color { get }
     var textButtonLight: Color { get }
     var textButtonDisabled: Color { get }
@@ -54,6 +57,9 @@ public protocol ColorSystemProtocol {
     var alertInfo: Color { get }
 
     var turquoise: Color { get }
+
+    // Devices-selection blue glow (onboarding + reshare)
+    var devicesSelectionGlow: Color { get }
 
     // Chain-specific colors
     var tronRed: Color { get }

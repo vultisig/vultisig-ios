@@ -27,6 +27,15 @@ final class RateProvider {
 
     static let shared = RateProvider()
 
+    /// Fires on the main actor whenever the cached rate set changes — the initial
+    /// load of persisted rates and every `save(rates:)`.
+    ///
+    /// Rates are an otherwise silent cache: callers that render a *precomputed*
+    /// fiat value (rather than reading `rate(for:)` inside `body`) have no way to
+    /// learn that a rate arrived, so their fiat stays frozen at whatever was
+    /// cached when they last recomputed. This signal is that missing link.
+    let ratesDidChange = PassthroughSubject<Void, Never>()
+
     static func cryptoId(for coin: CoinMeta) -> CryptoId {
         switch coin.chain.chainType {
         case .EVM, .Solana, .Sui, .THORChain:
@@ -66,6 +75,10 @@ final class RateProvider {
             do {
                 let objects = try Storage.shared.modelContext.fetch(descriptor)
                 self.rates = Set(objects.map { Rate(object: $0) })
+                // Persisted rates make fiat renderable immediately on a warm
+                // start; announce them so views that cached a pre-load fiat
+                // value recompute instead of waiting on a network refresh.
+                self.ratesDidChange.send()
             } catch {
                 print("Failed to load rates: \(error.localizedDescription)")
             }
@@ -87,19 +100,6 @@ final class RateProvider {
             return .zero
         }
         return fiatBalance(value: value, rate: rate)
-    }
-
-    func fiatBalance(for coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
-        return fiatBalance(value: coin.balanceDecimal, coin: coin.toCoinMeta(), currency: currency)
-    }
-
-    func fiatBalanceString(for coin: Coin, currency: SettingsCurrency = .current) -> String {
-        return fiatBalanceString(value: coin.balanceDecimal, coin: coin, currency: currency)
-    }
-
-    func fiatBalanceString(value: Decimal, rate: Rate) -> String {
-        let balance = fiatBalance(value: value, rate: rate)
-        return balance.formatToFiat(includeCurrencySymbol: true)
     }
 
     func fiatBalanceString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
@@ -135,6 +135,12 @@ final class RateProvider {
         // if a rate is newer , we use the newer one
         let newRateIds = Set(newRates.map { $0.id })
         rates = rates.filter { !newRateIds.contains($0.id) }.union(newRates)
+
+        // The in-memory cache is what rendering reads, and it has already
+        // changed — announce it even if the persistence below throws, or a
+        // failed write would leave the UI showing fiat that contradicts the
+        // cache until the next refresh.
+        defer { ratesDidChange.send() }
 
         // Update existing or insert new rates
         for rate in newRates {

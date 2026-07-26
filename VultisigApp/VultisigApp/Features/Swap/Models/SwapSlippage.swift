@@ -22,9 +22,9 @@ enum SwapSlippage: Equatable, Hashable {
 
     /// Upper bound on a custom slippage (basis points). Matches the downstream
     /// aggregator clamp (1inch/LI.FI cap at 5000 bps = 50%); THORChain/Maya pass
-    /// `tolerance_bps` raw and KyberSwap/SwapKit forward without an upper clamp, so
-    /// the cap is enforced here at the input layer to keep an absurd
-    /// `tolerance_bps` off the wire entirely.
+    /// `liquidity_tolerance_bps` raw and KyberSwap/SwapKit forward without an upper
+    /// clamp, so the cap is enforced here at the input layer to keep an absurd
+    /// `liquidity_tolerance_bps` off the wire entirely.
     static let maxCustomBps = 5000
 
     /// Clamp a custom slippage to `0...maxCustomBps`.

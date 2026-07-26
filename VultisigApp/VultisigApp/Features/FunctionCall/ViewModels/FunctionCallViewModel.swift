@@ -31,14 +31,18 @@ class FunctionCallViewModel: ObservableObject {
 
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
 
-    func stopMediator() {
-        self.mediator.stop()
-        logger.info("mediator server stopped.")
-    }
-
+    /// The fiat figure printed beside the crypto fee row.
+    ///
+    /// ⚠️ Priced off the SAME figure that row is, via `SendCryptoLogic.displayFee`.
+    /// This read `tx.gas` unconditionally, which on an EVM function call values
+    /// a gwei gas PRICE as though it were the whole fee: a limit-order cancel
+    /// costing ~0.00016 ETH rendered as `US$0.00` directly under the crypto
+    /// amount that said otherwise.
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
-        let fee = nativeCoin.decimal(for: tx.gas)
+        let fee = nativeCoin.decimal(
+            for: SendCryptoLogic.displayFee(coin: tx.coin, gas: tx.gas, fee: tx.fee)
+        )
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 

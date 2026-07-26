@@ -27,12 +27,140 @@
 //       equal inputs are `==` (Equatable rows).
 //
 
+import Combine
 import Foundation
 import XCTest
 @testable import VultisigApp
 
 @MainActor
 final class VaultDetailViewModelTests: XCTestCase {
+
+    private var rateCancellable: AnyCancellable?
+
+    // MARK: - Rate arrival refreshes the row projection
+
+    /// `ChainRowModel.fiatBalance` is a *formatted string* baked at projection
+    /// time, so a rate landing afterwards is invisible to it. The only rebuild
+    /// used to be the tail of `updateBalance`'s network refresh, which meant the
+    /// per-chain fiat sat at "$0.00" for the whole balance round trip (observed:
+    /// 60s on a flaky network, with the correct rates cached in memory the entire
+    /// time) — and never refreshed at all when that task lost its cancellation
+    /// race. A rate arriving must rebuild the projection on its own, with no
+    /// balance fetch involved.
+    func testRowsRefreshWhenRateLandsAfterProjectionWasBuilt() async throws {
+        let providerId = "vaultmain-rate-\(UUID().uuidString)"
+        let vault = makeVault(pubKey: "vault-rate", chains: [])
+        vault.coins = [makePricedCoin(chain: .bitcoin, ticker: "BTC", providerId: providerId, rawBalance: "100000000")]
+
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+
+        let fiatBefore = try XCTUnwrap(vm.rows.first(where: { $0.chain == .bitcoin })?.fiatBalance)
+        XCTAssertEqual(
+            fiatBefore,
+            Decimal.zero.formatToFiat(includeCurrencySymbol: true),
+            "precondition: no rate cached, so the projection bakes a zero fiat"
+        )
+
+        let rebuilt = expectation(description: "rows rebuilt on rate arrival")
+        rateCancellable = vm.$rows
+            .dropFirst()
+            .sink { rows in
+                if rows.first(where: { $0.chain == .bitcoin })?.fiatBalance != fiatBefore {
+                    rebuilt.fulfill()
+                }
+            }
+
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: providerId, value: 50_000)
+        ])
+
+        await fulfillment(of: [rebuilt], timeout: 2)
+        XCTAssertNotEqual(
+            vm.rows.first(where: { $0.chain == .bitcoin })?.fiatBalance,
+            fiatBefore,
+            "a cached rate must reach the row without a balance refresh"
+        )
+    }
+
+    /// The rebuild must be driven by the rate cache, not by `updateBalance` — a
+    /// view model that never ran a network refresh still has to pick up a rate.
+    /// Guards against "fixing" this by re-coupling the rebuild to balances.
+    func testRowsRefreshOnRateArrivalWithoutAnyBalanceRefresh() async throws {
+        let providerId = "vaultmain-norefresh-\(UUID().uuidString)"
+        let vault = makeVault(pubKey: "vault-norefresh", chains: [])
+        vault.coins = [makePricedCoin(chain: .ethereum, ticker: "ETH", providerId: providerId, rawBalance: "1000000000000000000")]
+
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+        let fiatBefore = try XCTUnwrap(vm.rows.first(where: { $0.chain == .ethereum })?.fiatBalance)
+
+        let rebuilt = expectation(description: "rows rebuilt without updateBalance")
+        rateCancellable = vm.$rows
+            .dropFirst()
+            .sink { rows in
+                if rows.first(where: { $0.chain == .ethereum })?.fiatBalance != fiatBefore {
+                    rebuilt.fulfill()
+                }
+            }
+
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: providerId, value: 2_000)
+        ])
+
+        await fulfillment(of: [rebuilt], timeout: 2)
+    }
+
+    /// Rates land once per chain group, and `chainRows` orders by fiat desc, so a
+    /// rate-driven rebuild that re-sorted would reshuffle the list under the user
+    /// mid-refresh. The rate rebuild must refresh values in place and leave
+    /// ordering to `updateBalance`'s tail.
+    func testRateArrivalRefreshesFiatWithoutReorderingRows() async throws {
+        let btcId = "order-btc-\(UUID().uuidString)"
+        let ethId = "order-eth-\(UUID().uuidString)"
+        let vault = makeVault(pubKey: "vault-order", chains: [])
+        vault.coins = [
+            makePricedCoin(chain: .bitcoin, ticker: "BTC", providerId: btcId, rawBalance: "100000000"),
+            makePricedCoin(chain: .ethereum, ticker: "ETH", providerId: ethId, rawBalance: "1000000000000000000")
+        ]
+
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+        let orderBefore = vm.rows.map(\.chain)
+
+        // Price ETH far above BTC. A re-sorting rebuild would flip the order.
+        let rebuilt = expectation(description: "fiat refreshed")
+        rateCancellable = vm.$rows.dropFirst().sink { rows in
+            if rows.contains(where: { $0.fiatBalance != Decimal.zero.formatToFiat(includeCurrencySymbol: true) }) {
+                rebuilt.fulfill()
+            }
+        }
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: ethId, value: 900_000)
+        ])
+        await fulfillment(of: [rebuilt], timeout: 2)
+
+        XCTAssertEqual(vm.rows.map(\.chain), orderBefore, "a rate arrival must not reorder the list")
+    }
+
+    /// A rate for a coin this vault does not hold must not republish `rows` —
+    /// `save(rates:)` fires once per chain group, so an unguarded rebuild would
+    /// churn the list several times per refresh.
+    func testUnrelatedRateDoesNotRepublishRows() async throws {
+        let vault = makeVault(pubKey: "vault-unrelated", chains: [.bitcoin])
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+
+        let noPublish = expectation(description: "rows must not republish")
+        noPublish.isInverted = true
+        rateCancellable = vm.$rows.dropFirst().sink { _ in noPublish.fulfill() }
+
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "unrelated-\(UUID().uuidString)", value: 42)
+        ])
+
+        await fulfillment(of: [noPublish], timeout: 0.5)
+    }
 
     func testUpdateBalance_firstCall_seedsChainsSynchronously() {
         let vault = makeVault(pubKey: "vault-a", chains: [.bitcoin, .ethereum])
@@ -432,5 +560,23 @@ final class VaultDetailViewModelTests: XCTestCase {
             isNativeToken: true
         )
         return Coin(asset: meta, address: "addr-\(pubKey)-\(chain.name)", hexPublicKey: "")
+    }
+
+    /// Native coin with a unique `priceProviderId` and a non-zero balance, so a
+    /// rate saved under that id changes the projected fiat. The unique id keeps
+    /// the `RateProvider` singleton's cache from leaking across tests.
+    private func makePricedCoin(chain: Chain, ticker: String, providerId: String, rawBalance: String) -> Coin {
+        let meta = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: "",
+            decimals: chain == .ethereum ? 18 : 8,
+            priceProviderId: providerId,
+            contractAddress: "",
+            isNativeToken: true
+        )
+        let coin = Coin(asset: meta, address: "addr-\(providerId)", hexPublicKey: "")
+        coin.rawBalance = rawBalance
+        return coin
     }
 }

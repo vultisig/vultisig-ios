@@ -9,12 +9,18 @@ import Foundation
 
 extension Coin {
 
+    /// THORChain fixed-point exponent. THORChain quotes amounts and LIM in 1e8
+    /// fixed-point regardless of a chain's natural decimals. Named here so the
+    /// market path (`thorswapMultiplier`) and the limit path (quote scaling,
+    /// `computeLim`) share one source instead of scattering `1e8` / `pow(10, 8)`.
+    static let thorchainFixedPointExponent = 8
+
     var thorswapMultiplier: Decimal {
         switch chain {
         case .mayaChain:
             return pow(10, decimals)
         default:
-            return 1e8
+            return pow(10, Coin.thorchainFixedPointExponent)
         }
     }
 
@@ -106,7 +112,7 @@ extension Coin {
         case .arbitrum:
             return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .base:
-            return [.thorchain, .oneinch(chain), .lifi, .swapkit] // KyberSwap not supported
+            return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .optimism, .polygon, .polygonV2:
             return [.lifi, .oneinch(chain), .kyberswap(chain), .swapkit] // KyberSwap supported
         case .mantle:

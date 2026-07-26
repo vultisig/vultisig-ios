@@ -146,10 +146,6 @@ class SolanaService {
         return nil
     }
 
-    func getSolanaBalance(coin: Coin) async throws -> String {
-        try await getSolanaBalance(coin: coin.toCoinMeta(), address: coin.address)
-    }
-
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             let response = try await httpClient.request(
@@ -295,14 +291,23 @@ class SolanaService {
     }
 
     func fetchTokenAssociatedAccountByOwner(for ownerAddress: String, mintAddress: String) async throws -> (String, Bool) {
-        // First try getTokenAccountsByOwner
-        let (tokenAccounts, isToken2022) = try await getTokenAccountsByOwner(walletAddress: ownerAddress, mintAddress: mintAddress)
+        // First try getTokenAccountsByOwner. A transient RPC/node error is treated
+        // like an empty result: the account index can lag right after an ATA is
+        // created, or the node may momentarily fail, yet the ATA is still
+        // deterministically derivable. Falling through to the derivation probe
+        // instead of propagating keeps the send from failing when the account
+        // actually exists. A successful lookup keeps today's behavior exactly.
+        do {
+            let (tokenAccounts, isToken2022) = try await getTokenAccountsByOwner(walletAddress: ownerAddress, mintAddress: mintAddress)
 
-        if !tokenAccounts.isEmpty {
-            return (tokenAccounts, isToken2022)
+            if !tokenAccounts.isEmpty {
+                return (tokenAccounts, isToken2022)
+            }
+        } catch {
+            logger.warning("getTokenAccountsByOwner lookup failed; falling back to ATA derivation: \(error.localizedDescription, privacy: .public)")
         }
 
-        // If getTokenAccountsByOwner returns empty, probe the deterministic ATAs directly
+        // If getTokenAccountsByOwner returns empty (or errored), probe the deterministic ATAs directly
         guard let walletCoreAddress = WalletCore.SolanaAddress(string: ownerAddress) else {
             return ("", false)
         }
@@ -573,16 +578,6 @@ class SolanaService {
             responseType: SolanaGetProgramAccountsResponse.self
         )
         return response.data.result.compactMap { SolanaStakeAccount(programAccount: $0) }
-    }
-
-    /// Full parsed info for a single stake account.
-    func fetchSolanaStakeAccount(address: String) async throws -> SolanaStakeAccount? {
-        let response = try await httpClient.request(
-            api(.getStakeAccountInfo(address: address)),
-            responseType: SolanaGetStakeAccountInfoResponse.self
-        )
-        guard let value = response.data.result.value else { return nil }
-        return SolanaStakeAccount(pubkey: address, accountInfo: value)
     }
 
     /// Current epoch info, cached 45s.

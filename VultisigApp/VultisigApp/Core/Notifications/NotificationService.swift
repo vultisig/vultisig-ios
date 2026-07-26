@@ -9,7 +9,6 @@ protocol NotificationServicing {
     func registerDevice(request: DeviceRegistrationRequest) async throws
     func unregisterDevice(vaultId: String, partyName: String) async throws
     func sendNotification(request: NotifyRequest) async throws
-    func isVaultRegistered(vaultId: String) async throws -> Bool
 }
 
 struct NotificationService: NotificationServicing {
@@ -28,11 +27,6 @@ struct NotificationService: NotificationServicing {
         _ = try await httpClient.requestEmpty(
             NotificationAPI.unregister(payload: request)
         )
-    }
-
-    func isVaultRegistered(vaultId: String) async throws -> Bool {
-        let response = try await httpClient.request(NotificationAPI.isVaultRegistered(vaultId: vaultId))
-        return response.response.statusCode == 200
     }
 
     func sendNotification(request: NotifyRequest) async throws {

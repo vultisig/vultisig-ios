@@ -31,7 +31,13 @@ enum SwapRecipientVerifier {
             // No external recipient → output goes to the user's own address.
             return
         }
-        try verify(quote: transaction.quote, recipient: recipient)
+        guard let quote = transaction.quote else {
+            // An external recipient with no quote (e.g. a limit order, which
+            // never sets one) has no verifiable output target — fail closed.
+            logger.error("[recipient-verify] external recipient set but no quote to verify against")
+            throw SwapError.recipientVerificationFailed
+        }
+        try verify(quote: quote, recipient: recipient)
     }
 
     /// Pure core, exposed for tests: assert the quote's built output target

@@ -13,6 +13,9 @@ struct SendCryptoVerifySummary {
     let network: String
     let networkImage: String
     let memo: String
+    /// XRP destination tag, pre-formatted for display. Rendered as its own
+    /// row under the memo. `nil` (the default) hides the row.
+    let destinationTag: String?
     let decodedFunctionSignature: String?
     let decodedFunctionArguments: String?
     let memoFunctionDictionary: [String: String]?
@@ -42,6 +45,18 @@ struct SendCryptoVerifySummary {
     /// When non-nil, the verify view renders a `DAppRequestBanner` above the
     /// hero so signers can sanity-check who originated the transaction.
     let dappMetadata: DAppMetadata?
+    /// Extra label/value rows, rendered inside the summary card beneath the
+    /// network-fee row.
+    ///
+    /// For a cost the transaction really carries but that the fee row cannot
+    /// express — the first is a limit-order cancel's attached dust, which
+    /// THORChain donates to the pool with no refund path. That belongs among the
+    /// costs, not in a red alert block below them: it is a normal, disclosed
+    /// part of the transaction, and styling it as an alarm made a real charge
+    /// read as a warning about something going wrong.
+    ///
+    /// Empty by default, so no existing construction site changes.
+    let additionalRows: [SendCryptoVerifySummaryRow]
 
     init(
         fromName: String,
@@ -51,6 +66,7 @@ struct SendCryptoVerifySummary {
         network: String,
         networkImage: String,
         memo: String,
+        destinationTag: String? = nil,
         // Only for Function Calls
         decodedFunctionSignature: String? = nil,
         decodedFunctionArguments: String? = nil,
@@ -67,7 +83,8 @@ struct SendCryptoVerifySummary {
         tokenDisplay: String? = nil,
         tokenDisplayIsUnlimited: Bool = false,
         vault: Vault? = nil,
-        dappMetadata: DAppMetadata? = nil
+        dappMetadata: DAppMetadata? = nil,
+        additionalRows: [SendCryptoVerifySummaryRow] = []
     ) {
         self.fromName = fromName
         self.fromAddress = fromAddress
@@ -76,6 +93,7 @@ struct SendCryptoVerifySummary {
         self.network = network
         self.networkImage = networkImage
         self.memo = memo
+        self.destinationTag = destinationTag
         self.decodedFunctionSignature = decodedFunctionSignature
         self.decodedFunctionArguments = decodedFunctionArguments
         self.memoFunctionDictionary = memoFunctionDictionary
@@ -92,5 +110,17 @@ struct SendCryptoVerifySummary {
         self.tokenDisplayIsUnlimited = tokenDisplayIsUnlimited
         self.vault = vault
         self.dappMetadata = dappMetadata
+        self.additionalRows = additionalRows
     }
+}
+
+/// One extra label/value row for the verify summary card.
+///
+/// `title` is a LOCALIZATION KEY — `getValueCell` localizes it, like every other
+/// row's title. `value` is already formatted for display.
+struct SendCryptoVerifySummaryRow: Identifiable {
+    let title: String
+    let value: String
+
+    var id: String { title }
 }

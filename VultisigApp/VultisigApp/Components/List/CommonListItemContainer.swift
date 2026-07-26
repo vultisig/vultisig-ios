@@ -21,8 +21,6 @@ struct CommonListItemContainer: ViewModifier {
 
     func body(content: Content) -> some View {
         VStack(spacing: 0) {
-            GradientListSeparator()
-                .showIf(isFirst)
             content
             Separator(color: Theme.colors.borderLight, opacity: 1)
                 .showIf(!isLast)
@@ -39,8 +37,27 @@ struct CommonListItemContainer: ViewModifier {
     }
 }
 
+/// Wrapping container for a group of `commonListItemContainer` rows: a single
+/// rounded surface with a hairline border, matching the Figma list style.
+struct CommonListContainer: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .background(Theme.colors.bgSurface1)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+                    .allowsHitTesting(false)
+            )
+    }
+}
+
 extension View {
     func commonListItemContainer(index: Int, itemsCount: Int) -> some View {
         modifier(CommonListItemContainer(index: index, itemsCount: itemsCount))
+    }
+
+    func commonListContainer() -> some View {
+        modifier(CommonListContainer())
     }
 }

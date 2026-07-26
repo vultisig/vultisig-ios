@@ -25,7 +25,7 @@ struct ImportVaultSelectionSheet: View {
                 importButton(
                     title: "importSeedphraseTitle".localized,
                     subtitle: "importSeedphraseSubtitle".localized,
-                    icon: "import-seedphrase",
+                    icon: .textOutdentRight,
                     isNew: true,
                     action: onSeedphrase
                 )
@@ -34,7 +34,7 @@ struct ImportVaultSelectionSheet: View {
                     title: "importVaultShareTitle".localized,
                     subtitle: "importVaultShareSubtitle".localized,
                     caption: "importVaultShareCaption".localized,
-                    icon: "import-vault-share",
+                    icon: .fileSend,
                     isNew: false,
                     action: onVaultShare
                 )
@@ -44,7 +44,7 @@ struct ImportVaultSelectionSheet: View {
         .screenIgnoresTopEdge()
         .screenToolbar {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     isPresented.toggle()
                 }
             }
@@ -58,7 +58,7 @@ struct ImportVaultSelectionSheet: View {
         title: String,
         subtitle: String,
         caption: String? = nil,
-        icon: String,
+        icon: ImageResource,
         isNew: Bool,
         action: @escaping () -> Void
     ) -> some View {
@@ -66,7 +66,7 @@ struct ImportVaultSelectionSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 newTag.showIf(isNew)
                 HStack(spacing: 8) {
-                    Icon(named: icon, color: Theme.colors.alertInfo, size: 20)
+                    Icon(icon, color: Theme.colors.alertInfo, size: 20)
                     Text(title)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.subtitle)
@@ -92,7 +92,7 @@ struct ImportVaultSelectionSheet: View {
     private var newTag: some View {
         HStack(spacing: 4) {
             Icon(
-                named: "stars",
+                .stars,
                 color: Theme.colors.alertWarning,
                 size: 12
             )

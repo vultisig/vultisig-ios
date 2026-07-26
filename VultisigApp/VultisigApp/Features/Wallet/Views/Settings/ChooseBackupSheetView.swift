@@ -31,23 +31,23 @@ struct ChooseBackupSheetView: View, BottomSheetProperties {
                 buttonView(
                     title: "deviceBackupTitle".localized,
                     subtitle: "deviceBackupDescription".localized,
-                    icon: "tablet-smartphone",
+                    icon: .tabletMobile,
                     action: onDeviceBackup
                 )
                 buttonView(
                     title: "serverBackupTitle".localized,
                     subtitle: "serverBackupDescription".localized,
-                    icon: "cloud",
+                    icon: .cloud,
                     action: onServerBackup
                 )
             }
         }
     }
 
-    func buttonView(title: String, subtitle: String, icon: String, action: @escaping () -> Void) -> some View {
+    func buttonView(title: String, subtitle: String, icon: ImageResource, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Icon(named: icon)
+                Icon(icon)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(Theme.fonts.subtitle)
@@ -57,7 +57,7 @@ struct ChooseBackupSheetView: View, BottomSheetProperties {
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
                 Spacer()
-                Icon(named: "chevron-right", color: Theme.colors.textSecondary, size: 16)
+                Icon(.chevronRight, color: Theme.colors.textSecondary, size: 16)
             }
             .containerStyle(padding: 16)
         }

@@ -40,7 +40,7 @@ struct PrimaryButtonView<LeadingView: View, TrailingView: View>: View {
                 .padding(.leading, paddingLeading)
             trailingView
             if reserveTrailingIconSpace, TrailingView.self == EmptyView.self {
-                Icon(named: "check", color: .clear, size: 15)
+                Icon(.check, color: .clear, size: 15)
             }
             if isLoading {
                 ProgressView()
@@ -65,48 +65,6 @@ extension PrimaryButtonView where LeadingView == EmptyView, TrailingView == Empt
             title: title,
             leadingView: { EmptyView() },
             trailingView: { EmptyView() },
-            isLoading: isLoading,
-            paddingLeading: paddingLeading,
-            reserveTrailingIconSpace: reserveTrailingIconSpace
-        )
-    }
-}
-
-// MARK: - Leading icon string
-
-extension PrimaryButtonView where LeadingView == Icon, TrailingView == EmptyView {
-    init(
-        title: String,
-        leadingIcon: String,
-        isLoading: Bool = false,
-        paddingLeading: CGFloat = 0,
-        reserveTrailingIconSpace: Bool = false
-    ) {
-        self.init(
-            title: title,
-            leadingView: { Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15) },
-            trailingView: { EmptyView() },
-            isLoading: isLoading,
-            paddingLeading: paddingLeading,
-            reserveTrailingIconSpace: reserveTrailingIconSpace
-        )
-    }
-}
-
-// MARK: - Trailing icon string
-
-extension PrimaryButtonView where LeadingView == EmptyView, TrailingView == Icon {
-    init(
-        title: String,
-        trailingIcon: String,
-        isLoading: Bool = false,
-        paddingLeading: CGFloat = 0,
-        reserveTrailingIconSpace: Bool = false
-    ) {
-        self.init(
-            title: title,
-            leadingView: { EmptyView() },
-            trailingView: { Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15) },
             isLoading: isLoading,
             paddingLeading: paddingLeading,
             reserveTrailingIconSpace: reserveTrailingIconSpace

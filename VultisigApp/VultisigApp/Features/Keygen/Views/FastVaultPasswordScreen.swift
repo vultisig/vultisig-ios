@@ -37,7 +37,7 @@ struct FastVaultPasswordScreen: View {
         _viewModel = StateObject(wrappedValue: FastVaultPasswordViewModel(isExistingVault: isExistingVault))
     }
 
-    private let stepIcons = ["email", "focus-lock"]
+    private let stepIcons: [ImageResource] = [.envelopeFilled, .lockPassword]
     private var totalSteps: Int { stepIcons.count }
     private var isLastStep: Bool { currentStep >= totalSteps - 1 }
 

@@ -226,7 +226,7 @@ struct KeygenView: View {
 
             VStack(spacing: 24) {
                 VStack {
-                    Text(NSLocalizedString("vaultCreated", comment: ""))
+                    Text(NSLocalizedString(tssType.keygenSuccessTitleKey, comment: ""))
                         .foregroundStyle(Theme.colors.textPrimary)
                     Text(NSLocalizedString("successfully", comment: ""))
                         .foregroundStyle(LinearGradient.primaryGradient)

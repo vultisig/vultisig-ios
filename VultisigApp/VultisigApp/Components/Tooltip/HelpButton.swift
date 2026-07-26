@@ -16,7 +16,7 @@ struct HelpButton: View {
         Button {
             withAnimation(.interpolatingSpring) { isPresented.toggle() }
         } label: {
-            Icon(named: "circle-info", color: Theme.colors.textPrimary, size: iconSize)
+            Icon(.circleInfo, color: Theme.colors.textPrimary, size: iconSize)
                 .frame(width: size, height: size)
                 .background(glassCircleBackground)
                 .contentShape(Circle())

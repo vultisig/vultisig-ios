@@ -45,12 +45,6 @@ class BackgroundTransactionPoller: ObservableObject {
         }
     }
 
-    /// Stop polling for a specific transaction
-    func stopPolling(txHash: String) {
-        pollingViewModels[txHash]?.stopPolling()
-        pollingViewModels.removeValue(forKey: txHash)
-    }
-
     /// Stop all background polling
     func stopAllPolling() {
         for (_, viewModel) in pollingViewModels {

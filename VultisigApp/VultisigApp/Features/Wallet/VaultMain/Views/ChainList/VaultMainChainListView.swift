@@ -32,15 +32,18 @@ struct VaultMainChainListView: View {
     }
 
     var chainList: some View {
-        ForEach(Array(filteredRows.enumerated()), id: \.element.id) { index, row in
-            VaultChainCellView(row: row, vault: vault) {
-                onCopy(row.chain)
+        VStack(spacing: 0) {
+            ForEach(Array(filteredRows.enumerated()), id: \.element.id) { index, row in
+                VaultChainCellView(row: row, vault: vault) {
+                    onCopy(row.chain)
+                }
+                .commonListItemContainer(
+                    index: index,
+                    itemsCount: filteredRows.count
+                )
             }
-            .commonListItemContainer(
-                index: index,
-                itemsCount: filteredRows.count
-            )
         }
+        .commonListContainer()
     }
 }
 

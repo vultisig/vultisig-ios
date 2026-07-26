@@ -20,53 +20,45 @@ struct OnboardingOverviewScreen: View {
     @State private var otpVerified = false
     @Environment(\.router) var router
 
+    private var content: OnboardingOverviewContent {
+        OnboardingOverviewContent(tssType: tssType, setupType: setupType)
+    }
+
     private var isKeyImport: Bool {
-        tssType == .KeyImport
+        content.isKeyImport
     }
 
     private var descriptionText: String {
-        isKeyImport ? "backupsDescription".localized : "backupsDescriptionVault".localized
+        content.descriptionKey.localized
     }
 
     private var row1Title: String {
-        if !isKeyImport && setupType == .fast {
-            return "backupDeviceDriver".localized
-        }
-        return "backupEachDevice".localized
+        content.backupRowTitleKey.localized
     }
 
     private var row1Subtitle: String {
-        if isKeyImport {
-            return "backupEachDeviceDescription".localized
-        }
-        switch setupType {
-        case .fast:
-            return "backupDeviceDriverDescription".localized
-        case .secure(let count):
-            return String(format: "backupEachDeviceDescriptionSecure".localized, count)
+        switch content.backupRowSubtitle {
+        case .plain(let key):
+            return key.localized
+        case .secureCount(let key, let count):
+            return String(format: key.localized, count)
         }
     }
 
     private var row2Subtitle: String {
-        if !isKeyImport, case .secure = setupType {
-            return "storeBackupsSeparatelyDescriptionSecure".localized
-        }
-        return "storeBackupsSeparatelyDescription".localized
+        content.storeSeparatelyRowSubtitleKey.localized
     }
 
     private var descriptionHighlightedText: String? {
-        isKeyImport ? nil : "backupsDescriptionVaultHighlight".localized
+        content.descriptionHighlightKey?.localized
     }
 
     private var row1HighlightedText: String? {
-        if !isKeyImport && setupType == .fast {
-            return "backupDeviceDriverDescriptionHighlight".localized
-        }
-        return nil
+        content.backupRowHighlightKey?.localized
     }
 
     private var buttonTitle: String {
-        isKeyImport ? "continue".localized : "iUnderstand".localized
+        content.buttonTitleKey.localized
     }
 
     var animationFileName: String {
@@ -164,15 +156,23 @@ struct OnboardingOverviewScreen: View {
             OnboardingInformationRowView(
                 title: row1Title,
                 subtitle: row1Subtitle,
-                icon: "cloud-upload-filled",
+                icon: .cloudUpload,
                 highlightedText: row1HighlightedText
             )
 
             OnboardingInformationRowView(
                 title: "storeBackupsSeparately".localized,
                 subtitle: row2Subtitle,
-                icon: "arrow-split"
+                icon: .split3
             )
+
+            if content.showsOldBackupsRow {
+                OnboardingInformationRowView(
+                    title: "oldBackupsWontWork".localized,
+                    subtitle: "oldBackupsWontWorkDescription".localized,
+                    icon: .fileXmark
+                )
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)

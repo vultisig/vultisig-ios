@@ -377,6 +377,14 @@ class JoinKeysignViewModel: ObservableObject {
         if status == .QBTCClaim {
             return
         }
+        // If preparing the keysign messages already failed (e.g. an unsupported
+        // multi-transaction Solana batch rejected in `prepareKeysignMessages`),
+        // keep the failure state. Otherwise the relay/discovery transition below
+        // would clobber it and let this co-signer walk into the confirm screen
+        // and start the ceremony with no messages to sign.
+        if status == .FailedToStart {
+            return
+        }
         if let keysignPayload {
             if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
                 self.status = .VaultMismatch

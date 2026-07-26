@@ -27,7 +27,6 @@ struct VultisigApp: App {
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
-    @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
     @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
     @StateObject var pushNotificationManager = PushNotificationManager.shared
@@ -49,6 +48,7 @@ struct VultisigApp: App {
         // the tx-history viewmodel and the native status poller can route by
         // `providerKind`. New providers register here.
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
+        SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
 
         // Register every destination-token provider with the shared registry
         // so the swap coin picker can aggregate destination tokens from
@@ -56,6 +56,7 @@ struct VultisigApp: App {
         DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
         DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .thorchain))
         DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .mayachain))
+        DestinationTokenRegistry.shared.register(SecuredAssetTokenProvider())
     }
     var body: some Scene {
         WindowGroup {
@@ -93,7 +94,8 @@ struct VultisigApp: App {
             VaultSettings.self,
             TransactionHistoryItem.self,
             SwapTrackingMetadata.self,
-            CustomRPCOverride.self
+            CustomRPCOverride.self,
+            LimitOrder.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -169,7 +171,6 @@ extension VultisigApp {
             .environmentObject(settingsViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
-            .environmentObject(globalStateViewModel)
             .environmentObject(sheetPresentedCounterManager)
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)
@@ -243,7 +244,6 @@ extension VultisigApp {
             .environmentObject(settingsViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
-            .environmentObject(globalStateViewModel)
             .environmentObject(sheetPresentedCounterManager)
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)

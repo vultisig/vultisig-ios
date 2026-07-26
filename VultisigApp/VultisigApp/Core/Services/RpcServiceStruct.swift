@@ -45,22 +45,18 @@ struct RpcServiceStruct {
             if let error = response["error"] as? [String: Any] {
                 let code = error["code"] as? Int ?? -1
                 let message = error["message"] as? String ?? "Unknown RPC error"
+                let dataMessage = error["data"] as? String
+                let detail = dataMessage.flatMap { $0.isEmpty ? nil : $0 } ?? message
 
                 // Special handling for transaction broadcast errors
-                if message.lowercased().contains("known".lowercased())
-                    || message.lowercased().contains("already known".lowercased())
-                    || message.lowercased().contains("Transaction is temporarily banned".lowercased())
-                    || message.lowercased().contains("nonce too low".lowercased())
-                    || message.lowercased().contains("nonce too high".lowercased())
-                    || message.lowercased().contains("transaction already exists".lowercased())
-                    || message.lowercased().contains("many requests for a specific RPC call".lowercased())
-                    || message.lowercased().contains("already".lowercased())
-                    || message.lowercased().contains("already mined".lowercased()) {
-                    return try decode("Transaction already broadcasted.")
+                if BroadcastErrorClassifier.broadcastMethods.contains(method),
+                   BroadcastErrorClassifier.isDuplicateBroadcast(message)
+                    || BroadcastErrorClassifier.isDuplicateBroadcast(detail) {
+                    return try decode(SubstrateBroadcast.alreadyBroadcastedSentinel)
                 }
 
                 // For other errors, throw an exception instead of trying to decode the error message
-                throw RpcServiceError.rpcError(code: code, message: message)
+                throw RpcServiceError.rpcError(code: code, message: detail)
 
             } else if let result = response["result"] {
                 return try decode(result)

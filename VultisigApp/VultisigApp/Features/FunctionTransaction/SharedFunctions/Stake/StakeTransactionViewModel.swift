@@ -62,7 +62,25 @@ final class StakeTransactionViewModel: ObservableObject, Form {
                 sendMaxAmount: isMaxAmount,
                 isAutoCompound: isAutocompound
             )
+        case "BRUNE":
+            return BRUNEStakeTransactionBuilder(
+                coin: coin,
+                amount: amountField.value,
+                sendMaxAmount: isMaxAmount
+            )
         case "RUJI":
+            // Both RUJI positions bond `x/ruji`, so the message has to follow the
+            // card the user tapped: `liquid.bond` mints the sRUJI receipt into the
+            // auto-compounding position, `account.bond` deposits into the bonded
+            // one. Routing both to the same message would silently move funds into
+            // the position with the other rewards and the other unstake path.
+            if isAutocompound {
+                return RUJILiquidBondTransactionBuilder(
+                    coin: coin,
+                    amount: amountField.value,
+                    sendMaxAmount: isMaxAmount
+                )
+            }
             return RUJIStakeTransactionBuilder(
                 coin: coin,
                 amount: amountField.value,

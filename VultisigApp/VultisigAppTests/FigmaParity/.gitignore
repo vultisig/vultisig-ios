@@ -1,0 +1,12 @@
+# Per-run render + diff artifacts produced by FigmaParityComparator.
+__Output__/
+
+# Figma reference exports are LOCAL-ONLY (heavy binaries, go stale).
+# Export them from Figma into FigmaParityReferences/ to run the checks;
+# tests SKIP (not fail) when a reference is absent. See that dir's README.
+FigmaParityReferences/*.png
+
+# …except the hermetic self-test reference: not a Figma export, but a small
+# PNG rendered by the harness itself from a test-only fixture view. Committing
+# it keeps the comparator exercised on every CI run. See FigmaParitySelfTests.
+!FigmaParityReferences/selftest-fixture.png

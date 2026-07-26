@@ -86,13 +86,6 @@ struct ImportWalletUploadSection: View {
         }
     }
 
-    private func textFile(for text: String) -> some View {
-        Text(text)
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textPrimary)
-            .padding(12)
-    }
-
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
         ZStack {
             if backgroundColor == Theme.colors.bgButtonPrimary {

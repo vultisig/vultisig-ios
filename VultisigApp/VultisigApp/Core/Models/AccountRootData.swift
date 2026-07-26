@@ -42,6 +42,16 @@ struct AccountRootData: Decodable {
             struct StakingV2: Decodable {
                 let account: String
                 let bonded: Bonded
+                /// Value of the account's auto-compounding position, denominated in the
+                /// BOND token (RUJI) rather than in receipt shares. Rujira mints a liquid
+                /// receipt (sRUJI) whose share price drifts above 1 RUJI, so the raw
+                /// receipt balance is not a valid display amount — this is that balance
+                /// converted at the pool's current share price, and it is what the Rujira
+                /// app shows. Independent of `bonded`: one account can hold both.
+                ///
+                /// Non-null in the Rujira schema, but decoded as optional so a partial or
+                /// older response still decodes into the rest of the entry.
+                let liquidSize: LiquidSize?
                 let pendingRevenue: PendingRevenue?
                 let pool: Pool?
             }
@@ -75,6 +85,13 @@ struct AccountRootData: Decodable {
             struct Bonded: Decodable {
                 let amount: String
                 let asset: Asset
+            }
+
+            struct LiquidSize: Decodable {
+                /// Optional so an absent amount surfaces through the caller's
+                /// explicit partial-response guard rather than as a decode failure
+                /// that takes the whole account payload down with it.
+                let amount: String?
             }
 
             struct PendingRevenue: Decodable {

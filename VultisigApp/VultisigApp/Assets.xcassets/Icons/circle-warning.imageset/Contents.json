@@ -1,15 +1,16 @@
 {
-  "images" : [
+  "images": [
     {
-      "filename" : "circle-warning.svg",
-      "idiom" : "universal"
+      "filename": "circle-warning.svg",
+      "idiom": "universal"
     }
   ],
-  "info" : {
-    "author" : "xcode",
-    "version" : 1
+  "info": {
+    "author": "xcode",
+    "version": 1
   },
-  "properties" : {
-    "template-rendering-intent" : "template"
+  "properties": {
+    "preserves-vector-representation": true,
+    "template-rendering-intent": "template"
   }
 }

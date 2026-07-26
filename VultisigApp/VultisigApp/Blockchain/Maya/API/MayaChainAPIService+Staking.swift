@@ -35,34 +35,6 @@ extension MayaChainAPIService {
         )
     }
 
-    /// Get global CACAO pool state (depth and units)
-    private func getCacaoPoolGlobalState() async throws -> (poolDepth: Decimal, poolUnits: Decimal) {
-        // Get pool units from history endpoint
-        let historyResponse = try await httpClient.request(
-            MayaChainStakingAPI.getCacaoPoolHistory(interval: "day", count: 1),
-            responseType: MayaCacaoPoolHistoryResponse.self
-        )
-
-        guard let latestInterval = historyResponse.data.intervals.first else {
-            throw MayaChainAPIError.invalidResponse
-        }
-
-        let poolUnits = Decimal(string: latestInterval.units) ?? 0
-
-        // Get pool depth from network endpoint (totalPooledRune = total CACAO in pool)
-        let networkInfo = try await getNetwork()
-        guard let totalPooledRune = networkInfo.totalPooledRune,
-              let poolDepth = Decimal(string: totalPooledRune) else {
-            throw MayaChainAPIError.invalidResponse
-        }
-
-        // Convert from atomic units to CACAO (10 decimals)
-        let poolDepthCacao = poolDepth / pow(10, 10)
-        let poolUnitsCacao = poolUnits / pow(10, 10)
-
-        return (poolDepthCacao, poolUnitsCacao)
-    }
-
     /// Get CACAO pool APR/APY from network endpoint
     func getCacaoPoolAPR() async throws -> (apr: Double, apy: Double) {
         // Get liquidity APY from network endpoint

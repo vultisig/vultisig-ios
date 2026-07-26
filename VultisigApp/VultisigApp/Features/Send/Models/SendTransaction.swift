@@ -46,32 +46,6 @@ struct SendDetailsSeed: Hashable {
     let memoFunctionDictionary: [String: String]
     let wasmContractPayload: WasmExecuteContractPayload?
 
-    static func empty(coin: Coin, vault: Vault, hasPreselectedCoin: Bool) -> SendDetailsSeed {
-        SendDetailsSeed(
-            coin: coin,
-            vault: vault,
-            hasPreselectedCoin: hasPreselectedCoin,
-            fromAddress: coin.address,
-            toAddress: "",
-            toAddressLabel: nil,
-            lastResolvedAddress: nil,
-            amount: "",
-            amountInFiat: "",
-            memo: "",
-            gas: .zero,
-            fee: .zero,
-            feeMode: .default,
-            estimatedGasLimit: nil,
-            customGasLimit: nil,
-            customByteFee: nil,
-            sendMaxAmount: false,
-            isStakingOperation: false,
-            transactionType: .unspecified,
-            memoFunctionDictionary: [:],
-            wasmContractPayload: nil
-        )
-    }
-
     /// Builds an empty seed prefilled with the deeplink/scanner fields used
     /// by `HomeRouteBuilder` when routing `VaultAction.send` so the prefill
     /// rides on the route value instead of mutating a long-lived form.
@@ -171,6 +145,12 @@ struct SendTransaction: Hashable {
     let amountInFiat: String
     let memo: String
 
+    /// XRP destination tag (nil elsewhere / when absent). Carried separately
+    /// from `memo` so the Verify screen can show an honest "Destination Tag"
+    /// row; the keysign payload encodes it into the memo slot as a canonical
+    /// uint32 decimal — the cross-platform wire contract (`RippleDestinationTag`).
+    let destinationTag: UInt32?
+
     // Fee / gas
     let gas: BigInt
     let fee: BigInt
@@ -188,6 +168,15 @@ struct SendTransaction: Hashable {
     // first-class case-enum modelling lands in Functions §13).
     let memoFunctionDictionary: [String: String]
     let wasmContractPayload: WasmExecuteContractPayload?
+
+    /// The limit order this transaction cancels, when it is a cancel.
+    ///
+    /// Local-only on iOS — like `cosmosStakingPayload`, it does not round-trip
+    /// through the proto-mappable `KeysignMessage` bridge. It exists so the done
+    /// screen can attribute a confirmed broadcast back to a specific
+    /// `LimitOrder` row; the `m=<` memo identifies the order to THORChain but
+    /// says nothing about our own storage key.
+    let limitCancelContext: LimitOrderCancelRequest?
 
     /// Native coin that pays for gas — `coin` itself for native sends, the
     /// chain's native sibling (e.g. ETH for a USDC source) otherwise.
@@ -222,6 +211,7 @@ extension SendTransaction {
             lhs.amount == rhs.amount &&
             lhs.amountInFiat == rhs.amountInFiat &&
             lhs.memo == rhs.memo &&
+            lhs.destinationTag == rhs.destinationTag &&
             lhs.gas == rhs.gas &&
             lhs.fee == rhs.fee &&
             lhs.feeMode == rhs.feeMode &&
@@ -235,7 +225,8 @@ extension SendTransaction {
             lhs.wasmContractPayload == rhs.wasmContractPayload &&
             lhs.feeCoinSnapshot == rhs.feeCoinSnapshot &&
             lhs.cosmosStakingPayload == rhs.cosmosStakingPayload &&
-            lhs.solanaStakingPayload == rhs.solanaStakingPayload
+            lhs.solanaStakingPayload == rhs.solanaStakingPayload &&
+            lhs.limitCancelContext == rhs.limitCancelContext
     }
 
     func hash(into hasher: inout Hasher) {
@@ -247,6 +238,7 @@ extension SendTransaction {
         hasher.combine(amount)
         hasher.combine(amountInFiat)
         hasher.combine(memo)
+        hasher.combine(destinationTag)
         hasher.combine(gas)
         hasher.combine(fee)
         hasher.combine(feeMode)
@@ -261,6 +253,7 @@ extension SendTransaction {
         hasher.combine(feeCoinSnapshot)
         hasher.combine(cosmosStakingPayload)
         hasher.combine(solanaStakingPayload)
+        hasher.combine(limitCancelContext)
     }
 }
 
@@ -274,6 +267,7 @@ extension SendTransaction {
         amount: String,
         amountInFiat: String,
         memo: String,
+        destinationTag: UInt32? = nil,
         gas: BigInt,
         fee: BigInt,
         feeMode: FeeMode,
@@ -287,7 +281,8 @@ extension SendTransaction {
         wasmContractPayload: WasmExecuteContractPayload?,
         feeCoin: Coin,
         cosmosStakingPayload: CosmosStakingPayload? = nil,
-        solanaStakingPayload: SolanaStakingPayload? = nil
+        solanaStakingPayload: SolanaStakingPayload? = nil,
+        limitCancelContext: LimitOrderCancelRequest? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -299,6 +294,7 @@ extension SendTransaction {
         self.amount = amount
         self.amountInFiat = amountInFiat
         self.memo = memo
+        self.destinationTag = destinationTag
         self.gas = gas
         self.fee = fee
         self.feeMode = feeMode
@@ -314,6 +310,7 @@ extension SendTransaction {
         self.feeCoinSnapshot = SendCoinSnapshot(coin: feeCoin)
         self.cosmosStakingPayload = cosmosStakingPayload
         self.solanaStakingPayload = solanaStakingPayload
+        self.limitCancelContext = limitCancelContext
     }
 }
 
@@ -369,6 +366,7 @@ extension SendTransaction {
         amount: String? = nil,
         amountInFiat: String? = nil,
         memo: String? = nil,
+        destinationTag: SendTransactionUpdate<UInt32?>? = nil,
         gas: BigInt? = nil,
         fee: BigInt? = nil,
         feeMode: FeeMode? = nil,
@@ -414,6 +412,10 @@ extension SendTransaction {
             guard let solanaStakingPayload else { return self.solanaStakingPayload }
             return solanaStakingPayload.value
         }()
+        let resolvedDestinationTag: UInt32? = {
+            guard let destinationTag else { return self.destinationTag }
+            return destinationTag.value
+        }()
         return SendTransaction(
             coin: resolvedCoin,
             vault: resolvedVault,
@@ -423,6 +425,7 @@ extension SendTransaction {
             amount: amount ?? self.amount,
             amountInFiat: amountInFiat ?? self.amountInFiat,
             memo: memo ?? self.memo,
+            destinationTag: resolvedDestinationTag,
             gas: gas ?? self.gas,
             fee: fee ?? self.fee,
             feeMode: feeMode ?? self.feeMode,
@@ -436,7 +439,18 @@ extension SendTransaction {
             wasmContractPayload: resolvedWasmContractPayload,
             feeCoin: feeCoin ?? self.feeCoin,
             cosmosStakingPayload: resolvedCosmosStakingPayload,
-            solanaStakingPayload: resolvedSolanaStakingPayload
+            solanaStakingPayload: resolvedSolanaStakingPayload,
+            // Carried through unconditionally — `copy` is not offered an
+            // override for it. The function-call flow calls `copy(gas:)` after
+            // fetching chain-specific gas, and dropping the context there would
+            // silently detach a confirmed cancel from the order it cancels.
+            //
+            // This codebase has already been bitten by exactly this: the
+            // done-screen copy in `LimitOrderRecord.with(inboundTxHash:)`
+            // silently dropped `minOutputOverride`, which carries the same doc
+            // comment warning. A field-by-field copy is the shape that invites
+            // it — every new field is one someone must remember to add here.
+            limitCancelContext: limitCancelContext
         )
     }
 

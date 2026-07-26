@@ -5,9 +5,8 @@
 //  Drives the QBTC claim BTC ECDSA round + proof generation via
 //  `QBTCClaimOrchestrator`. Constructed by the keysign screen; navigates
 //  to `QBTCClaimRoute.done` on success, surfaces `errorTitle` for retry
-//  on failure. NOT a `TransferViewModel` — this view model is a thin
-//  orchestrator driver; the keysign UI is provided by
-//  `SendCryptoKeysignView`, not `KeysignView`.
+//  on failure. It is a thin orchestrator driver — the keysign UI is
+//  provided by `SendCryptoKeysignView`, not the shared `KeysignView`.
 //
 
 import Foundation

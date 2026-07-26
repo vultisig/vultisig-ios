@@ -54,8 +54,7 @@ final class QBTCClaimRoundRunner {
         // Register on the relay BEFORE inviting Vultiserver. Without this POST, Vultiserver's
         // outbound MPC messages to this device's localPartyID may never be queued / matched
         // by the relay, and the iOS poll loop hangs on `/router/message/{sessionID}/{partyID}`
-        // forever. Mirrors `FastVaultKeysignService.executeKeysignCeremony` step 1 and
-        // `KeysignDiscoveryViewModel.startKeysignSession`.
+        // forever. Mirrors `KeysignDiscoveryViewModel.startKeysignSession`.
         try await sessionService.registerAsParticipant(session: session)
 
         let derivePath = input.btcCoin.coinType.derivationPath()
@@ -148,10 +147,4 @@ extension QBTCClaimOrchestrator {
         )
     }
 
-    /// Backwards-compatible alias for FastVault wiring. Older callers
-    /// (the v1 ViewModel) used `makeProduction()`.
-    @MainActor
-    static func makeProduction() -> QBTCClaimOrchestrator {
-        makeFastVault()
-    }
 }

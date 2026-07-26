@@ -17,30 +17,6 @@ enum AccessibilityID {
         static let balanceLabel = "home.balanceLabel"
     }
 
-    enum VaultSelector {
-        static let container = "vaultSelector.container"
-        static let addVaultButton = "vaultSelector.addVaultButton"
-        static func vaultCell(name: String) -> String {
-            "vaultSelector.vault.\(name)"
-        }
-    }
-
-    enum Send {
-        static let amountField = "send.amountField"
-        static let addressField = "send.addressField"
-        static let memoField = "send.memoField"
-        static let continueButton = "send.continueButton"
-        static let coinSelector = "send.coinSelector"
-        static let maxButton = "send.maxButton"
-    }
-
-    enum Verify {
-        static let confirmButton = "verify.confirmButton"
-        static let amountLabel = "verify.amountLabel"
-        static let addressLabel = "verify.addressLabel"
-        static let feeLabel = "verify.feeLabel"
-    }
-
     enum Settings {
         static let container = "settings.container"
         static let languageCell = "settings.languageCell"

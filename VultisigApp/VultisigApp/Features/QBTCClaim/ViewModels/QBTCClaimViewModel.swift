@@ -170,15 +170,6 @@ final class QBTCClaimViewModel: ObservableObject {
         )
     }
 
-    func toggleSelectAll() {
-        if isAllSelected {
-            selectedIds.removeAll()
-            return
-        }
-        let limit = QBTCClaimConfig.maxClaimUtxos
-        selectedIds = Set(utxos.prefix(limit).map { $0.id })
-    }
-
     // MARK: - Lifecycle
 
     /// Runs the gate checks + UTXO fetch in parallel. Idempotent — safe
@@ -309,13 +300,6 @@ final class QBTCClaimViewModel: ObservableObject {
         )
     }
 
-    /// Called when the user dismisses an error banner. Clears local
-    /// error state.
-    func resetForRetry() {
-        fastVaultPassword = ""
-        lastClaimError = nil
-    }
-
     // MARK: - SecureVault pair preparation
 
     /// Provisions a fresh relay session, builds the keysign payload,
@@ -411,14 +395,5 @@ final class QBTCClaimViewModel: ObservableObject {
     // MARK: - Snapshot test seeding
 
     #if DEBUG
-    /// Seeds the view model into a deterministic `.selecting` state for
-    /// snapshot tests. Sets `isLoading = false` so the `withLoading`
-    /// overlay doesn't cover the captured frame.
-    func snapshotSeed(utxos: [ClaimableUtxo], selected: Set<QBTCClaimUtxoId>) {
-        self.utxos = utxos
-        self.selectedIds = selected
-        self.state = utxos.isEmpty ? .blocked(reason: .noUtxos) : .selecting
-        self.isLoading = false
-    }
     #endif
 }

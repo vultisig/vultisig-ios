@@ -46,28 +46,6 @@ struct CoinFactory {
 
     static func generateAddress(
         chain: Chain,
-        publicKeyECDSA: String,
-        publicKeyEdDSA: String,
-        hexChainCode: String,
-        isDerived: Bool
-    ) throws -> String {
-        let publicKey = try publicKey(
-            chain: chain,
-            publicKeyECDSA: publicKeyECDSA,
-            publicKeyEdDSA: publicKeyEdDSA,
-            hexChainCode: hexChainCode,
-            isDerived: isDerived
-        )
-
-        return try generateAddress(
-            chain: chain,
-            publicKey: publicKey,
-            publicKeyEdDSA: publicKeyEdDSA
-        )
-    }
-
-    static func generateAddress(
-        chain: Chain,
         publicKey: PublicKey,
         publicKeyEdDSA: String
     ) throws -> String {

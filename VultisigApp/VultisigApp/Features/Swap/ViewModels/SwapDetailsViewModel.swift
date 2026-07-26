@@ -50,9 +50,12 @@ final class SwapDetailsViewModel {
     /// Whether to show the Advanced Settings sheet.
     var showAdvancedSettingsSheet = false
 
-    /// Gas-limit override applies only to EVM source chains.
+    /// Gas-limit override applies only to EVM source chains. Excluded for a
+    /// secured mint: its deposit is built by `ThorchainRouterDepositBuilder` from
+    /// a synthesized send (not the swap path that honors the override), so
+    /// offering it would silently drop the user's value.
     var isGasLimitSupported: Bool {
-        fromCoin.chain.chainType == .EVM
+        fromCoin.chain.chainType == .EVM && !isSecuredMint
     }
 
     // MARK: - Quote state
@@ -87,8 +90,16 @@ final class SwapDetailsViewModel {
 
     var thorchainFee: BigInt = .zero
     var gas: BigInt = .zero
+    /// Oracle gas limit from chainSpecific (EVM only, zero elsewhere or until
+    /// the fee data loads). Feeds the `EVMSwapFee` reconciliation together with
+    /// `gas` (= maxFeePerGas for EVM) so the displayed fee is the signed bond.
+    var gasLimit: BigInt = .zero
     var vultDiscountBps: Int = 0
     var referralDiscountBps: Int = 0
+    /// Whether a referral code is active for the current quote. Route-aware
+    /// affiliate-% display keys off this clean bit (not `referralDiscountBps`,
+    /// which is 0 in DEBUG even when referred).
+    var isReferred: Bool = false
 
     // MARK: - UI state (details-screen-only)
 
@@ -192,13 +203,6 @@ final class SwapDetailsViewModel {
     /// Apply a manual provider pick.
     func selectProvider(_ quote: SwapQuote) {
         selectedQuote = quote
-    }
-
-    /// Whether `candidate` is the top-ranked (rate-best) quote — the one the list
-    /// tags "Recommended". Defined as the first element of the net-output-sorted
-    /// `allQuotes` so the tag always lands on the row showing the largest output.
-    func isBest(_ candidate: SwapQuote) -> Bool {
-        candidate == allQuotes.first
     }
 
     /// Quotes for the picker sheet, with the active (selected) quote pinned to
@@ -411,11 +415,14 @@ final class SwapDetailsViewModel {
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount.toDecimal(),
-            quote: quote,
+            kind: .market(quote),
+            mode: isSecuredMint ? .securedMint : .standard,
             gas: gas,
+            gasLimit: gasLimit,
             thorchainFee: thorchainFee,
             vultDiscountBps: vultDiscountBps,
             referralDiscountBps: referralDiscountBps,
+            isReferred: isReferred,
             feeCoin: feeCoin,
             advancedSettings: resolvedAdvancedSettings
         )
@@ -428,6 +435,12 @@ final class SwapDetailsViewModel {
         var resolved = advancedSettings
         if !isGasLimitSupported {
             resolved.gasLimit = nil
+        }
+        // A secured mint always deposits to the vault's own THORChain address, so
+        // an external recipient must never travel — otherwise Verify would show a
+        // recipient the SECURE+ memo (vault thor address) doesn't honor.
+        if isSecuredMint {
+            resolved.externalRecipient = nil
         }
         return resolved
     }
@@ -453,6 +466,16 @@ extension SwapDetailsViewModel {
 
     var fee: BigInt {
         SwapCryptoLogic.fee(quote: quote, fromCoin: fromCoin, thorchainFee: thorchainFee)
+    }
+
+    /// Network fee value shown on the details screen. For EVM aggregator/
+    /// SwapKit routes this is the signed bond so it matches the verify screen,
+    /// the co-signer, and the vault's signature. Also what the insufficient-gas
+    /// gate (`balanceError`) validates against, since the bond is the node's
+    /// real admission requirement.
+    /// See `SwapCryptoLogic.displayedSwapNetworkFeeWei`.
+    var displayedNetworkFeeWei: BigInt {
+        SwapCryptoLogic.displayedSwapNetworkFeeWei(quote: quote, feeCoin: feeCoin, gas: gas, gasLimit: gasLimit, fee: fee)
     }
 
     var fromAmountDecimal: Decimal {
@@ -508,12 +531,25 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.isApproveRequired(fromCoin: fromCoin, quote: quote)
     }
 
+    /// Same-underlying secured selection (hold BTC → secured BTC): the flow mints
+    /// via SECURE+ instead of a pool swap. Drives skipping the pool-quote fetch,
+    /// the synthetic ~1:1 quote, and hiding the external-recipient / gas-limit
+    /// advanced settings the mint builder doesn't honor.
+    var isSecuredMint: Bool {
+        SwapCryptoLogic.isSameUnderlyingSecuredMint(fromCoin: fromCoin, toCoin: toCoin)
+    }
+
     var isDeposit: Bool {
         SwapCryptoLogic.isDeposit(fromCoin: fromCoin)
     }
 
+    /// The sufficiency gate validates against the same fee the screen displays:
+    /// the reconciled signed bond for EVM aggregator/SwapKit routes (an EVM
+    /// node rejects any transaction whose account can't cover
+    /// `gasLimit × maxFeePerGas + value`), the plain quote fee otherwise or
+    /// until the oracle data loads.
     var balanceError: SwapCryptoLogic.Errors? {
-        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: fee)
+        SwapCryptoLogic.balanceError(fromCoin: fromCoin, feeCoin: feeCoin, fromAmount: fromAmount, fee: displayedNetworkFeeWei)
     }
 
     var fromFiatAmount: String {
@@ -547,12 +583,23 @@ extension SwapDetailsViewModel {
         SwapCryptoLogic.showTotalFees(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
     }
 
+    /// Whether the itemized "Vultisig Fee" affiliate row should render (every
+    /// market swap route, even at 0%; not secured mints or limit orders).
+    var showAffiliateFeeRow: Bool {
+        SwapCryptoLogic.showAffiliateFeeRow(quote: quote, mode: isSecuredMint ? .securedMint : .standard)
+    }
+
+    /// Whether the "Protocol Fee" (native outbound) row should render.
+    var showProtocolFeeRow: Bool {
+        SwapCryptoLogic.showProtocolFeeRow(quote: quote, toCoin: toCoin, mode: isSecuredMint ? .securedMint : .standard)
+    }
+
     var swapFeeString: String {
         SwapCryptoLogic.swapFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin)
     }
 
     var swapGasString: String {
-        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: fee)
+        SwapCryptoLogic.swapGasString(quote: quote, feeCoin: feeCoin, gas: gas, fee: displayedNetworkFeeWei)
     }
 
     var approveFeeString: String {
@@ -564,7 +611,7 @@ extension SwapDetailsViewModel {
     }
 
     var totalFeeString: String {
-        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: fee)
+        SwapCryptoLogic.totalFeeString(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fee: displayedNetworkFeeWei)
     }
 
     var durationString: String {
@@ -576,7 +623,10 @@ extension SwapDetailsViewModel {
     }
 
     var swapFeeLabel: String {
-        SwapCryptoLogic.swapFeeLabel(quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin, fromAmount: fromAmount)
+        SwapCryptoLogic.swapFeeLabel(
+            quote: quote, fromCoin: fromCoin, toCoin: toCoin, feeCoin: feeCoin,
+            fromAmount: fromAmount, vultDiscountBps: vultDiscountBps, isReferred: isReferred
+        )
     }
 
     var outboundFeeString: String {
@@ -647,9 +697,11 @@ private extension SwapDetailsViewModel {
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
+            gasLimit = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
+            isReferred = false
             error = nil
             isLoadingQuotes = false
             isLoadingFees = false
@@ -668,9 +720,11 @@ private extension SwapDetailsViewModel {
             quotedPair = nil
             quotedAmount = nil
             gas = .zero
+            gasLimit = .zero
             thorchainFee = .zero
             vultDiscountBps = 0
             referralDiscountBps = 0
+            isReferred = false
         }
         error = nil
         isLoadingQuotes = true
@@ -717,6 +771,21 @@ private extension SwapDetailsViewModel {
 
         guard !fromAmount.isEmpty else { return }
 
+        // Same-underlying secured selection: there's no meaningful pool swap, so
+        // skip the network quote and present a synthetic ~1:1 "Mint (SECURE+)"
+        // quote. Confirm builds the real SECURE+ deposit payload.
+        if isSecuredMint {
+            selectedQuote = nil
+            bestQuote = SwapCryptoLogic.securedMintQuote(fromAmount: fromAmount.toDecimal(), toCoin: toCoin)
+            allQuotes = [bestQuote].compactMap { $0 }
+            quotedPair = currentPair
+            quotedAmount = fromAmount
+            vultDiscountBps = 0
+            referralDiscountBps = 0
+            isReferred = false
+            return
+        }
+
         do {
             let result = try await interactor.fetchQuote(
                 amount: fromAmount.toDecimal(),
@@ -741,6 +810,7 @@ private extension SwapDetailsViewModel {
                 quotedAmount = fromAmount
                 vultDiscountBps = result.vultDiscountBps
                 referralDiscountBps = result.referralDiscountBps
+                isReferred = result.isReferred
             }
         } catch {
             // Ignore cancellation from a superseding amount edit — surfacing it
@@ -776,6 +846,7 @@ private extension SwapDetailsViewModel {
             // A superseding edit cancelled this fetch — don't write stale fees.
             guard !Task.isCancelled else { return }
             gas = chainSpecific.gas
+            gasLimit = chainSpecific.gasLimit ?? .zero
             thorchainFee = computedFee
         } catch {
             // A superseding amount edit cancels the in-flight task; cancellation

@@ -97,7 +97,7 @@ struct ReferralMainScreen: View {
 
     var noReferralYetView: some View {
         VStack(spacing: 20) {
-            Icon(named: "file-question", color: Theme.colors.primaryAccent4, size: 24)
+            Icon(.circleDashed2, color: Theme.colors.primaryAccent4, size: 24)
                 .padding(7)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface1))
                 .padding(.top, 24)
@@ -124,7 +124,7 @@ struct ReferralMainScreen: View {
         ReferralCodeBoxView(
             title: "yourReferralCode".localized,
             value: referralViewModel.savedReferralCode,
-            icon: "copy"
+            icon: .copies3Filled
         ) {
             ClipboardManager.copyToClipboard(referralViewModel.savedReferralCode)
             showReferralCodeCopied = true
@@ -134,7 +134,7 @@ struct ReferralMainScreen: View {
     var collectedRewardsView: some View {
         BannerView(bgImage: "referral-banner-2") {
             VStack(alignment: .leading, spacing: 2) {
-                Icon(named: "trophy")
+                Icon(.trophy)
                     .padding(.bottom, 10)
                 Text("collectedRewards".localized)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -185,7 +185,7 @@ struct ReferralMainScreen: View {
         ReferralCodeBoxView(
             title: "yourFriendsReferralCode".localized,
             value: referredViewModel.savedReferredCode,
-            icon: "pencil"
+            icon: .penWritingFilled
         ) {
             router.navigate(to: ReferralRoute.referredCodeForm)
         }
@@ -212,7 +212,7 @@ struct ReferralMainScreen: View {
                         .font(Theme.fonts.bodyMMedium)
                     Spacer()
                     Icon(
-                        named: "chevron-right",
+                        .chevronRight,
                         color: Theme.colors.textPrimary,
                         size: 16
                     )
@@ -227,7 +227,7 @@ struct ReferralMainScreen: View {
 struct ReferralCodeBoxView: View {
     let title: String
     let value: String
-    let icon: String
+    let icon: ImageResource
     let action: () -> Void
 
     var body: some View {
@@ -243,7 +243,7 @@ struct ReferralCodeBoxView: View {
                         .font(Theme.fonts.bodyMMedium)
                     Spacer()
                     Icon(
-                        named: icon,
+                        icon,
                         color: Theme.colors.textPrimary,
                         size: 24
                     )

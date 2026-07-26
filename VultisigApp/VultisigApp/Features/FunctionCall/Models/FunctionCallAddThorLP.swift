@@ -370,13 +370,6 @@ final class FunctionCallAddThorLP {
         return dict
     }
 
-    func buildApprovePayload() -> ERC20ApprovePayload? {
-        guard isApprovalRequired, !toAddress.isEmpty else {
-            return nil
-        }
-        return ERC20ApprovePayload(amount: amountInRaw, spender: toAddress)
-    }
-
     var balance: String {
         let b = coin.balanceDecimal.formatForDisplay()
         return String(format: "balanceInParentheses".localized, b, coin.ticker.uppercased())

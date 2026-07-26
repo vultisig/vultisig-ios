@@ -41,7 +41,7 @@ struct ServerBackupVerificationScreen: View {
     var body: some View {
         Screen {
             VStack(spacing: 32) {
-                VaultSetupStepIcon(state: .active, icon: "email-circle")
+                VaultSetupStepIcon(state: .active, icon: .envelopeNotification)
                     .padding(.top, 56)
 
                 VStack(spacing: 16) {

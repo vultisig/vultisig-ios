@@ -21,22 +21,25 @@ struct ChainDetailListView: View {
     }
 
     var tokensList: some View {
-        ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
-            Button {
-                onPress(token)
-            } label: {
-                TokenCellView(coin: token)
-                    .commonListItemContainer(
-                        index: index,
-                        itemsCount: viewModel.filteredTokens.count
-                    )
+        VStack(spacing: 0) {
+            ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
+                Button {
+                    onPress(token)
+                } label: {
+                    TokenCellView(coin: token)
+                        .commonListItemContainer(
+                            index: index,
+                            itemsCount: viewModel.filteredTokens.count
+                        )
+                }
             }
         }
+        .commonListContainer()
     }
 
     var addTokensView: some View {
         VStack(spacing: 12) {
-            Icon(named: "crypto-outline", color: Theme.colors.primaryAccent4, size: 24)
+            Icon(.circleDashed, color: Theme.colors.primaryAccent4, size: 24)
             VStack(spacing: 8) {
                 Text("noTokensFound")
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -48,7 +51,7 @@ struct ChainDetailListView: View {
             .frame(maxWidth: 263)
             .multilineTextAlignment(.center)
 
-            PrimaryButton(title: "customizeTokens", leadingIcon: "write", size: .mini, action: onManageTokens)
+            PrimaryButton(title: "customizeTokens", leadingIcon: .compose2, size: .mini, action: onManageTokens)
                 .fixedSize()
         }
         .padding(.horizontal, 16)

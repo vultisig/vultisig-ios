@@ -69,7 +69,7 @@ struct GroupedChainCellView: View {
                                 Text(truncatedAddress)
                                     .font(Theme.fonts.caption12)
                                     .foregroundStyle(Theme.colors.textTertiary)
-                                Icon(named: "copy", color: Theme.colors.textTertiary, size: 12)
+                                Icon(.copies3, color: Theme.colors.textTertiary, size: 12)
                             }
                         }.buttonStyle(.plain)
                     }
@@ -94,7 +94,7 @@ struct GroupedChainCellView: View {
                 // and balance refresh (the projection's perf goal) while
                 // restoring the spring the pre-projection cell used on toggle.
                 .animation(.interpolatingSpring, value: homeViewModel.hideVaultBalance)
-                Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
+                Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 16)
             }
         }
         .padding(.horizontal, 16)

@@ -87,19 +87,4 @@ extension View {
     .environmentObject(mock)
 }
 
-#Preview("Notification Setup") {
-    let mock = PushNotificationManager()
-
-    Screen {
-        Color.clear
-    }
-    .crossPlatformSheet(isPresented: .constant(true)) {
-        VaultNotificationSetupSheet(
-            vault: Vault.example,
-            isPresented: .constant(true)
-        )
-        .environmentObject(mock)
-    }
-    .environmentObject(mock)
-}
 #endif

@@ -72,13 +72,13 @@ struct KeyImportOnboardingScreen: View {
                 OnboardingInformationRowView(
                     title: "yourSeedphrase".localized,
                     subtitle: "yourSeedphraseSubtitle".localized,
-                    icon: "seedphrase"
+                    icon: .seedphrase
                 )
 
                 OnboardingInformationRowView(
                     title: "atLeastOneDevice".localized,
                     subtitle: "atLeastOneDeviceSubtitle".localized,
-                    icon: "devices"
+                    icon: .laptopMobile
                 )
             }
             .fixedSize(horizontal: false, vertical: true)

@@ -109,7 +109,22 @@ struct SwapVerifyScreen: View {
                 summaryTitle
                 summaryFromTo
 
-                if let providerName = currentTransaction.quote.displayName {
+                if currentTransaction.isLimit {
+                    limitTargetPriceRow
+
+                    // A resting `=<` order has no market quote (so the shared
+                    // `showGas`/`showFees` fee rows are all suppressed) — surface
+                    // the estimated source-chain network fee, the only fee it has.
+                    if !currentTransaction.limitNetworkFeeString.isEmpty {
+                        separator
+                        getNetworkFeeCell(
+                            cryptoAmount: currentTransaction.limitNetworkFeeString,
+                            fiatAmount: currentTransaction.limitNetworkFeeFiat
+                        )
+                    }
+                }
+
+                if let providerName = currentTransaction.providerDisplayName {
                     separator
                     getValueCell(
                         for: "provider",
@@ -127,20 +142,48 @@ struct SwapVerifyScreen: View {
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
-                if currentTransaction.showFees {
+                // Vultisig Fee (affiliate component only). The label carries the
+                // effective affiliate %, the value the fiat amount — sourced from
+                // `fees.affiliate`, never THORChain's composite `fees.total`.
+                if currentTransaction.showAffiliateFeeRow {
+                    separator
+                    affiliateFeeRow
+                        .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
+                }
+
+                // Protocol Fee (native THOR/Maya outbound).
+                if currentTransaction.showProtocolFeeRow {
                     separator
                     getValueCell(
-                        for: "swapFee",
-                        with: currentTransaction.swapFeeString,
-                        bracketValue: nil
+                        for: "swap.protocol_fee",
+                        with: currentTransaction.outboundFeeString
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
                 }
 
+                // VULT tier saving (with the tier badge).
+                if !currentTransaction.vultDiscount.isEmpty {
+                    separator
+                    vultDiscountRow
+                }
+
+                // Referral saving.
+                if !currentTransaction.referralDiscount.isEmpty {
+                    separator
+                    referralDiscountRow
+                }
+
+                // Price Impact (only when the provider reports slippage).
+                if !currentTransaction.priceImpactString.isEmpty {
+                    separator
+                    priceImpactRow
+                }
+
+                // Total Fee — reconciles to Network + Vultisig + Protocol.
                 if currentTransaction.showTotalFees {
                     separator
                     getValueCell(
-                        for: "maxTotalFee",
+                        for: "totalFee",
                         with: currentTransaction.totalFeeString
                     )
                     .blur(radius: verifyViewModel.isLoadingFees ? 1 : 0)
@@ -174,6 +217,38 @@ struct SwapVerifyScreen: View {
             .padding(16)
             .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
+        }
+    }
+
+    /// Row shown only on limit orders, between the from/to summary and the
+    /// provider row. Matches Figma 74341:117861:
+    /// "Target Price: 1 <toCoin> = <price> <fromCoin>"  ⏱  "<expiry>h"
+    @ViewBuilder
+    var limitTargetPriceRow: some View {
+        if let limit = currentTransaction.limitContext {
+            HStack(spacing: 4) {
+                // LIM = sourceAmount(fromCoin) × targetPrice, so targetPrice is
+                // toCoin-per-1-fromCoin. The row MUST read "1 <fromCoin> = <price>
+                // <toCoin>" — passing toCoin first would confirm the reciprocal
+                // pair against the signed memo (fund-safety).
+                Text(String(
+                    format: "limitSwap.verify.targetPrice".localized,
+                    currentTransaction.fromCoin.ticker,
+                    limit.targetPrice.formatForDisplay(),
+                    currentTransaction.toCoin.ticker
+                ))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "clock")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.colors.textSecondary)
+
+                Text("\(limit.expiryHours)h")
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
         }
     }
 
@@ -233,7 +308,10 @@ struct SwapVerifyScreen: View {
     }
 
     var summaryTitle: some View {
-        Text(NSLocalizedString("youreSwapping", comment: ""))
+        Text(NSLocalizedString(
+            currentTransaction.isLimit ? "limitSwap.verify.title" : "youreSwapping",
+            comment: ""
+        ))
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -301,13 +379,29 @@ struct SwapVerifyScreen: View {
             }
             if let payload = await verifyViewModel.buildSwapKeysignPayload(vault: vault) {
                 await MainActor.run {
-                    router.navigate(to: SwapRoute.pair(
+                    // Fast vaults sign server-side with no peer to pair with,
+                    // so route straight into keysign (the bootstrap runs there)
+                    // and skip the pairing screen. A present fast password is
+                    // the fast-sign signal; an empty one means paired-sign,
+                    // which keeps the QR pairing screen.
+                    let context = SigningTxContext.swap(
                         vaultPubKeyECDSA: vault.pubKeyECDSA,
                         transaction: currentTransaction,
-                        retrySignal: retrySignal,
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
-                    ))
+                        retry: retrySignal
+                    )
+                    if let fastPassword = fastVaultPassword.nilIfEmpty {
+                        router.navigate(to: SigningRoute.keysign(.fast(
+                            context: context,
+                            keysignPayload: payload,
+                            fastVaultPassword: fastPassword
+                        )))
+                    } else {
+                        router.navigate(to: SigningRoute.pair(
+                            context: context,
+                            keysignPayload: payload,
+                            fastVaultPassword: nil
+                        ))
+                    }
                 }
             }
             await MainActor.run { signButtonDisabled = false }
@@ -323,8 +417,92 @@ struct SwapVerifyScreen: View {
             .opacity(0.2)
     }
 
+    @ViewBuilder
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
+        // Limit orders execute at a fixed target price, so there is no live quote
+        // to refresh — hide the countdown on the limit verify screen.
+        if !currentTransaction.isLimit {
+            SwapRefreshQuoteCounter(timer: verifyViewModel.timer)
+        }
+    }
+
+    /// "Vultisig Fee (X.XX%)" affiliate row. The label is already localized (it
+    /// embeds the percentage), so it's rendered verbatim rather than through a
+    /// key lookup.
+    private var affiliateFeeRow: some View {
+        HStack(spacing: 4) {
+            Text(currentTransaction.swapFeeLabel)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.baseAffiliateFee)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var vultDiscountRow: some View {
+        HStack(spacing: 4) {
+            vultTierIcon
+
+            Text(currentTransaction.vultDiscountLabel)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.vultDiscount)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var vultTierIcon: some View {
+        if let tier = VultDiscountTier.from(bpsDiscount: currentTransaction.vultDiscountBps) {
+            Image(tier.icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+        } else {
+            Image(systemName: "star.circle.fill")
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.turquoise)
+        }
+    }
+
+    private var referralDiscountRow: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "megaphone.fill")
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.primaryAccent4)
+
+            Text(currentTransaction.referralDiscountLabel)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.referralDiscount)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var priceImpactRow: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Spacer()
+
+            Text(currentTransaction.priceImpactString)
+                .foregroundStyle(currentTransaction.priceImpactColor)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     func getValueCell(

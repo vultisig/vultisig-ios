@@ -256,70 +256,6 @@ final class ReferralDetailsViewModel {
 
     // MARK: - Network — referral data
 
-    func fetchReferralCodeDetails() async {
-        isLoading = true
-        defer { isLoading = false }
-
-        guard savedReferralCode.isNotEmpty else { return }
-
-        do {
-            let details = try await thorchainService.getThornameDetails(name: savedReferralCode)
-            let lastBlock = try await thorchainService.getLastBlock()
-            let formattedExpires = ReferralExpiryDataCalculator.getFormattedExpiryDate(
-                expiryBlock: details.expireBlockHeight,
-                currentBlock: lastBlock
-            )
-            let runes = await calculateCollectedRewards(details: details)
-            currentBlockheight = lastBlock
-            expiresOn = formattedExpires
-            collectedRewards = runes
-            thornameDetails = details
-        } catch {
-            expiresOn = "-"
-            collectedRewards = "-"
-        }
-    }
-
-    func calculateCollectedRewards(details: THORName) async -> String {
-        let assetDecimals: Int
-        let assetMultiplier: Decimal
-        let assetTicker: String
-
-        if details.isDefaultPreferredAsset {
-            let runeCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .thorChain && $0.isNativeToken })
-            guard let runeCoin else { return "" }
-            assetDecimals = runeCoin.decimals
-            assetMultiplier = 1
-            assetTicker = runeCoin.ticker
-        } else {
-            let preferredAsset = try? await thorchainService.getPoolAsset(asset: details.preferredAsset)
-            guard let preferredAsset else { return "" }
-            assetDecimals = preferredAsset.decimals ?? 6
-            assetMultiplier = preferredAsset.assetTorPrice.toDecimal() / 100_000_000
-            assetTicker = String(preferredAsset.asset.split(separator: ".")[1].split(separator: "-").first ?? "")
-        }
-
-        let collectedRunesAmount = details.affiliateCollectorRune.toDecimal()
-        let collectedAssetAmount = collectedRunesAmount * assetMultiplier / pow(10, assetDecimals)
-        return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
-    }
-
-    func fetchVaultData() async {
-        isLoading = true
-        defer { isLoading = false }
-
-        guard vault.referralCode == nil,
-              let thorAddress = vault.nativeCoin(for: .thorChain)?.address
-        else { return }
-
-        let thorname = try? await thorchainService.getAddressLookup(address: thorAddress)
-        guard let thorname, !thorname.isEmpty else { return }
-
-        let normalised = thorname.uppercased()
-        let referral = ReferralCode(code: normalised, vault: vault)
-        saveReferralCode(referral)
-    }
-
     // MARK: - Verify + boundary
 
     /// Verifies the referral inputs and returns the immutable `SendTransaction`
@@ -356,21 +292,6 @@ final class ReferralDetailsViewModel {
             transactionType: .unspecified,
             memoFunctionDictionary: ["memo": ""]
         )
-    }
-
-    func persistReferralCode(_ code: String) {
-        if let vaultReferral = vault.referralCode {
-            vaultReferral.code = code
-            do {
-                try Storage.shared.save()
-            } catch {
-                showNameError(with: "systemErrorMessage")
-            }
-        } else {
-            // `saveReferralCode` already handles insert + save.
-            let referral = ReferralCode(code: code, vault: vault)
-            saveReferralCode(referral)
-        }
     }
 
     // MARK: - Private

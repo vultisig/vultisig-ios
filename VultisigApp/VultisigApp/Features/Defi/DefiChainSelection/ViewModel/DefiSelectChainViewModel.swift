@@ -71,10 +71,6 @@ class DefiSelectChainViewModel: ObservableObject {
         }
     }
 
-    func isSelected(asset: CoinMeta) -> Bool {
-        selection.contains(asset.chain)
-    }
-
     func handleSelection(isSelected: Bool, chain: Chain) {
         if isSelected {
             selection.insert(chain)

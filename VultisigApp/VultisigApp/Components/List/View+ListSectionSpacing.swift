@@ -16,11 +16,4 @@ extension View {
         #endif
     }
 
-    func groupedListStyle() -> some View {
-#if os(macOS)
-        self.listStyle(.plain)
-#else
-        self.listStyle(.grouped)
-#endif
-    }
 }

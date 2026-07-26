@@ -11,7 +11,7 @@ import SwiftData
 import OSLog
 
 @MainActor
-class PushNotificationManager: ObservableObject, PushNotificationManaging {
+class PushNotificationManager: ObservableObject {
     static let shared = PushNotificationManager()
 
     @Published var isPermissionGranted: Bool = false

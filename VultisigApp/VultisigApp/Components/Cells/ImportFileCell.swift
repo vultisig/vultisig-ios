@@ -23,7 +23,7 @@ struct ImportFileCell: View {
     }
 
     var fileImage: some View {
-        Image("FileIcon")
+        Image(.file)
             .resizable()
             .frame(width: 24, height: 24)
     }

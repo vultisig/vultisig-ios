@@ -34,7 +34,3 @@ final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {
 }
 
 // swiftlint:enable async_without_await unused_parameter
-
-enum MockInteractorError: Error, Equatable {
-    case generic
-}

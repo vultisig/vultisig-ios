@@ -69,7 +69,7 @@ struct VaultCellView<TrailingView: View>: View {
                 VaultCellMainView(vault: vault)
                 Spacer()
                 Group {
-                    Icon(named: "checkmark-2-small", color: Theme.colors.alertSuccess, size: 24)
+                    Icon(.check, color: Theme.colors.alertSuccess, size: 24)
                         .showIf(isSelected)
                     Text(vault.signerPartDescription)
                         .foregroundStyle(Theme.colors.textTertiary)

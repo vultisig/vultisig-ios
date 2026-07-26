@@ -61,9 +61,9 @@ struct ReferralVaultSelectionScreen: View {
     @ViewBuilder
     func trailingIcon(vault: Vault) -> some View {
         if isSelected(vault: vault) {
-            Icon(named: "check", color: Theme.colors.alertSuccess, size: 16)
+            Icon(.check, color: Theme.colors.alertSuccess, size: 16)
         } else {
-            Icon(named: "chevron-right", color: Theme.colors.textPrimary, size: 16)
+            Icon(.chevronRight, color: Theme.colors.textPrimary, size: 16)
         }
     }
 

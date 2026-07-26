@@ -62,7 +62,7 @@ final class DefiChainBondViewModel: ObservableObject {
         }
 
         async let canUnbondTask = interactor.canUnbond()
-        async let canAddBondTask = interactor.canAddBond(vault: vault)
+        async let canAddBondTask = interactor.canAddBond()
         async let fetchTask = interactor.fetchBondPositions(vault: vault)
 
         self.canUnbond = await canUnbondTask

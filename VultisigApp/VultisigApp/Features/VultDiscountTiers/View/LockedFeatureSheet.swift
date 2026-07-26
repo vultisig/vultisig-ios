@@ -51,7 +51,7 @@ struct LockedFeatureSheet: View {
         .onAppear { viewModel.loadBalance(for: vault) }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     isPresented = false
                 }
             }
@@ -133,7 +133,7 @@ struct LockedFeatureSheet: View {
     private var balanceRow: some View {
         HStack(spacing: 6) {
             HStack(spacing: 6) {
-                Icon(named: "wallet-4", color: Theme.colors.textTertiary, size: 16)
+                Icon(.walletFilled, color: Theme.colors.textTertiary, size: 16)
                 Text("customRPCsLockedYourBalance".localized)
                     .font(Theme.fonts.priceFootnote)
                     .foregroundStyle(Theme.colors.textTertiary)

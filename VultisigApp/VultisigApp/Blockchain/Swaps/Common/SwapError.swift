@@ -17,6 +17,10 @@ enum SwapError: Error, LocalizedError, Equatable {
     case noLiquidityPool
     case tradingHalted
     case swapAmountTooSmall
+    /// The node refused the quote because its simulated output fell below the
+    /// minimum-output floor derived from the requested slippage tolerance.
+    /// Actionable by the user: raise the slippage setting or reduce the amount.
+    case slippageToleranceTooTight
     case lessThenMinSwapAmount(amount: String)
     case serverError(message: String)
 
@@ -34,6 +38,8 @@ enum SwapError: Error, LocalizedError, Equatable {
             return "swapTradingHalted".localized
         case .swapAmountTooSmall:
             return "swapAmountTooSmall".localized
+        case .slippageToleranceTooTight:
+            return "swapSlippageToleranceTooTight".localized
         case .lessThenMinSwapAmount(let amount):
             return String(format: "swapAmountTooSmallRecommended".localized, amount)
         case .serverError(let msg):

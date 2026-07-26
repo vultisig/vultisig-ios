@@ -29,6 +29,10 @@ class MayachainService: ThorchainSwapProvider {
         self.resolver = resolver
     }
 
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .mayachain(quote)
+    }
+
     /// The override-aware Mayanode host. Falls back to the default host when no
     /// override is set.
     private var resolvedHost: URL {
@@ -111,7 +115,7 @@ class MayachainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -130,7 +134,7 @@ class MayachainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantityParam,
             affiliate: affiliate,
             affiliateBps: affiliateBps,
-            toleranceBps: toleranceBps > 0 ? String(toleranceBps) : nil
+            liquidityToleranceBps: liquidityToleranceBps > 0 ? String(liquidityToleranceBps) : nil
         ))
 
         // Maya sometimes returns a structured swap error body with a
@@ -197,19 +201,6 @@ class MayachainService: ThorchainSwapProvider {
         }
     }
 
-    /// Fetch MayaChain inbound addresses (halt flags + gas rates). Mirrors
-    /// `ThorchainService.fetchThorchainInboundAddress`: 5-minute cache, fail-soft
-    /// to an empty array on decode/network error. Pass `bypassCache: true` for the
-    /// sign-time halt re-check, which must never read or write the cache.
-    func fetchInboundAddress(bypassCache: Bool = false) async -> [InboundAddress] {
-        do {
-            return try await fetchInboundAddressOrThrow(bypassCache: bypassCache)
-        } catch {
-            logger.warning("MayaChain inbound address decoding error: \(error.localizedDescription, privacy: .public)")
-            return []
-        }
-    }
-
     /// Throwing variant of `fetchInboundAddress` for the sign-time fund-safety
     /// gate, which must fail CLOSED: a transport/decode failure has to propagate
     /// so a halt re-check can't be silently misread as "not halted". The fail-soft
@@ -250,7 +241,7 @@ private extension MayachainService {
     /// Returns (affiliateAddress, affiliateBps) as URL-param-ready strings, or (nil, nil)
     /// if no affiliate should be sent.
     static func affiliateParams(referredCode _: String, discountBps: Int) -> (String?, String?) {
-        let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+        let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.affiliateFeeRateBp, discountBps: discountBps)
         return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
     }
 }

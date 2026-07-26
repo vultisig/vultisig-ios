@@ -14,7 +14,7 @@ struct KeyImportNoActiveChainsView: View {
         VStack(spacing: 32) {
             Spacer()
             CircleIcon(
-                icon: "active-chain",
+                icon: .activeChain,
                 color: Theme.colors.alertError
             )
             VStack(spacing: 12) {

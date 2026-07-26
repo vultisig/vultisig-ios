@@ -23,7 +23,7 @@ struct DefiChainAvailableNodesView: View {
                         .font(Theme.fonts.bodySMedium)
                     Spacer()
 
-                    Icon(named: "chevron-down", color: Theme.colors.textPrimary, size: 20)
+                    Icon(.chevronDown, color: Theme.colors.textPrimary, size: 20)
                         .rotationEffect(.radians(isExpanded ? .pi : .zero))
                         .animation(.interpolatingSpring, value: isExpanded)
                 }
@@ -56,7 +56,7 @@ struct DefiChainAvailableNodesView: View {
                 BondNodeStateView(state: node.state)
             }
 
-            DefiButton(title: "requestToBond".localized, icon: "arrow-up-right-1", type: .secondary) {
+            DefiButton(title: "requestToBond".localized, icon: .arrowToCornerTopRight, type: .secondary) {
                 onBond(node)
             }
             .disabled(!node.state.canBond || !canAddBond)

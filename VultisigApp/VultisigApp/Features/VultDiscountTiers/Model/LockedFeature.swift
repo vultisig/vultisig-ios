@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// Descriptor for a tier-locked feature shown by `LockedFeatureSheet`.
 ///
@@ -17,12 +18,12 @@ enum LockedFeature: Hashable {
     case swapAdvancedSettings
 
     /// Asset-catalog icon rendered in the badge above the title.
-    var icon: String {
+    var icon: ImageResource {
         switch self {
         case .customRPC:
-            return "signal-tower"
+            return .mobileSignal
         case .swapAdvancedSettings:
-            return "sliders"
+            return .slidersVertical
         }
     }
 

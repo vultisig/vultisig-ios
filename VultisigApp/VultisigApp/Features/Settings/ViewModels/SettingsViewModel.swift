@@ -31,6 +31,7 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("thorchainChainnet") var enableThorchainChainnet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
+    @AppStorage("limitSwapEnabled") var limitSwapEnabled: Bool = false
     /// Debug-only: force every swap quote through a single provider so a
     /// tester can verify a specific signing path in isolation. Empty string
     /// = no force (production ranking across all providers). Otherwise one

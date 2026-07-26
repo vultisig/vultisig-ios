@@ -122,27 +122,6 @@ final class EditReferralDetailsViewModel {
 
     // MARK: - Network — gas
 
-    func loadGasInfo() async {
-        do {
-            let request = SendChainSpecificRequest(
-                coin: nativeCoin,
-                toAddress: nativeCoin.address,
-                amount: .zero,
-                memo: nil,
-                sendMaxAmount: false,
-                isDeposit: true,
-                transactionType: .unspecified,
-                gasLimit: nil,
-                feeMode: .default,
-                fromAddress: nativeCoin.address
-            )
-            let chainSpecific = try await interactor.fetchChainSpecific(request)
-            gas = chainSpecific.gas
-        } catch {
-            logger.error("loadGasInfo failed: \(error.localizedDescription)")
-        }
-    }
-
     // MARK: - Verify + boundary
 
     /// Verifies edit inputs and returns the immutable `SendTransaction` to

@@ -43,48 +43,12 @@ class FunctionCallVerifyViewModel: ObservableObject {
 
             // LP adds and SECURE+ mints are deposits, not swaps. Native RUNE/CACAO
             // build their deposit from the memo in THORChainHelper and need no
-            // payload. ERC20 deposits still ride the legacy swap-signing path —
-            // EVMHelper.getSwapPreSignedInputData requires a THORChainSwapPayload
-            // to build the router's depositWithExpiry call (which is what carries
-            // the memo to THORChain), so we synthesize one for those cases. The
-            // router routes by memo, so the same shim works for both. TODO:
-            // replace with a dedicated deposit payload across iOS/Android/Windows.
-            var approvePayload: ERC20ApprovePayload?
-            var swapPayload: SwapPayload?
-            let isLPAdd = tx.memoFunctionDictionary["pool"] != nil
-            let isSecuredAssetMint = tx.memo.hasPrefix("SECURE+")
-            let isRouterDeposit = isLPAdd || isSecuredAssetMint
-            if isRouterDeposit, tx.coin.shouldApprove, !tx.toAddress.isEmpty {
-                let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-                let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
-                guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                    throw HelperError.runtimeError("Failed to find inbound address for \(chainName)")
-                }
-
-                let expirationTime = Date().addingTimeInterval(60 * 15)
-                let thorchainSwapPayload = THORChainSwapPayload(
-                    fromAddress: tx.fromAddress,
-                    fromCoin: tx.coin,
-                    toCoin: tx.coin,
-                    vaultAddress: inbound.address,
-                    routerAddress: inbound.router,
-                    fromAmount: tx.amountInRaw,
-                    toAmountDecimal: tx.coin.decimal(for: tx.amountInRaw),
-                    toAmountLimit: "",
-                    streamingInterval: "",
-                    streamingQuantity: "",
-                    expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-                    isAffiliate: false
-                )
-                swapPayload = tx.coin.chain == .mayaChain
-                    ? .mayachain(thorchainSwapPayload)
-                    : .thorchain(thorchainSwapPayload)
-
-                approvePayload = ERC20ApprovePayload(
-                    amount: tx.amountInRaw,
-                    spender: tx.toAddress
-                )
-            }
+            // payload. ERC20 deposits still ride the legacy swap-signing path via
+            // the shared router-deposit shim. The shim is extracted into
+            // `ThorchainRouterDepositBuilder` so the inline swap SECURE+ path
+            // reuses the identical construction. TODO: replace with a dedicated
+            // deposit payload across iOS/Android/Windows.
+            let (swapPayload, approvePayload) = try await ThorchainRouterDepositBuilder.synthesizeRouterDeposit(tx: tx)
 
             let basePayload = try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,

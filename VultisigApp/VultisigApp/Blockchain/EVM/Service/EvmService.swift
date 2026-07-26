@@ -144,20 +144,12 @@ enum EvmService {
         return try await (try service).getCode(address: address)
     }
 
-    func fetchContractOwner(contractAddress: String) async -> String? {
-        return await (try? service)?.fetchContractOwner(contractAddress: contractAddress)
-    }
-
     func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
         return try await (try service).getGasInfo(fromAddress: fromAddress, mode: mode)
     }
 
     func fetchMaxPriorityFeesPerGas() async throws -> [FeeMode: BigInt] {
         return try await (try service).fetchMaxPriorityFeesPerGas()
-    }
-
-    func getFeeHistory() async throws -> [BigInt] {
-        return try await (try service).getFeeHistory()
     }
 
     func getBaseFee() async throws -> BigInt {
@@ -200,14 +192,6 @@ enum EvmService {
             multicall3Address: multicall3Address,
             includeNative: includeNative
         )
-    }
-
-    func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
-        return try await (try service).fetchAllowance(contractAddress: contractAddress, owner: owner, spender: spender)
-    }
-
-    func callContract(to: String, data: String) async throws -> String {
-        return try await (try service).callContract(to: to, data: data)
     }
 
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {

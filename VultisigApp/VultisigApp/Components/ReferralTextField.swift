@@ -71,7 +71,7 @@ struct ReferralTextField: View {
         Button {
             handleCopyCode()
         } label: {
-            Icon(named: "copy", color: Theme.colors.textPrimary, size: 20)
+            Icon(.copies3Filled, color: Theme.colors.textPrimary, size: 20)
         }
     }
 
@@ -79,12 +79,8 @@ struct ReferralTextField: View {
         Button {
             handlePasteCode()
         } label: {
-            Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
+            Icon(.clone2, color: Theme.colors.textPrimary, size: 20)
         }
-    }
-
-    private func clearCode() {
-        text = ""
     }
 
     // Based on thorname docs

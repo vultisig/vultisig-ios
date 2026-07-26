@@ -57,6 +57,19 @@ struct JoinKeysignDoneView: View {
         return memo.starts(with: "+:") || memo.starts(with: "-:")
     }
 
+    /// Which done-screen vocabulary a memo earns, on a device that has nothing
+    /// but the payload to go on.
+    ///
+    /// The two limit memo types are disjoint prefixes — `=<:` PLACES an order,
+    /// `m=<:` modifies one — and they warrant opposite headlines: a placement is
+    /// reported in terms of the order (submitted → resting → filled), while a
+    /// cancel is reported in terms of the TRANSACTION, because a cancel THORChain
+    /// accepts can still match nothing.
+    private func doneVerb(for memo: String?) -> TransactionActionVerb {
+        if LimitOrderCancelPresentation.isCancel(memo: memo) { return .cancelLimitOrder }
+        return isLimitSwapMemo(memo) ? .limitOrder : .send
+    }
+
     @ViewBuilder
     private func sendBranch(keysignPayload: KeysignPayload) -> some View {
         let fees = viewModel.getCalculatedNetworkFee()
@@ -65,7 +78,9 @@ struct JoinKeysignDoneView: View {
                 coin: keysignPayload.coin,
                 amountCrypto: keysignPayload.toAmountWithTickerString,
                 amountFiat: keysignPayload.toSendAmountFiatString,
-                hero: viewModel.heroContent,
+                hero: LimitOrderCancelPresentation.hero(
+                    forSignedMemo: keysignPayload.memo
+                ) ?? viewModel.heroContent,
                 hash: viewModel.txid,
                 explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                 memo: viewModel.memo ?? "",
@@ -82,6 +97,13 @@ struct JoinKeysignDoneView: View {
                 fee: FeeDisplay(crypto: fees.feeCrypto, fiat: fees.feeFiat),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA,
+                // A NATIVE-source limit order carries no swap payload, so it
+                // lands on the Send branch. Without the verb the header would
+                // call a resting order a completed transaction — the same lie
+                // the initiator screen fixes, just on the peer device. A CANCEL
+                // (`m=<`) is a different memo type and a different claim: what
+                // succeeded is the transaction, not the closing of the order.
+                verb: doneVerb(for: keysignPayload.memo),
                 dappMetadata: viewModel.dappMetadata
             ),
             statusService: DoneStatusServiceFactory.cosigner(
@@ -109,6 +131,9 @@ struct JoinKeysignDoneView: View {
                 fee: FeeDisplay(crypto: "", fiat: ""),
                 keysignPayload: keysignPayload,
                 pubKeyECDSA: vault.pubKeyECDSA,
+                // An ERC20-source limit order rides a swap payload (for the
+                // router's `depositWithExpiry`) and so lands here.
+                verb: doneVerb(for: keysignPayload.memo),
                 dappMetadata: viewModel.dappMetadata
             ),
             statusService: DoneStatusServiceFactory.cosigner(

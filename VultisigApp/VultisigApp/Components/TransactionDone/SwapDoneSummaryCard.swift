@@ -171,7 +171,20 @@ struct SwapDoneSummaryCard: View {
             getCell(title: "to", value: fields.toAddress, valueMaxWidth: 120)
 
             if let transaction = fields.transaction {
-                if transaction.showTotalFees {
+                if transaction.isLimit {
+                    // A resting `=<` order has no market quote, so the quote-driven
+                    // fee surfaces (`showTotalFees`/`showFees`/`showGas`) are all
+                    // suppressed. Show its only fee — the estimated source-chain
+                    // network fee — as a plain cell.
+                    if !transaction.limitNetworkFeeString.isEmpty {
+                        separator
+                        getCell(
+                            title: "networkFee",
+                            value: transaction.limitNetworkFeeString,
+                            bracketValue: transaction.limitNetworkFeeFiat.isEmpty ? nil : transaction.limitNetworkFeeFiat
+                        )
+                    }
+                } else if transaction.showTotalFees {
                     separator
                     if transaction.hasFeeBreakdown {
                         totalFees(transaction)
@@ -237,14 +250,21 @@ struct SwapDoneSummaryCard: View {
 
     private func expandableFees(_ transaction: SwapTransaction) -> some View {
         VStack(spacing: 4) {
-            if transaction.showFees {
-                getCell(title: "swapFee", value: transaction.swapFeeString)
-            }
             if transaction.showGas {
                 getCell(
                     title: "networkFee",
                     value: "\(transaction.swapGasString)(\(transaction.approveFeeString))"
                 )
+            }
+            // Vultisig Fee (affiliate only) — matches the reconciled Total, so the
+            // breakdown no longer shows THORChain's composite as the swap fee. The
+            // label is already localized (embeds the %), so it's used verbatim.
+            if transaction.showAffiliateFeeRow {
+                getCell(title: transaction.swapFeeLabel, value: transaction.baseAffiliateFee)
+            }
+            // Protocol Fee (native THOR/Maya outbound).
+            if transaction.showProtocolFeeRow {
+                getCell(title: "swap.protocol_fee", value: transaction.outboundFeeString)
             }
         }
     }

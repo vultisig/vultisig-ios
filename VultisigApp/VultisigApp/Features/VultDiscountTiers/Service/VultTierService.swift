@@ -61,16 +61,6 @@ struct VultTierService {
         vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
     }
 
-    /// Clears the cached timestamp for a specific vault
-    func clearCache(for vault: Vault) {
-        cacheEntries.removeAll { $0.vaultId == vault.pubKeyEdDSA }
-    }
-
-    /// Clears all cached timestamps
-    func clearAllCache() {
-        cacheEntries.removeAll()
-    }
-
     /// Checks if we recently fetched the balance (within cache validity duration)
     func shouldFetchBalance(for vault: Vault) -> Bool {
         guard let cacheEntry = cacheEntries.first(where: { $0.vaultId == vault.pubKeyEdDSA }) else {

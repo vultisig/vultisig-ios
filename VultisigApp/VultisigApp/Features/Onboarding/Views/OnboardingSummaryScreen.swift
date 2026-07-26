@@ -64,7 +64,7 @@ struct OnboardingSummaryScreen: View {
             .frame(width: 40, height: 40)
             .overlay(
                 Icon(
-                    named: "shield-check-filled",
+                    .shieldFilled,
                     color: Theme.colors.alertSuccess,
                     size: 20
                 )

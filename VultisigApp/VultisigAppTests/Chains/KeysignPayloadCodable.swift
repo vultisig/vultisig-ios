@@ -427,12 +427,18 @@ extension VSRippleSpecific: @retroactive Codable {
         case sequence = "sequence"
         case gas
         case lastLedgerSequence = "last_ledger_sequence"
+        case destinationTag = "destination_tag"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(sequence, forKey: .sequence)
         try container.encode(gas, forKey: .gas)
         try container.encode(lastLedgerSequence, forKey: .lastLedgerSequence)
+        // Optional first-class tag: encode only when present so golden fixtures
+        // distinguish "no tag" (unset) from a real value.
+        if hasDestinationTag {
+            try container.encode(destinationTag, forKey: .destinationTag)
+        }
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -440,6 +446,9 @@ extension VSRippleSpecific: @retroactive Codable {
         sequence = try container.decode(UInt64.self, forKey: .sequence)
         gas = try container.decode(UInt64.self, forKey: .gas)
         lastLedgerSequence = try container.decode(UInt64.self, forKey: .lastLedgerSequence)
+        if let tag = try container.decodeIfPresent(UInt32.self, forKey: .destinationTag) {
+            destinationTag = tag
+        }
     }
 }
 extension VSTronSpecific: @retroactive Codable {
@@ -968,6 +977,7 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         case signTon = "sign_ton"
         case signBitcoin = "sign_bitcoin"
         case signSui = "sign_sui"
+        case signRipple = "sign_ripple"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -992,6 +1002,9 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         } else if container.contains(.signSui) {
             let signSui = try container.decode(VSSignSui.self, forKey: .signSui)
             self = .signSui(signSui)
+        } else if container.contains(.signRipple) {
+            let signRipple = try container.decode(VSSignRipple.self, forKey: .signRipple)
+            self = .signRipple(signRipple)
         } else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
@@ -1017,6 +1030,8 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
             try container.encode(vSSignBitcoin, forKey: .signBitcoin)
         case .signSui(let vSSignSui):
             try container.encode(vSSignSui, forKey: .signSui)
+        case .signRipple(let vSSignRipple):
+            try container.encode(vSSignRipple, forKey: .signRipple)
         }
     }
 }
@@ -1333,6 +1348,23 @@ extension VSSignSui: @retroactive Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         unsignedTxMsg = try container.decode(String.self, forKey: .unsignedTxMsg)
+    }
+}
+
+extension VSSignRipple: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case rawJson = "raw_json"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(rawJson, forKey: .rawJson)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        rawJson = try container.decode(String.self, forKey: .rawJson)
     }
 }
 

@@ -48,7 +48,7 @@ struct DefiYieldProviderRow: View {
 
             HStack(spacing: 8) {
                 rightSideContent
-                Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
+                Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 16)
             }
         }
         .padding(.vertical, 12)

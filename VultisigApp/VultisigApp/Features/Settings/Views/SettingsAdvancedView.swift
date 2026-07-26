@@ -9,12 +9,24 @@ import SwiftUI
 
 struct SettingsAdvancedView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    @StateObject private var viewModel = SettingsAdvancedViewModel()
 
     var body: some View {
         Screen {
             content
         }
         .screenTitle("advanced".localized)
+        .alert(
+            "settingsAdvancedResetTransactionHistoryConfirmTitle".localized,
+            isPresented: $viewModel.isConfirmingReset
+        ) {
+            Button("settingsAdvancedResetTransactionHistoryButton".localized, role: .destructive) {
+                viewModel.confirmReset()
+            }
+            Button("cancel".localized, role: .cancel) {}
+        } message: {
+            Text("settingsAdvancedResetTransactionHistoryConfirmMessage".localized)
+        }
     }
 
     var content: some View {
@@ -43,6 +55,12 @@ struct SettingsAdvancedView: View {
                 isEnabled: $settingsViewModel.tssBatchEnabled
             )
 
+            SettingToggleCell(
+                title: "limitSwapToggle".localized,
+                icon: "arrow.up.right.square",
+                isEnabled: $settingsViewModel.limitSwapEnabled
+            )
+
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
                 icon: "arrow.triangle.branch",
@@ -65,6 +83,15 @@ struct SettingsAdvancedView: View {
                 buttonLabel: "settingsAdvancedClear".localized
             ) {
                 SwapKitTokensCache.shared.clearCache()
+            }
+
+            SettingActionCell(
+                title: "settingsAdvancedResetTransactionHistory".localized,
+                icon: "trash",
+                buttonLabel: "settingsAdvancedResetTransactionHistoryButton".localized,
+                buttonType: .alert
+            ) {
+                viewModel.requestReset()
             }
         }
     }

@@ -71,15 +71,18 @@ enum KeysignSessionServiceError: LocalizedError {
 @MainActor
 protocol KeysignSessionServicing: AnyObject {
     func registerAsParticipant(session: KeysignSessionInfo) async throws
-    func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws
     func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String]
     func pollSetupMessage(session: KeysignSessionInfo, messageID: String, timeout: TimeInterval) async throws -> Data
 }
 
 @MainActor
 final class KeysignSessionService: KeysignSessionServicing {
-    private let mediator: Mediator
-    private let fastVaultService: FastVaultService
+    // nonisolated(unsafe): set once in `nonisolated init` (required so this
+    // type can be built as a default-argument value from other @MainActor
+    // types' nonisolated default-argument contexts), then only ever read
+    // from this class's @MainActor-isolated methods.
+    private nonisolated(unsafe) let mediator: Mediator
+    private nonisolated(unsafe) let fastVaultService: FastVaultService
     private let httpClient: HTTPClientProtocol
     private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-session")
 

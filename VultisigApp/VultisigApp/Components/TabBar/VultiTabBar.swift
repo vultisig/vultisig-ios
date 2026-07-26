@@ -160,7 +160,7 @@ private extension VultiTabBar {
                         let color = item == selectedItem ? Theme.colors.textPrimary : Theme.colors.textTertiary
                         VStack(spacing: 4) {
                             Icon(
-                                named: item.icon,
+                                item.icon,
                                 color: color,
                                 size: 24
                             )

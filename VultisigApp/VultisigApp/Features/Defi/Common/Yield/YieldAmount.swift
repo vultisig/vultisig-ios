@@ -25,10 +25,6 @@ enum YieldAmount {
         return BigInt(NSDecimalNumber(decimal: rounded).stringValue)
     }
 
-    static func humanAmount(_ value: BigInt, decimals: Int) -> Decimal {
-        guard let decimal = Decimal(string: value.description) else { return .zero }
-        return decimal / pow(Decimal(10), decimals)
-    }
 }
 
 /// Projected yield on a deposit, in the deposit asset's units. Pure so the

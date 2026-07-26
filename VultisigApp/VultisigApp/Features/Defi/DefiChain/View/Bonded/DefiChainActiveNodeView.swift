@@ -58,7 +58,7 @@ struct DefiChainActiveNodeView: View {
             .lineLimit(1)
 
             HStack(spacing: 4) {
-                Icon(named: "percent", size: 16)
+                Icon(.circlePercentage, size: 16)
                 Text("apy".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -90,7 +90,7 @@ struct DefiChainActiveNodeView: View {
     var nextChurnView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "calendar-days", color: Theme.colors.textTertiary, size: 16)
+                Icon(.calendarDays, color: Theme.colors.textTertiary, size: 16)
                 Text("nextChurn".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -104,7 +104,7 @@ struct DefiChainActiveNodeView: View {
     var nextAwardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "trophy", color: Theme.colors.textTertiary, size: 16)
+                Icon(.trophy, color: Theme.colors.textTertiary, size: 16)
                 Text("nextAward".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -117,12 +117,12 @@ struct DefiChainActiveNodeView: View {
 
     var bondButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "unbond".localized, icon: "broken-chain-3", type: .secondary) {
+            DefiButton(title: "unbond".localized, icon: .linkSlash, type: .secondary) {
                 onUnbond(activeNode.node)
             }
             .disabled(unbondDisabled)
 
-            DefiButton(title: "bond".localized, icon: "chain-link-3") {
+            DefiButton(title: "bond".localized, icon: .chainLink3) {
                 onBond(activeNode.node)
             }
             .disabled(bondDisabled)

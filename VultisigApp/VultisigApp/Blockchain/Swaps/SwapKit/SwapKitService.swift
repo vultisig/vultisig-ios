@@ -203,19 +203,21 @@ struct SwapKitService {
 
 extension SwapKitService {
     /// Source-chain network fee from a SwapKit swap response, in the source
-    /// chain's native-gas-coin raw units. Feeds the verify-screen Network Fee
-    /// row, the Total Fee (fiat), and the gas-coin sufficiency check in
-    /// `SwapCryptoLogic.balanceError`.
+    /// chain's native-gas-coin raw units. This is the quote-time SEED for the
+    /// swap `fee` — what the details/verify screens fall back to before the
+    /// chain-specific fee oracle loads. Once it has loaded, EVM displays and
+    /// the sufficiency check re-derive the fee through the same `EVMSwapFee`
+    /// reconciliation the signer uses (SwapKit's `gasPrice` can be stale, so
+    /// the signed fee bumps it to the oracle ceiling and floors the gas by the
+    /// oracle limit).
     ///
-    /// EVM sources derive the fee from the realised `tx.gas × tx.gasPrice`
-    /// rather than the wire `inbound` `fees[]` entry. The `inbound` amount is a
-    /// per-provider estimate: ONEINCH reports a plausible gas figure there, but
+    /// EVM sources derive the seed from `tx.gas × tx.gasPrice` rather than the
+    /// wire `inbound` `fees[]` entry. The `inbound` amount is a per-provider
+    /// estimate: ONEINCH reports a plausible gas figure there, but
     /// FLASHNET-on-EVM returns a near-zero placeholder (~hundreds of wei) that
-    /// renders as garbage like `0.00000000000000013 ETH` and a `$0.00` total.
-    /// `gas × gasPrice` is the value the keysign path actually commits to
-    /// (`SwapPayloadBuilder.buildEVMQuoteFromSwapKit`), so the displayed fee
-    /// matches what the user is charged for every EVM sub-provider — the same
-    /// convention KyberSwap / 1inch / LI.FI use for their own `fee` BigInt.
+    /// renders as garbage like `0.00000000000000013 ETH` and a `$0.00` total —
+    /// the same convention KyberSwap / 1inch / LI.FI use for their own `fee`
+    /// BigInt.
     ///
     /// Non-EVM sources keep the `inbound`-decimal path: the BTC PSBT, Solana,
     /// and TRON fixtures all report the real native miner/network fee there as
@@ -227,13 +229,16 @@ extension SwapKitService {
         return inboundFeeFromWire(response: response, fromCoin: fromCoin)
     }
 
-    /// EVM network fee = `gasPrice × gas` in wei, parsing the hex `SwapKitEvmTx`
-    /// fields. SwapKit's reported `tx.gas` is respected whenever it's present —
-    /// the same convention 1inch / Kyber / LI.FI use for their own `fee`. Only a
-    /// route that omits the limit (`gas == 0`) falls back to a default so the row
-    /// shows a representative fee instead of zero: native sources to the swap gas
-    /// unit, ERC-20 sources (which need a token approval) to the token-transfer
-    /// unit.
+    /// Quote-time EVM fee seed = `gasPrice × gas` in wei, parsing the hex
+    /// `SwapKitEvmTx` fields. SwapKit's reported `tx.gas` is respected whenever
+    /// it's present — the same convention 1inch / Kyber / LI.FI use for their
+    /// own `fee`. Only a route that omits the limit (`gas == 0`) falls back to
+    /// a default so the row shows a representative fee instead of zero: native
+    /// sources to the swap gas unit, ERC-20 sources (which need a token
+    /// approval) to the token-transfer unit. Note this display-seed fallback is
+    /// NOT the signed one — the signer normalizes a zero gas to the swap gas
+    /// unit for every source (`EVMSwapFee`), which is what the post-oracle
+    /// displays use.
     func evmNetworkFee(from tx: SwapKitEvmTx, isNativeSource: Bool) -> BigInt? {
         let gasPrice = BigInt(tx.gasPrice.stripHexPrefix(), radix: 16) ?? .zero
         let parsedGas = BigInt(tx.gas.stripHexPrefix(), radix: 16) ?? .zero

@@ -140,20 +140,8 @@ class BittensorService: RpcService {
 
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
-        do {
-            let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix], endpoint: resolvedEndpoint)
-            return try SubstrateBroadcast.validatedHash(result)
-        } catch {
-            // Suppress "Already Imported" errors (multi-device signing, second device gets this)
-            let errorMessage = error.localizedDescription.lowercased()
-            if errorMessage.contains("already imported") {
-                // Return the hash from the hex data itself
-                let extrinsicData = Data(hexString: hex.stripHexPrefix()) ?? Data()
-                let txHash = Hash.blake2b(data: extrinsicData, size: 32).toHexString()
-                return "0x\(txHash)"
-            }
-            throw error
-        }
+        let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix], endpoint: resolvedEndpoint)
+        return try SubstrateBroadcast.validatedHash(result)
     }
 
     // MARK: - Public API

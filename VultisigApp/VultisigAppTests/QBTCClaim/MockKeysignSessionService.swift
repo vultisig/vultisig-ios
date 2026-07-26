@@ -17,7 +17,6 @@ final class MockKeysignSessionService: KeysignSessionServicing {
 
     enum Call: Equatable {
         case registerAsParticipant(session: KeysignSessionInfo)
-        case kickoffCommittee(session: KeysignSessionInfo, participants: [String])
         case awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval)
         case pollSetupMessage(session: KeysignSessionInfo, messageID: String, timeout: TimeInterval)
     }
@@ -40,11 +39,6 @@ final class MockKeysignSessionService: KeysignSessionServicing {
     func registerAsParticipant(session: KeysignSessionInfo) async throws {
         calls.append(.registerAsParticipant(session: session))
         if let registerError { throw registerError }
-    }
-
-    func kickoffCommittee(session: KeysignSessionInfo, participants: [String]) async throws {
-        calls.append(.kickoffCommittee(session: session, participants: participants))
-        if let kickoffError { throw kickoffError }
     }
 
     func awaitKeysignStart(session: KeysignSessionInfo, timeout: TimeInterval) async throws -> [String] {

@@ -14,9 +14,14 @@ struct SendCryptoVerifyLogic {
     // MARK: - Dependencies
 
     let interactor: SendInteractor
+    private let rippleService: RippleService
 
-    init(interactor: SendInteractor = DefaultSendInteractor.live) {
+    init(
+        interactor: SendInteractor = DefaultSendInteractor.live,
+        rippleService: RippleService = .shared
+    ) {
         self.interactor = interactor
+        self.rippleService = rippleService
     }
 
     // MARK: - Fee Calculation
@@ -102,8 +107,10 @@ struct SendCryptoVerifyLogic {
             }
 
             // Existential-deposit guard for chains that reap the *sender*
-            // (DOT/XRP). DOT signs `transfer_keep_alive`, which fails on-chain
+            // (DOT). It signs `transfer_keep_alive`, which fails on-chain
             // after the ceremony if the send would drop the sender below ED.
+            // Inert for XRP: its rawBalance is already reserve-net, so the
+            // balance checks above are the reserve guard.
             if SendCryptoLogic.canBeReaped(coin: tx.coin, amount: tx.amount, gas: tx.fee) {
                 return BalanceValidationResult(isValid: false, errorMessage: "belowExistentialDepositError".localized)
             }
@@ -170,17 +177,97 @@ struct SendCryptoVerifyLogic {
         try await interactor.validateUtxosIfNeeded(coin: tx.coin)
     }
 
+    // MARK: - Destination Validation
+
+    /// XRPL rejects a Payment that would create the destination account with
+    /// less than the base reserve (`tecNO_DST_INSUF_XRP`) — on-chain, after
+    /// the keysign ceremony, with the fee burned. Gate it here so the failure
+    /// surfaces before signing starts; no-op for every other chain. Matches
+    /// the guard the SDK and Android run at submit time.
+    func validateDestinationIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple, tx.coin.isNativeToken else { return }
+        do {
+            try await rippleService.validateDestinationActivation(
+                address: tx.toAddress,
+                amountDrops: tx.amountInRaw
+            )
+        } catch is CancellationError {
+            // A cancelled lookup (the screen is tearing down, or the load pass
+            // was superseded) must propagate as a cancel — never be rewrapped
+            // into a destination error that the load-time guard would surface
+            // as a spurious balance error.
+            throw CancellationError()
+        } catch {
+            // The Verify screen's alert plumbing presents only `HelperError`
+            // (`error as? HelperError`), so rewrap — same convention as
+            // `buildKeysignPayload` — or the guard would block silently.
+            throw HelperError.runtimeError(error.localizedDescription)
+        }
+    }
+
     // MARK: - Keysign Payload
+
+    /// Memo slot of the keysign payload. XRP populates it per the send the
+    /// initiator built (the tag rides the first-class field via
+    /// `dualWritingRippleTag`):
+    /// - a genuine text memo (tag+memo combo, or memo-only) rides the slot as
+    ///   the on-chain memo;
+    /// - a tag-only send ECHOES the tag's canonical uint32 decimal into the
+    ///   slot, so a legacy memo-only co-signer rebuilds the identical tagged
+    ///   payment (byte-parity);
+    /// - otherwise nil.
+    static func payloadMemo(tx: SendTransaction) -> String? {
+        if tx.coin.chain == .ripple {
+            if !tx.memo.isEmpty {
+                return tx.memo
+            }
+            if let tag = tx.destinationTag {
+                return String(tag)
+            }
+            return nil
+        }
+        return tx.memo.isEmpty ? nil : tx.memo
+    }
+
+    /// Dual-write half of the destination-tag rollout: set the first-class
+    /// `RippleSpecific.destination_tag` field from the resolved tag. For a
+    /// tag-only send the memo slot echoes the same value (`payloadMemo`); for a
+    /// tag+memo combo the field holds the tag while the memo slot holds the
+    /// text; a `nil` tag leaves the field unset, keeping memo-only sends
+    /// byte-identical for co-signers that don't read the field. No-op for
+    /// non-Ripple.
+    static func dualWritingRippleTag(_ chainSpecific: BlockChainSpecific, tag: UInt32?) -> BlockChainSpecific {
+        guard case .Ripple(let sequence, let gas, let lastLedgerSequence, _) = chainSpecific else {
+            return chainSpecific
+        }
+        return .Ripple(
+            sequence: sequence,
+            gas: gas,
+            lastLedgerSequence: lastLedgerSequence,
+            destinationTag: tag
+        )
+    }
 
     func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
-            let chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
+            var chainSpecific = try await interactor.fetchChainSpecific(tx: tx)
+
+            // Dual-write the resolved destination tag into the first-class
+            // RippleSpecific field. The memo slot now legitimately carries a
+            // real on-chain memo (tag+memo combo, or memo-only), so it is no
+            // longer re-validated as a tag here — the tag rides the field, and
+            // the signing helper (running on every device, initiator included)
+            // is the ultimate gate on the tag/memo pair.
+            let memo = Self.payloadMemo(tx: tx)
+            if tx.coin.chain == .ripple {
+                chainSpecific = Self.dualWritingRippleTag(chainSpecific, tag: tx.destinationTag)
+            }
 
             let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
-                memo: tx.memo.isEmpty ? nil : tx.memo,
+                memo: memo,
                 chainSpecific: chainSpecific,
                 wasmExecuteContractPayload: tx.wasmContractPayload,
                 vault: vault

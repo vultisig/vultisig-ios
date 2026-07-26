@@ -190,11 +190,6 @@ final class FunctionCallSecuredAsset {
         return dict
     }
 
-    func buildApprovePayload() -> ERC20ApprovePayload? {
-        guard isApprovalRequired, !toAddress.isEmpty else { return nil }
-        return ERC20ApprovePayload(amount: amountInRaw, spender: toAddress)
-    }
-
     func toSendTransaction(
         coin: Coin,
         vault: Vault,

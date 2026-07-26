@@ -10,9 +10,7 @@ import Foundation
 enum CircleApiError: Error {
     case invalidUrl
     case decodingError
-    case serverError(String)
     case unauthorized
-    case unknown
     case notFound
     case apiError(statusCode: Int, body: String?)
 }

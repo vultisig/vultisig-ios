@@ -8,11 +8,8 @@
 import Foundation
 
 enum AmountFormatter {
-    static func formatCryptoAmount(value: Decimal, coin: CoinMeta) -> String {
-        formatCryptoAmount(value: value, ticker: coin.ticker)
-    }
 
-    static func formatCryptoAmount(value: Decimal, coin: Coin) -> String {
+    static func formatCryptoAmount(value: Decimal, coin: CoinMeta) -> String {
         formatCryptoAmount(value: value, ticker: coin.ticker)
     }
 

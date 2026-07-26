@@ -58,10 +58,6 @@ final class PayloadService {
         self.httpClient = httpClient
     }
 
-    func getUrl(hash: String) -> String {
-        return "\(serverURL)/payload/\(hash)"
-    }
-
     func shouldUploadToRelay(payload: String) -> Bool {
         // when the payload is m
         if payload.lengthOfBytes(using: .utf8) > 2048 {

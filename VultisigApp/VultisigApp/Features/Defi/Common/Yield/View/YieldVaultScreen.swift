@@ -211,17 +211,15 @@ struct YieldVaultScreen: View {
             if model.depositedBalance > 0 {
                 DefiButton(
                     title: presentation.withdrawButtonKey.localized,
-                    icon: "minus.circle",
+                    icon: .circleMinus,
                     type: .outline,
-                    isSystemIcon: true,
                     action: { router.navigate(to: YieldRoute.withdraw(vault: vault, providerID: model.providerID, model: model)) }
                 )
             }
 
             DefiButton(
                 title: presentation.depositButtonKey.localized,
-                icon: "plus.circle",
-                isSystemIcon: true,
+                icon: .circlePlus,
                 action: { router.navigate(to: YieldRoute.deposit(vault: vault, providerID: model.providerID)) }
             )
             .disabled(!model.provider.depositsEnabled)
@@ -295,7 +293,7 @@ struct YieldVaultScreen: View {
 
     private func redemptionBanner(_ text: String, color: Color) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            Icon(named: "circle-info", color: color, size: 16)
+            Icon(.circleInfo, color: color, size: 16)
             Text(text)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)

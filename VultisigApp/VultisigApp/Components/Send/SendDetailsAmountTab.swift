@@ -28,16 +28,28 @@ struct SendDetailsAmountTab: View {
     }
 
     var content: some View {
-        SendFormExpandableSection(isExpanded: isExpanded) {
+        SendFormExpandableSection(
+            isExpanded: isExpanded,
+            cornerRadius: 24,
+            horizontalPadding: 16,
+            verticalPadding: 20,
+            backgroundColor: Theme.colors.bgPrimary
+        ) {
             titleSection
         } content: {
             VStack(spacing: 16) {
                 separator
                 amountFieldSection
 
-                if viewModel.showAmountAlert {
-                    errorText
-                }
+                errorText
+                    .transition(.verticalGrowAndFade)
+                    .animation(.interpolatingSpring, value: viewModel.showAmountAlert)
+                    .showIf(viewModel.showAmountAlert)
+
+                amountWarningText(viewModel.amountValidation.message ?? .empty)
+                    .transition(.verticalGrowAndFade)
+                    .animation(.interpolatingSpring, value: viewModel.amountValidation.message)
+                    .showIf(viewModel.amountValidation.message != nil)
 
                 percentageButtons
                 balanceSection
@@ -65,7 +77,7 @@ struct SendDetailsAmountTab: View {
     }
 
     var separator: some View {
-        LinearSeparator()
+        Separator(color: Theme.colors.borderLight, opacity: 1)
     }
 
     var showGasSelector: Bool {
@@ -125,6 +137,17 @@ struct SendDetailsAmountTab: View {
 
     var errorText: some View {
         Text(NSLocalizedString(viewModel.errorMessage ?? .empty, comment: ""))
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.alertWarning)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // Inline early-feedback warning surfaced by the async amount validators
+    // (e.g. a native XRP send below the destination's base reserve). The message
+    // is already localized and formatted by the VM, so render it directly (not
+    // via NSLocalizedString).
+    func amountWarningText(_ message: String) -> some View {
+        Text(message)
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -11,6 +11,10 @@ import RiveRuntime
 struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
+    /// Drives the Rive `Connected` boolean on the signing animation. `false`
+    /// renders the "connecting/searching" visual while the relay session is
+    /// still bootstrapping (fast-vault flow); `true` is the signing visual.
+    var connected: Bool = true
     var coinLogo: String? = nil
     var progress: Float = 0
     var errorButtonTitle: String? = nil
@@ -25,7 +29,7 @@ struct SendCryptoKeysignView: View {
             if showError {
                 errorView
             } else {
-                KeysignAnimationView(connected: .constant(true), coinLogo: coinLogo, progress: progress)
+                KeysignAnimationView(connected: .constant(connected), coinLogo: coinLogo, progress: progress)
             }
         }
     }

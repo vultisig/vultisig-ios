@@ -91,14 +91,6 @@ final class StoredPendingTransactionStorage {
         return try modelContext.fetch(descriptor)
     }
 
-    /// Delete a transaction
-    func delete(txHash: String) throws {
-        if let transaction = try get(txHash: txHash) {
-            modelContext.delete(transaction)
-            try modelContext.save()
-        }
-    }
-
     /// Cleanup old transactions (older than 24 hours and terminal)
     func cleanupOld() throws {
         let oneDayAgo = Date().addingTimeInterval(-86400)

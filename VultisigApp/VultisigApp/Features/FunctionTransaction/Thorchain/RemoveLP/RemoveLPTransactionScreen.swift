@@ -40,7 +40,7 @@ struct RemoveLPTransactionScreen: View {
                     )
 
                     if let feeError = viewModel.feeError {
-                        InfoBannerView(description: feeError, type: .error, leadingIcon: "triangle-alert")
+                        InfoBannerView(description: feeError, type: .error, leadingIcon: .triangleWarning)
                     }
                 }
             }

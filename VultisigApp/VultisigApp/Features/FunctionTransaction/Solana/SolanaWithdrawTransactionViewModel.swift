@@ -57,28 +57,6 @@ final class SolanaWithdrawTransactionViewModel: ObservableObject, Form {
         self.stakingService = stakingService
     }
 
-    func onLoad() {
-        setupForm()
-        Task { await evaluateCooldown() }
-    }
-
-    private func evaluateCooldown() async {
-        do {
-            let epochInfo = try await stakingService.fetchEpochInfo()
-            currentEpoch = epochInfo.epoch
-            cooldownState = SolanaEpochCooldownGate.evaluate(
-                stakeAccount: stakeAccount,
-                currentEpoch: epochInfo.epoch
-            )
-        } catch {
-            logger.error("Epoch info fetch failed: \(error.localizedDescription, privacy: .public)")
-            // Fail closed — leave the gate unresolved so the CTA stays disabled
-            // rather than letting a withdraw through on a still-cooling account.
-            currentEpoch = nil
-            cooldownState = nil
-        }
-    }
-
     /// `true` once the live epoch has advanced past the account's deactivation
     /// epoch (or the account was never deactivating). Drives the CTA enablement.
     var isWithdrawable: Bool {

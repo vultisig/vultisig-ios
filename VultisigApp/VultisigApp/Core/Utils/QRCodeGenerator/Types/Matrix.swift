@@ -30,7 +30,4 @@ struct Matrix<T> {
         }
     }
 
-    mutating func setIndexed(_ index: Int, value: T) {
-        self.array[index] = value
-    }
 }

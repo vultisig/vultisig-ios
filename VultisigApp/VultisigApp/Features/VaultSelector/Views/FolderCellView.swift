@@ -21,7 +21,7 @@ struct FolderCellView: View {
         Button(action: action) {
             VaultEditCellContainer(isEditing: $isEditing, showDragIndicator: true) {
                 HStack {
-                    Icon(named: isSelected ? "folder-fill" : "folder", color: Theme.colors.alertInfo, size: 16)
+                    Icon(isSelected ? .folderFilled : .folder, color: Theme.colors.alertInfo, size: 16)
                         .padding(12)
                         .background(Circle().fill(Theme.colors.bgSurface2))
                         .overlay(
@@ -46,7 +46,7 @@ struct FolderCellView: View {
                     Spacer()
 
                     Icon(
-                        named: "chevron-right-small",
+                        .chevronRightSmall,
                         color: Theme.colors.textPrimary,
                         size: 16
                     )
@@ -72,7 +72,7 @@ struct FolderCellView: View {
     var selectedSubtitle: some View {
         HStack(spacing: 4) {
             Icon(
-                named: "checkmark-2-small",
+                .check,
                 color: Theme.colors.alertInfo,
                 size: 16
             )

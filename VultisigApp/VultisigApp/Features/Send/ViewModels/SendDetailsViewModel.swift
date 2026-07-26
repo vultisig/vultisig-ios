@@ -34,9 +34,19 @@ final class SendDetailsViewModel {
     @ObservationIgnored private let interactor: SendInteractor
     @ObservationIgnored private let addressResolver: (String, Chain) async throws -> String
 
+    /// Chain-agnostic async amount validators (see `SendAmountValidator`). The
+    /// first applicable one to object wins; XRP ships the only implementation
+    /// today. Injected so tests can script the underlying service.
+    @ObservationIgnored private let amountValidators: [any SendAmountValidator]
+
     // MARK: - Identity (immutable once set)
     let vault: Vault
     let hasPreselectedCoin: Bool
+
+    /// XRP-only Destination Tag concern (field state, X-address autofill/lock
+    /// lifecycle, RequireDest gate). Read/bound through the parent so `@Observable`
+    /// tracks its nested state.
+    let rippleTag: RippleDestinationTagViewModel
 
     // MARK: - UI state (merged from the deleted UI-only SendDetailsViewModel)
     var selectedChain: Chain? = nil
@@ -56,6 +66,13 @@ final class SendDetailsViewModel {
     var amount: String = ""
     var amountInFiat: String = ""
     var memo: String = ""
+
+    /// Records the user's "Continue anyway" on the unverified-RequireDest
+    /// confirm for the current destination. Forwards the parent-owned
+    /// `toAddress` to the tag sub-VM that owns the acknowledgment.
+    func acknowledgeUnverifiedDestinationTag() {
+        rippleTag.acknowledge(toAddress: toAddress)
+    }
     var feeMode: FeeMode = .default
     var sendMaxAmount: Bool = false
     var isStakingOperation: Bool = false
@@ -81,6 +98,16 @@ final class SendDetailsViewModel {
     var showAddressAlert: Bool = false
     var showAmountAlert: Bool = false
 
+    /// Result of the async, chain-agnostic amount validators (see
+    /// `SendAmountValidator`): the inline message to render under the amount
+    /// field and whether it blocks Continue. Kept separate from the sync
+    /// alert-style `errorMessage` so the async, self-clearing check can't race
+    /// the synchronous validators. The message is already localized + formatted
+    /// (render directly, not through `NSLocalizedString`). For XRP this
+    /// complements — never replaces — the Verify-screen guard, the fail-closed
+    /// backstop.
+    var amountValidation: SendAmountValidationState = .valid
+
     // MARK: - Address-resolution + form-validity flags
 
     /// Whether the most recent `validateToAddress()` succeeded. Mirrors
@@ -100,6 +127,12 @@ final class SendDetailsViewModel {
 
     // MARK: - Cancellation
     @ObservationIgnored private var addressResolutionTask: Task<Void, Never>?
+    /// Monotonic token bumped on every new/cancelled resolution request. The
+    /// resolver may not honor `Task` cancellation, so the async body compares
+    /// this before publishing — a stale verdict must never overwrite the
+    /// pending (`nil`) state and flash an error on the current input.
+    @ObservationIgnored private var addressResolutionGeneration = 0
+    @ObservationIgnored private var amountValidationTask: Task<Void, Never>?
 
     /// Background fee refine for the native-coin Max path. Exposed so the UI
     /// (and tests) can observe / await the optimistic-fill → refine settle.
@@ -112,7 +145,9 @@ final class SendDetailsViewModel {
         vault: Vault,
         hasPreselectedCoin: Bool = false,
         interactor: SendInteractor = DefaultSendInteractor.live,
-        addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput
+        addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
+        amountValidators: [any SendAmountValidator] = [RippleDestinationReserveValidator()],
+        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil
     ) {
         self.coin = coin
         self.vault = vault
@@ -120,6 +155,8 @@ final class SendDetailsViewModel {
         self.fromAddress = coin.address
         self.interactor = interactor
         self.addressResolver = addressResolver
+        self.amountValidators = amountValidators
+        self.rippleTag = RippleDestinationTagViewModel(requirementProvider: destinationTagRequirementProvider)
     }
 
     func hydrate(from seed: SendDetailsSeed) {
@@ -185,9 +222,11 @@ final class SendDetailsViewModel {
 
     // MARK: - Derived state
 
-    /// Continue button is disabled while either async path is running.
+    /// Continue button is disabled while either async path is running, or while
+    /// an amount validator is presenting a blocking message (e.g. an XRP send
+    /// below the destination's base reserve).
     var continueButtonDisabled: Bool {
-        isLoading || isValidatingForm
+        isLoading || isValidatingForm || amountValidation.blocksContinue
     }
 
     /// Mirrors `SendCryptoViewModel.showLoader` — the legacy screen shows the
@@ -331,33 +370,112 @@ final class SendDetailsViewModel {
     /// — `validateToAddress` must complete before any `loadGasInfo` call.
     func debouncedResolveAddress() {
         addressResolutionTask?.cancel()
+        addressResolutionGeneration &+= 1
         isAddressResolved = nil
+        // Resolution is pending — keep the inline error cleared so it doesn't
+        // flash while the user is still typing; a definitive failure re-shows it.
+        showAddressAlert = false
+        let generation = addressResolutionGeneration
         addressResolutionTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(1))
             guard let self, !Task.isCancelled else { return }
-            isAddressResolved = await validateToAddress()
+            // Resolve through the generation-guarded path: a late/uncancelled
+            // resolver must neither publish a stale verdict nor rewrite
+            // `toAddress` over a newer recipient the user has since typed.
+            guard let resolved = await self.resolveToAddressIfCurrent(generation: generation) else { return }
+            self.isAddressResolved = resolved
         }
     }
 
     func cancelAddressResolution() {
         addressResolutionTask?.cancel()
+        addressResolutionGeneration &+= 1
         isAddressResolved = nil
+        // Dropping the in-flight verdict returns to the pending state — clear
+        // any stale inline error so editing the recipient never leaves a
+        // no-longer-true message on screen.
+        showAddressAlert = false
+    }
+
+    /// XRP address seam: when the destination input is a mainnet X-address,
+    /// replace it with the embedded classic r-address (keeping the original
+    /// X string visible as the label, ENS-style) and autofill + lock the
+    /// Destination Tag if one is embedded. Runs on both the sync
+    /// format-validation path and the async resolution path, so paste, QR
+    /// scan, address book, and deeplinks are all covered. The classic
+    /// address is what reaches `SendTransaction`/`KeysignPayload` — verify,
+    /// the security scanner, and tx history all agree with what is signed,
+    /// and the signer's X-address/tag conflict error becomes unreachable.
+    private func normalizeRippleXAddressIfNeeded() {
+        guard coin.chain == .ripple else { return }
+        guard let decoded = try? RippleXAddress.decode(toAddress) else {
+            // The input is no longer the X-address that locked the tag —
+            // the derived tag belonged to the old destination, drop it.
+            rippleTag.handleAddressChangedAway(isStillResolved: toAddress == lastResolvedAddress)
+            return
+        }
+
+        // Address fields are the parent's (shared with the ENS/name path); the
+        // tag/lock decision belongs to the XRP-only sub-VM.
+        let original = toAddress
+        toAddress = decoded.classicAddress
+        toAddressLabel = original
+        lastResolvedAddress = decoded.classicAddress
+
+        rippleTag.applyDecodedTag(decoded.tag)
+    }
+
+    /// Called when the destination field is cleared. Drops the resolution
+    /// bookkeeping and any X-address-derived tag so a stale locked tag
+    /// can't ride onto the next address the user enters — the empty-field
+    /// path never reaches `normalizeRippleXAddressIfNeeded()`, which is
+    /// where edits-away normally release the lock.
+    func onToAddressCleared() {
+        addressSetupDone = false
+        toAddressLabel = nil
+        lastResolvedAddress = nil
+        // An empty field is not an "invalid recipient" — drop any inline error
+        // so it doesn't hang under a blank input.
+        showAddressAlert = false
+        rippleTag.releaseLockedTag()
+    }
+
+    /// Surfaces the chain-general "invalid recipient" inline error under the
+    /// destination field, so a definitive resolution failure disables Continue
+    /// *with a visible reason* rather than silently. No-op for an empty field:
+    /// the empty state is owned by `onToAddressCleared`, and an error under a
+    /// blank input would just be noise. The error clears on correction — a
+    /// valid format (`isValidAddressFormat`), a cleared field
+    /// (`onToAddressCleared`), or a fresh resolution attempt
+    /// (`cancelAddressResolution` / `debouncedResolveAddress`) all reset it.
+    func markInvalidRecipient() {
+        guard !toAddress.isEmpty else { return }
+        setAddressError(message: "invalidRecipientAddressError")
+    }
+
+    /// Paste / QR / address-book commit that did not switch chains: surface the
+    /// inline error only for a value that can never resolve to a valid
+    /// recipient. A value that is valid for the current chain, or a name-service
+    /// candidate (ENS/`.sol`, or a THORChain-family TNS name) that async
+    /// resolution might still resolve, is deliberately left alone so those never
+    /// flash an error before the async path (`isAddressResolved`) reaches a
+    /// definitive verdict.
+    func markInvalidRecipientIfUnresolvable() {
+        guard !toAddress.isEmpty else { return }
+        guard !AddressService.validateAddress(address: toAddress, chain: coin.chain) else { return }
+        guard !toAddress.isENSNameService() else { return }
+        let resolvesNames: Set<Chain> = [.thorChain, .thorChainChainnet, .thorChainStagenet]
+        guard !resolvesNames.contains(coin.chain) else { return }
+        markInvalidRecipient()
     }
 
     func validateToAddress() async -> Bool {
         guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
+        let originalInput = toAddress
         do {
-            let originalInput = toAddress
             let resolvedAddress = try await addressResolver(originalInput, coin.chain)
-            if originalInput != resolvedAddress {
-                toAddress = resolvedAddress
-                toAddressLabel = originalInput
-                lastResolvedAddress = resolvedAddress
-            } else if originalInput != lastResolvedAddress {
-                toAddressLabel = nil
-                lastResolvedAddress = nil
-            }
-            isNamespaceResolved = true
+            commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
             return true
         } catch {
             isNamespaceResolved = false
@@ -365,8 +483,47 @@ final class SendDetailsViewModel {
         }
     }
 
+    /// Generation-guarded resolution for the debounced background task. Resolves
+    /// the current input but commits *nothing* — neither the address rewrite nor
+    /// the verdict — when a newer request has bumped `addressResolutionGeneration`
+    /// during the (possibly network-bound) await. Because `addressResolver` may
+    /// not honor `Task` cancellation, this guard is what prevents a late verdict
+    /// from clobbering a recipient the user has since re-typed. Returns `nil`
+    /// when the request was superseded.
+    private func resolveToAddressIfCurrent(generation: Int) async -> Bool? {
+        guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
+        let originalInput = toAddress
+        do {
+            let resolvedAddress = try await addressResolver(originalInput, coin.chain)
+            guard addressResolutionGeneration == generation else { return nil }
+            commitResolvedAddress(originalInput: originalInput, resolvedAddress: resolvedAddress)
+            return true
+        } catch {
+            guard addressResolutionGeneration == generation else { return nil }
+            isNamespaceResolved = false
+            return false
+        }
+    }
+
+    /// Applies a successful resolution to the address fields. Shared by the
+    /// synchronous-await path (`validateToAddress`) and the generation-guarded
+    /// background path so both commit identically.
+    private func commitResolvedAddress(originalInput: String, resolvedAddress: String) {
+        if originalInput != resolvedAddress {
+            toAddress = resolvedAddress
+            toAddressLabel = originalInput
+            lastResolvedAddress = resolvedAddress
+        } else if originalInput != lastResolvedAddress {
+            toAddressLabel = nil
+            lastResolvedAddress = nil
+        }
+        isNamespaceResolved = true
+    }
+
     func isValidAddressFormat() -> Bool {
         guard !toAddress.isEmpty else { return false }
+        normalizeRippleXAddressIfNeeded()
         let isValid = AddressService.validateAddress(address: toAddress, chain: coin.chain)
         if isValid {
             showAddressAlert = false
@@ -569,6 +726,81 @@ final class SendDetailsViewModel {
         }
     }
 
+    // MARK: - Async amount validation (chain-agnostic; see SendAmountValidator)
+
+    /// Value-type snapshot of the inputs the amount validators read. Built on
+    /// the main actor so no `@Model` `Coin` crosses into async validator work.
+    private var currentAmountValidationInput: SendAmountValidationInput {
+        SendAmountValidationInput(
+            chain: coin.chain,
+            isNativeToken: coin.isNativeToken,
+            toAddress: toAddress,
+            amount: amount,
+            amountDecimal: amountDecimal,
+            amountRaw: amountInRaw
+        )
+    }
+
+    /// Debounced inline amount validation. Cancels any in-flight run; clears the
+    /// message synchronously when no validator applies (so removing the address
+    /// clears the warning immediately, not after the debounce); otherwise
+    /// schedules the check after a short debounce. Validators cache their
+    /// per-destination verdict, so amount edits don't re-hit the node.
+    func debouncedValidateAmount() {
+        amountValidationTask?.cancel()
+        let input = currentAmountValidationInput
+        guard amountValidators.contains(where: { $0.isApplicable(to: input) }) else {
+            amountValidation = .valid
+            return
+        }
+        amountValidationTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(0.5))
+            guard let self, !Task.isCancelled else { return }
+            await self.refreshAmountValidation()
+        }
+    }
+
+    /// While-typing entry point: runs the applicable validators with the cached
+    /// verdict and publishes the result (clearing it when none applies).
+    func refreshAmountValidation() async {
+        _ = await runAmountValidation(forceRefresh: false)
+    }
+
+    /// Continue-time gate: runs the applicable validators live (`forceRefresh`)
+    /// so the block decision can never diverge from the fail-closed backstop
+    /// (e.g. an XRP destination funded mid-session must not stay blocked on a
+    /// cached verdict), publishes the result, and returns `false` when any
+    /// validator blocks Continue.
+    func validateAmountConstraints() async -> Bool {
+        !(await runAmountValidation(forceRefresh: true).blocksContinue)
+    }
+
+    /// Snapshot the inputs, run the applicable validators (first to object
+    /// wins), and — only if the form hasn't moved on since the snapshot —
+    /// publish the result. Fails open: a validator that returns `.ok` (or none
+    /// applying) yields `.valid`. Returns the resolved state for the
+    /// Continue-path decision, computed from the same snapshot, so a late edit
+    /// that skips the publish still returns the right verdict.
+    @discardableResult
+    private func runAmountValidation(forceRefresh: Bool) async -> SendAmountValidationState {
+        let input = currentAmountValidationInput
+        var state = SendAmountValidationState.valid
+        for validator in amountValidators where validator.isApplicable(to: input) {
+            if case let .invalid(message, blocksContinue) = await validator.validate(input, forceRefresh: forceRefresh) {
+                state = SendAmountValidationState(message: message, blocksContinue: blocksContinue)
+                break
+            }
+        }
+
+        // Publish only if the form hasn't moved on (a newer amount/address, a
+        // chain switch, or a reset/cancel while the lookup was in flight) so a
+        // late result can't write a stale message.
+        if !Task.isCancelled, currentAmountValidationInput == input {
+            amountValidation = state
+        }
+        return state
+    }
+
     // MARK: - Mediator lifecycle
 
     /// Stops the keysign Mediator service when leaving the Send flow.
@@ -605,7 +837,7 @@ final class SendDetailsViewModel {
     /// Rejects malformed addresses for the current coin's chain.
     func validateAddressFormat() -> Bool {
         guard isValidAddressFormat() else {
-            setAddressError(message: "invalidAddressError")
+            setAddressError(message: "invalidRecipientAddressError")
             return false
         }
         return true
@@ -613,10 +845,24 @@ final class SendDetailsViewModel {
 
     func validateAddressResolved() async -> Bool {
         guard await validateToAddress() else {
-            setAddressError(message: "invalidAddressError")
+            setAddressError(message: "invalidRecipientAddressError")
             return false
         }
         return true
+    }
+
+    /// TRON self-send guard (parity with android DefaultSendStrategy): a plain
+    /// transfer whose destination is the sender's own address just burns fees.
+    /// Staking ops (freeze/unfreeze) are self-directed by design, so they're
+    /// excluded via the existing `isStakingOperation` flag. Compares against
+    /// `fromAddress` — the sender `makeTransaction()` actually signs with, which
+    /// a hydrated seed can decouple from `coin.address` — so the guard tracks the
+    /// real sender rather than an assumed-equal default.
+    func validateNotSelfSend() -> Bool {
+        guard coin.chain == .tron, !isStakingOperation else { return true }
+        guard toAddress == fromAddress else { return true }
+        setAddressError(message: "sameAddressError")
+        return false
     }
 
     /// Rejects amount + fee > balance for the source coin. TRON staking is
@@ -641,11 +887,13 @@ final class SendDetailsViewModel {
             return false
         }
 
-        // Existential-deposit guard for ED-bearing chains (DOT/XRP) that reap
+        // Existential-deposit guard for ED-bearing chains (DOT) that reap
         // the *sender*. Block here — before the keysign ceremony — rather than
         // letting `transfer_keep_alive` fail on-chain with the fee already
         // charged. Skipped for non-native tokens (ED applies to the native
-        // account, not token transfers).
+        // account, not token transfers). Inert for XRP: its rawBalance is
+        // already reserve-net, so the amount-exceeded check is the reserve
+        // guard and a remainder below 1 XRP spendable is valid on-chain.
         if coin.isNativeToken {
             if SendCryptoLogic.canBeReaped(coin: coin, amount: amount, gas: fee) {
                 setAmountError(message: "belowExistentialDepositError".localized)
@@ -664,6 +912,55 @@ final class SendDetailsViewModel {
         }
 
         return validateERC20GasBalance()
+    }
+
+    /// XRP tag/memo contract, resolved at the form seam so the failure is
+    /// actionable while the fields are still on screen:
+    /// - the Destination Tag field must be empty or a canonical uint32 decimal;
+    /// - a TEXT memo is accepted again (restored on-chain memo support) — on its
+    ///   own, or riding alongside a tag as the tag+memo combo;
+    /// - a numeric memo alongside a DIFFERENT tag is a conflict (the wire would
+    ///   read two tags).
+    func validateRippleTagAndMemo() -> Bool {
+        guard coin.chain == .ripple else { return true }
+
+        guard let errorKey = rippleTag.validateTagAndMemo(memo: memo).errorKey else {
+            return true
+        }
+        setGeneralError(message: errorKey)
+        return false
+    }
+
+    /// Effective XRP destination tag: the dedicated field wins; a canonical
+    /// numeric memo (legacy workaround) is honored when the field is empty.
+    /// Only meaningful after `validateRippleTagAndMemo()` passed.
+    var resolvedDestinationTag: UInt32? {
+        guard coin.chain == .ripple else { return nil }
+        return rippleTag.resolvedTag(memo: memo)
+    }
+
+    /// RequireDest gate: a tagless XRP send to a destination whose
+    /// AccountRoot sets `lsfRequireDestTag` would be rejected by the ledger
+    /// (or worse, credited to nobody if the flag is off but the tag was
+    /// still needed by the exchange) — hard-block it here where the tag
+    /// field is still on screen. Lookup failure fails OPEN behind an
+    /// explicit per-address acknowledgment: XRPL public-RPC availability
+    /// must not become a hard dependency for every XRP send (the fee lookup
+    /// deliberately fails open on the same RPC), and the cohort this gate
+    /// protects — exchange deposit addresses — are funded, high-availability
+    /// accounts that resolve on the happy path.
+    func validateRippleRequireDest() async -> Bool {
+        guard coin.chain == .ripple else { return true }
+
+        switch await rippleTag.validateRequireDest(toAddress: toAddress, memo: memo) {
+        case .satisfied:
+            return true
+        case .required:
+            setGeneralError(message: "destinationTagRequiredError")
+            return false
+        case .unverified:
+            return false
+        }
     }
 
     /// For ERC20-style non-native sends, gas is paid in the chain's native
@@ -692,8 +989,17 @@ final class SendDetailsViewModel {
 
         guard validatePendingTransaction() else { return false }
         guard validateAmountNonZero() else { return false }
+        // Address resolution runs BEFORE the XRP tag/memo rule: it hosts the
+        // X-address normalization seam, which can autofill the tag field —
+        // validating the tag first would let an autofilled value (e.g. an
+        // embedded tag 0) skip validation on prefill paths that never went
+        // through the screen's format check.
         guard await validateAddressResolved() else { return false }
-        return validateBalance()
+        guard validateNotSelfSend() else { return false }
+        guard validateRippleTagAndMemo() else { return false }
+        guard await validateRippleRequireDest() else { return false }
+        guard validateBalance() else { return false }
+        return await validateAmountConstraints()
     }
 
     // MARK: - Hand-off
@@ -715,6 +1021,16 @@ final class SendDetailsViewModel {
         guard amount.isValidDecimal(), !toAddress.isEmpty, !amountDecimal.isZero else {
             throw MakeTransactionError.invalidForm
         }
+        // XRP: keep only a genuine TEXT memo (the tag+memo combo, or a
+        // memo-only send). A numeric memo was either consumed as the tag
+        // (legacy "type the tag into the memo" workaround) or echoes the tag
+        // field, so it must NOT also ride as an on-chain memo — blank it so the
+        // tag is the single source of truth and Verify shows one honest row.
+        let resolvedTag = resolvedDestinationTag
+        let effectiveMemo: String = {
+            guard coin.chain == .ripple else { return memo }
+            return RippleDestinationTag.parseCanonical(memo) != nil ? "" : memo
+        }()
         return SendTransaction(
             coin: coin,
             vault: vault,
@@ -723,7 +1039,8 @@ final class SendDetailsViewModel {
             toAddressLabel: toAddressLabel,
             amount: amount,
             amountInFiat: amountInFiat,
-            memo: memo,
+            memo: effectiveMemo,
+            destinationTag: resolvedTag,
             gas: gas,
             fee: fee,
             feeMode: feeMode,
@@ -755,6 +1072,9 @@ final class SendDetailsViewModel {
     /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
     /// screen. Phase D lesson: clear *every* derived field, not just amount.
     func reset(to newCoin: Coin) {
+        amountValidationTask?.cancel()
+        amountValidationTask = nil
+        amountValidation = .valid
         coin = newCoin
         fromAddress = newCoin.address
         toAddress = ""
@@ -763,6 +1083,7 @@ final class SendDetailsViewModel {
         amount = ""
         amountInFiat = ""
         memo = ""
+        rippleTag.reset()
         feeMode = .default
         sendMaxAmount = false
         isStakingOperation = false

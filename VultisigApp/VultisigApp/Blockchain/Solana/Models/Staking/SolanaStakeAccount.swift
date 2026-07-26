@@ -107,13 +107,6 @@ extension SolanaStakeAccount {
         self.init(pubkey: programAccount.pubkey, lamports: programAccount.account.lamports, parsed: parsed)
     }
 
-    /// Builds the model from a `getAccountInfo` value plus the account's own
-    /// pubkey (which `getAccountInfo` does not echo back).
-    init?(pubkey: String, accountInfo: SolanaStakeAccountInfoValue) {
-        guard let parsed = accountInfo.data.parsed else { return nil }
-        self.init(pubkey: pubkey, lamports: accountInfo.lamports, parsed: parsed)
-    }
-
     private init?(pubkey: String, lamports: UInt64, parsed: SolanaStakeParsed) {
         let info = parsed.info
         guard let rentReserve = UInt64(info.meta.rentExemptReserve) else { return nil }

@@ -35,12 +35,6 @@ struct FunctionCallDetailsScreen: View {
             ?? Coin.example
     }
 
-    private static func validateNodeAddress(_ address: String) -> Bool {
-        return AddressService.validateAddress(address: address, chain: .thorChain) ||
-        AddressService.validateAddress(address: address, chain: .mayaChain) ||
-        AddressService.validateAddress(address: address, chain: .ton)
-    }
-
     var body: some View {
         Screen {
             VStack {
@@ -186,12 +180,6 @@ struct FunctionCallDetailsScreen: View {
         // Ensure RUNE token is selected for operations on THORChain.
         if let runeCoin = vault.runeCoin {
             selectedCoin = runeCoin
-        }
-    }
-
-    private func ensureTCYCoin() {
-        if let tcyCoin = vault.tcyCoin {
-            selectedCoin = tcyCoin
         }
     }
 

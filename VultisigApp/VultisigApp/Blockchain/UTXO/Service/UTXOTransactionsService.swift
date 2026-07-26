@@ -2,11 +2,8 @@ import SwiftUI
 import WalletCore
 
 enum UTXOTransactionError: Error {
-    case invalidURL
-    case httpError(Int)
     case apiError(String)
     case unexpectedResponse
-    case unknown(Error)
 }
 
 class UTXOTransactionsService: ObservableObject {
@@ -58,19 +55,5 @@ class UTXOTransactionsService: ObservableObject {
             throw NSError(domain: "BlockchairServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])
         }
         return hash
-    }
-
-    func getAmount(for transaction: UTXOTransactionMempool) -> String {
-        if transaction.isSent {
-            return formatAmount(transaction.amountSent)
-        } else if transaction.isReceived {
-            return formatAmount(transaction.amountReceived)
-        }
-        return ""
-    }
-
-    func formatAmount(_ amountSatoshis: Int) -> String {
-        let amountBTC = Decimal(amountSatoshis) / 100_000_000
-        return amountBTC.formatForDisplay()
     }
 }

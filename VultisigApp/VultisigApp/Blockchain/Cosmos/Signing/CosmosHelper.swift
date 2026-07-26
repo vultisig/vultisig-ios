@@ -85,19 +85,6 @@ enum CosmosHelper {
         return try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
     }
 
-    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        // Handle special cases for Terra and Dydx
-        switch self {
-        case .terra, .terraClassic:
-            return try TerraHelperStruct.getPreSignedInputData(keysignPayload: keysignPayload, chain: chain)
-        case .dydx:
-            return try DydxHelperStruct.getPreSignedInputData(keysignPayload: keysignPayload)
-        default:
-            let helper = try makeHelperStruct()
-            return try helper.getPreSignedInputData(keysignPayload: keysignPayload)
-        }
-    }
-
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         switch self {
         case .terra, .terraClassic:

@@ -77,7 +77,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         .crossPlatformToolbar(showsBackButton: false) {
             #if os(macOS)
                 CustomToolbarItem(placement: .leading) {
-                    ToolbarButton(image: "x") {
+                    ToolbarButton(image: .xmark) {
                         isPresented.toggle()
                     }
                     .supportsLiquidGlass { view, isSupported in
@@ -87,7 +87,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             #endif
 
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "check", type: .confirmation) {
+                ToolbarButton(image: .check, type: .confirmation) {
                     onSave()
                 }
                 .supportsLiquidGlass { view, isSupported in

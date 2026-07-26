@@ -46,25 +46,6 @@ class CardanoService {
         return match?.quantity ?? "0"
     }
 
-    func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
-        let response = try await httpClient.request(
-            CardanoAPI.addressUtxos(addresses: [coin.address]),
-            responseType: [CardanoUtxoEntry].self
-        )
-
-        return response.data.compactMap { utxo in
-            guard
-                let valueInt = Int64(utxo.value),
-                let index = UInt32(exactly: utxo.txIndex)
-            else { return nil }
-            return UtxoInfo(
-                hash: utxo.txHash,
-                amount: valueInt,
-                index: index
-            )
-        }
-    }
-
     func getExtendedUTXOs(coin: Coin) async throws -> [CardanoExtendedUtxo] {
         let response = try await httpClient.request(
             CardanoAPI.addressUtxosExtended(addresses: [coin.address]),
@@ -108,67 +89,6 @@ class CardanoService {
     func calculateDynamicTTL() async throws -> UInt64 {
         let currentSlot = try await getCurrentSlot()
         return currentSlot + 720 // Add 720 slots (~12 minutes at 1 slot per second)
-    }
-
-    /// Validate that the amount meets Cardano's minimum UTXO requirements (Alonzo Era)
-    func validateMinimumAmount(_ amountInLovelaces: BigInt) throws {
-        let minUTXOValue = CardanoHelper.defaultMinUTXOValue
-
-        guard amountInLovelaces >= minUTXOValue else {
-            let minAmountADA = minUTXOValue.toADAString
-            let sendAmountADA = amountInLovelaces.toADAString
-            throw NSError(
-                domain: "CardanoServiceError",
-                code: 5,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Amount \(sendAmountADA) ADA is below the minimum UTXO requirement of \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
-                ]
-            )
-        }
-    }
-
-    /// Comprehensive validation for Cardano transactions including change/remaining balance validation
-    func validateTransaction(sendAmount: BigInt, totalBalance: BigInt, estimatedFee: BigInt) throws {
-        let validation = CardanoHelper.validateUTXORequirements(
-            sendAmount: sendAmount,
-            totalBalance: totalBalance,
-            estimatedFee: estimatedFee
-        )
-
-        if !validation.isValid {
-            throw NSError(
-                domain: "CardanoServiceError",
-                code: 9,
-                userInfo: [
-                    NSLocalizedDescriptionKey: validation.errorMessage ?? "Cardano UTXO validation failed"
-                ]
-            )
-        }
-
-        let sendMaxRecommendation = CardanoHelper.shouldRecommendSendMax(
-            totalBalance: totalBalance,
-            estimatedFee: estimatedFee
-        )
-
-        if sendMaxRecommendation.shouldRecommend {
-            logger.info("\(sendMaxRecommendation.message ?? "Consider Send Max")")
-        }
-    }
-
-    /// Validate Cardano chain specific parameters
-    func validateChainSpecific(_ chainSpecific: BlockChainSpecific) async throws {
-        guard case .Cardano(let byteFee, _, let ttl) = chainSpecific else {
-            throw NSError(domain: "CardanoServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid chain specific type for Cardano"])
-        }
-
-        guard byteFee > 0 else {
-            throw NSError(domain: "CardanoServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Cardano byte fee must be positive"])
-        }
-
-        let currentSlot = try await getCurrentSlot()
-        guard ttl > currentSlot else {
-            throw NSError(domain: "CardanoServiceError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Cardano TTL must be greater than current slot"])
-        }
     }
 
     /// Broadcast a signed Cardano transaction via Vultisig's Ogmios JSON-RPC proxy.

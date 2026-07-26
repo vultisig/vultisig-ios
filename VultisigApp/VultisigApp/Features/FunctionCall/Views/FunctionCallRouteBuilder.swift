@@ -26,26 +26,6 @@ struct FunctionCallRouteBuilder {
     }
 
     @ViewBuilder
-    func buildPairScreen(
-        vault: Vault,
-        tx: SendTransaction,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String?
-    ) -> some View {
-        FunctionCallPairScreen(
-            vault: vault,
-            tx: tx,
-            keysignPayload: keysignPayload,
-            fastVaultPassword: fastVaultPassword
-        )
-    }
-
-    @ViewBuilder
-    func buildKeysignScreen(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal) -> some View {
-        SendKeysignScreen(input: input, tx: tx, retrySignal: retrySignal)
-    }
-
-    @ViewBuilder
     func buildFunctionTransactionScreen(
         vault: Vault,
         transactionType: FunctionTransactionType

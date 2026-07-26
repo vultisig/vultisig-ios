@@ -110,6 +110,7 @@ struct SendVerifyScreen: View {
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
+                destinationTag: tx.destinationTag.map(String.init),
                 feeCrypto: sendCryptoVerifyViewModel.isCalculatingFee ? "loading".localized : tx.gasInReadable,
                 feeFiat: sendCryptoVerifyViewModel.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx),
                 isCalculatingFee: sendCryptoVerifyViewModel.isCalculatingFee,
@@ -155,13 +156,29 @@ struct SendVerifyScreen: View {
             do {
                 let result = try await sendCryptoVerifyViewModel.validateForm()
                 await MainActor.run {
-                    router.navigate(to: SendRoute.pairing(
+                    // Fast vaults sign server-side with no peer to pair with,
+                    // so route straight into keysign (the bootstrap runs there)
+                    // and never mount the pairing screen. A present fast
+                    // password is the fast-sign signal; an empty one means the
+                    // user chose paired-sign, which keeps the QR pairing screen.
+                    let context = SigningTxContext.send(
                         vault: vault,
                         tx: sendCryptoVerifyViewModel.transaction,
-                        retrySignal: retrySignal,
-                        keysignPayload: result,
-                        fastVaultPassword: sendCryptoVerifyViewModel.fastVaultPassword.nilIfEmpty
-                    ))
+                        retry: retrySignal
+                    )
+                    if let fastPassword = sendCryptoVerifyViewModel.fastVaultPassword.nilIfEmpty {
+                        router.navigate(to: SigningRoute.keysign(.fast(
+                            context: context,
+                            keysignPayload: result,
+                            fastVaultPassword: fastPassword
+                        )))
+                    } else {
+                        router.navigate(to: SigningRoute.pair(
+                            context: context,
+                            keysignPayload: result,
+                            fastVaultPassword: nil
+                        ))
+                    }
                 }
             } catch {
                 await MainActor.run {

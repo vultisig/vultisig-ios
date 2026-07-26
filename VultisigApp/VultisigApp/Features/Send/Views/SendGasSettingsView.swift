@@ -135,7 +135,7 @@ struct SendGasSettingsView: View {
                 isPresented = false
             },
             label: {
-                Image("x")
+                Image(.xmark)
                     .font(Theme.fonts.bodyLMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
@@ -247,7 +247,7 @@ extension SendGasSettingsView {
         }
         .crossPlatformToolbar("advanced".localized, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     isPresented.toggle()
                 }
             }

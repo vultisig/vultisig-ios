@@ -76,7 +76,8 @@ struct AppMigrationService {
         return [
             THORChainDuplicateTokensMigration(),
             TonGramRebrandMigration(),
-            PromoBannerDismissalMigration()
+            PromoBannerDismissalMigration(),
+            RujiAutoCompoundPositionMigration()
         ]
     }
 }

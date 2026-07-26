@@ -28,7 +28,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(font(for: size))
+            .font(font(for: type, size: size))
             .padding(padding(for: size))
             .background(
                 ZStack(alignment: .leadingLastTextBaseline) {
@@ -46,8 +46,39 @@ struct PrimaryButtonStyle: ButtonStyle {
                         .stroke(borderColor(for: type, isEnabled: isEnabled),
                                 lineWidth: borderWidth(for: type))
             )
+            .overlay {
+                if hasBevel(for: type), isEnabled {
+                    InsetBevelOverlay(cornerRadius: cornerRadius(for: size))
+                }
+            }
             .cornerRadius(cornerRadius(for: size))
             .contentShape(RoundedRectangle(cornerRadius: cornerRadius(for: size)))
+    }
+}
+
+/// Inset bevel used by the 2026 button treatment: a light hairline along the top
+/// inner edge and a dark hairline along the bottom inner edge. Reproduces the
+/// Figma `inset 0 1px 1px rgba(255,255,255,0.10)` + `inset 0 -1px 0.5px #0F1C3E`
+/// shadow pair. Currently applied to `.secondary`; kept as a standalone piece so
+/// the other button types can adopt the same treatment.
+private struct InsetBevelOverlay: View {
+    let cornerRadius: CGFloat
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius)
+            .strokeBorder(
+                LinearGradient(
+                    stops: [
+                        .init(color: Theme.colors.buttonBevelLight, location: 0),
+                        .init(color: .clear, location: 0.5),
+                        .init(color: Theme.colors.buttonBevelDark, location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                ),
+                lineWidth: 1
+            )
+            .allowsHitTesting(false)
     }
 }
 
@@ -65,6 +96,18 @@ private extension PrimaryButtonStyle {
         case .squared:
             return EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
         }
+    }
+
+    func font(for type: ButtonType, size: ButtonSize) -> Font {
+        // Secondary adopts the 2026 "Button / Small (Medium)" style (Brockmann
+        // Medium 14) at its standard sizes; the compact sizes keep their fonts.
+        if type == .secondary {
+            switch size {
+            case .medium, .small, .smallFixed: return Theme.fonts.buttonSMedium
+            case .mini, .squared: return font(for: size)
+            }
+        }
+        return font(for: size)
     }
 
     func font(for size: ButtonSize) -> Font {
@@ -142,11 +185,7 @@ private extension PrimaryButtonStyle {
         case .primary, .alert, .primarySuccess:
             return .clear
         case .secondary:
-            if !isEnabled {
-                return Theme.colors.bgButtonTertiary.opacity(0.6)
-            } else {
-                return Theme.colors.bgButtonTertiary
-            }
+            return Theme.colors.borderExtraLight
         case .outline:
              if !isEnabled {
                  return Theme.colors.bgButtonTertiary.opacity(0.6)
@@ -161,6 +200,15 @@ private extension PrimaryButtonStyle {
         case .primary, .alert, .primarySuccess: return 0
         case .secondary: return 1
         case .outline: return 1
+        }
+    }
+
+    /// Whether the inset bevel is applied. Scoped to `.secondary` for now; the
+    /// treatment extends to the other types in a follow-up.
+    func hasBevel(for type: ButtonType) -> Bool {
+        switch type {
+        case .secondary: return true
+        case .primary, .alert, .primarySuccess, .outline: return false
         }
     }
 }

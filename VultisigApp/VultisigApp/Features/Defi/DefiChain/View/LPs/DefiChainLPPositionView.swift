@@ -58,7 +58,7 @@ struct DefiChainLPPositionView: View {
 
     var aprSection: some View {
         HStack(spacing: 4) {
-            Icon(named: "percent", size: 16)
+            Icon(.circlePercentage, size: 16)
             Text("apr".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
@@ -89,10 +89,10 @@ struct DefiChainLPPositionView: View {
 
     var lpButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "remove".localized, icon: "minus-circle", type: .secondary) {
+            DefiButton(title: "remove".localized, icon: .circleMinus, type: .secondary) {
                 onRemove()
             }.disabled(removeDisabled)
-            DefiButton(title: "add".localized, icon: "plus-circle") {
+            DefiButton(title: "add".localized, icon: .circlePlus) {
                 onAdd()
             }
         }

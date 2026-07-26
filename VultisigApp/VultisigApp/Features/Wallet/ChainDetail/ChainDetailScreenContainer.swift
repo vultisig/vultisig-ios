@@ -57,12 +57,12 @@ struct ChainDetailScreenContainer: View {
                                 RefreshToolbarButton(onRefresh: { refreshTrigger.toggle() })
                             }
                             CustomToolbarItem(placement: .trailing) {
-                                ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
-                                    Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                                ToolbarButton(image: .clockRotateClockwise, action: onHistory) { _ in
+                                    Icon(.clockRotateClockwise, color: Theme.colors.textPrimary, size: 20)
                                 }
                             }
                             CustomToolbarItem(placement: .trailing) {
-                                ToolbarButton(image: "square-3d", action: onExplorer)
+                                ToolbarButton(image: .cube, action: onExplorer)
                             }
                         }
                         #endif
@@ -91,12 +91,12 @@ struct ChainDetailScreenContainer: View {
         #if os(iOS)
         .crossPlatformToolbar(ignoresTopEdge: true) {
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
-                    Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                ToolbarButton(image: .clockRotateClockwise, action: onHistory) { _ in
+                    Icon(.clockRotateClockwise, color: Theme.colors.textPrimary, size: 20)
                 }
             }
             CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "square-3d", action: onExplorer)
+                ToolbarButton(image: .cube, action: onExplorer)
             }
         }
         #endif

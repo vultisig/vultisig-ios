@@ -150,7 +150,7 @@ private extension VultDiscountTierView {
                 .foregroundStyle(Theme.colors.textPrimary)
         } else {
             HStack(spacing: 5) {
-                Icon(named: "check", color: Theme.colors.textPrimary, size: 14)
+                Icon(.check, color: Theme.colors.textPrimary, size: 14)
                 Text((isActiveInternal ? "active" : "unlocked").localized)
                     .font(Theme.fonts.buttonSSemibold)
                     .foregroundStyle(Theme.colors.textPrimary)

@@ -151,18 +151,6 @@ struct CardanoAddressInfo: Decodable {
     let balance: String
 }
 
-struct CardanoUtxoEntry: Decodable {
-    let txHash: String
-    let txIndex: Int
-    let value: String
-
-    enum CodingKeys: String, CodingKey {
-        case txHash = "tx_hash"
-        case txIndex = "tx_index"
-        case value
-    }
-}
-
 struct CardanoExtendedUtxoEntry: Decodable {
     let txHash: String
     let txIndex: Int

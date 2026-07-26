@@ -14,21 +14,48 @@ struct SwapDetailsScreen: View {
     @StateObject private var referredViewModel = ReferredViewModel()
     @StateObject private var keyboardObserver = KeyboardObserver()
 
-    @State private var buttonRotated = false
     @State private var showErrorTooltip = false
+    /// Local Market/Limit tab state. The Limit branch lives entirely
+    /// inside `LimitSwapModeBody` (which owns its own form view model and
+    /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
+    /// renders the existing Market layout pixel-identical to pre-feature.
+    @State private var selectedSwapMode: SwapFormMode = .market
     @State private var showAdvancedLockedSheet = false
 
     private let tierService = VultTierService()
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
 
     var body: some View {
         @Bindable var vm = detailsViewModel
         Screen {
-            VStack {
-                fields
-                continueButton
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 8) {
+                    swapModeTabs
+                        .fixedSize()
+                    Spacer(minLength: 8)
+                    tabRowCountdown
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .showIf(settingsViewModel.limitSwapEnabled)
+
+                switch selectedSwapMode {
+                case .market:
+                    VStack {
+                        fields
+                        continueButton
+                    }
+                case .limit:
+                    LimitSwapEntryView(
+                        initialFromCoin: limitInitialFromCoin,
+                        initialToCoin: detailsViewModel.toCoin,
+                        vault: vault
+                    )
+                    .environmentObject(coinSelectionViewModel)
+                }
             }
         }
         .screenTitle("swap".localized)
@@ -172,19 +199,19 @@ struct SwapDetailsScreen: View {
                     )
                     .transition(.opacity)
                 } else {
-                    swapButton
-                        .transition(.opacity)
+                    SwapAssetsButton(isLoading: detailsViewModel.isLoadingQuotes) {
+                        handleSwapTap()
+                    }
+                    .transition(.opacity)
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: detailsViewModel.error != nil)
-
-            filler.offset(x: -28)
-            filler.offset(x: 28)
         }
     }
 
     var amountFields: some View {
-        VStack(spacing: 12) {
+        // Shared with the notch-center inset so the toggle seats in a full circle.
+        VStack(spacing: swapCardSpacing) {
             swapFromField
             swapToField
         }
@@ -220,38 +247,6 @@ struct SwapDetailsScreen: View {
             detailsViewModel: detailsViewModel,
             handlePercentageSelection: nil
         )
-    }
-
-    var swapButton: some View {
-        Button {
-            handleSwapTap()
-        } label: {
-            swapLabel
-        }
-        .background(Circle().fill(Theme.colors.bgPrimary))
-        .overlay(Circle().stroke(Theme.colors.bgSurface2))
-    }
-
-    var swapLabel: some View {
-        ZStack {
-            if detailsViewModel.isLoadingQuotes {
-                CircularProgressIndicator(size: 20)
-            } else {
-                Icon(named: "arrow-bottom-top", color: Theme.colors.textPrimary, size: 18)
-            }
-        }
-        .frame(width: 34, height: 34)
-        .background(Circle().fill(Theme.colors.bgButtonTertiary))
-        .padding(2)
-        .background(Circle().fill(Theme.colors.bgPrimary))
-        .rotationEffect(.degrees(buttonRotated ? 180 : 0))
-        .animation(.spring, value: buttonRotated)
-    }
-
-    var filler: some View {
-        Rectangle()
-            .frame(width: 12, height: 10)
-            .foregroundStyle(Theme.colors.bgPrimary)
     }
 
     var summary: some View {
@@ -307,13 +302,44 @@ struct SwapDetailsScreen: View {
 
     @ViewBuilder
     var refreshCounter: some View {
-        if detailsViewModel.showRefreshCounter {
+        // When the Market/Limit tab row is visible (limit swap enabled) the
+        // countdown lives in that row via `tabRowCountdown`; keep the toolbar
+        // counter only for the flag-off market layout, which has no tab row.
+        if !settingsViewModel.limitSwapEnabled, detailsViewModel.showRefreshCounter {
             SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
         }
     }
 
+    /// Source coin the **limit** entry seeds with. Limit-entry only — the shared
+    /// market `detailsViewModel.fromCoin` is unchanged.
+    ///
+    /// A non-nil `fromCoin` means the user entered the swap from a specific
+    /// chain/coin, so the source is an explicit choice to honor. When it's nil the
+    /// source is `SwapCoinsResolver`'s alphabetical fallback (lands on RUNE, which
+    /// reads as an untradeable RUNE→BTC default), so prefer a high-value routable
+    /// native source the vault holds (BTC → ETH) instead. `detailsViewModel`
+    /// resolves the same optional the same way (`initialFromCoin ?? defaultFromCoin`).
+    private var limitInitialFromCoin: Coin {
+        limitDefaultSourceCoin(
+            marketDefault: detailsViewModel.fromCoin,
+            isSourceExplicit: fromCoin != nil,
+            targetCoin: detailsViewModel.toCoin,
+            vaultCoins: vault.coins
+        )
+    }
+
+    /// Quote-refresh countdown in the Market/Limit tab row. Market mode only —
+    /// it feeds `SwapDetailsViewModel.timer`. Limit orders execute at a fixed
+    /// target price, so there is no live quote to count down to.
+    @ViewBuilder
+    var tabRowCountdown: some View {
+        if selectedSwapMode == .market, detailsViewModel.showRefreshCounter {
+            SwapQuoteCountdownBadge(seconds: detailsViewModel.timer)
+        }
+    }
+
     var advancedSettingsButton: some View {
-        ToolbarButton(image: "sliders", type: .outline) {
+        ToolbarButton(image: .slidersVertical, type: .outline) {
             handleAdvancedSettingsTap()
         }
         .accessibilityLabel("advancedSettings".localized)
@@ -415,7 +441,6 @@ struct SwapDetailsScreen: View {
 
     private func handleSwapTap() {
         detailsViewModel.error = nil
-        buttonRotated.toggle()
         detailsViewModel.switchCoins(vault: vault, referredCode: referredViewModel.savedReferredCode)
         let fromChain = detailsViewModel.fromChain
         detailsViewModel.fromChain = detailsViewModel.toChain
@@ -426,36 +451,49 @@ struct SwapDetailsScreen: View {
 extension SwapDetailsScreen {
     func handlePercentageSelection(_ percentage: Int) {
         detailsViewModel.showAllPercentageButtons = false
-        let decimalsToUse: Int = 4
 
-        switch percentage {
-        case 25:
-            let amount = (detailsViewModel.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
-            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        case 50:
-            let amount = (detailsViewModel.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
-            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        case 75:
-            let amount = (detailsViewModel.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
-            detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        case 100:
-            let fromCoin = detailsViewModel.fromCoin
-            if fromCoin.isNativeToken {
-                let fee = detailsViewModel.fee
-                let amountLessFee = fromCoin.rawBalance.toBigInt() - fee
-                let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: fromCoin.decimals) / pow(10, fromCoin.decimals)
-                let amount = amountLessFeeDecimal.truncated(toPlaces: decimalsToUse)
-                detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            } else {
-                let amount = fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
-                detailsViewModel.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
-            }
-            detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
-        default:
-            break
-        }
+        guard let amount = SwapCryptoLogic.percentageAmountText(
+            percentage: percentage,
+            fromCoin: detailsViewModel.fromCoin,
+            fee: detailsViewModel.fee
+        ) else { return }
+
+        detailsViewModel.fromAmount = amount
+        detailsViewModel.updateFromAmount(vault: vault, referredCode: referredViewModel.savedReferredCode, immediate: true)
+    }
+
+    // MARK: - Market / Limit tabs
+
+    /// Toggle between Market and Limit swap modes. Limit is enabled only
+    /// when both selected coins live on a THORChain-routable chain. Tap-
+    /// changes are local; no router navigation here — the Limit branch
+    /// is hosted inline in `body` to feel like a tab, not a push.
+    var swapModeTabs: some View {
+        SegmentedControl(
+            selection: $selectedSwapMode,
+            items: [
+                SegmentedControlItem(
+                    value: SwapFormMode.market,
+                    title: "swap.tab.market".localized
+                ),
+                SegmentedControlItem(
+                    value: SwapFormMode.limit,
+                    title: "swap.tab.limit".localized,
+                    isEnabled: canCurrentPairUseLimitSwap
+                )
+            ]
+        )
+    }
+
+    /// Limit-mode availability is a vault-level question, not a pair-level
+    /// one: the user may currently be looking at a non-routable pair but
+    /// still have THORChain-routable chains enabled on the vault that they
+    /// can pick once they switch tabs. Disable Limit only when the vault
+    /// has zero routable chains at all — there's nothing to limit-swap.
+    /// The picker filter inside `LimitSwapEntryView` re-applies the
+    /// per-side routable filter (via `vm.supportedChains`) once Limit is
+    /// open.
+    private var canCurrentPairUseLimitSwap: Bool {
+        vault.chains.contains(where: { isThorchainRoutable(chain: $0) })
     }
 }

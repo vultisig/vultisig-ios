@@ -72,12 +72,6 @@ class PendingTransactionManager {
             .min(by: { $0.timestamp < $1.timestamp })
     }
 
-    /// Get elapsed seconds for a transaction
-    func getElapsedSeconds(for transaction: PendingTransaction) -> Int {
-        let timeElapsed = Date().timeIntervalSince(transaction.timestamp)
-        return Int(timeElapsed)
-    }
-
     // MARK: - Private Methods
 
     /// Force check pending transactions immediately (useful for UI refresh)

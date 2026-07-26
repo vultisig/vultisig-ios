@@ -11,11 +11,6 @@ import CoreImage
 import UIKit
 
 extension UIImage {
-    func resized(to size: CGSize) -> UIImage {
-        UIGraphicsImageRenderer(size: size).image { _ in
-            self.draw(in: CGRect(origin: .zero, size: size))
-        }
-    }
 
     func compose(with overlayImage: UIImage, rect: CGRect) -> UIImage {
         let backgroundImage = self

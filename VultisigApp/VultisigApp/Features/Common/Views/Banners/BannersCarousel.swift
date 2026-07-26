@@ -44,7 +44,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         max((availableWidth - bannerWidth) / 2, BannerLayoutProperties.minimumPadding)
     }
 
-    private let bannerHeight: CGFloat = 128
+    private let bannerHeight: CGFloat = 81
     private let spacing: CGFloat = 16
     private let indicatorsHeight: CGFloat = BannerLayoutProperties.indicatorsHeight
 
@@ -158,7 +158,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         )
 
         // Start the removal animation
-        withAnimation(.easeInOut(duration: 0.4)) {
+        _ = withAnimation(.easeInOut(duration: 0.4)) {
             bannersToRemove.insert(AnyHashable(banner.id))
         }
 

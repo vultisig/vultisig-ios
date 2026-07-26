@@ -8,7 +8,7 @@
 enum FunctionCallRoute: Hashable {
     case details(defaultCoin: Coin?, vault: Vault)
     case verify(tx: SendTransaction, vault: Vault)
-    case pair(vault: Vault, tx: SendTransaction, keysignPayload: KeysignPayload, fastVaultPassword: String?)
-    case keysign(input: KeysignInput, tx: SendTransaction, retrySignal: SendRetrySignal)
+    // pair → keysign → done live on the shared `SigningRoute`; verify
+    // navigates into it (reusing the Send-family keysign/done screens).
     case functionTransaction(vault: Vault, transactionType: FunctionTransactionType)
 }

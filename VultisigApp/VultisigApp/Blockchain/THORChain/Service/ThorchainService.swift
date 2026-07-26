@@ -14,7 +14,10 @@ class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
-    let httpClient: HTTPClientProtocol = HTTPClient()
+    /// Injectable so the sign-time halt gate is unit-testable with a stubbed
+    /// inbound response (same pattern as `MayachainService`); production uses
+    /// the default `HTTPClient`.
+    let httpClient: HTTPClientProtocol
 
     /// Resolves the THORChain custom RPC override. Injected so the API values
     /// are built from a dependency rather than a global reach-in; resolution
@@ -26,10 +29,18 @@ class ThorchainService: ThorchainSwapProvider {
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
-    private var cacheLPPositions = ThreadSafeDictionary<String, (data: [ThorchainLPPosition], timestamp: Date)>()
+    private var cacheSecuredAssets = ThreadSafeDictionary<String, (data: [ThorchainSecuredAsset], timestamp: Date)>()
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    init(
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        httpClient: HTTPClientProtocol = HTTPClient()
+    ) {
         self.resolver = resolver
+        self.httpClient = httpClient
+    }
+
+    func makeSwapQuote(_ quote: ThorchainSwapQuote) -> SwapQuote {
+        .thorchain(quote)
     }
 
     /// The override-aware THORChain LCD host. Falls back to the default host
@@ -85,7 +96,9 @@ class ThorchainService: ThorchainSwapProvider {
                 if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil {
+                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "ybrune", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "brune", options: [.caseInsensitive, .anchored]) == nil {
                     ticker = ticker.uppercased()
                 }
 
@@ -148,7 +161,7 @@ class ThorchainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         streamingQuantity: Int,
-        toleranceBps: Int,
+        liquidityToleranceBps: Int,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -166,7 +179,7 @@ class ThorchainService: ThorchainSwapProvider {
             streamingQuantity: streamingQuantity > 0 ? String(streamingQuantity) : nil,
             affiliates: affiliates,
             affiliateBps: affiliateBps,
-            toleranceBps: toleranceBps > 0 ? String(toleranceBps) : nil
+            liquidityToleranceBps: liquidityToleranceBps > 0 ? String(liquidityToleranceBps) : nil
         ))
 
         // THORChain returns a typed swap-error body (sometimes with HTTP 200,
@@ -330,12 +343,12 @@ class ThorchainService: ThorchainSwapProvider {
     /// Returns `(nil, nil)` if no affiliate entry should be sent.
     static func affiliateParams(referredCode: String, discountBps: Int) -> (String?, String?) {
         if !referredCode.isEmpty {
-            let feeRate = max(0, THORChainSwaps.referredAffiliateFeeRateBp - discountBps)
+            let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.referredAffiliateFeeRateBp, discountBps: discountBps)
             let addresses = "\(referredCode)/\(THORChainSwaps.affiliateFeeAddress)"
             let bps = "\(THORChainSwaps.referredUserFeeRateBp)/\(feeRate)"
             return (addresses, bps)
         } else {
-            let feeRate = max(0, THORChainSwaps.affiliateFeeRateBp - discountBps)
+            let feeRate = THORChainSwaps.discountedAffiliateBps(baseBps: THORChainSwaps.affiliateFeeRateBp, discountBps: discountBps)
             return (THORChainSwaps.affiliateFeeAddress, "\(feeRate)")
         }
     }
@@ -497,84 +510,6 @@ extension ThorchainService {
 // MARK: - THORChain LP Functionality
 extension ThorchainService {
 
-    /// Fetch LP positions for a given address with caching
-    func fetchLPPositions(runeAddress: String? = nil, assetAddress: String? = nil) async throws -> [ThorchainLPPosition] {
-        let targetAddress = runeAddress ?? assetAddress
-        guard let address = targetAddress else {
-            throw HelperError.runtimeError("Either rune address or asset address must be provided")
-        }
-
-        let cacheKey = "lp_positions_\(address)"
-        let cacheExpirationMinutes = 2.0 // Cache for 2 minutes
-
-        // Check cache first
-        if let cached = cacheLPPositions.get(cacheKey),
-           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            return cached.data
-        }
-
-        // Get all available pools first (this will use cache if available)
-        let pools = try await fetchLPPools()
-        var allPositions: [ThorchainLPPosition] = []
-
-        // Check each pool for LP positions
-        // Use sequential requests with small delay to avoid rate limiting
-        for pool in pools {
-            do {
-                let poolResponse = try await httpClient.request(
-                    mainnet(.poolLiquidityProvider(asset: pool.asset, address: address))
-                )
-
-                // 404 means no position on this pool — TargetType validation accepts it.
-                if poolResponse.response.statusCode == 404 {
-                    continue
-                }
-
-                // Try to decode as pool LP response
-                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolResponse.data) {
-                    // Only add if units > 0
-                    if let units = Int64(lpResponse.units), units > 0 {
-                        let position = ThorchainLPPosition(
-                            asset: lpResponse.asset,
-                            runeAddress: runeAddress,
-                            assetAddress: lpResponse.assetAddress,
-                            poolUnits: lpResponse.units,
-                            runeDepositValue: lpResponse.runeDepositValue,
-                            assetDepositValue: lpResponse.assetDepositValue,
-                            runeRedeemValue: nil,
-                            assetRedeemValue: nil,
-                            luvi: nil,
-                            gLPGrowth: nil,
-                            assetGrowthPct: nil
-                        )
-                        allPositions.append(position)
-                    }
-                }
-
-                // Add small delay to avoid rate limiting
-                try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
-
-            } catch {
-                // Skip pools where user has no position
-                continue
-            }
-        }
-
-        // Cache the result
-        cacheLPPositions.set(cacheKey, (data: allPositions, timestamp: Date()))
-
-        return allPositions
-    }
-
-    /// Fetch pool information for a specific asset
-    func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let response = try await httpClient.request(
-            mainnet(.poolInfo(asset: asset)),
-            responseType: ThorchainPool.self
-        )
-        return response.data
-    }
-
     /// Get supported pools for LP with caching
     func fetchLPPools() async throws -> [ThorchainPool] {
         let cacheKey = "lp_pools"
@@ -601,6 +536,31 @@ extension ThorchainService {
             cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
 
             return availablePools
+        }
+    }
+
+    /// Fetch the canonical THORChain secured-asset universe from
+    /// `/thorchain/securedassets`. Each entry is the uppercase dash-notation
+    /// denom (e.g. `ETH-USDC-0X…`) plus its `supply`/`depth`. Cached for 5
+    /// minutes and retried like `fetchLPPools`. This is the source of truth for
+    /// the discovery catalog — every pooled/securable asset has a secured form.
+    func fetchSecuredAssets() async throws -> [ThorchainSecuredAsset] {
+        let cacheKey = "secured_assets"
+        let cacheExpirationMinutes = 5.0
+
+        if let cached = cacheSecuredAssets.get(cacheKey),
+           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
+            return cached.data
+        }
+
+        return try await withRetry(maxAttempts: 3) {
+            let response = try await httpClient.request(
+                mainnet(.securedAssets),
+                responseType: [ThorchainSecuredAsset].self
+            )
+            let assets = response.data
+            cacheSecuredAssets.set(cacheKey, (data: assets, timestamp: Date()))
+            return assets
         }
     }
 
@@ -687,10 +647,7 @@ private extension ThorchainService {
     // MARK: - Models
     enum Errors: Error {
         case tnsEntryNotFound
-        case invalidURL
         case invalidPriceFormat
-        case invalidResponse
-        case apiError(String)
     }
 
 }

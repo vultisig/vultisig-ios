@@ -50,7 +50,7 @@ struct ErrorMessageSheet: View {
             )
 
             HStack(spacing: 12) {
-                PrimaryButton(title: "errorCopy".localized, leadingIcon: "copy", type: .secondary) {
+                PrimaryButton(title: "errorCopy".localized, leadingIcon: .copies3Filled, type: .secondary) {
                     ClipboardManager.copyToClipboard(rawError)
                 }
                 PrimaryButton(title: "errorReportBug".localized, type: .secondary) {
@@ -66,7 +66,7 @@ struct ErrorMessageSheet: View {
         .background(Theme.colors.bgPrimary)
         .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     isPresented = false
                 }
             }

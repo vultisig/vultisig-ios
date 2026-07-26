@@ -44,17 +44,6 @@ actor THORChainAPICache {
 
     // MARK: - Churn Interval Cache
 
-    func getCachedChurnInterval() -> String? {
-        guard let entry = churnIntervalCache, !entry.isExpired(duration: Self.cacheDuration) else {
-            return nil
-        }
-        return entry.value
-    }
-
-    func cacheChurnInterval(_ interval: String) {
-        churnIntervalCache = CacheEntry(value: interval, timestamp: Date())
-    }
-
     // MARK: - Network Info Cache
 
     func getCachedNetworkInfo() -> THORChainNetworkInfo? {

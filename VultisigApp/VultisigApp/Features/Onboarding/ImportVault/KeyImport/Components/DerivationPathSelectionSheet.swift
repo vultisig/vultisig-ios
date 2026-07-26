@@ -26,13 +26,13 @@ struct DerivationPathSelectionSheet: View {
 
             VStack(spacing: 12) {
                 DerivationOptionButton(
-                    icon: "phantom",
+                    icon: .phantom,
                     title: "phantomWallet".localized,
                     action: { selectPath(.phantom) }
                 )
 
                 DerivationOptionButton(
-                    icon: "wallet-4",
+                    icon: .walletFilled,
                     title: "standardSolanaWallet".localized,
                     action: { selectPath(.default) }
                 )
@@ -48,7 +48,7 @@ struct DerivationPathSelectionSheet: View {
 }
 
 struct DerivationOptionButton: View {
-    let icon: String
+    let icon: ImageResource
     let title: String
     let action: () -> Void
 

@@ -18,6 +18,13 @@ struct SwapCoinPickerView: View {
     /// to Phase 1 (the user can only swap from coins they hold).
     let isDestination: Bool
 
+    /// Optional predicate restricting the chain carousel (and therefore the
+    /// coin list) to a subset. `nil` (default) leaves the picker
+    /// unfiltered — the market-swap path passes nothing. The limit-swap
+    /// path passes a closure backed by THORChain's live routable set, so
+    /// the user can't pick a chain the limit-memo builder doesn't know.
+    let chainFilter: ((Chain) -> Bool)?
+
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var searchBarFocused: Bool = false
@@ -36,13 +43,15 @@ struct SwapCoinPickerView: View {
         showSheet: Binding<Bool>,
         selectedCoin: Binding<Coin>,
         selectedChain: Chain?,
-        isDestination: Bool = false
+        isDestination: Bool = false,
+        chainFilter: ((Chain) -> Bool)? = nil
     ) {
         self.vault = vault
         self._showSheet = showSheet
         self._selectedCoin = selectedCoin
         self.selectedChain = selectedChain
         self.isDestination = isDestination
+        self.chainFilter = chainFilter
         self._viewModel = StateObject(
             wrappedValue: .init(
                 vault: vault,
@@ -77,7 +86,7 @@ struct SwapCoinPickerView: View {
             .padding(.horizontal, 16)
 
             VStack(spacing: 12) {
-                GradientListSeparator()
+                Separator(color: Theme.colors.borderLight, opacity: 1)
                 Text("selectChain".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -91,17 +100,31 @@ struct SwapCoinPickerView: View {
         }
         .onLoad {
             viewModel.setup()
-            // First open per presentation forces a SwapKit catalog refresh so a
-            // stale token list (or one that missed the cold-launch fetch) is
-            // re-fetched. In-session chain re-selects stay on cached data.
-            reloadCoins(forceRefresh: true)
+            // If a chain filter is in effect and the seed `selectedChain`
+            // isn't in the filtered set, default to the first allowed chain
+            // so the carousel never lands on an unselectable highlight.
+            // The `onChange(of: selectedChain)` handler triggers
+            // `reloadCoins()` automatically when the assignment lands, so
+            // we skip the redundant call here in that branch (the reseeded
+            // chain loads from cache; the limit picker's curated THORChain
+            // set doesn't depend on the SwapKit catalog refresh below).
+            if let chainFilter,
+               let current = selectedChain,
+               !chainFilter(current) {
+                selectedChain = availableChains.first
+            } else {
+                // First open per presentation forces a SwapKit catalog refresh so a
+                // stale token list (or one that missed the cold-launch fetch) is
+                // re-fetched. In-session chain re-selects stay on cached data.
+                reloadCoins(forceRefresh: true)
+            }
         }
         .onChange(of: selectedChain) { _, _ in
             reloadCoins()
         }
         .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
+                ToolbarButton(image: .xmark) {
                     showSheet.toggle()
                 }
             }
@@ -139,7 +162,12 @@ struct SwapCoinPickerView: View {
                 }
             }
         }
-        .cornerRadius(12)
+        .background(Theme.colors.bgSurface1)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
 
     var emptyMessage: some View {
@@ -203,7 +231,7 @@ struct SwapCoinPickerView: View {
                     .frame(width: itemSize)
                     .background(
                         Capsule()
-                            .strokeBorder(Theme.colors.bgSurface2, lineWidth: 1)
+                            .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
                             .fill(Theme.colors.bgPrimary)
                     )
                     .padding(.horizontal, 4)
@@ -223,10 +251,12 @@ struct SwapCoinPickerView: View {
     }
 
     private var availableChains: [Chain] {
-        return coinSelectionViewModel.chains
+        let base = coinSelectionViewModel.chains
             .filter(\.isSwapAvailable)
             .filter { vault.chains.contains($0) }
             .filter { vault.availableChains.contains($0) }
+        guard let chainFilter else { return base }
+        return base.filter(chainFilter)
     }
 
     private func reloadCoins(forceRefresh: Bool = false) {
@@ -234,14 +264,26 @@ struct SwapCoinPickerView: View {
         // fetch can't publish results for the wrong chain.
         reloadTask?.cancel()
         reloadTask = Task {
+            // Debounce a burst of back-and-forth chain switches: the cancel
+            // above coalesces the burst so only the last selection's task
+            // survives the sleep and actually fetches. First open
+            // (forceRefresh) skips the delay to stay snappy.
+            if !forceRefresh {
+                try? await Task.sleep(nanoseconds: 150_000_000)
+            }
+            // Applies to both the debounced and the forced path: a task the
+            // cancel above superseded must not go on to fetch/publish.
+            guard !Task.isCancelled else { return }
             guard let selectedChain else { return }
             await viewModel.fetchCoins(chain: selectedChain, forceRefresh: forceRefresh)
         }
     }
 
     private func onSelect(chain: Chain) {
+        // Only mutate the selection; the single `.onChange(of: selectedChain)`
+        // owns the reload. Calling `reloadCoins()` here too fired two loads per
+        // tap, doubling the merge+sort work during rapid chain switching.
         selectedChain = chain
-        reloadCoins()
     }
 
     private func onSelect(coin: CoinMeta) {

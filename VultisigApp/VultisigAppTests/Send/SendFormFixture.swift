@@ -19,13 +19,17 @@ enum SendFormFixture {
         vault: Vault = makeVault(),
         interactor: SendInteractor? = nil,
         addressResolver: @escaping (String, Chain) async throws -> String = AddressService.resolveInput,
+        amountValidators: [any SendAmountValidator] = [RippleDestinationReserveValidator()],
+        destinationTagRequirementProvider: ((String) async -> RippleDestinationTagRequirement)? = nil,
         overrides: (SendDetailsViewModel) -> Void = { _ in }
     ) -> SendDetailsViewModel {
         let vm = SendDetailsViewModel(
             coin: coin,
             vault: vault,
             interactor: interactor ?? MockSendInteractor(),
-            addressResolver: addressResolver
+            addressResolver: addressResolver,
+            amountValidators: amountValidators,
+            destinationTagRequirementProvider: destinationTagRequirementProvider
         )
         overrides(vm)
         return vm
@@ -64,6 +68,10 @@ enum SendFormFixture {
 
     static func makeTRX(rawBalance: String = "1000000") -> Coin {
         makeCoin(.tron, ticker: "TRX", decimals: 6, isNative: true, rawBalance: rawBalance)
+    }
+
+    static func makeXRP(rawBalance: String = "20000000") -> Coin {
+        makeCoin(.ripple, ticker: "XRP", decimals: 6, isNative: true, rawBalance: rawBalance)
     }
 
     // MARK: - Vault builders

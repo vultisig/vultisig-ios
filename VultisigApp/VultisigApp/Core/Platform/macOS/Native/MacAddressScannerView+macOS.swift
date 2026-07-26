@@ -95,7 +95,7 @@ struct MacAddressScannerView: View {
         ) {
             if showImportOptions {
                 CustomToolbarItem(placement: .leading) {
-                    ToolbarButton(image: "chevron-right", action: closeImportOptions)
+                    ToolbarButton(image: .chevronRight, action: closeImportOptions)
                         .rotationEffect(.radians(.pi))
                 }
             } else {

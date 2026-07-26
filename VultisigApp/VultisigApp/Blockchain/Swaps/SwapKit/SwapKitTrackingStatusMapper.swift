@@ -40,15 +40,44 @@ enum SwapTrackingUiStatus: String, Codable, Sendable, Hashable {
     /// rendered identically to `failed` but kept distinct so we can surface
     /// "tracker unavailable, check explorer" copy and analytics.
     case unknownPendingExtended
+    /// A THORChain limit order sitting unfilled in the advanced-swap queue.
+    ///
+    /// Distinct from `pending`/`swapping`, which both mean "on its way": a
+    /// resting order is waiting for a PRICE that may never arrive, and can sit
+    /// for 12-72h by design. Collapsing it into `pending` would be survivable,
+    /// but it would leave the UI unable to say the one thing that matters about
+    /// this state — nothing is wrong, and nothing is moving.
+    case resting
+    /// A limit order whose TTL elapsed before it filled. Terminal; the unfilled
+    /// remainder is refunded.
+    case expired
+    /// A limit order that was cancelled. Terminal.
+    ///
+    /// Read from the chain, not from local bookkeeping: Midgard indexes the
+    /// closure as a refund action carrying THORChain's own
+    /// `"limit swap cancelled"`. So this is reachable for an order cancelled on
+    /// another device, or in another wallet, and it survives an app that was not
+    /// running when the cancel landed.
+    case cancelled
+    /// A limit order whose CANCEL transaction has been confirmed successful
+    /// on-chain, and which has not yet left the queue.
+    ///
+    /// ⚠️ **Non-terminal, deliberately.** It is a statement about our own
+    /// transaction, not about the order: a cancel can be accepted by the chain
+    /// and still match nothing, leaving the order resting and able to fill. So
+    /// the row keeps its in-progress coarse status and the tracker keeps
+    /// polling; only an observed closure resolves it. See
+    /// `LimitOrderStatus.cancelling`.
+    case cancelling
 }
 
 extension SwapTrackingUiStatus {
     /// Terminal states never get polled again.
     var isTerminal: Bool {
         switch self {
-        case .completed, .refunded, .failed, .unknownPendingExtended:
+        case .completed, .refunded, .failed, .unknownPendingExtended, .expired, .cancelled:
             return true
-        case .pending, .swapping:
+        case .pending, .swapping, .resting, .cancelling:
             return false
         }
     }

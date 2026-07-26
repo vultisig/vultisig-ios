@@ -8,7 +8,7 @@
 import Foundation
 
 @MainActor
-class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
+class SettingsCustomMessageViewModel: ObservableObject {
 
     enum KeysignState: Int, CaseIterable {
         case initial = 1
@@ -34,8 +34,6 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
     }
 
     @Published var state: KeysignState = .initial
-    @Published var hash: String?
-    @Published var approveHash: String?
     @Published var currentIndex: Int = 1
 
     var progress: Double {
@@ -44,11 +42,6 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
 
     func moveToNextView() {
         currentIndex += 1
-        state = KeysignState.allCases[currentIndex-1]
-    }
-
-    func handleBackTap() {
-        currentIndex-=1
         state = KeysignState.allCases[currentIndex-1]
     }
 

@@ -99,6 +99,9 @@ enum THORChainStakingAPI: TargetType {
                     }
                   }
                 }
+                liquidSize {
+                  amount
+                }
                 pendingRevenue {
                   amount
                   asset {
@@ -128,13 +131,6 @@ enum THORChainStakingAPI: TargetType {
 /// Response model for TCY staker endpoint
 struct TcyStakerResponse: Codable {
     let amount: String
-}
-
-/// Response model for TCY distribution (global)
-struct TcyDistribution: Codable {
-    let block: String
-    let amount: String
-    let timestamp: String?
 }
 
 /// Response model for TCY user distributions from Midgard

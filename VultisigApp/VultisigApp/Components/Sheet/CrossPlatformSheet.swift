@@ -12,8 +12,17 @@ extension View {
         modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, sheetContent: sheetContent))
     }
 
-    func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) -> some View {
-        modifier(PlatformSheetWithItem(item: item, sheetContent: sheetContent))
+    /// - Parameter onDismiss: run AFTER the sheet has finished dismissing.
+    ///   Needed when the dismissal hands off to a navigation push: pushing while
+    ///   the sheet is still on screen races the dismissal animation and the
+    ///   destination can be dropped. Defaults to `nil`, so existing call sites
+    ///   are unaffected.
+    func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
+    ) -> some View {
+        modifier(PlatformSheetWithItem(item: item, onDismiss: onDismiss, sheetContent: sheetContent))
     }
 }
 
@@ -118,6 +127,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
 private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetContent: View>: ViewModifier {
     @Binding var item: Item?
 
+    var onDismiss: (() -> Void)?
     var sheetContent: (Item) -> SheetContent
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
@@ -127,8 +137,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     @State private var internalItem: Item?
     @State private var dismissTask: Task<Void, Never>?
 
-    init(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) {
+    init(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder sheetContent: @escaping (Item) -> SheetContent
+    ) {
         self._item = item
+        self.onDismiss = onDismiss
         self.sheetContent = sheetContent
     }
 
@@ -181,6 +196,10 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                 try? await Task.sleep(for: .milliseconds(300))
                 guard !Task.isCancelled else { return }
                 item = nil
+                // Fired here rather than alongside the `internalItem` clear so
+                // it lines up with the native path's `onDismiss`: after the
+                // dismissal has actually settled, not when it starts.
+                onDismiss?()
             }
         }
     }
@@ -188,7 +207,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
 
     func nativeSheet(content: Content) -> some View {
         content
-            .sheet(item: $item) { item in
+            .sheet(item: $item, onDismiss: onDismiss) { item in
                 sheetContent(item)
                     .environment(\.isSheetPresented, true)
             }

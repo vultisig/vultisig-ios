@@ -204,6 +204,76 @@ final class SolanaHelperTests: XCTestCase {
         XCTAssertEqual(result.transactionHash, Base58.encodeNoCheck(data: expectedSignature))
     }
 
+    // MARK: - signAllTransactions batch guard
+
+    /// Builds a minimal but structurally valid Solana raw-tx envelope —
+    /// `[shortvec(1)][64-byte sig slot][32-byte message]`, base64-encoded —
+    /// the same shape the dApp raw-signing path (SignSolana.rawTransactions)
+    /// consumes.
+    private func makeRawSolanaTransactionBase64(messageFill: UInt8) -> String {
+        var tx = Data([0x01])
+        tx.append(Data(repeating: 0x00, count: 64))
+        tx.append(Data(repeating: messageFill, count: 32))
+        return tx.base64EncodedString()
+    }
+
+    private func makeSignSolanaPayload(rawTransactions: [String]) throws -> KeysignPayload {
+        KeysignPayload(
+            coin: makeCoin(privateKey: try makeSignerKey()),
+            toAddress: try makeRecipientAddress(),
+            toAmount: 0,
+            chainSpecific: .Solana(
+                recentBlockHash: recentBlockHash,
+                priorityFee: 0,
+                priorityLimit: 0,
+                fromAddressPubKey: nil,
+                toAddressPubKey: nil,
+                hasProgramId: false
+            ),
+            utxos: [],
+            memo: nil,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            vaultLocalPartyID: "localPartyID",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: .signSolana(SignSolana(proto: .with { $0.rawTransactions = rawTransactions }))
+        )
+    }
+
+    /// A multi-transaction Solana batch (signAllTransactions, N>1) must be
+    /// rejected here — the single pre-ceremony chokepoint reached on BOTH the
+    /// initiator and the co-signer before peer discovery. getSignedTransaction
+    /// only supports one raw transaction, so without this fail-fast guard the
+    /// user would physically approve the entire multi-device keysign ceremony
+    /// and only then hit an opaque post-ceremony failure.
+    func testGetPreSignedImageHashRejectsMultipleRawTransactions() throws {
+        let tx1 = makeRawSolanaTransactionBase64(messageFill: 0x07)
+        let tx2 = makeRawSolanaTransactionBase64(messageFill: 0x09)
+        let payload = try makeSignSolanaPayload(rawTransactions: [tx1, tx2])
+
+        XCTAssertThrowsError(try SolanaHelper.getPreSignedImageHash(keysignPayload: payload))
+    }
+
+    /// Regression: the single raw-transaction path is untouched and still
+    /// yields exactly one non-empty pre-image hash.
+    func testGetPreSignedImageHashAllowsSingleRawTransaction() throws {
+        let tx = makeRawSolanaTransactionBase64(messageFill: 0x07)
+        let payload = try makeSignSolanaPayload(rawTransactions: [tx])
+
+        let hashes = try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
+
+        XCTAssertEqual(hashes.count, 1)
+        XCTAssertFalse(try XCTUnwrap(hashes.first).isEmpty)
+    }
+
     // MARK: - RPC request shape
 
     func testSendTransactionRequestPinsBase64Encoding() throws {

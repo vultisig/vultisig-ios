@@ -110,28 +110,6 @@ struct ChainDetailScreen: View {
         self._qbtcEligibility = StateObject(wrappedValue: QBTCClaimEligibilityChecker())
     }
 
-    #if DEBUG
-    /// Snapshot-test seam — injects a pre-seeded checker so tests can
-    /// render the screen in `.eligible` / `.ineligible` states without
-    /// touching the network. Never called from production code.
-    init(
-        nativeCoin: Coin,
-        vault: Vault,
-        refreshTrigger: Binding<Bool> = .constant(false),
-        onAddressCopy: ((Coin) -> Void)? = nil,
-        snapshotEligibilityState: QBTCClaimEligibilityChecker.State
-    ) {
-        self.nativeCoin = nativeCoin
-        self.vault = vault
-        self._refreshTrigger = refreshTrigger
-        self.onAddressCopy = onAddressCopy
-        self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
-        let checker = QBTCClaimEligibilityChecker()
-        checker.snapshotSeed(state: snapshotEligibilityState)
-        self._qbtcEligibility = StateObject(wrappedValue: checker)
-    }
-    #endif
-
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
@@ -299,10 +277,10 @@ struct ChainDetailScreen: View {
             }
             .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: "magnifying-glass") {
+            CircularAccessoryIconButton(icon: .magnifier) {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
+            CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
                 showManageTokens = true
             }
         }
@@ -323,9 +301,6 @@ struct ChainDetailScreen: View {
 }
 
 private extension ChainDetailScreen {
-    func onRefreshButton() {
-        refresh()
-    }
 
     func refresh() {
         Task {
