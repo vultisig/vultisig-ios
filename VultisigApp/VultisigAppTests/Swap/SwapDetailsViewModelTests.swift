@@ -320,6 +320,32 @@ final class SwapDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.advancedSettings, .default, "A new swap session (load) must start at default advanced settings")
     }
 
+    // MARK: - Fee-error surfacing (real error, not a money verdict)
+
+    func testUpdateFeesSurfacesRealErrorInsteadOfInsufficientGas() async {
+        // A non-UTXO fee failure (timeout / decode / TLS) must surface as itself.
+        // It was previously relabeled by the `default:` branch as
+        // `insufficientGas` — a confident money verdict the app can't justify.
+        // Driven through the public quote→fee pipeline: the quote resolves, then
+        // the fee computation throws, exercising `updateFees`' catch.
+        struct ProbeFeeError: Error {}
+        let interactor = MockSwapInteractor(
+            quote: .thorchain(makeThorQuote(expectedAmountOut: "100000000")),
+            computeFeeError: ProbeFeeError()
+        )
+        let vm = makeVM(interactor: interactor)
+        vm.fromCoin = makeCoin(.thorChain, ticker: "RUNE", balance: "100000000000")
+        vm.toCoin = makeCoin(.bitcoin, ticker: "BTC")
+        vm.fromAmount = "1"
+
+        vm.updateFromAmount(vault: makeVault(), referredCode: "", immediate: true)
+        await vm.waitForQuoteTask()
+
+        XCTAssertNotNil(vm.quote, "Precondition: the quote must resolve so updateFees runs")
+        XCTAssertTrue(vm.error is ProbeFeeError, "The real fee error must surface, got \(String(describing: vm.error))")
+        XCTAssertFalse(vm.error is SwapCryptoLogic.Errors, "A generic fee failure must not be relabeled as a money error")
+    }
+
     // MARK: - Fixtures
 
     private func makeVM(interactor: SwapInteractor? = nil) -> SwapDetailsViewModel {
@@ -399,10 +425,12 @@ private extension SwapDetailsViewModel {
 @MainActor
 private final class MockSwapInteractor: SwapInteractor {
     private let stubbedQuote: SwapQuote?
+    private let computeFeeError: Error?
     private(set) var fetchQuoteCallCount = 0
 
-    init(quote: SwapQuote?) {
+    init(quote: SwapQuote?, computeFeeError: Error? = nil) {
         self.stubbedQuote = quote
+        self.computeFeeError = computeFeeError
     }
 
     func fetchQuote(
@@ -436,7 +464,10 @@ private final class MockSwapInteractor: SwapInteractor {
         fromAmount: Decimal,
         vault: Vault
     ) async throws -> BigInt {
-        .zero
+        if let computeFeeError {
+            throw computeFeeError
+        }
+        return .zero
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
