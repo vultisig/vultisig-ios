@@ -345,9 +345,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .osmosis:
             return "osmo"
         case .terra:
-            return "luna"
+            return "terra"
         case .terraClassic:
-            return "lunc"
+            return "terraclassic"
         case .noble:
             return "noble"
         case .ripple:
