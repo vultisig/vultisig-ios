@@ -22,7 +22,9 @@ class BalanceService {
     private let dot = PolkadotService.shared
     private let tao = BittensorService.shared
     private let ton = TonService.shared
-    private let ripple = RippleService.shared
+    /// Injected (unlike its siblings) so the native-vs-trust-line routing for
+    /// `.ripple` can be driven without a network.
+    private let ripple: RippleService
     private let tron = TronService.shared
     private let cardano = CardanoService.shared
 
@@ -31,8 +33,12 @@ class BalanceService {
 
     private let cryptoPriceService: CryptoPriceServiceProtocol
 
-    init(cryptoPriceService: CryptoPriceServiceProtocol = CryptoPriceService.shared) {
+    init(
+        cryptoPriceService: CryptoPriceServiceProtocol = CryptoPriceService.shared,
+        ripple: RippleService = .shared
+    ) {
         self.cryptoPriceService = cryptoPriceService
+        self.ripple = ripple
     }
 
     /// Cache of whether a chain's Multicall3 contract was verified to have code.
