@@ -10,6 +10,26 @@ Fixes #<issue-number>
 - [ ] Swap - Please attach a tx link for the swap here
 - [ ] New Chain / Chain related feature  -  Please attach tx link here
 
+## Parity
+
+<!-- REQUIRED if you ticked Sending, Swap, or New Chain above, or touched keysign,
+     broadcast, or fee computation. Delete this section otherwise.
+
+     One verdict per surface:
+       linked: <repo>#<n>  sibling issue already exists — link it above
+       filed:  <repo>#<n>  sibling filed as part of this PR
+       n/a:    <reason>    genuinely platform-specific (storage migration, service worker, ...)
+       first:  <surface>   first implementation anywhere — name the surface so the other
+                           platforms' tickets can be raised from it
+
+     A fix that lands on one platform and nowhere else is how the same bug ships three times.
+     A superseded fix that stays uncited is how the wrong shape gets copied into the next app.
+-->
+
+- Android:
+- Windows + extension:
+- SDK:
+
 ## Checklist
 
 - [ ] I have performed a self-review of my code
