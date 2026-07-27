@@ -9,14 +9,15 @@
 //  stays with `SwapTokenListCache` (the front cache); this is only the durable
 //  offline floor beneath it.
 //
-//  TRUST: this is untrusted persistence — a file must not be able to confer
-//  trust. On load every token's verification is floored to `.unverified`, so a
-//  disk-loaded (offline cold-start) token never auto-surfaces on the strength of
-//  a persisted verification. Auto-surfacing offline comes from the in-memory
-//  `BundledTokensProvider` (curated); disk tokens stay reachable via explicit
-//  search (badged) per verification-to-surface. Verification is never decoded
-//  from a third-party source payload — providers assign it in code from a live
-//  signal, and that live decision is intentionally NOT trusted back off disk.
+//  TRUST: this is untrusted persistence living in the app's Caches sandbox (iOS
+//  data protection). On load, verification is capped at `.verified` — a file can
+//  never confer `.curated` (the tier reserved for the in-memory bundled provider
+//  that wins dedup precedence). `.verified`/`.unverified` are preserved so a
+//  provider's last-good verified list still surfaces during a transient outage,
+//  instead of being filtered out and letting the outer cache overwrite a
+//  complete list with a bundled-only one. Verification is never decoded from a
+//  third-party source payload — providers assign it in code from a live signal
+//  before it is ever written here.
 //
 
 import Foundation
@@ -34,16 +35,20 @@ final class TokenCatalogDiskCache: Sendable {
         self.fileManager = fileManager
     }
 
-    /// Load the last-good snapshot for `chain`, flooring every token's
-    /// verification to `.unverified` (untrusted persistence must not confer
-    /// trust). Returns nil when absent / unreadable / undecodable.
+    /// Load the last-good snapshot for `chain`, capping every token's
+    /// verification at `.verified` (untrusted persistence must not confer
+    /// `.curated`). Returns nil when absent / unreadable / undecodable.
     func load(chain: Chain) -> [CatalogToken]? {
         guard let url = fileURL(for: chain) else { return nil }
         guard let data = try? Data(contentsOf: url) else { return nil }
         do {
             let decoded = try JSONDecoder().decode([CatalogToken].self, from: data)
             return decoded.map {
-                CatalogToken(meta: $0.meta, verification: .unverified, sourceKind: $0.sourceKind)
+                CatalogToken(
+                    meta: $0.meta,
+                    verification: $0.verification.cappedForUntrustedPersistence,
+                    sourceKind: $0.sourceKind
+                )
             }
         } catch {
             logger.warning("[token-catalog-disk] decode failed for \(chain.rawValue, privacy: .public): \(String(describing: error), privacy: .public)")
