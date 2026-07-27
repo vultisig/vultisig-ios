@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "无法访问";
 "customRPCWrongChain" = "链不匹配（期望 %d，实际 %d）";
 "customToken" = "自定义代币";
+"customTokenAddButton" = "添加 %@ 代币";
 "customTokenErrorSubtitle" = "可能的原因：错误的合约、不支持的链或代币已从注册表中删除";
+"customTokenNotFound" = "未找到代币";
+"customTokenRateLimit" = "请求过多。请关闭此屏幕，稍后再试。";
 "dappRequestFrom" = "请求来自";
 "date" = "日期";
 "decimalAmountError" = "金额必须为小数。";
