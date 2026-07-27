@@ -46,6 +46,28 @@ struct TokenSearchService {
         return Self.surfaceableTokens(from: candidates)
     }
 
+    /// The full verification-aware catalog for the wallet add-token picker: the
+    /// auto-surfacing (curated / verified) list, the withheld `.unverified`
+    /// candidates the "Show unverified" toggle reveals, and a `uniqueId →
+    /// verification` map the row views badge from. Unlike `loadTokens`, this is
+    /// NOT routed through `SwapTokenListCache` — that cache stays `[CoinMeta]`-typed
+    /// and drives the swap pickers untouched; the wallet catalog is re-derived per
+    /// screen open (the manage-tokens sheet isn't a rapid re-select surface, and
+    /// the providers already fail-open to their disk snapshots offline).
+    ///
+    /// Threading the verification alongside the bare `[CoinMeta]` (rather than
+    /// widening every list type to `[CatalogToken]`) is the least-invasive way to
+    /// keep the swap picker's cache + merge paths unchanged.
+    func loadCatalog(for chain: Chain) async throws -> TokenSearchResult {
+        guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
+
+        let candidates = await TokenCatalogRepository.appCatalog.catalog(for: chain)
+
+        guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
+
+        return Self.searchResult(from: candidates)
+    }
+
     /// The verification-to-surface + non-native filter the search list applies to
     /// the catalog. Exposed `static` so the filter is exercised directly by tests
     /// (rather than a duplicated helper) and reused by any future catalog reader.
@@ -64,6 +86,46 @@ struct TokenSearchService {
             .filter { !$0.meta.isNativeToken }
             .map { $0.meta }
     }
+
+    /// Splits the catalog into the wallet picker's three verification-aware
+    /// outputs. `surfaceable` is the exact same auto-surfacing list `loadTokens`
+    /// serves (curated / verified, non-native). `unverified` is the withheld
+    /// long-tail — non-native, and passed through the synchronous `isLikelySpam`
+    /// hard gate so scam / lookalike / dust tokens never surface even with the
+    /// toggle on. `verificationByUniqueId` lets the row views badge each token
+    /// without reaching back into the repository.
+    static func searchResult(from candidates: [CatalogToken]) -> TokenSearchResult {
+        let surfaceable = surfaceableTokens(from: candidates)
+
+        let unverified = candidates
+            .filter { !$0.autoSurfaces }
+            .filter { !$0.meta.isNativeToken }
+            .filter { !CoinService.isLikelySpam($0.meta) }
+            .map { $0.meta }
+
+        var verificationByUniqueId: [String: TokenVerification] = [:]
+        for candidate in candidates where !candidate.meta.isNativeToken {
+            verificationByUniqueId[candidate.uniqueId] = candidate.verification
+        }
+
+        return TokenSearchResult(
+            surfaceable: surfaceable,
+            unverified: unverified,
+            verificationByUniqueId: verificationByUniqueId
+        )
+    }
+}
+
+/// The wallet add-token picker's verification-aware view of the catalog. Kept a
+/// value type so it crosses the actor boundary cleanly.
+struct TokenSearchResult {
+    /// Curated / verified, non-native — the tokens that auto-surface (default).
+    let surfaceable: [CoinMeta]
+    /// Withheld `.unverified` candidates (non-native, spam-filtered) the
+    /// opt-in toggle reveals.
+    let unverified: [CoinMeta]
+    /// `CoinMeta.uniqueId → verification` for badging. Only non-native entries.
+    let verificationByUniqueId: [String: TokenVerification]
 }
 
 enum TokenSearchServiceError: Error, LocalizedError {
