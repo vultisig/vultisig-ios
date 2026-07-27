@@ -172,7 +172,7 @@ enum Utils {
 
         if uri.hasPrefix("ton://") {
             guard let url = URLComponents(string: uri) else {
-                print("invalid URI")
+                logger.error("invalid URI")
                 return (.empty, .empty, .empty)
             }
 
@@ -192,13 +192,13 @@ enum Utils {
                 case "amount":
                     amount = item.value ?? ""
                 default:
-                    print("Unknown query item: \(item.name)")
+                    logger.debug("Unknown query item: \(item.name, privacy: .public)")
                 }
             }
         } else {
 
             guard let url = URLComponents(string: uri) else {
-                print("Invalid URI")
+                logger.error("Invalid URI")
                 return (.empty, .empty, .empty)
             }
 
@@ -213,7 +213,7 @@ enum Utils {
                         message += (message.isEmpty ? "" : " ") + value
                     }
                 default:
-                    print("Unknown query item: \(item.name)")
+                    logger.debug("Unknown query item: \(item.name, privacy: .public)")
                 }
             }
         }
@@ -225,7 +225,7 @@ enum Utils {
         let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
 
         guard status == errSecSuccess else {
-            print("Error generating random bytes: \(status)")
+            logger.error("Error generating random bytes: \(status)")
             return nil
         }
 
@@ -244,7 +244,7 @@ enum Utils {
                 return try JSONDecoder().decode(T.self, from: resultData)
             }
         } catch {
-            print("Error processing JSON: \(error)")
+            logger.error("Error processing JSON: \(error.localizedDescription, privacy: .public)")
         }
         return nil
     }
@@ -254,7 +254,7 @@ enum Utils {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
             return getValueFromJson(for: path, in: json)
         } catch {
-            print("JSON decoding error: \(error)")
+            logger.error("JSON decoding error: \(error.localizedDescription, privacy: .public)")
         }
         return nil
     }
@@ -377,7 +377,7 @@ enum Utils {
     static func handleQrCodeFromImage(image: UIImage) -> Data {
         let qrStrings = detectQRCode(image)
         if qrStrings.isEmpty {
-            print("No QR codes detected.")
+            logger.debug("No QR codes detected.")
             return Data()
         } else {
             for qrString in qrStrings {
@@ -412,7 +412,7 @@ enum Utils {
     static func handleQrCodeFromImage(image: NSImage) -> Data {
         let qrStrings = detectQRCode(image)
         if qrStrings.isEmpty {
-            print("No QR codes detected.")
+            logger.debug("No QR codes detected.")
             return Data()
         } else {
             for qrString in qrStrings {
@@ -478,7 +478,7 @@ enum Utils {
 
 #if os(iOS)
             guard success else {
-                print("Failed to access URL")
+                logger.error("Failed to access URL")
                 throw UtilsQrCodeFromImageError.URLInaccessible
             }
 
@@ -486,7 +486,7 @@ enum Utils {
                 let qrStrings = Utils.detectQRCode(selectedImage)
 
                 if qrStrings.isEmpty {
-                    print("No QR codes detected.")
+                    logger.debug("No QR codes detected.")
                     throw UtilsQrCodeFromImageError.NoQRCodesDetected
                 } else {
                     for qrString in qrStrings {
@@ -494,7 +494,7 @@ enum Utils {
                     }
                 }
             } else {
-                print("Failed to load image from URL")
+                logger.error("Failed to load image from URL")
                 throw UtilsQrCodeFromImageError.FailedToLoadImage
             }
 #elseif os(macOS)
@@ -502,7 +502,7 @@ enum Utils {
                 let qrStrings = Utils.detectQRCode(selectedImage)
 
                 if qrStrings.isEmpty {
-                    print("No QR codes detected.")
+                    logger.debug("No QR codes detected.")
                     throw UtilsQrCodeFromImageError.NoQRCodesDetected
                 } else {
                     for qrString in qrStrings {
@@ -510,13 +510,13 @@ enum Utils {
                     }
                 }
             } else {
-                print("Failed to load image from URL")
+                logger.error("Failed to load image from URL")
                 throw UtilsQrCodeFromImageError.FailedToLoadImage
             }
 #endif
 
         case .failure(let error):
-            print("Error selecting file: \(error.localizedDescription)")
+            logger.error("Error selecting file: \(error.localizedDescription, privacy: .public)")
         }
         return Data()
     }

@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 final class BondMayaTransactionViewModel: ObservableObject, Form {
     let coin: Coin
@@ -135,7 +136,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
                     // On error, allow bonding attempt (server will reject if not whitelisted)
                     canBondToNode = true
                 }
-                print("Error checking whitelist: \(error.localizedDescription)")
+                Log.send.viewModel.error("Error checking whitelist: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -164,7 +165,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
                 userLPPositions = p
             }
         } catch {
-            print("Error fetching user LP positions: \(error.localizedDescription)")
+            Log.send.viewModel.error("Error fetching user LP positions: \(error.localizedDescription, privacy: .public)")
         }
     }
 

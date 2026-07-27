@@ -7,6 +7,7 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
 
 enum PolkadotHelper {
 
@@ -106,7 +107,7 @@ enum PolkadotHelper {
         let dummyPrivateKey = PrivateKey()
         let dummyPublicKey = dummyPrivateKey.getPublicKeyEd25519()
         let publicKeyData = dummyPublicKey.data
-        print("[Polkadot] getZeroSignedTransaction: Using DUMMY public key for fee calculation: \(publicKeyData.hexString.prefix(16))...")
+        Log.chain.other.debug("getZeroSignedTransaction: Using DUMMY public key for fee calculation: \(String(publicKeyData.hexString.prefix(16)), privacy: .public)...")
 
         let allSignatures = DataVector()
         let publicKeys = DataVector()

@@ -5,6 +5,7 @@
 import Foundation
 import SwiftData
 import WalletCore
+import OSLog
 
 @Model
 final class Vault: ObservableObject, Codable {
@@ -385,7 +386,7 @@ final class Vault: ObservableObject, Codable {
                 idx += 1
             } while idx < 1000
         } catch {
-            print("fail to load all vaults")
+            Log.wallet.store.error("fail to load all vaults")
         }
         return "Main Vault"
     }

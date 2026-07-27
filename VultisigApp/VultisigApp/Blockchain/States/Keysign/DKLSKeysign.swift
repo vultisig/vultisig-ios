@@ -93,7 +93,7 @@ final class DKLSKeysign {
         defer {
             let freeResult = dkls_keyshare_free(&h)
             if freeResult != DKLS_LIB_OK {
-                print("fail to free keyshare \(freeResult)")
+                logger.error("fail to free keyshare \(String(describing: freeResult), privacy: .public)")
             }
         }
         let keyIDResult = dkls_keyshare_key_id(h, &buf)
@@ -163,7 +163,7 @@ final class DKLSKeysign {
         var mutableMessage = message
         let receiverResult = dkls_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         if receiverResult != DKLS_LIB_OK {
-            print("fail to get receiver message,error: \(receiverResult)")
+            logger.error("fail to get receiver message,error: \(String(describing: receiverResult), privacy: .public)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
@@ -176,7 +176,7 @@ final class DKLSKeysign {
         }
         let result = dkls_sign_session_output_message(handle, &buf)
         if result != DKLS_LIB_OK {
-            print("fail to get outbound message: \(result)")
+            logger.error("fail to get outbound message: \(String(describing: result), privacy: .public)")
             return (result, [])
         }
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
@@ -191,7 +191,7 @@ final class DKLSKeysign {
             try Task.checkCancellation()
             let (result, outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != DKLS_LIB_OK {
-                print("fail to get outbound message,\(result)")
+                logger.error("fail to get outbound message,\(String(describing: result), privacy: .public)")
             }
             if outboundMessage.isEmpty {
                 return
@@ -207,7 +207,7 @@ final class DKLSKeysign {
                     break
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
+                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
@@ -273,10 +273,10 @@ final class DKLSKeysign {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(messageID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                logger.debug("message with key:\(key, privacy: .public) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            logger.debug("Got message from: \(msg.from, privacy: .public), to: \(msg.to, privacy: .public), key:\(key, privacy: .public)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 import BigInt
 
 protocol SendGasSettingsOutput {
@@ -154,7 +155,7 @@ struct SendGasSettingsView: View {
             do {
                 try await viewModel.fetch(chain: viewModel.chain)
             } catch {
-                print("Error fetching gas settings: \(error)")
+                Log.send.view.error("Error fetching gas settings: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

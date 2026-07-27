@@ -563,7 +563,7 @@ private extension BalanceService {
                     )
                 }
             } catch {
-                print("Error fetching MayaChain bonded nodes: \(error.localizedDescription)")
+                logger.error("Error fetching MayaChain bonded nodes: \(error.localizedDescription, privacy: .public)")
                 return nil
             }
 
@@ -632,7 +632,7 @@ private extension BalanceService {
                 let stakedAmountBigInt = stakedAmountInAtomicUnits.description.toBigInt()
                 return stakedAmountBigInt.description
             } catch {
-                print("Error fetching MayaChain CACAO staking balance: \(error.localizedDescription)")
+                logger.error("Error fetching MayaChain CACAO staking balance: \(error.localizedDescription, privacy: .public)")
                 return "0"
             }
 

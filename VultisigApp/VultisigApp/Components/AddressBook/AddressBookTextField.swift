@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 import UniformTypeIdentifiers
 
 struct AddressBookTextField: View {
@@ -36,7 +37,7 @@ struct AddressBookTextField: View {
                     let qrCode = try Utils.handleQrCodeFromImage(result: result)
                     handleImageQrCode(data: qrCode)
                 } catch {
-                    print(error)
+                    Log.app.view.error("\(error.localizedDescription, privacy: .public)")
                 }
             }
     }

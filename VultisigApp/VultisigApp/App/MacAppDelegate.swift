@@ -5,6 +5,7 @@
 
 #if os(macOS)
 import AppKit
+import OSLog
 
 class MacAppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
@@ -24,7 +25,7 @@ class MacAppDelegate: NSObject, NSApplicationDelegate {
         _: NSApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        print("Failed to register for remote notifications: \(error.localizedDescription)")
+        Log.app.other.error("Failed to register for remote notifications: \(error.localizedDescription, privacy: .public)")
     }
 }
 #endif

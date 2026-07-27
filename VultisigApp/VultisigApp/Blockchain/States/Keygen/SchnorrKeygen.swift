@@ -123,7 +123,7 @@ final class SchnorrKeygen {
         }
 
         if result != .schnorrLibOK {
-            print("fail to get outbound message: \(result)")
+            logger.error("fail to get outbound message: \(String(describing: result), privacy: .public)")
             return (result, [])
         }
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
@@ -143,7 +143,7 @@ final class SchnorrKeygen {
             receiverResult = schnorr_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         }
         if receiverResult != .schnorrLibOK {
-            print("fail to get receiver message,error: \(receiverResult)")
+            logger.error("fail to get receiver message,error: \(String(describing: receiverResult), privacy: .public)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
@@ -153,7 +153,7 @@ final class SchnorrKeygen {
         repeat {
             let (result, outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != .schnorrLibOK {
-                print("fail to get outbound message")
+                logger.error("fail to get outbound message")
             }
             if outboundMessage.isEmpty {
                 return
@@ -170,7 +170,7 @@ final class SchnorrKeygen {
                     continue
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString)")
+                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
@@ -231,7 +231,7 @@ final class SchnorrKeygen {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                logger.debug("message with key:\(key, privacy: .public) has been applied before")
                 continue
             }
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
@@ -256,7 +256,7 @@ final class SchnorrKeygen {
             if result != .schnorrLibOK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
-                print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no), from: \(msg.from) , to: \(msg.to) , size: \(decodedMsg.count) ")
+                logger.debug("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public) ,sequence_no:\(msg.sequence_no), from: \(msg.from, privacy: .public) , to: \(msg.to, privacy: .public) , size: \(decodedMsg.count) ")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))
@@ -352,7 +352,7 @@ final class SchnorrKeygen {
     // routing.setupMessageId is used to differentiate the setup message when doing key import
     // routing.exchangeMessageId isolates TSS message exchange on the relay
     func SchnorrKeygenWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
-        print("start Schnorr keygen/migration/keyimport , attempt:\(attempt)")
+        logger.info("start Schnorr keygen/migration/keyimport , attempt:\(attempt)")
         self.cache.removeAllObjects()
         self.messenger.messageID = routing.exchangeMessageId
         do {
@@ -443,14 +443,14 @@ final class SchnorrKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyEdDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
-                print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+                logger.debug("publicKeyEdDSA:\(publicKeyEdDSA.toHexString(), privacy: .public)")
             }
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            print("Failed to generate key, error: \(error.localizedDescription)")
+            logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry
-                print("keygen/reshare retry, attemp: \(attempt)")
+                logger.warning("keygen/reshare retry, attemp: \(attempt)")
                 try await SchnorrKeygenWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error
@@ -544,7 +544,7 @@ final class SchnorrKeygen {
     }
 
     func SchnorrReshareWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
-        print("start Schnorr reshare , attempt:\(attempt) , keygenCommittee: \(self.keygenCommittee)")
+        logger.info("start Schnorr reshare , attempt:\(attempt) , keygenCommittee: \(String(describing: self.keygenCommittee), privacy: .public)")
         self.cache.removeAllObjects()
         self.messenger.messageID = routing.exchangeMessageId
         // In sequential mode (.default), use "eddsa" to separate from DKLS setup.
@@ -586,7 +586,7 @@ final class SchnorrKeygen {
             defer {
                 let sessionFreeResult = schnorr_qc_session_free(&handler)
                 if sessionFreeResult != .schnorrLibOK {
-                    print("fail to free reshare session \(sessionFreeResult)")
+                    logger.error("fail to free reshare session \(String(describing: sessionFreeResult), privacy: .public)")
                 }
             }
             let h = handler
@@ -606,15 +606,15 @@ final class SchnorrKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyEdDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
-                print("reshare EdDSA successfully")
-                print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+                logger.info("reshare EdDSA successfully")
+                logger.debug("publicKeyEdDSA:\(publicKeyEdDSA.toHexString(), privacy: .public)")
             }
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            print("Failed to reshare key, error: \(error.localizedDescription)")
+            logger.error("Failed to reshare key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry
-                print("keygen/reshare retry, attemp: \(attempt)")
+                logger.warning("keygen/reshare retry, attemp: \(attempt)")
                 try await SchnorrReshareWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 /// Data source for Bond screen - fetches user's LP positions that are in bondable pools
 struct MayaUserLPAssetsDataSource: AssetSelectionDataSource {
@@ -50,7 +51,7 @@ struct MayaUserLPAssetsDataSource: AssetSelectionDataSource {
 
             return assets
         } catch {
-            print("Error fetching user LP positions: \(error.localizedDescription)")
+            Log.send.service.error("Error fetching user LP positions: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }

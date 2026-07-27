@@ -39,7 +39,7 @@ final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
                 if ipAddress != nil { break }
             }
         }
-        print("Resolved service address: \(ipAddress ?? "unknown")")
+        logger.debug("Resolved service address: \(ipAddress ?? "unknown", privacy: .public)")
         logger.info("Service found: \(sender.name), \(sender.hostName ?? ""), port \(sender.port) in domain \(sender.domain)")
         serverURL = "http://\(ipAddress ?? sender.hostName ?? ""):\(sender.port)"
     }

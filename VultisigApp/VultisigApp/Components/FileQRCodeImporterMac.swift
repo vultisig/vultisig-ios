@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 import UniformTypeIdentifiers
 
 struct FileQRCodeImporterMac: View {
@@ -99,11 +100,11 @@ struct FileQRCodeImporterMac: View {
 
 #Preview {
     func reset() {
-        print("RESET")
+        Log.app.view.debug("RESET")
     }
 
     func handleFileImport(_: Result<[URL], Error>) {
-        print("IMPORTED")
+        Log.app.view.debug("IMPORTED")
     }
 
     return FileQRCodeImporterMac(fileName: "File", resetData: reset, handleFileImport: handleFileImport, selectedImage: nil)

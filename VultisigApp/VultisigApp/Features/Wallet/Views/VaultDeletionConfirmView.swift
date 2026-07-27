@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
 
 struct VaultDeletionConfirmView: View {
     let vault: Vault
@@ -117,7 +118,7 @@ struct VaultDeletionConfirmView: View {
                 }
                 try modelContext.save()
             } catch {
-                print("Error: \(error)")
+                Log.wallet.view.error("Error: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

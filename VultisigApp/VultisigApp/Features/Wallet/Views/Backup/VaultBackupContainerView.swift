@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct VaultBackupContainerView<Content: View>: View {
     @Binding var presentFileExporter: Bool
@@ -32,7 +33,7 @@ struct VaultBackupContainerView<Content: View>: View {
                         dismissView()
                     }
                 case .failure(let error):
-                    print("Error saving file: \(error.localizedDescription)")
+                    Log.wallet.view.error("Error saving file: \(error.localizedDescription, privacy: .public)")
                     backupViewModel.alertTitle = "errorSavingFile"
                     backupViewModel.showAlert = true
                 }

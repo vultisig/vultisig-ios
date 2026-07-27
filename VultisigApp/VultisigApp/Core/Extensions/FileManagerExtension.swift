@@ -19,7 +19,7 @@ extension FileManager {
                 try self.removeItem(atPath: path)
             }
         } catch {
-            print(error)
+            Log.app.other.error("clearTmpDirectory failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 

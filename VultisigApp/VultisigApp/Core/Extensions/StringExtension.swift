@@ -7,6 +7,7 @@
 
 import SwiftUI
 import BigInt
+import OSLog
 
 // MARK: - String Extensions for Padding and Hex Processing
 
@@ -168,7 +169,7 @@ extension String {
             return .zero
         }
         guard let number = parseInput() else {
-            print("Failed to convert to Decimal: \(self)")
+            Log.app.other.error("Failed to convert to Decimal: \(self, privacy: .public)")
             return .zero
         }
 
