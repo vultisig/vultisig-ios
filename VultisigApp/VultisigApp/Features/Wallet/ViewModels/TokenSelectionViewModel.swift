@@ -205,13 +205,19 @@ struct TokenSelectionLogic {
             return []
         }
 
-        let tickers = chainCoins
-            .filter { !$0.isNativeToken }
-            .map { $0.ticker.lowercased() }
+        // Exclude only the EXACT held tokens (by uniqueId), never every token
+        // sharing a held ticker: a ticker exclusion would suppress the badged
+        // unverified lookalikes (fake USDC on another contract) that search is
+        // meant to reveal — and any legit different-contract same-ticker token.
+        let heldIds = Set(
+            chainCoins
+                .filter { !$0.isNativeToken }
+                .map { $0.toCoinMeta().uniqueId }
+        )
 
         let filtered = tokens
             .filter {
-                $0.ticker.lowercased().contains(searchText.lowercased()) && !tickers.contains($0.ticker.lowercased()) }
+                $0.ticker.lowercased().contains(searchText.lowercased()) && !heldIds.contains($0.uniqueId) }
             .prefix(20)
 
         return Array(filtered)
