@@ -1181,8 +1181,6 @@
 "shouldOnlyTakeAMinute..." = "This should only take a second";
 "showBalance" = "Show balance";
 "showHint" = "Show hint";
-"showUnverifiedTokensSubtitle" = "Unverified tokens can impersonate real assets. Only add one after confirming its contract.";
-"showUnverifiedTokensTitle" = "Show unverified results";
 "sign" = "Sign";
 "signature" = "Signature";
 "signCustomMessage" = "Sign custom message";
