@@ -20,7 +20,7 @@ import Foundation
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-add-thor-lp")
+private let logger = Log.send.other
 
 @Observable
 @MainActor

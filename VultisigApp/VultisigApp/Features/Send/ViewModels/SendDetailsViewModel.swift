@@ -30,7 +30,7 @@ enum SendDetailsFocusedTab: String {
 @MainActor
 @Observable
 final class SendDetailsViewModel {
-    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "send-details-form-vm")
+    @ObservationIgnored private let logger = Log.send.viewModel
     @ObservationIgnored private let interactor: SendInteractor
     @ObservationIgnored private let addressResolver: (String, Chain) async throws -> String
 

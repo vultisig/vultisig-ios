@@ -8,7 +8,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "function-transaction-screen")
+private let logger = Log.send.view
 
 struct FunctionTransactionScreen: View {
     @Environment(\.router) var router
