@@ -19,12 +19,30 @@ class TokenSelectionViewModel: ObservableObject {
     /// views can badge each token. Anything not in the map (vault-held coins,
     /// curated presets) is treated as `.curated` (no badge).
     @Published var verificationByUniqueId: [String: TokenVerification] = [:]
+    /// Opt-in reveal of `.unverified` search results, default OFF. Per-session:
+    /// the view model is recreated each time the picker is presented, so the safe
+    /// default re-arms rather than persisting a risky choice across sessions.
+    @Published var showUnverified: Bool = false
+
+    /// Auto-surfacing (curated / verified) externals — always in the search pool.
+    private var verifiedExternal: [CoinMeta] = []
+    /// Withheld `.unverified` externals — folded into the search pool only while
+    /// `showUnverified` is on.
+    private var unverifiedExternal: [CoinMeta] = []
+
     private var loadingTask: Task<Void, Never>?
 
     private let logic = TokenSelectionLogic.shared
 
     var showRetry: Bool {
         return logic.showRetry(error: error)
+    }
+
+    /// Whether the loaded catalog has any withheld unverified candidates — gates
+    /// the "Show unverified" toggle's visibility (no toggle when there's nothing
+    /// to reveal, e.g. chains with no unverified long-tail).
+    var hasUnverifiedResults: Bool {
+        !unverifiedExternal.isEmpty
     }
 
     /// Verification for a row — defaults to `.curated` (unbadged) for tokens the
@@ -63,6 +81,14 @@ class TokenSelectionViewModel: ObservableObject {
         searchedTokens = logic.filteredTokens(chainCoins: chainCoins, searchText: searchText, tokens: tokens)
     }
 
+    /// Flip the opt-in unverified reveal and re-derive the visible lists so the
+    /// withheld candidates appear in (or disappear from) search immediately.
+    func setShowUnverified(_ show: Bool, chain: Chain, vault: Vault) {
+        guard show != showUnverified else { return }
+        showUnverified = show
+        recompute(chain: chain, chainCoins: vault.coins(for: chain), hiddenTokens: vault.hiddenTokens)
+    }
+
     private func loadExternalTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) async {
         guard !Task.isCancelled else { return }
 
@@ -70,18 +96,13 @@ class TokenSelectionViewModel: ObservableObject {
         error = nil
 
         do {
-            let result = try await logic.loadExternalTokens(
-                chain: chain,
-                chainCoins: chainCoins,
-                currentTokens: tokens,
-                hiddenTokens: hiddenTokens
-            )
+            let result = try await logic.loadExternalTokens(chain: chain)
 
             if !Task.isCancelled {
-                tokens.append(contentsOf: result.newTokens)
-                selectedTokens = result.updatedSelectedTokens
-                preExistTokens = result.updatedPreExistTokens
+                verifiedExternal = result.verifiedTokens
+                unverifiedExternal = result.unverifiedTokens
                 verificationByUniqueId = result.verificationByUniqueId
+                recompute(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
             }
         } catch {
             // Capture the error for UI display
@@ -89,6 +110,22 @@ class TokenSelectionViewModel: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    /// Re-derive the visible token pool and its dependent lists from the loaded
+    /// externals under the current `showUnverified` setting. The unverified
+    /// candidates only ever join the *search* pool (browse still shows held +
+    /// curated presets, matching the pre-existing behaviour for verified
+    /// externals too).
+    private func recompute(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) {
+        tokens = TokenSelectionLogic.searchPool(
+            verified: verifiedExternal,
+            unverified: unverifiedExternal,
+            showUnverified: showUnverified
+        )
+        selectedTokens = logic.selectedTokens(chainCoins: chainCoins, tokens: tokens)
+        preExistTokens = logic.preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
+        searchedTokens = logic.filteredTokens(chainCoins: chainCoins, searchText: searchText, tokens: tokens)
     }
 }
 
@@ -160,36 +197,31 @@ struct TokenSelectionLogic {
         }
     }
 
+    /// The search token pool under the current toggle: the verified externals
+    /// always, plus the withheld unverified ones only when the opt-in is on.
+    /// Pure + `static` so the on/off gating is unit-tested directly.
+    static func searchPool(verified: [CoinMeta], unverified: [CoinMeta], showUnverified: Bool) -> [CoinMeta] {
+        verified + (showUnverified ? unverified : [])
+    }
+
     struct LoadResult {
-        let newTokens: [CoinMeta]
-        let updatedSelectedTokens: [CoinMeta]
-        let updatedPreExistTokens: [CoinMeta]
+        /// Curated / verified externals (auto-surfacing).
+        let verifiedTokens: [CoinMeta]
+        /// Withheld `.unverified` externals (spam already filtered).
+        let unverifiedTokens: [CoinMeta]
+        /// `uniqueId → verification` for badging the rows.
         let verificationByUniqueId: [String: TokenVerification]
     }
 
-    func loadExternalTokens(
-        chain: Chain,
-        chainCoins: [Coin],
-        currentTokens: [CoinMeta],
-        hiddenTokens: [HiddenToken]
-    ) async throws -> LoadResult {
-        let currentTokenIdentifiers = Set(currentTokens.map { "\($0.chain.rawValue):\($0.ticker)" })
-
-        // Propagate errors instead of swallowing them with try?. `loadCatalog`
-        // carries the verification the row views badge from — the auto-surfacing
-        // list is used here (the opt-in unverified list is layered in by the
-        // view model's toggle).
+    /// Fetches the verification-aware catalog for `chain`. The view model owns
+    /// how the two lists are merged with the vault's held coins and how the
+    /// unverified list is gated behind the toggle, so this stays a thin fetch.
+    /// Errors propagate (retry UI) rather than being swallowed with `try?`.
+    func loadExternalTokens(chain: Chain) async throws -> LoadResult {
         let catalog = try await searchService.loadCatalog(for: chain)
-        let uniqueTokens = catalog.surfaceable.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
-
-        let allTokens = currentTokens + uniqueTokens
-        let updatedSelectedTokens = selectedTokens(chainCoins: chainCoins, tokens: allTokens)
-        let updatedPreExistTokens = preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
-
         return LoadResult(
-            newTokens: uniqueTokens,
-            updatedSelectedTokens: updatedSelectedTokens,
-            updatedPreExistTokens: updatedPreExistTokens,
+            verifiedTokens: catalog.surfaceable,
+            unverifiedTokens: catalog.unverified,
             verificationByUniqueId: catalog.verificationByUniqueId
         )
     }

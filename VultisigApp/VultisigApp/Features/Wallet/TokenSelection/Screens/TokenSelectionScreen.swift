@@ -41,7 +41,8 @@ struct TokenSelectionScreen: View {
             elements: sections,
             onSave: onSave,
             cellBuilder: cellBuilder,
-            emptyStateBuilder: { EmptyView() }
+            emptyStateBuilder: { EmptyView() },
+            headerAccessory: { unverifiedToggle }
         )
         .onAppear {
             tokenViewModel.loadData(chain: chain, vault: vault)
@@ -51,6 +52,32 @@ struct TokenSelectionScreen: View {
         }
         .onReceive(tokenViewModel.$searchText) { _ in
             tokenViewModel.updateSearchedTokens(chain: chain, vault: vault)
+        }
+    }
+
+    /// Opt-in reveal of the withheld unverified search results. Shown only when
+    /// there are unverified candidates to reveal (otherwise it's noise). Routes
+    /// through `setShowUnverified` so the visible lists re-derive immediately.
+    @ViewBuilder
+    private var unverifiedToggle: some View {
+        if tokenViewModel.hasUnverifiedResults {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("showUnverifiedTokensTitle".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    Text("showUnverifiedTokensSubtitle".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                VultiToggle(isOn: Binding(
+                    get: { tokenViewModel.showUnverified },
+                    set: { tokenViewModel.setShowUnverified($0, chain: chain, vault: vault) }
+                ))
+            }
+            .padding(.trailing, 16)
         }
     }
 

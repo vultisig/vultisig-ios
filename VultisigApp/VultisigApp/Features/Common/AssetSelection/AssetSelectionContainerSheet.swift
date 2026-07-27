@@ -25,7 +25,7 @@ struct AssetSection<SectionType: Hashable, Asset: Hashable>: Hashable {
     }
 }
 
-struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View>: View {
+struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View, HeaderAccessory: View>: View {
     let title: String
     let subtitle: String?
     @Binding var isPresented: Bool
@@ -34,6 +34,10 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
     var onSave: () -> Void
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
+    /// Optional control rendered between the search field and the grid (e.g. the
+    /// token picker's "Show unverified" toggle). Defaults to `EmptyView` via the
+    /// convenience init below, so existing callers are unaffected.
+    var headerAccessory: () -> HeaderAccessory
 
     @State var searchBarFocused: Bool = false
 
@@ -45,7 +49,8 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         elements: [AssetSection<SectionType, Asset>],
         onSave: @escaping () -> Void,
         cellBuilder: @escaping (Asset, SectionType) -> CellView,
-        emptyStateBuilder: @escaping () -> EmptyStateView
+        emptyStateBuilder: @escaping () -> EmptyStateView,
+        @ViewBuilder headerAccessory: @escaping () -> HeaderAccessory
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -55,6 +60,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         self.onSave = onSave
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
+        self.headerAccessory = headerAccessory
     }
 
     var body: some View {
@@ -69,7 +75,8 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             insets: EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 0),
             elements: elements,
             cellBuilder: cellBuilder,
-            emptyStateBuilder: emptyStateBuilder
+            emptyStateBuilder: emptyStateBuilder,
+            headerAccessory: headerAccessory
         )
         .supportsLiquidGlass { view, isSupported in
             view.padding(.bottom, isSupported ? 0 : 16)
@@ -164,6 +171,33 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             }
             .padding(.bottom, 16)
         }
+    }
+}
+
+// Convenience init for the common case with no header accessory, so existing
+// callers keep the original signature (HeaderAccessory inferred as EmptyView).
+extension AssetSelectionContainerSheet where HeaderAccessory == EmptyView {
+    init(
+        title: String,
+        subtitle: String? = nil,
+        isPresented: Binding<Bool>,
+        searchText: Binding<String>,
+        elements: [AssetSection<SectionType, Asset>],
+        onSave: @escaping () -> Void,
+        cellBuilder: @escaping (Asset, SectionType) -> CellView,
+        emptyStateBuilder: @escaping () -> EmptyStateView
+    ) {
+        self.init(
+            title: title,
+            subtitle: subtitle,
+            isPresented: isPresented,
+            searchText: searchText,
+            elements: elements,
+            onSave: onSave,
+            cellBuilder: cellBuilder,
+            emptyStateBuilder: emptyStateBuilder,
+            headerAccessory: { EmptyView() }
+        )
     }
 }
 

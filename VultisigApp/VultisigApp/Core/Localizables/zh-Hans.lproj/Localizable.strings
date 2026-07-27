@@ -1185,6 +1185,8 @@
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
 "showHint" = "显示提示";
+"showUnverifiedTokensSubtitle" = "未验证的代币可能会假冒真实资产。请在确认合约地址后再添加。";
+"showUnverifiedTokensTitle" = "显示未验证的结果";
 "sign" = "签名";
 "signature" = "签名";
 "signCustomMessage" = "签署自定义消息";

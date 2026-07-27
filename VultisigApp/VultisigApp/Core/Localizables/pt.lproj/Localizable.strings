@@ -1185,6 +1185,8 @@
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um segundo";
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar dica";
+"showUnverifiedTokensSubtitle" = "Tokens não verificados podem imitar ativos reais. Adicione apenas após confirmar o contrato.";
+"showUnverifiedTokensTitle" = "Mostrar resultados não verificados";
 "sign" = "Assinar";
 "signature" = "Assinatura";
 "signCustomMessage" = "Assinar mensagem personalizada";
