@@ -52,6 +52,25 @@ final class TokenSelectionPoolTests: XCTestCase {
                        "Held coin enriched by uniqueId; the unverified lookalike must not appear")
     }
 
+    func testSearchExcludesOnlyExactHeldTokenNotSameTickerLookalikes() {
+        // Vault holds real USDC (contract A). Search for "usdc" over a pool that
+        // has an unverified lookalike USDC (contract B) plus the exact held token.
+        // The exact held token is excluded (already added); the lookalike is
+        // revealed (badged) so the user can see the impersonation risk.
+        let heldUSDC = Coin(asset: meta("USDC", contract: "0xReal"), address: "0xwallet", hexPublicKey: "pub")
+        let heldFromPool = meta("USDC", contract: "0xReal")
+        let lookalike = meta("USDC", contract: "0xFAKE")
+
+        let result = TokenSelectionLogic.shared.filteredTokens(
+            chainCoins: [heldUSDC],
+            searchText: "usdc",
+            tokens: [heldFromPool, lookalike]
+        )
+
+        XCTAssertEqual(result.map { $0.contractAddress }, ["0xFAKE"],
+                       "Search hides only the exact held token; the same-ticker lookalike is revealed")
+    }
+
     // MARK: - browse vs search (VM level)
 
     func testBrowseShowsVerifiedButNotUnverifiedWhileSearchRevealsUnverified() async {
