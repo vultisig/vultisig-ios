@@ -13,7 +13,7 @@ class MessagePuller: ObservableObject {
     let vaultPubKey: String
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "net-message-puller")
+    private let logger = Log.keygen.network
     private var currentTask: Task<Void, Error>? = nil
     let encryptGCM: Bool
     private let httpClient: HTTPClientProtocol

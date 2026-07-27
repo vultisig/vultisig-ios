@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 
 class KeygenVerify: ObservableObject {
-    private let logger = Logger(subsystem: "keygen-verify", category: "communication")
+    private let logger = Log.keygen.network
     let serverAddr: String
     let sessionID: String
     let localPartyID: String

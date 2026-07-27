@@ -19,7 +19,7 @@ private extension goschnorr.schnorr_lib_error {
     static let schnorrLibOK = goschnorr.schnorr_lib_error(rawValue: 0)
 }
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-schnorr-keysign")
+private let logger = Log.keysign.network
 
 final class SchnorrKeysign {
     let keysignCommittee: [String]

@@ -40,7 +40,7 @@ enum JoinKeysignStatus {
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
 
-    private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
+    private let logger = Log.keysign.viewModel
 
     var vault: Vault
     var serviceDelegate: ServiceDelegate?

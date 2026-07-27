@@ -20,7 +20,7 @@ struct DilithiumKeysignResponse: Codable {
     }
 }
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-dilithium-keysign")
+private let logger = Log.keysign.network
 
 final class DilithiumKeysign {
     let keysignCommittee: [String]

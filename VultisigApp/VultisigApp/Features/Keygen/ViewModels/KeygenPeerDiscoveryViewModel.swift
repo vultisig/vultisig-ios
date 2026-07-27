@@ -26,7 +26,7 @@ struct VaultRegistrationSnapshot {
 
 class KeygenPeerDiscoveryViewModel: ObservableObject {
 
-    private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
+    private let logger = Log.keygen.network
 
     var tssType: TssType
     var vault: Vault

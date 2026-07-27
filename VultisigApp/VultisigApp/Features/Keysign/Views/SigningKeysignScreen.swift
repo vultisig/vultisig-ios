@@ -18,7 +18,7 @@ import Mediator
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "signing-keysign")
+private let logger = Log.keysign.view
 
 struct SigningKeysignScreen: View {
     @Environment(\.router) var router
