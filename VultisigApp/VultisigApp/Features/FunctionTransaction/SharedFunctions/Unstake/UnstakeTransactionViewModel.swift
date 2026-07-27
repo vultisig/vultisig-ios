@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "unstake-transaction-view-model")
+private let logger = Log.send.viewModel
 
 final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin

@@ -38,7 +38,7 @@ final class TonSignDisplayViewModel: ObservableObject {
     @Published private(set) var simulationSwap: TonSwapSimulator.SwapInfo?
     @Published private(set) var isSimulating: Bool = false
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-sign-display-view-model")
+    private let logger = Log.send.viewModel
 
     private var lastDecodedKey: [String]?
 

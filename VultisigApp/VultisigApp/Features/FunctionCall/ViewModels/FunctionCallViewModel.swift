@@ -29,7 +29,7 @@ class FunctionCallViewModel: ObservableObject {
 
     private let mediator = Mediator.shared
 
-    let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
+    let logger = Log.send.other
 
     /// The fiat figure printed beside the crypto fee row.
     ///
