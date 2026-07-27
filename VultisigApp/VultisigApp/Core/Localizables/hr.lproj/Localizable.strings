@@ -1181,6 +1181,8 @@
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
 "showHint" = "Prikaži hint";
+"showUnverifiedTokensSubtitle" = "Nepotvrđeni tokeni mogu oponašati prave tokene. Dodajte ih tek nakon provjere ugovora.";
+"showUnverifiedTokensTitle" = "Prikaži nepotvrđene rezultate";
 "sign" = "Potpiši";
 "signature" = "Potpis";
 "signCustomMessage" = "Potpiši prilagođenu poruku";

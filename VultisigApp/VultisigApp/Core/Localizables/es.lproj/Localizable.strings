@@ -1181,6 +1181,8 @@
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un segundo";
 "showBalance" = "Mostrar saldo";
 "showHint" = "Mostrar pista";
+"showUnverifiedTokensSubtitle" = "Los tokens no verificados pueden suplantar activos reales. Añade uno solo tras confirmar su contrato.";
+"showUnverifiedTokensTitle" = "Mostrar resultados no verificados";
 "sign" = "Firmar";
 "signature" = "Firma";
 "signCustomMessage" = "Firmar mensaje personalizado";
