@@ -4,8 +4,8 @@
 //
 //  Pins the wallet add-token picker's verification-aware split of the catalog
 //  (`TokenSearchService.searchResult`): the auto-surfacing list stays curated /
-//  verified only, the opt-in `unverified` list carries the withheld candidates
-//  minus spam, and the verification map lets the row views badge each token.
+//  verified only, the withheld `unverified` list carries the search-reveal
+//  candidates minus spam, and the verification map lets the row views badge them.
 //
 
 import XCTest
@@ -46,7 +46,7 @@ final class TokenSearchResultTests: XCTestCase {
                        "Unverified stays out of the auto-surfacing list")
     }
 
-    func testUnverifiedListHardFiltersSpamRegardlessOfToggle() {
+    func testUnverifiedListHardFiltersSpam() {
         let result = TokenSearchService.searchResult(from: [
             token("visit-x.com", .unverified, contract: "0x1"),   // URL-like ticker
             token("EMPTY", .unverified, contract: "0x2", logo: ""), // empty logo
@@ -59,7 +59,7 @@ final class TokenSearchResultTests: XCTestCase {
 
     func testSpamIsHardGatedFromSurfaceableToo() {
         // A verified (auto-surfacing) candidate with a spammy ticker must NOT
-        // surface — spam is a hard gate on both lists, not just the opt-in one.
+        // surface — spam is a hard gate on both lists, not just the withheld one.
         let result = TokenSearchService.searchResult(from: [
             token("visit.io", .verified(source: "CoinGecko"), contract: "0x1"),
             token("USDC", .verified(source: "CoinGecko"), contract: "0x2")

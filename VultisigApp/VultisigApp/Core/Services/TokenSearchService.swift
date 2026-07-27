@@ -48,7 +48,7 @@ struct TokenSearchService {
 
     /// The full verification-aware catalog for the wallet add-token picker: the
     /// auto-surfacing (curated / verified) list, the withheld `.unverified`
-    /// candidates the "Show unverified" toggle reveals, and a `uniqueId →
+    /// candidates that search reveals (badged), and a `uniqueId →
     /// verification` map the row views badge from. Unlike `loadTokens`, this is
     /// NOT routed through `SwapTokenListCache` — that cache stays `[CoinMeta]`-typed
     /// and drives the swap pickers untouched; the wallet catalog is re-derived per
@@ -89,9 +89,9 @@ struct TokenSearchService {
 
     /// Splits the catalog into the wallet picker's three verification-aware
     /// outputs. `surfaceable` is the auto-surfacing (curated / verified,
-    /// non-native) list; `unverified` is the withheld long-tail the opt-in
-    /// toggle reveals. The synchronous `isLikelySpam` hard gate is applied to
-    /// BOTH — spam never surfaces, verified or unverified, toggle on or off (the
+    /// non-native) list; `unverified` is the withheld long-tail search reveals.
+    /// The synchronous `isLikelySpam` hard gate is applied to
+    /// BOTH — spam never surfaces, verified or unverified, browse or search (the
     /// dynamic-catalog risk posture). It's applied here in the wallet catalog
     /// path only: the swap-shared `surfaceableTokens`/`loadTokens` path is left
     /// untouched so the swap pickers don't regress. `verificationByUniqueId`
@@ -123,8 +123,8 @@ struct TokenSearchService {
 struct TokenSearchResult {
     /// Curated / verified, non-native — the tokens that auto-surface (default).
     let surfaceable: [CoinMeta]
-    /// Withheld `.unverified` candidates (non-native, spam-filtered) the
-    /// opt-in toggle reveals.
+    /// Withheld `.unverified` candidates (non-native, spam-filtered) that
+    /// search reveals.
     let unverified: [CoinMeta]
     /// `CoinMeta.uniqueId → verification` for badging. Only non-native entries.
     let verificationByUniqueId: [String: TokenVerification]
