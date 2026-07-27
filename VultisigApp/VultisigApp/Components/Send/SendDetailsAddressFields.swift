@@ -42,14 +42,15 @@ struct SendDetailsAddressFields: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .font(Theme.fonts.caption12).padding(.vertical, 10)
+        .font(Theme.fonts.caption12)
         .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
         .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .padding(1)
     }
@@ -62,7 +63,8 @@ struct SendDetailsAddressFields: View {
             error: Binding(
                 get: { viewModel.showAddressAlert ? viewModel.errorMessage : nil },
                 set: { _ in }
-            )
+            ),
+            errorStyle: .warning
         ) {
             handle(addressResult: $0)
         }
@@ -93,6 +95,13 @@ struct SendDetailsAddressFields: View {
                 viewModel.errorMessage = nil
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
+            } else {
+                // Paste/QR/address-book value that neither matches the current
+                // chain nor one we can switch to. A same-chain-valid value
+                // advances via the shared `toAddress` onChange; an ENS/TNS name
+                // still needs async resolution. Only a value that can never
+                // resolve is flagged now, so Next is disabled *with a reason*.
+                viewModel.markInvalidRecipientIfUnresolvable()
             }
         }
     }

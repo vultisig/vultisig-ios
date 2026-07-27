@@ -583,6 +583,7 @@
 "invalidIntegerError" = "Ungültige Ganzzahl";
 "invalidLPUnits" = "Ungültige LP-Einheiten";
 "invalidOperatorFee" = "Ungültige Betreibergebühr";
+"invalidRecipientAddressError" = "Dieser Empfänger ist keine gültige Adresse für diese Kette.";
 "invalidVaultData" = "Ungültige Tresordaten";
 "Italian" = "Italienisch";
 "iUnderstand" = "Ich verstehe";

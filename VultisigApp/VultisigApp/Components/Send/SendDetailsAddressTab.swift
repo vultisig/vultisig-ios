@@ -22,7 +22,13 @@ struct SendDetailsAddressTab: View {
     }
 
     var content: some View {
-        SendFormExpandableSection(isExpanded: isExpanded) {
+        SendFormExpandableSection(
+            isExpanded: isExpanded,
+            cornerRadius: 24,
+            horizontalPadding: 16,
+            verticalPadding: 20,
+            backgroundColor: Theme.colors.bgPrimary
+        ) {
             titleSection
         } content: {
             VStack(spacing: 16) {
@@ -53,7 +59,7 @@ struct SendDetailsAddressTab: View {
     }
 
     var separator: some View {
-        LinearSeparator()
+        Separator(color: Theme.colors.borderLight, opacity: 1)
     }
 
     var selectedAddress: some View {
@@ -78,6 +84,10 @@ struct SendDetailsAddressTab: View {
         }
         if !viewModel.toAddress.isEmpty {
             guard await viewModel.validateToAddress() else {
+                // Collapsing the address tab on an unresolved recipient is a
+                // definitive failure — surface the inline reason rather than
+                // just leaving Next disabled.
+                viewModel.markInvalidRecipient()
                 viewModel.addressSetupDone = false
                 if viewModel.selectedTab == .amount {
                     viewModel.onSelect(tab: .address)

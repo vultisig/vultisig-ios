@@ -13,7 +13,8 @@ import SwiftUI
 /// from/to fields are a stacked PAIR that must read as one unit (24 outside, 12
 /// where they meet) — a standalone card has no neighbour to meet, so it takes the
 /// outer 24 on all corners. The paired Sell/Buy rows below keep the uneven
-/// pairing shape (see `LimitAssetRowKind.cornerRadii`).
+/// pairing shape via `NotchedRectangle` (24 outside / 12 where they meet), so the
+/// shared toggle seats in a real cutout instead of page-colored paint.
 private let limitSectionCornerRadius: CGFloat = 24
 
 /// Corner radius for the inline notice/warning rows. Deliberately NOT the section
@@ -669,7 +670,8 @@ private struct LimitAssetSwapForm: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 8) {
+            // Shared with the notch-center inset so the toggle seats in a full circle.
+            VStack(spacing: swapCardSpacing) {
                 LimitAssetRow(
                     kind: .sell,
                     coin: fromCoin,
@@ -725,16 +727,6 @@ private enum LimitAssetRowKind {
     var labelKey: String {
         self == .sell ? "limitSwap.sell" : "limitSwap.buy"
     }
-
-    var cornerRadii: RectangleCornerRadii {
-        // Mirrors the Figma — Sell rounded top-heavy, Buy bottom-heavy.
-        switch self {
-        case .sell:
-            return .init(topLeading: 24, bottomLeading: 12, bottomTrailing: 12, topTrailing: 24)
-        case .buy:
-            return .init(topLeading: 12, bottomLeading: 24, bottomTrailing: 24, topTrailing: 12)
-        }
-    }
 }
 
 private struct LimitAssetRow: View {
@@ -755,111 +747,28 @@ private struct LimitAssetRow: View {
     let onPickAsset: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                HStack(spacing: 6) {
-                    Text(kind.labelKey.localized)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-
-                    Button(action: onPickAsset) {
-                        HStack(spacing: 4) {
-                            if !asset.chainLogo.isEmpty {
-                                AsyncImageView(
-                                    logo: asset.chainLogo,
-                                    size: CGSize(width: 16, height: 16),
-                                    ticker: asset.chain.ticker,
-                                    tokenChainLogo: nil
-                                )
-                            }
-                            Text(asset.chain.name)
-                                .font(Theme.fonts.caption12)
-                                .foregroundStyle(Theme.colors.textPrimary)
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(Theme.colors.textTertiary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                Spacer()
-
-                if kind == .sell {
-                    Text("\(coin.balanceString) \(coin.ticker)")
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                }
-            }
-
-            HStack(alignment: .center) {
-                Button(action: onPickAsset) {
-                    HStack(spacing: 8) {
-                        if !asset.logo.isEmpty {
-                            AsyncImageView(
-                                logo: asset.logo,
-                                size: CGSize(width: 36, height: 36),
-                                ticker: asset.ticker,
-                                tokenChainLogo: asset.chainLogo
-                            )
-                        }
-                        Text(asset.ticker)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    }
-                    .padding(.leading, 6)
-                    .padding(.trailing, 12)
-                    .padding(.vertical, 6)
-                    .background(Theme.colors.bgSurface2)
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-
-                Spacer(minLength: 12)
-
-                VStack(alignment: .trailing, spacing: 6) {
-                    if let editableFocus {
-                        TextField("0", text: $amountText.decimalOnly())
-                            // `.plain` strips macOS's default bordered chrome (the
-                            // dark bezel box); iOS is unaffected. Matches the market
-                            // amount field.
-                            .textFieldStyle(.plain)
-                            .font(Theme.fonts.title2)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .multilineTextAlignment(.trailing)
-                            .lineLimit(1)
-                            .focused(focusedField, equals: editableFocus)
-                            #if os(iOS)
-                            .keyboardType(.decimalPad)
-                            #endif
-                    } else {
-                        Text(amountText)
-                            .font(Theme.fonts.title2)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
-
-                    Text(fiatLine)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                }
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            UnevenRoundedRectangle(cornerRadii: kind.cornerRadii)
-                .fill(Color.clear)
-                .overlay(
-                    UnevenRoundedRectangle(cornerRadii: kind.cornerRadii)
-                        .stroke(Theme.colors.borderLight, lineWidth: 1)
-                )
+        // Both the chain chip and the coin pill open the same asset picker in the
+        // Limit form, so `onTapChain` and `onTapCoin` share `onPickAsset`. Balance
+        // is shown only on the Sell row (the Buy amount is computed). The editable
+        // Sell field participates in the form's single keyboard toolbar via `focus`.
+        SwapAssetCard<LimitFocusField>(
+            label: kind.labelKey.localized,
+            chainLogo: asset.chainLogo,
+            chainName: asset.chain.name,
+            onTapChain: onPickAsset,
+            coinLogo: asset.logo,
+            // No chain badge on a native asset (its icon already is the chain) —
+            // matches the Market card, which passes a nil `coin.tokenChainLogo`.
+            coinChainLogo: asset.isNativeToken ? nil : asset.chainLogo,
+            ticker: asset.ticker,
+            onTapCoin: onPickAsset,
+            balance: kind == .sell ? "\(coin.balanceString) \(coin.ticker)" : nil,
+            amount: $amountText,
+            isEditable: editableFocus != nil,
+            focus: focusedField,
+            focusValue: editableFocus,
+            fiat: fiatLine,
+            isSecondRow: kind == .buy
         )
     }
 

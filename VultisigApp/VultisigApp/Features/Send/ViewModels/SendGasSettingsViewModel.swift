@@ -124,7 +124,7 @@ private extension SendGasSettingsViewModel {
         // (padded/floored), so the field and the Total Fee reflect the estimate
         // instead of the flat default. Skipped when the user has pinned a custom
         // limit — their value must win.
-        var resolvedGasLimit: BigInt?
+        let resolvedGasLimit: BigInt?
         if customGasLimit == nil, !fromAddress.isEmpty, !hasEstimatedGasLimit {
             resolvedGasLimit = await BlockChainService.shared.resolveEVMSendGasLimit(
                 coin: coin,
@@ -135,6 +135,8 @@ private extension SendGasSettingsViewModel {
                 requestedGasLimit: nil,
                 customGasLimit: nil
             )
+        } else {
+            resolvedGasLimit = nil
         }
 
         await MainActor.run {
