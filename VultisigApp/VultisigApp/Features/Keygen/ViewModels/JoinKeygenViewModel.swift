@@ -354,7 +354,7 @@ class JoinKeygenViewModel: ObservableObject {
             }
             handleDeeplinkScan(URL(string: urlString))
         } catch {
-            print(error)
+            logger.error("\(error.localizedDescription, privacy: .public)")
         }
     }
 

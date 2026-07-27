@@ -102,7 +102,7 @@ final class DilithiumKeysign {
         defer {
             let freeResult = mldsa_keyshare_free(&h)
             if freeResult != MLDSA_LIB_OK {
-                print("fail to free keyshare \(freeResult)")
+                logger.error("fail to free keyshare \(String(describing: freeResult), privacy: .public)")
             }
         }
 
@@ -147,7 +147,7 @@ final class DilithiumKeysign {
         var mutableMessage = message
         let receiverResult = mldsa_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         if receiverResult != MLDSA_LIB_OK {
-            print("fail to get receiver message,error: \(receiverResult)")
+            logger.error("fail to get receiver message,error: \(String(describing: receiverResult), privacy: .public)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
@@ -160,7 +160,7 @@ final class DilithiumKeysign {
         }
         let result = mldsa_sign_session_output_message(handle, &buf)
         if result != MLDSA_LIB_OK {
-            print("fail to get outbound message: \(result)")
+            logger.error("fail to get outbound message: \(String(describing: result), privacy: .public)")
             return (result, [])
         }
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
@@ -175,7 +175,7 @@ final class DilithiumKeysign {
             try Task.checkCancellation()
             let (result, outboundMessage) = GetDilithiumOutboundMessage(handle: handle)
             if result != MLDSA_LIB_OK {
-                print("fail to get outbound message,\(result)")
+                logger.error("fail to get outbound message,\(String(describing: result), privacy: .public)")
             }
             if outboundMessage.isEmpty {
                 return
@@ -191,7 +191,7 @@ final class DilithiumKeysign {
                     break
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
+                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
@@ -257,10 +257,10 @@ final class DilithiumKeysign {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(messageID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                logger.debug("message with key:\(key, privacy: .public) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            logger.debug("Got message from: \(msg.from, privacy: .public), to: \(msg.to, privacy: .public), key:\(key, privacy: .public)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -378,7 +378,7 @@ final class DilithiumKeysign {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.
             if error is CancellationError { throw error }
-            print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
+            logger.error("Failed to sign message (\(messageToSign, privacy: .public)), error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await DilithiumKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
             } else {
@@ -405,7 +405,7 @@ final class DilithiumKeysign {
             let header = ["message_id": message]
             _ = try await Utils.asyncPostRequest(urlString: keySignVerify.urlString, headers: header, body: jsonData)
         } catch {
-            print("Failed to send request to mediator, error:\(error)")
+            logger.error("Failed to send request to mediator, error:\(error.localizedDescription, privacy: .public)")
         }
     }
 

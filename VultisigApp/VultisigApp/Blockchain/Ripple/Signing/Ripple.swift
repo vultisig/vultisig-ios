@@ -31,7 +31,7 @@ enum RippleHelper {
             case .Ripple(let sequence, let gas, let lastLedgerSequence, let fieldDestinationTag) = keysignPayload
                 .chainSpecific
         else {
-            print("keysignPayload.chainSpecific is not Ripple")
+            logger.error("keysignPayload.chainSpecific is not Ripple")
             throw HelperError.runtimeError(
                 "getPreSignedInputData: fail to get account number and sequence"
             )
@@ -406,7 +406,7 @@ enum RippleHelper {
         let preSigningOutput = try TxCompilerPreSigningOutput(
             serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
-            print(preSigningOutput.errorMessage)
+            logger.error("\(preSigningOutput.errorMessage, privacy: .public)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.dataHash.hexString]
@@ -429,7 +429,7 @@ enum RippleHelper {
             serializedBytes: hashes)
 
         if !preSigningOutput.errorMessage.isEmpty {
-            print(preSigningOutput.errorMessage)
+            logger.error("\(preSigningOutput.errorMessage, privacy: .public)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
 
@@ -446,7 +446,7 @@ enum RippleHelper {
                 signature: signature, message: preSigningOutput.dataHash)
         else {
             let errorMessage = "Invalid signature"
-            print("\(errorMessage)")
+            logger.error("\(errorMessage, privacy: .public)")
             throw HelperError.runtimeError(errorMessage)
         }
 
@@ -464,7 +464,7 @@ enum RippleHelper {
         // The error is HERE it accepted it as a DER previously
         if !output.errorMessage.isEmpty {
             let errorMessage = output.errorMessage
-            print("errorMessage: \(errorMessage)")
+            logger.error("errorMessage: \(errorMessage, privacy: .public)")
             throw HelperError.runtimeError(errorMessage)
         }
 

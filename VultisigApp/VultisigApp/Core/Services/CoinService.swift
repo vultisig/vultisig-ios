@@ -142,7 +142,7 @@ struct CoinService {
                     let priceProviderID  = try await CryptoPriceService.shared.resolvePriceProviderID(symbol: asset.ticker, contract: asset.contractAddress)
                     assetPriceProviderId = priceProviderID ?? ""
                 } catch {
-                    print("Error resolving price provider ID for \(asset.ticker): \(error.localizedDescription)")
+                    logger.error("Error resolving price provider ID for \(asset.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
             if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: assetPriceProviderId) {
@@ -627,12 +627,12 @@ struct CoinService {
         }
 
         if !alreadyHidden {
-            print("🙈 Hiding Token: \(coin.ticker) (\(coin.contractAddress))")
+            logger.debug("🙈 Hiding Token: \(coin.ticker, privacy: .public) (\(coin.contractAddress, privacy: .public))")
             let hiddenToken = HiddenToken(coin: coin)
             vault.hiddenTokens.append(hiddenToken)
             Storage.shared.insert([hiddenToken])
         } else {
-            print("🙈 Token already hidden: \(coin.ticker)")
+            logger.debug("🙈 Token already hidden: \(coin.ticker, privacy: .public)")
         }
     }
 

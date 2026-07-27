@@ -3,6 +3,7 @@
 //  VultisigApp
 
 import SwiftUI
+import OSLog
 
 struct JoinKeysignView: View {
     let vault: Vault
@@ -27,7 +28,7 @@ struct JoinKeysignView: View {
                 do {
                     _ = try await ThorchainService.shared.getTHORChainChainID()
                 } catch {
-                    print("fail to get thorchain network id, \(error.localizedDescription)")
+                    Log.keysign.view.error("fail to get thorchain network id, \(error.localizedDescription, privacy: .public)")
                 }
             }
     }

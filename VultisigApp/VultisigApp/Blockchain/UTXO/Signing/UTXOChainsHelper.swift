@@ -6,6 +6,7 @@
 import Foundation
 import Tss
 import WalletCore
+import OSLog
 
 struct UtxoInfo: Codable, Hashable {
     let hash: String
@@ -448,7 +449,7 @@ class UTXOChainsHelper {
             throw HelperError.runtimeError("Generated transaction is empty")
         }
 
-        print("ZERO SIGNED TX: \(transactionHex)")
+        Log.chain.other.debug("ZERO SIGNED TX: \(transactionHex, privacy: .public)")
 
         return transactionHex
     }

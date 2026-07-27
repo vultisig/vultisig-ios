@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 class PreferredAssetSelectionViewModel: ObservableObject {
     @Published var searchText: String = ""
@@ -33,7 +34,7 @@ class PreferredAssetSelectionViewModel: ObservableObject {
             await MainActor.run { self.assets = assets }
         } catch {
             // Will show empty state
-            print("No pools found: \(error)")
+            Log.wallet.viewModel.error("No pools found: \(error.localizedDescription, privacy: .public)")
         }
         await MainActor.run { isLoading = false }
     }

@@ -84,7 +84,7 @@ final class DilithiumKeygen {
         }
         let result = mldsa_keygen_session_output_message(handle, &buf)
         if result != MLDSA_LIB_OK {
-            print("fail to get outbound message: \(result)")
+            logger.error("fail to get outbound message: \(String(describing: result), privacy: .public)")
             return (result, [])
         }
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
@@ -98,7 +98,7 @@ final class DilithiumKeygen {
         var mutableMessage = message
         let receiverResult = mldsa_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         if receiverResult != MLDSA_LIB_OK {
-            print("fail to get receiver message,error: \(receiverResult)")
+            logger.error("fail to get receiver message,error: \(String(describing: receiverResult), privacy: .public)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
@@ -108,7 +108,7 @@ final class DilithiumKeygen {
         repeat {
             let (result, outboundMessage) = GetDilithiumOutboundMessage(handle: handle)
             if result != MLDSA_LIB_OK {
-                print("fail to get outbound message,\(result)")
+                logger.error("fail to get outbound message,\(String(describing: result), privacy: .public)")
             }
             if outboundMessage.isEmpty {
                 return
@@ -124,7 +124,7 @@ final class DilithiumKeygen {
                     break
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString) , length:\(outboundMessage.count)")
+                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
@@ -183,7 +183,7 @@ final class DilithiumKeygen {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                logger.debug("message with key:\(key, privacy: .public) has been applied before")
                 continue
             }
 
@@ -202,7 +202,7 @@ final class DilithiumKeygen {
             if result != MLDSA_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to mldsa,\(result)")
             } else {
-                print("successfully applied inbound message to mldsa, isFinished:\(isFinished), hash:\(msg.hash), from:\(msg.from), to:\(msg.to) , length:\(decodedMsg.count)")
+                logger.debug("successfully applied inbound message to mldsa, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public), from:\(msg.from, privacy: .public), to:\(msg.to, privacy: .public) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))
@@ -231,7 +231,7 @@ final class DilithiumKeygen {
     }
 
     func DilithiumKeygenWithRetry(attempt: UInt8) async throws {
-        print("keygen committee: \(self.keygenCommittee)")
+        logger.debug("keygen committee: \(String(describing: self.keygenCommittee), privacy: .public)")
         self.cache.removeAllObjects()
         do {
             var keygenSetupMsg: [UInt8]
@@ -257,7 +257,7 @@ final class DilithiumKeygen {
             defer {
                 let sessionFreeResult = mldsa_keygen_session_free(handler)
                 if sessionFreeResult != MLDSA_LIB_OK {
-                    print("fail to free keygen session \(sessionFreeResult)")
+                    logger.error("fail to free keygen session \(String(describing: sessionFreeResult), privacy: .public)")
                 }
             }
             let h = handler
@@ -274,7 +274,7 @@ final class DilithiumKeygen {
                     var keyshareHandlerPtr = keyshareHandler
                     let freeResult = mldsa_keyshare_free(&keyshareHandlerPtr)
                     if freeResult != MLDSA_LIB_OK {
-                        print("fail to free keyshare \(freeResult)")
+                        logger.error("fail to free keyshare \(String(describing: freeResult), privacy: .public)")
                     }
                 }
                 let keyshareBytes = try getKeyshareBytes(handle: keyshareHandler)
@@ -283,14 +283,14 @@ final class DilithiumKeygen {
                 self.keyshare = DilithiumKeyshare(PubKey: publicKeyBytes.toHexString(),
                                                   Keyshare: keyshareBytes.toBase64(),
                                                   keyId: keyIdBytes.toHexString())
-                print("publicKey:\(publicKeyBytes.toHexString())")
-                print("keyId: \(keyIdBytes.toHexString())")
+                logger.debug("publicKey:\(publicKeyBytes.toHexString(), privacy: .public)")
+                logger.debug("keyId: \(keyIdBytes.toHexString(), privacy: .public)")
                 try await Task.sleep(for: .milliseconds(500))
             }
         } catch {
-            print("Failed to generate key, error: \(error.localizedDescription)")
+            logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
-                print("keygen retry, attemp: \(attempt)")
+                logger.warning("keygen retry, attemp: \(attempt)")
                 try await DilithiumKeygenWithRetry(attempt: attempt + 1)
             } else {
                 throw error

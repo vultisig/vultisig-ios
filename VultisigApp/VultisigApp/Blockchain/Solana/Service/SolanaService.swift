@@ -225,7 +225,7 @@ class SolanaService {
                 [String: SolanaFmTokenInfo].self, from: dataResponse)
             return tokenInfo
         } catch {
-            print("Error in fetchSolanaTokenInfoList:")
+            logger.error("Error in fetchSolanaTokenInfoList:")
             return [:]
         }
     }
@@ -246,13 +246,13 @@ class SolanaService {
             return tokenInfo
         } catch let error as NSError {
             if error.code == 429 {
-                print("Error in fetchSolanaJupiterTokenInfoList: Rate limit exceeded (429)")
+                logger.warning("Error in fetchSolanaJupiterTokenInfoList: Rate limit exceeded (429)")
             } else {
-                print("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription) (Code: \(error.code))")
+                logger.error("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription, privacy: .public) (Code: \(error.code))")
             }
             throw error
         } catch {
-            print("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription)")
+            logger.error("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }
@@ -279,13 +279,13 @@ class SolanaService {
             }
         } catch let error as NSError {
             if error.code == 429 {
-                print("Error in fetchSolanaJupiterTokenList: Rate limit exceeded (429)")
+                logger.warning("Error in fetchSolanaJupiterTokenList: Rate limit exceeded (429)")
             } else {
-                print("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription) (Code: \(error.code))")
+                logger.error("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription, privacy: .public) (Code: \(error.code))")
             }
             throw error
         } catch {
-            print("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription)")
+            logger.error("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }
@@ -397,7 +397,7 @@ class SolanaService {
 
             return nil
         } catch {
-            print("Error in fetchTokenBalance: \(error.localizedDescription)")
+            logger.error("Error in fetchTokenBalance: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }
@@ -417,7 +417,7 @@ class SolanaService {
             let tokens = try await fetchTokensInfos(for: tokenAddresses)
             return tokens
         } catch {
-            print("Error in fetchTokens: \(error)")
+            logger.error("Error in fetchTokens: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }

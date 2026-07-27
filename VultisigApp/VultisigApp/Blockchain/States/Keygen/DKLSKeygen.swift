@@ -163,7 +163,7 @@ final class DKLSKeygen {
         }
 
         if result != DKLS_LIB_OK {
-            print("fail to get outbound message: \(result)")
+            logger.error("fail to get outbound message: \(String(describing: result), privacy: .public)")
             return (result, [])
         }
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
@@ -185,7 +185,7 @@ final class DKLSKeygen {
         }
 
         if receiverResult != DKLS_LIB_OK {
-            print("fail to get receiver message,error: \(receiverResult)")
+            logger.error("fail to get receiver message,error: \(String(describing: receiverResult), privacy: .public)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
@@ -195,7 +195,7 @@ final class DKLSKeygen {
         repeat {
             let (result, outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != DKLS_LIB_OK {
-                print("fail to get outbound message,\(result)")
+                logger.error("fail to get outbound message,\(String(describing: result), privacy: .public)")
             }
             if outboundMessage.isEmpty {
                 return
@@ -211,7 +211,7 @@ final class DKLSKeygen {
                     break
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString) , length:\(outboundMessage.count)")
+                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
@@ -271,7 +271,7 @@ final class DKLSKeygen {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                logger.debug("message with key:\(key, privacy: .public) has been applied before")
                 continue
             }
 
@@ -298,7 +298,7 @@ final class DKLSKeygen {
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
-                print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash), from:\(msg.from), to:\(msg.to) , length:\(decodedMsg.count)")
+                logger.debug("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash, privacy: .public), from:\(msg.from, privacy: .public), to:\(msg.to, privacy: .public) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))
@@ -372,7 +372,7 @@ final class DKLSKeygen {
     // DKLSKeygenWithRetry tries to do keygen with retry mechanism
     // routing.setupMessageId isolates setup payload, routing.exchangeMessageId isolates TSS exchange
     func DKLSKeygenWithRetry(attempt: UInt8, routing: KeygenRouting = .default) async throws {
-        print("keygen committee: \(self.keygenCommittee)")
+        logger.debug("keygen committee: \(String(describing: self.keygenCommittee), privacy: .public)")
         self.cache.removeAllObjects()
         self.messenger.messageID = routing.exchangeMessageId
         do {
@@ -454,7 +454,7 @@ final class DKLSKeygen {
             defer {
                 let sessionFreeResult = dkls_keygen_session_free(&handler)
                 if sessionFreeResult != DKLS_LIB_OK {
-                    print("fail to free keygen session \(sessionFreeResult)")
+                    logger.error("fail to free keygen session \(String(describing: sessionFreeResult), privacy: .public)")
                 }
             }
             let h = handler
@@ -471,7 +471,7 @@ final class DKLSKeygen {
                 defer {
                     let freeResult = dkls_keyshare_free(&keyshareHandler)
                     if freeResult != DKLS_LIB_OK {
-                        print("fail to free keyshare \(freeResult)")
+                        logger.error("fail to free keyshare \(String(describing: freeResult), privacy: .public)")
                     }
                 }
                 let keyshareBytes = try getKeyshareBytes(handle: keyshareHandler)
@@ -480,16 +480,16 @@ final class DKLSKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyECDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: chainCodeBytes.toHexString())
-                print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
-                print("chaincode: \(chainCodeBytes.toHexString())")
+                logger.debug("publicKeyECDSA:\(publicKeyECDSA.toHexString(), privacy: .public)")
+                logger.debug("chaincode: \(chainCodeBytes.toHexString(), privacy: .public)")
                 try await Task.sleep(for: .milliseconds(500))
             }
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            print("Failed to generate key, error: \(error.localizedDescription)")
+            logger.error("Failed to generate key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry
-                print("keygen/reshare retry, attemp: \(attempt)")
+                logger.warning("keygen/reshare retry, attemp: \(attempt)")
                 try await DKLSKeygenWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error
@@ -632,7 +632,7 @@ final class DKLSKeygen {
             defer {
                 let sessionFreeResult = dkls_qc_session_free(&handler)
                 if sessionFreeResult != DKLS_LIB_OK {
-                    print("fail to free reshare session \(sessionFreeResult)")
+                    logger.error("fail to free reshare session \(String(describing: sessionFreeResult), privacy: .public)")
                 }
             }
             let h = handler
@@ -648,7 +648,7 @@ final class DKLSKeygen {
                 defer {
                     let freeResult = dkls_keyshare_free(&newKeyshareHandler)
                     if freeResult != DKLS_LIB_OK {
-                        print("fail to free keyshare \(freeResult)")
+                        logger.error("fail to free keyshare \(String(describing: freeResult), privacy: .public)")
                     }
                 }
                 let keyshareBytes = try getKeyshareBytes(handle: newKeyshareHandler)
@@ -657,17 +657,17 @@ final class DKLSKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyECDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: chainCodeBytes.toHexString())
-                print("reshare ECDSA key successfully")
-                print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
-                print("chaincode: \(chainCodeBytes.toHexString())")
+                logger.info("reshare ECDSA key successfully")
+                logger.debug("publicKeyECDSA:\(publicKeyECDSA.toHexString(), privacy: .public)")
+                logger.debug("chaincode: \(chainCodeBytes.toHexString(), privacy: .public)")
                 try await Task.sleep(for: .milliseconds(500))
             }
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            print("Failed to reshare key, error: \(error.localizedDescription)")
+            logger.error("Failed to reshare key, error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 { // let's retry
-                print("keygen/reshare retry, attemp: \(attempt)")
+                logger.warning("keygen/reshare retry, attemp: \(attempt)")
                 try await DKLSReshareWithRetry(attempt: attempt + 1, routing: routing)
             } else {
                 throw error

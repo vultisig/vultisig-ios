@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 extension ThorchainService {
 
@@ -19,7 +20,7 @@ extension ThorchainService {
             }
             return Decimal(amount)
         } catch {
-            print("Error fetching or decoding staked amount: \(error.localizedDescription)")
+            Log.chain.service.error("Error fetching or decoding staked amount: \(error.localizedDescription, privacy: .public)")
             return .zero
         }
     }

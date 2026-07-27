@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct ImportFileCell: View {
 
@@ -50,7 +51,7 @@ struct ImportFileCell: View {
 
 #Preview {
     func reset() {
-        print("RESET")
+        Log.app.view.debug("RESET")
     }
 
     return ImportFileCell(name: "File", resetData: reset)
