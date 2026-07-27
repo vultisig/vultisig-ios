@@ -7,7 +7,7 @@ import OSLog
 import SwiftUI
 import BigInt
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "yield-vault-view")
+private let logger = Log.defi.view
 
 /// Generic yield-vault dashboard, parameterized by a `DefiYieldProvider`.
 /// Providers with different account and redemption models (e.g. Circle's

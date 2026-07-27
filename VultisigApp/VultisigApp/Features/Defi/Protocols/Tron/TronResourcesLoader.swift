@@ -16,7 +16,7 @@ final class TronResourcesLoader: ObservableObject {
     @Published var isLoading: Bool = false
 
     private let address: String
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "tron-resources")
+    private let logger = Log.defi.service
 
     init(address: String) {
         self.address = address

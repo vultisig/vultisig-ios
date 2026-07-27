@@ -11,7 +11,7 @@ import BigInt
 import WalletCore
 import VultisigCommonData
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "circle-view-logic")
+private let logger = Log.defi.other
 
 // MARK: - Logic (Methods)
 struct CircleViewLogic {

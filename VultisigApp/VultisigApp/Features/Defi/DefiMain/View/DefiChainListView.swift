@@ -8,7 +8,7 @@
 import SwiftUI
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-list")
+private let logger = Log.defi.view
 
 struct DefiChainListView: View {
     @ObservedObject var vault: Vault

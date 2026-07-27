@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-lps-interactor")
+private let logger = Log.defi.interactor
 
 struct THORChainLPsInteractor: LPsInteractor {
     private let thorchainAPIService = THORChainAPIService()
