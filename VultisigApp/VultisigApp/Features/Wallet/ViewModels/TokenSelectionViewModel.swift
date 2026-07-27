@@ -114,9 +114,12 @@ struct TokenSelectionLogic {
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
 
-        return TokensStore.TokenSelectionAssets
+        // The curated per-chain floor is sourced through the catalog's bundled
+        // provider (already scoped to `chain`) rather than reading the preset
+        // array directly. The dynamic overlay for this screen is unchanged — it
+        // still flows through `loadExternalTokens` -> `TokenSearchService`.
+        return BundledTokensProvider.curatedTokens(for: chain, defaults: .standard)
             .filter { token in
-                token.chain == chain &&
                 !token.isNativeToken &&
                 !tickers.contains(token.ticker.lowercased()) &&
                 !hiddenTokens.contains { $0.matches(token) }
