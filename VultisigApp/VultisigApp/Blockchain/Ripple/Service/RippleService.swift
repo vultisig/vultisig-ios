@@ -559,6 +559,93 @@ class RippleService {
         }
     }
 
+    // MARK: - Trust lines (account_lines)
+
+    /// Upper bound on `account_lines` pages followed for one address. rippled
+    /// serves 200 lines per page by default, so this covers any realistic
+    /// account by a wide margin while keeping a backend that echoes the same
+    /// marker forever from looping indefinitely.
+    private static let maxAccountLinesPages = 25
+
+    /// Every trust line held by `walletAddress`, following `account_lines`
+    /// pagination to completion.
+    ///
+    /// The XRP Ledger returns trust lines in pages, so reading only the first
+    /// page would silently truncate the set for an account with many lines and
+    /// **hide** token balances rather than fail. Requests are pinned to a single
+    /// resolved host for the whole walk (like `fetchAccountsInfo(for:host:)`) so
+    /// a custom-RPC change mid-pagination can't stitch two networks' pages
+    /// together, and each page goes through the retrier so a transient node
+    /// error is retried against a healthy backend.
+    ///
+    /// `actNotFound` on the first page resolves to an empty set: an unfunded
+    /// account has no AccountRoot and therefore holds no trust lines, which is a
+    /// valid outcome rather than an error.
+    ///
+    /// Each page is served from a fresh `current` ledger (SDK parity), so the
+    /// ledger can advance mid-walk. A marker invalidated by that advance comes
+    /// back as a node error and is surfaced, leaving the last known balance in
+    /// place; a repeated line is collapsed by `deduplicated`. Pinning the whole
+    /// walk to one ledger would need a `validated` read plus `ledger_hash`, and
+    /// only matters past the 200-lines-per-page threshold.
+    func fetchAccountLines(for walletAddress: String, host: URL? = nil) async throws -> [RippleTrustLine] {
+        let pinnedHost = host ?? resolvedHost
+        var lines: [RippleTrustLine] = []
+        var marker: String?
+
+        for page in 1...Self.maxAccountLinesPages {
+            let result: RippleAccountLinesResponse.Result?
+            do {
+                result = try await retrier.request(
+                    RippleAPI(.accountLines(account: walletAddress, marker: marker), host: pinnedHost),
+                    responseType: RippleAccountLinesResponse.self
+                ).result
+            } catch {
+                logger.error("fetchAccountLines: \(error.localizedDescription)")
+                throw error
+            }
+
+            if let rpcError = result?.error {
+                // Only on the FIRST page does `actNotFound` mean "unfunded, so
+                // no trust lines". Mid-pagination it means the account was
+                // deleted under us, which makes the pages gathered so far an
+                // under-report of a real balance — surface it rather than
+                // returning them (or an empty set) as the truth.
+                guard rpcError == "actNotFound", marker == nil else {
+                    throw RippleTrustLineError.accountLinesFailed(code: rpcError)
+                }
+                return []
+            }
+
+            // A successful `account_lines` always carries `lines`. Its absence
+            // is an uninterpretable body, not an empty wallet, so it must not
+            // resolve to a zero balance.
+            guard let pageLines = result?.lines else {
+                throw RippleTrustLineError.malformedResponse
+            }
+            lines.append(contentsOf: pageLines)
+
+            guard let next = result?.marker, !next.isEmpty else {
+                return Self.deduplicated(lines)
+            }
+            marker = next
+            logger.debug("fetchAccountLines: following marker to page \(page + 1, privacy: .public)")
+        }
+
+        throw RippleTrustLineError.paginationLimitExceeded(pages: Self.maxAccountLinesPages)
+    }
+
+    /// Collapses trust lines that repeat across pages. The ledger holds at most
+    /// one line per (counterparty, currency) pair, so a repeat can only come
+    /// from the ledger advancing mid-walk — each page is served from a fresh
+    /// `current` ledger. Keeping the first occurrence makes the assembled set
+    /// match the ledger's own invariant instead of double-counting a token in
+    /// discovery.
+    private static func deduplicated(_ lines: [RippleTrustLine]) -> [RippleTrustLine] {
+        var seen = Set<String>()
+        return lines.filter { seen.insert("\($0.account)|\($0.currency)").inserted }
+    }
+
     // MARK: - Destination-tag requirement (RequireDest)
 
     /// AccountRoot `lsfRequireDestTag` flag: the account refuses payments
