@@ -62,6 +62,8 @@ struct VultisigApp: App {
         // add-token). Bundled `TokensStore` is the highest-precedence, curated,
         // offline floor; dynamic sources (1inch / Jupiter) register on top.
         TokenCatalogRepository.appCatalog.register(BundledTokensProvider.shared)
+        TokenCatalogRepository.appCatalog.register(OneInchCatalogProvider.shared)
+        TokenCatalogRepository.appCatalog.register(JupiterCatalogProvider.shared)
     }
     var body: some Scene {
         WindowGroup {
