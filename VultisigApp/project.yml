@@ -174,11 +174,22 @@ targets:
         INFOPLIST_KEY_UISupportsDocumentBrowser: YES
 
       configs:
+        Debug:
+          # Master logging switch. LOGGING gates the `Log` facade: present here so
+          # Debug compiles the real os.Logger path; absent in Release so `Log.*`
+          # collapses to `Logger(.disabled)`. DEBUG is listed explicitly because
+          # overriding this key replaces XcodeGen's debug-config default.
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) DEBUG LOGGING"
+          # Default VULTI_LOG selector string, surfaced to the app via the
+          # Info.plist `VultiLogConfig` key (which expands `$(VULTI_LOG_CONFIG)`).
+          VULTI_LOG_CONFIG: "*:info"
         Release:
           # Matches the current pbxproj — Release is effectively Debug-like.
           SWIFT_OPTIMIZATION_LEVEL: "-Onone"
           ENABLE_TESTABILITY: YES
           ALLOW_TARGET_PLATFORM_SPECIALIZATION: YES
+          # No LOGGING flag here → logging is compiled out; keep the plist default off.
+          VULTI_LOG_CONFIG: "*:off"
 
     dependencies:
       # ---- Local embedded xcframeworks (link-only, no embed) ----
@@ -328,9 +339,18 @@ schemes:
         VultisigApp: all
     run:
       config: Debug
+      # Array form (not the `{KEY: {value, isEnabled}}` map): the map form is not
+      # supported by XcodeGen — it stringifies the inner dict and forces
+      # isEnabled=YES. The array form honours `isEnabled: false`.
       environmentVariables:
-        OS_ACTIVITY_MODE:
+        - variable: OS_ACTIVITY_MODE
           value: disable
+          isEnabled: false
+        # Per-run override for the Log facade gate. Disabled by default so the
+        # Info.plist `VultiLogConfig` default applies; flip `isEnabled` on (or edit
+        # the value) to narrow logging without a rebuild, e.g. "swap:debug,*:off".
+        - variable: VULTI_LOG
+          value: "swap:debug,.network:info,*:off"
           isEnabled: false
     test:
       config: Debug

@@ -58,6 +58,8 @@
 	</array>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
+	<key>VultiLogConfig</key>
+	<string>$(VULTI_LOG_CONFIG)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
