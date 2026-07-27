@@ -43,10 +43,7 @@ final class QBTCGovernanceViewModel: ObservableObject {
     private static let myVoteRecentPastLimit = 10
 
     private let service: QBTCGovServiceProtocol
-    private let logger = Logger(
-        subsystem: "com.vultisig.app",
-        category: "qbtc-governance-vm"
-    )
+    private let logger = Log.qbtc.viewModel
 
     init(service: QBTCGovServiceProtocol = QBTCGovService()) {
         self.service = service

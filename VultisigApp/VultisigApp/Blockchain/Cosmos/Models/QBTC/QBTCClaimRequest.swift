@@ -10,7 +10,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-request")
+private let logger = Log.qbtc.other
 
 /// One UTXO reference in the `/prove` request — `txid` + `vout` only,
 /// no amount (the chain doesn't need amount; that's BTC-side data for UI).

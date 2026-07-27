@@ -38,7 +38,7 @@ final class QBTCClaimRoundRunner {
     static let fastVaultPeerWaitSeconds: TimeInterval = 60
 
     private let sessionService: KeysignSessionService
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-round-runner")
+    private let logger = Log.qbtc.other
 
     init(sessionService: KeysignSessionService = KeysignSessionService()) {
         self.sessionService = sessionService

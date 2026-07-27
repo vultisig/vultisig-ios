@@ -108,7 +108,7 @@ final class QBTCClaimViewModel: ObservableObject {
     private let blockchairService: BlockchairService
     private let sessionService: KeysignSessionService
     private let coinResolver: QBTCClaimCoinResolver
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-vm")
+    private let logger = Log.qbtc.viewModel
 
     init(
         vault: Vault,
