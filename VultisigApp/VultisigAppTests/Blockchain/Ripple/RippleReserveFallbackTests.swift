@@ -193,7 +193,7 @@ private final class RippleScriptedHTTPClient: HTTPClientProtocol, @unchecked Sen
         case .serverState:
             queue.sync { _serverStateCalls += 1 }
             return try respond(serverStateResult)
-        case .submit, .tx:
+        case .submit, .tx, .accountLines:
             throw URLError(.unsupportedURL)
         }
     }
