@@ -1,5 +1,17 @@
 import Foundation
 
+/// Curated, hand-maintained catalog of supported coins.
+///
+/// Two consumption paths, kept deliberately separate:
+///  - **List / picker / discovery surfaces** (browsable token lists) must NOT read
+///    `TokenSelectionAssets` directly. They go through the app-wide catalog —
+///    `BundledTokensProvider` / `TokenCatalogRepository` — so the curated preset
+///    list, its chain-visibility gates, and (on network-backed surfaces) the
+///    dynamic 1inch/Jupiter overlay all flow through one place.
+///  - **Named-static curated-coin readers** (`rune`/`cacao`/`tcy`/`sruji`/`qbtc`/…
+///    and `findTokenMeta(chain:contractAddress:)`) remain the curated source of
+///    truth for a *specific* coin — pricing, referral, VultTier, keysign, DeFi,
+///    default-coin seeding, native-token lookups. These intentionally stay here.
 class TokensStore {
 
     static let TokenSelectionAssets = [
