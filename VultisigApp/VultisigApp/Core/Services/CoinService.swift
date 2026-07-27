@@ -455,7 +455,10 @@ struct CoinService {
     /// browse list is far larger than the discovery path's held-token set). This
     /// is the second gate the dynamic-catalog risk posture relies on: spam never
     /// surfaces, verified or unverified, toggle on or off.
-    static func isLikelySpam(_ token: CoinMeta) -> Bool {
+    ///
+    /// `nonisolated` so the token-search surface (a nonisolated static) can apply
+    /// it directly — the heuristics are pure and touch no `@MainActor` state.
+    nonisolated static func isLikelySpam(_ token: CoinMeta) -> Bool {
         // Additional spam filtering patterns
         let suspiciousPatterns = [
             "t.me/",           // Telegram links
