@@ -10,14 +10,17 @@ import Foundation
 struct TokenSearchService {
     static let shared = TokenSearchService()
 
-    private let oneInchservice = OneInchService.shared
-
     private init() {}
 
-    /// Returns the chain's remote + preset token list, served from
+    /// The chain's token list for search / add-token, served from
     /// `SwapTokenListCache` when fresh (instant, no network) and refetched via
     /// `fetchUncached` otherwise. The cache is vault-independent — callers
     /// re-merge the vault's held coins themselves on each open.
+    ///
+    /// The list is now assembled by the app-wide `TokenCatalogRepository`
+    /// (bundled curated `TokensStore` + 1inch + Jupiter, deduped by
+    /// `CoinMeta.uniqueId` with the curated logo/priceProviderId winning). The
+    /// caller-facing shape is unchanged — non-native `CoinMeta` for the chain.
     func loadTokens(for chain: Chain) async throws -> [CoinMeta] {
         try await SwapTokenListCache.shared.tokens(for: chain) {
             try await self.fetchUncached(for: chain)
@@ -27,52 +30,19 @@ struct TokenSearchService {
     private func fetchUncached(for chain: Chain) async throws -> [CoinMeta] {
         guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
 
-        do {
-            let externalTokens = try await fetchExternalTokens(for: chain)
-            let presetTokens = fetchPresetTokens(for: chain)
-            let presetTickers = presetTokens.map { $0.ticker.lowercased() }
-            let filtered = externalTokens.filter { !presetTickers.contains($0.ticker.lowercased()) }
+        // The repository's providers fail open internally (bundled floor + disk
+        // last-good), so `catalog(for:)` doesn't throw on a network miss — the
+        // curated list is always at least available offline. Cancellation is
+        // still surfaced so the picker's teardown supersedes the result.
+        let candidates = await TokenCatalogRepository.appCatalog.catalog(for: chain)
 
-            guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
+        guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
 
-            return presetTokens + filtered
-        } catch let error as NSError {
-            guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
-            // Check for rate limit error (429)
-            if error.code == 429 {
-                throw TokenSearchServiceError.rateLimitExceeded
-            } else {
-                throw TokenSearchServiceError.networkError
-            }
-        } catch {
-            guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
-            throw TokenSearchServiceError.networkError
-        }
-    }
-
-    private func fetchExternalTokens(for chain: Chain) async throws -> [CoinMeta] {
-        switch chain.chainType {
-        case .EVM:
-            if oneInchservice.isChainSupported(chain: chain) == false {
-                return []
-            }
-            guard let chainID = chain.chainID else { return [] }
-            let oneInchTokens = try await oneInchservice.fetchTokens(chain: chainID)
-                .sorted(by: { $0.name < $1.name })
-                .map { $0.toCoinMeta(chain: chain) }
-            return oneInchTokens
-
-        case .Solana:
-            let jupTokens = try await SolanaService.shared.fetchSolanaJupiterTokenList()
-            return jupTokens
-        default:
-            return []
-        }
-    }
-
-    private func fetchPresetTokens(for chain: Chain) -> [CoinMeta] {
-        return TokensStore.TokenSelectionAssets
-            .filter { $0.chain == chain && !$0.isNativeToken }
+        // Native tokens are added to the picker separately (and aren't
+        // "addable" in the wallet flow), so keep them out of the search list.
+        return candidates
+            .filter { !$0.meta.isNativeToken }
+            .map { $0.meta }
     }
 }
 
