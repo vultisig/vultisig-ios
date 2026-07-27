@@ -64,15 +64,33 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .showIf(input.fromAddress.isNotEmpty)
 
-            Group {
-                getValueCell(
-                    for: "to",
-                    with: input.toAlias ?? input.toAddress,
-                    bracketValue: input.toAlias != nil ? input.toAddress : nil
-                )
-                Separator()
+            // An XRPL TrustSet opens a trust line: it has no destination and no
+            // transfer amount, so it gets its own rows instead of the Payment
+            // ones. A "to" row would name an account this transaction never pays,
+            // and an "amount" row would present a trust-line LIMIT as if funds
+            // were moving. Dispatched here — the one view both the initiator's
+            // Verify screen and a co-signer's Join screen render — so a peer
+            // device can never be shown Payment framing for a trust line.
+            if let trustSet = rippleTrustSet {
+                Group {
+                    getValueCell(for: "rippleTrustLineIssuer", with: trustSet.issuer)
+                    Separator()
+                    getValueCell(for: "rippleTrustLineCurrency", with: trustSet.ticker)
+                    Separator()
+                    getValueCell(for: "rippleTrustLineLimit", with: "\(trustSet.limitValue) \(trustSet.ticker)")
+                    Separator()
+                }
+            } else {
+                Group {
+                    getValueCell(
+                        for: "to",
+                        with: input.toAlias ?? input.toAddress,
+                        bracketValue: input.toAlias != nil ? input.toAddress : nil
+                    )
+                    Separator()
+                }
+                .showIf(input.toAddress.isNotEmpty)
             }
-            .showIf(input.toAddress.isNotEmpty)
 
             if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
                 getValueCell(
@@ -240,7 +258,18 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
 
     @ViewBuilder
     var heroHeader: some View {
-        if let hero = input.hero {
+        // Checked BEFORE `input.hero`: the Join screen derives its hero from a
+        // transaction simulation, which reads a TrustSet as an ordinary send. A
+        // co-signer must not be shown "You're sending <limit> <ticker>" for a
+        // transaction that moves nothing.
+        if let trustSet = rippleTrustSet {
+            // Nothing is being sent — a trust line is being opened.
+            Text(String(format: "rippleTrustLineHeroTitle".localized, trustSet.ticker))
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyMMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
+        } else if let hero = input.hero {
             HeroContentView(content: hero)
                 .padding(.bottom, 8)
         } else if input.keysignPayload?.signSui != nil {
@@ -348,11 +377,26 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         }
     }
 
+    /// Rows for an XRPL TrustSet.
+    ///
+    /// Derived from the KEYSIGN PAYLOAD whenever one is present, so a co-signer
+    /// reads the transaction it is about to sign rather than anything the
+    /// initiator claims about it. The `input` value is the initiator's Verify
+    /// screen, which renders before its payload is built.
+    var rippleTrustSet: RippleTrustSetPresentation.Display? {
+        RippleTrustSetPresentation.display(for: input.keysignPayload) ?? input.rippleTrustSet
+    }
+
     /// True when the hero doesn't already show a resolved amount/coin, so the
     /// "amount" detail row should render with the fallback `tokenDisplay` value.
     var shouldShowAmountRow: Bool {
         // signSui carries no to_amount; the value lives in the PTB bytes.
         if input.keysignPayload?.signSui != nil {
+            return false
+        }
+        // A TrustSet's amount IS the limit, rendered as its own labelled row.
+        // Showing it as "amount" would read as a transfer.
+        if rippleTrustSet != nil {
             return false
         }
         // signRipple carries the amount inside the raw JSON (and offers have no

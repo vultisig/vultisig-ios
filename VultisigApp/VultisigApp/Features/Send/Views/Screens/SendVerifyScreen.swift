@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import VultisigCommonData
 
 struct SendVerifyScreen: View {
     @StateObject private var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
@@ -118,7 +119,8 @@ struct SendVerifyScreen: View {
                 amount: tx.amount,
                 amountFiat: sendCryptoVerifyViewModel.amountFiat,
                 coinTicker: tx.coin.ticker,
-                keysignPayload: sendCryptoVerifyViewModel.verifyKeysignPayload
+                keysignPayload: sendCryptoVerifyViewModel.verifyKeysignPayload,
+                rippleTrustSet: RippleTrustSetPresentation.display(for: tx)
             ),
             securityScannerState: $sendCryptoVerifyViewModel.securityScannerState
         ) {
@@ -136,12 +138,26 @@ struct SendVerifyScreen: View {
 
     var checkboxes: some View {
         VStack(spacing: 16) {
-            Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
-            Checkbox(isChecked: $sendCryptoVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
+            // An XRPL TrustSet sends nothing to anyone, so "the amount is
+            // correct" / "I'm sending to the right address" are both false
+            // framings. What the user is confirming is the limit and the issuer.
+            if isRippleTrustSet {
+                Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "rippleTrustLineLimitCheck")
+                Checkbox(isChecked: $sendCryptoVerifyViewModel.isAddressCorrect, text: "rippleTrustLineIssuerCheck")
+            } else {
+                Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
+                Checkbox(isChecked: $sendCryptoVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
+            }
             if sendCryptoVerifyViewModel.isApproveRequired {
                 Checkbox(isChecked: $sendCryptoVerifyViewModel.isApproveCorrect, text: "yieldVerifyApproveCheck")
             }
         }
+    }
+
+    /// Read off the transaction rather than the payload: the payload is only built
+    /// on confirm, and the checkboxes have to be right from the first render.
+    private var isRippleTrustSet: Bool {
+        tx.coin.chain == .ripple && tx.transactionType == .rippleTrustSet
     }
 
     func onSignPress() {

@@ -11,6 +11,13 @@ struct TokenCellView: View {
     @ObservedObject var coin: Coin
     @EnvironmentObject var homeViewModel: HomeViewModel
 
+    /// Shown for an XRPL issued currency the account holds no trust line for.
+    /// The coin is added locally the moment the user picks it (like every other
+    /// chain), but on XRPL it cannot hold or receive a balance until a TrustSet
+    /// opens the line — so the row has to make that state legible and offer the
+    /// one action that fixes it. `nil` for every other coin.
+    var onActivate: (() -> Void)?
+
     var body: some View {
         HStack {
             HStack(spacing: 12) {
@@ -38,17 +45,26 @@ struct TokenCellView: View {
             }
             HStack(spacing: 8) {
                 Spacer()
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceInFiatForDisplay)
-                        .font(Theme.fonts.priceBodyS)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .contentTransition(.numericText())
-                        .animation(.interpolatingSpring, value: coin.balanceInFiatForDisplay)
-                    Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
-                        .font(Theme.fonts.priceCaption)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .contentTransition(.numericText())
-                        .animation(.interpolatingSpring, value: coin.balanceStringWithTicker)
+                if let onActivate {
+                    PrimaryButton(
+                        title: "rippleTrustLineActivateAction".localized,
+                        size: .mini,
+                        action: onActivate
+                    )
+                    .fixedSize()
+                } else {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceInFiatForDisplay)
+                            .font(Theme.fonts.priceBodyS)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .contentTransition(.numericText())
+                            .animation(.interpolatingSpring, value: coin.balanceInFiatForDisplay)
+                        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
+                            .font(Theme.fonts.priceCaption)
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .contentTransition(.numericText())
+                            .animation(.interpolatingSpring, value: coin.balanceStringWithTicker)
+                    }
                 }
                 Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 16)
             }

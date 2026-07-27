@@ -85,6 +85,27 @@ struct SendCryptoVerifyLogic {
     }
 
     func validateBalanceWithFee(tx: SendTransaction) -> BalanceValidationResult {
+        // An XRPL TrustSet's amount is the trust-line LIMIT, not a transfer, so
+        // comparing it to the token balance is meaningless — every activation
+        // would fail as "balance exceeded" against a zero balance, which is
+        // exactly the state a trust line is being opened to leave. What must be
+        // affordable is the XRP the operation really costs: the owner reserve it
+        // locks up plus the fee. The activation sheet quotes both live from
+        // `server_state` and blocks there, and the on-ledger
+        // `tecINSUFFICIENT_RESERVE` remains the backstop; the generic native-gas
+        // check below is what applies here.
+        if tx.coin.chain == .ripple, tx.transactionType == .rippleTrustSet {
+            guard let nativeToken = tx.vault.coins.nativeCoin(chain: .ripple) else {
+                return BalanceValidationResult(isValid: true, errorMessage: nil)
+            }
+            let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+            if tx.fee > nativeBalance {
+                let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
+                return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
+            }
+            return BalanceValidationResult(isValid: true, errorMessage: nil)
+        }
+
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         // TRON staking operations: skip balance validation entirely
@@ -185,6 +206,16 @@ struct SendCryptoVerifyLogic {
     /// the keysign ceremony, with the fee burned. Gate it here so the failure
     /// surfaces before signing starts; no-op for every other chain. Matches
     /// the guard the SDK and Android run at submit time.
+    ///
+    /// ⚠️ The `isNativeToken` gate is deliberate and must NOT be widened to
+    /// issued-currency coins. The rule it enforces is "an account is created by
+    /// receiving at least the base reserve **in XRP**" — an issued-currency
+    /// Payment delivers no XRP at all, so it can neither create the destination
+    /// nor satisfy that minimum, and applying the check would reject every token
+    /// send to an unfunded account with a message about an XRP amount the
+    /// transaction does not carry. A token send to an account that cannot receive
+    /// is caught by `validateDestinationTrustLineIfNeeded` instead, which tests
+    /// the thing that actually applies: the trust line.
     func validateDestinationIfNeeded(tx: SendTransaction) async throws {
         guard tx.coin.chain == .ripple, tx.coin.isNativeToken else { return }
         do {
@@ -204,6 +235,38 @@ struct SendCryptoVerifyLogic {
             // `buildKeysignPayload` — or the guard would block silently.
             throw HelperError.runtimeError(error.localizedDescription)
         }
+    }
+
+    /// Pre-ceremony guard for an XRPL issued-currency Payment: the destination
+    /// must hold a trust line for the currency, or the Payment fails on-ledger
+    /// (`tecPATH_DRY` / `tecNO_LINE`) after the ceremony with the fee burned.
+    ///
+    /// FAIL OPEN, matching `validateDestinationIfNeeded`: it blocks only on
+    /// positive proof the destination cannot receive. A transport failure, a node
+    /// error or an unreadable response leaves the send to proceed — a lookup we
+    /// couldn't complete must never start blocking a send that worked before this
+    /// guard existed.
+    ///
+    /// No-op for native XRP (which has no trust line) and for a TrustSet (which
+    /// has no destination at all).
+    func validateDestinationTrustLineIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple,
+              !tx.coin.isNativeToken,
+              tx.transactionType != .rippleTrustSet else {
+            return
+        }
+
+        let state = await rippleService.destinationTrustLine(
+            for: tx.coin.toCoinMeta(),
+            destination: tx.toAddress
+        )
+        guard state == .noTrustLine else { return }
+
+        // The Verify screen's alert plumbing presents only `HelperError`, so
+        // rewrap — same convention as `validateDestinationIfNeeded`.
+        throw HelperError.runtimeError(
+            String(format: "xrpDestinationNoTrustLineError".localized, tx.coin.ticker)
+        )
     }
 
     // MARK: - Keysign Payload

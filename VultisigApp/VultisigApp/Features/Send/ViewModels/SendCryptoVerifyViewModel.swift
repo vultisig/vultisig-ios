@@ -177,6 +177,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
         guard prebuiltKeysignPayload == nil, !hasBalanceError else { return }
         do {
             try await logic.validateDestinationIfNeeded(tx: transaction)
+            // Issued-currency counterpart: a token Payment to an account with no
+            // trust line for that currency fails on-ledger after the ceremony.
+            // Same load pass, same fail-open posture.
+            try await logic.validateDestinationTrustLineIfNeeded(tx: transaction)
         } catch is CancellationError {
             // Propagate — a cancelled load must abort the whole load pass (its
             // caller returns without running post-load work), not be swallowed
@@ -235,6 +239,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
 
         try await logic.validateDestinationIfNeeded(tx: transaction)
+        try await logic.validateDestinationTrustLineIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
         return keysignPayload

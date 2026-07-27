@@ -11,6 +11,9 @@ struct ChainDetailListView: View {
     @ObservedObject var viewModel: ChainDetailViewModel
     var onPress: (Coin) -> Void
     var onManageTokens: () -> Void
+    /// Invoked for an XRPL token with no trust line. `nil` on chains that have no
+    /// activation step.
+    var onActivate: ((Coin) -> Void)?
 
     var body: some View {
         if viewModel.filteredTokens.isEmpty {
@@ -26,15 +29,25 @@ struct ChainDetailListView: View {
                 Button {
                     onPress(token)
                 } label: {
-                    TokenCellView(coin: token)
-                        .commonListItemContainer(
-                            index: index,
-                            itemsCount: viewModel.filteredTokens.count
-                        )
+                    TokenCellView(
+                        coin: token,
+                        onActivate: activateAction(for: token)
+                    )
+                    .commonListItemContainer(
+                        index: index,
+                        itemsCount: viewModel.filteredTokens.count
+                    )
                 }
             }
         }
         .commonListContainer()
+    }
+
+    /// The activation closure for a row, or `nil` when the row should render a
+    /// balance as usual. Resolved here so the cell stays a dumb renderer.
+    private func activateAction(for token: Coin) -> (() -> Void)? {
+        guard let onActivate, viewModel.needsTrustLine(token) else { return nil }
+        return { onActivate(token) }
     }
 
     var addTokensView: some View {

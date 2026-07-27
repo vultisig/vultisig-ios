@@ -33,6 +33,13 @@ struct ChainDetailScreen: View {
     @State private var addressCopyTask: Task<Void, Never>?
     @State private var coinDetailTask: Task<Void, Never>?
 
+    /// XRPL token awaiting trust-line activation, and the quote for it. The sheet
+    /// is the reserve warning: opening a line permanently raises the XRP
+    /// account's reserve floor, so it is never done without showing the cost and
+    /// the limit that will be signed.
+    @State private var coinToActivate: Coin?
+    @StateObject private var trustLineActivation = RippleTrustLineActivationViewModel()
+
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -200,6 +207,21 @@ struct ChainDetailScreen: View {
                 coinToShow = nil
             }
         }
+        .bottomSheet(isPresented: Binding(
+            get: { coinToActivate != nil },
+            set: { if !$0 { coinToActivate = nil } }
+        )) {
+            RippleTrustLineActivationSheet(
+                viewModel: trustLineActivation,
+                coin: coinToActivate,
+                onActivate: {
+                    if let coin = coinToActivate {
+                        confirmTrustLineActivation(for: coin)
+                    }
+                },
+                onDismissRequest: { coinToActivate = nil }
+            )
+        }
         .onChange(of: coins) { _, _ in
             refresh()
         }
@@ -251,11 +273,12 @@ struct ChainDetailScreen: View {
             .frame(height: 42)
             .padding(.bottom, 16)
 
-            ChainDetailListView(viewModel: viewModel) {
-                coinToShow = $0
-            } onManageTokens: {
-                showManageTokens = true
-            }
+            ChainDetailListView(
+                viewModel: viewModel,
+                onPress: { coinToShow = $0 },
+                onManageTokens: { showManageTokens = true },
+                onActivate: onActivateTrustLine
+            )
             .background(
                 // Reference to scroll when search gets presented
                 VStack {}
@@ -394,6 +417,26 @@ private extension ChainDetailScreen {
         guard let vaultAction else { return }
 
         navigateToAction(action: vaultAction)
+    }
+
+    /// Opens the reserve-warning sheet and quotes the activation. Nothing is
+    /// signed here — the cost has to be on screen first.
+    func onActivateTrustLine(_ coin: Coin) {
+        coinToActivate = coin
+        Task {
+            await trustLineActivation.load(coin: coin, nativeCoin: nativeCoin)
+        }
+    }
+
+    /// The user accepted the reserve cost. Hand the TrustSet to the shared
+    /// verify → keysign flow, which is where the payload is built, reviewed and
+    /// signed like any other transaction. Details is skipped: a TrustSet has no
+    /// destination or amount for the user to fill in — the limit is fixed and the
+    /// sheet just showed it.
+    func confirmTrustLineActivation(for coin: Coin) {
+        guard let tx = trustLineActivation.makeActivationTransaction(coin: coin, vault: vault) else { return }
+        coinToActivate = nil
+        router.navigate(to: SendRoute.verify(tx: tx, retrySignal: SendRetrySignal(), vault: vault))
     }
 
     func onCopy() {
