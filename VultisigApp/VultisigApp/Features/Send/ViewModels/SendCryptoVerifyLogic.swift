@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import VultisigCommonData
 import WalletCore
 
 struct SendCryptoVerifyLogic {
@@ -236,15 +237,40 @@ struct SendCryptoVerifyLogic {
     /// text; a `nil` tag leaves the field unset, keeping memo-only sends
     /// byte-identical for co-signers that don't read the field. No-op for
     /// non-Ripple.
-    static func dualWritingRippleTag(_ chainSpecific: BlockChainSpecific, tag: UInt32?) -> BlockChainSpecific {
-        guard case .Ripple(let sequence, let gas, let lastLedgerSequence, _) = chainSpecific else {
+    ///
+    /// `transactionType` rides the same seam because it answers a different
+    /// question about the same payload — WHICH XRPL operation to build. A
+    /// non-native Ripple coin alone cannot distinguish "open a trust line"
+    /// (TrustSet, amount = limit) from "send this token" (Payment with a
+    /// `CurrencyAmount`), so the discriminator has to be on the wire. Passing
+    /// `.unspecified` (the default) leaves the field off the wire, so native XRP
+    /// and pre-existing flows produce byte-identical payloads.
+    /// The only XRPL operation discriminator this flow is allowed to put on the
+    /// wire. `SendTransaction.transactionType` is a shared field other chains
+    /// populate with their own operations (`tonDeposit`, `thorMerge`, …); a
+    /// value like that leaking into `RippleSpecific.transaction_type` would tell
+    /// every co-signer something untrue about the XRPL operation. Narrow it to
+    /// the one XRPL value, so anything else — including a future enum case this
+    /// build predates — falls back to `.unspecified` and keeps the legacy
+    /// interpretation.
+    static func rippleTransactionType(tx: SendTransaction) -> VSTransactionType {
+        tx.transactionType == .rippleTrustSet ? .rippleTrustSet : .unspecified
+    }
+
+    static func dualWritingRippleTag(
+        _ chainSpecific: BlockChainSpecific,
+        tag: UInt32?,
+        transactionType: VSTransactionType = .unspecified
+    ) -> BlockChainSpecific {
+        guard case .Ripple(let sequence, let gas, let lastLedgerSequence, _, _) = chainSpecific else {
             return chainSpecific
         }
         return .Ripple(
             sequence: sequence,
             gas: gas,
             lastLedgerSequence: lastLedgerSequence,
-            destinationTag: tag
+            destinationTag: tag,
+            transactionType: transactionType.rawValue
         )
     }
 
@@ -260,7 +286,11 @@ struct SendCryptoVerifyLogic {
             // is the ultimate gate on the tag/memo pair.
             let memo = Self.payloadMemo(tx: tx)
             if tx.coin.chain == .ripple {
-                chainSpecific = Self.dualWritingRippleTag(chainSpecific, tag: tx.destinationTag)
+                chainSpecific = Self.dualWritingRippleTag(
+                    chainSpecific,
+                    tag: tx.destinationTag,
+                    transactionType: Self.rippleTransactionType(tx: tx)
+                )
             }
 
             let basePayload = try await interactor.buildKeysignPayload(

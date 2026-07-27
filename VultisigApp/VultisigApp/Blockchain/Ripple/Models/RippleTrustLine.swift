@@ -3,7 +3,42 @@
 //  VultisigApp
 //
 
+import BigInt
 import Foundation
+
+/// Trust-line limit defaults for the `TrustSet` we originate.
+///
+/// A TrustSet's amount IS the line's limit — the maximum of the issuer's
+/// currency this account is willing to hold. There is no "unlimited" encoding on
+/// XRPL, so opening a line means committing to a number, and the number has to
+/// come from somewhere other than a call site inventing one.
+enum RippleTrustLineLimit {
+
+    /// Limit signed when opening a trust line: one quadrillion (1e15) units.
+    ///
+    /// Sized to be effectively unlimited for any real holding while staying
+    /// EXACTLY representable: an XRPL issued-currency value carries 15
+    /// significant decimal digits, and `1e15` is a single significant digit
+    /// followed by zeros, so it round-trips through
+    /// `formatIssuedCurrencyValue` / `parseIssuedCurrencyValue` without
+    /// truncation. A limit built from 15 nines (`999_999_999_999_999`) would sit
+    /// at the precision boundary and is deliberately avoided.
+    ///
+    /// Expressed in base units at ``RippleIssuedCurrency/issuedCurrencyDecimals``
+    /// because that is the scale every keysign amount uses, so it needs no
+    /// special-casing on the signing path.
+    static let defaultLimit = BigInt(10).power(RippleIssuedCurrency.issuedCurrencyDecimals + 15)
+
+    /// The default limit as the XRPL value string that will be signed — the
+    /// number the reserve-warning sheet shows the user, so the limit riding the
+    /// TrustSet is never invisible.
+    static func defaultLimitDisplayValue() -> String? {
+        try? RippleIssuedCurrency.formatIssuedCurrencyValue(
+            amount: defaultLimit,
+            decimals: RippleIssuedCurrency.issuedCurrencyDecimals
+        )
+    }
+}
 
 /// One XRPL trust line as returned by `account_lines`, always from the
 /// perspective of the account the request was made for.

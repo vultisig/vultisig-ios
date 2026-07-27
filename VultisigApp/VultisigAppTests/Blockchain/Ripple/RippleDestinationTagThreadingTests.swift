@@ -205,7 +205,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         XCTAssertTrue(ripple.hasDestinationTag)
         XCTAssertEqual(ripple.destinationTag, 4242)
 
-        guard case .Ripple(_, _, _, let tag) = try BlockChainSpecific(proto: original.mapToProtobuff()) else {
+        guard case .Ripple(_, _, _, let tag, _) = try BlockChainSpecific(proto: original.mapToProtobuff()) else {
             return XCTFail("expected Ripple case")
         }
         XCTAssertEqual(tag, 4242)
@@ -223,7 +223,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         }
         XCTAssertFalse(ripple.hasDestinationTag, "no field → unset on the wire")
 
-        guard case .Ripple(_, _, _, let tag) = try BlockChainSpecific(proto: original.mapToProtobuff()) else {
+        guard case .Ripple(_, _, _, let tag, _) = try BlockChainSpecific(proto: original.mapToProtobuff()) else {
             return XCTFail("expected Ripple case")
         }
         XCTAssertNil(tag)
@@ -449,7 +449,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
     func testDualWriteSetsFieldFromResolvedTag() throws {
         let base: BlockChainSpecific = .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100)
         let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: try RippleDestinationTag.validatePayloadMemo("12345"))
-        guard case .Ripple(_, _, _, let fieldTag) = written else { return XCTFail("expected Ripple") }
+        guard case .Ripple(_, _, _, let fieldTag, _) = written else { return XCTFail("expected Ripple") }
         XCTAssertEqual(fieldTag, 12345)
     }
 
@@ -463,14 +463,14 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
 
         let base: BlockChainSpecific = .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100)
         let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: try RippleDestinationTag.validatePayloadMemo(memo))
-        guard case .Ripple(_, _, _, let fieldTag) = written else { return XCTFail("expected Ripple") }
+        guard case .Ripple(_, _, _, let fieldTag, _) = written else { return XCTFail("expected Ripple") }
         XCTAssertEqual(fieldTag.map(String.init), memo, "field and memo carriers must hold the same value")
     }
 
     func testDualWriteLeavesFieldUnsetForTaglessSend() {
         let base: BlockChainSpecific = .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100)
         let written = SendCryptoVerifyLogic.dualWritingRippleTag(base, tag: nil)
-        guard case .Ripple(_, _, _, let fieldTag) = written else { return XCTFail("expected Ripple") }
+        guard case .Ripple(_, _, _, let fieldTag, _) = written else { return XCTFail("expected Ripple") }
         XCTAssertNil(fieldTag, "no tag → field unset → byte-identical for memo-only co-signers")
     }
 
@@ -578,7 +578,7 @@ final class RippleDestinationTagThreadingTests: XCTestCase {
         let chainSpecific = SendCryptoVerifyLogic.dualWritingRippleTag(
             .Ripple(sequence: 1, gas: 10, lastLedgerSequence: 100), tag: tx.destinationTag
         )
-        guard case .Ripple(_, _, _, let fieldTag) = chainSpecific else { return XCTFail("expected Ripple") }
+        guard case .Ripple(_, _, _, let fieldTag, _) = chainSpecific else { return XCTFail("expected Ripple") }
         let payload = Self.makeRipplePayload(memo: SendCryptoVerifyLogic.payloadMemo(tx: tx), destinationTagField: fieldTag)
         let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
         XCTAssertTrue(input.rawJson.contains("DestinationTag"))

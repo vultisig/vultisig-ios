@@ -517,7 +517,11 @@ extension BlockChainSpecific {
                 sequence: value.sequence,
                 gas: value.gas,
                 lastLedgerSequence: value.lastLedgerSequence,
-                destinationTag: value.hasDestinationTag ? value.destinationTag : nil
+                destinationTag: value.hasDestinationTag ? value.destinationTag : nil,
+                // A proto3 enum is never absent — an unset field decodes to
+                // `.unspecified` (0), which is exactly the "no discriminator,
+                // apply the legacy rule" case the signer needs.
+                transactionType: value.transactionType.rawValue
             )
         case .tronSpecific(let value):
             self = .Tron(
@@ -634,7 +638,7 @@ extension BlockChainSpecific {
                 $0.genesisHash = genesisHash
                 $0.gas = UInt64(gas ?? 0)
             })
-        case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag):
+        case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag, let transactionType):
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
@@ -644,6 +648,11 @@ extension BlockChainSpecific {
                 if let destinationTag {
                     $0.destinationTag = destinationTag
                 }
+                // Assign unconditionally: an unrecognized raw value degrades to
+                // `.unspecified`, which is also the proto3 default, so it stays
+                // off the wire and the payload remains byte-identical to one
+                // built before the field existed.
+                $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
             })
 
         case .Tron(
