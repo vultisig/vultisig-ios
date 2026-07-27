@@ -38,7 +38,7 @@ struct DefiChainLPPositionView: View {
                 logo: position.coin2.logo,
                 size: CGSize(width: 40, height: 40),
                 ticker: position.coin2.ticker,
-                tokenChainLogo: position.coin2.chain.logo
+                tokenChainLogo: position.coin2.tokenChainLogo
             )
 
             VStack(alignment: .leading, spacing: .zero) {

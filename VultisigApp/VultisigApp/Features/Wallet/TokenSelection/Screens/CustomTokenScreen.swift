@@ -115,7 +115,7 @@ struct CustomTokenScreen: View {
                     logo: token?.logo ?? .empty,
                     size: CGSize(width: 36, height: 36),
                     ticker: token?.ticker ?? .empty,
-                    tokenChainLogo: token?.chain.logo
+                    tokenChainLogo: token?.tokenChainLogo
                 )
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
