@@ -9,7 +9,7 @@ import Mediator
 import OSLog
 import Tss
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-tss-messenger")
+private let logger = Log.tss.network
 final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     let mediatorUrl: String
     let sessionID: String

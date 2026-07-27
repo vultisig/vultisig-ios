@@ -7,7 +7,7 @@ import OSLog
 import SwiftUI
 import RiveRuntime
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "review-your-vaults")
+private let logger = Log.keygen.view
 
 struct ReviewYourVaultsScreen: View {
     let vault: Vault

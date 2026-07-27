@@ -57,7 +57,7 @@ struct KeyImportInput: Hashable {
 
 @MainActor
 class KeygenViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "keygen-viewmodel", category: "tss")
+    private let logger = Log.keygen.tss
 
     /// Maps derivationPath to WalletCore Derivation for each chain.
     /// Add new chains/derivations here to support additional derivation types.

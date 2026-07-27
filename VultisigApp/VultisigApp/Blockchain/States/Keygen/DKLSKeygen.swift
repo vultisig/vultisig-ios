@@ -41,7 +41,7 @@ struct DKLSKeyshare {
     let chaincode: String
 }
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-dkls-keygen")
+private let logger = Log.keygen.network
 
 final class DKLSKeygen {
     let vault: Vault

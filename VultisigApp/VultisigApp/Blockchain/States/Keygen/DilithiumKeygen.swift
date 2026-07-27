@@ -16,7 +16,7 @@ struct DilithiumKeyshare {
     let keyId: String
 }
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-dilithium-keygen")
+private let logger = Log.keygen.network
 
 final class DilithiumKeygen {
     let vault: Vault

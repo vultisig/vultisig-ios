@@ -84,7 +84,7 @@ final class KeysignSessionService: KeysignSessionServicing {
     private nonisolated(unsafe) let mediator: Mediator
     private nonisolated(unsafe) let fastVaultService: FastVaultService
     private let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-session")
+    private let logger = Log.keysign.service
 
     nonisolated init(
         mediator: Mediator = .shared,

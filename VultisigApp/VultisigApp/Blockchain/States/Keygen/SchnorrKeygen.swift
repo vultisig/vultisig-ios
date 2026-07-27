@@ -18,7 +18,7 @@ private extension goschnorr.schnorr_lib_error {
     static let schnorrLibOK = goschnorr.schnorr_lib_error(rawValue: 0)
 }
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-schnorr-keygen")
+private let logger = Log.keygen.network
 
 final class SchnorrKeygen {
     let vault: Vault

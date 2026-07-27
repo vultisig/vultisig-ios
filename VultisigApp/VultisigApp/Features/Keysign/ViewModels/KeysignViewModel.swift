@@ -43,7 +43,7 @@ enum TssKeysignError: Error {
 }
 @MainActor
 class KeysignViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "keysign", category: "tss")
+    private let logger = Log.keysign.tss
 
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = .empty

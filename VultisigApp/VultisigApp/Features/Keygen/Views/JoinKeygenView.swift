@@ -29,7 +29,7 @@ struct JoinKeygenView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @Environment(\.router) var router
 
-    let logger = Logger(subsystem: "join-keygen", category: "communication")
+    let logger = Log.keygen.network
 
     var body: some View {
         content

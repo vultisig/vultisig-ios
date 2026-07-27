@@ -11,7 +11,7 @@ import OSLog
 import Mediator
 import Tss
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-dkls-keysign")
+private let logger = Log.keysign.network
 
 final class DKLSKeysign {
     let keysignCommittee: [String]

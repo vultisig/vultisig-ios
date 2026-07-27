@@ -7,7 +7,7 @@ import OSLog
 import SwiftUI
 import RiveRuntime
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-animation")
+private let logger = Log.keysign.view
 
 struct KeysignAnimationView: View {
 

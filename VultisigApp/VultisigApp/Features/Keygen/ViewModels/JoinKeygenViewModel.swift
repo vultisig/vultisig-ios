@@ -24,7 +24,7 @@ enum JoinKeygenStatus {
 
 @MainActor
 class JoinKeygenViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "join-keygen", category: "viewmodel")
+    private let logger = Log.keygen.viewModel
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
 

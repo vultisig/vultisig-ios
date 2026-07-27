@@ -21,7 +21,7 @@ enum HelperError: Error, LocalizedError, Identifiable {
 }
 
 struct SignatureProvider {
-    let logger = Logger(subsystem: "chains", category: "tss")
+    let logger = Log.tss.tss
     let signatures: [String: TssKeysignResponse]
 
     func getDerSignature(preHash: Data) -> Data {
