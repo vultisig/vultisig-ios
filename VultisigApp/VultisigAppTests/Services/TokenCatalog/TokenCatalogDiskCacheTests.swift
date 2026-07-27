@@ -3,9 +3,10 @@
 //  VultisigAppTests
 //
 //  The per-chain offline snapshot: round-trips the CoinMeta, and — the trust
-//  invariant — floors every loaded token to `.unverified` so untrusted
-//  persistence can never confer trust (a disk-loaded token doesn't auto-surface
-//  on the strength of a persisted verification).
+//  invariant — caps every loaded token at `.verified` so untrusted persistence
+//  can never confer `.curated` (the dedup-winning tier). `.verified`/`.unverified`
+//  are preserved so a provider's last-good verified list still surfaces on a
+//  transient outage.
 //
 
 import XCTest
@@ -22,7 +23,7 @@ final class TokenCatalogDiskCacheTests: XCTestCase {
                  priceProviderId: "", contractAddress: contract, isNativeToken: false)
     }
 
-    func testSaveLoadRoundTripsMetaAndFloorsVerification() {
+    func testSaveLoadRoundTripsMetaAndPreservesVerifiedTiers() {
         let cache = makeCache()
         let tokens = [
             CatalogToken(meta: coin("USDC", "0x1"), verification: .verified(source: "CoinGecko"), sourceKind: "oneinch"),
@@ -31,15 +32,17 @@ final class TokenCatalogDiskCacheTests: XCTestCase {
         cache.save(tokens, chain: .ethereum)
         let loaded = cache.load(chain: .ethereum)
 
-        // CoinMeta + sourceKind round-trip; verification is floored to unverified.
+        // CoinMeta + sourceKind round-trip; verified/unverified tiers are preserved
+        // (so a last-good verified list survives an outage).
         XCTAssertEqual(loaded?.map { $0.meta }, tokens.map { $0.meta })
         XCTAssertEqual(loaded?.map { $0.sourceKind }, tokens.map { $0.sourceKind })
-        XCTAssertEqual(loaded?.map { $0.verification }, [.unverified, .unverified])
+        XCTAssertEqual(loaded?.map { $0.verification }, [.verified(source: "CoinGecko"), .unverified])
     }
 
-    func testLoadFloorsAnyPersistedTrustToUnverified() {
+    func testLoadCapsCuratedToVerifiedButKeepsVerified() {
         let cache = makeCache()
-        // Even a persisted .curated / .verified must never confer trust on load.
+        // A persisted .curated must never load as curated; a persisted .verified
+        // stays verified (survives verification-to-surface on an outage).
         let tokens = [
             CatalogToken(meta: coin("USDC", "0x1"), verification: .curated, sourceKind: "x"),
             CatalogToken(meta: coin("DAI", "0x2"), verification: .verified(source: "CoinGecko"), sourceKind: "x")
@@ -48,9 +51,10 @@ final class TokenCatalogDiskCacheTests: XCTestCase {
 
         let loaded = cache.load(chain: .ethereum)
         XCTAssertEqual(loaded?.count, 2)
-        XCTAssertTrue(loaded?.allSatisfy { $0.verification == .unverified } ?? false,
-                      "A persisted token must never load as curated or verified")
-        XCTAssertTrue(loaded?.allSatisfy { !$0.autoSurfaces } ?? false)
+        XCTAssertNotEqual(loaded?.first?.verification, .curated, "A persisted token must never load as curated")
+        XCTAssertEqual(loaded?.first?.verification, .verified(source: "cached"))
+        XCTAssertEqual(loaded?.last?.verification, .verified(source: "CoinGecko"), "Verified stays verified")
+        XCTAssertTrue(loaded?.allSatisfy { $0.autoSurfaces } ?? false, "Verified tiers still auto-surface offline")
     }
 
     func testLoadAbsentChainReturnsNil() {

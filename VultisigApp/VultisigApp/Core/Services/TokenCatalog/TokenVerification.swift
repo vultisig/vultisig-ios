@@ -23,9 +23,9 @@ import Foundation
 /// third-party source payload: that would let a remote list self-assert
 /// `.verified` and auto-surface. Providers assign verification in code from a
 /// validated signal (1inch `isCoinGeckoVerified`, Jupiter's `?query=verified`
-/// list, curated bundling) — never from a decoded field. The disk snapshot
-/// floors verification to `.unverified` on load rather than trusting the
-/// persisted value (see `TokenCatalogDiskCache`).
+/// list, curated bundling) — never from a decoded field. The disk snapshot caps
+/// verification at `.verified` on load (never `.curated`) rather than fully
+/// trusting the persisted value (see `TokenCatalogDiskCache`).
 enum TokenVerification: Equatable, Hashable, Sendable, Codable {
     /// Bundled, hand-curated `TokensStore` entry — the offline trust anchor.
     case curated
@@ -68,5 +68,19 @@ enum TokenVerification: Equatable, Hashable, Sendable, Codable {
     /// winning `CoinMeta` (curated logo / priceProviderId).
     static func stronger(_ lhs: TokenVerification, _ rhs: TokenVerification) -> TokenVerification {
         rhs.rank > lhs.rank ? rhs : lhs
+    }
+
+    /// Verification a value loaded from untrusted persistence (the disk snapshot)
+    /// may claim. `.curated` is reserved for the in-memory bundled provider and
+    /// wins dedup precedence, so a persisted/tampered token is capped at
+    /// `.verified` — it can never masquerade as curated. `.verified`/`.unverified`
+    /// are preserved so a provider's last-good verified list still surfaces
+    /// offline / during a transient outage (rather than being filtered out and
+    /// letting the outer cache overwrite a complete list with a bundled-only one).
+    var cappedForUntrustedPersistence: TokenVerification {
+        switch self {
+        case .curated: return .verified(source: "cached")
+        case .verified, .unverified: return self
+        }
     }
 }
