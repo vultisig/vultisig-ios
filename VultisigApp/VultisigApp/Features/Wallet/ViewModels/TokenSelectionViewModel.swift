@@ -186,9 +186,12 @@ struct TokenSelectionLogic {
                 .map { $0.toCoinMeta().uniqueId }
         )
 
-        return TokensStore.TokenSelectionAssets
+        // The curated per-chain floor is sourced through the catalog's bundled
+        // provider (already scoped to `chain`) rather than reading the preset
+        // array directly. The dynamic overlay for this screen is unchanged — it
+        // still flows through `loadExternalTokens` -> `TokenSearchService`.
+        return BundledTokensProvider.curatedTokens(for: chain, defaults: .standard)
             .filter { token in
-                token.chain == chain &&
                 !token.isNativeToken &&
                 !heldIds.contains(token.uniqueId) &&
                 !hiddenTokens.contains { $0.matches(token) }
