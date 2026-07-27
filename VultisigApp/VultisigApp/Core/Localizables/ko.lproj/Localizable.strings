@@ -1315,6 +1315,7 @@
 "to" = "받는 곳";
 "today" = "오늘";
 "tokens" = "토큰";
+"tokenUnverifiedBadge" = "미확인";
 "tonStakeBelowMinimum" = "최소 스테이킹은 %@ %@입니다";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

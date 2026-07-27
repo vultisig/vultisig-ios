@@ -1354,6 +1354,7 @@
 "to" = "Do";
 "today" = "Danas";
 "tokens" = "Tokeni";
+"tokenUnverifiedBadge" = "Neprovjereno";
 "tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

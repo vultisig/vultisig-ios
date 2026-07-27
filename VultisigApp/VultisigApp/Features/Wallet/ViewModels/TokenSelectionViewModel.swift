@@ -15,12 +15,22 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var searchedTokens: [CoinMeta] = []
     @Published var isLoading: Bool = false
     @Published var error: Error?
+    /// `CoinMeta.uniqueId → verification` for the loaded catalog, so the row
+    /// views can badge each token. Anything not in the map (vault-held coins,
+    /// curated presets) is treated as `.curated` (no badge).
+    @Published var verificationByUniqueId: [String: TokenVerification] = [:]
     private var loadingTask: Task<Void, Never>?
 
     private let logic = TokenSelectionLogic.shared
 
     var showRetry: Bool {
         return logic.showRetry(error: error)
+    }
+
+    /// Verification for a row — defaults to `.curated` (unbadged) for tokens the
+    /// catalog didn't tag (held coins, curated `TokensStore` presets).
+    func verification(for coin: CoinMeta) -> TokenVerification {
+        verificationByUniqueId[coin.uniqueId] ?? .curated
     }
 
     func loadData(chain: Chain, vault: Vault) {
@@ -71,6 +81,7 @@ class TokenSelectionViewModel: ObservableObject {
                 tokens.append(contentsOf: result.newTokens)
                 selectedTokens = result.updatedSelectedTokens
                 preExistTokens = result.updatedPreExistTokens
+                verificationByUniqueId = result.verificationByUniqueId
             }
         } catch {
             // Capture the error for UI display
@@ -153,6 +164,7 @@ struct TokenSelectionLogic {
         let newTokens: [CoinMeta]
         let updatedSelectedTokens: [CoinMeta]
         let updatedPreExistTokens: [CoinMeta]
+        let verificationByUniqueId: [String: TokenVerification]
     }
 
     func loadExternalTokens(
@@ -163,9 +175,12 @@ struct TokenSelectionLogic {
     ) async throws -> LoadResult {
         let currentTokenIdentifiers = Set(currentTokens.map { "\($0.chain.rawValue):\($0.ticker)" })
 
-        // Propagate errors instead of swallowing them with try?
-        let newTokens = try await searchService.loadTokens(for: chain)
-        let uniqueTokens = newTokens.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
+        // Propagate errors instead of swallowing them with try?. `loadCatalog`
+        // carries the verification the row views badge from — the auto-surfacing
+        // list is used here (the opt-in unverified list is layered in by the
+        // view model's toggle).
+        let catalog = try await searchService.loadCatalog(for: chain)
+        let uniqueTokens = catalog.surfaceable.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
 
         let allTokens = currentTokens + uniqueTokens
         let updatedSelectedTokens = selectedTokens(chainCoins: chainCoins, tokens: allTokens)
@@ -174,7 +189,8 @@ struct TokenSelectionLogic {
         return LoadResult(
             newTokens: uniqueTokens,
             updatedSelectedTokens: updatedSelectedTokens,
-            updatedPreExistTokens: updatedPreExistTokens
+            updatedPreExistTokens: updatedPreExistTokens,
+            verificationByUniqueId: catalog.verificationByUniqueId
         )
     }
 }

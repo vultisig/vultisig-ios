@@ -1354,6 +1354,7 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
+"tokenUnverifiedBadge" = "Nicht verifiziert";
 "tonStakeBelowMinimum" = "Mindesteinsatz beträgt %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";
