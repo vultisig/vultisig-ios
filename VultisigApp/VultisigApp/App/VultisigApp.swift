@@ -50,13 +50,13 @@ struct VultisigApp: App {
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
         SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
 
-        // Register every destination-token provider with the shared registry
-        // so the swap coin picker can aggregate destination tokens from
-        // every source. New providers register here.
-        DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
-        DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .thorchain))
-        DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .mayachain))
-        DestinationTokenRegistry.shared.register(SecuredAssetTokenProvider())
+        // Register every destination-token provider with the swap destination
+        // registry so the swap coin picker can aggregate destination tokens from
+        // every source. New destination providers register here.
+        TokenCatalogRepository.shared.register(SwapKitTokensCache.shared)
+        TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .thorchain))
+        TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .mayachain))
+        TokenCatalogRepository.shared.register(SecuredAssetTokenProvider())
     }
     var body: some Scene {
         WindowGroup {
