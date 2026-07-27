@@ -448,7 +448,14 @@ struct CoinService {
         }
 
         // Check if logo is empty (spam tokens often have empty logos)
-        if token.logo.isEmpty {
+        //
+        // XRPL is exempt. The ledger carries no token metadata, so an issued
+        // currency has no logo to discover unless it is curated in `TokensStore`
+        // — applying the rule would reject every legitimate XRP token. It also
+        // has nothing to catch there: a trust line exists only because the
+        // account holder opened one, so an issuer cannot push an unsolicited
+        // token into the asset list the way an ERC-20 airdrop can.
+        if token.logo.isEmpty, token.chain != .ripple {
             return true
         }
 

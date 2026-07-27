@@ -92,6 +92,61 @@ enum RippleIssuedCurrency {
         return try asciiToHexCurrencyCode(value)
     }
 
+    /// Printable-ASCII window used to decide whether a decoded hex currency code
+    /// is a human-readable ticker.
+    private static let printableAscii: ClosedRange<UInt8> = 0x20...0x7E
+
+    /// Human-readable ticker for an on-ledger currency code.
+    ///
+    /// A 3-character standard code (`USD`) is already a ticker. The 40-char
+    /// (160-bit) form encodes ASCII right-padded with NUL bytes, so decoding it
+    /// recovers the ticker a user recognizes (`524C555344…00` → `RLUSD`). A hex
+    /// code whose bytes are not all printable ASCII is not a ticker at all — an
+    /// arbitrary 160-bit code, or one of the reserved `0x00`-prefixed forms — so
+    /// the hex is kept verbatim rather than rendered as mojibake.
+    ///
+    /// Unlike the SDK's Node `ascii` decode, a byte with the high bit set is NOT
+    /// masked down into the ASCII range: an arbitrary code must stay hex rather
+    /// than be dressed up as a plausible ticker.
+    static func toIssuedCurrencyTicker(_ currency: String) -> String {
+        guard isHexCurrencyCode(currency), let bytes = hexBytes(currency) else {
+            return currency
+        }
+        var decoded = bytes
+        while decoded.last == 0 { decoded.removeLast() }
+        guard !decoded.isEmpty,
+              decoded.allSatisfy({ printableAscii.contains($0) }),
+              let ticker = String(bytes: decoded, encoding: .utf8) else {
+            return currency
+        }
+        return ticker
+    }
+
+    /// Raw bytes of a hex string. Returns `nil` on an odd length or a non-hex
+    /// digit; callers pass a code already validated by `isHexCurrencyCode`.
+    private static func hexBytes(_ hex: String) -> [UInt8]? {
+        let characters = Array(hex)
+        guard characters.count.isMultiple(of: 2) else { return nil }
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(characters.count / 2)
+        for index in stride(from: 0, to: characters.count, by: 2) {
+            guard let byte = UInt8(String(characters[index...index + 1]), radix: 16) else {
+                return nil
+            }
+            bytes.append(byte)
+        }
+        return bytes
+    }
+
+    /// Composite identifier for an XRPL issued currency: `<currencyCode>.<issuer>`.
+    /// XRPL keys tokens by the (currency, issuer) pair rather than by a single
+    /// contract address, so both are encoded into `Coin.contractAddress`. Inverse
+    /// of `parseRippleTokenId`.
+    static func rippleTokenId(currency: String, issuer: String) throws -> String {
+        let code = try toXrplCurrencyCode(currency)
+        return "\(code).\(issuer)"
+    }
+
     /// Split a `"<currencyCode>.<issuer>"` Ripple token id into its parts.
     /// Throws when the separator is missing, leading, or trailing.
     static func parseRippleTokenId(_ id: String) throws -> (currency: String, issuer: String) {

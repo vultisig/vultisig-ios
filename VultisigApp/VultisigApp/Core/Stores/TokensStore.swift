@@ -2566,6 +2566,23 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        // Ripple USD. XRPL keys issued currencies by (currency, issuer), so the
+        // contract address is the composite `<currencyCode>.<issuer>` token id.
+        // The currency is the 160-bit hex form because `RLUSD` is 5 characters —
+        // only 3-character codes travel as standard codes. Decimals are 15 for
+        // every issued currency (XRPL carries 15 significant digits, not a fixed
+        // on-chain scale). No `rlusd` art exists in the catalog or in the
+        // sibling repos' shared coin SVGs yet, so the logo is left empty and
+        // `AsyncImageView` renders the ticker initial until one is added.
+        CoinMeta(
+            chain: .ripple,
+            ticker: "RLUSD",
+            logo: "",
+            decimals: 15,
+            priceProviderId: "ripple-usd",
+            contractAddress: "524C555344000000000000000000000000000000.rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+            isNativeToken: false
+        ),
         CoinMeta(
             chain: .solana,
             ticker: "JUP",
