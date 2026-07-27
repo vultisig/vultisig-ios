@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-select-chain")
+private let logger = Log.defi.viewModel
 
 @MainActor
 class DefiSelectChainViewModel: ObservableObject {

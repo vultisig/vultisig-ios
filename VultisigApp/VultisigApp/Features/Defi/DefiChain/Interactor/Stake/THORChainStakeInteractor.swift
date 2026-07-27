@@ -7,7 +7,7 @@
 
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-stake-interactor")
+private let logger = Log.defi.interactor
 
 struct THORChainStakeInteractor: StakeInteractor {
     private let stakingService: THORChainStakingProviding

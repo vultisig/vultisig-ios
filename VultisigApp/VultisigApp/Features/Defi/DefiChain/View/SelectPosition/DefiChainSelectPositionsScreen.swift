@@ -8,7 +8,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-chain-select-positions")
+private let logger = Log.defi.view
 
 struct DefiChainSelectPositionsScreen: View {
     @ObservedObject var viewModel: DefiChainMainViewModel

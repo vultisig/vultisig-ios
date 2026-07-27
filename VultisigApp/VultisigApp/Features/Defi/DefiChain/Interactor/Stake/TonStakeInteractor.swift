@@ -7,7 +7,7 @@ import Foundation
 import OSLog
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-stake-interactor")
+private let logger = Log.defi.interactor
 
 private struct TonStakeSnapshot {
     let meta: CoinMeta

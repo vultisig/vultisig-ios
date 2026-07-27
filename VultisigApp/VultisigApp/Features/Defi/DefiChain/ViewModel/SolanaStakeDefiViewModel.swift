@@ -36,10 +36,7 @@ final class SolanaStakeDefiViewModel: ObservableObject {
     private let apyResolver: SolanaStakingAPYResolverProtocol
     private let storage: DefiPositionsStorageService
     private let onInvalidateCaches: @Sendable () -> Void
-    private let logger = Logger(
-        subsystem: "com.vultisig.app",
-        category: "solana-stake-defi-vm"
-    )
+    private let logger = Log.defi.viewModel
 
     init(
         vault: Vault,

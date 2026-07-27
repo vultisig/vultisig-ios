@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-lps-interactor")
+private let logger = Log.defi.interactor
 
 struct MayaChainLPsInteractor: LPsInteractor {
     private let mayaAPIService = MayaChainAPIService()
