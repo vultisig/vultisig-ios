@@ -60,10 +60,7 @@ enum CosmosStakingSignDataResolver {
         }
     }
 
-    private static let logger = Logger(
-        subsystem: "com.vultisig.app",
-        category: "cosmos-staking-sign-resolver"
-    )
+    private static let logger = Log.chain.other
 
     /// Resolves the SignDoc artefacts for a secp256k1 staking payload. Caller
     /// passes the immutable `SendTransaction` and the Cosmos chain-specific

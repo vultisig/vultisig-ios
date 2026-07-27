@@ -28,7 +28,7 @@ import OSLog
 import Tss
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-zec-signer")
+private let logger = Log.chain.other
 
 enum SwapKitZcashSignerError: Error, LocalizedError {
     case unsupportedZcashVersion(version: UInt32, group: UInt32)

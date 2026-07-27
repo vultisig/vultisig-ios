@@ -6,7 +6,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-swap-simulator")
+private let logger = Log.chain.other
 
 /// Calls TonAPI's `/v2/events/emulate` to detect whether a TonConnect
 /// transaction performs a jetton swap. Used as a fallback when the local BOC

@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 import SwiftData
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "coin-service")
+private let logger = Log.chain.service
 
 enum CoinServiceError: LocalizedError, Equatable {
     case chainNotEnabledForKeyImport(Chain)

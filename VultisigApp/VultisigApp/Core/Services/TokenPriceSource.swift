@@ -54,7 +54,7 @@ struct SolanaTokenPriceSource: TokenPriceSource {
 /// without `TokensStore` metadata are skipped rather than priced with default
 /// decimals.
 struct SuiTokenPriceSource: TokenPriceSource {
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
+    private let logger = Log.chain.service
 
     func prices(contracts: [String], coins _: [CoinMeta]) async throws -> [Rate] {
         var rates: [Rate] = []
@@ -86,7 +86,7 @@ struct SuiTokenPriceSource: TokenPriceSource {
 /// is pre-fetched (and persisted) when not already cached.
 struct MayaChainTokenPriceSource: TokenPriceSource {
     let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
+    private let logger = Log.chain.service
 
     func prices(contracts: [String], coins: [CoinMeta]) async throws -> [Rate] {
         if RateProvider.shared.rate(for: TokensStore.cacao) == nil {
@@ -199,7 +199,7 @@ struct ThorChainTokenPriceSource: TokenPriceSource {
 struct CoinGeckoContractTokenPriceSource: TokenPriceSource {
     let chain: Chain
     let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
+    private let logger = Log.chain.service
 
     func prices(contracts: [String], coins _: [CoinMeta]) async throws -> [Rate] {
         let currencies = SettingsCurrency.allCases

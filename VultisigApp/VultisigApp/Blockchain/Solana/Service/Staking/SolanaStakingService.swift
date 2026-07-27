@@ -70,7 +70,7 @@ actor SolanaStakingService: SolanaStakingServiceProtocol {
         validatorTTL: TimeInterval = 10 * 60,
         inflationTTL: TimeInterval = 10 * 60,
         clock: @escaping @Sendable () -> Date = { Date() },
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "solana-staking-service")
+        logger: Logger = Log.chain.service
     ) {
         self.solanaService = solanaService
         self.validatorTTL = validatorTTL

@@ -54,7 +54,7 @@ final class FastVaultService {
     static let shared = FastVaultService()
 
     private let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "fast-vault-service")
+    private let logger = Log.chain.service
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient

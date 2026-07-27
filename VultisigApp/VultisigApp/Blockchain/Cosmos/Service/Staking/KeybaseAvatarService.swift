@@ -47,7 +47,7 @@ actor KeybaseAvatarService: KeybaseAvatarServiceProtocol {
         httpClient: HTTPClientProtocol = HTTPClient(),
         ttl: TimeInterval = 60 * 60,
         clock: @escaping @Sendable () -> Date = { Date() },
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "keybase-avatar-service")
+        logger: Logger = Log.chain.service
     ) {
         self.httpClient = httpClient
         self.ttl = ttl

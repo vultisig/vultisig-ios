@@ -14,7 +14,7 @@ import WalletCore
 class SuiService {
     static let shared = SuiService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "sui-service")
+    private let logger = Log.chain.service
 
     /// Default Sui JSON-RPC host.
     static let defaultRPCURL: URL = {

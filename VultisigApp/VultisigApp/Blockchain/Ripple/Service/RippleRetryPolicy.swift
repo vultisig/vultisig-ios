@@ -119,7 +119,7 @@ struct RippleRequestRetrier {
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         sleep: @escaping Sleeper = RippleRequestRetrier.defaultSleep,
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "ripple-retry")
+        logger: Logger = Log.chain.other
     ) {
         self.httpClient = httpClient
         self.sleep = sleep

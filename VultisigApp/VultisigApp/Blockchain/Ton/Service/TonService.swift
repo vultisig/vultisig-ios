@@ -7,7 +7,7 @@ class TonService {
 
     static let shared = TonService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-service")
+    private let logger = Log.chain.service
     private let httpClient: HTTPClientProtocol = HTTPClient()
 
     /// Resolves the TON custom RPC override. Injected so the API values are

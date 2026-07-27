@@ -60,7 +60,7 @@ actor StakewizValidatorMetadataProvider: ValidatorMetadataProvider {
         avatarService: KeybaseAvatarServiceProtocol = KeybaseAvatarService(),
         ttl: TimeInterval = 60 * 60,
         clock: @escaping @Sendable () -> Date = { Date() },
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "stakewiz-validator-metadata")
+        logger: Logger = Log.chain.other
     ) {
         self.httpClient = httpClient
         self.avatarService = avatarService

@@ -23,7 +23,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-token-list-cache")
+private let logger = Log.chain.store
 
 @MainActor
 final class SwapTokenListCache {

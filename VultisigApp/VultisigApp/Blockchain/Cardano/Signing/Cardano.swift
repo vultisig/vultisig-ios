@@ -11,7 +11,7 @@ import WalletCore
 import BigInt
 import OSLog
 
-private let cardanoLogger = Logger(subsystem: "com.vultisig.app", category: "cardano-helper")
+private let cardanoLogger = Log.chain.other
 
 /*
  Cardano UTXO Validation & Send Max Recommendations

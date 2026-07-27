@@ -17,7 +17,7 @@ import OSLog
 import Tss
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "btc-psbt-signer")
+private let logger = Log.chain.other
 
 enum BitcoinPsbtSignerError: Error, LocalizedError {
     case noInputs
