@@ -774,6 +774,7 @@
 "mintCoin" = "Acuñar %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"missingEncryptionKey" = "Falta la clave de cifrado. Inténtalo de nuevo.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
 "modules" = "Módulos";

@@ -342,7 +342,7 @@ struct KeysignDiscoveryView: View {
 
     func startKeysign() {
         if viewModel.isValidPeers(vault: vault) {
-            let keysignInput = viewModel.startKeysign(vault: vault)
+            guard let keysignInput = viewModel.startKeysign(vault: vault) else { return }
             onKeysignInput(keysignInput)
         }
     }

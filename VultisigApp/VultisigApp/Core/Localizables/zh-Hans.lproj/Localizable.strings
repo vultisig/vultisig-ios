@@ -774,6 +774,7 @@
 "mintCoin" = "铸造 %@";
 "mintSecuredAsset" = "铸造担保资产 (SECURE+)";
 "mintTransaction" = "2. 铸造担保资产交易";
+"missingEncryptionKey" = "缺少加密密钥。请重试。";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "modules" = "模块";
