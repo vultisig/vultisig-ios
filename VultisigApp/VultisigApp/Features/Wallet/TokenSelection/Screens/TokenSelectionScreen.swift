@@ -24,8 +24,11 @@ struct TokenSelectionScreen: View {
     @State private var showUnverifiedAddConfirm = false
 
     var elements: [TokenSelectionAsset] {
+        // Local-first: held, then curated presets, then verified provider breadth.
+        // Browse hides `.unverified` — typing a query is what reveals the badged
+        // unverified long-tail (`searchedTokens`).
         let assets = tokenViewModel.searchText.isEmpty ?
-            tokenViewModel.selectedTokens + tokenViewModel.preExistTokens :
+            tokenViewModel.selectedTokens + tokenViewModel.preExistTokens + tokenViewModel.browseProviderTokens :
             tokenViewModel.searchedTokens
         return [.custom] + assets.map { .token($0) }
     }
@@ -43,8 +46,7 @@ struct TokenSelectionScreen: View {
             elements: sections,
             onSave: onSave,
             cellBuilder: cellBuilder,
-            emptyStateBuilder: { EmptyView() },
-            headerAccessory: { unverifiedToggle }
+            emptyStateBuilder: { EmptyView() }
         )
         .onAppear {
             tokenViewModel.loadData(chain: chain, vault: vault)
@@ -90,32 +92,6 @@ struct TokenSelectionScreen: View {
             }
             .joined(separator: "\n\n")
         return details.isEmpty ? base : base + "\n\n" + details
-    }
-
-    /// Opt-in reveal of the withheld unverified search results. Shown only when
-    /// there are unverified candidates to reveal (otherwise it's noise). Routes
-    /// through `setShowUnverified` so the visible lists re-derive immediately.
-    @ViewBuilder
-    private var unverifiedToggle: some View {
-        if tokenViewModel.hasUnverifiedResults {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("showUnverifiedTokensTitle".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    Text("showUnverifiedTokensSubtitle".localized)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 8)
-                VultiToggle(isOn: Binding(
-                    get: { tokenViewModel.showUnverified },
-                    set: { tokenViewModel.setShowUnverified($0, chain: chain, vault: vault) }
-                ))
-            }
-            .padding(.trailing, 16)
-        }
     }
 
     @ViewBuilder

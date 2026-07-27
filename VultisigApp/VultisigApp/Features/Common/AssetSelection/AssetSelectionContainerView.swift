@@ -7,17 +7,13 @@
 
 import SwiftUI
 
-struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View, HeaderAccessory: View>: View {
+struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View>: View {
     let title: String?
     let subtitle: String?
     @Binding var searchText: String
     let elements: [AssetSection<SectionType, Asset>]
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
-    /// Optional control rendered between the search field and the grid (e.g. the
-    /// token picker's "Show unverified" toggle). Defaults to `EmptyView` via the
-    /// convenience init below, so existing callers are unaffected.
-    var headerAccessory: () -> HeaderAccessory
     let insets: EdgeInsets
 
     @State var searchBarFocused: Bool = false
@@ -29,8 +25,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         insets: EdgeInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0),
         elements: [AssetSection<SectionType, Asset>],
         cellBuilder: @escaping (Asset, SectionType) -> CellView,
-        emptyStateBuilder: @escaping () -> EmptyStateView,
-        @ViewBuilder headerAccessory: @escaping () -> HeaderAccessory
+        emptyStateBuilder: @escaping () -> EmptyStateView
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -38,7 +33,6 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         self.elements = elements
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
-        self.headerAccessory = headerAccessory
         self.insets = insets
     }
 
@@ -54,7 +48,6 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         ZStack(alignment: .bottom) {
             VStack(spacing: 24) {
                 textfield
-                headerAccessory()
                 if showEmptyState {
                     emptyStateBuilder()
                     Spacer()
@@ -140,31 +133,6 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
             }
             .padding(.bottom, 16)
         }
-    }
-}
-
-// Convenience init for the common case with no header accessory, so existing
-// callers keep the original signature (HeaderAccessory inferred as EmptyView).
-extension AssetSelectionContainerView where HeaderAccessory == EmptyView {
-    init(
-        title: String? = nil,
-        subtitle: String? = nil,
-        searchText: Binding<String>,
-        insets: EdgeInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0),
-        elements: [AssetSection<SectionType, Asset>],
-        cellBuilder: @escaping (Asset, SectionType) -> CellView,
-        emptyStateBuilder: @escaping () -> EmptyStateView
-    ) {
-        self.init(
-            title: title,
-            subtitle: subtitle,
-            searchText: searchText,
-            insets: insets,
-            elements: elements,
-            cellBuilder: cellBuilder,
-            emptyStateBuilder: emptyStateBuilder,
-            headerAccessory: { EmptyView() }
-        )
     }
 }
 

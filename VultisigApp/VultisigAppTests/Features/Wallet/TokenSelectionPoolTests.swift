@@ -1,0 +1,93 @@
+//
+//  TokenSelectionPoolTests.swift
+//  VultisigAppTests
+//
+//  Pins the unified local-first token pool: browse shows local + verified (no
+//  unverified), search adds the badged unverified long-tail, curated/local
+//  tokens are ALWAYS searchable (even when the provider fetch throws), and the
+//  merge is local-first / deduped.
+//
+
+import XCTest
+@testable import VultisigApp
+
+@MainActor
+final class TokenSelectionPoolTests: XCTestCase {
+
+    private func meta(_ ticker: String, contract: String, chain: Chain = .ethereum) -> CoinMeta {
+        CoinMeta(chain: chain, ticker: ticker, logo: "logo", decimals: 18,
+                 priceProviderId: "", contractAddress: contract, isNativeToken: false)
+    }
+
+    // MARK: - mergeLocalFirst (pure ordering / dedup)
+
+    func testMergeLocalFirstKeepsOrderAndDedupsLocalWins() {
+        let local = meta("USDC", contract: "0xUSDC")
+        let dupFromProvider = meta("USDC", contract: "0xUSDC")   // same uniqueId
+        let providerOnly = meta("PEPE", contract: "0xPEPE")
+
+        let merged = TokenSelectionLogic.mergeLocalFirst([[local], [dupFromProvider, providerOnly]])
+
+        XCTAssertEqual(merged.map { $0.ticker }, ["USDC", "PEPE"], "Duplicate collapses; local kept first")
+        XCTAssertEqual(merged.first?.contractAddress, "0xUSDC", "Local-first: the local meta wins the collision")
+    }
+
+    // MARK: - browse vs search (VM level)
+
+    func testBrowseShowsVerifiedButNotUnverifiedWhileSearchRevealsUnverified() async {
+        let verified = meta("ZVERIFIED", contract: "0xa11ce")
+        let unverified = meta("ZUNVERIF", contract: "0xb0b")
+        let result = TokenSearchResult(
+            surfaceable: [verified],
+            unverified: [unverified],
+            verificationByUniqueId: [
+                verified.uniqueId: .verified(source: "CoinGecko"),
+                unverified.uniqueId: .unverified
+            ]
+        )
+        let vm = TokenSelectionViewModel(loadCatalog: { _ in result })
+
+        await vm.load(chain: .ethereum, vault: .example)
+
+        // Browse: verified breadth present, unverified absent.
+        XCTAssertTrue(vm.browseProviderTokens.contains { $0.uniqueId == verified.uniqueId })
+        XCTAssertFalse(vm.browseProviderTokens.contains { $0.uniqueId == unverified.uniqueId },
+                       "Unverified must not appear in browse")
+
+        // Search reveals the unverified token, and it's flagged for the badge.
+        vm.searchText = "zunverif"
+        vm.updateSearchedTokens(chain: .ethereum, vault: .example)
+        XCTAssertTrue(vm.searchedTokens.contains { $0.uniqueId == unverified.uniqueId },
+                      "Typing a query reveals the unverified long-tail")
+        XCTAssertEqual(vm.verification(for: unverified), .unverified)
+    }
+
+    // MARK: - local-first search regression (provider fetch throws)
+
+    func testCuratedTokenStaysSearchableWhenProviderFetchThrows() async {
+        struct FetchError: Error {}
+        let vm = TokenSelectionViewModel(loadCatalog: { _ in throw FetchError() })
+
+        await vm.load(chain: .ethereum, vault: .example)
+
+        // AAVE is a curated Ethereum preset. It must be found by search even
+        // though the provider fetch failed (fail-open to the local presets).
+        vm.searchText = "aave"
+        vm.updateSearchedTokens(chain: .ethereum, vault: .example)
+
+        XCTAssertTrue(vm.searchedTokens.contains { $0.ticker.uppercased() == "AAVE" },
+                      "Curated/local tokens stay searchable when the provider fetch throws")
+        XCTAssertNotNil(vm.error, "The fetch error is still surfaced for the retry affordance")
+    }
+
+    func testCuratedPresetBrowsableWhenProviderFetchThrows() async {
+        struct FetchError: Error {}
+        let vm = TokenSelectionViewModel(loadCatalog: { _ in throw FetchError() })
+
+        await vm.load(chain: .ethereum, vault: .example)
+
+        XCTAssertTrue(vm.preExistTokens.contains { $0.ticker.uppercased() == "AAVE" },
+                      "Curated presets render in browse regardless of the provider outcome")
+        XCTAssertTrue(vm.browseProviderTokens.isEmpty, "No provider breadth when the fetch failed")
+    }
+}
