@@ -8,7 +8,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "password-verify-reminder")
+private let logger = Log.wallet.other
 
 struct PasswordVerifyReminderView: View {
     let vault: Vault

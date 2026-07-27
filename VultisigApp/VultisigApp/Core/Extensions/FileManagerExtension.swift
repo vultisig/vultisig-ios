@@ -26,7 +26,7 @@ extension FileManager {
     /// Extract a ZIP file to a destination directory using ZIPFoundation
     /// - Important: Protects against zip-slip attacks and denies symlink extraction
     func unzipItem(at sourceURL: URL, to destinationURL: URL) throws {
-        let logger = Logger(subsystem: "com.vultisig.wallet", category: "zip-extraction")
+        let logger = Log.app.other
 
         guard let archive = try? Archive(url: sourceURL, accessMode: .read, pathEncoding: nil) else {
             logger.error("Failed to open ZIP archive at: \(sourceURL.path, privacy: .public)")

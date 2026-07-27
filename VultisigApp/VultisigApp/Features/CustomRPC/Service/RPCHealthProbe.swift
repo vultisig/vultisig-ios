@@ -81,7 +81,7 @@ private struct TronProbeResponse: Decodable {
 struct RPCHealthProbe {
 
     private let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "rpc-health-probe")
+    private let logger = Log.app.other
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient

@@ -53,7 +53,7 @@ class TransactionHistoryViewModel: ObservableObject {
     private let limitOrderStorage = LimitOrderStorageService()
     private let poller: TransactionHistoryNativePoller
     private let registry: SwapTrackingRegistry
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
+    private let logger = Log.wallet.viewModel
 
     init(
         pubKeyECDSA: String,

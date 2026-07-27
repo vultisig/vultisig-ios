@@ -17,7 +17,7 @@ import Foundation
 import OSLog
 import SwiftData
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-recorder")
+private let logger = Log.wallet.other
 
 enum TransactionHistoryRecording {
 

@@ -6,7 +6,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "transaction-history-screen")
+private let logger = Log.wallet.view
 
 struct TransactionHistoryScreen: View {
     @StateObject private var viewModel: TransactionHistoryViewModel

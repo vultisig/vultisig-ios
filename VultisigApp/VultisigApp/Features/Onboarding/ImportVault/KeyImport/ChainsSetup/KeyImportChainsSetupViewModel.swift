@@ -44,7 +44,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     @Published var isLoading: Bool = false
 
     private var chainBalanceResults = [ChainBalanceResult]()
-    private let logger = Logger(subsystem: "com.vultisig.VultisigApp", category: "KeyImport")
+    private let logger = Log.app.other
     private var wallet: HDWallet?
 
     /// Chains that have alternative derivation paths to check during import.
