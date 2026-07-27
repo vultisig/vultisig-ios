@@ -57,6 +57,20 @@ final class TokenSearchResultTests: XCTestCase {
                        "isLikelySpam is a hard gate on the unverified list")
     }
 
+    func testSpamIsHardGatedFromSurfaceableToo() {
+        // A verified (auto-surfacing) candidate with a spammy ticker must NOT
+        // surface — spam is a hard gate on both lists, not just the opt-in one.
+        let result = TokenSearchService.searchResult(from: [
+            token("visit.io", .verified(source: "CoinGecko"), contract: "0x1"),
+            token("USDC", .verified(source: "CoinGecko"), contract: "0x2")
+        ])
+
+        XCTAssertEqual(result.surfaceable.map { $0.ticker }, ["USDC"],
+                       "A verified token with a spammy ticker is still filtered")
+        XCTAssertNil(result.verificationByUniqueId[meta("visit.io", contract: "0x1").uniqueId],
+                     "Spam is dropped before the verification map is built")
+    }
+
     func testUnverifiedNativeTokenIsDropped() {
         let result = TokenSearchService.searchResult(from: [
             token("NATIVE", .unverified, contract: "", native: true),
