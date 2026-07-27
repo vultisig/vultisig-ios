@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "Non raggiungibile";
 "customRPCWrongChain" = "Catena errata (atteso %d, ricevuto %d)";
 "customToken" = "Token Personalizzato";
+"customTokenAddButton" = "Aggiungi token %@";
 "customTokenErrorSubtitle" = "Impossibile trovare il token. Controlla l'indirizzo del contratto e riprova.";
+"customTokenNotFound" = "Token non trovato";
+"customTokenRateLimit" = "Troppe richieste. Chiudi questa schermata e riprova più tardi.";
 "dappRequestFrom" = "Richiesta da";
 "date" = "Data";
 "decimalAmountError" = "L'importo deve essere decimale.";

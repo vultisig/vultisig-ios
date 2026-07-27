@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "Nicht erreichbar";
 "customRPCWrongChain" = "Falsche Chain (erwartet %d, erhalten %d)";
 "customToken" = "Benutzerdefinierten Token";
+"customTokenAddButton" = "%@ Token hinzufügen";
 "customTokenErrorSubtitle" = "Stellen Sie sicher, dass die Adresse korrekt ist und zur ausgewählten Kette gehört.";
+"customTokenNotFound" = "Token nicht gefunden";
+"customTokenRateLimit" = "Zu viele Anfragen. Bitte schließe diesen Bildschirm und versuche es später erneut.";
 "dappRequestFrom" = "Anfrage von";
 "date" = "Datum";
 "decimalAmountError" = "Der Betrag muss eine Dezimalzahl sein.";

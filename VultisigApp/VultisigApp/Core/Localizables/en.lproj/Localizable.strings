@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "Unreachable";
 "customRPCWrongChain" = "Wrong chain (expected %d, got %d)";
 "customToken" = "Custom Token";
+"customTokenAddButton" = "Add %@ token";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
+"customTokenNotFound" = "Token Not Found";
+"customTokenRateLimit" = "Too many requests. Please close this screen and try again later.";
 "dappRequestFrom" = "Request from";
 "date" = "Date";
 "decimalAmountError" = "The amount must be decimal.";

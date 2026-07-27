@@ -44,28 +44,32 @@ struct CustomTokenScreen: View {
                             placeholder: viewModel.searchPlaceholder
                         )
                         CircularAccessoryIconButton(icon: .searchArea) {
-                            Task {
-                                await viewModel.fetchTokenInfo()
-                            }
+                            viewModel.search()
                         }
                     }
 
-                    if let error = viewModel.error {
-                        errorView(error: error)
+                    switch viewModel.searchState {
+                    case .found(let token):
+                        tokenInfoView(token)
                             .transition(.opacity)
-                    }
 
-                    if viewModel.showTokenInfo {
-                        tokenInfoView
-
-                        PrimaryButton(title: "Add \(viewModel.tokenSymbol) token") {
+                        PrimaryButton(title: String(format: "customTokenAddButton".localized, viewModel.tokenSymbol)) {
                             saveAssets()
                         }
+                        .transition(.opacity)
+
+                    case .invalid(let message, let showsRetry):
+                        errorView(message: message, showsRetry: showsRetry)
+                            .transition(.opacity)
+
+                    case .idle, .loading:
+                        EmptyView()
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 24)
                 .padding(.horizontal, 16)
+                .animation(.easeInOut(duration: 0.25), value: viewModel.searchState)
             }
             .crossPlatformToolbar(showsBackButton: false) {
                 CustomToolbarItem(placement: .leading) {
@@ -75,9 +79,7 @@ struct CustomTokenScreen: View {
                 }
             }
             .onSubmit {
-                Task {
-                    await viewModel.fetchTokenInfo()
-                }
+                viewModel.search()
             }
         }
         .onLoad {
@@ -86,41 +88,49 @@ struct CustomTokenScreen: View {
         .onChange(of: viewModel.contractAddress) { _, newValue in
             viewModel.validateAddress(newValue)
         }
-        .withLoading(text: "pleaseWait".localized, isLoading: $viewModel.isLoading)
+        .withLoading(
+            text: "pleaseWait".localized,
+            isLoading: Binding(
+                get: { viewModel.searchState == .loading },
+                set: { _ in }
+            )
+        )
         .withLoading(text: "addingToken".localized, isLoading: $viewModel.isAddingToken)
     }
 
     /// Builds a banner view displaying the given error with an optional retry button.
-    /// - Parameter error: The error to present. Rate-limit errors hide the retry action.
+    /// - Parameters:
+    ///   - message: The user-facing error message to present.
+    ///   - showsRetry: Whether to offer a retry action (hidden for rate-limit errors).
     /// - Returns: An ``ActionBannerView`` configured for the error.
-    func errorView(error: Error) -> some View {
+    func errorView(message: String, showsRetry: Bool) -> some View {
         ActionBannerView(
-            title: error.localizedDescription,
+            title: message,
             subtitle: "customTokenErrorSubtitle".localized,
             buttonTitle: "retry".localized,
-            showsActionButton: !(error is RateLimitError)
+            showsActionButton: showsRetry
         ) {
-            Task { await viewModel.fetchTokenInfo() }
+            viewModel.search()
         }
     }
 
     /// A card view showing the resolved custom token's icon, ticker, chain badge, and contract address.
-    var tokenInfoView: some View {
+    func tokenInfoView(_ token: CoinMeta) -> some View {
         ZStack(alignment: .top) {
             HStack(spacing: 12) {
                 AsyncImageView(
-                    logo: viewModel.token?.logo ?? .empty,
+                    logo: token.logo,
                     size: CGSize(width: 36, height: 36),
-                    ticker: viewModel.token?.ticker ?? .empty,
-                    tokenChainLogo: viewModel.token?.tokenChainLogo
+                    ticker: token.ticker,
+                    tokenChainLogo: token.tokenChainLogo
                 )
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
-                        Text(viewModel.token?.ticker ?? .empty)
+                        Text(token.ticker)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.bodyMMedium)
 
-                        Text(viewModel.token?.chain.name ?? .empty)
+                        Text(token.chain.name)
                             .foregroundStyle(Theme.colors.textSecondary)
                             .font(Theme.fonts.caption10)
                             .padding(.vertical, 8)
@@ -128,7 +138,7 @@ struct CustomTokenScreen: View {
                             .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.borderLight))
                     }
 
-                    Text(viewModel.token?.contractAddress ?? .empty)
+                    Text(token.contractAddress)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.caption12)
                         .lineLimit(1)
