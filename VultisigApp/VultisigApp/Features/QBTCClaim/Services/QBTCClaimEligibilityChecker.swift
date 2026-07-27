@@ -46,10 +46,7 @@ protocol QBTCChainServiceClaimable: Sendable {
     ) -> [ClaimableUtxo]
 }
 
-private let confirmationGateLogger = Logger(
-    subsystem: "com.vultisig.app",
-    category: "qbtc-confirmation-gate"
-)
+private let confirmationGateLogger = Log.qbtc.other
 
 extension QBTCChainServiceClaimable {
     /// Applies the confirmation gate. Fetches `MinUtxoConfirmationBlocks` and
@@ -106,7 +103,7 @@ final class QBTCClaimEligibilityChecker: ObservableObject {
     private let blockchairService: BlockchairServiceClaimable
     private let chainService: QBTCChainServiceClaimable
     private let cacheStore: UserDefaults
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-eligibility")
+    private let logger = Log.qbtc.other
 
     /// Address most recently checked. A subsequent `check()` with a
     /// different address always re-runs; same-address calls also re-run
