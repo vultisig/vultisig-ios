@@ -21,6 +21,8 @@ struct TokenSelectionScreen: View {
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
 
+    @State private var showUnverifiedAddConfirm = false
+
     var elements: [TokenSelectionAsset] {
         let assets = tokenViewModel.searchText.isEmpty ?
             tokenViewModel.selectedTokens + tokenViewModel.preExistTokens :
@@ -52,6 +54,26 @@ struct TokenSelectionScreen: View {
         }
         .onReceive(tokenViewModel.$searchText) { _ in
             tokenViewModel.updateSearchedTokens(chain: chain, vault: vault)
+        }
+        .alert(
+            "addUnverifiedTokenTitle".localized,
+            isPresented: $showUnverifiedAddConfirm
+        ) {
+            Button("cancel".localized, role: .cancel) {}
+            Button("continueAnyway".localized, role: .destructive) {
+                persistSelection()
+            }
+        } message: {
+            Text("addUnverifiedTokenMessage".localized)
+        }
+    }
+
+    /// Newly-added tokens in the pending selection that the catalog flagged
+    /// `.unverified` — drives the add-confirm. Tokens already held by the vault
+    /// aren't re-confirmed (this only guards *adding* an unverified token).
+    private var unverifiedAdditions: [CoinMeta] {
+        coinViewModel.selection.filter { coin in
+            tokenViewModel.verification(for: coin) == .unverified && vault.coin(for: coin) == nil
         }
     }
 
@@ -98,6 +120,17 @@ struct TokenSelectionScreen: View {
     }
 
     func onSave() {
+        // Confirm before persisting when the selection adds any unverified token
+        // (reuses the app's "continue anyway" risk-confirm pattern). Verified /
+        // curated additions save straight through.
+        if unverifiedAdditions.isEmpty {
+            persistSelection()
+        } else {
+            showUnverifiedAddConfirm = true
+        }
+    }
+
+    private func persistSelection() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
             await MainActor.run { isPresented = false }

@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "您的地址簿是空的";
 "addressCopied" = "地址已复制";
 "addToAddressBook" = "添加到地址簿";
+"addUnverifiedTokenMessage" = "该代币未经验证，可能会假冒真实资产。添加前请确认合约地址是否正确。";
+"addUnverifiedTokenTitle" = "添加未验证的代币？";
 "addVaultsToFolder" = "选择要添加到文件夹的保险库";
 "advanced" = "高级";
 "advancedDescription" = "重新共享、管理安全或签署消息";
