@@ -62,6 +62,7 @@ struct TokenSelectionScreen: View {
         case .token(let coin):
             TokenSelectionGridCell(
                 coin: coin,
+                verification: tokenViewModel.verification(for: coin),
                 isSelected: coinViewModel.isSelected(asset: coin)
             ) {
                 coinViewModel.handleSelection(isSelected: $0, asset: coin)

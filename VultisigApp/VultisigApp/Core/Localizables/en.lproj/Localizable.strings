@@ -1348,6 +1348,7 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
+"tokenUnverifiedBadge" = "Unverified";
 "tonStakeBelowMinimum" = "Minimum stake is %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

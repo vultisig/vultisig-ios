@@ -1350,6 +1350,7 @@
 "to" = "至";
 "today" = "今天";
 "tokens" = "代币";
+"tokenUnverifiedBadge" = "未验证";
 "tonStakeBelowMinimum" = "最低质押为 %@ %@";
 "tonStakingAPY" = "年化收益";
 "tonStakingAPYValue" = "%@%%";
