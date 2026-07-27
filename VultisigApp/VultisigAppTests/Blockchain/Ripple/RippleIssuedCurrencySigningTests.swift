@@ -553,6 +553,36 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
         }
     }
 
+    /// FAIL CLOSED on the mirror-image inconsistency: a coin claiming to be
+    /// NATIVE while carrying an issued-currency token id. Metadata that names an
+    /// issuer but asks to be signed as drops describes no coherent asset, and the
+    /// whole `Coin` is proto-relayed, so it is refused rather than interpreted.
+    func testNativeCoinCarryingATokenIdIsRefused() {
+        let meta = CoinMeta(
+            chain: .ripple,
+            ticker: "XRP",
+            logo: "xrp",
+            decimals: 6,
+            priceProviderId: "ripple",
+            contractAddress: "USD.\(Self.issuer)",
+            isNativeToken: true
+        )
+        let coin = Coin(asset: meta, address: Self.account, hexPublicKey: Self.publicKeyHex)
+
+        for memo in [nil, "invoice-1234", "42"] {
+            let payload = Self.makePayload(
+                coin: coin,
+                toAddress: Self.destination,
+                toAmount: BigInt(1_000_000),
+                memo: memo
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "a native coin carrying a token id must be refused (memo: \(memo ?? "nil"))"
+            )
+        }
+    }
+
     /// FAIL CLOSED on a discriminator this build doesn't support: another chain's
     /// operation relayed onto a Ripple payload, or a future XRPL operation. The
     /// peer is describing something other than what these branches build, so

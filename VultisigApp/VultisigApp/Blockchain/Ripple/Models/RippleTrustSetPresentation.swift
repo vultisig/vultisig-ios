@@ -31,11 +31,46 @@ enum RippleTrustSetPresentation {
         let limitValue: String
     }
 
-    /// Whether `payload` is an XRPL TrustSet.
+    /// What the summary should render for this transaction.
+    ///
+    /// The distinction between `.unreviewable` and "not a TrustSet" is the whole
+    /// point: whether an operation IS a TrustSet is decided by the discriminator
+    /// alone, never by whether we managed to render it. Keying the UI off a
+    /// successful render would drop an unrenderable TrustSet into the ordinary
+    /// Payment rows — showing `toAddress` as a recipient and the LIMIT as a
+    /// transfer — which is exactly the false review a co-signer must never be
+    /// given.
+    enum State: Equatable {
+        /// Not an XRPL TrustSet — render the transaction normally.
+        case notTrustSet
+        /// A TrustSet whose terms can be shown.
+        case reviewable(Display)
+        /// A TrustSet whose token id, currency or amount cannot be read, so its
+        /// real terms cannot be shown. The signer refuses these payloads too, so
+        /// nothing can be signed from here — but the review surface has to say so
+        /// rather than fall back to describing a payment.
+        case unreviewable
+    }
+
+    /// Whether `payload` is an XRPL TrustSet, decided by the wire discriminator
+    /// alone.
     static func isTrustSet(payload: KeysignPayload?) -> Bool {
         guard let payload, payload.coin.chain == .ripple else { return false }
         guard case .Ripple(_, _, _, _, let transactionType) = payload.chainSpecific else { return false }
         return transactionType == VSTransactionType.rippleTrustSet.rawValue
+    }
+
+    /// Render state for a co-signer, from the payload it holds.
+    static func state(for payload: KeysignPayload?) -> State {
+        guard isTrustSet(payload: payload) else { return .notTrustSet }
+        return display(for: payload).map(State.reviewable) ?? .unreviewable
+    }
+
+    /// Render state for the initiator, from the transaction it is about to turn
+    /// into a payload.
+    static func state(for tx: SendTransaction) -> State {
+        guard tx.coin.chain == .ripple, tx.transactionType == .rippleTrustSet else { return .notTrustSet }
+        return display(for: tx).map(State.reviewable) ?? .unreviewable
     }
 
     /// The rows to show for a TrustSet, or `nil` when the payload is not one (or

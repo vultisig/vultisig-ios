@@ -89,19 +89,17 @@ struct SendCryptoVerifyLogic {
         // comparing it to the token balance is meaningless — every activation
         // would fail as "balance exceeded" against a zero balance, which is
         // exactly the state a trust line is being opened to leave. What must be
-        // affordable is the XRP the operation really costs: the owner reserve it
-        // locks up plus the fee. The activation sheet quotes both live from
-        // `server_state` and blocks there, and the on-ledger
-        // `tecINSUFFICIENT_RESERVE` remains the backstop; the generic native-gas
-        // check below is what applies here.
+        // affordable is the XRP the operation really costs; that is the async
+        // `validateTrustLineReserveIfNeeded`, which reads the live owner reserve.
+        // This synchronous pass only rules out the case that needs no network:
+        // no XRP coin at all.
         if tx.coin.chain == .ripple, tx.transactionType == .rippleTrustSet {
-            guard let nativeToken = tx.vault.coins.nativeCoin(chain: .ripple) else {
-                return BalanceValidationResult(isValid: true, errorMessage: nil)
-            }
-            let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
-            if tx.fee > nativeBalance {
-                let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
-                return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
+            guard tx.vault.coins.nativeCoin(chain: .ripple) != nil else {
+                // A trust line is an object OWNED BY an XRP account and paid for
+                // out of its reserve; without one there is nothing to attach it
+                // to and nothing to pay the fee. Fail closed — an absent coin is
+                // not a reason to let the ceremony start.
+                return BalanceValidationResult(isValid: false, errorMessage: "rippleTrustLineNoXrpAccountError")
             }
             return BalanceValidationResult(isValid: true, errorMessage: nil)
         }
@@ -266,6 +264,49 @@ struct SendCryptoVerifyLogic {
         // rewrap — same convention as `validateDestinationIfNeeded`.
         throw HelperError.runtimeError(
             String(format: "xrpDestinationNoTrustLineError".localized, tx.coin.ticker)
+        )
+    }
+
+    /// Pre-ceremony guard for a TrustSet: spendable XRP must cover the owner
+    /// reserve the new trust line locks up PLUS the fee, or the TrustSet fails
+    /// on-ledger with `tecINSUFFICIENT_RESERVE` after the ceremony, with the fee
+    /// already burned.
+    ///
+    /// The activation sheet quotes the same figures, but that quote is taken when
+    /// the sheet opens. This re-checks at Verify against the freshly loaded
+    /// balance and fee, so a balance that moved in between — a concurrent send, a
+    /// stale reading, or a `SendTransaction` built somewhere other than the sheet
+    /// — cannot walk past it.
+    ///
+    /// The reserve increment is read LIVE (`server_state` → cache → seed), never
+    /// hardcoded, so this and the sheet can never present different arithmetic.
+    /// No-op for every non-TrustSet transaction.
+    func validateTrustLineReserveIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple, tx.transactionType == .rippleTrustSet else { return }
+
+        guard let nativeToken = tx.vault.coins.nativeCoin(chain: .ripple) else {
+            throw HelperError.runtimeError("rippleTrustLineNoXrpAccountError".localized)
+        }
+
+        let reserveValues = try? await rippleService.fetchReserveValues()
+        // `reserve_base` is excluded: the account already exists and already
+        // meets it. What this operation adds is exactly one owner increment.
+        let ownerReserve = RippleReserve.reservedDrops(
+            ownerCount: 1,
+            reserveBase: 0,
+            reserveInc: reserveValues?.reserveInc
+        )
+        // The XRP balance is already reserve-net, so it is what can actually be
+        // locked up and spent.
+        let spendable = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        let required = ownerReserve + tx.fee
+        guard spendable < required else { return }
+
+        throw HelperError.runtimeError(
+            String(
+                format: "rippleTrustLineInsufficientXrpError".localized,
+                RippleReserve.xrpAmount(drops: required)
+            )
         )
     }
 

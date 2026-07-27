@@ -1078,8 +1078,11 @@
 "rippleTrustLineIssuerCheck" = "L'emittente è corretto";
 "rippleTrustLineLimit" = "Limite della linea di fiducia";
 "rippleTrustLineLimitCheck" = "Il limite della linea di fiducia è corretto";
+"rippleTrustLineNoXrpAccountError" = "Una linea di fiducia deve essere posseduta da un account XRP. Aggiungi prima XRP a questo vault.";
 "rippleTrustLineOwnerReserve" = "Riserva bloccata";
 "rippleTrustLineSpendableAfter" = "XRP disponibili dopo";
+"rippleTrustLineUnreviewable" = "Impossibile verificare";
+"rippleTrustLineUnreviewableValue" = "Non è stato possibile leggere valuta, emittente o limite di questa linea di fiducia, quindi le sue condizioni non possono essere mostrate. Non firmarla.";
 "rippleUndecodedNotice" = "Impossibile decodificare questa transazione. Controlla attentamente il JSON grezzo prima di firmare.";
 "routerNotAvailable" = "Router non disponibile per approvazioni su %@. Riprova più tardi.";
 "rune" = "RUNE";

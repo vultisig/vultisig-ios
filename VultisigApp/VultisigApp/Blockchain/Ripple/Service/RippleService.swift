@@ -600,7 +600,17 @@ class RippleService {
     /// performed instead of adding one network call per token row. A `nil` peek
     /// means "not observed yet", which callers must treat as unknown rather than
     /// as "no line". Internal (with the key) so tests can seed it.
-    let trustLinesCache = TTLCache<String, [RippleTrustLine]>()
+    let trustLinesCache = TTLCache<String, RippleTrustLineSnapshot>()
+
+    /// How long a recorded walk is treated as evidence.
+    ///
+    /// `peek` deliberately ignores TTL, so the snapshot carries its own timestamp
+    /// and an expired one degrades to `.unknown` rather than `.absent`. Without
+    /// that, a line opened on ANOTHER device (or a walk that has been failing for
+    /// a while) would keep offering `Activate` indefinitely on evidence that is no
+    /// longer true. Generous, because the balance refresh rewrites the snapshot
+    /// every cycle; the TTL only matters once refreshes stop succeeding.
+    private static let trustLinesTTL: TimeInterval = 60 * 5
 
     /// Cache key for an address's trust lines, host-scoped for the same reason as
     /// `reserveValuesCacheKey`: a custom RPC override can point at a different
@@ -735,24 +745,43 @@ class RippleService {
     /// Records a completed trust-line walk so UI affordances can read the
     /// ledger's trust-line state without their own network call.
     private func recordTrustLines(_ lines: [RippleTrustLine], for address: String, host: URL) async {
-        await trustLinesCache.setCached(lines, for: Self.trustLinesCacheKey(for: host, address: address))
+        await trustLinesCache.setCached(
+            RippleTrustLineSnapshot(lines: lines, recordedAt: Date()),
+            for: Self.trustLinesCacheKey(for: host, address: address)
+        )
     }
 
-    /// Whether `address` already holds a trust line for `coin`'s issued currency,
-    /// answered from the trust lines the last balance refresh already read.
+    /// Whether `address` already holds trust lines for each of `coins`, answered
+    /// from the walk the last balance refresh already performed.
     ///
-    /// Never performs a network call: a token row must not cost one
-    /// `account_lines` request per row. `.unknown` means no walk has been
-    /// recorded for this address yet (or the token id is unreadable), and callers
-    /// must treat it as "don't know" rather than "no line" — offering to open a
-    /// line we have no evidence is missing would invite a pointless ceremony.
-    func trustLineState(for coin: CoinMeta, address: String) async -> RippleTrustLinePresence {
-        guard let lines = await trustLinesCache.peek(
-            Self.trustLinesCacheKey(for: resolvedHost, address: address)
-        ) else {
-            return .unknown
+    /// Never performs a network call: a token list must not cost one
+    /// `account_lines` request per row. The host is resolved ONCE for the whole
+    /// batch, so a custom-RPC change mid-loop can't assemble one answer set from
+    /// two networks' snapshots.
+    ///
+    /// `.unknown` means no walk has been recorded for this address (or the
+    /// recording has gone stale, or the token id is unreadable). Callers must
+    /// treat it as "don't know" rather than "no line": offering to open a line we
+    /// have no current evidence is missing would invite a pointless ceremony, and
+    /// a fee.
+    func trustLineStates(for coins: [CoinMeta], address: String) async -> [String: RippleTrustLinePresence] {
+        let key = Self.trustLinesCacheKey(for: resolvedHost, address: address)
+        guard let snapshot = await trustLinesCache.peek(key),
+              Date().timeIntervalSince(snapshot.recordedAt) < Self.trustLinesTTL else {
+            return coins.reduce(into: [:]) { $0[$1.contractAddress] = .unknown }
         }
 
+        return coins.reduce(into: [:]) { result, coin in
+            result[coin.contractAddress] = Self.presence(of: coin, in: snapshot.lines)
+        }
+    }
+
+    /// Single-coin convenience over `trustLineStates(for:address:)`.
+    func trustLineState(for coin: CoinMeta, address: String) async -> RippleTrustLinePresence {
+        await trustLineStates(for: [coin], address: address)[coin.contractAddress] ?? .unknown
+    }
+
+    private static func presence(of coin: CoinMeta, in lines: [RippleTrustLine]) -> RippleTrustLinePresence {
         guard let (currency, issuer) = try? RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress),
               let currencyCode = try? RippleIssuedCurrency.toXrplCurrencyCode(currency) else {
             return .unknown
@@ -843,6 +872,17 @@ class RippleService {
             return .unknown
         }
     }
+}
+
+/// One completed `account_lines` walk, with the moment it was recorded.
+///
+/// The timestamp is carried in the value rather than left to the cache because
+/// the presence read uses `peek`, which ignores TTL by design — a UI affordance
+/// must never trigger a fetch. Carrying it here lets an expired snapshot degrade
+/// to "don't know" instead of silently standing in for current ledger state.
+struct RippleTrustLineSnapshot {
+    let lines: [RippleTrustLine]
+    let recordedAt: Date
 }
 
 /// Whether an account holds a trust line for a given issued currency.

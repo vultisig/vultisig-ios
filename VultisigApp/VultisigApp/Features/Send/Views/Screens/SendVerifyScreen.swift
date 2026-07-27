@@ -120,7 +120,7 @@ struct SendVerifyScreen: View {
                 amountFiat: sendCryptoVerifyViewModel.amountFiat,
                 coinTicker: tx.coin.ticker,
                 keysignPayload: sendCryptoVerifyViewModel.verifyKeysignPayload,
-                rippleTrustSet: RippleTrustSetPresentation.display(for: tx)
+                rippleTrustSet: RippleTrustSetPresentation.state(for: tx)
             ),
             securityScannerState: $sendCryptoVerifyViewModel.securityScannerState
         ) {

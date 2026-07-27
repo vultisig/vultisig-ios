@@ -71,14 +71,28 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             // were moving. Dispatched here — the one view both the initiator's
             // Verify screen and a co-signer's Join screen render — so a peer
             // device can never be shown Payment framing for a trust line.
-            if let trustSet = rippleTrustSet {
+            if isRippleTrustSet {
                 Group {
-                    getValueCell(for: "rippleTrustLineIssuer", with: trustSet.issuer)
-                    Separator()
-                    getValueCell(for: "rippleTrustLineCurrency", with: trustSet.ticker)
-                    Separator()
-                    getValueCell(for: "rippleTrustLineLimit", with: "\(trustSet.limitValue) \(trustSet.ticker)")
-                    Separator()
+                    if let trustSet = rippleTrustSet {
+                        getValueCell(for: "rippleTrustLineIssuer", with: trustSet.issuer)
+                        Separator()
+                        getValueCell(for: "rippleTrustLineCurrency", with: trustSet.ticker)
+                        Separator()
+                        getValueCell(for: "rippleTrustLineLimit", with: "\(trustSet.limitValue) \(trustSet.ticker)")
+                        Separator()
+                    } else {
+                        // A TrustSet whose terms cannot be read. Say so instead of
+                        // borrowing the Payment rows, which would present the
+                        // limit as a transfer to `toAddress`. The signer refuses
+                        // these payloads as well, so this is a dead end by design.
+                        getValueCell(
+                            for: "rippleTrustLineUnreviewable",
+                            with: "rippleTrustLineUnreviewableValue".localized,
+                            isMultiLine: true,
+                            color: Theme.colors.alertError
+                        )
+                        Separator()
+                    }
                 }
             } else {
                 Group {
@@ -262,13 +276,18 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         // transaction simulation, which reads a TrustSet as an ordinary send. A
         // co-signer must not be shown "You're sending <limit> <ticker>" for a
         // transaction that moves nothing.
-        if let trustSet = rippleTrustSet {
-            // Nothing is being sent — a trust line is being opened.
-            Text(String(format: "rippleTrustLineHeroTitle".localized, trustSet.ticker))
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.bodyMMedium)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 8)
+        if isRippleTrustSet {
+            // Nothing is being sent — a trust line is being opened. When the
+            // terms are unreadable the header stays generic rather than naming a
+            // ticker we couldn't decode.
+            Text(
+                rippleTrustSet.map { String(format: "rippleTrustLineHeroTitle".localized, $0.ticker) }
+                    ?? "rippleTrustLineActivationTitle".localized
+            )
+            .foregroundStyle(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyMMedium)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 8)
         } else if let hero = input.hero {
             HeroContentView(content: hero)
                 .padding(.bottom, 8)
@@ -377,14 +396,28 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         }
     }
 
-    /// Rows for an XRPL TrustSet.
+    /// Render state for an XRPL TrustSet.
     ///
-    /// Derived from the KEYSIGN PAYLOAD whenever one is present, so a co-signer
+    /// Taken from the KEYSIGN PAYLOAD whenever one is present, so a co-signer
     /// reads the transaction it is about to sign rather than anything the
-    /// initiator claims about it. The `input` value is the initiator's Verify
+    /// initiator claims about it. The `input` value covers the initiator's Verify
     /// screen, which renders before its payload is built.
+    var rippleTrustSetState: RippleTrustSetPresentation.State {
+        let fromPayload = RippleTrustSetPresentation.state(for: input.keysignPayload)
+        guard fromPayload == .notTrustSet else { return fromPayload }
+        return input.rippleTrustSet
+    }
+
+    /// Terms to render, when they can be read at all.
     var rippleTrustSet: RippleTrustSetPresentation.Display? {
-        RippleTrustSetPresentation.display(for: input.keysignPayload) ?? input.rippleTrustSet
+        guard case .reviewable(let display) = rippleTrustSetState else { return nil }
+        return display
+    }
+
+    /// True for ANY TrustSet, readable or not — the flag that must gate every
+    /// Payment-shaped row, so an unreviewable TrustSet can never borrow them.
+    var isRippleTrustSet: Bool {
+        rippleTrustSetState != .notTrustSet
     }
 
     /// True when the hero doesn't already show a resolved amount/coin, so the
@@ -394,9 +427,10 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         if input.keysignPayload?.signSui != nil {
             return false
         }
-        // A TrustSet's amount IS the limit, rendered as its own labelled row.
-        // Showing it as "amount" would read as a transfer.
-        if rippleTrustSet != nil {
+        // A TrustSet's amount IS the limit, rendered as its own labelled row (or
+        // withheld when unreadable). Showing it as "amount" would read as a
+        // transfer.
+        if isRippleTrustSet {
             return false
         }
         // signRipple carries the amount inside the raw JSON (and offers have no

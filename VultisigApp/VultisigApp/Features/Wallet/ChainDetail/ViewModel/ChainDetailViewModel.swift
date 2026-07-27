@@ -44,6 +44,9 @@ final class ChainDetailViewModel: ObservableObject {
 
     private let rippleService: RippleService
     private var isRipple: Bool { nativeCoin.chain == .ripple }
+    /// Monotonic tag identifying the most recent trust-line refresh, so an older
+    /// pass that finishes late can't overwrite a newer answer.
+    private var trustLineRefreshGeneration: UInt64 = 0
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -80,23 +83,40 @@ final class ChainDetailViewModel: ObservableObject {
     /// Adds NO network traffic: it reads the trust lines the balance refresh
     /// already fetched for this address, so the answer costs nothing per token
     /// row. No-op on every non-XRPL chain.
+    ///
+    /// Refreshes are generation-guarded. Several can be in flight at once (a
+    /// balance publish, a pull-to-refresh and a token-list recompute all trigger
+    /// one), and without the guard a slower earlier pass could land last and
+    /// replace a newer answer with a staler one — resurrecting an `Activate`
+    /// button on a line that has since been opened.
     func refreshTrustLineState() {
         guard isRipple else { return }
         let tokens = self.tokens.filter { !$0.isNativeToken }
         guard !tokens.isEmpty else {
+            trustLineRefreshGeneration &+= 1
             tokensNeedingTrustLine = []
             return
         }
+        trustLineRefreshGeneration &+= 1
+        let generation = trustLineRefreshGeneration
         let address = nativeCoin.address
-        let identified = tokens.map { (uniqueId: $0.uniqueId, meta: $0.toCoinMeta()) }
+        // Keyed by contract address because that is what the ledger answer is
+        // keyed by; mapped back to `uniqueId` for the row lookup.
+        let identifiers = Dictionary(
+            tokens.map { ($0.contractAddress, $0.uniqueId) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let metas = tokens.map { $0.toCoinMeta() }
         Task { @MainActor [rippleService] in
-            var missing: Set<String> = []
-            for token in identified {
-                if await rippleService.trustLineState(for: token.meta, address: address) == .absent {
-                    missing.insert(token.uniqueId)
-                }
-            }
-            tokensNeedingTrustLine = missing
+            let states = await rippleService.trustLineStates(for: metas, address: address)
+            // A newer pass has already answered — discard this one rather than
+            // overwrite it.
+            guard generation == trustLineRefreshGeneration else { return }
+            tokensNeedingTrustLine = Set(
+                states
+                    .filter { $0.value == .absent }
+                    .compactMap { identifiers[$0.key] }
+            )
         }
     }
 

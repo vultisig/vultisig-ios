@@ -1078,8 +1078,11 @@
 "rippleTrustLineIssuerCheck" = "Izdavatelj je ispravan";
 "rippleTrustLineLimit" = "Ograničenje linije povjerenja";
 "rippleTrustLineLimitCheck" = "Ograničenje linije povjerenja je ispravno";
+"rippleTrustLineNoXrpAccountError" = "Liniju povjerenja mora posjedovati XRP račun. Najprije dodajte XRP u ovaj trezor.";
 "rippleTrustLineOwnerReserve" = "Zaključana rezerva";
 "rippleTrustLineSpendableAfter" = "Raspoloživi XRP nakon";
+"rippleTrustLineUnreviewable" = "Pregled nije moguć";
+"rippleTrustLineUnreviewableValue" = "Valuta, izdavatelj ili ograničenje ove linije povjerenja nisu se mogli pročitati, pa se njezini uvjeti ne mogu prikazati. Nemojte je potpisati.";
 "rippleUndecodedNotice" = "Ovu transakciju nije bilo moguće dekodirati. Pažljivo pregledajte neobrađeni JSON prije potpisivanja.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";

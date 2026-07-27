@@ -280,17 +280,36 @@ enum RippleHelper {
         case issuedCurrency
     }
 
-    /// Classifies the payload's coin, refusing anything in between.
+    /// Classifies the payload's coin, refusing anything structurally
+    /// inconsistent.
     ///
-    /// A non-native coin with NO token id is the dangerous middle: it satisfies
-    /// no issued-currency branch, so it would fall through to the native encoding
-    /// and have its token base units serialized as XRP DROPS — a silent
-    /// token→native crossing that moves real XRP. Nothing legitimate produces
-    /// such a coin (`Coin.contractAddress` is the `<currency>.<issuer>` id every
-    /// XRPL token carries), and the whole `Coin` arrives proto-relayed from a
-    /// peer, so it is refused rather than interpreted.
+    /// The whole `Coin` arrives proto-relayed from a peer, and `isNativeToken`
+    /// and `contractAddress` between them decide which AMOUNT ENCODING gets
+    /// signed — so the two must agree before either is trusted. Both
+    /// contradictions are refused rather than interpreted:
+    ///
+    /// - **non-native with NO token id** satisfies no issued-currency branch, so
+    ///   it would fall through to the native encoding and have its token base
+    ///   units serialized as XRP DROPS — a silent token→native crossing that
+    ///   moves real XRP;
+    /// - **native WITH a token id** is the mirror image: metadata that names an
+    ///   issuer while asking to be signed as drops. Nothing legitimate produces
+    ///   it (`Coin.contractAddress` is empty for native XRP everywhere in the
+    ///   app), and a payload that cannot describe its own asset coherently is
+    ///   not one to sign.
+    ///
+    /// Deeper metadata (ticker, decimals) is NOT policed here: those vary
+    /// legitimately across platforms, and rejecting on them would false-reject
+    /// valid payloads from a peer rather than catch an attack.
     private static func issuedCurrencyKind(coin: Coin) throws -> RippleCoinKind {
-        guard !coin.isNativeToken else { return .native }
+        if coin.isNativeToken {
+            guard coin.contractAddress.isEmpty else {
+                throw HelperError.runtimeError(
+                    "XRP coin claims to be native but carries an issued-currency token id"
+                )
+            }
+            return .native
+        }
         guard !coin.contractAddress.isEmpty else {
             throw HelperError.runtimeError(
                 "XRP non-native coin is missing its issued-currency token id"

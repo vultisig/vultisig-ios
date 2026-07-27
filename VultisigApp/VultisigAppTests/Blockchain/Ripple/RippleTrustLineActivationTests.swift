@@ -220,6 +220,58 @@ final class RippleTrustLineActivationTests: XCTestCase {
         XCTAssertEqual(state, .absent)
     }
 
+    /// A recording that has gone stale degrades to `.unknown`, not `.absent`.
+    /// Without this an `Activate` button would sit there forever on evidence that
+    /// is no longer true — a line opened on another device, or a walk that has
+    /// been failing for a while — inviting a redundant ceremony and its fee.
+    func testStaleTrustLineSnapshotDegradesToUnknown() async {
+        let service = Self.makeService(RippleTrustLineStub())
+        let key = RippleService.trustLinesCacheKey(for: RippleAPI.defaultHost, address: Self.account)
+
+        // Seed a snapshot recorded an hour ago, well past the presence TTL.
+        await service.trustLinesCache.setCached(
+            RippleTrustLineSnapshot(lines: [], recordedAt: Date(timeIntervalSinceNow: -3_600)),
+            for: key
+        )
+
+        let stale = await service.trustLineState(
+            for: Self.coin(tokenId: "USD.\(Self.issuer)"),
+            address: Self.account
+        )
+        XCTAssertEqual(stale, .unknown)
+
+        // A fresh recording of the same (empty) result IS evidence.
+        await service.trustLinesCache.setCached(
+            RippleTrustLineSnapshot(lines: [], recordedAt: Date()),
+            for: key
+        )
+        let fresh = await service.trustLineState(
+            for: Self.coin(tokenId: "USD.\(Self.issuer)"),
+            address: Self.account
+        )
+        XCTAssertEqual(fresh, .absent)
+    }
+
+    /// The batch accessor resolves the host ONCE, so one answer set can never be
+    /// assembled from two networks' snapshots, and answers every coin it is given.
+    func testBatchPresenceAnswersEveryCoinFromOneSnapshot() async throws {
+        let stub = RippleTrustLineStub()
+        stub.pages = [Self.linesJSON([Self.line(currency: "USD", issuer: Self.issuer, balance: "5")], marker: nil)]
+        let service = Self.makeService(stub)
+        _ = try await service.fetchAccountLines(for: Self.account)
+
+        let held = Self.coin(tokenId: "USD.\(Self.issuer)")
+        let missing = Self.coin(tokenId: "EUR.\(Self.issuer)")
+        let unreadable = Self.coin(tokenId: "not-a-token-id")
+
+        let states = await service.trustLineStates(for: [held, missing, unreadable], address: Self.account)
+
+        XCTAssertEqual(states[held.contractAddress], .present)
+        XCTAssertEqual(states[missing.contractAddress], .absent)
+        XCTAssertEqual(states[unreadable.contractAddress], .unknown)
+        XCTAssertEqual(stub.callCount, 1, "the batch read must not issue its own request")
+    }
+
     // MARK: - Destination trust-line guard (#4758)
 
     func testDestinationWithAMatchingLineCanReceive() async {
@@ -350,6 +402,59 @@ final class RippleTrustLineActivationTests: XCTestCase {
         XCTAssertEqual(exact.remainingSpendableDrops, .zero)
     }
 
+    /// The limit the sheet DISPLAYS and the limit that gets SIGNED must be the
+    /// same number. The displayed value is a decimal string that travels through
+    /// `Decimal` in `SendCryptoLogic.amountInRaw` before becoming the keysign
+    /// amount, so a precision loss there would sign a different limit than the one
+    /// the user approved.
+    @MainActor
+    func testActivationTransactionSignsExactlyTheDisplayedLimit() async {
+        let viewModel = RippleTrustLineActivationViewModel(service: Self.makeService(RippleTrustLineStub()))
+        let meta = Self.coin(tokenId: "USD.\(Self.issuer)")
+        let coin = Coin(
+            asset: meta,
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        let vault = Vault.example
+        let nativeCoin = Coin(
+            asset: CoinMeta(
+                chain: .ripple,
+                ticker: "XRP",
+                logo: "xrp",
+                decimals: 6,
+                priceProviderId: "ripple",
+                contractAddress: "",
+                isNativeToken: true
+            ),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        nativeCoin.rawBalance = "50000000"
+
+        await viewModel.load(coin: coin, nativeCoin: nativeCoin)
+
+        let tx = viewModel.makeActivationTransaction(coin: coin, vault: vault)
+        let transaction = try? XCTUnwrap(tx)
+        guard let transaction else { return XCTFail("expected an activation transaction") }
+
+        XCTAssertEqual(transaction.transactionType, .rippleTrustSet)
+        XCTAssertEqual(transaction.amount, RippleTrustLineLimit.defaultLimitDisplayValue())
+        XCTAssertEqual(
+            transaction.amountInRaw,
+            RippleTrustLineLimit.defaultLimit,
+            "the signed limit must equal the displayed limit exactly"
+        )
+        // And that raw amount formats back to the same string the sheet showed.
+        XCTAssertEqual(
+            try? RippleIssuedCurrency.formatIssuedCurrencyValue(
+                amount: transaction.amountInRaw,
+                decimals: coin.decimals
+            ),
+            viewModel.quote?.limitValue
+        )
+    }
+
     func testQuoteDecodesAHexCurrencyToItsTicker() {
         let quote = RippleTrustLineActivationQuote(
             ownerReserveDrops: BigInt(200_000),
@@ -411,6 +516,100 @@ final class RippleTrustLineActivationTests: XCTestCase {
     func testTrustSetPresentationIsNilForAnUnreadableTokenId() {
         let payload = Self.makeTrustSetPayload(tokenId: "not-a-token-id", toAmount: BigInt(1))
         XCTAssertNil(RippleTrustSetPresentation.display(for: payload))
+    }
+
+    /// THE state distinction that keeps a co-signer safe: whether something IS a
+    /// TrustSet is decided by the discriminator, never by whether we managed to
+    /// render it. An unreadable TrustSet must resolve to `.unreviewable` — if it
+    /// collapsed to "not a TrustSet", the summary would fall back to the Payment
+    /// rows and present `toAddress` as a recipient and the LIMIT as a transfer,
+    /// asking a peer device to join after reviewing a materially false operation.
+    func testUnreadableTrustSetIsUnreviewableRatherThanNotATrustSet() {
+        for tokenId in ["not-a-token-id", "", "USD.", ".rIssuer"] {
+            let payload = Self.makeTrustSetPayload(tokenId: tokenId, toAmount: BigInt(1))
+
+            XCTAssertTrue(
+                RippleTrustSetPresentation.isTrustSet(payload: payload),
+                "'\(tokenId)': the discriminator alone decides the operation"
+            )
+            XCTAssertEqual(
+                RippleTrustSetPresentation.state(for: payload),
+                .unreviewable,
+                "'\(tokenId)' must never fall back to Payment framing"
+            )
+        }
+    }
+
+    /// Hostile `decimals` make the limit unformattable — also `.unreviewable`,
+    /// not a silent fallback to Payment rows.
+    func testTrustSetWithHostileDecimalsIsUnreviewable() {
+        let meta = CoinMeta(
+            chain: .ripple,
+            ticker: "USD",
+            logo: .empty,
+            decimals: -1,
+            priceProviderId: .empty,
+            contractAddress: "USD.\(Self.issuer)",
+            isNativeToken: false
+        )
+        let coin = Coin(
+            asset: meta,
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        let payload = KeysignPayload(
+            coin: coin,
+            toAddress: Self.issuer,
+            toAmount: BigInt(1),
+            chainSpecific: .Ripple(
+                sequence: 1,
+                gas: 10,
+                lastLedgerSequence: 100,
+                transactionType: VSTransactionType.rippleTrustSet.rawValue
+            ),
+            utxos: [],
+            memo: nil,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "",
+            vaultLocalPartyID: "iPhone-test",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
+            qbtcClaimPayload: nil,
+            isQbtcClaim: false,
+            skipBroadcast: false,
+            signData: nil
+        )
+
+        XCTAssertEqual(RippleTrustSetPresentation.state(for: payload), .unreviewable)
+        XCTAssertThrowsError(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "an unreviewable TrustSet must also be unsignable"
+        )
+    }
+
+    /// A readable TrustSet resolves to `.reviewable`, and an ordinary send to
+    /// `.notTrustSet` — so nothing else changes shape.
+    func testTrustSetStateDistinguishesReviewableFromNotATrustSet() throws {
+        let readable = Self.makeTrustSetPayload(
+            tokenId: "USD.\(Self.issuer)",
+            toAmount: BigInt("1500000000000000")
+        )
+        guard case .reviewable(let display) = RippleTrustSetPresentation.state(for: readable) else {
+            return XCTFail("expected a reviewable TrustSet")
+        }
+        XCTAssertEqual(display.limitValue, "1.5")
+
+        let payment = Self.makeTrustSetPayload(
+            tokenId: "USD.\(Self.issuer)",
+            toAmount: BigInt(1),
+            transactionType: .unspecified
+        )
+        XCTAssertEqual(RippleTrustSetPresentation.state(for: payment), .notTrustSet)
+        XCTAssertEqual(RippleTrustSetPresentation.state(for: nil), .notTrustSet)
     }
 
     // MARK: - Fixtures

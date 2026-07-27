@@ -58,13 +58,13 @@ struct SendCryptoVerifySummary {
     /// Empty by default, so no existing construction site changes.
     let additionalRows: [SendCryptoVerifySummaryRow]
 
-    /// XRPL trust-line rows for the INITIATOR, whose Verify screen renders before
-    /// a keysign payload exists (it is built on confirm). A co-signer needs
-    /// nothing here — the view derives the same rows from the payload it holds,
-    /// and that derivation WINS whenever a payload is present, so what a peer
-    /// device reads always comes from the thing it will sign. `nil` everywhere
-    /// else.
-    let rippleTrustSet: RippleTrustSetPresentation.Display?
+    /// XRPL trust-line render state for the INITIATOR, whose Verify screen
+    /// renders before a keysign payload exists (it is built on confirm). A
+    /// co-signer needs nothing here — the view derives the same state from the
+    /// payload it holds, and that derivation WINS whenever the payload is a
+    /// TrustSet, so what a peer device reads always comes from the thing it will
+    /// sign. `.notTrustSet` everywhere else.
+    let rippleTrustSet: RippleTrustSetPresentation.State
 
     init(
         fromName: String,
@@ -93,7 +93,7 @@ struct SendCryptoVerifySummary {
         vault: Vault? = nil,
         dappMetadata: DAppMetadata? = nil,
         additionalRows: [SendCryptoVerifySummaryRow] = [],
-        rippleTrustSet: RippleTrustSetPresentation.Display? = nil
+        rippleTrustSet: RippleTrustSetPresentation.State = .notTrustSet
     ) {
         self.fromName = fromName
         self.fromAddress = fromAddress
