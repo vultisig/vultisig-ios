@@ -1,0 +1,3 @@
+# Always-on inspection artifact written by the harness on every run.
+# The committed reference is SigningGoldenVectors.json (NOT ignored).
+SigningGoldenVectors.actual.json
