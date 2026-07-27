@@ -129,6 +129,109 @@ final class SendMaxAmountTests: XCTestCase {
         XCTAssertEqual(eth.getMaxValue(.zero), Decimal(string: "1.000000000000123456"))
     }
 
+    // MARK: - verifyMaxCandidateRaw (Verify-screen native-Max re-derivation)
+
+    func testVerifyMaxCandidateRawNonTerraSubtractsFeeWithoutClamping() {
+        // Non-Terra native Max keeps `balance − fee − ED` verbatim; the
+        // previous amount never clamps it (ED = 0 for ETH).
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000") // 1 ETH
+        let fee = BigInt(stringLiteral: "10000000000000000") // 0.01 ETH
+        let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
+            coin: eth,
+            fee: fee,
+            previousAmountRaw: BigInt(1) // absurdly small: proves no clamp off Terra
+        )
+        XCTAssertEqual(candidate, BigInt(stringLiteral: "990000000000000000")) // 0.99 ETH
+    }
+
+    func testVerifyMaxCandidateRawTerraClassicClampsToDetailsAmount() {
+        // Terra Classic: `balance − fee` overshoots the Details amount by the
+        // truncation residue; the clamp pins it back to the spendable amount.
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
+                            rawBalance: "8497702")
+        let baseGas = BigInt(TerraClassicTax.ulunaBaseGas)
+        let previousAmountRaw = BigInt(200) // Details amount A = floor(202 / 1.005)
+        let verifyFee = baseGas + TerraClassicTax.burnTax(amount: previousAmountRaw, rate: TerraClassicTax.fallbackBurnTaxRate)
+        // balance − verifyFee = 8497702 − 8497501 = 201 (one uluna over A).
+        let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
+            coin: lunc,
+            fee: verifyFee,
+            previousAmountRaw: previousAmountRaw
+        )
+        XCTAssertEqual(candidate, previousAmountRaw) // clamped from 201 down to 200
+    }
+
+    func testVerifyMaxCandidateRawTerraClassicKeepsCandidateWhenFeeGrew() {
+        // If the refetched fee is high enough that `balance − fee` falls below
+        // the Details amount, the smaller candidate is kept (it owes no more
+        // tax than the Details amount, so it stays spendable).
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
+                            rawBalance: "9000000")
+        let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
+            coin: lunc,
+            fee: BigInt(600000), // leaves 8_400_000
+            previousAmountRaw: BigInt(8_500_000) // larger than balance − fee
+        )
+        XCTAssertEqual(candidate, BigInt(8_400_000)) // not clamped up to the previous amount
+    }
+
+    func testTerraClassicVerifyMaxNeverUnderfundsAcrossSweptBalances() {
+        // Regression for the 1-uluna underfunding: sweep a contiguous balance
+        // range and assert the re-derived Verify amount is always spendable —
+        // `amount + baseGas + burnTax(amount)` never exceeds the balance — while
+        // confirming the pre-fix `balance − fee` formula did overshoot.
+        let baseGas = BigInt(TerraClassicTax.ulunaBaseGas)
+        let rate = TerraClassicTax.fallbackBurnTaxRate
+        let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true)
+
+        func signedCost(_ amount: BigInt) -> BigInt {
+            baseGas + amount + TerraClassicTax.burnTax(amount: amount, rate: rate)
+        }
+
+        let start = baseGas + 1
+        let count = 4000
+        var oldUnderfunded = 0
+        var newUnderfunded = 0
+
+        for offset in 0..<count {
+            let balance = start + BigInt(offset)
+            lunc.rawBalance = balance.description
+
+            // Details-screen amount A: fee = baseGas only (no amount known yet).
+            let detailsAmountStr = SendCryptoLogic.computeMaxAmount(coin: lunc, fee: baseGas)
+            let aRaw = SendCryptoLogic.amountInRaw(coin: lunc, amount: detailsAmountStr)
+            guard aRaw > 0 else { continue }
+
+            // Verify refetches the fee with amount = A → embeds burnTax(A).
+            let verifyFee = baseGas + TerraClassicTax.burnTax(amount: aRaw, rate: rate)
+
+            // Pre-fix re-derivation (ED = 0 for Terra Classic).
+            let oldCandidate = balance - verifyFee
+            if oldCandidate > 0, signedCost(oldCandidate) > balance {
+                oldUnderfunded += 1
+            }
+
+            // Re-derivation under test.
+            let newCandidate = SendCryptoLogic.verifyMaxCandidateRaw(
+                coin: lunc,
+                fee: verifyFee,
+                previousAmountRaw: aRaw
+            )
+            guard newCandidate > 0 else { continue }
+            if signedCost(newCandidate) > balance {
+                newUnderfunded += 1
+            }
+            XCTAssertLessThanOrEqual(
+                newCandidate, aRaw,
+                "verify amount \(newCandidate) exceeded the spendable Details amount \(aRaw) at balance \(balance)"
+            )
+        }
+
+        XCTAssertGreaterThan(oldUnderfunded, 0, "sweep did not reproduce the pre-fix underfunding — test is not exercising the bug")
+        XCTAssertEqual(newUnderfunded, 0, "clamped re-derivation still underfunded \(newUnderfunded) of \(count) balances")
+    }
+
     // MARK: - applyPercentage
 
     func testApplyPercentageScalesAmountLinearly() {
