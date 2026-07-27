@@ -477,10 +477,7 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
     }
 
     func testMalformedTokenIdThrowsOnTokenPayment() {
-        // A non-native coin with an EMPTY contract address falls through to the
-        // native drops path by design (it carries no token id at all), so the
-        // malformed cases here are the ones that DO look like a token id.
-        for contractAddress in ["USD", ".rIssuer", "USD.", "no-separator"] {
+        for contractAddress in ["", "USD", ".rIssuer", "USD.", "no-separator"] {
             let payload = Self.makePayload(
                 coin: Self.makeTokenCoin(contractAddress: contractAddress),
                 toAddress: Self.destination,
@@ -532,6 +529,146 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
         )
         XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
     }
+
+    /// FAIL CLOSED on the dangerous middle: a NON-native coin carrying no token
+    /// id satisfies no issued-currency branch, so without this guard it would
+    /// fall through to the native encoding and have the token's base units
+    /// serialized as XRP DROPS — a silent token→native crossing that moves real
+    /// XRP. The whole `Coin` is proto-relayed from a peer, so it must be refused
+    /// rather than interpreted.
+    func testNonNativeCoinWithNoTokenIdIsRefusedRatherThanSignedAsDrops() {
+        let coin = Self.makeTokenCoin(contractAddress: "")
+
+        for memo in [nil, "some text memo", "42"] {
+            let payload = Self.makePayload(
+                coin: coin,
+                toAddress: Self.destination,
+                toAmount: Self.tokenAmount,
+                memo: memo
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "a non-native coin with no token id must never reach the drops encoding (memo: \(memo ?? "nil"))"
+            )
+        }
+    }
+
+    /// FAIL CLOSED on a discriminator this build doesn't support: another chain's
+    /// operation relayed onto a Ripple payload, or a future XRPL operation. The
+    /// peer is describing something other than what these branches build, so
+    /// signing anything at all would be signing an unreviewed operation. It must
+    /// NOT quietly degrade to "just build a Payment".
+    func testUnsupportedTransactionTypeIsRefused() {
+        for transactionType in [VSTransactionType.tonDeposit, .genericContract, .thorMerge, .qbtcClaimWithProof] {
+            let tokenPayload = Self.makePayload(
+                coin: Self.makeTokenCoin(),
+                toAddress: Self.destination,
+                toAmount: Self.tokenAmount,
+                transactionType: transactionType
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: tokenPayload),
+                "\(transactionType) must be refused on a token payload"
+            )
+
+            let nativePayload = Self.makePayload(
+                coin: Self.makeNativeCoin(),
+                toAddress: Self.destination,
+                toAmount: BigInt(1_000_000),
+                transactionType: transactionType
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: nativePayload),
+                "\(transactionType) must be refused on a native payload"
+            )
+        }
+    }
+
+    /// A raw discriminator value no build knows (an operation added after this
+    /// one) survives the proto round-trip as `UNRECOGNIZED` rather than being
+    /// flattened to `.unspecified`, so the signer can see it and refuse.
+    func testUnrecognizedTransactionTypeRawValueIsRefused() throws {
+        let chainSpecific = BlockChainSpecific.Ripple(
+            sequence: Self.sequence,
+            gas: Self.gas,
+            lastLedgerSequence: Self.lastLedgerSequence,
+            transactionType: 9_999
+        )
+
+        let roundTripped = try BlockChainSpecific(proto: chainSpecific.mapToProtobuff())
+        guard case .Ripple(_, _, _, _, let transactionType) = roundTripped else {
+            return XCTFail("expected a Ripple chain specific")
+        }
+        XCTAssertEqual(transactionType, 9_999, "an unknown discriminator must not be flattened on the wire")
+    }
+
+    // MARK: - Frozen golden vectors
+
+    /// FROZEN BYTES for both new operations.
+    ///
+    /// The parity test above rebuilds its "legacy" reference with the same
+    /// normalization and formatting helpers production uses, so a shared mistake
+    /// in those helpers would let both sides agree while still diverging from
+    /// every other platform. These literals close that hole in the only way a
+    /// single-repo test can: they pin the exact bytes this signer emits for a
+    /// fixed payload, so any future change to currency normalization, value
+    /// formatting, field ordering or the envelope has to be deliberate.
+    ///
+    /// They are iOS-originated (this app is the first client to build XRPL token
+    /// payloads at all). Cross-checking them against the SDK's resolver output is
+    /// tracked as parity work rather than done here — nothing in this repo can
+    /// execute the TypeScript resolver.
+    func testTrustSetSerializesToFrozenBytes() throws {
+        let payload = Self.makePayload(
+            coin: Self.makeTokenCoin(),
+            toAddress: "",
+            toAmount: Self.tokenAmount,
+            transactionType: .rippleTrustSet
+        )
+
+        XCTAssertEqual(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload).hexString,
+            Self.frozenTrustSetInputHex,
+            "the TrustSet signing input changed — confirm the change is intended and cross-platform"
+        )
+    }
+
+    func testTokenPaymentSerializesToFrozenBytes() throws {
+        let payload = Self.makePayload(
+            coin: Self.makeTokenCoin(),
+            toAddress: Self.destination,
+            toAmount: Self.tokenAmount
+        )
+
+        XCTAssertEqual(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload).hexString,
+            Self.frozenTokenPaymentInputHex,
+            "the issued-currency Payment signing input changed — confirm the change is intended and cross-platform"
+        )
+    }
+
+    /// TrustSet over `USD.rHb9…` with a limit of `1.5`, fee 10, sequence 99,
+    /// lastLedgerSequence 12345678. Decodes as: fee(1)=10, sequence(2)=99,
+    /// lastLedgerSequence(3)=12345678, account(4), opTrustSet(7){ limitAmount{
+    /// currency="USD", value="1.5", issuer } }, publicKey(15). Note there is NO
+    /// field 5 (`flags`) — that absence is part of what is pinned.
+    private static let frozenTrustSetInputHex = """
+    080a106318cec2f10522227250564d68574273664639694d58596a3361417a4a566b504454464e537957644b79\
+    3a300a2e0a035553441203312e351a2272486239434a4157794234726a39315652576e3936446b756b47346277\
+    64747954687a210279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
+    """
+
+    /// Issued-currency Payment of `1.5 USD.rHb9…` to `rEb8…`, same envelope.
+    /// Decodes as the same envelope plus opPayment(8){ currencyAmount(2){
+    /// currency, value, issuer }, destination(3) } — with NO field 1 (the drops
+    /// `amount`), which is the property that keeps a token send from ever
+    /// presenting a native XRP amount.
+    private static let frozenTokenPaymentInputHex = """
+    080a106318cec2f10522227250564d68574273664639694d58596a3361417a4a566b504454464e537957644b79\
+    4254122e0a035553441203312e351a2272486239434a4157794234726a39315652576e3936446b756b47346277\
+    64747954681a2272456238544b336742676b3561755a6b77633673486e777247564a48384475614c687a210279\
+    be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
+    """
 
     // MARK: - Precedence
 
