@@ -38,4 +38,17 @@ extension OneInchToken {
                         contractAddress: self.address,
                         isNativeToken: false)
     }
+
+    /// Trust-carrying catalog candidate. Unlike `toCoinMeta` (which drops the
+    /// legitimacy signal), this preserves 1inch's CoinGecko-verified flag as the
+    /// token's `verification` — the same signal `EvmCoinFinder` uses as its scam
+    /// gate. Note: 1inch `/tokens` carries no CoinGecko id, so `priceProviderId`
+    /// stays empty; the curated bundled provider wins dedup and supplies it for
+    /// known tokens.
+    func toCatalogToken(chain: Chain, sourceKind: String) -> CatalogToken {
+        let verification: TokenVerification = isCoinGeckoVerified
+            ? .verified(source: "CoinGecko")
+            : .unverified
+        return CatalogToken(meta: toCoinMeta(chain: chain), verification: verification, sourceKind: sourceKind)
+    }
 }

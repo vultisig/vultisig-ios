@@ -24,8 +24,8 @@ import Foundation
 /// `.verified` and auto-surface. Providers assign verification in code from a
 /// validated signal (1inch `isCoinGeckoVerified`, Jupiter's `?query=verified`
 /// list, curated bundling) — never from a decoded field. The disk snapshot
-/// re-derives/floors verification on load rather than trusting the persisted
-/// value (see `TokenCatalogDiskCache`).
+/// floors verification to `.unverified` on load rather than trusting the
+/// persisted value (see `TokenCatalogDiskCache`).
 enum TokenVerification: Equatable, Hashable, Sendable, Codable {
     /// Bundled, hand-curated `TokensStore` entry — the offline trust anchor.
     case curated
