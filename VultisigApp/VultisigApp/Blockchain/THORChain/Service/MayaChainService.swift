@@ -11,7 +11,7 @@ import OSLog
 class MayachainService: ThorchainSwapProvider {
     static let shared = MayachainService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "mayachain-service")
+    private let logger = Log.chain.service
     private let httpClient: HTTPClientProtocol
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
 

@@ -32,7 +32,7 @@ import OSLog
 import Tss
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-tron-signer")
+private let logger = Log.chain.other
 
 enum SwapKitTronSignerError: Error, LocalizedError {
     case emptyPayload

@@ -7,7 +7,7 @@ import Foundation
 import OSLog
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-message-body-decoder")
+private let logger = Log.chain.other
 
 /// Decode the body BOC of a TON internal message into a structured intent.
 ///

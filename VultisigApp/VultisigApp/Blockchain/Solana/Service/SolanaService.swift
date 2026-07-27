@@ -35,7 +35,7 @@ enum SolanaRetryableError: Error, LocalizedError, RetryableBroadcastError {
 class SolanaService {
     static let shared = SolanaService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "solana-service")
+    private let logger = Log.chain.service
     private let httpClient: HTTPClientProtocol
 
     /// Resolves the Solana custom RPC override. Injected so the API values are

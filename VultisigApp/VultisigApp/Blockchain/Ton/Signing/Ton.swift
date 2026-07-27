@@ -11,7 +11,7 @@ import Tss
 import WalletCore
 import BigInt
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-helper")
+private let logger = Log.chain.other
 
 enum TonHelper {
 

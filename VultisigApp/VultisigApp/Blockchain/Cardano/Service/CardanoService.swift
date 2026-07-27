@@ -11,7 +11,7 @@ class CardanoService {
 
     static let shared = CardanoService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "cardano-service")
+    private let logger = Log.chain.service
     private let httpClient: HTTPClientProtocol
 
     private init(httpClient: HTTPClientProtocol = HTTPClient()) {

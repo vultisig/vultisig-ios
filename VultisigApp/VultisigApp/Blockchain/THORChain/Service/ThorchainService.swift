@@ -12,7 +12,7 @@ import OSLog
 class ThorchainService: ThorchainSwapProvider {
     var network: String = ""
     static let shared = ThorchainService()
-    let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
+    let logger = Log.chain.service
 
     /// Injectable so the sign-time halt gate is unit-testable with a stubbed
     /// inbound response (same pattern as `MayachainService`); production uses

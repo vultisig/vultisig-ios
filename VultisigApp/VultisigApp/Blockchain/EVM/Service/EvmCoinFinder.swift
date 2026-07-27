@@ -21,7 +21,7 @@ import BigInt
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "evm-coin-finder")
+private let logger = Log.chain.other
 
 enum EvmCoinFinder {
 

@@ -13,7 +13,7 @@ import BigInt
 class BalanceService {
 
     static let shared = BalanceService()
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "balance-service")
+    private let logger = Log.chain.service
 
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared

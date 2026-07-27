@@ -7,7 +7,7 @@ import Foundation
 import OSLog
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-external-message-emulator")
+private let logger = Log.chain.other
 
 /// Builds a wallet-v4R2 external-message BOC for emulation. Reuses the same
 /// `TheOpenNetworkSigningInput` path that signing uses, then injects a 64-byte

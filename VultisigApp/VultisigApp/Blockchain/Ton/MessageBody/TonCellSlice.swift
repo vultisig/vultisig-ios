@@ -7,7 +7,7 @@ import Foundation
 import OSLog
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ton-cell-slice")
+private let logger = Log.chain.other
 
 /// Errors thrown by the minimal TON BOC parser. They are intentionally caught
 /// at decoder boundaries so a malformed/truncated body falls back to "unknown"

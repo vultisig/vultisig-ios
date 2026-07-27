@@ -11,7 +11,7 @@ import OSLog
 
 actor BlockchairService {
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockchair-service")
+    private let logger = Log.chain.service
     private let httpClient: HTTPClientProtocol
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {

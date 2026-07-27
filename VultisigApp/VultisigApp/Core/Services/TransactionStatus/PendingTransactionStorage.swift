@@ -14,7 +14,7 @@ final class StoredPendingTransactionStorage {
     static let shared = StoredPendingTransactionStorage()
 
     private let modelContext: ModelContext
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "pending-tx-storage")
+    private let logger = Log.chain.store
 
     private init() {
         self.modelContext = Storage.shared.modelContext

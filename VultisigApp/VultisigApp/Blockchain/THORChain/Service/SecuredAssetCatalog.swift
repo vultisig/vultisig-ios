@@ -12,7 +12,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "secured-asset-catalog")
+private let logger = Log.chain.other
 
 /// One entry from THORNode `/thorchain/securedassets`. `asset` is the uppercase
 /// dash-notation denom (e.g. `ETH-USDC-0X…`, `BTC-BTC`); `supply`/`depth` are
