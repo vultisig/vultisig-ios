@@ -3,7 +3,7 @@ import CryptoKit
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "vault-backup-encryption")
+private let logger = Log.app.other
 
 protocol VaultBackupEncryption: Sendable {
     func encrypt(data: Data, password: String) async throws -> Data

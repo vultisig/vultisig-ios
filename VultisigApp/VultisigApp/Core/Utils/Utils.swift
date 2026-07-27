@@ -14,7 +14,7 @@ import SwiftUI
 // Legacy callback-based HTTP helpers predating `HTTPClient`/`TargetType`.
 // Disabled file-wide rather than per-call; new code should use `HTTPClient`.
 enum Utils {
-    static let logger = Logger(subsystem: "util", category: "network")
+    static let logger = Log.app.other
     static let context = CIContext()
     static func sendRequest<T: Codable>(urlString: String, method: String, headers: [String: String]? = nil, body: T?, completion: @escaping (Bool) -> Void) {
         logger.debug("url:\(urlString)")

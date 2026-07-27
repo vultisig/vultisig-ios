@@ -29,7 +29,7 @@ final class CustomRPCStore: @unchecked Sendable {
 
     private let lock = NSLock()
     private var mirror: [String: String] = [:]
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "custom-rpc-store")
+    private let logger = Log.wallet.store
 
     private init() {}
 

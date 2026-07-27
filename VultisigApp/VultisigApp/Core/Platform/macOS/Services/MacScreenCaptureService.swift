@@ -9,7 +9,7 @@ import CoreImage
 import SwiftUI
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "screen-capture")
+private let logger = Log.app.other
 
 /// Thread-safe normalized rect (0..1) in screen coordinates (bottom-left origin).
 /// Written by the preview NSView, read by the stream output for cropping QR detection.

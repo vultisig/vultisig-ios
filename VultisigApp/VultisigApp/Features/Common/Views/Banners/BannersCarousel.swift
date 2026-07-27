@@ -8,7 +8,7 @@
 import SwiftUI
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "banners-carousel")
+private let logger = Log.app.view
 
 struct BannersCarousel<Banner: CarouselBannerType>: View {
     @Binding var banners: [Banner]

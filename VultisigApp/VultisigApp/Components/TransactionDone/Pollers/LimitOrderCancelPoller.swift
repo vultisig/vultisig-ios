@@ -45,7 +45,7 @@ final class LimitOrderCancelPoller: DoneStatusPoller {
     private let verifier: LimitOrderCancelVerifying
     private let intents: LimitOrderCancelIntentStoring
     private let config: ChainStatusConfig
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-cancel-poller")
+    private let logger = Log.wallet.other
 
     private var pollTask: Task<Void, Never>?
 

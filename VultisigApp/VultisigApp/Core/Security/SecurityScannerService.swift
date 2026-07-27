@@ -17,7 +17,7 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
     private let providers: [BlockaidScannerServiceProtocol]
     private let settingsService: SecurityScannerSettingsServiceProtocol
     private let factory: SecurityScannerTransactionFactoryProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "security-scanner-service")
+    private let logger = Log.app.service
 
     // Thread-safe set for disabled provider names
     private let disabledProvidersQueue = DispatchQueue(label: "com.vultisig.security-scanner.providers", attributes: .concurrent)

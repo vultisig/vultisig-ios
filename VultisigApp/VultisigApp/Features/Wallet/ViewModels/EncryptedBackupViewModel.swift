@@ -34,7 +34,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var extractedFilesDirectory: URL?
     @Published var pendingEncryptedVaults: [(fileName: String, data: Data)] = []
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "encrypted-backup")
+    private let logger = Log.wallet.other
     private let keychain = DefaultKeychainService.shared
     private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
 
