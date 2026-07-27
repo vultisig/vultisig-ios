@@ -4,6 +4,7 @@
 //
 
 import XCTest
+import BigInt
 @testable import VultisigApp
 
 final class ExplorerLinkBuilderTests: XCTestCase {
@@ -474,5 +475,196 @@ final class ExplorerLinkBuilderTests: XCTestCase {
             (grouped ?? "").contains("explorer.bitcoin.com"),
             "Bitcoin Cash grouped address URL must no longer use explorer.bitcoin.com"
         )
+    }
+
+    // MARK: - Provider resolver parity (behaviour-preserving refactor, S11)
+    //
+    // All three entry points (persisted history string, live SwapQuote, keysign
+    // SwapPayload) now share one SwapProvider→tracker resolver. These lock the
+    // tracker/URL each provider — including legacy persisted aliases — resolved
+    // to before the refactor, byte-for-byte, so the shared resolver can't drift.
+
+    /// Hex-prefix-stripped form of `txHash`, used by the RuneScan/Maya trackers.
+    private var strippedHash: String { "ABCDEF1234567890" }
+
+    /// Every value `SwapQuote.displayName` and `SwapPayload.providerName` can
+    /// emit, plus the legacy `thorswap`/`mayachain`/`mayaprotocol` history
+    /// strings, mapped to the exact tracker URL they produced pre-refactor.
+    func testLegacyProviderAliasesResolveToExactTracker() {
+        let cases: [(provider: String, chain: String, expected: String)] = [
+            ("LI.FI", mainnetChain, "https://scan.li.fi/tx/\(txHash)"),
+            ("lifi", mainnetChain, "https://scan.li.fi/tx/\(txHash)"),
+            ("Maya protocol", Chain.bitcoin.rawValue, "https://www.explorer.mayachain.info/tx/\(strippedHash)"),
+            ("Maya Protocol", Chain.bitcoin.rawValue, "https://www.explorer.mayachain.info/tx/\(strippedHash)"),
+            ("maya", mainnetChain, "https://www.explorer.mayachain.info/tx/\(strippedHash)"),
+            ("mayachain", mainnetChain, "https://www.explorer.mayachain.info/tx/\(strippedHash)"),
+            ("mayaprotocol", mainnetChain, "https://www.explorer.mayachain.info/tx/\(strippedHash)"),
+            ("THORChain", mainnetChain, "https://runescan.io/tx/\(strippedHash)"),
+            ("THORSwap", mainnetChain, "https://runescan.io/tx/\(strippedHash)"),
+            ("THORChain", Chain.thorChainChainnet.rawValue, "https://runescan.io/tx/\(strippedHash)?network=chainnet"),
+            ("THORChain", stagenetChain, "https://runescan.io/tx/\(strippedHash)?network=stagenet"),
+            ("THORChain-Chainnet", mainnetChain, "https://runescan.io/tx/\(strippedHash)?network=chainnet"),
+            ("THORChain-Stagenet", Chain.bitcoin.rawValue, "https://runescan.io/tx/\(strippedHash)?network=stagenet"),
+            ("SwapKit", Chain.ethereum.rawValue, "https://track.swapkit.dev/?hash=\(txHash)&chainId=1"),
+            ("SwapKit", Chain.osmosis.rawValue, "https://track.swapkit.dev/?hash=\(txHash)")
+        ]
+        for testCase in cases {
+            let url = ExplorerLinkBuilder.url(
+                provider: testCase.provider,
+                txHash: txHash,
+                chainRawValue: testCase.chain,
+                fallbackExplorerLink: fallback
+            )
+            XCTAssertEqual(
+                url?.absoluteString,
+                testCase.expected,
+                "provider \"\(testCase.provider)\" on \(testCase.chain)"
+            )
+        }
+    }
+
+    /// Aggregators (1inch/KyberSwap/Jupiter), the sub-provider-suffixed
+    /// `SwapKit (Chainflip)` form (which normalizes to `swapkitchainflip`, not
+    /// `swapkit`), and unrecognised/empty strings all fall through to the
+    /// canonical chain explorer — exactly as the pre-refactor switch did.
+    func testAggregatorAndUnknownProvidersFallThroughToChainExplorer() {
+        let providers = ["1Inch", "KyberSwap", "Jupiter", "SwapKit (Chainflip)", "totally-unknown", ""]
+        let chain = Chain.ethereum.rawValue
+        let expected = ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: txHash)
+        for provider in providers {
+            let url = ExplorerLinkBuilder.url(
+                provider: provider,
+                txHash: txHash,
+                chainRawValue: chain,
+                fallbackExplorerLink: fallback
+            )
+            XCTAssertEqual(url?.absoluteString, expected, "provider \"\(provider)\" should fall through")
+        }
+    }
+
+    // MARK: - SwapQuote entry point parity
+
+    func testProgressLinkQuoteRoutesEachProviderToExactURL() {
+        let evmQuote = Self.makeEVMQuote()
+        let thorQuote = Self.makeThorchainQuote()
+        let ethExplorer = ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: txHash)
+        // The from-chain is deliberately ethereum for every case: THORChain/Maya
+        // quotes ignore it (network comes from the case), while the aggregators
+        // fall back to it — proving the quote case, not the chain, picks the URL.
+        let cases: [(quote: SwapQuote, expected: String)] = [
+            (.thorchain(thorQuote), "https://runescan.io/tx/\(strippedHash)"),
+            (.thorchainChainnet(thorQuote), "https://runescan.io/tx/\(strippedHash)?network=chainnet"),
+            (.thorchainStagenet(thorQuote), "https://runescan.io/tx/\(strippedHash)?network=stagenet"),
+            (.mayachain(thorQuote), "https://www.explorer.mayachain.info/tx/\(strippedHash)"),
+            (.lifi(evmQuote, fee: nil, integratorFee: nil), "https://scan.li.fi/tx/\(txHash)"),
+            (.oneinch(evmQuote, fee: nil), ethExplorer),
+            (.kyberswap(evmQuote, fee: nil), ethExplorer),
+            (.jupiter(evmQuote, fee: nil, platformFee: 0, feeOnInput: false), ethExplorer)
+        ]
+        for testCase in cases {
+            let link = ExplorerLinkBuilder.progressLink(
+                quote: testCase.quote,
+                txHash: txHash,
+                fromChain: .ethereum
+            )
+            XCTAssertEqual(link, testCase.expected)
+        }
+    }
+
+    func testProgressLinkQuoteNilFallsBackToChainExplorer() {
+        let link = ExplorerLinkBuilder.progressLink(quote: nil, txHash: txHash, fromChain: .ethereum)
+        XCTAssertEqual(link, ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: txHash))
+    }
+
+    // MARK: - SwapPayload entry point parity (generic sub-provider mapping)
+
+    func testProgressLinkSwapPayloadGenericRoutesEachProviderToExactURL() {
+        let ethExplorer = ExplorerLinkBuilder.getExplorerURL(chain: .ethereum, txid: txHash)
+
+        XCTAssertEqual(
+            ExplorerLinkBuilder.progressLink(
+                swapPayload: Self.makeGenericPayload(provider: .lifi, fromChain: .ethereum),
+                txHash: txHash
+            ),
+            "https://scan.li.fi/tx/\(txHash)"
+        )
+        // SwapKit on a non-catalogue chain → base tracker (no chainId hint).
+        XCTAssertEqual(
+            ExplorerLinkBuilder.progressLink(
+                swapPayload: Self.makeGenericPayload(provider: .swapkit, fromChain: .osmosis),
+                txHash: txHash
+            ),
+            "https://track.swapkit.dev/?hash=\(txHash)"
+        )
+        // SwapKit on a catalogue chain → chainId hint appended.
+        XCTAssertEqual(
+            ExplorerLinkBuilder.progressLink(
+                swapPayload: Self.makeGenericPayload(provider: .swapkit, fromChain: .ethereum),
+                txHash: txHash
+            ),
+            "https://track.swapkit.dev/?hash=\(txHash)&chainId=1"
+        )
+        // Aggregators + unknown wire providers → source-chain explorer.
+        for provider in [SwapProviderId.oneInch, .kyberSwap, .jupiter, .unknown("mystery")] {
+            XCTAssertEqual(
+                ExplorerLinkBuilder.progressLink(
+                    swapPayload: Self.makeGenericPayload(provider: provider, fromChain: .ethereum),
+                    txHash: txHash
+                ),
+                ethExplorer,
+                "generic \(provider) should fall back to the chain explorer"
+            )
+        }
+    }
+
+    func testProgressLinkSwapPayloadNilReturnsNil() {
+        XCTAssertNil(ExplorerLinkBuilder.progressLink(swapPayload: nil, txHash: txHash))
+    }
+
+    // MARK: - Fixtures
+
+    private static func makeEVMQuote() -> EVMQuote {
+        EVMQuote(
+            dstAmount: "1",
+            tx: EVMQuote.Transaction(from: "0xfrom", to: "0xto", data: "0x", value: "0", gasPrice: "0", gas: 0)
+        )
+    }
+
+    private static func makeThorchainQuote() -> ThorchainSwapQuote {
+        ThorchainSwapQuote(
+            dustThreshold: nil,
+            expectedAmountOut: "0",
+            expiry: 0,
+            fees: Fees(affiliate: "0", asset: "CACAO", outbound: "0", total: "0", liquidity: nil, slippageBps: nil, totalBps: nil),
+            inboundAddress: nil,
+            inboundConfirmationBlocks: nil,
+            inboundConfirmationSeconds: nil,
+            memo: "memo",
+            notes: "",
+            outboundDelayBlocks: 0,
+            outboundDelaySeconds: 0,
+            recommendedMinAmountIn: "0",
+            slippageBps: nil,
+            totalSwapSeconds: nil,
+            warning: "",
+            router: nil,
+            maxStreamingQuantity: nil
+        )
+    }
+
+    private static func makeCoin(_ chain: Chain, ticker: String) -> Coin {
+        let meta = CoinMeta.make(chain: chain, ticker: ticker, decimals: 18, isNativeToken: true)
+        return Coin(asset: meta, address: "addr-\(ticker)", hexPublicKey: "")
+    }
+
+    private static func makeGenericPayload(provider: SwapProviderId, fromChain: Chain) -> SwapPayload {
+        .generic(GenericSwapPayload(
+            fromCoin: makeCoin(fromChain, ticker: "FROM"),
+            toCoin: makeCoin(.ethereum, ticker: "TO"),
+            fromAmount: BigInt(1),
+            toAmountDecimal: 1,
+            quote: makeEVMQuote(),
+            provider: provider
+        ))
     }
 }
