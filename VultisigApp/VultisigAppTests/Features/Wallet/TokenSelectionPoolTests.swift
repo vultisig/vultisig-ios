@@ -32,6 +32,26 @@ final class TokenSelectionPoolTests: XCTestCase {
         XCTAssertEqual(merged.first?.contractAddress, "0xUSDC", "Local-first: the local meta wins the collision")
     }
 
+    // MARK: - held-coin enrichment matches by uniqueId, not ticker
+
+    func testSelectedTokensMatchHeldByUniqueIdNotTicker() {
+        // Vault holds a legit USDC. The catalog carries the real USDC plus an
+        // unverified lookalike on a DIFFERENT contract sharing the ticker. Only
+        // the held token may enter the held set — the lookalike must NOT ride in
+        // by ticker match (which would auto-surface it in browse).
+        let heldUSDC = Coin(asset: meta("USDC", contract: "0xReal"), address: "0xwallet", hexPublicKey: "pub")
+        let realFromCatalog = meta("USDC", contract: "0xReal")
+        let lookalike = meta("USDC", contract: "0xFAKE")
+
+        let result = TokenSelectionLogic.shared.selectedTokens(
+            chainCoins: [heldUSDC],
+            tokens: [realFromCatalog, lookalike]
+        )
+
+        XCTAssertEqual(result.map { $0.contractAddress }, ["0xReal"],
+                       "Held coin enriched by uniqueId; the unverified lookalike must not appear")
+    }
+
     // MARK: - browse vs search (VM level)
 
     func testBrowseShowsVerifiedButNotUnverifiedWhileSearchRevealsUnverified() async {

@@ -451,10 +451,10 @@ struct CoinService {
     /// Synchronous, offline spam heuristics: suspicious ticker patterns, URL-like
     /// tickers, non-ASCII lookalikes, and empty logos. Split out from
     /// `isSpamToken` so the token-search surface can apply the same hard gate to
-    /// the opt-in unverified list WITHOUT the per-token logo HEAD request (a
-    /// browse list is far larger than the discovery path's held-token set). This
-    /// is the second gate the dynamic-catalog risk posture relies on: spam never
-    /// surfaces, verified or unverified, toggle on or off.
+    /// the unverified list WITHOUT the per-token logo HEAD request (a browse list
+    /// is far larger than the discovery path's held-token set). This is the
+    /// second gate the dynamic-catalog risk posture relies on: spam never
+    /// surfaces, verified or unverified, browse or search.
     ///
     /// `nonisolated` so the token-search surface (a nonisolated static) can apply
     /// it directly — the heuristics are pure and touch no `@MainActor` state.

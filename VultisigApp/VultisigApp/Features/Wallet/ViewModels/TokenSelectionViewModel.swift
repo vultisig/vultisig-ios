@@ -152,23 +152,27 @@ struct TokenSelectionLogic {
 
     private init() {}
 
+    /// The vault's held non-native coins for browse, enriched with catalog
+    /// metadata (logo / priceProviderId) when the catalog carries the SAME token.
+    ///
+    /// Matching is by `uniqueId` (chain + ticker + contract), never by ticker
+    /// alone: a ticker match would let an unverified lookalike sharing a held
+    /// ticker (e.g. a fake `USDC` on a different contract) ride into the held set
+    /// and auto-surface in browse. Each held coin yields exactly one row — the
+    /// catalog meta when present, else the coin's own meta.
     func selectedTokens(chainCoins: [Coin], tokens: [CoinMeta]) -> [CoinMeta] {
-        let tickers = chainCoins
+        let catalogByUniqueId = Dictionary(
+            tokens.map { ($0.uniqueId, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        return chainCoins
             .filter { !$0.isNativeToken }
-            .map { $0.ticker.lowercased() }
-
-        let filteredTokens = tokens.filter { token in
-            tickers.contains(token.ticker.lowercased())
-        }
-        // Convert tickers to tokens if they are not already in the existing tokens list
-        let tickerTokens = chainCoins.filter { coin in
-            tickers.contains(coin.ticker.lowercased()) &&
-            !tokens.contains { token in token.ticker.lowercased() == coin.ticker.lowercased() }
-        }.map { coin in
-            coin.toCoinMeta()
-        }
-
-        return (filteredTokens + tickerTokens).uniqueBy { $0.uniqueId }
+            .map { coin in
+                let coinMeta = coin.toCoinMeta()
+                return catalogByUniqueId[coinMeta.uniqueId] ?? coinMeta
+            }
+            .uniqueBy { $0.uniqueId }
     }
 
     func preExistingTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) -> [CoinMeta] {
