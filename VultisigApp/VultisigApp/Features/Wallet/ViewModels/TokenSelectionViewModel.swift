@@ -176,15 +176,21 @@ struct TokenSelectionLogic {
     }
 
     func preExistingTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) -> [CoinMeta] {
-        let tickers = chainCoins
-            .filter { !$0.isNativeToken }
-            .map { $0.ticker.lowercased() }
+        // Exclude a curated preset only when the vault holds THAT exact token
+        // (by uniqueId), never every preset sharing a held ticker: a ticker match
+        // would drop the vetted `USDC` preset from browse whenever the vault
+        // holds a lookalike `USDC` on a different contract.
+        let heldIds = Set(
+            chainCoins
+                .filter { !$0.isNativeToken }
+                .map { $0.toCoinMeta().uniqueId }
+        )
 
         return TokensStore.TokenSelectionAssets
             .filter { token in
                 token.chain == chain &&
                 !token.isNativeToken &&
-                !tickers.contains(token.ticker.lowercased()) &&
+                !heldIds.contains(token.uniqueId) &&
                 !hiddenTokens.contains { $0.matches(token) }
             }
     }

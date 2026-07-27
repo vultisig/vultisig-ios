@@ -71,6 +71,22 @@ final class TokenSelectionPoolTests: XCTestCase {
                        "Search hides only the exact held token; the same-ticker lookalike is revealed")
     }
 
+    func testPreExistingKeepsVettedPresetWhenHoldingSameTickerLookalike() {
+        // Vault holds a lookalike AAVE on a bogus contract. The vetted curated
+        // AAVE preset (real contract) must remain in browse — presets are
+        // excluded only by exact uniqueId, not by shared ticker.
+        let lookalike = Coin(asset: meta("AAVE", contract: "0xFAKEAAVE"), address: "0xw", hexPublicKey: "p")
+
+        let presets = TokenSelectionLogic.shared.preExistingTokens(
+            chain: .ethereum,
+            chainCoins: [lookalike],
+            hiddenTokens: []
+        )
+
+        XCTAssertTrue(presets.contains { $0.ticker.uppercased() == "AAVE" && $0.contractAddress.lowercased() != "0xfakeaave" },
+                      "The vetted curated preset stays in browse despite a held same-ticker lookalike")
+    }
+
     // MARK: - browse vs search (VM level)
 
     func testBrowseShowsVerifiedButNotUnverifiedWhileSearchRevealsUnverified() async {
