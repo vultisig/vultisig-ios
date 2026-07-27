@@ -21,7 +21,7 @@ import BigInt
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-memo-limit")
+private let logger = Log.swap.other
 
 enum ThorchainMemoLimit {
 

@@ -18,7 +18,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-tokens-cache")
+private let logger = Log.swap.store
 
 @MainActor
 final class SwapKitTokensCache: DestinationTokenProvider {
