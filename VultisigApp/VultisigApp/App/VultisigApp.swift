@@ -57,6 +57,11 @@ struct VultisigApp: App {
         TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .thorchain))
         TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .mayachain))
         TokenCatalogRepository.shared.register(SecuredAssetTokenProvider())
+
+        // Register the app-wide token catalog providers (wallet search /
+        // add-token). Bundled `TokensStore` is the highest-precedence, curated,
+        // offline floor; dynamic sources (1inch / Jupiter) register on top.
+        TokenCatalogRepository.appCatalog.register(BundledTokensProvider.shared)
     }
     var body: some Scene {
         WindowGroup {
