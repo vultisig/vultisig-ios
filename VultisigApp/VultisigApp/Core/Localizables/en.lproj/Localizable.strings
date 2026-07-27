@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Your Address Book is empty";
 "addressCopied" = "Address Copied";
 "addToAddressBook" = "Add to Address Book";
+"addUnverifiedTokenMessage" = "This token isn't verified and could impersonate a real asset. Make sure the contract address is correct before adding it.";
+"addUnverifiedTokenTitle" = "Add unverified token?";
 "addVaultsToFolder" = "Select Vaults to add to the folder";
 "advanced" = "Advanced";
 "advancedDescription" = "Reshare, manage security or sign messages.";

@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Ihr Adressbuch ist leer";
 "addressCopied" = "Adresse kopiert";
 "addToAddressBook" = "Zum Adressbuch Hinzufügen";
+"addUnverifiedTokenMessage" = "Dieser Token ist nicht verifiziert und könnte ein echtes Asset imitieren. Stelle sicher, dass die Contract-Adresse korrekt ist, bevor du ihn hinzufügst.";
+"addUnverifiedTokenTitle" = "Nicht verifizierten Token hinzufügen?";
 "addVaultsToFolder" = "Wähle Tresore aus, die dem Ordner hinzugefügt werden sollen";
 "advanced" = "Erweitert";
 "advancedDescription" = "Umgestalten, Sicherheits- oder Zeichennachrichten verwalten.";

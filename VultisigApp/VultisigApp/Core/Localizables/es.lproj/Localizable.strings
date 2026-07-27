@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Tu libreta de direcciones está vacía";
 "addressCopied" = "Dirección copiada";
 "addToAddressBook" = "Agregar a la Libreta de Direcciones";
+"addUnverifiedTokenMessage" = "Este token no está verificado y podría suplantar un activo real. Asegúrate de que la dirección del contrato sea correcta antes de añadirlo.";
+"addUnverifiedTokenTitle" = "¿Añadir token no verificado?";
 "addVaultsToFolder" = "Selecciona Vaults para agregar a la carpeta";
 "advanced" = "Avanzado";
 "advancedDescription" = "Respaldar, administrar la seguridad o firmar mensajes.";
