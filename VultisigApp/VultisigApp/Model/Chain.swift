@@ -630,7 +630,7 @@ extension Chain {
         switch self {
         case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             return true
-        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .bittensor:
+        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor:
             return false
         }
     }
