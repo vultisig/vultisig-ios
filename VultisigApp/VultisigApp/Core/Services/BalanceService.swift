@@ -526,7 +526,14 @@ class BalanceService {
             }
 
         case .ripple:
-            return try await ripple.getBalance(address: address)
+            if coin.isNativeToken {
+                return try await ripple.getBalance(address: address)
+            } else {
+                // Issued currencies live on trust lines, not in the AccountRoot
+                // balance — without this branch a token row would render the
+                // account's XRP balance.
+                return try await ripple.getTokenBalance(coin: coin, address: address)
+            }
 
         case .tron:
             return try await tron.getBalance(coin: coin, address: address)

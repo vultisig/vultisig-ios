@@ -646,6 +646,38 @@ class RippleService {
         return lines.filter { seen.insert("\($0.account)|\($0.currency)").inserted }
     }
 
+    /// Balance of one XRPL issued currency (trust-line token) held at `address`,
+    /// in base units at `RippleIssuedCurrency.issuedCurrencyDecimals`.
+    ///
+    /// `coin.contractAddress` is the composite `<currencyCode>.<issuer>` token
+    /// id — XRPL keys tokens by the (currency, issuer) pair, not by a single
+    /// contract. A line matches when its counterparty IS that issuer and its
+    /// currency normalizes to the same on-ledger code, so a node spelling a
+    /// non-standard code in lowercase hex still resolves to the coin whose id
+    /// holds it uppercased.
+    ///
+    /// A **negative** balance means `address` is the token's issuer and owes the
+    /// counterparty: an issuance liability, not a holding. It reports zero, never
+    /// a negative asset. An account with no line for the token reports zero too.
+    func getTokenBalance(coin: CoinMeta, address: String) async throws -> String {
+        let (currency, issuer) = try RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress)
+        let currencyCode = try RippleIssuedCurrency.toXrplCurrencyCode(currency)
+
+        let lines = try await fetchAccountLines(for: address)
+
+        // Issuer addresses are base58 and case-SENSITIVE, so the comparison must
+        // not be relaxed to a case-insensitive one.
+        guard let line = lines.first(where: { line in
+            line.account == issuer
+                && (try? RippleIssuedCurrency.toXrplCurrencyCode(line.currency)) == currencyCode
+        }) else {
+            return "0"
+        }
+
+        let balance = try RippleIssuedCurrency.parseIssuedCurrencyValue(line.balance)
+        return max(balance, BigInt(0)).description
+    }
+
     // MARK: - Destination-tag requirement (RequireDest)
 
     /// AccountRoot `lsfRequireDestTag` flag: the account refuses payments
