@@ -49,12 +49,22 @@ enum EvmCoinFinder {
     /// — `findEvmCoins` in the SDK does the same.
     private static let vultEthereumContract = "0xb788144df611029c60b859df47e79b7726c4deba"
 
+    /// Chains 1inch `/balance` indexes but whose `/token` metadata is
+    /// incomplete (Robinhood's 96 stock tokens 404) — callers union this
+    /// path's result with the TokensStore-iteration fallback so neither
+    /// side's holdings are dropped.
+    static let hybridDiscoveryChains: Set<Chain> = [.robinhood]
+
     static func isSupported(chain: Chain) -> Bool {
         oneInchSupportedChains.contains(chain)
     }
 
+    static func isHybrid(chain: Chain) -> Bool {
+        hybridDiscoveryChains.contains(chain)
+    }
+
     static func find(chain: Chain, address: String) async -> [CoinMeta] {
-        guard isSupported(chain: chain), let chainId = chain.chainID else {
+        guard isSupported(chain: chain) || isHybrid(chain: chain), let chainId = chain.chainID else {
             return []
         }
 

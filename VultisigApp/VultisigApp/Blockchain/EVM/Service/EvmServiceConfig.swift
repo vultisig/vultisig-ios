@@ -29,6 +29,20 @@ struct EvmServiceConfig {
                 if EvmCoinFinder.isSupported(chain: nativeToken.chain) {
                     return await EvmCoinFinder.find(chain: nativeToken.chain, address: address)
                 }
+                if EvmCoinFinder.isHybrid(chain: nativeToken.chain) {
+                    // Robinhood: 1inch /balance indexes the chain but /token has
+                    // no metadata for its stock tokens, so either path alone
+                    // drops holdings. Union both; curated entries win the dedupe.
+                    async let oneInchTask = EvmCoinFinder.find(chain: nativeToken.chain, address: address)
+                    async let curatedTask = EvmServiceStruct.getTokensFallback(
+                        nativeToken: nativeToken,
+                        address: address,
+                        rpcService: rpcService
+                    )
+                    let (curated, oneInch) = await (curatedTask, oneInchTask)
+                    var seen = Set<String>()
+                    return (curated + oneInch).filter { seen.insert($0.contractAddress.lowercased()).inserted }
+                }
                 return await EvmServiceStruct.getTokensFallback(
                     nativeToken: nativeToken,
                     address: address,
