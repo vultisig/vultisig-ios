@@ -28,7 +28,7 @@ struct TokenSelectionGridCell: View {
             name: name ?? coin.ticker,
             ticker: coin.ticker,
             logo: coin.logo,
-            tokenChainLogo: showChainIcon ? coin.chain.logo : nil,
+            tokenChainLogo: showChainIcon ? coin.tokenChainLogo : nil,
             isSelected: $isSelected
         ) { onSelection(isSelected) }
     }

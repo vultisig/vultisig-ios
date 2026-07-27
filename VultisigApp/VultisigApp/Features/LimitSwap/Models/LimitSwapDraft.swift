@@ -106,7 +106,7 @@ extension LimitSwapAsset {
             contractAddress: coin.contractAddress,
             isNativeToken: coin.isNativeToken,
             logo: coin.logo,
-            chainLogo: coin.chain.logo
+            chainLogo: coin.tokenChainLogo ?? ""
         )
     }
 }
