@@ -16,7 +16,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class ExternalRecipientViewModel {
-    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "external-recipient")
+    @ObservationIgnored private let logger = Log.swap.other
 
     /// Resolves a literal address or a name (ENS/TNS/THORName) to a validated
     /// on-chain address for the given chain, throwing when it can't. Injected so

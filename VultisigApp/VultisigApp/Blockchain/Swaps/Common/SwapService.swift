@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-service")
+private let logger = Log.swap.service
 
 struct SwapService {
     static let shared = SwapService()

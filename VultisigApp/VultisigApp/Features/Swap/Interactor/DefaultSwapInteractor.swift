@@ -159,7 +159,7 @@ struct DefaultSwapInteractor: SwapInteractor {
             // Fail closed: an unverifiable inbound re-check must not let a native
             // deposit proceed. Surface the retryable halt message so the user can
             // retry once the fetch recovers.
-            let logger = Logger(subsystem: "com.vultisig.app", category: "swap-interactor")
+            let logger = Log.swap.interactor
             logger.warning("Sign-time halt re-check failed, blocking native route: \(error.localizedDescription, privacy: .public)")
             throw SwapError.tradingHalted
         }

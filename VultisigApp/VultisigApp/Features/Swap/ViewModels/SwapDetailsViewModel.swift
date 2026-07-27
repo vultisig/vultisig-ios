@@ -16,7 +16,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class SwapDetailsViewModel {
-    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-details")
+    @ObservationIgnored private let logger = Log.swap.other
     @ObservationIgnored private let interactor: SwapInteractor
     @ObservationIgnored private var updateQuoteTask: Task<Void, Never>?
 

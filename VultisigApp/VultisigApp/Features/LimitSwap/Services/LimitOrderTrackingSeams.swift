@@ -56,7 +56,7 @@ enum LimitOrderObservingError: Error, Equatable {
 @MainActor
 struct LimitOrderObserver: LimitOrderObserving {
     private let storage = LimitOrderStorageService()
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-order-observer")
+    private let logger = Log.swap.other
 
     /// Throws — never returns quietly — when the vault can't be resolved.
     ///
@@ -316,7 +316,7 @@ struct MidgardLimitOutcomeResolver: LimitOrderOutcomeResolving {
     }
 
     private let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-outcome-resolver")
+    private let logger = Log.swap.other
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient

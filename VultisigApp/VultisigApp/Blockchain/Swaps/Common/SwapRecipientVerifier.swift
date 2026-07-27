@@ -18,7 +18,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-recipient-verify")
+private let logger = Log.swap.other
 
 enum SwapRecipientVerifier {
 

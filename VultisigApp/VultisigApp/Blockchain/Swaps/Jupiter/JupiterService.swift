@@ -15,7 +15,7 @@ import Foundation
 import OSLog
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "jupiter-service")
+private let logger = Log.swap.service
 
 struct JupiterService {
 

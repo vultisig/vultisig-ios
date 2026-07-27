@@ -19,7 +19,7 @@ import BigInt
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-order-cancel-preparer")
+private let logger = Log.swap.other
 
 enum LimitOrderCancelPreparationError: LocalizedError, Equatable {
     /// The inbound vault or the dust floor could not be resolved, so there is no
