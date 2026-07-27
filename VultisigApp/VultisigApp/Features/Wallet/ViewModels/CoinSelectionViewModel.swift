@@ -71,45 +71,27 @@ class CoinSelectionViewModel: ObservableObject {
     }
 
     private func groupAssets(vault: Vault) {
-        groupedAssets = [:]
+        // Curated tokens now come through the catalog's bundled provider rather
+        // than reading `TokensStore.TokenSelectionAssets` directly, so the preset
+        // list and its chain-visibility gates (sepolia / thorchain-chainnet /
+        // QBTC-MLDSA, plus the Sepolia-native injection) live in one place.
+        // The vault-specific MLDSA-key gate stays here because the provider is
+        // vault-independent: QBTC (the only MLDSA chain today) is hidden unless
+        // the feature flag is on AND the vault has an MLDSA key (or the caller
+        // opted into showing it before keygen).
+        let defaults = UserDefaults.standard
+        let hasMLDSAKey = !(vault.publicKeyMLDSA44 ?? "").isEmpty
 
-        // Filter out Sepolia and Thorchain Stagenet based on settings
-        let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
-        let enableThorchainChainnet = UserDefaults.standard.bool(forKey: "thorchainChainnet")
-        let hasMLDSAKey = vault.publicKeyMLDSA44 != nil && !vault.publicKeyMLDSA44!.isEmpty
-
-        let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
-            if asset.chain == .ethereumSepolia {
-                return enableETHSepolia
+        let filteredAssets: [CoinMeta] = Chain.allCases.flatMap { chain -> [CoinMeta] in
+            if chain.signingKeyType == .MLDSA, !(hasMLDSAKey || showMldsaChainsWithoutKey) {
+                return []
             }
-            if asset.chain == .thorChainChainnet {
-                return enableThorchainChainnet
-            }
-            if asset.chain == .thorChainStagenet {
-                return enableThorchainChainnet
-            }
-            if asset.chain.signingKeyType == .MLDSA {
-                // QBTC is the only MLDSA chain today. The feature flag gates
-                // visibility in addition to MLDSA-key presence so flag-off
-                // users never see QBTC in the picker. When MLDSA is later
-                // used for non-QBTC chains, narrow this guard to `.qbtc`.
-                guard QBTCConfig.isFeatureEnabled else { return false }
-                return hasMLDSAKey || showMldsaChainsWithoutKey
-            }
-            return true
+            return BundledTokensProvider.curatedTokens(for: chain, defaults: defaults)
         }
 
         groupedAssets = Dictionary(grouping: filteredAssets.sorted(by: { first, _ in
-            if first.isNativeToken {
-                return true
-            }
-            return false
+            first.isNativeToken
         })) { $0.chain }
-
-        // Add Sepolia if enabled (it's not in TokenSelectionAssets)
-        if enableETHSepolia {
-            groupedAssets[TokensStore.Token.ethSepolia.chain] = [TokensStore.Token.ethSepolia]
-        }
     }
 
     func isSelected(asset: CoinMeta) -> Bool {
