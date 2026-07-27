@@ -29,7 +29,10 @@ enum NativeSwapProtocol {
 @MainActor
 final class NativePoolTokenProvider {
 
-    let providerKind: String
+    let kind: String
+    // Pool ids are resolved to curated `TokensStore` entries (unresolved pools
+    // are dropped), so every token this provider emits is curated.
+    let verification: TokenVerification = .curated
 
     private let proto: NativeSwapProtocol
     private let httpClient: HTTPClientProtocol
@@ -46,8 +49,8 @@ final class NativePoolTokenProvider {
         self.proto = proto
         self.httpClient = httpClient
         switch proto {
-        case .thorchain: self.providerKind = "thorchainPool"
-        case .mayachain: self.providerKind = "mayachainPool"
+        case .thorchain: self.kind = "thorchainPool"
+        case .mayachain: self.kind = "mayachainPool"
         }
     }
 
