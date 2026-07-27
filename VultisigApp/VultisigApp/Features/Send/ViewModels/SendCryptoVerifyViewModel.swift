@@ -11,6 +11,7 @@
 import SwiftUI
 import BigInt
 import WalletCore
+import OSLog
 
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
@@ -155,7 +156,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isCalculatingFee = false
             isLoading = false
         } catch {
-            print("DEBUG: Error calculating fee: \(error)")
+            Log.send.viewModel.error("Error calculating fee: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
             showAlert = true
             isCalculatingFee = false

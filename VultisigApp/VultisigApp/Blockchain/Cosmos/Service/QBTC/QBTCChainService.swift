@@ -40,7 +40,7 @@ struct QBTCParamResponse: Codable {
 
 final class QBTCChainService {
     private let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-chain")
+    private let logger = Log.qbtc.other
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient

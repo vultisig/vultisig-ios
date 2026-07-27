@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import OSLog
 
 @MainActor
 class BackgroundTransactionPoller: ObservableObject {
@@ -22,7 +23,7 @@ class BackgroundTransactionPoller: ObservableObject {
         do {
             let pendingTransactions = try storage.getAllPending()
 
-            print("BackgroundTransactionPoller: Found \(pendingTransactions.count) pending transactions")
+            Log.chain.service.debug("Found \(pendingTransactions.count) pending transactions")
 
             for transaction in pendingTransactions {
                 // Check if already being polled
@@ -35,13 +36,13 @@ class BackgroundTransactionPoller: ObservableObject {
                 pollingViewModels[transaction.txHash] = viewModel
                 viewModel.startPolling()
 
-                print("BackgroundTransactionPoller: Resumed polling for \(transaction.txHash.prefix(8))...")
+                Log.chain.service.debug("Resumed polling for \(String(transaction.txHash.prefix(8)), privacy: .public)...")
             }
 
             // Cleanup old transactions
             try storage.cleanupOld()
         } catch {
-            print("BackgroundTransactionPoller: Error resuming transactions: \(error)")
+            Log.chain.service.error("Error resuming transactions: \(error.localizedDescription, privacy: .public)")
         }
     }
 

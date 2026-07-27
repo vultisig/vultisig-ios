@@ -29,7 +29,7 @@ final class QBTCClaimKeysignViewModel: ObservableObject {
 
     private let orchestratorFactory: () -> QBTCClaimOrchestrator
     private var orchestrator: QBTCClaimOrchestrator?
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-keysign-vm")
+    private let logger = Log.qbtc.viewModel
 
     init(
         vault: Vault,

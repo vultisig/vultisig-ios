@@ -10,7 +10,7 @@ import OSLog
 import WalletCore
 import VultisigCommonData
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-gas-estimator")
+private let logger = Log.chain.other
 
 /// Simulates a Cosmos native send via `/cosmos/tx/v1beta1/simulate` and derives
 /// a padded gas limit the initiator relays to co-signers in

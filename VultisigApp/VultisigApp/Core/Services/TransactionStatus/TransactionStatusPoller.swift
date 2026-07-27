@@ -18,7 +18,7 @@ final class TransactionStatusPoller: ObservableObject {
     private let historyStorage = TransactionHistoryStorage.shared
     private var activeTasks: [String: Task<Void, Never>] = [:]
     private var taskTokens: [String: UUID] = [:]
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-status-poller")
+    private let logger = Log.chain.other
 
     private init() {}
 

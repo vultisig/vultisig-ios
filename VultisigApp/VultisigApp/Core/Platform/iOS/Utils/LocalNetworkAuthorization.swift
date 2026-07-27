@@ -49,7 +49,7 @@ enum LocalNetworkAuthorization {
 /// need a live run loop, and the browser/timeout are scheduled there too so no
 /// locking is required.
 private final class Prober: NSObject, NetServiceDelegate, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "local-network-authorization")
+    private let logger = Log.app.other
     /// The probe type MUST be one of the app's declared `NSBonjourServices`
     /// entries. iOS refuses to publish or browse an undeclared type even when
     /// Local Network access is *granted* — `NetService` fails with

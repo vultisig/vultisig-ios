@@ -27,10 +27,7 @@ final class CosmosStakeDefiViewModel: ObservableObject {
 
     private let stakingService: CosmosStakingServiceProtocol
     private let apyResolver: CosmosStakingAPYResolverProtocol
-    private let logger = Logger(
-        subsystem: "com.vultisig.app",
-        category: "cosmos-stake-defi-vm"
-    )
+    private let logger = Log.defi.viewModel
 
     init(
         chain: Chain,

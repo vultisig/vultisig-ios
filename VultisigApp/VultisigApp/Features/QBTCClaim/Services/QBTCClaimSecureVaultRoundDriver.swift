@@ -21,7 +21,7 @@ final class QBTCClaimSecureVaultRoundDriver {
     private let session: KeysignSessionInfo
     private let participants: [String]
     private let sessionService: KeysignSessionServicing
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-securevault-driver")
+    private let logger = Log.qbtc.other
 
     init(
         session: KeysignSessionInfo,

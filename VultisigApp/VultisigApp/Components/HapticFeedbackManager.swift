@@ -7,8 +7,11 @@
 
 import SwiftUI
 import CoreHaptics
+import OSLog
 
 #if os(iOS)
+private let logger = Log.app.other
+
 class HapticFeedbackManager {
     private var timer: Timer?
     private var stopWorkItem: DispatchWorkItem?
@@ -36,16 +39,16 @@ class HapticFeedbackManager {
                 do {
                     try self?.hapticEngine?.start()
                 } catch {
-                    print("Failed to restart haptic engine: \(error)")
+                    logger.error("Failed to restart haptic engine: \(error.localizedDescription, privacy: .public)")
                 }
             }
 
             // Handle engine stopped
             hapticEngine?.stoppedHandler = { reason in
-                print("Haptic engine stopped: \(reason)")
+                logger.info("Haptic engine stopped: \(String(describing: reason), privacy: .public)")
             }
         } catch {
-            print("Failed to create haptic engine: \(error)")
+            logger.error("Failed to create haptic engine: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -55,7 +58,7 @@ class HapticFeedbackManager {
         }
 
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "ahap") else {
-            print("AHAP file '\(fileName).ahap' not found")
+            logger.error("AHAP file '\(fileName, privacy: .public).ahap' not found")
             return
         }
 
@@ -75,7 +78,7 @@ class HapticFeedbackManager {
             // Play the pattern
             try hapticPlayer?.start(atTime: CHHapticTimeImmediate)
         } catch {
-            print("Failed to play AHAP file: \(error)")
+            logger.error("Failed to play AHAP file: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -84,7 +87,7 @@ class HapticFeedbackManager {
             try hapticPlayer?.stop(atTime: CHHapticTimeImmediate)
             hapticPlayer = nil
         } catch {
-            print("Failed to stop AHAP playback: \(error)")
+            logger.error("Failed to stop AHAP playback: \(error.localizedDescription, privacy: .public)")
         }
     }
 

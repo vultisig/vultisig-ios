@@ -10,6 +10,7 @@ import WalletCore
 import Tss
 import CryptoSwift
 import VultisigCommonData
+import OSLog
 
 struct CosmosHelperStruct {
     let config: CosmosHelperConfig
@@ -200,7 +201,7 @@ struct CosmosHelperStruct {
         let hashes = TransactionCompiler.preImageHashes(coinType: config.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
-            print("Error getPreSignedImageHash: \(preSigningOutput.errorMessage)")
+            Log.chain.other.error("Error getPreSignedImageHash: \(preSigningOutput.errorMessage, privacy: .public)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
 
@@ -231,7 +232,7 @@ struct CosmosHelperStruct {
             let signatureProvider = SignatureProvider(signatures: signatures)
             let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
-                print("getSignedTransaction signature is invalid")
+                Log.chain.other.error("getSignedTransaction signature is invalid")
                 throw HelperError.runtimeError("fail to verify signature")
             }
 
@@ -244,7 +245,7 @@ struct CosmosHelperStruct {
             let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
 
             if output.errorMessage.isNotEmpty {
-                print("getSignedTransaction Error message: \(output.errorMessage)")
+                Log.chain.other.error("getSignedTransaction Error message: \(output.errorMessage, privacy: .public)")
             }
 
             let serializedData = output.serialized

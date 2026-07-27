@@ -6,7 +6,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-service")
+private let logger = Log.chain.service
 
 struct CosmosServiceStruct {
     let config: CosmosServiceConfig

@@ -6,7 +6,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-yield-row")
+private let logger = Log.defi.view
 
 /// DeFi-tab list row for a USDC yield provider (e.g. Circle). Provider-specific
 /// copy and logo come from `presentation`; the deposited position is seeded from

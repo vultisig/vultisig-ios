@@ -10,7 +10,7 @@ import Foundation
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "vult-tier-service")
+private let logger = Log.app.service
 
 struct VultTierService {
     let vultTicker = "VULT"

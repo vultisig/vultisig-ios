@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Log.chain.service
 
 // MARK: - Pending Transaction Management
 
@@ -46,7 +49,7 @@ class PendingTransactionManager {
     func addPendingTransaction(txHash: String, address: String, chain: Chain, sequence: UInt64) {
         let transaction = PendingTransaction(txHash: txHash, address: address, chain: chain, sequence: sequence)
         self.pendingTransactions.setSync(txHash, transaction)
-        print("Added pending transaction: \(txHash) for address: \(address) with sequence: \(sequence)")
+        logger.debug("Added pending transaction: \(txHash, privacy: .public) for address: \(address, privacy: .public) with sequence: \(sequence)")
 
         // Start polling only for this specific chain
         self.startPollingForChain(chain)
@@ -76,7 +79,7 @@ class PendingTransactionManager {
 
     /// Force check pending transactions immediately (useful for UI refresh)
     func forceCheckPendingTransactions() async {
-        print("PendingTransactionManager: Force checking pending transactions")
+        logger.debug("Force checking pending transactions")
         // Check all pending transactions across all chains
         let allPending = Array(pendingTransactions.allItems().values.filter { !$0.isConfirmed })
 
@@ -104,7 +107,7 @@ class PendingTransactionManager {
             return
         }
 
-        print("PendingTransactionManager: Starting polling for chain: \(chain)")
+        logger.info("Starting polling for chain: \(String(describing: chain), privacy: .public)")
 
         let t = Task {
             while !Task.isCancelled {
@@ -114,11 +117,11 @@ class PendingTransactionManager {
                     // Wait 10 seconds before next check
                     try await Task.sleep(for: .seconds(10))
                 } catch {
-                    print("PendingTransactionManager: Polling error for \(chain): \(error)")
+                    logger.error("Polling error for \(String(describing: chain), privacy: .public): \(error.localizedDescription, privacy: .public)")
                     try? await Task.sleep(for: .seconds(10))
                 }
             }
-            print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
+            logger.debug("Polling task cancelled for chain: \(String(describing: chain), privacy: .public)")
         }
         self.pollingTasks.setSync(chain, t)
 
@@ -128,7 +131,7 @@ class PendingTransactionManager {
     func stopPollingForChain(_ chain: Chain) {
         self.pollingTasks.get(chain)?.cancel()
         self.pollingTasks.remove(chain)
-        print("PendingTransactionManager: Stopped polling for chain: \(chain)")
+        logger.info("Stopped polling for chain: \(String(describing: chain), privacy: .public)")
 
     }
 
@@ -136,7 +139,7 @@ class PendingTransactionManager {
     func stopAllPolling() {
         for (chain, task) in self.pollingTasks.allItems() {
             task.cancel()
-            print("PendingTransactionManager: Stopped polling for chain: \(chain)")
+            logger.info("Stopped polling for chain: \(String(describing: chain), privacy: .public)")
         }
         self.pollingTasks.clear()
     }
@@ -149,7 +152,7 @@ class PendingTransactionManager {
         }
 
         if !chainPending.isEmpty {
-            print("PendingTransactionManager: Checking \(chainPending.count) pending transactions for \(chain)")
+            logger.debug("Checking \(chainPending.count) pending transactions for \(String(describing: chain), privacy: .public)")
         }
 
         for transaction in chainPending {
@@ -171,13 +174,13 @@ class PendingTransactionManager {
 
     private func checkTransactionConfirmation(transaction: PendingTransaction) async {
         do {
-            print("PendingTransactionManager: Checking status for \(transaction.txHash.prefix(8))... on \(transaction.chain)")
+            logger.debug("Checking status for \(String(transaction.txHash.prefix(8)), privacy: .public)... on \(String(describing: transaction.chain), privacy: .public)")
             let isConfirmed = try await checkTransactionStatus(txHash: transaction.txHash, chain: transaction.chain)
-            print("PendingTransactionManager: Transaction \(transaction.txHash.prefix(8))... confirmed: \(isConfirmed)")
+            logger.debug("Transaction \(String(transaction.txHash.prefix(8)), privacy: .public)... confirmed: \(isConfirmed)")
 
             if isConfirmed {
                 pendingTransactions.remove(transaction.txHash)
-                print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
+                logger.info("✅ Transaction confirmed and removed: \(String(transaction.txHash.prefix(8)), privacy: .public)...")
 
                 // Clear cache to force fresh nonce fetch for next transaction (background thread)
                 BlockChainService.shared.clearCacheForAddress()
@@ -193,7 +196,7 @@ class PendingTransactionManager {
             }
 
         } catch {
-            print("PendingTransactionManager: ❌ Failed to check transaction status for \(transaction.txHash.prefix(8))...: \(error)")
+            logger.error("❌ Failed to check transaction status for \(String(transaction.txHash.prefix(8)), privacy: .public)...: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -220,23 +223,23 @@ class PendingTransactionManager {
             return false
         }
 
-        print("PendingTransactionManager: Checking nonce for address: \(transaction.address)")
-        print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
+        logger.debug("Checking nonce for address: \(transaction.address, privacy: .public)")
+        logger.debug("Expected sequence > \(transaction.sequence)")
 
         // Fetch current account info to get latest sequence number
         let account = try await ThorchainService.shared.fetchAccountNumber(transaction.address)
 
         guard let currentSequenceString = account?.sequence,
               let currentSequence = UInt64(currentSequenceString) else {
-            print("PendingTransactionManager: Failed to get current sequence")
+            logger.error("Failed to get current sequence")
             return false
         }
 
-        print("PendingTransactionManager: Current sequence: \(currentSequence)")
+        logger.debug("Current sequence: \(currentSequence)")
 
         // If current sequence is greater than the transaction sequence, it means the transaction was processed
         let isConfirmed = currentSequence > transaction.sequence
-        print("PendingTransactionManager: Nonce-based confirmation: \(isConfirmed)")
+        logger.debug("Nonce-based confirmation: \(isConfirmed)")
 
         return isConfirmed
     }
@@ -247,23 +250,23 @@ class PendingTransactionManager {
             return false
         }
 
-        print("PendingTransactionManager: Checking MayaChain nonce for address: \(transaction.address)")
-        print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
+        logger.debug("Checking MayaChain nonce for address: \(transaction.address, privacy: .public)")
+        logger.debug("Expected sequence > \(transaction.sequence)")
 
         // Fetch current account info to get latest sequence number
         let account = try await MayachainService.shared.fetchAccountNumber(transaction.address)
 
         guard let currentSequenceString = account?.sequence,
               let currentSequence = UInt64(currentSequenceString) else {
-            print("PendingTransactionManager: Failed to get current MayaChain sequence")
+            logger.error("Failed to get current MayaChain sequence")
             return false
         }
 
-        print("PendingTransactionManager: Current MayaChain sequence: \(currentSequence)")
+        logger.debug("Current MayaChain sequence: \(currentSequence)")
 
         // If current sequence is greater than the transaction sequence, it means the transaction was processed
         let isConfirmed = currentSequence > transaction.sequence
-        print("PendingTransactionManager: MayaChain nonce-based confirmation: \(isConfirmed)")
+        logger.debug("MayaChain nonce-based confirmation: \(isConfirmed)")
 
         return isConfirmed
     }
@@ -274,8 +277,8 @@ class PendingTransactionManager {
             return false
         }
 
-        print("PendingTransactionManager: Checking \(chain) nonce for address: \(transaction.address)")
-        print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
+        logger.debug("Checking \(String(describing: chain), privacy: .public) nonce for address: \(transaction.address, privacy: .public)")
+        logger.debug("Expected sequence > \(transaction.sequence)")
 
         // Fetch current account info to get latest sequence number
         let service = try CosmosService.getService(forChain: chain)
@@ -283,15 +286,15 @@ class PendingTransactionManager {
 
         guard let currentSequenceString = account?.sequence,
               let currentSequence = UInt64(currentSequenceString) else {
-            print("PendingTransactionManager: Failed to get current \(chain) sequence")
+            logger.error("Failed to get current \(String(describing: chain), privacy: .public) sequence")
             return false
         }
 
-        print("PendingTransactionManager: Current \(chain) sequence: \(currentSequence)")
+        logger.debug("Current \(String(describing: chain), privacy: .public) sequence: \(currentSequence)")
 
         // If current sequence is greater than the transaction sequence, it means the transaction was processed
         let isConfirmed = currentSequence > transaction.sequence
-        print("PendingTransactionManager: \(chain) nonce-based confirmation: \(isConfirmed)")
+        logger.debug("\(String(describing: chain), privacy: .public) nonce-based confirmation: \(isConfirmed)")
 
         return isConfirmed
     }
@@ -307,11 +310,11 @@ class PendingTransactionManager {
 
         for (txHash, transaction) in veryOldTransactions {
             pendingTransactions.remove(txHash)
-            print("Very old transaction removed (safety cleanup): \(txHash) for address: \(transaction.address)")
+            logger.info("Very old transaction removed (safety cleanup): \(txHash, privacy: .public) for address: \(transaction.address, privacy: .public)")
         }
 
         if !veryOldTransactions.isEmpty {
-            print("Safety cleanup: removed \(veryOldTransactions.count) very old transactions (>10 minutes)")
+            logger.info("Safety cleanup: removed \(veryOldTransactions.count) very old transactions (>10 minutes)")
         }
     }
 }

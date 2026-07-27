@@ -19,7 +19,7 @@ private extension goschnorr.schnorr_lib_error {
     static let schnorrLibOK = goschnorr.schnorr_lib_error(rawValue: 0)
 }
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-schnorr-keysign")
+private let logger = Log.keysign.network
 
 final class SchnorrKeysign {
     let keysignCommittee: [String]
@@ -149,7 +149,7 @@ final class SchnorrKeysign {
         var mutableMessage = message
         let receiverResult = schnorr_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         if receiverResult != .schnorrLibOK {
-            print("fail to get receiver message,error: \(receiverResult)")
+            logger.error("fail to get receiver message,error: \(String(describing: receiverResult), privacy: .public)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
@@ -162,7 +162,7 @@ final class SchnorrKeysign {
         }
         let result = schnorr_sign_session_output_message(handle, &buf)
         if result != .schnorrLibOK {
-            print("fail to get outbound message: \(result)")
+            logger.error("fail to get outbound message: \(String(describing: result), privacy: .public)")
             return (result, [])
         }
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
@@ -177,7 +177,7 @@ final class SchnorrKeysign {
             try Task.checkCancellation()
             let (result, outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != .schnorrLibOK {
-                print("fail to get outbound message")
+                logger.error("fail to get outbound message")
             }
             if outboundMessage.isEmpty {
                 return
@@ -193,7 +193,7 @@ final class SchnorrKeysign {
                     break
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
+                logger.debug("sending message from \(self.localPartyID, privacy: .public) to: \(receiverString, privacy: .public), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
@@ -259,10 +259,10 @@ final class SchnorrKeysign {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(messageID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                logger.debug("message with key:\(key, privacy: .public) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            logger.debug("Got message from: \(msg.from, privacy: .public), to: \(msg.to, privacy: .public), key:\(key, privacy: .public)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -394,7 +394,7 @@ final class SchnorrKeysign {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.
             if error is CancellationError { throw error }
-            print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
+            logger.error("Failed to sign message (\(messageToSign, privacy: .public)), error: \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await KeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
             }

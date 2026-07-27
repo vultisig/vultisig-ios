@@ -26,7 +26,7 @@ final class HTTPClient: HTTPClientProtocol {
         session: URLSession = .shared,
         jsonEncoder: JSONEncoder = JSONEncoder(),
         jsonDecoder: JSONDecoder = JSONDecoder(),
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "http-client")
+        logger: Logger = Log.app.other
     ) {
         self.session = session
         self.jsonEncoder = jsonEncoder

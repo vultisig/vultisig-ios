@@ -14,7 +14,7 @@ import WalletCore
 class SuiService {
     static let shared = SuiService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "sui-service")
+    private let logger = Log.chain.service
 
     /// Default Sui JSON-RPC host.
     static let defaultRPCURL: URL = {
@@ -72,7 +72,7 @@ class SuiService {
 
             return "0"
         } catch {
-            print("Error fetching suix_getAllBalances: \(error.localizedDescription)")
+            logger.error("Error fetching suix_getAllBalances: \(error.localizedDescription, privacy: .public)")
             return "0"
         }
     }
@@ -145,10 +145,10 @@ class SuiService {
                 let intResult = resultString.toBigInt()
                 return intResult
             } else {
-                print("JSON decoding error")
+                logger.error("JSON decoding error")
             }
         } catch {
-            print("Error fetching balance: \(error.localizedDescription)")
+            logger.error("Error fetching balance: \(error.localizedDescription, privacy: .public)")
             throw error
         }
         return BigInt.zero
@@ -230,10 +230,10 @@ class SuiService {
 
                 return tokens
             } else {
-                print("Failed to decode owned objects")
+                logger.error("Failed to decode owned objects")
             }
         } catch {
-            print("Error fetching tokens: \(error.localizedDescription)")
+            logger.error("Error fetching tokens: \(error.localizedDescription, privacy: .public)")
             throw error
         }
         return []
@@ -279,7 +279,7 @@ class SuiService {
 
                     tokensWithMetadata.append(coinMeta)
                 } catch {
-                    print("Error fetching metadata for \(objType): \(error.localizedDescription)")
+                    logger.error("Error fetching metadata for \(String(describing: objType), privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         }
@@ -334,7 +334,7 @@ class SuiService {
         } catch let error as Errors {
             throw error
         } catch {
-            print("Error in dry run transaction: \(error.localizedDescription)")
+            logger.error("Error in dry run transaction: \(error.localizedDescription, privacy: .public)")
             throw Errors.dryRunFailed(error.localizedDescription)
         }
     }

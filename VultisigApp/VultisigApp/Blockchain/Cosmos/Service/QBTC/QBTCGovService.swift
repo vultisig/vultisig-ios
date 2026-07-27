@@ -34,7 +34,7 @@ struct QBTCGovService: QBTCGovServiceProtocol {
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-gov-service")
+        logger: Logger = Log.qbtc.service
     ) {
         self.httpClient = httpClient
         self.logger = logger

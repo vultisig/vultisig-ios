@@ -16,7 +16,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class SwapVerifyViewModel {
-    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-verify")
+    @ObservationIgnored private let logger = Log.swap.other
     @ObservationIgnored private let interactor: SwapInteractor
     @ObservationIgnored private let securityScanViewModel = SecurityScannerViewModel()
     @ObservationIgnored private var securityScannerCancellable: AnyCancellable?

@@ -12,7 +12,7 @@ import OSLog
 class BlockaidScannerService: BlockaidScannerServiceProtocol {
 
     private let blockaidRpcClient: BlockaidRpcClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockaid-scanner")
+    private let logger = Log.app.other
 
     init(blockaidRpcClient: BlockaidRpcClientProtocol) {
         self.blockaidRpcClient = blockaidRpcClient

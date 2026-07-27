@@ -8,7 +8,7 @@ import Foundation
 import Observation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-swap-form")
+private let logger = Log.swap.other
 
 /// View-binding only. Holds the user-editable `LimitSwapDraft` plus derived UI
 /// state (% from market, warning, loading). Service calls + composition live

@@ -28,7 +28,7 @@ struct CosmosStakingService: CosmosStakingServiceProtocol {
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-staking-service")
+        logger: Logger = Log.chain.service
     ) {
         self.httpClient = httpClient
         self.logger = logger

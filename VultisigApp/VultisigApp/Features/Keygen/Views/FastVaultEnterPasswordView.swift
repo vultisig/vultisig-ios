@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 struct FastVaultEnterPasswordView: View {
     @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
@@ -152,7 +153,7 @@ struct FastVaultEnterPasswordView: View {
             },
             onError: { error in
                 // Log authentication error - don't fail silently
-                print("Fast Vault authentication error: \(error.localizedDescription)")
+                Log.keygen.view.error("Fast Vault authentication error: \(error.localizedDescription, privacy: .public)")
                 // Error is shown by system dialog, no need to show another alert
             })
     }

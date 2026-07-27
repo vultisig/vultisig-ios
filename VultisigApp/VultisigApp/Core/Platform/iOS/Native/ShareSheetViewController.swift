@@ -6,6 +6,7 @@
 //
 #if os(iOS)
 import SwiftUI
+import OSLog
 
 extension View {
     func shareSheet(isPresented: Binding<Bool>, activityItems: [Any], completion: ((Bool) -> Void)?, applicationActivities: [UIActivity]? = nil) -> some View {
@@ -62,7 +63,7 @@ private struct ShareSheetViewController: UIViewControllerRepresentable {
             context.coordinator.hasCompleted = true
 
             if let error = error {
-                print("Error sharing: \(error.localizedDescription)")
+                Log.app.other.error("Error sharing: \(error.localizedDescription, privacy: .public)")
             }
 
             // Dismiss the sheet first

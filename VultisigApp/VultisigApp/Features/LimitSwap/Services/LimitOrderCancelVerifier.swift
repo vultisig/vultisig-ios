@@ -66,7 +66,7 @@ protocol LimitOrderCancelVerifying {
 struct LimitOrderCancelVerifier: LimitOrderCancelVerifying {
     private let httpClient: HTTPClientProtocol
     private let statusChecker: TransactionStatusChecking
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "limit-cancel-verifier")
+    private let logger = Log.swap.other
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),

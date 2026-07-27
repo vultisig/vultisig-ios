@@ -12,7 +12,7 @@ import BigInt
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-service")
+private let logger = Log.swap.service
 
 struct SwapKitService {
     static let shared = SwapKitService()

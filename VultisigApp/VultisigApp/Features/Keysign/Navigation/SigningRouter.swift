@@ -16,7 +16,7 @@ import OSLog
 import SwiftData
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "signing-router")
+private let logger = Log.keysign.other
 
 struct SigningRouter {
 

@@ -10,7 +10,7 @@ import Mediator
 import OSLog
 import CryptoKit
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "net-dkls-messenger")
+private let logger = Log.tss.network
 final class DKLSMessenger {
     let mediatorURL: String
     let sessionID: String

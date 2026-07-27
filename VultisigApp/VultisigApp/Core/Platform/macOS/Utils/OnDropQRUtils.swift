@@ -8,6 +8,7 @@
 #if os(macOS)
 import AppKit
 import UniformTypeIdentifiers
+import OSLog
 
 enum OnDropQRError: Error {
     case noItems
@@ -18,13 +19,13 @@ class OnDropQRUtils {
 
     static func handleOnDrop(providers: [NSItemProvider], handleImageQrCode: @escaping (Data) -> Void) -> Bool {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier("public.image") }) else {
-            print("Invalid file type. Please drop an image.")
+            Log.app.other.error("Invalid file type. Please drop an image.")
             return false
         }
 
         provider.loadDataRepresentation(forTypeIdentifier: "public.image") { data, error in
             guard let data = data, let image = NSImage(data: data) else {
-                print(error?.localizedDescription ?? "Failed to load image.")
+                Log.app.other.error("\(error?.localizedDescription ?? "Failed to load image.", privacy: .public)")
                 return
             }
 
@@ -34,7 +35,7 @@ class OnDropQRUtils {
                     handleImageQrCode(qrData)
                 }
             } else {
-                print("No QR code detected in the image.")
+                Log.app.other.debug("No QR code detected in the image.")
             }
         }
 

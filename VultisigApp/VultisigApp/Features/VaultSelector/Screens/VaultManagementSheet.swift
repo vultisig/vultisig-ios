@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import OSLog
 
 private enum VaultSheetType: Equatable {
     case main
@@ -169,7 +170,7 @@ private extension VaultManagementSheet {
         do {
             try modelContext.save()
         } catch {
-            print("Error while deleting folder: \(error)")
+            Log.wallet.view.error("Error while deleting folder: \(error.localizedDescription, privacy: .public)")
         }
     }
 

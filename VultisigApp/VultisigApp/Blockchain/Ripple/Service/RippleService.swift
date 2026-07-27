@@ -139,7 +139,7 @@ class RippleService {
 
     static let shared = RippleService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-service")
+    private let logger = Log.chain.service
 
     /// Direct HTTP client for the verify-by-hash `tx` lookup, which runs its
     /// own bespoke retry loop (see `resolveSubmitByHash`).

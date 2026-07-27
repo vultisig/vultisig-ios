@@ -33,7 +33,7 @@ import OSLog
 import Tss
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-cardano-signer")
+private let logger = Log.chain.other
 
 enum SwapKitCardanoSignerError: Error, LocalizedError {
     case emptyPayload

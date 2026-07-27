@@ -22,7 +22,7 @@ import VultisigCommonData
 @Observable
 final class EditReferralDetailsViewModel {
 
-    @ObservationIgnored private let logger = Logger(subsystem: "com.vultisig.app", category: "edit-referral-details-vm")
+    @ObservationIgnored private let logger = Log.wallet.viewModel
     @ObservationIgnored private let interactor: SendInteractor
     @ObservationIgnored private let thorchainService: THORChainAPIService
     @ObservationIgnored private let addCoinIfNeeded: @MainActor (THORChainAsset, Vault) throws -> Coin?

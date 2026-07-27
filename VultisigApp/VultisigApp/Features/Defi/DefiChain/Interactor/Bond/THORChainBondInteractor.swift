@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-bond-interactor")
+private let logger = Log.defi.interactor
 
 private struct BondPositionDraft: Sendable {
     let node: BondNode

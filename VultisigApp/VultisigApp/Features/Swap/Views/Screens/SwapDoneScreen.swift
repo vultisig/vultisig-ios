@@ -33,7 +33,7 @@
 import SwiftUI
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swap-done-screen")
+private let logger = Log.swap.view
 
 struct SwapDoneScreen: View {
     let vault: Vault

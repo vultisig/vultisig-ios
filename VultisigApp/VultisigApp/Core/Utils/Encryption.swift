@@ -8,6 +8,7 @@
 import Foundation
 import CommonCrypto
 import CryptoKit
+import OSLog
 
 enum AESError: Error {
     case encryptionFailed
@@ -163,7 +164,7 @@ class Encryption {
         if result == errSecSuccess {
             return keyData.hexString
         } else {
-            print("Problem generating random bytes")
+            Log.app.other.error("Problem generating random bytes")
             return nil
         }
     }

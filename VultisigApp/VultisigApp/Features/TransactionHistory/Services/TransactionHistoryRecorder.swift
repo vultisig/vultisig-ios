@@ -11,7 +11,7 @@ final class TransactionHistoryRecorder {
     static let shared = TransactionHistoryRecorder()
 
     private let storage = TransactionHistoryStorage.shared
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-recorder")
+    private let logger = Log.wallet.other
 
     private init() {}
 

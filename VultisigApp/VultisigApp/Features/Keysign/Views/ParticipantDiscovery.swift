@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 
 class ParticipantDiscovery: ObservableObject {
-    private let logger = Logger(subsystem: "participant-discovery", category: "communication")
+    private let logger = Log.keysign.network
     private let httpClient: HTTPClientProtocol
 
     @Published var peersFound = [String]()

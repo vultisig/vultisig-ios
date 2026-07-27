@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
 
 struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
@@ -129,7 +130,7 @@ struct GeneralQRImportMacView: View {
             setValues(urls)
             importResult = result
         case .failure(let error):
-            print("Error importing file: \(error.localizedDescription)")
+            Log.app.view.error("Error importing file: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -147,7 +148,7 @@ struct GeneralQRImportMacView: View {
                 isButtonEnabled = true
             }
         } catch {
-            print(error)
+            Log.app.view.error("\(error.localizedDescription, privacy: .public)")
         }
     }
     #endif

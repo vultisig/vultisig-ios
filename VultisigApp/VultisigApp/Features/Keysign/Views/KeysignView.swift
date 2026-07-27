@@ -5,7 +5,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "keysign-view")
+private let logger = Log.keysign.view
 
 struct KeysignView: View {
     /// The keysign ceremony view-model, owned by the host (initiator, cosigner,

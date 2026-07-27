@@ -70,7 +70,7 @@ final class QBTCClaimJoinDriver: ObservableObject {
     private let session: KeysignSessionInfo
     private let sessionService: KeysignSessionServicing
     private let coinResolver: QBTCClaimCoinResolver
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim-join")
+    private let logger = Log.qbtc.other
 
     /// Cap on how long to wait for kickoff. Generous because the
     /// initiator may also be waiting on the user to confirm.

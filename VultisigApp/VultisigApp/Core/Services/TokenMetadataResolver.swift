@@ -12,7 +12,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "token-metadata-resolver")
+private let logger = Log.chain.other
 
 /// Successful metadata lookup. Empty `symbol` is treated as a failure and not cached.
 struct TokenMetadata: Equatable, Sendable {

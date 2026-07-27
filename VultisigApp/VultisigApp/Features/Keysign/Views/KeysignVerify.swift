@@ -10,7 +10,7 @@ import OSLog
 import Tss
 
 class KeysignVerify: ObservableObject {
-    private let logger = Logger(subsystem: "keysign-verify", category: "communication")
+    private let logger = Log.keysign.network
     let serverAddr: String
     let sessionID: String
     let urlString: String

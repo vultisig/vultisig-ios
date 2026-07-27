@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "tron-unfreeze-view-model")
+private let logger = Log.defi.viewModel
 
 @MainActor
 final class TronUnfreezeViewModel: ObservableObject, Form {

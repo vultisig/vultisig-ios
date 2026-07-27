@@ -16,7 +16,7 @@ enum KeysignDiscoveryStatus {
 }
 
 class KeysignDiscoveryViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "keysign-discovery", category: "viewmodel")
+    private let logger = Log.keysign.viewModel
     private var cancellables = Set<AnyCancellable>()
 
     var vault: Vault

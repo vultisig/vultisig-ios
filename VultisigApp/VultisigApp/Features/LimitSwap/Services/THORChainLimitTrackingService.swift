@@ -95,7 +95,7 @@ final class THORChainLimitTrackingService: ObservableObject, SwapTrackingService
     private let outcomes: LimitOrderOutcomeResolving
     private let cancelIntents: LimitOrderCancelIntentStoring
     private let cancelVerifier: LimitOrderCancelVerifying
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-limit-tracking")
+    private let logger = Log.swap.other
 
     /// Rows this service owns, keyed by `txHash`.
     private var tracked: [String: TrackedOrder] = [:]

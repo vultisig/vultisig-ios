@@ -26,7 +26,7 @@ struct VaultRegistrationSnapshot {
 
 class KeygenPeerDiscoveryViewModel: ObservableObject {
 
-    private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
+    private let logger = Log.keygen.network
 
     var tssType: TssType
     var vault: Vault
@@ -51,7 +51,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local {
         didSet {
-            print("selected network changed: \(selectedNetwork)")
+            logger.debug("selected network changed: \(String(describing: self.selectedNetwork), privacy: .public)")
             VultisigRelay.IsRelayEnabled = NetworkPromptType.Internet == selectedNetwork
         }
     }

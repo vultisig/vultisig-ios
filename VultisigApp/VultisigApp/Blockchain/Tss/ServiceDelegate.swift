@@ -8,7 +8,7 @@ import OSLog
 import SwiftUI
 
 final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
-    private let logger = Logger(subsystem: "service-delegate", category: "communication")
+    private let logger = Log.tss.network
     @Published var serverURL: String?
     /// Set when local-mode Bonjour resolution fails or times out. Observed by the
     /// join flow to surface a recoverable error instead of hanging on "Discovering".
@@ -39,7 +39,7 @@ final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
                 if ipAddress != nil { break }
             }
         }
-        print("Resolved service address: \(ipAddress ?? "unknown")")
+        logger.debug("Resolved service address: \(ipAddress ?? "unknown", privacy: .public)")
         logger.info("Service found: \(sender.name), \(sender.hostName ?? ""), port \(sender.port) in domain \(sender.domain)")
         serverURL = "http://\(ipAddress ?? sender.hostName ?? ""):\(sender.port)"
     }
