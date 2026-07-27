@@ -88,23 +88,25 @@ struct TokenSearchService {
     }
 
     /// Splits the catalog into the wallet picker's three verification-aware
-    /// outputs. `surfaceable` is the exact same auto-surfacing list `loadTokens`
-    /// serves (curated / verified, non-native). `unverified` is the withheld
-    /// long-tail — non-native, and passed through the synchronous `isLikelySpam`
-    /// hard gate so scam / lookalike / dust tokens never surface even with the
-    /// toggle on. `verificationByUniqueId` lets the row views badge each token
-    /// without reaching back into the repository.
+    /// outputs. `surfaceable` is the auto-surfacing (curated / verified,
+    /// non-native) list; `unverified` is the withheld long-tail the opt-in
+    /// toggle reveals. The synchronous `isLikelySpam` hard gate is applied to
+    /// BOTH — spam never surfaces, verified or unverified, toggle on or off (the
+    /// dynamic-catalog risk posture). It's applied here in the wallet catalog
+    /// path only: the swap-shared `surfaceableTokens`/`loadTokens` path is left
+    /// untouched so the swap pickers don't regress. `verificationByUniqueId`
+    /// lets the row views badge each token without reaching back into the
+    /// repository.
     static func searchResult(from candidates: [CatalogToken]) -> TokenSearchResult {
-        let surfaceable = surfaceableTokens(from: candidates)
-
-        let unverified = candidates
-            .filter { !$0.autoSurfaces }
+        let safe = candidates
             .filter { !$0.meta.isNativeToken }
             .filter { !CoinService.isLikelySpam($0.meta) }
-            .map { $0.meta }
+
+        let surfaceable = safe.filter { $0.autoSurfaces }.map { $0.meta }
+        let unverified = safe.filter { !$0.autoSurfaces }.map { $0.meta }
 
         var verificationByUniqueId: [String: TokenVerification] = [:]
-        for candidate in candidates where !candidate.meta.isNativeToken {
+        for candidate in safe {
             verificationByUniqueId[candidate.uniqueId] = candidate.verification
         }
 
