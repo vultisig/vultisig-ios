@@ -16,7 +16,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "jupiter-catalog-provider")
+private let logger = Log.wallet.service
 
 @MainActor
 final class JupiterCatalogProvider: TokenCatalogProvider {

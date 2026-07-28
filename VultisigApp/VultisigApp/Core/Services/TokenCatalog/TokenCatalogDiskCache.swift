@@ -23,7 +23,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "token-catalog-disk-cache")
+private let logger = Log.wallet.store
 
 /// Sendable — immutable config, no mutable state; safe to call off the MainActor.
 final class TokenCatalogDiskCache: Sendable {
