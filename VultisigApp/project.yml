@@ -57,10 +57,10 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # ⚠️ UNMERGED PIN — points at the open commondata branch that adds
-    # `RippleSpecific.transaction_type = 5` (the existing `TransactionType` enum)
-    # plus `TRANSACTION_TYPE_RIPPLE_TRUST_SET = 10`. Must move to the merged
-    # `main` commit before this can ship.
+    # Pinned to the commondata commit that adds `RippleSpecific.transaction_type
+    # = 5` (the existing `TransactionType` enum) plus
+    # `TRANSACTION_TYPE_RIPPLE_TRUST_SET = 10`. That commit is merged: it is an
+    # ancestor of commondata `main`, not a branch-only revision.
     #
     # Why the field exists: an XRPL issued-currency coin is ambiguous on its own.
     # The same (currency, issuer) pair can mean "open a trust line for this
