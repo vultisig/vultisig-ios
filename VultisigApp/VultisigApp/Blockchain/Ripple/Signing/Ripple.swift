@@ -464,6 +464,19 @@ enum RippleHelper {
             throw HelperError.runtimeError("XRP \(role): invalid currency code '\(token.currency)'")
         }
 
+        // The coin's currency is only trustworthy if WalletCore will put it on
+        // the wire unchanged. It uppercases a 3-BYTE code before encoding, and
+        // XRPL codes are case-sensitive, so a lowercase standard code would sign
+        // a DIFFERENT currency than the one reviewed. A coin can reach here from
+        // trust-line discovery or a restored vault, not only from the add-token
+        // field, so the refusal belongs at this boundary rather than only at the
+        // one that happens to be validated.
+        guard RippleIssuedCurrency.isSignableCurrencyCode(currencyCode) else {
+            throw HelperError.runtimeError(
+                "XRP \(role): currency code '\(currencyCode)' cannot be signed verbatim"
+            )
+        }
+
         let value: String
         do {
             value = try RippleIssuedCurrency.formatIssuedCurrencyValue(

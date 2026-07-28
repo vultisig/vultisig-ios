@@ -92,6 +92,39 @@ enum RippleIssuedCurrency {
         return try asciiToHexCurrencyCode(value)
     }
 
+    /// The repertoire a standard 3-character currency code may draw on, narrowed
+    /// from rippled's own `kIsoCharSet` (`src/libxrpl/protocol/UintTypes.cpp`,
+    /// enforced by `toCurrency`) — `a-z A-Z 0-9 <>(){}[]|?!@#$%^&*` — by dropping
+    /// the lowercase letters. See ``isSignableCurrencyCode`` for why.
+    private static let signableStandardCurrencyCodeCharacters = Set(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>(){}[]|?!@#$%^&*"
+    )
+
+    /// Whether a code already normalized by ``toXrplCurrencyCode`` is one the
+    /// signer puts on the wire byte for byte.
+    ///
+    /// WalletCore encodes a 3-BYTE currency code by uppercasing it first
+    /// (`Currency::from_str` → `Currency::ISO(s.to_uppercase())`), while XRPL
+    /// currency codes are case-SENSITIVE — rippled copies the three bytes into
+    /// positions 12–14 untouched. A lowercase standard code would therefore be
+    /// signed as a DIFFERENT currency than the one reviewed: a TrustSet opening
+    /// the wrong line and locking its reserve, or a Payment the ledger rejects
+    /// after the ceremony with the fee burned.
+    ///
+    /// A non-ASCII 3-unit code is refused for the same reason from the other
+    /// side: it is 4+ UTF-8 bytes, so it matches neither the 3-byte standard form
+    /// nor the 40-character hex one and cannot be encoded at all.
+    ///
+    /// Nothing is lost: the 40-character hex spelling of any such currency is
+    /// encoded verbatim, so it remains expressible.
+    static func isSignableCurrencyCode(_ code: String) -> Bool {
+        if isHexCurrencyCode(code) {
+            return code == code.uppercased()
+        }
+        guard code.utf16.count == standardCurrencyCodeLength else { return false }
+        return code.allSatisfy { signableStandardCurrencyCodeCharacters.contains($0) }
+    }
+
     /// Printable-ASCII window used to decide whether a decoded hex currency code
     /// is a human-readable ticker.
     private static let printableAscii: ClosedRange<UInt8> = 0x20...0x7E

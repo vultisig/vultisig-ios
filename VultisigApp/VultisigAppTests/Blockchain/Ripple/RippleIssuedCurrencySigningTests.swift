@@ -490,6 +490,60 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
         }
     }
 
+    /// FAIL CLOSED on a currency code WalletCore would not put on the wire
+    /// verbatim. It uppercases a 3-BYTE code before encoding
+    /// (`Currency::from_str` → `Currency::ISO(s.to_uppercase())`) while XRPL
+    /// codes are case-SENSITIVE, so `usd` would open a `USD` trust line — or pay
+    /// a `USD` obligation — instead of the currency the user reviewed.
+    ///
+    /// The add-token field already refuses these, but a coin also reaches the
+    /// signer from trust-line discovery and from a restored vault, neither of
+    /// which passes through that field. This boundary is the one that has to
+    /// say no.
+    func testCurrencyCodeTheSignerWouldMangleIsRefusedOnBothOperations() {
+        for currency in ["usd", "uSd", "a-b"] {
+            let trustSet = Self.makePayload(
+                coin: Self.makeTokenCoin(contractAddress: "\(currency).\(Self.issuer)"),
+                toAddress: "",
+                toAmount: Self.tokenAmount,
+                transactionType: .rippleTrustSet
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: trustSet),
+                "'\(currency)' must not be signed as a different currency"
+            )
+
+            let payment = Self.makePayload(
+                coin: Self.makeTokenCoin(contractAddress: "\(currency).\(Self.issuer)"),
+                toAddress: Self.destination,
+                toAmount: Self.tokenAmount
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payment),
+                "'\(currency)' must not be signed as a different currency"
+            )
+        }
+    }
+
+    /// The counterpart: the same currency written as the 160-bit hex form IS
+    /// encoded verbatim, so refusing the lowercase spelling removes a spelling,
+    /// not a currency.
+    func testTheHexSpellingOfAMangledCodeStillSigns() throws {
+        // `usd` at bytes 12–14, which is where a standard code lives.
+        let hex = String(repeating: "0", count: 24) + "757364" + String(repeating: "0", count: 10)
+        let payload = Self.makePayload(
+            coin: Self.makeTokenCoin(contractAddress: "\(hex).\(Self.issuer)"),
+            toAddress: Self.destination,
+            toAmount: Self.tokenAmount
+        )
+
+        let input = try RippleSigningInput(
+            serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload)
+        )
+
+        XCTAssertEqual(input.opPayment.currencyAmount.currency, hex)
+    }
+
     /// A currency code longer than XRPL's 20-byte limit cannot be normalized, so
     /// the signer rejects it instead of emitting a truncated code.
     func testOverlongCurrencyCodeThrows() {

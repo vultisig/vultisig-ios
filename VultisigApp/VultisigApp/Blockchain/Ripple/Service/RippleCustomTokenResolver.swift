@@ -47,16 +47,6 @@ enum RippleCustomTokenResolver {
     private static let maximumCurrencyCodeBytes = 20
     private static let printableAscii: ClosedRange<UInt8> = 0x20...0x7E
 
-    /// The repertoire a standard 3-character code may draw on.
-    ///
-    /// The ledger's own set is rippled's `kIsoCharSet`
-    /// (`src/libxrpl/protocol/UintTypes.cpp`, checked by `to_currency`):
-    /// `a-z`, `A-Z`, `0-9` and `<>(){}[]|?!@#$%^&*`. Lowercase letters are
-    /// deliberately left out here — see ``isStandardCurrencyCode``.
-    private static let standardCurrencyCodeCharacters = Set(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>(){}[]|?!@#$%^&*"
-    )
-
     /// A trust line cannot exist without a funded XRP account to own it (it costs
     /// an owner reserve), so the custom-token flow must refuse to add an XRPL
     /// token to a vault that hasn't enabled XRP.
@@ -125,25 +115,14 @@ enum RippleCustomTokenResolver {
     /// Whether `currency` is a standard 3-character currency code this app can
     /// carry unchanged from the add-token field to the signed transaction.
     ///
-    /// A 3-UTF16-unit string is not automatically a standard code. Outside the
-    /// ledger's ASCII repertoire it is 4+ UTF-8 bytes, and the signer encodes a
-    /// standard code by copying exactly 3 bytes into positions 12–14 of the
-    /// 160-bit field — so `ÁBC` matches neither the 3-byte standard form nor the
-    /// 40-character hex form, and the token would be addable but unsignable.
-    ///
-    /// Two deliberate narrowings on top of the ledger's rule:
-    ///
-    /// - **Lowercase letters are excluded**, even though the ledger accepts them.
-    ///   XRPL currency codes are case-SENSITIVE, but WalletCore uppercases a
-    ///   3-character code before encoding it, so `usd` would sign as `USD` — a
-    ///   different currency from the one added, displayed and balance-matched
-    ///   against `account_lines`. Such a code stays reachable through its
-    ///   40-character hex spelling, which the signer encodes verbatim.
-    /// - **`XRP` is excluded in every casing.** That spelling is reserved for the
-    ///   native asset and can never name an issued currency.
+    /// The repertoire test is ``RippleIssuedCurrency/isSignableCurrencyCode(_:)``
+    /// — shared with the signer so the add-token field can never accept a code
+    /// the signing boundary will later refuse. On top of it, `XRP` is excluded in
+    /// every casing: that spelling is reserved for the native asset and can never
+    /// name an issued currency.
     private static func isStandardCurrencyCode(_ currency: String) -> Bool {
         guard currency.uppercased() != "XRP" else { return false }
-        return currency.allSatisfy { standardCurrencyCodeCharacters.contains($0) }
+        return RippleIssuedCurrency.isSignableCurrencyCode(currency)
     }
 
     /// Whether `currency` is a ticker that `toXrplCurrencyCode` can pack into
