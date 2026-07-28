@@ -16,6 +16,8 @@ enum KeyshareKeyStoreError: Error, Equatable {
     case persistenceFailed
     case wrongPasscode
     case malformedWrappedKey
+    /// The Keychain reported success but the item is still readable.
+    case deletionFailed
 }
 
 /// Custody of the data key that encrypts key shares at rest.
@@ -39,11 +41,11 @@ protocol KeyshareKeyStoring {
 
     func loadDataKey() -> SymmetricKey?
     func storeDataKey(_ key: SymmetricKey) throws
-    func deleteDataKey()
+    func deleteDataKey() throws
 
     func loadWrappedDataKey() -> Data?
     func storeWrappedDataKey(_ blob: Data) throws
-    func deleteWrappedDataKey()
+    func deleteWrappedDataKey() throws
 
     func wrap(_ key: SymmetricKey, passcode: String) async throws -> Data
     func unwrap(_ blob: Data, passcode: String) async throws -> SymmetricKey
@@ -86,8 +88,18 @@ final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
         }
     }
 
-    func deleteDataKey() {
+    /// Verifies the item is actually gone.
+    ///
+    /// A silent deletion failure here is what makes a passcode cosmetic: the
+    /// clear copy would survive, and the next lock would simply reload it from
+    /// the Keychain and carry on signing.
+    func deleteDataKey() throws {
         keychain.setKeyshareDataKey(nil)
+
+        guard keychain.getKeyshareDataKey().valueTreatingUnavailableAsAbsent == nil else {
+            logger.error("Keyshare data key still present after deletion")
+            throw KeyshareKeyStoreError.deletionFailed
+        }
     }
 
     // MARK: - Wrapped data key
@@ -105,8 +117,13 @@ final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
         }
     }
 
-    func deleteWrappedDataKey() {
+    func deleteWrappedDataKey() throws {
         keychain.setWrappedKeyshareDataKey(nil)
+
+        guard keychain.getWrappedKeyshareDataKey().valueTreatingUnavailableAsAbsent == nil else {
+            logger.error("Wrapped keyshare data key still present after deletion")
+            throw KeyshareKeyStoreError.deletionFailed
+        }
     }
 
     // MARK: - Passcode wrapping

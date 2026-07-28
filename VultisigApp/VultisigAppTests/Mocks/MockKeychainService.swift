@@ -27,6 +27,9 @@ final class MockKeychainService: KeychainService {
     /// The answer ``getWrappedKeyshareDataKey()`` gives, likewise.
     var wrappedKeyshareDataKeyResult: KeychainReadResult<Data> = .absent
 
+    /// The answer ``getPasscodeAttemptState()`` gives, likewise.
+    var passcodeAttemptStateResult: KeychainReadResult<Data> = .absent
+
     private var fastPasswords: [String: KeychainReadResult<String>] = [:]
     private var fastHints: [String: KeychainReadResult<String>] = [:]
     private var deviceTokenResult: KeychainReadResult<String> = .absent
@@ -34,6 +37,13 @@ final class MockKeychainService: KeychainService {
     /// When set, `setKeyshareDataKey` accepts the write but stores nothing, so
     /// the read-back verification in `DefaultKeyshareKeyStore` can be exercised.
     var dropsKeyshareDataKeyWrites = false
+
+    /// When set, deletion of the clear data key silently does nothing, so the
+    /// verified-deletion path can be exercised.
+    var ignoresKeyshareDataKeyDeletion = false
+
+    /// Same, for the wrapped copy, so the disable rollback can be exercised.
+    var ignoresWrappedKeyshareDataKeyDeletion = false
 
     /// The recorded version, for tests that only care about the stored value.
     var lastMigratedVersion: Int? {
@@ -51,6 +61,12 @@ final class MockKeychainService: KeychainService {
     var wrappedKeyshareDataKey: Data? {
         get { wrappedKeyshareDataKeyResult.valueTreatingUnavailableAsAbsent }
         set { wrappedKeyshareDataKeyResult = Self.result(newValue) }
+    }
+
+    /// The recorded attempt state, for tests that only care about the stored value.
+    var passcodeAttemptState: Data? {
+        get { passcodeAttemptStateResult.valueTreatingUnavailableAsAbsent }
+        set { passcodeAttemptStateResult = Self.result(newValue) }
     }
 
     init(lastMigratedVersion: Int? = nil) {
@@ -85,14 +101,20 @@ final class MockKeychainService: KeychainService {
 
     func setKeyshareDataKey(_ data: Data?) {
         guard !dropsKeyshareDataKeyWrites else { return }
+        if data == nil && ignoresKeyshareDataKeyDeletion { return }
         keyshareDataKeyResult = Self.result(data)
     }
 
     func getWrappedKeyshareDataKey() -> KeychainReadResult<Data> { wrappedKeyshareDataKeyResult }
 
     func setWrappedKeyshareDataKey(_ data: Data?) {
+        if data == nil && ignoresWrappedKeyshareDataKeyDeletion { return }
         wrappedKeyshareDataKeyResult = Self.result(data)
     }
+
+    func getPasscodeAttemptState() -> KeychainReadResult<Data> { passcodeAttemptStateResult }
+
+    func setPasscodeAttemptState(_ data: Data?) { passcodeAttemptStateResult = Self.result(data) }
 
     private static func result<Value>(_ value: Value?) -> KeychainReadResult<Value> {
         guard let value else { return .absent }

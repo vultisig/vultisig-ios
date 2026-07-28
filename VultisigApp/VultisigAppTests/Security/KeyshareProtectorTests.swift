@@ -120,3 +120,62 @@ final class KeyshareProtectorTests: XCTestCase {
         }
     }
 }
+
+/// The generation token that stops a slow unlock from undoing a lock that landed
+/// while it was still deriving.
+///
+/// Driven directly rather than through `PasscodeService`: the end-to-end race
+/// needs the lock to land inside the window between capturing the generation and
+/// adopting the key, and there is no way to place it there deterministically
+/// without adding a synchronization point to production code purely for tests.
+final class KeyshareKeySessionGenerationTests: XCTestCase {
+
+    private func makeSession() -> KeyshareKeySession {
+        KeyshareKeySession(store: DefaultKeyshareKeyStore(keychain: MockKeychainService()))
+    }
+
+    func testAdoptSucceedsWhenNoLockIntervened() throws {
+        let session = makeSession()
+        let key = try VaultCryptoEnvelope.randomKey()
+
+        let generation = session.currentGeneration
+
+        XCTAssertTrue(session.adopt(key, ifGeneration: generation))
+    }
+
+    func testAdoptIsRejectedWhenAClearHappenedAfterTheGenerationWasCaptured() throws {
+        let session = makeSession()
+        let key = try VaultCryptoEnvelope.randomKey()
+        session.adopt(key)
+
+        let generation = session.currentGeneration
+        session.clear()
+
+        XCTAssertFalse(session.adopt(key, ifGeneration: generation), "A lock that landed mid-unlock must win")
+    }
+
+    func testRejectedAdoptLeavesTheSessionLocked() throws {
+        let session = makeSession()
+        let key = try VaultCryptoEnvelope.randomKey()
+        session.adopt(key)
+        let generation = session.currentGeneration
+        session.clear()
+
+        _ = session.adopt(key, ifGeneration: generation)
+
+        guard case .disabled = session.currentState() else {
+            return XCTFail("Expected the session to remain without a key")
+        }
+    }
+
+    func testEachClearInvalidatesAnEarlierGeneration() throws {
+        let session = makeSession()
+        let key = try VaultCryptoEnvelope.randomKey()
+        let first = session.currentGeneration
+        session.clear()
+        let second = session.currentGeneration
+
+        XCTAssertFalse(session.adopt(key, ifGeneration: first))
+        XCTAssertTrue(session.adopt(key, ifGeneration: second))
+    }
+}

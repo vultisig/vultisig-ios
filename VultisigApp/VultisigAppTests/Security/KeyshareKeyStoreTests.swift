@@ -49,7 +49,7 @@ final class KeyshareKeyStoreTests: XCTestCase {
     func testDeleteDataKeyRemovesIt() throws {
         try sut.storeDataKey(try sut.generateDataKey())
 
-        sut.deleteDataKey()
+        try sut.deleteDataKey()
 
         XCTAssertNil(sut.loadDataKey())
     }
@@ -85,7 +85,7 @@ final class KeyshareKeyStoreTests: XCTestCase {
     func testDeleteWrappedDataKeyRemovesIt() throws {
         try sut.storeWrappedDataKey(Data(repeating: 0x07, count: 64))
 
-        sut.deleteWrappedDataKey()
+        try sut.deleteWrappedDataKey()
 
         XCTAssertNil(sut.loadWrappedDataKey())
     }
