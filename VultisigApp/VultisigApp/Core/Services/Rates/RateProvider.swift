@@ -50,20 +50,40 @@ final class RateProvider {
         }
     }
 
-    /// Should be updated manually - thread-safe backing storage
-    private var _rates = Set<Rate>()
+    /// Should be updated manually - thread-safe backing storage, keyed by
+    /// `Rate.id`.
+    ///
+    /// A dictionary rather than a `Set<Rate>`: `rate(for:)` is on the path of
+    /// every fiat render in the app (wallet list, send, swap, DeFi, coin
+    /// detail) and looking a rate up in a set by `id` means `first(where:)` —
+    /// a linear scan of every cached rate, not a hash probe. `DatabaseRate.id`
+    /// is `@Attribute(.unique)`, so one entry per identifier is also the
+    /// storage model the persisted rates already follow.
+    private var _rates = [String: Rate]()
     private var ratesLock = os_unfair_lock()
-    /// Thread-safe access to rates
-    private var rates: Set<Rate> {
-        get {
-            os_unfair_lock_lock(&ratesLock)
-            defer { os_unfair_lock_unlock(&ratesLock) }
-            return _rates
-        }
-        set {
-            os_unfair_lock_lock(&ratesLock)
-            defer { os_unfair_lock_unlock(&ratesLock) }
-            _rates = newValue
+
+    /// Thread-safe single-rate lookup.
+    private func cachedRate(id: String) -> Rate? {
+        os_unfair_lock_lock(&ratesLock)
+        defer { os_unfair_lock_unlock(&ratesLock) }
+        return _rates[id]
+    }
+
+    /// Thread-safe wholesale replacement of the cache.
+    private func replaceRates(with newRates: [Rate]) {
+        let replacement = Dictionary(newRates.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
+        os_unfair_lock_lock(&ratesLock)
+        defer { os_unfair_lock_unlock(&ratesLock) }
+        _rates = replacement
+    }
+
+    /// Thread-safe newest-wins merge: an incoming rate replaces the cached one
+    /// with the same identifier and leaves every other entry untouched.
+    private func mergeRates(_ newRates: [Rate]) {
+        os_unfair_lock_lock(&ratesLock)
+        defer { os_unfair_lock_unlock(&ratesLock) }
+        for rate in newRates {
+            _rates[rate.id] = rate
         }
     }
 
@@ -75,7 +95,7 @@ final class RateProvider {
             let descriptor = FetchDescriptor<DatabaseRate>()
             do {
                 let objects = try Storage.shared.modelContext.fetch(descriptor)
-                self.rates = Set(objects.map { Rate(object: $0) })
+                self.replaceRates(with: objects.map { Rate(object: $0) })
                 // Persisted rates make fiat renderable immediately on a warm
                 // start; announce them so views that cached a pre-load fiat
                 // value recompute instead of waiting on a network refresh.
@@ -121,7 +141,7 @@ final class RateProvider {
     func rate(for coin: CoinMeta, currency: SettingsCurrency = .current) -> Rate? {
         let cryptoId = RateProvider.cryptoId(for: coin)
         let identifier = Rate.identifier(fiat: currency.rawValue, crypto: cryptoId.id)
-        return rates.first(where: { $0.id == identifier })
+        return cachedRate(id: identifier)
     }
 
     func hasRate(for coin: Coin, currency: SettingsCurrency = .current) -> Bool {
@@ -134,8 +154,7 @@ final class RateProvider {
 
     @MainActor func save(rates newRates: [Rate]) throws {
         // if a rate is newer , we use the newer one
-        let newRateIds = Set(newRates.map { $0.id })
-        rates = rates.filter { !newRateIds.contains($0.id) }.union(newRates)
+        mergeRates(newRates)
 
         // The in-memory cache is what rendering reads, and it has already
         // changed — announce it even if the persistence below throws, or a
