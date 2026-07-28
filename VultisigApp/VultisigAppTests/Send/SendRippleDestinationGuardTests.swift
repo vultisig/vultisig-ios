@@ -112,10 +112,11 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         let client = TrippingHTTPClient()
         client.serverStateResult = .success(Self.serverStateData)
         let logic = makeLogic(client: client)
-        // 200,000 drops owner reserve (live reserve_inc) + 20 drops fee.
-        let tx = makeTrustSetTransaction(xrpRawBalance: "200020", fee: BigInt(20))
+        let tx = makeTrustSetTransaction(xrpRawBalance: Self.requiredDrops.description, fee: Self.fee)
 
         try await logic.validateTrustLineReserveIfNeeded(tx: tx)
+
+        XCTAssertEqual(client.requestCount, 1, "the reserve must be read from the node, not seeded")
     }
 
     /// One drop short is blocked — the TrustSet would otherwise fail on-ledger
@@ -124,7 +125,7 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         let client = TrippingHTTPClient()
         client.serverStateResult = .success(Self.serverStateData)
         let logic = makeLogic(client: client)
-        let tx = makeTrustSetTransaction(xrpRawBalance: "200019", fee: BigInt(20))
+        let tx = makeTrustSetTransaction(xrpRawBalance: (Self.requiredDrops - 1).description, fee: Self.fee)
 
         do {
             try await logic.validateTrustLineReserveIfNeeded(tx: tx)
@@ -135,9 +136,10 @@ final class SendRippleDestinationGuardTests: XCTestCase {
             }
             // The copy quotes what the operation really costs, in whole XRP.
             XCTAssertTrue(
-                message.contains(RippleReserve.xrpAmount(drops: BigInt(200_020))),
+                message.contains(RippleReserve.xrpAmount(drops: Self.requiredDrops)),
                 "expected the required total in the copy, got: \(message)"
             )
+            XCTAssertEqual(client.requestCount, 1, "the reserve must be read from the node, not seeded")
         } catch {
             XCTFail("unexpected error type: \(error)")
         }
@@ -149,7 +151,11 @@ final class SendRippleDestinationGuardTests: XCTestCase {
     func testTrustSetWithoutAnXrpCoinIsBlocked() async throws {
         let client = TrippingHTTPClient()
         let logic = makeLogic(client: client)
-        let tx = makeTrustSetTransaction(xrpRawBalance: "200020", fee: BigInt(20), includeXrpCoin: false)
+        let tx = makeTrustSetTransaction(
+            xrpRawBalance: Self.requiredDrops.description,
+            fee: Self.fee,
+            includeXrpCoin: false
+        )
 
         do {
             try await logic.validateTrustLineReserveIfNeeded(tx: tx)
@@ -173,11 +179,31 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         XCTAssertEqual(client.requestCount, 0)
     }
 
+    /// The two boundary tests above only prove the reserve was read LIVE if the
+    /// stubbed increment differs from the seed the guard falls back to.
+    func testTheStubbedOwnerReserveIsNotTheSeed() {
+        XCTAssertNotEqual(
+            Self.ownerReserveDrops,
+            RippleReserve.seedReserveIncDrops,
+            "pick a stubbed reserve_inc the seed cannot coincidentally match"
+        )
+    }
+
     // MARK: - Fixtures
 
-    /// Mainnet reserve values: 1 XRP base, 0.2 XRP per owned object.
+    /// Owner reserve the node reports. Deliberately NOT
+    /// `RippleReserve.seedReserveIncDrops`, so a test only passes if the guard
+    /// really read `server_state` — falling back to the seed changes the answer.
+    private static let ownerReserveDrops = BigInt(500_000)
+    private static let fee = BigInt(20)
+    /// What the TrustSet costs: one owner increment plus the fee. `reserve_base`
+    /// is excluded — the account already exists and already meets it.
+    private static var requiredDrops: BigInt { ownerReserveDrops + fee }
+
+    /// `reserve_inc` set to the value above; `reserve_base` left at the mainnet
+    /// 1 XRP the guard never reads.
     private static let serverStateData = Data("""
-    {"result":{"state":{"load_base":256,"load_factor":256,"validated_ledger":{"base_fee":10,"reserve_base":1000000,"reserve_inc":200000}}}}
+    {"result":{"state":{"load_base":256,"load_factor":256,"validated_ledger":{"base_fee":10,"reserve_base":1000000,"reserve_inc":500000}}}}
     """.utf8)
 
     /// A TrustSet on an XRPL issued currency, in a vault that holds the XRP coin
