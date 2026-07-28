@@ -54,6 +54,11 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
                 } else {
                     ScrollView(showsIndicators: false) {
                         grid
+                            // The catalog resolves asynchronously, so cells arrive
+                            // after first paint (and again on every keystroke while
+                            // searching). Animate the diff so tokens fade/settle in
+                            // instead of the grid snapping to a new layout.
+                            .animation(.easeInOut(duration: 0.2), value: elements)
                     }
                     .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
                     .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
