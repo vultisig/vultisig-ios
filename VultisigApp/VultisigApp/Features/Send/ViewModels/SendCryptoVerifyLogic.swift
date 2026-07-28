@@ -300,14 +300,14 @@ struct SendCryptoVerifyLogic {
         // locked up and spent.
         let spendable = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
         let required = ownerReserve + tx.fee
-        guard spendable < required else { return }
-
-        throw HelperError.runtimeError(
-            String(
-                format: "rippleTrustLineInsufficientXrpError".localized,
-                RippleReserve.xrpAmount(drops: required)
+        guard spendable >= required else {
+            throw HelperError.runtimeError(
+                String(
+                    format: "rippleTrustLineInsufficientXrpError".localized,
+                    RippleReserve.xrpAmount(drops: required)
+                )
             )
-        )
+        }
     }
 
     // MARK: - Keysign Payload
