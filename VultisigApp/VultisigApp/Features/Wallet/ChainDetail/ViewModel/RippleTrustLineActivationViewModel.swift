@@ -66,7 +66,19 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
         // figure is a validation/display input, and refusing to quote because
         // `server_state` is briefly unreachable would block a legitimate
         // activation rather than protect anything.
-        let reserveValues = (try? await service.fetchReserveValues()) ?? nil
+        //
+        // Cancellation is not one of those recoverable failures — it is the only
+        // error `fetchReserveValues` rethrows, and it means this sheet is being
+        // torn down or superseded. Publishing a seeded quote then would price a
+        // token nobody is looking at, so leave `quote` alone and return.
+        let reserveValues: RippleReserveValues?
+        do {
+            reserveValues = try await service.fetchReserveValues()
+        } catch is CancellationError {
+            return
+        } catch {
+            reserveValues = nil
+        }
         let ownerReserve = RippleReserve.reservedDrops(
             ownerCount: 1,
             reserveBase: 0,

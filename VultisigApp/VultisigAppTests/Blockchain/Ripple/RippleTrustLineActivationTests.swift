@@ -952,10 +952,50 @@ final class RippleTrustLineActivationTests: XCTestCase {
         XCTAssertEqual(RippleTrustSetPresentation.state(for: nil), .notTrustSet)
     }
 
+    /// `fetchReserveValues` collapses every recoverable failure into a seeded
+    /// `nil` and rethrows exactly one error: cancellation, which means this sheet
+    /// is being torn down or superseded. Publishing a seeded quote then would
+    /// price a token nobody is looking at — and the slot must still be released.
+    @MainActor
+    func testCancelledQuoteIsNotPublishedFromSeeds() async {
+        let viewModel = RippleTrustLineActivationViewModel(
+            service: Self.makeService(client: CancellingStub())
+        )
+        let coin = Coin(
+            asset: Self.coin(tokenId: "USD.\(Self.issuer)"),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        let nativeCoin = Coin(
+            asset: CoinMeta(
+                chain: .ripple,
+                ticker: "XRP",
+                logo: "xrp",
+                decimals: 6,
+                priceProviderId: "ripple",
+                contractAddress: "",
+                isNativeToken: true
+            ),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        nativeCoin.rawBalance = "50000000"
+
+        await viewModel.load(coin: coin, nativeCoin: nativeCoin)
+
+        XCTAssertNil(viewModel.quote, "a cancelled load must not publish a seeded quote")
+        XCTAssertNil(viewModel.errorMessage, "cancellation is not an error to show")
+        XCTAssertFalse(viewModel.isLoading, "the activation slot must still be released")
+    }
+
     // MARK: - Fixtures
 
     private static func makeService(_ stub: RippleTrustLineStub) -> RippleService {
         RippleService(resolver: NoOverrideTrustLineResolver(), httpClient: stub, sleep: { _ in })
+    }
+
+    private static func makeService(client: HTTPClientProtocol) -> RippleService {
+        RippleService(resolver: NoOverrideTrustLineResolver(), httpClient: client, sleep: { _ in })
     }
 
     private static func coin(tokenId: String) -> CoinMeta {
@@ -1037,6 +1077,15 @@ final class RippleTrustLineActivationTests: XCTestCase {
 
 private final class NoOverrideTrustLineResolver: RPCEndpointResolving {
     func url(for _: Chain) -> String? { nil }
+}
+
+/// Answers every RPC with `CancellationError`, modelling a sheet torn down
+/// mid-load.
+private struct CancellingStub: HTTPClientProtocol {
+    func request(_: TargetType) async throws -> HTTPResponse<Data> {
+        await Task.yield()
+        throw CancellationError()
+    }
 }
 
 /// Serves canned `account_lines` bodies in order and counts the calls, so a test

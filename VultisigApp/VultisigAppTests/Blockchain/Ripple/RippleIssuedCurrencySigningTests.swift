@@ -508,19 +508,40 @@ final class RippleIssuedCurrencySigningTests: XCTestCase {
                 toAmount: Self.tokenAmount,
                 transactionType: .rippleTrustSet
             )
-            XCTAssertThrowsError(
-                try RippleHelper.getPreSignedInputData(keysignPayload: trustSet),
-                "'\(currency)' must not be signed as a different currency"
-            )
+            assertRefusedVerbatim(trustSet, currency: currency)
 
             let payment = Self.makePayload(
                 coin: Self.makeTokenCoin(contractAddress: "\(currency).\(Self.issuer)"),
                 toAddress: Self.destination,
                 toAmount: Self.tokenAmount
             )
-            XCTAssertThrowsError(
-                try RippleHelper.getPreSignedInputData(keysignPayload: payment),
-                "'\(currency)' must not be signed as a different currency"
+            assertRefusedVerbatim(payment, currency: currency)
+        }
+    }
+
+    /// Asserts the refusal came from the verbatim-encoding guard specifically,
+    /// not from some other malformed-input path that happens to also throw.
+    private func assertRefusedVerbatim(
+        _ payload: KeysignPayload,
+        currency: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "'\(currency)' must not be signed as a different currency",
+            file: file,
+            line: line
+        ) { error in
+            guard let helperError = error as? HelperError,
+                  case .runtimeError(let message) = helperError else {
+                return XCTFail("expected a HelperError, got \(error)", file: file, line: line)
+            }
+            XCTAssertTrue(
+                message.contains("cannot be signed verbatim"),
+                "expected the verbatim-encoding refusal, got: \(message)",
+                file: file,
+                line: line
             )
         }
     }

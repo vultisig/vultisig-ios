@@ -258,6 +258,11 @@ struct SendCryptoVerifyLogic {
             for: tx.coin.toCoinMeta(),
             destination: tx.toAddress
         )
+        // Fail-open means a cancelled lookup answers `.unknown`, exactly like a
+        // node error — so the guard would otherwise complete as a successful
+        // validation and let a superseded load pass run to the end. Ask the task
+        // itself, which is the only thing that can tell the two apart.
+        try Task.checkCancellation()
         guard state == .noTrustLine else { return }
 
         // The Verify screen's alert plumbing presents only `HelperError`, so

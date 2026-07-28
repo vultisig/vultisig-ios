@@ -103,6 +103,37 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         }
     }
 
+    /// The trust-line destination guard fails OPEN, so a cancelled lookup and a
+    /// node error both arrive as `.unknown` — indistinguishable at the service
+    /// boundary. Without asking the task itself, a superseded load pass would run
+    /// to completion and clear `isLoading`, re-enabling Sign against a state it
+    /// no longer describes.
+    func testDestinationTrustLineGuardPropagatesCancellation() async throws {
+        let client = TrippingHTTPClient()
+        client.accountLinesResult = .failure(CancellationError())
+        let logic = makeLogic(client: client)
+        let tx = makeTokenPaymentTransaction()
+
+        let task = Task {
+            // Suspend first so the cancel below always lands before the guard
+            // runs: cancelled-before-start makes the sleep throw immediately,
+            // cancelled-after-start interrupts it. Either ordering reaches the
+            // guard with the task already cancelled, so there is no race.
+            try? await Task.sleep(for: .seconds(60))
+            try await logic.validateDestinationTrustLineIfNeeded(tx: tx)
+        }
+        task.cancel()
+
+        do {
+            try await task.value
+            XCTFail("a cancelled destination lookup must abort the load pass")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
+    }
+
     // MARK: - TrustSet reserve guard
 
     /// The boundary the guard turns on: spendable XRP covering the owner reserve
@@ -309,6 +340,49 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         )
     }
 
+    /// An issued-currency Payment (not a TrustSet), which is the shape the
+    /// destination trust-line guard applies to.
+    private func makeTokenPaymentTransaction() -> SendTransaction {
+        let tokenAsset = CoinMeta(
+            chain: .ripple,
+            ticker: "USD",
+            logo: "",
+            decimals: 15,
+            priceProviderId: "token-payment-guard-\(UUID().uuidString)",
+            contractAddress: "USD.rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
+            isNativeToken: false
+        )
+        let token = Coin(asset: tokenAsset, address: "rTokenSenderUnderTest", hexPublicKey: "")
+        token.rawBalance = "1000000000000000"
+
+        let xrp = makeCoin(.ripple, ticker: Chain.ripple.ticker, decimals: 6)
+        let vault = TestStore.makeVault()
+        vault.coins = [xrp, token]
+
+        return SendTransaction(
+            coin: token,
+            vault: vault,
+            fromAddress: token.address,
+            toAddress: "rDestinationAddressUnderTest",
+            toAddressLabel: nil,
+            amount: "1",
+            amountInFiat: "",
+            memo: "",
+            gas: BigInt.zero,
+            fee: Self.fee,
+            feeMode: .default,
+            estimatedGasLimit: nil,
+            customGasLimit: nil,
+            customByteFee: nil,
+            sendMaxAmount: false,
+            isStakingOperation: false,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:],
+            wasmContractPayload: nil,
+            feeCoin: xrp
+        )
+    }
+
     private func makeLogic(client: HTTPClientProtocol) -> SendCryptoVerifyLogic {
         SendCryptoVerifyLogic(
             interactor: MockSendInteractor(),
@@ -367,6 +441,7 @@ private final class TrippingHTTPClient: HTTPClientProtocol, @unchecked Sendable 
 
     var accountInfoResult: Result<Data, Error> = .failure(URLError(.badServerResponse))
     var serverStateResult: Result<Data, Error> = .failure(URLError(.badServerResponse))
+    var accountLinesResult: Result<Data, Error> = .failure(URLError(.badServerResponse))
 
     private let queue = DispatchQueue(label: "TrippingHTTPClient.queue")
     private var _requestCount = 0
@@ -385,7 +460,9 @@ private final class TrippingHTTPClient: HTTPClientProtocol, @unchecked Sendable 
             return try respond(accountInfoResult)
         case .serverState:
             return try respond(serverStateResult)
-        case .submit, .tx, .accountLines:
+        case .accountLines:
+            return try respond(accountLinesResult)
+        case .submit, .tx:
             throw URLError(.unsupportedURL)
         }
     }
