@@ -8,7 +8,14 @@ import SwiftUI
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
 
-    @Published var searchText: String = .empty
+    /// Re-filters on `didSet` — i.e. AFTER the new value is stored. Driving this
+    /// from `$searchText` instead is a trap: `@Published` fires its publisher in
+    /// `willSet`, so a subscriber that reads `searchText` back (rather than using
+    /// the emitted value) filters against the PREVIOUS keystroke — type `USDCC`
+    /// and you get the results for `USDC`, delete the `C` and `USDC` disappears.
+    @Published var searchText: String = .empty {
+        didSet { updateSearchedTokens(query: searchText) }
+    }
     /// Held non-native coins for the chain (browse, shown first).
     @Published var selectedTokens: [CoinMeta] = []
     /// Curated `TokensStore` presets not held/hidden (browse, after held). Always
@@ -85,11 +92,12 @@ class TokenSelectionViewModel: ObservableObject {
         isLoading = false
     }
 
-    /// Re-filters the already-built pool against the current query. No vault read
-    /// is needed — the pool is derived in `recompute` and already carries the
-    /// vault's held tokens.
-    func updateSearchedTokens() {
-        searchedTokens = logic.filteredTokens(searchText: searchText, tokens: searchableTokens)
+    /// Re-filters the already-built pool against `query`. Takes the query as a
+    /// parameter rather than reading `searchText` so it can never observe a
+    /// half-applied edit. No vault read is needed — the pool is derived in
+    /// `recompute` and already carries the vault's held tokens.
+    func updateSearchedTokens(query: String) {
+        searchedTokens = logic.filteredTokens(searchText: query, tokens: searchableTokens)
     }
 
     private func loadExternalTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) async {

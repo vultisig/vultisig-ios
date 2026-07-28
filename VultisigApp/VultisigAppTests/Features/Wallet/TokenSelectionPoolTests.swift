@@ -110,7 +110,6 @@ final class TokenSelectionPoolTests: XCTestCase {
 
         // Search reveals the unverified token, and it's flagged for the badge.
         vm.searchText = "zunverif"
-        vm.updateSearchedTokens()
         XCTAssertTrue(vm.searchedTokens.contains { $0.uniqueId == unverified.uniqueId },
                       "Typing a query reveals the unverified long-tail")
         XCTAssertEqual(vm.verification(for: unverified), .unverified)
@@ -136,10 +135,33 @@ final class TokenSelectionPoolTests: XCTestCase {
         await vm.load(chain: .ethereum, vault: vault)
 
         vm.searchText = "vult"
-        vm.updateSearchedTokens()
 
         XCTAssertTrue(vm.searchedTokens.contains { $0.uniqueId == vultMeta.uniqueId },
                       "A held curated token must still be found by search")
+    }
+
+    func testSearchResultsTrackTheLatestKeystroke() async {
+        // Reported repro: typing "USDCC" showed USDC, then deleting the trailing
+        // "C" (leaving "USDC") made it disappear — results lagged one keystroke
+        // behind because the filter re-read `searchText` from a `@Published`
+        // willSet subscriber, i.e. before the new value was stored.
+        let usdc = meta("USDC", contract: "0xUSDC")
+        let vm = TokenSelectionViewModel(loadCatalog: { _ in
+            TokenSearchResult(
+                surfaceable: [usdc],
+                unverified: [],
+                verificationByUniqueId: [usdc.uniqueId: .verified(source: "CoinGecko")]
+            )
+        })
+        await vm.load(chain: .ethereum, vault: .example)
+
+        vm.searchText = "usdcc"
+        XCTAssertFalse(vm.searchedTokens.contains { $0.uniqueId == usdc.uniqueId },
+                       "No token matches 'usdcc' — results must reflect THIS keystroke")
+
+        vm.searchText = "usdc"
+        XCTAssertTrue(vm.searchedTokens.contains { $0.uniqueId == usdc.uniqueId },
+                      "Deleting the trailing C must bring USDC back on the same keystroke")
     }
 
     // MARK: - local-first search regression (provider fetch throws)
@@ -153,7 +175,6 @@ final class TokenSelectionPoolTests: XCTestCase {
         // AAVE is a curated Ethereum preset. It must be found by search even
         // though the provider fetch failed (fail-open to the local presets).
         vm.searchText = "aave"
-        vm.updateSearchedTokens()
 
         XCTAssertTrue(vm.searchedTokens.contains { $0.ticker.uppercased() == "AAVE" },
                       "Curated/local tokens stay searchable when the provider fetch throws")
