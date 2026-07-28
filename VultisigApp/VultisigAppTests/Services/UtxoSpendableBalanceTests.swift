@@ -210,22 +210,38 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         )
     }
 
-    /// Once a transaction reaches a terminal state it stops vouching for
-    /// anything: a confirmed output no longer needs the exemption, and a
-    /// failed or timed-out one never deserved it.
+    /// Confirmation is the only thing that ends the exemption, and it ends it
+    /// harmlessly — a confirmed output carries a block and needs no vouching.
     @MainActor
-    func testTerminalAndUnattributedTransactionsAreExcluded() throws {
+    func testConfirmedAndUnattributedTransactionsAreExcluded() throws {
         let storage = try makeStorage()
 
+        try storage.save(txHash: "broadcast", chain: .bitcoin, status: .broadcasted(estimatedTime: ""), pubKeyECDSA: "vault-a")
         try storage.save(txHash: "pending", chain: .bitcoin, status: .pending, pubKeyECDSA: "vault-a")
         try storage.save(txHash: "confirmed", chain: .bitcoin, status: .confirmed, pubKeyECDSA: "vault-a")
-        try storage.save(txHash: "failed", chain: .bitcoin, status: .failed(reason: "nope"), pubKeyECDSA: "vault-a")
-        try storage.save(txHash: "timed-out", chain: .bitcoin, status: .timeout, pubKeyECDSA: "vault-a")
         try storage.save(txHash: "no-owner", chain: .bitcoin, status: .broadcasted(estimatedTime: ""), pubKeyECDSA: nil)
 
         XCTAssertEqual(
             storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
-            ["pending"]
+            ["broadcast", "pending"]
+        )
+    }
+
+    /// The status poller gives up long before a mempool does. A low-fee
+    /// transaction marked `timeout` — or `failed` on inconclusive evidence —
+    /// can still be sitting in the mempool holding this wallet's only
+    /// unconfirmed change, and dropping it there would send the balance back
+    /// to zero for exactly the wallet this change exists to rescue.
+    @MainActor
+    func testAnInconclusiveTrackingStateStillVouchesForItsOutputs() throws {
+        let storage = try makeStorage()
+
+        try storage.save(txHash: "timed-out", chain: .bitcoin, status: .timeout, pubKeyECDSA: "vault-a")
+        try storage.save(txHash: "failed", chain: .bitcoin, status: .failed(reason: "not found"), pubKeyECDSA: "vault-a")
+
+        XCTAssertEqual(
+            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
+            ["timed-out", "failed"]
         )
     }
 
