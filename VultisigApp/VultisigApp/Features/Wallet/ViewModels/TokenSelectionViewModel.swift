@@ -85,9 +85,11 @@ class TokenSelectionViewModel: ObservableObject {
         isLoading = false
     }
 
-    func updateSearchedTokens(chain: Chain, vault: Vault) {
-        let chainCoins = vault.coins(for: chain)
-        searchedTokens = logic.filteredTokens(chainCoins: chainCoins, searchText: searchText, tokens: searchableTokens)
+    /// Re-filters the already-built pool against the current query. No vault read
+    /// is needed — the pool is derived in `recompute` and already carries the
+    /// vault's held tokens.
+    func updateSearchedTokens() {
+        searchedTokens = logic.filteredTokens(searchText: searchText, tokens: searchableTokens)
     }
 
     private func loadExternalTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) async {
@@ -138,8 +140,15 @@ class TokenSelectionViewModel: ObservableObject {
         let unverifiedBreadth = logic.providerTokens(catalogUnverified, excludingLocal: verifiedIds, hiddenTokens: hiddenTokens)
 
         browseProviderTokens = verifiedBreadth
-        searchableTokens = TokenSelectionLogic.mergeLocalFirst([preExistTokens, verifiedBreadth, unverifiedBreadth])
-        searchedTokens = logic.filteredTokens(chainCoins: chainCoins, searchText: searchText, tokens: searchableTokens)
+        // Held tokens lead the search pool. Excluding them (they're "already
+        // added") makes a search for a token the vault holds return NOTHING,
+        // which reads as the catalog being broken — search a held VULT on
+        // Ethereum and the curated token is simply absent. They render with
+        // their selected checkmark, so being held is already visible.
+        searchableTokens = TokenSelectionLogic.mergeLocalFirst(
+            [selectedTokens, preExistTokens, verifiedBreadth, unverifiedBreadth]
+        )
+        searchedTokens = logic.filteredTokens(searchText: searchText, tokens: searchableTokens)
     }
 }
 
@@ -207,24 +216,19 @@ struct TokenSelectionLogic {
         }
     }
 
-    func filteredTokens(chainCoins: [Coin], searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
+    /// Ticker matches over the whole local-first pool. Nothing is excluded here:
+    /// the pool already holds each token exactly once (deduped by `uniqueId`),
+    /// held tokens included, so search finds everything browse can show plus the
+    /// badged unverified long-tail. A same-ticker lookalike on a different
+    /// contract is a distinct `uniqueId` and is revealed alongside the real one —
+    /// that visibility is the point of the badge.
+    func filteredTokens(searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
 
-        // Exclude only the EXACT held tokens (by uniqueId), never every token
-        // sharing a held ticker: a ticker exclusion would suppress the badged
-        // unverified lookalikes (fake USDC on another contract) that search is
-        // meant to reveal — and any legit different-contract same-ticker token.
-        let heldIds = Set(
-            chainCoins
-                .filter { !$0.isNativeToken }
-                .map { $0.toCoinMeta().uniqueId }
-        )
-
         let filtered = tokens
-            .filter {
-                $0.ticker.lowercased().contains(searchText.lowercased()) && !heldIds.contains($0.uniqueId) }
+            .filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
             .prefix(20)
 
         return Array(filtered)

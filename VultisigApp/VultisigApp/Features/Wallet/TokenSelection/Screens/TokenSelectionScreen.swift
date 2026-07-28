@@ -55,7 +55,7 @@ struct TokenSelectionScreen: View {
             tokenViewModel.cancelLoading()
         }
         .onReceive(tokenViewModel.$searchText) { _ in
-            tokenViewModel.updateSearchedTokens(chain: chain, vault: vault)
+            tokenViewModel.updateSearchedTokens()
         }
         .alert(
             "addUnverifiedTokenTitle".localized,

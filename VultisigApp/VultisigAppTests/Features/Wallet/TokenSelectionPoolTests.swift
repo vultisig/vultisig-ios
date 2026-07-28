@@ -52,23 +52,22 @@ final class TokenSelectionPoolTests: XCTestCase {
                        "Held coin enriched by uniqueId; the unverified lookalike must not appear")
     }
 
-    func testSearchExcludesOnlyExactHeldTokenNotSameTickerLookalikes() {
+    func testSearchShowsHeldTokenAlongsideSameTickerLookalike() {
         // Vault holds real USDC (contract A). Search for "usdc" over a pool that
-        // has an unverified lookalike USDC (contract B) plus the exact held token.
-        // The exact held token is excluded (already added); the lookalike is
-        // revealed (badged) so the user can see the impersonation risk.
-        let heldUSDC = Coin(asset: meta("USDC", contract: "0xReal"), address: "0xwallet", hexPublicKey: "pub")
+        // has the held token plus an unverified lookalike USDC (contract B).
+        // BOTH are returned: the held token so the search doesn't come back empty
+        // for a token the user owns, the lookalike (badged) so the impersonation
+        // risk is visible. Local-first order puts the held token ahead.
         let heldFromPool = meta("USDC", contract: "0xReal")
         let lookalike = meta("USDC", contract: "0xFAKE")
 
         let result = TokenSelectionLogic.shared.filteredTokens(
-            chainCoins: [heldUSDC],
             searchText: "usdc",
             tokens: [heldFromPool, lookalike]
         )
 
-        XCTAssertEqual(result.map { $0.contractAddress }, ["0xFAKE"],
-                       "Search hides only the exact held token; the same-ticker lookalike is revealed")
+        XCTAssertEqual(result.map { $0.contractAddress }, ["0xReal", "0xFAKE"],
+                       "Search returns the held token first and still reveals the same-ticker lookalike")
     }
 
     func testPreExistingKeepsVettedPresetWhenHoldingSameTickerLookalike() {
@@ -111,10 +110,36 @@ final class TokenSelectionPoolTests: XCTestCase {
 
         // Search reveals the unverified token, and it's flagged for the badge.
         vm.searchText = "zunverif"
-        vm.updateSearchedTokens(chain: .ethereum, vault: .example)
+        vm.updateSearchedTokens()
         XCTAssertTrue(vm.searchedTokens.contains { $0.uniqueId == unverified.uniqueId },
                       "Typing a query reveals the unverified long-tail")
         XCTAssertEqual(vm.verification(for: unverified), .unverified)
+    }
+
+    func testHeldCuratedTokenIsFoundBySearch() async {
+        // The reported bug: searching "vult" on Ethereum returned nothing even
+        // though VULT is a curated preset — because the vault HELD it, and held
+        // tokens were dropped from both the search pool and the filter. A token
+        // the user owns must still be findable.
+        guard let vultMeta = TokensStore.TokenSelectionAssets.first(where: {
+            $0.chain == .ethereum && $0.ticker.uppercased() == "VULT"
+        }) else {
+            return XCTFail("VULT must exist as an Ethereum preset")
+        }
+
+        let vault = Vault(name: "held-vult")
+        vault.coins = [Coin(asset: vultMeta, address: "0xwallet", hexPublicKey: "pub")]
+
+        let vm = TokenSelectionViewModel(loadCatalog: { _ in
+            TokenSearchResult(surfaceable: [], unverified: [], verificationByUniqueId: [:])
+        })
+        await vm.load(chain: .ethereum, vault: vault)
+
+        vm.searchText = "vult"
+        vm.updateSearchedTokens()
+
+        XCTAssertTrue(vm.searchedTokens.contains { $0.uniqueId == vultMeta.uniqueId },
+                      "A held curated token must still be found by search")
     }
 
     // MARK: - local-first search regression (provider fetch throws)
@@ -128,7 +153,7 @@ final class TokenSelectionPoolTests: XCTestCase {
         // AAVE is a curated Ethereum preset. It must be found by search even
         // though the provider fetch failed (fail-open to the local presets).
         vm.searchText = "aave"
-        vm.updateSearchedTokens(chain: .ethereum, vault: .example)
+        vm.updateSearchedTokens()
 
         XCTAssertTrue(vm.searchedTokens.contains { $0.ticker.uppercased() == "AAVE" },
                       "Curated/local tokens stay searchable when the provider fetch throws")
