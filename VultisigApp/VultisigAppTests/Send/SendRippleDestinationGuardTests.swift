@@ -179,6 +179,60 @@ final class SendRippleDestinationGuardTests: XCTestCase {
         XCTAssertEqual(client.requestCount, 0)
     }
 
+    /// A cancelled reserve read must propagate, NOT fall through to a seeded
+    /// verdict. `hasBalanceError` / `errorMessage` are shared `@Published` state,
+    /// so a stale cancelled pass that answers anyway can overwrite a newer one.
+    ///
+    /// The balance here is affordable under the SEED but not under the stubbed
+    /// increment, so swallowing the cancel would return success — the silent
+    /// half of the bug, invisible to a test that only checks for a thrown error.
+    func testTrustSetReserveCancellationPropagatesRatherThanSeedingSuccess() async throws {
+        let client = TrippingHTTPClient()
+        client.serverStateResult = .failure(CancellationError())
+        let logic = makeLogic(client: client)
+        // 300,000 drops: over the seeded 200,020 requirement, under the stubbed
+        // 500,020 one.
+        let tx = makeTrustSetTransaction(xrpRawBalance: "300000", fee: Self.fee)
+
+        do {
+            try await logic.validateTrustLineReserveIfNeeded(tx: tx)
+            XCTFail("a cancelled reserve read must not seed its way to success")
+        } catch is CancellationError {
+            // expected — the caller's cancellation branch aborts the load pass
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
+    }
+
+    /// The other half: a cancelled read must not become a `HelperError` either.
+    /// The balance is below even the seeded requirement, so swallowing the cancel
+    /// would raise the insufficient-XRP alert and leave Sign blocked on a pass
+    /// that was already superseded.
+    func testTrustSetReserveCancellationIsNotRewrappedAsABalanceError() async throws {
+        let client = TrippingHTTPClient()
+        client.serverStateResult = .failure(CancellationError())
+        let logic = makeLogic(client: client)
+        let tx = makeTrustSetTransaction(xrpRawBalance: "100000", fee: Self.fee)
+
+        do {
+            try await logic.validateTrustLineReserveIfNeeded(tx: tx)
+            XCTFail("cancellation must propagate")
+        } catch is CancellationError {
+            // expected — not rewrapped into a spurious balance error
+        } catch {
+            XCTFail("expected CancellationError, got \(error)")
+        }
+    }
+
+    /// Both cancellation tests are only meaningful if the seeded fallback would
+    /// really have produced a different verdict than propagating.
+    func testTheSeededOwnerReserveWouldChangeBothCancellationVerdicts() {
+        let seeded = RippleReserve.reservedDrops(ownerCount: 1, reserveBase: 0, reserveInc: nil) + Self.fee
+        XCTAssertLessThan(seeded, BigInt(300_000), "the seeded requirement must be affordable at 300,000 drops")
+        XCTAssertGreaterThan(seeded, BigInt(100_000), "the seeded requirement must be unaffordable at 100,000 drops")
+        XCTAssertGreaterThan(Self.requiredDrops, BigInt(300_000), "the live requirement must be unaffordable at 300,000 drops")
+    }
+
     /// The two boundary tests above only prove the reserve was read LIVE if the
     /// stubbed increment differs from the seed the guard falls back to.
     func testTheStubbedOwnerReserveIsNotTheSeed() {

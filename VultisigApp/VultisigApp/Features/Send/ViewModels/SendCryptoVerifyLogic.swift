@@ -288,7 +288,21 @@ struct SendCryptoVerifyLogic {
             throw HelperError.runtimeError("rippleTrustLineNoXrpAccountError".localized)
         }
 
-        let reserveValues = try? await rippleService.fetchReserveValues()
+        // `fetchReserveValues` collapses every failure it can recover from into
+        // `nil` (its own live → cache → seed chain) and rethrows ONLY
+        // cancellation. `try?` would erase that one distinction and let a
+        // cancelled pass carry on to a seeded verdict — which, landing after a
+        // newer pass, writes `hasBalanceError` and leaves a spurious banner
+        // blocking Sign. Propagate instead, the way `validateDestinationIfNeeded`
+        // does, so the caller's cancellation branch aborts the whole load.
+        let reserveValues: RippleReserveValues?
+        do {
+            reserveValues = try await rippleService.fetchReserveValues()
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            reserveValues = nil
+        }
         // `reserve_base` is excluded: the account already exists and already
         // meets it. What this operation adds is exactly one owner increment.
         let ownerReserve = RippleReserve.reservedDrops(
