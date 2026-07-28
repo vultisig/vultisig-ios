@@ -123,7 +123,14 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
     var grid: some View {
         let spacing: CGFloat = 16
         let gridItem = GridItem(.flexible(), spacing: spacing)
-        ForEach(elements, id: \.self) { section in
+        // Keyed on the section's own type, NOT the whole value: `AssetSection`
+        // hashes its asset array, so `id: \.self` changed the section's identity
+        // on every catalog update and keystroke. SwiftUI then tore down and
+        // rebuilt the entire section — restarting each cell's remote-logo load
+        // (tokens visibly re-entered their loading state while typing) and
+        // re-seeding each cell's `@State`. With a stable id only real
+        // insertions / removals / moves animate.
+        ForEach(elements, id: \.type) { section in
             VStack(alignment: .leading, spacing: 8) {
                 if let title = section.title, !section.assets.isEmpty {
                     Text(title)
