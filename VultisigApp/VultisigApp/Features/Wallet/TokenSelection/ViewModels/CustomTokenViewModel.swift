@@ -50,12 +50,18 @@ final class CustomTokenViewModel: ObservableObject {
     }
 
     /// Chain-aware placeholder for the search field. THORChain tokens are referenced
-    /// by a `THOR.{SYMBOL}` bank-denom identifier rather than a contract address, so
-    /// it gets a dedicated hint; every other chain keeps the generic placeholder.
+    /// by a `THOR.{SYMBOL}` bank-denom identifier rather than a contract address, and
+    /// XRPL issued currencies by a `currency.issuer` pair, so both get a dedicated
+    /// hint; every other chain keeps the generic placeholder.
     var searchPlaceholder: String {
-        chain == .thorChain
-            ? "findCustomTokenThorchainPlaceholder".localized
-            : "search".localized
+        switch chain {
+        case .thorChain:
+            return "findCustomTokenThorchainPlaceholder".localized
+        case .ripple:
+            return "findCustomTokenRipplePlaceholder".localized
+        default:
+            return "search".localized
+        }
     }
 
     /// Validates whether the given input is a well-formed identifier for the current

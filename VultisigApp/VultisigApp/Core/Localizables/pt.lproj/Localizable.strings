@@ -469,6 +469,7 @@
 "fastVaultSecureTextDescription" = "Apenas 1 dispositivo necessário\nArmazene pequenos fundos para ações rápidas\nVultiserver coassina instantaneamente";
 "fee" = "Taxa";
 "filterByAsset" = "Filtrar por ativo";
+"findCustomTokenRipplePlaceholder" = "Insira currency.issuer, ex.: USD.rHb9CJ…";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "findCustomTokenThorchainPlaceholder" = "Insira o token, ex.: THOR.LQDY";
 "folder" = "Pasta";
@@ -1052,6 +1053,7 @@
 "restart" = "Por favor, reinicie o aplicativo para aplicar as novas configurações de idioma.";
 "retry" = "Tentar novamente";
 "reviewYourVaultDevices" = "Revise os dispositivos do seu cofre";
+"rippleCustomTokenInvalidFormat" = "Insira um token XRP como currency.issuer — o código do token (ex.: USD ou SOLO), seguido do endereço do emissor.";
 "rippleFieldAmount" = "Valor";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destino";
@@ -1065,6 +1067,22 @@
 "rippleFieldType" = "Tipo";
 "rippleTransaction" = "Transação XRP";
 "rippleTransactionSummary" = "Resumo da transação";
+"rippleTrustLineActivateAction" = "Ativar";
+"rippleTrustLineActivationSubtitle" = "%@ precisa de uma linha de confiança no XRP Ledger antes de a sua conta poder mantê-lo. Abri-la bloqueia permanentemente parte dos seus XRP como reserva de proprietário.";
+"rippleTrustLineActivationTitle" = "Ativar linha de confiança";
+"rippleTrustLineCurrency" = "Moeda";
+"rippleTrustLineHeroTitle" = "A ativar a linha de confiança de %@";
+"rippleTrustLineInsufficientXrpError" = "XRP disponíveis insuficientes. Abrir esta linha de confiança requer %@ XRP para a reserva de proprietário e a taxa.";
+"rippleTrustLineInvalidTokenError" = "Não foi possível ler a moeda e o emissor deste token.";
+"rippleTrustLineIssuer" = "Emissor";
+"rippleTrustLineIssuerCheck" = "O emissor está correto";
+"rippleTrustLineLimit" = "Limite da linha de confiança";
+"rippleTrustLineLimitCheck" = "O limite da linha de confiança está correto";
+"rippleTrustLineNoXrpAccountError" = "Uma linha de confiança precisa de uma conta XRP que a detenha. Adicione XRP a este cofre primeiro.";
+"rippleTrustLineOwnerReserve" = "Reserva bloqueada";
+"rippleTrustLineSpendableAfter" = "XRP disponíveis depois";
+"rippleTrustLineUnreviewable" = "Não é possível rever";
+"rippleTrustLineUnreviewableValue" = "Não foi possível ler a moeda, o emissor ou o limite desta linha de confiança, por isso as suas condições não podem ser mostradas. Não a assine.";
 "rippleUndecodedNotice" = "Não foi possível decodificar esta transação. Revise cuidadosamente o JSON bruto antes de assinar.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
@@ -1584,6 +1602,7 @@
 "x" = "x";
 "xrpDestinationLookupFailedError" = "Não foi possível verificar a conta XRP de destino (%@). Tente novamente.";
 "xrpDestinationNotActivatedError" = "O endereço XRP de destino ainda não está ativado. Uma primeira transferência deve ser de pelo menos %@ XRP (a reserva base da rede). Aumente o valor ou verifique o endereço.";
+"xrpDestinationNoTrustLineError" = "O destinatário não tem uma linha de confiança de %@, por isso este pagamento seria rejeitado pelo XRP Ledger.";
 "yes" = "Sim";
 "yesterday" = "Ontem";
 "yieldClaimAmount" = "Resgatar %@";

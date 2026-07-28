@@ -68,10 +68,32 @@ enum RippleReserve {
     /// copy. Shared by the throwing Verify guard and the non-throwing send-form
     /// check so the two can never present a different minimum.
     static func minimumActivationXRP(baseReserveDrops: BigInt) -> String {
-        // drops → XRP. toDecimal(decimals:) truncates rather than scales, so
-        // divide; reserves are always positive, so no fallback default is needed.
-        (baseReserveDrops.toDecimal(decimals: 6) / pow(10, 6)).description
+        xrpAmount(drops: baseReserveDrops)
     }
+
+    /// A drops amount rendered as whole XRP for user-facing copy. Every
+    /// reserve/fee figure the UI shows goes through this one conversion so two
+    /// surfaces can never disagree on the same number.
+    static func xrpAmount(drops: BigInt) -> String {
+        // toDecimal(decimals:) truncates rather than scales, so divide. XRP has
+        // 6 decimals (1 XRP = 1,000,000 drops).
+        (drops.toDecimal(decimals: 6) / pow(10, 6)).description
+    }
+}
+
+/// Whether an XRPL destination can receive a given issued currency.
+///
+/// A Payment to an account holding no trust line for the currency fails
+/// on-ledger (`tecPATH_DRY` / `tecNO_LINE`) — after the ceremony, with the fee
+/// burned.
+enum RippleDestinationTrustLine: Equatable {
+    /// The destination holds a line for this currency, or IS its issuer (an
+    /// issuer can always receive its own obligations back).
+    case canReceive
+    /// Positive proof the destination holds no line for this currency.
+    case noTrustLine
+    /// Could not be determined — the caller must fail open and not block.
+    case unknown
 }
 
 /// Non-throwing, send-form counterpart to `validateDestinationActivation`.
@@ -567,6 +589,36 @@ class RippleService {
     /// marker forever from looping indefinitely.
     private static let maxAccountLinesPages = 25
 
+    /// Trust lines last seen for an address, recorded by every successful
+    /// `fetchAccountLines` walk.
+    ///
+    /// Write-through only: this is never the source of a `fetchAccountLines`
+    /// result (so the balance read keeps its own fail-closed error semantics
+    /// exactly as they are) and is read only with `peek`, by UI affordances that
+    /// need the ledger's trust-line state. That keeps the "does this token have a
+    /// line?" question free — it reuses the read the balance refresh already
+    /// performed instead of adding one network call per token row. A `nil` peek
+    /// means "not observed yet", which callers must treat as unknown rather than
+    /// as "no line". Internal (with the key) so tests can seed it.
+    let trustLinesCache = TTLCache<String, RippleTrustLineSnapshot>()
+
+    /// How long a recorded walk is treated as evidence.
+    ///
+    /// `peek` deliberately ignores TTL, so the snapshot carries its own timestamp
+    /// and an expired one degrades to `.unknown` rather than `.absent`. Without
+    /// that, a line opened on ANOTHER device (or a walk that has been failing for
+    /// a while) would keep offering `Activate` indefinitely on evidence that is no
+    /// longer true. Generous, because the balance refresh rewrites the snapshot
+    /// every cycle; the TTL only matters once refreshes stop succeeding.
+    private static let trustLinesTTL: TimeInterval = 60 * 5
+
+    /// Cache key for an address's trust lines, host-scoped for the same reason as
+    /// `reserveValuesCacheKey`: a custom RPC override can point at a different
+    /// network, whose lines must never be served for another.
+    static func trustLinesCacheKey(for host: URL, address: String) -> String {
+        "xrpl-trust-lines|\(host.absoluteString)|\(address)"
+    }
+
     /// Every trust line held by `walletAddress`, following `account_lines`
     /// pagination to completion.
     ///
@@ -614,6 +666,9 @@ class RippleService {
                 guard rpcError == "actNotFound", marker == nil else {
                     throw RippleTrustLineError.accountLinesFailed(code: rpcError)
                 }
+                // An unfunded account demonstrably holds no lines — a definitive
+                // answer worth recording, not an absence of information.
+                await recordTrustLines([], for: walletAddress, host: pinnedHost)
                 return []
             }
 
@@ -626,13 +681,119 @@ class RippleService {
             lines.append(contentsOf: pageLines)
 
             guard let next = result?.marker, !next.isEmpty else {
-                return Self.deduplicated(lines)
+                let complete = Self.deduplicated(lines)
+                await recordTrustLines(complete, for: walletAddress, host: pinnedHost)
+                return complete
             }
             marker = next
             logger.debug("fetchAccountLines: following marker to page \(page + 1, privacy: .public)")
         }
 
         throw RippleTrustLineError.paginationLimitExceeded(pages: Self.maxAccountLinesPages)
+    }
+
+    /// Whether `destination` can receive `coin`'s issued currency.
+    ///
+    /// An XRPL Payment of an issued currency to an account with no trust line for
+    /// it fails on-ledger with `tecPATH_DRY` / `tecNO_LINE` — after the ceremony,
+    /// with the fee burned — so it is worth catching before signing starts.
+    ///
+    /// Same FAIL-OPEN posture as `validateDestinationActivation`: a verdict is
+    /// returned only on positive proof, and a transport failure, an RPC error or
+    /// an unreadable response all resolve to `.unknown`. A send that worked
+    /// yesterday must not start being blocked because a node is briefly
+    /// unreachable; the on-ledger engine result remains the real backstop.
+    ///
+    /// An unfunded destination resolves to `.noTrustLine`: `fetchAccountLines`
+    /// answers `actNotFound` with an empty set, and an account that does not
+    /// exist certainly holds no line. (Whether that account could be *created* is
+    /// the native reserve check's business — an issued-currency Payment delivers
+    /// no XRP and cannot create one.)
+    ///
+    /// The destination being the ISSUER itself is `.canReceive`: paying an
+    /// obligation back to its issuer needs no line on the issuer's side.
+    func destinationTrustLine(for coin: CoinMeta, destination: String) async -> RippleDestinationTrustLine {
+        guard let (currency, issuer) = try? RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress),
+              let currencyCode = try? RippleIssuedCurrency.toXrplCurrencyCode(currency) else {
+            return .unknown
+        }
+
+        // Base58 issuer addresses are case-SENSITIVE, so this is an exact match.
+        if destination == issuer {
+            return .canReceive
+        }
+
+        let lines: [RippleTrustLine]
+        do {
+            lines = try await fetchAccountLines(for: destination)
+        } catch is CancellationError {
+            return .unknown
+        } catch {
+            // Transport failure, a node error, or an uninterpretable body — none
+            // of which is evidence the destination can't receive.
+            logger.warning("destinationTrustLine: lookup failed, allowing send: \(error.localizedDescription)")
+            return .unknown
+        }
+
+        let canReceive = lines.contains { line in
+            line.account == issuer
+                && (try? RippleIssuedCurrency.toXrplCurrencyCode(line.currency)) == currencyCode
+        }
+        return canReceive ? .canReceive : .noTrustLine
+    }
+
+    /// Records a completed trust-line walk so UI affordances can read the
+    /// ledger's trust-line state without their own network call.
+    private func recordTrustLines(_ lines: [RippleTrustLine], for address: String, host: URL) async {
+        await trustLinesCache.setCached(
+            RippleTrustLineSnapshot(lines: lines, recordedAt: Date()),
+            for: Self.trustLinesCacheKey(for: host, address: address)
+        )
+    }
+
+    /// Whether `address` already holds trust lines for each of `coins`, answered
+    /// from the walk the last balance refresh already performed.
+    ///
+    /// Never performs a network call: a token list must not cost one
+    /// `account_lines` request per row. The host is resolved ONCE for the whole
+    /// batch, so a custom-RPC change mid-loop can't assemble one answer set from
+    /// two networks' snapshots.
+    ///
+    /// `.unknown` means no walk has been recorded for this address (or the
+    /// recording has gone stale, or the token id is unreadable). Callers must
+    /// treat it as "don't know" rather than "no line": offering to open a line we
+    /// have no current evidence is missing would invite a pointless ceremony, and
+    /// a fee.
+    func trustLineStates(for coins: [CoinMeta], address: String) async -> [String: RippleTrustLinePresence] {
+        let key = Self.trustLinesCacheKey(for: resolvedHost, address: address)
+        guard let snapshot = await trustLinesCache.peek(key),
+              Date().timeIntervalSince(snapshot.recordedAt) < Self.trustLinesTTL else {
+            return coins.reduce(into: [:]) { $0[$1.contractAddress] = .unknown }
+        }
+
+        return coins.reduce(into: [:]) { result, coin in
+            result[coin.contractAddress] = Self.presence(of: coin, in: snapshot.lines)
+        }
+    }
+
+    /// Single-coin convenience over `trustLineStates(for:address:)`.
+    func trustLineState(for coin: CoinMeta, address: String) async -> RippleTrustLinePresence {
+        await trustLineStates(for: [coin], address: address)[coin.contractAddress] ?? .unknown
+    }
+
+    private static func presence(of coin: CoinMeta, in lines: [RippleTrustLine]) -> RippleTrustLinePresence {
+        guard let (currency, issuer) = try? RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress),
+              let currencyCode = try? RippleIssuedCurrency.toXrplCurrencyCode(currency) else {
+            return .unknown
+        }
+
+        // Issuer addresses are base58 and case-SENSITIVE, so this comparison must
+        // not be relaxed — matching `getTokenBalance`.
+        let matches = lines.contains { line in
+            line.account == issuer
+                && (try? RippleIssuedCurrency.toXrplCurrencyCode(line.currency)) == currencyCode
+        }
+        return matches ? .present : .absent
     }
 
     /// Collapses trust lines that repeat across pages. The ledger holds at most
@@ -711,6 +872,28 @@ class RippleService {
             return .unknown
         }
     }
+}
+
+/// One completed `account_lines` walk, with the moment it was recorded.
+///
+/// The timestamp is carried in the value rather than left to the cache because
+/// the presence read uses `peek`, which ignores TTL by design — a UI affordance
+/// must never trigger a fetch. Carrying it here lets an expired snapshot degrade
+/// to "don't know" instead of silently standing in for current ledger state.
+struct RippleTrustLineSnapshot {
+    let lines: [RippleTrustLine]
+    let recordedAt: Date
+}
+
+/// Whether an account holds a trust line for a given issued currency.
+///
+/// `.unknown` is deliberately distinct from `.absent`: an account_lines walk we
+/// have not performed (or could not interpret) is not evidence that a line is
+/// missing, and the two drive different UI.
+enum RippleTrustLinePresence: Equatable {
+    case present
+    case absent
+    case unknown
 }
 
 /// Whether an XRPL destination requires a destination tag on incoming

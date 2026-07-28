@@ -9,6 +9,7 @@ import BigInt
 import Foundation
 import OSLog
 import Tss
+import VultisigCommonData
 import WalletCore
 
 private let logger = Log.chain.other
@@ -28,8 +29,13 @@ enum RippleHelper {
         }
 
         guard
-            case .Ripple(let sequence, let gas, let lastLedgerSequence, let fieldDestinationTag) = keysignPayload
-                .chainSpecific
+            case .Ripple(
+                let sequence,
+                let gas,
+                let lastLedgerSequence,
+                let fieldDestinationTag,
+                let fieldTransactionType
+            ) = keysignPayload.chainSpecific
         else {
             logger.error("keysignPayload.chainSpecific is not Ripple")
             throw HelperError.runtimeError(
@@ -57,6 +63,62 @@ enum RippleHelper {
                 lastLedgerSequence: lastLedgerSequence
             )
         }
+
+        // Issued-currency (trust-line token) operations. Both sit AFTER the
+        // dApp branch — a rawJson transaction is always signed verbatim — and
+        // BEFORE the `toAddress` guard, because a TrustSet has no destination at
+        // all, exactly like the dApp offer case that already skips it.
+        //
+        // The precedence is deliberate and load-bearing for MPC byte-parity:
+        //   1. `signRipple`                      → verbatim rawJson
+        //   2. `transaction_type == trustSet`    → opTrustSet (amount = LIMIT)
+        //   3. non-native coin with a token id   → opPayment.currencyAmount
+        //   4. native XRP                        → opPayment.amount (drops)
+        //
+        // (2) before (3) is what makes a mixed-version TrustSet ceremony work: a
+        // co-signer predating `transaction_type` sees only "non-native Ripple
+        // coin" and builds a TrustSet from the same limit, which is byte-identical
+        // to what this branch produces.
+        //
+        // ⚠️ The converse is NOT symmetric, and it is a deliberate trade rather
+        // than an oversight. Because an absent discriminator is indistinguishable
+        // from `.unspecified`, arm (3) claims the "non-native, no discriminator"
+        // case that every shipped signer today reads as a TrustSet. That is the
+        // only way an issued-currency Payment can be expressed at all — inferring
+        // TrustSet from the coin alone is precisely why sending XRPL tokens has
+        // been impossible. The consequences, in full:
+        //   - a token send whose committee includes a signer predating the field
+        //     DIVERGES → the ceremony fails and no funds move (fail-safe);
+        //   - a TrustSet ORIGINATED by a signer predating the field would be read
+        //     here as a token Payment. No shipped client can originate one (no
+        //     platform builds XRPL token payloads at all yet — this app is the
+        //     first), so the case is unreachable today; it stops being reachable
+        //     for good once every platform sets the field.
+        // Both are stated in the PR body rather than left to be rediscovered.
+        switch fieldTransactionType {
+        case VSTransactionType.unspecified.rawValue:
+            break
+        case VSTransactionType.rippleTrustSet.rawValue:
+            return try trustSetSigningInput(
+                keysignPayload: keysignPayload,
+                gas: gas,
+                sequence: sequence,
+                lastLedgerSequence: lastLedgerSequence
+            )
+        default:
+            // A discriminator this build doesn't recognise — another chain's
+            // operation relayed onto a Ripple payload, or a future XRPL
+            // operation. Refuse: the peer is describing something other than
+            // what these branches would build, so signing anything at all would
+            // be signing an operation nobody reviewed.
+            throw HelperError.runtimeError(
+                "XRP payload carries an unsupported transaction type (\(fieldTransactionType))"
+            )
+        }
+
+        // Classify the coin ONCE, before any operation is built, so an
+        // ill-formed coin can never slip into the wrong encoding further down.
+        let coinKind = try issuedCurrencyKind(coin: keysignPayload.coin)
 
         guard AnyAddress(string: keysignPayload.toAddress, coin: .xrp) != nil else {
             throw HelperError.runtimeError("fail to get to address")
@@ -170,6 +232,22 @@ enum RippleHelper {
             destinationTag = nil
         }
 
+        // An issued-currency Payment encodes its amount as a `CurrencyAmount`
+        // (currency / issuer / decimal value string), never as drops. Branch
+        // AFTER the tag resolution above so the tag rides a token Payment
+        // exactly as it rides a native one — the tag is orthogonal to how the
+        // amount is encoded.
+        if coinKind == .issuedCurrency {
+            return try tokenPaymentSigningInput(
+                keysignPayload: keysignPayload,
+                destinationTag: destinationTag,
+                gas: gas,
+                sequence: sequence,
+                lastLedgerSequence: lastLedgerSequence,
+                publicKey: publicKey
+            )
+        }
+
         let operation = RippleOperationPayment.with {
             $0.destination = keysignPayload.toAddress
             $0.amount = Int64(keysignPayload.toAmount.description) ?? 0
@@ -190,6 +268,248 @@ enum RippleHelper {
         logger.info("Creating XRP payment, destinationTag: \(destinationTag.map(String.init) ?? "none", privacy: .public), lastLedgerSequence: \(lastLedgerSequence)")
 
         return try input.serializedData()
+    }
+
+    // MARK: - Issued currency (trust-line tokens)
+
+    /// Which amount encoding a coin is entitled to on the XRPL signing path.
+    private enum RippleCoinKind {
+        /// Native XRP: the amount is drops.
+        case native
+        /// A trust-line token: the amount is a `CurrencyAmount` triple.
+        case issuedCurrency
+    }
+
+    /// Classifies the payload's coin, refusing anything structurally
+    /// inconsistent.
+    ///
+    /// The whole `Coin` arrives proto-relayed from a peer, and `isNativeToken`
+    /// and `contractAddress` between them decide which AMOUNT ENCODING gets
+    /// signed — so the two must agree before either is trusted. Both
+    /// contradictions are refused rather than interpreted:
+    ///
+    /// - **non-native with NO token id** satisfies no issued-currency branch, so
+    ///   it would fall through to the native encoding and have its token base
+    ///   units serialized as XRP DROPS — a silent token→native crossing that
+    ///   moves real XRP;
+    /// - **native WITH a token id** is the mirror image: metadata that names an
+    ///   issuer while asking to be signed as drops. Nothing legitimate produces
+    ///   it (`Coin.contractAddress` is empty for native XRP everywhere in the
+    ///   app), and a payload that cannot describe its own asset coherently is
+    ///   not one to sign.
+    ///
+    /// Deeper metadata (ticker, decimals) is NOT policed here: those vary
+    /// legitimately across platforms, and rejecting on them would false-reject
+    /// valid payloads from a peer rather than catch an attack.
+    private static func issuedCurrencyKind(coin: Coin) throws -> RippleCoinKind {
+        if coin.isNativeToken {
+            guard coin.contractAddress.isEmpty else {
+                throw HelperError.runtimeError(
+                    "XRP coin claims to be native but carries an issued-currency token id"
+                )
+            }
+            return .native
+        }
+        guard !coin.contractAddress.isEmpty else {
+            throw HelperError.runtimeError(
+                "XRP non-native coin is missing its issued-currency token id"
+            )
+        }
+        return .issuedCurrency
+    }
+
+    /// Signing input for a `TrustSet`: open or modify the trust line that lets
+    /// this account hold an issuer's currency.
+    ///
+    /// **The keysign `toAmount` IS the trust line's limit**, not a transfer — the
+    /// maximum of that currency this account is willing to hold. That identity is
+    /// the SDK resolver's convention (`getTrustSet`), and preserving it is what
+    /// makes a mixed-version ceremony work: a co-signer predating
+    /// `RippleSpecific.transaction_type` infers "TrustSet" from a non-native
+    /// Ripple coin and formats the very same amount as the limit, producing
+    /// byte-identical bytes. Do not "improve" it into a separate limit field
+    /// without changing the wire contract on every platform first.
+    ///
+    /// A TrustSet has no destination and no `Amount`, so this runs before the
+    /// `toAddress` guard — like the dApp offer case.
+    ///
+    /// `SigningInput.flags` is deliberately left unset. WalletCore stamps
+    /// `tfFullyCanonicalSig` on typed operations and the SDK sets no flags;
+    /// writing `tfSetNoRipple` here would risk clobbering that default and break
+    /// byte-parity with every other signer.
+    private static func trustSetSigningInput(
+        keysignPayload: KeysignPayload,
+        gas: UInt64,
+        sequence: UInt64,
+        lastLedgerSequence: UInt64
+    ) throws -> Data {
+        let coin = keysignPayload.coin
+        // A TrustSet is meaningless for native XRP: there is no issuer to trust.
+        // Fail closed rather than emitting a SigningInput whose limitAmount
+        // names an empty currency and issuer.
+        guard try issuedCurrencyKind(coin: coin) == .issuedCurrency else {
+            throw HelperError.runtimeError("XRP TrustSet requires an issued-currency coin carrying a token id")
+        }
+
+        let limitAmount = try issuedCurrencyAmount(
+            coin: coin,
+            amount: keysignPayload.toAmount,
+            role: "TrustSet limit"
+        )
+        let envelope = try signingEnvelope(
+            keysignPayload: keysignPayload,
+            gas: gas,
+            sequence: sequence,
+            lastLedgerSequence: lastLedgerSequence
+        )
+
+        let input = RippleSigningInput.with {
+            $0.fee = envelope.fee
+            $0.sequence = envelope.sequence
+            $0.account = coin.address
+            $0.publicKey = envelope.publicKey.data
+            $0.lastLedgerSequence = envelope.lastLedgerSequence
+            $0.opTrustSet = RippleOperationTrustSet.with { $0.limitAmount = limitAmount }
+        }
+
+        logger.info("Creating XRP TrustSet, lastLedgerSequence: \(lastLedgerSequence)")
+
+        return try input.serializedData()
+    }
+
+    /// Signing input for an issued-currency `Payment`: transfer a trust-line
+    /// token to `toAddress`.
+    ///
+    /// Uses `opPayment.currencyAmount` — the `oneof` alternative to the drops
+    /// `amount` — so the value rides as a decimal string against the coin's
+    /// (currency, issuer) pair. `destinationTag` is whatever the shared
+    /// tag/memo resolution already decided; the tag is an independent XRPL field
+    /// and applies to a token Payment exactly as it does to a native one.
+    ///
+    /// There is no old-signer counterpart for this operation (every signer
+    /// predating `transaction_type` reads a non-native coin as a TrustSet), so a
+    /// mixed-version committee diverges here and the ceremony fails without
+    /// moving funds — fail-safe, and stated plainly rather than papered over.
+    private static func tokenPaymentSigningInput(
+        keysignPayload: KeysignPayload,
+        destinationTag: UInt64?,
+        gas: UInt64,
+        sequence: UInt64,
+        lastLedgerSequence: UInt64,
+        publicKey: PublicKey
+    ) throws -> Data {
+        let currencyAmount = try issuedCurrencyAmount(
+            coin: keysignPayload.coin,
+            amount: keysignPayload.toAmount,
+            role: "Payment amount"
+        )
+
+        let operation = RippleOperationPayment.with {
+            $0.destination = keysignPayload.toAddress
+            // Setting `currencyAmount` selects the oneof arm, so the drops
+            // `amount` is not on the wire at all — a token Payment must never
+            // carry a drops amount.
+            $0.currencyAmount = currencyAmount
+            if let destinationTag {
+                $0.destinationTag = destinationTag
+            }
+        }
+
+        let envelope = try signingEnvelope(
+            keysignPayload: keysignPayload,
+            gas: gas,
+            sequence: sequence,
+            lastLedgerSequence: lastLedgerSequence
+        )
+
+        let input = RippleSigningInput.with {
+            $0.fee = envelope.fee
+            $0.sequence = envelope.sequence
+            $0.account = keysignPayload.coin.address
+            $0.publicKey = publicKey.data
+            $0.opPayment = operation
+            $0.lastLedgerSequence = envelope.lastLedgerSequence
+        }
+
+        logger.info(
+            "Creating XRP issued-currency payment, destinationTag: \(destinationTag.map(String.init) ?? "none", privacy: .public), lastLedgerSequence: \(lastLedgerSequence)"
+        )
+
+        return try input.serializedData()
+    }
+
+    /// Builds the WalletCore `CurrencyAmount` for `coin`'s token id at `amount`
+    /// base units.
+    ///
+    /// Every `RippleIssuedCurrency` helper throws rather than trapping precisely
+    /// so a hostile token id or `decimals` becomes a REJECTED transaction instead
+    /// of a crashed signer. `role` names which field failed so the surfaced error
+    /// says what the signer refused to build.
+    private static func issuedCurrencyAmount(
+        coin: Coin,
+        amount: BigInt,
+        role: String
+    ) throws -> RippleCurrencyAmount {
+        let token: (currency: String, issuer: String)
+        do {
+            token = try RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress)
+        } catch {
+            throw HelperError.runtimeError("XRP \(role): malformed token id '\(coin.contractAddress)'")
+        }
+
+        let currencyCode: String
+        do {
+            currencyCode = try RippleIssuedCurrency.toXrplCurrencyCode(token.currency)
+        } catch {
+            throw HelperError.runtimeError("XRP \(role): invalid currency code '\(token.currency)'")
+        }
+
+        let value: String
+        do {
+            value = try RippleIssuedCurrency.formatIssuedCurrencyValue(
+                amount: amount,
+                decimals: coin.decimals
+            )
+        } catch {
+            throw HelperError.runtimeError("XRP \(role): value is not representable at \(coin.decimals) decimals")
+        }
+
+        return RippleCurrencyAmount.with {
+            $0.currency = currencyCode
+            $0.issuer = token.issuer
+            $0.value = value
+        }
+    }
+
+    /// Envelope fields shared by every typed XRPL operation.
+    ///
+    /// The proto-relayed fee / sequence / ledger sequence are narrowed with
+    /// `exactly:` so a hostile out-of-range value throws (fail closed) instead of
+    /// trapping the signer — the convention `dappSigningInput` established. Real
+    /// XRPL values always fit, so this is byte-identical to the unchecked
+    /// conversions for every legitimate payload.
+    private static func signingEnvelope(
+        keysignPayload: KeysignPayload,
+        gas: UInt64,
+        sequence: UInt64,
+        lastLedgerSequence: UInt64
+    ) throws -> (fee: Int64, sequence: UInt32, lastLedgerSequence: UInt32, publicKey: PublicKey) {
+        guard let publicKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+            throw HelperError.runtimeError("invalid hex public key")
+        }
+        guard let publicKey = PublicKey(data: publicKeyData, type: .secp256k1) else {
+            throw HelperError.runtimeError("invalid public key data")
+        }
+        guard let fee = Int64(exactly: gas) else {
+            throw HelperError.runtimeError("XRP fee is out of range")
+        }
+        guard let sequence32 = UInt32(exactly: sequence) else {
+            throw HelperError.runtimeError("XRP sequence is out of range")
+        }
+        guard let lastLedgerSequence32 = UInt32(exactly: lastLedgerSequence) else {
+            throw HelperError.runtimeError("XRP lastLedgerSequence is out of range")
+        }
+        return (fee, sequence32, lastLedgerSequence32, publicKey)
     }
 
     /// Builds the signing input for a dApp-supplied XRPL transaction carried
@@ -356,6 +676,17 @@ enum RippleHelper {
         lastLedgerSequence: UInt64,
         publicKey: PublicKey
     ) throws -> Data {
+        // FAIL CLOSED: this rawJson encodes `Amount` as a DROPS string, which is
+        // only correct for native XRP. ANY non-native coin reaching here would be
+        // signed as a native XRP transfer of the token's base units — a real,
+        // silent loss of funds — so the check is on `isNativeToken` alone, not on
+        // whether a token id happens to be present. WalletCore's typed payment
+        // has no memo slot and a token rawJson Payment is not part of the wire
+        // contract yet, so refuse rather than guess.
+        guard keysignPayload.coin.isNativeToken else {
+            throw HelperError.runtimeError("XRP issued-currency payments cannot carry an on-chain memo")
+        }
+
         var txJson: [String: Any] = [
             "TransactionType": "Payment",
             "Account": keysignPayload.coin.address,

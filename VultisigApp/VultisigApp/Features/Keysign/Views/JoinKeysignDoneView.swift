@@ -78,9 +78,13 @@ struct JoinKeysignDoneView: View {
                 coin: keysignPayload.coin,
                 amountCrypto: keysignPayload.toAmountWithTickerString,
                 amountFiat: keysignPayload.toSendAmountFiatString,
-                hero: LimitOrderCancelPresentation.hero(
-                    forSignedMemo: keysignPayload.memo
-                ) ?? viewModel.heroContent,
+                // An XRPL TrustSet carries the trust-line LIMIT in `toAmount`, so
+                // it has to claim the hero before the amount slot describes it as
+                // a transfer of that many tokens.
+                hero: RippleTrustSetPresentation.hero(for: keysignPayload)
+                    ?? LimitOrderCancelPresentation.hero(
+                        forSignedMemo: keysignPayload.memo
+                    ) ?? viewModel.heroContent,
                 hash: viewModel.txid,
                 explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                 memo: viewModel.memo ?? "",

@@ -24,6 +24,15 @@ struct RippleDestinationReserveValidator: SendAmountValidator {
     /// side-effect-free) rather than the UI's `addressSetupDone` flag keeps the
     /// lookup from firing against a half-typed destination while the resolver is
     /// still in flight.
+    ///
+    /// ⚠️ `isNativeToken` is deliberate and must NOT be widened now that
+    /// non-native XRP coins exist. The rule is "an account is created by
+    /// receiving at least the base reserve **in XRP**"; an issued-currency
+    /// Payment delivers no XRP, so it can neither create the destination nor
+    /// satisfy that minimum, and applying this check to a token would show an XRP
+    /// minimum against an amount denominated in the token. The check that DOES
+    /// apply to a token — whether the destination holds a trust line for it —
+    /// lives in `SendCryptoVerifyLogic.validateDestinationTrustLineIfNeeded`.
     func isApplicable(to input: SendAmountValidationInput) -> Bool {
         input.chain == .ripple
             && input.isNativeToken
