@@ -33,17 +33,29 @@ struct RippleTrustLineActivationSheet: View {
     private func content(coin: Coin) -> some View {
         Screen {
             VStack(spacing: 24) {
-                header(coin: coin)
+                // Scrolls rather than clips. A half-height detent is ample for the
+                // usual row set, but the blocking message wraps and the whole
+                // sheet grows with Dynamic Type — and a reserve cost the user
+                // cannot read is the one thing this sheet must never produce.
+                ScrollView {
+                    VStack(spacing: 24) {
+                        header(coin: coin)
 
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(Theme.colors.alertError)
-                        .font(Theme.fonts.bodySMedium)
-                        .multilineTextAlignment(.center)
-                } else if viewModel.quote != nil {
-                    costRows(coin: coin)
-                    blockingMessage
-                    Spacer()
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage)
+                                .foregroundStyle(Theme.colors.alertError)
+                                .font(Theme.fonts.bodySMedium)
+                                .multilineTextAlignment(.center)
+                        } else if viewModel.quote != nil {
+                            costRows(coin: coin)
+                            blockingMessage
+                        }
+                    }
+                }
+                .scrollBounceBehavior(.basedOnSize)
+
+                // Pinned: the primary action stays reachable without scrolling to it.
+                if viewModel.quote != nil, viewModel.errorMessage == nil {
                     actions
                 }
             }
@@ -59,6 +71,11 @@ struct RippleTrustLineActivationSheet: View {
                 }
             #endif
         }
+        // A short, fixed row set — a half-height sheet fits it without the empty
+        // expanse `.large` would leave. The drag indicator comes with it, which
+        // is the affordance that makes swipe-to-dismiss discoverable now that
+        // there is no Cancel button.
+        .sheetStyle(detents: [.medium])
     }
 
     private func header(coin: Coin) -> some View {
