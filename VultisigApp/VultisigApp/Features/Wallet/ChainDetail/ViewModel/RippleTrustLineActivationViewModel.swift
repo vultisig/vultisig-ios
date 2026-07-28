@@ -5,10 +5,7 @@
 
 import BigInt
 import Foundation
-import OSLog
 import VultisigCommonData
-
-private let logger = Logger(subsystem: "com.vultisig.app", category: "ripple-trust-line-activation")
 
 /// Drives the trust-line activation sheet: what opening the line costs, whether
 /// the vault's XRP covers it, and the `SendTransaction` that carries the TrustSet
@@ -30,6 +27,21 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
 
     init(service: RippleService = .shared) {
         self.service = service
+    }
+
+    /// Claims the single activation slot, or reports that it is already taken.
+    ///
+    /// Guarding on `isLoading` at the call site cannot work: `load` only raises the
+    /// flag once its task starts running, so two taps in the same runloop turn both
+    /// see `false` and both proceed. Two concurrent `load`s then interleave over one
+    /// `quote`, and the sheet can end up pairing one token with another token's
+    /// reserve, limit and issuer. Here the check and the set are a single
+    /// synchronous step on the main actor with no `await` between them, so exactly
+    /// one caller can win.
+    func beginLoading() -> Bool {
+        guard !isLoading else { return false }
+        isLoading = true
+        return true
     }
 
     /// Quotes the activation of `coin`'s trust line, paid for from `nativeCoin`.

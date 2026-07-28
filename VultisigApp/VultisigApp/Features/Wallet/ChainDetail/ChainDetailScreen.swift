@@ -207,19 +207,22 @@ struct ChainDetailScreen: View {
                 coinToShow = nil
             }
         }
-        .bottomSheet(isPresented: Binding(
+        .crossPlatformSheet(isPresented: Binding(
             get: { coinToActivate != nil },
             set: { if !$0 { coinToActivate = nil } }
         )) {
             RippleTrustLineActivationSheet(
                 viewModel: trustLineActivation,
                 coin: coinToActivate,
+                isPresented: Binding(
+                    get: { coinToActivate != nil },
+                    set: { if !$0 { coinToActivate = nil } }
+                ),
                 onActivate: {
                     if let coin = coinToActivate {
                         confirmTrustLineActivation(for: coin)
                     }
-                },
-                onDismissRequest: { coinToActivate = nil }
+                }
             )
         }
         .onChange(of: coins) { _, _ in
@@ -427,7 +430,10 @@ private extension ChainDetailScreen {
     /// filling in afterwards sizes the sheet to a spinner and clips the real
     /// content. Quoting first means the sheet only ever renders a terminal state.
     func onActivateTrustLine(_ coin: Coin) {
-        guard !trustLineActivation.isLoading else { return }
+        // Claim the slot synchronously. Checking `isLoading` here instead would
+        // race: `load` only raises it after its task starts, so two taps in one
+        // runloop turn would both proceed and their quotes would interleave.
+        guard trustLineActivation.beginLoading() else { return }
         Task {
             await trustLineActivation.load(coin: coin, nativeCoin: nativeCoin)
             coinToActivate = coin

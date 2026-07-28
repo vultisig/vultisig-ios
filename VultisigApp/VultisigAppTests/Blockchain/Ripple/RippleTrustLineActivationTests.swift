@@ -592,6 +592,50 @@ final class RippleTrustLineActivationTests: XCTestCase {
         )
     }
 
+    /// Two taps in one runloop turn must not both start a quote. If they do, the
+    /// two `load`s interleave over one `quote` and the sheet can pair one token
+    /// with another token's reserve, limit and issuer.
+    @MainActor
+    func testOnlyOneActivationCanBeInFlightAtATime() {
+        let viewModel = RippleTrustLineActivationViewModel(service: Self.makeService(RippleTrustLineStub()))
+
+        XCTAssertTrue(viewModel.beginLoading(), "the first tap claims the slot")
+        XCTAssertFalse(viewModel.beginLoading(), "a second tap in the same turn must be refused")
+        XCTAssertFalse(viewModel.beginLoading())
+    }
+
+    /// The slot has to be released once the quote resolves, or Activate is dead
+    /// for the rest of the session.
+    @MainActor
+    func testTheActivationSlotIsReleasedAfterLoading() async {
+        let viewModel = RippleTrustLineActivationViewModel(service: Self.makeService(RippleTrustLineStub()))
+        let coin = Coin(
+            asset: Self.coin(tokenId: "USD.\(Self.issuer)"),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        let nativeCoin = Coin(
+            asset: CoinMeta(
+                chain: .ripple,
+                ticker: "XRP",
+                logo: "xrp",
+                decimals: 6,
+                priceProviderId: "ripple",
+                contractAddress: "",
+                isNativeToken: true
+            ),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        nativeCoin.rawBalance = "50000000"
+
+        XCTAssertTrue(viewModel.beginLoading())
+        await viewModel.load(coin: coin, nativeCoin: nativeCoin)
+
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertTrue(viewModel.beginLoading(), "a later tap must be able to quote again")
+    }
+
     /// The sheet shows the limit grouped, because 16 unseparated digits are not a
     /// number a user can check — and this row exists to be checked before signing.
     /// The grouped string must still be the exact figure that gets signed.
