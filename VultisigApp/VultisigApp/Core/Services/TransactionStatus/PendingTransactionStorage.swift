@@ -20,6 +20,13 @@ final class StoredPendingTransactionStorage {
         self.modelContext = Storage.shared.modelContext
     }
 
+    /// Test seam. The singleton binds to `Storage.shared` for its lifetime, so
+    /// exercising the queries against a throwaway in-memory container needs an
+    /// instance of its own rather than a mutated global.
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
+
     /// Save or update a pending transaction
     func save(
         txHash: String,
