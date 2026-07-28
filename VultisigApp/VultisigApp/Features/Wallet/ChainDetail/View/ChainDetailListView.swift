@@ -26,18 +26,24 @@ struct ChainDetailListView: View {
     var tokensList: some View {
         VStack(spacing: 0) {
             ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
-                Button {
-                    onPress(token)
-                } label: {
-                    TokenCellView(
-                        coin: token,
-                        onActivate: activateAction(for: token)
-                    )
-                    .commonListItemContainer(
-                        index: index,
-                        itemsCount: viewModel.filteredTokens.count
-                    )
-                }
+                // The row's tap is a gesture on the cell rather than a `Button`
+                // wrapping it. A row can carry its own "Activate" `PrimaryButton`,
+                // and a `Button` inside another `Button`'s label hit-tests
+                // unreliably — a tap on Activate can be swallowed by the row and
+                // navigate to coin detail instead of opening the activation sheet.
+                // Kept as siblings, the inner button takes the tap and the rest of
+                // the row still opens coin detail.
+                TokenCellView(
+                    coin: token,
+                    onActivate: activateAction(for: token)
+                )
+                .contentShape(Rectangle())
+                .onTapGesture { onPress(token) }
+                .accessibilityAddTraits(.isButton)
+                .commonListItemContainer(
+                    index: index,
+                    itemsCount: viewModel.filteredTokens.count
+                )
             }
         }
         .commonListContainer()

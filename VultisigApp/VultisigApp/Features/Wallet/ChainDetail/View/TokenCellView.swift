@@ -16,6 +16,9 @@ struct TokenCellView: View {
     /// chain), but on XRPL it cannot hold or receive a balance until a TrustSet
     /// opens the line — so the row has to make that state legible and offer the
     /// one action that fixes it. `nil` for every other coin.
+    ///
+    /// This renders a real `Button`, so the row around it must not be one: the
+    /// list attaches its own tap as a gesture instead (see `ChainDetailListView`).
     var onActivate: (() -> Void)?
 
     var body: some View {
