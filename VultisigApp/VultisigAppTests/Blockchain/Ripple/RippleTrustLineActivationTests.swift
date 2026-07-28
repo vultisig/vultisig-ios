@@ -97,6 +97,87 @@ final class RippleTrustLineActivationTests: XCTestCase {
         }
     }
 
+    /// A 3-UTF16-unit string is not automatically a standard currency code.
+    /// Outside the ledger's ASCII repertoire it is 4+ UTF-8 bytes, and a standard
+    /// code is encoded by copying exactly 3 bytes into positions 12–14 of the
+    /// 160-bit field — so such a code matches neither that form nor the
+    /// 40-character hex one, and the token would be addable but unsignable.
+    func testNonAsciiThreeUnitCurrencyCodeIsRejected() {
+        for currency in ["\u{00C1}BC", "\u{20AC}UR", "US\u{00A9}", "A\u{1F600}"] {
+            XCTAssertEqual(
+                currency.utf16.count, 3,
+                "'\(currency)' must reach the standard-code branch for this test to mean anything"
+            )
+            XCTAssertFalse(
+                RippleCustomTokenResolver.isValidInput("\(currency).\(Self.issuer)"),
+                "'\(currency)' is not a code the ledger can carry"
+            )
+            XCTAssertNil(
+                RippleCustomTokenResolver.normalized(from: "\(currency).\(Self.issuer)"),
+                "'\(currency)' must not fall through to the packable-ticker branch"
+            )
+        }
+    }
+
+    /// The repertoire the ledger itself checks a standard code against, taken
+    /// verbatim from rippled's `kIsoCharSet`. Pinned so nobody narrows it to
+    /// "alphanumeric" and starts rejecting currencies the XRP Ledger accepts.
+    func testTheLedgersStandardCodeSymbolsAreAccepted() {
+        for symbol in "<>(){}[]|?!@#$%^&*" {
+            XCTAssertTrue(
+                RippleCustomTokenResolver.isValidInput("A\(symbol)1.\(Self.issuer)"),
+                "'\(symbol)' is in the ledger's standard-code repertoire"
+            )
+        }
+    }
+
+    /// Anything outside that repertoire is rejected — and, crucially, is not
+    /// re-read as a packable ticker. All of these are 3 bytes of printable ASCII,
+    /// so without the terminal standard-code branch they would pack into the hex
+    /// form and resolve to a different on-ledger currency than the one typed.
+    func testCharactersOutsideTheStandardRepertoireAreRejected() {
+        for currency in ["A-B", "A+B", "A/B", "A_B", "A B", "A,B", "A;B", "A~B", "A'B", "A=B"] {
+            XCTAssertFalse(
+                RippleCustomTokenResolver.isValidInput("\(currency).\(Self.issuer)"),
+                "'\(currency)' is not a standard code the ledger accepts"
+            )
+            XCTAssertNil(
+                RippleCustomTokenResolver.normalized(from: "\(currency).\(Self.issuer)"),
+                "'\(currency)' must not fall through to the packable-ticker branch"
+            )
+        }
+    }
+
+    /// Lowercase letters are in the ledger's repertoire but not in this app's.
+    /// XRPL currency codes are case-SENSITIVE, while WalletCore uppercases a
+    /// 3-character code before encoding it — so `usd` would sign as `USD`, a
+    /// different currency from the one added, displayed and matched against
+    /// `account_lines`. Refusing the spelling beats signing a token the user did
+    /// not choose.
+    func testLowercaseStandardCurrencyCodeIsRejected() {
+        for currency in ["usd", "uSd", "abc"] {
+            XCTAssertFalse(
+                RippleCustomTokenResolver.isValidInput("\(currency).\(Self.issuer)"),
+                "'\(currency)' would not survive the signer's uppercasing"
+            )
+            XCTAssertNil(RippleCustomTokenResolver.normalized(from: "\(currency).\(Self.issuer)"))
+        }
+    }
+
+    /// The escape hatch that keeps the lowercase exclusion from removing a
+    /// currency outright: its hex spelling is accepted and normalized verbatim,
+    /// and that is the form the signer encodes byte for byte.
+    func testLowercaseCodeStaysReachableThroughItsHexSpelling() throws {
+        // A standard code occupies bytes 12–14 of the 160-bit field: 24 hex zeros,
+        // then `usd` as ASCII, then 10 more.
+        let hex = String(repeating: "0", count: 24) + "757364" + String(repeating: "0", count: 10)
+        XCTAssertEqual(hex.count, 40)
+
+        let normalized = try XCTUnwrap(RippleCustomTokenResolver.normalized(from: "\(hex).\(Self.issuer)"))
+
+        XCTAssertEqual(normalized.currency, hex)
+    }
+
     /// 20 bytes is the 160-bit ceiling; 21 cannot be represented.
     func testTickerLongerThanTwentyBytesIsRejected() {
         XCTAssertTrue(
