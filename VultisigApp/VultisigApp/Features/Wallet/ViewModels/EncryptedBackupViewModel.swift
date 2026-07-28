@@ -123,7 +123,7 @@ class EncryptedBackupViewModel: ObservableObject {
     func generateBackupFile(vault: Vault, encryptionPassword: String?, targetDirectory: URL? = nil) async throws -> URL? {
         var vaultContainer = VSVaultContainer()
         vaultContainer.version = 1 // current version 1
-        let vsVault = vault.mapToProtobuff()
+        let vsVault = try vault.mapToProtobuff()
         let data = try vsVault.serializedData()
 
         if let encryptionPassword {

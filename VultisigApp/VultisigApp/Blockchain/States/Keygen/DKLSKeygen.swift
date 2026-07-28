@@ -557,12 +557,7 @@ final class DKLSKeygen {
     }
 
     func getKeyshareString() -> String? {
-        for ks in vault.keyshares {
-            if ks.pubkey == self.publicKeyECDSA {
-                return ks.keyshare
-            }
-        }
-        return nil
+        return vault.getKeyshare(pubKey: self.publicKeyECDSA)
     }
 
     func getKeyshareBytesFromVault() throws -> [UInt8] {
