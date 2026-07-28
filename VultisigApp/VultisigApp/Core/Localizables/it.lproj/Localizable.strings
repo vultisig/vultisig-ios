@@ -27,8 +27,8 @@
 "addressBookEmptyTitle" = "La tua rubrica è vuota";
 "addressCopied" = "Indirizzo copiato";
 "addToAddressBook" = "Aggiungi alla Rubrica";
-"addUnverifiedTokenMessage" = "Questo token non è verificato e potrebbe impersonare un asset reale. Assicurati che l'indirizzo del contratto sia corretto prima di aggiungerlo.";
-"addUnverifiedTokenTitle" = "Aggiungere token non verificato?";
+"addUnverifiedTokenMessage" = "La tua selezione include token non verificati. Non sono controllati da una fonte attendibile e possono impersonare un asset reale: continua solo se ti fidi della provenienza di ciascuno.";
+"addUnverifiedTokenTitle" = "Aggiungere token non verificati?";
 "addVaultsToFolder" = "Seleziona i Vault da aggiungere alla cartella";
 "advanced" = "Avanzato";
 "advancedDescription" = "Reshare, gestire i messaggi di sicurezza o firma.";

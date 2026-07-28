@@ -54,19 +54,13 @@ struct TokenSelectionScreen: View {
         .onDisappear {
             tokenViewModel.cancelLoading()
         }
-        .onReceive(tokenViewModel.$searchText) { _ in
-            tokenViewModel.updateSearchedTokens()
-        }
-        .alert(
-            "addUnverifiedTokenTitle".localized,
-            isPresented: $showUnverifiedAddConfirm
-        ) {
-            Button("cancel".localized, role: .cancel) {}
-            Button("continueAnyway".localized, role: .destructive) {
+        .bottomSheet(isPresented: $showUnverifiedAddConfirm) {
+            UnverifiedTokenBottomSheet {
+                showUnverifiedAddConfirm = false
+            } onContinue: {
+                showUnverifiedAddConfirm = false
                 persistSelection()
             }
-        } message: {
-            Text(unverifiedAddConfirmMessage)
         }
     }
 
@@ -77,21 +71,6 @@ struct TokenSelectionScreen: View {
         coinViewModel.selection.filter { coin in
             tokenViewModel.verification(for: coin) == .unverified && vault.coin(for: coin) == nil
         }
-    }
-
-    /// The confirm copy plus each unverified token's ticker and full contract
-    /// address, so the user can actually perform the "make sure the contract is
-    /// correct" check the message asks for (a bare ticker is exactly what an
-    /// impersonator clones).
-    private var unverifiedAddConfirmMessage: String {
-        let base = "addUnverifiedTokenMessage".localized
-        let details = unverifiedAdditions
-            .map { coin in
-                let contract = coin.contractAddress.isEmpty ? coin.ticker : coin.contractAddress
-                return "\(coin.ticker)\n\(contract)"
-            }
-            .joined(separator: "\n\n")
-        return details.isEmpty ? base : base + "\n\n" + details
     }
 
     @ViewBuilder

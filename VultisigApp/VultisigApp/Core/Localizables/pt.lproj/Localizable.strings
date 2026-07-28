@@ -27,8 +27,8 @@
 "addressBookEmptyTitle" = "Seu catálogo de endereços está vazio";
 "addressCopied" = "Endereço copiado";
 "addToAddressBook" = "Adicionar ao Catálogo de Endereços";
-"addUnverifiedTokenMessage" = "Este token não é verificado e pode imitar um ativo real. Confirme se o endereço do contrato está correto antes de adicioná-lo.";
-"addUnverifiedTokenTitle" = "Adicionar token não verificado?";
+"addUnverifiedTokenMessage" = "A sua seleção inclui tokens não verificados. Eles não são validados por uma fonte confiável e podem imitar um ativo real — continue apenas se confiar na origem de cada um.";
+"addUnverifiedTokenTitle" = "Adicionar tokens não verificados?";
 "addVaultsToFolder" = "Selecione cofres para adicionar à pasta";
 "advanced" = "Avançado";
 "advancedDescription" = "Recompartilhar, gerenciar segurança ou assinar mensagens.";
