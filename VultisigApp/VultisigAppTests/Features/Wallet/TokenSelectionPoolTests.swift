@@ -132,7 +132,7 @@ final class TokenSelectionPoolTests: XCTestCase {
 
         XCTAssertTrue(vm.searchedTokens.contains { $0.ticker.uppercased() == "AAVE" },
                       "Curated/local tokens stay searchable when the provider fetch throws")
-        XCTAssertNotNil(vm.error, "The fetch error is still surfaced for the retry affordance")
+        XCTAssertNotNil(vm.error, "The fetch error is still recorded even though the list fails open")
     }
 
     func testCuratedPresetBrowsableWhenProviderFetchThrows() async {

@@ -51,10 +51,6 @@ class TokenSelectionViewModel: ObservableObject {
         self.loadCatalog = loadCatalog
     }
 
-    var showRetry: Bool {
-        return logic.showRetry(error: error)
-    }
-
     /// Verification for a row — defaults to `.curated` (unbadged) for tokens the
     /// catalog didn't tag (held coins, curated `TokensStore` presets).
     func verification(for coin: CoinMeta) -> TokenVerification {
@@ -111,8 +107,10 @@ class TokenSelectionViewModel: ObservableObject {
             verificationByUniqueId = result.verificationByUniqueId
         } catch {
             // Fail open: keep the local presets/held (already rendered) fully
-            // searchable rather than blanking the list. Surface the error for the
-            // retry affordance but still re-derive from what's local below.
+            // searchable rather than blanking the list, and re-derive from what's
+            // local below. The error is recorded (not rendered) — the catalog has
+            // no failure the user can act on: providers already fail open to the
+            // bundled floor + last-good disk snapshot, so there is nothing to retry.
             self.error = error
         }
 
@@ -230,15 +228,6 @@ struct TokenSelectionLogic {
             .prefix(20)
 
         return Array(filtered)
-    }
-
-    func showRetry(error: Error?) -> Bool {
-        switch error {
-        case let error as TokenSearchServiceError:
-            return error == .networkError || error == .rateLimitExceeded
-        default:
-            return false
-        }
     }
 
     /// Local-first dedup merge: earlier lists win a `uniqueId` collision (so the

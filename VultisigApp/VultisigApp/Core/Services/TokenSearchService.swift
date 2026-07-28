@@ -130,20 +130,15 @@ struct TokenSearchResult {
     let verificationByUniqueId: [String: TokenVerification]
 }
 
+/// Cancellation is the only failure this service can report: the catalog's
+/// providers fail open internally (bundled curated floor + last-good disk
+/// snapshot), so a network outage or a rate-limited provider degrades the list
+/// rather than throwing.
 enum TokenSearchServiceError: Error, LocalizedError {
-    case noTokens
-    case networkError
-    case rateLimitExceeded
     case cancelled
 
     var errorDescription: String? {
         switch self {
-        case .noTokens:
-            return "Tokens not found"
-        case .networkError:
-            return "Unable to connect.\nPlease check your internet connection and try again"
-        case .rateLimitExceeded:
-            return "Too many requests.\nPlease close this screen and try again later"
         case .cancelled:
             return "Request cancelled"
         }
