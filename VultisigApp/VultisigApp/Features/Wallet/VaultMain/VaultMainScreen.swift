@@ -137,12 +137,30 @@ struct VaultMainScreen: View {
         }
     }
 
+    /// The view model publishes a preformatted total, recomputed only when
+    /// balances, chain membership or rates change. Computing it here instead
+    /// (`homeViewModel.balanceText(for:)`) walked every coin through
+    /// `RateProvider` on every body evaluation.
+    ///
+    /// The fallback covers the frames where the projection is not yet usable —
+    /// before `onLoad`'s `refresh()` runs, and right after a vault switch while
+    /// the published total still belongs to the previous vault — so the balance
+    /// is never blank and never another vault's number.
+    private var totalBalanceToShow: String {
+        guard !homeViewModel.hideVaultBalance else { return String.hideBalanceText }
+        guard let total = viewModel.totalFiatBalance,
+              total.vaultPubKeyECDSA == vault.pubKeyECDSA else {
+            return homeViewModel.balanceText(for: vault)
+        }
+        return total.text
+    }
+
     func topContentSection(width: CGFloat) -> some View {
         LazyVStack(spacing: 0) {
             Group {
                 VaultMainBalanceView(
                     vault: vault,
-                    balanceToShow: homeViewModel.balanceText(for: vault),
+                    balanceToShow: totalBalanceToShow,
                     style: .wallet
                 )
                     .padding(.bottom, 32)

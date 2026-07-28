@@ -16,13 +16,15 @@ struct VaultMainScreenScrollView<Content: View>: View {
     @Binding var scrollOffset: CGFloat
     @ViewBuilder var content: () -> Content
 
-    private let coordinateSpaceName = UUID()
-
-    // Throttling state for 15fps
-    @State private var lastUpdateTime: CFTimeInterval = 0
-    @State private var pendingValue: CGFloat?
-    @State private var throttleTimer: Timer?
-    private let frameInterval: TimeInterval = 1.0 / 5.0 // 5fps
+    /// Throttle bookkeeping lives in a reference box rather than in `@State`
+    /// scalars. The offset reader below fires once per layout pass — i.e. every
+    /// frame while the user drags — and writing `@State` there would invalidate
+    /// this view's body, re-invoking `content()` (the entire wallet content
+    /// tree) at display rate. That defeated the whole point of the throttle:
+    /// only the `scrollOffset` binding was rate-limited, the expensive rebuild
+    /// was not. Mutating the box's properties is invisible to SwiftUI, so the
+    /// only re-render left is the throttled binding write itself.
+    @State private var throttle = ScrollOffsetThrottle(interval: 1.0 / 5.0)
 
     init(
         axes: Axis.Set = .vertical,
@@ -49,17 +51,15 @@ struct VaultMainScreenScrollView<Content: View>: View {
                         GeometryReader { proxy in
                             Color.clear
                                 .onChange(of: preferenceValue(proxy: proxy)) { _, newValue in
-                                    throttledUpdateOffset(newValue)
+                                    throttle.submit(newValue) { scrollOffset = $0 }
                                 }
                         }
                     )
                 insetView(length: bottomInset)
             }
         }
-        .coordinateSpace(name: coordinateSpaceName)
         .onDisappear {
-            // Clean up timer when view disappears
-            throttleTimer?.invalidate()
+            throttle.cancel()
         }
     }
 }
@@ -87,32 +87,59 @@ private extension VaultMainScreenScrollView {
         let frame = proxy.frame(in: .scrollView)
         return axes == .vertical ? frame.minY : frame.minX
     }
+}
 
-    func throttledUpdateOffset(_ newValue: CGFloat) {
-        let currentTime = CACurrentMediaTime()
+/// Leading-edge throttle for the scroll offset, with a trailing emission so the
+/// last value of a burst is never dropped.
+///
+/// Deliberately a class: it is held in a single `@State` so the per-frame
+/// bookkeeping never invalidates the owning view's body.
+private final class ScrollOffsetThrottle {
+    private let interval: TimeInterval
+    private var lastEmitTime: CFTimeInterval = 0
+    private var pendingValue: CGFloat?
+    private var timer: Timer?
 
-        // Store the latest value
-        pendingValue = newValue
+    init(interval: TimeInterval) {
+        self.interval = interval
+    }
 
-        // If enough time has passed since last update, update immediately
-        if currentTime - lastUpdateTime >= frameInterval {
-            scrollOffset = newValue
-            lastUpdateTime = currentTime
-            pendingValue = nil
+    /// Emits `value` immediately when `interval` has elapsed since the last
+    /// emission, otherwise schedules a single trailing emission of the newest
+    /// value seen in the meantime.
+    func submit(_ value: CGFloat, emit: @escaping (CGFloat) -> Void) {
+        let now = CACurrentMediaTime()
+        pendingValue = value
+
+        if now - lastEmitTime >= interval {
+            flush(now: now, emit: emit)
             return
         }
 
-        // Otherwise, schedule an update if we haven't already
-        if throttleTimer == nil {
-            let remainingTime = frameInterval - (currentTime - lastUpdateTime)
-            throttleTimer = Timer.scheduledTimer(withTimeInterval: remainingTime, repeats: false) { _ in
-                if let value = pendingValue {
-                    scrollOffset = value
-                    lastUpdateTime = CACurrentMediaTime()
-                    pendingValue = nil
-                }
-                throttleTimer = nil
-            }
+        guard timer == nil else { return }
+
+        let trailing = Timer(timeInterval: interval - (now - lastEmitTime), repeats: false) { [weak self] _ in
+            guard let self else { return }
+            self.timer = nil
+            self.flush(now: CACurrentMediaTime(), emit: emit)
         }
+        timer = trailing
+        // `.common` mode, not the default one: the default run loop mode is
+        // suspended for the whole duration of a scroll drag, so a timer
+        // scheduled there never fires while the finger is down — exactly when
+        // the trailing update is needed.
+        RunLoop.main.add(trailing, forMode: .common)
+    }
+
+    func cancel() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    private func flush(now: CFTimeInterval, emit: (CGFloat) -> Void) {
+        guard let value = pendingValue else { return }
+        pendingValue = nil
+        lastEmitTime = now
+        emit(value)
     }
 }

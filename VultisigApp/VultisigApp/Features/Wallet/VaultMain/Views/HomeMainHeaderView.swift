@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeMainHeaderView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
 
     let vault: Vault
     @Binding var activeTab: HomeTab
@@ -20,8 +21,29 @@ struct HomeMainHeaderView: View {
 
     @State private var showBalanceInternal = false
 
+    /// Wallet total: the same guard-and-fallback shape as
+    /// `VaultMainScreen.totalBalanceToShow`. `VaultDetailViewModel` publishes it
+    /// preformatted, so the header no longer walks every coin through
+    /// `RateProvider` on each body evaluation. The fallback covers the frames
+    /// where the projection is not usable — before the first `refresh()` lands,
+    /// and right after a vault switch while the published total still belongs to
+    /// the previous vault.
+    ///
+    /// DeFi total: kept as an on-the-fly compute. Its only meaningful published
+    /// source would be `DefiMainViewModel`, which `DefiMainScreen` owns as a
+    /// `@StateObject` and is therefore unreachable from here, and
+    /// `VaultDetailViewModel` has no trigger tied to a DeFi balance refresh — a
+    /// value published there would go stale on exactly the tab that shows it.
+    /// The walk is also far cheaper: it is filtered to the vault's DeFi chains
+    /// and only runs while the DeFi tab is active.
     var balanceText: String {
-        activeTab == .defi ? homeViewModel.defiBalanceText(for: vault) : homeViewModel.balanceText(for: vault)
+        guard !homeViewModel.hideVaultBalance else { return String.hideBalanceText }
+        guard activeTab != .defi else { return homeViewModel.defiBalanceText(for: vault) }
+        guard let total = vaultDetailViewModel.totalFiatBalance,
+              total.vaultPubKeyECDSA == vault.pubKeyECDSA else {
+            return homeViewModel.balanceText(for: vault)
+        }
+        return total.text
     }
 
     var body: some View {
@@ -118,4 +140,5 @@ struct HomeMainHeaderView: View {
     }
     .background(Theme.colors.bgPrimary)
     .environmentObject(HomeViewModel())
+    .environmentObject(VaultDetailViewModel())
 }

@@ -19,33 +19,58 @@ struct CommonListItemContainer: ViewModifier {
         index == itemsCount - 1
     }
 
+    /// Only the end rows have a non-zero radius, so only they need a mask. A
+    /// middle row's clip is a plain rectangle the size of the row — visually a
+    /// no-op that still installs a mask and can cost an offscreen pass, once
+    /// per row, on every frame the list composites.
+    private var needsCornerClip: Bool {
+        isFirst || isLast
+    }
+
     func body(content: Content) -> some View {
+        // The end rows carry the surface's corner radius themselves, so the
+        // group reads as one rounded card without a mask spanning the whole
+        // list. A container-height `clipShape` is a render-side cost that grows
+        // with the row count and forces the list to be laid out as one unit.
+        if needsCornerClip {
+            // A single-row list is both first and last, so it keeps all four
+            // corners rounded.
+            row(content)
+                .clipShape(
+                    .rect(
+                        topLeadingRadius: isFirst ? CommonListContainer.cornerRadius : 0,
+                        bottomLeadingRadius: isLast ? CommonListContainer.cornerRadius : 0,
+                        bottomTrailingRadius: isLast ? CommonListContainer.cornerRadius : 0,
+                        topTrailingRadius: isFirst ? CommonListContainer.cornerRadius : 0
+                    )
+                )
+        } else {
+            row(content)
+        }
+    }
+
+    private func row(_ content: Content) -> some View {
         VStack(spacing: 0) {
             content
             Separator(color: Theme.colors.borderLight, opacity: 1)
                 .showIf(!isLast)
         }
-        .clipShape(
-            .rect(
-                topLeadingRadius: isFirst ? 12 : 0,
-                bottomLeadingRadius: isLast ? 12 : 0,
-                bottomTrailingRadius: isLast ? 12 : 0,
-                topTrailingRadius: isFirst ? 12 : 0
-            )
-        )
-        .plainListItem()
     }
 }
 
 /// Wrapping container for a group of `commonListItemContainer` rows: a single
 /// rounded surface with a hairline border, matching the Figma list style.
 struct CommonListContainer: ViewModifier {
+    static let cornerRadius: CGFloat = 24
+
     func body(content: Content) -> some View {
         content
-            .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .background(
+                RoundedRectangle(cornerRadius: Self.cornerRadius)
+                    .fill(Theme.colors.bgSurface1)
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: Self.cornerRadius)
                     .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
                     .allowsHitTesting(false)
             )
