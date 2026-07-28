@@ -729,6 +729,9 @@ private final class RippleAccountLinesStub: HTTPClientProtocol, @unchecked Senda
         case exhausted
     }
 
+    // Canned bodies: written by the test before the exercise phase, only read
+    // once requests start — same arrangement as the sibling XRPL stubs.
+
     /// Consumed one per `account_lines` call, in order.
     var pages: [String] = []
     /// Served for every `account_info` call.
@@ -736,10 +739,21 @@ private final class RippleAccountLinesStub: HTTPClientProtocol, @unchecked Senda
     /// Served for every `server_state` call.
     var serverStateJSON: String?
 
-    private(set) var callCount = 0
-    private(set) var requestedParams: [[String: Any]] = []
-    private(set) var requestedMethods: [String] = []
-    private(set) var requestedHosts: [URL] = []
+    /// `RippleService.getBalance` fans `account_info` and `server_state` out
+    /// concurrently (`async let`), so two `request(_:)` calls land at once and
+    /// every recorded field is appended to from both. Concurrent `append` is
+    /// undefined behaviour, so recording goes through a lock — the same
+    /// discipline the other XRPL stubs use for their counters.
+    private let lock = NSLock()
+    private var recordedCallCount = 0
+    private var recordedParams: [[String: Any]] = []
+    private var recordedMethods: [String] = []
+    private var recordedHosts: [URL] = []
+
+    var callCount: Int { lock.withLock { recordedCallCount } }
+    var requestedParams: [[String: Any]] { lock.withLock { recordedParams } }
+    var requestedMethods: [String] { lock.withLock { recordedMethods } }
+    var requestedHosts: [URL] { lock.withLock { recordedHosts } }
 
     var requestedMarkers: [String?] {
         requestedParams.map { $0["marker"] as? String }
@@ -748,15 +762,12 @@ private final class RippleAccountLinesStub: HTTPClientProtocol, @unchecked Senda
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         await Task.yield()
         let method = Self.rpcMethod(of: target)
-        requestedMethods.append(method ?? "")
-        requestedHosts.append(target.baseURL)
+        let page = record(method: method, host: target.baseURL, params: Self.firstParams(of: target) ?? [:])
 
         switch method {
         case "account_lines":
-            callCount += 1
-            requestedParams.append(Self.firstParams(of: target) ?? [:])
-            guard callCount <= pages.count else { throw StubError.exhausted }
-            return HTTPResponse(data: Data(pages[callCount - 1].utf8), response: Self.ok)
+            guard let page, page < pages.count else { throw StubError.exhausted }
+            return HTTPResponse(data: Data(pages[page].utf8), response: Self.ok)
         case "account_info":
             guard let accountInfoJSON else { throw StubError.unexpectedMethod(method) }
             return HTTPResponse(data: Data(accountInfoJSON.utf8), response: Self.ok)
@@ -765,6 +776,20 @@ private final class RippleAccountLinesStub: HTTPClientProtocol, @unchecked Senda
             return HTTPResponse(data: Data(serverStateJSON.utf8), response: Self.ok)
         default:
             throw StubError.unexpectedMethod(method)
+        }
+    }
+
+    /// Records one request and, for `account_lines`, claims the next page index —
+    /// all in one critical section, so two concurrent calls can neither interleave
+    /// an `append` nor be handed the same page. `nil` for every other method.
+    private func record(method: String?, host: URL, params: [String: Any]) -> Int? {
+        lock.withLock { () -> Int? in
+            recordedMethods.append(method ?? "")
+            recordedHosts.append(host)
+            guard method == "account_lines" else { return nil }
+            recordedCallCount += 1
+            recordedParams.append(params)
+            return recordedCallCount - 1
         }
     }
 
