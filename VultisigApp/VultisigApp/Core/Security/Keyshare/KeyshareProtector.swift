@@ -38,6 +38,8 @@ enum KeyshareProtectionState {
 protocol KeyshareProtecting {
     func open(_ stored: String) throws -> String
     func seal(_ plaintext: String) throws -> String
+    /// Whether a stored value is ciphertext rather than a plaintext share.
+    func isSealed(_ stored: String) -> Bool
 }
 
 final class KeyshareProtector: KeyshareProtecting {
@@ -49,10 +51,14 @@ final class KeyshareProtector: KeyshareProtecting {
 
     init(
         cipher: KeyshareCipher = AesGcmKeyshareCipher(),
-        state: @escaping () -> KeyshareProtectionState = { .disabled }
+        state: @escaping () -> KeyshareProtectionState = { KeyshareKeySession.shared.currentState() }
     ) {
         self.cipher = cipher
         self.state = state
+    }
+
+    func isSealed(_ stored: String) -> Bool {
+        cipher.isSealed(stored)
     }
 
     func open(_ stored: String) throws -> String {
