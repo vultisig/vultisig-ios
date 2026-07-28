@@ -17,8 +17,9 @@ struct TokenCellView: View {
     /// opens the line — so the row has to make that state legible and offer the
     /// one action that fixes it. `nil` for every other coin.
     ///
-    /// This renders a real `Button`, so the row around it must not be one: the
-    /// list attaches its own tap as a gesture instead (see `ChainDetailListView`).
+    /// This renders a real `Button`, so the row around it must not be one — see
+    /// `ChainDetailListView.row(for:)`, which drops the row's navigation tap for
+    /// exactly these rows rather than nest the two. The chevron goes with it.
     var onActivate: (() -> Void)?
 
     var body: some View {
@@ -68,8 +69,10 @@ struct TokenCellView: View {
                             .contentTransition(.numericText())
                             .animation(.interpolatingSpring, value: coin.balanceStringWithTicker)
                     }
+                    // The chevron advertises the row's navigation tap, which only
+                    // exists while there is no activation CTA to compete with it.
+                    Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 16)
                 }
-                Icon(.chevronRightSmall, color: Theme.colors.textPrimary, size: 16)
             }
         }
         .padding(.horizontal, 16)

@@ -26,27 +26,41 @@ struct ChainDetailListView: View {
     var tokensList: some View {
         VStack(spacing: 0) {
             ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
-                // The row's tap is a gesture on the cell rather than a `Button`
-                // wrapping it. A row can carry its own "Activate" `PrimaryButton`,
-                // and a `Button` inside another `Button`'s label hit-tests
-                // unreliably — a tap on Activate can be swallowed by the row and
-                // navigate to coin detail instead of opening the activation sheet.
-                // Kept as siblings, the inner button takes the tap and the rest of
-                // the row still opens coin detail.
-                TokenCellView(
-                    coin: token,
-                    onActivate: activateAction(for: token)
-                )
-                .contentShape(Rectangle())
-                .onTapGesture { onPress(token) }
-                .accessibilityAddTraits(.isButton)
-                .commonListItemContainer(
-                    index: index,
-                    itemsCount: viewModel.filteredTokens.count
-                )
+                row(for: token)
+                    .commonListItemContainer(
+                        index: index,
+                        itemsCount: viewModel.filteredTokens.count
+                    )
             }
         }
         .commonListContainer()
+    }
+
+    /// A row is either a navigation target or an activation prompt — never both.
+    ///
+    /// The "Activate" CTA is a `Button`, and a `Button` inside another `Button`'s
+    /// label hit-tests unreliably: the CTA's tap can be taken by the row and open
+    /// coin detail instead of the activation sheet. Overlaying a row-wide tap
+    /// gesture on the CTA instead would only move the ambiguity into gesture
+    /// arbitration. Splitting the two cases leaves them structurally unable to
+    /// overlap, so neither has to win anything.
+    ///
+    /// A token whose trust line is missing can neither hold nor receive a balance,
+    /// so coin detail has nothing to show for it — that row drops the navigation
+    /// tap (and, in the cell, the chevron that advertised it) and offers only the
+    /// action that applies. Every other row keeps the plain `Button` it always had,
+    /// press feedback and keyboard activation included.
+    @ViewBuilder
+    private func row(for token: Coin) -> some View {
+        if let activate = activateAction(for: token) {
+            TokenCellView(coin: token, onActivate: activate)
+        } else {
+            Button {
+                onPress(token)
+            } label: {
+                TokenCellView(coin: token)
+            }
+        }
     }
 
     /// The activation closure for a row, or `nil` when the row should render a
