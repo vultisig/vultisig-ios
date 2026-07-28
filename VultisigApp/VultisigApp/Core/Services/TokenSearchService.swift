@@ -74,7 +74,7 @@ struct TokenSearchService {
     ///
     /// Verification-to-surface: only curated / verified candidates auto-appear in
     /// the wallet add-token search + the swap source browse list. Unverified
-    /// candidates (long-tail 1inch tokens with no CoinGecko listing, lookalike
+    /// candidates (1inch tokens 1inch itself tags `RISK:*`, lookalike
     /// USDC/USDT on a different contract, airdrop dust) are withheld — they stay
     /// addable through the explicit custom-token (paste-contract) flow, matching
     /// the MetaMask/Rabby "verified auto, unknown via manual import" posture. The

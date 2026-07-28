@@ -20,7 +20,8 @@ final class EvmCoinFinderTests: XCTestCase {
             name: "USD Coin",
             decimals: 6,
             logoURI: "https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png",
-            providers: ["1inch", "CoinGecko", "Uniswap Labs Default"]
+            providers: ["1inch", "CoinGecko", "Uniswap Labs Default"],
+            tags: nil
         )
         XCTAssertTrue(token.isCoinGeckoVerified)
     }
@@ -34,7 +35,8 @@ final class EvmCoinFinderTests: XCTestCase {
             name: "Anon",
             decimals: 18,
             logoURI: nil,
-            providers: ["1inch"]
+            providers: ["1inch"],
+            tags: nil
         )
         XCTAssertFalse(token.isCoinGeckoVerified)
     }
@@ -46,9 +48,41 @@ final class EvmCoinFinderTests: XCTestCase {
             name: "X",
             decimals: 18,
             logoURI: nil,
-            providers: nil
+            providers: nil,
+            tags: nil
         )
         XCTAssertFalse(token.isCoinGeckoVerified)
+    }
+
+    /// The two 1inch endpoints carry two different trust signals and must not be
+    /// conflated: discovery gates on `providers` from
+    /// `/token/v1.2/{chain}/custom` (kept live here), while the catalog gates on
+    /// `tags` from `/swap/v6.0/{chain}/tokens`, which never returns `providers`.
+    func testDiscoveryGateIsIndependentOfTheCatalogTagSignal() {
+        let customEndpointToken = OneInchToken(
+            address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            symbol: "USDC",
+            name: "USD Coin",
+            decimals: 6,
+            logoURI: "https://tokens.1inch.io/0xa0b8.png",
+            providers: ["1inch", "CoinGecko"],
+            tags: nil
+        )
+        XCTAssertTrue(customEndpointToken.isCoinGeckoVerified)
+        XCTAssertFalse(customEndpointToken.isRiskFlaggedByOneInch)
+
+        let tokensEndpointToken = OneInchToken(
+            address: "0xdeadbeef00000000000000000000000000000000",
+            symbol: "SCAM",
+            name: "Scam",
+            decimals: 18,
+            logoURI: "https://tokens.1inch.io/0xdead.png",
+            providers: nil,
+            tags: ["RISK:malicious"]
+        )
+        XCTAssertFalse(tokensEndpointToken.isCoinGeckoVerified,
+                       "The /tokens payload can never satisfy the discovery gate")
+        XCTAssertTrue(tokensEndpointToken.isRiskFlaggedByOneInch)
     }
 
     // MARK: - Chain support

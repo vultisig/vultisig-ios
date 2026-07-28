@@ -16,7 +16,8 @@
 //  merge and every existing provider/test keep working untouched. Trust-tagged
 //  candidates (`catalogTokens(for:)`) are derived on top: by default every token
 //  a provider emits gets the provider's `verification`; a provider with
-//  per-token trust (1inch CoinGecko-verified vs not) overrides `catalogTokens`.
+//  per-token trust (1inch, which downgrades its own `RISK:*`-tagged tokens)
+//  overrides `catalogTokens`.
 //
 
 import Foundation

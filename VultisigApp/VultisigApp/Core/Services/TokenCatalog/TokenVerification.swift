@@ -9,8 +9,9 @@
 //  Trust instead rides on the `CatalogToken` wrapper the repository emits.
 //
 //  Precedence: `.curated` (bundled `TokensStore`) is the strongest signal,
-//  then `.verified(source:)` (a source-side allowlist — 1inch CoinGecko,
-//  Jupiter's `?query=verified`), then `.unverified` (long-tail / unknown).
+//  then `.verified(source:)` (a source-side allowlist — 1inch's `/tokens`
+//  whitelist, Jupiter's `?query=verified`), then `.unverified` (long-tail /
+//  source-flagged / unknown).
 //  Only `.curated`/`.verified` auto-surface in search + discovery; `.unverified`
 //  stay reachable but must be opted into and are badged (MetaMask/Rabby model).
 //
@@ -22,14 +23,15 @@ import Foundation
 /// already computed). A `TokenVerification` MUST NOT be decoded straight from a
 /// third-party source payload: that would let a remote list self-assert
 /// `.verified` and auto-surface. Providers assign verification in code from a
-/// validated signal (1inch `isCoinGeckoVerified`, Jupiter's `?query=verified`
-/// list, curated bundling) — never from a decoded field. The disk snapshot caps
+/// validated signal (1inch's curated `/tokens` whitelist minus its `RISK:*`-tagged
+/// entries, Jupiter's `?query=verified` list, curated bundling) — never from a
+/// decoded field. The disk snapshot caps
 /// verification at `.verified` on load (never `.curated`) rather than fully
 /// trusting the persisted value (see `TokenCatalogDiskCache`).
 enum TokenVerification: Equatable, Hashable, Sendable, Codable {
     /// Bundled, hand-curated `TokensStore` entry — the offline trust anchor.
     case curated
-    /// Vouched for by a named source-side allowlist (e.g. "CoinGecko", "Jupiter").
+    /// Vouched for by a named source-side allowlist (e.g. "1inch", "Jupiter").
     case verified(source: String)
     /// Long-tail / unknown provenance — must not auto-surface.
     case unverified

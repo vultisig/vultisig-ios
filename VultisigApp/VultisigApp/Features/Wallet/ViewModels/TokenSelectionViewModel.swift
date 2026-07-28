@@ -21,7 +21,7 @@ class TokenSelectionViewModel: ObservableObject {
     /// Curated `TokensStore` presets not held/hidden (browse, after held). Always
     /// present synchronously — independent of the async provider fetch.
     @Published var preExistTokens: [CoinMeta] = []
-    /// Verified provider breadth for browse (1inch CoinGecko / Jupiter), deduped
+    /// Verified provider breadth for browse (1inch / Jupiter), deduped
     /// against the local tokens above. Empty until the provider fetch lands.
     @Published var browseProviderTokens: [CoinMeta] = []
     /// Search results over the full local-first pool (local + verified +
