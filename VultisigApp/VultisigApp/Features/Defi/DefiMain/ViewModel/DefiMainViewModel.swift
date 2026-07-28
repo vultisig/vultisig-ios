@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "defi-main-view-model")
+private let logger = Log.defi.viewModel
 
 enum DefiMainItem: Identifiable, Hashable {
     case chain(Chain)

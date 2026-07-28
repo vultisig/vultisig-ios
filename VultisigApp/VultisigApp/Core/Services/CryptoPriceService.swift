@@ -98,7 +98,7 @@ enum CryptoPriceAPI: TargetType {
 }
 
 public class CryptoPriceService: ObservableObject {
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
+    private let logger = Log.chain.service
 
     struct ResolvedSources {
         let providerIds: [String]

@@ -34,7 +34,7 @@ actor BlockaidSimulationService {
     )
 
     private let rpcClient: BlockaidRpcClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockaid-simulation")
+    private let logger = Log.app.other
 
     private var cache: [CacheKey: BlockaidKeysignScanResult] = [:]
     private var inflight: [CacheKey: Task<BlockaidKeysignScanResult, Error>] = [:]

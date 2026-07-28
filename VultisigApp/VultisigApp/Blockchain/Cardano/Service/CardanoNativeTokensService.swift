@@ -10,7 +10,7 @@ actor CardanoNativeTokensService {
 
     static let shared = CardanoNativeTokensService()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "cardano-native-tokens")
+    private let logger = Log.chain.other
     private let httpClient: HTTPClientProtocol
     private var assetInfoCache: [String: CachedMetadata] = [:]
     private let cacheTTL: TimeInterval = 7 * 24 * 60 * 60

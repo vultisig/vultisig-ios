@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 /// Data source for Unbond screen - fetches user's bonded LP positions on a specific node
 class MayaBondedAssetsDataSource: AssetSelectionDataSource {
@@ -44,7 +45,7 @@ class MayaBondedAssetsDataSource: AssetSelectionDataSource {
 
             return assets
         } catch {
-            print("Error fetching bonded LP positions: \(error.localizedDescription)")
+            Log.send.service.error("Error fetching bonded LP positions: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }

@@ -17,7 +17,7 @@ struct BlockSpecificCacheItem {
 }
 final class BlockChainService {
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "blockchain-service")
+    private let logger = Log.chain.service
 
     static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
         return value * 2 + value / 2 // x2.5 fee

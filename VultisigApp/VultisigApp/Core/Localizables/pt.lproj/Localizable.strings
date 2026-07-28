@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "Inacessível";
 "customRPCWrongChain" = "Cadeia errada (esperado %d, recebido %d)";
 "customToken" = "Token Personalizado";
+"customTokenAddButton" = "Adicionar token %@";
 "customTokenErrorSubtitle" = "Não foi possível encontrar o token. Verifique o endereço do contrato e tente novamente.";
+"customTokenNotFound" = "Token não encontrado";
+"customTokenRateLimit" = "Muitas solicitações. Feche esta tela e tente novamente mais tarde.";
 "dappRequestFrom" = "Pedido de";
 "date" = "Data";
 "decimalAmountError" = "O valor deve ser decimal.";
@@ -774,6 +777,7 @@
 "mintCoin" = "Cunhar %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"missingEncryptionKey" = "Chave de criptografia ausente. Tente novamente.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
 "modules" = "Módulos";

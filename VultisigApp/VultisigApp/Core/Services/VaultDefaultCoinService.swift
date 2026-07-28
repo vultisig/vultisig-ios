@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import OSLog
 
 class VaultDefaultCoinService {
     let context: ModelContext
@@ -27,7 +28,7 @@ class VaultDefaultCoinService {
 
     func setDefaultCoins(for vault: Vault) {
         // Add default coins when the vault doesn't have any coins in it
-        print("set default chains to vault")
+        Log.chain.service.info("set default chains to vault")
         if vault.coins.isEmpty {
             let defaultChains = getDefaultChains(for: vault)
             let chains: [CoinMeta] = TokensStore.TokenSelectionAssets

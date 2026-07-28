@@ -11,6 +11,7 @@
 import SwiftUI
 import BigInt
 import WalletCore
+import OSLog
 
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
@@ -110,14 +111,19 @@ class SendCryptoVerifyViewModel: ObservableObject {
             var newAmount = transaction.amount
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
             if transaction.sendMaxAmount && transaction.coin.isNativeToken {
-                let balance = transaction.coin.rawBalance.toBigInt(decimals: transaction.coin.decimals)
-                // Reserve the existential deposit so a DOT max-send settles at
-                // `balance − fee − ED`; `transfer_keep_alive` rejects a transfer
-                // that would reap the sender. Zero for non-ED chains — including
-                // TAO (`transfer_allow_death`) and XRP, whose rawBalance is
-                // already reserve-net, so its max settles at `balance − fee`.
-                let existentialDeposit = SendCryptoLogic.existentialDeposit(for: transaction.coin)
-                let candidate = balance - feeResult.fee - existentialDeposit
+                // `balance − fee − ED`. The ED reservation lets a DOT max-send
+                // settle at `balance − fee − ED` (`transfer_keep_alive` rejects
+                // a transfer that would reap the sender); zero for non-ED chains
+                // — including TAO (`transfer_allow_death`) and XRP, whose
+                // rawBalance is already reserve-net. Terra Classic additionally
+                // clamps to the Details amount so the refetched fee's embedded
+                // burn tax can't push the re-derived amount past the tax fixed
+                // point and underfund the send.
+                let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
+                    coin: transaction.coin,
+                    fee: feeResult.fee,
+                    previousAmountRaw: transaction.amountInRaw
+                )
                 if candidate > 0 {
                     let decimals = transaction.coin.decimals
                     let amountDecimal = Decimal(string: String(candidate)) ?? 0
@@ -150,7 +156,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isCalculatingFee = false
             isLoading = false
         } catch {
-            print("DEBUG: Error calculating fee: \(error)")
+            Log.send.viewModel.error("Error calculating fee: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
             showAlert = true
             isCalculatingFee = false

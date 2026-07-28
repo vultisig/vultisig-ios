@@ -253,7 +253,7 @@ private extension BlockaidTransactionScanResponseJson {
 private extension String {
 
     func toWarningType() -> SecurityRiskLevel {
-        let logger = Logger(subsystem: "com.vultisig.app", category: "security-scanner")
+        let logger = Log.app.other
 
         switch self.lowercased() {
         case "benign", "info":

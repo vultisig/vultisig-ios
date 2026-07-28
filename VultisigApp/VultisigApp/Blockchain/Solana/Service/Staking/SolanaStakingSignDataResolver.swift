@@ -53,10 +53,7 @@ enum SolanaStakingSignDataResolver {
         }
     }
 
-    private static let logger = Logger(
-        subsystem: "com.vultisig.app",
-        category: "solana-staking-sign-resolver"
-    )
+    private static let logger = Log.chain.other
 
     /// Resolves the `SignSolana` artefact for a delegate payload.
     ///

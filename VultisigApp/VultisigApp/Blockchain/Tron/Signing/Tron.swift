@@ -9,6 +9,7 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
 
 enum TronHelper {
 
@@ -386,7 +387,7 @@ enum TronHelper {
             serializedBytes: hashes
         )
         if !preSigningOutput.errorMessage.isEmpty {
-            print(preSigningOutput.errorMessage)
+            Log.chain.other.error("\(preSigningOutput.errorMessage, privacy: .public)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.dataHash.hexString]
@@ -419,7 +420,7 @@ enum TronHelper {
         )
         guard publicKey
             .verify(signature: signature, message: preSigningOutput.dataHash) else {
-            print("fail to verify signature")
+            Log.chain.other.error("fail to verify signature")
             throw HelperError.runtimeError("fail to verify signature")
         }
 
@@ -435,7 +436,7 @@ enum TronHelper {
         )
 
         if !output.errorMessage.isEmpty {
-            print(output.errorMessage)
+            Log.chain.other.error("\(output.errorMessage, privacy: .public)")
             throw HelperError.runtimeError("fail to sign transaction")
         }
 

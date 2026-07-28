@@ -29,7 +29,7 @@ import OSLog
 import Tss
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-sui-signer")
+private let logger = Log.chain.other
 
 enum SwapKitSuiSignerError: Error, LocalizedError {
     case emptyPayload

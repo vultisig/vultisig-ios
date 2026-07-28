@@ -24,7 +24,7 @@ enum JoinKeygenStatus {
 
 @MainActor
 class JoinKeygenViewModel: ObservableObject {
-    private let logger = Logger(subsystem: "join-keygen", category: "viewmodel")
+    private let logger = Log.keygen.viewModel
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
 
@@ -354,7 +354,7 @@ class JoinKeygenViewModel: ObservableObject {
             }
             handleDeeplinkScan(URL(string: urlString))
         } catch {
-            print(error)
+            logger.error("\(error.localizedDescription, privacy: .public)")
         }
     }
 

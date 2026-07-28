@@ -8,6 +8,7 @@
 import SwiftData
 import SwiftUI
 import WalletCore
+import OSLog
 
 struct HomeScreen: View {
     @Environment(\.router) var router
@@ -419,7 +420,7 @@ extension HomeScreen {
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
         } catch {
-            print(error)
+            Log.wallet.view.error("\(error.localizedDescription, privacy: .public)")
         }
     }
 

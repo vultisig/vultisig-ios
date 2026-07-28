@@ -30,7 +30,7 @@ final class TransactionHistoryResetService: TransactionHistoryResetting {
     private let deleteTransactionHistory: @MainActor () throws -> Void
     private let deleteLimitOrders: @MainActor () throws -> Void
     private let notifyChanged: @MainActor () -> Void
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-reset")
+    private let logger = Log.chain.other
 
     /// Seams default to the production singletons; tests inject fakes to assert
     /// the teardown order and that both stores are wiped.

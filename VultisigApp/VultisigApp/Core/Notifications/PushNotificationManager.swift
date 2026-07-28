@@ -25,10 +25,7 @@ class PushNotificationManager: ObservableObject {
 
     private let keychainService: KeychainService
     private let notificationService: NotificationServicing
-    private let logger = Logger(
-        subsystem: "com.vultisig.wallet",
-        category: "PushNotifications"
-    )
+    private let logger = Log.app.other
 
     private let notificationDelegate = NotificationDelegate()
 

@@ -75,7 +75,7 @@ struct FastVaultKeysignBootstrap {
     static let fastVaultPeerWaitSeconds: TimeInterval = 60
 
     private let sessionService: FastVaultKeysignSessionProviding
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "fast-vault-keysign-bootstrap")
+    private let logger = Log.keysign.other
 
     init(sessionService: FastVaultKeysignSessionProviding = KeysignSessionService()) {
         self.sessionService = sessionService

@@ -27,7 +27,7 @@ actor CosmosCoinFinder {
 
     static let shared = CosmosCoinFinder()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-discovery")
+    private let logger = Log.chain.other
     private let httpClient: HTTPClientProtocol
     private let metadataResolver: CosmosTokenMetadataResolver
 

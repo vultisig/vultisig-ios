@@ -17,7 +17,7 @@ final class FastVaultEligibilityRefresher {
 
     static let shared = FastVaultEligibilityRefresher()
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "fast-vault-cache")
+    private let logger = Log.chain.store
     private let checkEligibility: @MainActor (Vault) async -> Bool
     private let saveStorage: @MainActor () -> Void
     private let now: @MainActor () -> Date

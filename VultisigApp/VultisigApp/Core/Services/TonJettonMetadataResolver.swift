@@ -25,7 +25,7 @@ import WalletCore
 /// can fall back to the raw integer amount + jetton-wallet contract address.
 enum TonJettonMetadataResolver {
 
-    private static let logger = Logger(subsystem: "com.vultisig.app", category: "ton-jetton-metadata-resolver")
+    private static let logger = Log.chain.other
     private static let httpClient: HTTPClientProtocol = HTTPClient()
 
     /// Builds a `TonAPI` value honoring the user's TON custom-RPC override (host

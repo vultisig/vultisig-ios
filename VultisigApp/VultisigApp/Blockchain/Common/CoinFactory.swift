@@ -8,6 +8,7 @@
 import Foundation
 import WalletCore
 import CryptoKit
+import OSLog
 
 struct CoinFactory {
     private init() { }
@@ -123,7 +124,7 @@ extension CoinFactory {
 
                 // Create ed25519Cardano public key
                 guard let cardanoKey = PublicKey(data: cardanoExtendedKey, type: .ed25519Cardano) else {
-                    print("Failed to create ed25519Cardano key from properly structured data")
+                    Log.chain.other.error("Failed to create ed25519Cardano key from properly structured data")
                     throw Errors.invalidPublicKey(pubKey: "Failed to create Cardano extended key")
                 }
 

@@ -11,7 +11,7 @@ import OSLog
 
 final class QBTCProofService {
     private let httpClient: HTTPClientProtocol
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-proof")
+    private let logger = Log.qbtc.other
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient

@@ -23,7 +23,7 @@ import Foundation
 import OSLog
 import Tss
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-btc-signer")
+private let logger = Log.chain.other
 
 enum SwapKitBTCSignerError: Error, LocalizedError {
     case missingPSBT

@@ -8,7 +8,7 @@
 import SwiftUI
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "share-sheet-view-model")
+private let logger = Log.wallet.viewModel
 
 @MainActor
 class ShareSheetViewModel: ObservableObject {

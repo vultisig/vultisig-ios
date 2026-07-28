@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 /// Service responsible for handling app migrations
 /// Migrations are executed once per migration version on app launch
@@ -15,6 +16,7 @@ import Foundation
 /// 1. Persist across app reinstalls - prevents re-running migrations for existing users
 /// 2. Detect fresh installations - new devices have no Keychain entry, so migrations are skipped
 struct AppMigrationService {
+    private let logger = Log.app.service
     private let keychainService: KeychainService
 
     init(keychainService: KeychainService = DefaultKeychainService.shared) {
@@ -27,7 +29,7 @@ struct AppMigrationService {
 
         // Get the highest migration version available
         guard let latestMigrationVersion = migrations.map(\.version).max() else {
-            print("✅ [Migration] No migrations registered")
+            logger.info("✅ [Migration] No migrations registered")
             return
         }
 
@@ -39,16 +41,16 @@ struct AppMigrationService {
 
         // If already migrated to the latest version, skip
         if lastVersion >= latestMigrationVersion {
-            print("✅ [Migration] Already migrated to version \(lastVersion)")
+            logger.info("✅ [Migration] Already migrated to version \(lastVersion)")
             return
         }
 
-        print("🔄 [Migration] Starting migrations from version \(lastVersion) to \(latestMigrationVersion)")
+        logger.info("🔄 [Migration] Starting migrations from version \(lastVersion) to \(latestMigrationVersion)")
 
         // Execute migrations in order
         executeMigrations(from: lastVersion, migrations: migrations)
 
-        print("✅ [Migration] Completed all migrations")
+        logger.info("✅ [Migration] Completed all migrations")
     }
 
     /// Executes all necessary migrations after the last migrated version
@@ -58,13 +60,13 @@ struct AppMigrationService {
 
         // Execute each migration that hasn't been run yet
         for migration in sortedMigrations where migration.version > lastVersion {
-            print("🔄 [Migration] Executing migration #\(migration.version): \(migration.description)")
+            logger.info("🔄 [Migration] Executing migration #\(migration.version): \(migration.description, privacy: .public)")
             do {
                 try migration.migrate()
                 keychainService.setLastMigratedVersion(migration.version)
-                print("✅ [Migration] Successfully completed migration #\(migration.version)")
+                logger.info("✅ [Migration] Successfully completed migration #\(migration.version)")
             } catch {
-                print("❌ [Migration] Failed migration #\(migration.version): \(error.localizedDescription)")
+                logger.error("❌ [Migration] Failed migration #\(migration.version): \(error.localizedDescription, privacy: .public)")
                 // Stop executing further migrations if one fails
                 break
             }

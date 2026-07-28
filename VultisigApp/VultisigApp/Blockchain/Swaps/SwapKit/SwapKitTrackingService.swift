@@ -79,7 +79,7 @@ final class SwapKitTrackingService: ObservableObject, SwapTrackingService {
     private let httpClient: HTTPClientProtocol
     private let storage: SwapTrackingStorage
     private let clock: () -> Date
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-tracking")
+    private let logger = Log.swap.other
 
     /// Active poller registry keyed by `txHash` (the local broadcast hash
     /// the row was originally recorded under — not the SwapKit broadcast

@@ -8,7 +8,7 @@
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "vault-defi-chains-service")
+private let logger = Log.wallet.service
 
 // Enables Defi chains for the first time for vaults that were created before Defi features where released
 // TODO: - To be removed after release

@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftData
+import OSLog
 
 final class RateProvider {
 
@@ -80,7 +81,7 @@ final class RateProvider {
                 // value recompute instead of waiting on a network refresh.
                 self.ratesDidChange.send()
             } catch {
-                print("Failed to load rates: \(error.localizedDescription)")
+                Log.chain.service.error("Failed to load rates: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

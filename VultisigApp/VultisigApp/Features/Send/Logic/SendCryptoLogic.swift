@@ -196,6 +196,29 @@ enum SendCryptoLogic {
         return scaled < .zero ? 0 : scaled.truncated(toPlaces: coin.decimals)
     }
 
+    /// Re-derive the native-Max raw amount at Verify time from a freshly
+    /// resolved `fee`. The Verify screen refetches the fee after the Details
+    /// screen produced the amount, so a native Max is re-derived here as
+    /// `balance − fee − ED`.
+    ///
+    /// Terra Classic needs a clamp: its fee embeds a proportional burn tax
+    /// computed from the amount the Details screen produced, so `balance − fee`
+    /// re-adds the balance the tax already consumed and overshoots the tax
+    /// fixed point by up to one unit. Sending that candidate underfunds by up
+    /// to 1 uluna once the chain recomputes the tax on the larger amount at
+    /// broadcast. The Details amount already solves the fixed point
+    /// (`terraClassicMaxValue`) and is spendable, so the re-derived candidate
+    /// must never exceed it — clamping down also stays spendable when the fee
+    /// rose (a smaller amount owes no more tax than the Details amount did).
+    ///
+    /// Every other chain keeps `balance − fee − ED` unchanged.
+    static func verifyMaxCandidateRaw(coin: Coin, fee: BigInt, previousAmountRaw: BigInt) -> BigInt {
+        let balance = coin.rawBalance.toBigInt(decimals: coin.decimals)
+        let candidate = balance - fee - existentialDeposit(for: coin)
+        guard coin.chain == .terraClassic else { return candidate }
+        return Swift.min(candidate, previousAmountRaw)
+    }
+
     /// Apply a percentage (0–100) to a max amount string. Used by the
     /// "25% / 50% / 75%" preset buttons in the Details screen.
     ///

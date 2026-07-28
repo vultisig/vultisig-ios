@@ -21,7 +21,7 @@ class THORChainStakingService: THORChainStakingProviding {
     static let shared = THORChainStakingService()
 
     private let httpClient: HTTPClient
-    private let logger = Logger(subsystem: "com.vultisig.wallet", category: "thorchain-staking")
+    private let logger = Log.chain.other
 
     // Cache for TCY constants (they don't change often)
     private var cachedTcyConstants: TcyConstants?

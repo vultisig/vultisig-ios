@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "Unreachable";
 "customRPCWrongChain" = "Wrong chain (expected %d, got %d)";
 "customToken" = "Custom Token";
+"customTokenAddButton" = "Add %@ token";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
+"customTokenNotFound" = "Token Not Found";
+"customTokenRateLimit" = "Too many requests. Please close this screen and try again later.";
 "dappRequestFrom" = "Request from";
 "date" = "Date";
 "decimalAmountError" = "The amount must be decimal.";
@@ -772,6 +775,7 @@
 "mintCoin" = "Mint %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"missingEncryptionKey" = "Encryption key is missing. Please try again.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
 "modules" = "Modules";

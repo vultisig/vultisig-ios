@@ -5,6 +5,8 @@
 //  Created by Gaston Mazzeo on 24/11/2025.
 //
 
+import OSLog
+
 struct MayaAssetsDataSource: AssetSelectionDataSource {
     private let mayaChainAPIService = MayaChainAPIService()
 
@@ -14,7 +16,7 @@ struct MayaAssetsDataSource: AssetSelectionDataSource {
             let assets = try await mayaChainAPIService.getDepositAssets()
             return assets
         } catch {
-            print("Error fetching Maya deposit assets: \(error.localizedDescription)")
+            Log.send.service.error("Error fetching Maya deposit assets: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import RiveRuntime
+import OSLog
 
 struct ServerBackupVerificationScreen: View {
     let tssType: TssType
@@ -317,7 +318,7 @@ struct ServerBackupVerificationScreen: View {
             isPresented = false
             onBackToEmailSetup()
         } catch {
-            print("Error: \(error)")
+            Log.wallet.view.error("Error: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

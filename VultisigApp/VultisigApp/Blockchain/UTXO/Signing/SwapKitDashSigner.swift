@@ -30,7 +30,7 @@ import OSLog
 import Tss
 import WalletCore
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "swapkit-dash-signer")
+private let logger = Log.chain.other
 
 enum SwapKitDashSignerError: Error, LocalizedError {
     case underlying(SwapKitLegacyP2PKHSignerError)

@@ -3,7 +3,7 @@ import Foundation
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "function-call-details-screen")
+private let logger = Log.send.view
 
 struct FunctionCallDetailsScreen: View {
     @Environment(\.router) var router

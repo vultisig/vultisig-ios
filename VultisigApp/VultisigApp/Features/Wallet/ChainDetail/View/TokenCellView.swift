@@ -18,7 +18,7 @@ struct TokenCellView: View {
                     logo: coin.logo,
                     size: CGSize(width: 36, height: 36),
                     ticker: coin.chain.ticker,
-                    tokenChainLogo: coin.chain.logo
+                    tokenChainLogo: coin.tokenChainLogo
                 )
 
                 VStack(alignment: .leading, spacing: 4) {

@@ -9,6 +9,7 @@ import Foundation
 import BigInt
 import VultisigCommonData
 import WalletCore
+import OSLog
 
 class PolkadotService: RpcService {
     static let rpcEndpoint = Endpoint.polkadotServiceRpc
@@ -253,7 +254,7 @@ class PolkadotService: RpcService {
         do {
             partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
         } catch {
-            print("PolkadotService > calculateDynamicFee > Error fetching partial fee: \(error)")
+            Log.chain.service.error("calculateDynamicFee > Error fetching partial fee: \(error.localizedDescription, privacy: .public)")
         }
 
         return partialFee

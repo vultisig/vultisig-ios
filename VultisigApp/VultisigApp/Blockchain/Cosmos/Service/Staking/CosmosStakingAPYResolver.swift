@@ -47,7 +47,7 @@ actor CosmosStakingAPYResolver: CosmosStakingAPYResolverProtocol {
         httpClient: HTTPClientProtocol = HTTPClient(),
         ttl: TimeInterval = 5 * 60,
         clock: @escaping @Sendable () -> Date = { Date() },
-        logger: Logger = Logger(subsystem: "com.vultisig.app", category: "cosmos-apy-resolver")
+        logger: Logger = Log.chain.other
     ) {
         self.httpClient = httpClient
         self.ttl = ttl

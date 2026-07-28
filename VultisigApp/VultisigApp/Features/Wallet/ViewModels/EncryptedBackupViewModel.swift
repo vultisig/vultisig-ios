@@ -34,7 +34,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var extractedFilesDirectory: URL?
     @Published var pendingEncryptedVaults: [(fileName: String, data: Data)] = []
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "encrypted-backup")
+    private let logger = Log.wallet.other
     private let keychain = DefaultKeychainService.shared
     private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
 
@@ -270,7 +270,7 @@ class EncryptedBackupViewModel: ObservableObject {
 
                 importedVaults = processVaultFiles(vaultFiles)
             } catch {
-                print("⚠️ DEBUG: unzipItem failed: \(error)")
+                logger.error("⚠️ unzipItem failed: \(error.localizedDescription, privacy: .public)")
                 extractedSuccessfully = false
             }
 
@@ -292,19 +292,19 @@ class EncryptedBackupViewModel: ObservableObject {
                             // Process vault files
                             importedVaults = self.processVaultFiles(vaultFiles)
                         } else {
-                            print("❌ DEBUG: Coordinator didn't extract the ZIP")
+                            self.logger.error("❌ Coordinator didn't extract the ZIP")
                         }
                     }
                 }
 
                 if let error = coordinatorError {
-                    print("❌ DEBUG: Coordinator error: \(error)")
+                    self.logger.error("❌ Coordinator error: \(error.localizedDescription, privacy: .public)")
                     throw ZipFileError.failedToExtractZIP(error.localizedDescription)
                 }
             }
 
         } catch {
-            print("❌ DEBUG: Error during extraction: \(error)")
+            logger.error("❌ Error during extraction: \(error.localizedDescription, privacy: .public)")
             cleanupExtractedFiles()
             throw error
         }
@@ -335,7 +335,7 @@ class EncryptedBackupViewModel: ObservableObject {
             includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey],
             options: [.skipsHiddenFiles]
         ) else {
-            print("❌ DEBUG: Failed to create enumerator for: \(directory.path)")
+            logger.error("❌ Failed to create enumerator for: \(directory.path, privacy: .public)")
             return []
         }
 
@@ -361,7 +361,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     }
                 }
             } catch {
-                print("  ⚠️ Error checking file: \(fileURL.lastPathComponent) - \(error)")
+                logger.warning("⚠️ Error checking file: \(fileURL.lastPathComponent, privacy: .public) - \(error.localizedDescription, privacy: .public)")
             }
         }
 
@@ -388,7 +388,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     processedVaults.append(vault)
                 }
             } catch {
-                print("    ❌ Failed: \(error.localizedDescription)")
+                logger.error("❌ Failed: \(error.localizedDescription, privacy: .public)")
                 logger.warning("Failed to import vault from \(fileURL.lastPathComponent): \(error.localizedDescription)")
             }
         }
@@ -455,11 +455,11 @@ class EncryptedBackupViewModel: ObservableObject {
                     let vault = try Vault(proto: vsVault)
                     allVaults.append(vault)
                 } catch {
-                    print("  ❌ Failed to parse decrypted data (\(fileName)): \(error.localizedDescription)")
+                    logger.error("❌ Failed to parse decrypted data (\(fileName, privacy: .public)): \(error.localizedDescription, privacy: .public)")
                     failedVaults.append(fileName)
                 }
             } else {
-                print("  ❌ Failed to decrypt: \(fileName)")
+                logger.error("❌ Failed to decrypt: \(fileName, privacy: .public)")
                 failedVaults.append(fileName)
             }
         }
@@ -587,7 +587,7 @@ class EncryptedBackupViewModel: ObservableObject {
             let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
             return !matches.isEmpty
         } catch {
-            print("Error checking if filename is a DKLS backup: \(error.localizedDescription)")
+            logger.error("Error checking if filename is a DKLS backup: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -650,7 +650,7 @@ class EncryptedBackupViewModel: ObservableObject {
             showAlert = false
             isVaultImported = true
         } catch {
-            print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
+            logger.warning("failed to import with new format , fallback to the old format instead. \(error.localizedDescription, privacy: .public)")
 
             // fallback
             do {
@@ -736,13 +736,13 @@ class EncryptedBackupViewModel: ObservableObject {
 
     func handleOnDrop(providers: [NSItemProvider]) async {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.data.identifier) }) else {
-            print("Invalid file type.")
+            logger.error("Invalid file type.")
             return
         }
         do {
             let dragDropData = try await provider.loadItem(forTypeIdentifier: UTType.data.identifier)
             if let urlData = dragDropData as? NSURL {
-                print("File Path as NSURL: \(urlData)")
+                logger.debug("File Path as NSURL: \(String(describing: urlData), privacy: .public)")
                 provider.loadDataRepresentation(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     if let data {
                         let url = urlData as URL
@@ -762,7 +762,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 self.alertTitle = "failedToLoadFileData"
                 self.showAlert = true
             }
-            print("fail to process drag and drop file: \(error.localizedDescription)")
+            logger.error("fail to process drag and drop file: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

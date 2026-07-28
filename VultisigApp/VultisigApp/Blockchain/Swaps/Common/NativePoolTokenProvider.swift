@@ -18,7 +18,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "native-pool-token-provider")
+private let logger = Log.swap.other
 
 /// Which native protocol a pool feed belongs to.
 enum NativeSwapProtocol {

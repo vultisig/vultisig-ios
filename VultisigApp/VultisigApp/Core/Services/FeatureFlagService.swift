@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 enum FeatureFlag: String {
     case EncryptGCM
 
@@ -46,11 +47,11 @@ final class FeatureFlagService {
             if let result = features[feature.name] as? Bool {
                 return result
             } else {
-                print("Feature flag for \(feature) is not a boolean value")
+                Log.app.service.warning("Feature flag for \(String(describing: feature), privacy: .public) is not a boolean value")
             }
 
         } catch {
-            print("fail to get features \(error)")
+            Log.app.service.error("fail to get features \(error.localizedDescription, privacy: .public)")
         }
         return false
     }

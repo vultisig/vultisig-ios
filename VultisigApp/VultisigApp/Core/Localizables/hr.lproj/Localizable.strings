@@ -307,7 +307,10 @@
 "customRPCUnreachable" = "Nedostupno";
 "customRPCWrongChain" = "Pogrešan lanac (očekivano %d, dobiveno %d)";
 "customToken" = "Prilagođeni Token";
+"customTokenAddButton" = "Dodaj %@ token";
 "customTokenErrorSubtitle" = "Provjerite adresu tokena i pokušajte ponovo.";
+"customTokenNotFound" = "Token nije pronađen";
+"customTokenRateLimit" = "Previše zahtjeva. Zatvorite ovaj zaslon i pokušajte ponovo kasnije.";
 "dappRequestFrom" = "Zahtjev od";
 "date" = "Datum";
 "decimalAmountError" = "Iznos mora biti decimalan.";
@@ -774,6 +777,7 @@
 "mintCoin" = "Kovaj %@";
 "mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
 "mintTransaction" = "2. Mint secured asset transaction";
+"missingEncryptionKey" = "Nedostaje ključ za šifriranje. Pokušajte ponovno.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
 "modules" = "Moduli";

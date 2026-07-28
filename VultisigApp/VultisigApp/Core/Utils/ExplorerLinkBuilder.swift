@@ -27,7 +27,58 @@ enum ExplorerLinkBuilder {
     /// Used by `SwapCryptoLogic.progressLink` (and any post-swap success view).
     /// Returns a `String?` to match the existing call-site signature.
     static func progressLink(quote: SwapQuote?, txHash: String, fromChain: Chain) -> String? {
-        switch quote {
+        let provider = quote.map { swapProvider(for: $0, sourceChain: fromChain) }
+        return trackerURL(for: provider, txHash: txHash, sourceChain: fromChain)
+            ?? getExplorerURL(chain: fromChain, txid: txHash)
+    }
+
+    /// Used by `KeysignViewModel.getSwapProgressURL`.
+    /// Returns a `String?` to match the existing call-site signature.
+    static func progressLink(swapPayload: SwapPayload?, txHash: String) -> String? {
+        guard let swapPayload else { return nil }
+        let sourceChain = swapPayload.fromCoin.chain
+        return trackerURL(for: swapProvider(for: swapPayload), txHash: txHash, sourceChain: sourceChain)
+            ?? getExplorerURL(chain: sourceChain, txid: txHash)
+    }
+
+    // MARK: - Lower-level resolver (used by tx-history sheet + tests)
+
+    static func url(
+        provider: String?,
+        txHash: String,
+        chainRawValue: String,
+        fallbackExplorerLink: String
+    ) -> URL? {
+        let sourceChain = Chain(rawValue: chainRawValue)
+        if let provider = legacySwapProvider(from: provider, chainRawValue: chainRawValue),
+           let tracker = trackerURL(for: provider, txHash: txHash, sourceChain: sourceChain) {
+            return URL(string: tracker)
+        }
+        if let sourceChain {
+            return URL(string: getExplorerURL(chain: sourceChain, txid: txHash))
+        }
+        return URL(string: fallbackExplorerLink)
+    }
+
+    // MARK: - Provider → tracker resolver
+
+    /// The single provider→tracker mapping shared by all three entry points
+    /// (persisted history string, live `SwapQuote`, keysign `SwapPayload`). Each
+    /// entry point resolves its own identity to a `SwapProvider`, then this is
+    /// the one place that maps a provider to its integration tracker — so adding
+    /// or renaming a tracked provider happens in exactly one switch.
+    ///
+    /// Returns `nil` when the provider has no dedicated tracker (aggregator /
+    /// Jupiter / unknown routes), so the caller falls back to the canonical chain
+    /// explorer. `sourceChain` is the from-chain — only SwapKit reads it, to
+    /// append the chainId hint.
+    private static func trackerURL(
+        for provider: SwapProvider?,
+        txHash: String,
+        sourceChain: Chain?
+    ) -> String? {
+        guard let provider else { return nil }
+        switch provider {
         case .thorchain:
             return thorchainTracker(txid: txHash)
         case .thorchainChainnet:
@@ -39,87 +90,92 @@ enum ExplorerLinkBuilder {
         case .lifi:
             return lifiTracker(txid: txHash)
         case .swapkit:
-            // Phase 1 ships the explorer-link fallback; `/track` polling is
-            // covered by the follow-up tx-history plan. `track.swapkit.dev`
-            // accepts on-chain hashes for the source chain.
-            return swapkitTracker(txid: txHash, chain: fromChain)
-        case .oneinch, .kyberswap, .jupiter, .none:
-            return getExplorerURL(chain: fromChain, txid: txHash)
-        }
-    }
-
-    /// Used by `KeysignViewModel.getSwapProgressURL`.
-    /// Returns a `String?` to match the existing call-site signature.
-    static func progressLink(swapPayload: SwapPayload?, txHash: String) -> String? {
-        switch swapPayload {
-        case .thorchain:
-            return thorchainTracker(txid: txHash)
-        case .thorchainChainnet:
-            return thorchainChainnetTracker(txid: txHash)
-        case .thorchainStagenet:
-            return thorchainStagenetTracker(txid: txHash)
-        case .mayachain:
-            return mayaTracker(txid: txHash)
-        case .generic(let payload):
-            switch payload.provider {
-            case .lifi:
-                return lifiTracker(txid: txHash)
-            case .swapkit:
-                return swapkitTracker(txid: txHash, chain: payload.fromCoin.chain)
-            case .oneInch, .kyberSwap, .jupiter, .unknown:
-                return getExplorerURL(chain: payload.fromCoin.chain, txid: txHash)
-            }
-        case .swapkit(let payload):
-            // Phase 2 ships explorer-link fallback for BTC PSBT routes.
-            // `/track` polling integration is covered by the follow-up
-            // tx-history plan; track.swapkit.dev accepts the on-chain hash.
-            return swapkitTracker(txid: txHash, chain: payload.fromCoin.chain)
-        case .none:
+            return swapkitTracker(txid: txHash, chain: sourceChain)
+        case .oneinch, .kyberswap, .jupiter:
+            // Pure aggregators (and Jupiter) have no dedicated tracker; the tx
+            // shows on the source chain's canonical explorer instead.
             return nil
         }
     }
 
-    // MARK: - Lower-level resolver (used by tx-history sheet + tests)
+    /// Maps a live `SwapQuote` to its `SwapProvider`. Every case maps, so the
+    /// tracker decision stays entirely in `trackerURL(for:)`.
+    private static func swapProvider(for quote: SwapQuote, sourceChain: Chain) -> SwapProvider {
+        switch quote {
+        case .thorchain: return .thorchain
+        case .thorchainChainnet: return .thorchainChainnet
+        case .thorchainStagenet: return .thorchainStagenet
+        case .mayachain: return .mayachain
+        case .lifi: return .lifi
+        case .swapkit: return .swapkit
+        case .oneinch: return .oneinch(sourceChain)
+        case .kyberswap: return .kyberswap(sourceChain)
+        case .jupiter: return .jupiter
+        }
+    }
 
-    static func url(
-        provider: String?,
-        txHash: String,
-        chainRawValue: String,
-        fallbackExplorerLink: String
-    ) -> URL? {
-        if let normalized = provider?
-            .lowercased()
-            .filter({ $0.isLetter || $0.isNumber }) {
-            // Aliases cover every value SwapQuote.displayName and
-            // SwapPayload.providerName can produce, plus the legacy
-            // "thorswap" string from older history entries.
-            switch normalized {
-            case "lifi":
-                return URL(string: lifiTracker(txid: txHash))
-            case "swapkit":
-                return URL(string: swapkitTracker(txid: txHash, chain: Chain(rawValue: chainRawValue)))
-            case "maya", "mayachain", "mayaprotocol":
-                return URL(string: mayaTracker(txid: txHash))
-            case "thorchainstagenet":
-                return URL(string: thorchainStagenetTracker(txid: txHash))
-            case "thorchainchainnet":
-                return URL(string: thorchainChainnetTracker(txid: txHash))
-            case "thorchain", "thorswap":
-                if chainRawValue == Chain.thorChainChainnet.rawValue {
-                    return URL(string: thorchainChainnetTracker(txid: txHash))
-                }
-                if chainRawValue == Chain.thorChainStagenet.rawValue {
-                    return URL(string: thorchainStagenetTracker(txid: txHash))
-                }
-                return URL(string: thorchainTracker(txid: txHash))
-            default:
-                break
+    /// Maps a keysign `SwapPayload` to its `SwapProvider`. An unrecognised
+    /// generic provider yields `nil` so it falls back to the chain explorer,
+    /// matching the pre-refactor behaviour.
+    private static func swapProvider(for payload: SwapPayload) -> SwapProvider? {
+        switch payload {
+        case .thorchain: return .thorchain
+        case .thorchainChainnet: return .thorchainChainnet
+        case .thorchainStagenet: return .thorchainStagenet
+        case .mayachain: return .mayachain
+        case .swapkit: return .swapkit
+        case .generic(let payload):
+            switch payload.provider {
+            case .lifi: return .lifi
+            case .swapkit: return .swapkit
+            case .oneInch: return .oneinch(payload.fromCoin.chain)
+            case .kyberSwap: return .kyberswap(payload.fromCoin.chain)
+            case .jupiter: return .jupiter
+            case .unknown: return nil
             }
         }
-        if let chain = Chain(rawValue: chainRawValue) {
-            return URL(string: getExplorerURL(chain: chain, txid: txHash))
+    }
+
+    // MARK: - Legacy persisted-string aliases
+
+    /// Maps a persisted/history provider string (Transaction History stores only
+    /// the display name) to its `SwapProvider`. Every value `SwapQuote.displayName`
+    /// and `SwapPayload.providerName` can produce normalizes to one of these keys,
+    /// plus the legacy `"thorswap"`/`"mayachain"`/`"mayaprotocol"` strings from
+    /// older history entries. Keys are normalized — lowercased, letters and digits
+    /// only — so `"LI.FI"`, `"Maya protocol"` and `"THORChain-Stagenet"` each
+    /// collapse to a single key.
+    private static let legacyProviderAliases: [String: SwapProvider] = [
+        "lifi": .lifi,
+        "swapkit": .swapkit,
+        "maya": .mayachain,
+        "mayachain": .mayachain,
+        "mayaprotocol": .mayachain,
+        "thorchainstagenet": .thorchainStagenet,
+        "thorchainchainnet": .thorchainChainnet,
+        "thorchain": .thorchain,
+        "thorswap": .thorchain
+    ]
+
+    /// Resolves a raw persisted provider string to its `SwapProvider`, applying
+    /// the same normalization the alias table is keyed on. The persisted
+    /// `"thorchain"`/`"thorswap"` strings carry no network variant, so the
+    /// record's chain disambiguates them into chainnet/stagenet.
+    private static func legacySwapProvider(from provider: String?, chainRawValue: String) -> SwapProvider? {
+        guard let normalized = provider?
+            .lowercased()
+            .filter({ $0.isLetter || $0.isNumber }),
+            let resolved = legacyProviderAliases[normalized] else {
+            return nil
         }
-        return URL(string: fallbackExplorerLink)
+        guard resolved == .thorchain else { return resolved }
+        if chainRawValue == Chain.thorChainChainnet.rawValue {
+            return .thorchainChainnet
+        }
+        if chainRawValue == Chain.thorChainStagenet.rawValue {
+            return .thorchainStagenet
+        }
+        return .thorchain
     }
 
     // MARK: - Chain explorer URL

@@ -53,7 +53,7 @@ final class QBTCClaimOrchestrator: ObservableObject {
     private let runBtcRound: RunBtcRound
     private let pushTxHash: PushTxHash?
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "qbtc-claim")
+    private let logger = Log.qbtc.other
 
     init(
         generateProof: @escaping GenerateProof,

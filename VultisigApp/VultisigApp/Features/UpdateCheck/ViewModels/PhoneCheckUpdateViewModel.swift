@@ -18,7 +18,7 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     @Published var latestVersionString: String = ""
     @Published var currentVersionString: String = ""
 
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "update-check")
+    private let logger = Log.app.other
     private let logic = PhoneCheckUpdateLogic()
 
     func checkForUpdates(isAutoCheck: Bool = false) {

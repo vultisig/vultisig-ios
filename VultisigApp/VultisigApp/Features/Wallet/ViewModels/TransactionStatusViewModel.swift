@@ -18,7 +18,7 @@ class TransactionStatusViewModel: ObservableObject {
     private let config: ChainStatusConfig
     private let service = TransactionStatusService.shared
     private let storage = StoredPendingTransactionStorage.shared
-    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-status-viewmodel")
+    private let logger = Log.wallet.viewModel
 
     // Optional metadata for persistence
     private let coinTicker: String?

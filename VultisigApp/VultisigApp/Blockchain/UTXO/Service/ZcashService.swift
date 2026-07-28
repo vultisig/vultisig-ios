@@ -6,7 +6,7 @@
 import Foundation
 import OSLog
 
-private let logger = Logger(subsystem: "com.vultisig.app", category: "zcash-service")
+private let logger = Log.chain.service
 
 /// Resolves the active ZIP-243 consensus branch id WalletCore needs on the
 /// Zcash transaction plan. The branch id changes at every Zcash network
