@@ -302,6 +302,16 @@ class KeygenViewModel: ObservableObject {
                     throw HelperError.runtimeError("fail to get MLDSA keyshare")
                 }
 
+                // Sealed before this party reports completion. Sealing can fail,
+                // and once the peers have been told keygen succeeded there is no
+                // longer a safe way to abandon the share — the vault would be
+                // left holding a public key whose share was never stored.
+                let mldsaShare = try KeyShare.sealed(
+                    pubkey: keyshare.PubKey,
+                    keyshare: keyshare.Keyshare,
+                    keyId: keyshare.keyId
+                )
+
                 let keygenVerify = KeygenVerify(
                     serverAddr: self.mediatorURL,
                     sessionID: self.sessionID,
@@ -315,9 +325,7 @@ class KeygenViewModel: ObservableObject {
                 }
 
                 self.vault.publicKeyMLDSA44 = keyshare.PubKey
-                self.vault.keyshares.append(
-                    KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare, keyId: keyshare.keyId)
-                )
+                self.vault.keyshares.append(mldsaShare)
                 self.vault.isBackedUp = false
             }
 
@@ -444,12 +452,17 @@ class KeygenViewModel: ObservableObject {
             chainResults = collected
         }
 
+        // Seal every share up front so the vault is not left holding chain
+        // public keys whose shares never made it in.
+        var sealedChainShares: [KeyShare] = []
+        for result in chainResults where seenPubKeys.insert(result.keyshare.PubKey).inserted {
+            sealedChainShares.append(
+                try KeyShare.sealed(pubkey: result.keyshare.PubKey, keyshare: result.keyshare.Keyshare)
+            )
+        }
+
+        self.vault.keyshares.append(contentsOf: sealedChainShares)
         for result in chainResults {
-            if seenPubKeys.insert(result.keyshare.PubKey).inserted {
-                self.vault.keyshares.append(
-                    KeyShare(pubkey: result.keyshare.PubKey, keyshare: result.keyshare.Keyshare)
-                )
-            }
             self.vault.chainPublicKeys.append(
                 ChainPublicKey(
                     chain: result.chain,
@@ -526,11 +539,15 @@ class KeygenViewModel: ObservableObject {
 
         self.logger.info("Finished root key import. ECDSA pub: \(rootEcdsa.PubKey), EdDSA pub: \(rootEddsa.PubKey)")
 
+        let sealedRootShares = [
+            try KeyShare.sealed(pubkey: rootEcdsa.PubKey, keyshare: rootEcdsa.Keyshare),
+            try KeyShare.sealed(pubkey: rootEddsa.PubKey, keyshare: rootEddsa.Keyshare)
+        ]
+
         self.vault.pubKeyECDSA = rootEcdsa.PubKey
         self.vault.pubKeyEdDSA = rootEddsa.PubKey
         self.vault.hexChainCode = rootEcdsa.chaincode
-        self.vault.keyshares.append(KeyShare(pubkey: rootEcdsa.PubKey, keyshare: rootEcdsa.Keyshare))
-        self.vault.keyshares.append(KeyShare(pubkey: rootEddsa.PubKey, keyshare: rootEddsa.Keyshare))
+        self.vault.keyshares.append(contentsOf: sealedRootShares)
     }
 
     private func buildChainImportJobs(chains: [Chain], wallet: HDWallet?, useParallelPath: Bool) throws -> [KeyImportChainJob] {
@@ -789,6 +806,14 @@ class KeygenViewModel: ObservableObject {
             throw HelperError.runtimeError("fail to get EdDSA keyshare")
         }
 
+        // Sealed before this party reports completion, for the same reason as
+        // above: after markLocalPartyComplete the peers consider the vault
+        // created, so a sealing failure has nowhere left to abort to.
+        let sealedShares = [
+            try KeyShare.sealed(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+            try KeyShare.sealed(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)
+        ]
+
         let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
                                         sessionID: self.sessionID,
                                         localPartyID: self.vault.localPartyID,
@@ -806,8 +831,7 @@ class KeygenViewModel: ObservableObject {
         if self.tssType == .Migrate {
             self.vault.libType = .DKLS
         }
-        self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
-                                KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+        self.vault.keyshares = sealedShares
 
         let needsInsert = self.tssType == .Keygen ||
             !self.vaultOldCommittee.contains(self.vault.localPartyID)

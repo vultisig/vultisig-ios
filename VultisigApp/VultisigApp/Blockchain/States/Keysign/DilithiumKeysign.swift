@@ -67,12 +67,7 @@ final class DilithiumKeysign {
     }
 
     func getKeyshareString() -> String? {
-        for ks in vault.keyshares {
-            if ks.pubkey == self.publicKey {
-                return ks.keyshare
-            }
-        }
-        return nil
+        return vault.getKeyshare(pubKey: self.publicKey)
     }
 
     func getKeyshareBytes() throws -> [UInt8] {
