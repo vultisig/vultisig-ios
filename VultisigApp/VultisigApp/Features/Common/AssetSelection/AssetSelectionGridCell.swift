@@ -57,7 +57,16 @@ struct AssetSelectionGridCell: View {
                 Text(name)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textPrimary)
-                    .fixedSize(horizontal: true, vertical: false)
+                    // Clipped to the cell, never sized to the text: a long name
+                    // (dynamic-catalog tickers run to `aEthLidoUSDC` length) used
+                    // to lay out at its full ideal width and overlap the
+                    // neighbouring cells. Truncating in the MIDDLE keeps both ends
+                    // visible — these long tickers share prefixes, so tail
+                    // truncation renders `aEthLidoUSDC` and `aEthLidoUSDS`
+                    // identically.
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .frame(maxWidth: .infinity)
             }
             .frame(width: 74, height: 100)
             .contentShape(Rectangle())
