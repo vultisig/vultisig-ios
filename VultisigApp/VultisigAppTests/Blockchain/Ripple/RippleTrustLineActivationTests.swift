@@ -222,6 +222,49 @@ final class RippleTrustLineActivationTests: XCTestCase {
         XCTAssertTrue(RippleCustomTokenResolver.requiresVaultNativeCoin)
     }
 
+    /// The curated `EQ` entry has to win on the custom-token path too, not only in
+    /// discovery. Equilibrium's on-ledger code decodes to the long name, so without
+    /// the curated hit a hand-added coin would be tickered `Equilibrium` — a
+    /// different `uniqueId` from the discovered row, and therefore the same trust
+    /// line listed twice.
+    func testCuratedEquilibriumEntryWinsOnTheCustomTokenPath() throws {
+        let curated = try XCTUnwrap(TokensStore.TokenSelectionAssets.first {
+            $0.chain == .ripple && $0.ticker == "EQ"
+        })
+
+        let resolved = try RippleCustomTokenResolver.resolve(input: curated.contractAddress)
+
+        XCTAssertEqual(resolved.ticker, "EQ")
+        XCTAssertEqual(resolved.uniqueId, curated.uniqueId)
+        XCTAssertEqual(resolved.priceProviderId, "equilibrium")
+    }
+
+    /// Typing the name rather than the 40-char code must land on the same curated
+    /// coin — the widened gate and the curated catalog have to agree, or the two
+    /// ways of adding one token produce two coins.
+    func testCuratedEntryIsReachedByTypingTheTickerRatherThanTheHex() throws {
+        let curated = try XCTUnwrap(TokensStore.TokenSelectionAssets.first {
+            $0.chain == .ripple && $0.ticker == "SOLO"
+        })
+        let (_, issuer) = try RippleIssuedCurrency.parseRippleTokenId(curated.contractAddress)
+
+        let resolved = try RippleCustomTokenResolver.resolve(input: "SOLO.\(issuer)")
+
+        XCTAssertEqual(resolved.uniqueId, curated.uniqueId)
+        XCTAssertEqual(resolved.priceProviderId, "solo-coin")
+    }
+
+    /// The factory must route `.ripple` to the XRPL strategy rather than letting it
+    /// fall through to the EVM-like metadata lookup, which would try three
+    /// `eth_call`s against an XRPL token id.
+    func testFactoryRoutesRippleToTheXrplResolver() {
+        let resolver = CustomTokenResolverFactory.make(chain: .ripple)
+
+        XCTAssertTrue(resolver.validate("USD.\(Self.issuer)"))
+        XCTAssertFalse(resolver.validate("0x0000000000000000000000000000000000000000"))
+        XCTAssertTrue(resolver.requiresVaultNativeCoin)
+    }
+
     // MARK: - Trust-line presence (the Activate affordance)
 
     /// The presence check reads the lines the balance refresh already fetched —
