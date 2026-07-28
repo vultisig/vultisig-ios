@@ -274,6 +274,100 @@ final class VaultDetailViewModelTests: XCTestCase {
                        "updateBalance after groupChains for the same vault/membership must not re-seed")
     }
 
+    // MARK: - Published vault total
+
+    /// The wallet header's total used to be computed inside `VaultMainScreen.body`
+    /// via `HomeViewModel.balanceText(for:)` — O(coins) through `RateProvider` on
+    /// every body evaluation. It is now published from here and must be seeded by
+    /// the same synchronous pass that seeds `rows`.
+    func testTotalFiatBalance_seededSynchronouslyByUpdateBalance() {
+        let vault = makeVault(pubKey: "vault-total", chains: [.bitcoin, .ethereum])
+        let vm = VaultDetailViewModel()
+
+        XCTAssertNil(vm.totalFiatBalance, "precondition: nothing projected yet")
+
+        vm.updateBalance(vault: vault)
+
+        XCTAssertEqual(vm.totalFiatBalance?.text, vault.coins.totalBalanceInFiatString)
+        XCTAssertEqual(vm.totalFiatBalance?.vaultPubKeyECDSA, vault.pubKeyECDSA)
+    }
+
+    /// The published total carries the vault it was computed for, and the screen
+    /// renders it only when the tag matches the vault it is displaying. Without
+    /// the tag, the frame between a vault switch and the re-seed shows the
+    /// previous vault's number.
+    func testTotalFiatBalance_isTaggedWithTheVaultItBelongsTo() throws {
+        let vaultA = makeVault(pubKey: "vault-total-a", chains: [.bitcoin])
+        let vaultB = makeVault(pubKey: "vault-total-b", chains: [.solana])
+        let vm = VaultDetailViewModel()
+
+        vm.updateBalance(vault: vaultA)
+
+        // The state the screen sees on the first frame after switching to B,
+        // before `refresh()` has re-seeded: the published total still belongs
+        // to A, so the tag comparison must reject it.
+        let stale = try XCTUnwrap(vm.totalFiatBalance)
+        XCTAssertEqual(stale.vaultPubKeyECDSA, vaultA.pubKeyECDSA)
+        XCTAssertNotEqual(stale.vaultPubKeyECDSA, vaultB.pubKeyECDSA,
+                          "A total tagged with vault A must not be accepted while vault B is displayed")
+
+        vm.updateBalance(vault: vaultB)
+        XCTAssertEqual(vm.totalFiatBalance?.vaultPubKeyECDSA, vaultB.pubKeyECDSA,
+                       "A vault switch must re-tag the total once the seed runs")
+    }
+
+    /// A same-vault, same-membership refresh deliberately skips the row seed
+    /// (the no-stale-then-fresh-double-reorder invariant), but balances are
+    /// exactly what moved — the total must still follow them.
+    func testTotalFiatBalance_recomputesOnSameMembershipRefresh() throws {
+        let providerId = "total-refresh-\(UUID().uuidString.lowercased())"
+        let vault = makeVault(pubKey: "vault-total-refresh", chains: [])
+        let coin = makePricedCoin(chain: .bitcoin, ticker: "BTC", providerId: providerId, rawBalance: "100000000")
+        vault.coins = [coin]
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: providerId, value: 100)
+        ])
+
+        let vm = VaultDetailViewModel()
+        vm.updateBalance(vault: vault)
+        let before = try XCTUnwrap(vm.totalFiatBalance?.text)
+
+        // Membership unchanged, balance doubled.
+        coin.rawBalance = "200000000"
+        vm.updateBalance(vault: vault)
+
+        XCTAssertNotEqual(vm.totalFiatBalance?.text, before,
+                          "The total must track a balance change even when the seed is skipped")
+        XCTAssertEqual(vm.totalFiatBalance?.text, vault.coins.totalBalanceInFiatString)
+    }
+
+    /// The total bakes fiat at projection time, so — like `rows` — it is inert to
+    /// a rate landing afterwards unless the rate signal rebuilds it.
+    func testTotalFiatBalance_refreshesWhenARateLands() async throws {
+        let providerId = "total-rate-\(UUID().uuidString.lowercased())"
+        let vault = makeVault(pubKey: "vault-total-rate", chains: [])
+        vault.coins = [makePricedCoin(chain: .bitcoin, ticker: "BTC", providerId: providerId, rawBalance: "100000000")]
+
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+        let before = try XCTUnwrap(vm.totalFiatBalance?.text)
+
+        let updated = expectation(description: "total refreshed on rate arrival")
+        updated.assertForOverFulfill = false
+        rateCancellable = vm.$totalFiatBalance
+            .dropFirst()
+            .sink { total in
+                if total?.text != before { updated.fulfill() }
+            }
+
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: providerId, value: 30_000)
+        ])
+
+        await fulfillment(of: [updated], timeout: 2)
+        XCTAssertEqual(vm.totalFiatBalance?.text, vault.coins.totalBalanceInFiatString)
+    }
+
     // MARK: - chainRows builder
 
     /// The projection builds one row per chain, ordered to match

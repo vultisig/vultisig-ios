@@ -10,6 +10,15 @@ import Foundation
 import SwiftUI
 
 class VaultDetailViewModel: ObservableObject {
+    /// Preformatted vault total tagged with the vault it was computed for. The
+    /// tag is load-bearing: on a vault switch the previous vault's total stays
+    /// published until `refresh()` re-seeds, and rendering it would show the
+    /// wrong number for a frame.
+    struct TotalBalance: Equatable {
+        let vaultPubKeyECDSA: String
+        let text: String
+    }
+
     @Published var selectedChain: Chain? = nil
     @Published var chains = [Chain]()
     // Value-type projection the wallet chain list renders off. Rebuilt in
@@ -18,6 +27,12 @@ class VaultDetailViewModel: ObservableObject {
     // (Vault/Coin are @Model + ObservableObject with no @Published members),
     // so the list only repaints when a @Published on this view model changes.
     @Published private(set) var rows: [ChainRowModel] = []
+    /// Preformatted vault total for the wallet header, published on the same
+    /// triggers as `rows`. The screen used to call `HomeViewModel.balanceText(for:)`
+    /// inside its body, which walks every coin through `RateProvider` on every
+    /// body evaluation. `nil` means "not projected yet" so the first frame can
+    /// fall back to an on-the-fly compute instead of rendering blank.
+    @Published private(set) var totalFiatBalance: TotalBalance?
     @Published var searchText: String = ""
     @Published var vaultBanners: [VaultBannerType] = []
 
@@ -66,7 +81,9 @@ class VaultDetailViewModel: ObservableObject {
     /// tail, which keeps the deliberate "no stale-then-fresh double reorder"
     /// behaviour intact. No-ops when nothing changed.
     private func rebuildRowsForRateChange() {
-        guard let vault = rowsVault, !rows.isEmpty else { return }
+        guard let vault = rowsVault else { return }
+        refreshTotalFiatBalance(vault: vault)
+        guard !rows.isEmpty else { return }
         let byChain = Dictionary(
             logic.chainRows(vault: vault).map { ($0.chain, $0) },
             uniquingKeysWith: { _, latest in latest }
@@ -74,6 +91,20 @@ class VaultDetailViewModel: ObservableObject {
         let rebuilt = rows.compactMap { byChain[$0.chain] }
         guard rebuilt.count == rows.count, rebuilt != rows else { return }
         rows = rebuilt
+    }
+
+    /// Recomputes the preformatted vault total. Cheap relative to the row
+    /// projection (one pass over `vault.coins`) but still O(coins × rate
+    /// lookups), which is why it must not live in a view body. No-ops when the
+    /// formatted value is unchanged, so an unrelated rate arrival does not
+    /// republish.
+    private func refreshTotalFiatBalance(vault: Vault) {
+        let total = TotalBalance(
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
+            text: vault.coins.totalBalanceInFiatString
+        )
+        guard total != totalFiatBalance else { return }
+        totalFiatBalance = total
     }
 
     func filteredChains(in vault: Vault) -> [Chain] {
@@ -106,6 +137,10 @@ class VaultDetailViewModel: ObservableObject {
         // chain set is unchanged and the list does not reshuffle.
         let membershipChanged = Set(vault.chainsWithCoins) != Set(chains)
         rowsVault = vault
+        // Unconditional: the total is a scalar, so recomputing it cannot
+        // reorder anything, and a same-vault/same-membership refresh is exactly
+        // the case where balances moved.
+        refreshTotalFiatBalance(vault: vault)
         if chains.isEmpty || chainsVaultPubKeyECDSA != vault.pubKeyECDSA || membershipChanged {
             chains = logic.sortedChains(vault: vault)
             rows = logic.chainRows(vault: vault)
@@ -127,6 +162,7 @@ class VaultDetailViewModel: ObservableObject {
                 await MainActor.run {
                     self.chains = updated
                     self.rows = self.logic.chainRows(vault: vault)
+                    self.refreshTotalFiatBalance(vault: vault)
                     self.chainsVaultPubKeyECDSA = vault.pubKeyECDSA
                 }
             }
@@ -137,6 +173,7 @@ class VaultDetailViewModel: ObservableObject {
         rowsVault = vault
         chains = logic.sortedChains(vault: vault)
         rows = logic.chainRows(vault: vault)
+        refreshTotalFiatBalance(vault: vault)
         chainsVaultPubKeyECDSA = vault.pubKeyECDSA
     }
 
