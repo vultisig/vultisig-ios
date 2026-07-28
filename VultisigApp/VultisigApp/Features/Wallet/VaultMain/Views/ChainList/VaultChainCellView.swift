@@ -7,17 +7,28 @@
 
 import SwiftUI
 
-struct VaultChainCellView: View {
+/// Pure value view over a `ChainRowModel`. It deliberately does not take the
+/// `Vault`: the only thing it needed one for was building the navigation route,
+/// and holding a reference type made the row impossible to compare, so SwiftUI
+/// had to re-render every row whenever the list's parent body ran. The parent
+/// owns navigation now and passes closures instead, which lets this be
+/// `Equatable` and skipped while scrolling.
+struct VaultChainCellView: View, Equatable {
     let row: ChainRowModel
-    let vault: Vault
+    /// Identity, not rendering. The closures below capture the vault they were
+    /// built for, and an equality-skipped row keeps the closures it was created
+    /// with — so two identical-looking rows from different vaults must not
+    /// compare equal, or copy/navigation would act on the previous vault.
+    let vaultPubKeyECDSA: String
+    var onSelect: () -> Void
     var onCopy: () -> Void
 
-    @Environment(\.router) var router
+    static func == (lhs: VaultChainCellView, rhs: VaultChainCellView) -> Bool {
+        lhs.row == rhs.row && lhs.vaultPubKeyECDSA == rhs.vaultPubKeyECDSA
+    }
 
     var body: some View {
-        Button {
-            router.navigate(to: VaultRoute.chainDetail(chain: row.chain, vault: vault))
-        } label: {
+        Button(action: onSelect) {
             GroupedChainCellView(
                 chain: row.chain,
                 address: row.address,
@@ -42,7 +53,9 @@ struct VaultChainCellView: View {
             cryptoBalance: "0 BTC",
             assetCount: 1
         ),
-        vault: .example
-    ) {}
+        vaultPubKeyECDSA: "preview",
+        onSelect: {},
+        onCopy: {}
+    )
     .environmentObject(HomeViewModel())
 }
