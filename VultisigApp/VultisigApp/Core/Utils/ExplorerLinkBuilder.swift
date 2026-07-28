@@ -407,6 +407,11 @@ enum ExplorerLinkBuilder {
             address: { "https://seiscan.io/address/\($0)" },
             token: { "https://seiscan.io/token/\($0)" }
         ),
+        .robinhood: ExplorerConfig(
+            tx: { "https://robinhoodchain.blockscout.com/tx/\($0)" },
+            address: { "https://robinhoodchain.blockscout.com/address/\($0)" },
+            token: { "https://robinhoodchain.blockscout.com/token/\($0)" }
+        ),
         .qbtc: ExplorerConfig(
             tx: { "https://explorer.qbtc.net/qbtc/tx/\($0)" },
             address: { "https://explorer.qbtc.net/qbtc/account/\($0)" }

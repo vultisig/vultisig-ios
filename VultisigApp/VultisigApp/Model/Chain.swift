@@ -46,6 +46,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case mantle
     case hyperliquid
     case sei
+    case robinhood
     case qbtc
     case bittensor
 
@@ -131,6 +132,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
              .zcash,
              .mantle,
              .hyperliquid,
+             .robinhood,
              .tron,
              .cardano,
              .sui,
@@ -194,7 +196,7 @@ extension Chain {
         switch self {
         case .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash, .qbtc:
             return true
-        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .bittensor:
+        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .cronosChain, .sui, .polkadot, .zksync, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle, .hyperliquid, .sei, .robinhood, .bittensor:
             return false
         }
     }

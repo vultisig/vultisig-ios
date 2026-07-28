@@ -191,6 +191,10 @@ extension Coin {
             return [.thorchain, .swapkit]
         case .ton, .cardano, .sui:
             return [.swapkit]
+        case .robinhood:
+            // 1inch live-confirmed on 4663: /quote and /swap return executable
+            // calldata to its deployed router (0x5a70…89c7).
+            return [.oneinch(chain), .lifi, .kyberswap(chain), .swapkit]
         case .polkadot, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .sei, .qbtc, .bittensor:
             return []
         }

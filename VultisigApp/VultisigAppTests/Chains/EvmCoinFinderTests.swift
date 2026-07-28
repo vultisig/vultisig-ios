@@ -76,6 +76,7 @@ final class EvmCoinFinderTests: XCTestCase {
         XCTAssertFalse(EvmCoinFinder.isSupported(chain: .mantle))
         XCTAssertFalse(EvmCoinFinder.isSupported(chain: .hyperliquid))
         XCTAssertFalse(EvmCoinFinder.isSupported(chain: .sei))
+        XCTAssertFalse(EvmCoinFinder.isSupported(chain: .robinhood))
         XCTAssertFalse(EvmCoinFinder.isSupported(chain: .tron))
     }
 

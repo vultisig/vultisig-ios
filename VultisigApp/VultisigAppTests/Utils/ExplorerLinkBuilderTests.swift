@@ -367,6 +367,7 @@ final class ExplorerLinkBuilderTests: XCTestCase {
         .mantle: .init(tx: "https://explorer.mantle.xyz/tx/0xDEADBEEF", address: "https://mantlescan.xyz/address/ADDR", token: "https://mantlescan.xyz/token/CONTRACT"),
         .hyperliquid: .init(tx: "https://hypurrscan.io/tx/0xDEADBEEF", address: "https://hypurrscan.io/address/ADDR", token: "https://hypurrscan.io/token/CONTRACT"),
         .sei: .init(tx: "https://seiscan.io/tx/0xDEADBEEF", address: "https://seiscan.io/address/ADDR", token: "https://seiscan.io/token/CONTRACT"),
+        .robinhood: .init(tx: "https://robinhoodchain.blockscout.com/tx/0xDEADBEEF", address: "https://robinhoodchain.blockscout.com/address/ADDR", token: "https://robinhoodchain.blockscout.com/token/CONTRACT"),
         .qbtc: .init(tx: "https://explorer.qbtc.net/qbtc/tx/0xDEADBEEF", address: "https://explorer.qbtc.net/qbtc/account/ADDR", token: nil)
     ]
 

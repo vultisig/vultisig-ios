@@ -35,6 +35,7 @@ enum CustomRPCSupportedChains {
         .mantle,
         .hyperliquid,
         .sei,
+        .robinhood,
         // Solana
         .solana,
         // THORChain family (mayaChain rides the THORChain LCD funnel)

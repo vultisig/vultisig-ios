@@ -27,7 +27,7 @@ enum Multicall3 {
         switch chain {
         case .ethereum, .ethereumSepolia, .bscChain, .avalanche, .base, .arbitrum,
              .polygon, .polygonV2, .optimism, .blast, .cronosChain, .mantle,
-             .hyperliquid, .sei:
+             .hyperliquid, .sei, .robinhood:
             return canonical
         case .zksync:
             return zkSyncAddress

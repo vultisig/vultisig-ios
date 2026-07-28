@@ -155,6 +155,8 @@ extension Chain {
             return ChainConfig(name: "Hyperliquid", ticker: "HYPE", feeUnit: "Gwei", swapAsset: "HYPE", logo: "hyperliquid", chainID: 999, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "HYPE", minimumSendAmount: nil)
         case .sei:
             return ChainConfig(name: "Sei", ticker: "SEI", feeUnit: "Gwei", swapAsset: "SEI", logo: "sei", chainID: 1329, coinType: .ethereum, chainType: .EVM, banxaBlockchainCode: "SEI", minimumSendAmount: nil)
+        case .robinhood:
+            return ChainConfig(name: "Robinhood", ticker: "ETH", feeUnit: "Gwei", swapAsset: "ROBINHOOD", logo: "robinhood", chainID: 4663, coinType: .robinhoodChain, chainType: .EVM, banxaBlockchainCode: "ROBINHOOD", minimumSendAmount: nil)
         case .qbtc:
             return ChainConfig(name: "QBTC", ticker: "QBTC", feeUnit: "qbtc", swapAsset: "QBTC", logo: "qbtc", chainID: nil, coinType: .cosmos, chainType: .Cosmos, banxaBlockchainCode: "QBTC", minimumSendAmount: nil)
         case .bittensor:

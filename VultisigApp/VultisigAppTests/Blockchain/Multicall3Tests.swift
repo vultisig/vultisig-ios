@@ -24,7 +24,7 @@ final class Multicall3Tests: XCTestCase {
 
     func test_address_canonicalChains_returnCanonicalDeployment() {
         for chain in [Chain.ethereum, .bscChain, .avalanche, .base, .arbitrum,
-                      .polygon, .optimism, .blast, .cronosChain, .mantle, .hyperliquid, .sei] {
+                      .polygon, .optimism, .blast, .cronosChain, .mantle, .hyperliquid, .sei, .robinhood] {
             XCTAssertEqual(Multicall3.address(for: chain), Multicall3.canonical, "\(chain.name)")
         }
     }

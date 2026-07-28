@@ -86,6 +86,8 @@ class Endpoint {
 
     static let seiServiceRpcService = "https://evm-rpc.sei-apis.com"
 
+    static let robinhoodServiceRpcService = "https://rpc.mainnet.chain.robinhood.com"
+
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
 
     static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {

@@ -222,6 +222,8 @@ struct KyberSwapService {
             return "zksync"
         case .blast:
             return "blast"
+        case .robinhood:
+            return "robinhood"
         default:
             throw KyberSwapError.apiError(code: -1, message: "Unsupported chain for KyberSwap: \(chain)", details: nil)
         }

@@ -69,7 +69,7 @@ struct ChainStatusConfig {
         // EVM chains
         case .ethereum, .avalanche, .bscChain, .polygon, .polygonV2,
              .arbitrum, .base, .optimism, .blast, .cronosChain,
-             .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
+             .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:
             return ChainStatusConfig(
                 estimatedTime: "~15-30 sec",
                 pollInterval: 5,

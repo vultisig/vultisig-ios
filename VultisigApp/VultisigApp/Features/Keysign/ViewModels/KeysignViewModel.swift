@@ -969,7 +969,7 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         throw error
                     }
-                case .ethereum, .avalanche, .arbitrum, .bscChain, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
+                case .ethereum, .avalanche, .arbitrum, .bscChain, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:
                     let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin:

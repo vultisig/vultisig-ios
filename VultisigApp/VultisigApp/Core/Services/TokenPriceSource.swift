@@ -269,7 +269,8 @@ enum CoinGeckoPlatform {
         .mantle: "mantle",
         .cronosChain: "cronos",
         .hyperliquid: "hyperliquid",
-        .sei: "sei-network"
+        .sei: "sei-network",
+        .robinhood: "robinhood"
     ]
 
     static func id(for chain: Chain) -> String {

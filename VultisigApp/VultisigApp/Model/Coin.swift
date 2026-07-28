@@ -185,7 +185,7 @@ class Coin: ObservableObject, Codable, Hashable {
             } else {
                 return "120000"
             }
-        case .arbitrum:
+        case .arbitrum, .robinhood:
             return "120000"
         case .base:
             // Base requires higher gas limits due to L1 data availability costs
