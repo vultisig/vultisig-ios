@@ -1051,7 +1051,7 @@
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
 "retry" = "재시도";
 "reviewYourVaultDevices" = "볼트 기기 검토";
-"rippleCustomTokenInvalidFormat" = "XRP 토큰을 currency.issuer 형식으로 입력하세요 — 3자 코드 또는 40자 16진수 코드 다음에 발행자 주소를 입력합니다.";
+"rippleCustomTokenInvalidFormat" = "XRP 토큰을 currency.issuer 형식으로 입력하세요 — 토큰 코드(예: USD 또는 SOLO) 다음에 발행자 주소를 입력합니다.";
 "rippleFieldAmount" = "금액";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "수신처";

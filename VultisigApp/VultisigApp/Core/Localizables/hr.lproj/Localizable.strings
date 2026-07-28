@@ -1053,7 +1053,7 @@
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
 "retry" = "Pokušaj ponovo";
 "reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";
-"rippleCustomTokenInvalidFormat" = "Unesite XRP token kao currency.issuer — kod od 3 slova ili 40 heksadecimalnih znakova, a zatim adresu izdavatelja.";
+"rippleCustomTokenInvalidFormat" = "Unesite XRP token kao currency.issuer — kod tokena (npr. USD ili SOLO), a zatim adresu izdavatelja.";
 "rippleFieldAmount" = "Iznos";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Odredište";

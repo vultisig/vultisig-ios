@@ -1053,7 +1053,7 @@
 "restart" = "Si prega di riavviare l'app per applicare le nuove impostazioni della lingua.";
 "retry" = "Riprova";
 "reviewYourVaultDevices" = "Controlla i dispositivi del tuo vault";
-"rippleCustomTokenInvalidFormat" = "Inserisci un token XRP come currency.issuer: un codice di 3 lettere o di 40 caratteri esadecimali, poi l'indirizzo dell'emittente.";
+"rippleCustomTokenInvalidFormat" = "Inserisci un token XRP come currency.issuer: il codice del token (es. USD o SOLO), poi l'indirizzo dell'emittente.";
 "rippleFieldAmount" = "Importo";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destinazione";

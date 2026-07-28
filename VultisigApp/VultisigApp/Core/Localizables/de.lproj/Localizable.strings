@@ -1053,7 +1053,7 @@
 "restart" = "Bitte starte die App neu, um die neuen Spracheinstellungen zu übernehmen.";
 "retry" = "Erneut versuchen";
 "reviewYourVaultDevices" = "Überprüfe deine Tresor-Geräte";
-"rippleCustomTokenInvalidFormat" = "Geben Sie einen XRP-Token als currency.issuer ein — ein 3-Buchstaben-Code oder ein 40-stelliger Hex-Code, dann die Emittenten-Adresse.";
+"rippleCustomTokenInvalidFormat" = "Geben Sie einen XRP-Token als currency.issuer ein — den Token-Code (z. B. USD oder SOLO), dann die Emittenten-Adresse.";
 "rippleFieldAmount" = "Betrag";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Ziel";

@@ -1053,7 +1053,7 @@
 "restart" = "请重新启动应用程序以应用新的语言设置";
 "retry" = "重试";
 "reviewYourVaultDevices" = "检查你的保险库设备";
-"rippleCustomTokenInvalidFormat" = "请以 currency.issuer 格式输入 XRP 代币 —— 3 个字母的代码或 40 个字符的十六进制代码，然后是发行方地址。";
+"rippleCustomTokenInvalidFormat" = "请以 currency.issuer 格式输入 XRP 代币 —— 代币代码（例如 USD 或 SOLO），然后是发行方地址。";
 "rippleFieldAmount" = "金额";
 "rippleFieldDeliverMin" = "最小交付额";
 "rippleFieldDestination" = "目标地址";

@@ -1051,7 +1051,7 @@
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewYourVaultDevices" = "Review your vault devices";
-"rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — a 3-letter code or 40-character hex code, then the issuer address.";
+"rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — the token code (e.g. USD or SOLO), then the issuer address.";
 "rippleFieldAmount" = "Amount";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destination";

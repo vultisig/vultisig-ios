@@ -41,13 +41,70 @@ final class RippleTrustLineActivationTests: XCTestCase {
         }
     }
 
-    /// A bare ticker longer than 3 characters is NOT a valid on-ledger code. It is
-    /// only valid once normalized to the 40-char hex form — which is how the
-    /// curated catalog spells it — so accepting the bare spelling here would let
-    /// the same token be added twice under two different ids.
-    func testUnnormalizedTickerIsRejected() {
-        XCTAssertFalse(RippleCustomTokenResolver.isValidInput("RLUSD.\(Self.issuer)"))
-        XCTAssertFalse(RippleCustomTokenResolver.isValidInput("USDC.\(Self.issuer)"))
+    /// A bare ticker longer than 3 characters is accepted and packed into the
+    /// on-ledger hex form. Requiring the hex would have meant asking a user to
+    /// type 40 characters to add SOLO — the flow would technically work and be
+    /// unusable.
+    ///
+    /// The earlier worry that this forks a token into two coins does not hold:
+    /// both spellings normalize through `toXrplCurrencyCode` BEFORE the token id
+    /// is built, so they produce the same id. `testTickerAndHexSpellingsResolve
+    /// ToTheSameToken` is the standing proof of that.
+    func testUnnormalizedTickerIsAcceptedAndNormalized() throws {
+        for ticker in ["RLUSD", "USDC", "SOLO", "USDT"] {
+            XCTAssertTrue(
+                RippleCustomTokenResolver.isValidInput("\(ticker).\(Self.issuer)"),
+                "'\(ticker)' is how a user actually spells the token"
+            )
+            let normalized = try XCTUnwrap(
+                RippleCustomTokenResolver.normalized(from: "\(ticker).\(Self.issuer)")
+            )
+            XCTAssertEqual(normalized.currency, try RippleIssuedCurrency.toXrplCurrencyCode(ticker))
+            XCTAssertEqual(normalized.currency.count, 40, "a >3-char ticker must reach the ledger as hex")
+        }
+    }
+
+    /// The two spellings of one token must resolve to one coin. `CoinMeta`
+    /// identity is `chain-ticker-contractAddress`, so a divergence here would
+    /// put the same trust line in the asset list twice.
+    func testTickerAndHexSpellingsResolveToTheSameToken() throws {
+        let fromTicker = try RippleCustomTokenResolver.resolve(input: "RLUSD.\(Self.issuer)")
+        let fromHex = try RippleCustomTokenResolver.resolve(input: "\(Self.rlusdHex).\(Self.issuer)")
+
+        XCTAssertEqual(fromTicker.contractAddress, fromHex.contractAddress)
+        XCTAssertEqual(fromTicker.uniqueId, fromHex.uniqueId)
+    }
+
+    /// A 3-character ticker must NOT be packed to hex: the ledger carries it as
+    /// a standard code, and the ASCII-packed hex of a 3-character code is a
+    /// different currency. This is the asymmetry that makes the widened rule
+    /// safe rather than a blanket "pack everything".
+    func testThreeCharacterTickerIsStillTreatedAsAStandardCode() throws {
+        let normalized = try XCTUnwrap(RippleCustomTokenResolver.normalized(from: "USD.\(Self.issuer)"))
+
+        XCTAssertEqual(normalized.currency, "USD")
+    }
+
+    /// `asciiToHexCurrencyCode` will encode whatever UTF-8 bytes it is handed,
+    /// so the validator — not the encoder — has to refuse non-ASCII. Otherwise a
+    /// pasted lookalike packs into a well-formed code for a token nobody meant.
+    func testNonAsciiTickerIsRejected() {
+        for ticker in ["SÖLO", "SOL⍺", "🪙"] {
+            XCTAssertFalse(
+                RippleCustomTokenResolver.isValidInput("\(ticker).\(Self.issuer)"),
+                "'\(ticker)' is not a code the ledger can carry"
+            )
+        }
+    }
+
+    /// 20 bytes is the 160-bit ceiling; 21 cannot be represented.
+    func testTickerLongerThanTwentyBytesIsRejected() {
+        XCTAssertTrue(
+            RippleCustomTokenResolver.isValidInput("\(String(repeating: "A", count: 20)).\(Self.issuer)")
+        )
+        XCTAssertFalse(
+            RippleCustomTokenResolver.isValidInput("\(String(repeating: "A", count: 21)).\(Self.issuer)")
+        )
     }
 
     /// `XRP` is reserved for the native asset and can never name an issued
@@ -55,6 +112,31 @@ final class RippleTrustLineActivationTests: XCTestCase {
     func testNativeXrpCurrencyCodeIsRejected() {
         XCTAssertFalse(RippleCustomTokenResolver.isValidInput("XRP.\(Self.issuer)"))
         XCTAssertFalse(RippleCustomTokenResolver.isValidInput("xrp.\(Self.issuer)"))
+    }
+
+    /// Padding `XRP` must not smuggle it past the reservation. The currency
+    /// half is trimmed before validation precisely so the gate cannot see a
+    /// 4-byte ticker where the encoder will see the reserved 3-byte code:
+    /// `parseRippleTokenId` splits without trimming, `toXrplCurrencyCode`
+    /// trims, and the gap between them is the hole.
+    func testWhitespacePaddedNativeXrpCodeIsRejected() {
+        for input in ["XRP .\(Self.issuer)", " XRP.\(Self.issuer)", "xrp\t.\(Self.issuer)"] {
+            XCTAssertFalse(
+                RippleCustomTokenResolver.isValidInput(input),
+                "'\(input)' normalizes to the reserved native code"
+            )
+        }
+    }
+
+    /// Whatever the gate accepted must be what the encoder encodes. A padded
+    /// ticker resolves to the same coin as the clean spelling rather than to a
+    /// second, space-padded currency.
+    func testWhitespacePaddedTickerResolvesToTheSameTokenAsTheCleanSpelling() throws {
+        let padded = try RippleCustomTokenResolver.resolve(input: "RLUSD .\(Self.issuer)")
+        let clean = try RippleCustomTokenResolver.resolve(input: "RLUSD.\(Self.issuer)")
+
+        XCTAssertEqual(padded.uniqueId, clean.uniqueId)
+        XCTAssertEqual(padded.contractAddress, "\(Self.rlusdHex).\(Self.issuer)")
     }
 
     func testMalformedTokenIdsAreRejected() {
@@ -66,11 +148,10 @@ final class RippleTrustLineActivationTests: XCTestCase {
             // Issuer must be a real XRPL address.
             "USD.not-an-address",
             "USD.0x0000000000000000000000000000000000000000",
-            // A 4-char code is neither a standard nor a hex code.
-            "USDT.\(Self.issuer)",
-            // 39 hex characters — one short of the 160-bit form.
+            // 39 characters — one short of the 160-bit hex form, and far past
+            // the 20 bytes a ticker can be packed into.
             "\(String(repeating: "A", count: 39)).\(Self.issuer)",
-            // 40 characters but not hex.
+            // 40 characters but not hex, so it is neither form.
             "\(String(repeating: "Z", count: 40)).\(Self.issuer)"
         ] {
             XCTAssertFalse(RippleCustomTokenResolver.isValidInput(input), "'\(input)' should be rejected")
@@ -118,8 +199,21 @@ final class RippleTrustLineActivationTests: XCTestCase {
     }
 
     func testResolveThrowsOnMalformedInput() {
-        XCTAssertThrowsError(try RippleCustomTokenResolver.resolve(input: "RLUSD.\(Self.issuer)"))
-        XCTAssertThrowsError(try RippleCustomTokenResolver.resolve(input: "not-a-token-id"))
+        for input in [
+            // No separator at all.
+            "not-a-token-id",
+            // Reserved for the native asset.
+            "XRP.\(Self.issuer)",
+            // 21 bytes — one past the 160-bit ceiling, so unpackable.
+            "\(String(repeating: "A", count: 21)).\(Self.issuer)",
+            // Well-formed currency, but the issuer is not an XRPL address.
+            "RLUSD.not-an-address"
+        ] {
+            XCTAssertThrowsError(
+                try RippleCustomTokenResolver.resolve(input: input),
+                "'\(input)' should not resolve"
+            )
+        }
     }
 
     /// A trust line costs an owner reserve on the XRP account that holds it, so
