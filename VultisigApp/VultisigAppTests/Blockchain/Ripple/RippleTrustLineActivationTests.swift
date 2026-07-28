@@ -988,6 +988,50 @@ final class RippleTrustLineActivationTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading, "the activation slot must still be released")
     }
 
+    /// The view model is a screen-level `@StateObject`, so it outlives one sheet
+    /// presentation. A load that returns before quoting must not leave the
+    /// PREVIOUS token's reserve, limit and issuer standing for the new one —
+    /// that is the exact mispairing `beginLoading` exists to prevent, arrived at
+    /// from the other direction.
+    @MainActor
+    func testAFailedQuoteDoesNotLeaveThePreviousTokensQuoteStanding() async {
+        let viewModel = RippleTrustLineActivationViewModel(service: Self.makeService(RippleTrustLineStub()))
+        let nativeCoin = Coin(
+            asset: CoinMeta(
+                chain: .ripple,
+                ticker: "XRP",
+                logo: "xrp",
+                decimals: 6,
+                priceProviderId: "ripple",
+                contractAddress: "",
+                isNativeToken: true
+            ),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        nativeCoin.rawBalance = "50000000"
+
+        let first = Coin(
+            asset: Self.coin(tokenId: "USD.\(Self.issuer)"),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        await viewModel.load(coin: first, nativeCoin: nativeCoin)
+        XCTAssertNotNil(viewModel.quote, "the first token must quote for this test to mean anything")
+
+        // A token id the resolver cannot read — `load` reports it and returns
+        // before assigning a quote.
+        let second = Coin(
+            asset: Self.coin(tokenId: "no-separator"),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        await viewModel.load(coin: second, nativeCoin: nativeCoin)
+
+        XCTAssertNil(viewModel.quote, "the previous token's quote must not survive into a failed load")
+        XCTAssertNotNil(viewModel.errorMessage)
+    }
+
     // MARK: - Fixtures
 
     private static func makeService(_ stub: RippleTrustLineStub) -> RippleService {

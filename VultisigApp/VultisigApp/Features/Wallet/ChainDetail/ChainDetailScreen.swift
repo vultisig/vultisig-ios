@@ -436,6 +436,12 @@ private extension ChainDetailScreen {
         guard trustLineActivation.beginLoading() else { return }
         Task {
             await trustLineActivation.load(coin: coin, nativeCoin: nativeCoin)
+            // Present only when the load produced something to present. A
+            // cancelled quote leaves neither a price nor an error, and an empty
+            // sheet is worse than no sheet.
+            guard trustLineActivation.quote != nil || trustLineActivation.errorMessage != nil else {
+                return
+            }
             coinToActivate = coin
         }
     }

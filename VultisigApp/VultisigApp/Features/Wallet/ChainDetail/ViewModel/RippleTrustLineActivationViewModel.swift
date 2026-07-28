@@ -53,6 +53,14 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
     func load(coin: Coin, nativeCoin: Coin) async {
         isLoading = true
         errorMessage = nil
+        // Clear the quote too, not just the error. This view model is a
+        // screen-level `@StateObject`, so it outlives any one sheet presentation
+        // — and every path that returns before the assignment at the end would
+        // otherwise leave the PREVIOUS token's reserve, limit and issuer standing
+        // for this one. That is the exact pairing `beginLoading` exists to
+        // prevent; a sheet with nothing in it beats a sheet with another token's
+        // numbers in it.
+        quote = nil
         defer { isLoading = false }
 
         guard let (currency, issuer) = try? RippleIssuedCurrency.parseRippleTokenId(coin.contractAddress),
