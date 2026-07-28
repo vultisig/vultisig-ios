@@ -419,12 +419,18 @@ private extension ChainDetailScreen {
         navigateToAction(action: vaultAction)
     }
 
-    /// Opens the reserve-warning sheet and quotes the activation. Nothing is
+    /// Quotes the activation, THEN opens the reserve-warning sheet. Nothing is
     /// signed here — the cost has to be on screen first.
+    ///
+    /// The order matters for more than intent: the bottom-sheet container measures
+    /// its content once and pins the detent to that height, so presenting first and
+    /// filling in afterwards sizes the sheet to a spinner and clips the real
+    /// content. Quoting first means the sheet only ever renders a terminal state.
     func onActivateTrustLine(_ coin: Coin) {
-        coinToActivate = coin
+        guard !trustLineActivation.isLoading else { return }
         Task {
             await trustLineActivation.load(coin: coin, nativeCoin: nativeCoin)
+            coinToActivate = coin
         }
     }
 

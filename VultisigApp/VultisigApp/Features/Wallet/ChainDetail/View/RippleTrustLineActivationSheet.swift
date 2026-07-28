@@ -30,14 +30,16 @@ struct RippleTrustLineActivationSheet: View, BottomSheetProperties {
         }
     }
 
+    /// The sheet is only presented once the quote has resolved, so this renders a
+    /// terminal state and its height never changes after the first layout pass.
+    /// That is load-bearing: the bottom-sheet container measures its content once
+    /// and pins the detent to that height, so a sheet that grows after being
+    /// presented gets clipped rather than resized.
     private func content(coin: Coin) -> some View {
         VStack(spacing: 24) {
             header(coin: coin)
 
-            if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-            } else if let errorMessage = viewModel.errorMessage {
+            if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
                     .foregroundStyle(Theme.colors.alertError)
                     .font(Theme.fonts.bodySMedium)
@@ -73,11 +75,35 @@ struct RippleTrustLineActivationSheet: View, BottomSheetProperties {
             row("rippleTrustLineSpendableAfter", value: viewModel.remainingSpendableXRP, ticker: "XRP")
             // The signed limit. Shown without a ticker suffix ambiguity: it is
             // denominated in the token, not in XRP.
-            row("rippleTrustLineLimit", value: viewModel.quote?.limitValue, ticker: coin.ticker)
-            row("rippleTrustLineIssuer", value: viewModel.quote?.issuer, ticker: nil, truncates: true)
+            row("rippleTrustLineLimit", value: viewModel.limitDisplay, ticker: coin.ticker)
+            issuerRow
         }
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface2))
+    }
+
+    /// The issuer gets its own full-width line rather than sharing one with its
+    /// label. An XRPL issuer address is 25–35 characters and only just overflows
+    /// a shared row, so a side-by-side layout truncates a couple of characters
+    /// while adding an ellipsis — hiding exactly the detail the row exists to let
+    /// the user check, and hiding it in the middle where lookalike issuers differ.
+    @ViewBuilder
+    private var issuerRow: some View {
+        if let issuer = viewModel.quote?.issuer {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("rippleTrustLineIssuer".localized)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .font(Theme.fonts.bodySMedium)
+
+                Text(issuer)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.priceBodyS)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     @ViewBuilder
@@ -105,7 +131,7 @@ struct RippleTrustLineActivationSheet: View, BottomSheetProperties {
     }
 
     @ViewBuilder
-    private func row(_ title: String, value: String?, ticker: String?, truncates: Bool = false) -> some View {
+    private func row(_ title: String, value: String?, ticker: String?) -> some View {
         if let value {
             HStack(spacing: 8) {
                 Text(title.localized)
@@ -116,7 +142,7 @@ struct RippleTrustLineActivationSheet: View, BottomSheetProperties {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.priceBodyS)
                     .lineLimit(1)
-                    .truncationMode(truncates ? .middle : .tail)
+                    .minimumScaleFactor(0.8)
             }
         }
     }

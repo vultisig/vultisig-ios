@@ -120,4 +120,37 @@ enum RippleTrustSetPresentation {
             limitValue: limitValue
         )
     }
+
+    // MARK: - Done screen
+
+    /// Done-screen hero for a TrustSet, from a CO-SIGNER's payload.
+    ///
+    /// A TrustSet's `toAmount` is the trust-line LIMIT, not a transfer. The
+    /// default done slot renders `toAmountWithTickerString`, so without a hero
+    /// the screen announces a quadrillion-token payment that never happened —
+    /// and prices it in fiat. Supplying a hero replaces that block outright
+    /// (`DoneTokenContent` prefers `hero` over the coin amount), which is the
+    /// same escape hatch the limit-order cancel uses for the same reason: the
+    /// transaction is not a transfer and must not be described as one.
+    ///
+    /// The limit is deliberately NOT the caption. It belongs on the screens
+    /// where the user is deciding whether to sign it — the reserve sheet and the
+    /// verify summary — not on the receipt for a decision already made. The
+    /// issuer is what identifies WHICH line was opened.
+    static func hero(for payload: KeysignPayload?) -> HeroContent? {
+        display(for: payload).map(heroContent)
+    }
+
+    /// The same hero for the INITIATOR, whose done screen is driven by the
+    /// transaction rather than by a payload.
+    static func hero(for tx: SendTransaction) -> HeroContent? {
+        display(for: tx).map(heroContent)
+    }
+
+    private static func heroContent(for display: Display) -> HeroContent {
+        .title(
+            text: String(format: "rippleTrustLineHeroTitle".localized, display.ticker),
+            caption: display.issuer
+        )
+    }
 }

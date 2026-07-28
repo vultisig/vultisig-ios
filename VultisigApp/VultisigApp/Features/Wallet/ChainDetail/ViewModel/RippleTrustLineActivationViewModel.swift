@@ -113,6 +113,32 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
         quote.map { RippleReserve.xrpAmount(drops: $0.totalCostDrops) }
     }
 
+    /// The trust-line limit that will be signed, grouped so it can be read.
+    ///
+    /// The raw XRPL value is 16 unseparated digits (`1000000000000000`), which no
+    /// one can check at a glance — and this row exists precisely so the limit
+    /// riding the TrustSet is verifiable before it is signed. Grouping only:
+    /// nothing is rounded or abbreviated, so the figure shown is exactly the
+    /// figure signed. Falls back to the raw string if it will not parse, because
+    /// showing the true value unformatted beats showing nothing.
+    var limitDisplay: String? {
+        guard let limitValue = quote?.limitValue else { return nil }
+        guard let decimal = Decimal(string: limitValue, locale: Locale(identifier: "en_US_POSIX")) else {
+            return limitValue
+        }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = true
+        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
+        formatter.minimumFractionDigits = 0
+        // XRPL issued currencies carry 15 significant digits; never truncate the
+        // fraction of a value the user is about to sign.
+        formatter.maximumFractionDigits = RippleIssuedCurrency.issuedCurrencyDecimals
+        return formatter.string(from: NSDecimalNumber(decimal: decimal)) ?? limitValue
+    }
+
     /// Blocking copy shown when spendable XRP won't cover `reserve_inc + fee`.
     /// `nil` when the activation is affordable (or not yet quoted).
     var insufficientXRPMessage: String? {

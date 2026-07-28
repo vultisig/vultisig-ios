@@ -592,6 +592,46 @@ final class RippleTrustLineActivationTests: XCTestCase {
         )
     }
 
+    /// The sheet shows the limit grouped, because 16 unseparated digits are not a
+    /// number a user can check — and this row exists to be checked before signing.
+    /// The grouped string must still be the exact figure that gets signed.
+    @MainActor
+    func testLimitDisplayGroupsTheSignedValueWithoutChangingIt() async {
+        let viewModel = RippleTrustLineActivationViewModel(service: Self.makeService(RippleTrustLineStub()))
+        let coin = Coin(
+            asset: Self.coin(tokenId: "USD.\(Self.issuer)"),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        let nativeCoin = Coin(
+            asset: CoinMeta(
+                chain: .ripple,
+                ticker: "XRP",
+                logo: "xrp",
+                decimals: 6,
+                priceProviderId: "ripple",
+                contractAddress: "",
+                isNativeToken: true
+            ),
+            address: Self.account,
+            hexPublicKey: "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        )
+        nativeCoin.rawBalance = "50000000"
+
+        await viewModel.load(coin: coin, nativeCoin: nativeCoin)
+
+        let display = viewModel.limitDisplay
+        XCTAssertNotNil(display)
+        XCTAssertNotEqual(display, viewModel.quote?.limitValue, "the raw 16-digit run must be grouped")
+        // Stripping the grouping separators recovers the exact signed value, so
+        // formatting cannot have rounded or abbreviated it.
+        let separator = Locale.current.groupingSeparator ?? ","
+        XCTAssertEqual(
+            display?.replacingOccurrences(of: separator, with: ""),
+            viewModel.quote?.limitValue
+        )
+    }
+
     func testQuoteDecodesAHexCurrencyToItsTicker() {
         let quote = RippleTrustLineActivationQuote(
             ownerReserveDrops: BigInt(200_000),
@@ -632,6 +672,44 @@ final class RippleTrustLineActivationTests: XCTestCase {
         XCTAssertEqual(display.ticker, "RLUSD")
         XCTAssertEqual(display.currencyCode, Self.rlusdHex)
         XCTAssertEqual(display.limitValue, "1000000000000000")
+    }
+
+    // MARK: - Done-screen hero
+
+    /// The done screen renders `toAmountWithTickerString` unless a hero claims the
+    /// slot. A TrustSet's `toAmount` is the trust-line LIMIT, so without a hero the
+    /// receipt announces a 1,000,000,000,000,000-token payment that never happened
+    /// — and prices it in fiat. Observed on mainnet before this existed.
+    func testTrustSetSuppliesADoneHeroSoTheLimitIsNotShownAsATransfer() throws {
+        let payload = Self.makeTrustSetPayload(
+            tokenId: "\(Self.rlusdHex).\(Self.issuer)",
+            toAmount: RippleTrustLineLimit.defaultLimit
+        )
+
+        let hero = try XCTUnwrap(RippleTrustSetPresentation.hero(for: payload))
+
+        guard case .title(let text, let caption) = hero else {
+            return XCTFail("a TrustSet receipt must not use an amount hero")
+        }
+        XCTAssertTrue(text.contains("RLUSD"), "the hero names the token whose line was opened")
+        XCTAssertEqual(caption, Self.issuer, "the issuer identifies WHICH line was opened")
+        XCTAssertFalse(
+            text.contains("1000000000000000"),
+            "the limit must not be presented as an amount transferred"
+        )
+    }
+
+    /// An ordinary token Payment keeps the default amount hero — the fix must not
+    /// swallow the amount on transactions that genuinely have one.
+    func testNonTrustSetGetsNoDoneHeroOverride() {
+        let tokenPayment = Self.makeTrustSetPayload(
+            tokenId: "\(Self.rlusdHex).\(Self.issuer)",
+            toAmount: BigInt("1048869990000000"),
+            transactionType: .unspecified
+        )
+
+        XCTAssertNil(RippleTrustSetPresentation.hero(for: tokenPayment))
+        XCTAssertNil(RippleTrustSetPresentation.hero(for: nil))
     }
 
     /// Not a TrustSet → no trust-line rows, so an ordinary send keeps the Payment
