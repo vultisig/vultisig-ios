@@ -39,15 +39,12 @@ struct UnverifiedTokenBottomSheet: View, BottomSheetProperties {
             }
             .multilineTextAlignment(.center)
 
+            // Cancel is the primary (safe) action; continuing anyway is the
+            // subdued `.secondary` treatment — both are design-system buttons.
             VStack(spacing: 8) {
                 PrimaryButton(title: "cancel".localized, action: onCancel)
 
-                Button("continueAnyway".localized, action: onContinue)
-                    .frame(height: 42, alignment: .center)
-                    .foregroundStyle(Theme.colors.textButtonDisabled)
-                    .font(Theme.fonts.caption10)
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.plain)
+                PrimaryButton(title: "continueAnyway".localized, type: .secondary, action: onContinue)
             }
         }
     }
