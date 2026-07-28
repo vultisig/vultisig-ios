@@ -8,6 +8,12 @@
 import Combine
 import Foundation
 
+/// Main-actor isolated because every stored value it reads is SwiftData `@Model`
+/// state — `vault.coins`, each `Coin`'s balance/ticker/`uniqueId`, the native
+/// coin's address — which must never be touched off the MainActor. The isolation
+/// also matches what the type already is in practice: an `ObservableObject`
+/// driving a SwiftUI screen.
+@MainActor
 final class ChainDetailViewModel: ObservableObject {
     private let nativeCoin: Coin
     private let vault: Vault
@@ -57,16 +63,24 @@ final class ChainDetailViewModel: ObservableObject {
         self.tronLoader = nativeCoin.chain == .tron ? TronResourcesLoader(address: nativeCoin.address) : nil
         self.tokens = Self.computeTokens(vault: vault, nativeCoin: nativeCoin)
 
+        // Both sinks already receive on the main queue, but a Combine closure
+        // carries no actor isolation of its own. `assumeIsolated` states the
+        // guarantee the scheduler makes instead of adding a `Task` hop, which
+        // would let a publish land after the state it was meant to describe.
         tronLoader?.objectWillChange
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.objectWillChange.send() }
+            }
             .store(in: &cancellables)
 
         // Vault publishes once per `coin.rawBalance` write during a refresh —
         // 20+ times per cycle. Debounce so we sort once at the end.
         vault.objectWillChange
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in self?.recomputeTokens() }
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.recomputeTokens() }
+            }
             .store(in: &cancellables)
     }
 
@@ -142,7 +156,6 @@ final class ChainDetailViewModel: ObservableObject {
     /// in-memory when the Bitcoin chain isn't enabled — so the Claim entry
     /// point still appears for a quantum vault that hasn't added Bitcoin.
     /// Returns nil only on a genuine derivation failure.
-    @MainActor
     func qbtcClaimBitcoinCoin() -> Coin? {
         if nativeCoin.chain == .bitcoin {
             return nativeCoin
