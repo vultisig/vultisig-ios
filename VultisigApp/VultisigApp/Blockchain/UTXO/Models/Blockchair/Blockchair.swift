@@ -113,4 +113,26 @@ extension Blockchair.BlockchairUtxo {
         }
         return OutPoint(transactionHash: transactionHash, index: index)
     }
+
+    /// Whether this output may be offered to transaction planning. Mirrors the
+    /// SDK's `is_spendable !== false && block_id > 0`.
+    ///
+    /// **Confirmed only.** Blockchair reports mempool outputs with
+    /// `block_id == -1` and counts them in the address balance. An unconfirmed
+    /// output can still be replaced or evicted, and the response carries no
+    /// ancestry, so there is no way to tell our own change from an inbound
+    /// zero-conf payment that a sender can still double-spend. Spending either
+    /// produces a child transaction that dies with its parent — and the MPC
+    /// pairing window leaves minutes for that to happen between selection and
+    /// broadcast. A missing `block_id` is treated the same way: an output whose
+    /// depth we could not establish is not spent.
+    ///
+    /// **Not explicitly unspendable.** `is_spendable` is absent from
+    /// Blockchair's Bitcoin responses, so absent means spendable and only an
+    /// explicit `false` disqualifies an output.
+    var isSpendableCandidate: Bool {
+        guard isSpendable != false else { return false }
+        guard let blockId, blockId > 0 else { return false }
+        return true
+    }
 }

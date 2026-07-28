@@ -168,36 +168,29 @@ struct KeysignPayloadFactory {
     }
 
     private func selectUTXOs(keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
-        let utxosInfo: [UtxoInfo]
+        let dustThreshold = keysignPayload.coin.coinType.getFixedDustThreshold()
+        let usableUTXOs: [UtxoInfo]
 
         if keysignPayload.coin.chain == .dash {
-            utxosInfo = try await DashService.shared.fetchUtxos(
+            // Dash reads its UTXOs from a node's address index via
+            // `getaddressutxos`, which is built from connected blocks —
+            // mempool outputs live behind a separate RPC and never appear
+            // here. Every entry is confirmed by construction, so the
+            // confirmation filter the Blockchair path applies would be dead
+            // code; the SDK's Dash client filters on dust alone for the same
+            // reason.
+            let dashUTXOs = try await DashService.shared.fetchUtxos(
                 address: keysignPayload.coin.address
             )
+            usableUTXOs = dashUTXOs.filter { $0.amount >= dustThreshold }
         } else {
-            // Existing Blockchair path for all other UTXO chains
-            let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.compactMap { item -> UtxoInfo? in
-                guard
-                    let txHash = item.transactionHash, !txHash.isEmpty,
-                    let value = item.value,
-                    let index = item.index, index >= 0
-                else {
-                    return nil
-                }
-                return UtxoInfo(
-                    hash: txHash,
-                    amount: Int64(value),
-                    index: UInt32(index)
-                )
-            }
-            guard let mapped = info else {
+            // Blockchair path for every other UTXO chain.
+            guard let rows = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo else {
                 throw Errors.notEnoughUTXOError
             }
-            utxosInfo = mapped
+            usableUTXOs = Self.spendableUTXOs(from: rows, dustThreshold: dustThreshold)
         }
 
-        let dustThreshold = keysignPayload.coin.coinType.getFixedDustThreshold()
-        let usableUTXOs = utxosInfo.filter { $0.amount >= dustThreshold }
         if usableUTXOs.isEmpty {
             throw Errors.utxoTooSmallError
         }
@@ -271,6 +264,42 @@ struct KeysignPayloadFactory {
                 index: utxo.index,
                 cardanoTokens: sortedAssets
             )
+        }
+    }
+}
+
+extension KeysignPayloadFactory {
+
+    /// Narrows Blockchair's rows to the outputs that may fund a transaction,
+    /// adopting the SDK's `is_spendable !== false && block_id > 0` alongside
+    /// the dust threshold this path already applied. The dust comparison stays
+    /// inclusive (`>= dustThreshold`) rather than the SDK's strict `>`: that
+    /// boundary predates this filter and moving it would drop outputs iOS can
+    /// spend today.
+    ///
+    /// The confirmation half of that predicate is the load-bearing one here:
+    /// Blockchair's `utxo` array includes mempool outputs (`block_id == -1`),
+    /// and an unconfirmed parent can still be replaced or evicted — leaving a
+    /// child that can never confirm. The response carries no ancestry, so
+    /// there is no way to tell our own change from an inbound zero-conf
+    /// payment the sender can still double-spend, and the MPC pairing window
+    /// leaves minutes for either to happen between selection and broadcast.
+    ///
+    /// Rows missing the fields needed to build an input are dropped rather
+    /// than failing the whole set, matching the previous behaviour.
+    static func spendableUTXOs(
+        from rows: [Blockchair.BlockchairUtxo],
+        dustThreshold: Int64
+    ) -> [UtxoInfo] {
+        rows.compactMap { row -> UtxoInfo? in
+            guard row.isSpendableCandidate,
+                  let txHash = row.transactionHash, !txHash.isEmpty,
+                  let value = row.value, let amount = Int64(exactly: value), amount >= dustThreshold,
+                  let index = row.index, let vout = UInt32(exactly: index)
+            else {
+                return nil
+            }
+            return UtxoInfo(hash: txHash, amount: amount, index: vout)
         }
     }
 }
