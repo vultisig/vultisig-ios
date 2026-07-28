@@ -441,6 +441,121 @@ final class RippleTrustLineTests: XCTestCase {
         XCTAssertEqual(found?.ticker, "RLUSD")
     }
 
+    // MARK: - The curated XRPL catalog as a whole
+
+    /// Every curated XRPL entry must be a well-formed, resolvable token id. A
+    /// typo in an issuer or a currency code here is invisible until a user's
+    /// balance silently reads zero, because the lookup simply fails to match.
+    func testEveryCuratedRippleTokenHasAWellFormedTokenId() throws {
+        for curated in Self.curatedRippleTokens {
+            let (currency, issuer) = try RippleIssuedCurrency.parseRippleTokenId(curated.contractAddress)
+
+            XCTAssertTrue(
+                AddressService.validateAddress(address: issuer, chain: .ripple),
+                "\(curated.ticker) has an issuer that is not a valid XRPL address"
+            )
+            XCTAssertEqual(
+                currency,
+                try RippleIssuedCurrency.toXrplCurrencyCode(currency),
+                "\(curated.ticker) currency is not in its normalized on-ledger form"
+            )
+            XCTAssertFalse(curated.isNativeToken, "\(curated.ticker) must not be native")
+            XCTAssertEqual(
+                curated.decimals,
+                RippleIssuedCurrency.issuedCurrencyDecimals,
+                "\(curated.ticker) must use the 15-digit issued-currency scale"
+            )
+        }
+    }
+
+    /// A curated entry exists to supply the two things the ledger cannot: a
+    /// price feed and a logo. One without a `priceProviderId` would render a
+    /// blank fiat column, which is what auto-discovery already does for free —
+    /// so it would be carrying no weight.
+    func testEveryCuratedRippleTokenCarriesAPriceProviderAndALogo() {
+        for curated in Self.curatedRippleTokens {
+            XCTAssertFalse(
+                curated.priceProviderId.isEmpty,
+                "\(curated.ticker) has no priceProviderId, so it would show no fiat value"
+            )
+            XCTAssertTrue(
+                curated.logo.hasPrefix("https://"),
+                "\(curated.ticker) logo must be a remote URL — no XRPL token art is bundled"
+            )
+        }
+    }
+
+    /// `CoinMeta.uniqueId` keys on `chain-ticker-contractAddress`, so two
+    /// curated rows sharing a ticker would be two coins a user cannot tell
+    /// apart. This is the guard against curating gateway IOUs (two issuers both
+    /// tickered `USD`) without first fixing identity to be contract-keyed.
+    func testCuratedRippleTickersAreUnique() {
+        let tickers = Self.curatedRippleTokens.map { $0.ticker.lowercased() }
+
+        XCTAssertEqual(Set(tickers).count, tickers.count, "duplicate curated XRPL ticker: \(tickers)")
+    }
+
+    /// The on-ledger currency for Equilibrium decodes to `Equilibrium`, not to
+    /// the `EQ` the curated entry uses. Discovery must therefore return the
+    /// curated row verbatim rather than deriving its own ticker — otherwise the
+    /// same trust line yields two different `uniqueId`s and shows up twice.
+    func testCuratedTickerWinsOverTheDecodedCurrencyForEquilibrium() throws {
+        let curated = try XCTUnwrap(TokensStore.TokenSelectionAssets.first {
+            $0.chain == .ripple && $0.ticker == "EQ"
+        })
+        let (currency, issuer) = try RippleIssuedCurrency.parseRippleTokenId(curated.contractAddress)
+        XCTAssertEqual(
+            RippleIssuedCurrency.toIssuedCurrencyTicker(currency),
+            "Equilibrium",
+            "precondition: the ledger code decodes to the long name"
+        )
+
+        let discovered = RippleTrustLineTokens.discoverableTokens(
+            from: [Self.decodedLine(currency: currency, issuer: issuer, balance: "5")]
+        )
+
+        XCTAssertEqual(discovered.map(\.ticker), ["EQ"])
+        XCTAssertEqual(discovered.first?.uniqueId, curated.uniqueId)
+    }
+
+    /// Pins each curated token id to the currency and issuer it is supposed to
+    /// name. The well-formedness test above would happily accept a typo — any
+    /// 40 hex digits normalize to themselves — and a wrong digit here does not
+    /// fail loudly: the trust line simply never matches and the balance reads
+    /// zero forever. So the decoded ticker and the issuer are both asserted.
+    func testEveryCuratedRippleTokenDecodesToTheCurrencyItClaims() throws {
+        let expected: [String: (ticker: String, issuer: String)] = [
+            "RLUSD": ("RLUSD", "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"),
+            "SOLO": ("SOLO", "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"),
+            "USDC": ("USDC", "rGm7WCVp9gb4jZHWTEtGUr4dd74z2XuWhE"),
+            // The on-ledger code is the ASCII packing of the full name, not of
+            // the "EQ" the entry is tickered with.
+            "EQ": ("Equilibrium", "rpakCr61Q92abPXJnVboKENmpKssWyHpwu")
+        ]
+
+        XCTAssertEqual(
+            Set(Self.curatedRippleTokens.map(\.ticker)),
+            Set(expected.keys),
+            "the curated XRPL set changed — update the expectations rather than the assertion"
+        )
+
+        for curated in Self.curatedRippleTokens {
+            let want = try XCTUnwrap(expected[curated.ticker])
+            let (currency, issuer) = try RippleIssuedCurrency.parseRippleTokenId(curated.contractAddress)
+
+            XCTAssertEqual(
+                RippleIssuedCurrency.toIssuedCurrencyTicker(currency),
+                want.ticker,
+                "\(curated.ticker) currency code does not decode to \(want.ticker)"
+            )
+            XCTAssertEqual(issuer, want.issuer, "\(curated.ticker) has the wrong issuer")
+        }
+    }
+
+    private static var curatedRippleTokens: [CoinMeta] {
+        TokensStore.TokenSelectionAssets.filter { $0.chain == .ripple && !$0.isNativeToken }
+    }
+
     // MARK: - BalanceService routing
 
     func testBalanceServiceRoutesANonNativeCoinToItsTrustLineBalance() async throws {
