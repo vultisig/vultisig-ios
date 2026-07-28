@@ -1101,7 +1101,13 @@ class KeysignViewModel: ObservableObject {
                 status: .broadcasted(estimatedTime: config.estimatedTime),
                 coinTicker: keysignPayload.coin.ticker,
                 amount: keysignPayload.toAmount.description,
-                toAddress: keysignPayload.toAddress
+                toAddress: keysignPayload.toAddress,
+                // Stamps the record with the vault that signed it. Without it
+                // the row cannot be attributed, and on UTXO chains that means
+                // this vault's own unconfirmed change is indistinguishable
+                // from a stranger's zero-conf payment and stays unspendable
+                // until it confirms.
+                pubKeyECDSA: keysignPayload.vaultPubKeyECDSA
             )
         }
     }

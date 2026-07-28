@@ -184,11 +184,21 @@ struct KeysignPayloadFactory {
             )
             usableUTXOs = dashUTXOs.filter { $0.amount >= dustThreshold }
         } else {
-            // Blockchair path for every other UTXO chain.
+            // Blockchair path for every other UTXO chain. `SpendableUtxos` is
+            // shared with the balance path so the amount offered to planning
+            // is exactly the amount the wallet screen showed.
             guard let rows = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo else {
                 throw Errors.notEnoughUTXOError
             }
-            usableUTXOs = Self.spendableUTXOs(from: rows, dustThreshold: dustThreshold)
+            let ownUnconfirmed = await SpendableUtxos.ownUnconfirmedTxHashes(
+                chain: keysignPayload.coin.chain,
+                vaultPubKeyECDSA: keysignPayload.vaultPubKeyECDSA
+            )
+            usableUTXOs = SpendableUtxos.select(
+                from: rows,
+                dustThreshold: dustThreshold,
+                ownUnconfirmedTxHashes: ownUnconfirmed
+            )
         }
 
         if usableUTXOs.isEmpty {
@@ -264,42 +274,6 @@ struct KeysignPayloadFactory {
                 index: utxo.index,
                 cardanoTokens: sortedAssets
             )
-        }
-    }
-}
-
-extension KeysignPayloadFactory {
-
-    /// Narrows Blockchair's rows to the outputs that may fund a transaction,
-    /// adopting the SDK's `is_spendable !== false && block_id > 0` alongside
-    /// the dust threshold this path already applied. The dust comparison stays
-    /// inclusive (`>= dustThreshold`) rather than the SDK's strict `>`: that
-    /// boundary predates this filter and moving it would drop outputs iOS can
-    /// spend today.
-    ///
-    /// The confirmation half of that predicate is the load-bearing one here:
-    /// Blockchair's `utxo` array includes mempool outputs (`block_id == -1`),
-    /// and an unconfirmed parent can still be replaced or evicted — leaving a
-    /// child that can never confirm. The response carries no ancestry, so
-    /// there is no way to tell our own change from an inbound zero-conf
-    /// payment the sender can still double-spend, and the MPC pairing window
-    /// leaves minutes for either to happen between selection and broadcast.
-    ///
-    /// Rows missing the fields needed to build an input are dropped rather
-    /// than failing the whole set, matching the previous behaviour.
-    static func spendableUTXOs(
-        from rows: [Blockchair.BlockchairUtxo],
-        dustThreshold: Int64
-    ) -> [UtxoInfo] {
-        rows.compactMap { row -> UtxoInfo? in
-            guard row.isSpendableCandidate,
-                  let txHash = row.transactionHash, !txHash.isEmpty,
-                  let value = row.value, let amount = Int64(exactly: value), amount >= dustThreshold,
-                  let index = row.index, let vout = UInt32(exactly: index)
-            else {
-                return nil
-            }
-            return UtxoInfo(hash: txHash, amount: amount, index: vout)
         }
     }
 }

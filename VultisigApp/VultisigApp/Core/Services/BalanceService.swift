@@ -472,13 +472,12 @@ class BalanceService {
     func fetchBalance(for coin: CoinMeta, address: String) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
-            // Blockchair's `address.balance` counts mempool outputs, while
-            // `KeysignPayloadFactory.spendableUTXOs` only funds transactions
-            // from confirmed ones — so shortly after a deposit or a send this
-            // reads higher than the amount that can actually be spent. The SDK
-            // avoids the gap by summing its own filtered UTXO set instead;
-            // reconciling the two here is a separate change to the balance
-            // model, not to input selection.
+            // Blockchair's `address.balance` counts every mempool output,
+            // while `SpendableUtxos.select` funds transactions only from
+            // confirmed ones and this vault's own unconfirmed change — so a
+            // stranger's zero-conf deposit reads here as spendable money the
+            // send flow will refuse. Reconciling the two is the next change to
+            // this path, not a change to input selection.
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
             return blockChairData.address?.balance?.description ?? "0"
 

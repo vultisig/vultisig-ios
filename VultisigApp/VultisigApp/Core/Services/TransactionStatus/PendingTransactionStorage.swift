@@ -45,6 +45,16 @@ final class StoredPendingTransactionStorage {
             existing.status = status.persistenceString
             existing.lastCheckedAt = Date()
 
+            // Backfill the owning vault when the record was created without it.
+            // The broadcast path writes the row first and the status poller
+            // starts second, so whichever arrives with the key has to be able
+            // to attach it — a row with no vault is invisible to the
+            // per-vault lookups that decide which unconfirmed outputs this
+            // wallet may spend.
+            if existing.pubKeyECDSA == nil {
+                existing.pubKeyECDSA = pubKeyECDSA
+            }
+
             if case .confirmed = status {
                 existing.confirmedAt = Date()
             }
@@ -89,6 +99,49 @@ final class StoredPendingTransactionStorage {
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
         return try modelContext.fetch(descriptor)
+    }
+
+    /// Hashes of the transactions this device broadcast for one vault on one
+    /// chain that have not reached a terminal state, as a value type safe to
+    /// hand to a non-main actor.
+    ///
+    /// This is how the wallet tells its own unconfirmed change apart from an
+    /// inbound zero-conf payment: a mempool output whose transaction hash is
+    /// in this set was produced by a transaction only this vault could have
+    /// signed, so no one else can replace or double-spend it.
+    ///
+    /// Rows are never pruned while still pending (`cleanupOld` only deletes
+    /// terminal rows older than a day), and an output that confirms no longer
+    /// needs the set at all, so the answer stays complete for exactly as long
+    /// as it matters. A read failure returns the empty set, which degrades
+    /// spending back to confirmed-only rather than admitting anything unproven.
+    ///
+    /// The set is deliberately allowed to outlive the transactions in it — a
+    /// row stays non-terminal while the poller reports `notFound`, and the
+    /// interrupted-broadcast path records a hash it could not confirm reached
+    /// the network at all. That costs nothing, because the caller intersects
+    /// this set with the outputs the provider currently reports as unspent: a
+    /// hash for a transaction that never landed matches no output.
+    ///
+    /// Records written before the owner was persisted carry no
+    /// `pubKeyECDSA` and cannot acquire one — nothing that resumes them knows
+    /// which vault signed them. They match no vault here, so their change
+    /// stays unspendable until it confirms, which is exactly the behaviour
+    /// this lookup replaced.
+    func unconfirmedTransactionHashes(chain: Chain, vaultPubKeyECDSA: String) -> Set<String> {
+        guard !vaultPubKeyECDSA.isEmpty else { return [] }
+
+        do {
+            let pending = try getAllPending()
+            return Set(
+                pending
+                    .filter { $0.chain == chain && $0.pubKeyECDSA == vaultPubKeyECDSA }
+                    .map(\.txHash)
+            )
+        } catch {
+            logger.error("Failed to read pending transactions for \(chain.name): \(error.localizedDescription)")
+            return []
+        }
     }
 
     /// Cleanup old transactions (older than 24 hours and terminal)
