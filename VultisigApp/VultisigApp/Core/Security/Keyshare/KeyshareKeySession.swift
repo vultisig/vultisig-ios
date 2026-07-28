@@ -24,6 +24,9 @@ final class KeyshareKeySession {
     private let store: KeyshareKeyStoring
     private let lock = NSLock()
     private var cachedKey: SymmetricKey?
+    /// Bumped on every `clear()`. An unlock that began before a lock happened
+    /// must not install its result afterwards.
+    private var generation: Int = 0
 
     init(store: KeyshareKeyStoring = DefaultKeyshareKeyStore.shared) {
         self.store = store
@@ -57,10 +60,35 @@ final class KeyshareKeySession {
         cachedKey = key
     }
 
+    /// The generation to pass back to `adopt(_:ifGeneration:)`.
+    var currentGeneration: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return generation
+    }
+
+    /// Adopts the key only if no `clear()` happened in the meantime.
+    ///
+    /// Unlocking runs PBKDF2, which takes long enough for the app to be
+    /// backgrounded and locked mid-derivation. Without this check the unlock
+    /// would finish afterwards and quietly undo the lock.
+    ///
+    /// - Returns: whether the key was adopted.
+    @discardableResult
+    func adopt(_ key: SymmetricKey, ifGeneration expected: Int) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard generation == expected else { return false }
+        cachedKey = key
+        return true
+    }
+
     /// Forgets the key. Sealed shares become unreadable until it is restored.
     func clear() {
         lock.lock()
         defer { lock.unlock() }
         cachedKey = nil
+        generation &+= 1
     }
 }

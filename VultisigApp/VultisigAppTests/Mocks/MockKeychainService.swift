@@ -17,10 +17,18 @@ final class MockKeychainService: KeychainService {
     private var deviceToken: String?
     private var keyshareDataKey: Data?
     private var wrappedKeyshareDataKey: Data?
+    private var passcodeAttemptState: Data?
 
     /// When set, `setKeyshareDataKey` accepts the write but stores nothing, so
     /// the read-back verification in `DefaultKeyshareKeyStore` can be exercised.
     var dropsKeyshareDataKeyWrites = false
+
+    /// When set, deletion of the clear data key silently does nothing, so the
+    /// verified-deletion path can be exercised.
+    var ignoresKeyshareDataKeyDeletion = false
+
+    /// Same, for the wrapped copy, so the disable rollback can be exercised.
+    var ignoresWrappedKeyshareDataKeyDeletion = false
 
     init(lastMigratedVersion: Int? = nil) {
         self.lastMigratedVersion = lastMigratedVersion
@@ -50,10 +58,18 @@ final class MockKeychainService: KeychainService {
 
     func setKeyshareDataKey(_ data: Data?) {
         guard !dropsKeyshareDataKeyWrites else { return }
+        if data == nil && ignoresKeyshareDataKeyDeletion { return }
         keyshareDataKey = data
     }
 
     func getWrappedKeyshareDataKey() -> Data? { wrappedKeyshareDataKey }
 
-    func setWrappedKeyshareDataKey(_ data: Data?) { wrappedKeyshareDataKey = data }
+    func setWrappedKeyshareDataKey(_ data: Data?) {
+        if data == nil && ignoresWrappedKeyshareDataKeyDeletion { return }
+        wrappedKeyshareDataKey = data
+    }
+
+    func getPasscodeAttemptState() -> Data? { passcodeAttemptState }
+
+    func setPasscodeAttemptState(_ data: Data?) { passcodeAttemptState = data }
 }

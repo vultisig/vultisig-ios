@@ -20,6 +20,8 @@ protocol KeychainService: AnyObject {
     func setKeyshareDataKey(_ data: Data?)
     func getWrappedKeyshareDataKey() -> Data?
     func setWrappedKeyshareDataKey(_ data: Data?)
+    func getPasscodeAttemptState() -> Data?
+    func setPasscodeAttemptState(_ data: Data?)
 }
 
 final class DefaultKeychainService: KeychainService {
@@ -96,6 +98,20 @@ final class DefaultKeychainService: KeychainService {
             accessibility: kSecAttrAccessibleWhenUnlocked
         )
     }
+
+    func getPasscodeAttemptState() -> Data? {
+        return keychain.getData(for: Keys.passcodeAttemptState)
+    }
+
+    /// Kept in the Keychain, not `UserDefaults`, so a lockout is not cleared by
+    /// deleting and reinstalling the app.
+    func setPasscodeAttemptState(_ data: Data?) {
+        keychain.setData(
+            data,
+            for: Keys.passcodeAttemptState,
+            accessibility: kSecAttrAccessibleWhenUnlocked
+        )
+    }
 }
 
 private extension DefaultKeychainService {
@@ -107,6 +123,7 @@ private extension DefaultKeychainService {
         case deviceToken
         case keyshareDataKey
         case wrappedKeyshareDataKey
+        case passcodeAttemptState
 
         var identifier: String {
             return "\(DefaultKeychainService.serviceName).\(key)"
@@ -126,6 +143,8 @@ private extension DefaultKeychainService {
                 return "keyshareDataKey"
             case .wrappedKeyshareDataKey:
                 return "wrappedKeyshareDataKey"
+            case .passcodeAttemptState:
+                return "passcodeAttemptState"
             }
         }
     }
