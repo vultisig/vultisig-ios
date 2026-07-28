@@ -90,3 +90,27 @@ struct Blockchair: Codable {
     }
 }
 
+extension Blockchair.BlockchairUtxo {
+    /// Identity of an output on-chain.
+    ///
+    /// A paginated fetch can see the same output twice when the address's
+    /// UTXO set shifts between two page requests (Blockchair returns the list
+    /// newest-first, so one new entry slides everything down by one). A
+    /// duplicated outpoint in the candidate set would let the planner build a
+    /// transaction that spends the same input twice, which the network
+    /// rejects — so pages are merged on this key.
+    struct OutPoint: Hashable {
+        let transactionHash: String
+        let index: Int
+    }
+
+    /// `nil` when the row is missing the fields needed to identify the output.
+    /// Such rows are unusable downstream and are dropped there; they simply
+    /// cannot participate in de-duplication.
+    var outPoint: OutPoint? {
+        guard let transactionHash, !transactionHash.isEmpty, let index else {
+            return nil
+        }
+        return OutPoint(transactionHash: transactionHash, index: index)
+    }
+}
