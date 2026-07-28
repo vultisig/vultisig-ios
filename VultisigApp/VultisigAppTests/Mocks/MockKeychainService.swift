@@ -15,6 +15,12 @@ final class MockKeychainService: KeychainService {
     private var fastPasswords: [String: String] = [:]
     private var fastHints: [String: String] = [:]
     private var deviceToken: String?
+    private var keyshareDataKey: Data?
+    private var wrappedKeyshareDataKey: Data?
+
+    /// When set, `setKeyshareDataKey` accepts the write but stores nothing, so
+    /// the read-back verification in `DefaultKeyshareKeyStore` can be exercised.
+    var dropsKeyshareDataKeyWrites = false
 
     init(lastMigratedVersion: Int? = nil) {
         self.lastMigratedVersion = lastMigratedVersion
@@ -39,4 +45,15 @@ final class MockKeychainService: KeychainService {
     func getDeviceToken() -> String? { deviceToken }
 
     func setDeviceToken(_ token: String?) { deviceToken = token }
+
+    func getKeyshareDataKey() -> Data? { keyshareDataKey }
+
+    func setKeyshareDataKey(_ data: Data?) {
+        guard !dropsKeyshareDataKeyWrites else { return }
+        keyshareDataKey = data
+    }
+
+    func getWrappedKeyshareDataKey() -> Data? { wrappedKeyshareDataKey }
+
+    func setWrappedKeyshareDataKey(_ data: Data?) { wrappedKeyshareDataKey = data }
 }

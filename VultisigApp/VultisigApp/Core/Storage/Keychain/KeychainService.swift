@@ -16,6 +16,10 @@ protocol KeychainService: AnyObject {
     func setLastMigratedVersion(_ version: Int?)
     func getDeviceToken() -> String?
     func setDeviceToken(_ token: String?)
+    func getKeyshareDataKey() -> Data?
+    func setKeyshareDataKey(_ data: Data?)
+    func getWrappedKeyshareDataKey() -> Data?
+    func setWrappedKeyshareDataKey(_ data: Data?)
 }
 
 final class DefaultKeychainService: KeychainService {
@@ -64,6 +68,34 @@ final class DefaultKeychainService: KeychainService {
     func setDeviceToken(_ token: String?) {
         keychain.setString(token, for: Keys.deviceToken)
     }
+
+    func getKeyshareDataKey() -> Data? {
+        return keychain.getData(for: Keys.keyshareDataKey)
+    }
+
+    /// Stored as `WhenUnlocked` rather than the app default `ThisDeviceOnly`:
+    /// a `ThisDeviceOnly` item never leaves the device, so restoring an encrypted
+    /// backup onto a new phone would bring the encrypted key shares across
+    /// without the key that opens them.
+    func setKeyshareDataKey(_ data: Data?) {
+        keychain.setData(
+            data,
+            for: Keys.keyshareDataKey,
+            accessibility: kSecAttrAccessibleWhenUnlocked
+        )
+    }
+
+    func getWrappedKeyshareDataKey() -> Data? {
+        return keychain.getData(for: Keys.wrappedKeyshareDataKey)
+    }
+
+    func setWrappedKeyshareDataKey(_ data: Data?) {
+        keychain.setData(
+            data,
+            for: Keys.wrappedKeyshareDataKey,
+            accessibility: kSecAttrAccessibleWhenUnlocked
+        )
+    }
 }
 
 private extension DefaultKeychainService {
@@ -73,6 +105,8 @@ private extension DefaultKeychainService {
         case fastHint(pubKeyECDSA: String)
         case lastMigratedVersion
         case deviceToken
+        case keyshareDataKey
+        case wrappedKeyshareDataKey
 
         var identifier: String {
             return "\(DefaultKeychainService.serviceName).\(key)"
@@ -88,6 +122,10 @@ private extension DefaultKeychainService {
                 return "lastMigratedVersion"
             case .deviceToken:
                 return "deviceToken"
+            case .keyshareDataKey:
+                return "keyshareDataKey"
+            case .wrappedKeyshareDataKey:
+                return "wrappedKeyshareDataKey"
             }
         }
     }
