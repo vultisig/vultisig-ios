@@ -30,7 +30,12 @@ class AppViewModel: ObservableObject {
     @Published var showCamera: Bool = false
 
     private let logic = AccountLogic()
+    private let lockService: AppLockService
     private var didTriggerAuthThisSession = false
+
+    init(lockService: AppLockService = .shared) {
+        self.lockService = lockService
+    }
 
     static let shared = AppViewModel()
 
@@ -149,18 +154,17 @@ class AppViewModel: ObservableObject {
     func revokeAuth() {
         showCover = true
         didTriggerAuthThisSession = false
-        let formatter = ISO8601DateFormatter()
-        lastRecordedTime = formatter.string(from: Date())
+        lockService.noteBackgrounded()
     }
 
     func enableAuth() {
         showCover = false
-        let formatter = ISO8601DateFormatter()
-        let date = formatter.date(from: lastRecordedTime) ?? Date()
-        let interval = Date().timeIntervalSince(date)
-        lastRecordedTime = formatter.string(from: Date())
 
-        if interval>60*5 && !didTriggerAuthThisSession {
+        // The re-lock delay used to be five minutes hardcoded here, with no way
+        // for anyone to change it. `AppLockService` owns that policy now.
+        let shouldRelock = lockService.evaluateForeground()
+
+        if shouldRelock && !didTriggerAuthThisSession {
             resetLogin()
             continueLogin()
         }
