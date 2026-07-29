@@ -142,9 +142,10 @@ struct CoinDetailScreen: View {
     /// Chart and market sections, in the order they earn their place: the chart
     /// first, then the numbers behind it, then the asset's own details.
     ///
-    /// All of it sits *below* the actions deliberately — the sheet opens at
-    /// `.medium`, and send/swap/receive must stay above the fold. Dragging up
-    /// reveals the chart.
+    /// All of it sits *below* the actions deliberately — send/swap/receive are
+    /// what the sheet is opened for, so they keep the top of the scroll view and
+    /// stay reachable without a scroll. The market data is reference material
+    /// and can afford to be scrolled to.
     @ViewBuilder
     var marketSections: some View {
         if viewModel.showsChartSection {
