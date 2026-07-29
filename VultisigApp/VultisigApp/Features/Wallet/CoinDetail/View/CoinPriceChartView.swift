@@ -18,7 +18,9 @@ struct CoinPriceChartView: View {
     let isPositive: Bool
     var onSelectRange: (MarketChartRange) -> Void
 
-    @State private var scrubbedDate: Date?
+    /// Where along the series the finger is, in sample positions rather than in
+    /// time — the plot's x axis is the sample's index.
+    @State private var scrubbedPosition: Double?
 
     private static let chartHeight: CGFloat = 168
 
@@ -32,7 +34,7 @@ struct CoinPriceChartView: View {
         .commonListContainer()
         .onChange(of: range) { _, _ in
             // The old scrub position means nothing on a different window.
-            scrubbedDate = nil
+            scrubbedPosition = nil
         }
     }
 
@@ -75,8 +77,8 @@ struct CoinPriceChartView: View {
                 // loads, the picker already highlights the new window but this
                 // percentage still belongs to the old one, and the two must
                 // read as one stale group rather than a live figure.
-                .opacity(isLoading ? 0.3 : 1)
-                .animation(.easeInOut(duration: 0.2), value: isLoading)
+                .opacity(isDimmed ? 0.3 : 1)
+                .animation(.easeInOut(duration: 0.2), value: isDimmed)
         }
     }
 
@@ -87,46 +89,47 @@ struct CoinPriceChartView: View {
         ZStack {
             if let chart {
                 series(chart)
-                    // The previous window stays on screen, dimmed, while the
-                    // next one loads. On its own animation so the fade and the
-                    // swap below never drive the same views at once — the flag
-                    // and the new series are assigned in the same main-actor
-                    // turn, so one shared animation would catch both.
-                    .opacity(isLoading ? 0.3 : 1)
-                    .animation(.easeInOut(duration: 0.2), value: isLoading)
                     .transition(.chartSwap)
-                    // Identity is the series itself, so a new window replaces
-                    // the plot instead of updating it in place. Marks are
-                    // diffed by array position, so without this a switch to a
-                    // window with fewer samples morphs every mark between two
-                    // unrelated prices and fades the surplus ones out at their
-                    // old coordinates — stale line and fill drawn over the
-                    // incoming series.
-                    .id(chart)
             } else {
                 placeholder
                     .transition(.chartSwap)
             }
         }
         .frame(height: Self.chartHeight)
-        // One animation, driving one thing: the swap. Both halves of the
-        // transition have to share a curve to stay complementary, and stacking
-        // a second `.animation(_:value:)` here would race them — a range switch
-        // changes the series and the loading flag together.
+        // One animation, driving one thing: the series on screen. A new window
+        // updates the marks in place, so Charts interpolates the line from the
+        // old shape into the new one; the transition only runs on the genuine
+        // insertion and removal, which is the placeholder giving way to the
+        // first series.
         .animation(.easeInOut(duration: 0.35), value: chart)
+        // The previous window stays readable, dimmed, while the next loads. On
+        // its own modifier *outside* the swap animation: the flag and the new
+        // series are published in the same main-actor turn, and one shared
+        // animation would make the dim and the morph fight for the same views.
+        .opacity(isDimmed ? 0.3 : 1)
+        .animation(.easeInOut(duration: 0.2), value: isDimmed)
         .accessibilityLabel("priceChart".localized)
     }
 
+    /// The plot's x is the sample's *position* in the series, not its
+    /// timestamp.
+    ///
+    /// Every window arrives resampled to the same number of samples, so index
+    /// `i` is the same relative point of the window whichever range is on
+    /// screen. Charts diffs marks by array position, so switching range moves
+    /// each mark from one price to the next and the line grows into its new
+    /// shape — nothing is inserted, nothing is removed, and no mark is left
+    /// fading at coordinates that belong to the previous window. The x scale is
+    /// then fixed rather than inferred from the dates, so only the prices
+    /// travel; the timestamps stay in `points`, where the scrub reads them.
     private func series(_ chart: MarketChart) -> some View {
         let domain = chart.priceDomain
+        let scrubbed = scrubbedIndex(in: chart)
 
         return Chart {
-            // Identified by position, not by timestamp: a duplicated timestamp
-            // would silently drop marks, and the view must not depend on the
-            // decoder having de-duplicated them.
-            ForEach(Array(chart.points.enumerated()), id: \.offset) { _, point in
+            ForEach(Array(chart.points.enumerated()), id: \.offset) { index, point in
                 AreaMark(
-                    x: .value("date", point.date),
+                    x: .value("position", Double(index)),
                     yStart: .value("low", domain.lowerBound),
                     yEnd: .value("price", point.price)
                 )
@@ -134,7 +137,7 @@ struct CoinPriceChartView: View {
                 .foregroundStyle(areaGradient)
 
                 LineMark(
-                    x: .value("date", point.date),
+                    x: .value("position", Double(index)),
                     y: .value("price", point.price)
                 )
                 .interpolationMethod(.monotone)
@@ -142,27 +145,28 @@ struct CoinPriceChartView: View {
                 .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
             }
 
-            if let scrubbedPoint {
-                RuleMark(x: .value("date", scrubbedPoint.date))
+            if let scrubbed {
+                RuleMark(x: .value("position", Double(scrubbed)))
                     .foregroundStyle(Theme.colors.textTertiary.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
 
                 PointMark(
-                    x: .value("date", scrubbedPoint.date),
-                    y: .value("price", scrubbedPoint.price)
+                    x: .value("position", Double(scrubbed)),
+                    y: .value("price", chart.points[scrubbed].price)
                 )
                 .symbolSize(70)
                 .foregroundStyle(tint)
             }
         }
+        .chartXScale(domain: 0...Double(max(1, chart.points.count - 1)))
         .chartYScale(domain: domain)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .chartLegend(.hidden)
 #if os(iOS)
         // Touch: press-and-drag along the chart.
-        .chartXSelection(value: $scrubbedDate)
-        .sensoryFeedback(.selection, trigger: scrubbedPoint?.date)
+        .chartXSelection(value: $scrubbedPosition)
+        .sensoryFeedback(.selection, trigger: scrubbed)
 #else
         // Pointer: scrub on hover. `chartXSelection` is drag-driven, which on a
         // Mac means holding the mouse button down to read a chart — the
@@ -177,9 +181,12 @@ struct CoinPriceChartView: View {
                         case .active(let location):
                             guard let plotFrame = proxy.plotFrame else { return }
                             let plotOrigin = geometry[plotFrame].origin
-                            scrubbedDate = proxy.value(atX: location.x - plotOrigin.x)
+                            scrubbedPosition = proxy.value(
+                                atX: location.x - plotOrigin.x,
+                                as: Double.self
+                            )
                         case .ended:
-                            scrubbedDate = nil
+                            scrubbedPosition = nil
                         }
                     }
             }
@@ -234,14 +241,25 @@ struct CoinPriceChartView: View {
         )
     }
 
-    /// Sample nearest the scrub position. Linear over at most
-    /// `MarketChartLimits.maximumRenderedPoints` samples, which is why the
-    /// series is thinned before it reaches the view.
+    /// Whether the series on screen belongs to the range the picker shows. It
+    /// is dimmed while it does not, and only then — the placeholder is already
+    /// a loading state and fading it further reads as a failure.
+    private var isDimmed: Bool {
+        chart != nil && isLoading
+    }
+
+    /// Which sample the scrub sits on. The plot's x *is* the sample's position,
+    /// so the touch rounds straight to an index instead of searching the series
+    /// for the nearest timestamp.
+    private func scrubbedIndex(in chart: MarketChart) -> Int? {
+        scrubbedPosition.flatMap(chart.index(atPosition:))
+    }
+
+    /// The scrubbed sample itself — its real timestamp and price, whatever the
+    /// plot's own units are.
     private var scrubbedPoint: MarketChartPoint? {
-        guard let scrubbedDate, let points = chart?.points, !points.isEmpty else { return nil }
-        return points.min {
-            abs($0.date.timeIntervalSince(scrubbedDate)) < abs($1.date.timeIntervalSince(scrubbedDate))
-        }
+        guard let chart, let index = scrubbedIndex(in: chart) else { return nil }
+        return chart.points[index]
     }
 
     /// The scrubbed sample while dragging, otherwise the live spot price.
@@ -307,15 +325,14 @@ private struct ChartWipe: ViewModifier, Animatable {
 
 private extension AnyTransition {
 
-    /// How one series gives way to the next: the incoming one sweeps in from
-    /// the leading edge while the outgoing one retracts ahead of it.
+    /// How the plot arrives and leaves: it is drawn in from the leading edge,
+    /// and retracts to the trailing edge on the way out.
     ///
-    /// The two masks are complements of each other on the same curve, so they
-    /// tile the plot exactly — every column holds one series or the other,
-    /// never both and never neither. A plain cross-fade instead draws the two
-    /// price lines over each other for the length of the fade, and staging the
-    /// fade before the wipe leaves the card empty in between; both were
-    /// rendered and compared frame by frame, and both read as a glitch.
+    /// This runs on the one genuine insertion — the loading placeholder giving
+    /// way to the first real series — where the two masks are complements on
+    /// the same curve and tile the plot exactly: every column holds one of them
+    /// or the other, never both and never neither. Switching *between* windows
+    /// is not an insertion; that updates the marks in place so the line morphs.
     static var chartSwap: AnyTransition {
         .asymmetric(
             insertion: .modifier(

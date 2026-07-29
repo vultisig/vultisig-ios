@@ -282,6 +282,47 @@ final class MarketChartTests: XCTestCase {
         XCTAssertEqual(resampled.points, [chart.points.first, chart.points.last].compactMap { $0 })
     }
 
+    // MARK: - Plot position → sample
+
+    func testPositionRoundsToTheNearestSample() {
+        let chart = Self.makeChart(count: 10)
+
+        XCTAssertEqual(chart.index(atPosition: 0), 0)
+        XCTAssertEqual(chart.index(atPosition: 3.4), 3)
+        XCTAssertEqual(chart.index(atPosition: 3.6), 4)
+        XCTAssertEqual(chart.index(atPosition: 9), 9)
+    }
+
+    func testPositionOutsideThePlotClampsToTheNearestEnd() {
+        let chart = Self.makeChart(count: 10)
+
+        XCTAssertEqual(chart.index(atPosition: -50), 0)
+        XCTAssertEqual(chart.index(atPosition: 500), 9)
+    }
+
+    func testNonFinitePositionResolvesToNoSample() {
+        // Charts can hand back a non-finite value for a zero-width plot, and
+        // converting one to an `Int` traps rather than clamping.
+        let chart = Self.makeChart(count: 10)
+
+        XCTAssertNil(chart.index(atPosition: .nan))
+        XCTAssertNil(chart.index(atPosition: .infinity))
+        XCTAssertNil(chart.index(atPosition: -.infinity))
+        XCTAssertNil(MarketChart(points: []).index(atPosition: 0))
+    }
+
+    func testResampledSeriesStaysWithinTheSourceRange() throws {
+        let chart = Self.makeChart(count: 169)
+        let resampled = chart.resampled(to: 200)
+
+        let lowest = try XCTUnwrap(chart.points.map(\.price).min())
+        let highest = try XCTUnwrap(chart.points.map(\.price).max())
+        for point in resampled.points {
+            XCTAssertGreaterThanOrEqual(point.price, lowest)
+            XCTAssertLessThanOrEqual(point.price, highest)
+        }
+    }
+
     // MARK: - Range
 
     func testRangeDaysMapping() {

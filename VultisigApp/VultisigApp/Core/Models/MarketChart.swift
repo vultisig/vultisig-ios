@@ -9,7 +9,7 @@
 import Foundation
 
 /// One sample of a price series: a timestamp and the price in the requested fiat.
-struct MarketChartPoint: Hashable, Sendable {
+struct MarketChartPoint: Equatable, Sendable {
     let date: Date
     let price: Double
 }
@@ -20,11 +20,7 @@ struct MarketChartPoint: Hashable, Sendable {
 /// arrive in the same response but nothing renders them — market cap and volume
 /// come from the richer `/coins/markets` record instead — and skipping them
 /// avoids parsing two extra arrays that are ~4.8k samples each on `days=max`.
-///
-/// `Hashable` so the chart view can adopt the series itself as its view
-/// identity: a new window then *replaces* the plot instead of morphing the
-/// marks of the previous one into it.
-struct MarketChart: Hashable, Sendable {
+struct MarketChart: Equatable, Sendable {
 
     /// Fewest samples a series needs before it is worth drawing.
     ///
@@ -89,6 +85,18 @@ struct MarketChart: Hashable, Sendable {
         }
         let inset = span * Self.domainHeadroom
         return (lowest - inset)...(highest + inset)
+    }
+
+    /// The sample sitting at plot position `position`, where the plot's x axis
+    /// is the sample's own index in the series.
+    ///
+    /// Rounds to the nearest sample and clamps to the series, so a touch that
+    /// runs past either edge of the plot reads the end sample rather than
+    /// nothing. A non-finite position — which a zero-width plot can produce —
+    /// resolves to `nil`: converting one to an `Int` traps.
+    func index(atPosition position: Double) -> Int? {
+        guard position.isFinite, !points.isEmpty else { return nil }
+        return Int(min(Double(points.count - 1), max(0, position.rounded())))
     }
 
     /// Resamples the series onto exactly `count` samples spread evenly across
