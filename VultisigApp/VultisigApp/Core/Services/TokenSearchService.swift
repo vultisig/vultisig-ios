@@ -139,19 +139,13 @@ struct TokenSearchResult {
     /// so browse can cap each provider's breadth independently. Threaded as a
     /// side map for the same reason as `verificationByUniqueId`: it keeps the
     /// swap pickers' `[CoinMeta]` list types unchanged.
+    ///
+    /// Deliberately has no default: an omitted map would compile clean while
+    /// collapsing every provider into `cappedPerProvider`'s single unattributed
+    /// bucket, silently turning "the best N per provider" into "N in total".
+    /// Constructed through the synthesized memberwise init so that stays true
+    /// for any field added later.
     let sourceKindByUniqueId: [String: String]
-
-    init(
-        surfaceable: [CoinMeta],
-        unverified: [CoinMeta],
-        verificationByUniqueId: [String: TokenVerification],
-        sourceKindByUniqueId: [String: String] = [:]
-    ) {
-        self.surfaceable = surfaceable
-        self.unverified = unverified
-        self.verificationByUniqueId = verificationByUniqueId
-        self.sourceKindByUniqueId = sourceKindByUniqueId
-    }
 }
 
 /// Cancellation is the only failure this service can report: the catalog's

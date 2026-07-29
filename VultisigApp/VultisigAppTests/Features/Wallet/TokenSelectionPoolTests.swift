@@ -97,6 +97,10 @@ final class TokenSelectionPoolTests: XCTestCase {
             verificationByUniqueId: [
                 verified.uniqueId: .verified(source: "CoinGecko"),
                 unverified.uniqueId: .unverified
+            ],
+            sourceKindByUniqueId: [
+                verified.uniqueId: "oneinch",
+                unverified.uniqueId: "oneinch"
             ]
         )
         let vm = TokenSelectionViewModel(loadCatalog: { _ in result })
@@ -130,7 +134,9 @@ final class TokenSelectionPoolTests: XCTestCase {
         vault.coins = [Coin(asset: vultMeta, address: "0xwallet", hexPublicKey: "pub")]
 
         let vm = TokenSelectionViewModel(loadCatalog: { _ in
-            TokenSearchResult(surfaceable: [], unverified: [], verificationByUniqueId: [:])
+            // Empty catalog: there is no provider token to attribute.
+            TokenSearchResult(surfaceable: [], unverified: [],
+                              verificationByUniqueId: [:], sourceKindByUniqueId: [:])
         })
         await vm.load(chain: .ethereum, vault: vault)
 
@@ -150,7 +156,8 @@ final class TokenSelectionPoolTests: XCTestCase {
             TokenSearchResult(
                 surfaceable: [usdc],
                 unverified: [],
-                verificationByUniqueId: [usdc.uniqueId: .verified(source: "CoinGecko")]
+                verificationByUniqueId: [usdc.uniqueId: .verified(source: "CoinGecko")],
+                sourceKindByUniqueId: [usdc.uniqueId: "oneinch"]
             )
         })
         await vm.load(chain: .ethereum, vault: .example)
@@ -286,7 +293,9 @@ final class TokenSelectionPoolTests: XCTestCase {
         // token is already local — the cap must be a no-op there, not a
         // truncation of the curated list.
         let vm = TokenSelectionViewModel(loadCatalog: { _ in
-            TokenSearchResult(surfaceable: [], unverified: [], verificationByUniqueId: [:])
+            // Empty catalog: there is no provider token to attribute.
+            TokenSearchResult(surfaceable: [], unverified: [],
+                              verificationByUniqueId: [:], sourceKindByUniqueId: [:])
         })
 
         await vm.load(chain: .thorChain, vault: .example)
