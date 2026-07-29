@@ -907,6 +907,8 @@
 "part" = "Share";
 "partOf" = "part %d of %d";
 "passcodeAutoLockTitle" = "Auto-lock";
+"passcodeBiometricReason" = "Unlock Vultisig";
+"passcodeBiometricToggle" = "Unlock with biometrics";
 "passcodeChangeTitle" = "Change passcode";
 "passcodeChooseSubtitle" = "5 digits. You will need it to open the app.";
 "passcodeChooseTitle" = "Choose a passcode";

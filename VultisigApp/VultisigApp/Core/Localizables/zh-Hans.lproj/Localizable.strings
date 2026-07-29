@@ -909,6 +909,8 @@
 "part" = "份额";
 "partOf" = "第 %d 部分，共 %d 部分";
 "passcodeAutoLockTitle" = "自动锁定";
+"passcodeBiometricReason" = "解锁 Vultisig";
+"passcodeBiometricToggle" = "使用生物识别解锁";
 "passcodeChangeTitle" = "修改密码";
 "passcodeChooseSubtitle" = "5 位数字。打开应用时需要输入。";
 "passcodeChooseTitle" = "选择密码";

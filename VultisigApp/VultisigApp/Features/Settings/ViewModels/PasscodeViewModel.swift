@@ -35,11 +35,41 @@ final class PasscodeViewModel: ObservableObject {
         self.stage = stage
     }
 
+    // MARK: - Biometric shortcut
+
+    @Published var isBiometricUnlockAvailable = false
+
+    func refreshBiometricAvailability() async {
+        isBiometricUnlockAvailable = await service.isBiometricUnlockEnabled
+    }
+
+    /// Attempts the shortcut. Silent on failure by design: the passcode field is
+    /// already on screen, and telling the user "Face ID failed" adds nothing they
+    /// cannot see. Cancelling must leave them exactly where they were.
+    func unlockWithBiometrics(reason: String) async {
+        do {
+            _ = try await service.unlockWithBiometrics(reason: reason)
+            // A lock can land between adopting the key and dismissing the lock
+            // screen. Confirming the session still holds the key means a later
+            // lock always wins rather than being cleared by an unlock that had
+            // already been overtaken.
+            didFinish = service.isSessionUnlocked
+        } catch {
+            errorMessage = nil
+        }
+    }
+
     // MARK: - Unlock
 
     func unlock() async {
         await perform {
             try await self.service.unlock(with: self.entry)
+        }
+        // Same reasoning as the biometric path: a lock that landed during
+        // verification must not be undone by the unlock finishing.
+        if didFinish, !service.isSessionUnlocked {
+            didFinish = false
+            entry = ""
         }
     }
 

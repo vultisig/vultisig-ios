@@ -170,7 +170,13 @@ class AppViewModel: ObservableObject {
         isPasscodeLocked = true
     }
 
+    /// Clears the lock screen only if the session still holds the data key.
+    ///
+    /// The check lives here, immediately before the flag changes, rather than in
+    /// the caller: a lock landing between the caller's check and this call would
+    /// otherwise dismiss a lock screen that has just become valid again.
     func markPasscodeUnlocked() {
+        guard PasscodeService.shared.isSessionUnlocked else { return }
         isPasscodeLocked = false
     }
 

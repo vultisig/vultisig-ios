@@ -47,17 +47,24 @@ actor PasscodeService {
     private let session: KeyshareKeySession
     private let lockService: AppLockService
     private let limiter: PasscodeAttemptLimiting
+    private let biometrics: BiometricUnlockStore
 
     init(
         keyStore: KeyshareKeyStoring = DefaultKeyshareKeyStore.shared,
         session: KeyshareKeySession = .shared,
         lockService: AppLockService = .shared,
-        limiter: PasscodeAttemptLimiting = PasscodeAttemptLimiter()
+        limiter: PasscodeAttemptLimiting = PasscodeAttemptLimiter(),
+        biometrics: BiometricUnlockStore = .shared
     ) {
         self.keyStore = keyStore
         self.session = session
         self.lockService = lockService
         self.limiter = limiter
+        self.biometrics = biometrics
+    }
+
+    var isBiometricUnlockEnabled: Bool {
+        biometrics.isEnabled
     }
 
     var isSet: Bool {
@@ -168,7 +175,14 @@ actor PasscodeService {
     func disablePasscode(current: String, now: Date = Date()) async throws {
         let dataKey = try await unlock(with: current, now: now)
 
-        // Clear copy first, and it verifies its own read-back: deleting the
+        // The biometric copy goes first, before anything else has moved. It
+        // holds the same data key, so a survivor would quietly work again the
+        // next time a passcode is set — and failing here after the key swap
+        // would leave the passcode already removed but the call reporting an
+        // error. Nothing has changed yet at this point, so aborting is clean.
+        try biometrics.disable()
+
+        // Clear copy next, and it verifies its own read-back: deleting the
         // wrapped copy before the replacement is durable would leave no way to
         // reach the shares at all.
         try keyStore.storeDataKey(dataKey)
@@ -192,6 +206,66 @@ actor PasscodeService {
         session.adopt(dataKey)
         lockService.mode = .deviceAuth
         limiter.recordSuccess()
+    }
+
+    // MARK: - Biometric shortcut
+
+    /// Stores a biometry-guarded copy of the data key. Requires the app to be
+    /// unlocked, since it never unwraps anything itself.
+    func enableBiometricUnlock() throws {
+        guard isSet else { throw PasscodeError.notSet }
+
+        let generation = session.currentGeneration
+        guard case .unlocked(let dataKey) = session.currentState() else {
+            throw PasscodeError.cancelledByLock
+        }
+
+        try biometrics.enable(dataKey: dataKey)
+
+        // A lock can land between reading the key and storing it. Storing a
+        // shortcut for a session the user has since locked would enable one they
+        // never completed, so it is undone.
+        guard session.currentGeneration == generation else {
+            do {
+                try biometrics.disable()
+            } catch {
+                // The copy survived the rollback. Reporting only "cancelled"
+                // would leave a working shortcut behind that the UI believes
+                // does not exist.
+                throw PasscodeError.inconsistentState
+            }
+            throw PasscodeError.cancelledByLock
+        }
+    }
+
+    func disableBiometricUnlock() throws {
+        try biometrics.disable()
+    }
+
+    /// Whether the data key is currently held. Used by the UI to confirm an
+    /// unlock still stands before it dismisses the lock screen.
+    nonisolated var isSessionUnlocked: Bool {
+        if case .unlocked = session.currentState() { return true }
+        return false
+    }
+
+    /// Opens the app on a biometric match.
+    ///
+    /// Fails closed: every unsuccessful outcome throws and the caller falls back
+    /// to the passcode. A successful match is treated as a successful unlock, so
+    /// it also clears the attempt counter.
+    @discardableResult
+    func unlockWithBiometrics(reason: String) throws -> SymmetricKey {
+        guard isSet else { throw PasscodeError.notSet }
+
+        let generation = session.currentGeneration
+        let dataKey = try biometrics.unlock(reason: reason)
+
+        guard session.adopt(dataKey, ifGeneration: generation) else {
+            throw PasscodeError.cancelledByLock
+        }
+        limiter.recordSuccess()
+        return dataKey
     }
 
     // MARK: - Helpers

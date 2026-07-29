@@ -909,6 +909,8 @@
 "part" = "Parte";
 "partOf" = "parte %d de %d";
 "passcodeAutoLockTitle" = "Bloqueio automático";
+"passcodeBiometricReason" = "Desbloquear o Vultisig";
+"passcodeBiometricToggle" = "Desbloquear com biometria";
 "passcodeChangeTitle" = "Alterar código";
 "passcodeChooseSubtitle" = "5 dígitos. Vai precisar dele para abrir a app.";
 "passcodeChooseTitle" = "Escolha um código";

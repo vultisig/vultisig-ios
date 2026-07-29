@@ -27,6 +27,13 @@ struct EnterPasscodeScreen: View {
         }
         .screenNavigationBarHidden(true)
         .accessibilityIdentifier(AccessibilityID.Passcode.enterScreen)
+        .task {
+            await viewModel.refreshBiometricAvailability()
+            guard viewModel.isBiometricUnlockAvailable else { return }
+            // Offered immediately so the common case is one glance rather than
+            // five taps. Declining or failing leaves the passcode field ready.
+            await viewModel.unlockWithBiometrics(reason: "passcodeBiometricReason".localized)
+        }
         .onChange(of: viewModel.didFinish) { _, finished in
             guard finished else { return }
             onUnlocked()

@@ -11,6 +11,7 @@ struct ManagePasscodeScreen: View {
 
     @Environment(\.router) var router
     @State private var isSet: Bool = false
+    @State private var isBiometricEnabled: Bool = false
     @State private var showDisable = false
 
     private let service: PasscodeService
@@ -34,6 +35,7 @@ struct ManagePasscodeScreen: View {
                                 row(title: "passcodeAutoLockTitle".localized, showSeparator: true) {
                                     router.navigate(to: SettingsRoute.autoLock)
                                 }
+                                biometricToggle
                                 row(title: "passcodeDisableNavTitle".localized, showSeparator: false) {
                                     showDisable = true
                                 }
@@ -88,7 +90,43 @@ struct ManagePasscodeScreen: View {
         }
     }
 
+    /// A shortcut past the passcode, not a replacement — the passcode always
+    /// works, and turning this off never locks anyone out.
+    private var biometricToggle: some View {
+        Toggle(isOn: Binding(
+            get: { isBiometricEnabled },
+            set: { newValue in Task { await setBiometric(enabled: newValue) } }
+        )) {
+            Text("passcodeBiometricToggle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .accessibilityIdentifier(AccessibilityID.Settings.biometricUnlockToggle)
+    }
+
+    private func setBiometric(enabled: Bool) async {
+        if enabled {
+            // Enabling needs the data key in hand, so it can only be done while
+            // unlocked. A failure leaves the toggle off rather than implying a
+            // shortcut exists.
+            do {
+                try await service.enableBiometricUnlock()
+            } catch {
+                isBiometricEnabled = false
+                return
+            }
+        } else {
+            // A failure here leaves the copy in place, so the toggle must not
+            // claim it is gone.
+            try? await service.disableBiometricUnlock()
+        }
+        await refresh()
+    }
+
     private func refresh() async {
         isSet = await service.isSet
+        isBiometricEnabled = await service.isBiometricUnlockEnabled
     }
 }

@@ -907,6 +907,8 @@
 "part" = "공유";
 "partOf" = "%d/%d 공유";
 "passcodeAutoLockTitle" = "자동 잠금";
+"passcodeBiometricReason" = "Vultisig 잠금 해제";
+"passcodeBiometricToggle" = "생체 인증으로 잠금 해제";
 "passcodeChangeTitle" = "패스코드 변경";
 "passcodeChooseSubtitle" = "5자리 숫자입니다. 앱을 열 때 필요합니다.";
 "passcodeChooseTitle" = "패스코드 선택";

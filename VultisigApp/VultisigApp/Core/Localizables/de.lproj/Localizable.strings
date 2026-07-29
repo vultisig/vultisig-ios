@@ -909,6 +909,8 @@
 "part" = "Anteil";
 "partOf" = "Teil %d von %d";
 "passcodeAutoLockTitle" = "Automatische Sperre";
+"passcodeBiometricReason" = "Vultisig entsperren";
+"passcodeBiometricToggle" = "Mit Biometrie entsperren";
 "passcodeChangeTitle" = "Passcode ändern";
 "passcodeChooseSubtitle" = "5 Ziffern. Sie benötigen ihn, um die App zu öffnen.";
 "passcodeChooseTitle" = "Passcode wählen";

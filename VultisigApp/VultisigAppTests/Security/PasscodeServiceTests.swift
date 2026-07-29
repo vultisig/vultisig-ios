@@ -43,7 +43,8 @@ final class PasscodeServiceTests: XCTestCase {
             keyStore: store,
             session: keySession,
             lockService: lockService,
-            limiter: PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime })
+            limiter: PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime }),
+            biometrics: BiometricUnlockStore(keychain: InMemoryBiometricKeychain())
         )
     }
 
@@ -460,4 +461,24 @@ extension PasscodeServiceTests {
 
         XCTAssertEqual(limiter.remainingLockout(now: Date()), 0)
     }
+}
+
+
+/// The real biometric Keychain is unreachable from a test bundle (no
+/// entitlement), so passcode tests drive an in-memory stand-in. Biometric
+/// behaviour itself is covered by `BiometricUnlockStoreTests`.
+private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
+
+    private var stored: Data?
+
+    func store(_ data: Data, account _: String) throws { stored = data }
+
+    func read(account _: String, prompt _: String) throws -> Data {
+        guard let stored else { throw BiometricUnlockError.notEnabled }
+        return stored
+    }
+
+    func delete(account _: String) throws { stored = nil }
+
+    func exists(account _: String) -> Bool { stored != nil }
 }

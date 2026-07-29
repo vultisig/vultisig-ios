@@ -909,6 +909,8 @@
 "part" = "Dio";
 "partOf" = "dio %d od %d";
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
+"passcodeBiometricReason" = "Otključaj Vultisig";
+"passcodeBiometricToggle" = "Otključaj biometrijom";
 "passcodeChangeTitle" = "Promijeni zaporku";
 "passcodeChooseSubtitle" = "5 znamenki. Trebat će vam za otvaranje aplikacije.";
 "passcodeChooseTitle" = "Odaberite zaporku";

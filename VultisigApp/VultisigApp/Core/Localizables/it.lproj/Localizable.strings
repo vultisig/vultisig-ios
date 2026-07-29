@@ -909,6 +909,8 @@
 "part" = "Quota";
 "partOf" = "parte %d di %d";
 "passcodeAutoLockTitle" = "Blocco automatico";
+"passcodeBiometricReason" = "Sblocca Vultisig";
+"passcodeBiometricToggle" = "Sblocca con la biometria";
 "passcodeChangeTitle" = "Cambia codice";
 "passcodeChooseSubtitle" = "5 cifre. Ti servirà per aprire l'app.";
 "passcodeChooseTitle" = "Scegli un codice";
