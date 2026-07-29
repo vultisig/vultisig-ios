@@ -45,6 +45,10 @@ final class MockKeychainService: KeychainService {
     /// Same, for the wrapped copy, so the disable rollback can be exercised.
     var ignoresWrappedKeyshareDataKeyDeletion = false
 
+    /// When set, clearing the attempt state silently does nothing, so the
+    /// verified clear in `KeyshareInstallReconciler` can be exercised.
+    var ignoresPasscodeAttemptStateDeletion = false
+
     /// The recorded version, for tests that only care about the stored value.
     var lastMigratedVersion: Int? {
         get { lastMigratedVersionResult.valueTreatingUnavailableAsAbsent }
@@ -114,7 +118,10 @@ final class MockKeychainService: KeychainService {
 
     func getPasscodeAttemptState() -> KeychainReadResult<Data> { passcodeAttemptStateResult }
 
-    func setPasscodeAttemptState(_ data: Data?) { passcodeAttemptStateResult = Self.result(data) }
+    func setPasscodeAttemptState(_ data: Data?) {
+        if data == nil && ignoresPasscodeAttemptStateDeletion { return }
+        passcodeAttemptStateResult = Self.result(data)
+    }
 
     private static func result<Value>(_ value: Value?) -> KeychainReadResult<Value> {
         guard let value else { return .absent }

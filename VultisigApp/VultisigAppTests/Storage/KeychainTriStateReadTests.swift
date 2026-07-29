@@ -129,6 +129,12 @@ final class KeychainTriStateReadTests: XCTestCase {
                 .unavailable(status),
                 "an unreadable wrapped key must never look absent, for the same reason (status \(status))"
             )
+            XCTAssertEqual(
+                service.getPasscodeAttemptState(),
+                .unavailable(status),
+                "an unreadable attempt state must never look absent — absence means no failures yet, "
+                    + "which is the throttle switching itself off (status \(status))"
+            )
         }
     }
 
@@ -141,6 +147,7 @@ final class KeychainTriStateReadTests: XCTestCase {
         XCTAssertEqual(service.getLastMigratedVersion(), .absent)
         XCTAssertEqual(service.getKeyshareDataKey(), .absent)
         XCTAssertEqual(service.getWrappedKeyshareDataKey(), .absent)
+        XCTAssertEqual(service.getPasscodeAttemptState(), .absent)
     }
 
     func testEveryServiceReadReturnsTheStoredValue() {
@@ -152,6 +159,7 @@ final class KeychainTriStateReadTests: XCTestCase {
         XCTAssertEqual(service.getLastMigratedVersion(), .present(7))
         XCTAssertEqual(service.getKeyshareDataKey(), .present(Data("7".utf8)))
         XCTAssertEqual(service.getWrappedKeyshareDataKey(), .present(Data("7".utf8)))
+        XCTAssertEqual(service.getPasscodeAttemptState(), .present(Data("7".utf8)))
     }
 
     // MARK: - The deliberate collapse

@@ -208,6 +208,12 @@ extension VultisigApp {
                 }
                 #endif
 
+                // The Keychain outlives the app, so a reinstall can start
+                // with key material the container knows nothing about. Clears
+                // what a previous install left behind and puts the lock mode
+                // back in front of a key that survived.
+                KeyshareInstallReconciler().reconcile()
+
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 
@@ -266,6 +272,12 @@ extension VultisigApp {
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear {
+                // The Keychain outlives the app, so a reinstall can start
+                // with key material the container knows nothing about. Clears
+                // what a previous install left behind and puts the lock mode
+                // back in front of a key that survived.
+                KeyshareInstallReconciler().reconcile()
+
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 
