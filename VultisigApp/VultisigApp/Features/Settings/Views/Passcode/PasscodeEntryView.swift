@@ -39,9 +39,14 @@ struct PasscodeEntryView: View {
             message
                 .padding(.top, 16)
 
-            Spacer(minLength: 24)
+            // Balanced spacers rather than one at the top: the keypad sits in
+            // the middle of the space below the dots instead of being pinned to
+            // the bottom edge, which left a large dead gap on tall screens.
+            Spacer(minLength: 12)
 
             keypad
+
+            Spacer(minLength: 12)
         }
         .frame(maxWidth: .infinity)
         .onChange(of: passcode) { _, value in
@@ -227,29 +232,54 @@ extension PasscodeEntryView {
     }
 }
 
-/// Circular translucent key with a press state, matching the platform passcode
-/// affordance rather than the app's rectangular buttons. A keypad should read as
-/// a keypad — users already know how this one behaves.
+/// Circular glass key.
+///
+/// Uses the same treatment as `ToolbarButton` / `VultiTabBar` — `.glassEffect`
+/// on iOS 26, with their gradient-stroke fallback below it — rather than
+/// `.ultraThinMaterial`, which renders as flat opaque grey over a dark
+/// background and loses the translucency entirely.
 private struct PasscodeKeyButtonStyle: ButtonStyle {
     let hasFill: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background {
-                if hasFill {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .overlay(Circle().stroke(Theme.colors.borderLight.opacity(0.7), lineWidth: 1))
-                }
+        Group {
+            if #available(iOS 26.0, *) {
+                configuration.label
+                    .background {
+                        if hasFill {
+                            Circle()
+                                .fill(.clear)
+                                .glassEffect(.clear.interactive(), in: Circle())
+                        }
+                    }
+            } else {
+                configuration.label
+                    .background {
+                        if hasFill {
+                            Circle()
+                                .fill(Theme.colors.bgSurface1.opacity(0.35))
+                                .overlay(
+                                    Circle().stroke(
+                                        LinearGradient(
+                                            colors: [.white.opacity(0.6), .clear, .clear, .white.opacity(0.4)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                                )
+                        }
+                    }
             }
-            .overlay {
-                if configuration.isPressed {
-                    Circle().fill(Theme.colors.textPrimary.opacity(0.18))
-                }
+        }
+        .overlay {
+            if configuration.isPressed {
+                Circle().fill(Theme.colors.textPrimary.opacity(0.18))
             }
-            .clipShape(Circle())
-            .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
+        }
+        .clipShape(Circle())
+        .scaleEffect(configuration.isPressed ? 0.94 : 1)
+        .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 #endif
