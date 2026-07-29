@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "A blockchain %@ não está adicionada neste cofre. Por favor, adicione-a manualmente nas configurações do cofre.";
 "chains" = "Cadeias";
 "changeVault" = "Mudar Cofre";
+"chartRangeAll" = "TUDO";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1S";
+"chartRangeYear" = "1A";
 "checkEmail" = "Verifique o email";
 "checkEmptyField" = "Certifique-se de que todos os campos estão preenchidos.";
 "checkForUpdates" = "Verifique se há atualizações";

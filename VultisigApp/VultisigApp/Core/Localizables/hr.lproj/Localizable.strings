@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "Blockchain %@ nije dodan u ovaj trezor. Molimo dodajte ga ručno iz postavki trezora.";
 "chains" = "Lanci";
 "changeVault" = "Promijeni sef";
+"chartRangeAll" = "SVE";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1T";
+"chartRangeYear" = "1G";
 "checkEmail" = "Provjerite e -poštu";
 "checkEmptyField" = "Molimo provjerite da su sva polja ispunjena.";
 "checkForUpdates" = "Provjerite ažuriranja";

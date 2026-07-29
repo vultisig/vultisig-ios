@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "블록체인 %@이(가) 이 볼트에 추가되지 않았습니다. 볼트 설정에서 수동으로 추가하세요.";
 "chains" = "체인";
 "changeVault" = "볼트 변경";
+"chartRangeAll" = "전체";
+"chartRangeDay" = "1일";
+"chartRangeMonth" = "1개월";
+"chartRangeWeek" = "1주";
+"chartRangeYear" = "1년";
 "checkEmail" = "이메일 확인";
 "checkEmptyField" = "모든 필드를 채워주세요.";
 "checkForUpdates" = "업데이트 확인";

@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
 "chains" = "Chains";
 "changeVault" = "Change Vault";
+"chartRangeAll" = "ALL";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1W";
+"chartRangeYear" = "1Y";
 "checkEmail" = "Check email";
 "checkEmptyField" = "Please make sure all the fields are filled.";
 "checkForUpdates" = "Check for Updates";

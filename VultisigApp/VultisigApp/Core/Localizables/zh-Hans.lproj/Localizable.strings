@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "区块链 %@ 未添加到此保险库。请从保险库设置中手动添加。";
 "chains" = "链";
 "changeVault" = "更改保险库";
+"chartRangeAll" = "全部";
+"chartRangeDay" = "1天";
+"chartRangeMonth" = "1月";
+"chartRangeWeek" = "1周";
+"chartRangeYear" = "1年";
 "checkEmail" = "检查电子邮件";
 "checkEmptyField" = "请确保所有字段都已填写";
 "checkForUpdates" = "检查更新";

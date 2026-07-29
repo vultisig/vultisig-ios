@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "Die Blockchain %@ ist diesem Tresor nicht hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";
 "chains" = "Ketten";
 "changeVault" = "Tresor wechseln";
+"chartRangeAll" = "ALLE";
+"chartRangeDay" = "1T";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1W";
+"chartRangeYear" = "1J";
 "checkEmail" = "Überprüfen Sie die E -Mail";
 "checkEmptyField" = "Bitte stelle sicher, dass alle Felder ausgefüllt sind.";
 "checkForUpdates" = "Überprüfen Sie nach Updates";

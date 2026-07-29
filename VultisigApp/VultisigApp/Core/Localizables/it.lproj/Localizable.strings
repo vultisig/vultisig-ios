@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "La blockchain %@ non è aggiunta a questo caveau. Per favore, aggiungila manualmente dalle impostazioni del caveau.";
 "chains" = "Catene";
 "changeVault" = "Cambia Cassaforte";
+"chartRangeAll" = "TUTTO";
+"chartRangeDay" = "1G";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1S";
+"chartRangeYear" = "1A";
 "checkEmail" = "Controlla l'email";
 "checkEmptyField" = "Assicurati che tutti i campi siano compilati.";
 "checkForUpdates" = "Controlla gli aggiornamenti";

@@ -156,6 +156,11 @@
 "chainNotAddedMessage" = "La blockchain %@ no está añadida a esta bóveda. Por favor, añádela manualmente desde la configuración de la bóveda.";
 "chains" = "Cadenas";
 "changeVault" = "Cambiar Caja Fuerte";
+"chartRangeAll" = "TODO";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1S";
+"chartRangeYear" = "1A";
 "checkEmail" = "Revisar el correo electrónico";
 "checkEmptyField" = "Por favor, asegúrate de que todos los campos están llenos.";
 "checkForUpdates" = "Verifique las actualizaciones";
