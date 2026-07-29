@@ -15,6 +15,7 @@ struct CoinDetailScreen: View {
 
     @State var showReceiveSheet: Bool = false
     @State var addressToCopy: Coin?
+    @State var showContractCopiedBanner: Bool = false
     @State var size: CGFloat?
 
     @StateObject var viewModel: CoinDetailViewModel
@@ -46,13 +47,16 @@ struct CoinDetailScreen: View {
 #else
         content
             .presentationSizingFitted()
-            .applySheetSize(700, 450)
+            // Tall enough for the chart plus the market sections. The previous
+            // 450pt was sized for a header, the actions and two rows; anything
+            // below the actions was clipped on the Mac.
+            .applySheetSize(700, 760)
 #endif
     }
 
     var content: some View {
         ScrollView {
-            VStack(spacing: 32) {
+            VStack(spacing: 24) {
                 CoinDetailHeaderView(coin: coin)
                 CoinActionsView(
                     actions: viewModel.availableActions,
@@ -69,13 +73,12 @@ struct CoinDetailScreen: View {
                         isLoading: viewModel.tronLoader?.isLoading ?? false
                     )
                 }
-                CoinPriceNetworkView(
-                    chainName: coin.chain.name,
-                    price: Decimal(coin.price).formatToFiatPrice()
-                )
+
+                marketSections
             }
             .padding(.horizontal, 24)
             .padding(.top, isMacOS ? 40 : 0)
+            .padding(.bottom, 24)
         }
         .background(ModalBackgroundView(width: size ?? 0))
         .task {
@@ -83,10 +86,19 @@ struct CoinDetailScreen: View {
         }
         .onAppear(perform: onAppear)
         .withAddressCopy(coin: $addressToCopy)
+        .overlay(
+            NotificationBannerView(
+                text: "contractAddressCopied".localized,
+                isVisible: $showContractCopiedBanner
+            )
+            .padding(.bottom, isMacOS ? 24 : 0)
+            .showIf(showContractCopiedBanner)
+            .zIndex(2)
+        )
         .refreshable {
             await refresh()
         }
-        .presentationDetents([isIPadOS ? .large : .medium])
+        .presentationDetents(isIPadOS ? [.large] : [.medium, .large])
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)
@@ -122,6 +134,39 @@ struct CoinDetailScreen: View {
             }
         }
     }
+
+    /// Chart and market sections, in the order they earn their place: the chart
+    /// first, then the numbers behind it, then the asset's own details.
+    ///
+    /// All of it sits *below* the actions deliberately — the sheet opens at
+    /// `.medium`, and send/swap/receive must stay above the fold. Dragging up
+    /// reveals the chart.
+    @ViewBuilder
+    var marketSections: some View {
+        if viewModel.showsChartSection {
+            CoinPriceChartView(
+                chart: viewModel.chart,
+                range: viewModel.selectedRange,
+                isLoading: viewModel.isLoadingChart,
+                spotPrice: Decimal(coin.price),
+                changeFraction: viewModel.displayedChangeFraction,
+                isPositive: viewModel.isChangePositive,
+                onSelectRange: viewModel.selectRange
+            )
+        }
+
+        if let stats = viewModel.stats {
+            CoinMarketStatsView(stats: stats, ticker: coin.ticker)
+            CoinPriceExtremesView(stats: stats)
+        }
+
+        CoinTokenInfoView(
+            coin: coin,
+            price: viewModel.showsChartSection ? nil : Decimal(coin.price).formatToFiatPrice(),
+            onCopyContract: onCopyContract,
+            onOpenExplorer: onExplorer
+        )
+    }
 }
 
 private extension CoinDetailScreen {
@@ -150,6 +195,11 @@ private extension CoinDetailScreen {
             let linkURL = URL(string: url) {
             openURL(linkURL)
         }
+    }
+
+    func onCopyContract(_ contract: String) {
+        ClipboardManager.copyToClipboard(contract)
+        showContractCopiedBanner = true
     }
 
     func onAction(_ action: CoinAction) {

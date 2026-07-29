@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "Assicurati che";
 "allDevicesUpgradeTitle2" = " tutti i dispositivi iniziali siano presenti ";
 "allDevicesUpgradeTitle3" = "durante l’aggiornamento";
+"allTimeHigh" = "Massimo storico";
+"allTimeLow" = "Minimo storico";
 "allVaults" = "Tutti i Vault";
 "alreadyTaken" = "Già utilizzato";
 "aminoSign" = "Firma Amino";
@@ -211,6 +213,7 @@
 "circleWithdrawAmountLabel" = "Importo";
 "circleWithdrawConfirm" = "Continua";
 "circleWithdrawTitle" = "Preleva USDC";
+"circulatingSupply" = "Offerta circolante";
 "claim" = "Riscatta";
 "claimBroadcasted" = "Riscatto trasmesso";
 "claimFailed" = "Riscatto non riuscito";
@@ -233,7 +236,10 @@
 "continue" = "Continua";
 "continueAnyway" = "Continua comunque";
 "continueThresholdOfTotal" = "Continua (%d-di-%d)";
+"contract" = "Contratto";
+"contractAddressCopied" = "Indirizzo del contratto copiato";
 "copyAddress" = "Copia indirizzo";
+"copyContractAddress" = "Copia indirizzo del contratto";
 "correctAmountCheck" = "La quantità è corretta";
 "cosmosStakingActionClaim" = "Riscatta";
 "cosmosStakingActionDelegate" = "Stake";
@@ -321,6 +327,7 @@
 "dappRequestFrom" = "Richiesta da";
 "date" = "Data";
 "decimalAmountError" = "L'importo deve essere decimale.";
+"decimals" = "Decimali";
 "decodeCustomMessagePayloadError" = "Errore durante la decodifica del payload del messaggio personalizzato: %@";
 "decodeKeysignMessageError" = "Errore durante la decodifica del messaggio di keysign: %@";
 "defiChainNoPositions" = "Nessuna posizione trovata";
@@ -493,6 +500,7 @@
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di un timeout.";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
 "from" = "Da";
+"fullyDilutedValuation" = "Valutazione completamente diluita";
 "function" = "funzione";
 "functionArguments" = "Argomenti della funzione";
 "functionSignature" = "Firma della funzione";
@@ -556,6 +564,7 @@
 "governanceYouVoted" = "Hai votato %@";
 "hashCopied" = "Hash copiato";
 "hideBalance" = "Nascondi saldo";
+"high24h" = "Massimo 24h";
 "hold" = "Mantieni";
 "holdForPairedSign" = "Tieni premuto per la firma abbinata";
 "howItWorks" = "Come funziona";
@@ -753,6 +762,7 @@
 "loginUsingTouchID" = "Accedi con Touch ID";
 "lookingForDevices" = "Ricerca dispositivi... ";
 "looksGood" = "Sembra a posto";
+"low24h" = "Minimo 24h";
 "lps" = "LPs";
 "lpUnits" = "Unità LP";
 "lpUnitsCannotBeZero" = "Le unità LP non possono essere zero";
@@ -763,6 +773,10 @@
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
 "manageNotificationsInSettings" = "Puoi gestire le notifiche nelle impostazioni di sistema.";
 "managePositions" = "Gestisci posizioni";
+"marketCap" = "Capitalizzazione";
+"marketCapRank" = "Posizione";
+"marketStats" = "Dati di mercato";
+"maxSupply" = "Offerta massima";
 "maxTotalFee" = "Commissione totale max.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
@@ -938,6 +952,8 @@
 "preparingVaultText2" = "eliminando il punto singolo di errore";
 "previewKeygenDescription" = "Scansiona con i dispositivi per unirsi alla generazione di Vault";
 "price" = "Prezzo";
+"priceChart" = "Grafico dei prezzi";
+"priceRange" = "Intervallo di prezzo";
 "privacyPolicy" = "Informativa sulla privacy";
 "proposalID" = "ID Proposta";
 "provider" = "Fornitore";
@@ -1360,6 +1376,7 @@
 "title" = "Titolo";
 "to" = "A";
 "today" = "Oggi";
+"tokenInfo" = "Informazioni token";
 "tokens" = "Token";
 "tokenUnverifiedBadge" = "Non verificato";
 "tonStakeBelowMinimum" = "Lo stake minimo è %@ %@";
@@ -1550,6 +1567,7 @@
 "via" = "tramite";
 "view" = "Visualizza";
 "viewOnExplorer" = "Visualizza su Explorer";
+"volume24h" = "Volume 24h";
 "Vote" = "Vota";
 "vult" = "$VULT";
 "vultDiscount" = "Sconto: %dbps";

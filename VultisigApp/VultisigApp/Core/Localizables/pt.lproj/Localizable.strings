@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "Certifique-se de que";
 "allDevicesUpgradeTitle2" = " todos os dispositivos iniciais estejam presentes ";
 "allDevicesUpgradeTitle3" = "ao fazer a atualização";
+"allTimeHigh" = "Máxima histórica";
+"allTimeLow" = "Mínima histórica";
 "allVaults" = "Todos os cofres";
 "alreadyTaken" = "Já utilizado";
 "aminoSign" = "Assinatura Amino";
@@ -211,6 +213,7 @@
 "circleWithdrawAmountLabel" = "Valor";
 "circleWithdrawConfirm" = "Continuar";
 "circleWithdrawTitle" = "Sacar USDC";
+"circulatingSupply" = "Fornecimento circulante";
 "claim" = "Reivindicar";
 "claimBroadcasted" = "Reivindicação difundida";
 "claimFailed" = "Reivindicação falhou";
@@ -233,7 +236,10 @@
 "continue" = "Continuar";
 "continueAnyway" = "Continuar mesmo assim";
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
+"contract" = "Contrato";
+"contractAddressCopied" = "Endereço do contrato copiado";
 "copyAddress" = "Copiar endereço";
+"copyContractAddress" = "Copiar endereço do contrato";
 "correctAmountCheck" = "A quantidade está correta";
 "cosmosStakingActionClaim" = "Reivindicar";
 "cosmosStakingActionDelegate" = "Stake";
@@ -321,6 +327,7 @@
 "dappRequestFrom" = "Pedido de";
 "date" = "Data";
 "decimalAmountError" = "O valor deve ser decimal.";
+"decimals" = "Casas decimais";
 "decodeCustomMessagePayloadError" = "Erro ao descodificar o conteúdo da mensagem personalizada: %@";
 "decodeKeysignMessageError" = "Erro ao descodificar a mensagem de keysign: %@";
 "defiChainNoPositions" = "Nenhuma posição encontrada";
@@ -493,6 +500,7 @@
 "foundActiveChainsSubtitle" = "Cada chain adicional aumenta o tempo para gerar seu cofre e a possibilidade de um tempo limite.";
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
 "from" = "De";
+"fullyDilutedValuation" = "Avaliação totalmente diluída";
 "function" = "função";
 "functionArguments" = "Argumentos da função";
 "functionSignature" = "Assinatura da função";
@@ -556,6 +564,7 @@
 "governanceYouVoted" = "Você votou %@";
 "hashCopied" = "Hash copiado";
 "hideBalance" = "Ocultar saldo";
+"high24h" = "Máxima 24h";
 "hold" = "Manter";
 "holdForPairedSign" = "Segure para assinatura emparelhada";
 "howItWorks" = "Como funciona";
@@ -753,6 +762,7 @@
 "loginUsingTouchID" = "Entrar usando Touch ID";
 "lookingForDevices" = "Procurando dispositivos... ";
 "looksGood" = "Parece bom";
+"low24h" = "Mínima 24h";
 "lps" = "LPs";
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "As unidades LP não podem ser zero";
@@ -763,6 +773,10 @@
 "makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";
 "manageNotificationsInSettings" = "Você pode gerenciar notificações nas configurações do sistema.";
 "managePositions" = "Gerenciar posições";
+"marketCap" = "Capitalização de mercado";
+"marketCapRank" = "Classificação";
+"marketStats" = "Dados de mercado";
+"maxSupply" = "Fornecimento máximo";
 "maxTotalFee" = "Taxa total máx.";
 "memo" = "Memorando";
 "memoLabel" = "Memo";
@@ -938,6 +952,8 @@
 "preparingVaultText2" = "eliminando o ponto único de falha";
 "previewKeygenDescription" = "Digitalize com dispositivos para ingressar na geração do cofre";
 "price" = "Preço";
+"priceChart" = "Gráfico de preços";
+"priceRange" = "Faixa de preço";
 "privacyPolicy" = "Política de Privacidade";
 "proposalID" = "Proposal ID";
 "provider" = "Provedor";
@@ -1360,6 +1376,7 @@
 "title" = "Título";
 "to" = "Para";
 "today" = "Hoje";
+"tokenInfo" = "Informações do token";
 "tokens" = "Tokens";
 "tokenUnverifiedBadge" = "Não verificado";
 "tonStakeBelowMinimum" = "O stake mínimo é %@ %@";
@@ -1550,6 +1567,7 @@
 "via" = "via";
 "view" = "Ver";
 "viewOnExplorer" = "Ver no Explorer";
+"volume24h" = "Volume 24h";
 "Vote" = "Votar";
 "vult" = "$VULT";
 "vultDiscount" = "Desconto: %dbps";

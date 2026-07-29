@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "Provjeri da su";
 "allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
 "allDevicesUpgradeTitle3" = "tijekom nadogradnje";
+"allTimeHigh" = "Povijesni maksimum";
+"allTimeLow" = "Povijesni minimum";
 "allVaults" = "Svi trezori";
 "alreadyTaken" = "Već zauzeto";
 "aminoSign" = "Amino Potpis";
@@ -211,6 +213,7 @@
 "circleWithdrawAmountLabel" = "Iznos";
 "circleWithdrawConfirm" = "Nastavi";
 "circleWithdrawTitle" = "Povuci USDC";
+"circulatingSupply" = "Cirkulirajuća ponuda";
 "claim" = "Preuzmi";
 "claimBroadcasted" = "Preuzimanje poslano";
 "claimFailed" = "Preuzimanje nije uspjelo";
@@ -233,7 +236,10 @@
 "continue" = "Nastavi";
 "continueAnyway" = "Svejedno nastavi";
 "continueThresholdOfTotal" = "Nastavi (%d-od-%d)";
+"contract" = "Ugovor";
+"contractAddressCopied" = "Adresa ugovora kopirana";
 "copyAddress" = "Kopiraj adresu";
+"copyContractAddress" = "Kopiraj adresu ugovora";
 "correctAmountCheck" = "Iznos je točan";
 "cosmosStakingActionClaim" = "Preuzmi";
 "cosmosStakingActionDelegate" = "Uloži";
@@ -321,6 +327,7 @@
 "dappRequestFrom" = "Zahtjev od";
 "date" = "Datum";
 "decimalAmountError" = "Iznos mora biti decimalan.";
+"decimals" = "Decimale";
 "decodeCustomMessagePayloadError" = "Pogreška pri dekodiranju sadržaja prilagođene poruke: %@";
 "decodeKeysignMessageError" = "Pogreška pri dekodiranju keysign poruke: %@";
 "defiChainNoPositions" = "Nema pronađenih pozicija";
@@ -493,6 +500,7 @@
 "foundActiveChainsSubtitle" = "Svaki dodatni chain povećava vrijeme za generiranje vašeg trezora i mogućnost isteka vremena.";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "from" = "Od";
+"fullyDilutedValuation" = "Potpuno razrijeđena vrijednost";
 "function" = "funkcija";
 "functionArguments" = "Argumenti funkcije";
 "functionSignature" = "Potpis funkcije";
@@ -556,6 +564,7 @@
 "governanceYouVoted" = "Glasali ste %@";
 "hashCopied" = "Hash kopiran";
 "hideBalance" = "Sakrij saldo";
+"high24h" = "Najviša 24h";
 "hold" = "Držite";
 "holdForPairedSign" = "Drži za upareno potpisivanje";
 "howItWorks" = "Kako to radi";
@@ -753,6 +762,7 @@
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
 "lookingForDevices" = "Traženje uređaja... ";
 "looksGood" = "Izgleda dobro";
+"low24h" = "Najniža 24h";
 "lps" = "LPs";
 "lpUnits" = "LP jedinice";
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
@@ -763,6 +773,10 @@
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
 "manageNotificationsInSettings" = "Možete upravljati obavijestima u postavkama sustava.";
 "managePositions" = "Upravljaj pozicijama";
+"marketCap" = "Tržišna kapitalizacija";
+"marketCapRank" = "Rang";
+"marketStats" = "Tržišni podaci";
+"maxSupply" = "Maksimalna ponuda";
 "maxTotalFee" = "Maks. ukupna naknada";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
@@ -938,6 +952,8 @@
 "preparingVaultText2" = "uklanjanje jedne točke neuspjeha";
 "previewKeygenDescription" = "Skenirajte s uređajima za pridruživanje generaciji trezora";
 "price" = "Cijena";
+"priceChart" = "Grafikon cijene";
+"priceRange" = "Raspon cijena";
 "privacyPolicy" = "Pravila o privatnosti";
 "proposalID" = "Proposal ID";
 "provider" = "Davatelj usluga";
@@ -1360,6 +1376,7 @@
 "title" = "Naslov";
 "to" = "Do";
 "today" = "Danas";
+"tokenInfo" = "Podaci o tokenu";
 "tokens" = "Tokeni";
 "tokenUnverifiedBadge" = "Neprovjereno";
 "tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
@@ -1550,6 +1567,7 @@
 "via" = "putem";
 "view" = "Pogledaj";
 "viewOnExplorer" = "Prikaži u Exploreru";
+"volume24h" = "Volumen 24h";
 "Vote" = "Glasaj";
 "vult" = "$VULT";
 "vultDiscount" = "Popust: %dbps";

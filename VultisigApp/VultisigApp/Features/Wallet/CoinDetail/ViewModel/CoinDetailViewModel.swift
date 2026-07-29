@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class CoinDetailViewModel: ObservableObject {
     let coin: Coin
 
@@ -60,20 +61,17 @@ final class CoinDetailViewModel: ObservableObject {
     }
 
     func setup() {
-        Task { @MainActor in
+        Task {
             availableActions = await actionResolver.resolveActions(for: coin.chain).filtered
         }
 
-        Task { @MainActor in
-            loadMarketDataIfNeeded()
-        }
+        loadMarketDataIfNeeded()
     }
 
     /// Loads chart + stats on first open, and again when the display currency
     /// changed since the last load. Repeat calls in the same currency are
     /// no-ops: the screen's `.task` and `.onAppear` both fire on open, and the
     /// `TTLCache` behind the service would coalesce them anyway.
-    @MainActor
     func loadMarketDataIfNeeded() {
         guard supportsMarketData else { return }
 
@@ -91,7 +89,6 @@ final class CoinDetailViewModel: ObservableObject {
     /// left on screen — dimmed via `isLoadingChart` — so the layout never
     /// collapses to a spinner and back. A picker that flashes empty on every
     /// tap reads as broken even when it is fast.
-    @MainActor
     func selectRange(_ range: MarketChartRange) {
         guard range != selectedRange else { return }
 
@@ -121,18 +118,20 @@ final class CoinDetailViewModel: ObservableObject {
     /// leaving a gap.
     var showsChartSection: Bool {
         guard supportsMarketData else { return false }
-        return chart != nil || !hasAttemptedChartLoad
+        // `isLoadingChart` keeps the block through a *re*-load too — after a
+        // first attempt came back empty, a currency change should show the
+        // placeholder again rather than pop the block in only on success.
+        return chart != nil || isLoadingChart || !hasAttemptedChartLoad
     }
 
     // MARK: - Loading
 
-    @MainActor
     private func loadChart(range: MarketChartRange, currency: SettingsCurrency) {
         chartTask?.cancel()
         isLoadingChart = true
 
         let coinMeta = coin.toCoinMeta()
-        chartTask = Task { @MainActor [weak self, marketDataService] in
+        chartTask = Task { [weak self, marketDataService] in
             let result = await marketDataService.chart(
                 for: coinMeta,
                 range: range,
@@ -150,12 +149,11 @@ final class CoinDetailViewModel: ObservableObject {
         }
     }
 
-    @MainActor
     private func loadStats(currency: SettingsCurrency) {
         statsTask?.cancel()
 
         let coinMeta = coin.toCoinMeta()
-        statsTask = Task { @MainActor [weak self, marketDataService] in
+        statsTask = Task { [weak self, marketDataService] in
             let result = await marketDataService.stats(for: coinMeta, currency: currency)
 
             guard !Task.isCancelled else { return }
