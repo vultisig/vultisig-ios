@@ -263,20 +263,10 @@ class SolanaService {
             let dataResponse = try await Utils.asyncGetRequest(
                 urlString: urlString, headers: [:])
 
-            let tokenInfos = try JSONDecoder().decode(
-                [SolanaJupiterToken].self, from: dataResponse)
-            return tokenInfos.map { jupiterTokenInfo in
-                let coinMeta = CoinMeta(
-                    chain: .solana,
-                    ticker: jupiterTokenInfo.symbol ?? "",
-                    logo: jupiterTokenInfo.logoURI ?? "",
-                    decimals: jupiterTokenInfo.decimals ?? 0,
-                    priceProviderId: jupiterTokenInfo.extensions?.coingeckoId ?? "",
-                    contractAddress: jupiterTokenInfo.address ?? "",
-                    isNativeToken: false
-                )
-                return coinMeta
-            }
+            // Decoded, ranked best-first and mapped in one place: `CoinMeta`
+            // carries no score, so ordering is the only channel Jupiter's quality
+            // signal has to reach the catalog.
+            return try SolanaJupiterToken.rankedCatalogMetas(from: dataResponse)
         } catch let error as NSError {
             if error.code == 429 {
                 logger.warning("Error in fetchSolanaJupiterTokenList: Rate limit exceeded (429)")

@@ -5,12 +5,18 @@
 //  Jupiter's Solana token list as a `TokenCatalogProvider`. The upstream
 //  endpoint is pre-filtered server-side to `?query=verified`, so the whole list
 //  carries implicit "Jupiter-verified" trust — every token is
-//  `.verified("Jupiter")`. Per-token `coingeckoId` is already preserved into
-//  `priceProviderId` by `SolanaService.fetchSolanaJupiterTokenList`.
+//  `.verified("Jupiter")`.
 //
-//  Like `OneInchCatalogProvider`, freshness is governed upstream by
-//  `SwapTokenListCache`; this provider fetches → tags → write-throughs the disk
-//  snapshot, and serves the last-good snapshot on failure (offline floor).
+//  The list is returned best-first, ranked by Jupiter's own `organicScore` (see
+//  `SolanaJupiterToken.rankedForCatalog`). `CatalogToken` carries no rank field,
+//  so order is the contract: a consumer showing only the head of the list — the
+//  token picker's browse list — gets the tokens worth showing.
+//
+//  Like `OneInchCatalogProvider`, this fetches → ranks → tags → write-throughs
+//  the disk snapshot and serves the last-good snapshot on failure (offline
+//  floor). Fetch frequency is the caller's: the swap source path is fronted by
+//  `SwapTokenListCache`, the wallet add-token path (`loadCatalog`) deliberately
+//  is not and refetches per screen open.
 //
 
 import Foundation
