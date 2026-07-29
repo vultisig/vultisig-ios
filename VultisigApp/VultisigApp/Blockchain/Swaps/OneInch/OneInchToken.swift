@@ -83,6 +83,57 @@ extension OneInchToken {
         }
     }
 
+    private static let peggedTagPrefix = "PEG:"
+    private static let bluechipTag = "bluechip"
+    private static let connectorTag = "connector"
+
+    /// A quality **tier**, not a ranking. `/swap/v6.0/{chain}/tokens` carries no
+    /// volume, market-cap or liquidity field, so no true ordering can be derived
+    /// from it — the only quality information it exposes is 1inch's own tag
+    /// curation, which sorts the whitelist into these coarse bands:
+    ///
+    /// - `bluechip` — 1inch's hand-picked majors (41 of Ethereum's 2,225).
+    /// - `PEG:*` — assets pegged to USD / ETH / BTC / EUR: the stables and
+    ///   liquid-staking derivatives a user most often adds by name.
+    /// - `connector` — tokens 1inch routes through, i.e. real liquidity.
+    /// - everything else — on the whitelist, but with nothing said about it.
+    ///
+    /// Within a band 1inch tells us nothing, so the input order is kept.
+    enum CatalogQualityTier: Int, Comparable {
+        case bluechip
+        case pegged
+        case connector
+        case unclassified
+
+        static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
+    }
+
+    var catalogQualityTier: CatalogQualityTier {
+        guard let tags else { return .unclassified }
+        if tags.contains(Self.bluechipTag) { return .bluechip }
+        if tags.contains(where: { $0.hasPrefix(Self.peggedTagPrefix) }) { return .pegged }
+        if tags.contains(Self.connectorTag) { return .connector }
+        return .unclassified
+    }
+
+    /// The whitelist ordered best-tier-first, so a consumer showing only the head
+    /// of it (the token picker's browse list) leads with tokens a user would
+    /// recognise instead of whatever sorts first alphabetically.
+    ///
+    /// Stable: equal tiers keep the caller's order, which is the provider's
+    /// name sort.
+    static func rankedForCatalog(_ tokens: [OneInchToken]) -> [OneInchToken] {
+        tokens
+            .enumerated()
+            .sorted { lhs, rhs in
+                guard lhs.element.catalogQualityTier != rhs.element.catalogQualityTier else {
+                    return lhs.offset < rhs.offset
+                }
+                return lhs.element.catalogQualityTier < rhs.element.catalogQualityTier
+            }
+            .map(\.element)
+    }
+
     /// Trust-carrying catalog candidate. `/swap/v6.0/{chain}/tokens` is 1inch's
     /// curated swap whitelist, so membership in it *is* the trust signal —
     /// `.verified(source: "1inch")`. Tokens 1inch itself tags risky are downgraded

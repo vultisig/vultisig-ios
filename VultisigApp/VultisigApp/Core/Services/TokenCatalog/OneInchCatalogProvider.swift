@@ -13,10 +13,16 @@
 //  discovery on) only exists on the separate `/token/v1.2/{chain}/custom`
 //  endpoint and is absent from every `/tokens` response.
 //
+//  The list is returned best-first by 1inch's own tag curation (see
+//  `OneInchToken.rankedForCatalog`). `CatalogToken` carries no rank field, so
+//  order is the contract: a consumer showing only the head of the list — the
+//  token picker's browse list — gets the majors rather than whatever sorts
+//  first alphabetically.
+//
 //  Freshness (TTL / coalescing / fail-open) is governed by `SwapTokenListCache`
 //  at the `TokenSearchService.loadTokens` layer, so this provider stays thin:
-//  fetch → tag → write-through the disk snapshot; on failure serve the last-good
-//  disk snapshot (the offline floor beneath the in-memory cache).
+//  fetch → rank → tag → write-through the disk snapshot; on failure serve the
+//  last-good disk snapshot (the offline floor beneath the in-memory cache).
 //
 
 import Foundation
@@ -55,9 +61,10 @@ final class OneInchCatalogProvider: TokenCatalogProvider {
         guard service.isChainSupported(chain: chain), let chainID = chain.chainID else { return [] }
         let sourceKind = kind
         do {
-            let tokens = try await service.fetchTokens(chain: chainID)
-                .sorted(by: { $0.name < $1.name })
-                .map { $0.toCatalogToken(chain: chain, sourceKind: sourceKind) }
+            let ranked = try await OneInchToken.rankedForCatalog(
+                service.fetchTokens(chain: chainID).sorted(by: { $0.name < $1.name })
+            )
+            let tokens = ranked.map { $0.toCatalogToken(chain: chain, sourceKind: sourceKind) }
             let cache = disk
             Task.detached(priority: .utility) { cache.save(tokens, chain: chain) }
             return tokens
