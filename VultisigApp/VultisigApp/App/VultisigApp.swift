@@ -216,6 +216,13 @@ extension VultisigApp {
                 // funnel can read them without touching @Model.
                 CustomRPCStore.shared.reloadFromStore()
 
+                // Stamp the install date the App Store review throttle waits
+                // on. Idempotent, and deliberately placed at launch rather
+                // than at the first confirmed transaction: the 7-day rule has
+                // to be measured from when the user got the app, not from
+                // when they first happened to transact.
+                AppReviewService.shared.seedInstallDateIfNeeded()
+
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     continueLogin()
                 }
