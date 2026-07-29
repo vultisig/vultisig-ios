@@ -29,38 +29,63 @@ struct SettingsAdvancedView: View {
         }
     }
 
+    /// The debug rows this screen shows, ordered, so each one can tell the
+    /// shared list container where it sits.
+    enum Row: CaseIterable {
+        case sepolia
+        case thorchainStagenet
+        case sell
+        case tssBatching
+        case limitSwap
+        case forcedSwapProvider
+        case clearSwapKitTokensCache
+        case resetTransactionHistory
+    }
+
     var content: some View {
-        VStack {
+        VStack(spacing: 0) {
+            ForEach(Array(Row.allCases.enumerated()), id: \.element) { index, row in
+                view(for: row)
+                    .commonListItemContainer(index: index, itemsCount: Row.allCases.count)
+            }
+        }
+        .commonListContainer()
+    }
+
+    @ViewBuilder
+    func view(for row: Row) -> some View {
+        switch row {
+        case .sepolia:
             SettingToggleCell(
                 title: "ETH Testnet(Sepolia)",
                 icon: "timelapse",
                 isEnabled: $settingsViewModel.enableSepolia
             )
-
+        case .thorchainStagenet:
             SettingToggleCell(
                 title: "THORChain Stagenet",
                 icon: "timelapse",
                 isEnabled: $settingsViewModel.enableThorchainChainnet
             )
-
+        case .sell:
             SettingToggleCell(
                 title: "Sell",
                 icon: "creditcard",
                 isEnabled: $settingsViewModel.sellEnabled
             )
-
+        case .tssBatching:
             SettingToggleCell(
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
             )
-
+        case .limitSwap:
             SettingToggleCell(
                 title: "limitSwapToggle".localized,
                 icon: "arrow.up.right.square",
                 isEnabled: $settingsViewModel.limitSwapEnabled
             )
-
+        case .forcedSwapProvider:
             SettingPickerCell(
                 title: "settingsAdvancedForcedSwapProvider".localized,
                 icon: "arrow.triangle.branch",
@@ -76,7 +101,7 @@ struct SettingsAdvancedView: View {
                 ],
                 selection: $settingsViewModel.forcedSwapProvider
             )
-
+        case .clearSwapKitTokensCache:
             SettingActionCell(
                 title: "settingsAdvancedSwapKitClearTokensCache".localized,
                 icon: "arrow.clockwise",
@@ -84,7 +109,7 @@ struct SettingsAdvancedView: View {
             ) {
                 SwapKitTokensCache.shared.clearCache()
             }
-
+        case .resetTransactionHistory:
             SettingActionCell(
                 title: "settingsAdvancedResetTransactionHistory".localized,
                 icon: "trash",

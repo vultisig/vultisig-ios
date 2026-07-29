@@ -34,7 +34,5 @@ struct SettingActionCell: View {
                 .fixedSize()
         }
         .padding(12)
-        .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
     }
 }

@@ -59,7 +59,8 @@ struct ChooseBackupSheetView: View, BottomSheetProperties {
                 Spacer()
                 Icon(.chevronRight, color: Theme.colors.textSecondary, size: 16)
             }
-            .containerStyle(padding: 16)
+            .padding(16)
+            .commonListContainer()
         }
         .buttonStyle(.plain)
     }

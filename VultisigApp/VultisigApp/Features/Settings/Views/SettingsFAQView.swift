@@ -8,18 +8,20 @@
 import SwiftUI
 
 struct SettingsFAQView: View {
+    private var faqs: [(question: String, answer: String)] {
+        SettingsOptionsStore.FAQData
+    }
+
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                SettingsSectionContainerView {
-                    VStack(spacing: .zero) {
-                        ForEach(SettingsOptionsStore.FAQData, id: \.question) { faq in
-                            SettingFAQCell(question: faq.question, answer: faq.answer)
-                            GradientListSeparator()
-                                .showIf(faq.question != SettingsOptionsStore.FAQData.last?.question)
-                        }
+                VStack(spacing: .zero) {
+                    ForEach(Array(faqs.enumerated()), id: \.element.question) { index, faq in
+                        SettingFAQCell(question: faq.question, answer: faq.answer)
+                            .commonListItemContainer(index: index, itemsCount: faqs.count)
                     }
                 }
+                .commonListContainer()
             }
         }
         .screenTitle("faq".localized)
