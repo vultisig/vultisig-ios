@@ -28,6 +28,7 @@ struct ContentView: View {
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
+    @State private var pendingDeeplinks: [URL] = []
     @State private var dismissSplashTask: Task<Void, Never>?
 
     init(navigationRouter: NavigationRouter) {
@@ -79,6 +80,10 @@ struct ContentView: View {
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
+        .onChange(of: appViewModel.isPasscodeLocked) { _, isLocked in
+            guard !isLocked else { return }
+            drainPendingDeeplinks()
+        }
         .onReceive(
             NotificationCenter.default.publisher(
                 for: NSNotification.Name("HandlePushNotification")
@@ -93,7 +98,11 @@ struct ContentView: View {
             }
         }
         .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
+        .overlay(passcodeGate)
         .onLoad {
+            // A cold start must be gated too, not just a return from the
+            // background.
+            appViewModel.restorePasscodeLockOnLaunch()
             pushNotificationManager.hadVaultsOnStartup = !vaults.isEmpty
 
             if vaults.isEmpty {
@@ -130,6 +139,28 @@ struct ContentView: View {
             deeplinkError = nil
         }
         .withForegroundNotificationBanner()
+    }
+
+    /// Covers the app while the passcode lock is engaged. An overlay rather than
+    /// a navigation destination, so no route, deeplink or restored screen can
+    /// appear instead of it.
+    ///
+    /// Known limitation: SwiftUI presents sheets and full-screen covers in a
+    /// separate layer that an overlay does not reach, so a sheet already on
+    /// screen when the app locks stays visible. What it shows is stale — locking
+    /// forgets the data key, so no key share can be read and nothing can be
+    /// signed — but balances and addresses remain legible. The existing
+    /// `CoverView` privacy screen has the same gap; both want the lock hosted in
+    /// a window above the presentation layer, which is a change to how the app
+    /// presents modals and does not belong in this step.
+    @ViewBuilder
+    var passcodeGate: some View {
+        if appViewModel.isPasscodeLocked {
+            EnterPasscodeScreen {
+                appViewModel.markPasscodeUnlocked()
+            }
+            .ignoresSafeArea()
+        }
     }
 
     func navigateToHome() {
@@ -188,7 +219,28 @@ struct ContentView: View {
         appViewModel.authenticateUser()
     }
 
+    /// Deeplinks are held until the app is unlocked.
+    ///
+    /// Acting on one while locked would navigate, present sheets and mutate
+    /// state behind the lock screen — the gate has to apply to what the app
+    /// *does*, not only to what it shows.
     private func handleDeeplink(_ incomingURL: URL) {
+        guard !appViewModel.isPasscodeLocked else {
+            // Queued rather than replaced: a single slot silently drops every
+            // link but the last, and each one is a user action.
+            pendingDeeplinks.append(incomingURL)
+            return
+        }
+        processDeeplink(incomingURL)
+    }
+
+    private func drainPendingDeeplinks() {
+        let queued = pendingDeeplinks
+        pendingDeeplinks = []
+        queued.forEach(processDeeplink)
+    }
+
+    private func processDeeplink(_ incomingURL: URL) {
         guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
             return
         }

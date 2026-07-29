@@ -39,6 +39,12 @@ struct SettingsMainScreen: View {
                 title: "general",
                 options: generalOptions
             ),
+            SettingsOptionGroup(
+                title: "security",
+                options: [
+                    .managePasscode
+                ]
+            ),
         SettingsOptionGroup(
             title: "support",
             options: [
@@ -151,6 +157,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.notifications)
         case .addressBook:
             router.navigate(to: SettingsRoute.addressBook)
+        case .managePasscode:
+            router.navigate(to: SettingsRoute.managePasscode)
         case .faq:
             router.navigate(to: SettingsRoute.faq)
         case .checkForUpdates:
