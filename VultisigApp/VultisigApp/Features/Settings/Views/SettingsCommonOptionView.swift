@@ -13,22 +13,19 @@ struct SettingsCommonOptionView: View {
     let subtitle: String?
     let description: String?
     let type: SettingsOptionViewType
-    let showSeparator: Bool
 
     init(
         icon: ImageResource?,
         title: String,
         subtitle: String? = nil,
         description: String? = nil,
-        type: SettingsOptionViewType = .normal,
-        showSeparator: Bool = true
+        type: SettingsOptionViewType = .normal
     ) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
         self.description = description
         self.type = type
-        self.showSeparator = showSeparator
     }
 
     var body: some View {
@@ -37,7 +34,6 @@ struct SettingsCommonOptionView: View {
             title: title,
             subtitle: subtitle,
             type: type,
-            showSeparator: showSeparator,
             trailingView: { trailingView }
         )
     }
@@ -46,7 +42,7 @@ struct SettingsCommonOptionView: View {
     var trailingView: some View {
         if let description {
             Text(description)
-                .font(Theme.fonts.footnote)
+                .font(Theme.fonts.subtitle)
         }
 
         Icon(

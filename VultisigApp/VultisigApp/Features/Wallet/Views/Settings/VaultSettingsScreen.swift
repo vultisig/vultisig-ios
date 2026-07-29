@@ -32,33 +32,13 @@ struct VaultSettingsScreen: View {
         Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
-                    SettingsSectionView(title: "vaultManagement".localized) {
-                        vaultDetails
-                        editVault
-                        fastSigningBiometrics
-                            .showIf(vault.isFastVault)
-                    }
+                    section(title: "vaultManagement".localized, rows: vaultManagementRows)
+                    section(title: "security".localized, rows: securityRows)
+                    section(title: "other".localized, rows: otherRows)
 
-                    SettingsSectionView(title: "security".localized) {
-                        passwordHint
-                            .showIf(vault.isFastVault)
-                        backupVault
-                    }
-
-                    SettingsSectionView(title: "other".localized) {
-                        VStack(spacing: .zero) {
-                            if vault.libType == nil || vault.libType == .GG20 {
-                                migrateVault
-                            }
-                            advancedSettings
-                        }
-                    }
-
-                    SettingsSectionContainerView {
-                        VStack(spacing: .zero) {
-                            deleteVault
-                        }
-                    }
+                    deleteVault
+                        .commonListItemContainer(index: 0, itemsCount: 1)
+                        .commonListContainer()
                 }
             }
         }
@@ -94,11 +74,69 @@ struct VaultSettingsScreen: View {
         }
     }
 
+    /// The rows a section can hold. Sections compose them as an ordered array
+    /// so each row knows its position, which is what drives the shared list
+    /// container's separators and end-row corner rounding.
+    enum Row {
+        case vaultDetails
+        case editVault
+        case fastSigningBiometrics
+        case passwordHint
+        case backupVault
+        case migrateVault
+        case advancedSettings
+    }
+
+    var vaultManagementRows: [Row] {
+        var rows: [Row] = [.vaultDetails, .editVault]
+        if vault.isFastVault {
+            rows.append(.fastSigningBiometrics)
+        }
+        return rows
+    }
+
+    var securityRows: [Row] {
+        vault.isFastVault ? [.passwordHint, .backupVault] : [.backupVault]
+    }
+
+    var otherRows: [Row] {
+        let canMigrate = vault.libType == nil || vault.libType == .GG20
+        return canMigrate ? [.migrateVault, .advancedSettings] : [.advancedSettings]
+    }
+
+    func section(title: String, rows: [Row]) -> some View {
+        SettingsSectionView(title: title) {
+            ForEach(Array(rows.enumerated()), id: \.element) { index, row in
+                view(for: row)
+                    .commonListItemContainer(index: index, itemsCount: rows.count)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func view(for row: Row) -> some View {
+        switch row {
+        case .vaultDetails:
+            vaultDetails
+        case .editVault:
+            editVault
+        case .fastSigningBiometrics:
+            fastSigningBiometrics
+        case .passwordHint:
+            passwordHint
+        case .backupVault:
+            backupVault
+        case .migrateVault:
+            migrateVault
+        case .advancedSettings:
+            advancedSettings
+        }
+    }
+
     var fastSigningBiometrics: some View {
         SettingsOptionView(
             icon: .bolt,
-            title: "biometricsFastSigning".localized,
-            showSeparator: false
+            title: "biometricsFastSigning".localized
         ) {
             VultiToggle(isOn: Binding(
                 get: { viewModel.isBiometryEnabled },
@@ -134,8 +172,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .cloudDownload,
                 title: "backupVaultShareTitle".localized,
-                subtitle: "backupVaultShareDescription".localized,
-                showSeparator: false
+                subtitle: "backupVaultShareDescription".localized
             )
         }
     }
@@ -147,8 +184,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .penWritingFilled,
                 title: "rename".localized,
-                subtitle: "renameVault".localized,
-                showSeparator: vault.isFastVault
+                subtitle: "renameVault".localized
             )
         }
     }
@@ -161,8 +197,7 @@ struct VaultSettingsScreen: View {
                 icon: .trash,
                 title: "delete".localized,
                 subtitle: "deleteVault".localized,
-                type: .alert,
-                showSeparator: false
+                type: .alert
             )
         }
 
@@ -187,8 +222,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .folderKey,
                 title: "advanced".localized,
-                subtitle: "advancedDescription".localized,
-                showSeparator: false
+                subtitle: "advancedDescription".localized
             )
         }
     }

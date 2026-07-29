@@ -55,7 +55,5 @@ struct SettingPickerCell<Selection: Hashable>: View {
             }
         }
         .padding(12)
-        .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
     }
 }

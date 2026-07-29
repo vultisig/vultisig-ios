@@ -22,11 +22,10 @@ struct SettingsSectionView<Content: View>: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
 
-            SettingsSectionContainerView {
-                VStack(spacing: .zero) {
-                    content()
-                }
+            VStack(spacing: .zero) {
+                content()
             }
+            .commonListContainer()
         }
     }
 }

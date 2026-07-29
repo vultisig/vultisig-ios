@@ -95,25 +95,21 @@ struct SettingsMainScreen: View {
 
     func groupView(for group: SettingsOptionGroup) -> some View {
         SettingsSectionView(title: group.title.localized) {
-            ForEach(group.options, id: \.self) { option in
-                optionView(
-                    for: option,
-                    shouldHighlight: false,
-                    showSeparator: option != group.options.last
-                )
+            ForEach(Array(group.options.enumerated()), id: \.element) { index, option in
+                optionView(for: option, shouldHighlight: false)
+                    .commonListItemContainer(index: index, itemsCount: group.options.count)
             }
         }
     }
 
     @ViewBuilder
-    func optionView(for option: SettingsOption, shouldHighlight: Bool, showSeparator: Bool) -> some View {
+    func optionView(for option: SettingsOption, shouldHighlight: Bool) -> some View {
         optionContainerView(for: option) {
             SettingsCommonOptionView(
                 icon: option.icon,
                 title: option.title.localized,
                 description: description(for: option),
-                type: shouldHighlight ? .highlighted : .normal,
-                showSeparator: showSeparator
+                type: shouldHighlight ? .highlighted : .normal
             )
         }
         .accessibilityIdentifier(option.accessibilityID ?? "")

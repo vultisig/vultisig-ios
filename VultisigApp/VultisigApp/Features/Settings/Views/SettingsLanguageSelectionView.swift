@@ -12,25 +12,28 @@ struct SettingsLanguageSelectionView: View {
     @State private var showAlert = false
     @Environment(\.dismiss) var dismiss
 
+    private var languages: [SettingsLanguage] {
+        SettingsLanguage.allCases
+    }
+
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                SettingsSectionContainerView {
-                    VStack(spacing: .zero) {
-                        ForEach(SettingsLanguage.allCases, id: \.self) { language in
-                            Button {
-                                handleSelection(language)
-                            } label: {
-                                SettingSelectionCell(
-                                    title: language.rawValue,
-                                    isSelected: language==settingsViewModel.selectedLanguage,
-                                    description: language.description(),
-                                    showSeparator: language != SettingsLanguage.allCases.last
-                                )
-                            }
+                VStack(spacing: .zero) {
+                    ForEach(Array(languages.enumerated()), id: \.element) { index, language in
+                        Button {
+                            handleSelection(language)
+                        } label: {
+                            SettingSelectionCell(
+                                title: language.rawValue,
+                                isSelected: language == settingsViewModel.selectedLanguage,
+                                description: language.description()
+                            )
                         }
+                        .commonListItemContainer(index: index, itemsCount: languages.count)
                     }
                 }
+                .commonListContainer()
             }
         }
         .screenTitle("language".localized)
