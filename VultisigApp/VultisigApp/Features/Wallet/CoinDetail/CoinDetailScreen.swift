@@ -98,7 +98,11 @@ struct CoinDetailScreen: View {
         .refreshable {
             await refresh()
         }
-        .presentationDetents(isIPadOS ? [.large] : [.medium, .large])
+        // Large only. `.medium` was kept while this sheet held four rows; with
+        // the chart and the stats/extremes/info sections it now opens below the
+        // fold on every asset, so a medium detent only ever costs the user a
+        // drag before they can see what they came for.
+        .presentationDetents([.large])
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)
