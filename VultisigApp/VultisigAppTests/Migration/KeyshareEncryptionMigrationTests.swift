@@ -16,6 +16,10 @@ import XCTest
 final class KeyshareEncryptionMigrationTests: XCTestCase {
 
     private var container: ModelContainer!
+    /// `Storage.shared` is a process-wide singleton with an implicitly unwrapped
+    /// context, so leaving it nil crashes every later test in the process.
+    /// `TestStore` is the repo's helper for saving and restoring it.
+    private var contextToken: TestContextToken?
     private var keychain: MockKeychainService!
     private var keyStore: DefaultKeyshareKeyStore!
     private var session: KeyshareKeySession!
@@ -28,10 +32,9 @@ final class KeyshareEncryptionMigrationTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        container = try ModelContainer(
-            for: Vault.self, Coin.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
+        let token = try TestStore.installInMemoryContainer()
+        contextToken = token
+        container = token.container
         Storage.shared.modelContext = container.mainContext
 
         keychain = MockKeychainService()
@@ -47,7 +50,8 @@ final class KeyshareEncryptionMigrationTests: XCTestCase {
         session = nil
         keyStore = nil
         keychain = nil
-        Storage.shared.modelContext = nil
+        TestStore.restore(contextToken)
+        contextToken = nil
         container = nil
         super.tearDown()
     }
@@ -133,10 +137,25 @@ final class KeyshareEncryptionMigrationTests: XCTestCase {
         XCTAssertNotNil(keyStore.loadDataKey())
     }
 
-    func testEmptyStoreDoesNotCreateADataKey() throws {
+    /// A fresh install has no vaults, but the key still has to exist: the
+    /// migration version is bumped either way, so without one every vault
+    /// created or imported afterwards would be stored in the clear permanently
+    /// and no passcode could ever be set.
+    func testEmptyStoreStillCreatesTheDataKey() throws {
         try makeMigration().migrate()
 
-        XCTAssertNil(keyStore.loadDataKey(), "No vaults means nothing to protect")
+        XCTAssertNotNil(keyStore.loadDataKey(), "A fresh install must end up with a data key")
+    }
+
+    /// The consequence that matters: a vault created after the migration is
+    /// sealed, not plaintext.
+    func testAVaultCreatedAfterAnEmptyMigrationIsSealed() throws {
+        try makeMigration().migrate()
+
+        let share = try KeyShare.sealed(pubkey: "02aaa", keyshare: dklsShare, protector: protector)
+
+        XCTAssertTrue(share.keyshare.hasPrefix(AesGcmKeyshareCipher.sealedPrefix))
+        XCTAssertEqual(try protector.open(share.keyshare), dklsShare)
     }
 
     func testVaultWithNoSharesIsHarmless() throws {

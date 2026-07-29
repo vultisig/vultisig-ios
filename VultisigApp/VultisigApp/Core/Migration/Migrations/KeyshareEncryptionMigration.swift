@@ -69,17 +69,25 @@ struct KeyshareEncryptionMigration: @MainActor AppMigration {
         }
 
         let vaults = try modelContext.fetch(FetchDescriptor<Vault>())
-        guard !vaults.isEmpty else {
-            logger.info("No vaults to encrypt")
-            return
-        }
 
         // Whether anything is already sealed decides how a missing data key has
         // to be handled, so it is established before the key is touched.
         let hasSealedShares = vaults.contains { vault in
             vault.keyshares.contains { protector.isSealed($0.keyshare) }
         }
+
+        // The key is created even when there is nothing to encrypt yet. A fresh
+        // install has no vaults, and returning early here would bump the
+        // migration version with no key in place — so every vault created or
+        // imported afterwards would be stored in the clear, permanently, and a
+        // passcode could never be set. New users would silently not get the
+        // feature at all.
         try prepareDataKey(hasSealedShares: hasSealedShares)
+
+        guard !vaults.isEmpty else {
+            logger.info("No vaults to encrypt; data key is ready for the first one")
+            return
+        }
 
         // Phase 1 — seal and verify everything, mutating nothing. Applying a
         // vault as soon as it verifies would leave earlier vaults already

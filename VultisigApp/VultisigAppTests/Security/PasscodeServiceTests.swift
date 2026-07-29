@@ -463,7 +463,6 @@ extension PasscodeServiceTests {
     }
 }
 
-
 /// The real biometric Keychain is unreachable from a test bundle (no
 /// entitlement), so passcode tests drive an in-memory stand-in. Biometric
 /// behaviour itself is covered by `BiometricUnlockStoreTests`.
