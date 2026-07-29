@@ -91,39 +91,90 @@ struct MarketChart: Hashable, Sendable {
         return (lowest - inset)...(highest + inset)
     }
 
-    /// Evenly thins the series to at most `limit` samples, always keeping the
-    /// first and last so the window's endpoints — and therefore the rendered
-    /// change — survive the thinning.
+    /// Resamples the series onto exactly `count` samples spread evenly across
+    /// the window's *elapsed time*.
     ///
-    /// `days=max` returns thousands of daily samples; handing all of them to
-    /// Charts makes the scrub stutter on older devices for detail no one can
-    /// see at this plot width.
-    func downsampled(to limit: Int = MarketChartLimits.maximumRenderedPoints) -> MarketChart {
-        guard limit > 2, points.count > limit else { return self }
+    /// A resample, not a cap: a window with fewer samples than `count` is
+    /// interpolated *up* rather than passed through. Every range therefore
+    /// reaches the chart with the same number of marks, which is what lets one
+    /// window morph into the next — Charts identifies marks by array position,
+    /// so index `i` has to mean the same relative position in both series. When
+    /// the counts differ instead, the surplus marks are removed mid-switch and
+    /// fade out at their old coordinates, on top of the incoming line.
+    ///
+    /// The grid is laid out in time rather than over the source array, so index
+    /// `i` means the same fraction of the *window* and not merely the same
+    /// fraction of however many samples came back. The upstream series is
+    /// nominally regular but not guaranteed to be — a null sample is dropped
+    /// during decoding, and a quiet token can simply be missing hours — and a
+    /// plot whose x is the sample's index would otherwise give a six-hour gap
+    /// the same width as the five minutes either side of it, moving the price
+    /// action to a time it did not happen at.
+    ///
+    /// The first and last samples are carried over untouched, so the window's
+    /// opening and closing prices — and the change percentage read off them —
+    /// survive the resample exactly. Interior samples are the price linearly
+    /// interpolated between the two observations their instant falls between.
+    ///
+    /// A series of fewer than two samples, a `count` below two, or a window of
+    /// zero elapsed time has no grid to lay out and comes back unchanged rather
+    /// than padded out: a series that degenerate has already failed `isUsable`
+    /// and is not going to be drawn.
+    ///
+    /// Relies on `points` being in ascending timestamp order, which is the
+    /// type's invariant and is established where the series is decoded. It is
+    /// not re-checked here: sorting on every call would cost the long windows a
+    /// pass over thousands of samples to rule out a state the only production
+    /// construction site cannot produce.
+    func resampled(to count: Int = MarketChartRendering.pointCount) -> MarketChart {
+        guard count > 1, points.count > 1 else { return self }
 
-        // Fenceposts across the closed index range, so index 0 and the final
-        // index are both hit exactly.
-        let lastIndex = points.count - 1
-        let step = Double(lastIndex) / Double(limit - 1)
-        var thinned: [MarketChartPoint] = []
-        thinned.reserveCapacity(limit)
+        let opening = points[0]
+        let closing = points[points.count - 1]
+        let span = closing.date.timeIntervalSince(opening.date)
+        guard span > 0 else { return self }
 
-        var previousIndex = -1
-        for position in 0..<limit {
-            let index = min(lastIndex, Int((Double(position) * step).rounded()))
-            guard index != previousIndex else { continue }
-            thinned.append(points[index])
-            previousIndex = index
+        var samples: [MarketChartPoint] = [opening]
+        samples.reserveCapacity(count)
+
+        // The source samples bracketing the instant being solved for. Both the
+        // grid and the series ascend, so this only ever walks forwards.
+        var cursor = 0
+
+        for position in 1..<(count - 1) {
+            let instant = opening.date.addingTimeInterval(
+                span * Double(position) / Double(count - 1)
+            )
+            while cursor + 2 < points.count, points[cursor + 1].date <= instant {
+                cursor += 1
+            }
+
+            let start = points[cursor]
+            let end = points[cursor + 1]
+            let interval = end.date.timeIntervalSince(start.date)
+            let fraction = interval > 0 ? instant.timeIntervalSince(start.date) / interval : 0
+
+            samples.append(
+                MarketChartPoint(
+                    date: instant,
+                    price: start.price + (end.price - start.price) * fraction
+                )
+            )
         }
 
-        return MarketChart(points: thinned)
+        samples.append(closing)
+        return MarketChart(points: samples)
     }
 }
 
-enum MarketChartLimits {
-    /// Upper bound on samples handed to Charts. Roughly one per point of plot
-    /// width on the widest phone, so thinning below it costs no visible detail.
-    static let maximumRenderedPoints = 300
+enum MarketChartRendering {
+    /// Samples every series is resampled to before it reaches Charts.
+    ///
+    /// Roughly one sample per two points of plot width on the widest phone —
+    /// finer than the 2pt stroke can express, so no visible detail is lost —
+    /// and it is now a floor as well as a ceiling: every mark animates on every
+    /// range switch, so the count is what one morph costs.
+    static let pointCount = 200
 }
 
 // MARK: - Decoding
@@ -153,8 +204,8 @@ extension MarketChart: Decodable {
     ///
     /// Samples that repeat a timestamp are collapsed to the last one. Two
     /// points at the same instant are not something a price line can express,
-    /// and a repeated timestamp would also make "the sample nearest the scrub
-    /// position" ambiguous.
+    /// and a zero-length interval has no meaningful price to interpolate across
+    /// when the series is resampled onto a time grid.
     static func points(from rawPairs: [[Double?]]) -> [MarketChartPoint] {
         let parsed = rawPairs
             .compactMap { pair -> MarketChartPoint? in
@@ -199,7 +250,7 @@ enum MarketChartRange: String, CaseIterable, Identifiable, Sendable {
     /// Granularity is implied by it on the free tier (`<= 1` → 5-minutely,
     /// `2...90` → hourly, `> 90` → daily); the explicit `interval` parameter is
     /// a paid feature. That is why sample counts differ by an order of
-    /// magnitude between ranges and every series goes through `downsampled`.
+    /// magnitude between ranges and every series goes through `resampled`.
     var days: String {
         switch self {
         case .day: return "1"

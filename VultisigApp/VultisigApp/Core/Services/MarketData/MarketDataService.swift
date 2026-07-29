@@ -111,7 +111,10 @@ final class MarketDataService: MarketDataServiceProtocol {
             ) { [httpClient] in
                 try await httpClient.request(target, responseType: MarketChart.self).data
             }
-            return chart.isUsable ? chart.downsampled() : nil
+            // Resampled only after the usability floor: the floor counts real
+            // samples, and interpolating first would turn a two-point series
+            // into a plausible-looking two-hundred-point line.
+            return chart.isUsable ? chart.resampled() : nil
         } catch is CancellationError {
             // The caller is tearing this load down — switching range, or
             // closing the sheet. Serving a stale series here would undo the
@@ -120,7 +123,7 @@ final class MarketDataService: MarketDataServiceProtocol {
         } catch {
             logger.warning("Market chart unavailable for \(coin.ticker, privacy: .public): \(error.localizedDescription, privacy: .public)")
             guard let cached = await chartCache.peek(key), cached.isUsable else { return nil }
-            return cached.downsampled()
+            return cached.resampled()
         }
     }
 

@@ -3,7 +3,7 @@
 //  VultisigAppTests
 //
 //  Decoding of CoinGecko's `[[msEpoch, price]]` array-of-arrays, the
-//  sparse-series floor, the flat-series y-domain, the downsampler bounds and
+//  sparse-series floor, the flat-series y-domain, the resampler's contract and
 //  the per-range `days` mapping.
 //
 
@@ -53,7 +53,8 @@ final class MarketChartTests: XCTestCase {
 
     func testDecodeCollapsesRepeatedTimestampsToTheLastValue() throws {
         // Two samples at one instant are not something a price line can draw,
-        // and a repeated timestamp makes "nearest sample to the scrub" ambiguous.
+        // and a zero-length interval has nothing to interpolate across when the
+        // series is resampled onto a time grid.
         let json = Data(#"{"prices":[[1000,10.0],[2000,11.0],[2000,11.5],[3000,12.0]]}"#.utf8)
         let chart = try JSONDecoder().decode(MarketChart.self, from: json)
 
@@ -158,38 +159,127 @@ final class MarketChartTests: XCTestCase {
         XCTAssertLessThan(chart.priceDomain.lowerBound, chart.priceDomain.upperBound)
     }
 
-    // MARK: - Downsampling
+    // MARK: - Resampling
 
-    func testDownsamplingNeverExceedsTheCap() {
-        let chart = Self.makeChart(count: 4838)
-        let thinned = chart.downsampled(to: 300)
-
-        XCTAssertLessThanOrEqual(thinned.points.count, 300)
-        XCTAssertGreaterThan(thinned.points.count, 250)
+    func testResamplingHitsTheTargetCountFromEveryDirection() {
+        // The live counts the five ranges come back with, plus the target
+        // itself. All of them have to land on the same cardinality or a range
+        // switch cannot morph mark-for-mark.
+        for sourceCount in [169, 200, 289, 366, 721, 4838] {
+            let resampled = Self.makeChart(count: sourceCount).resampled(to: 200)
+            XCTAssertEqual(resampled.points.count, 200, "resampling \(sourceCount)")
+        }
     }
 
-    func testDownsamplingPreservesFirstAndLastPoint() {
-        let chart = Self.makeChart(count: 4838)
-        let thinned = chart.downsampled(to: 300)
+    func testResamplingPreservesFirstAndLastPointExactly() {
+        for sourceCount in [169, 289, 4838] {
+            let chart = Self.makeChart(count: sourceCount)
+            let resampled = chart.resampled(to: 200)
 
-        XCTAssertEqual(thinned.points.first, chart.points.first)
-        XCTAssertEqual(thinned.points.last, chart.points.last)
+            XCTAssertEqual(resampled.points.first, chart.points.first)
+            XCTAssertEqual(resampled.points.last, chart.points.last)
+        }
     }
 
-    func testDownsamplingKeepsShortSeriesIntact() {
-        let chart = Self.makeChart(count: 120)
-        XCTAssertEqual(chart.downsampled(to: 300).points, chart.points)
+    func testResamplingPreservesTheWindowChange() throws {
+        // The percentage on the card is read off the endpoints, so it has to
+        // survive the resample untouched in both directions.
+        for sourceCount in [169, 4838] {
+            let chart = Self.makeChart(count: sourceCount)
+            let before = try XCTUnwrap(chart.changeFraction)
+            let after = try XCTUnwrap(chart.resampled(to: 200).changeFraction)
+
+            XCTAssertEqual(before, after, accuracy: 1e-12)
+        }
     }
 
-    func testDownsamplingKeepsAscendingOrder() {
-        let thinned = Self.makeChart(count: 2000).downsampled(to: 300)
-        let dates = thinned.points.map(\.date)
-        XCTAssertEqual(dates, dates.sorted())
+    func testUpsamplingInterpolatesRatherThanRepeating() {
+        let chart = MarketChart(points: [
+            MarketChartPoint(date: Date(timeIntervalSince1970: 0), price: 0),
+            MarketChartPoint(date: Date(timeIntervalSince1970: 100), price: 100)
+        ])
+        let resampled = chart.resampled(to: 5)
+
+        XCTAssertEqual(resampled.points.map(\.price), [0, 25, 50, 75, 100])
+        XCTAssertEqual(
+            resampled.points.map(\.date.timeIntervalSince1970),
+            [0, 25, 50, 75, 100]
+        )
     }
 
-    func testDownsamplingIsANoOpForAnAbsurdlySmallCap() {
-        let chart = Self.makeChart(count: 500)
-        XCTAssertEqual(chart.downsampled(to: 2).points, chart.points)
+    func testResamplingKeepsAscendingOrder() {
+        for sourceCount in [11, 169, 2000] {
+            let dates = Self.makeChart(count: sourceCount).resampled(to: 200).points.map(\.date)
+            XCTAssertEqual(dates, dates.sorted())
+            XCTAssertEqual(Set(dates).count, dates.count)
+        }
+    }
+
+    func testResamplingAnAlreadyRegularSeriesReproducesIt() {
+        // Same count, already evenly spaced in time: the grid lands back on the
+        // samples it came from.
+        let chart = Self.makeChart(count: 200)
+        let resampled = chart.resampled(to: 200)
+
+        XCTAssertEqual(resampled.points.count, chart.points.count)
+        for (original, sample) in zip(chart.points, resampled.points) {
+            XCTAssertEqual(sample.price, original.price, accuracy: 1e-9)
+            XCTAssertEqual(
+                sample.date.timeIntervalSince1970,
+                original.date.timeIntervalSince1970,
+                accuracy: 1e-6
+            )
+        }
+    }
+
+    func testResamplingSpreadsTheGridOverElapsedTimeNotOverTheArray() {
+        // A gap in the upstream samples must stay a gap: the plot's x is the
+        // sample's index, so a grid laid out over the array would give six
+        // silent hours the same width as the minute either side of them, and
+        // move the price action to a time it did not happen at.
+        let chart = MarketChart(points: [
+            MarketChartPoint(date: Date(timeIntervalSince1970: 0), price: 100),
+            MarketChartPoint(date: Date(timeIntervalSince1970: 60), price: 100),
+            MarketChartPoint(date: Date(timeIntervalSince1970: 21_660), price: 200)
+        ])
+        let resampled = chart.resampled(to: 5)
+
+        // Evenly spaced in time, not one sample per source interval.
+        XCTAssertEqual(
+            resampled.points.map(\.date.timeIntervalSince1970),
+            [0, 5415, 10_830, 16_245, 21_660]
+        )
+        // The climb happens across the long interval, so the midpoint of the
+        // window is halfway up it — not already at the top, which is where an
+        // index-spaced grid would have put it.
+        XCTAssertEqual(resampled.points[2].price, 150, accuracy: 0.5)
+    }
+
+    func testResamplingLeavesADegenerateSeriesAlone() {
+        // Nothing to interpolate between: a series this short is below the
+        // usability floor and never reaches the chart anyway, but the
+        // resampler must not invent a line out of it.
+        let single = MarketChart(points: [
+            MarketChartPoint(date: Date(timeIntervalSince1970: 0), price: 7)
+        ])
+        XCTAssertEqual(single.resampled(to: 200).points.count, 1)
+        XCTAssertTrue(MarketChart(points: []).resampled(to: 200).points.isEmpty)
+    }
+
+    func testResamplingToFewerThanTwoSamplesIsANoOp() {
+        // Below two there is no line to draw, so the series comes back
+        // untouched rather than truncated to something undrawable.
+        let chart = Self.makeChart(count: 50)
+        for count in [-1, 0, 1] {
+            XCTAssertEqual(chart.resampled(to: count).points, chart.points, "count \(count)")
+        }
+    }
+
+    func testResamplingToTwoKeepsOnlyTheEndpoints() {
+        let chart = Self.makeChart(count: 50)
+        let resampled = chart.resampled(to: 2)
+
+        XCTAssertEqual(resampled.points, [chart.points.first, chart.points.last].compactMap { $0 })
     }
 
     // MARK: - Range

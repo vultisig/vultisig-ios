@@ -288,7 +288,7 @@ final class MarketDataServiceTests: XCTestCase {
         XCTAssertEqual(count, 2)
     }
 
-    // MARK: - Sparse + downsampling
+    // MARK: - Sparse + resampling
 
     func testSeriesBelowTheUsableFloorIsTreatedAsNoChart() async {
         let stub = StubHTTPClient(payload: Self.seriesJSON(count: MarketChart.minimumUsablePoints - 1))
@@ -308,15 +308,30 @@ final class MarketDataServiceTests: XCTestCase {
         XCTAssertNil(chart)
     }
 
-    func testLongSeriesIsDownsampledBeforeItReachesTheCaller() async {
-        let stub = StubHTTPClient(payload: Self.seriesJSON(count: 4838))
+    func testEveryServedSeriesHasTheSameCardinality() async throws {
+        // Both directions: a `days=max` series is thinned down and a `days=7`
+        // one is interpolated up, and they meet at the same count. Ranges that
+        // disagree on it are what makes a switch ghost instead of morph.
+        for count in [MarketChart.minimumUsablePoints, 169, 4838] {
+            let stub = StubHTTPClient(payload: Self.seriesJSON(count: count))
+            let service = MarketDataService(httpClient: stub)
+
+            let served = await service.chart(for: Self.bitcoin, range: .all, currency: .USD)
+            let chart = try XCTUnwrap(served)
+
+            XCTAssertEqual(chart.points.count, MarketChartRendering.pointCount, "source \(count)")
+        }
+    }
+
+    func testResamplingRunsAfterTheUsabilityFloorNotBefore() async {
+        // A one-sample series would interpolate into a full-width flat line if
+        // the resample came first; the floor has to see the real count.
+        let stub = StubHTTPClient(payload: Data(#"{"prices":[[1000,1.0]]}"#.utf8))
         let service = MarketDataService(httpClient: stub)
 
         let chart = await service.chart(for: Self.bitcoin, range: .all, currency: .USD)
 
-        let points = try? XCTUnwrap(chart).points
-        XCTAssertNotNil(points)
-        XCTAssertLessThanOrEqual(points?.count ?? .max, MarketChartLimits.maximumRenderedPoints)
+        XCTAssertNil(chart)
     }
 }
 
