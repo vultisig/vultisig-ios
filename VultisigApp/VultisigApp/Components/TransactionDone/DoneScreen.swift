@@ -24,6 +24,9 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import StoreKit
+#endif
 
 struct DoneScreen<
     TokenContent: View,
@@ -33,6 +36,10 @@ struct DoneScreen<
     let input: TransactionDonePayload
 
     @StateObject private var statusService: DoneStatusService
+
+    #if os(iOS)
+    @Environment(\.requestReview) private var requestReview
+    #endif
 
     /// Nav-bar title for the screen. Defaults to "Done"; the initiator
     /// Send/Swap flows pass "Overview" so the in-place keysign→overview
@@ -145,23 +152,61 @@ struct DoneScreen<
         }
         .onDisappear { statusService.stop() }
         .task { await revealAfterHold() }
+        #if os(iOS)
+        .onChange(of: statusService.status) { _, _ in
+            handleConfirmedTransactionIfNeeded()
+        }
+        #endif
     }
 
     /// Holds the centered hero for `revealDelay`, then springs to the
     /// expanded layout. Reduce Motion skips the hold and the animation.
     private func revealAfterHold() async {
-        guard !reduceMotion else {
+        if reduceMotion {
             revealPhase = .expanded
-            return
+        } else {
+            try? await Task.sleep(nanoseconds: revealDelay)
+            // Respect `.task` cancellation on disappear — don't flip state /
+            // animate a view that's already gone (e.g. after `restart()`).
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
+                revealPhase = .expanded
+            }
         }
-        try? await Task.sleep(nanoseconds: revealDelay)
-        // Respect `.task` cancellation on disappear — don't flip state /
-        // animate a view that's already gone (e.g. after `restart()`).
-        guard !Task.isCancelled else { return }
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
-            revealPhase = .expanded
-        }
+        #if os(iOS)
+        // Covers the case where the poller seeds `.confirmed` before the
+        // screen ever appears, so `onChange` never fires.
+        handleConfirmedTransactionIfNeeded()
+        #endif
     }
+
+    #if os(iOS)
+    /// Counts a confirmed transaction and, if the throttle allows, asks for an
+    /// App Store review.
+    ///
+    /// Deliberately safe to call repeatedly: this is the one place in the app
+    /// where "confirmed" is decided for every flow, and the view is not
+    /// guaranteed to observe it once — a re-render, a re-entry, or the poller
+    /// re-reporting a terminal status all land here again. `AppReviewService`
+    /// keys the tally on the transaction hash so the extra calls are inert.
+    ///
+    /// Waiting for `isExpanded` keeps the system sheet from landing on top of
+    /// the hero settle animation.
+    ///
+    /// The ask is recorded even though StoreKit may silently decline to show
+    /// anything — the API reports nothing back, so the only safe assumption is
+    /// that the ask was spent.
+    private func handleConfirmedTransactionIfNeeded() {
+        guard statusService.status == .confirmed, isExpanded else { return }
+
+        let service = AppReviewService.shared
+        service.recordConfirmedTransaction(id: input.hash)
+
+        guard service.shouldRequestReview() else { return }
+        service.recordPromptShown()
+        requestReview()
+    }
+    #endif
 }
 
 // MARK: - Default slot constructors
