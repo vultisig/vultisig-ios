@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "确保";
 "allDevicesUpgradeTitle2" = " 所有初始设备都在场 ";
 "allDevicesUpgradeTitle3" = "升级时";
+"allTimeHigh" = "历史最高价";
+"allTimeLow" = "历史最低价";
 "allVaults" = "所有保险库";
 "alreadyTaken" = "已被占用";
 "aminoSign" = "Amino 签名";
@@ -156,6 +158,11 @@
 "chainNotAddedMessage" = "区块链 %@ 未添加到此保险库。请从保险库设置中手动添加。";
 "chains" = "链";
 "changeVault" = "更改保险库";
+"chartRangeAll" = "全部";
+"chartRangeDay" = "1天";
+"chartRangeMonth" = "1月";
+"chartRangeWeek" = "1周";
+"chartRangeYear" = "1年";
 "checkEmail" = "检查电子邮件";
 "checkEmptyField" = "请确保所有字段都已填写";
 "checkForUpdates" = "检查更新";
@@ -206,6 +213,7 @@
 "circleWithdrawAmountLabel" = "金额";
 "circleWithdrawConfirm" = "继续";
 "circleWithdrawTitle" = "提现 USDC";
+"circulatingSupply" = "流通供应量";
 "claim" = "领取";
 "claimBroadcasted" = "领取已广播";
 "claimFailed" = "领取失败";
@@ -228,7 +236,10 @@
 "continue" = "继续";
 "continueAnyway" = "仍要继续";
 "continueThresholdOfTotal" = "继续 (%d/%d)";
+"contract" = "合约";
+"contractAddressCopied" = "合约地址已复制";
 "copyAddress" = "复制地址";
+"copyContractAddress" = "复制合约地址";
 "correctAmountCheck" = "金额正确";
 "cosmosStakingActionClaim" = "领取";
 "cosmosStakingActionDelegate" = "质押";
@@ -316,6 +327,7 @@
 "dappRequestFrom" = "请求来自";
 "date" = "日期";
 "decimalAmountError" = "金额必须为小数。";
+"decimals" = "小数位数";
 "decodeCustomMessagePayloadError" = "解码自定义消息负载时出错：%@";
 "decodeKeysignMessageError" = "解码 keysign 消息时出错：%@";
 "defiChainNoPositions" = "未找到任何持仓";
@@ -488,6 +500,7 @@
 "foundActiveChainsSubtitle" = "每增加一条链都会增加生成保险库的时间以及超时的可能性。";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
 "from" = "从";
+"fullyDilutedValuation" = "完全稀释估值";
 "function" = "功能";
 "functionArguments" = "函数参数";
 "functionSignature" = "函数签名";
@@ -551,6 +564,7 @@
 "governanceYouVoted" = "您投了%@";
 "hashCopied" = "哈希已复制";
 "hideBalance" = "隐藏余额";
+"high24h" = "24小时最高";
 "hold" = "持有";
 "holdForPairedSign" = "按住以配对签名";
 "howItWorks" = "工作原理";
@@ -748,6 +762,7 @@
 "loginUsingTouchID" = "使用 Touch ID 登录";
 "lookingForDevices" = "正在寻找设备...";
 "looksGood" = "看起来不错";
+"low24h" = "24小时最低";
 "lps" = "流动性池";
 "lpUnits" = "LP 单位";
 "lpUnitsCannotBeZero" = "LP 单位不能为零";
@@ -758,6 +773,10 @@
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
 "manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
 "managePositions" = "管理仓位";
+"marketCap" = "市值";
+"marketCapRank" = "排名";
+"marketStats" = "市场数据";
+"maxSupply" = "最大供应量";
 "maxTotalFee" = "最大总费用";
 "memo" = "备忘录";
 "memoLabel" = "备注";
@@ -933,6 +952,8 @@
 "preparingVaultText2" = "消除单点故障";
 "previewKeygenDescription" = "使用设备扫描以加入保险库生成";
 "price" = "价格";
+"priceChart" = "价格图表";
+"priceRange" = "价格区间";
 "privacyPolicy" = "隐私政策";
 "proposalID" = "提案 ID";
 "provider" = "提供商";
@@ -1355,6 +1376,7 @@
 "title" = "标题";
 "to" = "至";
 "today" = "今天";
+"tokenInfo" = "代币信息";
 "tokens" = "代币";
 "tokenUnverifiedBadge" = "未验证";
 "tonStakeBelowMinimum" = "最低质押为 %@ %@";
@@ -1545,6 +1567,7 @@
 "via" = "通过";
 "view" = "查看";
 "viewOnExplorer" = "在浏览器中查看";
+"volume24h" = "24小时交易量";
 "Vote" = "投票";
 "vult" = "$VULT";
 "vultDiscount" = "折扣：%d 个基点";

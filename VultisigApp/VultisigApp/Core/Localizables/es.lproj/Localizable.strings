@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "Asegúrate de que";
 "allDevicesUpgradeTitle2" = " todos los dispositivos iniciales estén presentes ";
 "allDevicesUpgradeTitle3" = "durante la actualización";
+"allTimeHigh" = "Máximo histórico";
+"allTimeLow" = "Mínimo histórico";
 "allVaults" = "Todas las bóvedas";
 "alreadyTaken" = "Ya usado";
 "aminoSign" = "Firma Amino";
@@ -156,6 +158,11 @@
 "chainNotAddedMessage" = "La blockchain %@ no está añadida a esta bóveda. Por favor, añádela manualmente desde la configuración de la bóveda.";
 "chains" = "Cadenas";
 "changeVault" = "Cambiar Caja Fuerte";
+"chartRangeAll" = "TODO";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1S";
+"chartRangeYear" = "1A";
 "checkEmail" = "Revisar el correo electrónico";
 "checkEmptyField" = "Por favor, asegúrate de que todos los campos están llenos.";
 "checkForUpdates" = "Verifique las actualizaciones";
@@ -206,6 +213,7 @@
 "circleWithdrawAmountLabel" = "Cantidad";
 "circleWithdrawConfirm" = "Continuar";
 "circleWithdrawTitle" = "Retirar USDC";
+"circulatingSupply" = "Suministro circulante";
 "claim" = "Reclamar";
 "claimBroadcasted" = "Reclamación difundida";
 "claimFailed" = "Reclamación fallida";
@@ -228,7 +236,10 @@
 "continue" = "Continuar";
 "continueAnyway" = "Continuar de todos modos";
 "continueThresholdOfTotal" = "Continuar (%d-de-%d)";
+"contract" = "Contrato";
+"contractAddressCopied" = "Dirección del contrato copiada";
 "copyAddress" = "Copiar dirección";
+"copyContractAddress" = "Copiar dirección del contrato";
 "correctAmountCheck" = "La cantidad es correcta";
 "cosmosStakingActionClaim" = "Reclamar";
 "cosmosStakingActionDelegate" = "Hacer Staking";
@@ -316,6 +327,7 @@
 "dappRequestFrom" = "Solicitud de";
 "date" = "Fecha";
 "decimalAmountError" = "El monto debe ser decimal.";
+"decimals" = "Decimales";
 "decodeCustomMessagePayloadError" = "Error al decodificar el contenido del mensaje personalizado: %@";
 "decodeKeysignMessageError" = "Error al decodificar el mensaje de keysign: %@";
 "defiChainNoPositions" = "No se encontraron posiciones";
@@ -488,6 +500,7 @@
 "foundActiveChainsSubtitle" = "Cada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de un tiempo de espera agotado.";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
 "from" = "De";
+"fullyDilutedValuation" = "Valoración totalmente diluida";
 "function" = "función";
 "functionArguments" = "Argumentos de función";
 "functionSignature" = "Firma de función";
@@ -551,6 +564,7 @@
 "governanceYouVoted" = "Has votado %@";
 "hashCopied" = "Hash copiado";
 "hideBalance" = "Ocultar saldo";
+"high24h" = "Máximo 24h";
 "hold" = "Mantener";
 "holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
 "howItWorks" = "Cómo funciona";
@@ -748,6 +762,7 @@
 "loginUsingTouchID" = "Iniciar sesión con Touch ID";
 "lookingForDevices" = "Buscando dispositivos... ";
 "looksGood" = "Se ve bien";
+"low24h" = "Mínimo 24h";
 "lps" = "LPs";
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "Las unidades LP no pueden ser cero";
@@ -758,6 +773,10 @@
 "makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";
 "manageNotificationsInSettings" = "Puedes gestionar las notificaciones en los ajustes del sistema.";
 "managePositions" = "Administrar posiciones";
+"marketCap" = "Capitalización";
+"marketCapRank" = "Ranking";
+"marketStats" = "Datos de mercado";
+"maxSupply" = "Suministro máximo";
 "maxTotalFee" = "Tarifa total máx.";
 "memo" = "Memorándum";
 "memoLabel" = "Memo";
@@ -933,6 +952,8 @@
 "preparingVaultText2" = "eliminando el punto único de fallo";
 "previewKeygenDescription" = "Escanee con dispositivos para unirse a la generación de bóveda";
 "price" = "Precio";
+"priceChart" = "Gráfico de precios";
+"priceRange" = "Rango de precios";
 "privacyPolicy" = "Política de Privacidad";
 "proposalID" = "Proposal ID";
 "provider" = "Proveedor";
@@ -1355,6 +1376,7 @@
 "title" = "Título";
 "to" = "A";
 "today" = "Hoy";
+"tokenInfo" = "Información del token";
 "tokens" = "Tokens";
 "tokenUnverifiedBadge" = "No verificado";
 "tonStakeBelowMinimum" = "El staking mínimo es %@ %@";
@@ -1545,6 +1567,7 @@
 "via" = "vía";
 "view" = "Ver";
 "viewOnExplorer" = "Ver en Explorer";
+"volume24h" = "Volumen 24h";
 "Vote" = "Votar";
 "vult" = "$VULT";
 "vultDiscount" = "Descuento: %dbps";

@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "업그레이드 시";
 "allDevicesUpgradeTitle2" = " 모든 초기 기기가 있어야 ";
 "allDevicesUpgradeTitle3" = "합니다";
+"allTimeHigh" = "역대 최고가";
+"allTimeLow" = "역대 최저가";
 "allVaults" = "모든 볼트";
 "alreadyTaken" = "이미 사용 중";
 "aminoSign" = "아미노 서명";
@@ -156,6 +158,11 @@
 "chainNotAddedMessage" = "블록체인 %@이(가) 이 볼트에 추가되지 않았습니다. 볼트 설정에서 수동으로 추가하세요.";
 "chains" = "체인";
 "changeVault" = "볼트 변경";
+"chartRangeAll" = "전체";
+"chartRangeDay" = "1일";
+"chartRangeMonth" = "1개월";
+"chartRangeWeek" = "1주";
+"chartRangeYear" = "1년";
 "checkEmail" = "이메일 확인";
 "checkEmptyField" = "모든 필드를 채워주세요.";
 "checkForUpdates" = "업데이트 확인";
@@ -206,6 +213,7 @@
 "circleWithdrawAmountLabel" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
+"circulatingSupply" = "유통 공급량";
 "claim" = "수령";
 "claimBroadcasted" = "수령 브로드캐스트됨";
 "claimFailed" = "수령 실패";
@@ -228,7 +236,10 @@
 "continue" = "계속";
 "continueAnyway" = "계속 진행";
 "continueThresholdOfTotal" = "계속 (%d/%d)";
+"contract" = "컨트랙트";
+"contractAddressCopied" = "컨트랙트 주소가 복사되었습니다";
 "copyAddress" = "주소 복사";
+"copyContractAddress" = "컨트랙트 주소 복사";
 "correctAmountCheck" = "금액이 올바릅니다";
 "cosmosStakingActionClaim" = "청구";
 "cosmosStakingActionDelegate" = "위임";
@@ -316,6 +327,7 @@
 "dappRequestFrom" = "요청 출처";
 "date" = "날짜";
 "decimalAmountError" = "금액은 소수여야 합니다.";
+"decimals" = "소수점 자릿수";
 "decodeCustomMessagePayloadError" = "사용자 지정 메시지 페이로드를 디코딩하는 중 오류가 발생했습니다: %@";
 "decodeKeysignMessageError" = "Keysign 메시지를 디코딩하는 중 오류가 발생했습니다: %@";
 "defiChainNoPositions" = "포지션을 찾을 수 없습니다";
@@ -486,6 +498,7 @@
 "foundActiveChainsSubtitle" = "추가 체인마다 볼트 생성 시간이 늘어나고 타임아웃 가능성이 높아집니다.";
 "foundActiveChainsTitle" = "%d개의 활성 체인을 찾았습니다";
 "from" = "출처";
+"fullyDilutedValuation" = "완전 희석 가치";
 "function" = "함수";
 "functionArguments" = "함수 인수";
 "functionSignature" = "함수 서명";
@@ -549,6 +562,7 @@
 "governanceYouVoted" = "%@ 투표함";
 "hashCopied" = "해시 복사됨";
 "hideBalance" = "잔액 숨기기";
+"high24h" = "24시간 최고";
 "hold" = "보유";
 "holdForPairedSign" = "쌍 서명을 위해 유지";
 "howItWorks" = "작동 방식";
@@ -746,6 +760,7 @@
 "loginUsingTouchID" = "Touch ID로 로그인";
 "lookingForDevices" = "기기 검색 중... ";
 "looksGood" = "좋아 보입니다";
+"low24h" = "24시간 최저";
 "lps" = "LP";
 "lpUnits" = "LP 단위";
 "lpUnitsCannotBeZero" = "LP 단위는 0이 될 수 없습니다";
@@ -756,6 +771,10 @@
 "makeSureCorrectDevices" = "추가한 기기가 올바른지 확인하세요:";
 "manageNotificationsInSettings" = "시스템 설정에서 알림을 관리할 수 있습니다.";
 "managePositions" = "포지션 관리";
+"marketCap" = "시가총액";
+"marketCapRank" = "순위";
+"marketStats" = "시장 지표";
+"maxSupply" = "최대 공급량";
 "maxTotalFee" = "최대 총 수수료";
 "memo" = "메모";
 "memoLabel" = "메모";
@@ -931,6 +950,8 @@
 "preparingVaultText2" = "단일 실패 지점 제거";
 "previewKeygenDescription" = "기기로 스캔하여 볼트 생성에 참여";
 "price" = "가격";
+"priceChart" = "가격 차트";
+"priceRange" = "가격 범위";
 "privacyPolicy" = "개인 정보 보호 정책";
 "proposalID" = "제안 ID";
 "provider" = "공급자";
@@ -1316,6 +1337,7 @@
 "title" = "제목";
 "to" = "받는 곳";
 "today" = "오늘";
+"tokenInfo" = "토큰 정보";
 "tokens" = "토큰";
 "tokenUnverifiedBadge" = "미확인";
 "tonStakeBelowMinimum" = "최소 스테이킹은 %@ %@입니다";
@@ -1506,6 +1528,7 @@
 "via" = "경유";
 "view" = "보기";
 "viewOnExplorer" = "탐색기에서 보기";
+"volume24h" = "24시간 거래량";
 "Vote" = "투표";
 "vult" = "$VULT";
 "vultDiscount" = "할인: %dbps";

@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
+"allTimeHigh" = "All-Time High";
+"allTimeLow" = "All-Time Low";
 "allVaults" = "All Vaults";
 "alreadyTaken" = "Already taken";
 "aminoSign" = "Amino Sign";
@@ -156,6 +158,11 @@
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
 "chains" = "Chains";
 "changeVault" = "Change Vault";
+"chartRangeAll" = "ALL";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1W";
+"chartRangeYear" = "1Y";
 "checkEmail" = "Check email";
 "checkEmptyField" = "Please make sure all the fields are filled.";
 "checkForUpdates" = "Check for Updates";
@@ -206,6 +213,7 @@
 "circleWithdrawAmountLabel" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
+"circulatingSupply" = "Circulating Supply";
 "claim" = "Claim";
 "claimBroadcasted" = "Claim broadcasted";
 "claimFailed" = "Claim failed";
@@ -228,7 +236,10 @@
 "continue" = "Continue";
 "continueAnyway" = "Continue Anyway";
 "continueThresholdOfTotal" = "Continue (%d-of-%d)";
+"contract" = "Contract";
+"contractAddressCopied" = "Contract address copied";
 "copyAddress" = "Copy address";
+"copyContractAddress" = "Copy contract address";
 "correctAmountCheck" = "The amount is correct";
 "cosmosStakingActionClaim" = "Claim";
 "cosmosStakingActionDelegate" = "Stake";
@@ -316,6 +327,7 @@
 "dappRequestFrom" = "Request from";
 "date" = "Date";
 "decimalAmountError" = "The amount must be decimal.";
+"decimals" = "Decimals";
 "decodeCustomMessagePayloadError" = "Error decoding custom message payload: %@";
 "decodeKeysignMessageError" = "Error decoding keysign message: %@";
 "defiChainNoPositions" = "No positions found";
@@ -486,6 +498,7 @@
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
+"fullyDilutedValuation" = "Fully Diluted Valuation";
 "function" = "Function";
 "functionArguments" = "Function Arguments";
 "functionSignature" = "Function Signature";
@@ -549,6 +562,7 @@
 "governanceYouVoted" = "You voted %@";
 "hashCopied" = "Hash copied";
 "hideBalance" = "Hide balance";
+"high24h" = "24h High";
 "hold" = "Hold";
 "holdForPairedSign" = "Hold for paired sign";
 "howItWorks" = "How it works";
@@ -746,6 +760,7 @@
 "loginUsingTouchID" = "Login using Touch ID";
 "lookingForDevices" = "Looking for devices... ";
 "looksGood" = "Looks good";
+"low24h" = "24h Low";
 "lps" = "LPs";
 "lpUnits" = "LP Units";
 "lpUnitsCannotBeZero" = "LP units cannot be zero";
@@ -756,6 +771,10 @@
 "makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
 "manageNotificationsInSettings" = "You can manage notifications in system settings.";
 "managePositions" = "Manage Positions";
+"marketCap" = "Market Cap";
+"marketCapRank" = "Rank";
+"marketStats" = "Market Stats";
+"maxSupply" = "Max Supply";
 "maxTotalFee" = "Max. Total Fee";
 "memo" = "Memo";
 "memoLabel" = "Memo";
@@ -931,6 +950,8 @@
 "preparingVaultText2" = "removing the single-point of failure";
 "previewKeygenDescription" = "Scan with devices to join the vault generation";
 "price" = "Price";
+"priceChart" = "Price chart";
+"priceRange" = "Price Range";
 "privacyPolicy" = "Privacy Policy";
 "proposalID" = "Proposal ID";
 "provider" = "Provider";
@@ -1353,6 +1374,7 @@
 "title" = "Title";
 "to" = "To";
 "today" = "Today";
+"tokenInfo" = "Token Info";
 "tokens" = "Tokens";
 "tokenUnverifiedBadge" = "Unverified";
 "tonStakeBelowMinimum" = "Minimum stake is %@ %@";
@@ -1543,6 +1565,7 @@
 "via" = "via";
 "view" = "View";
 "viewOnExplorer" = "View on Explorer";
+"volume24h" = "24h Volume";
 "Vote" = "Vote";
 "vult" = "$VULT";
 "vultDiscount" = "Discount: %dbps";
