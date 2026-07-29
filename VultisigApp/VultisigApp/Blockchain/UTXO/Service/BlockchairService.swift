@@ -74,8 +74,24 @@ actor BlockchairService {
     /// a partial UTXO set — which a large send would happily draw already-spent
     /// inputs from — this throws. Callers on the balance path treat that as a
     /// transient fetch failure and keep the previous balance.
+    ///
+    /// A chain whose spendable set this service does not serve skips the walk
+    /// entirely — see `servesUtxoSet(for:)`.
     func fetchBlockchairResponse(coin: CoinMeta, address: String) async throws -> BlockchairResponse {
         let chainName = coin.chain.name.lowercased()
+
+        guard Self.servesUtxoSet(for: coin.chain) else {
+            // One request, no rows. `limit`/`offset` apply to
+            // `transactions,utxo` in that order, so pinning both sides to zero
+            // returns the `address` aggregate on its own — verified against
+            // the proxy on dash, which answers `limit: "0,0"` with `balance`
+            // and `unspent_output_count` present and both arrays empty.
+            return try await httpClient.request(
+                BlockchairAPI.dashboard(address: address, chain: chainName, limit: 0, offset: 0),
+                responseType: BlockchairResponse.self
+            ).data
+        }
+
         var firstPage: BlockchairResponse?
         var utxos: [Blockchair.BlockchairUtxo] = []
         var seenOutPoints: Set<Blockchair.BlockchairUtxo.OutPoint> = []
@@ -179,6 +195,20 @@ actor BlockchairService {
             "Blockchair UTXO pagination hit the \(self.maxUtxoPages)-page cap for \(chainName) with \(utxos.count) retrieved"
         )
         throw Errors.utxoPageLimitExceeded(pageLimit: maxUtxoPages, retrieved: utxos.count)
+    }
+
+    /// Whether this chain's spendable set is the one this service serves.
+    ///
+    /// Dash's is not. `KeysignPayloadFactory` funds a Dash transaction from a
+    /// node's address index (`getaddressutxos`), and the only thing read from
+    /// its Blockchair dashboard is `address.balance` — a number that does not
+    /// depend on the `utxo` array at all. Walking that array for Dash would buy
+    /// nothing and cost everything the walk costs: up to `maxUtxoPages`
+    /// sequential round trips on the balance refresh and the send screen, and a
+    /// brand-new set of completeness failures able to block both. So Dash asks
+    /// for the aggregate alone.
+    static func servesUtxoSet(for chain: Chain) -> Bool {
+        chain != .dash
     }
 
     /// Rebuilds `response` with the merged `utxo` array in place of the page's

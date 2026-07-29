@@ -33,6 +33,7 @@ final class BlockchairUtxoPaginationTests: XCTestCase {
     private func makePagedClient(
         total: Int,
         reportedCount: Int?,
+        balance: Int = 1,
         address: String = BlockchairUtxoPaginationTests.address
     ) -> PagingStubHTTPClient {
         PagingStubHTTPClient { limit, offset in
@@ -42,8 +43,8 @@ final class BlockchairUtxoPaginationTests: XCTestCase {
                 "index": 0, "value": \(10_000 + index) }
                 """
             }
-            let addressObject = reportedCount.map { "{ \"balance\": 1, \"unspent_output_count\": \($0) }" }
-                ?? "{ \"balance\": 1 }"
+            let addressObject = reportedCount.map { "{ \"balance\": \(balance), \"unspent_output_count\": \($0) }" }
+                ?? "{ \"balance\": \(balance) }"
             return """
             {
               "data": {
@@ -453,6 +454,87 @@ final class BlockchairUtxoPaginationTests: XCTestCase {
         XCTAssertEqual(query["limit"], "0,1000")
         XCTAssertEqual(query["offset"], "0,2000")
         XCTAssertEqual(url.absoluteString.contains("%2C"), false, "a percent-encoded comma is not what Blockchair parses")
+    }
+
+    // MARK: - Chains this service does not serve the spendable set for
+
+    private static let dashAddress = "XnT33zjrFKjt3ymfyQZs2FPiKNer3WVj14"
+
+    private func makeDashCoinMeta() -> CoinMeta {
+        CoinMeta(
+            chain: .dash,
+            ticker: "DASH",
+            logo: "dash",
+            decimals: 8,
+            priceProviderId: "dash",
+            contractAddress: "",
+            isNativeToken: true
+        )
+    }
+
+    /// Dash funds its transactions from a node's `getaddressutxos` address
+    /// index, and the only thing read from its Blockchair dashboard is
+    /// `address.balance`. Paging an array nothing consumes would put up to
+    /// `maxUtxoPages` sequential round trips on every Dash balance refresh and
+    /// every Dash send screen. `limit=0,0` returns the aggregate alone.
+    func testDashRequestsTheAddressAggregateWithoutPagingAnyUtxoRows() async throws {
+        let client = makePagedClient(total: 5_000, reportedCount: 5_000, address: Self.dashAddress)
+        let service = BlockchairService(httpClient: client)
+
+        let response = try await service.fetchBlockchairResponse(
+            coin: makeDashCoinMeta(),
+            address: Self.dashAddress
+        )
+
+        XCTAssertEqual(client.requests, [.init(limit: 0, offset: 0)])
+        XCTAssertEqual(response.data[Self.dashAddress]?.utxo?.isEmpty, true)
+    }
+
+    /// The completeness guards exist to stop a partial UTXO set funding a
+    /// transaction. Dash funds nothing from this array, so the very response
+    /// that has to fail loud on a Blockchair-served chain must keep serving
+    /// Dash its balance — otherwise a large or churning Dash address gains a
+    /// balance-refresh failure it has no way to be responsible for.
+    func testDashBalanceSurvivesAResponseThatTripsTheCompletenessGuards() async throws {
+        let dashClient = makePagedClient(
+            total: 3,
+            reportedCount: 5_000,
+            balance: 73_832_101_404_000,
+            address: Self.dashAddress
+        )
+        let dashService = BlockchairService(httpClient: dashClient, utxoPageSize: 10, maxUtxoPages: 20)
+
+        let entry = try await dashService.fetchBlockchairData(
+            coin: makeDashCoinMeta(),
+            address: Self.dashAddress
+        )
+
+        XCTAssertEqual(entry.address?.balance, 73_832_101_404_000)
+        XCTAssertEqual(dashClient.requests, [.init(limit: 0, offset: 0)])
+
+        // The same response shape on a chain whose spendable set this service
+        // does serve.
+        do {
+            _ = try await fetchUtxos(client: makePagedClient(total: 3, reportedCount: 5_000), pageSize: 10)
+            XCTFail("expected incompleteUtxoSet on a Blockchair-served chain")
+        } catch let error as BlockchairService.Errors {
+            guard case .incompleteUtxoSet = error else {
+                return XCTFail("expected .incompleteUtxoSet, got \(error)")
+            }
+        }
+    }
+
+    /// Dash is the only exemption: every other chain routed here funds its
+    /// transactions from exactly this array.
+    func testOnlyDashSkipsTheUtxoWalk() {
+        XCTAssertFalse(BlockchairService.servesUtxoSet(for: .dash))
+
+        for chain in [Chain.bitcoin, .bitcoinCash, .litecoin, .dogecoin, .zcash] {
+            XCTAssertTrue(
+                BlockchairService.servesUtxoSet(for: chain),
+                "\(chain.name) funds transactions from the Blockchair utxo array and must be paged"
+            )
+        }
     }
 
     // MARK: - Cache

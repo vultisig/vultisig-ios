@@ -521,6 +521,11 @@ class BalanceService {
             // aggregate is mempool-aware and stays the better number to
             // display; closing Dash's own balance/spendable gap means changing
             // where its UTXOs come from, which is not a change to this filter.
+            //
+            // Because nothing here reads the `utxo` array, `BlockchairService`
+            // fetches Dash unpaged — one request for the aggregate, and none of
+            // the pagination-completeness failures that would otherwise be able
+            // to block a balance the array has no bearing on.
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
             return blockChairData.address?.balance?.description ?? "0"
 
