@@ -58,7 +58,9 @@ enum SpendableUtxos {
     /// ancestor limit and is refused until one of them confirms.
     ///
     /// Rows missing the fields needed to build an input are dropped rather
-    /// than failing the whole set.
+    /// than failing the whole set — but, unlike the policy exclusions above,
+    /// their count is logged, because there is no legitimate reason for one to
+    /// exist. See `unusableRowCount(in:)`.
     ///
     /// - Parameter ownUnconfirmedTxHashes: hashes of transactions this device
     ///   broadcast for this vault on this chain that have not reached a
@@ -75,24 +77,68 @@ enum SpendableUtxos {
         // broadcast proxy, so neither side's casing is guaranteed.
         let ownHashes = Set(ownUnconfirmedTxHashes.map { $0.lowercased() })
 
+        logUnusableRows(in: rows)
+
         return rows.compactMap { row -> UtxoInfo? in
-            guard row.isSpendable != false,
-                  let txHash = row.transactionHash, !txHash.isEmpty,
-                  let value = row.value, let amount = Int64(exactly: value), amount >= dustThreshold,
-                  let index = row.index, let vout = UInt32(exactly: index)
-            else {
+            guard let outPoint = usableOutPoint(of: row) else { return nil }
+
+            guard row.isSpendable != false, outPoint.amount >= dustThreshold else {
                 return nil
             }
 
             // A row whose depth we could not establish is treated as
             // unconfirmed: absent evidence of a block is not evidence of one.
             let isConfirmed = (row.blockId ?? 0) > 0
-            guard isConfirmed || ownHashes.contains(txHash.lowercased()) else {
+            guard isConfirmed || ownHashes.contains(outPoint.hash.lowercased()) else {
                 return nil
             }
 
-            return UtxoInfo(hash: txHash, amount: amount, index: vout)
+            return UtxoInfo(hash: outPoint.hash, amount: outPoint.amount, index: outPoint.index)
         }
+    }
+
+    /// The three fields an input is built from, or `nil` when the row does not
+    /// carry them.
+    ///
+    /// Separated from the policy filters above because the two failures mean
+    /// opposite things. A row excluded for dust, for an explicit
+    /// `is_spendable: false`, or for being a stranger's zero-conf is *working
+    /// as designed* — that money is legitimately not spendable right now. A row
+    /// that cannot even name an outpoint is a defect: either the provider
+    /// changed its response shape or our decoding of it regressed, and because
+    /// every field on `BlockchairUtxo` is optional such a row decodes cleanly
+    /// and is then silently dropped, understating the displayed balance by
+    /// whatever it held with nothing anywhere failing.
+    private static func usableOutPoint(
+        of row: Blockchair.BlockchairUtxo
+    ) -> (hash: String, amount: Int64, index: UInt32)? {
+        guard let hash = row.transactionHash, !hash.isEmpty,
+              let value = row.value, let amount = Int64(exactly: value),
+              let index = row.index, let vout = UInt32(exactly: index)
+        else {
+            return nil
+        }
+        return (hash, amount, vout)
+    }
+
+    /// Rows the provider returned that cannot identify an output at all.
+    ///
+    /// Exposed so the defect above is observable rather than inferred from a
+    /// balance that quietly came out too low. A hard failure would be the wrong
+    /// answer — `address.balance` legitimately exceeds the spendable sum on
+    /// every address holding a stranger's zero-conf or a sub-dust output, so
+    /// any threshold on that divergence would fire constantly — but the count
+    /// of unusable rows has no legitimate non-zero value.
+    static func unusableRowCount(in rows: [Blockchair.BlockchairUtxo]) -> Int {
+        rows.reduce(0) { $0 + (usableOutPoint(of: $1) == nil ? 1 : 0) }
+    }
+
+    private static func logUnusableRows(in rows: [Blockchair.BlockchairUtxo]) {
+        let unusable = unusableRowCount(in: rows)
+        guard unusable > 0 else { return }
+        Log.chain.service.error(
+            "Dropped \(unusable) of \(rows.count) Blockchair UTXO rows with no usable transaction_hash/index/value — the balance understates this address by whatever they held"
+        )
     }
 
     /// The balance of exactly the set `select` admits, in the chain's smallest

@@ -218,6 +218,42 @@ final class SpendableUtxosTests: XCTestCase {
         XCTAssertEqual(filter([makeRow(hash: "wide", index: Int(UInt32.max))]).map(\.index), [UInt32.max])
     }
 
+    /// Every field on `BlockchairUtxo` is optional, so a shape-regressed row
+    /// decodes cleanly and is then dropped in silence — the displayed balance
+    /// comes out low with nothing anywhere failing. Counting them is what makes
+    /// a provider or decode regression visible; a threshold on the gap between
+    /// `address.balance` and the spendable sum could not be, because that gap
+    /// is legitimately non-zero on any address holding a stranger's zero-conf
+    /// or a sub-dust output.
+    func testCountsRowsThatCannotIdentifyAnOutputAtAll() {
+        let rows = [
+            Blockchair.BlockchairUtxo(blockId: 900_000, transactionHash: nil, index: 0, value: 10_000),
+            makeRow(hash: ""),
+            makeRow(index: nil),
+            makeRow(value: nil),
+            makeRow(index: Int(UInt32.max) + 1)
+        ]
+
+        XCTAssertEqual(SpendableUtxos.unusableRowCount(in: rows), rows.count)
+        XCTAssertTrue(filter(rows).isEmpty, "an unusable row is dropped as well as counted")
+    }
+
+    /// The count must not double as a policy alarm: an output that is dust,
+    /// explicitly unspendable, or a stranger's zero-conf is excluded on
+    /// purpose and is perfectly well-formed. Conflating the two would make the
+    /// signal fire on every ordinary address and mean nothing.
+    func testAPolicyExclusionIsNotCountedAsMalformed() {
+        let rows = [
+            makeRow(blockId: 900_000, hash: "dust", value: Int(Self.bitcoinDust) - 1),
+            makeRow(blockId: 900_001, hash: "unspendable", isSpendable: false),
+            makeRow(blockId: -1, hash: "stranger-zero-conf")
+        ]
+
+        XCTAssertEqual(SpendableUtxos.unusableRowCount(in: rows), 0)
+        XCTAssertTrue(filter(rows).isEmpty, "all three are still excluded from the spendable set")
+        XCTAssertEqual(SpendableUtxos.unusableRowCount(in: []), 0)
+    }
+
     // MARK: - Mapping
 
     func testMapsSurvivingRowsPreservingOrderAndFields() {
