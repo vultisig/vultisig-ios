@@ -563,10 +563,22 @@ enum RippleHelper {
             throw HelperError.runtimeError("signRipple rawJson Account does not match the signing account")
         }
 
-        // Payments are expressible by the payload metadata, so bind them to the
-        // reviewed destination and amount. Other types (offers / trust lines /
-        // escrows) are not reconstructable from toAddress/toAmount and pass on
-        // the Account check alone.
+        // Applies to EVERY transaction type, before any type-specific binding.
+        //
+        // wallet-core uppercases a 3-byte currency code before encoding — measured
+        // on this exact rawJson path, not inferred from the typed one — so a code
+        // it would alter must be refused wherever it appears. Gating only
+        // `Payment.Amount` left TrustSet's `LimitAmount` and OfferCreate's
+        // `TakerGets`/`TakerPays` free to be reviewed as `usd` and signed as
+        // `USD`: a different trust line, or a DEX offer against a different pair,
+        // than the one shown to the co-signer. `Payment.SendMax` / `DeliverMin`
+        // had the same gap.
+        try assertEveryCurrencyCodeIsSignable(in: tx)
+
+        // Payments are additionally expressible by the payload metadata, so bind
+        // them to the reviewed destination and amount. Other types (offers /
+        // trust lines / escrows) are not reconstructable from toAddress/toAmount
+        // and pass on the Account and currency-code checks alone.
         if tx["TransactionType"] as? String == "Payment" {
             try bindPaymentToReviewedValues(tx: tx, keysignPayload: keysignPayload)
         }
@@ -603,6 +615,35 @@ enum RippleHelper {
         logger.info("Creating XRP dApp rawJson transaction, lastLedgerSequence: \(lastLedgerSequence)")
 
         return try input.serializedData()
+    }
+
+    /// Refuses the signature if any issued-currency code anywhere in the
+    /// transaction would not survive encoding verbatim.
+    ///
+    /// Walks the whole decoded object rather than a fixed field list, so a field
+    /// this signer does not know about — a future transaction type, or a nested
+    /// term — is covered by default instead of silently exempt. Fail-closed on
+    /// both branches: a code that cannot even be normalised is refused too.
+    private static func assertEveryCurrencyCodeIsSignable(in value: Any) throws {
+        let mangled = HelperError.runtimeError(
+            "signRipple rawJson currency code would be altered by the signer"
+        )
+
+        if let object = value as? [String: Any] {
+            if let currency = object["currency"] as? String {
+                guard let normalized = try? RippleIssuedCurrency.toXrplCurrencyCode(currency),
+                      RippleIssuedCurrency.isSignableCurrencyCode(normalized) else {
+                    throw mangled
+                }
+            }
+            for nested in object.values {
+                try assertEveryCurrencyCodeIsSignable(in: nested)
+            }
+        } else if let array = value as? [Any] {
+            for element in array {
+                try assertEveryCurrencyCodeIsSignable(in: element)
+            }
+        }
     }
 
     /// Fail-closed binding for a dApp `Payment`: `Destination` must equal the
