@@ -238,6 +238,29 @@ final class TokenSelectionPoolTests: XCTestCase {
                       "…but search still finds it — capping must never be why a token isn't found")
     }
 
+    func testSearchIsNotTruncatedWhenManyTickersShareTheQuery() async {
+        // A capped result list would hide a token purely because 100 other
+        // tickers contain the same substring, which is the exact failure the
+        // search escape hatch exists to prevent.
+        // `ZQRY` rather than a real ticker stem, so the count isn't muddied by
+        // curated Ethereum presets that also match.
+        let breadth = rankedBreadth("ZQRY", count: 300, sourceKind: "oneinch")
+        let vm = TokenSelectionViewModel(loadCatalog: { _ in
+            TokenSearchResult(
+                surfaceable: breadth.metas,
+                unverified: [],
+                verificationByUniqueId: breadth.verification,
+                sourceKindByUniqueId: breadth.sourceKinds
+            )
+        })
+        await vm.load(chain: .ethereum, vault: .example)
+
+        vm.searchText = "zqry"
+
+        XCTAssertEqual(vm.searchedTokens.count, 300, "Every match is reachable, not just the first page")
+        XCTAssertEqual(vm.searchedTokens.first?.ticker, "ZQRY0", "Matches keep the providers' ranked order")
+    }
+
     func testBrowseCapsEachProviderIndependently() async {
         let oneInch = rankedBreadth("ONE", count: 50, sourceKind: "oneinch")
         let jupiter = rankedBreadth("JUP", count: 50, sourceKind: "jupiter")

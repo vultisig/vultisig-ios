@@ -204,14 +204,9 @@ struct TokenSelectionLogic {
     /// per source", not an arbitrary truncation — 1inch alone offers ~2,200
     /// tokens on Ethereum, which is not a list anyone scans.
     ///
-    /// This bounds BROWSE only. `searchableTokens` keeps the full breadth, so
-    /// this can never be the reason a token isn't found.
+    /// This bounds BROWSE only. Search is bounded by nothing, so this can never
+    /// be the reason a token isn't found.
     static let browseTokensPerProvider = 20
-
-    /// How many matches a search renders. Unrelated to `browseTokensPerProvider`
-    /// — this one bounds the rendered result of a query, and the query has
-    /// already narrowed the pool.
-    static let searchResultLimit = 20
 
     private init() {}
 
@@ -296,22 +291,26 @@ struct TokenSelectionLogic {
         }
     }
 
-    /// Ticker matches over the whole local-first pool. Nothing is excluded here:
-    /// the pool already holds each token exactly once (deduped by `uniqueId`),
-    /// held tokens included, so search finds everything browse can show plus the
-    /// badged unverified long-tail. A same-ticker lookalike on a different
-    /// contract is a distinct `uniqueId` and is revealed alongside the real one —
-    /// that visibility is the point of the badge.
+    /// Ticker matches over the whole local-first pool. Nothing is excluded and
+    /// nothing is truncated: the pool already holds each token exactly once
+    /// (deduped by `uniqueId`), held tokens included, so search finds everything
+    /// browse can show plus the badged unverified long-tail. A same-ticker
+    /// lookalike on a different contract is a distinct `uniqueId` and is
+    /// revealed alongside the real one — that visibility is the point of the
+    /// badge.
+    ///
+    /// Results are unbounded on purpose. Browse is the shortlist; search is the
+    /// escape hatch, and a cap here would make a token unreachable purely
+    /// because too many other tickers contain the same substring — the failure
+    /// this whole surface exists to avoid. The grid renders lazily, so the cost
+    /// is bounded by what's on screen rather than by the match count.
     func filteredTokens(searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
 
-        let filtered = tokens
-            .filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
-            .prefix(Self.searchResultLimit)
-
-        return Array(filtered)
+        let query = searchText.lowercased()
+        return tokens.filter { $0.ticker.lowercased().contains(query) }
     }
 
     /// Local-first dedup merge: earlier lists win a `uniqueId` collision (so the
