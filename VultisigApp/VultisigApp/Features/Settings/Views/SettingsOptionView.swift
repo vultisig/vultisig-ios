@@ -48,9 +48,11 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
 
     var iconColor: Color {
         switch type {
-        case .normal:
-            return Theme.colors.primaryAccent4
-        case .highlighted:
+        case .normal, .highlighted:
+            // Matches the label rather than tinting: a settings row's icon is a
+            // glyph for the destination, not an accent, and the accent blue read
+            // as decoration against a white label. `.highlighted` still reads as
+            // highlighted through `bgColor`.
             return Theme.colors.textPrimary
         case .alert:
             return Theme.colors.alertError
