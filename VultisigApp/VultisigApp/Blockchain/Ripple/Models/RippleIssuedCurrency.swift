@@ -125,6 +125,46 @@ enum RippleIssuedCurrency {
         return code.allSatisfy { signableStandardCurrencyCodeCharacters.contains($0) }
     }
 
+    /// Whether a currency code taken VERBATIM from a dApp-supplied rawJson is
+    /// one the signer puts on the wire byte for byte.
+    ///
+    /// Differs from ``isSignableCurrencyCode`` in what it is handed, not in what
+    /// it wants: that one classifies a code already normalized by
+    /// ``toXrplCurrencyCode``, which TRIMS whitespace and ASCII-packs anything
+    /// that is neither 3 characters nor 40 hex digits. Normalizing before
+    /// classifying is right for a user-entered ticker and wrong for a rawJson
+    /// gate, because the signer never sees the normalized form — it reads the
+    /// raw string and classifies it by BYTE length. Two measured splits:
+    ///
+    /// - `"Ab "` is 3 raw bytes, so the signer reads an ISO code and uppercases
+    ///   it to `AB `. Normalizing trims it to a 2-character ticker and packs it
+    ///   to `4162…`, a different currency entirely — which the normalized gate
+    ///   then accepted.
+    /// - `"€"` is 1 character but also 3 raw bytes, so the same split happens
+    ///   with no whitespace involved at all.
+    ///
+    /// The classification here is therefore the ledger's own, applied to the raw
+    /// string: a currency field is 3 bytes of standard code or 40 hex digits and
+    /// nothing else. A length the signer cannot parse is refused rather than
+    /// silently repaired into one it never receives — and it was never signable
+    /// anyway, the signer rejects such an input outright.
+    ///
+    /// The standard-code repertoire is the same one ``isSignableCurrencyCode``
+    /// uses, so a 3-byte code outside it (`AB ` included — a space is not in
+    /// rippled's `kIsoCharSet`) is refused even though the signer would encode it
+    /// unchanged: the ledger would not render that line back as a standard code,
+    /// so the token id could never match its own `account_lines` row.
+    ///
+    /// Hex is accepted in either case because the signer decodes it
+    /// case-insensitively — measured on the rawJson path, not assumed.
+    static func isVerbatimSignableCurrencyCode(_ currency: String) -> Bool {
+        if isHexCurrencyCode(currency) {
+            return true
+        }
+        guard currency.utf8.count == standardCurrencyCodeLength else { return false }
+        return currency.allSatisfy { signableStandardCurrencyCodeCharacters.contains($0) }
+    }
+
     /// Printable-ASCII window used to decide whether a decoded hex currency code
     /// is a human-readable ticker.
     private static let printableAscii: ClosedRange<UInt8> = 0x20...0x7E

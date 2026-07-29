@@ -204,4 +204,116 @@ final class RippleCurrencyCodeCaseTests: XCTestCase {
         }
         XCTAssertTrue(RippleIssuedCurrency.isSignableCurrencyCode("USD"))
     }
+
+    // MARK: - wallet-core classifies by RAW BYTE LENGTH, not by trimmed characters
+
+    //  `toXrplCurrencyCode` trims whitespace and then ASCII-packs anything that
+    //  is neither 3 characters nor 40 hex digits. wallet-core does neither: it
+    //  reads the raw string and treats exactly 3 BYTES as an ISO code.
+    //
+    //  That gap is what the rawJson gate has to be built on, so it is measured
+    //  here rather than reasoned about. Every assertion below compares WHOLE
+    //  encoded transactions for the reason stated above: two inputs differing
+    //  only in the currency can agree byte for byte only if wallet-core resolved
+    //  them to the same currency.
+
+    private static let hexRlusd = "524C555344000000000000000000000000000000"
+
+    /// A 3-BYTE code with edge whitespace is an ISO code to wallet-core, and its
+    /// lowercase byte is uppercased like any other — `Ab ` is signed as `AB `.
+    func testAWhitespaceEdgedThreeByteCodeIsUppercasedAsAnIsoCode() throws {
+        let edged = try encodedTransaction(from: try rawJsonInput(currency: "Ab "))
+        let upper = try encodedTransaction(from: try rawJsonInput(currency: "AB "))
+
+        XCTAssertEqual(
+            edged, upper,
+            "wallet-core reads 3 raw bytes as an ISO code and uppercases them, whitespace included"
+        )
+    }
+
+    /// …and what it signs is NOT the ASCII-packed hex of the trimmed ticker,
+    /// which is what `toXrplCurrencyCode` makes of the same string. Normalising
+    /// before classifying therefore judges a currency that never reaches the
+    /// ledger.
+    func testAWhitespaceEdgedThreeByteCodeIsNotThePackedHexOfItsTrimmedForm() throws {
+        let edged = try encodedTransaction(from: try rawJsonInput(currency: "Ab "))
+        let packed = try encodedTransaction(
+            from: try rawJsonInput(currency: try RippleIssuedCurrency.toXrplCurrencyCode("Ab "))
+        )
+
+        XCTAssertNotEqual(
+            edged, packed,
+            "the normalised form is a different currency than the one wallet-core signs"
+        )
+    }
+
+    /// The split is not about whitespace. A single 3-BYTE character diverges the
+    /// same way, because wallet-core classifies on byte length while
+    /// normalisation classifies on character count and then packs to hex.
+    ///
+    /// Stated precisely: this proves the two forms are DIFFERENT currencies, not
+    /// that wallet-core specifically took the ISO branch. Divergence is the whole
+    /// property the gate needs — a code the two classify differently must be
+    /// refused whichever branch produced it.
+    func testAThreeByteNonAsciiCodeIsNotThePackedHexOfItsNormalisedForm() throws {
+        let euro = try encodedTransaction(from: try rawJsonInput(currency: "\u{20AC}"))
+        let packed = try encodedTransaction(
+            from: try rawJsonInput(currency: try RippleIssuedCurrency.toXrplCurrencyCode("\u{20AC}"))
+        )
+
+        XCTAssertNotEqual(euro, packed, "a 1-character, 3-byte code splits the two classifications too")
+    }
+
+    /// A 40-character hex code is decoded case-insensitively, so accepting
+    /// either spelling verbatim mangles nothing. This is what licenses the
+    /// verbatim gate not requiring uppercase hex.
+    func testHexCurrencyCodeIsCaseInsensitive() throws {
+        let upper = try encodedTransaction(from: try rawJsonInput(currency: Self.hexRlusd))
+        let lower = try encodedTransaction(from: try rawJsonInput(currency: Self.hexRlusd.lowercased()))
+
+        XCTAssertEqual(upper, lower, "hex is decoded case-insensitively, so either spelling is verbatim")
+    }
+
+    /// A length wallet-core cannot classify is refused by wallet-core itself, so
+    /// the gate refusing it costs nothing: `RLUSD` was never signable, it was
+    /// only ASCII-packed by the old gate into a code the signer never received.
+    func testACodeThatIsNeitherThreeBytesNorFortyHexIsRefusedByWalletCore() throws {
+        for currency in ["RLUSD", "Ab"] {
+            let output: RippleSigningOutput = AnySigner.sign(input: try rawJsonInput(currency: currency), coin: .xrp)
+            XCTAssertFalse(
+                output.errorMessage.isEmpty,
+                "wallet-core must refuse '\(currency)' outright rather than pack it"
+            )
+            XCTAssertTrue(
+                output.encoded.isEmpty,
+                "a refused input must produce no transaction at all: '\(currency)'"
+            )
+        }
+    }
+
+    /// The verbatim gate's verdicts, each justified by one of the measurements
+    /// above (or by rippled's own standard-code repertoire).
+    func testTheVerbatimGateAgreesWithTheMeasurements() {
+        XCTAssertTrue(RippleIssuedCurrency.isVerbatimSignableCurrencyCode("USD"), "signed verbatim")
+        XCTAssertTrue(RippleIssuedCurrency.isVerbatimSignableCurrencyCode(Self.hexRlusd), "signed verbatim")
+        XCTAssertTrue(
+            RippleIssuedCurrency.isVerbatimSignableCurrencyCode(Self.hexRlusd.lowercased()),
+            "hex is decoded case-insensitively, so this is the same 20 bytes"
+        )
+
+        XCTAssertFalse(RippleIssuedCurrency.isVerbatimSignableCurrencyCode("usd"), "uppercased by the signer")
+        XCTAssertFalse(RippleIssuedCurrency.isVerbatimSignableCurrencyCode("Ab "), "uppercased by the signer")
+        XCTAssertFalse(
+            RippleIssuedCurrency.isVerbatimSignableCurrencyCode("AB "),
+            "signed unchanged, but a space is outside rippled's standard-code repertoire"
+        )
+        XCTAssertFalse(
+            RippleIssuedCurrency.isVerbatimSignableCurrencyCode(" AB"),
+            "signed unchanged, but a space is outside rippled's standard-code repertoire"
+        )
+        XCTAssertFalse(RippleIssuedCurrency.isVerbatimSignableCurrencyCode("\u{20AC}"), "outside the repertoire")
+        XCTAssertFalse(RippleIssuedCurrency.isVerbatimSignableCurrencyCode("RLUSD"), "wallet-core refuses it outright")
+        XCTAssertFalse(RippleIssuedCurrency.isVerbatimSignableCurrencyCode("Ab"), "wallet-core refuses it outright")
+        XCTAssertFalse(RippleIssuedCurrency.isVerbatimSignableCurrencyCode(""), "not a currency")
+    }
 }

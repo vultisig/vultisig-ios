@@ -622,8 +622,14 @@ enum RippleHelper {
     ///
     /// Walks the whole decoded object rather than a fixed field list, so a field
     /// this signer does not know about — a future transaction type, or a nested
-    /// term — is covered by default instead of silently exempt. Fail-closed on
-    /// both branches: a code that cannot even be normalised is refused too.
+    /// term — is covered by default instead of silently exempt.
+    ///
+    /// The verdict is taken on the RAW string, never on a normalised one. The
+    /// rawJson reaches the signer byte for byte, so any normalisation applied
+    /// here that the signer does not apply is a place where this walk's verdict
+    /// and the signed bytes can disagree — and `toXrplCurrencyCode` normalises
+    /// by trimming whitespace and ASCII-packing, neither of which the signer
+    /// does. See ``RippleIssuedCurrency/isVerbatimSignableCurrencyCode(_:)``.
     private static func assertEveryCurrencyCodeIsSignable(in value: Any) throws {
         let mangled = HelperError.runtimeError(
             "signRipple rawJson currency code would be altered by the signer"
@@ -631,8 +637,7 @@ enum RippleHelper {
 
         if let object = value as? [String: Any] {
             if let currency = object["currency"] as? String {
-                guard let normalized = try? RippleIssuedCurrency.toXrplCurrencyCode(currency),
-                      RippleIssuedCurrency.isSignableCurrencyCode(normalized) else {
+                guard RippleIssuedCurrency.isVerbatimSignableCurrencyCode(currency) else {
                     throw mangled
                 }
             }
@@ -681,15 +686,19 @@ enum RippleHelper {
                       let iouValue = iou["value"] as? String else {
                     throw amountMismatch
                 }
-                let normalizedIou = try RippleIssuedCurrency.toXrplCurrencyCode(iouCurrency)
                 // The rawJson is handed to WalletCore VERBATIM, and it uppercases
                 // a 3-BYTE currency code before encoding. A code it would mangle
                 // must be refused even when both sides spell it the same way:
                 // agreeing on `usd` still puts `USD` on the ledger, which is a
-                // currency neither the dApp nor the reviewer named.
-                guard RippleIssuedCurrency.isSignableCurrencyCode(normalizedIou) else {
+                // currency neither the dApp nor the reviewer named. Judged on the
+                // RAW string for the same reason the walk above is — normalising
+                // first is exactly what let a whitespace-edged 3-byte code
+                // through. Redundant today (the walk already ran over this
+                // object), kept so this binding does not depend on that ordering.
+                guard RippleIssuedCurrency.isVerbatimSignableCurrencyCode(iouCurrency) else {
                     throw amountMismatch
                 }
+                let normalizedIou = try RippleIssuedCurrency.toXrplCurrencyCode(iouCurrency)
                 let currencyMatches = try normalizedIou
                     == RippleIssuedCurrency.toXrplCurrencyCode(token.currency)
                 let issuerMatches = iouIssuer == token.issuer

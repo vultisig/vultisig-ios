@@ -327,6 +327,83 @@ final class RippleSignRippleTests: XCTestCase {
         )
     }
 
+    // MARK: - The gate judges the RAW code, not a normalised one
+
+    //  `toXrplCurrencyCode` TRIMS whitespace and then ASCII-packs anything that
+    //  is neither 3 characters nor 40 hex digits; wallet-core does neither and
+    //  classifies the raw string by BYTE length (measured in
+    //  `RippleCurrencyCodeCaseTests`). Normalising before classifying therefore
+    //  judged a currency the signer never receives.
+    //
+    //  These are the exposed fields: TrustSet `LimitAmount` and OfferCreate
+    //  `TakerGets`/`TakerPays` have no second gate — the walk is the only thing
+    //  standing between the co-signer and the ledger — and a trailing space is
+    //  invisible on the Verify screen.
+
+    private static let hexRlusd = "524C555344000000000000000000000000000000"
+
+    /// `Ab ` normalised to a 2-character ticker, ASCII-packed to `4162…` and
+    /// passed the old gate, while wallet-core read 3 raw bytes as an ISO code
+    /// and signed `AB ` — a different trust line than the reviewed one.
+    func testTrustSetWithAWhitespaceEdgedLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "Ab "),
+            "a LimitAmount code whose raw bytes the signer would alter must be refused"
+        )
+    }
+
+    func testOfferCreateWithAWhitespaceEdgedTakerPaysCurrencyIsRefused() {
+        assertRefused(
+            Self.offerCreateJson(takerPaysCurrency: "Ab "),
+            "a TakerPays code whose raw bytes the signer would alter must be refused"
+        )
+    }
+
+    /// Leading whitespace splits the two classifications the same way trailing
+    /// whitespace does.
+    func testOfferCreateWithALeadingSpaceTakerPaysCurrencyIsRefused() {
+        assertRefused(
+            Self.offerCreateJson(takerPaysCurrency: " AB"),
+            "trimming is the asymmetry, not the side the whitespace sits on"
+        )
+    }
+
+    /// No whitespace involved: a single 3-BYTE character is an ISO code to the
+    /// signer and an ASCII-packed hex code to the normaliser.
+    func testTrustSetWithAThreeByteNonAsciiLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "\u{20AC}"),
+            "byte length, not character count, is what the signer classifies on"
+        )
+    }
+
+    /// A code the signer cannot classify at all is refused here rather than
+    /// ASCII-packed into one the signer never receives.
+    func testTrustSetWithAnUnpackableLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "RLUSD"),
+            "a 5-character code is not an on-ledger currency and wallet-core refuses it outright"
+        )
+    }
+
+    /// Positive control for the tightening: the 40-character hex form stays
+    /// expressible in EITHER case, so nothing legitimate was removed —
+    /// wallet-core decodes hex case-insensitively.
+    func testTrustSetWithAHexLimitCurrencyIsAcceptedInEitherCase() throws {
+        for limitCurrency in [Self.hexRlusd, Self.hexRlusd.lowercased()] {
+            let payload = Self.makePayload(
+                rawJson: Self.trustSetJson(limitCurrency: limitCurrency),
+                coin: Self.makeNativeCoin(),
+                toAddress: "",
+                toAmount: 0
+            )
+            XCTAssertNoThrow(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "the hex spelling must stay expressible: \(limitCurrency)"
+            )
+        }
+    }
+
     // MARK: - SendMax / DeliverMin are gated too
 
     private static func paymentJson(field: String, currency: String) -> String {
