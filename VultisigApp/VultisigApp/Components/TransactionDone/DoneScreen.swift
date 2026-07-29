@@ -39,6 +39,12 @@ struct DoneScreen<
 
     #if os(iOS)
     @Environment(\.requestReview) private var requestReview
+
+    /// Flipped once the arrival animation has actually finished. The review
+    /// sheet waits on this rather than on `isExpanded`, which only says the
+    /// spring has been *scheduled* — it flips synchronously inside
+    /// `withAnimation`, half a second before the hero has arrived.
+    @State private var hasSettled = false
     #endif
 
     /// Nav-bar title for the screen. Defaults to "Done"; the initiator
@@ -68,6 +74,11 @@ struct DoneScreen<
     /// then the hero holds ~0.8s — so the crossfade and the settle-up read
     /// as two sequential beats instead of overlapping into one blur.
     private let revealDelay: UInt64 = 1_150_000_000 // ≈ 0.35s crossfade + 0.8s hold
+
+    /// Response of the settle spring, and so roughly how long the hero takes
+    /// to arrive. Named rather than inlined because the review prompt has to
+    /// wait it out, and a second literal would drift away from the animation.
+    private let settleResponse: Double = 0.55
 
     /// Construct via `DoneStatusServiceFactory`. The
     /// `statusService` autoclosure is evaluated lazily by `@StateObject`
@@ -169,13 +180,22 @@ struct DoneScreen<
             // Respect `.task` cancellation on disappear — don't flip state /
             // animate a view that's already gone (e.g. after `restart()`).
             guard !Task.isCancelled else { return }
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
+            withAnimation(.spring(response: settleResponse, dampingFraction: 0.85)) {
                 revealPhase = .expanded
             }
+            #if os(iOS)
+            // `withAnimation` returns as soon as the spring is scheduled, so
+            // wait it out before anything may present over the settling hero.
+            try? await Task.sleep(nanoseconds: UInt64(settleResponse * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            #endif
         }
         #if os(iOS)
-        // Covers the case where the poller seeds `.confirmed` before the
-        // screen ever appears, so `onChange` never fires.
+        hasSettled = true
+        // The only call site that can see a `.confirmed` which `onChange`
+        // never delivers — one the poller seeded before the screen appeared —
+        // and the one that retries a `.confirmed` that arrived mid-reveal and
+        // was turned away for not having settled yet.
         handleConfirmedTransactionIfNeeded()
         #endif
     }
@@ -188,22 +208,16 @@ struct DoneScreen<
     /// where "confirmed" is decided for every flow, and the view is not
     /// guaranteed to observe it once — a re-render, a re-entry, or the poller
     /// re-reporting a terminal status all land here again. `AppReviewService`
-    /// keys the tally on the transaction hash so the extra calls are inert.
+    /// keys everything on the transaction hash, so the extra calls are inert
+    /// and, importantly, cannot spend an ask on a transaction already counted.
     ///
-    /// Waiting for `isExpanded` keeps the system sheet from landing on top of
+    /// Waiting for `hasSettled` keeps the system sheet from landing on top of
     /// the hero settle animation.
-    ///
-    /// The ask is recorded even though StoreKit may silently decline to show
-    /// anything — the API reports nothing back, so the only safe assumption is
-    /// that the ask was spent.
     private func handleConfirmedTransactionIfNeeded() {
-        guard statusService.status == .confirmed, isExpanded else { return }
-
-        let service = AppReviewService.shared
-        service.recordConfirmedTransaction(id: input.hash)
-
-        guard service.shouldRequestReview() else { return }
-        service.recordPromptShown()
+        guard statusService.status == .confirmed, hasSettled else { return }
+        guard AppReviewService.shared.claimReviewPrompt(forConfirmedTransaction: input.hash) else {
+            return
+        }
         requestReview()
     }
     #endif

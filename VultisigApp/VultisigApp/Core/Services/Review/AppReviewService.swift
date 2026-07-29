@@ -109,6 +109,27 @@ final class AppReviewService {
 
     // MARK: - Decision
 
+    /// Records a just-confirmed transaction and reports whether this is the
+    /// moment to show the review sheet, consuming the ask when it is.
+    ///
+    /// Returns `true` only when the call counted a *new* transaction **and**
+    /// the throttle allows an ask. Requiring a new count is what stops an ask
+    /// being spent without a transaction behind it — a repeat observation of
+    /// a hash already counted, or a done screen that carries no hash of its
+    /// own, as custom-message signing does. Both otherwise arrive at a
+    /// throttle that is already satisfied from earlier transactions and would
+    /// pass.
+    ///
+    /// Composed here rather than at the call site so the ordering — count
+    /// first, then decide, then spend — is covered by unit tests instead of
+    /// living in a view.
+    func claimReviewPrompt(forConfirmedTransaction id: String) -> Bool {
+        guard recordConfirmedTransaction(id: id) else { return false }
+        guard shouldRequestReview() else { return false }
+        recordPromptShown()
+        return true
+    }
+
     /// Whether the throttle currently allows asking for a review.
     func shouldRequestReview() -> Bool {
         AppReviewPolicy.shouldRequestReview(state: state, now: now())

@@ -216,6 +216,71 @@ final class AppReviewServiceTests: XCTestCase {
         XCTAssertFalse(service.shouldRequestReview())
     }
 
+    // MARK: - Claiming the ask
+
+    /// Brings a service to the point where only a fresh transaction is
+    /// missing: seeded, past the 7-day wait, two transactions counted.
+    private func makeAlmostEligibleService() -> AppReviewService {
+        let service = makeService()
+        service.seedInstallDateIfNeeded()
+        service.recordConfirmedTransaction(id: "hash-a")
+        service.recordConfirmedTransaction(id: "hash-b")
+        advance(days: 30)
+        return service
+    }
+
+    func testClaimingAsksOnceTheThirdTransactionConfirms() {
+        let service = makeAlmostEligibleService()
+        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-c"))
+        XCTAssertEqual(service.state.lastPromptDate, clock)
+    }
+
+    /// The ask must follow a *newly counted* transaction. Re-observing a hash
+    /// that already counted has no transaction behind it, so it must not ask
+    /// even when every throttle rule is otherwise satisfied.
+    func testClaimingRequiresANewlyCountedTransaction() {
+        let service = makeAlmostEligibleService()
+        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-c"))
+
+        advance(days: 200)
+        XCTAssertFalse(
+            service.claimReviewPrompt(forConfirmedTransaction: "hash-c"),
+            "a repeat observation of an already-counted hash must not ask again"
+        )
+    }
+
+    /// The custom-message signing flow renders the done screen already
+    /// `.confirmed` with an empty hash. Signing a message is not a
+    /// transaction, so it must never spend an ask.
+    func testClaimingWithAnEmptyIDNeverAsks() {
+        let service = makeAlmostEligibleService()
+        service.recordConfirmedTransaction(id: "hash-c")
+
+        XCTAssertTrue(service.shouldRequestReview(), "the throttle is otherwise satisfied")
+        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: ""))
+        XCTAssertNil(service.state.lastPromptDate)
+    }
+
+    func testClaimingDoesNotSpendTheAskWhenTheThrottleRefuses() {
+        let service = makeService()
+        service.seedInstallDateIfNeeded()
+
+        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: "hash-a"))
+        XCTAssertNil(service.state.lastPromptDate)
+        XCTAssertEqual(service.state.confirmedTransactionCount, 1, "the transaction still counts")
+    }
+
+    func testClaimingClosesTheWindowForOneHundredTwentyDays() {
+        let service = makeAlmostEligibleService()
+        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-c"))
+
+        advance(days: 119)
+        XCTAssertFalse(service.claimReviewPrompt(forConfirmedTransaction: "hash-d"))
+
+        advance(days: 1)
+        XCTAssertTrue(service.claimReviewPrompt(forConfirmedTransaction: "hash-e"))
+    }
+
     func testStateIsIsolatedPerDefaultsSuite() {
         let service = makeService()
         service.seedInstallDateIfNeeded()
