@@ -87,22 +87,33 @@ struct CoinPriceChartView: View {
         ZStack {
             if let chart {
                 series(chart)
+                    // The previous window stays on screen, dimmed, while the
+                    // next one loads. On its own animation so the fade and the
+                    // swap below never drive the same views at once — the flag
+                    // and the new series are assigned in the same main-actor
+                    // turn, so one shared animation would catch both.
                     .opacity(isLoading ? 0.3 : 1)
-                    // Draw-in wipe, as an *insertion* transition rather than an
-                    // `onAppear`-driven mask. Its identity state is
-                    // fully-revealed, so a frame that renders without ever
-                    // running the animation still shows the whole chart —
-                    // where an `onAppear` mask starting at zero width leaves a
-                    // blank card if the callback never fires.
-                    .transition(.chartWipe)
+                    .animation(.easeInOut(duration: 0.2), value: isLoading)
+                    .transition(.chartSwap)
+                    // Identity is the series itself, so a new window replaces
+                    // the plot instead of updating it in place. Marks are
+                    // diffed by array position, so without this a switch to a
+                    // window with fewer samples morphs every mark between two
+                    // unrelated prices and fades the surplus ones out at their
+                    // old coordinates — stale line and fill drawn over the
+                    // incoming series.
+                    .id(chart)
             } else {
                 placeholder
+                    .transition(.chartSwap)
             }
         }
         .frame(height: Self.chartHeight)
-        .animation(.easeOut(duration: 0.5), value: chart == nil)
+        // One animation, driving one thing: the swap. Both halves of the
+        // transition have to share a curve to stay complementary, and stacking
+        // a second `.animation(_:value:)` here would race them — a range switch
+        // changes the series and the loading flag together.
         .animation(.easeInOut(duration: 0.35), value: chart)
-        .animation(.easeInOut(duration: 0.2), value: isLoading)
         .accessibilityLabel("priceChart".localized)
     }
 
@@ -264,13 +275,15 @@ struct CoinPriceChartView: View {
     }()
 }
 
-/// Left-to-right reveal used when the series first lands.
+/// Horizontal reveal: `progress` is the fraction of the plot's width that stays
+/// visible, measured from `edge`.
 ///
-/// A mask width rather than an opacity fade: the line appears to be drawn.
-/// Because the transition's identity state is a full-width mask, the chart is
-/// only ever *more* visible than the animation — it can never be stuck hidden.
+/// A mask rather than an opacity fade, so the line reads as being *drawn*. And
+/// because the identity state is a full-width mask, the chart is only ever
+/// *more* visible than the animation asks for — it can never be stuck hidden.
 private struct ChartWipe: ViewModifier, Animatable {
     var progress: CGFloat
+    var edge: HorizontalAlignment
 
     var animatableData: CGFloat {
         get { progress }
@@ -278,17 +291,42 @@ private struct ChartWipe: ViewModifier, Animatable {
     }
 
     func body(content: Content) -> some View {
-        content.mask(alignment: .leading) {
+        content.mask {
             GeometryReader { geometry in
-                Rectangle().frame(width: geometry.size.width * max(0, min(1, progress)))
+                Rectangle()
+                    .frame(width: geometry.size.width * max(0, min(1, progress)))
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: .infinity,
+                        alignment: Alignment(horizontal: edge, vertical: .center)
+                    )
             }
         }
     }
 }
 
 private extension AnyTransition {
-    static var chartWipe: AnyTransition {
-        .modifier(active: ChartWipe(progress: 0), identity: ChartWipe(progress: 1))
+
+    /// How one series gives way to the next: the incoming one sweeps in from
+    /// the leading edge while the outgoing one retracts ahead of it.
+    ///
+    /// The two masks are complements of each other on the same curve, so they
+    /// tile the plot exactly — every column holds one series or the other,
+    /// never both and never neither. A plain cross-fade instead draws the two
+    /// price lines over each other for the length of the fade, and staging the
+    /// fade before the wipe leaves the card empty in between; both were
+    /// rendered and compared frame by frame, and both read as a glitch.
+    static var chartSwap: AnyTransition {
+        .asymmetric(
+            insertion: .modifier(
+                active: ChartWipe(progress: 0, edge: .leading),
+                identity: ChartWipe(progress: 1, edge: .leading)
+            ),
+            removal: .modifier(
+                active: ChartWipe(progress: 0, edge: .trailing),
+                identity: ChartWipe(progress: 1, edge: .trailing)
+            )
+        )
     }
 }
 

@@ -9,7 +9,7 @@
 import Foundation
 
 /// One sample of a price series: a timestamp and the price in the requested fiat.
-struct MarketChartPoint: Equatable, Sendable {
+struct MarketChartPoint: Hashable, Sendable {
     let date: Date
     let price: Double
 }
@@ -20,7 +20,11 @@ struct MarketChartPoint: Equatable, Sendable {
 /// arrive in the same response but nothing renders them — market cap and volume
 /// come from the richer `/coins/markets` record instead — and skipping them
 /// avoids parsing two extra arrays that are ~4.8k samples each on `days=max`.
-struct MarketChart: Equatable, Sendable {
+///
+/// `Hashable` so the chart view can adopt the series itself as its view
+/// identity: a new window then *replaces* the plot instead of morphing the
+/// marks of the previous one into it.
+struct MarketChart: Hashable, Sendable {
 
     /// Fewest samples a series needs before it is worth drawing.
     ///
