@@ -558,6 +558,12 @@ enum RippleHelper {
             throw HelperError.runtimeError("signRipple rawJson is not a transaction object")
         }
 
+        // Before ANY check reads the decoded object: refuse a rawJson whose two
+        // readers would not agree on what it says. See the function's docs — the
+        // two parsers resolve a duplicate key to DIFFERENT values, so every check
+        // below could otherwise be passed by one value and signed with another.
+        try assertNoDuplicateJsonKeys(in: rawJson)
+
         // Fail closed: the transaction must spend from the signing vault.
         guard tx["Account"] as? String == keysignPayload.coin.address else {
             throw HelperError.runtimeError("signRipple rawJson Account does not match the signing account")
@@ -615,6 +621,133 @@ enum RippleHelper {
         logger.info("Creating XRP dApp rawJson transaction, lastLedgerSequence: \(lastLedgerSequence)")
 
         return try input.serializedData()
+    }
+
+    /// Refuses a rawJson that repeats a key inside one JSON object.
+    ///
+    /// Duplicate keys are syntactically legal JSON and RFC 8259 leaves the winner
+    /// unspecified, so every parser picks its own. The two parsers standing
+    /// either side of this gate pick DIFFERENT ones — measured on this exact
+    /// path, not assumed: `JSONSerialization` keeps the FIRST occurrence and
+    /// wallet-core's parser keeps the LAST.
+    ///
+    /// Every check in `dappSigningInput` reads the object `JSONSerialization`
+    /// produced, while wallet-core signs the same text through its own parser. So
+    /// a dApp that writes a key twice gets its first value reviewed and its
+    /// second value signed — `{"Destination":"<reviewed>",…,"Destination":"<theirs>"}`
+    /// binds against the address the co-signer approved and pays the other one.
+    /// That is the exact mismatch class the rest of this file exists to close.
+    ///
+    /// The collapsed object cannot say what wallet-core will keep, so the text is
+    /// scanned and any repeat is refused outright. Nothing legitimate is lost: a
+    /// duplicate key expresses nothing a single-keyed object cannot, and a
+    /// transaction that means two different things to its two readers is not one
+    /// a co-signer can review.
+    ///
+    /// Keys are compared DECODED, so `"a"` and `"a"` count as the same key —
+    /// which is how both parsers compare them.
+    private static func assertNoDuplicateJsonKeys(in rawJson: String) throws {
+        let duplicate = HelperError.runtimeError(
+            "signRipple rawJson repeats a JSON key, which the signer and this reviewer resolve differently"
+        )
+
+        let scalars = Array(rawJson.unicodeScalars)
+        // Two parallel stacks rather than one stack of enum payloads, so a key
+        // set is mutated IN PLACE through its subscript. Rebuilding the set per
+        // key would copy every key seen so far on each insertion — quadratic in
+        // an object's field count, and the field count is dApp-controlled.
+        var containerIsObject: [Bool] = []
+        var objectKeys: [Set<String>] = []
+        var lastStringLiteral: String?
+        var index = 0
+
+        while index < scalars.count {
+            switch scalars[index] {
+            case "{":
+                containerIsObject.append(true)
+                objectKeys.append([])
+                lastStringLiteral = nil
+                index += 1
+            case "[":
+                containerIsObject.append(false)
+                lastStringLiteral = nil
+                index += 1
+            case "}", "]":
+                if let wasObject = containerIsObject.popLast(), wasObject {
+                    objectKeys.removeLast()
+                }
+                lastStringLiteral = nil
+                index += 1
+            case "\"":
+                // Consuming the whole literal is also what keeps a `:` or a brace
+                // INSIDE a string value from being read as structure.
+                guard let string = readJsonStringLiteral(scalars, from: index) else {
+                    throw duplicate
+                }
+                lastStringLiteral = string.literal
+                index = string.next
+            case ":":
+                // A `:` at object level always follows that object's key. The
+                // input already parsed as JSON, so anything else here is
+                // unreachable — refuse rather than guess.
+                guard containerIsObject.last == true,
+                      let literal = lastStringLiteral,
+                      let key = decodedJsonString(literal) else {
+                    throw duplicate
+                }
+                guard objectKeys[objectKeys.count - 1].insert(key).inserted else {
+                    throw duplicate
+                }
+                lastStringLiteral = nil
+                index += 1
+            default:
+                index += 1
+            }
+        }
+    }
+
+    /// Consumes the JSON string starting at `start` (the opening quote) and
+    /// returns the literal WITH its quotes plus the index just past the closing
+    /// quote. `nil` when the string never terminates.
+    private static func readJsonStringLiteral(
+        _ scalars: [Unicode.Scalar],
+        from start: Int
+    ) -> (literal: String, next: Int)? {
+        var literal = String.UnicodeScalarView()
+        literal.append("\"")
+        var index = start + 1
+
+        while index < scalars.count {
+            let scalar = scalars[index]
+            literal.append(scalar)
+            index += 1
+            if scalar == "\\" {
+                // The escaped scalar cannot end the string, whatever it is.
+                guard index < scalars.count else { return nil }
+                literal.append(scalars[index])
+                index += 1
+                continue
+            }
+            if scalar == "\"" {
+                return (String(literal), index)
+            }
+        }
+        return nil
+    }
+
+    /// Decoded value of a JSON string literal (quotes included), so two spellings
+    /// of one key compare equal. Escapes are resolved by the same decoder that
+    /// produced the object every other check reads.
+    private static func decodedJsonString(_ literal: String) -> String? {
+        guard literal.contains("\\") else {
+            return String(literal.dropFirst().dropLast())
+        }
+        guard let data = "[\(literal)]".data(using: .utf8),
+              let decoded = try? JSONSerialization.jsonObject(with: data) as? [String],
+              decoded.count == 1 else {
+            return nil
+        }
+        return decoded[0]
     }
 
     /// Refuses the signature if any issued-currency code anywhere in the
