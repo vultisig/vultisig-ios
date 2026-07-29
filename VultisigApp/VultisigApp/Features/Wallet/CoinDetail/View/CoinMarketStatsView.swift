@@ -11,6 +11,11 @@ struct CoinMarketStatsView: View {
     let stats: CoinMarketStats
     let ticker: String
 
+    /// Whether the card has anything to say. A `/markets` record can come back
+    /// with an id and nothing else, and a titled card with no rows is worse
+    /// than no card.
+    var hasContent: Bool { !rows.isEmpty }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("marketStats".localized)

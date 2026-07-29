@@ -10,6 +10,10 @@ import SwiftUI
 struct CoinPriceExtremesView: View {
     let stats: CoinMarketStats
 
+    /// Whether the card has anything to say — no 24h band and no all-time
+    /// extremes means an empty titled card.
+    var hasContent: Bool { rowCount > 0 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("priceRange".localized)

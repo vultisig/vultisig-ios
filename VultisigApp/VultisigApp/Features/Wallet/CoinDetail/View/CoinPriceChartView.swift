@@ -71,6 +71,12 @@ struct CoinPriceChartView: View {
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)
                 .background(Capsule().fill(tint.opacity(0.12)))
+                // Dimmed with the line it describes: while the next range
+                // loads, the picker already highlights the new window but this
+                // percentage still belongs to the old one, and the two must
+                // read as one stale group rather than a live figure.
+                .opacity(isLoading ? 0.3 : 1)
+                .animation(.easeInOut(duration: 0.2), value: isLoading)
         }
     }
 
@@ -104,7 +110,10 @@ struct CoinPriceChartView: View {
         let domain = chart.priceDomain
 
         return Chart {
-            ForEach(chart.points, id: \.date) { point in
+            // Identified by position, not by timestamp: a duplicated timestamp
+            // would silently drop marks, and the view must not depend on the
+            // decoder having de-duplicated them.
+            ForEach(Array(chart.points.enumerated()), id: \.offset) { _, point in
                 AreaMark(
                     x: .value("date", point.date),
                     yStart: .value("low", domain.lowerBound),
@@ -169,7 +178,7 @@ struct CoinPriceChartView: View {
 
     private var placeholder: some View {
         Chart {
-            ForEach(Self.placeholderPoints, id: \.date) { point in
+            ForEach(Array(Self.placeholderPoints.enumerated()), id: \.offset) { _, point in
                 AreaMark(
                     x: .value("date", point.date),
                     yStart: .value("low", 0),

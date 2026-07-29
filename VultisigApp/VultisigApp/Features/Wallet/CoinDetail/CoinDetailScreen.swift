@@ -156,8 +156,18 @@ struct CoinDetailScreen: View {
         }
 
         if let stats = viewModel.stats {
-            CoinMarketStatsView(stats: stats, ticker: coin.ticker)
-            CoinPriceExtremesView(stats: stats)
+            // Each card decides for itself whether it has rows: a `/markets`
+            // record can come back with an id and almost nothing else, and a
+            // titled card with no rows in it is worse than no card.
+            let marketStats = CoinMarketStatsView(stats: stats, ticker: coin.ticker)
+            if marketStats.hasContent {
+                marketStats
+            }
+
+            let extremes = CoinPriceExtremesView(stats: stats)
+            if extremes.hasContent {
+                extremes
+            }
         }
 
         CoinTokenInfoView(

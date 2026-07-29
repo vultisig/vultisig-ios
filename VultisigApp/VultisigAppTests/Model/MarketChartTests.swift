@@ -51,6 +51,16 @@ final class MarketChartTests: XCTestCase {
         XCTAssertEqual(chart.points.map(\.price), [10.0, 12.0])
     }
 
+    func testDecodeCollapsesRepeatedTimestampsToTheLastValue() throws {
+        // Two samples at one instant are not something a price line can draw,
+        // and a repeated timestamp makes "nearest sample to the scrub" ambiguous.
+        let json = Data(#"{"prices":[[1000,10.0],[2000,11.0],[2000,11.5],[3000,12.0]]}"#.utf8)
+        let chart = try JSONDecoder().decode(MarketChart.self, from: json)
+
+        XCTAssertEqual(chart.points.map(\.price), [10.0, 11.5, 12.0])
+        XCTAssertEqual(Set(chart.points.map(\.date)).count, chart.points.count)
+    }
+
     func testDecodeSortsOutOfOrderTimestamps() throws {
         let json = Data(#"{"prices":[[3000,12.0],[1000,10.0],[2000,11.0]]}"#.utf8)
         let chart = try JSONDecoder().decode(MarketChart.self, from: json)

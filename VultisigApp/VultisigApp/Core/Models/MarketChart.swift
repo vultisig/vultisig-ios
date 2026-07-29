@@ -146,8 +146,13 @@ extension MarketChart: Decodable {
     /// the user the chart. The result is sorted because nothing in the response
     /// contract guarantees ascending timestamps, and Charts draws a line in
     /// the order it is given.
+    ///
+    /// Samples that repeat a timestamp are collapsed to the last one. Two
+    /// points at the same instant are not something a price line can express,
+    /// and a repeated timestamp would also make "the sample nearest the scrub
+    /// position" ambiguous.
     static func points(from rawPairs: [[Double?]]) -> [MarketChartPoint] {
-        rawPairs
+        let parsed = rawPairs
             .compactMap { pair -> MarketChartPoint? in
                 guard pair.count >= 2,
                       let milliseconds = pair[0],
@@ -162,6 +167,14 @@ extension MarketChart: Decodable {
                 )
             }
             .sorted { $0.date < $1.date }
+
+        return parsed.reduce(into: [MarketChartPoint]()) { result, point in
+            if result.last?.date == point.date {
+                result[result.count - 1] = point
+            } else {
+                result.append(point)
+            }
+        }
     }
 }
 
