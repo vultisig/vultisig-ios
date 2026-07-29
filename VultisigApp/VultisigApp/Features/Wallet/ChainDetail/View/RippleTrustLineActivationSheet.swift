@@ -62,7 +62,14 @@ struct RippleTrustLineActivationSheet: View {
         }
         // iOS dismisses by swipe; macOS has no drag affordance, so it needs an
         // explicit close, matching every other sheet in the app.
-        .crossPlatformToolbar(showsBackButton: false) {
+        //
+        // Both settings go through `Screen`'s own toolbar rather than a second
+        // `.crossPlatformToolbar` layered over it. `Screen` already renders one
+        // on macOS, so an outer toolbar does not replace it — it stacks another
+        // 60pt row above, leaving the close button and `Screen`'s own back
+        // chevron as two dismiss affordances one on top of the other.
+        .screenBackButtonHidden()
+        .screenToolbar {
             #if os(macOS)
                 CustomToolbarItem(placement: .leading) {
                     ToolbarButton(image: .xmark) {
