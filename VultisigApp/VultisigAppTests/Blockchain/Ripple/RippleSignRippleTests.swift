@@ -277,6 +277,28 @@ final class RippleSignRippleTests: XCTestCase {
         XCTAssertEqual(input.rawJson, rawJson)
     }
 
+    /// The rawJson goes to WalletCore verbatim, and it uppercases a 3-BYTE
+    /// currency code before encoding while XRPL codes are case-SENSITIVE. Two
+    /// sides agreeing on `usd` is therefore NOT enough — the ledger would still
+    /// receive `USD`, a currency neither the dApp nor the reviewer named. Refuse.
+    func testIssuedCurrencyPaymentWhoseCodeTheSignerWouldMangleThrows() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "usd.\(issuer)", decimals: 15)
+        let rawJson = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"usd","issuer":"\(issuer)","value":"1.5"},"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: coin,
+            toAddress: Self.destination,
+            toAmount: BigInt("1500000000000000")
+        )
+        XCTAssertThrowsError(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "matching spellings must not license signing a currency the encoder rewrites"
+        )
+    }
+
     func testIssuedCurrencyPaymentIssuerMismatchThrows() {
         let coin = Self.makeIssuedCoin(contractAddress: "USD.rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", decimals: 15)
         let rawJson = """

@@ -640,7 +640,16 @@ enum RippleHelper {
                       let iouValue = iou["value"] as? String else {
                     throw amountMismatch
                 }
-                let currencyMatches = try RippleIssuedCurrency.toXrplCurrencyCode(iouCurrency)
+                let normalizedIou = try RippleIssuedCurrency.toXrplCurrencyCode(iouCurrency)
+                // The rawJson is handed to WalletCore VERBATIM, and it uppercases
+                // a 3-BYTE currency code before encoding. A code it would mangle
+                // must be refused even when both sides spell it the same way:
+                // agreeing on `usd` still puts `USD` on the ledger, which is a
+                // currency neither the dApp nor the reviewer named.
+                guard RippleIssuedCurrency.isSignableCurrencyCode(normalizedIou) else {
+                    throw amountMismatch
+                }
+                let currencyMatches = try normalizedIou
                     == RippleIssuedCurrency.toXrplCurrencyCode(token.currency)
                 let issuerMatches = iouIssuer == token.issuer
                 let reviewedValue = try RippleIssuedCurrency.parseIssuedCurrencyValue(
