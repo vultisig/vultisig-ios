@@ -70,4 +70,24 @@ struct SettingsRouteBuilder {
     func buildAdvancedSettingsScreen() -> some View {
         SettingsAdvancedView()
     }
+
+    @ViewBuilder
+    func buildManagePasscodeScreen() -> some View {
+        ManagePasscodeScreen()
+    }
+
+    @ViewBuilder
+    func buildSetPasscodeScreen() -> some View {
+        SetPasscodeScreen()
+    }
+
+    @ViewBuilder
+    func buildChangePasscodeScreen() -> some View {
+        ChangePasscodeScreen()
+    }
+
+    @ViewBuilder
+    func buildAutoLockScreen() -> some View {
+        AutoLockScreen()
+    }
 }

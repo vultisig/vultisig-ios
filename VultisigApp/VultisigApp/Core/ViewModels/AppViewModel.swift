@@ -18,6 +18,8 @@ class AppViewModel: ObservableObject {
     @AppStorage("selectedPubKeyECDSA") var selectedPubKeyECDSA: String = ""
 
     @Published var isAuthenticated = false
+    /// Whether the passcode lock screen should be covering the app.
+    @Published var isPasscodeLocked = false
     @Published var showSplashView = true
     @Published var didUserCancelAuthentication = false
     @Published var canLogin = true
@@ -157,14 +159,43 @@ class AppViewModel: ObservableObject {
         lockService.noteBackgrounded()
     }
 
+    /// Engages the passcode lock if that is the configured mode.
+    ///
+    /// Forgetting the data key is what actually locks the app — the screen only
+    /// reflects it. Without this the shares would stay readable behind the
+    /// overlay and signing would still work.
+    func lockWithPasscodeIfNeeded() {
+        guard lockService.mode == .passcode else { return }
+        PasscodeService.shared.lock()
+        isPasscodeLocked = true
+    }
+
+    func markPasscodeUnlocked() {
+        isPasscodeLocked = false
+    }
+
+    /// Restores the lock on launch when a passcode is configured, so a cold start
+    /// is gated rather than only a return from the background.
+    func restorePasscodeLockOnLaunch() {
+        guard lockService.mode == .passcode else { return }
+        PasscodeService.shared.lock()
+        isPasscodeLocked = true
+    }
+
     func enableAuth() {
         showCover = false
 
         // The re-lock delay used to be five minutes hardcoded here, with no way
         // for anyone to change it. `AppLockService` owns that policy now.
         let shouldRelock = lockService.evaluateForeground()
+        guard shouldRelock else { return }
 
-        if shouldRelock && !didTriggerAuthThisSession {
+        if lockService.mode == .passcode {
+            lockWithPasscodeIfNeeded()
+            return
+        }
+
+        if !didTriggerAuthThisSession {
             resetLogin()
             continueLogin()
         }

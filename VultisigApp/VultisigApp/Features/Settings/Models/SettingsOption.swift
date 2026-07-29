@@ -30,6 +30,7 @@ enum SettingsOption: String, Identifiable {
     case currency
     case notifications
     case addressBook
+    case managePasscode
     case referralCode
     case faq
     case education
@@ -56,6 +57,8 @@ enum SettingsOption: String, Identifiable {
             return "notifications"
         case .addressBook:
             return "addressBook"
+        case .managePasscode:
+            return "passcodeManageTitle"
         case .referralCode:
             return "referralCode"
         case .faq:
@@ -95,6 +98,8 @@ enum SettingsOption: String, Identifiable {
             return .bell
         case .addressBook:
             return .fileBookmark
+        case .managePasscode:
+            return .lockPassword
         case .referralCode:
             return .megaphone
         case .faq:
@@ -126,6 +131,7 @@ enum SettingsOption: String, Identifiable {
         case .currency: return AccessibilityID.Settings.currencyCell
         case .vaultSettings: return AccessibilityID.Settings.vaultSettingsCell
         case .faq: return AccessibilityID.Settings.faqCell
+        case .managePasscode: return AccessibilityID.Settings.managePasscodeCell
         default: return nil
         }
     }

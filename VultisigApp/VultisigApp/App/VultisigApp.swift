@@ -251,6 +251,16 @@ extension VultisigApp {
             .environmentObject(pushNotificationManager)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
+            // macOS does not reliably report scenePhase `.background` when the
+            // app is hidden or switched away from, so the shared scene-phase
+            // hook would seldom fire and the lock would seldom engage. AppKit's
+            // activation notifications are the dependable signal here.
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.willResignActiveNotification)) { _ in
+                resetLogin()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                continueLogin()
+            }
             .onAppear {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()

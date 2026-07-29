@@ -23,6 +23,19 @@ enum AccessibilityID {
         static let currencyCell = "settings.currencyCell"
         static let vaultSettingsCell = "settings.vaultSettingsCell"
         static let faqCell = "settings.faqCell"
+        static let managePasscodeCell = "settings.managePasscodeCell"
+        static let autoLockCell = "settings.autoLockCell"
+    }
+
+    enum Passcode {
+        static let dots = "passcode.dots"
+        static let deleteKey = "passcode.deleteKey"
+        static let macField = "passcode.macField"
+        static let enterScreen = "passcode.enterScreen"
+
+        static func digitKey(_ digit: String) -> String {
+            "passcode.digit.\(digit)"
+        }
     }
 
     enum Onboarding {
