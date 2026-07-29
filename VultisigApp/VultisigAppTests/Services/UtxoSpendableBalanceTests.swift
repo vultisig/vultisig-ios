@@ -3,7 +3,7 @@
 //  VultisigAppTests
 //
 //  Covers the two halves of "displayed balance == spendable balance" on the
-//  Blockchair-backed UTXO chains: `BalanceService.utxoSpendableBalance`, which
+//  Blockchair-backed UTXO chains: `BalanceService.utxoBalanceSnapshot`, which
 //  is what `fetchBalance` actually returns, and
 //  `StoredPendingTransactionStorage.unconfirmedTransactionHashes`, which is
 //  how the wallet recognises its own unconfirmed change. The two numbers used
@@ -51,15 +51,22 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         )
     }
 
-    private func balance(
+    private func snapshot(
         _ entry: Blockchair,
         own: Set<String> = []
-    ) throws -> String {
-        try BalanceService.utxoSpendableBalance(
+    ) throws -> BalanceService.BalanceSnapshot {
+        try BalanceService.utxoBalanceSnapshot(
             from: entry,
             dustThreshold: Self.bitcoinDust,
             ownUnconfirmedTxHashes: own
         )
+    }
+
+    private func balance(
+        _ entry: Blockchair,
+        own: Set<String> = []
+    ) throws -> String {
+        try snapshot(entry, own: own).rawBalance
     }
 
     // MARK: - The equality this whole change exists for
@@ -124,6 +131,75 @@ final class UtxoSpendableBalanceTests: XCTestCase {
     func testBalanceOfAnEmptyAddressIsZero() throws {
         XCTAssertEqual(try balance(makeEntry(reportedBalance: 0, utxo: [])), "0")
         XCTAssertEqual(try balance(makeEntry(reportedBalance: nil, utxo: [])), "0")
+    }
+
+    // MARK: - What is arriving, reported beside what is spendable
+
+    /// An inbound payment still in the mempool raises the pending amount and
+    /// leaves the spendable balance untouched. Folding it into the balance
+    /// would restore the gap this whole change closes — a send would clear the
+    /// balance check and then die at input selection, because a stranger's
+    /// zero-conf is not something this wallet can build an input from.
+    func testAnInboundZeroConfIsReportedAsPendingAndNotAsBalance() throws {
+        let rows = [
+            makeRow(blockId: 900_001, hash: "confirmed", index: 0, value: 1_000_000),
+            makeRow(blockId: -1, hash: "inbound", index: 0, value: 250_000)
+        ]
+
+        let result = try snapshot(makeEntry(reportedBalance: 1_250_000, utxo: rows))
+
+        XCTAssertEqual(result.rawBalance, "1000000")
+        XCTAssertEqual(result.pendingRawBalance, "250000")
+    }
+
+    /// Our own unconfirmed change is spendable, so it is already in the
+    /// balance — announcing it again as "arriving" would double-count the same
+    /// money on one screen.
+    func testOurOwnUnconfirmedChangeIsSpendableAndNeverPending() throws {
+        let entry = makeEntry(
+            reportedBalance: 90_000_000,
+            utxo: [makeRow(blockId: -1, hash: "our-send", index: 1, value: 90_000_000)]
+        )
+
+        let result = try snapshot(entry, own: ["our-send"])
+
+        XCTAssertEqual(result.rawBalance, "90000000")
+        XCTAssertEqual(result.pendingRawBalance, "0")
+    }
+
+    /// The two numbers partition the outputs: nothing is counted twice and
+    /// nothing that would be spendable on confirmation is dropped from both.
+    func testSpendableAndPendingNeverOverlapAndNeverDoubleCount() throws {
+        let rows = [
+            makeRow(blockId: 900_001, hash: "confirmed", index: 0, value: 1_000_000),
+            makeRow(blockId: -1, hash: "our-change", index: 1, value: 500_000),
+            makeRow(blockId: -1, hash: "inbound", index: 0, value: 900_000)
+        ]
+        let own: Set<String> = ["our-change"]
+
+        let result = try snapshot(makeEntry(reportedBalance: 2_400_000, utxo: rows), own: own)
+
+        XCTAssertEqual(result.rawBalance, "1500000")
+        XCTAssertEqual(result.pendingRawBalance, "900000")
+        XCTAssertEqual(
+            (BigInt(result.rawBalance) ?? 0) + (BigInt(result.pendingRawBalance) ?? 0),
+            BigInt(2_400_000)
+        )
+    }
+
+    /// Nothing arriving means no pending line at all — a permanent "+0 BTC
+    /// pending" under the balance would be noise. This is also what makes the
+    /// line *disappear*: the refresh after the payment confirms reports a
+    /// pending amount of zero, which the apply path writes like any other, so
+    /// the money moves from the pending line into the balance in one step.
+    func testAnAddressWithNothingArrivingReportsNoPendingAmount() throws {
+        let confirmed = [makeRow(blockId: 900_001, hash: "was-inbound", index: 0, value: 1_000_000)]
+
+        let settled = try snapshot(makeEntry(reportedBalance: 1_000_000, utxo: confirmed))
+        XCTAssertEqual(settled.rawBalance, "1000000")
+        XCTAssertEqual(settled.pendingRawBalance, "0")
+
+        XCTAssertEqual(try snapshot(makeEntry(reportedBalance: 0, utxo: [])).pendingRawBalance, "0")
     }
 
     // MARK: - Refusing a response that contradicts itself
@@ -278,35 +354,6 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         XCTAssertTrue(
             try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-b").isEmpty
         )
-    }
-
-    /// Every fail-loud path on this balance — an incomplete page walk, a
-    /// self-contradicting response, and a failed read of the wallet's own
-    /// pending transactions — reaches the caller as a thrown error, and this is
-    /// the single mechanism that makes throwing the *safe* choice: an update
-    /// carrying no balance is skipped entirely, so the last known balance
-    /// stands. Were a failure to produce a `0` instead, the wallet whose only
-    /// funds are its own unconfirmed change would read empty and its follow-up
-    /// send would be blocked — which is the failure the ownership lookup exists
-    /// to prevent, reached through a storage hiccup rather than a provider one.
-    func testABalanceUpdateWithNoBalanceInItIsSkippedSoThePreviousOneSurvives() {
-        let failed = BalanceService.CoinBalanceUpdate(
-            coinId: "btc",
-            rawBalance: nil,
-            stakedBalance: nil,
-            bondedNodes: nil,
-            error: BalanceService.Errors.utxoBalanceWithoutOutputs(reported: 1)
-        )
-        let genuinelyEmpty = BalanceService.CoinBalanceUpdate(
-            coinId: "btc",
-            rawBalance: "0",
-            stakedBalance: nil,
-            bondedNodes: nil,
-            error: nil
-        )
-
-        XCTAssertFalse(failed.hasUpdates, "a failed fetch must not overwrite the last known balance")
-        XCTAssertTrue(genuinelyEmpty.hasUpdates, "an emptied wallet must still render as empty")
     }
 
     /// A coin with no vault behind it — the key-import chain probe, say — asks

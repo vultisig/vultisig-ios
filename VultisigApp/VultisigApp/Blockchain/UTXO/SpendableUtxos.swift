@@ -163,6 +163,46 @@ enum SpendableUtxos {
         .reduce(BigInt(0)) { $0 + BigInt($1.amount) }
     }
 
+    /// The value sitting in outputs this address holds that `select` withheld
+    /// **only** because they are unconfirmed and somebody else's — an inbound
+    /// payment still in the mempool.
+    ///
+    /// This is the money the wallet can see and cannot yet spend, and it is
+    /// reported beside the balance rather than inside it. Folding it in would
+    /// undo the equality the balance exists to hold: a send would clear the
+    /// balance check and then die at input selection, exactly as it did when
+    /// the balance came from `address.balance`. Showing nothing at all was the
+    /// other option, and it means a user who has just been paid watches an
+    /// unchanged balance for a block with no acknowledgement anywhere that the
+    /// payment arrived.
+    ///
+    /// Disjoint from `select` by construction — a row is either confirmed-or-
+    /// ours or it is not — and derived from the same rows, the same dust
+    /// threshold and the same spendability flag, so the two numbers cannot
+    /// drift. Every clause other than the confirmation one is shared: a
+    /// sub-dust or explicitly unspendable inbound output is not "arriving", it
+    /// is money this wallet will not be able to spend after confirmation
+    /// either, and promising it would be worse than saying nothing.
+    static func pendingInboundBalance(
+        from rows: [Blockchair.BlockchairUtxo],
+        dustThreshold: Int64,
+        ownUnconfirmedTxHashes: Set<String>
+    ) -> BigInt {
+        let ownHashes = Set(ownUnconfirmedTxHashes.map { $0.lowercased() })
+
+        return rows.reduce(BigInt(0)) { total, row in
+            guard let outPoint = usableOutPoint(of: row),
+                  row.isSpendable != false,
+                  outPoint.amount >= dustThreshold,
+                  (row.blockId ?? 0) <= 0,
+                  !ownHashes.contains(outPoint.hash.lowercased())
+            else {
+                return total
+            }
+            return total + BigInt(outPoint.amount)
+        }
+    }
+
     /// Snapshots the transaction hashes this device broadcast for `chain` and
     /// `vaultPubKeyECDSA` that have not reached a terminal state.
     ///

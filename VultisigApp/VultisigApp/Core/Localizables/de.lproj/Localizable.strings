@@ -913,6 +913,7 @@
 "peerDiscoveryInfoDescription" = "Öffnen Sie auf Ihrem anderen Gerät die App und tippen Sie auf \"QR scannen\", um es zu verbinden.";
 "peerDiscoveryInfoTitle" = "Scannen Sie den QR auf Ihren anderen Geräten";
 "peerDiscoveryScanDeviceDisclaimer" = "Scanne den QR-Code mit einem anderen Gerät. 3-Geräte-Setup empfohlen, 2 sind ausreichend.";
+"pendingIncomingBalance" = "+%@ ausstehend";
 "pendingRewards" = "Ausstehende Belohnungen";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Fotobibliothek";

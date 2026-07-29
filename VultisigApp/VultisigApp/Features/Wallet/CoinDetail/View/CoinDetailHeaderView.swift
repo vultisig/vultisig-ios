@@ -17,6 +17,7 @@ struct CoinDetailHeaderView: View {
                 .padding(.bottom, 4)
             chainBalanceView
             chainFiatBalanceView
+            pendingBalanceView
         }
     }
 
@@ -47,6 +48,21 @@ struct CoinDetailHeaderView: View {
             .font(Theme.fonts.subtitle)
             .foregroundStyle(Theme.colors.textTertiary)
             .frame(height: 18)
+    }
+
+    /// Money arriving that the wallet cannot spend yet, reported separately
+    /// from the balance above it. The balance is strictly what a transaction
+    /// can be funded from, so an inbound payment still in the mempool does not
+    /// move it — without this line the recipient sees nothing at all happen
+    /// until the transaction confirms. Absent entirely when there is nothing
+    /// pending, and hidden with the rest of the numbers when balances are.
+    @ViewBuilder
+    var pendingBalanceView: some View {
+        if coin.hasPendingBalance, !homeViewModel.hideVaultBalance {
+            Text(String(format: "pendingIncomingBalance".localized, coin.pendingBalanceStringWithTicker))
+                .font(Theme.fonts.priceBodyS)
+                .foregroundStyle(Theme.colors.textTertiary)
+        }
     }
 }
 

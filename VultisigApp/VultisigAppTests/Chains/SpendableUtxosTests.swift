@@ -254,6 +254,75 @@ final class SpendableUtxosTests: XCTestCase {
         XCTAssertEqual(SpendableUtxos.unusableRowCount(in: []), 0)
     }
 
+    // MARK: - Inbound unconfirmed
+
+    private func pending(
+        _ rows: [Blockchair.BlockchairUtxo],
+        own: Set<String> = []
+    ) -> BigInt {
+        SpendableUtxos.pendingInboundBalance(
+            from: rows,
+            dustThreshold: Self.bitcoinDust,
+            ownUnconfirmedTxHashes: own
+        )
+    }
+
+    /// The one class of output the pending amount reports: somebody else's
+    /// payment, still in the mempool. It is the only thing a user has done
+    /// nothing about and would otherwise see no trace of anywhere in the app.
+    func testReportsAStrangersZeroConfAsPending() {
+        XCTAssertEqual(pending([makeRow(blockId: -1, hash: "inbound", value: 250_000)]), BigInt(250_000))
+        XCTAssertEqual(pending([makeRow(blockId: 0, hash: "inbound", value: 250_000)]), BigInt(250_000))
+    }
+
+    /// Our own unconfirmed change is already in the spendable balance. Counting
+    /// it as pending too would show the same money twice on one screen.
+    func testOurOwnUnconfirmedChangeIsNotPending() {
+        XCTAssertEqual(pending([makeRow(blockId: -1, hash: "ours")], own: ["ours"]), .zero)
+        XCTAssertEqual(pending([makeRow(blockId: -1, hash: "OURS")], own: ["ours"]), .zero)
+    }
+
+    func testAConfirmedOutputIsNotPending() {
+        XCTAssertEqual(pending([makeRow(blockId: 900_000, hash: "settled")]), .zero)
+    }
+
+    /// Every clause other than the confirmation one is shared with `select`.
+    /// An inbound output that is sub-dust, explicitly unspendable, or too
+    /// malformed to build an input from will not become spendable when it
+    /// confirms either, so promising it is worse than saying nothing.
+    func testPendingHonoursTheSameShapeDustAndSpendabilityGatesAsTheBalance() {
+        let rows = [
+            makeRow(blockId: -1, hash: "sub-dust", value: Int(Self.bitcoinDust) - 1),
+            makeRow(blockId: -1, hash: "unspendable", value: 400_000, isSpendable: false),
+            makeRow(blockId: -1, hash: "", value: 400_000),
+            makeRow(blockId: -1, hash: "no-index", index: nil, value: 400_000)
+        ]
+
+        XCTAssertEqual(pending(rows), .zero)
+    }
+
+    /// The two numbers partition the rows: an output is in exactly one of them
+    /// or in neither, never in both.
+    func testSpendableAndPendingArePartitions() {
+        let rows = [
+            makeRow(blockId: 900_001, hash: "confirmed", index: 0, value: 1_000_000),
+            makeRow(blockId: -1, hash: "our-change", index: 1, value: 500_000),
+            makeRow(blockId: -1, hash: "inbound", index: 0, value: 900_000),
+            makeRow(blockId: -1, hash: "inbound-dust", index: 1, value: Int(Self.bitcoinDust) - 1)
+        ]
+        let own: Set<String> = ["our-change"]
+
+        let spendable = SpendableUtxos.balance(
+            from: rows,
+            dustThreshold: Self.bitcoinDust,
+            ownUnconfirmedTxHashes: own
+        )
+
+        XCTAssertEqual(spendable, BigInt(1_500_000))
+        XCTAssertEqual(pending(rows, own: own), BigInt(900_000))
+        XCTAssertEqual(filter(rows, own: own).map(\.hash), ["confirmed", "our-change"])
+    }
+
     // MARK: - Mapping
 
     func testMapsSurvivingRowsPreservingOrderAndFields() {

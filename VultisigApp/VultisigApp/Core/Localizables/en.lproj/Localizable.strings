@@ -911,6 +911,7 @@
 "peerDiscoveryInfoDescription" = "On your other device, open the app and tap \"Scan QR\" to connect it.";
 "peerDiscoveryInfoTitle" = "Scan the QR on your other devices";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
+"pendingIncomingBalance" = "+%@ pending";
 "pendingRewards" = "Pending Rewards";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Photo Library";
