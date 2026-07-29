@@ -12,9 +12,11 @@
 //  so order is the contract: a consumer showing only the head of the list — the
 //  token picker's browse list — gets the tokens worth showing.
 //
-//  Like `OneInchCatalogProvider`, freshness is governed upstream by
-//  `SwapTokenListCache`; this provider fetches → tags → write-throughs the disk
-//  snapshot, and serves the last-good snapshot on failure (offline floor).
+//  Like `OneInchCatalogProvider`, this fetches → ranks → tags → write-throughs
+//  the disk snapshot and serves the last-good snapshot on failure (offline
+//  floor). Fetch frequency is the caller's: the swap source path is fronted by
+//  `SwapTokenListCache`, the wallet add-token path (`loadCatalog`) deliberately
+//  is not and refetches per screen open.
 //
 
 import Foundation

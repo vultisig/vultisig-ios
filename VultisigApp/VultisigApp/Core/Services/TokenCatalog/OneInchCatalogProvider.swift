@@ -19,10 +19,16 @@
 //  token picker's browse list — gets the majors rather than whatever sorts
 //  first alphabetically.
 //
-//  Freshness (TTL / coalescing / fail-open) is governed by `SwapTokenListCache`
-//  at the `TokenSearchService.loadTokens` layer, so this provider stays thin:
-//  fetch → rank → tag → write-through the disk snapshot; on failure serve the
-//  last-good disk snapshot (the offline floor beneath the in-memory cache).
+//  The provider stays thin either way: fetch → rank → tag → write-through the
+//  disk snapshot; on failure serve the last-good disk snapshot. How often that
+//  fetch happens depends on the caller, and the two differ:
+//   - swap source (`TokenSearchService.loadTokens`) — fronted by
+//     `SwapTokenListCache`, which owns the TTL, in-flight coalescing and
+//     fail-open-to-last-good.
+//   - wallet add-token (`TokenSearchService.loadCatalog`) — deliberately NOT
+//     cached there (that cache is `[CoinMeta]`-typed and drives the swap
+//     pickers), so this refetches per screen open with the disk snapshot as its
+//     only floor.
 //
 
 import Foundation
