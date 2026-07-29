@@ -24,8 +24,9 @@ struct TokenSelectionScreen: View {
     @State private var showUnverifiedAddConfirm = false
 
     var elements: [TokenSelectionAsset] {
-        // Local-first: held, then curated presets, then verified provider breadth.
-        // Browse hides `.unverified` — typing a query is what reveals the badged
+        // Local-first: held, then curated presets, then the best N of each
+        // provider's verified breadth. Browse is a shortlist, not the catalog —
+        // typing a query searches the whole of it, including the badged
         // unverified long-tail (`searchedTokens`).
         let assets = tokenViewModel.searchText.isEmpty ?
             tokenViewModel.selectedTokens + tokenViewModel.preExistTokens + tokenViewModel.browseProviderTokens :
