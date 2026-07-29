@@ -86,7 +86,18 @@ actor PasscodeService {
         // Verified, and the mode is only switched afterwards: a silently failed
         // deletion would leave the clear copy readable, so locking would just
         // reload it from the Keychain and the passcode would be decorative.
-        try keyStore.deleteDataKey()
+        do {
+            try keyStore.deleteDataKey()
+        } catch {
+            // Both copies exist. Left alone, `isSet` would report a passcode
+            // while the mode stayed on device auth and every retry failed with
+            // `alreadySet` — a passcode screen protecting nothing, with no way
+            // out. Undo the wrapped copy so the app is back where it started.
+            guard (try? keyStore.deleteWrappedDataKey()) != nil else {
+                throw PasscodeError.inconsistentState
+            }
+            throw error
+        }
 
         session.adopt(dataKey)
         lockService.mode = .passcode
