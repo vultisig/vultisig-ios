@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Your Address Book is empty";
 "addressCopied" = "Address Copied";
 "addToAddressBook" = "Add to Address Book";
+"addUnverifiedTokenMessage" = "Your selection includes unverified tokens. They aren't vetted by a trusted source and can impersonate a real asset — only continue if you trust where each one came from.";
+"addUnverifiedTokenTitle" = "Add unverified tokens?";
 "addVaultsToFolder" = "Select Vaults to add to the folder";
 "advanced" = "Advanced";
 "advancedDescription" = "Reshare, manage security or sign messages.";
@@ -1370,6 +1372,7 @@
 "to" = "To";
 "today" = "Today";
 "tokens" = "Tokens";
+"tokenUnverifiedBadge" = "Unverified";
 "tonStakeBelowMinimum" = "Minimum stake is %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

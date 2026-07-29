@@ -396,8 +396,35 @@ struct CoinService {
 
     // MARK: - Helper Functions
 
-    /// Check if a token appears to be spam based on its name and characteristics
+    /// Check if a token appears to be spam based on its name and characteristics.
+    /// Combines the synchronous heuristics (`isLikelySpam`) with a network
+    /// logo-liveness probe — used by the discovery path, which vets a handful of
+    /// held tokens (the per-token HEAD request is too costly for a browse list).
     private static func isSpamToken(_ token: CoinMeta) async -> Bool {
+        // Cheap, offline heuristics first.
+        if isLikelySpam(token) {
+            return true
+        }
+
+        // Check if logo URL is valid (not 404 or invalid)
+        if await isInvalidLogoURL(token.logo) {
+            return true
+        }
+
+        return false
+    }
+
+    /// Synchronous, offline spam heuristics: suspicious ticker patterns, URL-like
+    /// tickers, non-ASCII lookalikes, and empty logos. Split out from
+    /// `isSpamToken` so the token-search surface can apply the same hard gate to
+    /// the unverified list WITHOUT the per-token logo HEAD request (a browse list
+    /// is far larger than the discovery path's held-token set). This is the
+    /// second gate the dynamic-catalog risk posture relies on: spam never
+    /// surfaces, verified or unverified, browse or search.
+    ///
+    /// `nonisolated` so the token-search surface (a nonisolated static) can apply
+    /// it directly — the heuristics are pure and touch no `@MainActor` state.
+    nonisolated static func isLikelySpam(_ token: CoinMeta) -> Bool {
         // Additional spam filtering patterns
         let suspiciousPatterns = [
             "t.me/",           // Telegram links
@@ -456,11 +483,6 @@ struct CoinService {
         // account holder opened one, so an issuer cannot push an unsolicited
         // token into the asset list the way an ERC-20 airdrop can.
         if token.logo.isEmpty, token.chain != .ripple {
-            return true
-        }
-
-        // Check if logo URL is valid (not 404 or invalid)
-        if await isInvalidLogoURL(token.logo) {
             return true
         }
 

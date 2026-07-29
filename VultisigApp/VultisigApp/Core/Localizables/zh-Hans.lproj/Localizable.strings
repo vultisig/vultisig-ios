@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "您的地址簿是空的";
 "addressCopied" = "地址已复制";
 "addToAddressBook" = "添加到地址簿";
+"addUnverifiedTokenMessage" = "你的选择包含未验证的代币。它们未经可信来源核实，可能会假冒真实资产——请仅在你信任每个代币的来源时继续。";
+"addUnverifiedTokenTitle" = "添加未验证的代币？";
 "addVaultsToFolder" = "选择要添加到文件夹的保险库";
 "advanced" = "高级";
 "advancedDescription" = "重新共享、管理安全或签署消息";
@@ -1372,6 +1374,7 @@
 "to" = "至";
 "today" = "今天";
 "tokens" = "代币";
+"tokenUnverifiedBadge" = "未验证";
 "tonStakeBelowMinimum" = "最低质押为 %@ %@";
 "tonStakingAPY" = "年化收益";
 "tonStakingAPYValue" = "%@%%";

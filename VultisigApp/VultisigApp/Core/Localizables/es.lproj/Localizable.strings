@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Tu libreta de direcciones está vacía";
 "addressCopied" = "Dirección copiada";
 "addToAddressBook" = "Agregar a la Libreta de Direcciones";
+"addUnverifiedTokenMessage" = "Tu selección incluye tokens no verificados. No están validados por una fuente de confianza y pueden suplantar un activo real: continúa solo si confías en el origen de cada uno.";
+"addUnverifiedTokenTitle" = "¿Añadir tokens no verificados?";
 "addVaultsToFolder" = "Selecciona Vaults para agregar a la carpeta";
 "advanced" = "Avanzado";
 "advancedDescription" = "Respaldar, administrar la seguridad o firmar mensajes.";
@@ -1372,6 +1374,7 @@
 "to" = "A";
 "today" = "Hoy";
 "tokens" = "Tokens";
+"tokenUnverifiedBadge" = "No verificado";
 "tonStakeBelowMinimum" = "El staking mínimo es %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

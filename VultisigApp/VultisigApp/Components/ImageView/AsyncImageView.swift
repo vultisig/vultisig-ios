@@ -39,19 +39,30 @@ struct AsyncImageView: View {
                     .clipShape(Circle())
             case .remote(let url):
                 if let url = url {
-                    CachedAsyncImage(url: url, urlCache: .imageCache) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: size.width, height: size.height)
-                            // Matched to the `.resource` branch above. Bundled coin
-                            // art is drawn circular, but remote art is whatever the
-                            // source published — square logos (SOLO, EQ) rendered as
-                            // squares in a list of circles until this clip existed.
-                            .clipShape(Circle())
-                    } placeholder: {
-                        ProgressView()
-                            .frame(width: size.width, height: size.height)
+                    // Phase-based (not `placeholder:`) so a failed load resolves to
+                    // the ticker fallback instead of spinning forever. Long-tail
+                    // catalog tokens routinely carry a logo URL that 404s or serves
+                    // a non-image body — both surface here as `.failure`.
+                    CachedAsyncImage(url: url, urlCache: .imageCache) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: size.width, height: size.height)
+                                // Matched to the `.resource` branch above. Bundled coin
+                                // art is drawn circular, but remote art is whatever the
+                                // source published — square logos (SOLO, EQ) rendered as
+                                // squares in a list of circles until this clip existed.
+                                .clipShape(Circle())
+                        case .failure:
+                            fallbackText
+                        case .empty:
+                            ProgressView()
+                                .frame(width: size.width, height: size.height)
+                        @unknown default:
+                            fallbackText
+                        }
                     }
                 } else {
                     fallbackText
