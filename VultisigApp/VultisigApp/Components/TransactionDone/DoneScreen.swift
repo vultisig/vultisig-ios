@@ -24,6 +24,9 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import StoreKit
+#endif
 
 struct DoneScreen<
     TokenContent: View,
@@ -33,6 +36,16 @@ struct DoneScreen<
     let input: TransactionDonePayload
 
     @StateObject private var statusService: DoneStatusService
+
+    #if os(iOS)
+    @Environment(\.requestReview) private var requestReview
+
+    /// Flipped once the arrival animation has actually finished. The review
+    /// sheet waits on this rather than on `isExpanded`, which only says the
+    /// spring has been *scheduled* — it flips synchronously inside
+    /// `withAnimation`, half a second before the hero has arrived.
+    @State private var hasSettled = false
+    #endif
 
     /// Nav-bar title for the screen. Defaults to "Done"; the initiator
     /// Send/Swap flows pass "Overview" so the in-place keysign→overview
@@ -61,6 +74,11 @@ struct DoneScreen<
     /// then the hero holds ~0.8s — so the crossfade and the settle-up read
     /// as two sequential beats instead of overlapping into one blur.
     private let revealDelay: UInt64 = 1_150_000_000 // ≈ 0.35s crossfade + 0.8s hold
+
+    /// Response of the settle spring, and so roughly how long the hero takes
+    /// to arrive. Named rather than inlined because the review prompt has to
+    /// wait it out, and a second literal would drift away from the animation.
+    private let settleResponse: Double = 0.55
 
     /// Construct via `DoneStatusServiceFactory`. The
     /// `statusService` autoclosure is evaluated lazily by `@StateObject`
@@ -145,23 +163,64 @@ struct DoneScreen<
         }
         .onDisappear { statusService.stop() }
         .task { await revealAfterHold() }
+        #if os(iOS)
+        .onChange(of: statusService.status) { _, _ in
+            handleConfirmedTransactionIfNeeded()
+        }
+        #endif
     }
 
     /// Holds the centered hero for `revealDelay`, then springs to the
     /// expanded layout. Reduce Motion skips the hold and the animation.
     private func revealAfterHold() async {
-        guard !reduceMotion else {
+        if reduceMotion {
             revealPhase = .expanded
+        } else {
+            try? await Task.sleep(nanoseconds: revealDelay)
+            // Respect `.task` cancellation on disappear — don't flip state /
+            // animate a view that's already gone (e.g. after `restart()`).
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: settleResponse, dampingFraction: 0.85)) {
+                revealPhase = .expanded
+            }
+            #if os(iOS)
+            // `withAnimation` returns as soon as the spring is scheduled, so
+            // wait it out before anything may present over the settling hero.
+            try? await Task.sleep(nanoseconds: UInt64(settleResponse * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            #endif
+        }
+        #if os(iOS)
+        hasSettled = true
+        // The only call site that can see a `.confirmed` which `onChange`
+        // never delivers — one the poller seeded before the screen appeared —
+        // and the one that retries a `.confirmed` that arrived mid-reveal and
+        // was turned away for not having settled yet.
+        handleConfirmedTransactionIfNeeded()
+        #endif
+    }
+
+    #if os(iOS)
+    /// Counts a confirmed transaction and, if the throttle allows, asks for an
+    /// App Store review.
+    ///
+    /// Deliberately safe to call repeatedly: this is the one place in the app
+    /// where "confirmed" is decided for every flow, and the view is not
+    /// guaranteed to observe it once — a re-render, a re-entry, or the poller
+    /// re-reporting a terminal status all land here again. `AppReviewService`
+    /// keys everything on the transaction hash, so the extra calls are inert
+    /// and, importantly, cannot spend an ask on a transaction already counted.
+    ///
+    /// Waiting for `hasSettled` keeps the system sheet from landing on top of
+    /// the hero settle animation.
+    private func handleConfirmedTransactionIfNeeded() {
+        guard statusService.status == .confirmed, hasSettled else { return }
+        guard AppReviewService.shared.claimReviewPrompt(forConfirmedTransaction: input.hash) else {
             return
         }
-        try? await Task.sleep(nanoseconds: revealDelay)
-        // Respect `.task` cancellation on disappear — don't flip state /
-        // animate a view that's already gone (e.g. after `restart()`).
-        guard !Task.isCancelled else { return }
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
-            revealPhase = .expanded
-        }
+        requestReview()
     }
+    #endif
 }
 
 // MARK: - Default slot constructors
