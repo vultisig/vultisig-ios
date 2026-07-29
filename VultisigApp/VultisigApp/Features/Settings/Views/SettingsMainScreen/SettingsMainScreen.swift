@@ -95,8 +95,9 @@ struct SettingsMainScreen: View {
 
     func groupView(for group: SettingsOptionGroup) -> some View {
         SettingsSectionView(title: group.title.localized) {
-            ForEach(group.options, id: \.self) { option in
+            ForEach(Array(group.options.enumerated()), id: \.element) { index, option in
                 optionView(for: option, shouldHighlight: false)
+                    .commonListItemContainer(index: index, itemsCount: group.options.count)
             }
         }
     }

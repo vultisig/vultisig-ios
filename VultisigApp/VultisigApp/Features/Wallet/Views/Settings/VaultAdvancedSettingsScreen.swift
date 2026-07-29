@@ -19,15 +19,13 @@ struct VaultAdvancedSettingsScreen: View {
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                SettingsSectionContainerView {
-                    VStack(spacing: 0) {
-                        reshareVaultRow
-                        dilithiumKeygenRow
-                        customMessageRow
-                        onChainSecurityRow
-                        customRPCRow
+                VStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.element) { index, row in
+                        view(for: row)
+                            .commonListItemContainer(index: index, itemsCount: rows.count)
                     }
                 }
+                .commonListContainer()
             }
         }
         .screenTitle("advanced".localized)
@@ -48,55 +46,87 @@ struct VaultAdvancedSettingsScreen: View {
         }
     }
 
-    @ViewBuilder
-    var reshareVaultRow: some View {
+    /// The rows this screen can show, composed as an ordered array so each row
+    /// knows its position — that is what drives the shared list container's
+    /// separators and end-row corner rounding.
+    enum Row {
+        case reshareVault
+        case dilithiumKeygen
+        case customMessage
+        case onChainSecurity
+        case customRPC
+    }
+
+    var rows: [Row] {
+        var rows: [Row] = []
         if !vault.isFastVault && vault.publicKeyMLDSA44 == nil {
-            Button {
-                router.navigate(to: VaultRoute.reshare(vault: vault))
-            } label: {
-                SettingsCommonOptionView(icon: .upload4, title: "reshare".localized, subtitle: "reshareVault".localized)
-            }
+            rows.append(.reshareVault)
+        }
+        // Generating an MLDSA-44 post-quantum key is a one-time action, so hide
+        // the row entirely once the vault already has one rather than surfacing
+        // an entry point that dead-ends at an "already generated" notice.
+        if vault.publicKeyMLDSA44 == nil {
+            rows.append(.dilithiumKeygen)
+        }
+        rows.append(contentsOf: [.customMessage, .onChainSecurity, .customRPC])
+        return rows
+    }
+
+    @ViewBuilder
+    func view(for row: Row) -> some View {
+        switch row {
+        case .reshareVault:
+            reshareVaultRow
+        case .dilithiumKeygen:
+            dilithiumKeygenRow
+        case .customMessage:
+            customMessageRow
+        case .onChainSecurity:
+            onChainSecurityRow
+        case .customRPC:
+            customRPCRow
         }
     }
 
-    /// Generating an MLDSA-44 post-quantum key is a one-time action, so
-    /// hide the row entirely once the vault already has one rather than
-    /// surfacing an entry point that dead-ends at an "already generated"
-    /// notice.
-    @ViewBuilder
+    var reshareVaultRow: some View {
+        Button {
+            router.navigate(to: VaultRoute.reshare(vault: vault))
+        } label: {
+            SettingsCommonOptionView(icon: .upload4, title: "reshare".localized, subtitle: "reshareVault".localized)
+        }
+    }
+
     var dilithiumKeygenRow: some View {
-        if vault.publicKeyMLDSA44 == nil {
-            Button {
-                if vault.isFastVault {
-                    router.navigate(
-                        to: KeygenRoute.fastVaultPassword(
-                            tssType: .SingleKeygen,
-                            vault: vault,
-                            selectedTab: .fast,
-                            isExistingVault: true,
-                            singleKeygenType: .MLDSA
-                        )
+        Button {
+            if vault.isFastVault {
+                router.navigate(
+                    to: KeygenRoute.fastVaultPassword(
+                        tssType: .SingleKeygen,
+                        vault: vault,
+                        selectedTab: .fast,
+                        isExistingVault: true,
+                        singleKeygenType: .MLDSA
                     )
-                } else {
-                    router.navigate(
-                        to: KeygenRoute.peerDiscovery(
-                            tssType: .SingleKeygen,
-                            vault: vault,
-                            selectedTab: .secure,
-                            fastSignConfig: nil,
-                            keyImportInput: nil,
-                            setupType: nil,
-                            singleKeygenType: .MLDSA
-                        )
+                )
+            } else {
+                router.navigate(
+                    to: KeygenRoute.peerDiscovery(
+                        tssType: .SingleKeygen,
+                        vault: vault,
+                        selectedTab: .secure,
+                        fastSignConfig: nil,
+                        keyImportInput: nil,
+                        setupType: nil,
+                        singleKeygenType: .MLDSA
                     )
-                }
-            } label: {
-                SettingsCommonOptionView(
-                    icon: .atomShield,
-                    title: "dilithiumKeygen".localized,
-                    subtitle: "dilithiumKeygenSubtitle".localized
                 )
             }
+        } label: {
+            SettingsCommonOptionView(
+                icon: .atomShield,
+                title: "dilithiumKeygen".localized,
+                subtitle: "dilithiumKeygenSubtitle".localized
+            )
         }
     }
 
