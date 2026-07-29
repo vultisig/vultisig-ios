@@ -120,13 +120,25 @@ final class MarketChartTests: XCTestCase {
         XCTAssertGreaterThan(domain.upperBound, 1.0)
     }
 
-    func testMovingSeriesUsesItsOwnBounds() {
+    func testMovingSeriesDomainLeavesHeadroomAroundItsBounds() {
         let chart = MarketChart(points: [
             MarketChartPoint(date: Date(timeIntervalSince1970: 0), price: 5),
             MarketChartPoint(date: Date(timeIntervalSince1970: 60), price: 15)
         ])
-        XCTAssertEqual(chart.priceDomain.lowerBound, 5)
-        XCTAssertEqual(chart.priceDomain.upperBound, 15)
+
+        // Span 10, headroom 8% ⇒ 0.8 either side, so the stroke at the high and
+        // low is not clipped by the plot's edge.
+        XCTAssertEqual(chart.priceDomain.lowerBound, 4.2, accuracy: 0.0001)
+        XCTAssertEqual(chart.priceDomain.upperBound, 15.8, accuracy: 0.0001)
+    }
+
+    func testDomainAlwaysContainsEverySample() {
+        let chart = Self.makeChart(count: 50)
+        let domain = chart.priceDomain
+
+        for point in chart.points {
+            XCTAssertTrue(domain.contains(point.price))
+        }
     }
 
     func testAllZeroSeriesStillGetsANonDegenerateDomain() {

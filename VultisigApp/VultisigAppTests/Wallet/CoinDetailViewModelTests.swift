@@ -185,6 +185,10 @@ final class CoinDetailViewModelTests: XCTestCase {
         let viewModel = CoinDetailViewModel(coin: Self.coin(), marketDataService: service)
         viewModel.loadMarketDataIfNeeded()
 
+        // The `.day` request must genuinely be in flight before we switch away,
+        // or the test would prove nothing about a late answer arriving.
+        try await waitUntilAsync { await service.requestedRanges.contains(.day) }
+
         // Switch away before the first range ever answers, then let the stale
         // one through after the new one has landed.
         viewModel.selectRange(.week)
@@ -196,6 +200,8 @@ final class CoinDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.chart, weekChart)
         XCTAssertEqual(viewModel.selectedRange, .week)
+        let requested = await service.requestedRanges
+        XCTAssertEqual(requested, [.day, .week], "the abandoned request really was made and really did answer")
     }
 
     // MARK: - Change
@@ -261,6 +267,22 @@ final class CoinDetailViewModelTests: XCTestCase {
             try await Task.sleep(nanoseconds: 5_000_000)
         }
     }
+
+    private func waitUntilAsync(
+        timeout: TimeInterval = 3,
+        _ condition: () async -> Bool,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while await !condition() {
+            if Date() > deadline {
+                XCTFail("Timed out waiting for condition", file: file, line: line)
+                return
+            }
+            try await Task.sleep(nanoseconds: 5_000_000)
+        }
+    }
 }
 
 // MARK: - Test double
@@ -271,7 +293,10 @@ final class CoinDetailViewModelTests: XCTestCase {
 private actor GatedMarketDataService: MarketDataServiceProtocol {
     private var charts: [MarketChartRange: MarketChart?] = [:]
     private var statsValue: CoinMarketStats?
-    private var waiters: [MarketChartRange: CheckedContinuation<Void, Never>] = [:]
+    /// One entry per *waiting request*, not per range: the same range can be
+    /// asked for twice (a currency reload after a switch), and dropping the
+    /// earlier waiter would leak a suspended task.
+    private var waiters: [MarketChartRange: [CheckedContinuation<Void, Never>]] = [:]
     private var released: Set<MarketChartRange> = []
     private(set) var requestedRanges: [MarketChartRange] = []
 
@@ -283,29 +308,32 @@ private actor GatedMarketDataService: MarketDataServiceProtocol {
         statsValue = stats
     }
 
-    /// Lets the pending (or next) answer for `range` through.
+    /// Lets every pending — and any future — answer for `range` through.
     func release(_ range: MarketChartRange) {
         released.insert(range)
-        waiters.removeValue(forKey: range)?.resume()
+        let pending = waiters.removeValue(forKey: range) ?? []
+        pending.forEach { $0.resume() }
     }
 
     func chart(
-        for coin: CoinMeta,
+        for _: CoinMeta,
         range: MarketChartRange,
-        currency: SettingsCurrency
+        currency _: SettingsCurrency
     ) async -> MarketChart? {
         requestedRanges.append(range)
 
         if !released.contains(range) {
             await withCheckedContinuation { continuation in
-                waiters[range] = continuation
+                waiters[range, default: []].append(continuation)
             }
         }
 
         return charts[range] ?? nil
     }
 
-    func stats(for coin: CoinMeta, currency: SettingsCurrency) async -> CoinMarketStats? {
+    // `async` comes from the protocol requirement, not from this body.
+    // swiftlint:disable:next async_without_await
+    func stats(for _: CoinMeta, currency _: SettingsCurrency) async -> CoinMarketStats? {
         statsValue
     }
 }

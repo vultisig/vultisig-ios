@@ -60,6 +60,13 @@ struct MarketChart: Equatable, Sendable {
         return (last - first) / abs(first)
     }
 
+    /// Fraction of the window's span left free above and below the line.
+    ///
+    /// With a domain of exactly `min...max` the highest and lowest samples land
+    /// on the plot's edges and the stroke is clipped down the middle, which
+    /// reads as the chart being cut off.
+    static let domainHeadroom = 0.08
+
     /// Closed y-domain for the plot.
     ///
     /// A perfectly flat series has `min == max`, which Charts renders as a
@@ -70,12 +77,14 @@ struct MarketChart: Equatable, Sendable {
         guard let lowest = prices.min(), let highest = prices.max() else {
             return 0...1
         }
-        guard highest > lowest else {
+        let span = highest - lowest
+        guard span > 0 else {
             let padding = abs(lowest) * 0.05
             let inset = padding > 0 ? padding : 1
             return (lowest - inset)...(highest + inset)
         }
-        return lowest...highest
+        let inset = span * Self.domainHeadroom
+        return (lowest - inset)...(highest + inset)
     }
 
     /// Evenly thins the series to at most `limit` samples, always keeping the

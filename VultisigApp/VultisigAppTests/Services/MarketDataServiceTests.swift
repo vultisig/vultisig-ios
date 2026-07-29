@@ -340,6 +340,8 @@ private actor StubHTTPClient: HTTPClientProtocol {
         self.error = error
     }
 
+    // `async` comes from `HTTPClientProtocol`, not from this body.
+    // swiftlint:disable:next async_without_await
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         paths.append(target.path)
         if let error { throw error }
