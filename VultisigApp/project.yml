@@ -80,7 +80,12 @@ packages:
     # dual-writes into BOTH the field AND the legacy memo carrier, with signers
     # preferring the field and falling back to the memo so mixed-version device
     # pairs stay byte-identical in MPC keysign.
-    revision: a16c710f0b0dfb6e2c8debde54b72414a04feb9a
+    #
+    # Advanced to commondata `main`'s current HEAD per review request. Verified
+    # first: every commit between the prior pin and this one only touches repo
+    # tooling (`CLAUDE.md`, `.claude/hooks`, issue/PR templates) — no `.proto`
+    # file changed, so this is a no-op for generated Swift.
+    revision: 63a65c37c50f6a944f6791d36eb905810af82760
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →
