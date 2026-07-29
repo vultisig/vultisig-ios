@@ -412,20 +412,76 @@ final class RippleSignRippleTests: XCTestCase {
         """
     }
 
+    /// A `Payment` has a SECOND gate: `bindPaymentToReviewedValues` also demands
+    /// `Destination == toAddress` and `Amount == toAmount`. So a fixture whose
+    /// reviewed values do not match its JSON is refused whatever the currency
+    /// walk does, and would stay green if the walk stopped covering SendMax /
+    /// DeliverMin entirely.
+    ///
+    /// These payloads therefore bind CLEANLY — reviewed destination and amount
+    /// equal to the fixture's — so the currency walk is the only thing left that
+    /// can reject. `testPaymentWithAnUppercase…CurrencyIsAccepted` below is the
+    /// control that proves the binding really does pass.
+    private func assertBoundPaymentRefused(_ rawJson: String, _ message: String) {
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload), message)
+    }
+
+    private func assertBoundPaymentAccepted(_ rawJson: String, _ message: String) {
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+        XCTAssertNoThrow(try RippleHelper.getPreSignedInputData(keysignPayload: payload), message)
+    }
+
     /// `SendMax` is a spend authorisation shown on the Verify screen. Displaying
     /// `100 usd` and signing `100 USD` authorises a different asset entirely, and
     /// it sits outside the `Amount` branch the original gate covered.
     func testPaymentWithAMangledSendMaxCurrencyIsRefused() {
-        assertRefused(
+        assertBoundPaymentRefused(
             Self.paymentJson(field: "SendMax", currency: "usd"),
             "a SendMax the signer would alter must be refused"
         )
     }
 
     func testPaymentWithAMangledDeliverMinCurrencyIsRefused() {
-        assertRefused(
+        assertBoundPaymentRefused(
             Self.paymentJson(field: "DeliverMin", currency: "usd"),
             "a DeliverMin the signer would alter must be refused"
+        )
+    }
+
+    /// The controls that make the two refusals above load-bearing: the same
+    /// fixtures with an already-uppercase code SIGN. Without these, a refusal
+    /// proves only that something objected, not that the currency walk did.
+    func testPaymentWithAnUppercaseSendMaxCurrencyIsAccepted() {
+        assertBoundPaymentAccepted(
+            Self.paymentJson(field: "SendMax", currency: "USD"),
+            "the payload binds, so only the currency can be the reason for a refusal"
+        )
+    }
+
+    func testPaymentWithAnUppercaseDeliverMinCurrencyIsAccepted() {
+        assertBoundPaymentAccepted(
+            Self.paymentJson(field: "DeliverMin", currency: "USD"),
+            "the payload binds, so only the currency can be the reason for a refusal"
+        )
+    }
+
+    /// A whitespace-edged 3-byte code is refused in SendMax / DeliverMin too —
+    /// the raw-string judgement is not special-cased to any field.
+    func testPaymentWithAWhitespaceEdgedSendMaxCurrencyIsRefused() {
+        assertBoundPaymentRefused(
+            Self.paymentJson(field: "SendMax", currency: "Ab "),
+            "a SendMax code whose raw bytes the signer would alter must be refused"
         )
     }
 
