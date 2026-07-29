@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "La tua rubrica è vuota";
 "addressCopied" = "Indirizzo copiato";
 "addToAddressBook" = "Aggiungi alla Rubrica";
+"addUnverifiedTokenMessage" = "La tua selezione include token non verificati. Non sono controllati da una fonte attendibile e possono impersonare un asset reale: continua solo se ti fidi della provenienza di ciascuno.";
+"addUnverifiedTokenTitle" = "Aggiungere token non verificati?";
 "addVaultsToFolder" = "Seleziona i Vault da aggiungere alla cartella";
 "advanced" = "Avanzato";
 "advancedDescription" = "Reshare, gestire i messaggi di sicurezza o firma.";
@@ -1354,6 +1356,7 @@
 "to" = "A";
 "today" = "Oggi";
 "tokens" = "Token";
+"tokenUnverifiedBadge" = "Non verificato";
 "tonStakeBelowMinimum" = "Lo stake minimo è %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

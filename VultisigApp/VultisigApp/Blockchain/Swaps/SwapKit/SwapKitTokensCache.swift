@@ -24,7 +24,12 @@ private let logger = Log.swap.store
 final class SwapKitTokensCache: DestinationTokenProvider {
     static let shared = SwapKitTokensCache()
 
-    let providerKind: String = "swapKit"
+    let kind: String = "swapKit"
+    // Long-tail cross-chain destinations: coingeckoId presence is only a weak
+    // proxy, so SwapKit tokens are the weakest trust tier. They still populate
+    // the swap destination picker (all destinations are swappable); the wallet
+    // search catalog gates them out via verification-to-surface.
+    let verification: TokenVerification = .unverified
 
     private let httpClient: HTTPClientProtocol
     private let providerCache: SwapKitProviderCache

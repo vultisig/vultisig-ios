@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Ihr Adressbuch ist leer";
 "addressCopied" = "Adresse kopiert";
 "addToAddressBook" = "Zum Adressbuch Hinzufügen";
+"addUnverifiedTokenMessage" = "Deine Auswahl enthält nicht verifizierte Token. Sie sind von keiner vertrauenswürdigen Quelle geprüft und können ein echtes Asset imitieren — fahre nur fort, wenn du der Herkunft jedes Tokens vertraust.";
+"addUnverifiedTokenTitle" = "Nicht verifizierte Token hinzufügen?";
 "addVaultsToFolder" = "Wähle Tresore aus, die dem Ordner hinzugefügt werden sollen";
 "advanced" = "Erweitert";
 "advancedDescription" = "Umgestalten, Sicherheits- oder Zeichennachrichten verwalten.";
@@ -1354,6 +1356,7 @@
 "to" = "Zu";
 "today" = "Heute";
 "tokens" = "Token";
+"tokenUnverifiedBadge" = "Nicht verifiziert";
 "tonStakeBelowMinimum" = "Mindesteinsatz beträgt %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

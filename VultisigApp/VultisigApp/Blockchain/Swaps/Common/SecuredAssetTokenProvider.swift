@@ -21,7 +21,9 @@ import Foundation
 @MainActor
 final class SecuredAssetTokenProvider {
 
-    let providerKind: String = "thorchainSecured"
+    let kind: String = "thorchainSecured"
+    // The THORChain secured-asset universe is a curated catalog.
+    let verification: TokenVerification = .curated
 
     private let catalog: SecuredAssetCatalog
     private let cacheTTL: TimeInterval = 5 * 60

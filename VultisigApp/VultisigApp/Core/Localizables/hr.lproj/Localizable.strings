@@ -27,6 +27,8 @@
 "addressBookEmptyTitle" = "Vaš je adresar prazan";
 "addressCopied" = "Adresa kopirana";
 "addToAddressBook" = "Dodaj u Adresar";
+"addUnverifiedTokenMessage" = "Vaš odabir uključuje nepotvrđene tokene. Nije ih provjerio pouzdan izvor i mogu oponašati pravu imovinu — nastavite samo ako vjerujete izvoru svakog od njih.";
+"addUnverifiedTokenTitle" = "Dodati nepotvrđene tokene?";
 "addVaultsToFolder" = "Odaberite trezore za dodavanje u mapu";
 "advanced" = "Napredno";
 "advancedDescription" = "Popravite, upravljajte sigurnosnim ili potpisati poruke.";
@@ -1354,6 +1356,7 @@
 "to" = "Do";
 "today" = "Danas";
 "tokens" = "Tokeni";
+"tokenUnverifiedBadge" = "Neprovjereno";
 "tonStakeBelowMinimum" = "Minimalni ulog je %@ %@";
 "tonStakingAPY" = "APY";
 "tonStakingAPYValue" = "%@%%";

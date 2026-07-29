@@ -380,7 +380,7 @@ final class SwapCoinSelectionViewModelTests: XCTestCase {
 /// assert what the picker publishes while the fetch is still in flight.
 @MainActor
 private final class GatedDestinationTokenProvider: DestinationTokenProvider {
-    let providerKind = "gatedTestProvider"
+    let kind = "gatedTestProvider"
     private(set) var wasQueried = false
     private var released = false
     private var continuations: [CheckedContinuation<Void, Never>] = []

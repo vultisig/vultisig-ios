@@ -8,39 +8,83 @@ import SwiftUI
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
 
-    @Published var searchText: String = .empty
-    @Published var tokens: [CoinMeta] = []
+    /// Re-filters on `didSet` — i.e. AFTER the new value is stored. Driving this
+    /// from `$searchText` instead is a trap: `@Published` fires its publisher in
+    /// `willSet`, so a subscriber that reads `searchText` back (rather than using
+    /// the emitted value) filters against the PREVIOUS keystroke — type `USDCC`
+    /// and you get the results for `USDC`, delete the `C` and `USDC` disappears.
+    @Published var searchText: String = .empty {
+        didSet { updateSearchedTokens(query: searchText) }
+    }
+    /// Held non-native coins for the chain (browse, shown first).
     @Published var selectedTokens: [CoinMeta] = []
+    /// Curated `TokensStore` presets not held/hidden (browse, after held). Always
+    /// present synchronously — independent of the async provider fetch.
     @Published var preExistTokens: [CoinMeta] = []
+    /// Verified provider breadth for browse (1inch / Jupiter), deduped
+    /// against the local tokens above. Empty until the provider fetch lands.
+    @Published var browseProviderTokens: [CoinMeta] = []
+    /// Search results over the full local-first pool (local + verified +
+    /// unverified). Unverified rows carry the ⚠ badge — typing is what reveals
+    /// the unverified long-tail.
     @Published var searchedTokens: [CoinMeta] = []
     @Published var isLoading: Bool = false
     @Published var error: Error?
+    /// `CoinMeta.uniqueId → verification` for the loaded catalog, so the row
+    /// views can badge each token. Anything not in the map (vault-held coins,
+    /// curated presets) is treated as `.curated` (no badge).
+    @Published var verificationByUniqueId: [String: TokenVerification] = [:]
+
+    /// Raw vault-independent catalog results, kept so a search-text change or a
+    /// provider outcome re-derives without refetching. Empty until (or if) the
+    /// fetch lands — the local presets/held always render regardless.
+    private var catalogSurfaceable: [CoinMeta] = []
+    private var catalogUnverified: [CoinMeta] = []
+    /// The full local-first search pool (curated presets + verified + unverified),
+    /// filtered by the query into `searchedTokens`. Always contains the presets
+    /// so a curated/local token stays searchable even when the provider fetch
+    /// is pending or fails.
+    private var searchableTokens: [CoinMeta] = []
+
     private var loadingTask: Task<Void, Never>?
 
     private let logic = TokenSelectionLogic.shared
+    private let loadCatalog: (Chain) async throws -> TokenSearchResult
 
-    var showRetry: Bool {
-        return logic.showRetry(error: error)
+    /// `loadCatalog` is injectable so tests can drive the provider outcome
+    /// (including a throw) without the network. Production uses the shared
+    /// `TokenSearchService`.
+    init(loadCatalog: @escaping (Chain) async throws -> TokenSearchResult = { try await TokenSearchService.shared.loadCatalog(for: $0) }) {
+        self.loadCatalog = loadCatalog
+    }
+
+    /// Verification for a row — defaults to `.curated` (unbadged) for tokens the
+    /// catalog didn't tag (held coins, curated `TokensStore` presets).
+    func verification(for coin: CoinMeta) -> TokenVerification {
+        verificationByUniqueId[coin.uniqueId] ?? .curated
     }
 
     func loadData(chain: Chain, vault: Vault) {
-        // Cancel any existing loading task
         loadingTask?.cancel()
+        loadingTask = Task { [weak self] in
+            await self?.load(chain: chain, vault: vault)
+        }
+    }
 
-        // Reset error state
+    /// Awaitable load — the local pool renders synchronously first (so browse +
+    /// search work before any network), then the provider breadth is folded in.
+    /// Exposed so tests can await a deterministic load with an injected catalog.
+    func load(chain: Chain, vault: Vault) async {
         error = nil
 
-        // Load basic tokens immediately (synchronous)
         let hiddenTokens = vault.hiddenTokens
         let chainCoins = vault.coins(for: chain)
-        selectedTokens = logic.selectedTokens(chainCoins: chainCoins, tokens: tokens)
-        preExistTokens = logic.preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
 
-        // Start async loading of external tokens
-        loadingTask = Task { [weak self] in
-            guard let self else { return }
-            await self.loadExternalTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
-        }
+        // Local-first, synchronous: held + curated presets are always present
+        // and searchable, independent of the async provider fetch.
+        recompute(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
+
+        await loadExternalTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
     }
 
     func cancelLoading() {
@@ -48,9 +92,12 @@ class TokenSelectionViewModel: ObservableObject {
         isLoading = false
     }
 
-    func updateSearchedTokens(chain: Chain, vault: Vault) {
-        let chainCoins = vault.coins(for: chain)
-        searchedTokens = logic.filteredTokens(chainCoins: chainCoins, searchText: searchText, tokens: tokens)
+    /// Re-filters the already-built pool against `query`. Takes the query as a
+    /// parameter rather than reading `searchText` so it can never observe a
+    /// half-applied edit. No vault read is needed — the pool is derived in
+    /// `recompute` and already carries the vault's held tokens.
+    func updateSearchedTokens(query: String) {
+        searchedTokens = logic.filteredTokens(searchText: query, tokens: searchableTokens)
     }
 
     private func loadExternalTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) async {
@@ -60,24 +107,56 @@ class TokenSelectionViewModel: ObservableObject {
         error = nil
 
         do {
-            let result = try await logic.loadExternalTokens(
-                chain: chain,
-                chainCoins: chainCoins,
-                currentTokens: tokens,
-                hiddenTokens: hiddenTokens
-            )
-
-            if !Task.isCancelled {
-                tokens.append(contentsOf: result.newTokens)
-                selectedTokens = result.updatedSelectedTokens
-                preExistTokens = result.updatedPreExistTokens
+            let result = try await loadCatalog(chain)
+            guard !Task.isCancelled else {
+                isLoading = false
+                return
             }
+            catalogSurfaceable = result.surfaceable
+            catalogUnverified = result.unverified
+            verificationByUniqueId = result.verificationByUniqueId
         } catch {
-            // Capture the error for UI display
+            // Fail open: keep the local presets/held (already rendered) fully
+            // searchable rather than blanking the list, and re-derive from what's
+            // local below. The error is recorded (not rendered) — the catalog has
+            // no failure the user can act on: providers already fail open to the
+            // bundled floor + last-good disk snapshot, so there is nothing to retry.
             self.error = error
         }
 
+        if !Task.isCancelled {
+            recompute(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
+        }
         isLoading = false
+    }
+
+    /// Re-derive every visible list from the local presets/held + the current
+    /// (possibly empty) catalog. Ordering is local-first everywhere: held, then
+    /// curated presets, then provider breadth (deduped by `uniqueId`). Browse
+    /// shows curated/local + verified; search adds the badged unverified long-tail.
+    private func recompute(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) {
+        // Enrich held coins with catalog metadata where available.
+        let catalogMetas = catalogSurfaceable + catalogUnverified
+        selectedTokens = logic.selectedTokens(chainCoins: chainCoins, tokens: catalogMetas)
+        preExistTokens = logic.preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
+
+        let localIds = Set((selectedTokens + preExistTokens).map { $0.uniqueId })
+        // Provider verified breadth (curated overlaps are already local): drop
+        // anything local or user-hidden.
+        let verifiedBreadth = logic.providerTokens(catalogSurfaceable, excludingLocal: localIds, hiddenTokens: hiddenTokens)
+        let verifiedIds = localIds.union(verifiedBreadth.map { $0.uniqueId })
+        let unverifiedBreadth = logic.providerTokens(catalogUnverified, excludingLocal: verifiedIds, hiddenTokens: hiddenTokens)
+
+        browseProviderTokens = verifiedBreadth
+        // Held tokens lead the search pool. Excluding them (they're "already
+        // added") makes a search for a token the vault holds return NOTHING,
+        // which reads as the catalog being broken — search a held VULT on
+        // Ethereum and the curated token is simply absent. They render with
+        // their selected checkmark, so being held is already visible.
+        searchableTokens = TokenSelectionLogic.mergeLocalFirst(
+            [selectedTokens, preExistTokens, verifiedBreadth, unverifiedBreadth]
+        )
+        searchedTokens = logic.filteredTokens(searchText: searchText, tokens: searchableTokens)
     }
 }
 
@@ -86,95 +165,94 @@ class TokenSelectionViewModel: ObservableObject {
 struct TokenSelectionLogic {
     static let shared = TokenSelectionLogic()
 
-    private let searchService = TokenSearchService.shared
-
     private init() {}
 
+    /// The vault's held non-native coins for browse, enriched with catalog
+    /// metadata (logo / priceProviderId) when the catalog carries the SAME token.
+    ///
+    /// Matching is by `uniqueId` (chain + ticker + contract), never by ticker
+    /// alone: a ticker match would let an unverified lookalike sharing a held
+    /// ticker (e.g. a fake `USDC` on a different contract) ride into the held set
+    /// and auto-surface in browse. Each held coin yields exactly one row — the
+    /// catalog meta when present, else the coin's own meta.
     func selectedTokens(chainCoins: [Coin], tokens: [CoinMeta]) -> [CoinMeta] {
-        let tickers = chainCoins
+        let catalogByUniqueId = Dictionary(
+            tokens.map { ($0.uniqueId, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        return chainCoins
             .filter { !$0.isNativeToken }
-            .map { $0.ticker.lowercased() }
-
-        let filteredTokens = tokens.filter { token in
-            tickers.contains(token.ticker.lowercased())
-        }
-        // Convert tickers to tokens if they are not already in the existing tokens list
-        let tickerTokens = chainCoins.filter { coin in
-            tickers.contains(coin.ticker.lowercased()) &&
-            !tokens.contains { token in token.ticker.lowercased() == coin.ticker.lowercased() }
-        }.map { coin in
-            coin.toCoinMeta()
-        }
-
-        return (filteredTokens + tickerTokens).uniqueBy { $0.uniqueId }
+            .map { coin in
+                let coinMeta = coin.toCoinMeta()
+                return catalogByUniqueId[coinMeta.uniqueId] ?? coinMeta
+            }
+            .uniqueBy { $0.uniqueId }
     }
 
     func preExistingTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) -> [CoinMeta] {
-        let tickers = chainCoins
-            .filter { !$0.isNativeToken }
-            .map { $0.ticker.lowercased() }
+        // Exclude a curated preset only when the vault holds THAT exact token
+        // (by uniqueId), never every preset sharing a held ticker: a ticker match
+        // would drop the vetted `USDC` preset from browse whenever the vault
+        // holds a lookalike `USDC` on a different contract.
+        let heldIds = Set(
+            chainCoins
+                .filter { !$0.isNativeToken }
+                .map { $0.toCoinMeta().uniqueId }
+        )
 
-        return TokensStore.TokenSelectionAssets
+        // The curated per-chain floor is sourced through the catalog's bundled
+        // provider (already scoped to `chain`) rather than reading the preset
+        // array directly. The dynamic overlay for this screen is unchanged — it
+        // still flows through `loadExternalTokens` -> `TokenSearchService`.
+        return BundledTokensProvider.curatedTokens(for: chain, defaults: .standard)
             .filter { token in
-                token.chain == chain &&
                 !token.isNativeToken &&
-                !tickers.contains(token.ticker.lowercased()) &&
+                !heldIds.contains(token.uniqueId) &&
                 !hiddenTokens.contains { $0.matches(token) }
             }
     }
 
-    func filteredTokens(chainCoins: [Coin], searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
+    /// Provider tokens not already represented by a local token (by `uniqueId`)
+    /// and not user-hidden. Preserves input order — used to fold the dynamic
+    /// breadth in *after* the curated/local tokens without duplicating or
+    /// re-surfacing a token the user removed.
+    func providerTokens(_ tokens: [CoinMeta], excludingLocal localIds: Set<String>, hiddenTokens: [HiddenToken]) -> [CoinMeta] {
+        tokens.filter { token in
+            !localIds.contains(token.uniqueId) &&
+            !hiddenTokens.contains { $0.matches(token) }
+        }
+    }
+
+    /// Ticker matches over the whole local-first pool. Nothing is excluded here:
+    /// the pool already holds each token exactly once (deduped by `uniqueId`),
+    /// held tokens included, so search finds everything browse can show plus the
+    /// badged unverified long-tail. A same-ticker lookalike on a different
+    /// contract is a distinct `uniqueId` and is revealed alongside the real one —
+    /// that visibility is the point of the badge.
+    func filteredTokens(searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
 
-        let tickers = chainCoins
-            .filter { !$0.isNativeToken }
-            .map { $0.ticker.lowercased() }
-
         let filtered = tokens
-            .filter {
-                $0.ticker.lowercased().contains(searchText.lowercased()) && !tickers.contains($0.ticker.lowercased()) }
+            .filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
             .prefix(20)
 
         return Array(filtered)
     }
 
-    func showRetry(error: Error?) -> Bool {
-        switch error {
-        case let error as TokenSearchServiceError:
-            return error == .networkError || error == .rateLimitExceeded
-        default:
-            return false
+    /// Local-first dedup merge: earlier lists win a `uniqueId` collision (so the
+    /// curated/local meta is kept), novel tokens are appended in order. Pure +
+    /// `static` so the pool ordering/dedup is unit-tested directly.
+    static func mergeLocalFirst(_ lists: [[CoinMeta]]) -> [CoinMeta] {
+        var seen = Set<String>()
+        var result: [CoinMeta] = []
+        for list in lists {
+            for token in list where seen.insert(token.uniqueId).inserted {
+                result.append(token)
+            }
         }
-    }
-
-    struct LoadResult {
-        let newTokens: [CoinMeta]
-        let updatedSelectedTokens: [CoinMeta]
-        let updatedPreExistTokens: [CoinMeta]
-    }
-
-    func loadExternalTokens(
-        chain: Chain,
-        chainCoins: [Coin],
-        currentTokens: [CoinMeta],
-        hiddenTokens: [HiddenToken]
-    ) async throws -> LoadResult {
-        let currentTokenIdentifiers = Set(currentTokens.map { "\($0.chain.rawValue):\($0.ticker)" })
-
-        // Propagate errors instead of swallowing them with try?
-        let newTokens = try await searchService.loadTokens(for: chain)
-        let uniqueTokens = newTokens.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
-
-        let allTokens = currentTokens + uniqueTokens
-        let updatedSelectedTokens = selectedTokens(chainCoins: chainCoins, tokens: allTokens)
-        let updatedPreExistTokens = preExistingTokens(chain: chain, chainCoins: chainCoins, hiddenTokens: hiddenTokens)
-
-        return LoadResult(
-            newTokens: uniqueTokens,
-            updatedSelectedTokens: updatedSelectedTokens,
-            updatedPreExistTokens: updatedPreExistTokens
-        )
+        return result
     }
 }

@@ -21,9 +21,14 @@ struct TokenSelectionScreen: View {
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
 
+    @State private var showUnverifiedAddConfirm = false
+
     var elements: [TokenSelectionAsset] {
+        // Local-first: held, then curated presets, then verified provider breadth.
+        // Browse hides `.unverified` — typing a query is what reveals the badged
+        // unverified long-tail (`searchedTokens`).
         let assets = tokenViewModel.searchText.isEmpty ?
-            tokenViewModel.selectedTokens + tokenViewModel.preExistTokens :
+            tokenViewModel.selectedTokens + tokenViewModel.preExistTokens + tokenViewModel.browseProviderTokens :
             tokenViewModel.searchedTokens
         return [.custom] + assets.map { .token($0) }
     }
@@ -49,8 +54,22 @@ struct TokenSelectionScreen: View {
         .onDisappear {
             tokenViewModel.cancelLoading()
         }
-        .onReceive(tokenViewModel.$searchText) { _ in
-            tokenViewModel.updateSearchedTokens(chain: chain, vault: vault)
+        .bottomSheet(isPresented: $showUnverifiedAddConfirm) {
+            UnverifiedTokenBottomSheet {
+                showUnverifiedAddConfirm = false
+            } onContinue: {
+                showUnverifiedAddConfirm = false
+                persistSelection()
+            }
+        }
+    }
+
+    /// Newly-added tokens in the pending selection that the catalog flagged
+    /// `.unverified` — drives the add-confirm. Tokens already held by the vault
+    /// aren't re-confirmed (this only guards *adding* an unverified token).
+    private var unverifiedAdditions: [CoinMeta] {
+        coinViewModel.selection.filter { coin in
+            tokenViewModel.verification(for: coin) == .unverified && vault.coin(for: coin) == nil
         }
     }
 
@@ -62,6 +81,7 @@ struct TokenSelectionScreen: View {
         case .token(let coin):
             TokenSelectionGridCell(
                 coin: coin,
+                verification: tokenViewModel.verification(for: coin),
                 isSelected: coinViewModel.isSelected(asset: coin)
             ) {
                 coinViewModel.handleSelection(isSelected: $0, asset: coin)
@@ -70,6 +90,17 @@ struct TokenSelectionScreen: View {
     }
 
     func onSave() {
+        // Confirm before persisting when the selection adds any unverified token
+        // (reuses the app's "continue anyway" risk-confirm pattern). Verified /
+        // curated additions save straight through.
+        if unverifiedAdditions.isEmpty {
+            persistSelection()
+        } else {
+            showUnverifiedAddConfirm = true
+        }
+    }
+
+    private func persistSelection() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
             await MainActor.run { isPresented = false }

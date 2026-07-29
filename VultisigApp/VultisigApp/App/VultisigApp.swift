@@ -50,13 +50,20 @@ struct VultisigApp: App {
         SwapTrackingRegistry.shared.register(SwapKitTrackingService.shared)
         SwapTrackingRegistry.shared.register(THORChainLimitTrackingService.shared)
 
-        // Register every destination-token provider with the shared registry
-        // so the swap coin picker can aggregate destination tokens from
-        // every source. New providers register here.
-        DestinationTokenRegistry.shared.register(SwapKitTokensCache.shared)
-        DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .thorchain))
-        DestinationTokenRegistry.shared.register(NativePoolTokenProvider(proto: .mayachain))
-        DestinationTokenRegistry.shared.register(SecuredAssetTokenProvider())
+        // Register every destination-token provider with the swap destination
+        // registry so the swap coin picker can aggregate destination tokens from
+        // every source. New destination providers register here.
+        TokenCatalogRepository.shared.register(SwapKitTokensCache.shared)
+        TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .thorchain))
+        TokenCatalogRepository.shared.register(NativePoolTokenProvider(proto: .mayachain))
+        TokenCatalogRepository.shared.register(SecuredAssetTokenProvider())
+
+        // Register the app-wide token catalog providers (wallet search /
+        // add-token). Bundled `TokensStore` is the highest-precedence, curated,
+        // offline floor; dynamic sources (1inch / Jupiter) register on top.
+        TokenCatalogRepository.appCatalog.register(BundledTokensProvider.shared)
+        TokenCatalogRepository.appCatalog.register(OneInchCatalogProvider.shared)
+        TokenCatalogRepository.appCatalog.register(JupiterCatalogProvider.shared)
     }
     var body: some Scene {
         WindowGroup {
