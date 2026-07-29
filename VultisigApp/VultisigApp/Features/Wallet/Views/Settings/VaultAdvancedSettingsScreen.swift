@@ -128,7 +128,6 @@ struct VaultAdvancedSettingsScreen: View {
                 icon: .mobileSignal,
                 title: "settingsAdvancedCustomRPC",
                 subtitle: "customRPCSubtitle".localized,
-                showSeparator: false,
                 titleAccessory: { VultTierBadge() },
                 trailingView: {
                     Icon(.chevronRight, color: Theme.colors.textTertiary, size: 16)

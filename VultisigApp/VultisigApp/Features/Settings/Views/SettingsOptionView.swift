@@ -18,7 +18,6 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
     let title: String
     let subtitle: String?
     let type: SettingsOptionViewType
-    let showSeparator: Bool
     let titleAccessory: () -> TitleAccessory
     let trailingView: () -> TrailingView
 
@@ -27,7 +26,6 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         title: String,
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,
-        showSeparator: Bool = true,
         @ViewBuilder titleAccessory: @escaping () -> TitleAccessory,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
@@ -35,7 +33,6 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
         self.title = title
         self.subtitle = subtitle
         self.type = type
-        self.showSeparator = showSeparator
         self.titleAccessory = titleAccessory
         self.trailingView = trailingView
     }
@@ -70,39 +67,35 @@ struct SettingsOptionView<TitleAccessory: View, TrailingView: View>: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                if let icon {
-                    Icon(icon, color: iconColor, size: 20)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(title.localized)
-                            .font(Theme.fonts.footnote)
-                            .foregroundStyle(fontColor)
-                        titleAccessory()
-                    }
-
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(fontColor)
-                            .multilineTextAlignment(.leading)
-                    }
-                }
-
-                Spacer()
-
-                trailingView()
-                    .foregroundStyle(fontColor)
+        HStack(spacing: 12) {
+            if let icon {
+                Icon(icon, color: iconColor, size: 20)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
-            .background(bgColor)
-            GradientListSeparator()
-                .showIf(showSeparator)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text(title.localized)
+                        .font(Theme.fonts.subtitle)
+                        .foregroundStyle(fontColor)
+                    titleAccessory()
+                }
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(fontColor)
+                        .multilineTextAlignment(.leading)
+                }
+            }
+
+            Spacer()
+
+            trailingView()
+                .foregroundStyle(fontColor)
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 16)
+        .background(bgColor)
     }
 }
 
@@ -112,7 +105,6 @@ extension SettingsOptionView where TitleAccessory == EmptyView {
         title: String,
         subtitle: String? = nil,
         type: SettingsOptionViewType = .normal,
-        showSeparator: Bool = true,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self.init(
@@ -120,7 +112,6 @@ extension SettingsOptionView where TitleAccessory == EmptyView {
             title: title,
             subtitle: subtitle,
             type: type,
-            showSeparator: showSeparator,
             titleAccessory: { EmptyView() },
             trailingView: trailingView
         )

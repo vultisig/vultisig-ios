@@ -97,8 +97,7 @@ struct VaultSettingsScreen: View {
     var fastSigningBiometrics: some View {
         SettingsOptionView(
             icon: .bolt,
-            title: "biometricsFastSigning".localized,
-            showSeparator: false
+            title: "biometricsFastSigning".localized
         ) {
             VultiToggle(isOn: Binding(
                 get: { viewModel.isBiometryEnabled },
@@ -134,8 +133,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .cloudDownload,
                 title: "backupVaultShareTitle".localized,
-                subtitle: "backupVaultShareDescription".localized,
-                showSeparator: false
+                subtitle: "backupVaultShareDescription".localized
             )
         }
     }
@@ -147,8 +145,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .penWritingFilled,
                 title: "rename".localized,
-                subtitle: "renameVault".localized,
-                showSeparator: vault.isFastVault
+                subtitle: "renameVault".localized
             )
         }
     }
@@ -161,8 +158,7 @@ struct VaultSettingsScreen: View {
                 icon: .trash,
                 title: "delete".localized,
                 subtitle: "deleteVault".localized,
-                type: .alert,
-                showSeparator: false
+                type: .alert
             )
         }
 
@@ -187,8 +183,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: .folderKey,
                 title: "advanced".localized,
-                subtitle: "advancedDescription".localized,
-                showSeparator: false
+                subtitle: "advancedDescription".localized
             )
         }
     }
