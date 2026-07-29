@@ -65,8 +65,9 @@ enum SpendableUtxos {
     /// - Parameter ownUnconfirmedTxHashes: hashes of transactions this device
     ///   broadcast for this vault on this chain that have not reached a
     ///   terminal state — see `ownUnconfirmedTxHashes(chain:vaultPubKeyECDSA:)`.
-    ///   An empty set is the safe degradation: it collapses the predicate back
-    ///   to confirmed-only.
+    ///   An empty set collapses the predicate back to confirmed-only, which is
+    ///   the right answer when the wallet genuinely has nothing pending — but
+    ///   never a substitute for a lookup that *failed*, which throws.
     static func select(
         from rows: [Blockchair.BlockchairUtxo],
         dustThreshold: Int64,
@@ -173,10 +174,10 @@ enum SpendableUtxos {
     /// vouches for the outputs of the wallet that signed it — another vault's
     /// zero-conf payment into this one is still someone else's, even when both
     /// vaults live on this device.
-    static func ownUnconfirmedTxHashes(chain: Chain, vaultPubKeyECDSA: String?) async -> Set<String> {
+    static func ownUnconfirmedTxHashes(chain: Chain, vaultPubKeyECDSA: String?) async throws -> Set<String> {
         guard let vaultPubKeyECDSA, !vaultPubKeyECDSA.isEmpty else { return [] }
-        return await MainActor.run {
-            StoredPendingTransactionStorage.shared.unconfirmedTransactionHashes(
+        return try await MainActor.run {
+            try StoredPendingTransactionStorage.shared.unconfirmedTransactionHashes(
                 chain: chain,
                 vaultPubKeyECDSA: vaultPubKeyECDSA
             )

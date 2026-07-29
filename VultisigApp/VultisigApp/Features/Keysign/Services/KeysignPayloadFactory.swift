@@ -190,7 +190,7 @@ struct KeysignPayloadFactory {
             guard let rows = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo else {
                 throw Errors.notEnoughUTXOError
             }
-            let ownUnconfirmed = await SpendableUtxos.ownUnconfirmedTxHashes(
+            let ownUnconfirmed = try await SpendableUtxos.ownUnconfirmedTxHashes(
                 chain: keysignPayload.coin.chain,
                 vaultPubKeyECDSA: keysignPayload.vaultPubKeyECDSA
             )

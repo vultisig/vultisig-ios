@@ -138,15 +138,25 @@ final class StoredPendingTransactionStorage {
     /// day — a transaction still unconfirmed by then loses its exemption, and
     /// its owner is looking at a stuck transaction either way.
     ///
-    /// A read failure returns the empty set, which degrades spending back to
-    /// confirmed-only rather than admitting anything unproven.
+    /// A read failure propagates rather than degrading to the empty set.
+    /// Returning "nothing is pending" would be a *claim*, and in the one state
+    /// this lookup exists for — the block after a send, when the wallet's only
+    /// funds are its own unconfirmed change — it is the wrong one: the balance
+    /// would read zero and the follow-up send would be blocked, which is the
+    /// exact failure this lookup prevents, reached through a storage hiccup
+    /// instead of a provider one. Thrown, the balance refresh produces no
+    /// update at all and the previous balance survives (`fetchBalanceUpdate`
+    /// captures the error and `applyBalanceUpdates` skips an update with no
+    /// balance in it), and a send fails with the real reason instead of a
+    /// misleading "not enough funds". Consistent with every other read on this
+    /// type, all of which already throw.
     ///
     /// Records written before the owner was persisted carry no
     /// `pubKeyECDSA` and cannot acquire one — nothing that resumes them knows
     /// which vault signed them. They match no vault here, so their change
     /// stays unspendable until it confirms, which is exactly the behaviour
     /// this lookup replaced.
-    func unconfirmedTransactionHashes(chain: Chain, vaultPubKeyECDSA: String) -> Set<String> {
+    func unconfirmedTransactionHashes(chain: Chain, vaultPubKeyECDSA: String) throws -> Set<String> {
         guard !vaultPubKeyECDSA.isEmpty else { return [] }
 
         let confirmed = TransactionStatus.confirmed.persistenceString
@@ -163,7 +173,7 @@ final class StoredPendingTransactionStorage {
             )
         } catch {
             logger.error("Failed to read pending transactions for \(chain.name): \(error.localizedDescription)")
-            return []
+            throw error
         }
     }
 

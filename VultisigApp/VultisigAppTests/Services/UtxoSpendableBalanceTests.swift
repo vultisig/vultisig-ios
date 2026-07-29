@@ -198,15 +198,15 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         try storage.save(txHash: "ltc-ours", chain: .litecoin, status: .broadcasted(estimatedTime: ""), pubKeyECDSA: "vault-a")
 
         XCTAssertEqual(
-            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
+            try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
             ["btc-ours"]
         )
         XCTAssertEqual(
-            storage.unconfirmedTransactionHashes(chain: .litecoin, vaultPubKeyECDSA: "vault-a"),
+            try storage.unconfirmedTransactionHashes(chain: .litecoin, vaultPubKeyECDSA: "vault-a"),
             ["ltc-ours"]
         )
         XCTAssertTrue(
-            storage.unconfirmedTransactionHashes(chain: .dogecoin, vaultPubKeyECDSA: "vault-a").isEmpty
+            try storage.unconfirmedTransactionHashes(chain: .dogecoin, vaultPubKeyECDSA: "vault-a").isEmpty
         )
     }
 
@@ -222,7 +222,7 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         try storage.save(txHash: "no-owner", chain: .bitcoin, status: .broadcasted(estimatedTime: ""), pubKeyECDSA: nil)
 
         XCTAssertEqual(
-            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
+            try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
             ["broadcast", "pending"]
         )
     }
@@ -240,7 +240,7 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         try storage.save(txHash: "failed", chain: .bitcoin, status: .failed(reason: "not found"), pubKeyECDSA: "vault-a")
 
         XCTAssertEqual(
-            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
+            try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
             ["timed-out", "failed"]
         )
     }
@@ -252,12 +252,12 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         let storage = try makeStorage()
 
         try storage.save(txHash: "raced", chain: .bitcoin, status: .broadcasted(estimatedTime: ""), pubKeyECDSA: nil)
-        XCTAssertTrue(storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a").isEmpty)
+        XCTAssertTrue(try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a").isEmpty)
 
         try storage.save(txHash: "raced", chain: .bitcoin, status: .broadcasted(estimatedTime: ""), pubKeyECDSA: "vault-a")
 
         XCTAssertEqual(
-            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
+            try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
             ["raced"]
         )
     }
@@ -272,20 +272,49 @@ final class UtxoSpendableBalanceTests: XCTestCase {
         try storage.save(txHash: "owned", chain: .bitcoin, status: .pending, pubKeyECDSA: "vault-b")
 
         XCTAssertEqual(
-            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
+            try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-a"),
             ["owned"]
         )
         XCTAssertTrue(
-            storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-b").isEmpty
+            try storage.unconfirmedTransactionHashes(chain: .bitcoin, vaultPubKeyECDSA: "vault-b").isEmpty
         )
+    }
+
+    /// Every fail-loud path on this balance — an incomplete page walk, a
+    /// self-contradicting response, and a failed read of the wallet's own
+    /// pending transactions — reaches the caller as a thrown error, and this is
+    /// the single mechanism that makes throwing the *safe* choice: an update
+    /// carrying no balance is skipped entirely, so the last known balance
+    /// stands. Were a failure to produce a `0` instead, the wallet whose only
+    /// funds are its own unconfirmed change would read empty and its follow-up
+    /// send would be blocked — which is the failure the ownership lookup exists
+    /// to prevent, reached through a storage hiccup rather than a provider one.
+    func testABalanceUpdateWithNoBalanceInItIsSkippedSoThePreviousOneSurvives() {
+        let failed = BalanceService.CoinBalanceUpdate(
+            coinId: "btc",
+            rawBalance: nil,
+            stakedBalance: nil,
+            bondedNodes: nil,
+            error: BalanceService.Errors.utxoBalanceWithoutOutputs(reported: 1)
+        )
+        let genuinelyEmpty = BalanceService.CoinBalanceUpdate(
+            coinId: "btc",
+            rawBalance: "0",
+            stakedBalance: nil,
+            bondedNodes: nil,
+            error: nil
+        )
+
+        XCTAssertFalse(failed.hasUpdates, "a failed fetch must not overwrite the last known balance")
+        XCTAssertTrue(genuinelyEmpty.hasUpdates, "an emptied wallet must still render as empty")
     }
 
     /// A coin with no vault behind it — the key-import chain probe, say — asks
     /// for nothing and gets nothing, which lands it on a confirmed-only
     /// balance rather than on an unscoped match.
-    func testAVaultlessLookupNeverTouchesTheStore() async {
-        let hashes = await SpendableUtxos.ownUnconfirmedTxHashes(chain: .bitcoin, vaultPubKeyECDSA: nil)
-        let empty = await SpendableUtxos.ownUnconfirmedTxHashes(chain: .bitcoin, vaultPubKeyECDSA: "")
+    func testAVaultlessLookupNeverTouchesTheStore() async throws {
+        let hashes = try await SpendableUtxos.ownUnconfirmedTxHashes(chain: .bitcoin, vaultPubKeyECDSA: nil)
+        let empty = try await SpendableUtxos.ownUnconfirmedTxHashes(chain: .bitcoin, vaultPubKeyECDSA: "")
 
         XCTAssertTrue(hashes.isEmpty)
         XCTAssertTrue(empty.isEmpty)

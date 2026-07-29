@@ -501,7 +501,7 @@ class BalanceService {
             // it from the same predicate is what makes the two numbers one
             // number.
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
-            let ownUnconfirmed = await SpendableUtxos.ownUnconfirmedTxHashes(
+            let ownUnconfirmed = try await SpendableUtxos.ownUnconfirmedTxHashes(
                 chain: coin.chain,
                 vaultPubKeyECDSA: vaultPubKeyECDSA
             )
