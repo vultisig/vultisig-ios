@@ -48,9 +48,44 @@ enum CustomTokenResolverFactory {
             return Cw20CustomTokenResolverStrategy(chain: chain)
         } else if chain.chainType == .Solana {
             return SolanaCustomTokenResolverStrategy(chain: chain)
+        } else if chain == .ripple {
+            return RippleCustomTokenResolverStrategy()
         } else {
             return EvmLikeCustomTokenResolverStrategy(chain: chain)
         }
+    }
+}
+
+// MARK: - Ripple
+
+/// XRPL issued currencies are keyed by a `(currency, issuer)` **pair**, written as
+/// the composite `<currency>.<issuer>` token id, so the shared
+/// `AddressService.validateAddress` cannot judge the input — only its issuer half is
+/// an address. Delegates to the shared ``RippleCustomTokenResolver``.
+///
+/// Unlike every other strategy here, this one performs **no network call**: XRPL has
+/// no on-ledger token metadata registry, so a well-formed pair cannot be confirmed
+/// to name a real, reputable token — only to be well-formed — and ticker/decimals
+/// come from the identifier itself.
+///
+/// `requiresVaultNativeCoin` is `true` because a trust line costs an owner reserve
+/// on the XRP account that holds it, so the vault must already hold XRP.
+private struct RippleCustomTokenResolverStrategy: CustomTokenResolver {
+    var requiresVaultNativeCoin: Bool { RippleCustomTokenResolver.requiresVaultNativeCoin }
+
+    /// Throws only for input `validate` would already have rejected — the caller
+    /// gates on `isValidAddress` first — so the throw is a guard against a future
+    /// caller skipping validation, not an expected path.
+    ///
+    /// `async` is required by the protocol, not by this implementation: resolution
+    /// is pure normalization with nothing to await, which is the whole point of the
+    /// XRPL seam.
+    func fetchInfo(contract: String) async throws -> CoinMeta? { // swiftlint:disable:this async_without_await
+        try RippleCustomTokenResolver.resolve(input: contract)
+    }
+
+    func validate(_ address: String) -> Bool {
+        RippleCustomTokenResolver.isValidInput(address)
     }
 }
 

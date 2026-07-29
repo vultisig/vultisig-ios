@@ -57,15 +57,35 @@ packages:
     from: 1.17.0
   VultisigCommonData:
     url: https://github.com/vultisig/commondata
-    # Pinned to the merged `main` commit that adds `SignRipple { string raw_json }`
-    # at `sign_ripple = 46` in `KeysignPayload.sign_data` — the XRPL dApp
-    # co-signer passthrough field. This commit is a linear descendant of the
-    # earlier `RippleSpecific.destination_tag` (optional uint32) pin, so it keeps
-    # that first-class XRPL DestinationTag field: the initiator dual-writes the
-    # tag into BOTH the field AND the legacy memo carrier, and signers prefer the
-    # field, falling back to the memo, so mixed-version device pairs stay
-    # byte-identical in MPC keysign.
-    revision: c91f2ea7db5eb03cf6bb637da19e4ed93b07dc46
+    # Pinned to the commondata commit that adds `RippleSpecific.transaction_type
+    # = 5` (the existing `TransactionType` enum) plus
+    # `TRANSACTION_TYPE_RIPPLE_TRUST_SET = 10`. That commit is merged: it is an
+    # ancestor of commondata `main`, not a branch-only revision.
+    #
+    # Why the field exists: an XRPL issued-currency coin is ambiguous on its own.
+    # The same (currency, issuer) pair can mean "open a trust line for this
+    # token" — a TrustSet whose keysign amount is the trust-line LIMIT — or "send
+    # this token", a Payment carrying a `CurrencyAmount`. Those serialize to
+    # different signed bytes, so in MPC keysign the discriminator has to be on
+    # the wire rather than inferred. A proto3 enum defaults to
+    # `TRANSACTION_TYPE_UNSPECIFIED` and is absent from the wire when unset, so
+    # native XRP payloads stay byte-identical; a signer predating the field still
+    # infers TrustSet from a non-native coin, which keeps a TrustSet
+    # byte-identical across mixed-version committees.
+    #
+    # This commit is a linear descendant of the pin that added `SignRipple {
+    # string raw_json }` at `sign_ripple = 46` (the XRPL dApp co-signer
+    # passthrough) and, before that, `RippleSpecific.destination_tag` (optional
+    # uint32) — the first-class XRPL DestinationTag field the initiator
+    # dual-writes into BOTH the field AND the legacy memo carrier, with signers
+    # preferring the field and falling back to the memo so mixed-version device
+    # pairs stay byte-identical in MPC keysign.
+    #
+    # Advanced to commondata `main`'s current HEAD per review request. Verified
+    # first: every commit between the prior pin and this one only touches repo
+    # tooling (`CLAUDE.md`, `.claude/hooks`, issue/PR templates) — no `.proto`
+    # file changed, so this is a no-op for generated Swift.
+    revision: 63a65c37c50f6a944f6791d36eb905810af82760
   WalletCore:
     url: https://github.com/vultisig/walletcore-spm
     # v4.7.1 is the correctly-cut release for wallet-core 4.7.0 (tag →

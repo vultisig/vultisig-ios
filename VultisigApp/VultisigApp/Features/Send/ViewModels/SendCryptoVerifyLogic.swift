@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import VultisigCommonData
 import WalletCore
 
 struct SendCryptoVerifyLogic {
@@ -84,6 +85,25 @@ struct SendCryptoVerifyLogic {
     }
 
     func validateBalanceWithFee(tx: SendTransaction) -> BalanceValidationResult {
+        // An XRPL TrustSet's amount is the trust-line LIMIT, not a transfer, so
+        // comparing it to the token balance is meaningless — every activation
+        // would fail as "balance exceeded" against a zero balance, which is
+        // exactly the state a trust line is being opened to leave. What must be
+        // affordable is the XRP the operation really costs; that is the async
+        // `validateTrustLineReserveIfNeeded`, which reads the live owner reserve.
+        // This synchronous pass only rules out the case that needs no network:
+        // no XRP coin at all.
+        if tx.coin.chain == .ripple, tx.transactionType == .rippleTrustSet {
+            guard tx.vault.coins.nativeCoin(chain: .ripple) != nil else {
+                // A trust line is an object OWNED BY an XRP account and paid for
+                // out of its reserve; without one there is nothing to attach it
+                // to and nothing to pay the fee. Fail closed — an absent coin is
+                // not a reason to let the ceremony start.
+                return BalanceValidationResult(isValid: false, errorMessage: "rippleTrustLineNoXrpAccountError")
+            }
+            return BalanceValidationResult(isValid: true, errorMessage: nil)
+        }
+
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         // TRON staking operations: skip balance validation entirely
@@ -184,6 +204,16 @@ struct SendCryptoVerifyLogic {
     /// the keysign ceremony, with the fee burned. Gate it here so the failure
     /// surfaces before signing starts; no-op for every other chain. Matches
     /// the guard the SDK and Android run at submit time.
+    ///
+    /// ⚠️ The `isNativeToken` gate is deliberate and must NOT be widened to
+    /// issued-currency coins. The rule it enforces is "an account is created by
+    /// receiving at least the base reserve **in XRP**" — an issued-currency
+    /// Payment delivers no XRP at all, so it can neither create the destination
+    /// nor satisfy that minimum, and applying the check would reject every token
+    /// send to an unfunded account with a message about an XRP amount the
+    /// transaction does not carry. A token send to an account that cannot receive
+    /// is caught by `validateDestinationTrustLineIfNeeded` instead, which tests
+    /// the thing that actually applies: the trust line.
     func validateDestinationIfNeeded(tx: SendTransaction) async throws {
         guard tx.coin.chain == .ripple, tx.coin.isNativeToken else { return }
         do {
@@ -202,6 +232,100 @@ struct SendCryptoVerifyLogic {
             // (`error as? HelperError`), so rewrap — same convention as
             // `buildKeysignPayload` — or the guard would block silently.
             throw HelperError.runtimeError(error.localizedDescription)
+        }
+    }
+
+    /// Pre-ceremony guard for an XRPL issued-currency Payment: the destination
+    /// must hold a trust line for the currency, or the Payment fails on-ledger
+    /// (`tecPATH_DRY` / `tecNO_LINE`) after the ceremony with the fee burned.
+    ///
+    /// FAIL OPEN, matching `validateDestinationIfNeeded`: it blocks only on
+    /// positive proof the destination cannot receive. A transport failure, a node
+    /// error or an unreadable response leaves the send to proceed — a lookup we
+    /// couldn't complete must never start blocking a send that worked before this
+    /// guard existed.
+    ///
+    /// No-op for native XRP (which has no trust line) and for a TrustSet (which
+    /// has no destination at all).
+    func validateDestinationTrustLineIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple,
+              !tx.coin.isNativeToken,
+              tx.transactionType != .rippleTrustSet else {
+            return
+        }
+
+        let state = await rippleService.destinationTrustLine(
+            for: tx.coin.toCoinMeta(),
+            destination: tx.toAddress
+        )
+        // Fail-open means a cancelled lookup answers `.unknown`, exactly like a
+        // node error — so the guard would otherwise complete as a successful
+        // validation and let a superseded load pass run to the end. Ask the task
+        // itself, which is the only thing that can tell the two apart.
+        try Task.checkCancellation()
+        guard state == .noTrustLine else { return }
+
+        // The Verify screen's alert plumbing presents only `HelperError`, so
+        // rewrap — same convention as `validateDestinationIfNeeded`.
+        throw HelperError.runtimeError(
+            String(format: "xrpDestinationNoTrustLineError".localized, tx.coin.ticker)
+        )
+    }
+
+    /// Pre-ceremony guard for a TrustSet: spendable XRP must cover the owner
+    /// reserve the new trust line locks up PLUS the fee, or the TrustSet fails
+    /// on-ledger with `tecINSUFFICIENT_RESERVE` after the ceremony, with the fee
+    /// already burned.
+    ///
+    /// The activation sheet quotes the same figures, but that quote is taken when
+    /// the sheet opens. This re-checks at Verify against the freshly loaded
+    /// balance and fee, so a balance that moved in between — a concurrent send, a
+    /// stale reading, or a `SendTransaction` built somewhere other than the sheet
+    /// — cannot walk past it.
+    ///
+    /// The reserve increment is read LIVE (`server_state` → cache → seed), never
+    /// hardcoded, so this and the sheet can never present different arithmetic.
+    /// No-op for every non-TrustSet transaction.
+    func validateTrustLineReserveIfNeeded(tx: SendTransaction) async throws {
+        guard tx.coin.chain == .ripple, tx.transactionType == .rippleTrustSet else { return }
+
+        guard let nativeToken = tx.vault.coins.nativeCoin(chain: .ripple) else {
+            throw HelperError.runtimeError("rippleTrustLineNoXrpAccountError".localized)
+        }
+
+        // `fetchReserveValues` collapses every failure it can recover from into
+        // `nil` (its own live → cache → seed chain) and rethrows ONLY
+        // cancellation. `try?` would erase that one distinction and let a
+        // cancelled pass carry on to a seeded verdict — which, landing after a
+        // newer pass, writes `hasBalanceError` and leaves a spurious banner
+        // blocking Sign. Propagate instead, the way `validateDestinationIfNeeded`
+        // does, so the caller's cancellation branch aborts the whole load.
+        let reserveValues: RippleReserveValues?
+        do {
+            reserveValues = try await rippleService.fetchReserveValues()
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            reserveValues = nil
+        }
+        // `reserve_base` is excluded: the account already exists and already
+        // meets it. What this operation adds is exactly one owner increment.
+        let ownerReserve = RippleReserve.reservedDrops(
+            ownerCount: 1,
+            reserveBase: 0,
+            reserveInc: reserveValues?.reserveInc
+        )
+        // The XRP balance is already reserve-net, so it is what can actually be
+        // locked up and spent.
+        let spendable = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        let required = ownerReserve + tx.fee
+        guard spendable >= required else {
+            throw HelperError.runtimeError(
+                String(
+                    format: "rippleTrustLineInsufficientXrpError".localized,
+                    RippleReserve.xrpAmount(drops: required)
+                )
+            )
         }
     }
 
@@ -236,15 +360,40 @@ struct SendCryptoVerifyLogic {
     /// text; a `nil` tag leaves the field unset, keeping memo-only sends
     /// byte-identical for co-signers that don't read the field. No-op for
     /// non-Ripple.
-    static func dualWritingRippleTag(_ chainSpecific: BlockChainSpecific, tag: UInt32?) -> BlockChainSpecific {
-        guard case .Ripple(let sequence, let gas, let lastLedgerSequence, _) = chainSpecific else {
+    ///
+    /// `transactionType` rides the same seam because it answers a different
+    /// question about the same payload — WHICH XRPL operation to build. A
+    /// non-native Ripple coin alone cannot distinguish "open a trust line"
+    /// (TrustSet, amount = limit) from "send this token" (Payment with a
+    /// `CurrencyAmount`), so the discriminator has to be on the wire. Passing
+    /// `.unspecified` (the default) leaves the field off the wire, so native XRP
+    /// and pre-existing flows produce byte-identical payloads.
+    /// The only XRPL operation discriminator this flow is allowed to put on the
+    /// wire. `SendTransaction.transactionType` is a shared field other chains
+    /// populate with their own operations (`tonDeposit`, `thorMerge`, …); a
+    /// value like that leaking into `RippleSpecific.transaction_type` would tell
+    /// every co-signer something untrue about the XRPL operation. Narrow it to
+    /// the one XRPL value, so anything else — including a future enum case this
+    /// build predates — falls back to `.unspecified` and keeps the legacy
+    /// interpretation.
+    static func rippleTransactionType(tx: SendTransaction) -> VSTransactionType {
+        tx.transactionType == .rippleTrustSet ? .rippleTrustSet : .unspecified
+    }
+
+    static func dualWritingRippleTag(
+        _ chainSpecific: BlockChainSpecific,
+        tag: UInt32?,
+        transactionType: VSTransactionType = .unspecified
+    ) -> BlockChainSpecific {
+        guard case .Ripple(let sequence, let gas, let lastLedgerSequence, _, _) = chainSpecific else {
             return chainSpecific
         }
         return .Ripple(
             sequence: sequence,
             gas: gas,
             lastLedgerSequence: lastLedgerSequence,
-            destinationTag: tag
+            destinationTag: tag,
+            transactionType: transactionType.rawValue
         )
     }
 
@@ -260,7 +409,11 @@ struct SendCryptoVerifyLogic {
             // is the ultimate gate on the tag/memo pair.
             let memo = Self.payloadMemo(tx: tx)
             if tx.coin.chain == .ripple {
-                chainSpecific = Self.dualWritingRippleTag(chainSpecific, tag: tx.destinationTag)
+                chainSpecific = Self.dualWritingRippleTag(
+                    chainSpecific,
+                    tag: tx.destinationTag,
+                    transactionType: Self.rippleTransactionType(tx: tx)
+                )
             }
 
             let basePayload = try await interactor.buildKeysignPayload(

@@ -16,6 +16,9 @@ struct RippleAPI: TargetType {
         case tx(hash: String)
         case serverState
         case accountInfo(account: String)
+        /// One page of the account's trust lines. `marker` is the opaque cursor
+        /// echoed by the previous page; `nil` requests the first page.
+        case accountLines(account: String, marker: String?)
     }
 
     /// Default XRP Ledger JSON-RPC host.
@@ -61,6 +64,21 @@ struct RippleAPI: TargetType {
                 RippleRpcRequest(
                     method: "account_info",
                     params: [RippleAccountInfoParams(account: account, ledgerIndex: "current", queue: true)]
+                ),
+                .jsonEncoding
+            )
+        case .accountLines(let account, let marker):
+            return .requestCodable(
+                RippleRpcRequest(
+                    method: "account_lines",
+                    params: [
+                        RippleAccountLinesParams(
+                            account: account,
+                            ledgerIndex: "current",
+                            ignoreDefault: true,
+                            marker: marker
+                        )
+                    ]
                 ),
                 .jsonEncoding
             )
@@ -111,6 +129,25 @@ struct RippleAccountInfoParams: Encodable {
     }
 }
 
+struct RippleAccountLinesParams: Encodable {
+    let account: String
+    let ledgerIndex: String
+    /// Excludes trust lines in the default state (zero balance, zero limit, no
+    /// flags). Those hold nothing, so dropping them server-side keeps the pages
+    /// meaningful without changing any balance we would report.
+    let ignoreDefault: Bool
+    /// Pagination cursor from the previous page. `nil` is omitted from the
+    /// encoded body entirely, which is how the first page is requested.
+    let marker: String?
+
+    enum CodingKeys: String, CodingKey {
+        case account
+        case ledgerIndex = "ledger_index"
+        case ignoreDefault = "ignore_default"
+        case marker
+    }
+}
+
 // MARK: - Response types
 
 struct RippleSubmitResponse: Decodable {
@@ -138,5 +175,30 @@ struct RippleSubmitResponse: Decodable {
 }
 
 extension RippleSubmitResponse: RippleRPCResponse {
+    var rpcError: String? { result?.error }
+}
+
+struct RippleAccountLinesResponse: Decodable {
+    let result: Result?
+
+    struct Result: Decodable {
+        let lines: [RippleTrustLine]?
+        /// Present only while more pages remain. Typed as `String` because both
+        /// rippled and Clio serialize the `account_lines` marker as one, and it
+        /// is the only shape the typed request body can echo back. The XRPL API
+        /// documents markers as opaque values that are "not necessarily a
+        /// string", so a structured marker fails the decode — deliberately:
+        /// dropping an unusable marker would silently truncate the trust-line
+        /// set and under-report balances, which is the exact failure pagination
+        /// exists to prevent, while a thrown error leaves the last known
+        /// balance in place.
+        let marker: String?
+        /// rippled error token returned in an HTTP-200 error body — `actNotFound`
+        /// for an unfunded account, or a node-level token that drives the retry.
+        let error: String?
+    }
+}
+
+extension RippleAccountLinesResponse: RippleRPCResponse {
     var rpcError: String? { result?.error }
 }

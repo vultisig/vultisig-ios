@@ -258,6 +258,242 @@ final class RippleSignRippleTests: XCTestCase {
         XCTAssertNoThrow(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
     }
 
+    // MARK: - Currency-code gate applies to every transaction type
+
+    //  wallet-core uppercases a 3-byte currency code before encoding — measured
+    //  on this exact rawJson path in `RippleCurrencyCodeCaseTests`, not inferred
+    //  from the typed path. So a code it would alter has to be refused wherever
+    //  it appears, not only in `Payment.Amount`.
+    //
+    //  `testOfferCreatePassesOnAccountCheckAlone` above stays as-is and is still
+    //  correct: an offer with an ALREADY-uppercase code is not false-rejected.
+    //  These are its negative controls — the case that fixture never exercised.
+
+    private static func offerCreateJson(takerPaysCurrency: String) -> String {
+        """
+        {"TransactionType":"OfferCreate","Account":"\(account)","TakerGets":"5000000","TakerPays":{"currency":"\(takerPaysCurrency)","issuer":"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh","value":"10"},"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+    }
+
+    private static func trustSetJson(limitCurrency: String) -> String {
+        """
+        {"TransactionType":"TrustSet","Account":"\(account)","LimitAmount":{"currency":"\(limitCurrency)","issuer":"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh","value":"1000"},"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+    }
+
+    private func assertRefused(_ rawJson: String, _ message: String) {
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: "",
+            toAmount: 0
+        )
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload), message)
+    }
+
+    /// A trust line reviewed as `usd` would be opened as `USD` — a different
+    /// line than the one shown, reserving against a currency the co-signer
+    /// never approved.
+    func testTrustSetWithAMangledLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "usd"),
+            "a TrustSet LimitAmount the signer would alter must be refused"
+        )
+    }
+
+    func testTrustSetWithAnUppercaseLimitCurrencyIsAccepted() throws {
+        let payload = Self.makePayload(
+            rawJson: Self.trustSetJson(limitCurrency: "USD"),
+            coin: Self.makeNativeCoin(),
+            toAddress: "",
+            toAmount: 0
+        )
+        XCTAssertNoThrow(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
+    }
+
+    /// An offer reviewed against `usd` would be placed against `USD` — a
+    /// different currency pair than the one shown.
+    func testOfferCreateWithAMangledTakerPaysCurrencyIsRefused() {
+        assertRefused(
+            Self.offerCreateJson(takerPaysCurrency: "usd"),
+            "an OfferCreate TakerPays the signer would alter must be refused"
+        )
+    }
+
+    func testOfferCreateWithMixedCaseCurrencyIsRefused() {
+        assertRefused(
+            Self.offerCreateJson(takerPaysCurrency: "UsD"),
+            "mixed case is altered just as lowercase is"
+        )
+    }
+
+    // MARK: - The gate judges the RAW code, not a normalised one
+
+    //  `toXrplCurrencyCode` TRIMS whitespace and then ASCII-packs anything that
+    //  is neither 3 characters nor 40 hex digits; wallet-core does neither and
+    //  classifies the raw string by BYTE length (measured in
+    //  `RippleCurrencyCodeCaseTests`). Normalising before classifying therefore
+    //  judged a currency the signer never receives.
+    //
+    //  These are the exposed fields: TrustSet `LimitAmount` and OfferCreate
+    //  `TakerGets`/`TakerPays` have no second gate — the walk is the only thing
+    //  standing between the co-signer and the ledger — and a trailing space is
+    //  invisible on the Verify screen.
+
+    private static let hexRlusd = "524C555344000000000000000000000000000000"
+
+    /// `Ab ` normalised to a 2-character ticker, ASCII-packed to `4162…` and
+    /// passed the old gate, while wallet-core read 3 raw bytes as an ISO code
+    /// and signed `AB ` — a different trust line than the reviewed one.
+    func testTrustSetWithAWhitespaceEdgedLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "Ab "),
+            "a LimitAmount code whose raw bytes the signer would alter must be refused"
+        )
+    }
+
+    func testOfferCreateWithAWhitespaceEdgedTakerPaysCurrencyIsRefused() {
+        assertRefused(
+            Self.offerCreateJson(takerPaysCurrency: "Ab "),
+            "a TakerPays code whose raw bytes the signer would alter must be refused"
+        )
+    }
+
+    /// Leading whitespace splits the two classifications the same way trailing
+    /// whitespace does.
+    func testOfferCreateWithALeadingSpaceTakerPaysCurrencyIsRefused() {
+        assertRefused(
+            Self.offerCreateJson(takerPaysCurrency: " AB"),
+            "trimming is the asymmetry, not the side the whitespace sits on"
+        )
+    }
+
+    /// No whitespace involved: a single 3-BYTE character is an ISO code to the
+    /// signer and an ASCII-packed hex code to the normaliser.
+    func testTrustSetWithAThreeByteNonAsciiLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "\u{20AC}"),
+            "byte length, not character count, is what the signer classifies on"
+        )
+    }
+
+    /// A code the signer cannot classify at all is refused here rather than
+    /// ASCII-packed into one the signer never receives.
+    func testTrustSetWithAnUnpackableLimitCurrencyIsRefused() {
+        assertRefused(
+            Self.trustSetJson(limitCurrency: "RLUSD"),
+            "a 5-character code is not an on-ledger currency and wallet-core refuses it outright"
+        )
+    }
+
+    /// Positive control for the tightening: the 40-character hex form stays
+    /// expressible in EITHER case, so nothing legitimate was removed —
+    /// wallet-core decodes hex case-insensitively.
+    func testTrustSetWithAHexLimitCurrencyIsAcceptedInEitherCase() throws {
+        for limitCurrency in [Self.hexRlusd, Self.hexRlusd.lowercased()] {
+            let payload = Self.makePayload(
+                rawJson: Self.trustSetJson(limitCurrency: limitCurrency),
+                coin: Self.makeNativeCoin(),
+                toAddress: "",
+                toAmount: 0
+            )
+            XCTAssertNoThrow(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "the hex spelling must stay expressible: \(limitCurrency)"
+            )
+        }
+    }
+
+    // MARK: - SendMax / DeliverMin are gated too
+
+    private static func paymentJson(field: String, currency: String) -> String {
+        """
+        {"TransactionType":"Payment","Account":"\(account)","Destination":"\(destination)","Amount":"1000000","\(field)":{"currency":"\(currency)","issuer":"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh","value":"100"},"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+    }
+
+    /// A `Payment` has a SECOND gate: `bindPaymentToReviewedValues` also demands
+    /// `Destination == toAddress` and `Amount == toAmount`. So a fixture whose
+    /// reviewed values do not match its JSON is refused whatever the currency
+    /// walk does, and would stay green if the walk stopped covering SendMax /
+    /// DeliverMin entirely.
+    ///
+    /// These payloads therefore bind CLEANLY — reviewed destination and amount
+    /// equal to the fixture's — so the currency walk is the only thing left that
+    /// can reject. `testPaymentWithAnUppercase…CurrencyIsAccepted` below is the
+    /// control that proves the binding really does pass.
+    private func assertBoundPaymentRefused(_ rawJson: String, _ message: String) {
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+        XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload), message)
+    }
+
+    private func assertBoundPaymentAccepted(_ rawJson: String, _ message: String) {
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+        XCTAssertNoThrow(try RippleHelper.getPreSignedInputData(keysignPayload: payload), message)
+    }
+
+    /// `SendMax` is a spend authorisation shown on the Verify screen. Displaying
+    /// `100 usd` and signing `100 USD` authorises a different asset entirely, and
+    /// it sits outside the `Amount` branch the original gate covered.
+    func testPaymentWithAMangledSendMaxCurrencyIsRefused() {
+        assertBoundPaymentRefused(
+            Self.paymentJson(field: "SendMax", currency: "usd"),
+            "a SendMax the signer would alter must be refused"
+        )
+    }
+
+    func testPaymentWithAMangledDeliverMinCurrencyIsRefused() {
+        assertBoundPaymentRefused(
+            Self.paymentJson(field: "DeliverMin", currency: "usd"),
+            "a DeliverMin the signer would alter must be refused"
+        )
+    }
+
+    /// The controls that make the two refusals above load-bearing: the same
+    /// fixtures with an already-uppercase code SIGN. Without these, a refusal
+    /// proves only that something objected, not that the currency walk did.
+    func testPaymentWithAnUppercaseSendMaxCurrencyIsAccepted() {
+        assertBoundPaymentAccepted(
+            Self.paymentJson(field: "SendMax", currency: "USD"),
+            "the payload binds, so only the currency can be the reason for a refusal"
+        )
+    }
+
+    func testPaymentWithAnUppercaseDeliverMinCurrencyIsAccepted() {
+        assertBoundPaymentAccepted(
+            Self.paymentJson(field: "DeliverMin", currency: "USD"),
+            "the payload binds, so only the currency can be the reason for a refusal"
+        )
+    }
+
+    /// A whitespace-edged 3-byte code is refused in SendMax / DeliverMin too —
+    /// the raw-string judgement is not special-cased to any field.
+    func testPaymentWithAWhitespaceEdgedSendMaxCurrencyIsRefused() {
+        assertBoundPaymentRefused(
+            Self.paymentJson(field: "SendMax", currency: "Ab "),
+            "a SendMax code whose raw bytes the signer would alter must be refused"
+        )
+    }
+
+    /// The walk is structural, not a field allowlist, so a term this signer does
+    /// not know about is covered by default rather than silently exempt.
+    func testAMangledCurrencyNestedInAnUnknownFieldIsRefused() {
+        let rawJson = """
+        {"TransactionType":"OfferCreate","Account":"\(Self.account)","TakerGets":"5000000","TakerPays":{"currency":"USD","issuer":"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh","value":"10"},"SomeFutureField":[{"nested":{"currency":"usd","issuer":"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh","value":"1"}}],"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        assertRefused(rawJson, "an unknown field carrying a mangled code must still be refused")
+    }
+
     // MARK: - Issued-currency Payment binding
 
     /// A cross-currency Payment whose issued-currency Amount matches the
@@ -275,6 +511,28 @@ final class RippleSignRippleTests: XCTestCase {
 
         let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
         XCTAssertEqual(input.rawJson, rawJson)
+    }
+
+    /// The rawJson goes to WalletCore verbatim, and it uppercases a 3-BYTE
+    /// currency code before encoding while XRPL codes are case-SENSITIVE. Two
+    /// sides agreeing on `usd` is therefore NOT enough — the ledger would still
+    /// receive `USD`, a currency neither the dApp nor the reviewer named. Refuse.
+    func testIssuedCurrencyPaymentWhoseCodeTheSignerWouldMangleThrows() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "usd.\(issuer)", decimals: 15)
+        let rawJson = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"usd","issuer":"\(issuer)","value":"1.5"},"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: coin,
+            toAddress: Self.destination,
+            toAmount: BigInt("1500000000000000")
+        )
+        XCTAssertThrowsError(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "matching spellings must not license signing a currency the encoder rewrites"
+        )
     }
 
     func testIssuedCurrencyPaymentIssuerMismatchThrows() {

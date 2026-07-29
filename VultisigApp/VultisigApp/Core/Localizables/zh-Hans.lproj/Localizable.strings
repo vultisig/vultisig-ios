@@ -483,6 +483,7 @@
 "fastVaultSecureTextDescription" = "只需 1 个设备\n存储小额资金以进行快速操作\nVultiserver 即时共同签名";
 "fee" = "费用";
 "filterByAsset" = "按资产筛选";
+"findCustomTokenRipplePlaceholder" = "输入 currency.issuer，例如 USD.rHb9CJ…";
 "findCustomTokens" = "查找自定义代币";
 "findCustomTokenThorchainPlaceholder" = "输入代币，例如 THOR.LQDY";
 "folder" = "文件夹";
@@ -1075,6 +1076,7 @@
 "restart" = "请重新启动应用程序以应用新的语言设置";
 "retry" = "重试";
 "reviewYourVaultDevices" = "检查你的保险库设备";
+"rippleCustomTokenInvalidFormat" = "请以 currency.issuer 格式输入 XRP 代币 —— 代币代码（例如 USD 或 SOLO），然后是发行方地址。";
 "rippleFieldAmount" = "金额";
 "rippleFieldDeliverMin" = "最小交付额";
 "rippleFieldDestination" = "目标地址";
@@ -1088,6 +1090,22 @@
 "rippleFieldType" = "类型";
 "rippleTransaction" = "XRP 交易";
 "rippleTransactionSummary" = "交易摘要";
+"rippleTrustLineActivateAction" = "激活";
+"rippleTrustLineActivationSubtitle" = "%@ 需要在 XRP Ledger 上建立信任线，您的账户才能持有它。开通信任线会将您的一部分 XRP 永久锁定为所有者准备金。";
+"rippleTrustLineActivationTitle" = "激活信任线";
+"rippleTrustLineCurrency" = "货币";
+"rippleTrustLineHeroTitle" = "正在激活 %@ 信任线";
+"rippleTrustLineInsufficientXrpError" = "可用 XRP 不足。开通此信任线需要 %@ XRP 用于所有者准备金和手续费。";
+"rippleTrustLineInvalidTokenError" = "无法读取此代币的货币和发行方。";
+"rippleTrustLineIssuer" = "发行方";
+"rippleTrustLineIssuerCheck" = "发行方正确";
+"rippleTrustLineLimit" = "信任线上限";
+"rippleTrustLineLimitCheck" = "信任线上限正确";
+"rippleTrustLineNoXrpAccountError" = "信任线需要由一个 XRP 账户持有。请先向此保险库添加 XRP。";
+"rippleTrustLineOwnerReserve" = "锁定的准备金";
+"rippleTrustLineSpendableAfter" = "之后可用的 XRP";
+"rippleTrustLineUnreviewable" = "无法审核";
+"rippleTrustLineUnreviewableValue" = "无法读取此信任线的货币、发行方或上限，因此无法显示其条款。请勿签名。";
 "rippleUndecodedNotice" = "无法解码此交易。签名前请仔细核对原始 JSON。";
 "routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
 "rune" = "RUNE";
@@ -1610,6 +1628,7 @@
 "x" = "X（推特）";
 "xrpDestinationLookupFailedError" = "无法验证目标 XRP 账户 (%@)。请重试。";
 "xrpDestinationNotActivatedError" = "目标 XRP 地址尚未激活。首次向其转账必须至少为 %@ XRP（网络基础准备金）。请增加金额或核对地址。";
+"xrpDestinationNoTrustLineError" = "收款方没有 %@ 信任线，因此此付款会被 XRP Ledger 拒绝。";
 "yes" = "是";
 "yesterday" = "昨天";
 "yieldClaimAmount" = "领取 %@";

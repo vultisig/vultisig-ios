@@ -481,6 +481,7 @@
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVultiserver co-signs instantly";
 "fee" = "Fee";
 "filterByAsset" = "Filter by Asset";
+"findCustomTokenRipplePlaceholder" = "Enter currency.issuer, e.g. USD.rHb9CJ…";
 "findCustomTokens" = "Find custom token";
 "findCustomTokenThorchainPlaceholder" = "Enter token, e.g. THOR.LQDY";
 "folder" = "Folder";
@@ -1073,6 +1074,7 @@
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewYourVaultDevices" = "Review your vault devices";
+"rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — the token code (e.g. USD or SOLO), then the issuer address.";
 "rippleFieldAmount" = "Amount";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destination";
@@ -1086,6 +1088,22 @@
 "rippleFieldType" = "Type";
 "rippleTransaction" = "XRP Transaction";
 "rippleTransactionSummary" = "Transaction summary";
+"rippleTrustLineActivateAction" = "Activate";
+"rippleTrustLineActivationSubtitle" = "%@ needs a trust line on the XRP Ledger before your account can hold it. Opening one permanently locks part of your XRP as an owner reserve.";
+"rippleTrustLineActivationTitle" = "Activate trust line";
+"rippleTrustLineCurrency" = "Currency";
+"rippleTrustLineHeroTitle" = "Activating the %@ trust line";
+"rippleTrustLineInsufficientXrpError" = "Not enough spendable XRP. Opening this trust line needs %@ XRP for the owner reserve and fee.";
+"rippleTrustLineInvalidTokenError" = "This token's currency and issuer could not be read.";
+"rippleTrustLineIssuer" = "Issuer";
+"rippleTrustLineIssuerCheck" = "The issuer is correct";
+"rippleTrustLineLimit" = "Trust line limit";
+"rippleTrustLineLimitCheck" = "The trust line limit is correct";
+"rippleTrustLineNoXrpAccountError" = "A trust line needs an XRP account to own it. Add XRP to this vault first.";
+"rippleTrustLineOwnerReserve" = "Reserve locked";
+"rippleTrustLineSpendableAfter" = "Spendable XRP after";
+"rippleTrustLineUnreviewable" = "Cannot review";
+"rippleTrustLineUnreviewableValue" = "This trust line's currency, issuer or limit could not be read, so its terms cannot be shown. Do not sign it.";
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
@@ -1608,6 +1626,7 @@
 "x" = "X (Twitter)";
 "xrpDestinationLookupFailedError" = "The destination XRP account couldn't be verified (%@). Please try again.";
 "xrpDestinationNotActivatedError" = "The destination XRP address is not activated yet. A first transfer to it must be at least %@ XRP (the network base reserve). Increase the amount or double-check the address.";
+"xrpDestinationNoTrustLineError" = "The recipient has no %@ trust line, so this payment would be rejected by the XRP Ledger.";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
 "yieldClaimAmount" = "Claim %@";

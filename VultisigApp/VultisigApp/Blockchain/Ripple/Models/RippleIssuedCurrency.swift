@@ -92,6 +92,134 @@ enum RippleIssuedCurrency {
         return try asciiToHexCurrencyCode(value)
     }
 
+    /// The repertoire a standard 3-character currency code may draw on, narrowed
+    /// from rippled's own `kIsoCharSet` (`src/libxrpl/protocol/UintTypes.cpp`,
+    /// enforced by `toCurrency`) — `a-z A-Z 0-9 <>(){}[]|?!@#$%^&*` — by dropping
+    /// the lowercase letters. See ``isSignableCurrencyCode`` for why.
+    private static let signableStandardCurrencyCodeCharacters = Set(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>(){}[]|?!@#$%^&*"
+    )
+
+    /// Whether a code already normalized by ``toXrplCurrencyCode`` is one the
+    /// signer puts on the wire byte for byte.
+    ///
+    /// WalletCore encodes a 3-BYTE currency code by uppercasing it first
+    /// (`Currency::from_str` → `Currency::ISO(s.to_uppercase())`), while XRPL
+    /// currency codes are case-SENSITIVE — rippled copies the three bytes into
+    /// positions 12–14 untouched. A lowercase standard code would therefore be
+    /// signed as a DIFFERENT currency than the one reviewed: a TrustSet opening
+    /// the wrong line and locking its reserve, or a Payment the ledger rejects
+    /// after the ceremony with the fee burned.
+    ///
+    /// A non-ASCII 3-unit code is refused for the same reason from the other
+    /// side: it is 4+ UTF-8 bytes, so it matches neither the 3-byte standard form
+    /// nor the 40-character hex one and cannot be encoded at all.
+    ///
+    /// Nothing is lost: the 40-character hex spelling of any such currency is
+    /// encoded verbatim, so it remains expressible.
+    static func isSignableCurrencyCode(_ code: String) -> Bool {
+        if isHexCurrencyCode(code) {
+            return code == code.uppercased()
+        }
+        guard code.utf16.count == standardCurrencyCodeLength else { return false }
+        return code.allSatisfy { signableStandardCurrencyCodeCharacters.contains($0) }
+    }
+
+    /// Whether a currency code taken VERBATIM from a dApp-supplied rawJson is
+    /// one the signer puts on the wire byte for byte.
+    ///
+    /// Differs from ``isSignableCurrencyCode`` in what it is handed, not in what
+    /// it wants: that one classifies a code already normalized by
+    /// ``toXrplCurrencyCode``, which TRIMS whitespace and ASCII-packs anything
+    /// that is neither 3 characters nor 40 hex digits. Normalizing before
+    /// classifying is right for a user-entered ticker and wrong for a rawJson
+    /// gate, because the signer never sees the normalized form — it reads the
+    /// raw string and classifies it by BYTE length. Two measured splits:
+    ///
+    /// - `"Ab "` is 3 raw bytes, so the signer reads an ISO code and uppercases
+    ///   it to `AB `. Normalizing trims it to a 2-character ticker and packs it
+    ///   to `4162…`, a different currency entirely — which the normalized gate
+    ///   then accepted.
+    /// - `"€"` is 1 character but also 3 raw bytes, so the same split happens
+    ///   with no whitespace involved at all.
+    ///
+    /// The classification here is therefore the ledger's own, applied to the raw
+    /// string: a currency field is 3 bytes of standard code or 40 hex digits and
+    /// nothing else. A length the signer cannot parse is refused rather than
+    /// silently repaired into one it never receives — and it was never signable
+    /// anyway, the signer rejects such an input outright.
+    ///
+    /// The standard-code repertoire is the same one ``isSignableCurrencyCode``
+    /// uses, so a 3-byte code outside it (`AB ` included — a space is not in
+    /// rippled's `kIsoCharSet`) is refused even though the signer would encode it
+    /// unchanged: the ledger would not render that line back as a standard code,
+    /// so the token id could never match its own `account_lines` row.
+    ///
+    /// Hex is accepted in either case because the signer decodes it
+    /// case-insensitively — measured on the rawJson path, not assumed.
+    static func isVerbatimSignableCurrencyCode(_ currency: String) -> Bool {
+        if isHexCurrencyCode(currency) {
+            return true
+        }
+        guard currency.utf8.count == standardCurrencyCodeLength else { return false }
+        return currency.allSatisfy { signableStandardCurrencyCodeCharacters.contains($0) }
+    }
+
+    /// Printable-ASCII window used to decide whether a decoded hex currency code
+    /// is a human-readable ticker.
+    private static let printableAscii: ClosedRange<UInt8> = 0x20...0x7E
+
+    /// Human-readable ticker for an on-ledger currency code.
+    ///
+    /// A 3-character standard code (`USD`) is already a ticker. The 40-char
+    /// (160-bit) form encodes ASCII right-padded with NUL bytes, so decoding it
+    /// recovers the ticker a user recognizes (`524C555344…00` → `RLUSD`). A hex
+    /// code whose bytes are not all printable ASCII is not a ticker at all — an
+    /// arbitrary 160-bit code, or one of the reserved `0x00`-prefixed forms — so
+    /// the hex is kept verbatim rather than rendered as mojibake.
+    ///
+    /// Unlike the SDK's Node `ascii` decode, a byte with the high bit set is NOT
+    /// masked down into the ASCII range: an arbitrary code must stay hex rather
+    /// than be dressed up as a plausible ticker.
+    static func toIssuedCurrencyTicker(_ currency: String) -> String {
+        guard isHexCurrencyCode(currency), let bytes = hexBytes(currency) else {
+            return currency
+        }
+        var decoded = bytes
+        while decoded.last == 0 { decoded.removeLast() }
+        guard !decoded.isEmpty,
+              decoded.allSatisfy({ printableAscii.contains($0) }),
+              let ticker = String(bytes: decoded, encoding: .utf8) else {
+            return currency
+        }
+        return ticker
+    }
+
+    /// Raw bytes of a hex string. Returns `nil` on an odd length or a non-hex
+    /// digit; callers pass a code already validated by `isHexCurrencyCode`.
+    private static func hexBytes(_ hex: String) -> [UInt8]? {
+        let characters = Array(hex)
+        guard characters.count.isMultiple(of: 2) else { return nil }
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(characters.count / 2)
+        for index in stride(from: 0, to: characters.count, by: 2) {
+            guard let byte = UInt8(String(characters[index...index + 1]), radix: 16) else {
+                return nil
+            }
+            bytes.append(byte)
+        }
+        return bytes
+    }
+
+    /// Composite identifier for an XRPL issued currency: `<currencyCode>.<issuer>`.
+    /// XRPL keys tokens by the (currency, issuer) pair rather than by a single
+    /// contract address, so both are encoded into `Coin.contractAddress`. Inverse
+    /// of `parseRippleTokenId`.
+    static func rippleTokenId(currency: String, issuer: String) throws -> String {
+        let code = try toXrplCurrencyCode(currency)
+        return "\(code).\(issuer)"
+    }
+
     /// Split a `"<currencyCode>.<issuer>"` Ripple token id into its parts.
     /// Throws when the separator is missing, leading, or trailing.
     static func parseRippleTokenId(_ id: String) throws -> (currency: String, issuer: String) {

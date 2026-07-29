@@ -517,7 +517,14 @@ extension BlockChainSpecific {
                 sequence: value.sequence,
                 gas: value.gas,
                 lastLedgerSequence: value.lastLedgerSequence,
-                destinationTag: value.hasDestinationTag ? value.destinationTag : nil
+                destinationTag: value.hasDestinationTag ? value.destinationTag : nil,
+                // A proto3 enum is never absent — an unset field decodes to
+                // `.unspecified` (0). Relayed VERBATIM, including a value this
+                // build doesn't recognise: the signer refuses an unsupported
+                // discriminator rather than silently degrading it to
+                // `.unspecified`, so it must be able to see what the peer
+                // actually sent.
+                transactionType: value.transactionType.rawValue
             )
         case .tronSpecific(let value):
             self = .Tron(
@@ -634,7 +641,7 @@ extension BlockChainSpecific {
                 $0.genesisHash = genesisHash
                 $0.gas = UInt64(gas ?? 0)
             })
-        case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag):
+        case .Ripple(let sequence, let gas, let lastLedgerSequence, let destinationTag, let transactionType):
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
@@ -644,6 +651,13 @@ extension BlockChainSpecific {
                 if let destinationTag {
                     $0.destinationTag = destinationTag
                 }
+                // Assign unconditionally: `.unspecified` (0) is the proto3 default
+                // and stays off the wire, so a payload with no XRPL operation
+                // discriminator is byte-identical to one built before the field
+                // existed. A raw value this build doesn't know round-trips as
+                // `UNRECOGNIZED` rather than being flattened, so the signer sees
+                // what the peer sent and can refuse it.
+                $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
             })
 
         case .Tron(
