@@ -21,7 +21,15 @@ final class PasscodeViewModel: ObservableObject {
         case confirm
     }
 
-    @Published var entry: String = ""
+    @Published var entry: String = "" {
+        didSet {
+            // Typing is the user's answer to the error, so it clears the moment
+            // they start over rather than sitting there contradicting the dots
+            // they are refilling.
+            guard !entry.isEmpty, errorMessage != nil else { return }
+            errorMessage = nil
+        }
+    }
     @Published var errorMessage: String?
     @Published var isBusy: Bool = false
     @Published private(set) var stage: Stage

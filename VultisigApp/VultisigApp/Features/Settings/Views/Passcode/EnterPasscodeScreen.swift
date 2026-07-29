@@ -19,6 +19,7 @@ struct EnterPasscodeScreen: View {
                 subtitle: "passcodeEnterSubtitle".localized,
                 errorMessage: viewModel.errorMessage,
                 isBusy: viewModel.isBusy,
+                showsLogo: true,
                 passcode: $viewModel.entry,
                 onComplete: { _ in
                     Task { await viewModel.unlock() }

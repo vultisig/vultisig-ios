@@ -15,6 +15,9 @@ struct PasscodeEntryView: View {
     let subtitle: String?
     var errorMessage: String?
     var isBusy: Bool = false
+    /// Shown on the lock screen only. The settings flows are already inside a
+    /// titled, branded navigation stack, so a logo there is noise.
+    var showsLogo: Bool = false
     @Binding var passcode: String
     /// Called once the last digit lands, so no flow needs its own submit button.
     let onComplete: (String) -> Void
@@ -30,6 +33,14 @@ struct PasscodeEntryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if showsLogo {
+                Image("vultisig-logo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 64)
+                    .padding(.bottom, 20)
+            }
+
             header
                 .padding(.top, 8)
 
@@ -274,12 +285,20 @@ private struct PasscodeKeyButtonStyle: ButtonStyle {
         }
         .overlay {
             if configuration.isPressed {
-                Circle().fill(Theme.colors.textPrimary.opacity(0.18))
+                Circle().fill(Theme.colors.textPrimary.opacity(0.22))
             }
         }
         .clipShape(Circle())
-        .scaleEffect(configuration.isPressed ? 0.94 : 1)
-        .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
+        // Press compresses hard and fast; release overshoots slightly before
+        // settling. A single symmetric spring reads as mushy next to the
+        // platform keypad, which snaps down and bounces back.
+        .scaleEffect(configuration.isPressed ? 0.88 : 1)
+        .animation(
+            configuration.isPressed
+                ? .spring(response: 0.12, dampingFraction: 0.55)
+                : .spring(response: 0.34, dampingFraction: 0.42),
+            value: configuration.isPressed
+        )
     }
 }
 #endif

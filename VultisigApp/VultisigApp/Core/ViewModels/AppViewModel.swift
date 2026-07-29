@@ -183,17 +183,21 @@ class AppViewModel: ObservableObject {
     }
 
     func enableAuth() {
-        showCover = false
-
         // The re-lock delay used to be five minutes hardcoded here, with no way
         // for anyone to change it. `AppLockService` owns that policy now.
         let shouldRelock = lockService.evaluateForeground()
-        guard shouldRelock else { return }
 
-        if lockService.mode == .passcode {
+        if shouldRelock, lockService.mode == .passcode {
+            // The lock goes up BEFORE the cover comes down. Dropping the cover
+            // first left the home screen — balances, addresses — visible for the
+            // frames it took the lock screen to mount, on every single unlock.
             lockWithPasscodeIfNeeded()
+            showCover = false
             return
         }
+
+        showCover = false
+        guard shouldRelock else { return }
 
         if !didTriggerAuthThisSession {
             resetLogin()
