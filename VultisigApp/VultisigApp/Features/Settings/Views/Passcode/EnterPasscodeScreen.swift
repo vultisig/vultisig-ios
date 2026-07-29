@@ -26,6 +26,7 @@ struct EnterPasscodeScreen: View {
             )
         }
         .screenNavigationBarHidden(true)
+        .screenBackground(.gradient)
         .accessibilityIdentifier(AccessibilityID.Passcode.enterScreen)
         .onChange(of: viewModel.didFinish) { _, finished in
             guard finished else { return }

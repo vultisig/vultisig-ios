@@ -98,7 +98,7 @@ struct ContentView: View {
             }
         }
         .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
-        .overlay(passcodeGate)
+        .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
         .onLoad {
             // A cold start must be gated too, not just a return from the
             // background.
@@ -159,7 +159,11 @@ struct ContentView: View {
             EnterPasscodeScreen {
                 appViewModel.markPasscodeUnlocked()
             }
-            .ignoresSafeArea()
+            // No `.ignoresSafeArea()` here. `Screen` already paints its
+            // background full-bleed while keeping content inside the safe area;
+            // ignoring it at this level pushed the title under the Dynamic
+            // Island instead.
+            .transition(.opacity)
         }
     }
 

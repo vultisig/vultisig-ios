@@ -37,6 +37,7 @@ struct AutoLockScreen: View {
             }
         }
         .screenTitle("passcodeAutoLockTitle".localized)
+        .screenBackground(.gradient)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
     }
 

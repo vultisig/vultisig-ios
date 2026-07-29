@@ -27,6 +27,7 @@ struct ChangePasscodeScreen: View {
             )
         }
         .screenTitle("passcodeChangeTitle".localized)
+        .screenBackground(.gradient)
         .onChange(of: viewModel.didFinish) { _, finished in
             guard finished else { return }
             dismiss()
