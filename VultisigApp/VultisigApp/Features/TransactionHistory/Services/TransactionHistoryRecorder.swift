@@ -274,6 +274,114 @@ final class TransactionHistoryRecorder {
         }
     }
 
+    // MARK: - Record an XRPL trust-line activation
+
+    /// Records an XRPL `TrustSet` — the transaction that opens a trust line.
+    ///
+    /// Modelled on `recordApprove`, because the two are the same kind of
+    /// transaction: permissioning, not transfer. The difference from an approve
+    /// is that this row carries NO amount at all. A TrustSet's signed amount is
+    /// the line's LIMIT, so any value in `amountCrypto` would be read as a
+    /// quantity that moved — which is the entire bug this exists to close.
+    ///
+    /// The fee IS recorded, unlike an approve (whose call site has none to
+    /// hand). A trust line costs a fee and locks an owner reserve, and that cost
+    /// is the main thing history still owes the user for a transaction that
+    /// moved nothing.
+    ///
+    /// - Parameters:
+    ///   - ticker: the trusted currency as a human reads it — resolved from the
+    ///     on-ledger currency code, so a 40-character hex currency shows as
+    ///     `RLUSD` rather than its hex.
+    ///   - issuer: the account the line is with. Stored in `toAddress` because
+    ///     the row schema has nowhere else, and relabelled by the detail sheet:
+    ///     a TrustSet has no XRPL destination, so the issuer must never be
+    ///     presented as a recipient.
+    func recordTrustLineActivation(
+        txHash: String,
+        pubKeyECDSA: String,
+        coin: Coin,
+        ticker: String,
+        issuer: String,
+        feeCrypto: String,
+        feeFiat: String,
+        explorerLink: String
+    ) {
+        let data = Self.trustLineActivationRow(
+            txHash: txHash,
+            pubKeyECDSA: pubKeyECDSA,
+            coin: coin,
+            ticker: ticker,
+            issuer: issuer,
+            feeCrypto: feeCrypto,
+            feeFiat: feeFiat,
+            explorerLink: explorerLink
+        )
+        do {
+            try storage.save(data)
+        } catch {
+            logger.error("Save failed for txHash=\(txHash): \(error)")
+        }
+    }
+
+    /// The row a trust-line activation persists.
+    ///
+    /// Pure and `static` so the row's CONTENT can be pinned by tests — the
+    /// recorder is a `private init()` singleton writing to SwiftData, so the
+    /// wired path isn't reachable from a unit test. The routing that reaches it
+    /// is pinned separately by `TransactionHistoryRecording.isTrustLineActivation`.
+    static func trustLineActivationRow(
+        txHash: String,
+        pubKeyECDSA: String,
+        coin: Coin,
+        ticker: String,
+        issuer: String,
+        feeCrypto: String,
+        feeFiat: String,
+        explorerLink: String
+    ) -> TransactionHistoryData {
+        TransactionHistoryData(
+            id: UUID(),
+            txHash: txHash,
+            approveTxHash: nil,
+            pubKeyECDSA: pubKeyECDSA,
+            type: .trustLineActivation,
+            status: .inProgress,
+            // Taken from the coin rather than pinned to `.ripple`, even though a
+            // TrustSet is XRPL-only: the explorer link and the native poller
+            // both resolve their chain from this field, and a value that could
+            // disagree with the coin the row shows is a link pointing at the
+            // wrong ledger.
+            chainRawValue: coin.chain.rawValue,
+            coinTicker: ticker,
+            coinLogo: coin.logo,
+            coinChainLogo: coin.tokenChainLogo,
+            // ⚠️ Deliberately empty, both of them. The only number a TrustSet
+            // carries is the trust-line limit, and the whole point of this row
+            // type is that the limit is not a quantity that moved. The card and
+            // the detail sheet branch away from their amount slots for this
+            // type, so nothing formats these.
+            amountCrypto: .empty,
+            amountFiat: .empty,
+            fromAddress: coin.address,
+            toAddress: issuer,
+            toCoinTicker: nil,
+            toCoinLogo: nil,
+            toCoinChainLogo: nil,
+            toAmountCrypto: nil,
+            toAmountFiat: nil,
+            swapProvider: nil,
+            feeCrypto: feeCrypto,
+            feeFiat: feeFiat,
+            network: coin.chain.name,
+            explorerLink: explorerLink,
+            createdAt: Date(),
+            completedAt: nil,
+            estimatedTime: ChainStatusConfig.config(for: coin.chain).estimatedTime,
+            errorMessage: nil
+        )
+    }
+
     // MARK: - Record from KeysignPayload (co-signer path)
 
     func recordFromKeysignPayload(

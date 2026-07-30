@@ -1104,6 +1104,7 @@
 "rippleTrustLineNoXrpAccountError" = "Uma linha de confiança precisa de uma conta XRP que a detenha. Adicione XRP a este cofre primeiro.";
 "rippleTrustLineOwnerReserve" = "Reserva bloqueada";
 "rippleTrustLineSpendableAfter" = "XRP disponíveis depois";
+"rippleTrustLineTypePill" = "Linha de confiança";
 "rippleTrustLineUnreviewable" = "Não é possível rever";
 "rippleTrustLineUnreviewableValue" = "Não foi possível ler a moeda, o emissor ou o limite desta linha de confiança, por isso as suas condições não podem ser mostradas. Não a assine.";
 "rippleUndecodedNotice" = "Não foi possível decodificar esta transação. Revise cuidadosamente o JSON bruto antes de assinar.";

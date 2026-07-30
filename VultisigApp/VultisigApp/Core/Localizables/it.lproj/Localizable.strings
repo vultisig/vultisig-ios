@@ -1104,6 +1104,7 @@
 "rippleTrustLineNoXrpAccountError" = "Una linea di fiducia deve essere posseduta da un account XRP. Aggiungi prima XRP a questo vault.";
 "rippleTrustLineOwnerReserve" = "Riserva bloccata";
 "rippleTrustLineSpendableAfter" = "XRP disponibili dopo";
+"rippleTrustLineTypePill" = "Linea di fiducia";
 "rippleTrustLineUnreviewable" = "Impossibile verificare";
 "rippleTrustLineUnreviewableValue" = "Non è stato possibile leggere valuta, emittente o limite di questa linea di fiducia, quindi le sue condizioni non possono essere mostrate. Non firmarla.";
 "rippleUndecodedNotice" = "Impossibile decodificare questa transazione. Controlla attentamente il JSON grezzo prima di firmare.";

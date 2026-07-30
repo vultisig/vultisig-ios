@@ -51,6 +51,27 @@ enum TransactionHistoryRecording {
         // transaction itself remain one tap away.
         guard !isLimitOrderCancel(payload) else { return }
 
+        // An XRPL trust-line activation is not a transfer. Branched BEFORE
+        // everything below it, because every route beneath this line ends in a
+        // `recordSend` that would persist the trust-line LIMIT as an amount sent
+        // — 1,000,000,000,000,000 USDC for a USDC activation.
+        //
+        // ⚠️ Recorded, not suppressed. A limit-order cancel above can be dropped
+        // because the ORDER's row narrates its lifecycle and keeps the hash
+        // linked; a TrustSet has no parent row, so dropping it would erase the
+        // fee the user paid and the XRP owner reserve they locked.
+        //
+        // One branch covers BOTH devices. The initiator's `SendDoneScreen` and
+        // the cosigner's `JoinKeysignDoneView.sendBranch` build different
+        // `amountCrypto` strings but both carry the `KeysignPayload`, and
+        // neither routes through `recordFromKeysignPayload` (a TrustSet has no
+        // swap payload and no limit memo) — so they share this one fallback, and
+        // fixing it here fixes it everywhere.
+        if isTrustLineActivation(payload) {
+            recordTrustLineActivation(payload: payload)
+            return
+        }
+
         // Cosigner: the full `KeysignPayload` carries the swap-or-send
         // discriminator + amounts. Delegate to the recorder helper.
         if let keysignPayload = payload.keysignPayload,
@@ -83,6 +104,44 @@ enum TransactionHistoryRecording {
             feeCrypto: payload.fee.crypto,
             feeFiat: payload.fee.fiat,
             chain: payload.coin.chain,
+            explorerLink: payload.explorerLink
+        )
+    }
+
+    /// Whether this payload opened an XRPL trust line, judged by the WIRE
+    /// discriminator alone — the same rule `RippleTrustSetPresentation` uses to
+    /// decide what a co-signer is shown.
+    ///
+    /// Deliberately not judged from the amount, the coin or the hero. Whether
+    /// something IS a TrustSet is decided by the field that says so; keying it
+    /// off anything derived would let an unrenderable TrustSet fall back into
+    /// the Payment framing, which is exactly the false record this closes.
+    ///
+    /// Pure and `static` so the routing can be pinned by tests: the recorder it
+    /// guards is a `private init()` singleton that writes to SwiftData.
+    static func isTrustLineActivation(_ payload: TransactionDonePayload) -> Bool {
+        RippleTrustSetPresentation.isTrustSet(payload: payload.keysignPayload)
+    }
+
+    /// Persists the activation row.
+    ///
+    /// The ticker and issuer come from the payload's own trust-line terms —
+    /// the resolved currency (so a hex currency code shows as `RLUSD`, not its
+    /// hex) and the account the line is with. When those cannot be read the row
+    /// still records, degrading to the coin's own ticker and the payload's
+    /// address: the transaction happened and cost a fee either way, and the one
+    /// thing that must never happen is falling back to a transfer row.
+    @MainActor
+    private static func recordTrustLineActivation(payload: TransactionDonePayload) {
+        let display = RippleTrustSetPresentation.display(for: payload.keysignPayload)
+        TransactionHistoryRecorder.shared.recordTrustLineActivation(
+            txHash: payload.hash,
+            pubKeyECDSA: payload.pubKeyECDSA,
+            coin: payload.coin,
+            ticker: display?.ticker ?? payload.coin.ticker,
+            issuer: display?.issuer ?? payload.toAddress,
+            feeCrypto: payload.fee.crypto,
+            feeFiat: payload.fee.fiat,
             explorerLink: payload.explorerLink
         )
     }
