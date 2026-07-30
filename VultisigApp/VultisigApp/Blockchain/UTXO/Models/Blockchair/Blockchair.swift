@@ -29,6 +29,21 @@ struct Blockchair: Codable {
     struct BlockchairAddress: Codable {
 		let scriptHex: String?
 		let balance: Int?
+		/// Total number of unspent outputs Blockchair holds for this address,
+		/// mempool ones included. The `utxo` array is capped by the request's
+		/// `limit`, so this is the only way to tell a complete page from a
+		/// truncated one — and it is what drives pagination in
+		/// `BlockchairService`.
+		let unspentOutputCount: Int?
+
+		// Blockchair sends snake_case over the wire and the `JSONDecoder` used
+		// by `HTTPClient` applies no key strategy, so every multi-word field
+		// needs an explicit mapping.
+		enum CodingKeys: String, CodingKey {
+			case scriptHex = "script_hex"
+			case balance
+			case unspentOutputCount = "unspent_output_count"
+		}
 
 		var balanceInBTC: String {
 			formatAsBitcoin(balance ?? 0)
@@ -45,6 +60,11 @@ struct Blockchair: Codable {
         let transactionHash: String?
         let index: Int?
         let value: Int?
+        /// Whether the provider considers this output spendable. Blockchair's
+        /// Bitcoin responses omit the field entirely, so it is optional and
+        /// **absent means spendable** — matching the SDK's `is_spendable !==
+        /// false`. Only an explicit `false` disqualifies an output.
+        let isSpendable: Bool?
 
         // Blockchair returns `transaction_hash` and `block_id` (snake_case) over the
         // wire. The default `JSONDecoder` we use through `HTTPClient` doesn't apply
@@ -55,6 +75,42 @@ struct Blockchair: Codable {
             case transactionHash = "transaction_hash"
             case index
             case value
+            case isSpendable = "is_spendable"
         }
+
+        /// `isSpendable` defaults to `nil` because that is the wire shape
+        /// Blockchair actually sends for Bitcoin — the field is simply absent.
+        init(blockId: Int?, transactionHash: String?, index: Int?, value: Int?, isSpendable: Bool? = nil) {
+            self.blockId = blockId
+            self.transactionHash = transactionHash
+            self.index = index
+            self.value = value
+            self.isSpendable = isSpendable
+        }
+    }
+}
+
+extension Blockchair.BlockchairUtxo {
+    /// Identity of an output on-chain.
+    ///
+    /// A paginated fetch can see the same output twice when the address's
+    /// UTXO set shifts between two page requests (Blockchair returns the list
+    /// newest-first, so one new entry slides everything down by one). A
+    /// duplicated outpoint in the candidate set would let the planner build a
+    /// transaction that spends the same input twice, which the network
+    /// rejects — so pages are merged on this key.
+    struct OutPoint: Hashable {
+        let transactionHash: String
+        let index: Int
+    }
+
+    /// `nil` when the row is missing the fields needed to identify the output.
+    /// Such rows are unusable downstream and are dropped there; they simply
+    /// cannot participate in de-duplication.
+    var outPoint: OutPoint? {
+        guard let transactionHash, !transactionHash.isEmpty, let index else {
+            return nil
+        }
+        return OutPoint(transactionHash: transactionHash, index: index)
     }
 }

@@ -359,7 +359,15 @@ private extension KeyImportChainsSetupViewModel {
         derivationPath: DerivationPath?
     ) async -> DerivationBalanceResult {
         do {
-            let balanceString = try await balanceService.fetchBalance(for: nativeCoin, address: address)
+            // No vault yet — this probes candidate derivation paths to decide
+            // which chains the imported vault should carry, so there are no
+            // locally-broadcast transactions to attribute and a confirmed-only
+            // UTXO balance is the right basis for the decision.
+            let balanceString = try await balanceService.fetchBalance(
+                for: nativeCoin,
+                address: address,
+                vaultPubKeyECDSA: nil
+            )
             guard let balance = Decimal(string: balanceString), balance > 0 else {
                 return DerivationBalanceResult(nativeCoin: nativeCoin, hasBalance: false, derivationPath: derivationPath)
             }

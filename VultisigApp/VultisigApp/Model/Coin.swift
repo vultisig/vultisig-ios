@@ -22,6 +22,18 @@ class Coin: ObservableObject, Codable, Hashable {
     var rawBalance: String = ""
     var stakedBalance: String = ""
 
+    /// Inbound value sitting in the mempool, in the chain's smallest unit:
+    /// money this address can see arriving and cannot spend until it confirms.
+    /// Shown beside the balance, never inside it — the balance is what a
+    /// transaction can actually be funded from, and folding this in would put
+    /// back the gap where a send passed the balance check and then failed at
+    /// input selection.
+    ///
+    /// Transient because it describes the mempool, which is not a thing worth
+    /// persisting: it is refreshed by the same fetch that sets `rawBalance`
+    /// and is meaningless a launch later.
+    @Transient var pendingRawBalance: String = "0"
+
     @Transient var bondedNodes: [RuneBondNode] = []
     @Relationship(inverse: \Vault.coins) var vault: Vault?
 
@@ -114,6 +126,21 @@ class Coin: ObservableObject, Codable, Hashable {
 
     var balanceStringWithTicker: String {
         "\(balanceString) \(ticker)"
+    }
+
+    var pendingBalanceDecimal: Decimal {
+        pendingRawBalance.toDecimal() / pow(10, decimals)
+    }
+
+    var pendingBalanceStringWithTicker: String {
+        "\(pendingBalanceDecimal.formatForDisplay()) \(ticker)"
+    }
+
+    /// Whether there is an inbound amount worth telling the user about. A
+    /// wallet with nothing arriving must show no pending line at all rather
+    /// than a permanent "0 BTC pending".
+    var hasPendingBalance: Bool {
+        pendingBalanceDecimal > 0
     }
 
     var defiBalanceString: String {
