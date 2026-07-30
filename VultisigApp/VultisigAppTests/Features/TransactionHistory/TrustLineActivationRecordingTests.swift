@@ -155,6 +155,45 @@ final class TrustLineActivationRecordingTests: XCTestCase {
         }
     }
 
+    /// Pins WHERE in the chain the branch sits, not merely that it exists.
+    ///
+    /// Every other TrustSet fixture here carries no swap payload, no limit memo
+    /// and the `.send` verb — so it would still route correctly if the branch
+    /// were demoted below the keysign dispatch or the `.claim` guard, and those
+    /// reorderings would go unnoticed. These two payloads are deliberately
+    /// impossible (a TrustSet cannot carry a limit-order memo, and no XRPL
+    /// operation is a QBTC claim); their only job is to make each of those
+    /// positions distinguishable. Move the branch down past either guard and one
+    /// of these turns red.
+    func testTheActivationBranchOutranksTheKeysignDispatchAndTheClaimGuard() {
+        let withLimitMemo = makeDonePayload(
+            amountCrypto: "\(Self.limitDisplayValue) RLUSD",
+            keysignPayload: makeTrustSetPayload(memo: "=<:BTC.BTC:bc1qexample:1e6:va:50")
+        )
+        XCTAssertTrue(
+            TransactionHistoryRecording.routesThroughKeysignRecorder(
+                makeTrustSetPayload(memo: "=<:BTC.BTC:bc1qexample:1e6:va:50")
+            ),
+            "the fixture must genuinely qualify for the keysign dispatch, or this pins nothing"
+        )
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(for: withLimitMemo),
+            .trustLineActivation,
+            "the activation branch is asked before the keysign dispatch"
+        )
+
+        let claimVerb = makeDonePayload(
+            amountCrypto: "\(Self.limitDisplayValue) RLUSD",
+            keysignPayload: makeTrustSetPayload(),
+            verb: .claim
+        )
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(for: claimVerb),
+            .trustLineActivation,
+            "the activation branch is asked before the claim opt-out"
+        )
+    }
+
     /// ⚠️ Decided by the WIRE discriminator, never by whether the terms could be
     /// rendered. An unreadable token id must still record as an activation: if
     /// it collapsed to "not a TrustSet" it would fall back into the send row,
@@ -380,7 +419,8 @@ final class TrustLineActivationRecordingTests: XCTestCase {
 
     private func makeTrustSetPayload(
         tokenId: String? = nil,
-        transactionType: VSTransactionType = .rippleTrustSet
+        transactionType: VSTransactionType = .rippleTrustSet,
+        memo: String? = nil
     ) -> KeysignPayload {
         makePayload(
             coin: makeCoin(tokenId: tokenId ?? "\(Self.rlusdHex).\(Self.issuer)"),
@@ -390,7 +430,8 @@ final class TrustLineActivationRecordingTests: XCTestCase {
                 gas: 10,
                 lastLedgerSequence: 100,
                 transactionType: transactionType.rawValue
-            )
+            ),
+            memo: memo
         )
     }
 
