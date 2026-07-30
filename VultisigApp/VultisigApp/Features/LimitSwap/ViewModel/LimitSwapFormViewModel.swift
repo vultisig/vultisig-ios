@@ -133,6 +133,7 @@ final class LimitSwapFormViewModel {
 
     private let vault: Vault
     private let interactor: LimitSwapInteractor
+    private let marketDataService: MarketDataServiceProtocol
 
     /// Tags each in-flight `refreshMarketPrice` so a slower older request
     /// can't overwrite a faster newer one's `marketPriceRef`/`error` after
@@ -159,13 +160,57 @@ final class LimitSwapFormViewModel {
     /// keystroke never cancels a pending pair refresh (and vice-versa).
     @ObservationIgnored private var feeRefreshTask: Task<Void, Never>?
 
+    /// In-flight chart fetch. Its own handle so a range switch cancels only the
+    /// chart, and an amount keystroke never cancels the chart at all — the
+    /// series does not depend on the amount.
+    @ObservationIgnored private var chartRefreshTask: Task<Void, Never>?
+
     /// Keystroke/selection debounce before the market-price / fee fetches fire.
     static let inputDebounce: Duration = .milliseconds(300)
 
-    init(initialDraft: LimitSwapDraft, vault: Vault, interactor: LimitSwapInteractor) {
+    /// Pair-ratio history behind the price chart, or `nil` when one cannot be
+    /// drawn — either side unpriced, the fetch failed, or the two histories
+    /// could not be reconciled. The form then renders exactly as it did before
+    /// the chart existed; placement is never gated on it.
+    var pairChart: MarketChart?
+
+    /// Window the chart plots. `1D` is deliberately absent from the picker: the
+    /// drag zone has to span the preset pills' reach, roughly 15%, and a day's
+    /// range is a fraction of that — the history renders as a flat ribbon under
+    /// any domain policy, so the range would only ever disappoint.
+    var chartRange: MarketChartRange = .month
+
+    var isLoadingPairChart = false
+
+    /// Whether the price chart is showing. Persisted, and **collapsed by
+    /// default**: the chart is an optional way to set a price the form can
+    /// already set numerically, so it opts in rather than claiming the vertical
+    /// space of everyone who does not want it.
+    ///
+    /// `UserDefaults.bool` returns `false` for an unset key, so the default
+    /// falls out of the storage rather than being restated here.
+    var isChartExpanded: Bool {
+        didSet { UserDefaults.standard.set(isChartExpanded, forKey: Self.chartExpandedKey) }
+    }
+
+    static let chartExpandedKey = "limitSwapChartExpanded"
+
+    /// Invalidation token for the chart fetch, mirroring the market-price and
+    /// fee refreshes: a range switch or pair change must not have an older
+    /// in-flight series land on top of a newer one.
+    @ObservationIgnored private var chartRequestID = UUID()
+
+    init(
+        initialDraft: LimitSwapDraft,
+        vault: Vault,
+        interactor: LimitSwapInteractor,
+        marketDataService: MarketDataServiceProtocol = MarketDataService.shared
+    ) {
         self.draft = initialDraft
         self.vault = vault
         self.interactor = interactor
+        self.marketDataService = marketDataService
+        self.isChartExpanded = UserDefaults.standard.bool(forKey: Self.chartExpandedKey)
     }
 
     // MARK: - User input mutations
@@ -176,6 +221,33 @@ final class LimitSwapFormViewModel {
         // estimate so a fee from a previous amount can never be snapshotted into
         // the placed order. A fresh estimate is re-fetched by the view.
         invalidateNetworkFeeEstimate()
+        // The chart is deliberately NOT invalidated here. The series is keyed on
+        // the pair, range and currency — never on the amount — and nothing in
+        // this path re-triggers a fetch, so clearing it would blank the chart on
+        // the first keystroke into the amount field and leave it blank until the
+        // user switched range or swapped an asset.
+    }
+
+    /// Drop the pair chart and invalidate any in-flight fetch, SYNCHRONOUSLY.
+    ///
+    /// The series is priced in the OLD pair's units, so leaving it on screen
+    /// during the debounce leaves a live price input that belongs to a pair the
+    /// user is no longer trading. Dragging it then writes a value from the old
+    /// pair's domain into the new pair's target price — BTC/ETH's ~30 becoming
+    /// the target for BTC/USDC, whose real price is ~118,000 — and because a
+    /// drag is a deliberate edit it also bumps the edit sequence, suppressing
+    /// the auto-seed that would otherwise have corrected it. The order then
+    /// places at that price and fills immediately, at a catastrophic loss.
+    ///
+    /// Deliberately different from a RANGE switch, which keeps the outgoing
+    /// series on screen while the next one loads: there the units are unchanged,
+    /// so a briefly stale line is only stale, and clearing it collapses the card.
+    /// Here the units themselves are wrong, so there is nothing honest to show.
+    private func invalidatePairChart() {
+        chartRefreshTask?.cancel()
+        chartRequestID = UUID()
+        pairChart = nil
+        isLoadingPairChart = false
     }
 
     /// Drop the cached network-fee estimate AND invalidate any in-flight
@@ -256,6 +328,88 @@ final class LimitSwapFormViewModel {
         }
     }
 
+    /// Set the target price from a drag on the chart.
+    ///
+    /// The chart plots in `Double` while the order is priced in `Decimal`, and
+    /// `Decimal(someDouble)` carries the full binary expansion — 31.8255 arrives
+    /// as 31.825500000000000682. Rounded to 8 decimals, the memo LIM's
+    /// fixed-point precision, exactly as the preset and USD paths do, so a
+    /// dragged price can never be stored with more precision than the signed
+    /// order can express and the price-text round-trip stays stable.
+    ///
+    /// Routed through `targetPriceChanged` rather than assigning the draft
+    /// directly: a drag is a deliberate price choice, so it has to bump the edit
+    /// sequence too, or a pending pair refresh would land and overwrite it with
+    /// the Market preset a moment after the finger lifts.
+    func targetPriceChangedFromChart(_ price: Double) {
+        guard price.isFinite, price > 0 else { return }
+        var raw = Decimal(price)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &raw, 8, .plain)
+        guard rounded > 0 else { return }
+        targetPriceChanged(rounded)
+    }
+
+    func selectChartRange(_ range: MarketChartRange, currency: SettingsCurrency) {
+        guard range != chartRange else { return }
+        chartRange = range
+        chartRefreshTask?.cancel()
+        chartRefreshTask = Task { [weak self] in
+            await self?.refreshPairChart(currency: currency)
+        }
+    }
+
+    /// Load the pair-ratio series for the current assets and range.
+    ///
+    /// The previous series is deliberately left on screen while a new one loads:
+    /// clearing it first collapses the card's height and the whole form jumps,
+    /// which on a range switch is a worse experience than a briefly stale line.
+    /// Show or hide the chart, persisting the choice.
+    ///
+    /// Expanding is what triggers the first fetch — while collapsed nothing is
+    /// requested at all, so a user who never opens it costs no market-data
+    /// traffic. The loading flag is raised synchronously so the content does not
+    /// render one frame of "unavailable" before the request has started.
+    func setChartExpanded(_ expanded: Bool, currency: SettingsCurrency) {
+        isChartExpanded = expanded
+        guard expanded, pairChart == nil else { return }
+        isLoadingPairChart = true
+        chartRefreshTask?.cancel()
+        chartRefreshTask = Task { [weak self] in
+            await self?.refreshPairChart(currency: currency)
+        }
+    }
+
+    func refreshPairChart(currency: SettingsCurrency) async {
+        // Collapsed means nobody is looking, so the two requests this would make
+        // are pure waste — on open and again on every pair change. The chart is
+        // fetched when it is first expanded instead.
+        guard isChartExpanded else {
+            isLoadingPairChart = false
+            return
+        }
+        let requestID = UUID()
+        chartRequestID = requestID
+        isLoadingPairChart = true
+        defer {
+            if requestID == chartRequestID {
+                isLoadingPairChart = false
+            }
+        }
+
+        let chart = await marketDataService.pairChart(
+            base: draft.fromAsset.coinMeta,
+            quote: draft.toAsset.coinMeta,
+            range: chartRange,
+            currency: currency
+        )
+
+        // A superseded request must not publish: a slow ALL fetch landing after
+        // the user has switched back to 1M would replace the series under them.
+        guard requestID == chartRequestID else { return }
+        pairChart = chart
+    }
+
     func selectExpiryHours(_ hours: Int) {
         draft.expiryHours = hours
     }
@@ -280,6 +434,7 @@ final class LimitSwapFormViewModel {
         // sleep and repopulate `marketPriceRef` for the wrong pair.
         marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
+        invalidatePairChart()
     }
 
     func selectToAsset(_ asset: LimitSwapAsset) {
@@ -290,6 +445,7 @@ final class LimitSwapFormViewModel {
         pairUnroutableReason = nil
         marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
+        invalidatePairChart()
     }
 
     // MARK: - Async actions
@@ -429,7 +585,7 @@ final class LimitSwapFormViewModel {
     /// Cancels the prior pair refresh so a swap's two coin mutations collapse into
     /// one round of fetches, and cancels any pending amount fee fetch that is now
     /// stale for the new pair.
-    func schedulePairRefresh(sourceCoin: Coin, targetCoin: Coin) {
+    func schedulePairRefresh(sourceCoin: Coin, targetCoin: Coin, currency: SettingsCurrency) {
         pairRefreshTask?.cancel()
         feeRefreshTask?.cancel()
         let editSeqAtSchedule = targetPriceEditSeq
@@ -438,7 +594,8 @@ final class LimitSwapFormViewModel {
             guard !Task.isCancelled, let self else { return }
             async let market: Void = self.refreshMarketPrice()
             async let fee: Void = self.refreshNetworkFeeEstimate(sourceCoin: sourceCoin, targetCoin: targetCoin)
-            _ = await (market, fee)
+            async let chart: Void = self.refreshPairChart(currency: currency)
+            _ = await (market, fee, chart)
             // Only auto-seed the Market preset if the user hasn't chosen a price
             // (typed edit OR preset tap) since this refresh was scheduled —
             // otherwise the delayed seed would clobber their choice.

@@ -971,6 +971,48 @@ final class LimitSwapFormViewModelTests: XCTestCase {
     private func ethAsset() -> LimitSwapAsset {
         LimitSwapAsset(chain: .ethereum, ticker: "ETH", decimals: 18, contractAddress: "ETH-contract", isNativeToken: true)
     }
+    // MARK: - The pair chart cannot outlive its pair
+
+    func testSwitchingTheTargetAssetDropsTheChartImmediately() {
+        // A drag on a chart priced in the OLD pair's units writes that value
+        // into the NEW pair's target price, and — being a deliberate edit — also
+        // suppresses the auto-seed that would have corrected it. BTC/ETH's ~30
+        // becoming the target for BTC/USDC at ~118,000 places an order that
+        // fills instantly at a catastrophic loss. The chart must be gone before
+        // the debounced refresh has even started.
+        let vm = makeViewModel()
+        vm.pairChart = MarketChart(points: (0..<40).map {
+            MarketChartPoint(date: Date(timeIntervalSince1970: Double($0) * 60), price: 30)
+        })
+
+        vm.selectToAsset(
+            LimitSwapAsset(
+                chain: .ethereum, ticker: "USDC", decimals: 6,
+                contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                isNativeToken: false, priceProviderId: "usd-coin"
+            )
+        )
+
+        XCTAssertNil(vm.pairChart)
+        XCTAssertFalse(vm.isLoadingPairChart)
+    }
+
+    func testSwitchingTheSourceAssetDropsTheChartImmediately() {
+        let vm = makeViewModel()
+        vm.pairChart = MarketChart(points: (0..<40).map {
+            MarketChartPoint(date: Date(timeIntervalSince1970: Double($0) * 60), price: 30)
+        })
+
+        vm.selectFromAsset(
+            LimitSwapAsset(
+                chain: .thorChain, ticker: "RUNE", decimals: 8,
+                contractAddress: "", isNativeToken: true, priceProviderId: "thorchain"
+            )
+        )
+
+        XCTAssertNil(vm.pairChart)
+    }
+
 }
 
 private struct UntestedError: Error {}

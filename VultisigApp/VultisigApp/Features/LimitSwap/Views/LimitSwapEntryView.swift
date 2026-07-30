@@ -83,7 +83,8 @@ struct LimitSwapEntryView: View {
             async let supportedChains: () = vm.refreshSupportedChains()
             async let marketPrice: () = vm.refreshMarketPrice()
             async let queueGate: () = vm.refreshAdvancedSwapQueueGate()
-            _ = await (supportedChains, marketPrice, queueGate)
+            async let pairChart: () = vm.refreshPairChart(currency: SettingsCurrency.current)
+            _ = await (supportedChains, marketPrice, queueGate, pairChart)
             vm.selectPresetPct(0, userInitiated: false)
         }
         .onChange(of: limitFromCoin) { _, newCoin in
@@ -91,12 +92,12 @@ struct LimitSwapEntryView: View {
             vm.sourceUsdPricePerUnit = Decimal(newCoin.price)
             // Debounced + coalesced: a swap mutates both coins, so both onChanges
             // fire — the scheduler cancels the first so only one refresh runs.
-            vm.schedulePairRefresh(sourceCoin: newCoin, targetCoin: limitToCoin)
+            vm.schedulePairRefresh(sourceCoin: newCoin, targetCoin: limitToCoin, currency: SettingsCurrency.current)
         }
         .onChange(of: limitToCoin) { _, newCoin in
             vm.selectToAsset(LimitSwapAsset(coin: newCoin))
             vm.targetUsdPricePerUnit = Decimal(newCoin.price)
-            vm.schedulePairRefresh(sourceCoin: limitFromCoin, targetCoin: newCoin)
+            vm.schedulePairRefresh(sourceCoin: limitFromCoin, targetCoin: newCoin, currency: SettingsCurrency.current)
         }
         .onChange(of: vm.draft.sourceAmount) { _, _ in
             // The network fee (UTXO especially) depends on the amount; refresh the
