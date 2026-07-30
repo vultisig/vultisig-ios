@@ -850,9 +850,11 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNil(inFlight.noticeMessage, "No notice may be rendered from an unresolved fee")
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc), "Placement stays blocked until the fee resolves")
 
-        // …and the moment the estimate lands, the real verdict appears.
+        // …and the moment the estimate lands, the real verdict appears — and it
+        // is the ONLY term still blocking the CTA, so this pins the wiring too.
         vm.networkFeeEstimate = BigInt(10_000)
         XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientGas(feeTicker: "BTC"))
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc))
     }
 
     func testInsufficientFundsIsStillReportedWhileTheFeeEstimateIsInFlight() {
@@ -888,6 +890,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.networkFeeEstimate = BigInt(1_050_000_000_000_000)  // 0.00105 ETH in wei
 
         XCTAssertEqual(vm.balanceState(sourceCoin: usdc), .insufficientGas(feeTicker: "ETH"))
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: usdc))
 
         eth.rawBalance = "1000000000000000000"  // 1 ETH
         XCTAssertEqual(
@@ -895,6 +898,10 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             .sufficient,
             "A wei fee must be judged in ETH's 18 decimals, not the token's 6"
         )
+        // Funding the sibling is the ONLY thing that changed, so the CTA coming
+        // back proves the split-fee-coin path is wired through `canPlaceOrder`
+        // and not merely classified correctly in isolation.
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: usdc))
     }
 
     func testBalanceStateAgreesWithTheMarketSwapRuleForTheSameInput() {
@@ -913,6 +920,9 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         )
         XCTAssertEqual(marketVerdict, .insufficientGas)
         XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientGas(feeTicker: "BTC"))
+        // Every other `canPlaceOrder` term is satisfied here, so the disabled CTA
+        // can only come from the shared rule's verdict.
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc))
     }
 
     func testBalanceStateIsIndeterminateWhenTheCoinIsNotTheDraftSource() {
