@@ -727,6 +727,8 @@
 "limitSwap.done.status.restingDetail" = "挂单等待，直至达到您的价格";
 "limitSwap.done.status.submitted" = "订单已提交";
 "limitSwap.error.advancedSwapQueueDisabled" = "THORChain 暂时无法使用限价单。请稍后重试或使用市价兑换。";
+"limitSwap.error.insufficientFunds" = "%@ 余额不足，无法下此订单。请输入不超过余额的数量。";
+"limitSwap.error.insufficientGas" = "%@ 不足，无法支付此订单的网络手续费。";
 "limitSwap.error.invalidInputs" = "部分订单信息无效。请检查数量、价格和有效期后重试。";
 "limitSwap.error.limitAmountTooSmall" = "此订单金额过小，无法设置限价。请增加数量或调整价格后重试。";
 "limitSwap.error.pairNotRoutable" = "该交易对目前无法在 THORChain 上交易。请选择其他资产。";

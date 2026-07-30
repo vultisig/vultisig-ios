@@ -91,6 +91,10 @@ struct LimitSwapBodyView: View {
     let onPlaceOrder: () -> Void
 
     var body: some View {
+        // Evaluated once and threaded through both consumers — the inline notice
+        // and the CTA's disabled state have to agree, and re-deriving it per read
+        // would run the affordability math twice on every body pass.
+        let balance = vm.balanceState(sourceCoin: fromCoin)
         VStack(spacing: 12) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
@@ -130,6 +134,14 @@ struct LimitSwapBodyView: View {
                         LimitNoticeRow(message: unroutable.message)
                     }
 
+                    // Says which asset is short — funds or gas — instead of
+                    // letting the user find out one screen later at Verify.
+                    // Silent while the fee estimate is in flight, so a gas error
+                    // is never shown and then withdrawn.
+                    if let balanceMessage = balance.noticeMessage {
+                        LimitNoticeRow(message: balanceMessage)
+                    }
+
                     if let warning = vm.displayedWarning {
                         LimitWarningRow(warning: warning)
                     }
@@ -140,7 +152,7 @@ struct LimitSwapBodyView: View {
                 title: "limitSwap.placeOrder".localized,
                 action: onPlaceOrder
             )
-            .disabled(!vm.canPlaceOrder)
+            .disabled(!vm.canPlaceOrder(sourceCoin: fromCoin))
             .padding(.bottom, 16)
         }
         #if os(iOS)
