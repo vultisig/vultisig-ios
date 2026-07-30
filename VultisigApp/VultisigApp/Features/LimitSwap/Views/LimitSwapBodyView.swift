@@ -347,7 +347,6 @@ private struct LimitPriceCard: View {
                 LimitAssetChip(
                     asset: vm.draft.toAsset,
                     iconSize: 20,
-                    font: Theme.fonts.priceBodyL,
                     action: onPickToAsset
                 )
             }
@@ -608,6 +607,13 @@ private struct LimitChartRangePills: View {
                         .padding(.vertical, 5)
                         .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 100))
+                        // The pill is `maxWidth: .infinity` but an unselected one
+                        // fills with `Color.clear`, so without an explicit content
+                        // shape the tap area collapses to the glyphs and most of
+                        // the button is dead — worse the wider the screen, and it
+                        // only afflicts the UNSELECTED pills, which are precisely
+                        // the ones being reached for.
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -621,14 +627,14 @@ private struct LimitChartRangePills: View {
 // "When 1 [chip] is worth" source chip and the trailing target chip), so the two
 // stay symmetric with each other. Matches the established asset-pill style used by
 // `LimitAssetRow` — filled `bgSurface2` capsule with the 6/12/6 padding — so the
-// fill (not just a border) is what signals "tappable". Only the icon size + font
-// vary, tied to the type scale of the row each chip sits in.
+// fill (not just a border) is what signals "tappable". The ticker takes the same
+// `caption12` the Sell/Buy coin pills use, so every asset chip on the screen
+// speaks one type size; only the icon scales with the row it sits in.
 
 private struct LimitAssetChip: View {
 
     let asset: LimitSwapAsset
     let iconSize: CGFloat
-    let font: Font
     let action: () -> Void
 
     var body: some View {
@@ -648,7 +654,7 @@ private struct LimitAssetChip: View {
                     )
                 }
                 Text(asset.ticker)
-                    .font(font)
+                    .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             .padding(.leading, 6)
@@ -681,7 +687,6 @@ private struct LimitExecuteWhenTitle: View {
             LimitAssetChip(
                 asset: asset,
                 iconSize: 16,
-                font: Theme.fonts.bodySMedium,
                 action: onTapAsset
             )
 
