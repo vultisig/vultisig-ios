@@ -751,7 +751,6 @@
 "limitSwap.verify.title" = "您正在下达限价单";
 "limitSwap.warning.priceAtOrBelowMarket" = "价格已可用，建议使用市价兑换";
 "limitSwap.warning.priceFarAboveMarket" = "可能在到期前无法成交";
-"limitSwapToggle" = "限价兑换";
 "liquidityPools" = "流动性池";
 "loading" = "加载中...";
 "loadingDetails" = "正在加载详情";

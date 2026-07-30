@@ -751,7 +751,6 @@
 "limitSwap.verify.title" = "Você está colocando uma ordem limite";
 "limitSwap.warning.priceAtOrBelowMarket" = "Preço já disponível, considere um swap de mercado";
 "limitSwap.warning.priceFarAboveMarket" = "Pode não ser executada antes da validade";
-"limitSwapToggle" = "Swap limite";
 "liquidityPools" = "Pools de liquidez";
 "loading" = "Loading...";
 "loadingDetails" = "Carregando detalhes";
