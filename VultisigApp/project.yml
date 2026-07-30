@@ -271,29 +271,34 @@ targets:
           # never a test resource, so exclude it wholesale.
           - "**/*.md"
           # Exclude the fixture JSONs from the generic-sources scan; they're
-          # picked up explicitly below as a folder reference so they land at
-          # `__fixtures__/*.json` inside the bundle. Without this exclude,
+          # picked up explicitly below as folder references so each set keeps
+          # its own directory inside the bundle. Without these excludes,
           # XcodeGen treats every `.json` under the tree as a flattened
-          # resource and collides with `ChainHelperTests.testChainHelpers`,
-          # which enumerates every top-level JSON in the bundle root.
+          # resource, so unrelated suites' fixtures all land side by side in
+          # the bundle's resource root with no way to tell them apart.
           - "Swap/SwapKit/__fixtures__/**"
           - "Blockchain/Cosmos/Staking/CosmosStakingFixtures/**"
+          - "TestData/**"
           # The QBTC weighted-vote vector generator is a committed Node/cosmjs
           # tool (generate.mjs + package.json + README + node_modules), not test
           # code or a bundled resource. Excluding it keeps its .js/.ts/.map
           # files from being flattened into the test bundle root (which
           # collides under "Multiple commands produce").
           - "Blockchain/Cosmos/Signing/fixtures/qbtc-voteweighted/**"
-      # Static fixture JSONs bundled with the test target as a *folder
-      # reference* (blue folder in Xcode) so they land at
-      # `__fixtures__/*.json` inside the bundle instead of flattening into
-      # the resource root. Flattening would collide with
-      # `ChainHelperTests.testChainHelpers`, which enumerates every top-level
-      # JSON and decodes it as `[ChainHelperTestCase]`.
+      # Static fixture JSONs bundled with the test target as *folder
+      # references* (blue folders in Xcode) so they keep their directory
+      # inside the bundle instead of flattening into the resource root.
+      # `TestData` in particular is the golden signing-vector corpus: keeping
+      # it addressable as a directory lets `ChainHelperTests` enumerate
+      # exactly its own fixtures and assert every one of them is executed,
+      # instead of guessing which of a flat pile of JSON files belongs to it.
       - path: VultisigAppTests/Swap/SwapKit/__fixtures__
         type: folder
         buildPhase: resources
       - path: VultisigAppTests/Blockchain/Cosmos/Staking/CosmosStakingFixtures
+        type: folder
+        buildPhase: resources
+      - path: VultisigAppTests/TestData
         type: folder
         buildPhase: resources
 

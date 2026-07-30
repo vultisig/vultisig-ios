@@ -22,51 +22,143 @@ struct ChainHelperTestCase: Codable {
     }
 }
 
+/// The golden signing-vector fixtures bundled under `TestData/`.
+///
+/// Every fixture is named here and gets its own `test…` method rather than
+/// being discovered by a wildcard walk of the bundle. A wildcard walk is what
+/// let the entire corpus stop executing without anything turning red: the
+/// walk's "is this one of ours?" filter silently matched nothing, so the loop
+/// body never ran and the suite stayed green with zero conformance coverage.
+///
+/// Explicit registration makes that failure mode impossible to reach silently:
+/// `testEveryBundledFixtureIsRegistered` pins this list against the JSON files
+/// actually present in the bundle and against the number of test methods on
+/// this class, so a fixture can neither be added without a test nor listed
+/// without one.
+enum ChainHelperFixture: String, CaseIterable {
+    case arb
+    case bsc
+    case cardano
+    case cosmos
+    case cosmosSdkSignAmino = "cosmos-sdk-sign-amino"
+    case cosmosSdkSignDirect = "cosmos-sdk-sign-direct"
+    case dot
+    case evm
+    case kujira
+    case lifiswap
+    case maya
+    case mayaswap
+    case pol
+    case solana
+    case solanaSignData = "solana-sign-data"
+    case sui
+    case terra
+    case thorchain
+    case thorchainswap
+    case ton
+    case tron
+    case utxo
+    case xrp
+}
+
 final class ChainHelperTests: XCTestCase {
     let hexPublicKey = "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b"
     let hexChainCode = "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7"
 
-    func testChainHelpers() throws {
-        // Get the test bundle
-        let bundle = Bundle(for: type(of: self))
+    /// Fixtures are bundled as a folder reference so they keep their own
+    /// directory inside the test bundle instead of flattening into the
+    /// resource root next to unrelated suites' JSON.
+    private static let fixtureSubdirectory = "TestData"
 
-        // Get all JSON files in the bundle
-        let fileManager = FileManager.default
-        guard let resourcePath = bundle.resourcePath else {
-            XCTFail("Missing resource path")
+    // MARK: - Per-fixture golden vectors
+
+    func testArbFixture() throws { try runFixture(.arb) }
+    func testBscFixture() throws { try runFixture(.bsc) }
+    func testCardanoFixture() throws { try runFixture(.cardano) }
+    func testCosmosFixture() throws { try runFixture(.cosmos) }
+    func testCosmosSdkSignAminoFixture() throws { try runFixture(.cosmosSdkSignAmino) }
+    func testCosmosSdkSignDirectFixture() throws { try runFixture(.cosmosSdkSignDirect) }
+    func testDotFixture() throws { try runFixture(.dot) }
+    func testEvmFixture() throws { try runFixture(.evm) }
+    func testKujiraFixture() throws { try runFixture(.kujira) }
+    func testLifiswapFixture() throws { try runFixture(.lifiswap) }
+    func testMayaFixture() throws { try runFixture(.maya) }
+    func testMayaswapFixture() throws { try runFixture(.mayaswap) }
+    func testPolFixture() throws { try runFixture(.pol) }
+    func testSolanaFixture() throws { try runFixture(.solana) }
+    func testSolanaSignDataFixture() throws { try runFixture(.solanaSignData) }
+    func testSuiFixture() throws { try runFixture(.sui) }
+    func testTerraFixture() throws { try runFixture(.terra) }
+    func testThorchainFixture() throws { try runFixture(.thorchain) }
+    func testThorchainswapFixture() throws { try runFixture(.thorchainswap) }
+    func testTonFixture() throws { try runFixture(.ton) }
+    func testTronFixture() throws { try runFixture(.tron) }
+    func testUtxoFixture() throws { try runFixture(.utxo) }
+    func testXrpFixture() throws { try runFixture(.xrp) }
+
+    // MARK: - Corpus guard
+
+    /// Fails if the bundled corpus and the registered fixtures diverge in
+    /// either direction, so no fixture can silently stop being executed.
+    func testEveryBundledFixtureIsRegistered() throws {
+        let bundle = Bundle(for: type(of: self))
+        guard let urls = bundle.urls(forResourcesWithExtension: "json",
+                                     subdirectory: Self.fixtureSubdirectory) else {
+            XCTFail("No \(Self.fixtureSubdirectory) directory in the test bundle — the golden fixtures are not being copied as resources")
             return
         }
-        let resourceURL = URL(fileURLWithPath: resourcePath)
-        let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" }
 
-        // Iterate through each JSON file
-        for jsonFile in jsonFiles {
-            let data = try Data(contentsOf: jsonFile)
-            let decoder = JSONDecoder()
+        let bundled = Set(urls.map { $0.deletingPathExtension().lastPathComponent })
+        let registered = Set(ChainHelperFixture.allCases.map(\.rawValue))
 
-            // Skip files that aren't ChainHelper fixtures — other suites
-            // may bundle their own JSON (e.g. Fixtures/LimitSwapMemos.json)
-            // that flatten to the same resourcePath at test time. Match by
-            // filename prefix and fail fast if a *named* ChainHelper file
-            // doesn't decode (so genuine schema regressions still surface).
-            let isChainHelperFixture = jsonFile.lastPathComponent.hasPrefix("ChainHelper")
-            guard isChainHelperFixture else { continue }
+        XCTAssertEqual(bundled.subtracting(registered), [],
+                       "Bundled golden fixtures with no test method — add a case to ChainHelperFixture and a test that runs it")
+        XCTAssertEqual(registered.subtracting(bundled), [],
+                       "Registered golden fixtures missing from the bundle")
 
-            let testCases: [ChainHelperTestCase]
-            do {
-                testCases = try decoder.decode([ChainHelperTestCase].self, from: data)
-            } catch {
-                XCTFail("Invalid ChainHelper fixture \(jsonFile.lastPathComponent): \(error)")
-                continue
-            }
+        // One `test…Fixture` method per registered fixture, plus this guard.
+        XCTAssertEqual(Self.defaultTestSuite.testCaseCount, ChainHelperFixture.allCases.count + 1,
+                       "Every ChainHelperFixture case needs its own test method so failures are attributable per fixture")
+    }
 
-            for testCase in testCases {
-                try runTestCase(testCase)
-            }
+    // MARK: - Runner
+
+    private func runFixture(_ fixture: ChainHelperFixture,
+                            file: StaticString = #filePath,
+                            line: UInt = #line) throws {
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: fixture.rawValue,
+                                   withExtension: "json",
+                                   subdirectory: Self.fixtureSubdirectory) else {
+            XCTFail("Missing golden fixture \(Self.fixtureSubdirectory)/\(fixture.rawValue).json in the test bundle",
+                    file: file, line: line)
+            return
         }
 
+        let data = try Data(contentsOf: url)
+        let testCases: [ChainHelperTestCase]
+        do {
+            testCases = try JSONDecoder().decode([ChainHelperTestCase].self, from: data)
+        } catch {
+            XCTFail("Invalid golden fixture \(fixture.rawValue).json: \(error)", file: file, line: line)
+            return
+        }
+
+        XCTAssertFalse(testCases.isEmpty,
+                       "Golden fixture \(fixture.rawValue).json decoded to zero cases",
+                       file: file, line: line)
+
+        // Run every case even if an earlier one throws, so one broken vector
+        // doesn't hide the state of the rest of the file.
+        for testCase in testCases {
+            do {
+                try runTestCase(testCase)
+            } catch {
+                XCTFail("Test case \(testCase.name) threw: \(error)", file: file, line: line)
+            }
+        }
     }
+
     private func runTestCaseWithSwap(_ testCase: ChainHelperTestCase, keysignPayload: KeysignPayload) throws {
         var result: [String] = []
         if keysignPayload.approvePayload != nil {
@@ -110,8 +202,8 @@ final class ChainHelperTests: XCTestCase {
         }
         XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed")
     }
+
     private func runTestCase(_ testCase: ChainHelperTestCase) throws {
-        print("Running test case: \(testCase.name)")
         let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
         let chain = keysignPayload.coin.chain
         if keysignPayload.swapPayload != nil {
