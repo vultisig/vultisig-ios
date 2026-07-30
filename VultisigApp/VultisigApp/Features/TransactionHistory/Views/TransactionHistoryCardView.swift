@@ -60,8 +60,13 @@ struct TransactionHistoryCardView: View {
         }
     }
 
+    /// The expanded layout is a `from -> to` transfer diagram: an amount at the
+    /// top, an arrow, a recipient at the bottom. Only types that MOVED something
+    /// earn it — an approve grants an allowance, and a trust-line activation
+    /// opens a line and locks a reserve. Neither has an amount or a recipient to
+    /// put in those slots.
     static func shouldExpand(status: TransactionHistoryStatus, type: TransactionHistoryType) -> Bool {
-        status == .inProgress && type != .approve
+        status == .inProgress && type != .approve && type != .trustLineActivation
     }
 
     // MARK: - Top Row
@@ -404,13 +409,39 @@ struct TransactionHistoryCardView: View {
     private var collapsedContent: some View {
         HStack(spacing: 12) {
             coinIcon
-            amountColumn
+
+            if transaction.type == .trustLineActivation {
+                trustLineColumn
+            } else {
+                amountColumn
+            }
 
             Spacer()
 
             if transaction.type == .send {
                 addressPill
             }
+        }
+    }
+
+    /// What a trust-line activation says instead of an amount.
+    ///
+    /// The same sentence the done screen showed when the line was opened, over
+    /// the issuer that identifies WHICH line — deliberately the hero's two
+    /// lines, so history and the receipt tell one story. The amount column is
+    /// bypassed rather than fed an empty string: a TrustSet's only number is the
+    /// line's limit, and there is no honest way to render that here.
+    private var trustLineColumn: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(RippleTrustSetPresentation.activationTitle(ticker: transaction.coinTicker))
+                .font(Theme.fonts.priceFootnote)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .lineLimit(1)
+
+            Text(truncatedAddress(transaction.toAddress))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .lineLimit(1)
         }
     }
 
