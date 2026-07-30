@@ -352,6 +352,16 @@ private struct LimitPriceCard: View {
                 )
             }
 
+            // Between the price and the presets on purpose: the chart is what
+            // gives a preset its meaning, so it reads as the thing the pills act
+            // on rather than as an illustration tacked on below them. Absent
+            // entirely when no series resolves — the form is then exactly what
+            // it was before the chart existed, and placement is never gated on
+            // it.
+            if let pairChart = vm.pairChart {
+                LimitPriceChartSection(vm: vm, chart: pairChart)
+            }
+
             LimitPresetPills(vm: vm)
         }
         .padding(16)
@@ -468,6 +478,140 @@ private struct LimitPriceCard: View {
         formatter.maximumFractionDigits = 2
         formatter.groupingSeparator = ","
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0.00"
+    }
+}
+
+// MARK: - Price chart section
+//
+// The chart, the window picker under it, and the one-line verdict on whether the
+// pair has ever been where the target is. The verdict is the part that answers
+// the question a limit price actually raises — "is this reachable?" — and is
+// also the part that makes the expiry pills legible.
+
+private struct LimitPriceChartSection: View {
+
+    @Bindable var vm: LimitSwapFormViewModel
+    let chart: MarketChart
+
+    /// Ranges offered here, deliberately not `MarketChartRange.allCases`. `1D`
+    /// is omitted: the drag zone spans the preset pills' reach, ~15%, and an
+    /// intraday range is a fraction of that, so the history draws as a flat
+    /// ribbon whatever the domain policy. Coin detail keeps 1D because there the
+    /// plot is only ever a picture; here it is also an input.
+    private static let ranges: [MarketChartRange] = [.week, .month, .year, .all]
+
+    private var market: Double? {
+        vm.marketPriceRef.map { NSDecimalNumber(decimal: $0).doubleValue }
+    }
+
+    private var target: Double {
+        NSDecimalNumber(decimal: vm.draft.targetPrice).doubleValue
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            LimitPriceChartView(
+                chart: chart,
+                market: market,
+                target: target,
+                targetLabel: targetLabel,
+                onTargetChanged: vm.targetPriceChangedFromChart
+            )
+            .frame(height: 148)
+            .opacity(vm.isLoadingPairChart ? 0.45 : 1)
+            // The outgoing series stays on screen, dimmed, while the next one
+            // loads. Clearing it first collapses the card and the whole form
+            // jumps — worse, on a range switch, than a briefly stale line.
+            .animation(.easeInOut(duration: 0.2), value: vm.isLoadingPairChart)
+
+            reachHint
+
+            LimitChartRangePills(vm: vm, ranges: Self.ranges)
+        }
+    }
+
+    private var targetLabel: String {
+        "\(formatPrice(vm.draft.targetPrice)) \(vm.draft.toAsset.ticker)"
+    }
+
+    @ViewBuilder
+    private var reachHint: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(hintTint)
+                .frame(width: 5, height: 5)
+            Text(hintText)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .lineLimit(2)
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var verdict: LimitChartReach.Verdict {
+        LimitChartReach.evaluate(chart: chart, target: target, market: market)
+    }
+
+    private var hintTint: Color {
+        switch verdict {
+        case .atOrBelowMarket: return Theme.colors.alertError
+        case .lastTraded: return Theme.colors.alertSuccess
+        case .notReached: return Theme.colors.textTertiary
+        }
+    }
+
+    private var hintText: String {
+        switch verdict {
+        case .atOrBelowMarket:
+            return "limitSwap.chart.fillsImmediately".localized
+        case .lastTraded(let date):
+            let elapsed = RelativeDateTimeFormatter()
+            elapsed.unitsStyle = .full
+            return String(
+                format: "limitSwap.chart.lastTradedHere".localized,
+                elapsed.localizedString(for: date, relativeTo: Date())
+            )
+        case .notReached(let highest):
+            return String(
+                format: "limitSwap.chart.notReached".localized,
+                "\(formatPrice(Decimal(highest))) \(vm.draft.toAsset.ticker)"
+            )
+        }
+    }
+
+    private func formatPrice(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 8
+        return formatter.string(from: NSDecimalNumber(decimal: value))
+            ?? NSDecimalNumber(decimal: value).stringValue
+    }
+}
+
+private struct LimitChartRangePills: View {
+
+    @Bindable var vm: LimitSwapFormViewModel
+    let ranges: [MarketChartRange]
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(ranges) { range in
+                let isSelected = vm.chartRange == range
+                Button {
+                    vm.selectChartRange(range, currency: SettingsCurrency.current)
+                } label: {
+                    Text(range.title)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(isSelected ? Theme.colors.textPrimary : Theme.colors.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 5)
+                        .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 100))
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 }
 

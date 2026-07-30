@@ -698,7 +698,10 @@
 "limitSwap.cancel.unavailableVaultUnreadable" = "Non è stato possibile controllare questo vault al momento. Riprova a breve: il tuo ordine non è interessato.";
 "limitSwap.cancel.verify.title" = "Stai annullando un ordine limite";
 "limitSwap.cancel.viewTransaction" = "Visualizza transazione di annullamento";
+"limitSwap.chart.fillsImmediately" = "Pari o sotto il mercato: verrà eseguito subito.";
+"limitSwap.chart.lastTradedHere" = "Ultima volta a questo prezzo %@.";
 "limitSwap.chart.market" = "Mercato";
+"limitSwap.chart.notReached" = "Non raggiunto in questo intervallo: il massimo è stato %@.";
 "limitSwap.chart.targetPrice" = "Prezzo obiettivo";
 "limitSwap.confirmation.byteCapError.format" = "Memo troppo lungo: %d byte (max %d). Prova con un indirizzo di destinazione più corto o una sorgente non UTXO.";
 "limitSwap.detail.copyTxHash" = "Copia hash TX";

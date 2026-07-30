@@ -698,7 +698,10 @@
 "limitSwap.cancel.unavailableVaultUnreadable" = "目前无法检查此保险库。请稍后重试——您的订单不受影响。";
 "limitSwap.cancel.verify.title" = "您正在取消限价订单";
 "limitSwap.cancel.viewTransaction" = "查看取消交易";
+"limitSwap.chart.fillsImmediately" = "等于或低于市价——挂单后将立即成交。";
+"limitSwap.chart.lastTradedHere" = "上次达到该价格：%@。";
 "limitSwap.chart.market" = "市价";
+"limitSwap.chart.notReached" = "此区间内未达到——最高为 %@。";
 "limitSwap.chart.targetPrice" = "目标价格";
 "limitSwap.confirmation.byteCapError.format" = "备注过长：%d 字节（最多 %d）。请尝试更短的目标地址或非 UTXO 源。";
 "limitSwap.detail.copyTxHash" = "复制交易哈希";
