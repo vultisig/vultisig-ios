@@ -1340,7 +1340,7 @@
 "swapErrorRouteUnavailableTitle" = "Keine Route verfügbar";
 "swapErrorSameAssetDescription" = "Es ist nicht möglich, dasselbe Asset zu tauschen. Bitte wählen Sie ein anderes Asset.";
 "swapErrorSameAssetTitle" = "Gleiches Asset";
-"swapErrorSlippageTooTightTitle" = "Slippage zu niedrig";
+"swapErrorSlippageTooTightTitle" = "Slippage-Toleranz zu eng";
 "swapErrorTradingHaltedTitle" = "Handel ausgesetzt";
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";

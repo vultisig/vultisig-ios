@@ -1340,7 +1340,7 @@
 "swapErrorRouteUnavailableTitle" = "无可用路由";
 "swapErrorSameAssetDescription" = "无法兑换相同的资产。请选择不同的资产。";
 "swapErrorSameAssetTitle" = "相同资产";
-"swapErrorSlippageTooTightTitle" = "滑点过低";
+"swapErrorSlippageTooTightTitle" = "滑点容忍度过低";
 "swapErrorTradingHaltedTitle" = "交易已暂停";
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorUnexpectedTitle" = "意外错误";

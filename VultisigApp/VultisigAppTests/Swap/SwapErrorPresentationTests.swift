@@ -64,13 +64,26 @@ final class SwapErrorPresentationTests: XCTestCase {
 
     private var allCases: [SwapError] { CaseTag.allCases.map(sample) }
 
-    /// Localized value for `key`, or `nil` when the key is missing from the
-    /// bundle. `"key".localized` echoes the key back on a miss, so asserting
-    /// against it proves nothing about the strings file; this does.
-    private func localizedValue(forKey key: String) -> String? {
+    /// Every locale the app ships. `ko` is included deliberately: the repo's own
+    /// docs list seven, but Korean is a shipping localization, and a key added to
+    /// the other seven leaks a raw camelCase identifier to Korean users.
+    private static let shippedLocales = ["en", "de", "es", "hr", "it", "ko", "pt", "zh-Hans"]
+
+    /// Localized value for `key` in `bundle`, or `nil` when the key is missing.
+    /// `"key".localized` echoes the key back on a miss, so asserting against it
+    /// proves nothing about the strings file; this does.
+    private func localizedValue(forKey key: String, in bundle: Bundle = .main) -> String? {
         let sentinel = "__missing_localization__"
-        let value = Bundle.main.localizedString(forKey: key, value: sentinel, table: nil)
+        let value = bundle.localizedString(forKey: key, value: sentinel, table: nil)
         return value == sentinel ? nil : value
+    }
+
+    /// The bundle for a single `.lproj`, which resolves keys from that locale
+    /// alone with no fallback. `Bundle.main` answers for the *active*
+    /// localization only, so a key present in `en` and missing from `ko` reads as
+    /// covered when the whole point of the check is that it isn't.
+    private func bundle(forLocale locale: String) -> Bundle? {
+        Bundle.main.path(forResource: locale, ofType: "lproj").flatMap(Bundle.init(path:))
     }
 
     // MARK: - The reported bug, through the path the view actually uses
@@ -165,11 +178,12 @@ final class SwapErrorPresentationTests: XCTestCase {
         }
     }
 
-    func testNewCopyKeysExistInTheBundle() {
+    func testNewCopyKeysExistInEveryShippedLocale() {
         // Guards the "missing key leaks a raw camelCase identifier to the user"
         // failure mode that a `"key".localized == "key".localized` assertion
-        // cannot see.
-        for key in [
+        // cannot see — and checks it per locale, because the active-localization
+        // lookup would pass on `en` alone while a non-English user saw the key.
+        let keys = [
             "swapErrorRouteUnavailableTitle",
             "swapErrorRecipientRouteTitle",
             "swapErrorRecipientVerificationTitle",
@@ -179,8 +193,64 @@ final class SwapErrorPresentationTests: XCTestCase {
             "swapErrorInvalidDestinationTitle",
             "swapErrorProviderRejectedTitle",
             "swapErrorProviderRejectedDescription"
-        ] {
-            XCTAssertNotNil(localizedValue(forKey: key), "\(key) is missing from Localizable.strings")
+        ]
+        for locale in Self.shippedLocales {
+            guard let bundle = bundle(forLocale: locale) else {
+                XCTFail("\(locale).lproj does not ship in the app bundle")
+                continue
+            }
+            for key in keys {
+                XCTAssertNotNil(
+                    localizedValue(forKey: key, in: bundle),
+                    "\(key) is missing from \(locale).lproj/Localizable.strings"
+                )
+            }
+        }
+    }
+
+    func testPerLocaleLookupDoesNotFallBackToEnglish() {
+        // Gives the two per-locale assertions their teeth. If `Bundle(path:)`
+        // resolved through the English table, a key missing from a locale would
+        // still answer and both checks would pass vacuously.
+        // `swapErrorNoLiquidityPoolTitle` is translated in all eight, so every
+        // non-English bundle must answer with something other than the English.
+        guard let english = bundle(forLocale: "en"),
+              let englishValue = localizedValue(forKey: "swapErrorNoLiquidityPoolTitle", in: english) else {
+            XCTFail("en.lproj does not ship in the app bundle")
+            return
+        }
+        for locale in Self.shippedLocales where locale != "en" {
+            guard let bundle = bundle(forLocale: locale) else {
+                XCTFail("\(locale).lproj does not ship in the app bundle")
+                continue
+            }
+            XCTAssertNotEqual(
+                localizedValue(forKey: "swapErrorNoLiquidityPoolTitle", in: bundle),
+                englishValue,
+                "\(locale) answered with the English value — the per-locale lookup is falling back"
+            )
+        }
+    }
+
+    func testSecuredDestinationTemplateSurvivesFormattingInEveryLocale() {
+        // `securedAssetInvalidDestination` is the one case whose copy is built
+        // with `String(format:)`. A locale that drops or mangles a positional
+        // specifier silently loses the prefix or the address from the message —
+        // and both are the whole content of it. Assert on the formatted output
+        // rather than on the literal `%1$@` / `%2$@`, since a translation is free
+        // to reorder them.
+        for locale in Self.shippedLocales {
+            guard let bundle = bundle(forLocale: locale) else {
+                XCTFail("\(locale).lproj does not ship in the app bundle")
+                continue
+            }
+            guard let template = localizedValue(forKey: "swapSecuredAssetInvalidDestination", in: bundle) else {
+                XCTFail("swapSecuredAssetInvalidDestination is missing from \(locale).lproj")
+                continue
+            }
+            let formatted = String(format: template, "thor", "0xdead")
+            XCTAssertTrue(formatted.contains("thor"), "\(locale): expected prefix dropped by the template")
+            XCTAssertTrue(formatted.contains("0xdead"), "\(locale): destination dropped by the template")
         }
     }
 
