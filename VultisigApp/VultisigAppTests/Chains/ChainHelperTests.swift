@@ -32,7 +32,8 @@ struct ChainHelperTestCase: Codable {
 ///
 /// Two tests keep that from happening again.
 /// `testAllRegisteredFixturesExecute` runs every case in this list in a single
-/// test, so coverage never depends on per-method bookkeeping, and
+/// test and pins the total vector count, so coverage never depends on
+/// per-method bookkeeping and cannot shrink unnoticed;
 /// `testEveryBundledFixtureIsRegistered` pins the list against the JSON files
 /// actually present in the bundle — in both directions — so a fixture can
 /// neither be added without being run nor listed without existing.
@@ -60,6 +61,41 @@ enum ChainHelperFixture: String, CaseIterable {
     case tron
     case utxo
     case xrp
+
+    /// How many signing vectors this fixture must contain.
+    ///
+    /// Pinning the count is what stops the corpus shrinking quietly: the
+    /// filename checks only prove the file still exists, not that it still
+    /// asserts anything, and a fixture emptied down to one vector would
+    /// otherwise stay green. Adding or removing a vector is a deliberate act,
+    /// so it should show up here as a deliberate edit.
+    var expectedCaseCount: Int {
+        switch self {
+        case .arb: return 1
+        case .bsc: return 2
+        case .cardano: return 2
+        case .cosmos: return 4
+        case .cosmosSdkSignAmino: return 2
+        case .cosmosSdkSignDirect: return 2
+        case .dot: return 1
+        case .evm: return 2
+        case .kujira: return 3
+        case .lifiswap: return 2
+        case .maya: return 3
+        case .mayaswap: return 2
+        case .pol: return 1
+        case .solana: return 4
+        case .solanaSignData: return 1
+        case .sui: return 1
+        case .terra: return 5
+        case .thorchain: return 9
+        case .thorchainswap: return 5
+        case .ton: return 3
+        case .tron: return 4
+        case .utxo: return 5
+        case .xrp: return 3
+        }
+    }
 
     /// The per-fixture test method that must exist so a failure is attributable
     /// to one fixture instead of to the corpus as a whole. Derived from the
@@ -124,8 +160,10 @@ final class ChainHelperTests: XCTestCase {
         for fixture in ChainHelperFixture.allCases {
             executedCases += try runFixture(fixture)
         }
-        XCTAssertGreaterThan(executedCases, 0,
-                             "The golden corpus executed zero signing vectors — the suite is vacuous")
+
+        let expectedCases = ChainHelperFixture.allCases.reduce(0) { $0 + $1.expectedCaseCount }
+        XCTAssertEqual(executedCases, expectedCases,
+                       "The golden corpus executed \(executedCases) signing vectors, expected \(expectedCases) — coverage shrank")
     }
 
     /// Fails if the bundled corpus and the registered fixtures diverge in
@@ -178,8 +216,8 @@ final class ChainHelperTests: XCTestCase {
             return 0
         }
 
-        XCTAssertFalse(testCases.isEmpty,
-                       "Golden fixture \(fixture.rawValue).json decoded to zero cases",
+        XCTAssertEqual(testCases.count, fixture.expectedCaseCount,
+                       "Golden fixture \(fixture.rawValue).json holds \(testCases.count) signing vectors, expected \(fixture.expectedCaseCount) — if a vector was deliberately added or removed, update ChainHelperFixture.expectedCaseCount",
                        file: file, line: line)
 
         // Run every case even if an earlier one throws, so one broken vector
