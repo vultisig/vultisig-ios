@@ -36,7 +36,6 @@ struct SettingsAdvancedView: View {
         case thorchainStagenet
         case sell
         case tssBatching
-        case limitSwap
         case forcedSwapProvider
         case clearSwapKitTokensCache
         case resetTransactionHistory
@@ -78,12 +77,6 @@ struct SettingsAdvancedView: View {
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
-            )
-        case .limitSwap:
-            SettingToggleCell(
-                title: "limitSwapToggle".localized,
-                icon: "arrow.up.right.square",
-                isEnabled: $settingsViewModel.limitSwapEnabled
             )
         case .forcedSwapProvider:
             SettingPickerCell(

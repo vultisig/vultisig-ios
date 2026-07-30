@@ -752,7 +752,6 @@
 "limitSwap.verify.title" = "Postavljaš limit nalog";
 "limitSwap.warning.priceAtOrBelowMarket" = "Cijena već dostupna, razmotri tržišnu zamjenu";
 "limitSwap.warning.priceFarAboveMarket" = "Možda se neće izvršiti prije isteka";
-"limitSwapToggle" = "Limit zamjena";
 "liquidityPools" = "Bazeni likvidnosti";
 "loading" = "Učitavanje...";
 "loadingDetails" = "Učitavanje detalja";
