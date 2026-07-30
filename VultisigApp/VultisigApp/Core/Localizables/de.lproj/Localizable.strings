@@ -1331,8 +1331,17 @@
 "swapErrorInsufficientFundsTitle" = "Unzureichendes Guthaben";
 "swapErrorInsufficientGasDescription" = "Nicht genügend Gas-Token, um die Netzwerkgebühr zu decken. Bitte fügen Sie Gas zu Ihrem Wallet hinzu.";
 "swapErrorInsufficientGasTitle" = "Unzureichendes Gas";
+"swapErrorInvalidDestinationTitle" = "Ungültiges Ziel";
+"swapErrorNoLiquidityPoolTitle" = "Kein Liquiditätspool";
+"swapErrorProviderRejectedDescription" = "Der Swap-Anbieter konnte für diesen Handel kein Angebot erstellen. Versuche es erneut oder wähle ein anderes Paar.";
+"swapErrorProviderRejectedTitle" = "Swap nicht verfügbar";
+"swapErrorRecipientRouteTitle" = "Keine Empfängerroute";
+"swapErrorRecipientVerificationTitle" = "Empfängerprüfung fehlgeschlagen";
+"swapErrorRouteUnavailableTitle" = "Keine Route verfügbar";
 "swapErrorSameAssetDescription" = "Es ist nicht möglich, dasselbe Asset zu tauschen. Bitte wählen Sie ein anderes Asset.";
 "swapErrorSameAssetTitle" = "Gleiches Asset";
+"swapErrorSlippageTooTightTitle" = "Slippage zu niedrig";
+"swapErrorTradingHaltedTitle" = "Handel ausgesetzt";
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
 "swapFee" = "Tauschgebühr";

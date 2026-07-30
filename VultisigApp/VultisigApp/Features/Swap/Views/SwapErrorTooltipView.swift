@@ -54,24 +54,26 @@ struct SwapErrorTooltipView: View {
         }
     }
 
+    /// Single resolution path for the tooltip's title AND body. Resolving them
+    /// separately is what let a domain-correct description sit under the generic
+    /// "Unexpected Error" heading: `SwapError` satisfied the description's
+    /// `localizedDescription` fallback but matched none of the title's arms.
+    private var presentableError: SwapErrorPresentable? {
+        if let presentable = error as? SwapErrorPresentable {
+            return presentable
+        }
+        return normalizedSwapKitError
+    }
+
     private var errorTitle: String {
-        if let swapError = error as? SwapCryptoLogic.Errors {
-            return swapError.errorTitle
-        }
-        if let normalized = normalizedSwapKitError {
-            return normalized.errorTitle
-        }
-        return SwapCryptoLogic.Errors.unexpectedError.errorTitle
+        presentableError?.errorTitle ?? SwapCryptoLogic.Errors.unexpectedError.errorTitle
     }
 
     private var errorDescription: String {
-        if let swapError = error as? SwapCryptoLogic.Errors {
-            return swapError.errorDescription ?? error.localizedDescription
-        }
-        if let normalized = normalizedSwapKitError {
-            return normalized.errorDescription ?? error.localizedDescription
-        }
-        return error.localizedDescription
+        // Errors outside the swap flow's own vocabulary (fee-path failures,
+        // aggregator bodies, transport errors) still relay their localized
+        // description — it is the only signal available for them.
+        presentableError?.errorMessage ?? error.localizedDescription
     }
 
     /// Map terminal SwapKit error cases onto the swap-flow's user-facing

@@ -1331,8 +1331,17 @@
 "swapErrorInsufficientFundsTitle" = "余额不足";
 "swapErrorInsufficientGasDescription" = "Gas 代币不足以支付网络费用。请向钱包添加 Gas。";
 "swapErrorInsufficientGasTitle" = "Gas 不足";
+"swapErrorInvalidDestinationTitle" = "目标地址无效";
+"swapErrorNoLiquidityPoolTitle" = "无流动性池";
+"swapErrorProviderRejectedDescription" = "交换服务商无法为此交易报价。请重试或选择其他交易对。";
+"swapErrorProviderRejectedTitle" = "无法交换";
+"swapErrorRecipientRouteTitle" = "无接收方路由";
+"swapErrorRecipientVerificationTitle" = "接收方校验失败";
+"swapErrorRouteUnavailableTitle" = "无可用路由";
 "swapErrorSameAssetDescription" = "无法兑换相同的资产。请选择不同的资产。";
 "swapErrorSameAssetTitle" = "相同资产";
+"swapErrorSlippageTooTightTitle" = "滑点过低";
+"swapErrorTradingHaltedTitle" = "交易已暂停";
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorUnexpectedTitle" = "意外错误";
 "swapFee" = "交换费用";

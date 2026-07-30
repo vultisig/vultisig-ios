@@ -656,12 +656,9 @@ extension SwapService {
         if recipientAddress == nil,
            THORChainHelper.isSecuredAsset(coin: toCoin),
            !THORChainHelper.isValidThorchainAddress(destination, chain: toCoin.chain) {
-            throw SwapError.serverError(
-                message: String(
-                    format: "swapSecuredAssetInvalidDestination".localized,
-                    THORChainHelper.expectedAddressPrefix(for: toCoin.chain),
-                    destination.nilIfEmpty ?? "empty"
-                )
+            throw SwapError.securedAssetInvalidDestination(
+                expectedPrefix: THORChainHelper.expectedAddressPrefix(for: toCoin.chain),
+                destination: destination.nilIfEmpty ?? "empty"
             )
         }
 

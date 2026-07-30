@@ -1331,8 +1331,17 @@
 "swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
 "swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
+"swapErrorInvalidDestinationTitle" = "Nevažeće Odredište";
+"swapErrorNoLiquidityPoolTitle" = "Nema Pool Likvidnosti";
+"swapErrorProviderRejectedDescription" = "Pružatelj zamjene nije mogao dati ponudu za ovu trgovinu. Pokušajte ponovno ili odaberite drugi par.";
+"swapErrorProviderRejectedTitle" = "Zamjena Nije Dostupna";
+"swapErrorRecipientRouteTitle" = "Nema Rute do Primatelja";
+"swapErrorRecipientVerificationTitle" = "Provjera Primatelja Nije Uspjela";
+"swapErrorRouteUnavailableTitle" = "Nema Dostupne Rute";
 "swapErrorSameAssetDescription" = "Ne možete zamijeniti isti asset. Molimo odaberite drugi asset.";
 "swapErrorSameAssetTitle" = "Isti Asset";
+"swapErrorSlippageTooTightTitle" = "Klizanje Preusko";
+"swapErrorTradingHaltedTitle" = "Trgovanje Zaustavljeno";
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorUnexpectedTitle" = "Neočekivana Greška";
 "swapFee" = "Naknada za zamjenu";
