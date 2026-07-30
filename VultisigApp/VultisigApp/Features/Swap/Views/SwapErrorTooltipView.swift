@@ -54,41 +54,18 @@ struct SwapErrorTooltipView: View {
         }
     }
 
-    /// Single resolution path for the tooltip's title AND body. Resolving them
-    /// separately is what let a domain-correct description sit under the generic
-    /// "Unexpected Error" heading: `SwapError` satisfied the description's
-    /// `localizedDescription` fallback but matched none of the title's arms.
-    private var presentableError: SwapErrorPresentable? {
-        if let presentable = error as? SwapErrorPresentable {
-            return presentable
-        }
-        return normalizedSwapKitError
-    }
+    // Title and body both come from `SwapErrorPresentation`, which owns the one
+    // lookup they share. Resolving them separately in this view is what let a
+    // domain-correct description sit under the generic "Unexpected Error"
+    // heading: `SwapError` satisfied the description ladder's
+    // `localizedDescription` fallback but matched none of the title ladder's arms.
 
     private var errorTitle: String {
-        presentableError?.errorTitle ?? SwapCryptoLogic.Errors.unexpectedError.errorTitle
+        SwapErrorPresentation.title(for: error)
     }
 
     private var errorDescription: String {
-        // Errors outside the swap flow's own vocabulary (fee-path failures,
-        // aggregator bodies, transport errors) still relay their localized
-        // description — it is the only signal available for them.
-        presentableError?.errorMessage ?? error.localizedDescription
-    }
-
-    /// Map terminal SwapKit error cases onto the swap-flow's user-facing
-    /// error vocabulary so the tooltip shows a domain-appropriate title and
-    /// description instead of the generic "Unexpected Error" fallback. Only
-    /// covers cases that have a clear `SwapCryptoLogic.Errors` equivalent —
-    /// everything else flows through `error.localizedDescription` as before.
-    private var normalizedSwapKitError: SwapCryptoLogic.Errors? {
-        guard let swapKitError = error as? SwapKitError else { return nil }
-        switch swapKitError {
-        case .amountBelowProviderMinimum:
-            return .swapAmountTooSmall
-        default:
-            return nil
-        }
+        SwapErrorPresentation.message(for: error)
     }
 }
 

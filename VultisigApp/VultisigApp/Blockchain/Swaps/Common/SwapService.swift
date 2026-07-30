@@ -149,9 +149,26 @@ struct SwapService {
     /// describe the real routing outcome (no route, amount too small, etc.). Fall
     /// back to a SwapKit error only when SwapKit was the sole provider attempted
     /// (e.g. TON/Cardano/Sui pairs), where it's the only signal available.
+    ///
+    /// Within the chosen pool, a *classified* verdict beats an unclassified
+    /// upstream relay. `errors` arrives in task-completion order, so `first` alone
+    /// is a network race: a poolless THORChain↔EVM pair fails on THORChain and
+    /// MAYAChain simultaneously, and whichever node answered first decided whether
+    /// the user saw "No liquidity pool available for this token pair" or the
+    /// losing node's raw body. Same failure, different sentence on every refresh.
     static func surfacedQuoteError(from errors: [Error]) -> Error? {
         let coreProviderErrors = errors.filter { !($0 is SwapKitError) }
-        return coreProviderErrors.first ?? errors.first
+        let pool = coreProviderErrors.isEmpty ? errors : coreProviderErrors
+        return pool.first(where: isClassifiedVerdict) ?? pool.first
+    }
+
+    /// Whether an error is a typed verdict about the swap itself, as opposed to
+    /// `.serverError`, which is only a container for text an upstream provider
+    /// sent and this app could not classify.
+    private static func isClassifiedVerdict(_ error: Error) -> Bool {
+        guard let swapError = error as? SwapError else { return false }
+        if case .serverError = swapError { return false }
+        return true
     }
 
     /// Restrict the candidate provider set so a quote can never be ranked/selected
@@ -686,11 +703,41 @@ extension SwapService {
         tradingHaltedMarkers.contains { message.localizedCaseInsensitiveContains($0) }
     }
 
+    /// Substrings that name the missing asset itself rather than the pool.
+    private static let unknownAssetMarkers = [
+        "invalid symbol",
+        "bad to asset",
+        "bad from asset"
+    ]
+
+    /// Whether a native quote-error body says "this pair has no pool".
+    ///
+    /// The two nodes word the identical verdict differently — THORChain returns
+    /// `…fail to convert dest fee to src asset pool does not exist`, MAYAChain
+    /// returns `failed to simulate swap: pool <ASSET> doesn't exist` — so
+    /// matching only THORChain's phrasing left Maya's verdict unclassified and
+    /// relayed its raw node text instead.
+    ///
+    /// The contraction is only accepted alongside the word "pool". A bare
+    /// `doesn't exist` also appears in THORNode's
+    /// `bad destination address: unable to parse address: THORName doesn't exist: thor1…`,
+    /// which is a destination failure and must not be reported as a missing pool.
+    private static func isMissingPool(_ message: String) -> Bool {
+        if unknownAssetMarkers.contains(where: { message.localizedCaseInsensitiveContains($0) }) {
+            return true
+        }
+        guard message.localizedCaseInsensitiveContains("pool") else { return false }
+        return message.localizedCaseInsensitiveContains("does not exist")
+            || message.localizedCaseInsensitiveContains("doesn't exist")
+            || message.localizedCaseInsensitiveContains("doesn\u{2019}t exist")
+    }
+
     /// Classify a native (THORChain/MAYAChain) quote-error body into a typed
     /// `SwapError`, shared by both branches so Maya stops leaking dust-minimum /
     /// missing-pool errors as a raw `.serverError`. Returns `nil` when the body
     /// matches none of the known classes; the caller then applies its own
-    /// fallback (THORChain relays the server message, Maya relays the raw error).
+    /// fallback (`.serverError`, which carries the upstream text for logs and
+    /// renders as generic copy on screen).
     private static func classifyNativeQuoteError(_ message: String) -> SwapError? {
         if message.contains("not enough asset to pay for fees") ||
             message.localizedCaseInsensitiveContains("zero emit asset") {
@@ -699,11 +746,8 @@ extension SwapService {
             // the retry-with-more message.
             return .swapAmountTooSmall
         }
-        if message.localizedCaseInsensitiveContains("invalid symbol") ||
-            message.localizedCaseInsensitiveContains("bad to asset") ||
-            message.localizedCaseInsensitiveContains("bad from asset") ||
-            message.localizedCaseInsensitiveContains("pool does not exist") {
-            // This typically means no liquidity pool exists for this token pair.
+        if isMissingPool(message) {
+            // No liquidity pool exists for this token pair.
             return .noLiquidityPool
         }
         if message.localizedCaseInsensitiveContains("less than price limit") {
@@ -716,14 +760,16 @@ extension SwapService {
         return nil
     }
 
-    /// Translate a decoded THORChain quote error into the user-facing `SwapError`.
+    /// Translate a decoded THORChain quote error into the typed `SwapError`.
     /// A trading halt is detected on any code so a paused chain surfaces as a
     /// retryable message. Otherwise the known dust/fee/missing-pool classes are
-    /// mapped to their typed errors and anything else relays THORNode's own
-    /// message — so a specific, actionable failure (e.g. code 2 "swap
-    /// destination address is not the same chain as the target asset") is
-    /// diagnosable instead of collapsing into a generic `routeUnavailable`. Only
-    /// a truly empty message falls back to `routeUnavailable`.
+    /// mapped to their typed errors and anything else is carried in
+    /// `.serverError` — so a specific, actionable failure (e.g. code 2 "swap
+    /// destination address is not the same chain as the target asset") stays
+    /// diagnosable in the logs instead of collapsing into a generic
+    /// `routeUnavailable`. The tooltip shows generic copy for `.serverError`
+    /// rather than the node's own wording. Only a truly empty message falls back
+    /// to `routeUnavailable`.
     static func mapThorchainSwapError(_ error: ThorchainSwapError) -> SwapError {
         if isTradingHalted(error.message) {
             return .tradingHalted
@@ -734,11 +780,12 @@ extension SwapService {
         return error.message.isEmpty ? .routeUnavailable : .serverError(message: error.message)
     }
 
-    /// Translate a decoded MAYAChain quote error into the user-facing `SwapError`.
+    /// Translate a decoded MAYAChain quote error into the typed `SwapError`.
     /// A trading halt surfaces as the retryable message; the shared dust-minimum
-    /// / missing-pool classification (previously THORChain-only) now applies here
-    /// too, so those no longer leak as a raw `.serverError`. Anything unrecognised
-    /// keeps the previous behaviour of relaying the raw upstream string.
+    /// / missing-pool classification (previously THORChain-only) applies here too,
+    /// so those no longer leak as a raw `.serverError`. Anything unrecognised is
+    /// carried in `.serverError`, which keeps the raw upstream string for the logs
+    /// and renders as generic copy on screen.
     static func mapMayachainSwapError(_ error: MayachainSwapError) -> SwapError {
         if isTradingHalted(error.error) {
             return .tradingHalted

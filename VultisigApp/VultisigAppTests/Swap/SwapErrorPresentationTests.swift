@@ -13,93 +13,174 @@ import XCTest
 
 final class SwapErrorPresentationTests: XCTestCase {
 
-    /// One value per `SwapError` case. Kept honest by `caseName(_:)` below,
-    /// whose exhaustive switch fails to compile when a case is added.
-    private let allCases: [SwapError] = [
-        .routeUnavailable,
-        .recipientRouteUnavailable,
-        .recipientVerificationFailed,
-        .noLiquidityPool,
-        .tradingHalted,
-        .swapAmountTooSmall,
-        .slippageToleranceTooTight,
-        .lessThenMinSwapAmount(amount: "0.01 BTC"),
-        .securedAssetInvalidDestination(expectedPrefix: "thor", destination: "0xabc"),
-        .serverError(message: "some upstream body")
-    ]
+    /// One tag per `SwapError` case. Two exhaustive switches close the loop
+    /// around it: `tag(of:)` fails to compile when a case is added to
+    /// `SwapError`, and `sample(for:)` fails to compile when a tag is added
+    /// here. Adding a case therefore cannot reach `main` without supplying a
+    /// sample, and every sample is in `allCases` by construction.
+    private enum CaseTag: String, CaseIterable {
+        case routeUnavailable
+        case recipientRouteUnavailable
+        case recipientVerificationFailed
+        case noLiquidityPool
+        case tradingHalted
+        case swapAmountTooSmall
+        case slippageToleranceTooTight
+        case lessThenMinSwapAmount
+        case securedAssetInvalidDestination
+        case serverError
+    }
 
-    /// Compile-time exhaustiveness guard. A new `SwapError` case breaks this
-    /// switch, which forces it into `allCases` and therefore into every
-    /// assertion below — including "no case is titled Unexpected Error".
-    private func caseName(_ error: SwapError) -> String {
-        switch error {
-        case .routeUnavailable: return "routeUnavailable"
-        case .recipientRouteUnavailable: return "recipientRouteUnavailable"
-        case .recipientVerificationFailed: return "recipientVerificationFailed"
-        case .noLiquidityPool: return "noLiquidityPool"
-        case .tradingHalted: return "tradingHalted"
-        case .swapAmountTooSmall: return "swapAmountTooSmall"
-        case .slippageToleranceTooTight: return "slippageToleranceTooTight"
-        case .lessThenMinSwapAmount: return "lessThenMinSwapAmount"
-        case .securedAssetInvalidDestination: return "securedAssetInvalidDestination"
-        case .serverError: return "serverError"
+    private func sample(for tag: CaseTag) -> SwapError {
+        switch tag {
+        case .routeUnavailable: return .routeUnavailable
+        case .recipientRouteUnavailable: return .recipientRouteUnavailable
+        case .recipientVerificationFailed: return .recipientVerificationFailed
+        case .noLiquidityPool: return .noLiquidityPool
+        case .tradingHalted: return .tradingHalted
+        case .swapAmountTooSmall: return .swapAmountTooSmall
+        case .slippageToleranceTooTight: return .slippageToleranceTooTight
+        case .lessThenMinSwapAmount: return .lessThenMinSwapAmount(amount: "0.01 BTC")
+        case .securedAssetInvalidDestination:
+            return .securedAssetInvalidDestination(expectedPrefix: "thor", destination: "0xabc")
+        case .serverError: return .serverError(message: "some upstream body")
         }
     }
 
-    // MARK: - The reported bug
+    private func tag(of error: SwapError) -> CaseTag {
+        switch error {
+        case .routeUnavailable: return .routeUnavailable
+        case .recipientRouteUnavailable: return .recipientRouteUnavailable
+        case .recipientVerificationFailed: return .recipientVerificationFailed
+        case .noLiquidityPool: return .noLiquidityPool
+        case .tradingHalted: return .tradingHalted
+        case .swapAmountTooSmall: return .swapAmountTooSmall
+        case .slippageToleranceTooTight: return .slippageToleranceTooTight
+        case .lessThenMinSwapAmount: return .lessThenMinSwapAmount
+        case .securedAssetInvalidDestination: return .securedAssetInvalidDestination
+        case .serverError: return .serverError
+        }
+    }
+
+    private var allCases: [SwapError] { CaseTag.allCases.map(sample) }
+
+    /// Localized value for `key`, or `nil` when the key is missing from the
+    /// bundle. `"key".localized` echoes the key back on a miss, so asserting
+    /// against it proves nothing about the strings file; this does.
+    private func localizedValue(forKey key: String) -> String? {
+        let sentinel = "__missing_localization__"
+        let value = Bundle.main.localizedString(forKey: key, value: sentinel, table: nil)
+        return value == sentinel ? nil : value
+    }
+
+    // MARK: - The reported bug, through the path the view actually uses
 
     func testNoLiquidityPoolIsNotTitledUnexpectedError() {
-        XCTAssertNotEqual(
-            SwapError.noLiquidityPool.errorTitle,
+        let generic = SwapCryptoLogic.Errors.unexpectedError.errorTitle
+        XCTAssertNotEqual(SwapErrorPresentation.title(for: SwapError.noLiquidityPool), generic)
+        XCTAssertEqual(
+            SwapErrorPresentation.title(for: SwapError.noLiquidityPool),
+            "swapErrorNoLiquidityPoolTitle".localized
+        )
+        XCTAssertEqual(
+            SwapErrorPresentation.message(for: SwapError.noLiquidityPool),
+            "noLiquidityPool".localized
+        )
+    }
+
+    func testResolutionCoversTheThreeVocabulariesTheTooltipMeets() {
+        // `SwapError` — the vocabulary that had no title arm at all.
+        XCTAssertNotNil(SwapErrorPresentation.presentable(for: SwapError.tradingHalted))
+        // `SwapCryptoLogic.Errors` — the vocabulary that always worked.
+        XCTAssertNotNil(SwapErrorPresentation.presentable(for: SwapCryptoLogic.Errors.insufficientGas))
+        // `SwapKitError` — normalized for the one case with an equivalent.
+        XCTAssertEqual(
+            SwapErrorPresentation.title(for: SwapKitError.amountBelowProviderMinimum),
+            SwapCryptoLogic.Errors.swapAmountTooSmall.errorTitle
+        )
+    }
+
+    func testUnknownErrorStillFallsBackToItsLocalizedDescription() {
+        // Fee-path and transport failures are outside the swap vocabulary. They
+        // keep the previous behaviour — generic title, real description — because
+        // that description is the only signal they carry.
+        let error = NSError(
+            domain: "test",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "an unclassifiable failure"]
+        )
+        XCTAssertEqual(
+            SwapErrorPresentation.title(for: error),
             SwapCryptoLogic.Errors.unexpectedError.errorTitle
         )
-        XCTAssertEqual(SwapError.noLiquidityPool.errorTitle, "swapErrorNoLiquidityPoolTitle".localized)
-        XCTAssertEqual(SwapError.noLiquidityPool.errorMessage, "noLiquidityPool".localized)
+        XCTAssertEqual(SwapErrorPresentation.message(for: error), "an unclassifiable failure")
     }
 
     // MARK: - Every case, not just the reported one
 
-    func testEveryCaseCoveredExactlyOnce() {
-        let names = allCases.map(caseName)
-        XCTAssertEqual(Set(names).count, names.count, "duplicate sample in allCases")
-        XCTAssertEqual(names.count, 10, "a SwapError case is missing from allCases")
-    }
-
     func testNoCaseFallsBackToUnexpectedErrorTitle() {
         let generic = SwapCryptoLogic.Errors.unexpectedError.errorTitle
         for error in allCases {
-            XCTAssertNotEqual(error.errorTitle, generic, "\(caseName(error)) is still titled generically")
+            XCTAssertNotEqual(
+                SwapErrorPresentation.title(for: error),
+                generic,
+                "\(tag(of: error).rawValue) is still titled generically"
+            )
         }
     }
 
     func testEveryCaseHasNonEmptyTitleAndMessage() {
         for error in allCases {
-            XCTAssertFalse(error.errorTitle.isEmpty, "\(caseName(error)) has an empty title")
-            XCTAssertFalse(error.errorMessage.isEmpty, "\(caseName(error)) has an empty message")
+            XCTAssertFalse(error.errorTitle.isEmpty, "\(tag(of: error).rawValue) has an empty title")
+            XCTAssertFalse(error.errorMessage.isEmpty, "\(tag(of: error).rawValue) has an empty message")
         }
     }
 
     func testTitleKeyPerCase() {
-        let expected: [String: String] = [
-            "routeUnavailable": "swapErrorRouteUnavailableTitle",
-            "recipientRouteUnavailable": "swapErrorRecipientRouteTitle",
-            "recipientVerificationFailed": "swapErrorRecipientVerificationTitle",
-            "noLiquidityPool": "swapErrorNoLiquidityPoolTitle",
-            "tradingHalted": "swapErrorTradingHaltedTitle",
+        let expected: [CaseTag: String] = [
+            .routeUnavailable: "swapErrorRouteUnavailableTitle",
+            .recipientRouteUnavailable: "swapErrorRecipientRouteTitle",
+            .recipientVerificationFailed: "swapErrorRecipientVerificationTitle",
+            .noLiquidityPool: "swapErrorNoLiquidityPoolTitle",
+            .tradingHalted: "swapErrorTradingHaltedTitle",
             // Same verdict as `SwapCryptoLogic.Errors.swapAmountTooSmall`, so the
             // two amount cases deliberately reuse that existing title key.
-            "swapAmountTooSmall": "swapErrorAmountTooSmallTitle",
-            "lessThenMinSwapAmount": "swapErrorAmountTooSmallTitle",
-            "slippageToleranceTooTight": "swapErrorSlippageTooTightTitle",
-            "securedAssetInvalidDestination": "swapErrorInvalidDestinationTitle",
-            "serverError": "swapErrorProviderRejectedTitle"
+            .swapAmountTooSmall: "swapErrorAmountTooSmallTitle",
+            .lessThenMinSwapAmount: "swapErrorAmountTooSmallTitle",
+            .slippageToleranceTooTight: "swapErrorSlippageTooTightTitle",
+            .securedAssetInvalidDestination: "swapErrorInvalidDestinationTitle",
+            .serverError: "swapErrorProviderRejectedTitle"
         ]
         for error in allCases {
-            guard let key = expected[caseName(error)] else {
-                XCTFail("no expected title key for \(caseName(error))")
+            let name = tag(of: error).rawValue
+            guard let key = expected[tag(of: error)] else {
+                XCTFail("no expected title key for \(name)")
                 continue
             }
-            XCTAssertEqual(error.errorTitle, key.localized, "wrong title key for \(caseName(error))")
+            guard let value = localizedValue(forKey: key) else {
+                XCTFail("\(key) is missing from Localizable.strings (\(name))")
+                continue
+            }
+            XCTAssertEqual(error.errorTitle, value, "wrong title key for \(name)")
+        }
+    }
+
+    func testNewCopyKeysExistInTheBundle() {
+        // Guards the "missing key leaks a raw camelCase identifier to the user"
+        // failure mode that a `"key".localized == "key".localized` assertion
+        // cannot see.
+        for key in [
+            "swapErrorRouteUnavailableTitle",
+            "swapErrorRecipientRouteTitle",
+            "swapErrorRecipientVerificationTitle",
+            "swapErrorNoLiquidityPoolTitle",
+            "swapErrorTradingHaltedTitle",
+            "swapErrorSlippageTooTightTitle",
+            "swapErrorInvalidDestinationTitle",
+            "swapErrorProviderRejectedTitle",
+            "swapErrorProviderRejectedDescription"
+        ] {
+            XCTAssertNotNil(localizedValue(forKey: key), "\(key) is missing from Localizable.strings")
         }
     }
 
@@ -117,10 +198,15 @@ final class SwapErrorPresentationTests: XCTestCase {
     // MARK: - Raw upstream text never reaches the tooltip body
 
     func testServerErrorMessageIsGenericNotTheProviderString() {
+        // Verbatim MAYAChain body for RUNE → ETH.VULT, captured from
+        // mayanode.mayachain.info.
         let raw = "failed to simulate swap: pool ETH.VULT-0XB788144DF611029C60B859DF47E79B7726C4DEBA doesn't exist"
         let error = SwapError.serverError(message: raw)
-        XCTAssertNotEqual(error.errorMessage, raw)
-        XCTAssertEqual(error.errorMessage, "swapErrorProviderRejectedDescription".localized)
+        XCTAssertNotEqual(SwapErrorPresentation.message(for: error), raw)
+        XCTAssertEqual(
+            SwapErrorPresentation.message(for: error),
+            "swapErrorProviderRejectedDescription".localized
+        )
     }
 
     func testServerErrorKeepsTheProviderStringForLogs() {
@@ -138,7 +224,7 @@ final class SwapErrorPresentationTests: XCTestCase {
         let expected = String(format: "swapSecuredAssetInvalidDestination".localized, "thor", "0xdead")
         XCTAssertEqual(error.errorDescription, expected)
         // It is app copy, so unlike `serverError` it is shown verbatim.
-        XCTAssertEqual(error.errorMessage, expected)
+        XCTAssertEqual(SwapErrorPresentation.message(for: error), expected)
     }
 
     // MARK: - SwapCryptoLogic.Errors keeps its existing presentation
@@ -152,7 +238,8 @@ final class SwapErrorPresentationTests: XCTestCase {
             .inboundAddress,
             .sameAsset
         ] {
-            XCTAssertEqual(error.errorMessage, error.errorDescription)
+            XCTAssertEqual(SwapErrorPresentation.message(for: error), error.errorDescription)
+            XCTAssertEqual(SwapErrorPresentation.title(for: error), error.errorTitle)
             XCTAssertFalse(error.errorTitle.isEmpty)
         }
     }
