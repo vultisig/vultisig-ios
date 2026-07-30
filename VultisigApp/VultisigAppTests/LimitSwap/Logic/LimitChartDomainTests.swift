@@ -100,6 +100,36 @@ final class LimitChartDomainTests: XCTestCase {
         XCTAssertTrue(LimitChartDomain.isOffScale(target: 1, in: domain))
     }
 
+    // MARK: - Agreement with the form's own thresholds
+
+    func testFarAboveMarketMultipleMatchesTheWarningTheFormRaises() {
+        // The chart colours the target line off this constant while the warning
+        // row comes from `evaluateWarning`'s own inline threshold. They are two
+        // spellings of one rule in two numeric types, so pin them together:
+        // just under the multiple must not warn, just over must.
+        let market: Decimal = 100
+        let multiple = Decimal(LimitChartDomain.farAboveMarketMultiple)
+
+        XCTAssertNil(
+            evaluateWarning(targetPrice: market * multiple, marketPrice: market),
+            "the multiple itself is the boundary and must not warn"
+        )
+        XCTAssertEqual(
+            evaluateWarning(targetPrice: market * multiple * Decimal(1.001), marketPrice: market),
+            .priceFarAboveMarket
+        )
+    }
+
+    func testAtOrBelowMarketBoundaryMatchesTheFormsWarning() {
+        // The reach verdict's below-market shortcut and the form's warning have
+        // to agree on the boundary, or the hint and the warning row contradict
+        // each other at exactly the market price.
+        let chart = calmChart
+
+        XCTAssertEqual(LimitChartReach.evaluate(chart: chart, target: 100, market: 100), .atOrBelowMarket)
+        XCTAssertEqual(evaluateWarning(targetPrice: 100, marketPrice: 100), .priceAtOrBelowMarket)
+    }
+
     // MARK: - Reach
 
     func testReachReportsAtOrBelowMarketOnTheBoundary() {

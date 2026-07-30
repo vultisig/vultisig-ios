@@ -698,6 +698,8 @@
 "limitSwap.cancel.unavailableVaultUnreadable" = "Dieses Vault konnte gerade nicht geprüft werden. Versuchen Sie es in Kürze erneut — Ihre Order bleibt unberührt.";
 "limitSwap.cancel.verify.title" = "Sie stornieren eine Limit-Order";
 "limitSwap.cancel.viewTransaction" = "Stornierungstransaktion anzeigen";
+"limitSwap.chart.market" = "Markt";
+"limitSwap.chart.targetPrice" = "Zielpreis";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";
 "limitSwap.detail.copyTxHash" = "TX-Hash kopieren";
 "limitSwap.detail.filled" = "Ausgeführt";

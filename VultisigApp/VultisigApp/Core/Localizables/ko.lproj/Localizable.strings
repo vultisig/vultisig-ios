@@ -696,6 +696,8 @@
 "limitSwap.cancel.unavailableVaultUnreadable" = "지금은 이 볼트를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요. 주문에는 영향이 없습니다.";
 "limitSwap.cancel.verify.title" = "리밋 주문을 취소합니다";
 "limitSwap.cancel.viewTransaction" = "취소 트랜잭션 보기";
+"limitSwap.chart.market" = "시장가";
+"limitSwap.chart.targetPrice" = "목표 가격";
 "limitSwap.confirmation.byteCapError.format" = "메모가 너무 깁니다: %d바이트(최대 %d). 더 짧은 대상 주소 또는 비 UTXO 소스를 사용해 보세요.";
 "limitSwap.detail.copyTxHash" = "TX 해시 복사";
 "limitSwap.detail.filled" = "체결";

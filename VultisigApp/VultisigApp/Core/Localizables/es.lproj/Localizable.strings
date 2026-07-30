@@ -698,6 +698,8 @@
 "limitSwap.cancel.unavailableVaultUnreadable" = "No se ha podido comprobar esta bóveda ahora mismo. Inténtalo de nuevo en breve: tu orden no se ve afectada.";
 "limitSwap.cancel.verify.title" = "Estás cancelando una orden límite";
 "limitSwap.cancel.viewTransaction" = "Ver transacción de cancelación";
+"limitSwap.chart.market" = "Mercado";
+"limitSwap.chart.targetPrice" = "Precio objetivo";
 "limitSwap.confirmation.byteCapError.format" = "Memo demasiado largo: %d bytes (máx %d). Prueba con una dirección de destino más corta o una fuente no UTXO.";
 "limitSwap.detail.copyTxHash" = "Copiar hash de TX";
 "limitSwap.detail.filled" = "Ejecutado";

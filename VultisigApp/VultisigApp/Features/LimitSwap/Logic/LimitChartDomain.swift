@@ -79,6 +79,16 @@ enum LimitChartDomain {
         !domain.contains(target)
     }
 
+    /// The multiple of market above which the form warns "far above market".
+    ///
+    /// The same rule `evaluateWarning` applies, restated in `Double` because
+    /// the chart plots in `Double` while the form's prices are `Decimal`. Two
+    /// spellings of one threshold is a drift risk, so a test asserts the
+    /// warning flips at exactly this multiple — if either side moves, that test
+    /// fails rather than the chart quietly colouring a line that the warning
+    /// row disagrees with.
+    static let farAboveMarketMultiple = 1.2
+
     /// The multiples of the market price to tick the drag zone at.
     ///
     /// They are the preset pills' own stops, so the empty region above the
