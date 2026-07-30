@@ -46,6 +46,15 @@ struct ChainHelperTestCase: Codable {
 /// signer's bugs to ground truth, which is the failure mode the corpus exists
 /// to catch.
 ///
+/// What agreement between two implementations does and does not establish is
+/// worth being exact about. All three platform signers build a protobuf signing
+/// input themselves and then hand it to the same WalletCore compiler, so two of
+/// them agreeing pins **the platform-specific construction layer** — chain IDs,
+/// transaction envelope, message shape, denoms, fee fields — which is where the
+/// cross-platform keysign failures this corpus exists for actually originate.
+/// It does **not** independently verify WalletCore itself: a bug inside the
+/// shared compiler would be invisible to every one of these vectors.
+///
 /// - `evm-chain-matrix` and `tcy` were added by running the Swift signer and
 ///   the TypeScript core signer over the identical payload and requiring the
 ///   two to produce byte-identical hashes.
@@ -200,32 +209,44 @@ final class ChainHelperTests: XCTestCase {
                        "The golden corpus executed \(executedCases) signing vectors, expected \(expectedCases) — coverage shrank")
     }
 
-    /// The EVM matrix vectors must all hash differently from each other and
-    /// from the Ethereum native send.
+    /// Every EVM native send must produce a different pre-image hash, and the
+    /// hashes are **recomputed here from the payloads** rather than read back
+    /// out of the fixtures.
     ///
     /// Those payloads hold every pre-image-feeding field identical and vary
     /// only `coin.chain` (plus native-asset metadata the EVM signing input does
     /// not read), so the only thing that can separate their pre-images is the
     /// EIP-155 chain ID. If a chain ever stopped contributing its own — by
     /// falling back to the WalletCore coin type's default, which is what makes
-    /// chains sharing a coin type dangerous — two of these would collapse onto
-    /// the same hash. The individual vectors would still pass, because each
-    /// would merely be compared against its own committed value; only their
-    /// relationship exposes it.
+    /// chains sharing a coin type dangerous — two would collapse onto the same
+    /// hash. Each vector on its own would still pass, since each is only
+    /// compared against its own committed value; only the relationship between
+    /// them exposes it.
+    ///
+    /// Reading `expected_image_hash` here instead would make this test
+    /// self-satisfying: any set of distinct strings would pass it, including
+    /// one re-baselined around the very regression it is meant to catch. It
+    /// therefore drives the real signers through `computeDirectImageHashes`.
     func testEvmChainMatrixVectorsAreChainSpecific() throws {
-        var hashesByCase: [String: [String]] = [:]
+        var computedHashesByCase: [String: [String]] = [:]
 
         for fixture in [ChainHelperFixture.evmChainMatrix, .evm] {
             for testCase in try decodeFixture(fixture) where testCase.keysignPayload.coin.isNativeToken {
-                hashesByCase[testCase.name] = testCase.expectedImageHash
+                let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
+                XCTAssertEqual(keysignPayload.coin.chainType, .EVM,
+                               "\(testCase.name) is not an EVM payload, so it does not belong in this check")
+                computedHashesByCase[testCase.name] = try computeDirectImageHashes(keysignPayload: keysignPayload)
             }
         }
 
-        let allHashes = hashesByCase.values.flatMap { $0 }
+        XCTAssertEqual(computedHashesByCase.count, ChainHelperFixture.evmChainMatrix.expectedCaseCount + 1,
+                       "Expected every EVM matrix case plus the Ethereum native send to take part in this check, got \(computedHashesByCase.keys.sorted())")
+
+        let allHashes = computedHashesByCase.values.flatMap { $0 }
+        XCTAssertEqual(allHashes.count, computedHashesByCase.count,
+                       "Every EVM native send should produce exactly one pre-image hash")
         XCTAssertEqual(Set(allHashes).count, allHashes.count,
-                       "Two EVM native-send vectors share a pre-image hash. Their payloads differ only by chain, so this means a chain stopped contributing its own EIP-155 chain ID: \(hashesByCase)")
-        XCTAssertEqual(hashesByCase.count, ChainHelperFixture.evmChainMatrix.expectedCaseCount + 1,
-                       "Expected every EVM matrix case plus the Ethereum native send to take part in this check")
+                       "Two EVM native sends computed the same pre-image hash. Their payloads differ only by chain, so a chain has stopped contributing its own EIP-155 chain ID: \(computedHashesByCase)")
     }
 
     /// Fails if the bundled corpus and the registered fixtures diverge in
@@ -374,6 +395,19 @@ final class ChainHelperTests: XCTestCase {
                 return
             }
         }
+        let result = try computeDirectImageHashes(keysignPayload: keysignPayload)
+        XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
+    }
+
+    /// Computes the pre-signing image hash for a non-swap payload by dispatching
+    /// to the same per-chain signer the app uses.
+    ///
+    /// Separated from `runTestCase` so a test can obtain a *computed* hash
+    /// rather than the committed one. A guard that reasons about the corpus by
+    /// reading `expected_image_hash` back out of the JSON proves nothing about
+    /// the signers — it would be satisfied by any set of distinct strings.
+    private func computeDirectImageHashes(keysignPayload: KeysignPayload) throws -> [String] {
+        let chain = keysignPayload.coin.chain
         var result: [String] = []
         switch chain {
         case .bitcoin, .bitcoinCash, .dogecoin, .litecoin, .zcash:
@@ -419,6 +453,6 @@ final class ChainHelperTests: XCTestCase {
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }
 
-        XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
+        return result
     }
 }
