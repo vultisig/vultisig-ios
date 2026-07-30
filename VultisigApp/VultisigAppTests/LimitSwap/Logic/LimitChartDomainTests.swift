@@ -43,15 +43,34 @@ final class LimitChartDomainTests: XCTestCase {
         XCTAssertGreaterThan(domain.upperBound, 140)
     }
 
-    func testDomainDoesNotDependOnTheTarget() {
-        // The property that makes dragging stable: nothing about the target
-        // enters the calculation, so the plot cannot move under the finger.
-        let first = LimitChartDomain.range(for: calmChart, market: 100)
-        let second = LimitChartDomain.range(for: calmChart, market: 100)
+    func testDomainIsStableAcrossEveryTargetADragCouldProduce() {
+        // The property that makes dragging feel like moving a line over a chart
+        // rather than zooming one: sweeping the target across (and past) the
+        // plot must not move the plot. Target-independence is structural — the
+        // function takes no target — so what is worth pinning is that the
+        // caller's usage cannot reintroduce a dependence: the same domain is
+        // used to place every one of those targets.
+        let domain = LimitChartDomain.range(for: calmChart, market: 100)
 
-        XCTAssertEqual(first, second)
-        XCTAssertTrue(LimitChartDomain.isOffScale(target: 400, in: first))
-        XCTAssertEqual(LimitChartDomain.range(for: calmChart, market: 100), first)
+        for target in stride(from: 50.0, through: 400.0, by: 5.0) {
+            XCTAssertEqual(LimitChartDomain.range(for: calmChart, market: 100), domain)
+            // ...and the only thing the target decides is whether it is pinned.
+            XCTAssertEqual(
+                LimitChartDomain.isOffScale(target: target, in: domain),
+                !domain.contains(target)
+            )
+        }
+    }
+
+    func testDomainSurvivesANonFiniteSample() {
+        // An infinity would make the span infinite and the domain
+        // -infinity...+infinity, collapsing the whole plot rather than one point.
+        let poisoned = makeChart(prices: [98, 99, .infinity, 100] + Array(repeating: 99.0, count: 20))
+        let domain = LimitChartDomain.range(for: poisoned, market: 100)
+
+        XCTAssertTrue(domain.lowerBound.isFinite)
+        XCTAssertTrue(domain.upperBound.isFinite)
+        XCTAssertTrue(domain.contains(100))
     }
 
     func testFallsBackToTheDataAnchoredDomainWithoutAMarketReference() {
@@ -92,10 +111,33 @@ final class LimitChartDomainTests: XCTestCase {
 
     func testReachReportsTheMostRecentTouchNotTheFirst() {
         // Price hits 120 early and again late; the useful answer is the late one.
+        // Samples are 60s apart: the second 120 is at t=240, and the line falls
+        // from 120 to 100 over the following minute, crossing the 115 target a
+        // quarter of the way down it.
         let chart = makeChart(prices: [100, 120, 100, 100, 120, 100, 100])
         let verdict = LimitChartReach.evaluate(chart: chart, target: 115, market: 100)
 
-        XCTAssertEqual(verdict, .lastTraded(at: Date(timeIntervalSince1970: 240)))
+        XCTAssertEqual(verdict, .lastTraded(at: Date(timeIntervalSince1970: 255)))
+    }
+
+    func testReachInterpolatesTheCrossingRatherThanReportingTheSample() {
+        // Reporting the sample's own timestamp ages the answer by up to one grid
+        // step — hours on a month window, over a week on ALL — and disagrees
+        // with the crossing the user can see on the plot.
+        let chart = makeChart(prices: [120, 100] + Array(repeating: 100.0, count: 20))
+
+        XCTAssertEqual(
+            LimitChartReach.evaluate(chart: chart, target: 110, market: 90),
+            .lastTraded(at: Date(timeIntervalSince1970: 30))
+        )
+    }
+
+    func testReachReportsTheFinalSampleWhenTheSeriesEndsAboveTarget() {
+        // Nothing follows the last sample to interpolate towards.
+        let chart = makeChart(prices: Array(repeating: 100.0, count: 20) + [130])
+        let verdict = LimitChartReach.evaluate(chart: chart, target: 125, market: 100)
+
+        XCTAssertEqual(verdict, .lastTraded(at: Date(timeIntervalSince1970: 1200)))
     }
 
     func testReachReportsTheWindowHighWhenTheTargetWasNeverMet() {

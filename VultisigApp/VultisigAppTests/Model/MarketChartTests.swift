@@ -36,6 +36,28 @@ final class MarketChartTests: XCTestCase {
         XCTAssertEqual(chart.points.count, 2)
     }
 
+    func testDecodeDropsNonPositivePrices() throws {
+        // Same seam as `null`, and the last point at which they can be dropped
+        // at all: every consumer sees a series that has already been resampled
+        // onto a time grid, and the grid does not land on the bad sample. It is
+        // spread across its neighbours instead, so a lone zero survives any
+        // downstream validation as a run of small positive interpolants — and
+        // the limit chart's pair ratio divides by it, drawing a spike no later
+        // guard can tell apart from real price action.
+        let json = Data(#"{"prices":[[1000,10.0],[2000,0.0],[3000,-4.0],[4000,12.0]]}"#.utf8)
+        let chart = try JSONDecoder().decode(MarketChart.self, from: json)
+
+        XCTAssertEqual(chart.points.map(\.price), [10.0, 12.0])
+    }
+
+    func testDecodeKeepsSmallButPositivePrices() throws {
+        // The rule is "not positive", not "small" — sub-cent tokens are real.
+        let json = Data(#"{"prices":[[1000,0.00000001],[2000,0.00000002]]}"#.utf8)
+        let chart = try JSONDecoder().decode(MarketChart.self, from: json)
+
+        XCTAssertEqual(chart.points.count, 2)
+    }
+
     func testDecodeDropsShortAndEmptyInnerArrays() throws {
         let json = Data(#"{"prices":[[1000,10.0],[2000],[],[3000,12.0]]}"#.utf8)
         let chart = try JSONDecoder().decode(MarketChart.self, from: json)

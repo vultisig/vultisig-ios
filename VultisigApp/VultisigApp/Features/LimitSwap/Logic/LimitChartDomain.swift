@@ -50,9 +50,13 @@ enum LimitChartDomain {
     /// domain when there is no market reference yet (the quote probe is async,
     /// so the first frames can arrive without one).
     static func range(for chart: MarketChart, market: Double?) -> ClosedRange<Double> {
-        guard let market, market > 0 else { return chart.priceDomain }
+        guard let market, market > 0, market.isFinite else { return chart.priceDomain }
 
-        let prices = chart.points.map(\.price)
+        // A non-finite sample would make `span` infinite and the domain
+        // `-infinity ... +infinity`, which collapses the whole plot rather than
+        // just that point. Series reaching here are already validated, so this
+        // only bounds the damage if a future producer is not.
+        let prices = chart.points.map(\.price).filter(\.isFinite)
         let low = min(prices.min() ?? market, market * floorFraction)
         let high = max(prices.max() ?? market, market * ceilingFraction)
 

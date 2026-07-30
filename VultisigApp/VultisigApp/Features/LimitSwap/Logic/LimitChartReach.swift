@@ -38,10 +38,24 @@ enum LimitChartReach {
 
         // Walk back from the most recent sample: the answer wanted is the LAST
         // time the price was here, not the first.
-        if let touched = chart.points.last(where: { $0.price >= target }) {
-            return .lastTraded(at: touched.date)
+        guard let index = chart.points.lastIndex(where: { $0.price >= target }) else {
+            return .notReached(highest: chart.points.map(\.price).max() ?? 0)
         }
 
-        return .notReached(highest: chart.points.map(\.price).max() ?? 0)
+        // The line leaves the target somewhere between that sample and the next
+        // one, not at the sample itself. Reporting the sample's own timestamp
+        // ages the answer by up to one grid step — a couple of hours on a month
+        // window, over a week on ALL — and puts the label at odds with the
+        // crossing the user can see on the plot. Interpolate the crossing.
+        let touched = chart.points[index]
+        guard index + 1 < chart.points.count else { return .lastTraded(at: touched.date) }
+
+        let next = chart.points[index + 1]
+        let drop = touched.price - next.price
+        guard drop > 0 else { return .lastTraded(at: touched.date) }
+
+        let fraction = (touched.price - target) / drop
+        let interval = next.date.timeIntervalSince(touched.date)
+        return .lastTraded(at: touched.date.addingTimeInterval(interval * fraction))
     }
 }

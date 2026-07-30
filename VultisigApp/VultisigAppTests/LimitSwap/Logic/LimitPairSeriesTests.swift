@@ -69,27 +69,27 @@ final class LimitPairSeriesTests: XCTestCase {
 
     func testSamplesOnlyTheOverlappingWindow() throws {
         let base = makeChart(start: 0) { _ in 100 }        // 0 … 100
-        let quote = makeChart(start: 20) { _ in 4 }        // 20 … 120
+        let quote = makeChart(start: 5) { _ in 4 }         // 5 … 105
 
         let ratio = try XCTUnwrap(LimitPairSeries.ratio(base: base, quote: quote))
 
-        XCTAssertEqual(ratio.points.first?.date, Date(timeIntervalSince1970: 20))
+        XCTAssertEqual(ratio.points.first?.date, Date(timeIntervalSince1970: 5))
         XCTAssertEqual(ratio.points.last?.date, Date(timeIntervalSince1970: 100))
     }
 
     func testDividesPricesObservedAtTheSameInstant() throws {
         // The regression this type exists for. Base is priced from its own
-        // timestamp and opens at t = 0; quote opens at t = 20. Resampling each
+        // timestamp and opens at t = 0; quote opens at t = 5. Resampling each
         // series independently and dividing position-by-position would pair
-        // base's opening sample (t = 0, price 10) with quote's (t = 20), giving
-        // a first ratio of 2.5. On a shared grid the first sample is at t = 20
-        // on BOTH sides, so it is 30 / 4.
+        // base's opening sample (t = 0, price 10) with quote's (t = 5), giving
+        // a first ratio of 2.5. On a shared grid the first sample is at t = 5
+        // on BOTH sides, so it is 15 / 4.
         let base = makeChart(start: 0) { $0 + 10 }
-        let quote = makeChart(start: 20) { _ in 4 }
+        let quote = makeChart(start: 5) { _ in 4 }
 
         let ratio = try XCTUnwrap(LimitPairSeries.ratio(base: base, quote: quote))
 
-        XCTAssertEqual(ratio.points.first?.price ?? .nan, 7.5, accuracy: 1e-9)
+        XCTAssertEqual(ratio.points.first?.price ?? .nan, 3.75, accuracy: 1e-9)
         XCTAssertEqual(ratio.points.last?.price ?? .nan, 27.5, accuracy: 1e-9)
     }
 
@@ -103,6 +103,7 @@ final class LimitPairSeriesTests: XCTestCase {
 
         XCTAssertEqual(ratio.points[0].price, 100, accuracy: 1e-9)
         XCTAssertEqual(ratio.points[4].price, 100, accuracy: 1e-9)   // t = 40, still 1
+        XCTAssertEqual(ratio.points[5].price, 50, accuracy: 1e-9)    // t = 50, the step itself
         XCTAssertEqual(ratio.points[10].price, 50, accuracy: 1e-9)   // t = 100, now 2
     }
 
@@ -165,5 +166,64 @@ final class LimitPairSeriesTests: XCTestCase {
 
         XCTAssertNil(LimitPairSeries.ratio(base: base, quote: quote, count: 1))
         XCTAssertNil(LimitPairSeries.ratio(base: base, quote: quote, count: 0))
+    }
+
+    func testReturnsNilForASliverOfOverlap() {
+        // Half a window in common is not a window. Stretching it to 200 samples
+        // would present a fraction of the period under the axis label of all of
+        // it.
+        let base = makeChart(start: 0) { _ in 100 }         // 0 … 100
+        let quote = makeChart(start: 50) { _ in 4 }         // 50 … 150
+
+        XCTAssertNil(LimitPairSeries.ratio(base: base, quote: quote))
+    }
+
+    func testReturnsNilWhenOneLegStoppedReportingLongBeforeTheOther() {
+        // Both legs fail open to their own last-good snapshot, so a partial
+        // network failure can pair a fresh series with a stale one. If both
+        // assets moved together the ratio should not have changed at all, but
+        // dividing fresh by stale invents a move — and it looks plausible. A
+        // large skew between the closing instants is the observable signature.
+        let stale = makeChart(start: 0, count: 11) { _ in 100 }        // 0 … 100
+        let fresh = makeChart(start: 0, count: 21) { _ in 4 }          // 0 … 200
+
+        XCTAssertNil(LimitPairSeries.ratio(base: stale, quote: fresh))
+        XCTAssertNil(LimitPairSeries.ratio(base: fresh, quote: stale))
+    }
+
+    func testReturnsNilWhenTheQuotientLeavesTheFiniteRange() {
+        // Positive finite operands do not guarantee a positive finite quotient:
+        // the division itself can overflow. Unreachable from real market data,
+        // but an infinity here would take the chart's whole y-domain with it.
+        let huge = makeChart(start: 0) { _ in .greatestFiniteMagnitude }
+        let tiny = makeChart(start: 0) { _ in .leastNonzeroMagnitude }
+
+        XCTAssertNil(LimitPairSeries.ratio(base: huge, quote: tiny))
+        XCTAssertNil(LimitPairSeries.ratio(base: tiny, quote: huge))
+    }
+
+    // MARK: - The production path
+
+    func testNonPositiveSamplesAreGoneBeforeTheRatioEverSeesThem() throws {
+        // The regression the earlier guard did NOT catch. In production a series
+        // is decoded and resampled before any consumer sees it, and the resample
+        // grid does not land on t=50 — so a guard downstream of it inspects
+        // interpolated neighbours, never the zero itself, and the spike survives.
+        // This drives the real path: decode → resample → ratio.
+        let flatJson = Data(#"{"prices":[[0,100],[10000,100],[20000,100],[30000,100],[40000,100],[50000,100],[60000,100],[70000,100],[80000,100],[90000,100],[100000,100]]}"#.utf8)
+        let poisonedJson = Data(#"{"prices":[[0,1],[10000,1],[20000,1],[30000,1],[40000,1],[50000,0],[60000,1],[70000,1],[80000,1],[90000,1],[100000,1]]}"#.utf8)
+
+        let base = try JSONDecoder().decode(MarketChart.self, from: flatJson)
+        let quote = try JSONDecoder().decode(MarketChart.self, from: poisonedJson)
+
+        XCTAssertEqual(quote.points.count, 10, "the zero sample should be dropped at decode")
+
+        let ratio = try XCTUnwrap(
+            LimitPairSeries.ratio(base: base.resampled(), quote: quote.resampled())
+        )
+
+        for point in ratio.points {
+            XCTAssertEqual(point.price, 100, accuracy: 1e-9)
+        }
     }
 }

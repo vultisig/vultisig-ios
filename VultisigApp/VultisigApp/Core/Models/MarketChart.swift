@@ -204,11 +204,20 @@ extension MarketChart: Decodable {
 
     /// Maps CoinGecko's `[[msEpoch, price]]` array-of-arrays into samples.
     ///
-    /// Pairs that are short, empty, null-valued or non-finite are dropped
-    /// rather than failing the whole decode — one bad sample should not cost
-    /// the user the chart. The result is sorted because nothing in the response
-    /// contract guarantees ascending timestamps, and Charts draws a line in
-    /// the order it is given.
+    /// Pairs that are short, empty, null-valued, non-finite or not a positive
+    /// price are dropped rather than failing the whole decode — one bad sample
+    /// should not cost the user the chart. The result is sorted because nothing
+    /// in the response contract guarantees ascending timestamps, and Charts
+    /// draws a line in the order it is given.
+    ///
+    /// Zero and negative prices are dropped here, at the same seam as `null`,
+    /// because this is the last point at which they can be dropped at all: a
+    /// series is resampled onto a time grid before any consumer sees it, and
+    /// the grid almost never lands on the bad sample exactly. It instead spreads
+    /// that sample across its neighbours, so a lone zero survives downstream
+    /// validation as a run of small positive interpolants — and any consumer
+    /// dividing by it (the limit chart's pair ratio) draws a spike of arbitrary
+    /// height that no later guard can distinguish from real price action.
     ///
     /// Samples that repeat a timestamp are collapsed to the last one. Two
     /// points at the same instant are not something a price line can express,
@@ -221,7 +230,8 @@ extension MarketChart: Decodable {
                       let milliseconds = pair[0],
                       let price = pair[1],
                       milliseconds.isFinite,
-                      price.isFinite else {
+                      price.isFinite,
+                      price > 0 else {
                     return nil
                 }
                 return MarketChartPoint(
