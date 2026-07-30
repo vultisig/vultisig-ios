@@ -13,10 +13,10 @@ import SwiftUI
 /// target be dragged.
 ///
 /// Presentational only — it renders `target` and reports drags through
-/// `onTargetChanged`. It never rounds, clamps or stores the value: the form's
-/// text field remains authoritative, and rounding a dragged price to something
-/// sane is the view model's business. That split is what lets a typed target
-/// sit far outside the plot without the chart quietly pulling it back in.
+/// `onTargetChanged`. It never rounds or stores the value: the form's text
+/// field remains authoritative, and rounding a dragged price to something sane
+/// is the view model's business. That split is what lets a typed target sit far
+/// outside the plot without the chart quietly pulling it back in.
 struct LimitPriceChartView: View {
 
     let chart: MarketChart
@@ -25,54 +25,36 @@ struct LimitPriceChartView: View {
     /// rule, rather than holding the whole chart back.
     let market: Double?
     let target: Double
+    /// The target formatted for display, supplied by the caller because how a
+    /// price is written is the form's decision, not the plot's. Shown only when
+    /// the target is off-scale, where the line's position no longer tells the
+    /// user what their order is.
+    let targetLabel: String
     let onTargetChanged: (Double) -> Void
 
-    private var domain: ClosedRange<Double> {
-        LimitChartDomain.range(for: chart, market: market)
-    }
-
-    /// Where the target line is *drawn*, which is not always where the target
-    /// *is*: past the domain it pins to the edge and the value is spelled out
-    /// instead. Rescaling the plot to chase it would squash the history away
-    /// exactly when it is being read.
-    private var drawnTarget: Double {
-        min(max(target, domain.lowerBound), domain.upperBound)
-    }
-
-    private var isOffScale: Bool {
-        LimitChartDomain.isOffScale(target: target, in: domain)
-    }
-
-    /// Warning state drives the target's colour, reusing the thresholds the
-    /// form already validates against so the line and the warning row can never
-    /// disagree.
-    private var targetTint: Color {
-        guard let market, market > 0 else { return Theme.colors.alertSuccess }
-        if target <= market { return Theme.colors.alertError }
-        if target > market * LimitChartDomain.farAboveMarketMultiple { return Theme.colors.alertWarning }
-        return Theme.colors.alertSuccess
-    }
-
     var body: some View {
-        Chart {
-            areaAndLine
+        // Everything derived is computed ONCE here and handed to the mark
+        // builders. `domain` in particular walks the whole series; read as a
+        // computed property from inside the per-point `ForEach` it was
+        // recomputed for all 200 points, on every frame of a drag.
+        let layout = Layout(chart: chart, market: market, target: target)
 
-            if let market, domain.contains(market) {
+        Chart {
+            areaAndLine(layout)
+
+            if let market = layout.market {
                 marketRule(at: market)
             }
 
-            guides
+            guides(layout)
+            band(layout)
 
-            band
-
-            RuleMark(y: .value("target", drawnTarget))
-                .foregroundStyle(targetTint)
-                .lineStyle(
-                    StrokeStyle(lineWidth: 1.5, dash: isOffScale ? [5, 4] : [])
-                )
+            if let drawn = layout.drawnTarget {
+                targetRule(at: drawn, layout: layout)
+            }
         }
-        .chartXScale(domain: 0...Double(max(1, chart.points.count - 1)))
-        .chartYScale(domain: domain)
+        .chartXScale(domain: 0...Double(max(1, layout.points.count - 1)))
+        .chartYScale(domain: layout.domain)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .chartLegend(.hidden)
@@ -89,29 +71,50 @@ struct LimitPriceChartView: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { value in
-                                guard let plotFrame = proxy.plotFrame else { return }
-                                let plotOrigin = geometry[plotFrame].origin
-                                guard let price = proxy.value(
-                                    atY: value.location.y - plotOrigin.y,
-                                    as: Double.self
-                                ) else { return }
-                                onTargetChanged(min(max(price, domain.lowerBound), domain.upperBound))
+                                report(gestureAt: value.location, proxy: proxy, geometry: geometry, layout: layout)
                             }
                     )
             }
         }
         .accessibilityElement()
         .accessibilityLabel("limitSwap.chart.targetPrice".localized)
-        .accessibilityValue(Text(String(format: "%.8f", target)))
+        .accessibilityValue(targetLabel)
         .accessibilityAdjustableAction { direction in
-            guard let market, market > 0 else { return }
-            let step = market * 0.005
+            // Routed through the same clamp the drag uses. Nudging must not be
+            // able to produce a value a drag could not — without this, repeated
+            // decrements walk the target below zero.
+            guard let market = layout.market else { return }
+            let step = market * Self.accessibilityStepFraction
             switch direction {
-            case .increment: onTargetChanged(target + step)
-            case .decrement: onTargetChanged(target - step)
+            case .increment: report(price: target + step, layout: layout)
+            case .decrement: report(price: target - step, layout: layout)
             @unknown default: break
             }
         }
+    }
+
+    /// One nudge of the accessibility adjustable action, as a share of market.
+    private static let accessibilityStepFraction = 0.005
+
+    // MARK: - Reporting
+
+    private func report(gestureAt location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy, layout: Layout) {
+        guard let plotFrame = proxy.plotFrame else { return }
+        let plot = geometry[plotFrame]
+        // The overlay covers the whole chart, including the insets outside the
+        // plot. Without this a press starting in an inset resolves to a price
+        // that was never under the finger and then clamps to a domain edge,
+        // which reads as the line jumping to a value the user did not choose.
+        guard plot.contains(location) else { return }
+        guard let price = proxy.value(atY: location.y - plot.origin.y, as: Double.self) else { return }
+        report(price: price, layout: layout)
+    }
+
+    /// The single seam every reported price passes through, so the drag and the
+    /// accessibility action cannot diverge on what is a legal value.
+    private func report(price: Double, layout: Layout) {
+        guard price.isFinite else { return }
+        onTargetChanged(min(max(price, layout.domain.lowerBound), layout.domain.upperBound))
     }
 
     // MARK: - Marks
@@ -131,11 +134,19 @@ struct LimitPriceChartView: View {
     }
 
     @ChartContentBuilder
-    private var areaAndLine: some ChartContent {
-        ForEach(Array(chart.points.enumerated()), id: \.offset) { index, point in
+    private func areaAndLine(_ layout: Layout) -> some ChartContent {
+        // Both of these are hoisted out of the loop body for the type checker,
+        // which will not solve the `ForEach` closure in reasonable time when it
+        // has to resolve a member chain and a gradient per mark. They are also
+        // loop invariants, so the hoist is free.
+        let floor = layout.domain.lowerBound
+        let accent = Theme.colors.primaryAccent3
+        let stroke = StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
+
+        ForEach(Array(layout.points.enumerated()), id: \.offset) { index, point in
             AreaMark(
                 x: .value("position", Double(index)),
-                yStart: .value("low", domain.lowerBound),
+                yStart: .value("low", floor),
                 yEnd: .value("price", point.price)
             )
             .interpolationMethod(.monotone)
@@ -146,8 +157,8 @@ struct LimitPriceChartView: View {
                 y: .value("price", point.price)
             )
             .interpolationMethod(.monotone)
-            .foregroundStyle(Theme.colors.primaryAccent3)
-            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            .foregroundStyle(accent)
+            .lineStyle(stroke)
         }
     }
 
@@ -162,20 +173,36 @@ struct LimitPriceChartView: View {
             }
     }
 
+    private func targetRule(at drawn: Double, layout: Layout) -> some ChartContent {
+        RuleMark(y: .value("target", drawn))
+            .foregroundStyle(layout.targetTint)
+            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: layout.isOffScale ? [5, 4] : []))
+            .annotation(
+                position: layout.isPinnedToTop ? .bottom : .top,
+                alignment: .trailing,
+                spacing: 2
+            ) {
+                // Off the scale the line's position stops telling the user what
+                // their order is — it only says "past here". The number has to
+                // be on the plot, or the chart shows a price that is not the one
+                // being placed.
+                if layout.isOffScale {
+                    Text(verbatim: "\(layout.isPinnedToTop ? "▲" : "▼") \(targetLabel)")
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(layout.targetTint)
+                }
+            }
+    }
+
     /// Ticks the drag zone at the preset pills' own stops. Left bare it reads as
     /// dead chart; ticked, the empty space above the series becomes the scale of
     /// distance-from-market that the feature is actually about.
     @ChartContentBuilder
-    private var guides: some ChartContent {
-        if let market, market > 0 {
-            ForEach(LimitChartDomain.guidePercentages, id: \.self) { percentage in
-                let level = market * (1 + Double(percentage) / 100)
-                if domain.contains(level), abs(level - drawnTarget) > domain.span * 0.04 {
-                    RuleMark(y: .value("guide", level))
-                        .foregroundStyle(Theme.colors.textTertiary.opacity(0.35))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [1, 5]))
-                }
-            }
+    private func guides(_ layout: Layout) -> some ChartContent {
+        ForEach(layout.guideLevels, id: \.self) { level in
+            RuleMark(y: .value("guide", level))
+                .foregroundStyle(Theme.colors.textTertiary.opacity(0.35))
+                .lineStyle(StrokeStyle(lineWidth: 1, dash: [1, 5]))
         }
     }
 
@@ -185,20 +212,93 @@ struct LimitPriceChartView: View {
     /// the history red, and history sits below the current price about half the
     /// time.
     @ChartContentBuilder
-    private var band: some ChartContent {
-        if let market, market > 0 {
+    private func band(_ layout: Layout) -> some ChartContent {
+        if let bounds = layout.bandBounds {
             RectangleMark(
-                yStart: .value("from", min(market, drawnTarget)),
-                yEnd: .value("to", max(market, drawnTarget))
+                yStart: .value("from", bounds.lowerBound),
+                yEnd: .value("to", bounds.upperBound)
             )
-            .foregroundStyle(
-                (target >= market ? Theme.colors.primaryAccent3 : Theme.colors.alertError)
-                    .opacity(0.16)
-            )
+            .foregroundStyle(layout.bandTint.opacity(0.16))
         }
     }
 }
 
-private extension ClosedRange where Bound == Double {
-    var span: Double { upperBound - lowerBound }
+// MARK: - Derived geometry
+
+extension LimitPriceChartView {
+
+    /// Everything the marks need, resolved once per body evaluation.
+    ///
+    /// It is also the single place non-finite values are screened out. The
+    /// series reaching this view is validated upstream, but Charts is not
+    /// forgiving of an infinity in a mark, and a NaN survives `min`/`max`
+    /// unchanged — so clamping alone does not sanitise a target.
+    struct Layout {
+
+        let points: [MarketChartPoint]
+        let domain: ClosedRange<Double>
+        let market: Double?
+        /// `nil` when the target is not a drawable number, which suppresses the
+        /// target rule and the band rather than feeding NaN into Charts.
+        let drawnTarget: Double?
+        let isOffScale: Bool
+        let isPinnedToTop: Bool
+        let targetTint: Color
+        let bandBounds: ClosedRange<Double>?
+        let bandTint: Color
+
+        init(chart: MarketChart, market rawMarket: Double?, target: Double) {
+            let sanitised = MarketChart(points: chart.points.filter(\.price.isFinite))
+            points = sanitised.points
+
+            let market = rawMarket.flatMap { $0.isFinite && $0 > 0 ? $0 : nil }
+            self.market = market
+            domain = LimitChartDomain.range(for: sanitised, market: market)
+
+            if target.isFinite {
+                let drawn = min(max(target, domain.lowerBound), domain.upperBound)
+                drawnTarget = drawn
+                isOffScale = LimitChartDomain.isOffScale(target: target, in: domain)
+                isPinnedToTop = target > domain.upperBound
+                if let market {
+                    bandBounds = min(market, drawn)...max(market, drawn)
+                    bandTint = target >= market ? Theme.colors.primaryAccent3 : Theme.colors.alertError
+                } else {
+                    bandBounds = nil
+                    bandTint = .clear
+                }
+                if let market {
+                    if target <= market {
+                        targetTint = Theme.colors.alertError
+                    } else if target > market * LimitChartDomain.farAboveMarketMultiple {
+                        targetTint = Theme.colors.alertWarning
+                    } else {
+                        targetTint = Theme.colors.alertSuccess
+                    }
+                } else {
+                    targetTint = Theme.colors.alertSuccess
+                }
+            } else {
+                drawnTarget = nil
+                isOffScale = false
+                isPinnedToTop = false
+                targetTint = Theme.colors.alertSuccess
+                bandBounds = nil
+                bandTint = .clear
+            }
+        }
+
+        /// Guide levels that are inside the plot and far enough from the target
+        /// line not to draw on top of it.
+        var guideLevels: [Double] {
+            guard let market else { return [] }
+            let separation = (domain.upperBound - domain.lowerBound) * 0.04
+            return LimitChartDomain.guidePercentages.compactMap { percentage in
+                let level = market * (1 + Double(percentage) / 100)
+                guard domain.contains(level) else { return nil }
+                if let drawnTarget, abs(level - drawnTarget) <= separation { return nil }
+                return level
+            }
+        }
+    }
 }
