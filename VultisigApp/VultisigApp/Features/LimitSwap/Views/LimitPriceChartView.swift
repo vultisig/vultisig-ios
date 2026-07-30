@@ -218,7 +218,7 @@ struct LimitPriceChartView: View {
                 yStart: .value("from", bounds.lowerBound),
                 yEnd: .value("to", bounds.upperBound)
             )
-            .foregroundStyle(layout.bandTint.opacity(0.16))
+            .foregroundStyle(layout.bandTint.opacity(Layout.bandOpacity))
         }
     }
 }
@@ -260,23 +260,39 @@ extension LimitPriceChartView {
                 drawnTarget = drawn
                 isOffScale = LimitChartDomain.isOffScale(target: target, in: domain)
                 isPinnedToTop = target > domain.upperBound
-                if let market {
+
+                let tint: Color
+                if let market, target <= market {
+                    tint = Theme.colors.alertError
+                } else if let market, target > market * LimitChartDomain.farAboveMarketMultiple {
+                    tint = Theme.colors.alertWarning
+                } else {
+                    tint = Theme.colors.alertSuccess
+                }
+                targetTint = tint
+
+                // The band wears the target's colour rather than the accent.
+                // Rendered, an accent-blue band above market was indistinguishable
+                // from the series' own blue area fill directly beneath it — the two
+                // merged into one mass and the band, which is the whole point of
+                // the chart, stopped reading as a region at all. Below market it
+                // worked only because red happened to contrast. Taking the target's
+                // colour separates the band from the series everywhere, and ties it
+                // to the line that bounds it.
+                //
+                // No band at all once the target is off-scale, and not for a
+                // cosmetic reason: the band's top edge is then the plot's edge
+                // rather than the target, so filling it states a distance that is
+                // not the real one. The pinned line and its label carry the
+                // magnitude honestly instead. (It also renders badly — amber at a
+                // legible alpha over this navy is arithmetically a blue-grey, so a
+                // large warning band reads as "disabled" rather than as a warning.)
+                if let market, !isOffScale {
                     bandBounds = min(market, drawn)...max(market, drawn)
-                    bandTint = target >= market ? Theme.colors.primaryAccent3 : Theme.colors.alertError
+                    bandTint = tint
                 } else {
                     bandBounds = nil
                     bandTint = .clear
-                }
-                if let market {
-                    if target <= market {
-                        targetTint = Theme.colors.alertError
-                    } else if target > market * LimitChartDomain.farAboveMarketMultiple {
-                        targetTint = Theme.colors.alertWarning
-                    } else {
-                        targetTint = Theme.colors.alertSuccess
-                    }
-                } else {
-                    targetTint = Theme.colors.alertSuccess
                 }
             } else {
                 drawnTarget = nil
@@ -287,6 +303,8 @@ extension LimitPriceChartView {
                 bandTint = .clear
             }
         }
+
+        static let bandOpacity = 0.18
 
         /// Guide levels that are inside the plot and far enough from the target
         /// line not to draw on top of it.

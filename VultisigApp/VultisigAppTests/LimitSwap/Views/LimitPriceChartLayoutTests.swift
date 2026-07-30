@@ -93,11 +93,22 @@ final class LimitPriceChartLayoutTests: XCTestCase {
         XCTAssertEqual(below.bandBounds, 98...100)
     }
 
+    func testNoBandOnceTheTargetIsOffScale() {
+        // The band's top edge would be the plot's edge rather than the target,
+        // so filling it would state a distance that is not the real one. The
+        // pinned line and its label carry the magnitude instead.
+        let layout = Layout(chart: calmChart, market: 100, target: 400)
+
+        XCTAssertTrue(layout.isOffScale)
+        XCTAssertNil(layout.bandBounds)
+    }
+
     func testTheBandIsNeverInverted() {
         // RectangleMark with yStart above yEnd is not a shape Charts can draw.
         for target in stride(from: 60.0, through: 200.0, by: 2.5) {
             let layout = Layout(chart: calmChart, market: 100, target: target)
             guard let bounds = layout.bandBounds else { continue }
+            XCTAssertFalse(layout.isOffScale, "an off-scale target must not carry a band")
             XCTAssertLessThanOrEqual(bounds.lowerBound, bounds.upperBound)
         }
     }
