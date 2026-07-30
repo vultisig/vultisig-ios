@@ -305,9 +305,9 @@ struct TransactionHistoryCardView: View {
 
     @ViewBuilder
     private var toRow: some View {
-        // A limit order shows the same from -> to pair as a swap, and the
-        // existing "min. payout" label on the to-side happens to be exactly
-        // right for one: the order's LIM *is* a guaranteed minimum output.
+        // A limit order shows the same from -> to pair as a swap; only the
+        // to-side caption differs, since the order's LIM *is* a guaranteed
+        // minimum output while a market swap's recorded amount is not.
         if transaction.type == .swap || transaction.type == .limit {
             swapToRow
         } else {
@@ -327,7 +327,10 @@ struct TransactionHistoryCardView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("minPayout".localized)
+                // A market swap persists the quote's EXPECTED output, so it can
+                // only be labelled that. Only a limit order's recorded amount is
+                // a guaranteed minimum.
+                Text((transaction.type == .limit ? "minPayout" : "expectedPayout").localized)
                     .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.textTertiary)
 

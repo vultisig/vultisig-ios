@@ -442,6 +442,7 @@
 "estNetworkFee" = "Geschätzte Netzwerkgebühr";
 "evmChains" = "EVM -Ketten";
 "excessGasRefund" = "Erstattung überschüssiger Gas";
+"expectedPayout" = "Erwartete Auszahlung";
 "expirationDate" = "Ablaufdatum";
 "expiresOn" = "Läuft ab";
 "extendExpiration(inYears)" = "Ausweitung des Ablaufs (in Jahren)";

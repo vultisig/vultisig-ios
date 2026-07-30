@@ -440,6 +440,7 @@
 "estNetworkFee" = "Est. network fee";
 "evmChains" = "EVM Chains";
 "excessGasRefund" = "Excess Gas Refund";
+"expectedPayout" = "expected payout";
 "expirationDate" = "Expiration date";
 "expiresOn" = "Expires on";
 "extendExpiration(inYears)" = "Extend Expiration (in years)";
