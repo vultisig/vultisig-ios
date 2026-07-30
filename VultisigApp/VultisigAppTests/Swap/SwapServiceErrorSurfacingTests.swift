@@ -100,17 +100,27 @@ final class SwapServiceErrorSurfacingTests: XCTestCase {
         )
     }
 
-    func testNonSwapErrorCoreFailureStillSurfacesInOrder() {
-        // Transport/decode failures are not `SwapError` at all, so they are not
-        // "classified"; with no classified verdict present the first one wins,
-        // exactly as before.
-        let transport = URLError(.timedOut)
-        let errors: [Error] = [transport, SwapError.serverError(message: "body")]
+    func testRelayLosesToAnyOtherCoreError() {
+        // Transport failures are not `SwapError`, but they still carry a verdict
+        // of their own, so they outrank the relay.
+        let errors: [Error] = [SwapError.serverError(message: "body"), URLError(.timedOut)]
         XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is URLError)
     }
 
-    func testClassifiedVerdictBeatsNonSwapErrorCoreFailure() {
+    func testOnlyTheRelayIsDemoted() {
+        // Guard against over-reach: the rule demotes `.serverError` and nothing
+        // else. A typed aggregator failure with a specific, actionable message
+        // must keep its place in completion order — otherwise a provider that
+        // merely answered slower downgrades "Insufficient funds" to the generic
+        // "No route available".
+        let kyber = KyberSwapError.insufficientFunds(message: "not enough ETH")
+        let errors: [Error] = [kyber, SwapError.routeUnavailable]
+        XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is KyberSwapError)
+    }
+
+    func testNonSwapErrorCoreFailureStillSurfacesInOrder() {
+        // No relay involved at all: completion order is untouched.
         let errors: [Error] = [URLError(.timedOut), SwapError.tradingHalted]
-        XCTAssertEqual(SwapService.surfacedQuoteError(from: errors) as? SwapError, .tradingHalted)
+        XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is URLError)
     }
 }

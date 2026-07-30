@@ -217,4 +217,17 @@ final class SwapErrorMappingTests: XCTestCase {
         let error = MayachainSwapError(code: nil, error: "inbound address doesn't exist")
         XCTAssertNotEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
     }
+
+    func testPoolAndMissingVerbInDifferentClausesIsNotAMissingPool() {
+        // The pool and the verb have to be in the SAME clause. A composite body
+        // that names a pool in one clause and something else missing in another
+        // is not a missing-pool verdict — and this classification is load-bearing
+        // beyond the tooltip: the limit-order form persists `.noRoute` from it
+        // and blocks placement.
+        let error = MayachainSwapError(
+            code: nil,
+            error: "pool ETH.USDC rejected the swap: affiliate THORName doesn't exist"
+        )
+        XCTAssertNotEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
+    }
 }

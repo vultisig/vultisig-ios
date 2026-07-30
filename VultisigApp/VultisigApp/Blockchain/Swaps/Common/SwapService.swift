@@ -150,24 +150,30 @@ struct SwapService {
     /// back to a SwapKit error only when SwapKit was the sole provider attempted
     /// (e.g. TON/Cardano/Sui pairs), where it's the only signal available.
     ///
-    /// Within the chosen pool, a *classified* verdict beats an unclassified
-    /// upstream relay. `errors` arrives in task-completion order, so `first` alone
-    /// is a network race: a poolless THORChain↔EVM pair fails on THORChain and
-    /// MAYAChain simultaneously, and whichever node answered first decided whether
-    /// the user saw "No liquidity pool available for this token pair" or the
-    /// losing node's raw body. Same failure, different sentence on every refresh.
+    /// Within the chosen pool, `.serverError` sorts last. `errors` arrives in
+    /// task-completion order, so `first` alone is a network race: a poolless
+    /// THORChain↔EVM pair fails on THORChain and MAYAChain simultaneously, and
+    /// whichever node answered first decided whether the user saw "No liquidity
+    /// pool available for this token pair" or the losing node's raw body. Same
+    /// failure, different sentence on every refresh.
+    ///
+    /// Only `.serverError` is demoted, not "everything that isn't a typed
+    /// `SwapError`" — a Kyber/LI.FI/transport failure carries its own specific
+    /// description and must keep its place, or a provider that merely answered
+    /// slower could downgrade "Insufficient funds" to "No Route Available".
     static func surfacedQuoteError(from errors: [Error]) -> Error? {
         let coreProviderErrors = errors.filter { !($0 is SwapKitError) }
         let pool = coreProviderErrors.isEmpty ? errors : coreProviderErrors
-        return pool.first(where: isClassifiedVerdict) ?? pool.first
+        return pool.first(where: { !isUnclassifiedRelay($0) }) ?? pool.first
     }
 
-    /// Whether an error is a typed verdict about the swap itself, as opposed to
-    /// `.serverError`, which is only a container for text an upstream provider
-    /// sent and this app could not classify.
-    private static func isClassifiedVerdict(_ error: Error) -> Bool {
-        guard let swapError = error as? SwapError else { return false }
-        if case .serverError = swapError { return false }
+    /// Whether an error is only a container for text an upstream provider sent
+    /// and this app could not classify — as opposed to any error that carries a
+    /// verdict of its own, typed or described.
+    private static func isUnclassifiedRelay(_ error: Error) -> Bool {
+        guard let swapError = error as? SwapError, case .serverError = swapError else {
+            return false
+        }
         return true
     }
 
@@ -710,6 +716,9 @@ extension SwapService {
         "bad from asset"
     ]
 
+    /// Ways the two nodes spell "… does not exist".
+    private static let missingVerbs = ["does not exist", "doesn't exist", "doesn\u{2019}t exist"]
+
     /// Whether a native quote-error body says "this pair has no pool".
     ///
     /// The two nodes word the identical verdict differently — THORChain returns
@@ -718,18 +727,23 @@ extension SwapService {
     /// matching only THORChain's phrasing left Maya's verdict unclassified and
     /// relayed its raw node text instead.
     ///
-    /// The contraction is only accepted alongside the word "pool". A bare
-    /// `doesn't exist` also appears in THORNode's
-    /// `bad destination address: unable to parse address: THORName doesn't exist: thor1…`,
-    /// which is a destination failure and must not be reported as a missing pool.
+    /// Matched per clause, not per message. Both real bodies name the pool and
+    /// the verb in the same clause; requiring that keeps a body that mentions a
+    /// pool in one clause and something else missing in another from reading as
+    /// a missing pool. THORNode uses the same verb for an unrelated failure —
+    /// `bad destination address: unable to parse address: THORName doesn't exist: thor1…`
+    /// — and reporting that as a missing pool would send the user off to pick a
+    /// different asset when the fault is the address.
     private static func isMissingPool(_ message: String) -> Bool {
         if unknownAssetMarkers.contains(where: { message.localizedCaseInsensitiveContains($0) }) {
             return true
         }
-        guard message.localizedCaseInsensitiveContains("pool") else { return false }
-        return message.localizedCaseInsensitiveContains("does not exist")
-            || message.localizedCaseInsensitiveContains("doesn't exist")
-            || message.localizedCaseInsensitiveContains("doesn\u{2019}t exist")
+        return message
+            .lowercased()
+            .split(whereSeparator: { $0 == ":" || $0 == ";" })
+            .contains { clause in
+                clause.contains("pool") && missingVerbs.contains { clause.contains($0) }
+            }
     }
 
     /// Classify a native (THORChain/MAYAChain) quote-error body into a typed
