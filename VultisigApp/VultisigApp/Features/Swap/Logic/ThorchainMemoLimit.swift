@@ -30,6 +30,13 @@ enum ThorchainMemoLimit {
     /// liquidity tolerance the floor already carries.
     private static let minSignificantDigits = 5
 
+    /// Largest `e<exponent>` a LIM may carry before it is treated as unreadable.
+    /// `compressed` never emits more than the digit count of a base-1e8 amount,
+    /// and a node-returned LIM is a plain integer, so anything beyond this is a
+    /// memo we don't understand — and expanding it would mean raising 10 to an
+    /// attacker-chosen power.
+    private static let maxLimitExponent = 64
+
     /// The UTF-8 byte budget a chain's THORChain / Maya swap memo must fit, or
     /// `nil` when the source chain carries no such cap.
     ///
@@ -39,6 +46,14 @@ enum ThorchainMemoLimit {
     /// 80-byte constraint, so no compression is applied there.
     static func memoByteLimit(for chain: Chain) -> Int? {
         chain.chainType == .UTXO ? 80 : nil
+    }
+
+    /// The memo a THORChain / Maya swap out of `sourceChain` is actually signed
+    /// with: the node's memo after whatever `OP_RETURN` compression this app
+    /// applies on the way to the signer. One definition so the payload builder
+    /// and the verify/co-sign display can never disagree about what gets signed.
+    static func signedMemo(_ memo: String, sourceChain: Chain) -> String {
+        compressed(memo, maxBytes: memoByteLimit(for: sourceChain))
     }
 
     /// Rewrites the LIM field of a THORChain / Maya swap memo into scientific
@@ -112,5 +127,74 @@ enum ThorchainMemoLimit {
         // emit one we know is over the cap.
         logger.debug("THORChain swap memo LIM could not be compressed within \(maxBytes) bytes; leaving memo unchanged")
         return memo
+    }
+
+    /// THORChain and MayaChain both spell the swap action `SWAP`, `=` or `s`,
+    /// case-insensitively. Every other action (`ADD`, `WITHDRAW`, `DONATE`,
+    /// `LOAN+`, …) lays its fields out differently, so its 4th field is not a
+    /// `LIM/INTERVAL/QUANTITY` triple and must not be read as one.
+    static func isSwapAction(_ field: some StringProtocol) -> Bool {
+        switch field.lowercased() {
+        case "swap", "=", "s":
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// The minimum output a THORChain / Maya swap memo asserts (`LIM`), in the
+    /// node's own base units — the same units as `expected_amount_out`.
+    ///
+    /// Read this off the memo that will actually be **signed**, not off
+    /// `quote.memo`: for a UTXO source `compressed(_:maxBytes:)` rewrites the
+    /// floor into `<mantissa>e<exponent>` and rounds it DOWN, so the quote's memo
+    /// overstates what the chain will enforce. Both spellings are accepted here
+    /// for that reason — the plain integer the node returns, and the scientific
+    /// form we may have substituted.
+    ///
+    /// Returns `nil` — never a guess — when the memo is not a swap memo, when the
+    /// LIM term is anything other than one of those two canonical spellings, or
+    /// when the floor is `0` (a swap that asserts no minimum, which is what a
+    /// user-set 0% slippage produces). Callers must then show no minimum at all
+    /// rather than a number the signed transaction does not back.
+    static func assertedLimit(in memo: String) -> BigInt? {
+        let fields = memo.split(separator: ":", omittingEmptySubsequences: false)
+        guard fields.count >= 4, isSwapAction(fields[0]) else { return nil }
+
+        // The LIM is the amount before the first `/` in `LIM/INTERVAL/QUANTITY`.
+        let limField = fields[3]
+        let limTerm = limField.prefix { $0 != "/" }
+        guard let limit = parseLimitTerm(limTerm), limit > 0 else { return nil }
+        return limit
+    }
+
+    /// `1234` or `1234e5` (mantissa followed by `exponent` trailing zeros) — the
+    /// only two spellings a LIM we are willing to vouch for can take. ASCII
+    /// digits only: `Character.isNumber` alone also accepts non-ASCII numerals
+    /// and fractions, which `BigInt` would then read as something the node never
+    /// wrote.
+    private static func parseLimitTerm(_ term: some StringProtocol) -> BigInt? {
+        let parts = term.split(separator: "e", omittingEmptySubsequences: false)
+        guard let mantissaText = parts.first, isCanonicalDigits(mantissaText),
+              let mantissa = BigInt(String(mantissaText)) else {
+            return nil
+        }
+
+        switch parts.count {
+        case 1:
+            return mantissa
+        case 2:
+            guard isCanonicalDigits(parts[1]),
+                  let exponent = Int(parts[1]), exponent <= maxLimitExponent else {
+                return nil
+            }
+            return mantissa * BigInt(10).power(exponent)
+        default:
+            return nil
+        }
+    }
+
+    private static func isCanonicalDigits(_ text: some StringProtocol) -> Bool {
+        !text.isEmpty && text.allSatisfy { $0.isASCII && $0.isNumber }
     }
 }

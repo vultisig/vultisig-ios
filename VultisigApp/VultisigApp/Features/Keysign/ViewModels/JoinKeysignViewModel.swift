@@ -720,6 +720,36 @@ class JoinKeysignViewModel: ObservableObject {
 
     }
 
+    /// Caption over the destination amount on the swap confirm screen. A market
+    /// swap's amount is the quote's *expected* output; the enforced floor is a
+    /// separate, lower number (`getMinPayoutCaption`). A resting limit order is
+    /// the opposite case — the assembler puts the order's LIM floor in
+    /// `toAmountDecimal` precisely so the co-signer sees the guarantee — so it
+    /// keeps the "min. payout" wording.
+    var toAmountCaptionKey: String {
+        isLimitSwapMemo(keysignPayload?.memo) ? "minPayout" : "expectedPayout"
+    }
+
+    /// "min. payout: …" line under a market swap's destination amount, or `nil`
+    /// when this transaction enforces no output floor and the screen must
+    /// therefore promise none.
+    ///
+    /// Read out of `keysignPayload.memo` — the literal bytes THIS device is
+    /// about to sign — rather than the payload's `toAmountLimit`, which the
+    /// initiator derived from the quote's memo before any `OP_RETURN`
+    /// compression. Confirming what it signs is the co-signer's entire job.
+    func getMinPayoutCaption() -> String? {
+        guard let payload = keysignPayload,
+              let swapPayload = payload.swapPayload,
+              swapPayload.isNativeProtocolRoute,
+              let memo = payload.memo,
+              let limit = ThorchainMemoLimit.assertedLimit(in: memo) else {
+            return nil
+        }
+        let amount = Decimal(limit) / swapPayload.toCoin.thorswapMultiplier
+        return SwapCryptoLogic.minPayoutCaption(amount: amount, ticker: swapPayload.toCoin.ticker)
+    }
+
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
