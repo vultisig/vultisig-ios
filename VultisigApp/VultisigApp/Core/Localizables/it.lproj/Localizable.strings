@@ -442,6 +442,7 @@
 "estNetworkFee" = "Comm. di rete stimata";
 "evmChains" = "Catene EVM";
 "excessGasRefund" = "Rimborso del Gas in Eccesso";
+"expectedPayout" = "pagamento previsto";
 "expirationDate" = "Data di scadenza";
 "expiresOn" = "Scade";
 "extendExpiration(inYears)" = "Estendere la scadenza (in anni)";
@@ -751,7 +752,6 @@
 "limitSwap.verify.title" = "Stai inserendo un ordine limite";
 "limitSwap.warning.priceAtOrBelowMarket" = "Prezzo già disponibile, valuta uno swap di mercato";
 "limitSwap.warning.priceFarAboveMarket" = "Potrebbe non eseguirsi entro la scadenza";
-"limitSwapToggle" = "Swap limite";
 "liquidityPools" = "Pool di liquidità";
 "loading" = "Caricamento...";
 "loadingDetails" = "Caricamento dettagli";
@@ -933,6 +933,7 @@
 "peerDiscoveryInfoDescription" = "Sull'altro dispositivo, apri l'app e tocca \"Scansiona QR\" per connetterlo.";
 "peerDiscoveryInfoTitle" = "Scansiona il QR sugli altri dispositivi";
 "peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";
+"pendingIncomingBalance" = "+%@ in attesa";
 "pendingRewards" = "Premio in sospeso";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteca di foto";

@@ -141,6 +141,13 @@ final class BalanceServiceMulticallPartitionTests: XCTestCase {
         // integration is not unit-testable (EvmService is a non-injectable enum
         // factory) and was verified at runtime instead, against a live batch with
         // a deliberately reverting sub-call.
+        //
+        // The UTXO balance leans on the same predicate for a different
+        // failure: an incomplete page walk, a self-contradicting response, or
+        // a failed read of the wallet's own pending transactions all throw,
+        // and this is what makes throwing safer than answering with a zero —
+        // the last known balance stands. A genuine zero must still get
+        // through, or an emptied wallet would never render as empty.
         let update = BalanceService.CoinBalanceUpdate(
             coinId: "eth-coin",
             rawBalance: nil,
@@ -148,8 +155,20 @@ final class BalanceServiceMulticallPartitionTests: XCTestCase {
             bondedNodes: nil,
             error: nil
         )
+        let emptied = BalanceService.CoinBalanceUpdate(
+            coinId: "eth-coin",
+            rawBalance: "0",
+            stakedBalance: nil,
+            bondedNodes: nil,
+            error: nil
+        )
 
         XCTAssertFalse(update.hasUpdates, "a nil rawBalance must not reach the coin")
+        XCTAssertTrue(emptied.hasUpdates, "a genuine zero must still reach the coin")
+        XCTAssertNil(
+            update.pendingRawBalance,
+            "a failed fetch writes neither number, leaving both at their last known values"
+        )
     }
 
     func testFullySuccessfulBatchNeedsNoPerCoinRetry() {

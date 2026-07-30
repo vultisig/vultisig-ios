@@ -235,6 +235,23 @@ extension SwapTransaction {
         return SwapCryptoLogic.toAmountDecimal(quote: quote, toCoin: toCoin)
     }
 
+    /// Memo-enforced minimum output for the destination cell, or `nil` when this
+    /// swap signs no floor and the screen must therefore claim none.
+    ///
+    /// `nil` for a limit order by construction: its `toAmountDecimal` already IS
+    /// the floor, so the cell's own amount is the minimum and a second line
+    /// restating it would only be noise. Market swaps show the expected output as
+    /// the amount, which is why they need the floor spelled out separately.
+    var minPayoutDecimal: Decimal? {
+        guard !isLimit else { return nil }
+        return SwapCryptoLogic.signedMinimumOutput(quote: quote, fromCoin: fromCoin, toCoin: toCoin)
+    }
+
+    /// Pre-formatted "min. payout: …" caption, `nil` when there is no floor.
+    var minPayoutCaption: String? {
+        minPayoutDecimal.map { SwapCryptoLogic.minPayoutCaption(amount: $0, ticker: toCoin.ticker) }
+    }
+
     var router: String? {
         SwapCryptoLogic.router(quote: quote)
     }

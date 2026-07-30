@@ -205,7 +205,7 @@ struct KeysignSwapConfirmView: View {
             getCoinIcon(for: coin)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("minPayout".localized)
+                Text(viewModel.toAmountCaptionKey.localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .opacity(isTo ? 1 : 0)
@@ -237,6 +237,16 @@ struct KeysignSwapConfirmView: View {
                         .font(Theme.fonts.caption10)
                         .offset(x: 2)
                     }
+                }
+
+                // The floor the memo this device is about to sign enforces —
+                // the whole point of a co-signer's confirm screen is that the
+                // guarantee it approves is the guarantee it signs. Absent on
+                // routes that enforce none.
+                if isTo, let minPayout = viewModel.getMinPayoutCaption() {
+                    Text(minPayout)
+                        .font(Theme.fonts.priceCaption)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

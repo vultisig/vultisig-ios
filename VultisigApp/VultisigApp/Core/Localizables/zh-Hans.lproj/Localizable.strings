@@ -442,6 +442,7 @@
 "estNetworkFee" = "预计网络费用";
 "evmChains" = "EVM 链";
 "excessGasRefund" = "多余 Gas 退款";
+"expectedPayout" = "预期支付";
 "expirationDate" = "到期日期";
 "expiresOn" = "到期于";
 "extendExpiration(inYears)" = "延长到期时间（年）";
@@ -751,7 +752,6 @@
 "limitSwap.verify.title" = "您正在下达限价单";
 "limitSwap.warning.priceAtOrBelowMarket" = "价格已可用，建议使用市价兑换";
 "limitSwap.warning.priceFarAboveMarket" = "可能在到期前无法成交";
-"limitSwapToggle" = "限价兑换";
 "liquidityPools" = "流动性池";
 "loading" = "加载中...";
 "loadingDetails" = "正在加载详情";
@@ -933,6 +933,7 @@
 "peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
 "peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
+"pendingIncomingBalance" = "+%@ 待确认";
 "pendingRewards" = "待领取奖励";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "照片库";

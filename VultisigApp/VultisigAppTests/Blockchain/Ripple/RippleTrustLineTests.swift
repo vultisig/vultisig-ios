@@ -570,7 +570,8 @@ final class RippleTrustLineTests: XCTestCase {
 
         let balance = try await balanceService.fetchBalance(
             for: Self.coin(tokenId: "USD.\(Self.usdIssuer)"),
-            address: Self.account
+            address: Self.account,
+            vaultPubKeyECDSA: nil
         )
 
         XCTAssertEqual(balance, "7000000000000000", "must be the token balance, not the XRP balance")
@@ -583,7 +584,11 @@ final class RippleTrustLineTests: XCTestCase {
         stub.serverStateJSON = Self.serverStateJSON
         let balanceService = BalanceService(ripple: Self.makeService(stub))
 
-        let balance = try await balanceService.fetchBalance(for: Self.nativeXRP, address: Self.account)
+        let balance = try await balanceService.fetchBalance(
+            for: Self.nativeXRP,
+            address: Self.account,
+            vaultPubKeyECDSA: nil
+        )
 
         // 5 XRP held minus the 1 XRP base reserve, in drops.
         XCTAssertEqual(balance, "4000000")

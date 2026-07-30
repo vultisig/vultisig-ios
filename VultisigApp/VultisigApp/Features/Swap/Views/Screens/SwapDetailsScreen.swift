@@ -15,17 +15,15 @@ struct SwapDetailsScreen: View {
     @StateObject private var keyboardObserver = KeyboardObserver()
 
     @State private var showErrorTooltip = false
-    /// Local Market/Limit tab state. The Limit branch lives entirely
-    /// inside `LimitSwapModeBody` (which owns its own form view model and
-    /// drives the limit-swap pipeline via `SwapRoute.limitPair`) — flag-off
-    /// renders the existing Market layout pixel-identical to pre-feature.
+    /// Local Market/Limit tab state. The Limit branch lives entirely inside
+    /// `LimitSwapEntryView`, which owns its own `LimitSwapFormViewModel` and
+    /// drives the limit-swap pipeline independently of `detailsViewModel`.
     @State private var selectedSwapMode: SwapFormMode = .market
     @State private var showAdvancedLockedSheet = false
 
     private let tierService = VultTierService()
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
 
     var body: some View {
@@ -40,7 +38,6 @@ struct SwapDetailsScreen: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
-                .showIf(settingsViewModel.limitSwapEnabled)
 
                 switch selectedSwapMode {
                 case .market:
@@ -69,15 +66,8 @@ struct SwapDetailsScreen: View {
             )
         }
         .screenToolbar {
-            // Glass button (shared toolbar background) first, then the custom
-            // countdown pill (own background → shared hidden). The toolbar
-            // renders the glass group ahead of the plain group, so this order
-            // shows the advanced-settings button left of the countdown.
             CustomToolbarItem(placement: .trailing) {
                 advancedSettingsButton
-            }
-            CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
-                refreshCounter
             }
         }
         .crossPlatformSheet(isPresented: $showAdvancedLockedSheet) {
@@ -298,16 +288,6 @@ struct SwapDetailsScreen: View {
             return String(format: "swapInsufficientTokenBalance".localized, detailsViewModel.fromCoin.ticker)
         }
         return "continue"
-    }
-
-    @ViewBuilder
-    var refreshCounter: some View {
-        // When the Market/Limit tab row is visible (limit swap enabled) the
-        // countdown lives in that row via `tabRowCountdown`; keep the toolbar
-        // counter only for the flag-off market layout, which has no tab row.
-        if !settingsViewModel.limitSwapEnabled, detailsViewModel.showRefreshCounter {
-            SwapRefreshQuoteCounter(timer: detailsViewModel.timer)
-        }
     }
 
     /// Source coin the **limit** entry seeds with. Limit-entry only — the shared

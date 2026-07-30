@@ -58,11 +58,18 @@ class BalanceService {
         let coinId: String
         let coinMeta: CoinMeta
         let address: String
+        /// Owning vault, carried so the UTXO balance can ask which unconfirmed
+        /// outputs at this address this wallet produced itself. `nil` for a
+        /// coin not attached to a vault — a discovery probe during import, say
+        /// — which reads as "nothing pending" and yields a confirmed-only
+        /// balance.
+        let vaultPubKeyECDSA: String?
 
         init(from coin: Coin) {
             self.coinId = coin.id
             self.coinMeta = coin.toCoinMeta()
             self.address = coin.address
+            self.vaultPubKeyECDSA = coin.vault?.pubKeyECDSA
         }
 
         // Convenience accessors for commonly used CoinMeta properties
@@ -71,13 +78,57 @@ class BalanceService {
         var isNativeToken: Bool { coinMeta.isNativeToken }
     }
 
+    /// One fetch's two numbers: what the address can spend, and what it can
+    /// see arriving but cannot spend yet.
+    ///
+    /// They travel together because they are read off the same snapshot. Only
+    /// the Blockchair-backed UTXO chains have a non-zero pending amount — every
+    /// other chain's balance is the provider's own aggregate, which withholds
+    /// nothing there is anything to say about.
+    struct BalanceSnapshot {
+        /// Spendable balance, in the chain's smallest unit.
+        let rawBalance: String
+        /// Inbound value in the mempool, in the chain's smallest unit.
+        /// Deliberately *not* part of `rawBalance`: it is money this wallet
+        /// cannot fund a transaction from until it confirms.
+        let pendingRawBalance: String
+
+        init(rawBalance: String, pendingRawBalance: String = "0") {
+            self.rawBalance = rawBalance
+            self.pendingRawBalance = pendingRawBalance
+        }
+    }
+
     /// Value type containing balance update data for a specific coin
     struct CoinBalanceUpdate {
         let coinId: String
         let rawBalance: String?
+        /// Only ever carried alongside a `rawBalance`, so it is only ever
+        /// *written* from a fetch that succeeded. A fetch that failed carries
+        /// neither, which leaves both numbers at their last known values —
+        /// deliberately, because they describe one address: clearing the
+        /// pending line while a stale balance stayed on screen would make an
+        /// incoming payment appear to have been cancelled by a network blip.
+        let pendingRawBalance: String?
         let stakedBalance: String?
         let bondedNodes: [RuneBondNode]?
         let error: Error?
+
+        init(
+            coinId: String,
+            rawBalance: String?,
+            pendingRawBalance: String? = nil,
+            stakedBalance: String?,
+            bondedNodes: [RuneBondNode]?,
+            error: Error?
+        ) {
+            self.coinId = coinId
+            self.rawBalance = rawBalance
+            self.pendingRawBalance = pendingRawBalance
+            self.stakedBalance = stakedBalance
+            self.bondedNodes = bondedNodes
+            self.error = error
+        }
 
         var hasUpdates: Bool {
             rawBalance != nil || stakedBalance != nil || bondedNodes != nil
@@ -352,16 +403,20 @@ class BalanceService {
     /// Fetch balance update for a single coin identifier
     private func fetchBalanceUpdate(for identifier: CoinIdentifier) async -> CoinBalanceUpdate {
         var rawBalance: String?
+        var pendingRawBalance: String?
         var stakedBalance: String?
         var bondedNodes: [RuneBondNode]?
         var capturedError: Error?
 
         do {
             // Fetch raw balance
-            rawBalance = try await fetchBalance(
+            let snapshot = try await fetchBalanceSnapshot(
                 for: identifier.coinMeta,
-                address: identifier.address
+                address: identifier.address,
+                vaultPubKeyECDSA: identifier.vaultPubKeyECDSA
             )
+            rawBalance = snapshot.rawBalance
+            pendingRawBalance = snapshot.pendingRawBalance
 
             // Fetch staked balance if supported
             if let staked = try await fetchStakedBalance(for: identifier) {
@@ -379,6 +434,7 @@ class BalanceService {
         return CoinBalanceUpdate(
             coinId: identifier.coinId,
             rawBalance: rawBalance,
+            pendingRawBalance: pendingRawBalance,
             stakedBalance: stakedBalance,
             bondedNodes: bondedNodes,
             error: capturedError
@@ -400,6 +456,14 @@ class BalanceService {
             // Update raw balance if present and changed
             if let rawBalance = update.rawBalance, coin.rawBalance != rawBalance {
                 coin.rawBalance = rawBalance
+            }
+
+            // Written whenever a balance was, including when it is back to
+            // zero: the pending line has to disappear the moment the payment
+            // it announced confirms and joins the spendable balance. A refresh
+            // that failed writes neither and both numbers stay as they were.
+            if let pendingRawBalance = update.pendingRawBalance, coin.pendingRawBalance != pendingRawBalance {
+                coin.pendingRawBalance = pendingRawBalance
             }
 
             // Update staked balance if present and changed
@@ -440,6 +504,10 @@ class BalanceService {
                 coin.rawBalance = rawBalance
             }
 
+            if let pendingRawBalance = update.pendingRawBalance, coin.pendingRawBalance != pendingRawBalance {
+                coin.pendingRawBalance = pendingRawBalance
+            }
+
             if let stakedBalance = update.stakedBalance, coin.stakedBalance != stakedBalance {
                 coin.stakedBalance = stakedBalance
             }
@@ -465,8 +533,14 @@ class BalanceService {
         // Snapshot the SwiftData @Model's identity on MainActor before the async
         // fetch — reading a main-context model off a generic executor is a
         // concurrency hazard.
-        let (meta, address) = await MainActor.run { (coin.toCoinMeta(), coin.address) }
-        let rawBalance = try await fetchBalance(for: meta, address: address)
+        let (meta, address, vaultPubKeyECDSA) = await MainActor.run {
+            (coin.toCoinMeta(), coin.address, coin.vault?.pubKeyECDSA)
+        }
+        let rawBalance = try await fetchBalance(
+            for: meta,
+            address: address,
+            vaultPubKeyECDSA: vaultPubKeyECDSA
+        )
         try await MainActor.run {
             if coin.rawBalance != rawBalance {
                 coin.rawBalance = rawBalance
@@ -475,29 +549,87 @@ class BalanceService {
         }
     }
 
-    func fetchBalance(for coin: CoinMeta, address: String) async throws -> String {
+    /// - Parameter vaultPubKeyECDSA: the vault that owns `address`, used on the
+    ///   UTXO chains to recognise this wallet's own unconfirmed change. `nil`
+    ///   yields a confirmed-only balance, which is the right answer for a coin
+    ///   with no vault behind it — an address being probed during import has
+    ///   no locally-broadcast transactions to recognise.
+    func fetchBalance(for coin: CoinMeta, address: String, vaultPubKeyECDSA: String?) async throws -> String {
+        try await fetchBalanceSnapshot(
+            for: coin,
+            address: address,
+            vaultPubKeyECDSA: vaultPubKeyECDSA
+        ).rawBalance
+    }
+
+    /// The spendable balance and, beside it, whatever the address can see
+    /// arriving but cannot spend yet. One switch so the two can only ever come
+    /// from the same fetch; `fetchBalance` is the view of it that callers who
+    /// need a single number take.
+    ///
+    /// - Parameter vaultPubKeyECDSA: see `fetchBalance`.
+    func fetchBalanceSnapshot(
+        for coin: CoinMeta,
+        address: String,
+        vaultPubKeyECDSA: String?
+    ) async throws -> BalanceSnapshot {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .zcash:
+            // The balance is the sum of exactly the outputs `SpendableUtxos`
+            // will offer to transaction planning, not Blockchair's
+            // `address.balance`. That aggregate counts every mempool output
+            // including a stranger's zero-conf, so it used to show money the
+            // send flow then refused to spend: a specific-amount send cleared
+            // the balance check and failed at input selection, send-max drained
+            // less than the screen showed, and swaps inherited both. Deriving
+            // it from the same predicate is what makes the two numbers one
+            // number.
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
-            return blockChairData.address?.balance?.description ?? "0"
+            let ownUnconfirmed = try await SpendableUtxos.ownUnconfirmedTxHashes(
+                chain: coin.chain,
+                vaultPubKeyECDSA: vaultPubKeyECDSA
+            )
+            return try Self.utxoBalanceSnapshot(
+                from: blockChairData,
+                dustThreshold: coin.coinType.getFixedDustThreshold(),
+                ownUnconfirmedTxHashes: ownUnconfirmed
+            )
+
+        case .dash:
+            // Dash is the one UTXO chain whose spendable set does not come from
+            // Blockchair: `KeysignPayloadFactory` reads it from a node's
+            // address index via `getaddressutxos`. That index is built from
+            // connected blocks and is blind to the mempool in both directions,
+            // so summing it here would make the wallet keep showing an input
+            // its own pending send had already consumed. Blockchair's
+            // aggregate is mempool-aware and stays the better number to
+            // display; closing Dash's own balance/spendable gap means changing
+            // where its UTXOs come from, which is not a change to this filter.
+            //
+            // Because nothing here reads the `utxo` array, `BlockchairService`
+            // fetches Dash unpaged — one request for the aggregate, and none of
+            // the pagination-completeness failures that would otherwise be able
+            // to block a balance the array has no bearing on.
+            let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
+            return .init(rawBalance: blockChairData.address?.balance?.description ?? "0")
 
         case .cardano:
-            return try await cardano.getBalance(coin: coin, address: address)
+            return .init(rawBalance: try await cardano.getBalance(coin: coin, address: address))
 
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
             let thorBalances = try await service.fetchBalances(address)
-            return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
+            return .init(rawBalance: thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin))
 
         case .solana:
-            return try await sol.getSolanaBalance(coin: coin, address: address)
+            return .init(rawBalance: try await sol.getSolanaBalance(coin: coin, address: address))
 
         case .sui:
-            return try await sui.getBalance(coin: coin, address: address)
+            return .init(rawBalance: try await sui.getBalance(coin: coin, address: address))
 
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei, .robinhood:
             let service = try EvmService.getService(forChain: coin.chain)
-            return try await service.getBalance(coin: coin, address: address)
+            return .init(rawBalance: try await service.getBalance(coin: coin, address: address))
 
         case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash, .qbtc:
             let cosmosService = try CosmosService.getService(forChain: coin.chain)
@@ -512,38 +644,95 @@ class BalanceService {
                 denom = coin.chain.ticker.lowercased()
             }
 
-            return balances.balance(denom: denom, coin: coin)
+            return .init(rawBalance: balances.balance(denom: denom, coin: coin))
 
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(address)
-            return mayaBalance.balance(denom: coin.ticker.lowercased())
+            return .init(rawBalance: mayaBalance.balance(denom: coin.ticker.lowercased()))
 
         case .polkadot:
-            return try await dot.getBalance(address: address)
+            return .init(rawBalance: try await dot.getBalance(address: address))
 
         case .bittensor:
-            return try await tao.getBalance(address: address)
+            return .init(rawBalance: try await tao.getBalance(address: address))
 
         case .ton:
             if coin.isNativeToken {
-                return try await ton.getBalance(coin: coin, address: address)
+                return .init(rawBalance: try await ton.getBalance(coin: coin, address: address))
             } else {
-                return try await ton.getJettonBalance(coin: coin, address: address)
+                return .init(rawBalance: try await ton.getJettonBalance(coin: coin, address: address))
             }
 
         case .ripple:
             if coin.isNativeToken {
-                return try await ripple.getBalance(address: address)
+                return .init(rawBalance: try await ripple.getBalance(address: address))
             } else {
                 // Issued currencies live on trust lines, not in the AccountRoot
                 // balance — without this branch a token row would render the
                 // account's XRP balance.
-                return try await ripple.getTokenBalance(coin: coin, address: address)
+                return .init(rawBalance: try await ripple.getTokenBalance(coin: coin, address: address))
             }
 
         case .tron:
-            return try await tron.getBalance(coin: coin, address: address)
+            return .init(rawBalance: try await tron.getBalance(coin: coin, address: address))
         }
+    }
+}
+
+extension BalanceService {
+
+    enum Errors: Error {
+        /// Blockchair reported a positive `address.balance` for an address it
+        /// returned no unspent outputs for. The balance is derived from those
+        /// outputs, so this is a contradiction rather than an empty wallet:
+        /// surfacing it as a fetch failure keeps the last known balance
+        /// instead of persisting a zero the provider did not actually claim.
+        case utxoBalanceWithoutOutputs(reported: Int)
+    }
+
+    /// The two numbers a Blockchair address entry yields, both in the chain's
+    /// smallest unit: the spendable balance — the sum of exactly the outputs
+    /// `SpendableUtxos.select` will offer to transaction planning — and the
+    /// inbound mempool value held back from it. Extracted from `fetchBalance`
+    /// so that equality is pinned by tests on the production path rather than
+    /// on a helper the production path merely resembles.
+    ///
+    /// Deriving the balance from the rows makes their *absence* load-bearing,
+    /// and one shape of response can no longer be read literally. The
+    /// pagination walk treats an empty first page as provably complete, so a
+    /// provider or proxy that normalises away the `utxo` array would arrive
+    /// here looking like a credible empty wallet and persist a zero that
+    /// blocks sends, send-max and swaps. An address the provider says holds a
+    /// balance but returns no unspent outputs for is contradicting itself:
+    /// throw, and the caller keeps the last known balance. An address whose
+    /// outputs are all present and all filtered out is a different case
+    /// entirely and does legitimately read zero.
+    static func utxoBalanceSnapshot(
+        from blockchair: Blockchair,
+        dustThreshold: Int64,
+        ownUnconfirmedTxHashes: Set<String>
+    ) throws -> BalanceSnapshot {
+        let rows = blockchair.utxo ?? []
+
+        if rows.isEmpty, let reportedBalance = blockchair.address?.balance, reportedBalance > 0 {
+            Log.chain.service.error(
+                "Blockchair reported a balance of \(reportedBalance) with no unspent outputs — refusing to zero the balance"
+            )
+            throw Errors.utxoBalanceWithoutOutputs(reported: reportedBalance)
+        }
+
+        return BalanceSnapshot(
+            rawBalance: SpendableUtxos.balance(
+                from: rows,
+                dustThreshold: dustThreshold,
+                ownUnconfirmedTxHashes: ownUnconfirmedTxHashes
+            ).description,
+            pendingRawBalance: SpendableUtxos.pendingInboundBalance(
+                from: rows,
+                dustThreshold: dustThreshold,
+                ownUnconfirmedTxHashes: ownUnconfirmedTxHashes
+            ).description
+        )
     }
 }
 

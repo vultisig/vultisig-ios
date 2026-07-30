@@ -138,7 +138,7 @@ extension SwapCryptoLogic {
     /// term that isn't already canonical is a term we should not vouch for.
     static func thorchainMemoSwapTerms(from memo: String) -> ThorchainMemoSwapTerms {
         let fields = memo.split(separator: ":", omittingEmptySubsequences: false)
-        guard fields.count >= 4, isThorchainSwapAction(fields[0]) else { return .unspecified }
+        guard fields.count >= 4, ThorchainMemoLimit.isSwapAction(fields[0]) else { return .unspecified }
 
         let terms = fields[3].split(separator: "/", omittingEmptySubsequences: false)
         guard !terms.isEmpty, terms.count <= 3 else { return .unspecified }
@@ -161,19 +161,6 @@ extension SwapCryptoLogic {
         )
     }
 
-    /// THORChain and MayaChain both spell the swap action `SWAP`, `=` or `s`,
-    /// case-insensitively. Every other action (`ADD`, `WITHDRAW`, `DONATE`,
-    /// `LOAN+`, …) lays its fields out differently, so its 4th field is not a
-    /// `LIM/INTERVAL/QUANTITY` triple and must not be read as one.
-    private static func isThorchainSwapAction(_ field: Substring) -> Bool {
-        switch field.lowercased() {
-        case "swap", "=", "s":
-            return true
-        default:
-            return false
-        }
-    }
-
     /// Build the THORChain/MayaChain swap payload from primitives + selected quote.
     /// `now` parameterised so tests can pin the 15-minute expiration deterministically.
     ///
@@ -183,9 +170,11 @@ extension SwapCryptoLogic {
     /// of the output floor and streaming plan — neither is derivable from the
     /// quote's other fields, because the node applies its tolerance parameter to
     /// a feeless price we never see and bakes its own streaming choice into the
-    /// memo. All three are inert on this device (nothing renders them, no signer
-    /// reads them); they ride the proto so the co-signer sees exactly what the
-    /// memo commits to.
+    /// memo. All three stay inert: no signer reads them, and no screen renders
+    /// them either — the minimum shown on the verify and co-sign screens is read
+    /// from the signed memo itself, because for a UTXO source
+    /// `ThorchainMemoLimit.compressed` lowers that memo's LIM *after* this
+    /// payload is built. They ride the proto for cross-device transit only.
     static func buildThorchainSwapPayload(
         fromCoin: Coin,
         toCoin: Coin,
@@ -247,10 +236,7 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress ?? fromCoin.address,
                 amount: amountInCoin,
-                memo: ThorchainMemoLimit.compressed(
-                    quote.memo,
-                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
-                ),
+                memo: ThorchainMemoLimit.signedMemo(quote.memo, sourceChain: fromCoin.chain),
                 chainSpecific: chainSpecific,
                 swapPayload: .mayachain(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
@@ -270,10 +256,7 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress,
                 amount: amountInCoin,
-                memo: ThorchainMemoLimit.compressed(
-                    quote.memo,
-                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
-                ),
+                memo: ThorchainMemoLimit.signedMemo(quote.memo, sourceChain: fromCoin.chain),
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchain(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
@@ -293,10 +276,7 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress,
                 amount: amountInCoin,
-                memo: ThorchainMemoLimit.compressed(
-                    quote.memo,
-                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
-                ),
+                memo: ThorchainMemoLimit.signedMemo(quote.memo, sourceChain: fromCoin.chain),
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchainChainnet(buildThorchainSwapPayload(
                     fromCoin: fromCoin,
@@ -316,10 +296,7 @@ extension SwapCryptoLogic {
                 coin: fromCoin,
                 toAddress: toAddress,
                 amount: amountInCoin,
-                memo: ThorchainMemoLimit.compressed(
-                    quote.memo,
-                    maxBytes: ThorchainMemoLimit.memoByteLimit(for: fromCoin.chain)
-                ),
+                memo: ThorchainMemoLimit.signedMemo(quote.memo, sourceChain: fromCoin.chain),
                 chainSpecific: chainSpecific,
                 swapPayload: .thorchainStagenet(buildThorchainSwapPayload(
                     fromCoin: fromCoin,

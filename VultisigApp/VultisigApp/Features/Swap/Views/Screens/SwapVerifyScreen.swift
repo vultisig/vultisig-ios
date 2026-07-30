@@ -297,6 +297,15 @@ struct SwapVerifyScreen: View {
         }
     }
 
+    /// Caption over the destination amount. A market swap's amount is the quote's
+    /// *expected* output — the memo's floor sits ~1% below it and gets its own
+    /// line — so calling it the minimum overstates what the signature guarantees.
+    /// A placed limit order is the opposite case: its amount IS the signed floor,
+    /// so "min. payout" is exactly right there and stays.
+    private var destinationCaptionKey: String {
+        currentTransaction.isLimit ? "minPayout" : "expectedPayout"
+    }
+
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
@@ -575,7 +584,7 @@ struct SwapVerifyScreen: View {
             getCoinIcon(for: coin)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("minPayout".localized)
+                Text(destinationCaptionKey.localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .opacity(isTo ? 1 : 0)
@@ -611,6 +620,15 @@ struct SwapVerifyScreen: View {
                         .font(Theme.fonts.caption10)
                         .offset(x: 2)
                     }
+                }
+
+                // The floor the signed memo actually enforces. Absent — not
+                // zeroed, not substituted — on routes that enforce none, so the
+                // screen never asserts a guarantee the signature doesn't back.
+                if isTo, let minPayout = currentTransaction.minPayoutCaption {
+                    Text(minPayout)
+                        .font(Theme.fonts.priceCaption)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -1,0 +1,72 @@
+[
+    {
+        "name": "Send TCY",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "TCY",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "tcy",
+                "logo": "rune.png"
+            },
+            "to_address": "thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean",
+            "to_amount": "100000000",
+            "memo": "",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": false,
+                    "transaction_type": 0
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "7124c5cdee5666615a0c0076697addbd8f1922983f8309ffde89ded55f42bb21"
+        ]
+    },
+    {
+        "name": "Swap TCY to RUNE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "TCY",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "tcy",
+                "logo": "rune.png"
+            },
+            "to_address": "thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean",
+            "to_amount": "100000000",
+            "memo": "=:THOR.RUNE:thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 0
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "209d7b5e196b6941d3161f310dda6521fca2f532ef1d07e31b46da4e73608f72"
+        ]
+    }
+]

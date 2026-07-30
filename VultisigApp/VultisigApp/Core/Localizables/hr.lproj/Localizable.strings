@@ -442,6 +442,7 @@
 "estNetworkFee" = "Procijenjena mrežna naknada";
 "evmChains" = "EVM lanci";
 "excessGasRefund" = "Povrat viška goriva";
+"expectedPayout" = "očekivana isplata";
 "expirationDate" = "Datum isteka";
 "expiresOn" = "Ističe na";
 "extendExpiration(inYears)" = "Produžite istek (u godinama)";
@@ -751,7 +752,6 @@
 "limitSwap.verify.title" = "Postavljaš limit nalog";
 "limitSwap.warning.priceAtOrBelowMarket" = "Cijena već dostupna, razmotri tržišnu zamjenu";
 "limitSwap.warning.priceFarAboveMarket" = "Možda se neće izvršiti prije isteka";
-"limitSwapToggle" = "Limit zamjena";
 "liquidityPools" = "Bazeni likvidnosti";
 "loading" = "Učitavanje...";
 "loadingDetails" = "Učitavanje detalja";
@@ -933,6 +933,7 @@
 "peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
 "peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
+"pendingIncomingBalance" = "+%@ na čekanju";
 "pendingRewards" = "Nagrade na čekanju";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteka fotografija";

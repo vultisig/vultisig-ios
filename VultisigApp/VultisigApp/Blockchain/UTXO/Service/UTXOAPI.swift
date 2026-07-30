@@ -35,10 +35,12 @@ enum BitcoinBroadcastAPI: TargetType {
     var validationType: ValidationType { .noValidation }
 }
 
-// MARK: - Blockchair (BCH/LTC/DOGE/DASH/ZEC)
+// MARK: - Blockchair (BTC/BCH/LTC/DOGE/ZEC)
 
 enum BlockchairAPI: TargetType {
-    case dashboard(address: String, chain: String)
+    /// One page of an address dashboard. `limit`/`offset` page the `utxo`
+    /// array; without them Blockchair caps it at 100 entries, newest-first.
+    case dashboard(address: String, chain: String, limit: Int, offset: Int)
     case broadcast(chain: String, signedTransaction: String)
     case stats(chain: String)
 
@@ -46,7 +48,7 @@ enum BlockchairAPI: TargetType {
 
     var path: String {
         switch self {
-        case .dashboard(let address, let chain):
+        case .dashboard(let address, let chain, _, _):
             return "/blockchair/\(chain.lowercased())/dashboards/address/\(address)"
         case .broadcast(let chain, _):
             return "/blockchair/\(chain.lowercased())/push/transaction"
@@ -66,7 +68,17 @@ enum BlockchairAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
-        case .dashboard, .stats:
+        case .dashboard(_, _, let limit, let offset):
+            // Blockchair's address dashboard applies `limit` and `offset` to
+            // two collections at once, in the order `transactions,utxo`.
+            // Nothing here decodes `transactions`, and at a UTXO page size of
+            // 1000 an unpinned transactions side would add a thousand
+            // transaction hashes to every page, so it is pinned to zero.
+            return .requestParameters(
+                ["limit": "0,\(limit)", "offset": "0,\(offset)"],
+                .urlEncoding
+            )
+        case .stats:
             return .requestPlain
         case .broadcast(_, let signedTransaction):
             return .requestCodable(BlockchairBroadcastRequest(data: signedTransaction), .jsonEncoding)
