@@ -35,6 +35,12 @@ final class TrustLineActivationRecordingTests: XCTestCase {
 
     // MARK: - Routing
 
+    /// ⚠️ The assertion that actually holds the fix up. The predicate being true
+    /// is not enough — the bug was never a missing predicate, it was a dispatch
+    /// that asked the wrong question first. `route(for:)` answers the whole
+    /// precedence chain, so deleting the activation branch or demoting it below
+    /// the send fallback turns this red.
+    ///
     /// The INITIATOR's shape: `SendDoneScreen` builds `amountCrypto` from the
     /// `SendTransaction`, so the string it hands over already reads as a
     /// quadrillion-token send.
@@ -44,6 +50,7 @@ final class TrustLineActivationRecordingTests: XCTestCase {
             keysignPayload: makeTrustSetPayload()
         )
 
+        XCTAssertEqual(TransactionHistoryRecording.route(for: payload), .trustLineActivation)
         XCTAssertTrue(TransactionHistoryRecording.isTrustLineActivation(payload))
     }
 
@@ -58,22 +65,94 @@ final class TrustLineActivationRecordingTests: XCTestCase {
             fromAddress: Self.account
         )
 
-        XCTAssertTrue(TransactionHistoryRecording.isTrustLineActivation(payload))
+        XCTAssertEqual(TransactionHistoryRecording.route(for: payload), .trustLineActivation)
     }
 
     /// Why ONE branch fixes both devices: a TrustSet carries no swap payload and
     /// no limit-swap memo, so it never reaches `recordFromKeysignPayload` — both
     /// the initiator and the co-signer share the `recordSend` fallback at the
-    /// bottom of `record()`, and the activation branch sits above it.
+    /// bottom of the chain, and the activation branch sits above it.
     func testATrustSetIsInterceptedBeforeTheKeysignRecorderDispatch() {
         let keysignPayload = makeTrustSetPayload()
         let payload = makeDonePayload(amountCrypto: "0 RLUSD", keysignPayload: keysignPayload)
 
-        XCTAssertTrue(TransactionHistoryRecording.isTrustLineActivation(payload))
+        XCTAssertEqual(TransactionHistoryRecording.route(for: payload), .trustLineActivation)
         XCTAssertFalse(
             TransactionHistoryRecording.routesThroughKeysignRecorder(keysignPayload),
             "a TrustSet has no swap payload and no limit memo — it shares the recordSend fallback"
         )
+    }
+
+    /// The new branch must not have displaced anything that was already routed.
+    /// Each of these is a precedence the chain had before the activation case
+    /// was inserted, re-asserted from above and below it.
+    func testTheActivationBranchDoesNotDisplaceTheExistingRoutes() {
+        // Above it: a payload with nothing to record still records nothing.
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(
+                for: makeDonePayload(amountCrypto: "1 XRP", keysignPayload: nil, hash: "")
+            ),
+            .skip,
+            "an un-broadcast payload has no row to write"
+        )
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(
+                for: makeDonePayload(amountCrypto: "1 XRP", keysignPayload: nil, pubKeyECDSA: "")
+            ),
+            .skip,
+            "a preview payload carries no vault"
+        )
+        // Still above it: a limit-order cancel is suppressed even though the
+        // order's own row keeps its hash reachable.
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(
+                for: makeDonePayload(
+                    amountCrypto: "0 RUNE",
+                    keysignPayload: nil,
+                    memo: "m=<:100000000THOR.RUNE:15979057441BTC.BTC:0"
+                )
+            ),
+            .skip
+        )
+        // Below it: the co-signer's swap dispatch and the plain send fallback.
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(
+                for: makeDonePayload(
+                    amountCrypto: "1 RUNE",
+                    keysignPayload: makeThorchainPayload(memo: "=<:BTC.BTC:bc1qexample:1e6:va:50")
+                )
+            ),
+            .keysignPayload
+        )
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(
+                for: makeDonePayload(amountCrypto: "1 RUNE", keysignPayload: makeThorchainPayload())
+            ),
+            .send
+        )
+        XCTAssertEqual(
+            TransactionHistoryRecording.route(
+                for: makeDonePayload(amountCrypto: "1 XRP", keysignPayload: nil, verb: .claim)
+            ),
+            .skip,
+            "QBTC claims have no tx-history schema"
+        )
+    }
+
+    /// ⚠️ The exact regression, stated as a route: an XRPL TrustSet must never
+    /// come back `.send`. That is the single assertion that would have caught
+    /// the shipped bug.
+    func testATrustSetIsNeverRoutedToTheSendRow() {
+        for tokenId in ["\(Self.rlusdHex).\(Self.issuer)", "USD.\(Self.issuer)", "not-a-token-id"] {
+            let route = TransactionHistoryRecording.route(
+                for: makeDonePayload(
+                    amountCrypto: "\(Self.limitDisplayValue) RLUSD",
+                    keysignPayload: makeTrustSetPayload(tokenId: tokenId)
+                )
+            )
+            XCTAssertNotEqual(route, .send, "'\(tokenId)' would persist the trust-line limit as a transfer")
+            XCTAssertEqual(route, .trustLineActivation, "'\(tokenId)'")
+        }
     }
 
     /// ⚠️ Decided by the WIRE discriminator, never by whether the terms could be
@@ -102,6 +181,7 @@ final class TrustLineActivationRecordingTests: XCTestCase {
         )
 
         XCTAssertFalse(TransactionHistoryRecording.isTrustLineActivation(payload))
+        XCTAssertEqual(TransactionHistoryRecording.route(for: payload), .send)
     }
 
     /// Nothing on another chain, and nothing without a payload at all, can be
@@ -275,21 +355,26 @@ final class TrustLineActivationRecordingTests: XCTestCase {
     private func makeDonePayload(
         amountCrypto: String,
         keysignPayload: KeysignPayload?,
-        fromAddress: String = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        fromAddress: String = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+        hash: String = "TRUSTSETHASH",
+        pubKeyECDSA: String = "pubkey-ecdsa",
+        memo: String = "",
+        verb: TransactionActionVerb = .send
     ) -> TransactionDonePayload {
         TransactionDonePayload(
             coin: keysignPayload?.coin ?? .example,
             amountCrypto: amountCrypto,
             amountFiat: "",
-            hash: "TRUSTSETHASH",
+            hash: hash,
             explorerLink: "https://xrpscan.com/tx/TRUSTSETHASH",
-            memo: "",
+            memo: memo,
             isSend: true,
             fromAddress: fromAddress,
             toAddress: Self.issuer,
             fee: FeeDisplay(crypto: "0.000012 XRP", fiat: "$0.00003"),
             keysignPayload: keysignPayload,
-            pubKeyECDSA: "pubkey-ecdsa"
+            pubKeyECDSA: pubKeyECDSA,
+            verb: verb
         )
     }
 
@@ -309,7 +394,7 @@ final class TrustLineActivationRecordingTests: XCTestCase {
         )
     }
 
-    private func makeThorchainPayload() -> KeysignPayload {
+    private func makeThorchainPayload(memo: String? = nil) -> KeysignPayload {
         makePayload(
             coin: .example,
             toAmount: BigInt(1000),
@@ -319,14 +404,16 @@ final class TrustLineActivationRecordingTests: XCTestCase {
                 fee: 0,
                 isDeposit: true,
                 transactionType: 0
-            )
+            ),
+            memo: memo
         )
     }
 
     private func makePayload(
         coin: Coin,
         toAmount: BigInt,
-        chainSpecific: BlockChainSpecific
+        chainSpecific: BlockChainSpecific,
+        memo: String? = nil
     ) -> KeysignPayload {
         KeysignPayload(
             coin: coin,
@@ -334,7 +421,7 @@ final class TrustLineActivationRecordingTests: XCTestCase {
             toAmount: toAmount,
             chainSpecific: chainSpecific,
             utxos: [],
-            memo: nil,
+            memo: memo,
             swapPayload: nil,
             approvePayload: nil,
             vaultPubKeyECDSA: "pubkey-ecdsa",

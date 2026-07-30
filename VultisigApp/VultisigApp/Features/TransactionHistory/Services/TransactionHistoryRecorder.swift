@@ -328,8 +328,8 @@ final class TransactionHistoryRecorder {
     ///
     /// Pure and `static` so the row's CONTENT can be pinned by tests — the
     /// recorder is a `private init()` singleton writing to SwiftData, so the
-    /// wired path isn't reachable from a unit test. The routing that reaches it
-    /// is pinned separately by `TransactionHistoryRecording.isTrustLineActivation`.
+    /// wired path isn't reachable from a unit test. The precedence that reaches
+    /// it is pinned separately by `TransactionHistoryRecording.route(for:)`.
     static func trustLineActivationRow(
         txHash: String,
         pubKeyECDSA: String,
@@ -392,7 +392,36 @@ final class TransactionHistoryRecorder {
     ) {
         let isSwap = keysignPayload.swapPayload != nil
 
-        if isSwap, let swapPayload = keysignPayload.swapPayload {
+        if RippleTrustSetPresentation.isTrustSet(payload: keysignPayload) {
+            // An XRPL TrustSet never reaches here today — the unified recording
+            // entry point intercepts it first. The gate is duplicated anyway,
+            // for the reason `TransactionStatusPoller` duplicates its tracker
+            // gate: this method is the choke point every payload-driven row
+            // funnels through, and its `else` arm below is an unconditional
+            // `recordSend` whose amount would be the trust-line LIMIT. A caller
+            // added later must not be able to reintroduce a quadrillion-token
+            // row by routing here.
+            //
+            // Gated on the wire discriminator, not on whether the terms could be
+            // rendered — an unreadable TrustSet must degrade to a vaguer
+            // activation row, never to a transfer. The fee is empty because this
+            // path has none to hand, the same reason every branch below passes
+            // empty fees.
+            let display = RippleTrustSetPresentation.display(for: keysignPayload)
+            recordTrustLineActivation(
+                txHash: txHash,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                coin: keysignPayload.coin,
+                ticker: display?.ticker ?? keysignPayload.coin.ticker,
+                issuer: display?.issuer ?? keysignPayload.toAddress,
+                feeCrypto: .empty,
+                feeFiat: .empty,
+                explorerLink: ExplorerLinkBuilder.getExplorerURL(
+                    chain: keysignPayload.coin.chain,
+                    txid: txHash
+                )
+            )
+        } else if isSwap, let swapPayload = keysignPayload.swapPayload {
             recordSwap(
                 txHash: txHash,
                 approveTxHash: approveTxHash,
