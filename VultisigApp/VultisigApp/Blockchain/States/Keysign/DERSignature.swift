@@ -13,6 +13,16 @@ func encodeCanonicalDERSignature(r: [UInt8], s: [UInt8]) -> Data {
     func derInteger(_ value: Data) -> Data {
         var value = value
 
+        // Strip non-essential leading zero bytes first. `r` arrives as a
+        // fixed 32-byte scalar straight from the raw signature, not a
+        // minimal-length big-endian value like `s` (which is already minimal
+        // via BigUInt.serialize() below) — encoding it verbatim adds padding
+        // a strict node's DER check rejects as non-canonical whenever the
+        // true value needs fewer than 32 bytes.
+        while value.count > 1 && value.first == 0x00 && value[value.index(after: value.startIndex)] < 0x80 {
+            value.removeFirst()
+        }
+
         // Ensure the value is positive (prefix with 0x00 if highest bit is set)
         if value.first! >= 0x80 {
             value.insert(0x00, at: 0)
