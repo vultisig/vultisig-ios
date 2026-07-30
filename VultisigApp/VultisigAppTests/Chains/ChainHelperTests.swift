@@ -228,16 +228,33 @@ final class ChainHelperTests: XCTestCase {
     /// one re-baselined around the very regression it is meant to catch. It
     /// therefore drives the real signers through `computeDirectImageHashes`.
     func testEvmChainMatrixVectorsAreChainSpecific() throws {
+        // Declared, not derived from the fixtures. Reading the participating
+        // chains out of the data and comparing them to themselves would restate
+        // the same self-satisfying shape this test exists to avoid: the point is
+        // to pin WHICH chains the matrix is supposed to cover, so that swapping a
+        // target for another EVM chain fails here instead of silently passing on
+        // nine-still-unique hashes while a chain quietly loses its coverage.
+        let expectedChains: Set<Chain> = [
+            .ethereum,
+            .avalanche, .optimism, .base, .blast,
+            .cronosChain, .zksync, .mantle, .hyperliquid
+        ]
+
         var computedHashesByCase: [String: [String]] = [:]
+        var participatingChains: Set<Chain> = []
 
         for fixture in [ChainHelperFixture.evmChainMatrix, .evm] {
             for testCase in try decodeFixture(fixture) where testCase.keysignPayload.coin.isNativeToken {
                 let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
                 XCTAssertEqual(keysignPayload.coin.chainType, .EVM,
                                "\(testCase.name) is not an EVM payload, so it does not belong in this check")
+                participatingChains.insert(keysignPayload.coin.chain)
                 computedHashesByCase[testCase.name] = try computeDirectImageHashes(keysignPayload: keysignPayload)
             }
         }
+
+        XCTAssertEqual(participatingChains, expectedChains,
+                       "The EVM matrix no longer covers the intended chain set. Missing: \(expectedChains.subtracting(participatingChains).map(\.name).sorted()); unexpected: \(participatingChains.subtracting(expectedChains).map(\.name).sorted())")
 
         XCTAssertEqual(computedHashesByCase.count, ChainHelperFixture.evmChainMatrix.expectedCaseCount + 1,
                        "Expected every EVM matrix case plus the Ethereum native send to take part in this check, got \(computedHashesByCase.keys.sorted())")
