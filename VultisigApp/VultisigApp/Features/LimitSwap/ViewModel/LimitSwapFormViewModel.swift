@@ -207,6 +207,29 @@ final class LimitSwapFormViewModel {
         // estimate so a fee from a previous amount can never be snapshotted into
         // the placed order. A fresh estimate is re-fetched by the view.
         invalidateNetworkFeeEstimate()
+        invalidatePairChart()
+    }
+
+    /// Drop the pair chart and invalidate any in-flight fetch, SYNCHRONOUSLY.
+    ///
+    /// The series is priced in the OLD pair's units, so leaving it on screen
+    /// during the debounce leaves a live price input that belongs to a pair the
+    /// user is no longer trading. Dragging it then writes a value from the old
+    /// pair's domain into the new pair's target price — BTC/ETH's ~30 becoming
+    /// the target for BTC/USDC, whose real price is ~118,000 — and because a
+    /// drag is a deliberate edit it also bumps the edit sequence, suppressing
+    /// the auto-seed that would otherwise have corrected it. The order then
+    /// places at that price and fills immediately, at a catastrophic loss.
+    ///
+    /// Deliberately different from a RANGE switch, which keeps the outgoing
+    /// series on screen while the next one loads: there the units are unchanged,
+    /// so a briefly stale line is only stale, and clearing it collapses the card.
+    /// Here the units themselves are wrong, so there is nothing honest to show.
+    private func invalidatePairChart() {
+        chartRefreshTask?.cancel()
+        chartRequestID = UUID()
+        pairChart = nil
+        isLoadingPairChart = false
     }
 
     /// Drop the cached network-fee estimate AND invalidate any in-flight
@@ -370,6 +393,7 @@ final class LimitSwapFormViewModel {
         // sleep and repopulate `marketPriceRef` for the wrong pair.
         marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
+        invalidatePairChart()
     }
 
     func selectToAsset(_ asset: LimitSwapAsset) {
@@ -380,6 +404,7 @@ final class LimitSwapFormViewModel {
         pairUnroutableReason = nil
         marketPriceRequestID = UUID()
         invalidateNetworkFeeEstimate()
+        invalidatePairChart()
     }
 
     // MARK: - Async actions
