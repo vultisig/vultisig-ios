@@ -207,7 +207,11 @@ final class LimitSwapFormViewModel {
         // estimate so a fee from a previous amount can never be snapshotted into
         // the placed order. A fresh estimate is re-fetched by the view.
         invalidateNetworkFeeEstimate()
-        invalidatePairChart()
+        // The chart is deliberately NOT invalidated here. The series is keyed on
+        // the pair, range and currency — never on the amount — and nothing in
+        // this path re-triggers a fetch, so clearing it would blank the chart on
+        // the first keystroke into the amount field and leave it blank until the
+        // user switched range or swapped an asset.
     }
 
     /// Drop the pair chart and invalidate any in-flight fetch, SYNCHRONOUSLY.

@@ -535,11 +535,15 @@ private struct LimitPriceChartSection: View {
 
     @ViewBuilder
     private var reachHint: some View {
+        // Evaluated once and threaded through both consumers. Read as two
+        // computed properties, the reach scan walked the whole series twice on
+        // every body pass.
+        let reach = verdict
         HStack(spacing: 6) {
             Circle()
-                .fill(hintTint)
+                .fill(hintTint(for: reach))
                 .frame(width: 5, height: 5)
-            Text(hintText)
+            Text(hintText(for: reach))
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .lineLimit(2)
@@ -548,10 +552,15 @@ private struct LimitPriceChartSection: View {
     }
 
     private var verdict: LimitChartReach.Verdict {
-        LimitChartReach.evaluate(chart: chart, target: target, market: market)
+        // Same non-finite filter the chart layout applies to this series. On the
+        // raw points a NaN or infinite sample survives into `.notReached(highest:)`
+        // and reaches `Decimal(_: Double)`, which represents neither — so the
+        // hint would render from a value the chart itself had already discarded.
+        let sanitised = MarketChart(points: chart.points.filter(\.price.isFinite))
+        return LimitChartReach.evaluate(chart: sanitised, target: target, market: market)
     }
 
-    private var hintTint: Color {
+    private func hintTint(for verdict: LimitChartReach.Verdict) -> Color {
         switch verdict {
         case .atOrBelowMarket: return Theme.colors.alertError
         case .lastTraded: return Theme.colors.alertSuccess
@@ -559,7 +568,7 @@ private struct LimitPriceChartSection: View {
         }
     }
 
-    private var hintText: String {
+    private func hintText(for verdict: LimitChartReach.Verdict) -> String {
         switch verdict {
         case .atOrBelowMarket:
             return "limitSwap.chart.fillsImmediately".localized
