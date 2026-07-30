@@ -442,6 +442,7 @@
 "estNetworkFee" = "Procijenjena mrežna naknada";
 "evmChains" = "EVM lanci";
 "excessGasRefund" = "Povrat viška goriva";
+"expectedPayout" = "očekivana isplata";
 "expirationDate" = "Datum isteka";
 "expiresOn" = "Ističe na";
 "extendExpiration(inYears)" = "Produžite istek (u godinama)";

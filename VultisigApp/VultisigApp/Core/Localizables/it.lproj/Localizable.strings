@@ -442,6 +442,7 @@
 "estNetworkFee" = "Comm. di rete stimata";
 "evmChains" = "Catene EVM";
 "excessGasRefund" = "Rimborso del Gas in Eccesso";
+"expectedPayout" = "pagamento previsto";
 "expirationDate" = "Data di scadenza";
 "expiresOn" = "Scade";
 "extendExpiration(inYears)" = "Estendere la scadenza (in anni)";

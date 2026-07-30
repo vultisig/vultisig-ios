@@ -74,6 +74,21 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         }
     }
 
+    /// True for the native-protocol routes (THORChain on any network, MayaChain)
+    /// whose signed memo carries a `LIM` output floor. Mirrors
+    /// `SwapQuote.isNativeProtocolRoute` for the co-signer, which sees only the
+    /// serialized payload. Aggregator routes (1inch / LI.FI / KyberSwap /
+    /// Jupiter / SwapKit) sign opaque calldata or a pre-built transaction, so
+    /// whatever floor they enforce is not readable here.
+    var isNativeProtocolRoute: Bool {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return true
+        case .generic, .swapkit:
+            return false
+        }
+    }
+
     var isDeposit: Bool {
         switch self {
         case .mayachain(let payload):

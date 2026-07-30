@@ -6,8 +6,8 @@
 //  Maya swap memo into scientific notation so a large UTXO swap's memo fits its
 //  source chain's `OP_RETURN` byte cap. THORChain and Maya both parse
 //  `<mantissa>e<exponent>` (mantissa followed by `exponent` trailing zeros) in
-//  the LIM field at execution, so rewriting the memo before signing keeps the
-//  floor on every route without changing what the chain reads.
+//  the LIM field at execution, so rewriting the memo before signing keeps a real
+//  floor on routes the byte cap would otherwise force to no floor at all.
 //
 //  Rounding is always DOWN. For a market swap a lower floor is strictly more
 //  permissive: it can never wrongfully reject a fillable swap, only accept one
@@ -15,6 +15,11 @@
 //  `LimitSwapMemoBuilder`, which rounds a limit order's LIM UP — there raising
 //  the floor is the safe direction because the user must never receive less
 //  than their resting target.)
+//
+//  Because rounding moves the floor, the rewritten memo — not `quote.memo` — is
+//  the one that states what the chain will enforce. `assertedLimit(in:)` reads
+//  a floor back out of it, so the number the swap screens label "minimum" is
+//  the number the signature actually backs.
 //
 
 import BigInt
@@ -30,6 +35,19 @@ enum ThorchainMemoLimit {
     /// liquidity tolerance the floor already carries.
     private static let minSignificantDigits = 5
 
+    /// Largest `e<exponent>` a LIM may carry before it is treated as unreadable.
+    /// `compressed` never emits more than the digit count of a base-1e8 amount,
+    /// and a node-returned LIM is a plain integer, so anything beyond this is a
+    /// memo we don't understand — and expanding it would mean raising 10 to an
+    /// attacker-chosen power.
+    private static let maxLimitExponent = 64
+
+    /// THORNode parses the LIM as a `cosmos.Uint` and rejects a memo whose value
+    /// does not fit 256 bits. A wider number is therefore a memo the chain will
+    /// refuse outright — no swap, no floor — so we must not read a guarantee out
+    /// of it. Exclusive upper bound.
+    private static let limitUpperBound = BigInt(2).power(256)
+
     /// The UTF-8 byte budget a chain's THORChain / Maya swap memo must fit, or
     /// `nil` when the source chain carries no such cap.
     ///
@@ -39,6 +57,14 @@ enum ThorchainMemoLimit {
     /// 80-byte constraint, so no compression is applied there.
     static func memoByteLimit(for chain: Chain) -> Int? {
         chain.chainType == .UTXO ? 80 : nil
+    }
+
+    /// The memo a THORChain / Maya swap out of `sourceChain` is actually signed
+    /// with: the node's memo after whatever `OP_RETURN` compression this app
+    /// applies on the way to the signer. One definition so the payload builder
+    /// and the verify/co-sign display can never disagree about what gets signed.
+    static func signedMemo(_ memo: String, sourceChain: Chain) -> String {
+        compressed(memo, maxBytes: memoByteLimit(for: sourceChain))
     }
 
     /// Rewrites the LIM field of a THORChain / Maya swap memo into scientific
@@ -112,5 +138,104 @@ enum ThorchainMemoLimit {
         // emit one we know is over the cap.
         logger.debug("THORChain swap memo LIM could not be compressed within \(maxBytes) bytes; leaving memo unchanged")
         return memo
+    }
+
+    /// THORChain and MayaChain both spell the swap action `SWAP`, `=` or `s`,
+    /// case-insensitively. Every other action (`ADD`, `WITHDRAW`, `DONATE`,
+    /// `LOAN+`, …) lays its fields out differently, so its 4th field is not a
+    /// `LIM/INTERVAL/QUANTITY` triple and must not be read as one.
+    static func isSwapAction(_ field: some StringProtocol) -> Bool {
+        switch field.lowercased() {
+        case "swap", "=", "s":
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// The minimum output a THORChain / Maya swap memo asserts (`LIM`), in the
+    /// node's own base units — the same units as `expected_amount_out`.
+    ///
+    /// Read this off the memo that will actually be **signed**, not off
+    /// `quote.memo`: for a UTXO source `compressed(_:maxBytes:)` rewrites the
+    /// floor into `<mantissa>e<exponent>` and rounds it DOWN, so the quote's memo
+    /// overstates what the chain will enforce. Both spellings are accepted here
+    /// for that reason — the plain integer the node returns, and the scientific
+    /// form we may have substituted.
+    ///
+    /// Returns `nil` — never a guess — when the memo is not a swap memo, when any
+    /// term of the `LIM/INTERVAL/QUANTITY` triple is not something we can read,
+    /// or when the floor is `0` (a swap that asserts no minimum, which is what a
+    /// user-set 0% slippage produces). Callers must then show no minimum at all
+    /// rather than a number the signed transaction does not back.
+    static func assertedLimit(in memo: String) -> BigInt? {
+        let fields = memo.split(separator: ":", omittingEmptySubsequences: false)
+        guard fields.count >= 4, isSwapAction(fields[0]) else { return nil }
+
+        // All-or-nothing on the whole triple, matching the sibling parser that
+        // feeds the proto. THORNode reads `LIM/INTERVAL/QUANTITY` as one field
+        // and rejects the memo outright if any term is malformed — so a LIM
+        // salvaged from a triple we could not fully read is a floor the chain
+        // would never get as far as enforcing.
+        let terms = fields[3].split(separator: "/", omittingEmptySubsequences: false)
+        guard let limTerm = terms.first, terms.count <= 3 else { return nil }
+        // Only the LIM is ever rewritten into scientific notation; the streaming
+        // terms are plain integers in both the node's spelling and our own.
+        guard terms.dropFirst().allSatisfy({ isPlainDecimalDigits($0) }) else { return nil }
+
+        guard let limit = parseLimitTerm(limTerm), limit > 0 else { return nil }
+        return limit
+    }
+
+    /// `1234` or `1234e5` (mantissa followed by `exponent` trailing zeros) — the
+    /// two spellings a LIM we are willing to vouch for can take. ASCII digits
+    /// only: `Character.isNumber` alone also accepts non-ASCII numerals and
+    /// fractions, which `BigInt` would then read as something the node never
+    /// wrote. Values wider than the node's own `cosmos.Uint` are refused too.
+    ///
+    /// The exponent ceiling is deliberately below the node's own (77): the only
+    /// scientific LIM this app ever has to read is one `compressed(_:maxBytes:)`
+    /// wrote, whose exponent cannot exceed the digit count of a base-1e8 amount.
+    /// A memo past that is one we did not produce and the node did not return.
+    private static func parseLimitTerm(_ term: some StringProtocol) -> BigInt? {
+        let parts = term.split(separator: "e", omittingEmptySubsequences: false)
+        guard let mantissaText = parts.first, isPlainDecimalDigits(mantissaText),
+              let mantissa = BigInt(String(mantissaText)) else {
+            return nil
+        }
+
+        let value: BigInt
+        switch parts.count {
+        case 1:
+            value = mantissa
+        case 2:
+            guard isPlainDecimalDigits(parts[1]),
+                  let exponent = Int(parts[1]), exponent <= maxLimitExponent else {
+                return nil
+            }
+            value = mantissa * BigInt(10).power(exponent)
+        default:
+            return nil
+        }
+
+        guard value < limitUpperBound else { return nil }
+        return value
+    }
+
+    /// A non-empty run of ASCII decimal digits, read at its numeric value.
+    ///
+    /// Leading zeros pass and mean what they say — `01` is one. That matches
+    /// THORNode, which reads every numeric memo term through `big.Int.SetString`
+    /// / `big.ParseFloat` / `strconv.ParseUint` at base 10, all of which accept
+    /// zero-padding. Rejecting `01` here would hide a floor the network would
+    /// have enforced, which is the same failure as showing one it would not.
+    ///
+    /// Where this parser IS stricter than the node — an empty term (the node
+    /// substitutes `0`), a fractional LIM (the node truncates) — the difference
+    /// is only reachable through a memo neither the node's own memo builder nor
+    /// `compressed(_:maxBytes:)` can emit, and it fails toward showing no
+    /// minimum, which is the safe direction for a number labelled "minimum".
+    private static func isPlainDecimalDigits(_ text: some StringProtocol) -> Bool {
+        !text.isEmpty && text.allSatisfy { $0.isASCII && $0.isNumber }
     }
 }

@@ -194,6 +194,49 @@ enum SwapCryptoLogic {
         }
     }
 
+    /// The minimum destination amount the transaction this swap will sign
+    /// actually enforces, in `toCoin` units — or `nil` when the route enforces
+    /// nothing this app can see.
+    ///
+    /// Only the native routes assert a floor: THORChain / MayaChain bake
+    /// `LIM = expected_amount_out × (10_000 − liquidity_tolerance_bps) / 10_000`
+    /// into the memo they return, and that memo is signed verbatim. So the floor
+    /// is read back out of the memo — after the same `OP_RETURN` compression the
+    /// payload builder applies — rather than re-derived from the tolerance we
+    /// sent. The node owns the rounding and the streaming split; a client-side
+    /// re-derivation would drift from it, which is the whole reason the displayed
+    /// "minimum" was wrong to begin with.
+    ///
+    /// `nil` for every aggregator route (1inch / KyberSwap / LI.FI / Jupiter /
+    /// SwapKit): they return opaque calldata or a pre-built transaction, so
+    /// whatever floor their own router enforces is not exposed here. `nil` too
+    /// when the memo asserts `LIM 0` — what a user-set 0% slippage produces —
+    /// because that swap genuinely has no floor. Callers must render no minimum
+    /// in those cases, never a stand-in.
+    static func signedMinimumOutput(quote: SwapQuote?, fromCoin: Coin, toCoin: Coin) -> Decimal? {
+        guard let quote else { return nil }
+        switch quote {
+        case let .mayachain(quote),
+             let .thorchain(quote),
+             let .thorchainChainnet(quote),
+             let .thorchainStagenet(quote):
+            let signedMemo = ThorchainMemoLimit.signedMemo(quote.memo, sourceChain: fromCoin.chain)
+            guard let limit = ThorchainMemoLimit.assertedLimit(in: signedMemo) else { return nil }
+            return Decimal(limit) / toCoin.thorswapMultiplier
+        case .oneinch, .kyberswap, .lifi, .jupiter, .swapkit:
+            return nil
+        }
+    }
+
+    /// The "min. payout: 0.00032334 ETH" line that sits under a swap's
+    /// destination amount. Built here rather than at each call site so the
+    /// initiator's verify screen and the co-signer's confirm screen render the
+    /// identical string for the identical swap — the point of showing it at all
+    /// is that both devices consent to the same number.
+    static func minPayoutCaption(amount: Decimal, ticker: String) -> String {
+        "\("minPayout".localized): \(amount.formatForDisplay()) \(ticker)"
+    }
+
     static func router(quote: SwapQuote?) -> String? {
         quote?.router
     }

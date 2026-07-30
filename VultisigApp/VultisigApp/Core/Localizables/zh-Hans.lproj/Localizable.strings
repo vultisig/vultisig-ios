@@ -442,6 +442,7 @@
 "estNetworkFee" = "预计网络费用";
 "evmChains" = "EVM 链";
 "excessGasRefund" = "多余 Gas 退款";
+"expectedPayout" = "预期支付";
 "expirationDate" = "到期日期";
 "expiresOn" = "到期于";
 "extendExpiration(inYears)" = "延长到期时间（年）";

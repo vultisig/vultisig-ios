@@ -440,6 +440,7 @@
 "estNetworkFee" = "예상 네트워크 수수료";
 "evmChains" = "EVM 체인";
 "excessGasRefund" = "초과 가스 환불";
+"expectedPayout" = "예상 지급";
 "expirationDate" = "만료 날짜";
 "expiresOn" = "만료 날짜";
 "extendExpiration(inYears)" = "만료 연장 (년 단위)";
