@@ -639,7 +639,12 @@ private struct LimitAssetChip: View {
                         logo: asset.logo,
                         size: CGSize(width: iconSize, height: iconSize),
                         ticker: asset.ticker,
-                        tokenChainLogo: asset.chainLogo
+                        // No chain badge on a native asset — its icon already IS
+                        // the chain, so the badge repeats it. `LimitAssetRow`
+                        // has always done this; the chips did not, so RUNE and
+                        // ETH carried a redundant dot in the price card while
+                        // the same assets were clean in the Sell/Buy rows.
+                        tokenChainLogo: asset.isNativeToken ? nil : asset.chainLogo
                     )
                 }
                 Text(asset.ticker)
