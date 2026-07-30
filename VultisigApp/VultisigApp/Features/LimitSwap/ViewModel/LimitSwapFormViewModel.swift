@@ -182,6 +182,19 @@ final class LimitSwapFormViewModel {
 
     var isLoadingPairChart = false
 
+    /// Whether the price chart is showing. Persisted, and **collapsed by
+    /// default**: the chart is an optional way to set a price the form can
+    /// already set numerically, so it opts in rather than claiming the vertical
+    /// space of everyone who does not want it.
+    ///
+    /// `UserDefaults.bool` returns `false` for an unset key, so the default
+    /// falls out of the storage rather than being restated here.
+    var isChartExpanded: Bool {
+        didSet { UserDefaults.standard.set(isChartExpanded, forKey: Self.chartExpandedKey) }
+    }
+
+    static let chartExpandedKey = "limitSwapChartExpanded"
+
     /// Invalidation token for the chart fetch, mirroring the market-price and
     /// fee refreshes: a range switch or pair change must not have an older
     /// in-flight series land on top of a newer one.
@@ -197,6 +210,7 @@ final class LimitSwapFormViewModel {
         self.vault = vault
         self.interactor = interactor
         self.marketDataService = marketDataService
+        self.isChartExpanded = UserDefaults.standard.bool(forKey: Self.chartExpandedKey)
     }
 
     // MARK: - User input mutations
@@ -350,7 +364,30 @@ final class LimitSwapFormViewModel {
     /// The previous series is deliberately left on screen while a new one loads:
     /// clearing it first collapses the card's height and the whole form jumps,
     /// which on a range switch is a worse experience than a briefly stale line.
+    /// Show or hide the chart, persisting the choice.
+    ///
+    /// Expanding is what triggers the first fetch — while collapsed nothing is
+    /// requested at all, so a user who never opens it costs no market-data
+    /// traffic. The loading flag is raised synchronously so the content does not
+    /// render one frame of "unavailable" before the request has started.
+    func setChartExpanded(_ expanded: Bool, currency: SettingsCurrency) {
+        isChartExpanded = expanded
+        guard expanded, pairChart == nil else { return }
+        isLoadingPairChart = true
+        chartRefreshTask?.cancel()
+        chartRefreshTask = Task { [weak self] in
+            await self?.refreshPairChart(currency: currency)
+        }
+    }
+
     func refreshPairChart(currency: SettingsCurrency) async {
+        // Collapsed means nobody is looking, so the two requests this would make
+        // are pure waste — on open and again on every pair change. The chart is
+        // fetched when it is first expanded instead.
+        guard isChartExpanded else {
+            isLoadingPairChart = false
+            return
+        }
         let requestID = UUID()
         chartRequestID = requestID
         isLoadingPairChart = true

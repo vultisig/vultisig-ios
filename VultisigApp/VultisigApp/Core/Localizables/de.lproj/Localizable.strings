@@ -703,6 +703,8 @@
 "limitSwap.chart.market" = "Markt";
 "limitSwap.chart.notReached" = "In diesem Zeitraum nicht erreicht — Höchstwert war %@.";
 "limitSwap.chart.targetPrice" = "Zielpreis";
+"limitSwap.chart.title" = "Preisverlauf";
+"limitSwap.chart.unavailable" = "Kein Preisverlauf für dieses Paar.";
 "limitSwap.confirmation.byteCapError.format" = "Memo zu lang: %d Bytes (max %d). Versuche eine kürzere Zieladresse oder eine Nicht-UTXO-Quelle.";
 "limitSwap.detail.copyTxHash" = "TX-Hash kopieren";
 "limitSwap.detail.filled" = "Ausgeführt";

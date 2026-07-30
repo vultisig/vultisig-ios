@@ -701,6 +701,8 @@
 "limitSwap.chart.market" = "시장가";
 "limitSwap.chart.notReached" = "이 기간에는 도달하지 않음 — 최고가는 %@.";
 "limitSwap.chart.targetPrice" = "목표 가격";
+"limitSwap.chart.title" = "가격 차트";
+"limitSwap.chart.unavailable" = "이 페어의 가격 기록이 없습니다.";
 "limitSwap.confirmation.byteCapError.format" = "메모가 너무 깁니다: %d바이트(최대 %d). 더 짧은 대상 주소 또는 비 UTXO 소스를 사용해 보세요.";
 "limitSwap.detail.copyTxHash" = "TX 해시 복사";
 "limitSwap.detail.filled" = "체결";

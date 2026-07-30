@@ -703,6 +703,8 @@
 "limitSwap.chart.market" = "Tržište";
 "limitSwap.chart.notReached" = "Nije dosegnuto u ovom rasponu — najviše je bilo %@.";
 "limitSwap.chart.targetPrice" = "Ciljna cijena";
+"limitSwap.chart.title" = "Grafikon cijena";
+"limitSwap.chart.unavailable" = "Nema povijesti cijena za ovaj par.";
 "limitSwap.confirmation.byteCapError.format" = "Memo predugačak: %d bajtova (najviše %d). Pokušaj kraću odredišnu adresu ili izvor koji nije UTXO.";
 "limitSwap.detail.copyTxHash" = "Kopiraj TX hash";
 "limitSwap.detail.filled" = "Izvršeno";
