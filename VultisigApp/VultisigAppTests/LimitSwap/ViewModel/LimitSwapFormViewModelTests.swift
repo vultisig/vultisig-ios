@@ -22,16 +22,23 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
         // Vault holds matching coins for source (BTC) + target (ETH) so
         // destinationAddress() can resolve.
-        vault.coins.append(Coin(
+        let btc = Coin(
             asset: CoinMeta.make(chain: .bitcoin, ticker: "BTC", decimals: 8),
             address: "bc1qsourceaddress0000000000000000000000000",
             hexPublicKey: "btc-pubkey"
-        ))
-        vault.coins.append(Coin(
+        )
+        // Funded well above every fixture amount so tests that are about a
+        // DIFFERENT `canPlaceOrder` term aren't silently blocked by the balance
+        // gate. The balance-specific tests set their own balances.
+        btc.rawBalance = "1000000000"  // 10 BTC
+        vault.coins.append(btc)
+        let eth = Coin(
             asset: CoinMeta.make(chain: .ethereum, ticker: "ETH", decimals: 18),
             address: "0xethdestaddress00000000000000000000000000",
             hexPublicKey: "eth-pubkey"
-        ))
+        )
+        eth.rawBalance = "1000000000000000000"  // 1 ETH
+        vault.coins.append(eth)
 
         quoteService = MockLimitSwapQuoteService()
         interactor = DefaultLimitSwapInteractor(quoteService: quoteService)
@@ -592,7 +599,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             chain: .solana, ticker: "SOL", decimals: 9,
             contractAddress: "", isNativeToken: true
         )
-        XCTAssertFalse(vm.canPlaceOrder, "An unencodable target must disable the CTA")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "An unencodable target must disable the CTA")
     }
 
     func testCanPlaceOrderBlockedWhenNoDestinationAddress() {
@@ -602,7 +609,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = 16  // isolate the destination cause from the probe gate
-        XCTAssertFalse(vm.canPlaceOrder, "No destination address must disable the CTA")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "No destination address must disable the CTA")
     }
 
     func testRuneToTcyIsPlaceable() {
@@ -755,10 +762,10 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.draft.targetPrice = 16
         vm.marketPriceRef = 16  // positive routability proof (a resolved quote)
         vm.networkFeeEstimate = .zero
-        XCTAssertFalse(vm.canPlaceOrder, "Must be blocked while the network fee is unresolved")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "Must be blocked while the network fee is unresolved")
 
         vm.networkFeeEstimate = BigInt(4_200)
-        XCTAssertTrue(vm.canPlaceOrder, "Placeable once amount, price, queue gate, fee and market ref are all resolved")
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()), "Placeable once amount, price, queue gate, fee and market ref are all resolved")
     }
 
     func testCanPlaceOrderRequiresSuccessfulMarketProbe() {
@@ -770,10 +777,10 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = nil
-        XCTAssertFalse(vm.canPlaceOrder, "Not placeable until the market probe proves the pair routable")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "Not placeable until the market probe proves the pair routable")
 
         vm.marketPriceRef = 16
-        XCTAssertTrue(vm.canPlaceOrder)
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()))
     }
 
     func testCanPlaceOrderFalseWhenQueueDisabled() {
@@ -781,7 +788,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.advancedSwapQueueEnabled = false
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
-        XCTAssertFalse(vm.canPlaceOrder)
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()))
     }
 
     func testCanPlaceOrderFalseWhenAmountOrPriceMissing() {
@@ -789,12 +796,148 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.advancedSwapQueueEnabled = true
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
-        XCTAssertFalse(vm.canPlaceOrder, "Zero amount is not placeable")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "Zero amount is not placeable")
 
         vm.amountChanged(BigInt(100_000_000))
         vm.networkFeeEstimate = BigInt(4_200)  // amountChanged clears it; restore
         vm.draft.targetPrice = 0
-        XCTAssertFalse(vm.canPlaceOrder, "Zero price is not placeable")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "Zero price is not placeable")
+    }
+
+    // MARK: - balance gate (the sell amount must be affordable, on THIS screen)
+
+    func testCanPlaceOrderBlockedWhenAmountExceedsBalance() {
+        // The whole point of the gate: an order for more than the vault holds
+        // must be refused on the FORM, not one screen later at Verify.
+        let btc = btcCoin()
+        btc.rawBalance = "100000000"  // 1 BTC
+        let vm = makeReadyToPlace(sourceAmount: BigInt(200_000_000))  // 2 BTC
+
+        XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientFunds(sourceTicker: "BTC"))
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc), "An over-balance amount must disable Place Order")
+
+        // Both directions, so deleting the term fails this test either way.
+        vm.amountChanged(BigInt(50_000_000))  // 0.5 BTC
+        vm.networkFeeEstimate = BigInt(4_200)  // amountChanged clears it; restore
+        XCTAssertEqual(vm.balanceState(sourceCoin: btc), .sufficient)
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btc), "An affordable amount must re-enable Place Order")
+    }
+
+    func testAmountThatFitsButLeavesNothingForGasIsReportedAsGasNotFunds() {
+        // Market parity: the source coin pays its own gas, the amount alone fits,
+        // so this is a GAS problem. Collapsing the two into one message — or
+        // calling it insufficient funds — is the failure this pins.
+        let btc = btcCoin()
+        btc.rawBalance = "100000000"  // exactly 1 BTC
+        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000))  // exactly 1 BTC
+        vm.networkFeeEstimate = BigInt(10_000)
+
+        XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientGas(feeTicker: "BTC"))
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc))
+    }
+
+    func testNoGasErrorIsShownWhileTheFeeEstimateIsInFlight() {
+        // `networkFeeEstimate` is dropped to 0 on every input change. A gas
+        // verdict is not knowable in that window, so none is shown — the form
+        // must never display a gas error it would have to withdraw a frame later.
+        let btc = btcCoin()
+        btc.rawBalance = "100000000"
+        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000))
+        vm.networkFeeEstimate = .zero
+
+        let inFlight = vm.balanceState(sourceCoin: btc)
+        XCTAssertEqual(inFlight, .indeterminate)
+        XCTAssertNil(inFlight.noticeMessage, "No notice may be rendered from an unresolved fee")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc), "Placement stays blocked until the fee resolves")
+
+        // …and the moment the estimate lands, the real verdict appears.
+        vm.networkFeeEstimate = BigInt(10_000)
+        XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientGas(feeTicker: "BTC"))
+    }
+
+    func testInsufficientFundsIsStillReportedWhileTheFeeEstimateIsInFlight() {
+        // The funds question is fee-independent, so suppressing it during the
+        // in-flight window would withhold an answer that cannot change.
+        let btc = btcCoin()
+        btc.rawBalance = "100000000"  // 1 BTC
+        let vm = makeReadyToPlace(sourceAmount: BigInt(200_000_000))  // 2 BTC
+        vm.networkFeeEstimate = .zero
+
+        let state = vm.balanceState(sourceCoin: btc)
+        XCTAssertEqual(state, .insufficientFunds(sourceTicker: "BTC"))
+        XCTAssertNotNil(state.noticeMessage)
+    }
+
+    func testErc20SourceJudgesGasAgainstTheNativeSiblingNotTheToken() {
+        // Gas is paid in the chain's NATIVE coin: an ERC20 source pays ETH. The
+        // fee is in wei, so reading it against the token's 6 decimals would make
+        // it look like ~1e9 tokens and report a false `insufficientGas` even with
+        // a funded ETH sibling — the exact bug `SwapCryptoLogic.feeCoin` exists
+        // to prevent. The second assertion is what catches that.
+        let usdc = Coin(
+            asset: CoinMeta.make(chain: .ethereum, ticker: "USDC", decimals: 6, isNativeToken: false),
+            address: "0xethdestaddress00000000000000000000000000",
+            hexPublicKey: "usdc-pubkey"
+        )
+        usdc.rawBalance = "1000000000"  // 1,000 USDC — the amount itself is covered
+        vault.coins.append(usdc)
+        let eth = ethCoin()
+        eth.rawBalance = "0"  // no gas at all
+
+        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000), fromAsset: LimitSwapAsset(coin: usdc))
+        vm.networkFeeEstimate = BigInt(1_050_000_000_000_000)  // 0.00105 ETH in wei
+
+        XCTAssertEqual(vm.balanceState(sourceCoin: usdc), .insufficientGas(feeTicker: "ETH"))
+
+        eth.rawBalance = "1000000000000000000"  // 1 ETH
+        XCTAssertEqual(
+            vm.balanceState(sourceCoin: usdc),
+            .sufficient,
+            "A wei fee must be judged in ETH's 18 decimals, not the token's 6"
+        )
+    }
+
+    func testBalanceStateAgreesWithTheMarketSwapRuleForTheSameInput() {
+        // Anti-drift: the limit form must not grow a second affordability rule.
+        // Same coins, same amount, same fee ⇒ same verdict as the market tab.
+        let btc = btcCoin()
+        btc.rawBalance = "100000000"  // 1 BTC
+        let vm = makeReadyToPlace(sourceAmount: BigInt(99_999_000))  // 0.99999 BTC
+        vm.networkFeeEstimate = BigInt(10_000)
+
+        let marketVerdict = SwapCryptoLogic.balanceError(
+            fromCoin: btc,
+            feeCoin: btc,
+            fromAmount: "0.99999",
+            fee: BigInt(10_000)
+        )
+        XCTAssertEqual(marketVerdict, .insufficientGas)
+        XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientGas(feeTicker: "BTC"))
+    }
+
+    func testBalanceStateIsIndeterminateWhenTheCoinIsNotTheDraftSource() {
+        // SwiftUI can render one frame with a newly-picked coin and the previous
+        // draft asset. Judging a BTC amount against an ETH balance for that frame
+        // would flash a bogus row, so the verdict is withheld and placement fails
+        // closed.
+        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000))  // draft source is BTC
+
+        XCTAssertEqual(vm.balanceState(sourceCoin: ethCoin()), .indeterminate)
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: ethCoin()))
+    }
+
+    func testBalanceNoticesNameTheAssetAndDistinguishFundsFromGas() {
+        let funds = LimitSwapBalanceState.insufficientFunds(sourceTicker: "BTC").noticeMessage
+        let gas = LimitSwapBalanceState.insufficientGas(feeTicker: "ETH").noticeMessage
+
+        XCTAssertEqual(funds?.contains("BTC"), true, "The funds notice must name the source asset")
+        XCTAssertEqual(gas?.contains("ETH"), true, "The gas notice must name the fee asset")
+        XCTAssertNotEqual(funds, gas, "The two cases must not collapse into one message")
+
+        XCTAssertNil(LimitSwapBalanceState.sufficient.noticeMessage)
+        XCTAssertNil(LimitSwapBalanceState.indeterminate.noticeMessage)
+        XCTAssertFalse(LimitSwapBalanceState.sufficient.blocksPlacement)
+        XCTAssertTrue(LimitSwapBalanceState.indeterminate.blocksPlacement, "Unknown must fail closed")
     }
 
     // MARK: - pair routability gate (poolless pairs must not be placeable)
@@ -875,13 +1018,13 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = 16
-        XCTAssertTrue(vm.canPlaceOrder)
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()))
 
         vm.pairUnroutableReason = .noRoute
-        XCTAssertFalse(vm.canPlaceOrder, "A pair THORChain can't route must not be placeable")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "A pair THORChain can't route must not be placeable")
 
         vm.pairUnroutableReason = nil
-        XCTAssertTrue(vm.canPlaceOrder)
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()))
     }
 
     func testSelectFromAssetClearsUnroutableReason() {
@@ -952,6 +1095,29 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             vault: vault,
             interactor: interactor
         )
+    }
+
+    /// A draft with every NON-balance `canPlaceOrder` term already satisfied, so
+    /// a `false` verdict in the balance tests can only come from the balance gate.
+    private func makeReadyToPlace(
+        sourceAmount: BigInt,
+        fromAsset: LimitSwapAsset? = nil
+    ) -> LimitSwapFormViewModel {
+        let draft = LimitSwapDraft(
+            fromAsset: fromAsset ?? btcAsset(),
+            toAsset: ethAsset(),
+            sourceAmount: sourceAmount
+        )
+        let vm = LimitSwapFormViewModel(
+            initialDraft: draft,
+            vault: vault,
+            interactor: interactor
+        )
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        return vm
     }
 
     /// The vault's BTC / ETH coins (installed in `setUp`) — for VM methods that
