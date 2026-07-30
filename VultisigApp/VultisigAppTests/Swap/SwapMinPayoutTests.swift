@@ -263,6 +263,39 @@ final class SwapMinPayoutTests: XCTestCase {
         XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:999999999999999999999999999999e60/1/0"))
     }
 
+    /// Zero-padded terms are read at their value, because that is what the
+    /// network does with them: every numeric memo term reaches THORNode through
+    /// `big.Int.SetString` / `big.ParseFloat` / `strconv.ParseUint` at base 10,
+    /// and all three accept zero-padding. A padded LIM therefore names a floor
+    /// the chain WOULD enforce — refusing to read it would hide a real
+    /// guarantee, which is the same disservice as inventing one.
+    func testAssertedLimitReadsZeroPaddedTermsAtTheirValueLikeTheNode() {
+        XCTAssertEqual(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:01/1/0"), BigInt(1))
+        XCTAssertEqual(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:001/1/0"), BigInt(1))
+        XCTAssertEqual(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:032334:vi:0"), BigInt(32_334))
+        // `1e00` is one, exactly as the node's own mantissa/exponent split reads it.
+        XCTAssertEqual(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:1e00/1/0"), BigInt(1))
+        // Padding in the streaming terms is the node's reading too.
+        XCTAssertEqual(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:32334/01/003"), BigInt(32_334))
+        // A padded value that IS zero still asserts no floor.
+        XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:00/1/0"))
+    }
+
+    /// The three shapes THORNode accepts that this reader deliberately refuses.
+    /// None is reachable from a real memo — the node's own memo builder emits
+    /// none of them and `compressed(_:maxBytes:)` preserves its input's spelling
+    /// — and refusing them hides a floor rather than inventing one, which is the
+    /// safe direction for a number the UI labels "minimum".
+    func testAssertedLimitIsStricterThanTheNodeOnlyWhereThatFailsSafe() {
+        // The node substitutes "0" for an empty streaming term.
+        XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:32334//"))
+        // The node truncates a fractional LIM (to 32334).
+        XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:32334.9/1/0"))
+        // The node's exponent ceiling is 77; ours is lower, because the only
+        // scientific LIM we ever have to read is one `compressed` wrote.
+        XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:1e70/1/0"))
+    }
+
     // MARK: - Co-signer
 
     /// The WYSIWYS half: the peer approving the swap must see the floor that the

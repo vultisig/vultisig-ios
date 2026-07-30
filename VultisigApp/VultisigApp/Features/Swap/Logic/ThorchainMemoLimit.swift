@@ -181,20 +181,25 @@ enum ThorchainMemoLimit {
         guard let limTerm = terms.first, terms.count <= 3 else { return nil }
         // Only the LIM is ever rewritten into scientific notation; the streaming
         // terms are plain integers in both the node's spelling and our own.
-        guard terms.dropFirst().allSatisfy({ isCanonicalDigits($0) }) else { return nil }
+        guard terms.dropFirst().allSatisfy({ isPlainDecimalDigits($0) }) else { return nil }
 
         guard let limit = parseLimitTerm(limTerm), limit > 0 else { return nil }
         return limit
     }
 
     /// `1234` or `1234e5` (mantissa followed by `exponent` trailing zeros) — the
-    /// only two spellings a LIM we are willing to vouch for can take. ASCII
-    /// digits only: `Character.isNumber` alone also accepts non-ASCII numerals
-    /// and fractions, which `BigInt` would then read as something the node never
+    /// two spellings a LIM we are willing to vouch for can take. ASCII digits
+    /// only: `Character.isNumber` alone also accepts non-ASCII numerals and
+    /// fractions, which `BigInt` would then read as something the node never
     /// wrote. Values wider than the node's own `cosmos.Uint` are refused too.
+    ///
+    /// The exponent ceiling is deliberately below the node's own (77): the only
+    /// scientific LIM this app ever has to read is one `compressed(_:maxBytes:)`
+    /// wrote, whose exponent cannot exceed the digit count of a base-1e8 amount.
+    /// A memo past that is one we did not produce and the node did not return.
     private static func parseLimitTerm(_ term: some StringProtocol) -> BigInt? {
         let parts = term.split(separator: "e", omittingEmptySubsequences: false)
-        guard let mantissaText = parts.first, isCanonicalDigits(mantissaText),
+        guard let mantissaText = parts.first, isPlainDecimalDigits(mantissaText),
               let mantissa = BigInt(String(mantissaText)) else {
             return nil
         }
@@ -204,7 +209,7 @@ enum ThorchainMemoLimit {
         case 1:
             value = mantissa
         case 2:
-            guard isCanonicalDigits(parts[1]),
+            guard isPlainDecimalDigits(parts[1]),
                   let exponent = Int(parts[1]), exponent <= maxLimitExponent else {
                 return nil
             }
@@ -217,7 +222,20 @@ enum ThorchainMemoLimit {
         return value
     }
 
-    private static func isCanonicalDigits(_ text: some StringProtocol) -> Bool {
+    /// A non-empty run of ASCII decimal digits, read at its numeric value.
+    ///
+    /// Leading zeros pass and mean what they say — `01` is one. That matches
+    /// THORNode, which reads every numeric memo term through `big.Int.SetString`
+    /// / `big.ParseFloat` / `strconv.ParseUint` at base 10, all of which accept
+    /// zero-padding. Rejecting `01` here would hide a floor the network would
+    /// have enforced, which is the same failure as showing one it would not.
+    ///
+    /// Where this parser IS stricter than the node — an empty term (the node
+    /// substitutes `0`), a fractional LIM (the node truncates) — the difference
+    /// is only reachable through a memo neither the node's own memo builder nor
+    /// `compressed(_:maxBytes:)` can emit, and it fails toward showing no
+    /// minimum, which is the safe direction for a number labelled "minimum".
+    private static func isPlainDecimalDigits(_ text: some StringProtocol) -> Bool {
         !text.isEmpty && text.allSatisfy { $0.isASCII && $0.isNumber }
     }
 }
