@@ -6,8 +6,8 @@
 //  Maya swap memo into scientific notation so a large UTXO swap's memo fits its
 //  source chain's `OP_RETURN` byte cap. THORChain and Maya both parse
 //  `<mantissa>e<exponent>` (mantissa followed by `exponent` trailing zeros) in
-//  the LIM field at execution, so rewriting the memo before signing keeps the
-//  floor on every route without changing what the chain reads.
+//  the LIM field at execution, so rewriting the memo before signing keeps a real
+//  floor on routes the byte cap would otherwise force to no floor at all.
 //
 //  Rounding is always DOWN. For a market swap a lower floor is strictly more
 //  permissive: it can never wrongfully reject a fillable swap, only accept one
@@ -15,6 +15,11 @@
 //  `LimitSwapMemoBuilder`, which rounds a limit order's LIM UP — there raising
 //  the floor is the safe direction because the user must never receive less
 //  than their resting target.)
+//
+//  Because rounding moves the floor, the rewritten memo — not `quote.memo` — is
+//  the one that states what the chain will enforce. `assertedLimit(in:)` reads
+//  a floor back out of it, so the number the swap screens label "minimum" is
+//  the number the signature actually backs.
 //
 
 import BigInt

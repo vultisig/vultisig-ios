@@ -170,9 +170,11 @@ extension SwapCryptoLogic {
     /// of the output floor and streaming plan — neither is derivable from the
     /// quote's other fields, because the node applies its tolerance parameter to
     /// a feeless price we never see and bakes its own streaming choice into the
-    /// memo. All three are inert on this device (nothing renders them, no signer
-    /// reads them); they ride the proto so the co-signer sees exactly what the
-    /// memo commits to.
+    /// memo. All three stay inert: no signer reads them, and no screen renders
+    /// them either — the minimum shown on the verify and co-sign screens is read
+    /// from the signed memo itself, because for a UTXO source
+    /// `ThorchainMemoLimit.compressed` lowers that memo's LIM *after* this
+    /// payload is built. They ride the proto for cross-device transit only.
     static func buildThorchainSwapPayload(
         fromCoin: Coin,
         toCoin: Coin,
