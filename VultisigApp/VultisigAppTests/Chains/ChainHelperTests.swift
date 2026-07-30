@@ -24,17 +24,18 @@ struct ChainHelperTestCase: Codable {
 
 /// The golden signing-vector fixtures bundled under `TestData/`.
 ///
-/// Every fixture is named here and gets its own `test…` method rather than
-/// being discovered by a wildcard walk of the bundle. A wildcard walk is what
-/// let the entire corpus stop executing without anything turning red: the
-/// walk's "is this one of ours?" filter silently matched nothing, so the loop
-/// body never ran and the suite stayed green with zero conformance coverage.
+/// This list — not a wildcard walk of the bundle — is what the suite executes.
+/// A wildcard walk is what let the entire corpus stop running without anything
+/// turning red: the walk's "is this one of ours?" filter silently matched
+/// nothing, so the loop body never ran and the suite stayed green with zero
+/// conformance coverage.
 ///
-/// Explicit registration makes that failure mode impossible to reach silently:
-/// `testEveryBundledFixtureIsRegistered` pins this list against the JSON files
-/// actually present in the bundle and against the number of test methods on
-/// this class, so a fixture can neither be added without a test nor listed
-/// without one.
+/// Two tests keep that from happening again.
+/// `testAllRegisteredFixturesExecute` runs every case in this list in a single
+/// test, so coverage never depends on per-method bookkeeping, and
+/// `testEveryBundledFixtureIsRegistered` pins the list against the JSON files
+/// actually present in the bundle — in both directions — so a fixture can
+/// neither be added without being run nor listed without existing.
 enum ChainHelperFixture: String, CaseIterable {
     case arb
     case bsc
@@ -59,6 +60,18 @@ enum ChainHelperFixture: String, CaseIterable {
     case tron
     case utxo
     case xrp
+
+    /// The per-fixture test method that must exist so a failure is attributable
+    /// to one fixture instead of to the corpus as a whole. Derived from the
+    /// file name, so the guard checks the same name the method has to declare.
+    var testMethodName: String {
+        let camelCased = rawValue
+            .split(separator: "-")
+            .enumerated()
+            .map { $0.offset == 0 ? String($0.element) : $0.element.capitalized }
+            .joined()
+        return "test\(camelCased.prefix(1).uppercased())\(camelCased.dropFirst())Fixture"
+    }
 }
 
 final class ChainHelperTests: XCTestCase {
@@ -96,10 +109,27 @@ final class ChainHelperTests: XCTestCase {
     func testUtxoFixture() throws { try runFixture(.utxo) }
     func testXrpFixture() throws { try runFixture(.xrp) }
 
-    // MARK: - Corpus guard
+    // MARK: - Corpus guards
+
+    /// Authoritative coverage: executes every registered fixture in one test.
+    ///
+    /// The per-fixture methods above exist for attribution, but coverage must
+    /// not depend on someone remembering to add one — that bookkeeping is
+    /// exactly what failed before. This test runs the whole registered corpus
+    /// regardless of how many per-fixture methods survive, so the vectors
+    /// cannot go dark again. Cases therefore run twice; the corpus is small
+    /// enough that this costs a fraction of a second.
+    func testAllRegisteredFixturesExecute() throws {
+        var executedCases = 0
+        for fixture in ChainHelperFixture.allCases {
+            executedCases += try runFixture(fixture)
+        }
+        XCTAssertGreaterThan(executedCases, 0,
+                             "The golden corpus executed zero signing vectors — the suite is vacuous")
+    }
 
     /// Fails if the bundled corpus and the registered fixtures diverge in
-    /// either direction, so no fixture can silently stop being executed.
+    /// either direction, or if a fixture has lost its attributing test method.
     func testEveryBundledFixtureIsRegistered() throws {
         let bundle = Bundle(for: type(of: self))
         guard let urls = bundle.urls(forResourcesWithExtension: "json",
@@ -112,27 +142,31 @@ final class ChainHelperTests: XCTestCase {
         let registered = Set(ChainHelperFixture.allCases.map(\.rawValue))
 
         XCTAssertEqual(bundled.subtracting(registered), [],
-                       "Bundled golden fixtures with no test method — add a case to ChainHelperFixture and a test that runs it")
+                       "Bundled golden fixtures missing from ChainHelperFixture — add the case and its test method")
         XCTAssertEqual(registered.subtracting(bundled), [],
                        "Registered golden fixtures missing from the bundle")
 
-        // One `test…Fixture` method per registered fixture, plus this guard.
-        XCTAssertEqual(Self.defaultTestSuite.testCaseCount, ChainHelperFixture.allCases.count + 1,
-                       "Every ChainHelperFixture case needs its own test method so failures are attributable per fixture")
+        let discoveredTestNames = Self.defaultTestSuite.tests.map(\.name)
+        for fixture in ChainHelperFixture.allCases {
+            XCTAssertTrue(discoveredTestNames.contains { $0.contains(fixture.testMethodName) },
+                          "Golden fixture \(fixture.rawValue).json has no \(fixture.testMethodName)() method, so its failures would not be attributable to it")
+        }
     }
 
     // MARK: - Runner
 
+    /// Runs one fixture and returns the number of cases it executed.
+    @discardableResult
     private func runFixture(_ fixture: ChainHelperFixture,
                             file: StaticString = #filePath,
-                            line: UInt = #line) throws {
+                            line: UInt = #line) throws -> Int {
         let bundle = Bundle(for: type(of: self))
         guard let url = bundle.url(forResource: fixture.rawValue,
                                    withExtension: "json",
                                    subdirectory: Self.fixtureSubdirectory) else {
             XCTFail("Missing golden fixture \(Self.fixtureSubdirectory)/\(fixture.rawValue).json in the test bundle",
                     file: file, line: line)
-            return
+            return 0
         }
 
         let data = try Data(contentsOf: url)
@@ -141,7 +175,7 @@ final class ChainHelperTests: XCTestCase {
             testCases = try JSONDecoder().decode([ChainHelperTestCase].self, from: data)
         } catch {
             XCTFail("Invalid golden fixture \(fixture.rawValue).json: \(error)", file: file, line: line)
-            return
+            return 0
         }
 
         XCTAssertFalse(testCases.isEmpty,
@@ -157,6 +191,8 @@ final class ChainHelperTests: XCTestCase {
                 XCTFail("Test case \(testCase.name) threw: \(error)", file: file, line: line)
             }
         }
+
+        return testCases.count
     }
 
     private func runTestCaseWithSwap(_ testCase: ChainHelperTestCase, keysignPayload: KeysignPayload) throws {
