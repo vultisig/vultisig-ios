@@ -37,6 +37,43 @@ struct ChainHelperTestCase: Codable {
 /// `testEveryBundledFixtureIsRegistered` pins the list against the JSON files
 /// actually present in the bundle — in both directions — so a fixture can
 /// neither be added without being run nor listed without existing.
+///
+/// ## Provenance of the expected hashes
+///
+/// A vector is only worth anything if its `expected_image_hash` was produced by
+/// more than one implementation. A hash captured from a single signer proves
+/// that signer is self-consistent and nothing more — it silently promotes that
+/// signer's bugs to ground truth, which is the failure mode the corpus exists
+/// to catch.
+///
+/// What agreement between two implementations does and does not establish is
+/// worth being exact about. All three platform signers build a protobuf signing
+/// input themselves and then hand it to the same WalletCore compiler, so two of
+/// them agreeing pins **the platform-specific construction layer** — chain IDs,
+/// transaction envelope, message shape, denoms, fee fields — which is where the
+/// cross-platform keysign failures this corpus exists for actually originate.
+/// It does **not** independently verify WalletCore itself: a bug inside the
+/// shared compiler would be invisible to every one of these vectors.
+///
+/// - `evm-chain-matrix` and `tcy` were added by running the Swift signer and
+///   the TypeScript core signer over the identical payload and requiring the
+///   two to produce byte-identical hashes.
+/// - Every other case here is also carried by vultisig-android (and, for the
+///   `cosmos-sdk-sign-*` cases, by the TypeScript core), so those hashes too
+///   carry agreement from at least two signers — **with one known exception**:
+///   `cosmos-sdk-sign-amino.json` → "SignAmino - THORChain transaction memo"
+///   appears in no other corpus and has only ever been produced by the Swift
+///   signer. It is left in place because removing coverage is worse than
+///   flagging it, but it is not corroborated and should not be treated as
+///   ground truth until a second signer reproduces it.
+///
+/// `evm-chain-matrix` reuses one payload across chains: every field that feeds
+/// the EVM pre-image — recipient, amount, nonce, gas limit and fee fields — is
+/// held identical, and only `coin.chain` varies. The remaining differences are
+/// that chain's real native-asset metadata (`ticker`, `logo`), which the EVM
+/// signing input never reads. Every case must therefore still hash differently,
+/// because the EIP-155 chain ID *is* part of the signed pre-image — which is
+/// what lets these vectors catch a per-chain chain-ID regression.
 enum ChainHelperFixture: String, CaseIterable {
     case arb
     case bsc
@@ -46,6 +83,7 @@ enum ChainHelperFixture: String, CaseIterable {
     case cosmosSdkSignDirect = "cosmos-sdk-sign-direct"
     case dot
     case evm
+    case evmChainMatrix = "evm-chain-matrix"
     case kujira
     case lifiswap
     case maya
@@ -54,6 +92,7 @@ enum ChainHelperFixture: String, CaseIterable {
     case solana
     case solanaSignData = "solana-sign-data"
     case sui
+    case tcy
     case terra
     case thorchain
     case thorchainswap
@@ -79,6 +118,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .cosmosSdkSignDirect: return 2
         case .dot: return 1
         case .evm: return 2
+        case .evmChainMatrix: return 8
         case .kujira: return 3
         case .lifiswap: return 2
         case .maya: return 3
@@ -87,6 +127,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .solana: return 4
         case .solanaSignData: return 1
         case .sui: return 1
+        case .tcy: return 2
         case .terra: return 5
         case .thorchain: return 9
         case .thorchainswap: return 5
@@ -129,6 +170,7 @@ final class ChainHelperTests: XCTestCase {
     func testCosmosSdkSignDirectFixture() throws { try runFixture(.cosmosSdkSignDirect) }
     func testDotFixture() throws { try runFixture(.dot) }
     func testEvmFixture() throws { try runFixture(.evm) }
+    func testEvmChainMatrixFixture() throws { try runFixture(.evmChainMatrix) }
     func testKujiraFixture() throws { try runFixture(.kujira) }
     func testLifiswapFixture() throws { try runFixture(.lifiswap) }
     func testMayaFixture() throws { try runFixture(.maya) }
@@ -137,6 +179,7 @@ final class ChainHelperTests: XCTestCase {
     func testSolanaFixture() throws { try runFixture(.solana) }
     func testSolanaSignDataFixture() throws { try runFixture(.solanaSignData) }
     func testSuiFixture() throws { try runFixture(.sui) }
+    func testTcyFixture() throws { try runFixture(.tcy) }
     func testTerraFixture() throws { try runFixture(.terra) }
     func testThorchainFixture() throws { try runFixture(.thorchain) }
     func testThorchainswapFixture() throws { try runFixture(.thorchainswap) }
@@ -166,6 +209,63 @@ final class ChainHelperTests: XCTestCase {
                        "The golden corpus executed \(executedCases) signing vectors, expected \(expectedCases) — coverage shrank")
     }
 
+    /// Every EVM native send must produce a different pre-image hash, and the
+    /// hashes are **recomputed here from the payloads** rather than read back
+    /// out of the fixtures.
+    ///
+    /// Those payloads hold every pre-image-feeding field identical and vary
+    /// only `coin.chain` (plus native-asset metadata the EVM signing input does
+    /// not read), so the only thing that can separate their pre-images is the
+    /// EIP-155 chain ID. If a chain ever stopped contributing its own — by
+    /// falling back to the WalletCore coin type's default, which is what makes
+    /// chains sharing a coin type dangerous — two would collapse onto the same
+    /// hash. Each vector on its own would still pass, since each is only
+    /// compared against its own committed value; only the relationship between
+    /// them exposes it.
+    ///
+    /// Reading `expected_image_hash` here instead would make this test
+    /// self-satisfying: any set of distinct strings would pass it, including
+    /// one re-baselined around the very regression it is meant to catch. It
+    /// therefore drives the real signers through `computeDirectImageHashes`.
+    func testEvmChainMatrixVectorsAreChainSpecific() throws {
+        // Declared, not derived from the fixtures. Reading the participating
+        // chains out of the data and comparing them to themselves would restate
+        // the same self-satisfying shape this test exists to avoid: the point is
+        // to pin WHICH chains the matrix is supposed to cover, so that swapping a
+        // target for another EVM chain fails here instead of silently passing on
+        // nine-still-unique hashes while a chain quietly loses its coverage.
+        let expectedChains: Set<Chain> = [
+            .ethereum,
+            .avalanche, .optimism, .base, .blast,
+            .cronosChain, .zksync, .mantle, .hyperliquid
+        ]
+
+        var computedHashesByCase: [String: [String]] = [:]
+        var participatingChains: Set<Chain> = []
+
+        for fixture in [ChainHelperFixture.evmChainMatrix, .evm] {
+            for testCase in try decodeFixture(fixture) where testCase.keysignPayload.coin.isNativeToken {
+                let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
+                XCTAssertEqual(keysignPayload.coin.chainType, .EVM,
+                               "\(testCase.name) is not an EVM payload, so it does not belong in this check")
+                participatingChains.insert(keysignPayload.coin.chain)
+                computedHashesByCase[testCase.name] = try computeDirectImageHashes(keysignPayload: keysignPayload)
+            }
+        }
+
+        XCTAssertEqual(participatingChains, expectedChains,
+                       "The EVM matrix no longer covers the intended chain set. Missing: \(expectedChains.subtracting(participatingChains).map(\.name).sorted()); unexpected: \(participatingChains.subtracting(expectedChains).map(\.name).sorted())")
+
+        XCTAssertEqual(computedHashesByCase.count, ChainHelperFixture.evmChainMatrix.expectedCaseCount + 1,
+                       "Expected every EVM matrix case plus the Ethereum native send to take part in this check, got \(computedHashesByCase.keys.sorted())")
+
+        let allHashes = computedHashesByCase.values.flatMap { $0 }
+        XCTAssertEqual(allHashes.count, computedHashesByCase.count,
+                       "Every EVM native send should produce exactly one pre-image hash")
+        XCTAssertEqual(Set(allHashes).count, allHashes.count,
+                       "Two EVM native sends computed the same pre-image hash. Their payloads differ only by chain, so a chain has stopped contributing its own EIP-155 chain ID: \(computedHashesByCase)")
+    }
+
     /// Fails if the bundled corpus and the registered fixtures diverge in
     /// either direction, or if a fixture has lost its attributing test method.
     func testEveryBundledFixtureIsRegistered() throws {
@@ -193,26 +293,46 @@ final class ChainHelperTests: XCTestCase {
 
     // MARK: - Runner
 
+    private enum FixtureError: Error, CustomStringConvertible {
+        case missing(String, subdirectory: String)
+        case undecodable(String, underlying: Error)
+
+        var description: String {
+            switch self {
+            case .missing(let name, let subdirectory):
+                return "Missing golden fixture \(subdirectory)/\(name).json in the test bundle"
+            case .undecodable(let name, let underlying):
+                return "Invalid golden fixture \(name).json: \(underlying)"
+            }
+        }
+    }
+
+    /// Loads and decodes one fixture without running it.
+    private func decodeFixture(_ fixture: ChainHelperFixture) throws -> [ChainHelperTestCase] {
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: fixture.rawValue,
+                                   withExtension: "json",
+                                   subdirectory: Self.fixtureSubdirectory) else {
+            throw FixtureError.missing(fixture.rawValue, subdirectory: Self.fixtureSubdirectory)
+        }
+
+        do {
+            return try JSONDecoder().decode([ChainHelperTestCase].self, from: try Data(contentsOf: url))
+        } catch {
+            throw FixtureError.undecodable(fixture.rawValue, underlying: error)
+        }
+    }
+
     /// Runs one fixture and returns the number of cases it executed.
     @discardableResult
     private func runFixture(_ fixture: ChainHelperFixture,
                             file: StaticString = #filePath,
                             line: UInt = #line) throws -> Int {
-        let bundle = Bundle(for: type(of: self))
-        guard let url = bundle.url(forResource: fixture.rawValue,
-                                   withExtension: "json",
-                                   subdirectory: Self.fixtureSubdirectory) else {
-            XCTFail("Missing golden fixture \(Self.fixtureSubdirectory)/\(fixture.rawValue).json in the test bundle",
-                    file: file, line: line)
-            return 0
-        }
-
-        let data = try Data(contentsOf: url)
         let testCases: [ChainHelperTestCase]
         do {
-            testCases = try JSONDecoder().decode([ChainHelperTestCase].self, from: data)
+            testCases = try decodeFixture(fixture)
         } catch {
-            XCTFail("Invalid golden fixture \(fixture.rawValue).json: \(error)", file: file, line: line)
+            XCTFail("\(error)", file: file, line: line)
             return 0
         }
 
@@ -292,13 +412,27 @@ final class ChainHelperTests: XCTestCase {
                 return
             }
         }
+        let result = try computeDirectImageHashes(keysignPayload: keysignPayload)
+        XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
+    }
+
+    /// Computes the pre-signing image hash for a non-swap payload by dispatching
+    /// to the same per-chain signer the app uses.
+    ///
+    /// Separated from `runTestCase` so a test can obtain a *computed* hash
+    /// rather than the committed one. A guard that reasons about the corpus by
+    /// reading `expected_image_hash` back out of the JSON proves nothing about
+    /// the signers — it would be satisfied by any set of distinct strings.
+    private func computeDirectImageHashes(keysignPayload: KeysignPayload) throws -> [String] {
+        let chain = keysignPayload.coin.chain
         var result: [String] = []
         switch chain {
         case .bitcoin, .bitcoinCash, .dogecoin, .litecoin, .zcash:
             let utxoHelper = UTXOChainsHelper(coin: chain.coinType)
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
-        case .ethereum, .arbitrum, .optimism, .polygon, .base, .bscChain, .avalanche, .mantle:
+        case .ethereum, .arbitrum, .optimism, .polygon, .base, .bscChain, .avalanche, .mantle,
+             .blast, .cronosChain, .zksync, .hyperliquid:
             let chain = keysignPayload.coin.chain
             if keysignPayload.coin.contractAddress.isEmpty {
                 let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)
@@ -336,6 +470,6 @@ final class ChainHelperTests: XCTestCase {
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }
 
-        XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
+        return result
     }
 }

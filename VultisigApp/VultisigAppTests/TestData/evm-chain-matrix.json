@@ -1,0 +1,266 @@
+[
+    {
+        "name": "Send AVAX",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Avalanche",
+                "ticker": "AVAX",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "avax"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "8ec5af48e856ab7097310b6d735a48416d148a2149200ef8bcead1102a6e9ea7"
+        ]
+    },
+    {
+        "name": "Send Optimism ETH",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Optimism",
+                "ticker": "ETH",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "eth"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "f970f1a92f2a975629833039138e7c1632ee89bb4291531a9fe07b8db8610efc"
+        ]
+    },
+    {
+        "name": "Send Base ETH",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Base",
+                "ticker": "ETH",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "eth"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "6457cc2c6c7fdf7999ad4048fe2071945fc2008812ead29a442585d6512a85ec"
+        ]
+    },
+    {
+        "name": "Send Blast ETH",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Blast",
+                "ticker": "ETH",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "eth"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "da02a36a9246c5733b2e4850e6979f57fc72a74c68fb333a9532f807ac03ba70"
+        ]
+    },
+    {
+        "name": "Send CRO",
+        "keysign_payload": {
+            "coin": {
+                "chain": "CronosChain",
+                "ticker": "CRO",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "cro"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "5fd7121271694a87fc65e008596f4facdf6845dd2f218961192658ed7c3261c6"
+        ]
+    },
+    {
+        "name": "Send Zksync ETH",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Zksync",
+                "ticker": "ETH",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "zsync_era"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "02fb15a677a3ffb58c78f25191c6b284ec32050bfb65c534f71657ffbc55ddc7"
+        ]
+    },
+    {
+        "name": "Send Mantle MNT",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Mantle",
+                "ticker": "MNT",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "mantle"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "c20de51bca07bb677231de76a2445213a38860a7d5f00602f332b278a477481f"
+        ]
+    },
+    {
+        "name": "Send Hyperliquid HYPE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Hyperliquid",
+                "ticker": "HYPE",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "hyperliquid"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "77b6a09109b679f49c1912222859339906386d61857b237c9017b433cfb52b7e"
+        ]
+    }
+]
