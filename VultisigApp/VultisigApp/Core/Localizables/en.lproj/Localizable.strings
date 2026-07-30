@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "Make sure that";
 "allDevicesUpgradeTitle2" = " all initial devices are present ";
 "allDevicesUpgradeTitle3" = "when upgrading";
+"allTimeHigh" = "All-Time High";
+"allTimeLow" = "All-Time Low";
 "allVaults" = "All Vaults";
 "alreadyTaken" = "Already taken";
 "aminoSign" = "Amino Sign";
@@ -156,6 +158,11 @@
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
 "chains" = "Chains";
 "changeVault" = "Change Vault";
+"chartRangeAll" = "ALL";
+"chartRangeDay" = "1D";
+"chartRangeMonth" = "1M";
+"chartRangeWeek" = "1W";
+"chartRangeYear" = "1Y";
 "checkEmail" = "Check email";
 "checkEmptyField" = "Please make sure all the fields are filled.";
 "checkForUpdates" = "Check for Updates";
@@ -206,6 +213,7 @@
 "circleWithdrawAmountLabel" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
+"circulatingSupply" = "Circulating Supply";
 "claim" = "Claim";
 "claimBroadcasted" = "Claim broadcasted";
 "claimFailed" = "Claim failed";
@@ -228,7 +236,10 @@
 "continue" = "Continue";
 "continueAnyway" = "Continue Anyway";
 "continueThresholdOfTotal" = "Continue (%d-of-%d)";
+"contract" = "Contract";
+"contractAddressCopied" = "Contract address copied";
 "copyAddress" = "Copy address";
+"copyContractAddress" = "Copy contract address";
 "correctAmountCheck" = "The amount is correct";
 "cosmosStakingActionClaim" = "Claim";
 "cosmosStakingActionDelegate" = "Stake";
@@ -316,6 +327,7 @@
 "dappRequestFrom" = "Request from";
 "date" = "Date";
 "decimalAmountError" = "The amount must be decimal.";
+"decimals" = "Decimals";
 "decodeCustomMessagePayloadError" = "Error decoding custom message payload: %@";
 "decodeKeysignMessageError" = "Error decoding keysign message: %@";
 "defiChainNoPositions" = "No positions found";
@@ -469,6 +481,7 @@
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVultiserver co-signs instantly";
 "fee" = "Fee";
 "filterByAsset" = "Filter by Asset";
+"findCustomTokenRipplePlaceholder" = "Enter currency.issuer, e.g. USD.rHb9CJ…";
 "findCustomTokens" = "Find custom token";
 "findCustomTokenThorchainPlaceholder" = "Enter token, e.g. THOR.LQDY";
 "folder" = "Folder";
@@ -486,6 +499,7 @@
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
+"fullyDilutedValuation" = "Fully Diluted Valuation";
 "function" = "Function";
 "functionArguments" = "Function Arguments";
 "functionSignature" = "Function Signature";
@@ -549,6 +563,7 @@
 "governanceYouVoted" = "You voted %@";
 "hashCopied" = "Hash copied";
 "hideBalance" = "Hide balance";
+"high24h" = "24h High";
 "hold" = "Hold";
 "holdForPairedSign" = "Hold for paired sign";
 "howItWorks" = "How it works";
@@ -746,6 +761,7 @@
 "loginUsingTouchID" = "Login using Touch ID";
 "lookingForDevices" = "Looking for devices... ";
 "looksGood" = "Looks good";
+"low24h" = "24h Low";
 "lps" = "LPs";
 "lpUnits" = "LP Units";
 "lpUnitsCannotBeZero" = "LP units cannot be zero";
@@ -756,6 +772,10 @@
 "makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
 "manageNotificationsInSettings" = "You can manage notifications in system settings.";
 "managePositions" = "Manage Positions";
+"marketCap" = "Market Cap";
+"marketCapRank" = "Rank";
+"marketStats" = "Market Stats";
+"maxSupply" = "Max Supply";
 "maxTotalFee" = "Max. Total Fee";
 "memo" = "Memo";
 "memoLabel" = "Memo";
@@ -932,6 +952,8 @@
 "preparingVaultText2" = "removing the single-point of failure";
 "previewKeygenDescription" = "Scan with devices to join the vault generation";
 "price" = "Price";
+"priceChart" = "Price chart";
+"priceRange" = "Price Range";
 "privacyPolicy" = "Privacy Policy";
 "proposalID" = "Proposal ID";
 "provider" = "Provider";
@@ -1053,6 +1075,7 @@
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewYourVaultDevices" = "Review your vault devices";
+"rippleCustomTokenInvalidFormat" = "Enter an XRP token as currency.issuer — the token code (e.g. USD or SOLO), then the issuer address.";
 "rippleFieldAmount" = "Amount";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destination";
@@ -1066,6 +1089,22 @@
 "rippleFieldType" = "Type";
 "rippleTransaction" = "XRP Transaction";
 "rippleTransactionSummary" = "Transaction summary";
+"rippleTrustLineActivateAction" = "Activate";
+"rippleTrustLineActivationSubtitle" = "%@ needs a trust line on the XRP Ledger before your account can hold it. Opening one permanently locks part of your XRP as an owner reserve.";
+"rippleTrustLineActivationTitle" = "Activate trust line";
+"rippleTrustLineCurrency" = "Currency";
+"rippleTrustLineHeroTitle" = "Activating the %@ trust line";
+"rippleTrustLineInsufficientXrpError" = "Not enough spendable XRP. Opening this trust line needs %@ XRP for the owner reserve and fee.";
+"rippleTrustLineInvalidTokenError" = "This token's currency and issuer could not be read.";
+"rippleTrustLineIssuer" = "Issuer";
+"rippleTrustLineIssuerCheck" = "The issuer is correct";
+"rippleTrustLineLimit" = "Trust line limit";
+"rippleTrustLineLimitCheck" = "The trust line limit is correct";
+"rippleTrustLineNoXrpAccountError" = "A trust line needs an XRP account to own it. Add XRP to this vault first.";
+"rippleTrustLineOwnerReserve" = "Reserve locked";
+"rippleTrustLineSpendableAfter" = "Spendable XRP after";
+"rippleTrustLineUnreviewable" = "Cannot review";
+"rippleTrustLineUnreviewableValue" = "This trust line's currency, issuer or limit could not be read, so its terms cannot be shown. Do not sign it.";
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
@@ -1354,6 +1393,7 @@
 "title" = "Title";
 "to" = "To";
 "today" = "Today";
+"tokenInfo" = "Token Info";
 "tokens" = "Tokens";
 "tokenUnverifiedBadge" = "Unverified";
 "tonStakeBelowMinimum" = "Minimum stake is %@ %@";
@@ -1544,6 +1584,7 @@
 "via" = "via";
 "view" = "View";
 "viewOnExplorer" = "View on Explorer";
+"volume24h" = "24h Volume";
 "Vote" = "Vote";
 "vult" = "$VULT";
 "vultDiscount" = "Discount: %dbps";
@@ -1586,6 +1627,7 @@
 "x" = "X (Twitter)";
 "xrpDestinationLookupFailedError" = "The destination XRP account couldn't be verified (%@). Please try again.";
 "xrpDestinationNotActivatedError" = "The destination XRP address is not activated yet. A first transfer to it must be at least %@ XRP (the network base reserve). Increase the amount or double-check the address.";
+"xrpDestinationNoTrustLineError" = "The recipient has no %@ trust line, so this payment would be rejected by the XRP Ledger.";
 "yes" = "Yes";
 "yesterday" = "Yesterday";
 "yieldClaimAmount" = "Claim %@";

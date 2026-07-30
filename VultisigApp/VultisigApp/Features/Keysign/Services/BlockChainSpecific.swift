@@ -36,7 +36,18 @@ enum BlockChainSpecific: Codable, Hashable {
     /// this field and falls back to parsing the memo, so a co-signer that does
     /// not read the field still rebuilds a byte-identical signing input from
     /// the memo. `nil` means "no field present — use the memo".
-    case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64, destinationTag: UInt32? = nil)
+    ///
+    /// `transactionType` is the wire discriminator that says WHICH XRPL
+    /// operation this payload describes (`RippleSpecific.transaction_type`),
+    /// stored as the enum's raw value like `.THORChain` and `.Cosmos` already
+    /// do. It exists because a non-native Ripple coin is ambiguous on its own:
+    /// the same (currency, issuer) pair can mean "open a trust line for this
+    /// token" — a TrustSet whose amount is the trust-line LIMIT — or "send this
+    /// token", a Payment carrying a `CurrencyAmount`. `0`
+    /// (`TRANSACTION_TYPE_UNSPECIFIED`) is the proto3 default and is absent
+    /// from the wire, so native XRP payloads stay byte-identical to before the
+    /// field existed.
+    case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64, destinationTag: UInt32? = nil, transactionType: Int = 0)
 
     case Tron(
         timestamp: UInt64,
@@ -96,7 +107,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return dynamicGas
         case .Ton:
             return TonHelper.defaultFee
-        case .Ripple(_, let gas, _, _):
+        case .Ripple(_, let gas, _, _, _):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
             return gasFeeEstimation.description.toBigInt()

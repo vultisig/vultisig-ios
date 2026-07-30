@@ -54,7 +54,10 @@ struct SendDoneScreen: View {
             coin: tx.coin,
             amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
             amountFiat: tx.amountInFiat,
-            hero: LimitOrderCancelPresentation.hero(for: tx),
+            // A TrustSet's amount IS the trust-line limit, so it has to claim the
+            // hero before the amount slot renders it as a transfer.
+            hero: RippleTrustSetPresentation.hero(for: tx)
+                ?? LimitOrderCancelPresentation.hero(for: tx),
             hash: hash,
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash),
             memo: tx.memo,

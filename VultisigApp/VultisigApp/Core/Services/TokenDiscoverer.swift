@@ -69,6 +69,17 @@ struct CosmosBankDenomTokenDiscoverer: TokenDiscoverer {
     }
 }
 
+/// XRPL issued currencies: every trust line the address holds with a positive
+/// balance. The ledger is the only source of these — XRPL has no token metadata
+/// registry to enumerate against, so a token the user holds is discoverable only
+/// from their own trust lines.
+struct RippleTrustLineTokenDiscoverer: TokenDiscoverer {
+    func discoverTokens(nativeCoin _: CoinMeta, address: String) async throws -> [CoinMeta] {
+        let lines = try await RippleService.shared.fetchAccountLines(for: address)
+        return RippleTrustLineTokens.discoverableTokens(from: lines)
+    }
+}
+
 /// Explicit no-op for chains that do not support token auto-discovery.
 /// Registered by name so "no discovery" is a declared choice rather than an
 /// implicit empty fall-through.
@@ -105,7 +116,9 @@ enum TokenDiscovererRegistry {
             return CosmosCoinFinder.allowlistedChains.contains(chain)
                 ? CosmosBankDenomTokenDiscoverer()
                 : NoTokenDiscoverer()
-        case .UTXO, .Cardano, .Polkadot, .Ton, .Ripple, .Tron:
+        case .Ripple:
+            return RippleTrustLineTokenDiscoverer()
+        case .UTXO, .Cardano, .Polkadot, .Ton, .Tron:
             return NoTokenDiscoverer()
         }
     }

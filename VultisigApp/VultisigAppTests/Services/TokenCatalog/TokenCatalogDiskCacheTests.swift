@@ -57,6 +57,25 @@ final class TokenCatalogDiskCacheTests: XCTestCase {
         XCTAssertTrue(loaded?.allSatisfy { $0.autoSurfaces } ?? false, "Verified tiers still auto-surface offline")
     }
 
+    func testRoundTripPreservesTheProvidersRankedOrder() {
+        // Providers return their lists best-first and `CatalogToken` carries no
+        // rank field, so order IS the ranking. A snapshot that round-tripped
+        // through a set or re-sorted would silently degrade the offline browse
+        // list to an arbitrary 20 tokens.
+        let cache = makeCache()
+        let ranked = (0..<50).map {
+            CatalogToken(meta: coin("TKN\($0)", "0x\($0)"),
+                         verification: .verified(source: "1inch"),
+                         sourceKind: "oneinch")
+        }
+        cache.save(ranked, chain: .ethereum)
+
+        let loaded = cache.load(chain: .ethereum)
+
+        XCTAssertEqual(loaded?.map { $0.meta.ticker }, ranked.map { $0.meta.ticker },
+                       "The offline snapshot must serve the list in the provider's ranked order")
+    }
+
     func testLoadAbsentChainReturnsNil() {
         let cache = makeCache()
         XCTAssertNil(cache.load(chain: .solana))

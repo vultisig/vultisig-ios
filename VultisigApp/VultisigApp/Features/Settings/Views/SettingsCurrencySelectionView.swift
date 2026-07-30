@@ -22,21 +22,20 @@ struct SettingsCurrencySelectionView: View {
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                SettingsSectionContainerView {
-                    VStack(spacing: .zero) {
-                        ForEach(currencies, id: \.currency) { viewModel in
-                            Button {
-                                handleSelection(viewModel.currency)
-                            } label: {
-                                SettingSelectionCell(
-                                    title: viewModel.description,
-                                    isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue,
-                                    showSeparator: viewModel.currency != SettingsCurrency.allCases.last
-                                )
-                            }
+                VStack(spacing: .zero) {
+                    ForEach(Array(currencies.enumerated()), id: \.element.currency) { index, viewModel in
+                        Button {
+                            handleSelection(viewModel.currency)
+                        } label: {
+                            SettingSelectionCell(
+                                title: viewModel.description,
+                                isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue
+                            )
                         }
+                        .commonListItemContainer(index: index, itemsCount: currencies.count)
                     }
                 }
+                .commonListContainer()
             }
         }
         .screenTitle("currency".localized)

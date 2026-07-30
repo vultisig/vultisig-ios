@@ -2578,6 +2578,84 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        // MARK: XRPL issued currencies (trust-line tokens)
+        //
+        // XRPL keys an issued currency by the (currency, issuer) PAIR, not by a
+        // single contract address, so `contractAddress` is the composite
+        // `<currencyCode>.<issuer>` token id. The currency half is always written
+        // in the 160-bit hex form unless the ticker is exactly 3 characters —
+        // only 3-character codes travel the ledger as standard codes, and the
+        // ASCII-packed hex of a 3-character code is a genuinely DIFFERENT
+        // currency, so the two forms are never interchangeable. `decimals` is 15
+        // for every issued currency (XRPL carries 15 significant digits rather
+        // than a fixed on-chain scale).
+        //
+        // Curation rule for this list — a token earns a curated entry only when
+        // BOTH hold:
+        //   1. XRPL Meta rates it trust level 3, its highest. The ledger has
+        //      90k+ issued currencies and no on-ledger metadata registry, so an
+        //      external trust signal is the only defence against curating a
+        //      lookalike.
+        //   2. CoinGecko maps it on the `xrp` asset platform, which is what
+        //      makes `priceProviderId` real. Matching a token to a CoinGecko id
+        //      by TICKER instead is unsafe and was rejected: XRPL `XPM` matches
+        //      `primecoin` and `ELS` matches `ethlas`, two unrelated coins whose
+        //      prices would have shipped as if they were these tokens.
+        //
+        // Gateway IOUs are deliberately excluded even though several outrank
+        // everything here by market cap. Bitstamp and GateHub issue currencies
+        // tickered `BTC`, `ETH`, `USD` and `EUR`; listing them would put a row
+        // called "BTC" next to real Bitcoin, and two different issuers' "USD"
+        // next to each other, while `CoinMeta.uniqueId` keys on the ticker.
+        //
+        // Logos are remote URLs rather than bundled art: no XRPL token art
+        // exists in the catalog or in the sibling repos' shared coin SVGs, and
+        // `AsyncImageView` already routes any `https://` logo to a cached remote
+        // image (falling back to the ticker initial). CoinGecko's CDN is used
+        // for all four because a curated entry requires a CoinGecko id anyway,
+        // so this adds no new dependency.
+        CoinMeta(
+            chain: .ripple,
+            ticker: "RLUSD",
+            logo: "https://coin-images.coingecko.com/coins/images/39651/large/RLUSD_200x200_%281%29.png",
+            decimals: 15,
+            priceProviderId: "ripple-usd",
+            contractAddress: "524C555344000000000000000000000000000000.rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .ripple,
+            ticker: "SOLO",
+            logo: "https://coin-images.coingecko.com/coins/images/10771/large/solo.png",
+            decimals: 15,
+            priceProviderId: "solo-coin",
+            contractAddress: "534F4C4F00000000000000000000000000000000.rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .ripple,
+            ticker: "USDC",
+            logo: "https://coin-images.coingecko.com/coins/images/6319/large/USDC.png",
+            decimals: 15,
+            priceProviderId: "usd-coin",
+            contractAddress: "5553444300000000000000000000000000000000.rGm7WCVp9gb4jZHWTEtGUr4dd74z2XuWhE",
+            isNativeToken: false
+        ),
+        // On-ledger this currency is the ASCII-packed hex of "Equilibrium", so
+        // decoding it yields "Equilibrium" rather than the ticker the project
+        // and CoinGecko both use. The curated ticker is the recognizable "EQ";
+        // both the discovery path and the custom-token resolver return a curated
+        // entry verbatim when one matches, so they agree with this spelling
+        // instead of deriving their own. `RippleTrustLineTests` pins that.
+        CoinMeta(
+            chain: .ripple,
+            ticker: "EQ",
+            logo: "https://coin-images.coingecko.com/coins/images/18959/large/USO9eUfE_400x400.jpg",
+            decimals: 15,
+            priceProviderId: "equilibrium",
+            contractAddress: "457175696C69627269756D000000000000000000.rpakCr61Q92abPXJnVboKENmpKssWyHpwu",
+            isNativeToken: false
+        ),
         CoinMeta(
             chain: .solana,
             ticker: "JUP",

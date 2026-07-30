@@ -37,6 +37,8 @@
 "allDevicesUpgradeTitle1" = "업그레이드 시";
 "allDevicesUpgradeTitle2" = " 모든 초기 기기가 있어야 ";
 "allDevicesUpgradeTitle3" = "합니다";
+"allTimeHigh" = "역대 최고가";
+"allTimeLow" = "역대 최저가";
 "allVaults" = "모든 볼트";
 "alreadyTaken" = "이미 사용 중";
 "aminoSign" = "아미노 서명";
@@ -156,6 +158,11 @@
 "chainNotAddedMessage" = "블록체인 %@이(가) 이 볼트에 추가되지 않았습니다. 볼트 설정에서 수동으로 추가하세요.";
 "chains" = "체인";
 "changeVault" = "볼트 변경";
+"chartRangeAll" = "전체";
+"chartRangeDay" = "1일";
+"chartRangeMonth" = "1개월";
+"chartRangeWeek" = "1주";
+"chartRangeYear" = "1년";
 "checkEmail" = "이메일 확인";
 "checkEmptyField" = "모든 필드를 채워주세요.";
 "checkForUpdates" = "업데이트 확인";
@@ -206,6 +213,7 @@
 "circleWithdrawAmountLabel" = "금액";
 "circleWithdrawConfirm" = "계속";
 "circleWithdrawTitle" = "USDC 출금";
+"circulatingSupply" = "유통 공급량";
 "claim" = "수령";
 "claimBroadcasted" = "수령 브로드캐스트됨";
 "claimFailed" = "수령 실패";
@@ -228,7 +236,10 @@
 "continue" = "계속";
 "continueAnyway" = "계속 진행";
 "continueThresholdOfTotal" = "계속 (%d/%d)";
+"contract" = "컨트랙트";
+"contractAddressCopied" = "컨트랙트 주소가 복사되었습니다";
 "copyAddress" = "주소 복사";
+"copyContractAddress" = "컨트랙트 주소 복사";
 "correctAmountCheck" = "금액이 올바릅니다";
 "cosmosStakingActionClaim" = "청구";
 "cosmosStakingActionDelegate" = "위임";
@@ -316,6 +327,7 @@
 "dappRequestFrom" = "요청 출처";
 "date" = "날짜";
 "decimalAmountError" = "금액은 소수여야 합니다.";
+"decimals" = "소수점 자릿수";
 "decodeCustomMessagePayloadError" = "사용자 지정 메시지 페이로드를 디코딩하는 중 오류가 발생했습니다: %@";
 "decodeKeysignMessageError" = "Keysign 메시지를 디코딩하는 중 오류가 발생했습니다: %@";
 "defiChainNoPositions" = "포지션을 찾을 수 없습니다";
@@ -469,6 +481,7 @@
 "fastVaultSecureTextDescription" = "기기 1개만 필요\n빠른 작업을 위한 소액 자금 저장\nVultiserver가 즉시 공동 서명";
 "fee" = "수수료";
 "filterByAsset" = "자산으로 필터링";
+"findCustomTokenRipplePlaceholder" = "currency.issuer 입력, 예: USD.rHb9CJ…";
 "findCustomTokens" = "커스텀 토큰 찾기";
 "findCustomTokenThorchainPlaceholder" = "토큰 입력, 예: THOR.LQDY";
 "folder" = "폴더";
@@ -486,6 +499,7 @@
 "foundActiveChainsSubtitle" = "추가 체인마다 볼트 생성 시간이 늘어나고 타임아웃 가능성이 높아집니다.";
 "foundActiveChainsTitle" = "%d개의 활성 체인을 찾았습니다";
 "from" = "출처";
+"fullyDilutedValuation" = "완전 희석 가치";
 "function" = "함수";
 "functionArguments" = "함수 인수";
 "functionSignature" = "함수 서명";
@@ -549,6 +563,7 @@
 "governanceYouVoted" = "%@ 투표함";
 "hashCopied" = "해시 복사됨";
 "hideBalance" = "잔액 숨기기";
+"high24h" = "24시간 최고";
 "hold" = "보유";
 "holdForPairedSign" = "쌍 서명을 위해 유지";
 "howItWorks" = "작동 방식";
@@ -746,6 +761,7 @@
 "loginUsingTouchID" = "Touch ID로 로그인";
 "lookingForDevices" = "기기 검색 중... ";
 "looksGood" = "좋아 보입니다";
+"low24h" = "24시간 최저";
 "lps" = "LP";
 "lpUnits" = "LP 단위";
 "lpUnitsCannotBeZero" = "LP 단위는 0이 될 수 없습니다";
@@ -756,6 +772,10 @@
 "makeSureCorrectDevices" = "추가한 기기가 올바른지 확인하세요:";
 "manageNotificationsInSettings" = "시스템 설정에서 알림을 관리할 수 있습니다.";
 "managePositions" = "포지션 관리";
+"marketCap" = "시가총액";
+"marketCapRank" = "순위";
+"marketStats" = "시장 지표";
+"maxSupply" = "최대 공급량";
 "maxTotalFee" = "최대 총 수수료";
 "memo" = "메모";
 "memoLabel" = "메모";
@@ -932,6 +952,8 @@
 "preparingVaultText2" = "단일 실패 지점 제거";
 "previewKeygenDescription" = "기기로 스캔하여 볼트 생성에 참여";
 "price" = "가격";
+"priceChart" = "가격 차트";
+"priceRange" = "가격 범위";
 "privacyPolicy" = "개인 정보 보호 정책";
 "proposalID" = "제안 ID";
 "provider" = "공급자";
@@ -1053,6 +1075,7 @@
 "restart" = "새 언어 설정을 적용하려면 앱을 재시작하세요.";
 "retry" = "재시도";
 "reviewYourVaultDevices" = "볼트 기기 검토";
+"rippleCustomTokenInvalidFormat" = "XRP 토큰을 currency.issuer 형식으로 입력하세요 — 토큰 코드(예: USD 또는 SOLO) 다음에 발행자 주소를 입력합니다.";
 "rippleFieldAmount" = "금액";
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "수신처";
@@ -1066,6 +1089,22 @@
 "rippleFieldType" = "유형";
 "rippleTransaction" = "XRP 트랜잭션";
 "rippleTransactionSummary" = "트랜잭션 요약";
+"rippleTrustLineActivateAction" = "활성화";
+"rippleTrustLineActivationSubtitle" = "%@을(를) 보유하려면 먼저 XRP Ledger에 신뢰선이 필요합니다. 신뢰선을 열면 XRP의 일부가 소유자 준비금으로 영구히 잠깁니다.";
+"rippleTrustLineActivationTitle" = "신뢰선 활성화";
+"rippleTrustLineCurrency" = "통화";
+"rippleTrustLineHeroTitle" = "%@ 신뢰선 활성화 중";
+"rippleTrustLineInsufficientXrpError" = "사용 가능한 XRP가 부족합니다. 이 신뢰선을 열려면 소유자 준비금과 수수료로 %@ XRP가 필요합니다.";
+"rippleTrustLineInvalidTokenError" = "이 토큰의 통화와 발행자를 읽을 수 없습니다.";
+"rippleTrustLineIssuer" = "발행자";
+"rippleTrustLineIssuerCheck" = "발행자가 정확합니다";
+"rippleTrustLineLimit" = "신뢰선 한도";
+"rippleTrustLineLimitCheck" = "신뢰선 한도가 정확합니다";
+"rippleTrustLineNoXrpAccountError" = "신뢰선을 보유하려면 XRP 계정이 필요합니다. 먼저 이 볼트에 XRP를 추가하세요.";
+"rippleTrustLineOwnerReserve" = "잠긴 준비금";
+"rippleTrustLineSpendableAfter" = "이후 사용 가능한 XRP";
+"rippleTrustLineUnreviewable" = "검토할 수 없음";
+"rippleTrustLineUnreviewableValue" = "이 신뢰선의 통화, 발행자 또는 한도를 읽을 수 없어 조건을 표시할 수 없습니다. 서명하지 마세요.";
 "rippleUndecodedNotice" = "이 트랜잭션을 디코딩할 수 없습니다. 서명하기 전에 원시 JSON을 주의 깊게 확인하세요.";
 "routerNotAvailable" = "%@에서 승인을 위한 라우터를 사용할 수 없습니다. 나중에 다시 시도하세요.";
 "rune" = "RUNE";
@@ -1317,6 +1356,7 @@
 "title" = "제목";
 "to" = "받는 곳";
 "today" = "오늘";
+"tokenInfo" = "토큰 정보";
 "tokens" = "토큰";
 "tokenUnverifiedBadge" = "미확인";
 "tonStakeBelowMinimum" = "최소 스테이킹은 %@ %@입니다";
@@ -1507,6 +1547,7 @@
 "via" = "경유";
 "view" = "보기";
 "viewOnExplorer" = "탐색기에서 보기";
+"volume24h" = "24시간 거래량";
 "Vote" = "투표";
 "vult" = "$VULT";
 "vultDiscount" = "할인: %dbps";
@@ -1549,6 +1590,7 @@
 "x" = "X (Twitter)";
 "xrpDestinationLookupFailedError" = "대상 XRP 계정을 확인할 수 없습니다 (%@). 다시 시도해 주세요.";
 "xrpDestinationNotActivatedError" = "대상 XRP 주소가 아직 활성화되지 않았습니다. 첫 송금은 최소 %@ XRP(네트워크 기본 준비금) 이상이어야 합니다. 금액을 늘리거나 주소를 다시 확인하세요.";
+"xrpDestinationNoTrustLineError" = "수신자에게 %@ 신뢰선이 없으므로 이 결제는 XRP Ledger에서 거부됩니다.";
 "yes" = "예";
 "yesterday" = "어제";
 "yieldClaimAmount" = "%@ 수령";

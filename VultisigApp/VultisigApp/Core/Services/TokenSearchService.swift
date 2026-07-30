@@ -106,20 +106,27 @@ struct TokenSearchService {
         let unverified = safe.filter { !$0.autoSurfaces }.map { $0.meta }
 
         var verificationByUniqueId: [String: TokenVerification] = [:]
+        var sourceKindByUniqueId: [String: String] = [:]
         for candidate in safe {
             verificationByUniqueId[candidate.uniqueId] = candidate.verification
+            sourceKindByUniqueId[candidate.uniqueId] = candidate.sourceKind
         }
 
         return TokenSearchResult(
             surfaceable: surfaceable,
             unverified: unverified,
-            verificationByUniqueId: verificationByUniqueId
+            verificationByUniqueId: verificationByUniqueId,
+            sourceKindByUniqueId: sourceKindByUniqueId
         )
     }
 }
 
 /// The wallet add-token picker's verification-aware view of the catalog. Kept a
 /// value type so it crosses the actor boundary cleanly.
+///
+/// `surfaceable` and `unverified` arrive in provider order, which is the
+/// providers' ranking (best-first) — see `OneInchToken.rankedForCatalog` /
+/// `SolanaJupiterToken.rankedForCatalog`. Nothing downstream may re-sort them.
 struct TokenSearchResult {
     /// Curated / verified, non-native — the tokens that auto-surface (default).
     let surfaceable: [CoinMeta]
@@ -128,6 +135,17 @@ struct TokenSearchResult {
     let unverified: [CoinMeta]
     /// `CoinMeta.uniqueId → verification` for badging. Only non-native entries.
     let verificationByUniqueId: [String: TokenVerification]
+    /// `CoinMeta.uniqueId → the `TokenCatalogProvider.kind` that won the token`,
+    /// so browse can cap each provider's breadth independently. Threaded as a
+    /// side map for the same reason as `verificationByUniqueId`: it keeps the
+    /// swap pickers' `[CoinMeta]` list types unchanged.
+    ///
+    /// Deliberately has no default: an omitted map would compile clean while
+    /// collapsing every provider into `cappedPerProvider`'s single unattributed
+    /// bucket, silently turning "the best N per provider" into "N in total".
+    /// Constructed through the synthesized memberwise init so that stays true
+    /// for any field added later.
+    let sourceKindByUniqueId: [String: String]
 }
 
 /// Cancellation is the only failure this service can report: the catalog's

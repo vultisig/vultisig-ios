@@ -224,7 +224,7 @@ private final class ReserveCheckScriptedHTTPClient: HTTPClientProtocol, @uncheck
             return try respond(accountInfoResult)
         case .serverState:
             return try respond(serverStateResult)
-        case .submit, .tx:
+        case .submit, .tx, .accountLines:
             throw URLError(.unsupportedURL)
         }
     }

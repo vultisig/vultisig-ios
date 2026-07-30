@@ -21,8 +21,11 @@ class TokenSelectionViewModel: ObservableObject {
     /// Curated `TokensStore` presets not held/hidden (browse, after held). Always
     /// present synchronously — independent of the async provider fetch.
     @Published var preExistTokens: [CoinMeta] = []
-    /// Verified provider breadth for browse (1inch / Jupiter), deduped
-    /// against the local tokens above. Empty until the provider fetch lands.
+    /// Verified provider breadth for browse (1inch / Jupiter), deduped against
+    /// the local tokens above and capped to the best
+    /// `TokenSelectionLogic.browseTokensPerProvider` of EACH provider. Empty
+    /// until the provider fetch lands. Search is not capped this way — it reads
+    /// `searchableTokens`, which holds the full breadth.
     @Published var browseProviderTokens: [CoinMeta] = []
     /// Search results over the full local-first pool (local + verified +
     /// unverified). Unverified rows carry the ⚠ badge — typing is what reveals
@@ -40,11 +43,19 @@ class TokenSelectionViewModel: ObservableObject {
     /// fetch lands — the local presets/held always render regardless.
     private var catalogSurfaceable: [CoinMeta] = []
     private var catalogUnverified: [CoinMeta] = []
+    /// `uniqueId → provider kind`, so browse caps each provider's breadth
+    /// separately (a two-provider chain shows two capped groups, not one).
+    private var catalogSourceKinds: [String: String] = [:]
     /// The full local-first search pool (curated presets + verified + unverified),
     /// filtered by the query into `searchedTokens`. Always contains the presets
     /// so a curated/local token stays searchable even when the provider fetch
     /// is pending or fails.
     private var searchableTokens: [CoinMeta] = []
+    /// The chain the retained catalog above belongs to. A failed fetch keeps the
+    /// last-good catalog (better than blanking the list) — but only for the SAME
+    /// chain: retaining it across a chain change would browse and search another
+    /// chain's tokens.
+    private var catalogChain: Chain?
 
     private var loadingTask: Task<Void, Never>?
 
@@ -77,6 +88,10 @@ class TokenSelectionViewModel: ObservableObject {
     func load(chain: Chain, vault: Vault) async {
         error = nil
 
+        if catalogChain != chain {
+            discardRetainedCatalog()
+        }
+
         let hiddenTokens = vault.hiddenTokens
         let chainCoins = vault.coins(for: chain)
 
@@ -100,6 +115,16 @@ class TokenSelectionViewModel: ObservableObject {
         searchedTokens = logic.filteredTokens(searchText: query, tokens: searchableTokens)
     }
 
+    /// Drop everything derived from a provider fetch. Called when the screen is
+    /// asked for a different chain than the retained catalog belongs to.
+    private func discardRetainedCatalog() {
+        catalogSurfaceable = []
+        catalogUnverified = []
+        catalogSourceKinds = [:]
+        verificationByUniqueId = [:]
+        catalogChain = nil
+    }
+
     private func loadExternalTokens(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) async {
         guard !Task.isCancelled else { return }
 
@@ -114,7 +139,9 @@ class TokenSelectionViewModel: ObservableObject {
             }
             catalogSurfaceable = result.surfaceable
             catalogUnverified = result.unverified
+            catalogSourceKinds = result.sourceKindByUniqueId
             verificationByUniqueId = result.verificationByUniqueId
+            catalogChain = chain
         } catch {
             // Fail open: keep the local presets/held (already rendered) fully
             // searchable rather than blanking the list, and re-derive from what's
@@ -133,7 +160,8 @@ class TokenSelectionViewModel: ObservableObject {
     /// Re-derive every visible list from the local presets/held + the current
     /// (possibly empty) catalog. Ordering is local-first everywhere: held, then
     /// curated presets, then provider breadth (deduped by `uniqueId`). Browse
-    /// shows curated/local + verified; search adds the badged unverified long-tail.
+    /// shows curated/local + the best N of each provider's verified breadth;
+    /// search spans the FULL breadth and adds the badged unverified long-tail.
     private func recompute(chain: Chain, chainCoins: [Coin], hiddenTokens: [HiddenToken]) {
         // Enrich held coins with catalog metadata where available.
         let catalogMetas = catalogSurfaceable + catalogUnverified
@@ -147,7 +175,13 @@ class TokenSelectionViewModel: ObservableObject {
         let verifiedIds = localIds.union(verifiedBreadth.map { $0.uniqueId })
         let unverifiedBreadth = logic.providerTokens(catalogUnverified, excludingLocal: verifiedIds, hiddenTokens: hiddenTokens)
 
-        browseProviderTokens = verifiedBreadth
+        // Cap AFTER the local/hidden exclusion, so a curated or user-hidden
+        // token can't eat one of a provider's slots and leave browse showing
+        // fewer than the cap in genuinely new tokens.
+        browseProviderTokens = TokenSelectionLogic.cappedPerProvider(
+            verifiedBreadth,
+            sourceKindByUniqueId: catalogSourceKinds
+        )
         // Held tokens lead the search pool. Excluding them (they're "already
         // added") makes a search for a token the vault holds return NOTHING,
         // which reads as the catalog being broken — search a held VULT on
@@ -165,7 +199,40 @@ class TokenSelectionViewModel: ObservableObject {
 struct TokenSelectionLogic {
     static let shared = TokenSelectionLogic()
 
+    /// How many of each provider's tokens browse shows before the user types.
+    /// The providers now return their lists best-first, so this is "the best N
+    /// per source", not an arbitrary truncation — 1inch alone offers ~2,200
+    /// tokens on Ethereum, which is not a list anyone scans.
+    ///
+    /// This bounds BROWSE only. Search is bounded by nothing, so this can never
+    /// be the reason a token isn't found.
+    static let browseTokensPerProvider = 20
+
     private init() {}
+
+    /// Takes the first `limit` tokens of EACH provider, preserving order.
+    ///
+    /// Per-provider rather than global: a chain served by two providers shows up
+    /// to `2 × limit`, a chain served by one shows `limit`, and a slow or empty
+    /// provider can't be crowded out by a fast one. Grouping is by the provider
+    /// `kind` that won the token in the catalog merge.
+    ///
+    /// Tokens with no known source share a single bucket rather than escaping
+    /// the cap — an unattributed token should shrink the list, not uncap it.
+    static func cappedPerProvider(
+        _ tokens: [CoinMeta],
+        sourceKindByUniqueId: [String: String],
+        limit: Int = browseTokensPerProvider
+    ) -> [CoinMeta] {
+        var shownPerSource: [String: Int] = [:]
+        return tokens.filter { token in
+            let source = sourceKindByUniqueId[token.uniqueId] ?? .empty
+            let shown = shownPerSource[source, default: 0]
+            guard shown < limit else { return false }
+            shownPerSource[source] = shown + 1
+            return true
+        }
+    }
 
     /// The vault's held non-native coins for browse, enriched with catalog
     /// metadata (logo / priceProviderId) when the catalog carries the SAME token.
@@ -224,22 +291,26 @@ struct TokenSelectionLogic {
         }
     }
 
-    /// Ticker matches over the whole local-first pool. Nothing is excluded here:
-    /// the pool already holds each token exactly once (deduped by `uniqueId`),
-    /// held tokens included, so search finds everything browse can show plus the
-    /// badged unverified long-tail. A same-ticker lookalike on a different
-    /// contract is a distinct `uniqueId` and is revealed alongside the real one —
-    /// that visibility is the point of the badge.
+    /// Ticker matches over the whole local-first pool. Nothing is excluded and
+    /// nothing is truncated: the pool already holds each token exactly once
+    /// (deduped by `uniqueId`), held tokens included, so search finds everything
+    /// browse can show plus the badged unverified long-tail. A same-ticker
+    /// lookalike on a different contract is a distinct `uniqueId` and is
+    /// revealed alongside the real one — that visibility is the point of the
+    /// badge.
+    ///
+    /// Results are unbounded on purpose. Browse is the shortlist; search is the
+    /// escape hatch, and a cap here would make a token unreachable purely
+    /// because too many other tickers contain the same substring — the failure
+    /// this whole surface exists to avoid. The grid renders lazily, so the cost
+    /// is bounded by what's on screen rather than by the match count.
     func filteredTokens(searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
 
-        let filtered = tokens
-            .filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
-            .prefix(20)
-
-        return Array(filtered)
+        let query = searchText.lowercased()
+        return tokens.filter { $0.ticker.lowercased().contains(query) }
     }
 
     /// Local-first dedup merge: earlier lists win a `uniqueId` collision (so the

@@ -70,7 +70,7 @@ enum RippleDestinationTag {
     /// does NOT fall through to the memo.
     static func displayTag(for payload: KeysignPayload) -> UInt32? {
         guard payload.coin.chain == .ripple, payload.swapPayload == nil else { return nil }
-        if case .Ripple(_, _, _, let fieldTag) = payload.chainSpecific, let fieldTag {
+        if case .Ripple(_, _, _, let fieldTag, _) = payload.chainSpecific, let fieldTag {
             return fieldTag == 0 ? nil : fieldTag
         }
         return payload.memo.flatMap(parseTag)

@@ -50,6 +50,11 @@ struct AsyncImageView: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: size.width, height: size.height)
+                                // Matched to the `.resource` branch above. Bundled coin
+                                // art is drawn circular, but remote art is whatever the
+                                // source published — square logos (SOLO, EQ) rendered as
+                                // squares in a list of circles until this clip existed.
+                                .clipShape(Circle())
                         case .failure:
                             fallbackText
                         case .empty:
