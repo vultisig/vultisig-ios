@@ -37,14 +37,14 @@
         "keysign_payload": {
             "coin": {
                 "chain": "Optimism",
-                "ticker": "OP",
+                "ticker": "ETH",
                 "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
                 "decimals": 18,
                 "price_provider_id": "",
                 "is_native_token": true,
                 "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
                 "contract_address": "",
-                "logo": "optimism"
+                "logo": "eth"
             },
             "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
             "to_amount": "100000000000000000",
@@ -70,14 +70,14 @@
         "keysign_payload": {
             "coin": {
                 "chain": "Base",
-                "ticker": "BASE",
+                "ticker": "ETH",
                 "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
                 "decimals": 18,
                 "price_provider_id": "",
                 "is_native_token": true,
                 "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
                 "contract_address": "",
-                "logo": "base"
+                "logo": "eth"
             },
             "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
             "to_amount": "100000000000000000",
@@ -103,14 +103,14 @@
         "keysign_payload": {
             "coin": {
                 "chain": "Blast",
-                "ticker": "BLAST",
+                "ticker": "ETH",
                 "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
                 "decimals": 18,
                 "price_provider_id": "",
                 "is_native_token": true,
                 "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
                 "contract_address": "",
-                "logo": "blast"
+                "logo": "eth"
             },
             "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
             "to_amount": "100000000000000000",
@@ -169,14 +169,14 @@
         "keysign_payload": {
             "coin": {
                 "chain": "Zksync",
-                "ticker": "ZK",
+                "ticker": "ETH",
                 "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
                 "decimals": 18,
                 "price_provider_id": "",
                 "is_native_token": true,
                 "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
                 "contract_address": "",
-                "logo": "zksync"
+                "logo": "zsync_era"
             },
             "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
             "to_amount": "100000000000000000",

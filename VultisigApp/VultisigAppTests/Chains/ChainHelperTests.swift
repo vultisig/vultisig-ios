@@ -46,17 +46,25 @@ struct ChainHelperTestCase: Codable {
 /// signer's bugs to ground truth, which is the failure mode the corpus exists
 /// to catch.
 ///
-/// - The pre-existing fixtures are shared with vultisig-android (and, for the
-///   `cosmos-sdk-sign-*` cases, the TypeScript core), so their hashes carry
-///   agreement from at least two signers.
 /// - `evm-chain-matrix` and `tcy` were added by running the Swift signer and
 ///   the TypeScript core signer over the identical payload and requiring the
 ///   two to produce byte-identical hashes.
+/// - Every other case here is also carried by vultisig-android (and, for the
+///   `cosmos-sdk-sign-*` cases, by the TypeScript core), so those hashes too
+///   carry agreement from at least two signers — **with one known exception**:
+///   `cosmos-sdk-sign-amino.json` → "SignAmino - THORChain transaction memo"
+///   appears in no other corpus and has only ever been produced by the Swift
+///   signer. It is left in place because removing coverage is worse than
+///   flagging it, but it is not corroborated and should not be treated as
+///   ground truth until a second signer reproduces it.
 ///
-/// `evm-chain-matrix` deliberately reuses one payload across chains, varying
-/// only `coin.chain`. Every case therefore has to hash differently, because the
-/// EIP-155 chain ID is part of the signed pre-image — that is what makes these
-/// vectors able to catch a per-chain chain-ID regression.
+/// `evm-chain-matrix` reuses one payload across chains: every field that feeds
+/// the EVM pre-image — recipient, amount, nonce, gas limit and fee fields — is
+/// held identical, and only `coin.chain` varies. The remaining differences are
+/// that chain's real native-asset metadata (`ticker`, `logo`), which the EVM
+/// signing input never reads. Every case must therefore still hash differently,
+/// because the EIP-155 chain ID *is* part of the signed pre-image — which is
+/// what lets these vectors catch a per-chain chain-ID regression.
 enum ChainHelperFixture: String, CaseIterable {
     case arb
     case bsc
@@ -195,9 +203,10 @@ final class ChainHelperTests: XCTestCase {
     /// The EVM matrix vectors must all hash differently from each other and
     /// from the Ethereum native send.
     ///
-    /// Every one of those payloads is byte-identical apart from `coin.chain`,
-    /// so the only thing that can separate their pre-images is the EIP-155
-    /// chain ID. If a chain ever stopped contributing its own chain ID — by
+    /// Those payloads hold every pre-image-feeding field identical and vary
+    /// only `coin.chain` (plus native-asset metadata the EVM signing input does
+    /// not read), so the only thing that can separate their pre-images is the
+    /// EIP-155 chain ID. If a chain ever stopped contributing its own — by
     /// falling back to the WalletCore coin type's default, which is what makes
     /// chains sharing a coin type dangerous — two of these would collapse onto
     /// the same hash. The individual vectors would still pass, because each
