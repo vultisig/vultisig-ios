@@ -237,11 +237,30 @@ final class SwapMinPayoutTests: XCTestCase {
             "=:e:0xabc:e5/1/0",                // empty mantissa
             "=:e:0xabc:12e5e5/1/0",            // two exponents
             "=:e:0xabc:1e999999/1/0",          // exponent beyond what we will expand
-            "=:e:0xabc: 12345/1/0"             // leading whitespace — not canonical
+            "=:e:0xabc: 12345/1/0",            // leading whitespace — not canonical
+            // The node reads LIM/INTERVAL/QUANTITY as ONE field and refuses the
+            // whole memo if any term is malformed, so the swap never executes —
+            // salvaging the LIM would advertise a floor nothing ever enforces.
+            "=:e:0xabc:12345/notanumber",
+            "=:e:0xabc:12345/1/notanumber",
+            "=:e:0xabc:12345/1/2/3",           // four terms — not this grammar
+            "=:e:0xabc:12345/1/2e2"            // only the LIM is ever scientific
         ]
         for memo in cases {
             XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: memo), "Must refuse to read a floor from: \(memo)")
         }
+    }
+
+    func testAssertedLimitRefusesValuesWiderThanTheNodesOwnUint() {
+        // THORNode parses the LIM as a `cosmos.Uint`; anything past 256 bits is a
+        // memo it rejects outright, so there is no floor to report.
+        let maxUint = BigInt(2).power(256) - 1
+
+        XCTAssertEqual(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:\(maxUint)/1/0"), maxUint)
+        XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:\(maxUint + 1)/1/0"))
+        // The exponent cap alone does not bound the product — a wide mantissa
+        // inside the cap still has to be range-checked.
+        XCTAssertNil(ThorchainMemoLimit.assertedLimit(in: "=:e:0xabc:999999999999999999999999999999e60/1/0"))
     }
 
     // MARK: - Co-signer

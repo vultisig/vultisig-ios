@@ -37,6 +37,12 @@ enum ThorchainMemoLimit {
     /// attacker-chosen power.
     private static let maxLimitExponent = 64
 
+    /// THORNode parses the LIM as a `cosmos.Uint` and rejects a memo whose value
+    /// does not fit 256 bits. A wider number is therefore a memo the chain will
+    /// refuse outright — no swap, no floor — so we must not read a guarantee out
+    /// of it. Exclusive upper bound.
+    private static let limitUpperBound = BigInt(2).power(256)
+
     /// The UTF-8 byte budget a chain's THORChain / Maya swap memo must fit, or
     /// `nil` when the source chain carries no such cap.
     ///
@@ -152,18 +158,26 @@ enum ThorchainMemoLimit {
     /// for that reason — the plain integer the node returns, and the scientific
     /// form we may have substituted.
     ///
-    /// Returns `nil` — never a guess — when the memo is not a swap memo, when the
-    /// LIM term is anything other than one of those two canonical spellings, or
-    /// when the floor is `0` (a swap that asserts no minimum, which is what a
+    /// Returns `nil` — never a guess — when the memo is not a swap memo, when any
+    /// term of the `LIM/INTERVAL/QUANTITY` triple is not something we can read,
+    /// or when the floor is `0` (a swap that asserts no minimum, which is what a
     /// user-set 0% slippage produces). Callers must then show no minimum at all
     /// rather than a number the signed transaction does not back.
     static func assertedLimit(in memo: String) -> BigInt? {
         let fields = memo.split(separator: ":", omittingEmptySubsequences: false)
         guard fields.count >= 4, isSwapAction(fields[0]) else { return nil }
 
-        // The LIM is the amount before the first `/` in `LIM/INTERVAL/QUANTITY`.
-        let limField = fields[3]
-        let limTerm = limField.prefix { $0 != "/" }
+        // All-or-nothing on the whole triple, matching the sibling parser that
+        // feeds the proto. THORNode reads `LIM/INTERVAL/QUANTITY` as one field
+        // and rejects the memo outright if any term is malformed — so a LIM
+        // salvaged from a triple we could not fully read is a floor the chain
+        // would never get as far as enforcing.
+        let terms = fields[3].split(separator: "/", omittingEmptySubsequences: false)
+        guard let limTerm = terms.first, terms.count <= 3 else { return nil }
+        // Only the LIM is ever rewritten into scientific notation; the streaming
+        // terms are plain integers in both the node's spelling and our own.
+        guard terms.dropFirst().allSatisfy({ isCanonicalDigits($0) }) else { return nil }
+
         guard let limit = parseLimitTerm(limTerm), limit > 0 else { return nil }
         return limit
     }
@@ -172,7 +186,7 @@ enum ThorchainMemoLimit {
     /// only two spellings a LIM we are willing to vouch for can take. ASCII
     /// digits only: `Character.isNumber` alone also accepts non-ASCII numerals
     /// and fractions, which `BigInt` would then read as something the node never
-    /// wrote.
+    /// wrote. Values wider than the node's own `cosmos.Uint` are refused too.
     private static func parseLimitTerm(_ term: some StringProtocol) -> BigInt? {
         let parts = term.split(separator: "e", omittingEmptySubsequences: false)
         guard let mantissaText = parts.first, isCanonicalDigits(mantissaText),
@@ -180,18 +194,22 @@ enum ThorchainMemoLimit {
             return nil
         }
 
+        let value: BigInt
         switch parts.count {
         case 1:
-            return mantissa
+            value = mantissa
         case 2:
             guard isCanonicalDigits(parts[1]),
                   let exponent = Int(parts[1]), exponent <= maxLimitExponent else {
                 return nil
             }
-            return mantissa * BigInt(10).power(exponent)
+            value = mantissa * BigInt(10).power(exponent)
         default:
             return nil
         }
+
+        guard value < limitUpperBound else { return nil }
+        return value
     }
 
     private static func isCanonicalDigits(_ text: some StringProtocol) -> Bool {
