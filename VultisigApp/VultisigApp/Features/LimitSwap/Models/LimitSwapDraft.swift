@@ -54,6 +54,15 @@ struct LimitSwapAsset: Equatable {
     /// Chain logo identifier — pass to `AsyncImageView`'s `tokenChainLogo:`
     /// parameter. Empty string when not available.
     let chainLogo: String
+    /// CoinGecko id, carried so the asset can be priced.
+    ///
+    /// Without it an asset cannot be resolved to a market-data source at all:
+    /// the lookup falls back to the contract address, which is empty for every
+    /// native asset — so BTC, ETH and RUNE, the assets limit orders are mostly
+    /// written against, would silently have no price history. Defaulted only
+    /// for fixtures; the production path is `init(coin:)`, which always carries
+    /// the real id.
+    let priceProviderId: String
 
     init(
         chain: Chain,
@@ -62,7 +71,8 @@ struct LimitSwapAsset: Equatable {
         contractAddress: String,
         isNativeToken: Bool,
         logo: String = "",
-        chainLogo: String = ""
+        chainLogo: String = "",
+        priceProviderId: String = ""
     ) {
         self.chain = chain
         self.ticker = ticker
@@ -71,6 +81,24 @@ struct LimitSwapAsset: Equatable {
         self.isNativeToken = isNativeToken
         self.logo = logo
         self.chainLogo = chainLogo
+        self.priceProviderId = priceProviderId
+    }
+
+    /// The asset as the shared market-data layer expects it.
+    ///
+    /// `MarketDataService` routes on `RateProvider.cryptoId(for:)`, which reads
+    /// the price-provider id first and the contract address second, so this is
+    /// only meaningful because the id is carried above.
+    var coinMeta: CoinMeta {
+        CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: logo,
+            decimals: decimals,
+            priceProviderId: priceProviderId,
+            contractAddress: contractAddress,
+            isNativeToken: isNativeToken
+        )
     }
 
     /// THORChain memo asset string form, e.g. `BTC.BTC` or `ETH.USDC-EC7`.
@@ -106,7 +134,8 @@ extension LimitSwapAsset {
             contractAddress: coin.contractAddress,
             isNativeToken: coin.isNativeToken,
             logo: coin.logo,
-            chainLogo: coin.tokenChainLogo ?? ""
+            chainLogo: coin.tokenChainLogo ?? "",
+            priceProviderId: coin.priceProviderId
         )
     }
 }
