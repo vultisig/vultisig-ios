@@ -33,7 +33,7 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
             content
         }
         .background(showBackground ? Theme.colors.bgPrimary.ignoresSafeArea() : nil)
-        .onChange(of: pushNotificationManager.foregroundNotification) { _, newValue in
+        .onReceive(pushNotificationManager.$foregroundNotification) { newValue in
             guard let newValue else { return }
             show(data: newValue)
         }

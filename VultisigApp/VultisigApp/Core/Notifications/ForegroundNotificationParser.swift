@@ -9,10 +9,10 @@ import UserNotifications
 enum ForegroundNotificationParser {
 
     static func parse(
-        notification: UNNotification,
+        content: UNNotificationContent,
         vaults: [Vault]
     ) -> ForegroundNotificationData? {
-        let userInfo = notification.request.content.userInfo
+        let userInfo = content.userInfo
 
         guard let deeplinkString = userInfo["deeplink"] as? String,
               let deeplinkURL = URL(string: deeplinkString) else {
@@ -30,7 +30,7 @@ enum ForegroundNotificationParser {
 
         let transactionType = parseTransactionType(
             queryItems: queryItems,
-            notificationBody: notification.request.content.body
+            notificationBody: content.body
         )
 
         return ForegroundNotificationData(
