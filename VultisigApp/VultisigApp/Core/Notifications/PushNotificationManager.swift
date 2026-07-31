@@ -25,24 +25,38 @@ class PushNotificationManager: ObservableObject {
 
     private let keychainService: KeychainService
     private let notificationService: NotificationServicing
+    private let fetchVaults: () throws -> [Vault]
+    private let canPresentForegroundBanner: @MainActor () -> Bool
     private let logger = Log.app.other
 
     private let notificationDelegate = NotificationDelegate()
 
     init(
         notificationService: NotificationServicing = NotificationService(),
-        keychainService: KeychainService = DefaultKeychainService.shared
+        keychainService: KeychainService = DefaultKeychainService.shared,
+        fetchVaults: (() throws -> [Vault])? = nil,
+        canPresentForegroundBanner: (@MainActor () -> Bool)? = nil
     ) {
         self.notificationService = notificationService
         self.keychainService = keychainService
+        self.fetchVaults = fetchVaults ?? {
+            try Storage.shared.modelContext.fetch(FetchDescriptor<Vault>())
+        }
+        self.canPresentForegroundBanner = canPresentForegroundBanner ?? {
+            ForegroundNotificationPresentationPolicy.canPresentCustomBanner
+        }
     }
 
     // MARK: - Notification Delegate
 
     func setupNotificationDelegate() {
-        notificationDelegate.onForegroundNotification = { [weak self] notification in
+        notificationDelegate.onForegroundNotification = { [weak self] content, completion in
             Task { @MainActor in
-                self?.handleForegroundNotification(notification)
+                guard let self else {
+                    completion(false)
+                    return
+                }
+                completion(self.handleForegroundNotification(content))
             }
         }
         UNUserNotificationCenter.current().delegate = notificationDelegate
@@ -284,14 +298,31 @@ class PushNotificationManager: ObservableObject {
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 
-    private func handleForegroundNotification(_ notification: UNNotification) {
-        let descriptor = FetchDescriptor<Vault>()
-        guard let vaults = try? Storage.shared.modelContext.fetch(descriptor) else { return }
+    @discardableResult
+    func handleForegroundNotification(_ content: UNNotificationContent) -> Bool {
+        guard canPresentForegroundBanner() else {
+            logger.info("Custom foreground banner unavailable while a modal is presented")
+            return false
+        }
 
-        foregroundNotification = ForegroundNotificationParser.parse(
-            notification: notification,
+        let vaults: [Vault]
+        do {
+            vaults = try fetchVaults()
+        } catch {
+            logger.error("Failed to fetch vaults for foreground notification: \(error.localizedDescription)")
+            return false
+        }
+
+        guard let parsedNotification = ForegroundNotificationParser.parse(
+            content: content,
             vaults: vaults
-        )
+        ) else {
+            logger.warning("Unable to parse foreground notification; using system presentation")
+            return false
+        }
+
+        foregroundNotification = parsedNotification
+        return true
     }
 
     private func reRegisterOptedInVaults() async {
@@ -318,17 +349,22 @@ class PushNotificationManager: ObservableObject {
 
 // MARK: - UNUserNotificationCenterDelegate
 
-private class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
-    var onForegroundNotification: ((UNNotification) -> Void)?
+    var onForegroundNotification: ((
+        UNNotificationContent,
+        @escaping (Bool) -> Void
+    ) -> Void)?
 
     func userNotificationCenter(
         _: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        onForegroundNotification?(notification)
-        completionHandler([.sound])
+        presentationOptions(
+            for: notification.request.content,
+            completion: completionHandler
+        )
     }
 
     func userNotificationCenter(
@@ -346,5 +382,47 @@ private class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
             }
         }
         completionHandler()
+    }
+
+    func presentationOptions(
+        for content: UNNotificationContent,
+        completion: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        guard let onForegroundNotification else {
+            completion(ForegroundNotificationPresentationPolicy.systemOptions)
+            return
+        }
+
+        onForegroundNotification(content) { handled in
+            completion(
+                handled
+                    ? ForegroundNotificationPresentationPolicy.customOptions
+                    : ForegroundNotificationPresentationPolicy.systemOptions
+            )
+        }
+    }
+}
+
+enum ForegroundNotificationPresentationPolicy {
+    static let customOptions: UNNotificationPresentationOptions = [.sound]
+    static let systemOptions: UNNotificationPresentationOptions = [.banner, .list, .sound]
+
+    @MainActor
+    static var canPresentCustomBanner: Bool {
+        #if os(iOS)
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }),
+              let keyWindow = windowScene.windows.first(where: \.isKeyWindow),
+              let rootViewController = keyWindow.rootViewController else {
+            return false
+        }
+        return rootViewController.presentedViewController == nil
+        #elseif os(macOS)
+        guard let window = NSApplication.shared.keyWindow ?? NSApplication.shared.mainWindow else {
+            return false
+        }
+        return window.attachedSheet == nil
+        #endif
     }
 }
