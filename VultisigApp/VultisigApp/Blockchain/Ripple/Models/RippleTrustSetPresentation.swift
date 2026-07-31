@@ -148,9 +148,17 @@ enum RippleTrustSetPresentation {
     }
 
     private static func heroContent(for display: Display) -> HeroContent {
-        .title(
-            text: String(format: "rippleTrustLineHeroTitle".localized, display.ticker),
-            caption: display.issuer
-        )
+        .title(text: activationTitle(ticker: display.ticker), caption: display.issuer)
+    }
+
+    /// The one sentence that names what a TrustSet did, given the trusted
+    /// currency's ticker.
+    ///
+    /// Shared by the done-screen hero and the transaction-history row on
+    /// purpose. History used to record an activation as a token transfer of the
+    /// limit, contradicting the receipt the user had just been shown; the two
+    /// surfaces now read from the same string so they cannot drift apart again.
+    static func activationTitle(ticker: String) -> String {
+        String(format: "rippleTrustLineHeroTitle".localized, ticker)
     }
 }

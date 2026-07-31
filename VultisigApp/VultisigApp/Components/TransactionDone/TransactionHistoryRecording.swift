@@ -21,23 +21,38 @@ private let logger = Log.wallet.other
 
 enum TransactionHistoryRecording {
 
-    /// Records the send-style transaction reflected in `payload` to tx
-    /// history. No-op when the payload doesn't carry a vault
-    /// `pubKeyECDSA` (e.g. previews), when the hash is empty, or when
-    /// the verb is `.claim` (QBTC has no tx-history schema yet).
+    /// What `record` will do with a payload.
     ///
-    /// Swap-side flows pre-record via `recordSwap` + `recordApprove`
-    /// from their screen layer (they carry from/to coin pairs we don't
-    /// surface on the unified payload) — those payloads ship with
-    /// `isSend == false` and no `keysignPayload`, so this helper skips
-    /// them to avoid double-counting. Cosigner paths with a
-    /// `KeysignPayload` are dispatched here via
-    /// `recordFromKeysignPayload` so the cosigner's swap-branch gets
-    /// captured too.
-    @MainActor
-    static func record(payload: TransactionDonePayload) {
-        guard payload.pubKeyECDSA.isNotEmpty else { return }
-        guard payload.hash.isNotEmpty else { return }
+    /// Split out from `record` so the DISPATCH ORDER is testable, not just the
+    /// individual predicates. The predicates were already pure; the precedence
+    /// between them was not, and precedence is where this dispatch has actually
+    /// gone wrong — a TrustSet reaching `recordSend` is a branch that exists but
+    /// sits in the wrong place, and a suite that only asserts "the payload IS a
+    /// TrustSet" stays green through exactly that mistake.
+    enum Route: Equatable {
+        /// No row. Previews and un-broadcast payloads, QBTC claims, limit-order
+        /// cancels, and the swap initiator (which pre-records in its own screen
+        /// layer, so recording here would double-count).
+        case skip
+        /// An XRPL trust-line activation.
+        case trustLineActivation
+        /// Delegated to `recordFromKeysignPayload`, which reads the swap-or-order
+        /// discriminator off the payload itself.
+        case keysignPayload
+        /// The plain send row.
+        case send
+    }
+
+    /// Which row `payload` earns, and — the part that matters — in which order
+    /// the question is asked.
+    ///
+    /// Pure and `static` so the whole precedence chain can be pinned by tests:
+    /// the recorder it drives is a `private init()` singleton that writes to
+    /// SwiftData, so `record` itself isn't reachable from a unit test.
+    static func route(for payload: TransactionDonePayload) -> Route {
+        guard payload.pubKeyECDSA.isNotEmpty else { return .skip }
+        guard payload.hash.isNotEmpty else { return .skip }
+
         // A limit-order CANCEL gets no row of its own. It is a step in an
         // order's life, not a transfer the user made, and recording it produces
         // a standalone "Send 0 RUNE" — or, on the L1 route, a send of dust —
@@ -49,40 +64,124 @@ enum TransactionHistoryRecording {
         // auditable: its hash is persisted on the `LimitOrder` and the order's
         // detail sheet links it to the block explorer, so the fee and the
         // transaction itself remain one tap away.
-        guard !isLimitOrderCancel(payload) else { return }
+        guard !isLimitOrderCancel(payload) else { return .skip }
+
+        // An XRPL trust-line activation is not a transfer. Asked BEFORE
+        // everything below it, because every route beneath this line ends in a
+        // `recordSend` that would persist the trust-line LIMIT as an amount sent
+        // — 1,000,000,000,000,000 USDC for a USDC activation.
+        //
+        // ⚠️ Recorded, not suppressed. A limit-order cancel above can be dropped
+        // because the ORDER's row narrates its lifecycle and keeps the hash
+        // linked; a TrustSet has no parent row, so dropping it would erase the
+        // fee the user paid and the XRP owner reserve they locked.
+        //
+        // One branch covers BOTH devices. The initiator's `SendDoneScreen` and
+        // the cosigner's `JoinKeysignDoneView.sendBranch` build different
+        // `amountCrypto` strings but both carry the `KeysignPayload`, and
+        // neither routes through `recordFromKeysignPayload` (a TrustSet has no
+        // swap payload and no limit memo) — so they share this one fallback, and
+        // fixing it here fixes it everywhere.
+        if isTrustLineActivation(payload) { return .trustLineActivation }
 
         // Cosigner: the full `KeysignPayload` carries the swap-or-send
         // discriminator + amounts. Delegate to the recorder helper.
         if let keysignPayload = payload.keysignPayload,
-           Self.routesThroughKeysignRecorder(keysignPayload) {
-            guard let vault = lookupVault(pubKeyECDSA: payload.pubKeyECDSA) else { return }
+           routesThroughKeysignRecorder(keysignPayload) {
+            return .keysignPayload
+        }
+
+        // QBTC claim opts out — no tx-history schema for claims today.
+        guard payload.verb != .claim else { return .skip }
+
+        // Swap initiator: records via `recordSwap` + `recordApprove`
+        // in its own screen layer. Skip here to avoid double-counting.
+        guard payload.isSend || payload.keysignPayload != nil else { return .skip }
+
+        return .send
+    }
+
+    /// Records the transaction reflected in `payload` to tx history, along the
+    /// route `route(for:)` chose.
+    ///
+    /// Swap-side flows pre-record via `recordSwap` + `recordApprove`
+    /// from their screen layer (they carry from/to coin pairs we don't
+    /// surface on the unified payload) — those payloads ship with
+    /// `isSend == false` and no `keysignPayload`, so this helper skips
+    /// them to avoid double-counting. Cosigner paths with a
+    /// `KeysignPayload` are dispatched here via
+    /// `recordFromKeysignPayload` so the cosigner's swap-branch gets
+    /// captured too.
+    @MainActor
+    static func record(payload: TransactionDonePayload) {
+        switch route(for: payload) {
+        case .skip:
+            return
+
+        case .trustLineActivation:
+            recordTrustLineActivation(payload: payload)
+
+        case .keysignPayload:
+            guard let keysignPayload = payload.keysignPayload,
+                  let vault = lookupVault(pubKeyECDSA: payload.pubKeyECDSA) else { return }
             TransactionHistoryRecorder.shared.recordFromKeysignPayload(
                 txHash: payload.hash,
                 approveTxHash: nil,
                 vault: vault,
                 keysignPayload: keysignPayload
             )
-            return
+
+        case .send:
+            TransactionHistoryRecorder.shared.recordSend(
+                txHash: payload.hash,
+                pubKeyECDSA: payload.pubKeyECDSA,
+                coin: payload.coin,
+                amountCrypto: payload.amountCrypto,
+                amountFiat: payload.amountFiat,
+                fromAddress: payload.fromAddress,
+                toAddress: payload.toAddress,
+                feeCrypto: payload.fee.crypto,
+                feeFiat: payload.fee.fiat,
+                chain: payload.coin.chain,
+                explorerLink: payload.explorerLink
+            )
         }
+    }
 
-        // QBTC claim opts out — no tx-history schema for claims today.
-        guard payload.verb != .claim else { return }
+    /// Whether this payload opened an XRPL trust line, judged by the WIRE
+    /// discriminator alone — the same rule `RippleTrustSetPresentation` uses to
+    /// decide what a co-signer is shown.
+    ///
+    /// Deliberately not judged from the amount, the coin or the hero. Whether
+    /// something IS a TrustSet is decided by the field that says so; keying it
+    /// off anything derived would let an unrenderable TrustSet fall back into
+    /// the Payment framing, which is exactly the false record this closes.
+    ///
+    /// Pure and `static` so the routing can be pinned by tests: the recorder it
+    /// guards is a `private init()` singleton that writes to SwiftData.
+    static func isTrustLineActivation(_ payload: TransactionDonePayload) -> Bool {
+        RippleTrustSetPresentation.isTrustSet(payload: payload.keysignPayload)
+    }
 
-        // Swap initiator: records via `recordSwap` + `recordApprove`
-        // in its own screen layer. Skip here to avoid double-counting.
-        guard payload.isSend || payload.keysignPayload != nil else { return }
-
-        TransactionHistoryRecorder.shared.recordSend(
+    /// Persists the activation row.
+    ///
+    /// The ticker and issuer come from the payload's own trust-line terms —
+    /// the resolved currency (so a hex currency code shows as `RLUSD`, not its
+    /// hex) and the account the line is with. When those cannot be read the row
+    /// still records, degrading to the coin's own ticker and the payload's
+    /// address: the transaction happened and cost a fee either way, and the one
+    /// thing that must never happen is falling back to a transfer row.
+    @MainActor
+    private static func recordTrustLineActivation(payload: TransactionDonePayload) {
+        let display = RippleTrustSetPresentation.display(for: payload.keysignPayload)
+        TransactionHistoryRecorder.shared.recordTrustLineActivation(
             txHash: payload.hash,
             pubKeyECDSA: payload.pubKeyECDSA,
             coin: payload.coin,
-            amountCrypto: payload.amountCrypto,
-            amountFiat: payload.amountFiat,
-            fromAddress: payload.fromAddress,
-            toAddress: payload.toAddress,
+            ticker: display?.ticker ?? payload.coin.ticker,
+            issuer: display?.issuer ?? payload.toAddress,
             feeCrypto: payload.fee.crypto,
             feeFiat: payload.fee.fiat,
-            chain: payload.coin.chain,
             explorerLink: payload.explorerLink
         )
     }

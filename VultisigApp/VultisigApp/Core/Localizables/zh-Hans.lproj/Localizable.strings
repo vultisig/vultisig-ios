@@ -1112,6 +1112,7 @@
 "rippleTrustLineNoXrpAccountError" = "信任线需要由一个 XRP 账户持有。请先向此保险库添加 XRP。";
 "rippleTrustLineOwnerReserve" = "锁定的准备金";
 "rippleTrustLineSpendableAfter" = "之后可用的 XRP";
+"rippleTrustLineTypePill" = "信任线";
 "rippleTrustLineUnreviewable" = "无法审核";
 "rippleTrustLineUnreviewableValue" = "无法读取此信任线的货币、发行方或上限，因此无法显示其条款。请勿签名。";
 "rippleUndecodedNotice" = "无法解码此交易。签名前请仔细核对原始 JSON。";

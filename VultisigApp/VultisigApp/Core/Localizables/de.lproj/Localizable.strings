@@ -1112,6 +1112,7 @@
 "rippleTrustLineNoXrpAccountError" = "Eine Trust Line benötigt ein XRP-Konto als Eigentümer. Fügen Sie diesem Vault zuerst XRP hinzu.";
 "rippleTrustLineOwnerReserve" = "Gesperrte Reserve";
 "rippleTrustLineSpendableAfter" = "Verfügbare XRP danach";
+"rippleTrustLineTypePill" = "Trust-Line";
 "rippleTrustLineUnreviewable" = "Prüfung nicht möglich";
 "rippleTrustLineUnreviewableValue" = "Währung, Emittent oder Limit dieser Trust Line konnten nicht gelesen werden, daher lassen sich ihre Bedingungen nicht anzeigen. Nicht signieren.";
 "rippleUndecodedNotice" = "Diese Transaktion konnte nicht dekodiert werden. Überprüfe das rohe JSON sorgfältig, bevor du signierst.";

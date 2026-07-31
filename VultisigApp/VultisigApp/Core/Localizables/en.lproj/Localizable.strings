@@ -1110,6 +1110,7 @@
 "rippleTrustLineNoXrpAccountError" = "A trust line needs an XRP account to own it. Add XRP to this vault first.";
 "rippleTrustLineOwnerReserve" = "Reserve locked";
 "rippleTrustLineSpendableAfter" = "Spendable XRP after";
+"rippleTrustLineTypePill" = "Trust line";
 "rippleTrustLineUnreviewable" = "Cannot review";
 "rippleTrustLineUnreviewableValue" = "This trust line's currency, issuer or limit could not be read, so its terms cannot be shown. Do not sign it.";
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";

@@ -24,6 +24,19 @@ enum TransactionHistoryType: String, Codable, Sendable, Hashable {
     /// they carry no swap payload and so used to be recorded as plain `send`
     /// rows.
     case limit
+    /// An XRPL `TrustSet` that opened a trust line.
+    ///
+    /// The same category as `.approve`, and typed for the same reason: it is a
+    /// PERMISSIONING transaction. It costs a fee and locks an owner reserve, but
+    /// it moves nothing — its amount is the line's LIMIT, and a TrustSet routed
+    /// to `.send` renders that limit as a transferred quantity (a USDC
+    /// activation reads as a send of 1,000,000,000,000,000 USDC).
+    ///
+    /// ⚠️ Typed rather than suppressed. A limit-order CANCEL gets no row because
+    /// the order's own row narrates its lifecycle and keeps the hash linked; a
+    /// TrustSet has no parent row, so hiding it would erase the fee the user paid
+    /// and the XRP reserve they locked.
+    case trustLineActivation
 }
 
 // MARK: - Status Enum

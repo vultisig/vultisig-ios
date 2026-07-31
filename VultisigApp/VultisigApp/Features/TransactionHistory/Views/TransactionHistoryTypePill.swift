@@ -44,6 +44,13 @@ struct TransactionHistoryTypePill: View {
             Image("clock-rotate-clockwise-3")
                 .resizable()
                 .frame(width: 12, height: 12)
+        case .trustLineActivation:
+            // A trust line is a link between an account and an issuer, which is
+            // what this row records — not a check mark, which is the approve
+            // pill and would make two different permissions look alike.
+            Image(.chainLink3)
+                .resizable()
+                .frame(width: 12, height: 12)
         }
     }
 
@@ -57,6 +64,8 @@ struct TransactionHistoryTypePill: View {
             return "approve".localized
         case .limit:
             return "limitSwap.typePill".localized
+        case .trustLineActivation:
+            return "rippleTrustLineTypePill".localized
         }
     }
 

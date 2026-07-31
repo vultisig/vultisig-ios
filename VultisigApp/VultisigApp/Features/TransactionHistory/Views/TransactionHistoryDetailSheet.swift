@@ -45,6 +45,8 @@ struct TransactionHistoryDetailSheet: View {
 
     private var isLimit: Bool { transaction.type == .limit }
 
+    private var isTrustLineActivation: Bool { transaction.type == .trustLineActivation }
+
     /// A limit order and a swap share the from/to header pair: both express an
     /// intent to trade one asset for another.
     private var showsFromToCards: Bool {
@@ -123,16 +125,36 @@ struct TransactionHistoryDetailSheet: View {
                     tokenChainLogo: transaction.coinChainLogo
                 )
 
-                Text(transaction.amountCrypto)
-                    .font(Theme.fonts.priceTitle1)
-                    .foregroundStyle(Theme.colors.textPrimary)
+                if isTrustLineActivation {
+                    trustLineHeadline
+                } else {
+                    Text(transaction.amountCrypto)
+                        .font(Theme.fonts.priceTitle1)
+                        .foregroundStyle(Theme.colors.textPrimary)
 
-                Text(transaction.amountFiat.formatToFiat(includeCurrencySymbol: true))
-                    .font(Theme.fonts.priceBodyS)
-                    .foregroundStyle(Theme.colors.textTertiary)
+                    Text(transaction.amountFiat.formatToFiat(includeCurrencySymbol: true))
+                        .font(Theme.fonts.priceBodyS)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                }
             }
             .padding(.vertical, 8)
         }
+    }
+
+    /// The done screen's hero, restated. A TrustSet has no amount and no fiat
+    /// value — its only number is the trust line's limit, which is a ceiling the
+    /// account accepted, not a sum that moved. Rendering it in the amount slot
+    /// is the bug this row type exists to close.
+    @ViewBuilder
+    private var trustLineHeadline: some View {
+        Text(RippleTrustSetPresentation.activationTitle(ticker: transaction.coinTicker))
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
+
+        Text(truncatedAddress(transaction.toAddress))
+            .font(Theme.fonts.priceBodyS)
+            .foregroundStyle(Theme.colors.textTertiary)
     }
 
     // MARK: - From/To Cards (Swap only)
@@ -238,7 +260,15 @@ struct TransactionHistoryDetailSheet: View {
             Separator().opacity(0.2)
             detailRow(title: "from".localized, value: truncatedAddress(transaction.fromAddress))
             Separator().opacity(0.2)
-            detailRow(title: "to".localized, value: truncatedAddress(transaction.toAddress))
+            // ⚠️ A TrustSet has no XRPL destination field at all. The row stores
+            // the ISSUER here because the schema has nowhere else to put it, so
+            // it has to be labelled as the issuer — under a "To" label it reads
+            // as a recipient the transaction paid, which is the same false
+            // framing the verify summary suppresses this row to avoid.
+            detailRow(
+                title: (isTrustLineActivation ? "rippleTrustLineIssuer" : "to").localized,
+                value: truncatedAddress(transaction.toAddress)
+            )
             Separator().opacity(0.2)
             detailRow(title: "date".localized, value: formattedDate)
             Separator().opacity(0.2)

@@ -302,7 +302,13 @@ class TransactionHistoryViewModel: ObservableObject {
             // carries the status.
             result = result.filter { $0.type == .limit }
         case .send:
-            result = result.filter { $0.type == .send || $0.type == .approve }
+            // Everything that isn't a trade. An approve and a trust-line
+            // activation both belong here for the same reason: they are what the
+            // user did from the Send/asset flows, they cost a fee, and there is
+            // no other tab that would ever show them.
+            result = result.filter {
+                $0.type == .send || $0.type == .approve || $0.type == .trustLineActivation
+            }
         }
 
         // Asset filter
