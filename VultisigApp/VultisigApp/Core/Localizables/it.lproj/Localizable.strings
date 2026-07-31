@@ -1339,8 +1339,17 @@
 "swapErrorInsufficientFundsTitle" = "Fondi Insufficienti";
 "swapErrorInsufficientGasDescription" = "Token gas insufficiente per coprire la commissione di rete. Per favore aggiungi gas al tuo portafoglio.";
 "swapErrorInsufficientGasTitle" = "Gas Insufficiente";
+"swapErrorInvalidDestinationTitle" = "Destinazione Non Valida";
+"swapErrorNoLiquidityPoolTitle" = "Nessun Pool di Liquidità";
+"swapErrorProviderRejectedDescription" = "Il fornitore di scambio non è riuscito a quotare questa operazione. Riprova o scegli un'altra coppia.";
+"swapErrorProviderRejectedTitle" = "Scambio Non Disponibile";
+"swapErrorRecipientRouteTitle" = "Nessun Percorso al Destinatario";
+"swapErrorRecipientVerificationTitle" = "Verifica Destinatario Fallita";
+"swapErrorRouteUnavailableTitle" = "Nessun Percorso Disponibile";
 "swapErrorSameAssetDescription" = "Non è possibile scambiare lo stesso asset. Per favore seleziona un asset diverso.";
 "swapErrorSameAssetTitle" = "Stesso Asset";
+"swapErrorSlippageTooTightTitle" = "Slippage Troppo Stretto";
+"swapErrorTradingHaltedTitle" = "Negoziazione Sospesa";
 "swapErrorUnexpectedDescription" = "Si è verificato un errore imprevisto. Per favore riprova.";
 "swapErrorUnexpectedTitle" = "Errore Imprevisto";
 "swapFee" = "Commissione di scambio";

@@ -19,7 +19,7 @@ import SwiftUI
 enum SwapCryptoLogic {
     // MARK: - Errors
 
-    enum Errors: String, Error, LocalizedError {
+    enum Errors: String, Error, LocalizedError, SwapErrorPresentable {
         case unexpectedError
         case insufficientFunds
         case insufficientGas
@@ -47,6 +47,12 @@ enum SwapCryptoLogic {
             case .inboundAddress: return "swapErrorInboundAddressDescription".localized
             case .sameAsset: return "swapErrorSameAssetDescription".localized
             }
+        }
+
+        /// Every case has a localized description, so the body is that string;
+        /// the coalesce only satisfies `LocalizedError`'s optional return type.
+        var errorMessage: String {
+            errorDescription ?? Errors.unexpectedError.errorDescription ?? ""
         }
     }
 

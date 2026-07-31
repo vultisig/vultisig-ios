@@ -63,4 +63,64 @@ final class SwapServiceErrorSurfacingTests: XCTestCase {
         ]
         XCTAssertEqual(SwapService.surfacedQuoteError(from: errors) as? SwapKitError, .addressScreeningFailed)
     }
+
+    // MARK: - A classified verdict beats an unclassified upstream relay
+
+    func testClassifiedVerdictWinsOverRawProviderRelayRegardlessOfOrder() {
+        // The reported case: a poolless THORChain↔EVM pair fails on THORChain and
+        // MAYAChain at once. THORChain's body classifies to `.noLiquidityPool`;
+        // an unclassifiable body only reaches `.serverError`. `errors` arrives in
+        // task-completion order, so without this rule the user saw whichever node
+        // happened to answer first — a different sentence on every refresh.
+        let raw = SwapError.serverError(message: "failed to simulate swap: pool ETH.FOO-0XDEAD doesn't exist")
+        let classifiedFirst: [Error] = [SwapError.noLiquidityPool, raw]
+        let classifiedLast: [Error] = [raw, SwapError.noLiquidityPool]
+        XCTAssertEqual(SwapService.surfacedQuoteError(from: classifiedFirst) as? SwapError, .noLiquidityPool)
+        XCTAssertEqual(SwapService.surfacedQuoteError(from: classifiedLast) as? SwapError, .noLiquidityPool)
+    }
+
+    func testRawRelaySurfacesWhenNothingWasClassified() {
+        // Nothing better available — the relay is still the only signal, and its
+        // message is preserved for the logs.
+        let raw = SwapError.serverError(message: "some upstream body")
+        XCTAssertEqual(SwapService.surfacedQuoteError(from: [raw]) as? SwapError, raw)
+    }
+
+    func testCoreProviderPrecedenceOutranksClassification() {
+        // A classified SwapKit error must NOT jump ahead of a core provider's
+        // unclassified relay: the SwapKit-is-optional rule is about which
+        // provider's opinion is trustworthy, and it still comes first.
+        let errors: [Error] = [
+            SwapKitError.noRoutesFound,
+            SwapError.serverError(message: "core provider body")
+        ]
+        XCTAssertEqual(
+            SwapService.surfacedQuoteError(from: errors) as? SwapError,
+            .serverError(message: "core provider body")
+        )
+    }
+
+    func testRelayLosesToAnyOtherCoreError() {
+        // Transport failures are not `SwapError`, but they still carry a verdict
+        // of their own, so they outrank the relay.
+        let errors: [Error] = [SwapError.serverError(message: "body"), URLError(.timedOut)]
+        XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is URLError)
+    }
+
+    func testOnlyTheRelayIsDemoted() {
+        // Guard against over-reach: the rule demotes `.serverError` and nothing
+        // else. A typed aggregator failure with a specific, actionable message
+        // must keep its place in completion order — otherwise a provider that
+        // merely answered slower downgrades "Insufficient funds" to the generic
+        // "No route available".
+        let kyber = KyberSwapError.insufficientFunds(message: "not enough ETH")
+        let errors: [Error] = [kyber, SwapError.routeUnavailable]
+        XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is KyberSwapError)
+    }
+
+    func testNonSwapErrorCoreFailureStillSurfacesInOrder() {
+        // No relay involved at all: completion order is untouched.
+        let errors: [Error] = [URLError(.timedOut), SwapError.tradingHalted]
+        XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is URLError)
+    }
 }

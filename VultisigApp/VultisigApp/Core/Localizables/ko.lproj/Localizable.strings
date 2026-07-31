@@ -1302,8 +1302,17 @@
 "swapErrorInsufficientFundsTitle" = "자금 부족";
 "swapErrorInsufficientGasDescription" = "네트워크 수수료를 충당할 가스 토큰이 부족합니다. 지갑에 가스를 추가하세요.";
 "swapErrorInsufficientGasTitle" = "가스 부족";
+"swapErrorInvalidDestinationTitle" = "유효하지 않은 대상";
+"swapErrorNoLiquidityPoolTitle" = "유동성 풀 없음";
+"swapErrorProviderRejectedDescription" = "스왑 제공자가 이 거래의 견적을 제공하지 못했습니다. 다시 시도하거나 다른 쌍을 선택하세요.";
+"swapErrorProviderRejectedTitle" = "스왑 불가";
+"swapErrorRecipientRouteTitle" = "수신자 경로 없음";
+"swapErrorRecipientVerificationTitle" = "수신자 확인 실패";
+"swapErrorRouteUnavailableTitle" = "사용 가능한 경로 없음";
 "swapErrorSameAssetDescription" = "동일한 자산으로 스왑할 수 없습니다. 다른 자산을 선택하세요.";
 "swapErrorSameAssetTitle" = "동일한 자산";
+"swapErrorSlippageTooTightTitle" = "슬리피지 허용 범위가 너무 좁음";
+"swapErrorTradingHaltedTitle" = "거래 중단됨";
 "swapErrorUnexpectedDescription" = "예상치 못한 오류가 발생했습니다. 다시 시도하세요.";
 "swapErrorUnexpectedTitle" = "예상치 못한 오류";
 "swapFee" = "스왑 수수료";

@@ -162,4 +162,72 @@ final class SwapErrorMappingTests: XCTestCase {
         )
         XCTAssertEqual(SwapService.mapThorchainSwapError(error).errorDescription, "swapTradingHalted".localized)
     }
+
+    // MARK: - Both nodes' wording for the same missing-pool verdict
+
+    func testThorchainMissingPoolVerbatimBodyMapsToNoLiquidityPool() {
+        // Verbatim THORNode body for THOR.RUNE → ETH.VULT (no such pool),
+        // captured from gateway.liquify.com/chain/thorchain_api.
+        let error = ThorchainSwapError(
+            code: 2,
+            message: "failed to calculate min swap amount: fail to convert dest fee to src asset pool does not exist"
+        )
+        XCTAssertEqual(SwapService.mapThorchainSwapError(error), .noLiquidityPool)
+    }
+
+    func testMayachainContractedWordingMapsToNoLiquidityPool() {
+        // Verbatim Mayanode body for the same pair. MAYAChain contracts the verb
+        // where THORChain spells it out, which is why the same verdict used to
+        // classify on one chain and leak the raw node string on the other.
+        let error = MayachainSwapError(
+            code: nil,
+            error: "failed to simulate swap: pool ETH.VULT-0XB788144DF611029C60B859DF47E79B7726C4DEBA doesn't exist"
+        )
+        XCTAssertEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
+    }
+
+    func testMayachainContractedWordingNoLongerLeaksTheRawNodeString() {
+        let raw = "failed to simulate swap: pool ETH.VULT-0XB788144DF611029C60B859DF47E79B7726C4DEBA doesn't exist"
+        let error = MayachainSwapError(code: nil, error: raw)
+        XCTAssertNotEqual(SwapService.mapMayachainSwapError(error).errorDescription, raw)
+    }
+
+    func testTypographicApostropheAlsoClassifies() {
+        let error = MayachainSwapError(code: nil, error: "pool ETH.FOO doesn\u{2019}t exist")
+        XCTAssertEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
+    }
+
+    func testMissingPoolMatchIsCaseInsensitive() {
+        let error = ThorchainSwapError(code: 3, message: "POOL DOES NOT EXIST")
+        XCTAssertEqual(SwapService.mapThorchainSwapError(error), .noLiquidityPool)
+    }
+
+    func testUnknownThornameIsNotAMissingPool() {
+        // The trap the contraction opens up: THORNode uses the same verb for a
+        // bad destination address. Verbatim body, captured live. Classifying it
+        // as a missing pool would tell the user to pick a different asset when
+        // the real fault is the address.
+        let message = "bad destination address: unable to parse address: THORName doesn't exist: thor1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
+        let error = ThorchainSwapError(code: 2, message: message)
+        XCTAssertNotEqual(SwapService.mapThorchainSwapError(error), .noLiquidityPool)
+        XCTAssertEqual(SwapService.mapThorchainSwapError(error), .serverError(message: message))
+    }
+
+    func testUnrelatedMissingThingIsNotAMissingPool() {
+        let error = MayachainSwapError(code: nil, error: "inbound address doesn't exist")
+        XCTAssertNotEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
+    }
+
+    func testPoolAndMissingVerbInDifferentClausesIsNotAMissingPool() {
+        // The pool and the verb have to be in the SAME clause. A composite body
+        // that names a pool in one clause and something else missing in another
+        // is not a missing-pool verdict — and this classification is load-bearing
+        // beyond the tooltip: the limit-order form persists `.noRoute` from it
+        // and blocks placement.
+        let error = MayachainSwapError(
+            code: nil,
+            error: "pool ETH.USDC rejected the swap: affiliate THORName doesn't exist"
+        )
+        XCTAssertNotEqual(SwapService.mapMayachainSwapError(error), .noLiquidityPool)
+    }
 }
