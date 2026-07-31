@@ -22,7 +22,7 @@ struct SetupPushNotificationsModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
-                NotificationsIntroSheet(isPresented: $shouldShow)
+                sheetContent
             }
             .onChange(of: shouldShow) { _, newValue in
                 if !newValue {
@@ -33,6 +33,21 @@ struct SetupPushNotificationsModifier: ViewModifier {
             .onChange(of: vault) { _, _ in
                 checkIfNeeded()
             }
+    }
+
+    @ViewBuilder
+    private var sheetContent: some View {
+        switch activeSheetType {
+        case .intro:
+            NotificationsIntroSheet(isPresented: $shouldShow)
+        case .vaultOptIn:
+            NotificationsIntroSheet(
+                isPresented: $shouldShow,
+                targetVault: vault
+            )
+        case nil:
+            EmptyView()
+        }
     }
 
     private func checkIfNeeded() {

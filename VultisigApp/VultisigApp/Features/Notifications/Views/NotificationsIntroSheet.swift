@@ -8,14 +8,29 @@ import SwiftUI
 
 struct NotificationsIntroSheet: View {
     @Binding var isPresented: Bool
+    let targetVault: Vault?
     @Query var vaults: [Vault]
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var step: Step = .welcome
 
+    enum PermissionDestination {
+        case dismiss
+        case enableVault(Vault)
+        case vaultSelection
+    }
+
     private enum Step {
         case welcome
         case vaultOptIn
+    }
+
+    init(
+        isPresented: Binding<Bool>,
+        targetVault: Vault? = nil
+    ) {
+        _isPresented = isPresented
+        self.targetVault = targetVault
     }
 
     var allVaultsEnabled: Bool {
@@ -78,15 +93,22 @@ struct NotificationsIntroSheet: View {
                 PrimaryButton(title: "enable") {
                     Task {
                         let granted = await pushNotificationManager.requestPermission()
-                        if granted && vaults.count > 1 {
+                        pushNotificationManager.isNotificationsEnabled = granted
+
+                        switch Self.permissionDestination(
+                            granted: granted,
+                            targetVault: targetVault,
+                            vaults: vaults
+                        ) {
+                        case .dismiss:
+                            dismiss()
+                        case .enableVault(let vault):
+                            pushNotificationManager.setVaultOptIn(vault, enabled: true)
+                            dismiss()
+                        case .vaultSelection:
                             withAnimation(.interpolatingSpring) {
                                 step = .vaultOptIn
                             }
-                        } else {
-                            if let vault = vaults.first {
-                                pushNotificationManager.setVaultOptIn(vault, enabled: true)
-                            }
-                            dismiss()
                         }
                     }
                 }
@@ -158,6 +180,18 @@ struct NotificationsIntroSheet: View {
     private func dismiss() {
         pushNotificationManager.hasSeenNotificationPrompt = true
         isPresented = false
+    }
+
+    static func permissionDestination(
+        granted: Bool,
+        targetVault: Vault?,
+        vaults: [Vault]
+    ) -> PermissionDestination {
+        guard granted else { return .dismiss }
+        if let targetVault { return .enableVault(targetVault) }
+        if vaults.count > 1 { return .vaultSelection }
+        if let vault = vaults.first { return .enableVault(vault) }
+        return .dismiss
     }
 }
 
