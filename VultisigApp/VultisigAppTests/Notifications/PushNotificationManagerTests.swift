@@ -36,7 +36,7 @@ final class PushNotificationManagerTests: XCTestCase {
         XCTAssertEqual(manager.deviceToken, "cached-token")
     }
 
-    func test_unchangedTokenReRegistersOptedInVault() async throws {
+    func test_unchangedTokenSkipsReRegistrationWhenNothingPending() async throws {
         let tokenData = Data([0x01, 0xAB, 0xFF])
         let tokenString = "01abff"
         let keychain = MockKeychainService()
@@ -52,6 +52,37 @@ final class PushNotificationManagerTests: XCTestCase {
         Storage.shared.insert(settings)
         vault.settings = settings
         try Storage.shared.save()
+
+        manager.setDeviceToken(tokenData)
+
+        // Give the reconcile Task a chance to run, then confirm it didn't.
+        try await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertEqual(service.registerRequests.count, 0)
+    }
+
+    func test_pendingRegistrationReRegistersOnceTokenArrives() async throws {
+        let tokenData = Data([0x01, 0xAB, 0xFF])
+        let tokenString = "01abff"
+        let keychain = MockKeychainService()
+        let service = NotificationServiceSpy()
+        let manager = PushNotificationManager(
+            notificationService: service,
+            keychainService: keychain
+        )
+        let vault = TestStore.makeVault()
+        let settings = VaultSettings(vault: vault)
+        settings.notificationsEnabled = true
+        Storage.shared.insert(settings)
+        vault.settings = settings
+        try Storage.shared.save()
+
+        // Simulates the opt-in race from #4971: opt-in fires before APNs
+        // has delivered a token, so registration silently no-ops.
+        await manager.registerVault(
+            vaultId: notificationVaultId(for: vault),
+            localPartyID: vault.localPartyID
+        )
+        XCTAssertEqual(service.registerRequests.count, 0)
 
         manager.setDeviceToken(tokenData)
 

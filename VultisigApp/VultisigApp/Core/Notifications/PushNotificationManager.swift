@@ -29,6 +29,12 @@ class PushNotificationManager: ObservableObject {
 
     private let notificationDelegate = NotificationDelegate()
 
+    /// Set when `registerVault` is called before a device token is available
+    /// (the opt-in race from #4971: permission just granted, APNs hasn't
+    /// delivered a token yet). Lets `setDeviceToken` catch up that vault
+    /// without re-registering everything on every ordinary launch.
+    private var hasPendingRegistration = false
+
     init(
         notificationService: NotificationServicing = NotificationService(),
         keychainService: KeychainService = DefaultKeychainService.shared
@@ -84,12 +90,13 @@ class PushNotificationManager: ObservableObject {
         deviceToken = tokenString
         keychainService.setDeviceToken(tokenString)
 
-        if tokenString == previousToken {
-            logger.info("Device token unchanged, reconciling vault registrations")
-        } else {
-            logger.info("Device token changed, reconciling vault registrations")
+        guard tokenString != previousToken || hasPendingRegistration else {
+            logger.info("Device token unchanged and no pending registrations, skipping")
+            return
         }
 
+        logger.info("Device token \(tokenString == previousToken ? "unchanged but registration pending" : "changed"), reconciling vault registrations")
+        hasPendingRegistration = false
         Task {
             await reRegisterOptedInVaults()
         }
@@ -195,7 +202,8 @@ class PushNotificationManager: ObservableObject {
 
     func registerVault(vaultId: String, localPartyID: String) async {
         guard let token = deviceToken else {
-            logger.warning("No device token available for vault registration")
+            logger.warning("No device token available for vault registration, will register once a token arrives")
+            hasPendingRegistration = true
             return
         }
 
