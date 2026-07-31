@@ -35,6 +35,7 @@ class PushNotificationManager: ObservableObject {
     ) {
         self.notificationService = notificationService
         self.keychainService = keychainService
+        deviceToken = keychainService.getDeviceToken()
     }
 
     // MARK: - Notification Delegate
@@ -83,12 +84,12 @@ class PushNotificationManager: ObservableObject {
         deviceToken = tokenString
         keychainService.setDeviceToken(tokenString)
 
-        guard tokenString != previousToken else {
-            logger.info("Device token unchanged, skipping re-registration")
-            return
+        if tokenString == previousToken {
+            logger.info("Device token unchanged, reconciling vault registrations")
+        } else {
+            logger.info("Device token changed, reconciling vault registrations")
         }
 
-        logger.info("Device token changed, re-registering vaults")
         Task {
             await reRegisterOptedInVaults()
         }
