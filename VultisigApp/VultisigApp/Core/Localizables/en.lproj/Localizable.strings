@@ -725,6 +725,8 @@
 "limitSwap.done.status.restingDetail" = "Resting until your price is met";
 "limitSwap.done.status.submitted" = "Order submitted";
 "limitSwap.error.advancedSwapQueueDisabled" = "Limit orders are temporarily unavailable on THORChain. Try again later or use a market swap.";
+"limitSwap.error.insufficientFunds" = "Not enough %@ to place this order. Enter an amount within your balance.";
+"limitSwap.error.insufficientGas" = "Not enough %@ to cover the network fee for this order.";
 "limitSwap.error.invalidInputs" = "Some order details are invalid. Check the amount, price and expiry, then try again.";
 "limitSwap.error.limitAmountTooSmall" = "This order is too small to place at a limit price. Increase the amount or adjust the price and try again.";
 "limitSwap.error.pairNotRoutable" = "This pair can't be traded on THORChain right now. Pick a different asset.";

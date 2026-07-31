@@ -875,10 +875,20 @@ enum SwapCryptoLogic {
     /// Returns the specific balance error, or nil if balance is sufficient.
     /// Differentiates between insufficient token balance and insufficient gas.
     static func balanceError(fromCoin: Coin, feeCoin: Coin, fromAmount: String, fee: BigInt) -> Errors? {
+        balanceError(fromCoin: fromCoin, feeCoin: feeCoin, amount: fromAmount.toDecimal(), fee: fee)
+    }
+
+    /// The same rule, entered with an amount that is already a `Decimal`.
+    ///
+    /// The limit form holds its sell amount as a `BigInt` in the source coin's
+    /// base units, so routing it through the `String` entry point above would
+    /// format it and immediately re-parse it through a locale-aware parser for
+    /// nothing. Both swap tabs therefore share ONE affordability rule — there is
+    /// no second implementation to drift.
+    static func balanceError(fromCoin: Coin, feeCoin: Coin, amount: Decimal, fee: BigInt) -> Errors? {
         let fromFee = feeCoin.decimal(for: fee)
         let fromBalance = fromCoin.balanceDecimal
         let feeCoinBalance = feeCoin.balanceDecimal
-        let amount = fromAmount.toDecimal()
 
         if feeCoin == fromCoin {
             // Same coin pays for amount + gas.

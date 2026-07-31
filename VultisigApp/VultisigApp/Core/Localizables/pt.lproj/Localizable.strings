@@ -727,6 +727,8 @@
 "limitSwap.done.status.restingDetail" = "Aguardando até atingir seu preço";
 "limitSwap.done.status.submitted" = "Ordem enviada";
 "limitSwap.error.advancedSwapQueueDisabled" = "As ordens limite estão temporariamente indisponíveis na THORChain. Tente novamente mais tarde ou use uma troca de mercado.";
+"limitSwap.error.insufficientFunds" = "Não há %@ suficiente para colocar esta ordem. Insira um valor dentro do seu saldo.";
+"limitSwap.error.insufficientGas" = "Não há %@ suficiente para cobrir a taxa de rede desta ordem.";
 "limitSwap.error.invalidInputs" = "Alguns detalhes da ordem são inválidos. Verifique o valor, o preço e a validade e tente novamente.";
 "limitSwap.error.limitAmountTooSmall" = "Esta ordem é pequena demais para um preço limite. Aumente o valor ou ajuste o preço e tente novamente.";
 "limitSwap.error.pairNotRoutable" = "Este par não pode ser negociado na THORChain no momento. Escolha outro ativo.";

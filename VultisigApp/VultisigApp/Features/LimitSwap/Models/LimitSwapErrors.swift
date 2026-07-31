@@ -77,6 +77,49 @@ enum LimitSwapPairUnroutableReason: Equatable {
     }
 }
 
+/// Whether the vault can afford the sell amount the limit form currently holds.
+///
+/// Derived from the SAME rule the market swap gates Continue on
+/// (`SwapCryptoLogic.balanceError`), so the two swap tabs can never disagree for
+/// identical input. This type only names the verdict and the asset it is about;
+/// the affordability arithmetic lives entirely in `SwapCryptoLogic`.
+enum LimitSwapBalanceState: Equatable {
+    /// The sell amount, and the network fee on top of it, both fit.
+    case sufficient
+    /// The sell amount alone exceeds the source balance. Knowable WITHOUT a
+    /// resolved network fee, so it is shown the moment the amount is typed.
+    case insufficientFunds(sourceTicker: String)
+    /// The sell amount fits, but the network fee does not — either it no longer
+    /// fits alongside the amount (source coin pays its own gas) or the native
+    /// fee sibling can't cover it (an ERC20 source pays ETH). Only ever produced
+    /// from a RESOLVED fee estimate.
+    case insufficientGas(feeTicker: String)
+    /// Nothing can be concluded yet: the network-fee estimate is still in flight
+    /// (so gas coverage is unjudgeable), or the selected coin and the draft's
+    /// source asset have not re-synced after a pair change. Renders NO row and
+    /// blocks placement — the form never shows a gas error it would have to take
+    /// back one frame later.
+    case indeterminate
+
+    /// Whether this verdict must keep the Place Order button disabled. Only an
+    /// affirmative `sufficient` unblocks it, so both failure modes and the
+    /// not-yet-known state all fail closed.
+    var blocksPlacement: Bool { self != .sufficient }
+
+    /// Message for the inline notice row, or `nil` when there is nothing honest
+    /// to say — the order is affordable, or the verdict isn't in yet.
+    var noticeMessage: String? {
+        switch self {
+        case .sufficient, .indeterminate:
+            return nil
+        case let .insufficientFunds(sourceTicker):
+            return String(format: "limitSwap.error.insufficientFunds".localized, sourceTicker)
+        case let .insufficientGas(feeTicker):
+            return String(format: "limitSwap.error.insufficientGas".localized, feeTicker)
+        }
+    }
+}
+
 /// User-facing failure surfaced when "Place Order" cannot assemble a valid
 /// order. Carries a localized message so the entry view can show an alert
 /// instead of silently doing nothing. `Identifiable` so it can back a SwiftUI

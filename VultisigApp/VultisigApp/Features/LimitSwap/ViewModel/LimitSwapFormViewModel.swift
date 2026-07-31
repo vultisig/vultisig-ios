@@ -88,11 +88,20 @@ final class LimitSwapFormViewModel {
     /// before it resolves and sign an order whose Verify / Done screens show a
     /// blank network-fee row — never seeing the real source-chain gas that is
     /// derived at sign time. While the fee recomputes the button stays disabled.
-    var canPlaceOrder: Bool {
+    ///
+    /// `sourceCoin` is the vault coin the picker currently has selected — the
+    /// same object the Sell row prints a balance for, so the gate can never
+    /// judge a different balance from the one on screen. It is passed in rather
+    /// than mirrored into a stored property precisely so there is no second copy
+    /// to drift from `draft.fromAsset`.
+    func canPlaceOrder(sourceCoin: Coin) -> Bool {
         draft.targetPrice > 0
             && draft.sourceAmount > 0
             && isAdvancedSwapQueueEnabled
             && networkFeeEstimate > 0
+            // Affordability: the vault must hold the sell amount, and the fee on
+            // top of it. Same rule as the market tab's Continue gate.
+            && !balanceState(sourceCoin: sourceCoin).blocksPlacement
             // POSITIVE routability proof: a resolved market reference means the
             // market-price probe got a quote back, which proves the pair has a
             // THORChain pool (the picker only filters per-CHAIN, so a poolless
@@ -112,6 +121,76 @@ final class LimitSwapFormViewModel {
             && draft.fromAsset.memoSymbol != nil
             && draft.toAsset.memoSymbol != nil
             && destinationAddress() != nil
+    }
+
+    /// Whether the vault can afford the current draft, judged against the SAME
+    /// coin the Sell row prints a balance for.
+    ///
+    /// The arithmetic is `SwapCryptoLogic.balanceError` — the market swap's rule,
+    /// reused rather than reimplemented, so an identical input can never produce
+    /// two different verdicts across the two tabs. The fee coin is resolved with
+    /// `SwapCryptoLogic.feeCoin`, the same helper `LimitSwapEntryView` uses to
+    /// build the `SwapTransaction`: gas is paid in the source chain's NATIVE coin,
+    /// so an ERC20 source's fee has to be read against ETH's 18 decimals and not
+    /// the token's (reading wei against a token's decimals once produced a false
+    /// `insufficientGas`).
+    ///
+    /// **The fee-in-flight window.** `networkFeeEstimate` is dropped to `0` on
+    /// every input change and refetched after a debounce, so for a moment there
+    /// is no fee to judge against. The two questions are split by what is
+    /// knowable without one:
+    ///
+    /// - *Does the amount alone exceed the balance?* Fee-independent, so it is
+    ///   answered immediately. The first call passes `fee: .zero`, which makes
+    ///   `balanceError`'s gas arm unreachable by construction (the same-coin arm
+    ///   needs `fromFee > 0`, the split-coin arm needs `fromFee > feeCoinBalance`)
+    ///   — so a zero fee can only ever yield the funds verdict, never a gas one.
+    /// - *Does the fee fit on top?* Not knowable, so it is not guessed at:
+    ///   `.indeterminate` shows no row and keeps the CTA disabled. A gas error is
+    ///   therefore never displayed and then withdrawn a frame later.
+    func balanceState(sourceCoin: Coin) -> LimitSwapBalanceState {
+        // The view can render one frame with a newly-picked coin and the previous
+        // draft asset (the two are synced in an `onChange`). Comparing a BTC
+        // amount against an ETH balance for that frame would flash a bogus row,
+        // so refuse to judge until they agree. Fail-closed: `.indeterminate`
+        // blocks placement.
+        guard sourceCoin.chain == draft.fromAsset.chain,
+              sourceCoin.ticker == draft.fromAsset.ticker,
+              sourceCoin.contractAddress == draft.fromAsset.contractAddress else {
+            return .indeterminate
+        }
+
+        let feeCoin = SwapCryptoLogic.feeCoin(fromCoin: sourceCoin, fromCoins: vault.coins)
+        let amount = sourceCoin.decimal(for: draft.sourceAmount)
+
+        // Fee-independent leg — a zero fee cannot reach the gas arm.
+        if SwapCryptoLogic.balanceError(
+            fromCoin: sourceCoin,
+            feeCoin: feeCoin,
+            amount: amount,
+            fee: .zero
+        ) != nil {
+            return .insufficientFunds(sourceTicker: sourceCoin.ticker)
+        }
+
+        guard networkFeeEstimate > 0 else { return .indeterminate }
+
+        switch SwapCryptoLogic.balanceError(
+            fromCoin: sourceCoin,
+            feeCoin: feeCoin,
+            amount: amount,
+            fee: networkFeeEstimate
+        ) {
+        case .none:
+            return .sufficient
+        case .some(.insufficientGas):
+            return .insufficientGas(feeTicker: feeCoin.ticker)
+        case .some:
+            // The amount cleared the fee-free leg, so this can only be the
+            // same-coin `amount + fee > balance` case that the gas arm didn't
+            // claim. Report it as the funds problem the shared rule called it.
+            return .insufficientFunds(sourceTicker: sourceCoin.ticker)
+        }
     }
 
     /// User-facing error raised while assembling / pre-flighting the order in
