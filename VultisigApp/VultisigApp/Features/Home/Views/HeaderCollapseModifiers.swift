@@ -21,13 +21,7 @@ struct HeaderCollapseFade: ViewModifier {
     let tab: HomeTab
 
     func body(content: Content) -> some View {
-        let opacity = collapse.progress(for: tab).expandedOpacity
-        content
-            .opacity(opacity)
-            // Faded out it is still laid out, sitting behind the top bar —
-            // don't let it take taps or be read out.
-            .allowsHitTesting(opacity > 0)
-            .accessibilityHidden(opacity == 0)
+        content.headerCollapseOpacity(collapse.progress(for: tab).expandedOpacity)
     }
 }
 
@@ -37,7 +31,9 @@ struct HeaderCollapseFade: ViewModifier {
 ///
 /// It is removed rather than left at zero opacity while the home is expanded,
 /// so a transparent full-width background can't swallow taps meant for the
-/// content scrolling underneath.
+/// content scrolling underneath. `headerCollapseOpacity` covers the one point
+/// that removal doesn't: the swap itself, where the background is present but
+/// still at zero.
 struct HeaderCollapseReveal: ViewModifier {
     @ObservedObject var collapse: HomeHeaderCollapse
     let tab: HomeTab
@@ -45,12 +41,28 @@ struct HeaderCollapseReveal: ViewModifier {
     func body(content: Content) -> some View {
         let progress = collapse.progress(for: tab)
         content
-            .opacity(progress.collapsedOpacity)
+            .headerCollapseOpacity(progress.collapsedOpacity)
             .showIf(progress.isCollapsed)
     }
 }
 
 extension View {
+    /// Applies one end of the collapse crossfade, and makes the view inert for
+    /// as long as that ramp holds it at zero.
+    ///
+    /// Fading something out does not remove it: it stays laid out, keeps taking
+    /// taps and is still read out by VoiceOver. Everything the crossfade ramps
+    /// goes through here, so that neither side of the swap can leave a control
+    /// live while it is invisible — without it the top bar's buttons stay fully
+    /// tappable through the last sliver of their fade, and its balance is
+    /// exposed from the instant it appears at zero opacity.
+    func headerCollapseOpacity(_ opacity: Double) -> some View {
+        self
+            .opacity(opacity)
+            .allowsHitTesting(opacity > 0)
+            .accessibilityHidden(opacity == 0)
+    }
+
     /// Fades the receiver out over the first half of `tab`'s header collapse,
     /// leaving the second half to the top bar's own balance. See
     /// `HeaderCollapseFade`.

@@ -111,6 +111,58 @@ final class HeaderCollapseProgressTests: XCTestCase {
         }
     }
 
+    // MARK: - The guards the ramps drive
+
+    /// A faded-out view is still laid out: it keeps taking taps and is still
+    /// read out by VoiceOver unless something says otherwise. `headerCollapseOpacity`
+    /// says otherwise by comparing the ramp against zero *exactly* — so a ramp
+    /// that merely approached zero, or landed on a float residue, would leave an
+    /// invisible balance or an invisible History/Settings button live. Pin the
+    /// hard zeros at both ends of both ramps.
+    func testBothRampsReachExactlyZero() {
+        XCTAssertEqual(makeProgress(scrolled: distance * 0.5).expandedOpacity, 0)
+        XCTAssertEqual(makeProgress(scrolled: distance * 0.75).expandedOpacity, 0)
+        XCTAssertEqual(makeProgress(scrolled: distance).expandedOpacity, 0)
+
+        XCTAssertEqual(makeProgress(scrolled: 0).collapsedOpacity, 0)
+        XCTAssertEqual(makeProgress(scrolled: distance * 0.25).collapsedOpacity, 0)
+        XCTAssertEqual(makeProgress(scrolled: distance * 0.5).collapsedOpacity, 0)
+    }
+
+    /// The two guards are complementary predicates over the same value —
+    /// `allowsHitTesting(opacity > 0)` and `accessibilityHidden(opacity == 0)` —
+    /// so every scroll position must satisfy exactly one of them. A ramp that
+    /// went negative (or NaN) would satisfy neither, which is precisely the
+    /// defect the guards exist to prevent: invisible, and still exposed.
+    func testTheGuardPredicatesPartitionTheWholeSweep() {
+        for step in stride(from: CGFloat(-40), through: distance + 40, by: 0.25) {
+            let progress = makeProgress(scrolled: step)
+            for opacity in [progress.expandedOpacity, progress.collapsedOpacity] {
+                XCTAssertTrue(
+                    (opacity > 0) != (opacity == 0),
+                    "opacity \(opacity) at \(step)pt is neither legible nor a hard zero"
+                )
+            }
+        }
+    }
+
+    /// The top bar's trailing slot draws whichever side `isCollapsed` selects,
+    /// and ramps it with the matching opacity. Swept across the transition, the
+    /// side that is *not* drawn is always at a hard zero, so the side that is
+    /// drawn is the only thing the guards ever have to keep alive — the swap
+    /// can never hand over while the outgoing side is still legible.
+    func testTheDrawnSideOfTheSwapIsAlwaysTheOnlyLiveOne() {
+        for step in stride(from: CGFloat(-40), through: distance + 40, by: 0.25) {
+            let progress = makeProgress(scrolled: step)
+            let shownOpacity = progress.isCollapsed ? progress.collapsedOpacity : progress.expandedOpacity
+            let hiddenOpacity = progress.isCollapsed ? progress.expandedOpacity : progress.collapsedOpacity
+
+            XCTAssertEqual(hiddenOpacity, 0, "the slot that is not drawn must be at a hard zero at \(step)pt")
+            XCTAssertGreaterThanOrEqual(shownOpacity, 0, "a ramp went negative at \(step)pt")
+            XCTAssertLessThanOrEqual(shownOpacity, 1, "a ramp overshot at \(step)pt")
+        }
+    }
+
     // MARK: - Per-tab store
 
     @MainActor

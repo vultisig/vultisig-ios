@@ -112,14 +112,16 @@ private struct HomeMainHeaderTrailingView: View {
 
     /// The buttons and the balance never overlap: the buttons have faded out by
     /// the time the swap happens, and the balance starts fading in from there,
-    /// so the swap lands on the one point where both are invisible.
+    /// so the swap lands on the one point where both are invisible. Each side
+    /// is ramped through `headerCollapseOpacity`, which is also what stops the
+    /// buttons taking taps once they are no longer legible.
     var body: some View {
         if progress.isCollapsed {
             balanceView
-                .opacity(progress.collapsedOpacity)
+                .headerCollapseOpacity(progress.collapsedOpacity)
         } else {
             buttonsStack
-                .opacity(progress.expandedOpacity)
+                .headerCollapseOpacity(progress.expandedOpacity)
         }
     }
 
