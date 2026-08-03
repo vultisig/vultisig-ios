@@ -17,7 +17,9 @@ struct LockedFeatureSheet: View {
     @StateObject private var viewModel: LockedFeatureSheetViewModel
 
     private let footerHeight: CGFloat = 48
-    private let footerCornerRadius: CGFloat = 24
+    private let footerCornerRadius: CGFloat = Theme.radius.xl.points
+    /// Deliberately off the scale — mirrors `VultDiscountTierView`'s card, whose
+    /// 20pt bottom is a Figma value the footer bar is drawn to sit under.
     private let cardCornerRadius: CGFloat = 20
 
     init(

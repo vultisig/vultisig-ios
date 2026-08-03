@@ -18,11 +18,11 @@ struct DefiChainLPPositionSkeletonView: View {
                         .frame(width: 40, height: 40)
 
                     VStack(alignment: .leading, spacing: 4) {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 120, height: 16)
 
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 80, height: 24)
                     }
@@ -34,24 +34,24 @@ struct DefiChainLPPositionSkeletonView: View {
 
                 // APR section skeleton
                 HStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: 4)
+                    Theme.radius.xs.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(width: 60, height: 16)
 
                     Spacer()
 
-                    RoundedRectangle(cornerRadius: 4)
+                    Theme.radius.xs.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(width: 50, height: 16)
                 }
 
                 // Position amount skeleton
                 VStack(alignment: .leading, spacing: 6) {
-                    RoundedRectangle(cornerRadius: 4)
+                    Theme.radius.xs.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(width: 80, height: 16)
 
-                    RoundedRectangle(cornerRadius: 4)
+                    Theme.radius.xs.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(width: 200, height: 16)
                 }
@@ -59,11 +59,11 @@ struct DefiChainLPPositionSkeletonView: View {
 
                 // Buttons skeleton
                 HStack(alignment: .top, spacing: 16) {
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(height: 44)
 
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(height: 44)
                 }

@@ -76,7 +76,7 @@ struct VaultCellView<TrailingView: View>: View {
                         .font(Theme.fonts.caption12)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(RoundedRectangle(cornerRadius: 8).stroke(isEditing ? Theme.colors.textTertiary : Theme.colors.borderLight))
+                        .background(Theme.radius.sm.shape.stroke(isEditing ? Theme.colors.textTertiary : Theme.colors.borderLight))
                         .fixedSize()
                 }
                 .showIf(showTrailingDetails && !isEditing)
@@ -89,7 +89,7 @@ struct VaultCellView<TrailingView: View>: View {
     }
 
     var selectedBackground: some View {
-        RoundedRectangle(cornerRadius: 12)
+        Theme.radius.md.shape
             .fill(Theme.colors.bgSurface1)
     }
 }

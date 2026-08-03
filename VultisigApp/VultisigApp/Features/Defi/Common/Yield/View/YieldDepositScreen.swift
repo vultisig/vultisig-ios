@@ -70,7 +70,7 @@ struct YieldDepositScreen: View {
             }
             .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .fill(Theme.colors.bgSurface1)
             )
         }

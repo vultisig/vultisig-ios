@@ -86,9 +86,9 @@ struct CommonTextEditor: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(12)
+            .cornerRadius(Theme.radius.md)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .stroke(borderColor, lineWidth: 1)
             )
             .padding(1)

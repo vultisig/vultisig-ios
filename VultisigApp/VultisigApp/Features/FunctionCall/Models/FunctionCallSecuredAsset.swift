@@ -256,7 +256,7 @@ struct SecuredAssetFormView: View {
                         .font(.footnote)
                         .padding(8)
                         .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
+                        .cornerRadius(Theme.radius.sm)
                 }
             }
 
@@ -268,7 +268,7 @@ struct SecuredAssetFormView: View {
                     .font(.footnote)
                     .padding(8)
                     .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
+                    .cornerRadius(Theme.radius.sm)
             }
         }
         .onAppear {

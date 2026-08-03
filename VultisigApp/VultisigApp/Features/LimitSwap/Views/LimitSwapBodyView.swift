@@ -21,7 +21,7 @@ private let limitSectionCornerRadius = Theme.radius.xl
 /// radius: these rows are single-line annotations (~39pt tall), and a 24pt radius
 /// exceeds half their height, degenerating the shape into a capsule and making
 /// them read as pills rather than as messages.
-private let limitNoticeCornerRadius: CGFloat = 12
+private let limitNoticeCornerRadius: CornerRadius = Theme.radius.md
 
 /// The limit form's editable fields, as focus identities.
 ///
@@ -1267,10 +1267,10 @@ private struct LimitUnavailableRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
+            limitNoticeCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 }
 
@@ -1302,10 +1302,10 @@ private struct LimitNoticeRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
+            limitNoticeCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 }
 
@@ -1331,10 +1331,10 @@ private struct LimitWarningRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
+            limitNoticeCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 
     private var messageKey: String {

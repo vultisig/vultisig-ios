@@ -30,9 +30,9 @@ struct GasLimitSettingsView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .padding(16)
                     .background(Theme.colors.bgSurface1)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Theme.radius.md.shape)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Theme.radius.md.shape
                             .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
                     )
                     .onChange(of: text) { _, newValue in apply(newValue) }

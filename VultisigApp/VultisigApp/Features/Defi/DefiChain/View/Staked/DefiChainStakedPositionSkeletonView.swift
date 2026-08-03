@@ -18,11 +18,11 @@ struct DefiChainStakedPositionSkeletonView: View {
                         .frame(width: 40, height: 40)
 
                     VStack(alignment: .leading, spacing: 4) {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 100, height: 16)
 
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 140, height: 24)
                     }
@@ -35,25 +35,25 @@ struct DefiChainStakedPositionSkeletonView: View {
                 // Rewards section skeleton
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 4) {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 50, height: 16)
 
                         Spacer()
 
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 60, height: 16)
                     }
 
                     HStack(spacing: 4) {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 90, height: 16)
 
                         Spacer()
 
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.borderLight.opacity(0.3))
                             .frame(width: 80, height: 16)
                     }
@@ -63,11 +63,11 @@ struct DefiChainStakedPositionSkeletonView: View {
 
                 // Buttons skeleton
                 HStack(alignment: .top, spacing: 16) {
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(height: 44)
 
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(height: 44)
                 }

@@ -59,7 +59,7 @@ struct TronResourcesInfoSheet: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(Theme.radius.sm.shape)
 
                 Text("TRON")
                     .font(Theme.fonts.footnote)
@@ -166,7 +166,7 @@ struct TronResourcesInfoSheet: View {
             .foregroundStyle(accentColor)
             .padding(8)
             .background(
-                RoundedRectangle(cornerRadius: 8)
+                Theme.radius.sm.shape
                     .fill(accentColor.opacity(0.1))
             )
     }

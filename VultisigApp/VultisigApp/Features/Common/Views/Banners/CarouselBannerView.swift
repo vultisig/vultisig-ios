@@ -75,9 +75,9 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         Icon(banner.icon, color: banner.iconColor, size: 20)
             .frame(width: 41, height: 41)
             .background(Theme.colors.bgSurface2)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.lg.shape)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.lg.shape
                     .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
             )
     }

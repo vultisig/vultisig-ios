@@ -17,9 +17,12 @@ struct VultDiscountTierView: View {
     @State var isExpanded: Bool = false
     @State var isActiveInternal: Bool = false
 
-    private let topCornerRadius: CGFloat = 24
+    private let topCornerRadius: CGFloat = Theme.radius.xl.points
+    /// Deliberately off the scale. The card's 24-top / 20-bottom asymmetry is a
+    /// Figma value, not a rounding of one: the footer bar peeks out from under
+    /// the bottom edge and the two radii are drawn to sit together.
     private let bottomCornerRadius: CGFloat = 20
-    private let footerCornerRadius: CGFloat = 24
+    private let footerCornerRadius: CGFloat = Theme.radius.xl.points
     private let footerHeight: CGFloat = 48
 
     var holdAmountText: String {
@@ -83,9 +86,9 @@ private extension VultDiscountTierView {
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
             .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.lg.shape)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.lg.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
             .fixedSize(horizontal: true, vertical: true)

@@ -99,7 +99,7 @@ struct ReferralMainScreen: View {
         VStack(spacing: 20) {
             Icon(.circleDashed2, color: Theme.colors.primaryAccent4, size: 24)
                 .padding(7)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface1))
+                .background(Theme.radius.sm.shape.fill(Theme.colors.bgSurface1))
                 .padding(.top, 24)
 
             VStack(spacing: 8) {

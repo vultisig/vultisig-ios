@@ -47,7 +47,7 @@ struct TonPoolCard: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.lg.shape)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -66,7 +66,7 @@ struct TonPoolCard: View {
         if isSelected {
             Theme.colors.bgSurface1
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .stroke(Theme.colors.alertSuccess.opacity(0.5), lineWidth: 1)
                 )
         } else {

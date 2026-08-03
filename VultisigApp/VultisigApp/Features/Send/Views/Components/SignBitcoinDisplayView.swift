@@ -48,7 +48,7 @@ struct SignBitcoinDisplayView: View {
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
     }
@@ -125,7 +125,7 @@ struct SignBitcoinDisplayView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgPrimary))
+        .background(Theme.radius.sm.shape.fill(Theme.colors.bgPrimary))
     }
 
     private func outputRow(index: Int, output: BitcoinOutput) -> some View {
@@ -155,7 +155,7 @@ struct SignBitcoinDisplayView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgPrimary))
+        .background(Theme.radius.sm.shape.fill(Theme.colors.bgPrimary))
     }
 
     // MARK: - Formatting
