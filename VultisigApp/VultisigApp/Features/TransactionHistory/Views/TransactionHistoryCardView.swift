@@ -142,7 +142,7 @@ struct TransactionHistoryCardView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Theme.colors.bgPrimary)
-            .cornerRadius(99)
+            .cornerRadius(Theme.radius.pill)
     }
 
     /// Two-line status: the state, and beneath it the progress.
@@ -209,7 +209,7 @@ struct TransactionHistoryCardView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Theme.colors.bgPrimary)
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
     }
 
     // MARK: - Completed Status
@@ -483,9 +483,9 @@ struct TransactionHistoryCardView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(Theme.colors.bgSurface2)
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
         .overlay(
-            RoundedRectangle(cornerRadius: 99)
+            Theme.radius.pill.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

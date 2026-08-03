@@ -94,7 +94,7 @@ struct PeerCell: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 99)
+                Theme.radius.pill.shape
                     .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
                     .fill(Theme.colors.bgSurface2)
             )

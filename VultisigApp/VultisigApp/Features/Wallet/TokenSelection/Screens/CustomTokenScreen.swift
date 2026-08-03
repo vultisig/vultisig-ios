@@ -135,7 +135,7 @@ struct CustomTokenScreen: View {
                             .font(Theme.fonts.caption10)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
-                            .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.borderLight))
+                            .overlay(Theme.radius.pill.shape.stroke(Theme.colors.borderLight))
                     }
 
                     Text(token.contractAddress)

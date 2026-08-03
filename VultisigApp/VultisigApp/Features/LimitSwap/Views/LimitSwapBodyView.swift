@@ -710,7 +710,7 @@ private struct LimitChartRangePills: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 5)
                         .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 100))
+                        .clipShape(Theme.radius.pill.shape)
                         // The pill is `maxWidth: .infinity` but an unselected one
                         // fills with `Color.clear`, so without an explicit content
                         // shape the tap area collapses to the glyphs and most of
@@ -900,10 +900,10 @@ private struct LimitExpiryCard: View {
                 .padding(.vertical, 6)
                 .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 100)
+                    Theme.radius.pill.shape
                         .stroke(Theme.colors.border, lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 100))
+                .clipShape(Theme.radius.pill.shape)
         }
         .buttonStyle(.plain)
     }
@@ -1167,7 +1167,7 @@ private extension View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .overlay(
-                RoundedRectangle(cornerRadius: 100)
+                Theme.radius.pill.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
     }

@@ -234,10 +234,10 @@ struct TransactionHistoryDetailSheet: View {
             .bold()
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(60)
+            .cornerRadius(Theme.radius.pill)
             .padding(8)
             .background(Theme.colors.bgPrimary)
-            .cornerRadius(60)
+            .cornerRadius(Theme.radius.pill)
             .overlay(
                 Circle()
                     .stroke(Theme.colors.border, lineWidth: 1)

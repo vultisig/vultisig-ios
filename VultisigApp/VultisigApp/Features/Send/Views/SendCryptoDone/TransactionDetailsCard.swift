@@ -117,7 +117,7 @@ struct TransactionDetailsCard: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.alertSuccess, lineWidth: 0.5))
+            .overlay(Theme.radius.pill.shape.stroke(Theme.colors.alertSuccess, lineWidth: 0.5))
             .fixedSize()
         }
     }
