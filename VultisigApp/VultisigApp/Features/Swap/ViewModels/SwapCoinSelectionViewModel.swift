@@ -335,9 +335,9 @@ struct SwapCoinSelectionLogic {
     }
 
     /// A chain has exactly one native asset, so the picker must show it once.
-    /// External providers (e.g. SwapKit's token list) and legacy persisted
-    /// coins can surface that native under a stale ticker — after the Toncoin
-    /// rebrand the curated native is `GRAM` while SwapKit still lists `TON`,
+    /// External providers and legacy persisted coins can surface that native
+    /// under a stale ticker — a vault that predates the Toncoin → Gram rebrand
+    /// still holds a `TON`-ticker'd native alongside the curated `GRAM` one,
     /// which the `uniqueId` dedup treats as distinct and would show as a second
     /// native row (and let it be re-added as a duplicate coin). Keep the first
     /// native — the curated `TokensStore` entry, prepended in `fetchCoins` — and

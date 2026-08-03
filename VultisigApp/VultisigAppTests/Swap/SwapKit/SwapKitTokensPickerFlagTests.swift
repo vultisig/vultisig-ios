@@ -70,19 +70,69 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         XCTAssertEqual(collapsed.map { $0.ticker }, ["ETH", "USDC"], "No duplicate native → list unchanged")
     }
 
-    func testSwapSymbolMapsNativeTonToTON() {
-        // The Toncoin → GRAM rebrand renamed only the display ticker; SwapKit
-        // still lists the native as "TON" and doesn't support "GRAM", so a
-        // GRAM-ticker'd native must swap as TON.
-        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ton, ticker: "GRAM", isNativeToken: true), "TON")
-        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ton, ticker: "TON", isNativeToken: true), "TON")
+    private func makeCoin(
+        chain: Chain,
+        ticker: String,
+        contractAddress: String = "",
+        isNativeToken: Bool
+    ) -> Coin {
+        let meta = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: ticker.lowercased(),
+            decimals: 9,
+            priceProviderId: "",
+            contractAddress: contractAddress,
+            isNativeToken: isNativeToken
+        )
+        return Coin(asset: meta, address: "addr", hexPublicKey: "pub")
     }
 
-    func testSwapSymbolLeavesOtherAssetsUnchanged() {
-        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ethereum, ticker: "ETH", isNativeToken: true), "ETH")
-        XCTAssertEqual(SwapKitService.swapSymbol(chain: .bitcoin, ticker: "BTC", isNativeToken: true), "BTC")
-        // TON-chain jetton (non-native) keeps its own ticker.
-        XCTAssertEqual(SwapKitService.swapSymbol(chain: .ton, ticker: "USDT", isNativeToken: false), "USDT")
+    /// The native TON asset is `TON.GRAM` on the wire. SwapKit tracked the
+    /// Toncoin → Gram rename, so the pre-rename `TON.TON` no longer resolves —
+    /// quoting it fails with `tokenPriceUnavailable`. Verifiable against
+    /// `GET https://api.vultisig.com/swapkit/tokens?provider=NEAR` (bare host,
+    /// no `/v3`), which lists `TON.GRAM` and no `TON.TON` at all.
+    func testAssetIdentifierUsesGramForTheNativeTonCoin() {
+        let gram = makeCoin(chain: .ton, ticker: "GRAM", isNativeToken: true)
+
+        XCTAssertEqual(SwapKitService().assetIdentifier(for: gram), "TON.GRAM")
+    }
+
+    /// A jetton keeps its own ticker and appends its contract — the native case
+    /// must not bleed into it. Matches SwapKit's listed
+    /// `TON.USDT-EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs`.
+    func testAssetIdentifierKeepsTheJettonTickerAndContract() {
+        let contract = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+        let usdt = makeCoin(chain: .ton, ticker: "USDT", contractAddress: contract, isNativeToken: false)
+
+        XCTAssertEqual(SwapKitService().assetIdentifier(for: usdt), "TON.USDT-\(contract)")
+    }
+
+    /// A vault restored from a pre-rebrand backup still holds a `TON`-ticker'd
+    /// native: the launch migration rewrites `vault.coins`, but an import lands
+    /// after it has already run. Canonicalising against the curated store keeps
+    /// that vault quotable instead of sending the dead `TON.TON`.
+    func testAssetIdentifierCanonicalisesAnUnmigratedNativeTonCoin() {
+        let legacy = makeCoin(chain: .ton, ticker: "TON", isNativeToken: true)
+
+        XCTAssertEqual(SwapKitService().assetIdentifier(for: legacy), "TON.GRAM")
+    }
+
+    /// Canonicalisation is scoped to natives — a jetton that happens to carry a
+    /// ticker matching nothing curated must still quote under its own.
+    func testAssetIdentifierDoesNotCanonicaliseNonNativeTokens() {
+        let jetton = makeCoin(chain: .ton, ticker: "TON", contractAddress: "EQjetton", isNativeToken: false)
+
+        XCTAssertEqual(SwapKitService().assetIdentifier(for: jetton), "TON.TON-EQjetton")
+    }
+
+    func testAssetIdentifierLeavesOtherChainsUnchanged() {
+        let eth = makeCoin(chain: .ethereum, ticker: "ETH", isNativeToken: true)
+        let btc = makeCoin(chain: .bitcoin, ticker: "BTC", isNativeToken: true)
+
+        XCTAssertEqual(SwapKitService().assetIdentifier(for: eth), "ETH.ETH")
+        XCTAssertEqual(SwapKitService().assetIdentifier(for: btc), "BTC.BTC")
     }
 
     @MainActor

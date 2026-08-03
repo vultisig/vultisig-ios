@@ -272,29 +272,53 @@ extension SwapKitService {
 }
 
 extension SwapKitService {
-    /// The protocol symbol SwapKit knows an asset by, which can differ from the
-    /// app's display ticker. The Toncoin → GRAM rebrand renamed only the
-    /// *display* ticker of the native TON coin; SwapKit still lists it as "TON"
-    /// (and doesn't support "GRAM"), so a GRAM-ticker'd native must swap as TON.
-    static func swapSymbol(chain: Chain, ticker: String, isNativeToken: Bool) -> String {
-        if chain == .ton, isNativeToken {
-            return "TON"
-        }
-        return ticker
-    }
-}
-
-private extension SwapKitService {
     /// SwapKit asset identifier format: `Chain.Ticker` for native tokens,
     /// `Chain.Ticker-Contract` for tokens with an on-chain contract address.
     /// See `api-contract.md` for the canonical chain prefix table.
+    ///
+    /// SwapKit tracks display renames, so there is no new-to-old mapping to
+    /// apply here. The native TON coin is `TON.GRAM`, not `TON.TON`: the
+    /// Toncoin → Gram rename has landed on their side too, and quoting the
+    /// pre-rename identifier now fails with `tokenPriceUnavailable`. Re-check
+    /// the exact identifier before assuming otherwise — the list is public and
+    /// unauthenticated:
+    ///
+    ///     GET https://api.vultisig.com/swapkit/tokens?provider=NEAR
+    ///
+    /// (bare host, no `/v3` — see `SwapKitAPI.baseURL`). Match on `identifier`;
+    /// `price` is null for every entry on that endpoint, so a null price says
+    /// nothing about whether an asset is quotable.
     func assetIdentifier(for coin: Coin) -> String {
         let prefix = chainPrefix(for: coin.chain, fallback: coin.ticker)
-        let symbol = SwapKitService.swapSymbol(chain: coin.chain, ticker: coin.ticker, isNativeToken: coin.isNativeToken)
+        let symbol = canonicalSymbol(for: coin)
         if coin.isNativeToken || coin.contractAddress.isEmpty {
             return "\(prefix).\(symbol)"
         }
         return "\(prefix).\(symbol)-\(coin.contractAddress)"
+    }
+}
+
+private extension SwapKitService {
+    /// The symbol to quote the coin under: its own ticker, except that a NATIVE
+    /// coin defers to the curated `TokensStore` entry for its chain.
+    ///
+    /// That normalises a *stale persisted* ticker forward to the name the asset
+    /// trades under today. The launch migration rewrites `vault.coins`, but a
+    /// vault restored from a pre-rebrand backup lands after it has already run
+    /// and still holds a `TON`-ticker'd native, which would quote as the dead
+    /// `TON.TON`.
+    ///
+    /// Note the direction — this maps stale local data onto the CURRENT
+    /// canonical symbol, and reads that symbol from the store rather than
+    /// hardcoding it, so a future rename needs no change here. The reverse
+    /// (rewriting a current ticker back to a legacy one to accommodate a
+    /// lagging counterparty) is exactly what broke TON swaps and must not be
+    /// reintroduced without re-checking the live list first.
+    func canonicalSymbol(for coin: Coin) -> String {
+        guard coin.isNativeToken else { return coin.ticker }
+        let curated = TokensStore.TokenSelectionAssets
+            .first { $0.chain == coin.chain && $0.isNativeToken }
+        return curated?.ticker ?? coin.ticker
     }
 
     func chainPrefix(for chain: Chain, fallback: String) -> String {
