@@ -178,6 +178,24 @@ final class LimitOrderCancelDustTests: XCTestCase {
         }
     }
 
+    /// ⚠️ The ceiling has to reject it INDEPENDENTLY, because it is evaluated as
+    /// an argument to the function above and therefore runs before that guard.
+    /// Reaching `BigInt(10).power(8 - decimals)` with a negative precision
+    /// allocates absurdly, and with `Int.min` the subtraction traps outright —
+    /// a crash where the contract says "throw".
+    func testTheCeilingRejectsANegativePrecisionBeforeRaisingAnythingToAPower() {
+        for decimals in [-1, Int.min] {
+            XCTAssertThrowsError(
+                try limitOrderCancelDustCeiling(for: .bitcoin, decimals: decimals, chainSymbol: "BTC")
+            ) { error in
+                XCTAssertEqual(
+                    error as? LimitOrderCancelDustError,
+                    .unusableChainPrecision(chain: "BTC", decimals: decimals)
+                )
+            }
+        }
+    }
+
     /// ⚠️ Fails closed. Guessing low means Bifrost silently ignores the cancel —
     /// fee spent, order untouched, indistinguishable from success.
     func testMissingThresholdThrowsRatherThanDefaulting() {
@@ -211,30 +229,124 @@ final class LimitOrderCancelDustTests: XCTestCase {
         XCTAssertEqual(try dust(walletCore: 0, inbound: "500", ceiling: BigInt(1000)), BigInt(1000))
     }
 
-    /// Every real chain's normal attach must sit comfortably under its ceiling,
-    /// or cancelling would fail on the happy path.
+    // MARK: - The ceiling table, driven by the production predicates
+
+    /// Every chain a cancel can be sent FROM as an L1 dust transfer — i.e.
+    /// every chain that can reach the ceiling at all.
+    ///
+    /// ⚠️ **Composed from the production predicates, never listed.** That is the
+    /// entire point of this section. The THORChain-native cases are excluded
+    /// because `LimitOrderCancelPreparer.prepare` routes them to `MsgDeposit`
+    /// before any dust is computed, and THORChain publishes no inbound row for
+    /// itself.
+    private var l1CancelSourceChains: [Chain] {
+        Chain.allCases.filter {
+            isThorchainRoutable(chain: $0)
+                && !limitOrderCancelIsThorchainSourced(sourceChainRawValue: $0.rawValue)
+        }
+    }
+
+    /// Every chain the ceiling table pins a threshold for. A superset of the
+    /// above: pinning ahead of the routability gate is deliberate.
+    private var pinnedChains: [Chain] {
+        Chain.allCases.filter { limitOrderCancelPinnedDustThreshold(for: $0) != nil }
+    }
+
+    /// The native gas asset's precision, taken from the app's own catalog
+    /// rather than restated here — a cancel is always signed with the source
+    /// chain's gas asset, so this is the number production feeds the rescale.
+    private func nativeDecimals(for chain: Chain) -> Int? {
+        TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }?.decimals
+    }
+
+    /// The production ceiling for `chain`, in that chain's smallest units —
+    /// the exact call `limitOrderCancelDust(for:inbound:)` makes, without
+    /// needing a `Coin`.
+    private func ceiling(for chain: Chain, decimals: Int) throws -> BigInt {
+        try limitOrderCancelDustCeiling(for: chain, decimals: decimals, chainSymbol: "\(chain)")
+    }
+
+    /// ⚠️ **The tripwire this file did not have.**
+    ///
+    /// The coverage loop below used to run over a hardcoded array — the same
+    /// captured list the ceiling table itself was sized against — so it could
+    /// not see a chain nobody remembered to add to it. That is structurally why
+    /// XRP, TRON and SOL ended up on a `default` two to three orders of
+    /// magnitude under their real requirement: not an oversight in the table so
+    /// much as a test that could only ever confirm what the table already said.
+    ///
+    /// Driven off the production predicates instead, adding a chain to
+    /// `thorchainChainPrefix` without pinning its threshold fails HERE, in CI,
+    /// rather than shipping a chain whose every cancel its own ceiling refuses.
+    func testEveryChainACancelCanBeSentFromHasAPinnedThreshold() {
+        XCTAssertFalse(l1CancelSourceChains.isEmpty, "the predicates must resolve at least one source chain")
+        for chain in l1CancelSourceChains {
+            guard let pinned = limitOrderCancelPinnedDustThreshold(for: chain) else {
+                XCTFail("""
+                    \(chain) is a limit-swap cancel source with no pinned dust_threshold. \
+                    Read it off /thorchain/inbound_addresses (1e8 units, verbatim) and add it to \
+                    limitOrderCancelPinnedDustThreshold — every cancel from this chain is refused until you do.
+                    """)
+                continue
+            }
+            XCTAssertGreaterThan(pinned, 0, "\(chain) pinned threshold must be positive")
+        }
+    }
+
+    /// The pinned table must be a faithful copy of what THORChain publishes —
+    /// nothing invented, nothing missing.
+    ///
+    /// ⚠️ The second loop is the load-bearing one. Pinning a chain THORChain
+    /// does NOT publish means inventing a bound out of nothing, which is the
+    /// exact defect the natural-units table had: `.dash`, `.zcash` and `.noble`
+    /// carried ceilings derived from no published threshold at all.
+    func testThePinnedThresholdsAreVerbatimWhatThorchainPublishes() {
+        // Captured 2026-08-03 from /thorchain/inbound_addresses, in THORChain's
+        // 1e8 fixed point. Every chain the endpoint lists, and only those.
+        let published: [Chain: BigInt] = [
+            .bitcoin: BigInt(1000),
+            .ethereum: BigInt(1000),
+            .base: BigInt(1000),
+            .bitcoinCash: BigInt(10_000),
+            .bscChain: BigInt(10_000),
+            .litecoin: BigInt(100_000),
+            .avalanche: BigInt(100_000),
+            .solana: BigInt(100_000),
+            .gaiaChain: BigInt(1_000_000),
+            .tron: BigInt(10_000_000),
+            .dogecoin: BigInt(100_000_000),
+            .ripple: BigInt(100_000_000)
+        ]
+        for (chain, threshold) in published {
+            XCTAssertEqual(
+                limitOrderCancelPinnedDustThreshold(for: chain), threshold,
+                "\(chain) must be pinned to the value THORChain publishes"
+            )
+        }
+        for chain in Chain.allCases where published[chain] == nil {
+            XCTAssertNil(
+                limitOrderCancelPinnedDustThreshold(for: chain),
+                "\(chain) has no THORChain inbound row, so pinning it would be inventing a bound"
+            )
+        }
+    }
+
+    /// Every pinned chain's normal attach must sit comfortably under its
+    /// ceiling, or cancelling would fail on the happy path.
     ///
     /// ⚠️ LTC and AVAX both publish a 0.001 threshold, so their normal attach is
-    /// 0.002 — over the 0.001 ceiling they used to be given. A ceiling sized
+    /// 0.002 — over the 0.001 ceiling they were once given. A ceiling sized
     /// against the wrong number does not fail safe: it refuses a cancel the user
     /// is entitled to make.
     func testEveryChainsPublishedThresholdSitsUnderItsCeiling() throws {
-        // (chain, decimals, published 1e8 threshold)
-        let cases: [(Chain, Int, String)] = [
-            (.bitcoin, 8, "1000"),
-            (.dogecoin, 8, "100000000"),
-            (.litecoin, 8, "100000"),
-            (.bitcoinCash, 8, "10000"),
-            (.ethereum, 18, "1000"),
-            (.avalanche, 18, "100000"),
-            (.bscChain, 18, "10000"),
-            (.gaiaChain, 6, "1000000")
-        ]
-        for (chain, decimals, threshold) in cases {
+        for chain in pinnedChains {
+            let decimals = try XCTUnwrap(nativeDecimals(for: chain), "\(chain) has no native asset in the catalog")
+            let pinned = try XCTUnwrap(limitOrderCancelPinnedDustThreshold(for: chain))
+
             XCTAssertNoThrow(
                 try dust(
                     walletCore: 0,
-                    inbound: threshold,
+                    inbound: pinned.description,
                     decimals: decimals,
                     ceiling: try ceiling(for: chain, decimals: decimals),
                     chain: "\(chain)"
@@ -244,11 +356,211 @@ final class LimitOrderCancelDustTests: XCTestCase {
         }
     }
 
-    /// The production ceiling for `chain`, in that chain's smallest units —
-    /// the exact call `limitOrderCancelDust(for:inbound:)` makes, without
-    /// needing a `Coin`.
-    private func ceiling(for chain: Chain, decimals: Int) throws -> BigInt {
-        try limitOrderCancelDustCeiling(for: chain, decimals: decimals, chainSymbol: "\(chain)")
+    /// The ceiling is exactly `headroom` times the normal attach, on every
+    /// chain and in every unit system.
+    ///
+    /// Stated against the ATTACH rather than against the formula, because the
+    /// attach is what a reader cares about: this is how far THORChain may
+    /// legitimately move a threshold before cancelling stops working. It also
+    /// pins the composition — the ceiling is built FROM
+    /// `limitOrderCancelDustSafetyMultiple`, so raising that widens the ceiling
+    /// with it instead of quietly eating the margin.
+    func testTheCeilingIsExactlyTheHeadroomTimesTheNormalAttach() throws {
+        for chain in pinnedChains {
+            let decimals = try XCTUnwrap(nativeDecimals(for: chain), "\(chain) has no native asset in the catalog")
+            let pinned = try XCTUnwrap(limitOrderCancelPinnedDustThreshold(for: chain))
+            let ceilingUnits = try ceiling(for: chain, decimals: decimals)
+            let attach = try dust(
+                walletCore: 0,
+                inbound: pinned.description,
+                decimals: decimals,
+                ceiling: ceilingUnits,
+                chain: "\(chain)"
+            )
+
+            XCTAssertEqual(
+                ceilingUnits, attach * limitOrderCancelDustCeilingHeadroom,
+                "\(chain) ceiling must be exactly the headroom over its normal attach"
+            )
+        }
+    }
+
+    /// ⚠️ **The OTHER floor has to fit under the ceiling too.**
+    ///
+    /// The attach is `max(walletCoreDustFloor, rescaledThreshold) × multiple`,
+    /// and the ceiling is derived from only one of those two. On every chain
+    /// today THORChain's threshold is the larger, so the ceiling is sized by the
+    /// binding floor — but nothing in the types says so. A chain whose local
+    /// signer floor exceeded ten times its published threshold would be refused
+    /// on the happy path by a ceiling that never looked at it.
+    ///
+    /// Uses WalletCore's real per-chain value, the same call production makes.
+    func testTheLocalSignerFloorAlsoFitsUnderEveryCeiling() throws {
+        for chain in pinnedChains {
+            let decimals = try XCTUnwrap(nativeDecimals(for: chain), "\(chain) has no native asset in the catalog")
+            let pinned = try XCTUnwrap(limitOrderCancelPinnedDustThreshold(for: chain))
+            let walletCoreFloor = BigInt(chain.coinType.getFixedDustThreshold())
+
+            XCTAssertNoThrow(
+                try dust(
+                    walletCore: walletCoreFloor,
+                    inbound: pinned.description,
+                    decimals: decimals,
+                    ceiling: try ceiling(for: chain, decimals: decimals),
+                    chain: "\(chain)"
+                ),
+                "\(chain) attach with its real local floor (\(walletCoreFloor)) must fit under its ceiling"
+            )
+        }
+    }
+
+    /// ⚠️ **The headroom is a safety parameter, so its VALUE is pinned here.**
+    ///
+    /// Every other assertion in this section derives its expectations from the
+    /// constant, which is deliberate — they should keep holding if it is ever
+    /// retuned. The cost is that they are all satisfied by any value at all.
+    /// This one is not: the headroom decides how much a wrong or hostile
+    /// `dust_threshold` can cause the app to donate, so changing it has to be a
+    /// conscious edit that lands here rather than a number that drifts.
+    func testTheHeadroomIsTenTimesTheNormalAttach() {
+        XCTAssertEqual(limitOrderCancelDustCeilingHeadroom, BigInt(10))
+        XCTAssertEqual(limitOrderCancelDustSafetyMultiple, BigInt(2))
+    }
+
+    /// The ceilings themselves, spelled out in each chain's own smallest units.
+    ///
+    /// ⚠️ **Hand-computed, deliberately not derived.** Everything else here
+    /// checks the formula against itself; these twelve numbers are the only
+    /// place the formula is checked against arithmetic done independently of
+    /// it. They are also what a reader needs to judge the trade — the natural
+    /// units in the comments are the real answer to "how much could a bad
+    /// remote value cost me on this chain".
+    func testTheCeilingsAreTheExpectedAmountsInEachChainsOwnUnits() throws {
+        // (chain, decimals, ceiling in smallest units, the same in natural units, ticker)
+        let expected: [(Chain, Int, String, String, String)] = [
+            (.bitcoin, 8, "20000", "0.0002", "BTC"),
+            (.bitcoinCash, 8, "200000", "0.002", "BCH"),
+            (.litecoin, 8, "2000000", "0.02", "LTC"),
+            (.dogecoin, 8, "2000000000", "20", "DOGE"),
+            (.ethereum, 18, "200000000000000", "0.0002", "ETH"),
+            (.base, 18, "200000000000000", "0.0002", "ETH"),
+            (.bscChain, 18, "2000000000000000", "0.002", "BNB"),
+            (.avalanche, 18, "20000000000000000", "0.02", "AVAX"),
+            (.gaiaChain, 6, "200000", "0.2", "ATOM"),
+            (.tron, 6, "2000000", "2", "TRX"),
+            (.ripple, 6, "20000000", "20", "XRP"),
+            (.solana, 9, "20000000", "0.02", "SOL")
+        ]
+        XCTAssertEqual(expected.count, pinnedChains.count, "every pinned chain must have an expected ceiling here")
+
+        for (chain, decimals, ceilingUnits, natural, ticker) in expected {
+            let raw = try XCTUnwrap(BigInt(ceilingUnits))
+            XCTAssertEqual(nativeDecimals(for: chain), decimals, "\(chain) native precision")
+            XCTAssertEqual(
+                try ceiling(for: chain, decimals: decimals), raw,
+                "\(chain) ceiling should be \(natural) \(ticker)"
+            )
+            // The smallest-units figure and the natural-units one in the table
+            // above must actually be the same amount, so neither column can be
+            // wrong without the other noticing.
+            XCTAssertEqual(
+                exactNaturalUnitsString(raw, decimals: decimals), natural,
+                "\(chain) ceiling in natural units"
+            )
+        }
+    }
+
+    /// The headroom's boundary, asserted from both sides on every pinned chain:
+    /// a tenfold threshold rise still cancels, an elevenfold one is refused.
+    ///
+    /// This is the trade the ceiling IS. A legitimate protocol change should not
+    /// brick cancelling; a remote value that has gone somewhere absurd must not
+    /// be honoured and then doubled into an irreversible donation.
+    func testATenfoldThresholdRiseStillCancelsAndMoreIsRefused() throws {
+        for chain in pinnedChains {
+            let decimals = try XCTUnwrap(nativeDecimals(for: chain), "\(chain) has no native asset in the catalog")
+            let pinned = try XCTUnwrap(limitOrderCancelPinnedDustThreshold(for: chain))
+            let ceilingUnits = try ceiling(for: chain, decimals: decimals)
+
+            XCTAssertNoThrow(
+                try dust(
+                    walletCore: 0,
+                    inbound: (pinned * limitOrderCancelDustCeilingHeadroom).description,
+                    decimals: decimals,
+                    ceiling: ceilingUnits,
+                    chain: "\(chain)"
+                ),
+                "\(chain) must survive a threshold rise of the full headroom"
+            )
+            XCTAssertThrowsError(
+                try dust(
+                    walletCore: 0,
+                    inbound: (pinned * (limitOrderCancelDustCeilingHeadroom + 1)).description,
+                    decimals: decimals,
+                    ceiling: ceilingUnits,
+                    chain: "\(chain)"
+                ),
+                "\(chain) must refuse a threshold beyond the headroom"
+            )
+        }
+    }
+
+    /// ⚠️ **The regression this change exists for, in its own numbers.**
+    ///
+    /// XRP, TRON and SOL had no ceiling entry and fell to a `default` of 0.001
+    /// natural units. Each row asserts BOTH halves: the attach really did exceed
+    /// that default — so the cancel could never have been built, surfacing only
+    /// as an error message that never resolves — and it fits the pinned ceiling
+    /// now.
+    ///
+    /// BASE is here because it is the one that shows how invisible the trap was:
+    /// THORChain publishes it too, and it survived the same `default` purely
+    /// because its threshold happens to equal Ethereum's.
+    func testTheChainsTheOldDefaultCeilingWouldHaveRefused() throws {
+        // (chain, decimals, published 1e8 threshold, attach, the old 0.001-natural default,
+        //  whether that default refused it)
+        let cases: [(Chain, Int, String, String, BigInt, Bool)] = [
+            (.ripple, 6, "100000000", "2000000", BigInt(1000), true),
+            (.tron, 6, "10000000", "200000", BigInt(1000), true),
+            (.solana, 9, "100000", "2000000", BigInt(1_000_000), true),
+            (.base, 18, "1000", "20000000000000", BigInt(10).power(15), false)
+        ]
+        for (chain, decimals, threshold, expected, oldDefault, wasRefused) in cases {
+            XCTAssertEqual(
+                nativeDecimals(for: chain), decimals,
+                "\(chain) native precision — the entire difference between the right attach and a wrong one"
+            )
+
+            let amount = try dust(
+                walletCore: 0,
+                inbound: threshold,
+                decimals: decimals,
+                ceiling: try ceiling(for: chain, decimals: decimals),
+                chain: "\(chain)"
+            )
+            XCTAssertEqual(amount, BigInt(expected), "\(chain) attach")
+
+            XCTAssertEqual(
+                amount > oldDefault, wasRefused,
+                "\(chain) against the removed default ceiling"
+            )
+        }
+    }
+
+    /// A chain with nothing pinned is refused BY NAME, rather than handed a
+    /// number nobody checked against it.
+    ///
+    /// `.dash` stands in for the general case here: THORChain publishes no
+    /// inbound row for it, so a cancel from it is impossible upstream of this
+    /// anyway — but if the routability gate ever opened, this is the error a
+    /// developer would see, and it says which chain is unconfigured.
+    func testAChainWithNoPinnedThresholdIsRefusedByName() {
+        XCTAssertNil(limitOrderCancelPinnedDustThreshold(for: .dash))
+        XCTAssertThrowsError(
+            try limitOrderCancelDustCeiling(for: .dash, decimals: 8, chainSymbol: "DASH")
+        ) { error in
+            XCTAssertEqual(error as? LimitOrderCancelDustError, .dustCeilingUnpinned(chain: "DASH"))
+        }
     }
 
     func testANegativeLocalFloorFailsClosedRatherThanBeingIgnored() {
