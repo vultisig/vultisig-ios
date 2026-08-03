@@ -26,10 +26,13 @@ struct HomeScreen: View {
     @State var showBackupNow = false
     @State var selectedChain: Chain? = nil
 
-    @State var walletShowPortfolioHeader: Bool = false
-    @State var defiShowPortfolioHeader: Bool = false
-    @State var showPortfolioHeader: Bool = false
     @State var shouldRefresh: Bool = false
+    /// Per-tab collapse progress for the top bar, written by each tab's scroll
+    /// view and read by the bar and by the two large balances. Held in a plain
+    /// `@State` rather than a `@StateObject` on purpose: this screen owns it but
+    /// must not observe it, or every frame of a collapse would rebuild the whole
+    /// tab content.
+    @State private var headerCollapse = HomeHeaderCollapse()
     @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
@@ -172,14 +175,14 @@ struct HomeScreen: View {
                             addressToCopy: $addressToCopy,
                             showUpgradeVaultSheet: $showUpgradeVaultSheet,
                             showBackupNow: $showBackupNow,
-                            showBalanceInHeader: $walletShowPortfolioHeader,
+                            collapse: headerCollapse,
                             shouldRefresh: $shouldRefresh,
                             onCamera: onCamera
                         )
                     case .defi:
                         DefiMainScreen(
                             vault: selectedVault,
-                            showBalanceInHeader: $defiShowPortfolioHeader
+                            collapse: headerCollapse
                         )
                     case .camera:
                         EmptyView()
@@ -221,10 +224,7 @@ struct HomeScreen: View {
             .onLoad {
                 onVaultLoaded(vault: selectedVault)
             }
-            .onChange(of: walletShowPortfolioHeader) { _, _ in updateHeader() }
-            .onChange(of: defiShowPortfolioHeader) { _, _ in updateHeader() }
             .onChange(of: selectedTab) { _, newValue in
-                updateHeader()
                 if newValue == .camera {
                     onCamera()
                 }
@@ -352,7 +352,7 @@ struct HomeScreen: View {
         HomeMainHeaderView(
             vault: vault,
             activeTab: $selectedTab,
-            showBalance: $showPortfolioHeader,
+            collapse: headerCollapse,
             vaultSelectorAction: { showVaultSelector.toggle() },
             historyAction: { vaultRoute = .transactionHistory },
             settingsAction: { vaultRoute = .settings },
@@ -362,20 +362,6 @@ struct HomeScreen: View {
 }
 
 extension HomeScreen {
-    fileprivate func updateHeader() {
-        let showOpaqueHeader: Bool
-        switch selectedTab {
-        case .defi:
-            showOpaqueHeader = defiShowPortfolioHeader
-        case .wallet:
-            showOpaqueHeader = walletShowPortfolioHeader
-        case .camera:
-            return
-        }
-
-        self.showPortfolioHeader = showOpaqueHeader
-    }
-
     fileprivate func moveToVaultsView() {
         guard let vault = deeplinkViewModel.selectedVault else {
             return

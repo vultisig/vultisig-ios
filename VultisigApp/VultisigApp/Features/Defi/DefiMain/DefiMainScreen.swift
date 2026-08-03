@@ -10,7 +10,10 @@ import SwiftUI
 
 struct DefiMainScreen: View {
     @ObservedObject var vault: Vault
-    @Binding var showBalanceInHeader: Bool
+    /// Shared with the top bar and written from this screen's scroll offset.
+    /// Held as a plain `let`, deliberately un-observed: this screen must not be
+    /// invalidated by a scroll, only the leaf that renders the balance is.
+    let collapse: HomeHeaderCollapse
 
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var settingsViewModel: SettingsViewModel
@@ -19,7 +22,6 @@ struct DefiMainScreen: View {
     @State var scrollProxy: ScrollViewProxy?
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
-    @State var scrollOffset: CGFloat = 0
     @State var showChainSelection: Bool = false
     @State private var searchScrollTask: Task<Void, Never>?
     @State private var clearSearchTask: Task<Void, Never>?
@@ -38,10 +40,11 @@ struct DefiMainScreen: View {
                     showsIndicators: false,
                     topInset: contentInset,
                     bottomInset: 0,
-                    scrollOffset: $scrollOffset
+                    onOffsetChange: onScrollOffsetChange
                 ) {
                     LazyVStack(spacing: 20) {
                         DefiMainBalanceView(vault: vault)
+                            .headerCollapseFade(collapse, tab: .defi)
                         Separator(color: Theme.colors.borderLight, opacity: 1)
                         bottomContentSection
                     }
@@ -76,9 +79,6 @@ struct DefiMainScreen: View {
             .refreshable { refresh() }
             .onChange(of: settingsViewModel.selectedCurrency) {
                 refresh()
-            }
-            .onChange(of: scrollOffset) { _, newValue in
-                onScrollOffsetChange(newValue)
             }
         }
         .throttledOnAppear(interval: 15.0, action: refresh)
@@ -188,16 +188,14 @@ struct DefiMainScreen: View {
     }
 
     func onScrollOffsetChange(_ offset: CGFloat) {
-        let showBalanceInHeader: Bool = offset < contentInset
-        guard showBalanceInHeader != self.showBalanceInHeader else { return }
-        self.showBalanceInHeader = showBalanceInHeader
+        collapse.update(tab: .defi, offset: offset, restingOffset: contentInset)
     }
 }
 
 #Preview {
     DefiMainScreen(
         vault: .example,
-        showBalanceInHeader: .constant(false)
+        collapse: HomeHeaderCollapse()
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
