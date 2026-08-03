@@ -22,6 +22,10 @@ final class DefiChainMainViewModel: ObservableObject {
     var filteredAvailablePositions: [AssetSection<DefiChainPositionType, CoinMeta>] {
         guard positionsSearchText.isNotEmpty else { return availablePositions }
         return availablePositions.compactMap { section in
+            // An unresolved section has nothing to match yet. Keep it so a search
+            // run while the pool list is still arriving doesn't claim "no
+            // positions found", and so a failed section keeps its retry action.
+            guard section.state == .loaded else { return section }
             let newPositions = section.assets
                 .filter { $0.ticker.localizedCaseInsensitiveContains(positionsSearchText) || $0.chain.ticker.localizedCaseInsensitiveContains(positionsSearchText) }
             guard !newPositions.isEmpty else { return nil }

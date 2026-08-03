@@ -216,4 +216,33 @@ final class DefiChainMainViewModelTests: XCTestCase {
         XCTAssertEqual(filtered.first?.assets, [stakeCoin])
         XCTAssertEqual(filtered.first?.state, .loaded)
     }
+
+    func testSearchKeepsAnUnresolvedSectionVisible() {
+        service.lpDelay = .seconds(60)
+        let vm = makeViewModel()
+        vm.onLoad()
+
+        // "BTC" only ever matches a pool, which has not arrived yet. Dropping the
+        // loading section here would report "no positions found" for a catalog
+        // that is still on its way.
+        vm.positionsSearchText = "BTC"
+
+        let filtered = vm.filteredAvailablePositions
+        XCTAssertEqual(filtered.map(\.type), [.liquidityPool])
+        XCTAssertTrue(filtered.first?.state.isLoading ?? false)
+        vm.lpLoadTask?.cancel()
+    }
+
+    func testSearchKeepsAFailedSectionVisibleSoRetryStaysReachable() async {
+        service.lpError = MockDefiPositionsProvider.StubError.unreachable
+        let vm = makeViewModel()
+        vm.onLoad()
+        await vm.lpLoadTask?.value
+
+        vm.positionsSearchText = "BTC"
+
+        let filtered = vm.filteredAvailablePositions
+        XCTAssertEqual(filtered.map(\.type), [.liquidityPool])
+        XCTAssertTrue(filtered.first?.state.isFailed ?? false)
+    }
 }
