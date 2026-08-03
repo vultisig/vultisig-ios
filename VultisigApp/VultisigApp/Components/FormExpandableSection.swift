@@ -11,8 +11,9 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     let title: String
     let isValid: Bool
     let showValue: Bool
-    /// Corner radius of the bordered card. Defaults to the shared form value;
-    /// only the limit-swap sections override it to match their Figma radius.
+    /// Corner radius of the bordered card. Defaults to the container step —
+    /// every call site is a top-level section inside `FormScreen`, which draws
+    /// no surface of its own, so the section is the outer container.
     let cornerRadius: CornerRadius
     /// When true, the header/content divider is a plain hairline instead of the
     /// default gradient separator. Only the limit-swap sections opt in.
@@ -31,7 +32,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
-        cornerRadius: CornerRadius = Theme.radius.md,
+        cornerRadius: CornerRadius = Theme.radius.xl,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
@@ -63,7 +64,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: [T],
-        cornerRadius: CornerRadius = Theme.radius.md,
+        cornerRadius: CornerRadius = Theme.radius.xl,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
@@ -94,7 +95,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
-        cornerRadius: CornerRadius = Theme.radius.md,
+        cornerRadius: CornerRadius = Theme.radius.xl,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,
@@ -118,7 +119,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: [T],
-        cornerRadius: CornerRadius = Theme.radius.md,
+        cornerRadius: CornerRadius = Theme.radius.xl,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,
