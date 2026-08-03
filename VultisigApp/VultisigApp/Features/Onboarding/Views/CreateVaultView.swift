@@ -104,7 +104,7 @@ struct CreateVaultView: View {
     }
 
     var newVaultButton: some View {
-        PrimaryButton(title: "getStarted") {
+        PrimaryButton(title: "createNewVault") {
             router.navigate(to: OnboardingRoute.devicesSelection(tssType: .Keygen, keyImportInput: nil))
         }
         .accessibilityIdentifier(AccessibilityID.Onboarding.createVaultButton)
