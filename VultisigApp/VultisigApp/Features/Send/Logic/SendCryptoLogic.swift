@@ -179,6 +179,17 @@ enum SendCryptoLogic {
         return formatAmountInput(maxValue, digits: digits)
     }
 
+    /// Format a raw (base-unit) amount for the amount field, with the same
+    /// precision rule `computeMaxAmount` uses. For amounts that come from a
+    /// transaction planner rather than from `balance − fee` arithmetic.
+    /// Truncates (never rounds up), so the displayed figure can't exceed what
+    /// was planned.
+    static func formatRawAmount(_ raw: BigInt, coin: Coin) -> String {
+        let digits = coin.decimals > 8 ? 8 : coin.decimals
+        let value = raw > .zero ? coin.decimal(for: raw) : .zero
+        return formatAmountInput(value, digits: digits)
+    }
+
     /// Fixed-point max amount for Terra Classic accounting for the proportional
     /// burn tax. `baseGasFee` is the flat gas portion in the send denom.
     private static func terraClassicMaxValue(coin: Coin, baseGasFee: BigInt) -> Decimal {

@@ -265,9 +265,6 @@ final class SendMaxAmountStickinessTests: XCTestCase {
     func testFeeRefineStandsDownWhenTheUserTypesWhileItIsInFlight() async {
         let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
         let interactor = MockSendInteractor()
-        interactor.fetchChainSpecificStub = { _ in
-            .THORChain(accountNumber: 0, sequence: 0, fee: 5_000, isDeposit: false, transactionType: 0)
-        }
         let vm = SendFormFixture.make(coin: btc, interactor: interactor)
 
         vm.setMaxAmount(percentage: 100)
@@ -290,16 +287,14 @@ final class SendMaxAmountStickinessTests: XCTestCase {
     func testFeeRefineStillSettlesWhenNothingElseTouchesTheField() async {
         let btc = SendFormFixture.makeBTC(rawBalance: "100000000") // 1 BTC
         let interactor = MockSendInteractor()
-        interactor.fetchChainSpecificStub = { _ in
-            .THORChain(accountNumber: 0, sequence: 0, fee: 5_000, isDeposit: false, transactionType: 0)
-        }
         let vm = SendFormFixture.make(coin: btc, interactor: interactor)
 
         vm.setMaxAmount(percentage: 100)
         await vm.feeRefineTask?.value
 
+        // The mock plans `balance − 3_000` by default: 99_997_000 sats.
         XCTAssertEqual(vm.amount.replacingOccurrences(of: ",", with: ".").toDecimal(),
-                       Decimal(string: "0.99995"),
+                       Decimal(string: "0.99997"),
                        "the token guard must not block the refine on an untouched field")
         XCTAssertTrue(vm.sendMaxAmount)
     }

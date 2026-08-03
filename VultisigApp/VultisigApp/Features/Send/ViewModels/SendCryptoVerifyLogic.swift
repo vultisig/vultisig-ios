@@ -30,6 +30,16 @@ struct SendCryptoVerifyLogic {
     struct FeeResult {
         let fee: BigInt
         let gas: BigInt
+        /// For a UTXO max send: the recipient amount the plan this fee came from
+        /// will actually produce. `nil` everywhere else, where the amount is
+        /// re-derived as `balance − fee`.
+        ///
+        /// A UTXO max send signs `Σ selected inputs − fee`, which is not
+        /// `balance − fee` whenever an output was left out of the selection
+        /// (dust, unconfirmed, a chain whose balance and UTXO sources differ).
+        /// Carrying the planned amount is what keeps the figure Verify confirms
+        /// equal to the one that gets signed.
+        var maxSendAmountRaw: BigInt? = nil
     }
 
     func calculateFee(tx: SendTransaction) async throws -> FeeResult {
@@ -56,6 +66,18 @@ struct SendCryptoVerifyLogic {
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
             do {
+                // A UTXO max send: take the amount AND the fee off ONE plan, so
+                // the summary the user confirms describes the transaction that
+                // will be signed. `balance − fee` diverges from it whenever the
+                // selection excluded an output.
+                if tx.coin.chainType == .UTXO, tx.sendMaxAmount, tx.coin.isNativeToken {
+                    let plan = try await interactor.calculateMaxSendPlan(
+                        SendChainSpecificRequest(tx: tx),
+                        vault: tx.vault,
+                        refreshUtxos: true
+                    )
+                    return FeeResult(fee: plan.fee, gas: plan.fee, maxSendAmountRaw: plan.amount)
+                }
                 fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
             } catch is CancellationError {
                 // A superseded load pass must stay a cancellation — the caller

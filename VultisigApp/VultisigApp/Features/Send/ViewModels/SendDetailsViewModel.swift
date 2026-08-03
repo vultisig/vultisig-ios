@@ -631,6 +631,9 @@ final class SendDetailsViewModel {
         // newer intent, and a late callback must not undo it.
         beginAmountEdit()
         errorMessage = ""
+        // Drop a planner verdict left over from a previous preset — this attempt
+        // gets to state its own outcome.
+        showAmountAlert = false
 
         sendMaxAmount = percentage == 100
 
@@ -647,11 +650,11 @@ final class SendDetailsViewModel {
         startFeeRefine()
     }
 
-    /// Background refine for the native-coin Max path. Re-fetches the real
-    /// max-send fee and settles `amount` to `balance − fee`. Guarded so a
-    /// stale refine can't clobber a newer fill (another preset tap, manual
-    /// edit) — the task is cancelled at the top of `setMaxAmount`, and we
-    /// re-check cancellation after the await before writing.
+    /// Background refine for the native-coin Max path. Settles the optimistic
+    /// full-balance fill to what can really be sent. Guarded so a stale refine
+    /// can't clobber a newer fill (another preset tap, manual edit) — the task
+    /// is cancelled at the top of `setMaxAmount`, and cancellation plus the edit
+    /// token are re-checked after the await before writing.
     private func startFeeRefine() {
         isCalculatingFee = true
         // The refine is one of the writers the edit token orders. `sendMaxAmount`
@@ -664,42 +667,107 @@ final class SendDetailsViewModel {
             guard let self else { return }
             defer { self.isCalculatingFee = false }
             do {
-                let result = try await self.interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
-                    coin: self.coin,
-                    toAddress: self.toAddress.isEmpty ? self.coin.address : self.toAddress,
-                    amount: .zero,
-                    memo: self.memo.isEmpty ? nil : self.memo,
-                    sendMaxAmount: true,
-                    isDeposit: self.isDeposit,
-                    transactionType: self.transactionType,
-                    gasLimit: self.gasLimit,
-                    customGasLimit: self.customGasLimit,
-                    feeMode: self.feeMode,
-                    fromAddress: self.fromAddress
-                )))
-                // Skip the refine write if the user moved off Max in the
-                // meantime — a manual amount edit flips `sendMaxAmount` via
-                // `convertToFiat` without cancelling this task, so guard on it
-                // too or we'd clobber their input. The token additionally covers
-                // the window before that edit's debounce has landed.
-                guard !Task.isCancelled,
-                      self.sendMaxAmount,
-                      self.amountEditGeneration == generation else { return }
-                if self.customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
-                    self.estimatedGasLimit = resolvedGasLimit
+                if self.coin.chainType == .UTXO {
+                    try await self.refineMaxFromPlan(generation: generation)
+                } else {
+                    try await self.refineMaxFromFee(generation: generation)
                 }
-                let refined = SendCryptoLogic.computeMaxAmount(coin: self.coin, fee: result.fee)
-                self.amount = refined
-                self.convertToFiat(newValue: refined, setMaxValue: true)
             } catch is CancellationError {
                 return
             } catch {
-                // Keep the optimistic full-balance value rather than wiping the
-                // field; the Verify screen recomputes and validates the real
-                // fee before signing.
-                guard !Task.isCancelled else { return }
-                self.logger.error("setMaxAmount fee refine failed: \(error.localizedDescription, privacy: .public)")
+                // Same guards as the success paths: a verdict about a max send
+                // the user has already moved off must not paint an alert on the
+                // amount they typed instead.
+                guard !Task.isCancelled,
+                      self.sendMaxAmount,
+                      self.amountEditGeneration == generation else { return }
+                self.handleMaxRefineFailure(error)
             }
+        }
+    }
+
+    /// The max-send request for the current form state. `amount` differs by
+    /// path: the UTXO planner is handed the whole balance (it ignores the value
+    /// in max mode and derives the output from the selected inputs), while the
+    /// flat-fee estimate keeps passing zero so an EVM `eth_estimateGas` isn't
+    /// simulated against a value the account can't also cover gas for.
+    private func maxSendRequest(amount: BigInt) -> SendChainSpecificRequest {
+        SendChainSpecificRequest(
+            coin: coin,
+            // The output script type affects the transaction's size, hence the
+            // fee, so planning needs an address — fall back to our own.
+            toAddress: toAddress.isEmpty ? coin.address : toAddress,
+            amount: amount,
+            memo: memo.isEmpty ? nil : memo,
+            sendMaxAmount: true,
+            isDeposit: isDeposit,
+            transactionType: transactionType,
+            gasLimit: gasLimit,
+            customGasLimit: customGasLimit,
+            customByteFee: customByteFee,
+            feeMode: feeMode,
+            fromAddress: fromAddress
+        )
+    }
+
+    /// UTXO Max. A sat/vB rate is not a fee: the fee is `rate × size`, and the
+    /// size only exists once inputs are selected. Ask WalletCore what a real
+    /// `useMaxAmount` transaction would send and cost, and show exactly that —
+    /// so the Details figure is the one Verify will confirm rather than
+    /// `balance − rate`, which reserves roughly a dozen sats for a fee of a few
+    /// thousand.
+    private func refineMaxFromPlan(generation: Int) async throws {
+        // The planner ignores this value in max mode, but it still reaches
+        // WalletCore's `Int64` amount field, where an out-of-range conversion
+        // traps rather than failing. Clamp it — an absurd balance must not
+        // crash the form.
+        let probeAmount = Swift.min(coin.rawBalance.toBigInt(decimals: coin.decimals), BigInt(Int64.max))
+        // The form plans against the cached UTXO set: Max is tapped repeatedly
+        // while editing, and Verify refreshes before the plan that is signed.
+        let plan = try await interactor.calculateMaxSendPlan(
+            maxSendRequest(amount: probeAmount),
+            vault: vault,
+            refreshUtxos: false
+        )
+        guard !Task.isCancelled, sendMaxAmount, amountEditGeneration == generation else { return }
+        // `gas` stays the rate (what the gas sheet edits); `fee` becomes the
+        // planned total, so the balance guard compares against a real number
+        // and the hand-off transaction carries an honest fee into Verify.
+        gas = plan.byteFee
+        fee = plan.fee
+        let refined = SendCryptoLogic.formatRawAmount(plan.amount, coin: coin)
+        amount = refined
+        convertToFiat(newValue: refined, setMaxValue: true)
+    }
+
+    /// Every other native chain: the chain quotes a flat fee, so `balance − fee`
+    /// is the max.
+    private func refineMaxFromFee(generation: Int) async throws {
+        let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: maxSendRequest(amount: .zero)))
+        guard !Task.isCancelled, sendMaxAmount, amountEditGeneration == generation else { return }
+        if customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
+            estimatedGasLimit = resolvedGasLimit
+        }
+        let refined = SendCryptoLogic.computeMaxAmount(coin: coin, fee: result.fee)
+        amount = refined
+        convertToFiat(newValue: refined, setMaxValue: true)
+    }
+
+    /// Keep the optimistic full-balance fill on a transport failure — the Verify
+    /// screen recomputes and validates the real fee before signing, so a flaky
+    /// lookup must not wipe the field or block the flow.
+    ///
+    /// A planner or UTXO-selection verdict is different in kind: it will not
+    /// resolve itself on retry, and leaving it silent until Verify is exactly
+    /// the late, mislabelled failure this path exists to prevent. Surface it
+    /// inline, under the amount field, while the amount is still editable.
+    private func handleMaxRefineFailure(_ error: Error) {
+        logger.error("setMaxAmount fee refine failed: \(error.localizedDescription, privacy: .public)")
+        switch error {
+        case is UTXOTransactionPlanError, is KeysignPayloadFactory.Errors:
+            setAmountError(message: error.localizedDescription)
+        default:
+            break
         }
     }
 
@@ -739,6 +807,7 @@ final class SendDetailsViewModel {
                 transactionType: transactionType,
                 gasLimit: gasLimit,
                 customGasLimit: customGasLimit,
+                customByteFee: customByteFee,
                 feeMode: feeMode,
                 fromAddress: fromAddress
             )))

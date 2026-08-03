@@ -110,7 +110,16 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
             var newAmount = transaction.amount
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
-            if transaction.sendMaxAmount && transaction.coin.isNativeToken {
+            if transaction.sendMaxAmount, transaction.coin.isNativeToken,
+               let plannedRaw = feeResult.maxSendAmountRaw {
+                // UTXO max: the plan this fee came from already says exactly what
+                // the recipient will get. Re-deriving `balance − fee` here would
+                // show a figure the signer does not produce whenever the input
+                // selection excluded an output.
+                if plannedRaw > 0 {
+                    newAmount = SendCryptoLogic.formatRawAmount(plannedRaw, coin: transaction.coin)
+                }
+            } else if transaction.sendMaxAmount && transaction.coin.isNativeToken {
                 // `balance − fee − ED`. The ED reservation lets a DOT max-send
                 // settle at `balance − fee − ED` (`transfer_keep_alive` rejects
                 // a transfer that would reap the sender); zero for non-ED chains
