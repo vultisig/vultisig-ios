@@ -40,9 +40,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
     /// figures on screen were never resolved": the summary still shows whatever
     /// the Details screen handed over — for a max send after a failed refine,
     /// the optimistic full balance at a zero fee — while Sign would build and
-    /// sign a fresh plan from live data the user was never shown. Sign stays
-    /// disabled until a load succeeds; every load clears it on entry, so a retry
-    /// or the screen's reload recovers.
+    /// sign a fresh plan from live data the user was never shown.
+    ///
+    /// Sign stays disabled until a load runs to completion — only that path
+    /// clears this. Clearing on load *entry* instead would let a cancelled retry
+    /// release the hold with the previous failure's figures still on screen and
+    /// nothing having re-resolved them. Recovery is the alert's Retry button,
+    /// since `.onLoad` runs once.
     @Published var hasLoadError = false
 
     @Published var showSecurityScannerSheet: Bool = false
