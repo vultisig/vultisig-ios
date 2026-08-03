@@ -18,6 +18,10 @@ struct CoinDetailScreen: View {
     @State var showContractCopiedBanner: Bool = false
     @State var size: CGFloat?
 
+    /// Where the sheet is resting. Purely presentation state — it never leaves
+    /// the view, so it stays here rather than in the view model.
+    @State private var detent: PresentationDetent = CoinDetailScreen.initialDetent
+
     @StateObject var viewModel: CoinDetailViewModel
 
     @Environment(\.openURL) var openURL
@@ -54,10 +58,86 @@ struct CoinDetailScreen: View {
 #endif
     }
 
+    /// Resting height of the sheet on iPhone, as a fraction of its full height.
+    ///
+    /// Measured against a rendered sheet rather than picked as a ratio: 0.50
+    /// puts the sheet at ~405pt on an iPhone 16 Pro, the shortest height that
+    /// still clears the balance, the whole action row and the top of the price
+    /// chart — what the sheet is opened for. A third of the screen, the first
+    /// guess, cuts through the action labels and shows no chart at all.
+    private static let partialFraction: CGFloat = 0.50
+
+    /// iPad presents this as a large sheet and macOS sizes it with
+    /// `applySheetSize`; only iPhone has a partial resting height.
+    private static var supportsPartialDetent: Bool {
+        !isIPadOS && !isMacOS
+    }
+
+    /// `.large` stays in the set alongside the partial height so one drag still
+    /// reveals the chart and the market sections.
+    private static var detents: Set<PresentationDetent> {
+        supportsPartialDetent ? [.fraction(partialFraction), .large] : [.large]
+    }
+
+    private static var initialDetent: PresentationDetent {
+        supportsPartialDetent ? .fraction(partialFraction) : .large
+    }
+
+    /// Whether the sheet is resting below its full height.
+    private var isPartial: Bool {
+        Self.supportsPartialDetent && detent != .large
+    }
+
+    /// Scroll target for the top of the content, used to rewind the scroll
+    /// view when the sheet returns to its resting height.
+    private static let topAnchor = "coinDetailTop"
+
+    /// At the partial detent the content is cut mid-chart. Left hard, that edge
+    /// reads as a clipped view; dissolving the last strip into the sheet
+    /// surface makes it read as "there is more below" instead — the same
+    /// bottom-anchored surface gradient `ModalBackgroundView` and
+    /// `ListBottomSection` already use. Gone once the sheet is expanded, since
+    /// then the edge is the actual end of the content.
+    @ViewBuilder
+    private var bottomFade: some View {
+        if Self.supportsPartialDetent {
+            LinearGradient(
+                stops: [
+                    Gradient.Stop(color: Theme.colors.bgSurface1, location: 0.0),
+                    Gradient.Stop(color: Theme.colors.bgSurface1.opacity(0.55), location: 0.40),
+                    Gradient.Stop(color: Theme.colors.bgSurface1.opacity(0), location: 1.0)
+                ],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+            .frame(height: 64)
+            .frame(maxHeight: .infinity, alignment: .bottom)
+            .allowsHitTesting(false)
+            .opacity(isPartial ? 1 : 0)
+            .animation(.easeInOut(duration: 0.2), value: isPartial)
+        }
+    }
+
     var content: some View {
+        ScrollViewReader { proxy in
+            scrollView
+                // Collapsing while scrolled would otherwise strand the user
+                // mid-content with scrolling switched off — and the actions,
+                // which are what the sheet is opened for, off the top of it.
+                .onChange(of: isPartial) { _, isNowPartial in
+                    guard isNowPartial else { return }
+                    proxy.scrollTo(Self.topAnchor, anchor: .top)
+                }
+        }
+    }
+
+    /// The sheet's scrolling body. Split out of `content` so the
+    /// `ScrollViewReader` that rewinds it stays a thin wrapper.
+    private var scrollView: some View {
         ScrollView {
             VStack(spacing: 24) {
                 CoinDetailHeaderView(coin: coin)
+                    .id(Self.topAnchor)
                 CoinActionsView(
                     actions: viewModel.availableActions,
                     onAction: onAction
@@ -80,7 +160,9 @@ struct CoinDetailScreen: View {
             .padding(.top, isMacOS ? 40 : 0)
             .padding(.bottom, 24)
         }
+        .scrollDisabled(isPartial)
         .background(ModalBackgroundView(width: size ?? 0))
+        .overlay(bottomFade)
         .task {
             viewModel.setup()
         }
@@ -98,11 +180,7 @@ struct CoinDetailScreen: View {
         .refreshable {
             await refresh()
         }
-        // Large only. `.medium` was kept while this sheet held four rows; with
-        // the chart and the stats/extremes/info sections it now opens below the
-        // fold on every asset, so a medium detent only ever costs the user a
-        // drag before they can see what they came for.
-        .presentationDetents([.large])
+        .presentationDetents(Self.detents, selection: $detent)
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)
