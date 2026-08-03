@@ -825,7 +825,11 @@ private struct LimitPriceToggle: View {
         }
         .padding(3)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        // Track and thumb are one pair and move together. Neither `20` nor the
+        // thumb's `18` was a chosen radius: both already exceeded half of the
+        // 38pt track / 32pt thumb, so both rendered as the clamp. `pill` names
+        // that and keeps them clamping in step if either size changes.
+        .clipShape(Theme.radius.pill.shape)
     }
 
     private func toggleButton(unit: PriceDisplayUnit, systemImage: String) -> some View {
@@ -846,7 +850,7 @@ private struct LimitPriceToggle: View {
                     // The selected indicator is a single matched-geometry thumb, so
                     // it slides between the two chips instead of hard-switching.
                     if isActive {
-                        RoundedRectangle(cornerRadius: 18)
+                        Theme.radius.pill.shape
                             .fill(Theme.colors.primaryAccent3)
                             .matchedGeometryEffect(id: "thumb", in: thumb)
                     }

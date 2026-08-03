@@ -114,7 +114,7 @@ extension SwapPercentageButtons {
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
-            .cornerRadius(32)
+            .cornerRadius(Theme.radius.pill)
     }
 }
 #endif

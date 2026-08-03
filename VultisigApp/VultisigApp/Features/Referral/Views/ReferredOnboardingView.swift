@@ -102,20 +102,27 @@ struct ReferredOnboardingView: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface1)
+        // The trailing edge is a capsule end cap: `32` already exceeded half the
+        // row's height, so both corners were clamped and the edge rendered fully
+        // round. `pill` says that, and clamps to the same shape. Rounding each
+        // corner separately means this cannot use the token's `shape`, so the
+        // style is carried across by hand — as the list and banner masks do.
         .clipShape(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,
                 bottomLeadingRadius: 0,
-                bottomTrailingRadius: 32,
-                topTrailingRadius: 32
+                bottomTrailingRadius: Theme.radius.pill.points,
+                topTrailingRadius: Theme.radius.pill.points,
+                style: Theme.radius.pill.style
             )
         )
         .overlay(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,
                 bottomLeadingRadius: 0,
-                bottomTrailingRadius: 32,
-                topTrailingRadius: 32
+                bottomTrailingRadius: Theme.radius.pill.points,
+                topTrailingRadius: Theme.radius.pill.points,
+                style: Theme.radius.pill.style
             )
             .inset(by: 1)
             .stroke(Theme.colors.borderLight, lineWidth: 2)

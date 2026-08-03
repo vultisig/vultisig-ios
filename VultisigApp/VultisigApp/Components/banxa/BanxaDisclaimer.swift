@@ -48,7 +48,7 @@ struct BanxaDisclaimer: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 32)
+                        Theme.radius.pill.shape
                             .stroke(Color.gray, lineWidth: 2)
                     )
                 }

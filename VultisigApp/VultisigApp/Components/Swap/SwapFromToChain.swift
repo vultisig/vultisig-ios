@@ -34,7 +34,7 @@ struct SwapFromToChain: View {
         Image(systemName: "chevron.down")
             .font(Theme.fonts.caption10)
             .foregroundStyle(Theme.colors.textPrimary)
-            .cornerRadius(32)
+            .cornerRadius(Theme.radius.pill)
             .bold()
     }
 }
