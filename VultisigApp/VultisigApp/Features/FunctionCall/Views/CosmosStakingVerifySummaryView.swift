@@ -103,7 +103,7 @@ struct CosmosStakingVerifySummaryView: View {
                 Image(transaction.coin.logo)
                     .resizable()
                     .frame(width: 24, height: 24)
-                    .cornerRadius(32)
+                    .cornerRadius(Theme.radius.pill)
 
                 Text(transaction.amountDecimal.formatForDisplay())
                     .foregroundStyle(Theme.colors.textPrimary)

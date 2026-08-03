@@ -46,7 +46,7 @@ struct VaultBackupPasswordOptionsScreen: View {
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(width: 64, height: 64)
             .background(Theme.colors.bgSurface2)
-            .cornerRadius(16)
+            .cornerRadius(Theme.radius.lg)
     }
 
     var textContent: some View {

@@ -320,7 +320,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     Image(input.coinImage)
                         .resizable()
                         .frame(width: 24, height: 24)
-                        .cornerRadius(32)
+                        .cornerRadius(Theme.radius.pill)
 
                     CoinAmountFiatLabel(
                         amount: input.amount,
