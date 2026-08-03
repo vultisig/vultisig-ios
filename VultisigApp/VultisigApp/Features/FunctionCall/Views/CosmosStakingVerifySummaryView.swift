@@ -74,9 +74,9 @@ struct CosmosStakingVerifySummaryView: View {
         }
         .padding(24)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(LinearGradient.borderGreen, lineWidth: 1)
         )
         .padding(1)

@@ -273,9 +273,9 @@ struct DoneTokenContent: View {
         .padding(16)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
     }
@@ -327,9 +327,9 @@ struct DoneDetailContent: View {
         .padding(.vertical, 16)
         .foregroundStyle(Theme.colors.textSecondary)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
     }
