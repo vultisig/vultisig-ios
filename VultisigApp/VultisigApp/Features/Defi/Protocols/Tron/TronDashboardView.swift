@@ -89,7 +89,7 @@ struct TronDashboardView: View {
                 }
                 .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
             }
-            .clipShape(RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius))
+            .clipShape(TronConstants.Design.cornerRadius.shape)
 
             // Content
             HStack(alignment: .top) {
@@ -125,7 +125,7 @@ struct TronDashboardView: View {
     }
 
     var cardBackground: some View {
-        RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+        TronConstants.Design.cornerRadius.shape
             .fill(
                 LinearGradient(
                     stops: [
@@ -137,7 +137,7 @@ struct TronDashboardView: View {
                 )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                TronConstants.Design.cornerRadius.shape
                     .stroke(Theme.colors.tronRed.opacity(0.3), lineWidth: 1)
             )
     }
@@ -220,11 +220,11 @@ struct TronDashboardView: View {
         }
         .padding(TronConstants.Design.cardPadding)
         .background(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
         )
     }
@@ -296,7 +296,7 @@ struct TronDashboardView: View {
             }
             .padding(TronConstants.Design.cardPadding)
             .background(
-                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                TronConstants.Design.cornerRadius.shape
                     .fill(Theme.colors.bgSurface1)
             )
         }

@@ -217,7 +217,7 @@ struct ReferralMainScreen: View {
                         size: 16
                     )
                 }
-                .containerStyle(padding: 12, radius: 99)
+                .containerStyle(padding: 12, radius: Theme.radius.pill)
                 .contentShape(Rectangle())
             }
         }

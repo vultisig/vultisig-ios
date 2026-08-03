@@ -49,11 +49,11 @@ struct TronResourcesCardView: View {
         }
         .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
         )
         .overlay(alignment: .topTrailing) {
