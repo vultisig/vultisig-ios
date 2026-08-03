@@ -104,9 +104,11 @@ struct ReferredOnboardingView: View {
         .background(Theme.colors.bgSurface1)
         // The trailing edge is a capsule end cap: `32` already exceeded half the
         // row's height, so both corners were clamped and the edge rendered fully
-        // round. `pill` says that, and clamps to the same shape. Rounding each
-        // corner separately means this cannot use the token's `shape`, so the
-        // style is carried across by hand — as the list and banner masks do.
+        // round. `pill` says that, and clamps to the same shape — and keeps
+        // saying it at accessibility text sizes, where the literal would have
+        // stopped clamping once the symbol pushed the row past 64pt. Rounding
+        // each corner separately means this cannot use the token's `shape`, so
+        // the style is carried across by hand — as the list and banner masks do.
         .clipShape(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,

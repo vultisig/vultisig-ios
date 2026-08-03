@@ -58,12 +58,16 @@ struct DefiChainLPPositionSkeletonView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 // Buttons skeleton
+                // The real row draws `DefiButton`s, which style themselves with
+                // `PrimaryButtonStyle` and are therefore capsules. The
+                // placeholder has to be the shape it stands in for, or the
+                // buttons visibly change shape the moment the data lands.
                 HStack(alignment: .top, spacing: 16) {
-                    Theme.radius.lg.shape
+                    Theme.radius.pill.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(height: 44)
 
-                    Theme.radius.lg.shape
+                    Theme.radius.pill.shape
                         .fill(Theme.colors.borderLight.opacity(0.3))
                         .frame(height: 44)
                 }

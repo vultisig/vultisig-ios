@@ -17,12 +17,12 @@ struct VultDiscountTierView: View {
     @State var isExpanded: Bool = false
     @State var isActiveInternal: Bool = false
 
-    private let topCornerRadius: CGFloat = Theme.radius.xl.points
+    private let topRadius: CornerRadius = Theme.radius.xl
     /// Deliberately off the scale. The card's 24-top / 20-bottom asymmetry is a
     /// Figma value, not a rounding of one: the footer bar peeks out from under
     /// the bottom edge and the two radii are drawn to sit together.
     private let bottomCornerRadius: CGFloat = 20
-    private let footerCornerRadius: CGFloat = Theme.radius.xl.points
+    private let footerRadius: CornerRadius = Theme.radius.xl
     private let footerHeight: CGFloat = 48
 
     var holdAmountText: String {
@@ -195,11 +195,11 @@ private extension VultDiscountTierView {
     }
 
     var footerInnerShadow: some View {
-        RoundedRectangle(cornerRadius: footerCornerRadius)
+        footerRadius.shape
             .stroke(Color.white.opacity(0.1), lineWidth: 1)
             .blur(radius: 1)
             .mask(
-                RoundedRectangle(cornerRadius: footerCornerRadius)
+                footerRadius.shape
                     .fill(
                         LinearGradient(
                             colors: [.white, .clear],
@@ -214,11 +214,16 @@ private extension VultDiscountTierView {
     var cardShape: some Shape {
         UnevenRoundedRectangle(
             cornerRadii: .init(
-                topLeading: topCornerRadius,
+                topLeading: topRadius.points,
                 bottomLeading: bottomCornerRadius,
                 bottomTrailing: bottomCornerRadius,
-                topTrailing: topCornerRadius
-            )
+                topTrailing: topRadius.points
+            ),
+            // The top corners come from the token, so the style has to come
+            // from it too — a radius on the scale drawn with whatever style the
+            // SDK happens to default to is the one pairing that silently stops
+            // tracking the design system.
+            style: topRadius.style
         )
     }
 

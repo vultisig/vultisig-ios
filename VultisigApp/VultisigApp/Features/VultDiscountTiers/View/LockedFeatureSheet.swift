@@ -17,7 +17,7 @@ struct LockedFeatureSheet: View {
     @StateObject private var viewModel: LockedFeatureSheetViewModel
 
     private let footerHeight: CGFloat = 48
-    private let footerCornerRadius: CGFloat = Theme.radius.xl.points
+    private let footerRadius: CornerRadius = Theme.radius.xl
     /// Deliberately off the scale — mirrors `VultDiscountTierView`'s card, whose
     /// 20pt bottom is a Figma value the footer bar is drawn to sit under.
     private let cardCornerRadius: CGFloat = 20
@@ -198,11 +198,11 @@ struct LockedFeatureSheet: View {
     /// Soft top highlight on the footer, matching
     /// `VultDiscountTierView.footerInnerShadow`.
     private var footerInnerShadow: some View {
-        RoundedRectangle(cornerRadius: footerCornerRadius)
+        footerRadius.shape
             .stroke(Color.white.opacity(0.1), lineWidth: 1)
             .blur(radius: 1)
             .mask(
-                RoundedRectangle(cornerRadius: footerCornerRadius)
+                footerRadius.shape
                     .fill(
                         LinearGradient(
                             colors: [.white, .clear],
