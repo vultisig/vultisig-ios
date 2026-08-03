@@ -11,7 +11,11 @@
 /// access; only liquidity pools need a live pool list. Callers rely on that
 /// split to publish the static sections immediately instead of gating the whole
 /// catalog on a network round-trip.
-protocol DefiPositionsProviding {
+///
+/// `Sendable` because the pool fetch is handed to a detached task: the view
+/// model captures its provider into the closure it races against a timeout, so
+/// every conformer has to be safe to use from another isolation domain.
+protocol DefiPositionsProviding: Sendable {
     func bondCoins(for chain: Chain) -> [CoinMeta]
     func stakeCoins(for chain: Chain) -> [CoinMeta]
     /// Whether `lpCoins(for:)` performs a network fetch for this chain. Lets a
