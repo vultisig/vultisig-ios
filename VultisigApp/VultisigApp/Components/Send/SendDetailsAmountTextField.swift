@@ -94,7 +94,7 @@ struct SendDetailsAmountTextField: View {
     var amountField: some View {
         SendCryptoAmountTextField(
             amount: $viewModel.amount,
-            beginEdit: { viewModel.beginAmountEdit() },
+            beginEdit: { viewModel.beginUserAmountEdit() },
             onChange: { viewModel.onAmountFieldEdited($0, generation: $1) },
             onMaxPressed: { viewModel.setMaxAmount() }
         )
@@ -128,7 +128,7 @@ struct SendDetailsAmountTextField: View {
     var textFiatField: some View {
         SendCryptoAmountTextField(
             amount: $viewModel.amountInFiat,
-            beginEdit: { viewModel.beginAmountEdit() },
+            beginEdit: { viewModel.beginUserAmountEdit() },
             onChange: { viewModel.onFiatAmountFieldEdited($0, generation: $1) }
         )
         .focused($focusedField, equals: .amountInFiat)

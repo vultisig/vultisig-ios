@@ -256,6 +256,69 @@ final class SendMaxAmountStickinessTests: XCTestCase {
         XCTAssertEqual(vm.amount, "", "a callback from before the reset must not repopulate the form")
     }
 
+    // MARK: - A genuine edit clears Max immediately (the inverse window)
+
+    /// Continue does not wait for a pending debounce. If the flag only cleared
+    /// when the callback ran, a fast Continue after typing would snapshot a
+    /// hand-typed amount still marked as a max send — and the UTXO signer would
+    /// sweep the wallet for someone who asked to send a specific figure.
+    func testTypingClearsMaxBeforeContinueCanSnapshotIt() async throws {
+        let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
+        let vm = SendFormFixture.make(coin: btc)
+        vm.toAddress = "bc1qtest"
+
+        vm.setMaxAmount(percentage: 100)
+        await vm.feeRefineTask?.value
+        XCTAssertTrue(vm.sendMaxAmount)
+
+        // The user types, then taps Continue before the debounce fires.
+        vm.amount = "0.25"
+        vm.beginUserAmountEdit()
+
+        XCTAssertFalse(vm.sendMaxAmount,
+                       "a keystroke must drop the max intent synchronously")
+
+        let tx = try vm.makeTransaction()
+        XCTAssertFalse(tx.sendMaxAmount,
+                       "the hand-off must not sign a max send for a hand-typed amount")
+        XCTAssertEqual(tx.amount, "0.25")
+    }
+
+    func testTypingInTheFiatFieldAlsoClearsMaxImmediately() async {
+        let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
+        let vm = SendFormFixture.make(coin: btc)
+
+        vm.setMaxAmount(percentage: 100)
+        await vm.feeRefineTask?.value
+
+        vm.amountInFiat = "250"
+        vm.beginUserAmountEdit()
+
+        XCTAssertFalse(vm.sendMaxAmount, "the fiat field has the same window")
+    }
+
+    /// Both properties must hold at once: a genuine edit clears Max, and a
+    /// superseded callback still cannot.
+    func testASupersededCallbackStillCannotClearMaxAfterAGenuineEdit() async {
+        let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
+        let vm = SendFormFixture.make(coin: btc)
+
+        // A genuine edit, then Max, then the edit's late callback.
+        vm.amount = "0.25"
+        let staleToken = vm.beginUserAmountEdit()
+        XCTAssertFalse(vm.sendMaxAmount)
+
+        vm.setMaxAmount(percentage: 100)
+        await vm.feeRefineTask?.value
+        let maxAmount = vm.amount
+        XCTAssertTrue(vm.sendMaxAmount)
+
+        vm.onAmountFieldEdited("0.25", generation: staleToken)
+
+        XCTAssertTrue(vm.sendMaxAmount, "the superseded callback must still be dropped")
+        XCTAssertEqual(vm.amount, maxAmount)
+    }
+
     // MARK: - Background fee refine
 
     /// A keystroke does not clear `sendMaxAmount` until its own debounce lands,
