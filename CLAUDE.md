@@ -29,7 +29,7 @@ VultisigApp/
 ├── Core/
 │   ├── DesignSystem/   # Theme, colors, fonts (Theme.colors.*, Theme.fonts.*)
 │   ├── Extensions/     # Swift type extensions
-│   ├── Localizables/   # 7 locale .strings files
+│   ├── Localizables/   # Shipping locale .strings files, including ko.lproj
 │   ├── Models/         # Cross-feature models
 │   ├── Navigation/     # NavigationRouter, routing
 │   ├── Networking/     # HTTPClient, TargetType
@@ -51,7 +51,7 @@ VultisigApp/
 1. **Design System** — Always use `Theme.colors.*` and `Theme.fonts.*`. Never hardcode colors/fonts. Use price fonts (`priceTitle1`, `priceBodyL`, `priceBodyS`) for numbers and balances.
 2. **SwiftData** — Never access `@Model` classes off MainActor. Use value types across actor boundaries.
 3. **Networking** — Use `TargetType` protocol for all API endpoints. Use `HTTPClient` with async/await.
-4. **Localization** — Never hardcode user-facing strings. Use `"key".localized`. Add to ALL 7 `Localizable.strings` (en, de, es, hr, it, pt, zh-Hans) in `VultisigApp/Core/Localizables/`. camelCase keys, alphabetical order. Run `sort_localizable.py` after.
+4. **Localization** — Never hardcode user-facing strings. Use `"key".localized`. Add every key to every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`; it currently contains eight locales, including `ko.lproj`, and is the source of truth. Locale files live under `VultisigApp/VultisigApp/Core/Localizables/`. Use camelCase keys, keep them alphabetized, and run `sort_localizable.py` afterward.
 5. **Buttons** — Always use `PrimaryButton`. Never create custom button styles.
 6. **Deprecated APIs** — Use `.foregroundStyle()` not `.foregroundColor()`.
 7. **Concurrency** — Use async/await. Never use callbacks/completion handlers.
@@ -79,7 +79,7 @@ Domain knowledge loads on-demand via skills:
 | `/batch-review` | Morning dashboard — PR statuses, CodeRabbit feedback, next actions |
 | `/batch-retry` | Retry failed batch tasks — cleanup, re-execute with failure context |
 | `/batch-fix-reviews` | Auto-fix CodeRabbit review comments, push fixes, re-request review |
-| `/localize` | Complete i18n workflow — add keys to all 7 locale files, translate, sort |
+| `/localize` | Complete i18n workflow — add keys to every shipping locale, including Korean, translate, sort |
 | `/ship` | Commit + create PR in one step, with checks and Co-Authored-By |
 | `/approve-pr` | Approve a PR and add it to the merge queue |
 | `/orchestrate` | God-mode orchestrator — end-to-end feature delivery or exhaustive PR review |

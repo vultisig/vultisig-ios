@@ -112,7 +112,7 @@ verify: ["swiftlint lint"]
 - Never edit `project.pbxproj` directly — it is generated from `VultisigApp/project.yml` by XcodeGen. Change sources or `project.yml` and run `make generate`.
 - Never modify `Blockchain/Tss/` without explicit review
 - Use `"key".localized` for all user-facing strings
-- Update ALL 7 locale files for string changes
+- Update every locale in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`, including `ko.lproj`, for string changes
 
 ## Workflow
 

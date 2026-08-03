@@ -64,9 +64,9 @@ final class SwapErrorPresentationTests: XCTestCase {
 
     private var allCases: [SwapError] { CaseTag.allCases.map(sample) }
 
-    /// Every locale the app ships. `ko` is included deliberately: the repo's own
-    /// docs list seven, but Korean is a shipping localization, and a key added to
-    /// the other seven leaks a raw camelCase identifier to Korean users.
+    /// Every locale the app ships. Keep this aligned with `sort_localizable.py`'s
+    /// `LOCALE_DIRS`; `ko` is included deliberately so Korean cannot regress to
+    /// displaying raw camelCase identifiers.
     private static let shippedLocales = ["en", "de", "es", "hr", "it", "ko", "pt", "zh-Hans"]
 
     /// Localized value for `key` in `bundle`, or `nil` when the key is missing.
