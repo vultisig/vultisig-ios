@@ -312,7 +312,12 @@ struct MacAddressScannerView: View {
                         cornerSize: CGSize(
                             width: Theme.radius.xl.points,
                             height: Theme.radius.xl.points
-                        )
+                        ),
+                        // The mask is a Path, which cannot take the token's `shape`,
+                        // so the style has to be carried across by hand — a radius
+                        // from the token with the style left to the SDK is exactly
+                        // the pair that stops tracking the design system.
+                        style: Theme.radius.xl.style
                     )
                 }
                 .fill(Theme.colors.bgPrimary.opacity(0.55), style: FillStyle(eoFill: true))
