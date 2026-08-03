@@ -35,9 +35,9 @@ struct TransactionHistoryCardView: View {
         }
         .padding(16)
         .padding(.bottom, transaction.swapProvider != nil ? 20 : 0)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .inset(by: 1)
                 .fill(Theme.colors.bgSurface1)
                 .stroke(Theme.colors.border, lineWidth: 1)

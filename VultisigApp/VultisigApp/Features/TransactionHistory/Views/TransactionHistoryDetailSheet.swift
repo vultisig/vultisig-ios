@@ -220,9 +220,9 @@ struct TransactionHistoryDetailSheet: View {
         .frame(height: 130)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -284,9 +284,9 @@ struct TransactionHistoryDetailSheet: View {
         }
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
