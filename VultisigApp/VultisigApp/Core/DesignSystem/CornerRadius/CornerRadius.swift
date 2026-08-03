@@ -25,6 +25,10 @@ public struct CornerRadius: Equatable {
     /// corners individually and so cannot take a `shape`. Everywhere else,
     /// prefer `shape` or the `cornerRadius(_:)` view modifier so the corner
     /// style travels with the radius.
+    ///
+    /// Where you do reach for it, pass `style` alongside. A radius taken from a
+    /// token and a style left to the SDK is the one combination that quietly
+    /// stops tracking the design system.
     public let points: CGFloat
 
     /// How the corner is drawn. Set once, for the whole scale, by
