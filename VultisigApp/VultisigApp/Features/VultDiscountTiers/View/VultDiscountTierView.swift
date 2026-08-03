@@ -135,9 +135,22 @@ private extension VultDiscountTierView {
             .padding(.bottom, 14)
             .background(footerGradient)
             .overlay(footerInnerShadow)
-            .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
+            // Both radii below are the CARD's bottom radius, not the footer's
+            // own: the bar sits behind `cardBody` and peeks out from under it,
+            // so its bottom edge has to trace the edge it emerges from. Written
+            // as a literal `20` they were a silent copy — move the card and the
+            // footer would have cut across the corner it is meant to follow.
+            .clipShape(
+                UnevenRoundedRectangle(
+                    bottomLeadingRadius: bottomCornerRadius,
+                    bottomTrailingRadius: bottomCornerRadius
+                )
+            )
             .offset(y: isExpanded ? 48 : 2)
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.colors.borderLight, lineWidth: 1))
+            .overlay(
+                RoundedRectangle(cornerRadius: bottomCornerRadius)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
             .onTapGesture {
                 if isUnlockTappable {
                     onUnlock()
