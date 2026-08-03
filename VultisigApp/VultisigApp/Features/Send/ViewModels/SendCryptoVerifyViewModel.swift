@@ -106,7 +106,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
         isLoading = true
         errorMessage = ""
         hasBalanceError = false
-        hasLoadError = false
+        // `hasLoadError` is deliberately NOT cleared here. Clearing on entry
+        // would let a *cancelled* retry release the hold: the previous failure's
+        // figures would still be on screen, with nothing having re-resolved them.
+        // Only a load that runs to completion clears it.
 
         // Ensure balance is loaded before validation (protects against stale/empty balances)
         await interactor.updateBalance(for: transaction.coin)
@@ -169,6 +172,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // stays disabled until the load-time validation fully settles —
             // otherwise Sign briefly re-enables while account_info is in flight.
             try await validateDestinationActivationIfNeeded()
+            // The figures on screen have now been resolved end to end, so a
+            // previous failure's hold is released. Reached only on the success
+            // path: a throw or a cancellation leaves the hold as it was.
+            hasLoadError = false
             isLoading = false
         } catch is CancellationError {
             // The load pass was cancelled/superseded. Abort quietly — don't

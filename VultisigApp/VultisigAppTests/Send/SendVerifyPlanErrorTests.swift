@@ -118,6 +118,30 @@ final class SendVerifyPlanErrorTests: XCTestCase {
         XCTAssertFalse(vm.signButtonDisabled)
     }
 
+    /// Clearing the hold on load *entry* would let a cancelled retry release it
+    /// while the previous failure's figures are still on screen and nothing has
+    /// re-resolved them.
+    func testACancelledRetryDoesNotReleaseAnExistingHold() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: false) }
+        var failure: Error = URLError(.timedOut)
+        interactor.calculatePlanFeeStub = { _, _ in throw failure }
+
+        let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
+        await vm.loadGasInfoForSending()
+        XCTAssertTrue(vm.hasLoadError)
+
+        // The retry is superseded before it resolves anything.
+        failure = CancellationError()
+        await vm.loadGasInfoForSending()
+
+        XCTAssertTrue(vm.hasLoadError,
+                      "only a load that runs to completion may release the hold")
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+        XCTAssertTrue(vm.signButtonDisabled)
+    }
+
     func testCancelledLoadDoesNotHoldSign() async {
         let interactor = MockSendInteractor()
         interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: false) }
