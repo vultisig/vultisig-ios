@@ -63,7 +63,7 @@ struct StakingValidatorPickerScreen<V: StakingValidatorConvertible>: View {
                             .padding(.top, 48)
                     }
                 }
-                .cornerRadius(12)
+                .cornerRadius(Theme.radius.xl)
             }
         }
         .screenTitle("cosmosStakingSelectValidator".localized)

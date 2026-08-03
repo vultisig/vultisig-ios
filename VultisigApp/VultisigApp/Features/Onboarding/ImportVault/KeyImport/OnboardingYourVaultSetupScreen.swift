@@ -105,7 +105,7 @@ struct OnboardingYourVaultSetupScreen: View {
         .padding(8)
         .padding(.trailing, 20)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.lg.shape
                 .inset(by: 0.5)
                 .fill(Theme.colors.bgSurface1)
                 .stroke(

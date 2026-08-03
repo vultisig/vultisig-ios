@@ -52,7 +52,7 @@ struct Checkbox: View {
             .foregroundStyle(color)
             .frame(width: 24, height: 24)
             .background(bgColor)
-            .cornerRadius(20)
+            .cornerRadius(Theme.radius.pill)
             .opacity(isChecked ? 1 : 0)
             .overlay(
                 Circle()

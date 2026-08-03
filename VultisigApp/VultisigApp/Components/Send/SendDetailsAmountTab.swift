@@ -30,9 +30,6 @@ struct SendDetailsAmountTab: View {
     var content: some View {
         SendFormExpandableSection(
             isExpanded: isExpanded,
-            cornerRadius: 24,
-            horizontalPadding: 16,
-            verticalPadding: 20,
             backgroundColor: Theme.colors.bgPrimary
         ) {
             titleSection
@@ -128,7 +125,7 @@ struct SendDetailsAmountTab: View {
         .padding(12)
         .padding(.vertical, 8)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.md)
     }
 
     var additionalOptionsSection: some View {

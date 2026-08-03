@@ -220,9 +220,9 @@ struct TransactionHistoryDetailSheet: View {
         .frame(height: 130)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -234,10 +234,10 @@ struct TransactionHistoryDetailSheet: View {
             .bold()
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(60)
+            .cornerRadius(Theme.radius.pill)
             .padding(8)
             .background(Theme.colors.bgPrimary)
-            .cornerRadius(60)
+            .cornerRadius(Theme.radius.pill)
             .overlay(
                 Circle()
                     .stroke(Theme.colors.border, lineWidth: 1)
@@ -284,9 +284,9 @@ struct TransactionHistoryDetailSheet: View {
         }
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -367,7 +367,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
 
             if let expiry = expiryChipText(order) {
                 HStack(spacing: 4) {
@@ -381,7 +381,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
             }
         }
         .font(Theme.fonts.bodySMedium)
@@ -494,7 +494,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
         }
         .font(Theme.fonts.bodySMedium)
         .padding(.vertical, 16)
@@ -511,7 +511,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
         }
         .font(Theme.fonts.bodySMedium)
         .padding(.vertical, 16)

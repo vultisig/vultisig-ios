@@ -35,8 +35,8 @@ struct DefiMainBalanceView: View {
             Theme.colors.bgSurface1
                 .overlay(gradientBackground.clipped())
         )
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.colors.border))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(Theme.radius.xl.shape.stroke(Theme.colors.border))
+        .clipShape(Theme.radius.xl.shape)
         .onAppear { updateBalance() }
         .onChange(of: vault) { _, _ in
             updateBalance()

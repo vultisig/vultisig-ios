@@ -75,7 +75,7 @@ struct JoinKeygenView: View {
         .if(viewModel.status != .KeygenStarted) {
             $0
                 .padding()
-                .cornerRadius(10)
+                .cornerRadius(Theme.radius.md)
         }
     }
 
@@ -216,7 +216,7 @@ struct JoinKeygenView: View {
         }
         .padding(22)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.xl)
     }
 
     var shadow: some View {

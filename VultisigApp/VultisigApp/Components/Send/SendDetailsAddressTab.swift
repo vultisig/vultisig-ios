@@ -24,9 +24,6 @@ struct SendDetailsAddressTab: View {
     var content: some View {
         SendFormExpandableSection(
             isExpanded: isExpanded,
-            cornerRadius: 24,
-            horizontalPadding: 16,
-            verticalPadding: 20,
             backgroundColor: Theme.colors.bgPrimary
         ) {
             titleSection

@@ -9,16 +9,13 @@ import SwiftUI
 
 struct SendFormExpandableSection<Header: View, Content: View>: View {
     let isExpanded: Bool
-    /// Corner radius of the section's bordered container. Defaults to the shared
-    /// value used across every Send/Function form; callers that need to match a
-    /// different Figma card radius (e.g. the limit-swap accordion, or the 2026
-    /// Send-details cards) override it.
-    let cornerRadius: CGFloat
-    /// Inner horizontal padding of the bordered container. Defaults to the shared
-    /// value; the 2026 Send-details cards use 16.
+    /// Corner radius of the section's bordered container. Defaults to the
+    /// container step: a form section is the outer surface on its screen, and
+    /// the fields inside it keep the smaller step so the nesting still reads.
+    let cornerRadius: CornerRadius
+    /// Inner horizontal padding of the bordered container.
     let horizontalPadding: CGFloat
-    /// Inner vertical padding of the bordered container. Defaults to the shared
-    /// value; the 2026 Send-details cards use 20.
+    /// Inner vertical padding of the bordered container.
     let verticalPadding: CGFloat
     /// Optional fill behind the bordered container. `nil` keeps the container
     /// transparent (the shared default); the 2026 Send-details cards fill it
@@ -32,11 +29,15 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
 
     @State var isExpandedInternal = false
 
+    /// The defaults are the 2026 Send-details card: `xl` / 16 / 20. Those cards
+    /// are this same view with the new design already applied, so making them
+    /// the default is what "like send" means rather than a number picked off a
+    /// different screen.
     init(
         isExpanded: Bool,
-        cornerRadius: CGFloat = 12,
+        cornerRadius: CornerRadius = Theme.radius.xl,
         horizontalPadding: CGFloat = 16,
-        verticalPadding: CGFloat = 16,
+        verticalPadding: CGFloat = 20,
         backgroundColor: Color? = nil,
         @ViewBuilder header: @escaping () -> Header,
         @ViewBuilder content: @escaping () -> Content
@@ -63,7 +64,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         .padding(.vertical, verticalPadding)
         .background(fill)
         .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
+            cornerRadius.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(1)
@@ -78,7 +79,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     @ViewBuilder
     private var fill: some View {
         if let backgroundColor {
-            RoundedRectangle(cornerRadius: cornerRadius)
+            cornerRadius.shape
                 .fill(backgroundColor)
         }
     }

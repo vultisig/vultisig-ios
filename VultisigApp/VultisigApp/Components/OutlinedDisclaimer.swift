@@ -46,7 +46,7 @@ import SwiftUI
 
 extension OutlinedDisclaimer {
     var overlay: some View {
-        RoundedRectangle(cornerRadius: 10)
+        Theme.radius.md.shape
             .stroke(LinearGradient.primaryGradient, lineWidth: 1)
     }
 }
@@ -57,7 +57,7 @@ import SwiftUI
 
 extension OutlinedDisclaimer {
     var overlay: some View {
-        RoundedRectangle(cornerRadius: 10)
+        Theme.radius.md.shape
             .stroke(LinearGradient.primaryGradient, lineWidth: 2)
     }
 }

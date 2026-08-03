@@ -84,7 +84,7 @@ struct FolderCellView: View {
     }
 
     var selectedBackground: some View {
-        RoundedRectangle(cornerRadius: 12)
+        Theme.radius.md.shape
             .fill(Theme.colors.bgSurface1)
     }
 }

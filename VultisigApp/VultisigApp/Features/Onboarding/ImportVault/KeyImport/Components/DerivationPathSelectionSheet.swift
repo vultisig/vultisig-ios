@@ -67,7 +67,7 @@ struct DerivationOptionButton: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.xl.shape
                     .fill(Theme.colors.bgSurface1)
             )
         }

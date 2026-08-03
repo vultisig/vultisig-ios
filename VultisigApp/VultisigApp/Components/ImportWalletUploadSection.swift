@@ -22,7 +22,7 @@ struct ImportWalletUploadSection: View {
             .frame(height: 200)
             .frame(maxWidth: .infinity)
             .background(backgroundColor.opacity(0.15))
-            .cornerRadius(10)
+            .cornerRadius(Theme.radius.md)
             .overlay(
                 ZStack {
                     getOverlay(isUploading ? 2 : 1)
@@ -89,10 +89,10 @@ struct ImportWalletUploadSection: View {
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
         ZStack {
             if backgroundColor == Theme.colors.bgButtonPrimary {
-                RoundedRectangle(cornerRadius: 10)
+                Theme.radius.md.shape
                     .strokeBorder(backgroundColor, lineWidth: 1)
             } else {
-                RoundedRectangle(cornerRadius: 10)
+                Theme.radius.md.shape
                     .strokeBorder(backgroundColor, style: StrokeStyle(lineWidth: lineWidth, dash: [5]))
             }
         }

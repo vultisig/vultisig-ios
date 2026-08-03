@@ -321,12 +321,12 @@ struct SolanaStakeDefiView<EmptyState: View>: View {
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
+        Theme.radius.xl.shape
             .fill(Theme.colors.bgSurface1)
     }
 
     private var cardBorder: some View {
-        RoundedRectangle(cornerRadius: 16)
+        Theme.radius.xl.shape
             .stroke(Theme.colors.border, lineWidth: 1)
     }
 

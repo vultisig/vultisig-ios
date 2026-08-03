@@ -32,7 +32,7 @@ struct Loader: View {
         }
         .frame(width: 180, height: 120)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
     }
 }
 

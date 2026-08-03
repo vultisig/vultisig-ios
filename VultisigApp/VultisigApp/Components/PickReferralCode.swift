@@ -69,9 +69,9 @@ struct PickReferralCode: View {
                     .foregroundStyle(status.color)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
-                    .cornerRadius(24)
+                    .cornerRadius(Theme.radius.xl)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 24)
+                        Theme.radius.xl.shape
                             .stroke(Theme.colors.border, lineWidth: 1)
                     )
             }

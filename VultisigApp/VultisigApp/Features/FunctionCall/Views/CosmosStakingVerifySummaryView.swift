@@ -74,9 +74,9 @@ struct CosmosStakingVerifySummaryView: View {
         }
         .padding(24)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(LinearGradient.borderGreen, lineWidth: 1)
         )
         .padding(1)
@@ -103,7 +103,7 @@ struct CosmosStakingVerifySummaryView: View {
                 Image(transaction.coin.logo)
                     .resizable()
                     .frame(width: 24, height: 24)
-                    .cornerRadius(32)
+                    .cornerRadius(Theme.radius.pill)
 
                 Text(transaction.amountDecimal.formatForDisplay())
                     .foregroundStyle(Theme.colors.textPrimary)

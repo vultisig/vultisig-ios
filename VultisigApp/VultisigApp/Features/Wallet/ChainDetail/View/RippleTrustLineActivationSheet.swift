@@ -115,7 +115,7 @@ struct RippleTrustLineActivationSheet: View {
             row("rippleTrustLineIssuer", value: viewModel.quote?.issuer, ticker: nil, truncatesInMiddle: true)
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface2))
+        .background(Theme.radius.md.shape.fill(Theme.colors.bgSurface2))
     }
 
     @ViewBuilder

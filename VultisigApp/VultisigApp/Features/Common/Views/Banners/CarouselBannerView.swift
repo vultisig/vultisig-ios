@@ -64,20 +64,20 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .contentShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(Theme.radius.xl.shape)
+        .contentShape(Theme.radius.xl.shape)
     }
 
     var iconTile: some View {
         Icon(banner.icon, color: banner.iconColor, size: 20)
             .frame(width: 41, height: 41)
             .background(Theme.colors.bgSurface2)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.lg.shape)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.lg.shape
                     .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
             )
     }

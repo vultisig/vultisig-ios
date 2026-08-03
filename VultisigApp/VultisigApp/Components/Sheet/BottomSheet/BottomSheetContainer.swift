@@ -31,7 +31,7 @@ struct BottomSheetContainer<Content: BottomSheetContentView>: View {
         Capsule()
             .fill(Theme.colors.border)
             .frame(width: 64, height: 4)
-            .cornerRadius(99)
+            .cornerRadius(Theme.radius.pill)
         #elseif os(macOS)
         HStack {
             Spacer()

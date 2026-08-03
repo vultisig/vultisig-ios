@@ -142,7 +142,7 @@ struct NotificationsIntroSheet: View {
                     }
                 }
                 .background(
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .fill(Theme.colors.bgSurface12)
                 )
             }

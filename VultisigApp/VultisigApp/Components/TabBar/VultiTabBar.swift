@@ -192,7 +192,7 @@ private extension VultiTabBar {
                     .glassEffect(.regular.interactive())
 
             } else {
-                RoundedRectangle(cornerRadius: 99)
+                Theme.radius.pill.shape
                     .fill(.white.opacity(0.06))
             }
         }
@@ -208,10 +208,10 @@ private extension VultiTabBar {
                     .fill(.clear)
                     .glassEffect(.regular)
             } else {
-                RoundedRectangle(cornerRadius: 99)
+                Theme.radius.pill.shape
                     .fill(Color(hex: "0C2546"))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 99)
+                        Theme.radius.pill.shape
                             .inset(by: 0.5)
                             .stroke(Color(red: 0.02, green: 0.11, blue: 0.23), lineWidth: 1)
                     )

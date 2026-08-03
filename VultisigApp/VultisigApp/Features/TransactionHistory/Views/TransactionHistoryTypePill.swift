@@ -18,9 +18,9 @@ struct TransactionHistoryTypePill: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(foregroundColor.opacity(0.1))
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
         .overlay(
-            RoundedRectangle(cornerRadius: 99)
+            Theme.radius.pill.shape
                 .stroke(foregroundColor, lineWidth: 1)
         )
     }

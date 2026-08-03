@@ -142,7 +142,7 @@ struct CosmosRedelegateTransactionScreen: View {
         }
         .padding(14)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(Theme.radius.md.shape)
         .padding(.top, 8)
     }
 

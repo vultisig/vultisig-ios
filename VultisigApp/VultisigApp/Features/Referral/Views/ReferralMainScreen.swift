@@ -99,7 +99,7 @@ struct ReferralMainScreen: View {
         VStack(spacing: 20) {
             Icon(.circleDashed2, color: Theme.colors.primaryAccent4, size: 24)
                 .padding(7)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface1))
+                .background(Theme.radius.sm.shape.fill(Theme.colors.bgSurface1))
                 .padding(.top, 24)
 
             VStack(spacing: 8) {
@@ -117,7 +117,7 @@ struct ReferralMainScreen: View {
             }
             .padding(.bottom, 12)
         }
-        .containerStyle(padding: 12, bgColor: .clear)
+        .containerStyle(padding: 12, radius: Theme.radius.md, bgColor: .clear)
     }
 
     var yourReferralCodeView: some View {
@@ -165,7 +165,7 @@ struct ReferralMainScreen: View {
             .font(Theme.fonts.bodyLMedium)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .containerStyle(padding: 14)
+        .containerStyle(padding: 14, radius: Theme.radius.md)
     }
 
     var editReferralButton: some View {
@@ -217,7 +217,7 @@ struct ReferralMainScreen: View {
                         size: 16
                     )
                 }
-                .containerStyle(padding: 12, radius: 99)
+                .containerStyle(padding: 12, radius: Theme.radius.pill)
                 .contentShape(Rectangle())
             }
         }
@@ -249,7 +249,10 @@ struct ReferralCodeBoxView: View {
                     )
                 }
                 .padding(16)
-                .containerStyle()
+                // Nested in both usages: `referredCodeSection` wraps this view
+                // in a container, and `yourReferralCodeView` renders it inside
+                // the referral-code section. Either way this box is content.
+                .containerStyle(radius: Theme.radius.md)
                 .contentShape(Rectangle())
             }
         }

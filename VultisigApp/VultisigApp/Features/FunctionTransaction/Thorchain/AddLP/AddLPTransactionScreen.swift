@@ -53,7 +53,7 @@ struct AddLPTransactionScreen: View {
             }
             .padding(12)
             .background(Theme.colors.bgNeutral)
-            .cornerRadius(8)
+            .cornerRadius(Theme.radius.sm)
         }
     }
 }

@@ -33,7 +33,7 @@ struct PopupCapsule: View {
             .padding()
             .padding(.horizontal, showText ? 16 : 8)
             .background(Theme.colors.border)
-            .cornerRadius(100)
+            .cornerRadius(Theme.radius.pill)
             .offset(y: offset)
     }
 

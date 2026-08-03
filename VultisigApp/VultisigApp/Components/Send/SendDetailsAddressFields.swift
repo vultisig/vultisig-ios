@@ -47,9 +47,9 @@ struct SendDetailsAddressFields: View {
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.md)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .padding(1)

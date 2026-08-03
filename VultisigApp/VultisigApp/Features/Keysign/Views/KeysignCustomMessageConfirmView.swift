@@ -58,7 +58,7 @@ struct KeysignCustomMessageConfirmView: View {
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(10)
+            .cornerRadius(Theme.radius.xl)
             .padding(16)
         }
     }
@@ -118,7 +118,7 @@ struct KeysignCustomMessageConfirmView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .frame(maxWidth: .infinity, maxHeight: 300)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -183,7 +183,7 @@ struct KeysignCustomMessageConfirmView: View {
                     .padding(16)
                 }
                 .frame(maxHeight: 300)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
     }

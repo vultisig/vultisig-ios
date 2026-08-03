@@ -34,7 +34,7 @@ struct DAppRequestBanner: View {
         }
         .padding(20)
         .background(Theme.colors.bgSurface2)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.lg)
     }
 
     @ViewBuilder

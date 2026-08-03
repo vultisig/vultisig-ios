@@ -63,7 +63,13 @@ extension SwapPercentageButtons {
             .padding(.horizontal, 8)
             .padding(.vertical, 10)
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
-            .cornerRadius(16)
+            // Not the macOS twin's `pill`, and not an oversight: this cell is
+            // taller (10pt of vertical padding against macOS's 8), so its 16
+            // stayed just under the clamp and rendered as a real 16 where the
+            // macOS cell's 32 rendered as a capsule. The two have always looked
+            // different; tokenising each at what it draws keeps that true, and
+            // makes the difference a design question instead of two numbers.
+            .cornerRadius(Theme.radius.lg)
     }
 }
 #endif
@@ -114,7 +120,7 @@ extension SwapPercentageButtons {
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
-            .cornerRadius(32)
+            .cornerRadius(Theme.radius.pill)
     }
 }
 #endif

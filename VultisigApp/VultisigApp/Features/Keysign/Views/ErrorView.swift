@@ -149,11 +149,11 @@ private extension ErrorView {
             }
             .padding(20)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.xl.shape
                     .fill(Theme.colors.bgSurface1)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.xl.shape
                     .strokeBorder(Theme.colors.border, lineWidth: 1)
             )
         }

@@ -135,7 +135,7 @@ struct CustomTokenScreen: View {
                             .font(Theme.fonts.caption10)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
-                            .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.borderLight))
+                            .overlay(Theme.radius.pill.shape.stroke(Theme.colors.borderLight))
                     }
 
                     Text(token.contractAddress)
@@ -147,10 +147,10 @@ struct CustomTokenScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
+            .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
             GradientListSeparator()
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(Theme.radius.xl.shape)
     }
 
     /// Persists the resolved custom token to the vault and dismisses the screen.

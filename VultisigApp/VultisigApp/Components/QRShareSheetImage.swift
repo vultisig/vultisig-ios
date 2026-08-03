@@ -57,10 +57,10 @@ struct QRShareSheetImage: View {
             .padding(qrInnerPadding)
             .background(Theme.colors.bgSurface1)
             .overlay(
-                RoundedRectangle(cornerRadius: cardCornerRadius)
+                cardCornerRadius.shape
                     .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius))
+            .clipShape(cardCornerRadius.shape)
     }
 
     var metadataCard: some View {
@@ -75,10 +75,10 @@ struct QRShareSheetImage: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: cardCornerRadius)
+            cardCornerRadius.shape
                 .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius))
+        .clipShape(cardCornerRadius.shape)
     }
 
     @ViewBuilder
@@ -207,7 +207,7 @@ struct QRShareSheetImage: View {
 }
 
 private extension QRShareSheetImage {
-    var cardCornerRadius: CGFloat { 24 }
+    var cardCornerRadius: CornerRadius { Theme.radius.xl }
     var qrInnerPadding: CGFloat { 16 }
 }
 

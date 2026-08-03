@@ -56,7 +56,7 @@ struct VaultMainBalanceView: View {
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 6)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "5180FC").opacity(0.12)))
+        .background(Theme.radius.sm.shape.fill(Color(hex: "5180FC").opacity(0.12)))
         .frame(width: 120)
         .animation(.interactiveSpring(duration: 0.3), value: homeViewModel.hideVaultBalance)
     }
