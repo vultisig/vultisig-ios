@@ -70,7 +70,7 @@ struct SignedMessageDoneTokenContent: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.xl)
     }
 
     @ViewBuilder

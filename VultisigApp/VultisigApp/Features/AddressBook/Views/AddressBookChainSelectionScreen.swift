@@ -29,7 +29,7 @@ struct AddressBookChainSelectionScreen: View {
                         emptyMessage
                     }
                 }
-                .cornerRadius(12)
+                .cornerRadius(Theme.radius.xl)
             }
         }
         .screenTitle("selectChain".localized)

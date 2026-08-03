@@ -70,9 +70,9 @@ struct SwitchToLocalLink: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(background)
-                .cornerRadius(12)
+                .cornerRadius(Theme.radius.md)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    Theme.radius.md.shape
                         .stroke(borderColor, lineWidth: 1)
                 )
         }

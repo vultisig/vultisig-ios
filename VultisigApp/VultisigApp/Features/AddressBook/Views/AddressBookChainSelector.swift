@@ -19,7 +19,7 @@ struct AddressBookChainSelector: View {
                 Text("chain".localized)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
-                ContainerView {
+                ContainerView(radius: Theme.radius.md) {
                     HStack {
                         AddressBookChainCellView(chain: selectedChain)
                         Spacer()

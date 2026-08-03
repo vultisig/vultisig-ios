@@ -14,7 +14,7 @@ struct TronConstants {
         static let horizontalPadding: CGFloat = 16
         static let cardPadding: CGFloat = 24
         static let verticalSpacing: CGFloat = 16
-        static let cornerRadius: CGFloat = 16
+        static let cornerRadius = Theme.radius.xl
 
         static let mainViewTopPadding: CGFloat = 16
 

@@ -27,7 +27,7 @@ struct ReferralSendOverviewView: View {
         }
         .padding(24)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
     }
 
     var title: some View {
@@ -42,7 +42,7 @@ struct ReferralSendOverviewView: View {
             Image("rune")
                 .resizable()
                 .frame(width: 24, height: 24)
-                .cornerRadius(32)
+                .cornerRadius(Theme.radius.pill)
 
             Text("\(transaction.amount)")
                 .foregroundStyle(Theme.colors.textPrimary)
@@ -107,7 +107,7 @@ struct ReferralSendOverviewView: View {
                 Image(icon)
                     .resizable()
                     .frame(width: 16, height: 16)
-                    .cornerRadius(16)
+                    .cornerRadius(Theme.radius.pill)
             }
 
             Text(description)

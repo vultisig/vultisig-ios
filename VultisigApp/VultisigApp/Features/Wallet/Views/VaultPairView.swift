@@ -20,9 +20,9 @@ struct VaultPartView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
         .overlay(
-            RoundedRectangle(cornerRadius: 99)
+            Theme.radius.pill.shape
                 .inset(by: 1)
                 .stroke(Theme.colors.border, lineWidth: 1)
         )

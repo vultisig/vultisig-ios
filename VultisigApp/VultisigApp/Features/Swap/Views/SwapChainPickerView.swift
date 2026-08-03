@@ -95,9 +95,9 @@ struct SwapChainPickerView: View {
             }
         }
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(Theme.radius.xl.shape)
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
         )
     }

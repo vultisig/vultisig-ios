@@ -297,6 +297,12 @@ struct PeerDiscoveryScreen: View {
             .frame(maxWidth: qrCodeSize, maxHeight: qrCodeSize)
             .padding(20)
             .background(Theme.colors.bgSurface1)
+            // Off the scale on purpose. The frame and its 8pt gradient ring are
+            // one drawn object at a size nothing else in the app has, and the
+            // nearest step is 9pt away — enough to reshape the screen the
+            // pairing flow is built around. Both radii are the same number
+            // because they are the same edge, so they move together or not at
+            // all.
             .cornerRadius(33)
             .overlay(
                 RoundedRectangle(cornerRadius: 33)

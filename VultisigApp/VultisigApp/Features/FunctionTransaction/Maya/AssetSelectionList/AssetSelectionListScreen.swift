@@ -38,7 +38,7 @@ struct AssetSelectionListScreen: View {
                         emptyMessage
                     }
                 }
-                .cornerRadius(12)
+                .cornerRadius(Theme.radius.xl)
             }
         }
         .screenTitle("selectAsset".localized)

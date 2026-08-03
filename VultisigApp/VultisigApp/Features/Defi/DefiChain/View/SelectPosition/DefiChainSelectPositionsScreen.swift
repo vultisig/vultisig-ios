@@ -194,7 +194,7 @@ private struct PositionNotFoundEmptyStateView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 32)
             .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
+            .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
             Spacer()
         }
     }

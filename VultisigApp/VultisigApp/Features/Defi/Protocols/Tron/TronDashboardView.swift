@@ -89,7 +89,7 @@ struct TronDashboardView: View {
                 }
                 .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
             }
-            .clipShape(RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius))
+            .clipShape(TronConstants.Design.cornerRadius.shape)
 
             // Content
             HStack(alignment: .top) {
@@ -100,7 +100,7 @@ struct TronDashboardView: View {
 
                     if model.isLoadingBalance {
                         // Skeleton placeholder
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.bgSurface1)
                             .frame(width: 120, height: 24)
                             .shimmer()
@@ -125,7 +125,7 @@ struct TronDashboardView: View {
     }
 
     var cardBackground: some View {
-        RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+        TronConstants.Design.cornerRadius.shape
             .fill(
                 LinearGradient(
                     stops: [
@@ -137,7 +137,7 @@ struct TronDashboardView: View {
                 )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                TronConstants.Design.cornerRadius.shape
                     .stroke(Theme.colors.tronRed.opacity(0.3), lineWidth: 1)
             )
     }
@@ -157,7 +157,7 @@ struct TronDashboardView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
 
                     if model.isLoadingBalance {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.bgSurface1)
                             .frame(width: 80, height: 20)
                             .shimmer()
@@ -182,7 +182,7 @@ struct TronDashboardView: View {
                     .foregroundStyle(Theme.colors.textSecondary)
 
                 if model.isLoadingBalance {
-                    RoundedRectangle(cornerRadius: 4)
+                    Theme.radius.xs.shape
                         .fill(Theme.colors.bgSurface1)
                         .frame(width: 100, height: 20)
                         .shimmer()
@@ -220,11 +220,11 @@ struct TronDashboardView: View {
         }
         .padding(TronConstants.Design.cardPadding)
         .background(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
         )
     }
@@ -296,7 +296,7 @@ struct TronDashboardView: View {
             }
             .padding(TronConstants.Design.cardPadding)
             .background(
-                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                TronConstants.Design.cornerRadius.shape
                     .fill(Theme.colors.bgSurface1)
             )
         }

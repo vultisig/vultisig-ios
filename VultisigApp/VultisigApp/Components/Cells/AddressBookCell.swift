@@ -48,7 +48,7 @@ struct AddressBookCell: View {
         .padding(.leading, 16)
         .padding(.trailing, isEditing ? 20 : 16)
         .background(
-            RoundedRectangle(cornerRadius: isEditing ? 99 : 12)
+            (isEditing ? Theme.radius.pill : Theme.radius.xl).shape
                 .inset(by: 1)
                 .fill(Theme.colors.bgSurface1)
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
@@ -59,7 +59,7 @@ struct AddressBookCell: View {
         Image(address.coinMeta.logo)
             .resizable()
             .frame(width: 32, height: 32)
-            .cornerRadius(30)
+            .cornerRadius(Theme.radius.pill)
     }
 
     var text: some View {

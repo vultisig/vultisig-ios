@@ -42,7 +42,7 @@ struct SignSolanaDisplayView: View {
                     .padding(16)
                 }
                 .frame(maxHeight: 400)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
     }
@@ -86,7 +86,7 @@ struct SignSolanaDisplayView: View {
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.colors.bgPrimary)
-            .cornerRadius(8)
+            .cornerRadius(Theme.radius.sm)
         }
     }
 
@@ -118,7 +118,7 @@ struct SignSolanaDisplayView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.colors.bgPrimary)
-        .cornerRadius(8)
+        .cornerRadius(Theme.radius.sm)
     }
 
 }

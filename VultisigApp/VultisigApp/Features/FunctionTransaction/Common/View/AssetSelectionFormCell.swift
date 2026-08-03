@@ -40,7 +40,7 @@ struct AssetSelectionFormCell: View {
             .padding(.vertical, 6)
             .padding(.leading, 6)
             .padding(.trailing, 12)
-            .background(RoundedRectangle(cornerRadius: 99).fill(Theme.colors.bgSurface1))
+            .background(Theme.radius.pill.shape.fill(Theme.colors.bgSurface1))
         }
     }
 }

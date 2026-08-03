@@ -35,9 +35,9 @@ struct TransactionHistoryCardView: View {
         }
         .padding(16)
         .padding(.bottom, transaction.swapProvider != nil ? 20 : 0)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .inset(by: 1)
                 .fill(Theme.colors.bgSurface1)
                 .stroke(Theme.colors.border, lineWidth: 1)
@@ -142,7 +142,7 @@ struct TransactionHistoryCardView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Theme.colors.bgPrimary)
-            .cornerRadius(99)
+            .cornerRadius(Theme.radius.pill)
     }
 
     /// Two-line status: the state, and beneath it the progress.
@@ -209,7 +209,7 @@ struct TransactionHistoryCardView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Theme.colors.bgPrimary)
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
     }
 
     // MARK: - Completed Status
@@ -389,18 +389,30 @@ struct TransactionHistoryCardView: View {
             .background(Theme.colors.bgSurface2)
             .clipShape(
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 12,
+                    topLeadingRadius: Theme.radius.md.points,
                     bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 16,
-                    topTrailingRadius: 0
+                    // The badge is overlaid on the card's bottom-trailing
+                    // corner, so this radius is not the badge's own geometry —
+                    // it traces the card's. It has to read from the same token
+                    // the card does or the badge stops following the contour it
+                    // is sitting in.
+                    bottomTrailingRadius: Theme.radius.xl.points,
+                    topTrailingRadius: 0,
+                    style: Theme.radius.xl.style
                 )
             )
             .overlay(
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 12,
+                    topLeadingRadius: Theme.radius.md.points,
                     bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 16,
-                    topTrailingRadius: 0
+                    // The badge is overlaid on the card's bottom-trailing
+                    // corner, so this radius is not the badge's own geometry —
+                    // it traces the card's. It has to read from the same token
+                    // the card does or the badge stops following the contour it
+                    // is sitting in.
+                    bottomTrailingRadius: Theme.radius.xl.points,
+                    topTrailingRadius: 0,
+                    style: Theme.radius.xl.style
                 )
                 .stroke(Theme.colors.border, lineWidth: 1)
             )
@@ -483,9 +495,9 @@ struct TransactionHistoryCardView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(Theme.colors.bgSurface2)
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
         .overlay(
-            RoundedRectangle(cornerRadius: 99)
+            Theme.radius.pill.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

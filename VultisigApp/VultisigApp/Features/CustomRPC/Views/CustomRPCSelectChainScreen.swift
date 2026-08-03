@@ -101,11 +101,11 @@ private struct CustomRPCChainGridCell: View {
         )
         .frame(width: 74, height: 74)
         .background(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(hasOverride ? editedOverlay : nil)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(Theme.radius.xl.shape)
     }
 
     /// Matches `AssetSelectionGridCell`'s selected treatment: the corner badge is
@@ -118,15 +118,19 @@ private struct CustomRPCChainGridCell: View {
                 .background(
                     UnevenRoundedRectangle(
                         cornerRadii: .init(
-                            topLeading: 24,
+                            // Both corners restate the tile's radius: the badge
+                            // is drawn into the tile's bottom-trailing corner
+                            // and has to trace it.
+                            topLeading: Theme.radius.xl.points,
                             bottomLeading: 0,
-                            bottomTrailing: 24,
+                            bottomTrailing: Theme.radius.xl.points,
                             topTrailing: 0
-                        )
+                        ),
+                        style: Theme.radius.xl.style
                     )
                     .fill(Theme.colors.border)
                 )
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
     }

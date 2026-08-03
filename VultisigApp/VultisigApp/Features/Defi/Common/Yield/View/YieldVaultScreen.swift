@@ -312,7 +312,7 @@ struct YieldVaultScreen: View {
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 24)
+        Theme.radius.xl.shape
             .inset(by: 0.5)
             .fill(Theme.colors.bgSurface1)
             .stroke(Theme.colors.borderLight, lineWidth: 1)

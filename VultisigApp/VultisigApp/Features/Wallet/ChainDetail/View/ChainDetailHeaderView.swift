@@ -61,7 +61,7 @@ struct ChainDetailHeaderView: View {
             }
             .padding(.vertical, 4)
             .padding(.horizontal, 6)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "5180FC").opacity(0.12)))
+            .background(Theme.radius.sm.shape.fill(Color(hex: "5180FC").opacity(0.12)))
         }
     }
 }

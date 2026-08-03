@@ -74,9 +74,9 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                     }
 
                 sheetContent()
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .clipShape(Theme.radius.xl.shape)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 24)
+                        Theme.radius.xl.shape
                             .inset(by: 0.5)
                             .strokeBorder(Theme.colors.borderExtraLight)
                     )
@@ -176,9 +176,9 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                     }
 
                 sheetContent(currentItem)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .clipShape(Theme.radius.xl.shape)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 24)
+                        Theme.radius.xl.shape
                             .inset(by: 0.5)
                             .strokeBorder(Theme.colors.borderExtraLight)
                     )

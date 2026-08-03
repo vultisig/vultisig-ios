@@ -42,17 +42,17 @@ struct PrimaryButtonStyle: ButtonStyle {
             )
             .foregroundStyle(foregroundColor(for: type, isEnabled: isEnabled))
             .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius(for: size))
+                    radius(for: size).shape
                         .stroke(borderColor(for: type, isEnabled: isEnabled),
                                 lineWidth: borderWidth(for: type))
             )
             .overlay {
                 if hasBevel(for: type), isEnabled {
-                    InsetBevelOverlay(cornerRadius: cornerRadius(for: size))
+                    InsetBevelOverlay(radius: radius(for: size))
                 }
             }
-            .cornerRadius(cornerRadius(for: size))
-            .contentShape(RoundedRectangle(cornerRadius: cornerRadius(for: size)))
+            .cornerRadius(radius(for: size))
+            .contentShape(radius(for: size).shape)
     }
 }
 
@@ -62,10 +62,10 @@ struct PrimaryButtonStyle: ButtonStyle {
 /// shadow pair. Currently applied to `.secondary`; kept as a standalone piece so
 /// the other button types can adopt the same treatment.
 private struct InsetBevelOverlay: View {
-    let cornerRadius: CGFloat
+    let radius: CornerRadius
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius)
+        radius.shape
             .strokeBorder(
                 LinearGradient(
                     stops: [
@@ -118,10 +118,14 @@ private extension PrimaryButtonStyle {
         }
     }
 
-    func cornerRadius(for size: ButtonSize) -> CGFloat {
+    /// Every size but `.squared` is a capsule. It was written as `99`, which is
+    /// not a radius anyone chose — it is simply larger than half the button's
+    /// height, and that clamp is what rounds the ends. `pill` names the
+    /// intention instead, and renders the same shape at every button size.
+    func radius(for size: ButtonSize) -> CornerRadius {
         switch size {
-        case .medium, .small, .smallFixed, .mini: 99
-        case .squared: 12
+        case .medium, .small, .smallFixed, .mini: Theme.radius.pill
+        case .squared: Theme.radius.md
         }
     }
 

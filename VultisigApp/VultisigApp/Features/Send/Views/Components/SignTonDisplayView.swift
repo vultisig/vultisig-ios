@@ -107,7 +107,7 @@ struct SignTonDisplayView: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .stroke(Theme.colors.border, lineWidth: 1)
             )
         }
@@ -225,7 +225,7 @@ struct SignTonDisplayView: View {
         .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.lg.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -285,7 +285,7 @@ struct SignTonDisplayView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

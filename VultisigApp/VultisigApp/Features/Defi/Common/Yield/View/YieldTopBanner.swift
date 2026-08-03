@@ -42,12 +42,12 @@ struct YieldTopBanner: View {
     }
 
     private var background: some View {
-        RoundedRectangle(cornerRadius: 16)
+        Theme.radius.xl.shape
             .inset(by: 0.5)
             .fill(gradient)
             .stroke(bannerTint.opacity(0.17), lineWidth: 1)
             .overlay(logo, alignment: .topTrailing)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.xl.shape)
     }
 
     private var logo: some View {

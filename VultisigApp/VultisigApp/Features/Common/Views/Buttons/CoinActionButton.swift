@@ -29,9 +29,9 @@ struct CoinActionButton: View {
                 )
                 .padding(16)
                 .background(bgColor)
-                .cornerRadius(16)
+                .cornerRadius(Theme.radius.lg)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .inset(by: 0.5)
                         .stroke(.white.opacity(0.03), lineWidth: 1)
                 )

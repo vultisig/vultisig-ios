@@ -22,9 +22,9 @@ struct IconCapsule: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgPrimary)
-        .cornerRadius(50)
+        .cornerRadius(Theme.radius.pill)
         .overlay(
-            RoundedRectangle(cornerRadius: 50)
+            Theme.radius.pill.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

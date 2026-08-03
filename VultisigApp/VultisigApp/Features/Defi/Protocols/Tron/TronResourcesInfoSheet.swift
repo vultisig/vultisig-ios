@@ -59,7 +59,7 @@ struct TronResourcesInfoSheet: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(Theme.radius.sm.shape)
 
                 Text("TRON")
                     .font(Theme.fonts.footnote)
@@ -148,11 +148,11 @@ struct TronResourcesInfoSheet: View {
         .padding(.bottom, isExpanded ? 24 : 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
     }
@@ -166,7 +166,7 @@ struct TronResourcesInfoSheet: View {
             .foregroundStyle(accentColor)
             .padding(8)
             .background(
-                RoundedRectangle(cornerRadius: 8)
+                Theme.radius.sm.shape
                     .fill(accentColor.opacity(0.1))
             )
     }

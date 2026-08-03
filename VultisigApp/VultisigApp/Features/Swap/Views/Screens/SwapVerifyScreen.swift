@@ -216,7 +216,7 @@ struct SwapVerifyScreen: View {
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(10)
+            .cornerRadius(Theme.radius.xl)
         }
     }
 
@@ -312,7 +312,7 @@ struct SwapVerifyScreen: View {
             .foregroundStyle(Theme.colors.primaryAccent4)
             .padding(6)
             .background(Theme.colors.bgSurface2)
-            .cornerRadius(32)
+            .cornerRadius(Theme.radius.pill)
             .bold()
     }
 

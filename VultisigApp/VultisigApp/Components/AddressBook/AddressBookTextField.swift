@@ -47,9 +47,9 @@ struct AddressBookTextField: View {
             Theme.colors.bgButtonPrimary.opacity(0.2)
                 .frame(height: 48)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .cornerRadius(10)
+                .cornerRadius(Theme.radius.md)
 
-            RoundedRectangle(cornerRadius: 10)
+            Theme.radius.md.shape
                 .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 1, dash: [10]))
                 .padding(5)
 

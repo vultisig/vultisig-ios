@@ -159,7 +159,7 @@ struct CreateReferralDetailsView: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .background(Theme.colors.textPrimary)
-        .cornerRadius(8)
+        .cornerRadius(Theme.radius.sm)
         .onTapGesture {
             showTooltip = false
         }

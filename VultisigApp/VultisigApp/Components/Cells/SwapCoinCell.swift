@@ -96,7 +96,7 @@ struct SwapCoinCell: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                Theme.radius.xl.shape
                     .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             )
     }
@@ -108,7 +108,7 @@ struct SwapCoinCell: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 10)
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                Theme.radius.xl.shape
                     .stroke(Theme.colors.alertInfo, lineWidth: 1)
             )
     }

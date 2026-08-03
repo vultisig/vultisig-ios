@@ -248,9 +248,9 @@ struct SwapDoneScreen: View {
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(Theme.radius.xl.shape)
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            Theme.radius.xl.shape
                 .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
         )
     }

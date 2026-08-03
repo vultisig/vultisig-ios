@@ -27,7 +27,7 @@ struct FunctionCallContractSelectorDropDown: View {
         }
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
         .disabled(!isActive)
     }
 

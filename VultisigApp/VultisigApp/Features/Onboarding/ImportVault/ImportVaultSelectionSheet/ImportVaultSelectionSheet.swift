@@ -84,7 +84,7 @@ struct ImportVaultSelectionSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface1))
+            .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
         }
         .buttonStyle(.plain)
     }

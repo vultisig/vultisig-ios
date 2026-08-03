@@ -81,7 +81,7 @@ struct ReceiveQRCodeBottomSheet: View {
 
     var topSection: some View {
         VStack(spacing: 8) {
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
                 .overlay(
                     qrCodeImage?

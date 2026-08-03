@@ -179,11 +179,26 @@
                 ZStack {
                     Path { path in
                         path.addRect(proxy.frame(in: .local))
-                        path.addRoundedRect(in: rect, cornerSize: CGSize(width: 24, height: 24))
+                        path.addRoundedRect(
+                            in: rect,
+                            // Restates the viewport frame's radius: this path is the
+                            // punch-out for the same rect the stroke draws, so the two
+                            // have to read the same token or the dimming mask stops
+                            // lining up with the frame.
+                            cornerSize: CGSize(
+                                width: Theme.radius.xl.points,
+                                height: Theme.radius.xl.points
+                            ),
+                            // The mask is a Path, which cannot take the token's `shape`,
+                            // so the style has to be carried across by hand — a radius
+                            // from the token with the style left to the SDK is exactly
+                            // the pair that stops tracking the design system.
+                            style: Theme.radius.xl.style
+                        )
                     }
                     .fill(Theme.colors.bgPrimary.opacity(0.55), style: FillStyle(eoFill: true))
 
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
                         .frame(width: rect.width, height: rect.height)
                         .position(x: rect.midX, y: rect.midY)

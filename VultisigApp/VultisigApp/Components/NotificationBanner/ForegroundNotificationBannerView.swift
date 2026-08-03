@@ -15,6 +15,11 @@ struct ForegroundNotificationBannerView: View {
     var body: some View {
         ZStack {
             bannerBackground
+                // Off the scale on purpose. This is a full-bleed banner that
+                // drops from under the status bar and ignores the safe area; its
+                // bottom curve is drawn against the device's own screen corners,
+                // not against the app's card geometry, and 24 reads as a card
+                // stuck to the top of the screen.
                 .clipShape(
                     UnevenRoundedRectangle(
                         bottomLeadingRadius: 40,

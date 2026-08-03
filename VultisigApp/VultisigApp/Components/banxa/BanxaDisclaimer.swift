@@ -48,7 +48,12 @@ struct BanxaDisclaimer: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 32)
+                        // `32` was already past half this button's height, so it
+                        // drew a capsule. It stays one at every text size now,
+                        // where the literal would have started showing real
+                        // corners once an accessibility size pushed the button
+                        // past 64pt tall — the idiom held, the number did not.
+                        Theme.radius.pill.shape
                             .stroke(Color.gray, lineWidth: 2)
                     )
                 }

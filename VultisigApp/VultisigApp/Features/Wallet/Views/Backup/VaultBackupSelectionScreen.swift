@@ -91,7 +91,7 @@ struct VaultBackupSelectionScreen: View {
             case .single(let vault):
                 vaultRow(vault: vault)
                     .background(Theme.colors.bgSurface1)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Theme.radius.md.shape)
             case .multiple(let vaults, _):
                 VStack(alignment: .center, spacing: 12) {
                     VStack(spacing: 0) {
@@ -102,7 +102,7 @@ struct VaultBackupSelectionScreen: View {
                         }
                     }
                     .background(Theme.colors.bgSurface1)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Theme.radius.md.shape)
 
                     Text(String(format: "plusMore".localized, moreVaultsCount))
                         .font(Theme.fonts.bodySMedium)

@@ -41,11 +41,11 @@ struct ErrorMessageSheet: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .background(
-                RoundedRectangle(cornerRadius: 24)
+                Theme.radius.xl.shape
                     .fill(Theme.colors.bgSurface1)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                Theme.radius.xl.shape
                     .strokeBorder(Theme.colors.border, lineWidth: 1)
             )
 

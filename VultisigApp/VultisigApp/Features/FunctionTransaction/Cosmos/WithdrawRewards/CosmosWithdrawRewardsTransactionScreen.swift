@@ -67,7 +67,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
                 }
                 .padding(10)
                 .background(Theme.colors.bgSurface1)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(Theme.radius.sm.shape)
             }
         }
     }
@@ -100,7 +100,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(Theme.radius.md.shape)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -109,7 +109,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
     @ViewBuilder
     private func checkbox(isSelected: Bool) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 4)
+            Theme.radius.xs.shape
                 .stroke(
                     isSelected
                         ? Theme.colors.primaryAccent3
@@ -171,7 +171,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(Theme.radius.xl.shape)
     }
 
     private func truncated(_ address: String) -> String {

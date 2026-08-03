@@ -83,7 +83,7 @@ struct GovernanceWeightedVoteSheet: View {
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .fill(Theme.colors.bgSurface1)
         )
     }

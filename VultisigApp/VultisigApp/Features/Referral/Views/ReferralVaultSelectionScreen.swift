@@ -35,7 +35,7 @@ struct ReferralVaultSelectionScreen: View {
                         }
                     }
                     .background(Theme.colors.bgSurface1)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Theme.radius.xl.shape)
                 }
             }
         }

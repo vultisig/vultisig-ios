@@ -108,11 +108,11 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -139,11 +139,11 @@ struct CosmosStakeDefiView<EmptyState: View>: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

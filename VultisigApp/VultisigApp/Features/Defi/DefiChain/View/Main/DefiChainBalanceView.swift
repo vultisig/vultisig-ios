@@ -48,12 +48,12 @@ struct DefiChainBalanceView: View {
     }
 
     var backgroundView: some View {
-        RoundedRectangle(cornerRadius: 16)
+        Theme.radius.xl.shape
             .inset(by: 0.5)
             .stroke(Color(hex: "34E6BF").opacity(0.17))
             .fill(gradientStyle)
             .overlay(imageView, alignment: .topTrailing)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.xl.shape)
     }
 
     var defiBanner: String? {

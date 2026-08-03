@@ -387,7 +387,7 @@ struct SecuredAssetSelectorSection: View {
         .frame(height: 48)
         .padding(.horizontal, 12)
         .background(Color.gray.opacity(0.1))
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
     }
 
     private var errorView: some View {
@@ -416,7 +416,7 @@ struct SecuredAssetSelectorSection: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color.gray.opacity(0.1))
-            .cornerRadius(10)
+            .cornerRadius(Theme.radius.md)
         }
     }
 

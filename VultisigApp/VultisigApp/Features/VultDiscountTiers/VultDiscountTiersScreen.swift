@@ -100,9 +100,9 @@ private extension VultDiscountTiersScreen {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(height: 139)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(Theme.radius.xl.shape)
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .stroke(Color.white.opacity(0.09), lineWidth: 1)
         )
     }
