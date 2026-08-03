@@ -182,7 +182,11 @@ final class SendDetailsViewModel {
     }
 
     func hydrate(from seed: SendDetailsSeed) {
-        beginAmountEdit()
+        // The seed replaces every field, including the max intent, so nothing
+        // derived from the state it replaces may still land: drop the pending
+        // keystroke commit and the background max-fee refine alike.
+        cancelPendingAmountCommit()
+        cancelFeeRefine()
         fromAddress = seed.fromAddress
         toAddress = seed.toAddress
         toAddressLabel = seed.toAddressLabel
@@ -555,71 +559,102 @@ final class SendDetailsViewModel {
         return isValid
     }
 
-    // MARK: - Fiat / crypto conversion
+    // MARK: - Amount editing
 
-    /// Monotonic token bumped by every event that replaces what the amount
-    /// fields show — a keystroke in either field, a percentage/Max preset, a QR
-    /// fill, a coin switch, the background max-fee refine, a reset.
+    /// How long the amount fields wait after the last keystroke before the typed
+    /// value is committed (converted into the other field, max intent settled).
+    private static let amountCommitDebounce: Duration = .milliseconds(500)
+
+    /// The commit armed by the last keystroke in either amount field, while it
+    /// is still pending.
     ///
-    /// Both amount fields debounce through the process-wide
-    /// `DebounceHelper.shared`, which holds a single pending work item, so a
-    /// callback armed by typing can fire long after its keystroke — after a Max
-    /// preset has already replaced the amount. Each callback carries the token
-    /// it was armed with and is dropped once a newer event has superseded it.
-    ///
-    /// Comparing the callback's value against the field instead is not enough:
-    /// typing the full balance and then tapping Max produces the *same string*
-    /// from two different intents, and applying the stale one clears
-    /// `sendMaxAmount` while the amount stays at the full balance. That is the
-    /// state that makes WalletCore's exact coin selector try to fund
-    /// `balance + fee` out of `balance`, return no inputs, and surface as a
+    /// A superseded commit has to be **cancelled**, not merely detected and
+    /// skipped. Detection would have to compare the commit's value against the
+    /// field, and that cannot tell the two intents apart: typing the full
+    /// balance and then tapping Max produces the *same string*. Applying the
+    /// typed one clears `sendMaxAmount` while the amount stays at the full
+    /// balance — the state that makes WalletCore's exact coin selector try to
+    /// fund `balance + fee` out of `balance`, return no inputs, and surface as a
     /// generic "insufficient UTXOs available" on a healthy wallet.
-    @ObservationIgnored private var amountEditGeneration = 0
+    ///
+    /// Cancelling is only meaningful if the debouncer is *owned*: a process-wide
+    /// one holds a single slot any caller can steal, so it can express "whatever
+    /// was last debounced anywhere", never "this form's pending amount commit".
+    /// One slot per form gives both halves of the ordering — the two fields
+    /// share it, so moving from the crypto field to the fiat field cancels the
+    /// field the user left, and every path that writes the amount itself cancels
+    /// it before writing (see `cancelPendingAmountCommit`).
+    ///
+    /// Exposed (like `feeRefineTask`) so tests can await the settle.
+    @ObservationIgnored private(set) var amountCommitTask: Task<Void, Never>?
 
-    /// Records that the amount fields are being replaced and returns the token a
-    /// debounced callback must present to still count. Called by every path that
-    /// writes the amount itself; a keystroke goes through `beginUserAmountEdit`.
-    @discardableResult
-    func beginAmountEdit() -> Int {
-        amountEditGeneration &+= 1
-        return amountEditGeneration
+    /// Arm the debounced commit for a keystroke, replacing any commit still
+    /// pending. `delayedTask` sleeps before running `commit`, so cancelling the
+    /// task stops the commit at that checkpoint and swallows the cancellation —
+    /// a superseded keystroke is ordinary control flow, not a failure.
+    ///
+    /// The slot holds only *pending* commits: a commit that has passed the
+    /// checkpoint releases it before running, so its own conversion doesn't find
+    /// the task that is executing it and cancel that.
+    private func scheduleAmountCommit(_ commit: @MainActor @escaping () -> Void) {
+        amountCommitTask?.cancel()
+        amountCommitTask = delayedTask(after: Self.amountCommitDebounce) { [weak self] in
+            self?.amountCommitTask = nil
+            commit()
+        }
     }
 
-    /// A keystroke in either amount field, applied synchronously before the
-    /// debounce is armed.
+    /// Called by every path that writes the amount fields itself — a
+    /// percentage/Max preset, a QR/deeplink fill, a coin switch, the background
+    /// max-fee refine's commit, a reset, a re-hydrate. The pending keystroke
+    /// commit is dropped, so it cannot land afterwards and undo the write.
     ///
-    /// Dropping the max-send intent here — rather than waiting for the debounced
-    /// commit half a second later — closes the inverse of the staleness window:
-    /// Continue does not wait for a pending edit, so between the keystroke and
-    /// its callback `makeTransaction` could otherwise snapshot a hand-typed
-    /// amount still flagged `sendMaxAmount`, and a UTXO signer would sweep the
-    /// wallet for a user who asked to send a specific figure.
+    /// This is the half a shared debouncer could not provide: none of those paths
+    /// arm a debounce, so they had nothing of their own to cancel and the stale
+    /// commit ran regardless.
     ///
-    /// The two properties are independent and both hold: a *superseded* callback
-    /// is still dropped by the token and cannot clear the flag, while a *genuine*
-    /// edit clears it immediately. Only the field bindings call this; programmatic
-    /// fills (presets, the fee refine, QR) do not go through a `Binding`'s setter.
-    @discardableResult
-    func beginUserAmountEdit() -> Int {
+    /// Those paths cancel *within the same main-actor turn* as their write, and
+    /// nothing suspends in between, so a pending commit cannot interleave —
+    /// whether the cancel comes before the write (`setMaxAmount`) or with the
+    /// conversion that follows it (the QR fill, the fee refine).
+    private func cancelPendingAmountCommit() {
+        amountCommitTask?.cancel()
+        amountCommitTask = nil
+    }
+
+    /// A keystroke in the crypto amount field, reported by the field's binding
+    /// after it has written `amount`. The conversion is debounced; the max-send
+    /// intent is dropped now (see `dropMaxIntentForUserEdit`).
+    func onAmountFieldEdited(_ newValue: String) {
+        dropMaxIntentForUserEdit()
+        scheduleAmountCommit { [weak self] in self?.convertToFiat(newValue: newValue) }
+    }
+
+    /// A keystroke in the fiat amount field. Shares the crypto field's single
+    /// pending slot, so an in-flight commit from the field the user just left
+    /// cannot clobber the one they moved to.
+    func onFiatAmountFieldEdited(_ newValue: String) {
+        dropMaxIntentForUserEdit()
+        scheduleAmountCommit { [weak self] in self?.convertFiatToCoin(newValue: newValue) }
+    }
+
+    /// The part of a keystroke that must not wait for the debounce.
+    ///
+    /// Continue does not wait for a pending commit, so if the max-send intent
+    /// only lapsed when the commit ran, `makeTransaction` could snapshot a
+    /// hand-typed amount still flagged `sendMaxAmount` — and a UTXO signer would
+    /// sweep the wallet for a user who asked to send a specific figure. Both
+    /// entry points run this on the main actor before any suspension point, so
+    /// no Continue tap can observe the intent the keystroke has already dropped.
+    ///
+    /// The inverse property is the cancellation above, and the two are
+    /// independent: a *superseded* commit is cancelled and so cannot clear the
+    /// flag, while a *genuine* edit clears it immediately.
+    private func dropMaxIntentForUserEdit() {
         sendMaxAmount = false
-        return beginAmountEdit()
     }
 
-    /// Debounced commit from the crypto amount field. Applies only when no newer
-    /// edit or programmatic fill has landed since this callback was armed —
-    /// otherwise it would rewrite the newer amount and clear `sendMaxAmount`.
-    func onAmountFieldEdited(_ newValue: String, generation: Int) {
-        guard generation == amountEditGeneration else { return }
-        convertToFiat(newValue: newValue)
-    }
-
-    /// Debounced commit from the fiat amount field. Shares one token sequence
-    /// with the crypto field, so switching between them can't let an in-flight
-    /// callback from the field the user just left clobber the one they moved to.
-    func onFiatAmountFieldEdited(_ newValue: String, generation: Int) {
-        guard generation == amountEditGeneration else { return }
-        convertFiatToCoin(newValue: newValue)
-    }
+    // MARK: - Fiat / crypto conversion
 
     /// Convert a fiat-typed value to the equivalent coin amount. Empty input
     /// clears `amount` instead of leaving a stale value (Phase D lesson).
@@ -628,7 +663,7 @@ final class SendDetailsViewModel {
     /// max-send flag — including on the clearing branch, where leaving the flag
     /// set would pair "send everything" with an empty amount field.
     func convertFiatToCoin(newValue: String) {
-        beginAmountEdit()
+        cancelPendingAmountCommit()
         guard let coinAmount = SendCryptoLogic.fiatToCoinAmount(fiat: newValue, coin: coin) else {
             amount = ""
             sendMaxAmount = false
@@ -643,7 +678,7 @@ final class SendDetailsViewModel {
     /// the legacy flag — when true, this update is from the max-amount path
     /// and shouldn't reset the sendMaxAmount flag.
     func convertToFiat(newValue: String, setMaxValue: Bool = false) {
-        beginAmountEdit()
+        cancelPendingAmountCommit()
         guard let fiatAmount = SendCryptoLogic.coinAmountToFiat(amount: newValue, coin: coin) else {
             amountInFiat = ""
             sendMaxAmount = setMaxValue ? sendMaxAmount : false
@@ -668,9 +703,9 @@ final class SendDetailsViewModel {
     /// precise fee validation before signing.
     func setMaxAmount(percentage: Double = 100) {
         cancelFeeRefine()
-        // Supersede any amount-field callback still in flight: the preset is the
-        // newer intent, and a late callback must not undo it.
-        beginAmountEdit()
+        // Drop any amount-field commit still pending: the preset is the newer
+        // intent, and a late commit must not undo it.
+        cancelPendingAmountCommit()
         errorMessage = ""
         // Drop a planner verdict left over from a previous preset — this attempt
         // gets to state its own outcome.
@@ -692,26 +727,31 @@ final class SendDetailsViewModel {
     }
 
     /// Background refine for the native-coin Max path. Settles the optimistic
-    /// full-balance fill to what can really be sent. Guarded so a stale refine
-    /// can't clobber a newer fill (another preset tap, manual edit) — the task
-    /// is cancelled at the top of `setMaxAmount`, and cancellation plus the edit
-    /// token are re-checked after the await before writing.
+    /// full-balance fill to what can really be sent.
+    ///
+    /// Its ordering against the amount fields rests on two guards, re-checked
+    /// after the await, which between them cover every writer of the amount:
+    ///
+    /// - paths that replace the amount while *keeping* the max intent cancel
+    ///   this task first (`setMaxAmount`, `hydrate`), so `Task.isCancelled`
+    ///   catches them;
+    /// - every path that replaces it with an *explicit* amount clears
+    ///   `sendMaxAmount` as it does so — a keystroke included, which drops the
+    ///   intent synchronously in `onAmountFieldEdited` rather than waiting for
+    ///   its debounced commit.
+    ///
+    /// So a refine settling into either kind of newer write stands down instead
+    /// of clobbering it.
     private func startFeeRefine() {
         isCalculatingFee = true
-        // The refine is one of the writers the edit token orders. `sendMaxAmount`
-        // alone is not a sufficient guard: a keystroke does not clear the flag
-        // until its own debounce lands, so a refine settling inside that window
-        // would overwrite the newer input *and* then invalidate the very callback
-        // that was about to honour it — losing the edit for good.
-        let generation = amountEditGeneration
         feeRefineTask = Task { [weak self] in
             guard let self else { return }
             defer { self.isCalculatingFee = false }
             do {
                 if self.coin.chainType == .UTXO {
-                    try await self.refineMaxFromPlan(generation: generation)
+                    try await self.refineMaxFromPlan()
                 } else {
-                    try await self.refineMaxFromFee(generation: generation)
+                    try await self.refineMaxFromFee()
                 }
             } catch is CancellationError {
                 return
@@ -719,9 +759,7 @@ final class SendDetailsViewModel {
                 // Same guards as the success paths: a verdict about a max send
                 // the user has already moved off must not paint an alert on the
                 // amount they typed instead.
-                guard !Task.isCancelled,
-                      self.sendMaxAmount,
-                      self.amountEditGeneration == generation else { return }
+                guard !Task.isCancelled, self.sendMaxAmount else { return }
                 self.handleMaxRefineFailure(error)
             }
         }
@@ -757,7 +795,7 @@ final class SendDetailsViewModel {
     /// so the Details figure is the one Verify will confirm rather than
     /// `balance − rate`, which reserves roughly a dozen sats for a fee of a few
     /// thousand.
-    private func refineMaxFromPlan(generation: Int) async throws {
+    private func refineMaxFromPlan() async throws {
         // The planner ignores this value in max mode, but it still reaches
         // WalletCore's `Int64` amount field, where an out-of-range conversion
         // traps rather than failing. Clamp it — an absurd balance must not
@@ -770,7 +808,7 @@ final class SendDetailsViewModel {
             vault: vault,
             refreshUtxos: false
         )
-        guard !Task.isCancelled, sendMaxAmount, amountEditGeneration == generation else { return }
+        guard !Task.isCancelled, sendMaxAmount else { return }
         // `gas` stays the rate (what the gas sheet edits); `fee` becomes the
         // planned total, so the balance guard compares against a real number
         // and the hand-off transaction carries an honest fee into Verify.
@@ -783,9 +821,9 @@ final class SendDetailsViewModel {
 
     /// Every other native chain: the chain quotes a flat fee, so `balance − fee`
     /// is the max.
-    private func refineMaxFromFee(generation: Int) async throws {
+    private func refineMaxFromFee() async throws {
         let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: maxSendRequest(amount: .zero)))
-        guard !Task.isCancelled, sendMaxAmount, amountEditGeneration == generation else { return }
+        guard !Task.isCancelled, sendMaxAmount else { return }
         if customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
             estimatedGasLimit = resolvedGasLimit
         }
@@ -1247,7 +1285,7 @@ final class SendDetailsViewModel {
     /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
     /// screen. Phase D lesson: clear *every* derived field, not just amount.
     func reset(to newCoin: Coin) {
-        beginAmountEdit()
+        cancelPendingAmountCommit()
         amountValidationTask?.cancel()
         amountValidationTask = nil
         amountValidation = .valid

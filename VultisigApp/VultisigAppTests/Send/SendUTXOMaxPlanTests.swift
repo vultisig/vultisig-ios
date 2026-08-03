@@ -172,9 +172,10 @@ final class SendUTXOMaxPlanTests: XCTestCase {
         let vm = SendFormFixture.make(coin: btc, interactor: interactor)
 
         vm.setMaxAmount(percentage: 100)
-        // The user types before the plan settles.
+        // The user types before the plan settles. The keystroke drops the
+        // max-send intent synchronously, which is what stands the plan down.
         vm.amount = "0.2"
-        vm.beginAmountEdit()
+        vm.onAmountFieldEdited("0.2")
 
         await vm.feeRefineTask?.value
 
