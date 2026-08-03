@@ -119,16 +119,23 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 // clamps to the Details amount so the refetched fee's embedded
                 // burn tax can't push the re-derived amount past the tax fixed
                 // point and underfund the send.
+                //
+                // OP-stack rollups additionally bill an L1 data fee and an
+                // operator fee that op-geth adds to the balance check it runs
+                // before executing the transaction, so the amount has to leave
+                // room for those on top of the L2 gas. Zero on every other
+                // chain, which leaves the arithmetic exactly as it was.
                 let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
                     coin: transaction.coin,
                     fee: feeResult.fee,
-                    previousAmountRaw: transaction.amountInRaw
+                    previousAmountRaw: transaction.amountInRaw,
+                    extraReserve: await logic.opStackFeeReserve(
+                        tx: transaction,
+                        gasLimit: feeResult.gasLimit
+                    )
                 )
                 if candidate > 0 {
-                    let decimals = transaction.coin.decimals
-                    let amountDecimal = Decimal(string: String(candidate)) ?? 0
-                    let formattedAmount = amountDecimal / pow(10, decimals)
-                    newAmount = "\(formattedAmount)"
+                    newAmount = SendCryptoLogic.amountString(coin: transaction.coin, raw: candidate)
                 }
             }
 
@@ -247,7 +254,33 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
+        syncMaxSendAmount(with: keysignPayload)
         return keysignPayload
+    }
+
+    /// Republish `transaction` at the amount the payload carries.
+    ///
+    /// A native EVM MAX is re-fitted at build time to the fee the payload
+    /// itself quotes, so the signed value can come out below the one Verify
+    /// displayed (never above — the clamp only reduces). `transaction` is what
+    /// the signing context, the keysign summary and the history entry are built
+    /// from, so it has to follow the payload or the user is shown a number that
+    /// isn't the one being signed. No-op for every other send, whose amount the
+    /// payload build leaves untouched.
+    private func syncMaxSendAmount(with payload: KeysignPayload) {
+        guard SendCryptoVerifyLogic.needsEVMMaxClamp(tx: transaction),
+              payload.toAmount != transaction.amountInRaw else {
+            return
+        }
+        let amount = SendCryptoLogic.amountString(coin: transaction.coin, raw: payload.toAmount)
+        // The Done screen pairs `amount` with `amountInFiat`, so the fiat figure
+        // has to follow the clamp too — same conversion the Details screen uses,
+        // so the string keeps the shape that screen produces. A coin with no
+        // rate yields nil and keeps whatever was there.
+        transaction = transaction.copy(
+            amount: amount,
+            amountInFiat: SendCryptoLogic.coinAmountToFiat(amount: amount, coin: transaction.coin)
+        )
     }
 
     func scan() async {

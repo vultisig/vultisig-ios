@@ -30,6 +30,10 @@ struct SendCryptoVerifyLogic {
     struct FeeResult {
         let fee: BigInt
         let gas: BigInt
+        /// The gas limit the fee was computed against, for EVM. Needed to price
+        /// the OP-stack operator fee, which is levied per unit of gas LIMIT
+        /// rather than gas used. `nil` off EVM.
+        var gasLimit: BigInt?
     }
 
     func calculateFee(tx: SendTransaction) async throws -> FeeResult {
@@ -45,7 +49,7 @@ struct SendCryptoVerifyLogic {
         // hardcoding .default. The user's custom fee mode chosen in the
         // Details screen is otherwise dropped on Verify refresh.
         let result = try await interactor.calculateEVMFee(SendFeeEstimateRequest(tx: tx))
-        return FeeResult(fee: result.fee, gas: result.gas)
+        return FeeResult(fee: result.fee, gas: result.gas, gasLimit: result.gasLimit)
     }
 
     private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
@@ -329,6 +333,28 @@ struct SendCryptoVerifyLogic {
         }
     }
 
+    // MARK: - EVM max-send clamp
+
+    /// True for the one send whose value is derived from the balance rather than
+    /// typed by the user: a native EVM MAX. Its amount is `balance − fee`, so it
+    /// is the only case where a fee that moved between the Verify quote and the
+    /// payload build makes the signed value unaffordable. Token sends move the
+    /// whole token balance and pay gas from the native sibling; a typed amount
+    /// is the user's number and must never be rewritten.
+    static func needsEVMMaxClamp(tx: SendTransaction) -> Bool {
+        tx.sendMaxAmount && tx.coin.isNativeToken && tx.coin.chainType == .EVM
+    }
+
+    /// Headroom a native MAX send has to leave on OP-stack rollups, where
+    /// op-geth checks `value + gasLimit × maxFeePerGas + l1Cost + operatorCost`
+    /// against the balance. `.zero` for token sends, whose gas comes out of the
+    /// native sibling rather than the amount being sent, and for every chain
+    /// that charges neither term.
+    func opStackFeeReserve(tx: SendTransaction, gasLimit: BigInt?) async -> BigInt {
+        guard tx.coin.isNativeToken else { return .zero }
+        return await interactor.fetchOpStackFeeReserve(coin: tx.coin, memo: tx.memo, gasLimit: gasLimit)
+    }
+
     // MARK: - Keysign Payload
 
     /// Memo slot of the keysign payload. XRP populates it per the send the
@@ -416,10 +442,17 @@ struct SendCryptoVerifyLogic {
                 )
             }
 
+            // A native EVM MAX is `balance − fee`, and the fee it was derived
+            // from is NOT the one in `chainSpecific` above — that is a second,
+            // independent reading of the fee market. Re-fit the value to the
+            // fee the payload actually carries, or the node rejects the send
+            // for the difference once the ceremony has already run.
+            let amount = try await clampedMaxSendAmount(tx: tx, chainSpecific: chainSpecific)
+
             let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
-                amount: tx.amountInRaw,
+                amount: amount,
                 memo: memo,
                 chainSpecific: chainSpecific,
                 wasmExecuteContractPayload: tx.wasmContractPayload,
@@ -477,5 +510,32 @@ struct SendCryptoVerifyLogic {
             }
             throw HelperError.runtimeError(errorMessage)
         }
+    }
+
+    /// The value to sign, given the chain-specific the payload is being built
+    /// from. Passes a typed amount through untouched; re-derives a native EVM
+    /// MAX against `chainSpecific`'s own `gasLimit × maxFeePerGas` plus the
+    /// OP-stack L1 data fee, clamping down only.
+    ///
+    /// Throws rather than signing when nothing is left after the fee: a send the
+    /// balance cannot fund is a rejected broadcast, and refusing it here costs
+    /// the user nothing where discovering it after the ceremony costs a signing
+    /// round.
+    private func clampedMaxSendAmount(
+        tx: SendTransaction,
+        chainSpecific: BlockChainSpecific
+    ) async throws -> BigInt {
+        guard Self.needsEVMMaxClamp(tx: tx) else { return tx.amountInRaw }
+
+        let amount = SendCryptoLogic.evmMaxSendAmountRaw(
+            coin: tx.coin,
+            displayedAmountRaw: tx.amountInRaw,
+            signedFee: chainSpecific.fee,
+            extraReserve: await opStackFeeReserve(tx: tx, gasLimit: chainSpecific.gasLimit)
+        )
+        guard amount > 0 else {
+            throw HelperError.runtimeError("walletBalanceExceededError")
+        }
+        return amount
     }
 }
