@@ -119,7 +119,7 @@ final class LimitOrderCancelDustTests: XCTestCase {
                 walletCore: 0,
                 inbound: threshold,
                 decimals: decimals,
-                ceiling: ceiling(for: chain, decimals: decimals),
+                ceiling: try ceiling(for: chain, decimals: decimals),
                 chain: "\(chain)"
             )
 
@@ -236,7 +236,7 @@ final class LimitOrderCancelDustTests: XCTestCase {
                     walletCore: 0,
                     inbound: threshold,
                     decimals: decimals,
-                    ceiling: ceiling(for: chain, decimals: decimals),
+                    ceiling: try ceiling(for: chain, decimals: decimals),
                     chain: "\(chain)"
                 ),
                 "\(chain) normal attach must fit under its ceiling"
@@ -245,13 +245,10 @@ final class LimitOrderCancelDustTests: XCTestCase {
     }
 
     /// The production ceiling for `chain`, in that chain's smallest units —
-    /// mirroring what `limitOrderCancelDust(for:inbound:)` does with
-    /// `Coin.raw(for:)`, without needing a `Coin`.
-    private func ceiling(for chain: Chain, decimals: Int) -> BigInt {
-        var natural = limitOrderCancelDustCeiling(for: chain)
-        var raw = Decimal()
-        NSDecimalMultiplyByPowerOf10(&raw, &natural, Int16(decimals), .plain)
-        return BigInt(NSDecimalNumber(decimal: raw).stringValue) ?? 0
+    /// the exact call `limitOrderCancelDust(for:inbound:)` makes, without
+    /// needing a `Coin`.
+    private func ceiling(for chain: Chain, decimals: Int) throws -> BigInt {
+        try limitOrderCancelDustCeiling(for: chain, decimals: decimals, chainSymbol: "\(chain)")
     }
 
     func testANegativeLocalFloorFailsClosedRatherThanBeingIgnored() {

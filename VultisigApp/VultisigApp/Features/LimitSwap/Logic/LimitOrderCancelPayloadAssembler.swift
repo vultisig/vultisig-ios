@@ -90,13 +90,21 @@ func resolveThorchainInboundVault(for chain: Chain) async throws -> InboundAddre
 /// precision is what turns it into the smallest unit the signer needs.
 @MainActor
 func limitOrderCancelDust(for sourceCoin: Coin, inbound: InboundAddress) throws -> BigInt {
+    let chainSymbol = ThorchainService.getInboundChainName(for: sourceCoin.chain)
     do {
         return try limitOrderCancelDustAmount(
             walletCoreDustFloor: BigInt(sourceCoin.coinType.getFixedDustThreshold()),
             inboundDustThreshold: inbound.dust_threshold,
             decimals: sourceCoin.decimals,
-            ceiling: sourceCoin.raw(for: limitOrderCancelDustCeiling(for: sourceCoin.chain)),
-            chainSymbol: ThorchainService.getInboundChainName(for: sourceCoin.chain)
+            // Built from the coin's own precision rather than from a natural-units
+            // literal, so the ceiling and the amount are rescaled by the same
+            // function out of the same 1e8 source units.
+            ceiling: limitOrderCancelDustCeiling(
+                for: sourceCoin.chain,
+                decimals: sourceCoin.decimals,
+                chainSymbol: chainSymbol
+            ),
+            chainSymbol: chainSymbol
         )
     } catch let error as LimitOrderCancelDustError {
         throw LimitOrderCancelAssemblyError.dust(error)
