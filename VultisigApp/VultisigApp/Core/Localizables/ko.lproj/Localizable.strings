@@ -497,7 +497,7 @@
 "foregroundNotificationSwap" = "%@ → %@ 스왑";
 "formInvalid" = "폼이 유효하지 않음";
 "formInvalidDefaultMessage" = "폼이 유효하지 않습니다. 빨간 별표로 표시된 필드를 수정해 주세요.";
-"forwardTonAmount" = "전달된 TON 금액";
+"forwardTonAmount" = "전달된 GRAM 금액";
 "foundActiveChainsSubtitle" = "추가 체인마다 볼트 생성 시간이 늘어나고 타임아웃 가능성이 높아집니다.";
 "foundActiveChainsTitle" = "%d개의 활성 체인을 찾았습니다";
 "from" = "출처";

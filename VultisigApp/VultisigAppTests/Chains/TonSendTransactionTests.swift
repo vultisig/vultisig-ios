@@ -18,11 +18,11 @@ final class TonSendTransactionTests: XCTestCase {
     private let destB = "EQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ"
     private let destC = "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5"
 
-    private func makeCoin() -> Coin {
+    private func makeCoin(chain: Chain = .ton, ticker: String = "GRAM") -> Coin {
         let meta = CoinMeta(
-            chain: .ton,
-            ticker: "GRAM",
-            logo: "gram",
+            chain: chain,
+            ticker: ticker,
+            logo: ticker.lowercased(),
             decimals: 9,
             priceProviderId: "the-open-network",
             contractAddress: "",
@@ -35,10 +35,11 @@ final class TonSendTransactionTests: XCTestCase {
         toAddress: String,
         toAmount: BigInt,
         chainSpecific: BlockChainSpecific,
-        signData: SignData?
+        signData: SignData?,
+        coin: Coin? = nil
     ) -> KeysignPayload {
         KeysignPayload(
-            coin: makeCoin(),
+            coin: coin ?? makeCoin(),
             toAddress: toAddress,
             toAmount: toAmount,
             chainSpecific: chainSpecific,
@@ -67,6 +68,41 @@ final class TonSendTransactionTests: XCTestCase {
             bounceable: bounceable,
             sendMaxAmount: false
         )
+    }
+
+    // MARK: - Pre-sign chain guard
+
+    /// The guard keys on the chain case, not on a ticker string. Ticker strings
+    /// move: the native TON coin already reads "GRAM" after the Toncoin rebrand,
+    /// and `chain.ticker` is only still "TON" because it is the protocol
+    /// identifier the swap asset notation is built from. A guard that compares
+    /// either one is a rename away from rejecting every TON send.
+    func testPreSignAcceptsTheRebrandedNativeCoin() throws {
+        let payload = makePayload(
+            toAddress: destA,
+            toAmount: 50_000_000,
+            chainSpecific: tonSpecific(),
+            signData: nil
+        )
+
+        XCTAssertEqual(payload.coin.ticker, "GRAM")
+        XCTAssertNoThrow(try TonHelper.getPreSignedInputData(keysignPayload: payload))
+    }
+
+    /// Still fail-closed: a coin from another chain must never reach the TON
+    /// signing input builder.
+    func testPreSignRejectsACoinFromAnotherChain() {
+        let payload = makePayload(
+            toAddress: destA,
+            toAmount: 50_000_000,
+            chainSpecific: tonSpecific(),
+            signData: nil,
+            coin: makeCoin(chain: .ethereum, ticker: "ETH")
+        )
+
+        XCTAssertThrowsError(try TonHelper.getPreSignedInputData(keysignPayload: payload)) { error in
+            XCTAssertEqual((error as? HelperError)?.errorDescription, "coin is not TON")
+        }
     }
 
     // MARK: - Regression: native single transfer

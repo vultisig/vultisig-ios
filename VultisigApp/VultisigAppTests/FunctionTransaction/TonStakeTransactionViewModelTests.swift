@@ -66,6 +66,28 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         XCTAssertTrue(vm.hasDestinationPool)
     }
 
+    /// The min-stake message must name the COIN's ticker. `chain.ticker` stays
+    /// "TON" because it is the protocol identifier the signer and the swap asset
+    /// notation are keyed on, so a screen that reads it shows the pre-rebrand
+    /// name to a GRAM holder.
+    func testMinStakeErrorUsesCoinTickerNotChainTicker() {
+        let vm = TonStakeTransactionViewModel(
+            coin: makeTonCoin(),
+            vault: .example,
+            existingPoolAddress: Self.poolAddress
+        )
+        vm.onLoad()
+        // Below `defaultMinStake` (1) + `depositFeeBuffer` (1), and well within
+        // the fixture balance, so the min-stake validator is the one that trips.
+        vm.amountField.value = "0.5"
+
+        XCTAssertThrowsError(try vm.amountField.validateErrors(showing: true)) { error in
+            let message = error.localizedDescription
+            XCTAssertTrue(message.contains("GRAM"), "expected the coin ticker in \(message)")
+            XCTAssertFalse(message.contains("TON"), "expected no chain ticker in \(message)")
+        }
+    }
+
     func testFirstTimeStakeUsesPickedPoolAddress() {
         let vm = TonStakeTransactionViewModel(
             coin: makeTonCoin(),

@@ -24,7 +24,10 @@ enum TonHelper {
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
-        guard keysignPayload.coin.chain.ticker == "TON" else {
+        // Keyed on the chain case, not on a ticker string: `chain.ticker` is a
+        // protocol identifier that a rebrand could move, and this guard failing
+        // open or closed on a renamed ticker would take out every TON send.
+        guard keysignPayload.coin.chain == .ton else {
             throw HelperError.runtimeError("coin is not TON")
         }
 

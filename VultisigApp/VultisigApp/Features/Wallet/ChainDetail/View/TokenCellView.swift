@@ -28,7 +28,7 @@ struct TokenCellView: View {
                 AsyncImageView(
                     logo: coin.logo,
                     size: CGSize(width: 36, height: 36),
-                    ticker: coin.chain.ticker,
+                    ticker: coin.ticker,
                     tokenChainLogo: coin.tokenChainLogo
                 )
 
