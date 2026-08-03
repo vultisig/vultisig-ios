@@ -18,7 +18,7 @@ struct InformationNote: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.colors.bgAlert.opacity(0.35))
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.md)
         .overlay(
             overlay
         )
@@ -59,7 +59,7 @@ import SwiftUI
 
 extension InformationNote {
     var overlay: some View {
-        RoundedRectangle(cornerRadius: 12)
+        Theme.radius.md.shape
             .stroke(Theme.colors.bgAlert, lineWidth: 1)
     }
 }
@@ -70,7 +70,7 @@ import SwiftUI
 
 extension InformationNote {
     var overlay: some View {
-        RoundedRectangle(cornerRadius: 12)
+        Theme.radius.md.shape
             .stroke(Theme.colors.bgAlert, lineWidth: 2)
     }
 }

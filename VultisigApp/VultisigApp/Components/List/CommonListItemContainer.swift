@@ -38,10 +38,17 @@ struct CommonListItemContainer: ViewModifier {
             row(content)
                 .clipShape(
                     .rect(
-                        topLeadingRadius: isFirst ? CommonListContainer.cornerRadius : 0,
-                        bottomLeadingRadius: isLast ? CommonListContainer.cornerRadius : 0,
-                        bottomTrailingRadius: isLast ? CommonListContainer.cornerRadius : 0,
-                        topTrailingRadius: isFirst ? CommonListContainer.cornerRadius : 0
+                        topLeadingRadius: isFirst ? CommonListContainer.cornerRadius.points : 0,
+                        bottomLeadingRadius: isLast ? CommonListContainer.cornerRadius.points : 0,
+                        bottomTrailingRadius: isLast ? CommonListContainer.cornerRadius.points : 0,
+                        topTrailingRadius: isFirst ? CommonListContainer.cornerRadius.points : 0,
+                        // Rounding each corner separately means this cannot use
+                        // the token's `shape`, so the style has to be carried
+                        // across by hand — otherwise these row masks would keep
+                        // the SDK's default while the container follows the
+                        // token, and the two would diverge the moment the
+                        // token's style changes.
+                        style: CommonListContainer.cornerRadius.style
                     )
                 )
         } else {
@@ -61,16 +68,16 @@ struct CommonListItemContainer: ViewModifier {
 /// Wrapping container for a group of `commonListItemContainer` rows: a single
 /// rounded surface with a hairline border, matching the Figma list style.
 struct CommonListContainer: ViewModifier {
-    static let cornerRadius: CGFloat = 24
+    static let cornerRadius = Theme.radius.xl
 
     func body(content: Content) -> some View {
         content
             .background(
-                RoundedRectangle(cornerRadius: Self.cornerRadius)
+                Self.cornerRadius.shape
                     .fill(Theme.colors.bgSurface1)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: Self.cornerRadius)
+                Self.cornerRadius.shape
                     .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
                     .allowsHitTesting(false)
             )

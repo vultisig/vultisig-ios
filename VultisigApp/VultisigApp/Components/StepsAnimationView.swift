@@ -122,9 +122,9 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
                 .padding(16)
                 .frame(height: cellHeight)
                 .background(Theme.colors.bgSurface1)
-                .cornerRadius(16)
+                .cornerRadius(Theme.radius.lg)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    Theme.radius.lg.shape
                         .inset(by: 1)
                         .stroke(Theme.colors.borderLight, lineWidth: 1)
                 )

@@ -60,7 +60,7 @@ struct SearchTextField: View {
         .frame(height: 44)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(99)
+        .cornerRadius(Theme.radius.pill)
         .onChange(of: focusedState) { _, newValue in
             isFocused = newValue
         }

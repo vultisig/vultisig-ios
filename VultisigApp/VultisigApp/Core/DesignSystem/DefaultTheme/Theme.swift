@@ -8,4 +8,5 @@
 enum Theme {
     static let fonts: FontSystemProtocol = FontSystem()
     static let colors: ColorSystemProtocol = ColorSystem()
+    static let radius: CornerRadiusSystemProtocol = CornerRadiusSystem()
 }
