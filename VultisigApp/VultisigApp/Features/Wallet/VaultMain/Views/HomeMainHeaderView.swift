@@ -13,13 +13,15 @@ struct HomeMainHeaderView: View {
 
     let vault: Vault
     @Binding var activeTab: HomeTab
-    @Binding var showBalance: Bool
+    /// Held as a plain `let`: this view must not re-evaluate when the collapse
+    /// progress moves, because `balanceText` below is not free. The two things
+    /// that do move with the scroll — the trailing slot and the bar's opaque
+    /// background — observe it themselves.
+    let collapse: HomeHeaderCollapse
     var vaultSelectorAction: () -> Void
     var historyAction: () -> Void
     var settingsAction: () -> Void
     var onRefresh: () -> Void
-
-    @State private var showBalanceInternal = false
 
     /// Wallet total: the same guard-and-fallback shape as
     /// `VaultMainScreen.totalBalanceToShow`. `VaultDetailViewModel` publishes it
@@ -35,7 +37,9 @@ struct HomeMainHeaderView: View {
     /// `VaultDetailViewModel` has no trigger tied to a DeFi balance refresh — a
     /// value published there would go stale on exactly the tab that shows it.
     /// The walk is also far cheaper: it is filtered to the vault's DeFi chains
-    /// and only runs while the DeFi tab is active.
+    /// and only runs while the DeFi tab is active. It is still a walk, though,
+    /// which is why it is computed here and handed down as a plain `String`
+    /// rather than being re-derived on every frame of a collapse.
     var balanceText: String {
         guard !homeViewModel.hideVaultBalance else { return String.hideBalanceText }
         guard activeTab != .defi else { return homeViewModel.defiBalanceText(for: vault) }
@@ -56,27 +60,66 @@ struct HomeMainHeaderView: View {
 
             HStack {
                 Spacer()
-                trailingView
-                    .transition(.opacity)
+                HomeMainHeaderTrailingView(
+                    collapse: collapse,
+                    tab: activeTab,
+                    balanceText: balanceText,
+                    historyAction: historyAction,
+                    settingsAction: settingsAction,
+                    onRefresh: onRefresh
+                )
             }
         }
         .padding(.top, isMacOS ? 16 : 0)
         .padding(.bottom, 16)
         .padding(.horizontal, 16)
         .background(backgroundView)
-        .onChange(of: showBalance) { _, newValue in
-            withAnimation(.interpolatingSpring) {
-                showBalanceInternal = newValue
-            }
-        }
+        // Nothing here animates on a timeline: every opacity is a function of
+        // the scroll offset. Switching tabs steps straight to the other tab's
+        // stored progress rather than easing into it — easing would fade this
+        // bar's balance out while the tab being switched to already has its
+        // large balance on screen, which is the very overlap this is fixing.
     }
 
-    @ViewBuilder
-    var trailingView: some View {
-        if showBalanceInternal {
+    var backgroundView: some View {
+        VStack(spacing: 0) {
+            Theme.colors.bgPrimary
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+        }
+        .ignoresSafeArea(.all)
+        .headerCollapseReveal(collapse, tab: activeTab)
+    }
+}
+
+/// The bar's trailing slot: toolbar buttons while the home is expanded, the
+/// portfolio balance once it has collapsed.
+///
+/// Split out of `HomeMainHeaderView` so that it, and not the whole bar, is what
+/// SwiftUI re-evaluates as the collapse progress moves — the bar's `balanceText`
+/// walks the vault's DeFi coins on the DeFi tab, and that must not be redone on
+/// every frame of a transition.
+private struct HomeMainHeaderTrailingView: View {
+    @ObservedObject var collapse: HomeHeaderCollapse
+    let tab: HomeTab
+    let balanceText: String
+    let historyAction: () -> Void
+    let settingsAction: () -> Void
+    let onRefresh: () -> Void
+
+    private var progress: HeaderCollapseProgress {
+        collapse.progress(for: tab)
+    }
+
+    /// The buttons and the balance never overlap: the buttons have faded out by
+    /// the time the swap happens, and the balance starts fading in from there,
+    /// so the swap lands on the one point where both are invisible.
+    var body: some View {
+        if progress.isCollapsed {
             balanceView
+                .opacity(progress.collapsedOpacity)
         } else {
             buttonsStack
+                .opacity(progress.expandedOpacity)
         }
     }
 
@@ -110,16 +153,6 @@ struct HomeMainHeaderView: View {
                 .accessibilityIdentifier(AccessibilityID.Home.settingsButton)
         }
     }
-
-    var backgroundView: some View {
-        VStack(spacing: 0) {
-            Theme.colors.bgPrimary
-            Separator(color: Theme.colors.borderLight, opacity: 1)
-        }
-        .ignoresSafeArea(.all)
-        .transition(.opacity)
-        .showIf(showBalanceInternal)
-    }
 }
 
 #Preview {
@@ -127,7 +160,7 @@ struct HomeMainHeaderView: View {
         HomeMainHeaderView(
             vault: .example,
             activeTab: .constant(.wallet),
-            showBalance: .constant(true)
+            collapse: HomeHeaderCollapse()
         ) {
             print("Vault Selector Action")
         } historyAction: {

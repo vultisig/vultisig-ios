@@ -10,12 +10,16 @@ import Foundation
 /// Shared collapse progress for the vault-home top bar, one value per tab.
 ///
 /// Written from the scroll views' geometry reader on **every layout pass**, and
-/// read by exactly two leaves: the top bar itself, and the `headerCollapseFade`
-/// modifier wrapped around the large balance inside the scroll content.
-/// `HomeScreen` owns it in a plain `@State` and never reads it, so a scroll
-/// never invalidates the tab content.
+/// read only by leaves: the top bar's trailing slot and background, and the
+/// `headerCollapseFade` modifier wrapped around each large balance inside the
+/// scroll content. `HomeScreen` owns it in a plain `@State` and never reads it,
+/// and neither tab screen reads it either, so a scroll never invalidates a
+/// content tree — every observer re-applies an opacity to an already-built
+/// subtree. (Being one `ObservableObject`, a change on one tab does wake the
+/// other tab's fade modifier as well; that is one redundant opacity write per
+/// transition frame, not a rebuild.)
 ///
-/// Two properties keep that per-frame write cheap:
+/// Two properties keep the per-frame write cheap:
 /// - `update` compares before it publishes, and
 /// - the progress saturates at `0`/`1` outside a
 ///   `HeaderCollapseProgress.defaultDistance`-point window, so all but that
