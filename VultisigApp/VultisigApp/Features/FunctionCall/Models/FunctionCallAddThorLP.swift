@@ -424,7 +424,7 @@ struct AddThorLPFormView: View {
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(Theme.colors.bgSurface1.opacity(0.1))
-                    .cornerRadius(10)
+                    .cornerRadius(Theme.radius.md)
             }
 
             StyledFloatingPointField(
@@ -503,7 +503,7 @@ struct PoolSelectorSection: View {
         .frame(height: 48)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
     }
 
     private var errorView: some View {
@@ -534,7 +534,7 @@ struct PoolSelectorSection: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(10)
+            .cornerRadius(Theme.radius.md)
         }
     }
 

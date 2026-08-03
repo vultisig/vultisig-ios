@@ -299,6 +299,6 @@ struct SecuredAssetFormView: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .background(Color.blue.opacity(0.1))
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
     }
 }

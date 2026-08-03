@@ -151,11 +151,11 @@ struct LockedFeatureSheet: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 14)
+            Theme.radius.md.shape
                 .fill(Theme.colors.bgSurface12)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
+            Theme.radius.md.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }
