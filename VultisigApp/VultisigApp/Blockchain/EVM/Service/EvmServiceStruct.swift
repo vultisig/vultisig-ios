@@ -9,6 +9,17 @@ import Foundation
 import BigInt
 
 struct EvmServiceStruct {
+    /// Canonical OP-stack `GasPriceOracle` predeploy — identical on every
+    /// OP-stack rollup.
+    static let gasPriceOracleAddress = "0x420000000000000000000000000000000000000F"
+    /// `getL1Fee(bytes)`. Preferred over `getL1FeeUpperBound(uint256)`, which is
+    /// the purpose-built API but only exists from Fjord onwards — Blast's oracle
+    /// predates it, while `getL1Fee` has been there since Bedrock.
+    private static let getL1FeeSelector = "49948e0e"
+    /// `getOperatorFee(uint256)` — Isthmus and later. Reverts on older oracles,
+    /// which is the same answer as "this chain charges no operator fee".
+    private static let getOperatorFeeSelector = "275aedd2"
+
     let config: EvmServiceConfig
     private let rpcService: RpcServiceStruct
 
@@ -102,6 +113,81 @@ struct EvmServiceStruct {
 
             return baseFee
         }
+    }
+
+    /// L1 data-availability fee an OP-stack sequencer charges on top of L2
+    /// execution gas, read from the `GasPriceOracle` predeploy. op-geth adds
+    /// this to the balance check it runs before executing a transaction, so it
+    /// has to be reserved on a native max send or the node rejects the send by
+    /// exactly this amount.
+    ///
+    /// `unsignedTxSize` is the caller's estimate of the UNSIGNED serialized
+    /// transaction in bytes — the oracle adds its own 68-byte allowance for the
+    /// signature. Only meaningful on `Chain.isOpStack`; anywhere else the
+    /// predeploy has no code and the empty result surfaces as a thrown decode
+    /// error.
+    func fetchOpStackL1DataFee(unsignedTxSize: Int) async throws -> BigInt {
+        let payload = Self.l1FeeProbePayload(size: unsignedTxSize)
+        let callData = "0x" + Self.getL1FeeSelector + Self.abiEncodedBytesArgument(payload)
+        return try await rpcService.intRpcCall(
+            method: "eth_call",
+            params: [["to": Self.gasPriceOracleAddress, "data": callData], "latest"]
+        )
+    }
+
+    /// Per-transaction operator fee an OP-stack chain operator may levy from
+    /// Isthmus onwards (`gasLimit × operatorFeeScalar / 1e6 + operatorFeeConstant`).
+    /// op-geth adds it to the same pre-execution balance check as the L1 data
+    /// fee, so a native max send has to reserve it too. Zero on chains whose
+    /// operator scalars are unset, and a revert on oracles that predate the
+    /// method — which means the same thing.
+    func fetchOpStackOperatorFee(gasLimit: BigInt) async throws -> BigInt {
+        let callData = "0x" + Self.getOperatorFeeSelector + Self.abiEncodedUInt256(gasLimit)
+        return try await rpcService.intRpcCall(
+            method: "eth_call",
+            params: [["to": Self.gasPriceOracleAddress, "data": callData], "latest"]
+        )
+    }
+
+    /// Probe bytes handed to `getL1Fee(bytes)` in place of the real serialized
+    /// transaction, which isn't built yet when the fee has to be reserved.
+    ///
+    /// Deliberately **incompressible**: from Fjord onwards the oracle prices the
+    /// FastLZ-compressed size of the bytes it is given, so anything with
+    /// repeated 3-byte windows reports a fee below what a real transaction
+    /// costs. A counter or stride sequence is not enough — it wraps, and the
+    /// repeat is compressible: measured against Optimism, a 512-byte stride
+    /// payload reports 4.92e9 where random bytes report 9.24e9. This LCG stream
+    /// stays deterministic without wrapping, and measures 2.96e9 / 8.85e9 /
+    /// 18.19e9 at 160 / 512 / 1024 bytes against random's 2.96e9 / 9.24e9 /
+    /// 18.19e9.
+    static func l1FeeProbePayload(size: Int) -> Data {
+        var state: UInt32 = 0x9E37_79B9
+        var bytes = [UInt8]()
+        bytes.reserveCapacity(max(0, size))
+        for _ in 0..<max(0, size) {
+            state = state &* 1_664_525 &+ 1_013_904_223
+            bytes.append(UInt8((state >> 24) & 0xFF))
+        }
+        return Data(bytes)
+    }
+
+    /// Solidity ABI encoding of a single `uint256` argument.
+    static func abiEncodedUInt256(_ value: BigInt) -> String {
+        let hex = String(value.magnitude, radix: 16)
+        guard hex.count < 64 else { return String(hex.suffix(64)) }
+        return String(repeating: "0", count: 64 - hex.count) + hex
+    }
+
+    /// Solidity ABI encoding of a single dynamic `bytes` argument: head offset,
+    /// length, then the payload right-padded to a 32-byte boundary.
+    static func abiEncodedBytesArgument(_ payload: Data) -> String {
+        let paddedLength = (payload.count + 31) / 32 * 32
+        let offset = String(format: "%064x", 32)
+        let length = String(format: "%064x", payload.count)
+        let body = payload.map { String(format: "%02x", $0) }.joined()
+        let padding = String(repeating: "00", count: paddedLength - payload.count)
+        return offset + length + body + padding
     }
 
     func getGasInfoZk(fromAddress: String, toAddress: String, memo: String = "0xffffffff") async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, nonce: Int64) {

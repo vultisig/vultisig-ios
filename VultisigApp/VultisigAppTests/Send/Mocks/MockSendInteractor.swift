@@ -66,6 +66,7 @@ final class MockSendInteractor: SendInteractor {
     private(set) var updateBalanceCalls: [Coin] = []
     private(set) var calculatePlanFeeCalls: [(tx: SendTransaction, chainSpecific: BlockChainSpecific)] = []
     private(set) var validateUtxosIfNeededCalls: [Coin] = []
+    private(set) var opStackFeeReserveCalls: [(coin: Coin, memo: String?, gasLimit: BigInt?)] = []
 
     // MARK: - Stubs
 
@@ -80,6 +81,8 @@ final class MockSendInteractor: SendInteractor {
         chainSpecific.fee
     }
     var validateUtxosIfNeededStub: ((Coin) throws -> Void) = { _ in }
+    /// Defaults to the production shape for a non-OP-stack chain: no reserve.
+    var opStackFeeReserveStub: ((Coin, String?, BigInt?) -> BigInt) = { _, _, _ in .zero }
     var buildKeysignPayloadStub: ((BuildKeysignPayloadCall) throws -> KeysignPayload)?
 
     // MARK: - Conformance
@@ -94,6 +97,11 @@ final class MockSendInteractor: SendInteractor {
         let call = CalculateEVMFeeCall(request: request)
         calculateEVMFeeCalls.append(call)
         return try calculateEVMFeeStub(call)
+    }
+
+    func fetchOpStackFeeReserve(coin: Coin, memo: String?, gasLimit: BigInt?) async -> BigInt {
+        opStackFeeReserveCalls.append((coin: coin, memo: memo, gasLimit: gasLimit))
+        return opStackFeeReserveStub(coin, memo, gasLimit)
     }
 
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {

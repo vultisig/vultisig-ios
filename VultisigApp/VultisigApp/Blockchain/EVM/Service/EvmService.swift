@@ -165,6 +165,14 @@ enum EvmService {
         return try await (try service).getGasInfoZk(fromAddress: fromAddress, toAddress: toAddress, memo: memo)
     }
 
+    func fetchOpStackL1DataFee(unsignedTxSize: Int) async throws -> BigInt {
+        return try await (try service).fetchOpStackL1DataFee(unsignedTxSize: unsignedTxSize)
+    }
+
+    func fetchOpStackOperatorFee(gasLimit: BigInt) async throws -> BigInt {
+        return try await (try service).fetchOpStackOperatorFee(gasLimit: gasLimit)
+    }
+
     func broadcastTransaction(hex: String) async throws -> String {
         return try await (try service).broadcastTransaction(hex: hex)
     }

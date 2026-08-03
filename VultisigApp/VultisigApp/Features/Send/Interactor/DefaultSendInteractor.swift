@@ -9,7 +9,10 @@
 
 import BigInt
 import Foundation
+import OSLog
 import VultisigCommonData
+
+private let logger = Log.send.interactor
 
 struct DefaultSendInteractor: SendInteractor {
     let blockchain: BlockChainService
@@ -86,6 +89,55 @@ struct DefaultSendInteractor: SendInteractor {
         }
 
         return SendInteractorFeeResult(fee: fee, gas: gas, gasLimit: resolvedGasLimit)
+    }
+
+    func fetchOpStackFeeReserve(coin: Coin, memo: String?, gasLimit: BigInt?) async -> BigInt {
+        guard coin.chain.isOpStack, let service = try? EvmService.getService(forChain: coin.chain) else {
+            return .zero
+        }
+
+        // Each term degrades on its own. Blast's oracle predates
+        // `getOperatorFee` and reverts on it; letting that failure take the L1
+        // data fee down with it would leave the chain reserving nothing at all.
+        let l1DataFee = await Self.reserveTerm(named: "L1 data fee", chain: coin.chain) {
+            try await service.fetchOpStackL1DataFee(unsignedTxSize: Self.l1FeeProbeTxSize(memo: memo))
+        }
+        let operatorFee = await Self.reserveTerm(named: "operator fee", chain: coin.chain) {
+            guard let gasLimit, gasLimit > 0 else { return .zero }
+            return try await service.fetchOpStackOperatorFee(gasLimit: gasLimit)
+        }
+
+        return l1DataFee + operatorFee
+    }
+
+    /// Runs one reserve lookup, failing open. Reserving nothing is exactly the
+    /// behaviour that shipped before these lookups existed, so an unreachable or
+    /// too-old oracle degrades the send rather than blocking it. A negative
+    /// answer is nonsense from a fee oracle and is floored at zero rather than
+    /// handed on to widen the max amount.
+    private static func reserveTerm(
+        named name: String,
+        chain: Chain,
+        fetch: () async throws -> BigInt
+    ) async -> BigInt {
+        do {
+            return max(.zero, try await fetch())
+        } catch {
+            logger.warning("OP-stack \(name, privacy: .public) lookup failed for \(chain.name, privacy: .public); reserving nothing for it")
+            return .zero
+        }
+    }
+
+    /// Size, in bytes, that the L1-fee probe stands in for. The oracle expects
+    /// the UNSIGNED serialized transaction and adds its own 68-byte allowance
+    /// for the signature, so this models the ~70-byte unsigned EIP-1559 native
+    /// transfer with deliberate margin: the payload isn't built yet when the fee
+    /// has to be reserved, and over-reserving leaves dust where under-reserving
+    /// costs a rejected broadcast after the ceremony already ran. The memo
+    /// becomes the transaction's `data`, either UTF-8 bytes or half as many when
+    /// it is hex, so its UTF-8 length bounds both.
+    private static func l1FeeProbeTxSize(memo: String?) -> Int {
+        160 + (memo?.utf8.count ?? 0)
     }
 
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
