@@ -194,6 +194,45 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    /// The balance this check runs against has to be the balance the wallet
+    /// actually holds. `rawBalance.toBigInt(decimals:)` parses through
+    /// `NumberFormatter`, which falls back to `Double` past `Int64` and rounds
+    /// UP over ~9.2 units on an 18-decimal chain — making the check LOOSER than
+    /// the truth, so a send the wallet cannot fund clears Verify and dies at
+    /// broadcast instead.
+    ///
+    /// 9999999999999999999 wei is one wei under 10 ETH, and the nearest `Double`
+    /// to it is 1e19 — exactly the amount + fee below. Read lossily the send
+    /// "fits"; read exactly it is one wei short.
+    func testValidateBalanceWithFeeReadsABalancePastInt64Exactly() throws {
+        let oneWeiUnderTenEth = "9999999999999999999"
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: oneWeiUnderTenEth)
+        XCTAssertGreaterThan(
+            eth.rawBalance.toBigInt(decimals: eth.decimals),
+            BigInt(stringLiteral: oneWeiUnderTenEth),
+            "precondition: the shared parse must be the one that rounds this balance up"
+        )
+
+        // 9.9 ETH + 0.1 ETH fee = 10 ETH exactly, one wei more than the balance.
+        let tx = try makeTransaction(coin: eth, amount: "9.9",
+                                     fee: BigInt(stringLiteral: "100000000000000000"))
+        // Pin the total rather than trusting it: the amount parse is locale
+        // sensitive, and a "9.9" that scaled differently would make this test
+        // pass against the old lossy read too — for the wrong reason.
+        XCTAssertEqual(
+            tx.amountInRaw + tx.fee,
+            eth.rawBalance.toBigInt(decimals: eth.decimals),
+            "the send has to land exactly on the rounded-up balance for this to test anything"
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError, "a send one wei past the real balance must not clear Verify")
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
     // MARK: - validateBalanceWithFee — Terra Classic bank denom vs CW20/IBC
 
     func testValidateBalanceUSTCBankDenomSubtractsFeeFromTokenBalance() throws {

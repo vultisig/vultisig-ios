@@ -109,7 +109,11 @@ struct SendCryptoVerifyLogic {
         }
 
         let amount = tx.amountInRaw
-        let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+        // Exactly, not via the shared `toBigInt(decimals:)` route: that one
+        // rounds a balance past `Int64` UP, which makes this check LOOSER than
+        // the truth and lets a send the wallet cannot fund walk through to a
+        // rejected broadcast.
+        let balance = SendCryptoLogic.exactRawBalance(of: tx.coin)
         // TRON staking operations: skip balance validation entirely
         // The balance is already validated in TronFreezeScreen/TronUnfreezeScreen
         // and the user sees the available balance on the screen
@@ -174,7 +178,7 @@ struct SendCryptoVerifyLogic {
             // error when the vault's ADA balance can't cover that.
             if tx.coin.chain == .cardano,
                let nativeToken = tx.vault.coins.nativeCoin(chain: .cardano) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = SendCryptoLogic.exactRawBalance(of: nativeToken)
                 let minAdaReserve = CardanoHelper.defaultMinUTXOValue * 2
                 if nativeBalance < tx.fee + minAdaReserve {
                     return BalanceValidationResult(isValid: false, errorMessage: "cardanoOutputBelowMinAda")
@@ -184,7 +188,7 @@ struct SendCryptoVerifyLogic {
             // Validate gas balance for non-native tokens. Decision 2 win:
             // vault is now non-optional, so the singleton fallback is gone.
             if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = SendCryptoLogic.exactRawBalance(of: nativeToken)
                 if tx.fee > nativeBalance {
                     let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
                     return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
