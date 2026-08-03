@@ -56,7 +56,7 @@ struct KeysignSwapConfirmView: View {
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.xl)
     }
 
     var button: some View {
