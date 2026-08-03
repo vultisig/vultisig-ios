@@ -222,8 +222,7 @@ enum SendCryptoLogic {
         previousAmountRaw: BigInt,
         extraReserve: BigInt = .zero
     ) -> BigInt {
-        let balance = coin.rawBalance.toBigInt(decimals: coin.decimals)
-        let candidate = balance - fee - existentialDeposit(for: coin) - extraReserve
+        let candidate = exactRawBalance(of: coin) - fee - existentialDeposit(for: coin) - extraReserve
         guard coin.chain == .terraClassic else { return candidate }
         return Swift.min(candidate, previousAmountRaw)
     }
@@ -251,8 +250,21 @@ enum SendCryptoLogic {
         signedFee: BigInt,
         extraReserve: BigInt
     ) -> BigInt {
-        let balance = coin.rawBalance.toBigInt(decimals: coin.decimals)
-        return Swift.min(displayedAmountRaw, balance - signedFee - extraReserve)
+        Swift.min(displayedAmountRaw, exactRawBalance(of: coin) - signedFee - extraReserve)
+    }
+
+    /// The raw balance, exactly.
+    ///
+    /// `rawBalance` is already a base-unit integer string, and the usual
+    /// `toBigInt(decimals:)` route parses it with `NumberFormatter` — which
+    /// falls back to `Double` past `Int64`, and can round a large balance UP.
+    /// A max amount derived from a balance that is higher than the real one is
+    /// precisely the rejected broadcast this clamp exists to prevent, so parse
+    /// the integer directly, the way `canBeReaped` already does. A value that
+    /// isn't a plain integer falls back to the shared path rather than
+    /// collapsing to a zero balance.
+    private static func exactRawBalance(of coin: Coin) -> BigInt {
+        BigInt(coin.rawBalance) ?? coin.rawBalance.toBigInt(decimals: coin.decimals)
     }
 
     /// Raw base-unit amount rendered as the decimal string a `SendTransaction`

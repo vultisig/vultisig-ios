@@ -134,6 +134,35 @@ final class EvmMaxSendClampTests: XCTestCase {
         XCTAssertEqual(clamped + signedFee, balanceRaw)
     }
 
+    /// A balance past `Int64` is parsed through `Double` by the shared
+    /// `toBigInt(decimals:)` route and rounds UP — which would hand the clamp a
+    /// balance larger than the real one and produce exactly the unaffordable
+    /// amount it exists to prevent. Both helpers must read the raw integer.
+    func testClampReadsBalancesBeyondInt64Exactly() {
+        let balanceRaw = BigInt(stringLiteral: "12345678901234567890123") // > Int64.max
+        let eth = makeCoin(.ethereum, rawBalance: balanceRaw.description)
+        let fee = BigInt(stringLiteral: "10000000000000000")
+
+        XCTAssertNotEqual(
+            eth.rawBalance.toBigInt(decimals: eth.decimals), balanceRaw,
+            "if this starts passing, the shared balance parser gained full precision and this guard is stale"
+        )
+
+        XCTAssertEqual(
+            SendCryptoLogic.evmMaxSendAmountRaw(
+                coin: eth,
+                displayedAmountRaw: balanceRaw,
+                signedFee: fee,
+                extraReserve: .zero
+            ),
+            balanceRaw - fee
+        )
+        XCTAssertEqual(
+            SendCryptoLogic.verifyMaxCandidateRaw(coin: eth, fee: fee, previousAmountRaw: .zero),
+            balanceRaw - fee
+        )
+    }
+
     // MARK: - verifyMaxCandidateRaw extra reserve
 
     func testVerifyMaxCandidateRawDefaultsToNoExtraReserve() {
