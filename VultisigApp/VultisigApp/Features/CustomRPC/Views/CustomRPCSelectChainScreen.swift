@@ -101,11 +101,11 @@ private struct CustomRPCChainGridCell: View {
         )
         .frame(width: 74, height: 74)
         .background(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(hasOverride ? editedOverlay : nil)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(Theme.radius.xl.shape)
     }
 
     /// Matches `AssetSelectionGridCell`'s selected treatment: the corner badge is
@@ -126,7 +126,7 @@ private struct CustomRPCChainGridCell: View {
                     )
                     .fill(Theme.colors.border)
                 )
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
     }

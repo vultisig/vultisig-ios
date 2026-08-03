@@ -18,11 +18,11 @@ struct CustomTokenGridCell: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .fill(Theme.colors.bgSurface1)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .inset(by: 0.75)
                         .strokeBorder(Theme.colors.border, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
                 )

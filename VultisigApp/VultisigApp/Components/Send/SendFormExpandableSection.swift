@@ -13,7 +13,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     /// value used across every Send/Function form; callers that need to match a
     /// different Figma card radius (e.g. the limit-swap accordion, or the 2026
     /// Send-details cards) override it.
-    let cornerRadius: CGFloat
+    let cornerRadius: CornerRadius
     /// Inner horizontal padding of the bordered container. Defaults to the shared
     /// value; the 2026 Send-details cards use 16.
     let horizontalPadding: CGFloat
@@ -34,7 +34,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
 
     init(
         isExpanded: Bool,
-        cornerRadius: CGFloat = 12,
+        cornerRadius: CornerRadius = Theme.radius.md,
         horizontalPadding: CGFloat = 16,
         verticalPadding: CGFloat = 16,
         backgroundColor: Color? = nil,
@@ -63,7 +63,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         .padding(.vertical, verticalPadding)
         .background(fill)
         .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
+            cornerRadius.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(1)
@@ -78,7 +78,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     @ViewBuilder
     private var fill: some View {
         if let backgroundColor {
-            RoundedRectangle(cornerRadius: cornerRadius)
+            cornerRadius.shape
                 .fill(backgroundColor)
         }
     }

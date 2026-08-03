@@ -47,11 +47,11 @@ struct AssetSelectionGridCell: View {
                 .opacity(isSelected ? 1 : 0.5)
                 .padding(22)
                 .background(
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .fill(isSelected ? Theme.colors.bgSurface1 : Theme.colors.bgButtonDisabled)
                 )
                 .overlay(isSelected ? selectedOverlay : nil)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .clipShape(Theme.radius.xl.shape)
                 .animation(.easeInOut, value: isSelected)
 
                 Text(name)
@@ -87,7 +87,7 @@ struct AssetSelectionGridCell: View {
                         topTrailing: 0
                     )).fill(Theme.colors.border)
                 )
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .inset(by: 1)
                 .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }

@@ -183,7 +183,7 @@
                     }
                     .fill(Theme.colors.bgPrimary.opacity(0.55), style: FillStyle(eoFill: true))
 
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
                         .frame(width: rect.width, height: rect.height)
                         .position(x: rect.midX, y: rect.midY)

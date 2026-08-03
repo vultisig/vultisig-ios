@@ -19,7 +19,7 @@ struct SwapRefreshQuoteCounter: View {
         .padding(.vertical, 6)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface2)
-        .cornerRadius(24)
+        .cornerRadius(Theme.radius.xl)
     }
 
     var label: some View {

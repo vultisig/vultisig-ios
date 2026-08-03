@@ -13,7 +13,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     let showValue: Bool
     /// Corner radius of the bordered card. Defaults to the shared form value;
     /// only the limit-swap sections override it to match their Figma radius.
-    let cornerRadius: CGFloat
+    let cornerRadius: CornerRadius
     /// When true, the header/content divider is a plain hairline instead of the
     /// default gradient separator. Only the limit-swap sections opt in.
     let plainSeparator: Bool
@@ -31,7 +31,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
-        cornerRadius: CGFloat = 12,
+        cornerRadius: CornerRadius = Theme.radius.md,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
@@ -63,7 +63,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: [T],
-        cornerRadius: CGFloat = 12,
+        cornerRadius: CornerRadius = Theme.radius.md,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
@@ -94,7 +94,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
-        cornerRadius: CGFloat = 12,
+        cornerRadius: CornerRadius = Theme.radius.md,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,
@@ -118,7 +118,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: [T],
-        cornerRadius: CGFloat = 12,
+        cornerRadius: CornerRadius = Theme.radius.md,
         plainSeparator: Bool = false,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,

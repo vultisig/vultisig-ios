@@ -45,7 +45,7 @@ struct SendDetailsAssetTab: View {
     var content: some View {
         SendFormExpandableSection(
             isExpanded: isExpanded,
-            cornerRadius: 24,
+            cornerRadius: Theme.radius.xl,
             horizontalPadding: 16,
             verticalPadding: 20,
             backgroundColor: Theme.colors.bgPrimary

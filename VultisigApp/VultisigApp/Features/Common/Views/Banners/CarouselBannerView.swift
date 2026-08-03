@@ -64,11 +64,11 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .contentShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(Theme.radius.xl.shape)
+        .contentShape(Theme.radius.xl.shape)
     }
 
     var iconTile: some View {

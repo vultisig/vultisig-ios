@@ -40,9 +40,9 @@ struct PeerCell: View {
         .padding(.horizontal, 16)
         .frame(height: 68)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(24)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }
