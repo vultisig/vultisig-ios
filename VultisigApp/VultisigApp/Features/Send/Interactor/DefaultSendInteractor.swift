@@ -135,6 +135,11 @@ struct DefaultSendInteractor: SendInteractor {
                 throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
             }
             let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            // A failed plan has `fee == 0`. Returning it would quote a free
+            // transaction on the Verify screen and let the balance check pass on
+            // arithmetic that never held, so the failure only surfaced at Sign
+            // time as a generic message. Fail here, with the planner's reason.
+            try UTXOTransactionPlanError.validate(plan)
             return BigInt(plan.fee)
         }
     }

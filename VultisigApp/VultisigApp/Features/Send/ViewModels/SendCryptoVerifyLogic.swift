@@ -55,7 +55,19 @@ struct SendCryptoVerifyLogic {
 
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
-            fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
+            do {
+                fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
+            } catch is CancellationError {
+                // A superseded load pass must stay a cancellation — the caller
+                // aborts quietly on it and would otherwise show a spurious alert.
+                throw CancellationError()
+            } catch {
+                // The load path reaches the same UTXO builder as the Sign path,
+                // so it must speak the same language. Without this it surfaced
+                // the raw `localizedDescription` and the identical failure read
+                // differently depending on when it happened.
+                throw Self.sendFailure(error)
+            }
 
         case .Cosmos, .THORChain:
             // Cosmos batched-claim signs one msg per validator and the
@@ -460,22 +472,40 @@ struct SendCryptoVerifyLogic {
 
             return basePayload
 
+        } catch is CancellationError {
+            // Matches the convention the destination guards above already
+            // follow: a cancelled build is not a failure to report. Wrapping it
+            // into a `HelperError` would raise an alert on a screen that is
+            // tearing down, or on a pass a newer one has already superseded.
+            throw CancellationError()
         } catch {
-            // Handle UTXO-specific errors with more user-friendly messages
-            let errorMessage: String
-            switch error {
-            case KeysignPayloadFactory.Errors.notEnoughUTXOError:
-                errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
-            case KeysignPayloadFactory.Errors.utxoTooSmallError:
-                errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
-            case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
-                errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
-            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
-                errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
-            default:
-                errorMessage = error.localizedDescription
-            }
-            throw HelperError.runtimeError(errorMessage)
+            throw Self.sendFailure(error)
         }
+    }
+
+    /// Maps a send-build failure onto the message the Verify screen presents.
+    ///
+    /// The screen's alert plumbing only presents `HelperError`, so everything is
+    /// rewrapped. Shared by the Sign path (`buildKeysignPayload`) and the
+    /// fee-load path (`calculateNonEVMFee`) so the same underlying failure can
+    /// never read two different ways depending on which one hit it first.
+    ///
+    /// `UTXOTransactionPlanError` needs no case here: it is a `LocalizedError`,
+    /// so the default branch already yields its own mapped message.
+    static func sendFailure(_ error: Error) -> HelperError {
+        let errorMessage: String
+        switch error {
+        case KeysignPayloadFactory.Errors.notEnoughUTXOError:
+            errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
+        case KeysignPayloadFactory.Errors.utxoTooSmallError:
+            errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
+        case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
+            errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
+        case KeysignPayloadFactory.Errors.notEnoughBalanceError:
+            errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
+        default:
+            errorMessage = error.localizedDescription
+        }
+        return HelperError.runtimeError(errorMessage)
     }
 }

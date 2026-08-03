@@ -1521,6 +1521,12 @@
 "useLocalMode" = "Use local mode";
 "usePassword" = "Use password";
 "useStandardMode" = "Use standard mode";
+"utxoPlanDustAmountError" = "What would be left for the recipient is below the network's dust limit. Send a larger amount, or lower the network rate so more remains to send.";
+"utxoPlanFailedError" = "This transaction could not be prepared (%@). Try a different amount, or lower the network rate.";
+"utxoPlanInsufficientFundsError" = "Your spendable outputs don't cover this amount plus the network fee. Try a smaller amount, or lower the network rate.";
+"utxoPlanInvalidUtxoError" = "One of your transaction outputs can't be spent right now. Refresh your balance and try again.";
+"utxoPlanTransactionTooLargeError" = "This transaction needs more inputs than one transaction can carry. Send a smaller amount, or consolidate your outputs first.";
+"utxoPlanZeroAmountError" = "Enter an amount greater than zero.";
 "utxoSelectionFailedError" = "UTXO selection failed. Unable to find suitable transaction outputs to cover the amount plus estimated fees. Try reducing the transaction amount.";
 "utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
 "validAddressDomainError" = "Wrong address for selected blockchain. Try adding the chain to your vault.";
