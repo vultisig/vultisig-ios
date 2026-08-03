@@ -35,7 +35,6 @@ struct CornerRadiusSystem: CornerRadiusSystemProtocol {
     var md: CornerRadius { radius(12) }
     var lg: CornerRadius { radius(16) }
     var xl: CornerRadius { radius(24) }
-    var xxl: CornerRadius { radius(38) }
     var pill: CornerRadius { radius(Self.pillPoints) }
 
     private func radius(_ points: CGFloat) -> CornerRadius {

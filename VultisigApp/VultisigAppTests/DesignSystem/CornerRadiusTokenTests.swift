@@ -27,7 +27,6 @@ final class CornerRadiusTokenTests: XCTestCase {
         XCTAssertEqual(Theme.radius.md.points, 12)
         XCTAssertEqual(Theme.radius.lg.points, 16)
         XCTAssertEqual(Theme.radius.xl.points, 24)
-        XCTAssertEqual(Theme.radius.xxl.points, 38)
     }
 
     func testScaleIsStrictlyIncreasing() {
@@ -53,8 +52,7 @@ final class CornerRadiusTokenTests: XCTestCase {
             ("sm", Theme.radius.sm, 8),
             ("md", Theme.radius.md, 12),
             ("lg", Theme.radius.lg, 16),
-            ("xl", Theme.radius.xl, 24),
-            ("xxl", Theme.radius.xxl, 38)
+            ("xl", Theme.radius.xl, 24)
         ]
 
         for (name, token, literal) in migrated {
@@ -149,7 +147,6 @@ final class CornerRadiusTokenTests: XCTestCase {
             Theme.radius.md,
             Theme.radius.lg,
             Theme.radius.xl,
-            Theme.radius.xxl,
             Theme.radius.pill
         ]
     }
