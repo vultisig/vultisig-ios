@@ -109,6 +109,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             let feeResult = try await logic.calculateFee(tx: transaction)
 
             var newAmount = transaction.amount
+            var nothingLeftAfterFee = false
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
             if transaction.sendMaxAmount && transaction.coin.isNativeToken {
                 // `balance − fee − ED`. The ED reservation lets a DOT max-send
@@ -136,6 +137,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 )
                 if candidate > 0 {
                     newAmount = SendCryptoLogic.amountString(coin: transaction.coin, raw: candidate)
+                } else {
+                    // Nothing survives the fee (plus the reserves), so there is
+                    // no max to show. Leaving the stale amount would keep Sign
+                    // enabled on a send that cannot be funded, and the failure
+                    // would only surface when the payload build refuses it.
+                    // `validateBalanceWithFee` doesn't see this on its own: it
+                    // compares the fee alone against the balance, and it is the
+                    // reserves on top that can tip it over.
+                    nothingLeftAfterFee = true
                 }
             }
 
@@ -150,6 +160,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isCalculatingFee = false
 
             validateBalanceWithFee()
+            if nothingLeftAfterFee, !hasBalanceError {
+                flagBalanceError("walletBalanceExceededError")
+            }
             // Keep isLoading true across the async destination guard so Sign
             // stays disabled until the load-time validation fully settles —
             // otherwise Sign briefly re-enables while account_info is in flight.
@@ -216,11 +229,18 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
         let result = logic.validateBalanceWithFee(tx: transaction)
         if !result.isValid {
-            errorMessage = result.errorMessage ?? ""
-            showAlert = true
-            isAmountCorrect = false
-            hasBalanceError = true
+            flagBalanceError(result.errorMessage ?? "")
         }
+    }
+
+    /// Surface a balance problem: alert it, clear the amount check and disable
+    /// Sign. `errorMessage` carries the localization KEY — the Verify screen's
+    /// alert runs it through `NSLocalizedString`.
+    private func flagBalanceError(_ message: String) {
+        errorMessage = message
+        showAlert = true
+        isAmountCorrect = false
+        hasBalanceError = true
     }
 
     var isValidForm: Bool {

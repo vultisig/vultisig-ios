@@ -936,6 +936,33 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
                        SendCryptoLogic.amountString(coin: eth, raw: balanceRaw - quotedFee))
     }
 
+    /// The reserves sit on top of the fee, so a balance can clear
+    /// `validateBalanceWithFee`'s fee-only check and still have nothing left to
+    /// send. Without this the stale amount stayed on screen with Sign enabled
+    /// and the send only failed when the payload build refused it.
+    func testLoadGasInfoFlagsABalanceErrorWhenNothingSurvivesTheFee() async throws {
+        let interactor = MockSendInteractor()
+        let balanceRaw = BigInt(stringLiteral: "48000800000")
+        interactor.calculateEVMFeeStub = { _ in
+            // Fee alone fits under the balance; the L1 reserve is what tips it.
+            SendInteractorFeeResult(fee: balanceRaw - 1_000, gas: BigInt(1_200_020), gasLimit: BigInt(40_000))
+        }
+        interactor.opStackFeeReserveStub = { _, _, _ in BigInt(4_293_564_911) }
+
+        let opEth = makeCoin(.optimism, ticker: "ETH", decimals: 18, isNative: true,
+                             rawBalance: balanceRaw.description)
+        let tx = try makeTransaction(coin: opEth, amount: "0.000000048", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertTrue(vm.hasBalanceError, "a max send with nothing left after the fee must be flagged on load")
+        XCTAssertTrue(vm.showAlert)
+        XCTAssertFalse(vm.isAmountCorrect)
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertTrue(vm.signButtonDisabled)
+    }
+
     // MARK: - validateForm — pre-built keysign payload pass-through
 
     /// Circle USDC withdraw signs a native-ETH MSCA `execute(USDC, 0, transfer(vault, amount))`
