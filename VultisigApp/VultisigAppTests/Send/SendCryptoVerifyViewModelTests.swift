@@ -1103,6 +1103,63 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         }
     }
 
+    // MARK: - needsEVMBalanceRefit
+
+    /// An amount Verify clamped down to what the balance could fund settles at
+    /// `balance − fee`, exactly like a MAX — so it carries the same exposure to
+    /// a fee that moves before the payload is built, and needs the same re-fit.
+    func testBalanceRefitCoversAnAmountTheAppAdjusted() throws {
+        let tx = try makeTransaction(amountWasAutoAdjusted: true)
+        XCTAssertFalse(tx.sendMaxAmount, "the point of this case is that it is NOT a max send")
+        XCTAssertTrue(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    func testBalanceRefitStillCoversANativeEvmMax() throws {
+        let tx = try makeTransaction(sendMaxAmount: true)
+        XCTAssertTrue(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// The invariant this predicate protects: a number the user typed and the
+    /// app never touched is never rewritten, however close to the balance it is.
+    func testBalanceRefitSkipsATypedAmountTheAppNeverTouched() throws {
+        let tx = try makeTransaction()
+        XCTAssertFalse(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// A token send moves the token balance and pays gas from the native
+    /// sibling, so a native fee that moved cannot underfund it.
+    func testBalanceRefitSkipsATokenSend() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "1000000", contractAddress: "0xA0b8")
+        let tx = try makeTransaction(coin: usdc, amountWasAutoAdjusted: true)
+        XCTAssertFalse(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// The payload-time re-fit is deliberately EVM-only. Other chains do
+    /// re-resolve their fee at build time, but they fail closed on it — a UTXO
+    /// plan that no longer covers amount + fee throws before the ceremony —
+    /// where an EVM node accepts the signature and refuses the broadcast after
+    /// it. Widening the re-fit is a separate decision, not a side effect of this
+    /// predicate.
+    func testBalanceRefitSkipsANonEvmChain() throws {
+        let dot = makeCoin(.polkadot, ticker: "DOT", decimals: 10, isNative: true,
+                           rawBalance: "100000000000")
+        let tx = try makeTransaction(coin: dot, amountWasAutoAdjusted: true)
+        XCTAssertFalse(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// `copy` is a field-by-field builder whose own doc warns that every new
+    /// field is one someone must remember to add. Losing this one silently
+    /// drops the re-fit on the transaction that most needs it.
+    func testCopyCarriesTheAutoAdjustedMarker() throws {
+        let adjusted = try makeTransaction(amountWasAutoAdjusted: true)
+        XCTAssertTrue(adjusted.copy(amount: "0.2").amountWasAutoAdjusted)
+
+        let typed = try makeTransaction()
+        XCTAssertFalse(typed.copy(amount: "0.2").amountWasAutoAdjusted)
+        XCTAssertTrue(typed.copy(amountWasAutoAdjusted: true).amountWasAutoAdjusted)
+    }
+
     // MARK: - Helpers
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0", contractAddress: String? = nil) -> Coin {
@@ -1149,7 +1206,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         fee: BigInt = BigInt(stringLiteral: "1000000000000000"),
         feeMode: FeeMode = .default,
         customGasLimit: BigInt? = nil,
-        sendMaxAmount: Bool = false
+        sendMaxAmount: Bool = false,
+        amountWasAutoAdjusted: Bool = false
     ) throws -> SendTransaction {
         let vault = try TestStore.makeVault()
         let coinToUse = coin ?? makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
@@ -1174,7 +1232,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
             wasmContractPayload: nil,
-            feeCoin: coinToUse
+            feeCoin: coinToUse,
+            amountWasAutoAdjusted: amountWasAutoAdjusted
         )
     }
 }

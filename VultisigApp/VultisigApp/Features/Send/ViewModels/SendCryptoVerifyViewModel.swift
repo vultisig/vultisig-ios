@@ -274,21 +274,22 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
-        syncMaxSendAmount(with: keysignPayload)
+        syncRefittedAmount(with: keysignPayload)
         return keysignPayload
     }
 
     /// Republish `transaction` at the amount the payload carries.
     ///
-    /// A native EVM MAX is re-fitted at build time to the fee the payload
-    /// itself quotes, so the signed value can come out below the one Verify
-    /// displayed (never above — the clamp only reduces). `transaction` is what
-    /// the signing context, the keysign summary and the history entry are built
-    /// from, so it has to follow the payload or the user is shown a number that
-    /// isn't the one being signed. No-op for every other send, whose amount the
-    /// payload build leaves untouched.
-    private func syncMaxSendAmount(with payload: KeysignPayload) {
-        guard SendCryptoVerifyLogic.needsEVMMaxClamp(tx: transaction),
+    /// A native EVM amount the app derived from the balance — a MAX, or one
+    /// Verify adjusted down to fit the fee — is re-fitted at build time to the
+    /// fee the payload itself quotes, so the signed value can come out below the
+    /// one Verify displayed (never above — the clamp only reduces).
+    /// `transaction` is what the signing context, the keysign summary and the
+    /// history entry are built from, so it has to follow the payload or the user
+    /// is shown a number that isn't the one being signed. No-op for every other
+    /// send, whose amount the payload build leaves untouched.
+    private func syncRefittedAmount(with payload: KeysignPayload) {
+        guard SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: transaction),
               payload.toAmount != transaction.amountInRaw else {
             return
         }
