@@ -50,7 +50,7 @@ struct SendDetailsAmountTextField: View {
         }
         .padding(3)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(32)
+        .cornerRadius(Theme.radius.pill)
     }
 
     var selectorOvelay: some View {

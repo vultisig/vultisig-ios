@@ -71,7 +71,7 @@ struct JoinKeysignView: View {
             }
 
         }
-        .if(!isInAnimationState) { $0.padding().cornerRadius(10) }
+        .if(!isInAnimationState) { $0.padding().cornerRadius(Theme.radius.md) }
     }
 
     var keysignStartedView: some View {

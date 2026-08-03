@@ -33,10 +33,10 @@ struct AddressFieldAccessoryStack: View {
             AddressFieldAccessoryButton(
                 icon: .copies3Filled,
                 cornerRadii: RectangleCornerRadii(
-                    topLeading: 8,
-                    bottomLeading: 16,
-                    bottomTrailing: 8,
-                    topTrailing: 8
+                    topLeading: Theme.radius.sm.points,
+                    bottomLeading: Theme.radius.lg.points,
+                    bottomTrailing: Theme.radius.sm.points,
+                    topTrailing: Theme.radius.sm.points
                 )
             ) {
                 pasteAddress()
@@ -47,10 +47,10 @@ struct AddressFieldAccessoryStack: View {
             AddressFieldAccessoryButton(
                 icon: .bookmarks,
                 cornerRadii: RectangleCornerRadii(
-                    topLeading: 8,
-                    bottomLeading: 8,
-                    bottomTrailing: 16,
-                    topTrailing: 8
+                    topLeading: Theme.radius.sm.points,
+                    bottomLeading: Theme.radius.sm.points,
+                    bottomTrailing: Theme.radius.lg.points,
+                    topTrailing: Theme.radius.sm.points
                 )
             ) {
                 showAddressBookSheet.toggle()

@@ -100,7 +100,7 @@ struct TronDashboardView: View {
 
                     if model.isLoadingBalance {
                         // Skeleton placeholder
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.bgSurface1)
                             .frame(width: 120, height: 24)
                             .shimmer()
@@ -157,7 +157,7 @@ struct TronDashboardView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
 
                     if model.isLoadingBalance {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.bgSurface1)
                             .frame(width: 80, height: 20)
                             .shimmer()
@@ -182,7 +182,7 @@ struct TronDashboardView: View {
                     .foregroundStyle(Theme.colors.textSecondary)
 
                 if model.isLoadingBalance {
-                    RoundedRectangle(cornerRadius: 4)
+                    Theme.radius.xs.shape
                         .fill(Theme.colors.bgSurface1)
                         .frame(width: 100, height: 20)
                         .shimmer()

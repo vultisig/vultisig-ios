@@ -117,7 +117,10 @@ struct SendGasSettingsView: View {
 
         }
         .background(
-            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+            // Written as a `cornerSize` rather than a radius, which is why it
+            // stayed a lone `5` while every other field in the app moved to the
+            // form radius. Same control, same step.
+            Theme.radius.md.shape
                 .foregroundStyle(Theme.colors.bgSurface1)
         )
         .frame(maxWidth: .infinity)
@@ -229,7 +232,10 @@ extension SendGasSettingsView {
             .padding(.vertical, 16)
         }
         .background(
-            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+            // Written as a `cornerSize` rather than a radius, which is why it
+            // stayed a lone `5` while every other field in the app moved to the
+            // form radius. Same control, same step.
+            Theme.radius.md.shape
                 .foregroundStyle(Theme.colors.bgSurface1)
         )
         .padding(.horizontal, 16)
@@ -282,7 +288,10 @@ extension SendGasSettingsView {
             .padding(.vertical, 16)
         }
         .background(
-            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+            // Written as a `cornerSize` rather than a radius, which is why it
+            // stayed a lone `5` while every other field in the app moved to the
+            // form radius. Same control, same step.
+            Theme.radius.md.shape
                 .foregroundStyle(Theme.colors.bgSurface1)
         )
         .padding(.horizontal, 16)

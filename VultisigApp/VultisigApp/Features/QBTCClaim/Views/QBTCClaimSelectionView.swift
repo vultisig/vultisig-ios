@@ -196,7 +196,7 @@ struct QBTCClaimUtxoRow: View {
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .clipShape(Theme.radius.lg.shape)
         }
         .buttonStyle(.plain)
     }

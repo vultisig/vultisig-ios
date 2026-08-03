@@ -61,6 +61,11 @@ struct KeyImportActiveChainsView: View {
                             .padding(12)
                             .padding(.trailing, 16)
                             .background(
+                                // A 20 that is not the tier card's: it is this
+                                // screen's own Figma value, and both 16 and 24
+                                // are the same 4pt away, so there is no reading
+                                // of the scale that picks one. Left for a design
+                                // call rather than rounded to the nearer step.
                                 RoundedRectangle(cornerRadius: 20)
                                     .inset(by: 0.5)
                                     .stroke(Theme.colors.borderLight, lineWidth: 1)

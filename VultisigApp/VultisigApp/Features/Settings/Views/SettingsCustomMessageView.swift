@@ -103,7 +103,7 @@ struct SettingsCustomMessageView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    Theme.radius.md.shape
                         .fill(Theme.colors.bgSurface2)
                 )
         }

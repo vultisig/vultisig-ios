@@ -46,7 +46,7 @@ struct SignSuiDisplayView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+        .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
     }
 
     // MARK: - Commands
@@ -158,7 +158,7 @@ struct SignSuiDisplayView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Theme.colors.bgPrimary)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
         }
     }
 
@@ -194,7 +194,7 @@ struct SignSuiDisplayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.lg.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

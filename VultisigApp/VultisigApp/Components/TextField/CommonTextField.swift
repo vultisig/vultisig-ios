@@ -117,9 +117,9 @@ struct CommonTextField<TrailingView: View>: View {
                 .font(Theme.fonts.bodyMMedium)
                 .padding(.horizontal, 12)
                 .background(Theme.colors.bgSurface1)
-                .cornerRadius(12)
+                .cornerRadius(Theme.radius.md)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    Theme.radius.md.shape
                         .stroke(borderColor, lineWidth: borderWidth)
                 )
                 .autocorrectionDisabled()

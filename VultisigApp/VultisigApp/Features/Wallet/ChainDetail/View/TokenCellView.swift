@@ -41,7 +41,7 @@ struct TokenCellView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface2))
+                        .background(Theme.radius.sm.shape.fill(Theme.colors.bgSurface2))
                         .fixedSize()
                         .contentTransition(.numericText())
                         .animation(.interpolatingSpring, value: coin.price)

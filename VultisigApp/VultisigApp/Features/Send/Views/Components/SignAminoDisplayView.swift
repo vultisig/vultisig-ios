@@ -40,7 +40,7 @@ struct SignAminoDisplayView: View {
                     }
                 }
                 .frame(maxHeight: 300)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
     }

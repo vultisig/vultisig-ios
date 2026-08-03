@@ -110,6 +110,81 @@ final class CornerRadiusTokenTests: XCTestCase {
         }
     }
 
+    /// Several surfaces round only some of their corners — a badge's end cap, a
+    /// docked banner's top edge, a list's first and last row. Those take
+    /// `UnevenRoundedRectangle`, which cannot accept the token's `shape`, so the
+    /// call site passes `points` and `style` by hand. `pill` has to survive that
+    /// route too: its bound is far larger than any of these surfaces, and the
+    /// per-corner clamp is a different code path from the uniform one.
+    func testPillClampsTheSameWayOnIndividualCorners() {
+        let capRow = CGRect(x: 0, y: 0, width: 140, height: 32)
+
+        func endCap(_ radius: CGFloat) -> String {
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: radius,
+                topTrailingRadius: radius,
+                style: Theme.radius.pill.style
+            ).path(in: capRow).description
+        }
+
+        XCTAssertEqual(
+            endCap(Theme.radius.pill.points),
+            endCap(32),
+            "pill does not clamp to what the 32 literal it replaces clamps to"
+        )
+    }
+
+    /// `strokeBorder` insets the shape by half the line width before building
+    /// the path, and `inset(by:)` is used directly by several borders. `pill` is
+    /// a bound rather than a drawn number, so an inset has to leave it above the
+    /// clamp — otherwise a bordered capsule would quietly stop being one.
+    func testPillStaysFullyRoundAfterAnInset() {
+        let button = CGRect(x: 0, y: 0, width: 320, height: 44)
+        let inset = CGRect(x: 0.5, y: 0.5, width: 319, height: 43)
+
+        XCTAssertEqual(
+            Theme.radius.pill.shape.inset(by: 0.5).path(in: button).description,
+            Capsule(style: Theme.radius.pill.style).path(in: inset).description,
+            "pill stops clamping to a capsule once a border insets it"
+        )
+    }
+
+    /// `RoundedRectangle` and `UnevenRoundedRectangle` both default their corner
+    /// style, and the app leans on those defaults matching the token's — every
+    /// per-corner call site that was migrated passed the style in for the first
+    /// time. If the two ever disagree, that migration was a restyle rather than
+    /// a rename, and this is where it shows.
+    func testTheImplicitCornerStyleMatchesTheToken() {
+        let rect = CGRect(x: 0, y: 0, width: 200, height: 80)
+        let radius = Theme.radius.lg.points
+
+        func corners(style: RoundedCornerStyle?) -> String {
+            if let style {
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: radius,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: radius,
+                    topTrailingRadius: 0,
+                    style: style
+                ).path(in: rect).description
+            }
+            return UnevenRoundedRectangle(
+                topLeadingRadius: radius,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: radius,
+                topTrailingRadius: 0
+            ).path(in: rect).description
+        }
+
+        XCTAssertEqual(
+            corners(style: nil),
+            corners(style: Theme.radius.lg.style),
+            "UnevenRoundedRectangle's implicit style is not the token's"
+        )
+    }
+
     func testPillIsNotOnTheNumericScale() {
         let numericScale = allTokens.dropLast().map(\.points)
         XCTAssertFalse(numericScale.contains(Theme.radius.pill.points))

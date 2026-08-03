@@ -188,11 +188,11 @@ struct KeysignDiscoveryView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .fill(Theme.colors.bgButtonDisabled.opacity(0.5))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
             )
         }

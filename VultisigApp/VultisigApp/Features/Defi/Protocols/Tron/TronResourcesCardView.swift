@@ -89,7 +89,7 @@ struct TronResourcesCardView: View {
 
             HStack(spacing: 8) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8)
+                    Theme.radius.sm.shape
                         .fill(accentColor.opacity(0.15))
                         .frame(width: 36, height: 36)
 
@@ -100,7 +100,7 @@ struct TronResourcesCardView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     if isLoading {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.bgSurface1)
                             .frame(width: 60, height: 14)
                             .shimmer()

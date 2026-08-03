@@ -119,9 +119,9 @@ struct ServerBackupVerificationScreen: View {
             .disableAutocorrection(true)
             .frame(width: 58, height: 46)
             .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .clipShape(Theme.radius.xl.shape)
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                Theme.radius.xl.shape
                     .strokeBorder(digitBorderColor(index), lineWidth: 1.5)
             )
             .focused($focusedField, equals: index)
@@ -162,9 +162,9 @@ struct ServerBackupVerificationScreen: View {
                 .frame(height: 46)
                 .frame(maxWidth: 76)
                 .background(Theme.colors.bgSurface2)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .clipShape(Theme.radius.xl.shape)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24)
+                    Theme.radius.xl.shape
                         .strokeBorder(Theme.colors.borderExtraLight.opacity(0.03), lineWidth: 1)
                 )
         }

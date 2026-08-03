@@ -329,7 +329,7 @@ struct VaultSetupScreen: View {
         }
         .buttonStyle(.plain)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .fill(Theme.colors.bgSurface2)
                 .stroke(Theme.colors.borderExtraLight.opacity(0.3), lineWidth: 1)
         )

@@ -367,7 +367,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
 
             if let expiry = expiryChipText(order) {
                 HStack(spacing: 4) {
@@ -381,7 +381,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
             }
         }
         .font(Theme.fonts.bodySMedium)
@@ -494,7 +494,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
         }
         .font(Theme.fonts.bodySMedium)
         .padding(.vertical, 16)
@@ -511,7 +511,7 @@ struct TransactionHistoryDetailSheet: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Theme.colors.bgSurface2)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
         }
         .font(Theme.fonts.bodySMedium)
         .padding(.vertical, 16)
