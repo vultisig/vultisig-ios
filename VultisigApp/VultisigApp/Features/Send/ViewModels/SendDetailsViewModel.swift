@@ -85,7 +85,29 @@ final class SendDetailsViewModel {
     var fee: BigInt = .zero
     var estimatedGasLimit: BigInt? = nil
     var customGasLimit: BigInt? = nil
-    var customByteFee: BigInt? = nil
+
+    /// Backing storage for `customByteFee`, plus the chain it was pinned for.
+    private var pinnedByteFee: BigInt? = nil
+    private var pinnedByteFeeChain: Chain? = nil
+
+    /// The user-pinned sat/vB rate from the gas settings sheet.
+    ///
+    /// A byte rate is meaningless off its own chain — DOGE quotes six figures
+    /// per byte where BTC quotes tens — so one pinned for BTC must never price a
+    /// later LTC or DOGE send. The coin picker writes `coin` directly and no
+    /// view owns clearing this, so the binding is enforced here rather than left
+    /// to a caller to remember: the rate is only visible while the form is still
+    /// on the chain it was set for, and re-pinning re-stamps the chain.
+    var customByteFee: BigInt? {
+        get {
+            guard let pinnedByteFeeChain, pinnedByteFeeChain == coin.chain else { return nil }
+            return pinnedByteFee
+        }
+        set {
+            pinnedByteFee = newValue
+            pinnedByteFeeChain = newValue == nil ? nil : coin.chain
+        }
+    }
 
     // MARK: - VM state (replaces `FunctionCallForm.isCalculatingFee` etc.)
     var isLoading: Bool = false
@@ -555,13 +577,32 @@ final class SendDetailsViewModel {
     @ObservationIgnored private var amountEditGeneration = 0
 
     /// Records that the amount fields are being replaced and returns the token a
-    /// debounced callback must present to still count. Called synchronously by
-    /// the fields' bindings on every keystroke, and by every path that writes
-    /// the amount itself.
+    /// debounced callback must present to still count. Called by every path that
+    /// writes the amount itself; a keystroke goes through `beginUserAmountEdit`.
     @discardableResult
     func beginAmountEdit() -> Int {
         amountEditGeneration &+= 1
         return amountEditGeneration
+    }
+
+    /// A keystroke in either amount field, applied synchronously before the
+    /// debounce is armed.
+    ///
+    /// Dropping the max-send intent here — rather than waiting for the debounced
+    /// commit half a second later — closes the inverse of the staleness window:
+    /// Continue does not wait for a pending edit, so between the keystroke and
+    /// its callback `makeTransaction` could otherwise snapshot a hand-typed
+    /// amount still flagged `sendMaxAmount`, and a UTXO signer would sweep the
+    /// wallet for a user who asked to send a specific figure.
+    ///
+    /// The two properties are independent and both hold: a *superseded* callback
+    /// is still dropped by the token and cannot clear the flag, while a *genuine*
+    /// edit clears it immediately. Only the field bindings call this; programmatic
+    /// fills (presets, the fee refine, QR) do not go through a `Binding`'s setter.
+    @discardableResult
+    func beginUserAmountEdit() -> Int {
+        sendMaxAmount = false
+        return beginAmountEdit()
     }
 
     /// Debounced commit from the crypto amount field. Applies only when no newer
