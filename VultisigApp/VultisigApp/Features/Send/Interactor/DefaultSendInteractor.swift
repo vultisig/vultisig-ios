@@ -193,6 +193,23 @@ struct DefaultSendInteractor: SendInteractor {
         )
     }
 
+    // `async` is required by the protocol so MainActor-isolated conformers (the
+    // test mock) can implement it; WalletCore planning itself is synchronous.
+    // swiftlint:disable:next async_without_await
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? {
+        guard payload.coin.chainType == .UTXO,
+              let utxoHelper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
+            return nil
+        }
+        let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: payload)
+        try UTXOTransactionPlanError.validate(plan)
+        return SendMaxPlanResult(
+            amount: BigInt(plan.amount),
+            fee: BigInt(plan.fee),
+            byteFee: payload.chainSpecific.gas
+        )
+    }
+
     func validateUtxosIfNeeded(coin: Coin) async throws {
         guard coin.chain.chainType == .UTXO else { return }
         do {

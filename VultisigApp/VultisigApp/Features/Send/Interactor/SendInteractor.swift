@@ -146,6 +146,15 @@ protocol SendInteractor {
     /// Validate UTXO availability before payload construction.
     func validateUtxosIfNeeded(coin: Coin) async throws
 
+    /// Re-plan an already-built payload and report what it will actually send
+    /// and pay. `nil` for chains that have no such plan.
+    ///
+    /// Exists so the signing path can confirm the transaction it is about to
+    /// hand to the ceremony still matches the one the user approved — the input
+    /// set is refetched between the two, and a `useMaxAmount` plan is defined by
+    /// whatever that set contains.
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult?
+
     /// Build the final keysign payload to hand off to signing. UTXO + Cardano
     /// chains plan a draft transfer internally; other chains read directly
     /// off `chainSpecific`.

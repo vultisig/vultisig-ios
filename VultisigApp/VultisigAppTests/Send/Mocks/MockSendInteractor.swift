@@ -68,6 +68,7 @@ final class MockSendInteractor: SendInteractor {
     private(set) var calculatePlanFeeCalls: [(tx: SendTransaction, chainSpecific: BlockChainSpecific)] = []
     private(set) var calculateMaxSendPlanCalls: [SendChainSpecificRequest] = []
     private(set) var calculateMaxSendPlanRefreshFlags: [Bool] = []
+    private(set) var plannedOutcomeCalls: [KeysignPayload] = []
     private(set) var validateUtxosIfNeededCalls: [Coin] = []
 
     // MARK: - Stubs
@@ -90,6 +91,9 @@ final class MockSendInteractor: SendInteractor {
         return SendMaxPlanResult(amount: max(balance - fee, .zero), fee: fee, byteFee: BigInt(12))
     }
     var validateUtxosIfNeededStub: ((Coin) throws -> Void) = { _ in }
+    /// Default: no plan available, so the sign-time consistency check is inert
+    /// unless a test opts in.
+    var plannedOutcomeStub: ((KeysignPayload) throws -> SendMaxPlanResult?) = { _ in nil }
     var buildKeysignPayloadStub: ((BuildKeysignPayloadCall) throws -> KeysignPayload)?
 
     // MARK: - Conformance
@@ -119,6 +123,11 @@ final class MockSendInteractor: SendInteractor {
         calculateMaxSendPlanCalls.append(request)
         calculateMaxSendPlanRefreshFlags.append(refreshUtxos)
         return try calculateMaxSendPlanStub(request, vault)
+    }
+
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? {
+        plannedOutcomeCalls.append(payload)
+        return try plannedOutcomeStub(payload)
     }
 
     func validateUtxosIfNeeded(coin: Coin) async throws {

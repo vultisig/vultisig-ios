@@ -460,6 +460,8 @@ struct SendCryptoVerifyLogic {
                 vault: vault
             )
 
+            try await assertPlanMatchesDisplayed(tx: tx, payload: basePayload)
+
             // Cosmos staking branch — when the per-flow builder produced a
             // `cosmosStakingPayload`, swap the base payload's `signData` for
             // a freshly-resolved `.signDirect(...)` carrying the proto-encoded
@@ -502,6 +504,27 @@ struct SendCryptoVerifyLogic {
             throw CancellationError()
         } catch {
             throw Self.sendFailure(error)
+        }
+    }
+
+    /// Closes the display/sign gap on the one path where the signed amount is
+    /// not fixed by the form.
+    ///
+    /// A UTXO max send signs `Σ selected inputs − fee`, so the transaction is
+    /// defined by the input set at *build* time — and `validateUtxosIfNeeded`
+    /// deliberately refetches that set moments before the payload is built. If
+    /// an output confirmed (or arrived) since the Verify screen planned what it
+    /// displayed, the ceremony would sign a larger amount and a larger fee than
+    /// the user approved. Refuse rather than sign it, and let them review the
+    /// updated figures.
+    ///
+    /// Only max sends are gated: every other send pins its recipient amount in
+    /// the payload, so a changed input set can move the fee but never the amount.
+    private func assertPlanMatchesDisplayed(tx: SendTransaction, payload: KeysignPayload) async throws {
+        guard tx.sendMaxAmount, tx.coin.chainType == .UTXO, tx.coin.isNativeToken else { return }
+        guard let outcome = try await interactor.plannedOutcome(for: payload) else { return }
+        guard outcome.amount == tx.amountInRaw, outcome.fee == tx.fee else {
+            throw HelperError.runtimeError("maxSendPlanChangedError".localized)
         }
     }
 

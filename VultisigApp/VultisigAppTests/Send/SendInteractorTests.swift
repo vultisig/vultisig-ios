@@ -192,6 +192,8 @@ private final class StubSendInteractor: SendInteractor {
         throw NSError(domain: "stub", code: 0)
     }
 
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? { nil }
+
     func validateUtxosIfNeeded(coin: Coin) async throws {}
 
     func buildKeysignPayload(

@@ -786,6 +786,7 @@
 "marketCap" = "Tržišna kapitalizacija";
 "marketCapRank" = "Rang";
 "marketStats" = "Tržišni podaci";
+"maxSendPlanChangedError" = "Vaša raspoloživa sredstva promijenila su se dok ste pregledavali, pa ova transakcija više ne bi poslala prikazani iznos. Vratite se i pregledajte ažurirani iznos.";
 "maxSupply" = "Maksimalna ponuda";
 "maxTotalFee" = "Maks. ukupna naknada";
 "memo" = "Bilješka";

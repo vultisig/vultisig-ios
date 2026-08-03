@@ -786,6 +786,7 @@
 "marketCap" = "市值";
 "marketCapRank" = "排名";
 "marketStats" = "市场数据";
+"maxSendPlanChangedError" = "在您确认期间可用余额发生了变化，此交易将不再发送所显示的金额。请返回并查看更新后的金额";
 "maxSupply" = "最大供应量";
 "maxTotalFee" = "最大总费用";
 "memo" = "备忘录";

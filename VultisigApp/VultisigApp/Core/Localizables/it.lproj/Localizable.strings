@@ -786,6 +786,7 @@
 "marketCap" = "Capitalizzazione";
 "marketCapRank" = "Posizione";
 "marketStats" = "Dati di mercato";
+"maxSendPlanChangedError" = "I tuoi fondi disponibili sono cambiati durante la verifica, quindi questa transazione non invierebbe più l'importo mostrato. Torna indietro e controlla l'importo aggiornato.";
 "maxSupply" = "Offerta massima";
 "maxTotalFee" = "Commissione totale max.";
 "memo" = "Memo";

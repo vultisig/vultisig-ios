@@ -263,6 +263,83 @@ final class SendUTXOMaxPlanTests: XCTestCase {
         XCTAssertEqual(vm.transaction.amount, "0.25", "a non-max send keeps the amount the user chose")
     }
 
+    // MARK: - Sign must build the plan Verify displayed
+
+    /// `validateUtxosIfNeeded` refetches the input set moments before the
+    /// payload is built, and a `useMaxAmount` plan is defined by whatever that
+    /// set contains. If it moved since Verify planned what it displayed, the
+    /// ceremony must not sign the difference silently.
+    func testSignRefusesWhenThePlannedOutcomeNoLongerMatchesTheDisplayedOne() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(20), sendMaxAmount: true) }
+        // Verify displayed 0.99997 / 3_000; an output confirmed in between, so
+        // the build-time plan now sweeps more.
+        interactor.plannedOutcomeStub = { _ in
+            SendMaxPlanResult(amount: BigInt(149_996_200), fee: BigInt(3_800), byteFee: BigInt(20))
+        }
+
+        let vm = SendCryptoVerifyViewModel(transaction: makeMaxUTXOTransaction(), interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("signing must not proceed on a plan the user was never shown")
+        } catch {
+            XCTAssertEqual((error as? HelperError)?.errorDescription,
+                           NSLocalizedString("maxSendPlanChangedError", comment: ""))
+        }
+    }
+
+    func testSignProceedsWhenThePlanStillMatches() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(20), sendMaxAmount: true) }
+        interactor.plannedOutcomeStub = { _ in
+            SendMaxPlanResult(amount: BigInt(99_997_000), fee: BigInt(3_000), byteFee: BigInt(20))
+        }
+
+        var tx = makeMaxUTXOTransaction()
+        tx = tx.copy(fee: BigInt(3_000))
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try? await vm.validateForm()
+        XCTAssertNotNil(payload, "an unchanged plan must sign normally")
+        XCTAssertEqual(interactor.plannedOutcomeCalls.count, 1)
+    }
+
+    /// The guard compares the planner's raw figure against the amount string the
+    /// form carries, so that round-trip has to be exact or every max send would
+    /// be blocked.
+    func testFormattedMaxAmountRoundTripsExactly() {
+        let btc = SendFormFixture.makeBTC()
+        for raw in [BigInt(99_997_000), BigInt(1), BigInt(12_345_678), BigInt(100_000_000), BigInt(59_997_000)] {
+            let formatted = SendCryptoLogic.formatRawAmount(raw, coin: btc)
+            XCTAssertEqual(SendCryptoLogic.amountInRaw(coin: btc, amount: formatted), raw,
+                           "\(raw) must survive format → parse unchanged")
+        }
+    }
+
+    func testNonMaxSendsAreNotGatedByThePlanCheck() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(20), sendMaxAmount: false) }
+        interactor.calculatePlanFeeStub = { _, _ in BigInt(2_500) }
+        interactor.plannedOutcomeStub = { _ in
+            XCTFail("a non-max send pins its recipient amount; it must not be gated")
+            return nil
+        }
+
+        var tx = makeMaxUTXOTransaction()
+        tx = tx.copy(amount: "0.25", sendMaxAmount: false)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        _ = try? await vm.validateForm()
+        XCTAssertTrue(interactor.plannedOutcomeCalls.isEmpty)
+    }
+
     private func makeMaxUTXOTransaction() -> SendTransaction {
         let btc = SendFormFixture.makeBTC(rawBalance: "100000000")
         return SendTransaction(

@@ -786,6 +786,7 @@
 "marketCap" = "Marktkapitalisierung";
 "marketCapRank" = "Rang";
 "marketStats" = "Marktdaten";
+"maxSendPlanChangedError" = "Dein verfügbares Guthaben hat sich während der Überprüfung geändert, daher würde diese Transaktion nicht mehr den angezeigten Betrag senden. Geh zurück und prüfe den aktualisierten Betrag.";
 "maxSupply" = "Maximale Menge";
 "maxTotalFee" = "Max. Gesamtgebühr";
 "memo" = "Memo";

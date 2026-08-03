@@ -784,6 +784,7 @@
 "marketCap" = "Market Cap";
 "marketCapRank" = "Rank";
 "marketStats" = "Market Stats";
+"maxSendPlanChangedError" = "Your available funds changed while you were reviewing, so this transaction would no longer send the amount shown. Go back and review the updated amount.";
 "maxSupply" = "Max Supply";
 "maxTotalFee" = "Max. Total Fee";
 "memo" = "Memo";
