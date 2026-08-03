@@ -97,7 +97,7 @@ final class TonStakeTransactionViewModel: ObservableObject, Form {
                 guard let self else { return }
                 let amount = value.toDecimal()
                 if amount < self.requiredMinStake {
-                    throw MinStakeError.belowMinimum(self.requiredMinStake, self.coin.chain.ticker)
+                    throw MinStakeError.belowMinimum(self.requiredMinStake, self.coin.ticker)
                 }
             }
         )

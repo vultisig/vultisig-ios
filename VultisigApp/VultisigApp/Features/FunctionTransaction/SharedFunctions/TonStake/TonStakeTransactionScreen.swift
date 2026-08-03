@@ -33,7 +33,7 @@ struct TonStakeTransactionScreen: View {
 
     var body: some View {
         FormScreen(
-            title: String(format: "stakeCoin".localized, viewModel.coin.chain.ticker),
+            title: String(format: "stakeCoin".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
             isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
@@ -51,7 +51,7 @@ struct TonStakeTransactionScreen: View {
                 AmountTextField(
                     amount: $viewModel.amountField.value,
                     error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.chain.ticker,
+                    ticker: viewModel.coin.ticker,
                     type: .button,
                     availableAmount: viewModel.maxStakeableAmount,
                     decimals: viewModel.coin.decimals,
@@ -70,14 +70,14 @@ struct TonStakeTransactionScreen: View {
             }
 
             if !viewModel.hasSufficientBalanceForFee {
-                InsufficientFeeNotice(ticker: viewModel.coin.chain.ticker)
+                InsufficientFeeNotice(ticker: viewModel.coin.ticker)
             }
         }
         .crossPlatformSheet(isPresented: $showPoolPicker) {
             TonPoolSelectionScreen(
                 isPresented: $showPoolPicker,
                 selectedPool: $viewModel.selectedPool,
-                ticker: viewModel.coin.chain.ticker,
+                ticker: viewModel.coin.ticker,
                 decimals: viewModel.coin.decimals
             )
         }
