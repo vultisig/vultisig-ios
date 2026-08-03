@@ -34,7 +34,7 @@ reviews:
         Localization changes must be applied to every locale in VultisigApp/scripts/sort_localizable.py's LOCALE_DIRS.
         The authoritative list includes ko.lproj/; flag any locale omitted from a localization change.
         Keys must be camelCase and in alphabetical order.
-        Flag any untranslated strings (English text in non-English files).
+        Flag untranslated prose, but allow established English terminology already used by the locale.
     - path: "**/*.pbxproj"
       instructions: |
         Xcode-generated changes are allowed.

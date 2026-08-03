@@ -1,55 +1,88 @@
 #!/usr/bin/env python3
-"""Fail when a localized strings file is missing an English key."""
+"""Validate every shipping locale against the English localization contract."""
 
-import re
-import sys
+from collections import Counter
 from pathlib import Path
+import sys
+
+from sort_localizable import ENTRY_RE, LOCALIZABLES_DIR, LOCALE_DIRS
+
+LOCALIZABLES_PATH = Path(LOCALIZABLES_DIR)
 
 
-LOCALIZABLES_DIR = (
-    Path(__file__).resolve().parents[1]
-    / "VultisigApp"
-    / "Core"
-    / "Localizables"
-)
-ENTRY_RE = re.compile(r'^\s*"([^"]+)"\s*=')
-
-
-def extract_keys(filepath):
-    """Return all localization keys declared in filepath."""
+def extract_key_counts(filepath):
+    """Return every localization key and its occurrence count."""
     with filepath.open(encoding="utf-8") as strings_file:
-        return {
+        return Counter(
             match.group(1)
             for line in strings_file
             if (match := ENTRY_RE.match(line))
-        }
+        )
+
+
+def report_duplicates(locale, key_counts):
+    """Print duplicate keys and return whether any were found."""
+    duplicates = sorted(key for key, count in key_counts.items() if count > 1)
+    if not duplicates:
+        return False
+
+    print(f"{locale}: {len(duplicates)} duplicate key(s)")
+    for key in duplicates:
+        print(f"  {key} ({key_counts[key]} occurrences)")
+    return True
 
 
 def main():
-    """Compare every discovered locale against the English key set."""
-    english_file = LOCALIZABLES_DIR / "en.lproj" / "Localizable.strings"
+    """Require every configured locale to match English exactly once per key."""
+    configured_locales = set(LOCALE_DIRS)
+    discovered_files = sorted(LOCALIZABLES_PATH.glob("*.lproj/Localizable.strings"))
+    discovered_locales = {filepath.parent.name for filepath in discovered_files}
+
+    failed = False
+    for locale in sorted(configured_locales - discovered_locales):
+        failed = True
+        print(f"{locale}: configured locale file is missing")
+    for locale in sorted(discovered_locales - configured_locales):
+        failed = True
+        print(f"{locale}: locale file is not configured in LOCALE_DIRS")
+
+    english_file = LOCALIZABLES_PATH / "en.lproj" / "Localizable.strings"
     if not english_file.is_file():
         print(f"Missing English localization file: {english_file}")
         return 1
 
-    english_keys = extract_keys(english_file)
-    locale_files = sorted(LOCALIZABLES_DIR.glob("*.lproj/Localizable.strings"))
-    localized_files = [filepath for filepath in locale_files if filepath != english_file]
-    if not localized_files:
-        print(f"No localized strings files found in {LOCALIZABLES_DIR}")
-        return 1
+    english_counts = extract_key_counts(english_file)
+    english_keys = set(english_counts)
+    failed = report_duplicates("en", english_counts) or failed
 
-    failed = False
-    for filepath in localized_files:
+    for locale_dir in LOCALE_DIRS:
+        if locale_dir == "en.lproj":
+            continue
+
+        filepath = LOCALIZABLES_PATH / locale_dir / "Localizable.strings"
+        if not filepath.is_file():
+            continue
+
         locale = filepath.parent.stem
-        missing_keys = sorted(english_keys - extract_keys(filepath))
+        key_counts = extract_key_counts(filepath)
+        locale_keys = set(key_counts)
+        duplicate_keys = report_duplicates(locale, key_counts)
+        missing_keys = sorted(english_keys - locale_keys)
+        unexpected_keys = sorted(locale_keys - english_keys)
+        failed = duplicate_keys or failed
+
         if missing_keys:
             failed = True
             print(f"{locale}: missing {len(missing_keys)} English key(s)")
             for key in missing_keys:
                 print(f"  {key}")
-        else:
-            print(f"{locale}: all {len(english_keys)} English keys present")
+        if unexpected_keys:
+            failed = True
+            print(f"{locale}: contains {len(unexpected_keys)} unexpected key(s)")
+            for key in unexpected_keys:
+                print(f"  {key}")
+        if not duplicate_keys and not missing_keys and not unexpected_keys:
+            print(f"{locale}: all {len(english_keys)} English keys present exactly once")
 
     return 1 if failed else 0
 

@@ -357,8 +357,6 @@
 "devicesOnSameInternet" = "Conecte todos os dispositivos à Internet\ncom o aplicativo Vultisig aberto.";
 "devicesOnSameNetwork" = "Conecte todos os dispositivos à mesma\nrede com o aplicativo Vultisig aberto.";
 "devicesOnSameWifi" = "Mantenha dispositivos na mesma rede com Vultisig aberto";
-"dilithiumAlreadyGeneratedSubtitle" = "Este cofre já tem uma chave pós-quântica MLDSA-44 gerada. Nenhuma ação adicional é necessária.";
-"dilithiumAlreadyGeneratedTitle" = "Chave Pós-Quântica Ativa";
 "dilithiumKeygen" = "Chave Pós-Quântica";
 "dilithiumKeygenSubtitle" = "Gere a chave MLDSA-44 para resistência quântica";
 "directSign" = "Assinatura Direta";

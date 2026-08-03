@@ -23,7 +23,7 @@ The authoritative locale list is `LOCALE_DIRS` in `VultisigApp/scripts/sort_loca
 - Be descriptive and specific
 
 ### Step 2: Add to Every Locale
-Add the entry to every locale listed in `LOCALE_DIRS`. Use proper translations — do not leave English in non-English files.
+Add the entry to every locale listed in `LOCALE_DIRS`. Translate user-facing prose, but keep established terminology in English when the locale uses it.
 
 **Format:** `"keyName" = "Translation";`
 
