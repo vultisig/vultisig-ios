@@ -14,6 +14,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
     let elements: [AssetSection<SectionType, Asset>]
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
+    var onRetrySection: ((SectionType) -> Void)?
     let insets: EdgeInsets
 
     @State var searchBarFocused: Bool = false
@@ -25,7 +26,8 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         insets: EdgeInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0),
         elements: [AssetSection<SectionType, Asset>],
         cellBuilder: @escaping (Asset, SectionType) -> CellView,
-        emptyStateBuilder: @escaping () -> EmptyStateView
+        emptyStateBuilder: @escaping () -> EmptyStateView,
+        onRetrySection: ((SectionType) -> Void)? = nil
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -33,6 +35,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         self.elements = elements
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
+        self.onRetrySection = onRetrySection
         self.insets = insets
     }
 
@@ -40,8 +43,12 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         content
     }
 
+    /// The empty state means "there is genuinely nothing to pick", so a section
+    /// that is still loading — or that failed and can be retried — suppresses it.
+    /// Sections whose assets resolve synchronously are always `.loaded`, so a
+    /// picker with no pending work still shows the empty state exactly as before.
     var showEmptyState: Bool {
-        elements.isEmpty
+        elements.allSatisfy { $0.state == .loaded && $0.assets.isEmpty }
     }
 
     var content: some View {
@@ -132,19 +139,59 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         // insertions / removals / moves animate.
         ForEach(elements, id: \.type) { section in
             VStack(alignment: .leading, spacing: 8) {
-                if let title = section.title, !section.assets.isEmpty {
+                // A pending or failed section keeps its header so the user can
+                // see *which* group is still resolving rather than watching an
+                // unlabelled placeholder.
+                if let title = section.title, !section.assets.isEmpty || section.state != .loaded {
                     Text(title)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.footnote)
                 }
-                LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {
-                    ForEach(section.assets, id: \.self) { element in
-                        cellBuilder(element, section.type)
+
+                switch section.state {
+                case .loading:
+                    LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {
+                        ForEach(0..<4, id: \.self) { _ in
+                            AssetSelectionGridCellSkeleton()
+                        }
+                    }
+                case .failed(let message):
+                    sectionFailureView(message: message, type: section.type)
+                case .loaded:
+                    LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {
+                        ForEach(section.assets, id: \.self) { element in
+                            cellBuilder(element, section.type)
+                        }
                     }
                 }
             }
             .padding(.bottom, 16)
         }
+    }
+
+    /// Inline failure row for one section. Deliberately scoped to the section —
+    /// the sections that did resolve stay usable while this one is retried.
+    @ViewBuilder
+    func sectionFailureView(message: String, type: SectionType) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Icon(.triangleWarning, color: Theme.colors.alertWarning, size: 16)
+
+            Text(message)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .font(Theme.fonts.footnote)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let onRetrySection {
+                PrimaryButton(title: "retry".localized, size: .mini) {
+                    onRetrySection(type)
+                }
+                .fixedSize()
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
     }
 }
 
