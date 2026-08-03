@@ -15,7 +15,7 @@ import SwiftUI
 /// outer 24 on all corners. The paired Sell/Buy rows below keep the uneven
 /// pairing shape via `NotchedRectangle` (24 outside / 12 where they meet), so the
 /// shared toggle seats in a real cutout instead of page-colored paint.
-private let limitSectionCornerRadius: CGFloat = 24
+private let limitSectionCornerRadius = Theme.radius.xl
 
 /// Corner radius for the inline notice/warning rows. Deliberately NOT the section
 /// radius: these rows are single-line annotations (~39pt tall), and a 24pt radius
@@ -383,10 +383,10 @@ private struct LimitPriceCard: View {
         }
         .padding(16)
         .overlay(
-            RoundedRectangle(cornerRadius: limitSectionCornerRadius)
+            limitSectionCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
+        .clipShape(limitSectionCornerRadius.shape)
     }
 
     @ViewBuilder
@@ -882,10 +882,10 @@ private struct LimitExpiryCard: View {
         }
         .padding(14)
         .overlay(
-            RoundedRectangle(cornerRadius: limitSectionCornerRadius)
+            limitSectionCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
+        .clipShape(limitSectionCornerRadius.shape)
     }
 
     private func pill(titleKey: String, hours: Int) -> some View {

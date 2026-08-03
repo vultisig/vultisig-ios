@@ -54,7 +54,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                 ? 0
                 : max(0, (trackWidth - optionGap * CGFloat(gapCount)) / CGFloat(options.count))
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: pillCornerRadius)
+                pillCornerRadius.shape
                     .fill(pillColor)
                     .frame(width: pillWidth)
                     .offset(x: CGFloat(selectionIndex) * (pillWidth + optionGap))
@@ -77,7 +77,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
             .frame(width: trackWidth)
             .padding(trackPadding)
             .background(
-                RoundedRectangle(cornerRadius: trackCornerRadius)
+                trackCornerRadius.shape
                     .fill(trackColor)
             )
         }
@@ -157,23 +157,13 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
         }
     }
 
-    var trackCornerRadius: CGFloat {
-        switch size {
-        case .normal, .small:
-            99
-        case .filledPill:
-            88
-        }
-    }
+    /// Track and thumb are capsules at every size. The four numbers this
+    /// replaced — 99, 88, 99, 77 — all exceeded half the control's height and
+    /// so all rendered the same clamped capsule; the differences between them
+    /// never reached the screen.
+    var trackCornerRadius: CornerRadius { Theme.radius.pill }
 
-    var pillCornerRadius: CGFloat {
-        switch size {
-        case .normal, .small:
-            99
-        case .filledPill:
-            77
-        }
-    }
+    var pillCornerRadius: CornerRadius { Theme.radius.pill }
 
     var height: CGFloat? {
         switch size {
