@@ -74,6 +74,62 @@ final class SendVerifyPlanErrorTests: XCTestCase {
         XCTAssertEqual(vm.transaction.fee, BigInt(3_000))
     }
 
+    // MARK: - A failed load must hold Sign
+
+    /// The summary still shows whatever Details handed over — for a max send
+    /// after a failed refine, the optimistic full balance at a zero fee — while
+    /// Sign would build and sign a fresh plan from live data. Ticking the
+    /// consent boxes must not be enough to get there.
+    func testFailedLoadKeepsSignDisabledEvenAfterBothChecksAreTicked() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: true) }
+        interactor.calculatePlanFeeStub = { _, _ in throw URLError(.timedOut) }
+
+        let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
+        await vm.loadGasInfoForSending()
+
+        XCTAssertTrue(vm.hasLoadError)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        XCTAssertTrue(vm.signButtonDisabled,
+                      "Sign must stay disabled while the displayed figures were never resolved")
+    }
+
+    func testASuccessfulReloadClearsTheLoadErrorAndReenablesSign() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: false) }
+        var shouldFail = true
+        interactor.calculatePlanFeeStub = { _, _ in
+            if shouldFail { throw URLError(.timedOut) }
+            return BigInt(3_000)
+        }
+
+        let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
+        await vm.loadGasInfoForSending()
+        XCTAssertTrue(vm.hasLoadError)
+
+        shouldFail = false
+        await vm.loadGasInfoForSending()
+
+        XCTAssertFalse(vm.hasLoadError, "a retry that succeeds must release the hold")
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+        XCTAssertFalse(vm.signButtonDisabled)
+    }
+
+    func testCancelledLoadDoesNotHoldSign() async {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: false) }
+        interactor.calculatePlanFeeStub = { _, _ in throw CancellationError() }
+
+        let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
+        await vm.loadGasInfoForSending()
+
+        XCTAssertFalse(vm.hasLoadError,
+                       "a superseded load is not a failure — the newer pass owns the outcome")
+    }
+
     // MARK: - Sign path
 
     func testSignPathSurfacesTheMappedPlannerVerdict() async {

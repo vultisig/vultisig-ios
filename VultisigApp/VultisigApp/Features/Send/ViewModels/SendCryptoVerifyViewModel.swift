@@ -33,6 +33,18 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var hasBalanceError = false
 
+    /// Whether the last fee/amount load failed.
+    ///
+    /// Kept separate from `hasBalanceError`, which means "the amount doesn't fit
+    /// the balance" and gates the XRP destination guards. This one means "the
+    /// figures on screen were never resolved": the summary still shows whatever
+    /// the Details screen handed over — for a max send after a failed refine,
+    /// the optimistic full balance at a zero fee — while Sign would build and
+    /// sign a fresh plan from live data the user was never shown. Sign stays
+    /// disabled until a load succeeds; every load clears it on entry, so a retry
+    /// or the screen's reload recovers.
+    @Published var hasLoadError = false
+
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
 
@@ -94,6 +106,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         isLoading = true
         errorMessage = ""
         hasBalanceError = false
+        hasLoadError = false
 
         // Ensure balance is loaded before validation (protects against stale/empty balances)
         await interactor.updateBalance(for: transaction.coin)
@@ -168,6 +181,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
             Log.send.viewModel.error("Error calculating fee: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
             showAlert = true
+            // The amount and fee on screen were never resolved against the
+            // chain. Signing from here would build a fresh plan the user has not
+            // seen, so hold Sign until a load succeeds.
+            hasLoadError = true
             isCalculatingFee = false
             isLoading = false
         }
@@ -233,7 +250,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     var signButtonDisabled: Bool {
-        !isValidForm || isLoading || hasBalanceError
+        !isValidForm || isLoading || hasBalanceError || hasLoadError
     }
 
     func validateForm() async throws -> KeysignPayload {
