@@ -157,6 +157,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 transaction = transaction.copy(amount: newAmount)
             }
 
+            try await adjustAmountForFeeShortfallIfNeeded(gasLimit: feeResult.gasLimit)
+
             isCalculatingFee = false
 
             validateBalanceWithFee()
@@ -182,6 +184,77 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isCalculatingFee = false
             isLoading = false
         }
+    }
+
+    /// Clamp the amount down to what the balance can actually fund, when the
+    /// re-fetched fee — not the amount itself — is what put the send past the
+    /// balance. The alternative is the dead end this replaces: an error whose
+    /// only answer is to go back and retype a number the user cannot compute,
+    /// because it depends on a fee they never see until this screen.
+    ///
+    /// Publishing the clamped value to `transaction` BEFORE
+    /// `validateBalanceWithFee` runs is what makes it safe, and the ordering is
+    /// load-bearing:
+    ///
+    /// - the screen renders both the crypto amount and its fiat from this same
+    ///   `transaction`, so the user reads the clamped number, not the one they
+    ///   typed;
+    /// - the balance check, the existential-deposit guard (DOT) and the
+    ///   minimum-send floor (Cardano) then all run against the clamped value
+    ///   rather than the abandoned one;
+    /// - and they run against it as the screen shows it — rendering raw units to
+    ///   a decimal string and parsing them back is not lossless, so the check
+    ///   has to see the string's value, not the BigInt it came from. If the
+    ///   clamp fails any of those, the error surfaces and Sign stays disabled.
+    ///
+    /// Nothing is ever signed that the screen did not show.
+    private func adjustAmountForFeeShortfallIfNeeded(gasLimit: BigInt?) async throws {
+        // Same skip as `validateBalanceWithFee`: a pre-built payload's
+        // `transaction` is display-only and its balance is not the real source.
+        guard prebuiltKeysignPayload == nil,
+              SendCryptoVerifyLogic.hasFeeOnlyShortfall(tx: transaction) else {
+            return
+        }
+
+        // Read the OP-stack surcharges only now. It is a network call, and it is
+        // owed only by a send that is actually being clamped to the balance.
+        let pending = transaction
+        let extraReserve = await logic.opStackFeeReserve(tx: pending, gasLimit: gasLimit)
+        // The reserve lookup fails open and never throws, so cancellation has to
+        // be asked for explicitly — otherwise a superseded load pass carries on
+        // and rewrites the amount a newer one just published.
+        try Task.checkCancellation()
+        // A `transaction` that moved while this was suspended means a newer load
+        // pass published it, so this one is stale. Abort the whole pass rather
+        // than returning: carrying on would run the balance validation on the
+        // newer pass's transaction and could leave a spurious error standing on
+        // an amount that pass is still about to adjust.
+        guard transaction == pending else { throw CancellationError() }
+
+        guard let adjusted = SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(
+            tx: pending,
+            extraReserve: extraReserve
+        ) else {
+            return
+        }
+
+        let amount = SendCryptoLogic.amountString(coin: pending.coin, raw: adjusted)
+        // The fiat figure moves with the amount. The Verify header derives its
+        // own from `amountDecimal` and follows automatically, but the Done screen
+        // reads the stored `amountInFiat` — left alone it would quote the value
+        // the user asked for rather than the one that was signed. With no rate
+        // the conversion yields "0", which is what a priceless coin showed all
+        // along; what matters is that it never keeps the pre-clamp figure.
+        transaction = pending.copy(
+            amount: amount,
+            amountInFiat: SendCryptoLogic.coinAmountToFiat(amount: amount, coin: pending.coin),
+            amountWasAutoAdjusted: true
+        )
+        // The user is confirming a number the app just changed under them. Any
+        // "the amount is correct" tick standing from before — first load racing
+        // the checkbox, or a retry re-pricing an already-confirmed screen —
+        // authorized the old amount, not this one.
+        isAmountCorrect = false
     }
 
     /// Load-time destination-activation guard. XRPL rejects a Payment that

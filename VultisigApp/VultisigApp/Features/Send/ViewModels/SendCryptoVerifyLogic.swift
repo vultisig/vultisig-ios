@@ -337,6 +337,73 @@ struct SendCryptoVerifyLogic {
         }
     }
 
+    // MARK: - Fee-shortfall amount adjustment
+
+    /// True when the balance covers the amount but not the amount PLUS the fee.
+    /// That is the one shape Verify can rescue by clamping the amount down,
+    /// instead of dead-ending on an error whose only answer is to go back and
+    /// retype a number the user has no way to compute.
+    ///
+    /// Deliberately narrow:
+    /// - **Native coins only.** A token send pays gas out of the native sibling,
+    ///   so the token balance is never what the fee overruns.
+    /// - **Not a MAX send.** That amount is already re-derived from the fee a
+    ///   few lines earlier; clamping it twice would just fight itself.
+    /// - **Plain transfers only.** A stake, a bond, an unbond, an XRPL TrustSet
+    ///   limit or a function call carries an amount that means something other
+    ///   than "how much to move" — quietly reducing it would change the
+    ///   operation rather than make it affordable. A memo is enough to
+    ///   disqualify a send on its own: on EVM the memo IS the calldata, so the
+    ///   amount is a contract call's `msg.value` and not a transfer at all, and
+    ///   elsewhere a memo is what tells a protocol how to interpret the deposit.
+    ///   The send this issue is about carries none of that.
+    /// - **The amount alone has to fit.** If the user asked to send more than
+    ///   they hold, the fee is not what went wrong and the error is the honest
+    ///   answer. Clamping there would silently replace the send they asked for
+    ///   with a different one.
+    static func hasFeeOnlyShortfall(tx: SendTransaction) -> Bool {
+        guard tx.coin.isNativeToken,
+              !tx.sendMaxAmount,
+              !tx.isStakingOperation,
+              tx.transactionType == .unspecified,
+              tx.memo.isEmpty,
+              tx.memoFunctionDictionary.isEmpty,
+              tx.wasmContractPayload == nil,
+              tx.cosmosStakingPayload == nil,
+              tx.solanaStakingPayload == nil else {
+            return false
+        }
+
+        let balance = SendCryptoLogic.exactRawBalance(of: tx.coin)
+        let amount = tx.amountInRaw
+        return amount <= balance && amount + tx.fee > balance
+    }
+
+    /// What to fall back to when the fee is what pushed the send past the
+    /// balance: the very same `balance − fee − ED − extraReserve` the MAX path
+    /// derives. Sharing it is the point — a DOT clamp keeps reserving the
+    /// existential deposit, an OP-stack clamp keeps reserving the L1 data and
+    /// operator fees op-geth bills on top of gas, and the balance is read
+    /// exactly rather than through the rounding parse.
+    ///
+    /// `nil` when there is nothing safe to fall back TO: the clamp landed at or
+    /// below zero (the balance cannot even fund its own fee — a zero-value send
+    /// is not a rescue), or it somehow came out no smaller than what was asked
+    /// for (this only ever adjusts DOWNWARD). Both leave the existing balance
+    /// error standing.
+    static func feeShortfallAdjustedAmountRaw(tx: SendTransaction, extraReserve: BigInt) -> BigInt? {
+        guard hasFeeOnlyShortfall(tx: tx) else { return nil }
+
+        let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
+            coin: tx.coin,
+            fee: tx.fee,
+            previousAmountRaw: tx.amountInRaw,
+            extraReserve: extraReserve
+        )
+        guard candidate > 0, candidate < tx.amountInRaw else { return nil }
+        return candidate
+    }
+
     // MARK: - EVM balance-derived amount re-fit
 
     /// True for a send whose value the APP derived from the balance rather than
