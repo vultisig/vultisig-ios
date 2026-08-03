@@ -160,6 +160,7 @@ final class SendDetailsViewModel {
     }
 
     func hydrate(from seed: SendDetailsSeed) {
+        beginAmountEdit()
         fromAddress = seed.fromAddress
         toAddress = seed.toAddress
         toAddressLabel = seed.toAddressLabel
@@ -534,11 +535,62 @@ final class SendDetailsViewModel {
 
     // MARK: - Fiat / crypto conversion
 
+    /// Monotonic token bumped by every event that replaces what the amount
+    /// fields show — a keystroke in either field, a percentage/Max preset, a QR
+    /// fill, a coin switch, the background max-fee refine, a reset.
+    ///
+    /// Both amount fields debounce through the process-wide
+    /// `DebounceHelper.shared`, which holds a single pending work item, so a
+    /// callback armed by typing can fire long after its keystroke — after a Max
+    /// preset has already replaced the amount. Each callback carries the token
+    /// it was armed with and is dropped once a newer event has superseded it.
+    ///
+    /// Comparing the callback's value against the field instead is not enough:
+    /// typing the full balance and then tapping Max produces the *same string*
+    /// from two different intents, and applying the stale one clears
+    /// `sendMaxAmount` while the amount stays at the full balance. That is the
+    /// state that makes WalletCore's exact coin selector try to fund
+    /// `balance + fee` out of `balance`, return no inputs, and surface as a
+    /// generic "insufficient UTXOs available" on a healthy wallet.
+    @ObservationIgnored private var amountEditGeneration = 0
+
+    /// Records that the amount fields are being replaced and returns the token a
+    /// debounced callback must present to still count. Called synchronously by
+    /// the fields' bindings on every keystroke, and by every path that writes
+    /// the amount itself.
+    @discardableResult
+    func beginAmountEdit() -> Int {
+        amountEditGeneration &+= 1
+        return amountEditGeneration
+    }
+
+    /// Debounced commit from the crypto amount field. Applies only when no newer
+    /// edit or programmatic fill has landed since this callback was armed —
+    /// otherwise it would rewrite the newer amount and clear `sendMaxAmount`.
+    func onAmountFieldEdited(_ newValue: String, generation: Int) {
+        guard generation == amountEditGeneration else { return }
+        convertToFiat(newValue: newValue)
+    }
+
+    /// Debounced commit from the fiat amount field. Shares one token sequence
+    /// with the crypto field, so switching between them can't let an in-flight
+    /// callback from the field the user just left clobber the one they moved to.
+    func onFiatAmountFieldEdited(_ newValue: String, generation: Int) {
+        guard generation == amountEditGeneration else { return }
+        convertFiatToCoin(newValue: newValue)
+    }
+
     /// Convert a fiat-typed value to the equivalent coin amount. Empty input
     /// clears `amount` instead of leaving a stale value (Phase D lesson).
+    ///
+    /// Typing a fiat figure is an explicit amount choice, so it drops the
+    /// max-send flag — including on the clearing branch, where leaving the flag
+    /// set would pair "send everything" with an empty amount field.
     func convertFiatToCoin(newValue: String) {
+        beginAmountEdit()
         guard let coinAmount = SendCryptoLogic.fiatToCoinAmount(fiat: newValue, coin: coin) else {
             amount = ""
+            sendMaxAmount = false
             return
         }
         amount = coinAmount
@@ -550,6 +602,7 @@ final class SendDetailsViewModel {
     /// the legacy flag — when true, this update is from the max-amount path
     /// and shouldn't reset the sendMaxAmount flag.
     func convertToFiat(newValue: String, setMaxValue: Bool = false) {
+        beginAmountEdit()
         guard let fiatAmount = SendCryptoLogic.coinAmountToFiat(amount: newValue, coin: coin) else {
             amountInFiat = ""
             sendMaxAmount = setMaxValue ? sendMaxAmount : false
@@ -574,6 +627,9 @@ final class SendDetailsViewModel {
     /// precise fee validation before signing.
     func setMaxAmount(percentage: Double = 100) {
         cancelFeeRefine()
+        // Supersede any amount-field callback still in flight: the preset is the
+        // newer intent, and a late callback must not undo it.
+        beginAmountEdit()
         errorMessage = ""
 
         sendMaxAmount = percentage == 100
@@ -598,6 +654,12 @@ final class SendDetailsViewModel {
     /// re-check cancellation after the await before writing.
     private func startFeeRefine() {
         isCalculatingFee = true
+        // The refine is one of the writers the edit token orders. `sendMaxAmount`
+        // alone is not a sufficient guard: a keystroke does not clear the flag
+        // until its own debounce lands, so a refine settling inside that window
+        // would overwrite the newer input *and* then invalidate the very callback
+        // that was about to honour it — losing the edit for good.
+        let generation = amountEditGeneration
         feeRefineTask = Task { [weak self] in
             guard let self else { return }
             defer { self.isCalculatingFee = false }
@@ -618,8 +680,11 @@ final class SendDetailsViewModel {
                 // Skip the refine write if the user moved off Max in the
                 // meantime — a manual amount edit flips `sendMaxAmount` via
                 // `convertToFiat` without cancelling this task, so guard on it
-                // too or we'd clobber their input.
-                guard !Task.isCancelled, self.sendMaxAmount else { return }
+                // too or we'd clobber their input. The token additionally covers
+                // the window before that edit's debounce has landed.
+                guard !Task.isCancelled,
+                      self.sendMaxAmount,
+                      self.amountEditGeneration == generation else { return }
                 if self.customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
                     self.estimatedGasLimit = resolvedGasLimit
                 }
@@ -1072,6 +1137,7 @@ final class SendDetailsViewModel {
     /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
     /// screen. Phase D lesson: clear *every* derived field, not just amount.
     func reset(to newCoin: Coin) {
+        beginAmountEdit()
         amountValidationTask?.cancel()
         amountValidationTask = nil
         amountValidation = .valid
