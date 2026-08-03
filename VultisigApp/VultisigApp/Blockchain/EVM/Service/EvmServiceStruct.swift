@@ -15,10 +15,10 @@ struct EvmServiceStruct {
     /// `getL1Fee(bytes)`. Preferred over `getL1FeeUpperBound(uint256)`, which is
     /// the purpose-built API but only exists from Fjord onwards — Blast's oracle
     /// predates it, while `getL1Fee` has been there since Bedrock.
-    private static let getL1FeeSelector = "49948e0e"
+    static let getL1FeeSelector = "49948e0e"
     /// `getOperatorFee(uint256)` — Isthmus and later. Reverts on older oracles,
     /// which is the same answer as "this chain charges no operator fee".
-    private static let getOperatorFeeSelector = "275aedd2"
+    static let getOperatorFeeSelector = "275aedd2"
 
     let config: EvmServiceConfig
     private let rpcService: RpcServiceStruct

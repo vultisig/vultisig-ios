@@ -706,6 +706,236 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(interactor.validateUtxosIfNeededCalls.first?.ticker, "BTC")
     }
 
+    // MARK: - validateForm — native EVM MAX re-fit against the signed fee
+
+    /// The amount on screen came from one fee reading; the payload is built from
+    /// a second, independent one. Whatever fee the payload ends up carrying, the
+    /// value has to fit under it or the node rejects the send after the ceremony
+    /// already ran. Numbers taken from the reported Arbitrum failure.
+    func testValidateFormRefitsNativeEvmMaxToTheSignedChainSpecific() async throws {
+        let interactor = MockSendInteractor()
+        let gasLimit = BigInt(120_000)
+        let signedMaxFeePerGas = BigInt(12_024_000) // base fee ticked up between the two fetches
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: signedMaxFeePerGas, priorityFeeWei: .zero, nonce: 3, gasLimit: gasLimit)
+        }
+
+        let balanceRaw = BigInt(stringLiteral: "90995688510130159")
+        let arb = makeCoin(.arbitrum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let quotedFee = gasLimit * BigInt(12_000_000)
+        let tx = try makeTransaction(
+            coin: arb,
+            amount: SendCryptoLogic.amountString(coin: arb, raw: balanceRaw - quotedFee),
+            sendMaxAmount: true
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        let signedFee = gasLimit * signedMaxFeePerGas
+        XCTAssertEqual(payload.toAmount, balanceRaw - signedFee)
+        XCTAssertEqual(payload.toAmount + signedFee, balanceRaw,
+                       "value + gasLimit * maxFeePerGas must land exactly on the balance")
+        XCTAssertLessThan(payload.toAmount, tx.amountInRaw, "the clamp must reduce, since the fee grew")
+        // The transaction carries the amount as a decimal string, which the
+        // Done screen and the history entry read; assert the string is the
+        // rendering of the signed value. (Re-parsing it is Double-bounded —
+        // see EvmMaxSendClampTests — which is exactly why the clamp itself
+        // works in raw units and never round-trips through the string.)
+        XCTAssertEqual(vm.transaction.amount, SendCryptoLogic.amountString(coin: arb, raw: payload.toAmount),
+                       "the transaction handed on to signing must quote the value that was signed")
+    }
+
+    /// A fee that FELL between the two readings leaves room for more than the
+    /// screen displayed — signing that would send more than the user approved.
+    func testValidateFormNeverRaisesTheMaxWhenTheSignedFeeFell() async throws {
+        let interactor = MockSendInteractor()
+        let gasLimit = BigInt(120_000)
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: BigInt(6_000_000), priorityFeeWei: .zero, nonce: 1, gasLimit: gasLimit)
+        }
+
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let arb = makeCoin(.arbitrum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let quotedFee = gasLimit * BigInt(12_000_000)
+        let displayed = balanceRaw - quotedFee
+        let tx = try makeTransaction(
+            coin: arb,
+            amount: SendCryptoLogic.amountString(coin: arb, raw: displayed),
+            sendMaxAmount: true
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        XCTAssertEqual(payload.toAmount, tx.amountInRaw)
+        XCTAssertGreaterThan(balanceRaw - gasLimit * BigInt(6_000_000), payload.toAmount,
+                             "the cheaper signed fee left room the clamp must not take")
+        XCTAssertEqual(vm.transaction.amount, tx.amount, "an unchanged amount must not republish the transaction")
+    }
+
+    func testValidateFormReservesTheOpStackFeesOnTopOfGas() async throws {
+        let interactor = MockSendInteractor()
+        let gasLimit = BigInt(40_000)
+        let maxFeePerGas = BigInt(1_200_020)
+        let l1Reserve = BigInt(4_293_564_911)
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: BigInt(20), nonce: 0, gasLimit: gasLimit)
+        }
+        interactor.opStackFeeReserveStub = { _, _, _ in l1Reserve }
+
+        let balanceRaw = BigInt(stringLiteral: "12437685400489921")
+        let opEth = makeCoin(.optimism, ticker: "ETH", decimals: 18, isNative: true,
+                             rawBalance: balanceRaw.description)
+        let tx = try makeTransaction(
+            coin: opEth,
+            amount: SendCryptoLogic.amountString(coin: opEth, raw: balanceRaw - gasLimit * maxFeePerGas),
+            sendMaxAmount: true
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        XCTAssertEqual(payload.toAmount, balanceRaw - gasLimit * maxFeePerGas - l1Reserve)
+        XCTAssertEqual(interactor.opStackFeeReserveCalls.count, 1)
+        XCTAssertEqual(interactor.opStackFeeReserveCalls.first?.coin.chain, .optimism)
+        XCTAssertEqual(interactor.opStackFeeReserveCalls.first?.gasLimit, gasLimit,
+                       "the operator fee is priced off the gas limit the payload actually carries")
+    }
+
+    func testValidateFormThrowsWhenTheSignedFeeLeavesNothingToSend() async throws {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in
+            // A fee that swallows the whole balance.
+            .Ethereum(maxFeePerGasWei: BigInt(stringLiteral: "1000000000000"), priorityFeeWei: .zero,
+                      nonce: 0, gasLimit: BigInt(120_000))
+        }
+        let arb = makeCoin(.arbitrum, ticker: "ETH", decimals: 18, isNative: true, rawBalance: "1000000000")
+        let tx = try makeTransaction(coin: arb, amount: "0.0000000005", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        do {
+            _ = try await vm.validateForm()
+            XCTFail("a send the balance cannot fund must not reach the ceremony")
+        } catch let error as HelperError {
+            guard case .runtimeError(let message) = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+            XCTAssertEqual(message, "walletBalanceExceededError")
+        }
+
+        XCTAssertTrue(interactor.buildKeysignPayloadCalls.isEmpty, "nothing must be built from an unaffordable amount")
+    }
+
+    func testValidateFormLeavesATypedEvmAmountUntouched() async throws {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: BigInt(50_000_000_000), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(23_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let tx = try makeTransaction(coin: eth, amount: "0.1") // sendMaxAmount: false
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        XCTAssertEqual(payload.toAmount, tx.amountInRaw, "a typed amount is the user's number and must never be rewritten")
+        XCTAssertTrue(interactor.opStackFeeReserveCalls.isEmpty)
+    }
+
+    func testValidateFormLeavesATokenMaxUntouched() async throws {
+        // An ERC-20 max moves the whole token balance; gas comes out of the
+        // native sibling, so nothing about the fee can shrink the amount.
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: BigInt(50_000_000_000), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(120_000))
+        }
+        interactor.opStackFeeReserveStub = { _, _, _ in BigInt(4_293_564_911) }
+        let usdc = makeCoin(.optimism, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "200000000")
+        let tx = try makeTransaction(coin: usdc, amount: "200", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        XCTAssertEqual(payload.toAmount, tx.amountInRaw)
+        XCTAssertTrue(interactor.opStackFeeReserveCalls.isEmpty, "a token send has no L1 headroom to leave in its own amount")
+    }
+
+    func testValidateFormLeavesANonEvmMaxUntouched() async throws {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in
+            .Cosmos(accountNumber: 1, sequence: 1, gas: UInt64(200_000),
+                    transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
+        }
+        let atom = makeCoin(.gaiaChain, ticker: "ATOM", decimals: 6, isNative: true, rawBalance: "10000000")
+        let tx = try makeTransaction(coin: atom, amount: "9.8", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        let payload = try await vm.validateForm()
+
+        XCTAssertEqual(payload.toAmount, tx.amountInRaw, "only EVM re-derives its MAX from the payload's own fee")
+    }
+
+    // MARK: - loadGasInfoForSending — L1 headroom in the displayed max
+
+    func testLoadGasInfoLeavesOpStackL1HeadroomInTheDisplayedMax() async throws {
+        let interactor = MockSendInteractor()
+        let quotedFee = BigInt(stringLiteral: "48000800000")
+        let l1Reserve = BigInt(4_293_564_911)
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: quotedFee, gas: BigInt(1_200_020), gasLimit: BigInt(40_000))
+        }
+        interactor.opStackFeeReserveStub = { _, _, _ in l1Reserve }
+
+        let balanceRaw = BigInt(stringLiteral: "12437685400489921")
+        let opEth = makeCoin(.optimism, ticker: "ETH", decimals: 18, isNative: true,
+                             rawBalance: balanceRaw.description)
+        let tx = try makeTransaction(coin: opEth, amount: "0.01", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount,
+                       SendCryptoLogic.amountString(coin: opEth, raw: balanceRaw - quotedFee - l1Reserve),
+                       "the amount on screen must already carry the L1 headroom it will be signed with")
+    }
+
+    func testLoadGasInfoKeepsBalanceMinusFeeWhereThereIsNoL1DataFee() async throws {
+        // Mirror hazard: the L1 reserve must not shave anything off an L1 max.
+        let interactor = MockSendInteractor()
+        let quotedFee = BigInt(stringLiteral: "1150000000000000")
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: quotedFee, gas: BigInt(50_000_000_000), gasLimit: BigInt(23_000))
+        }
+
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let tx = try makeTransaction(coin: eth, amount: "0.9", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount,
+                       SendCryptoLogic.amountString(coin: eth, raw: balanceRaw - quotedFee))
+    }
+
     // MARK: - validateForm — pre-built keysign payload pass-through
 
     /// Circle USDC withdraw signs a native-ETH MSCA `execute(USDC, 0, transfer(vault, amount))`
@@ -852,7 +1082,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         amount: String = "0.1",
         fee: BigInt = BigInt(stringLiteral: "1000000000000000"),
         feeMode: FeeMode = .default,
-        customGasLimit: BigInt? = nil
+        customGasLimit: BigInt? = nil,
+        sendMaxAmount: Bool = false
     ) throws -> SendTransaction {
         let vault = try TestStore.makeVault()
         let coinToUse = coin ?? makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
@@ -872,7 +1103,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             estimatedGasLimit: nil,
             customGasLimit: customGasLimit,
             customByteFee: nil,
-            sendMaxAmount: false,
+            sendMaxAmount: sendMaxAmount,
             isStakingOperation: false,
             transactionType: .unspecified,
             memoFunctionDictionary: [:],

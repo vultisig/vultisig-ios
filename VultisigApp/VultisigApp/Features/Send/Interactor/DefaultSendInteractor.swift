@@ -96,18 +96,29 @@ struct DefaultSendInteractor: SendInteractor {
             return .zero
         }
 
-        // Each term degrades on its own. Blast's oracle predates
-        // `getOperatorFee` and reverts on it; letting that failure take the L1
-        // data fee down with it would leave the chain reserving nothing at all.
-        let l1DataFee = await Self.reserveTerm(named: "L1 data fee", chain: coin.chain) {
-            try await service.fetchOpStackL1DataFee(unsignedTxSize: Self.l1FeeProbeTxSize(memo: memo))
-        }
-        let operatorFee = await Self.reserveTerm(named: "operator fee", chain: coin.chain) {
-            guard let gasLimit, gasLimit > 0 else { return .zero }
-            return try await service.fetchOpStackOperatorFee(gasLimit: gasLimit)
-        }
+        return await Self.opStackReserveSum(
+            chain: coin.chain,
+            l1DataFee: {
+                try await service.fetchOpStackL1DataFee(unsignedTxSize: Self.l1FeeProbeTxSize(memo: memo))
+            },
+            operatorFee: {
+                guard let gasLimit, gasLimit > 0 else { return .zero }
+                return try await service.fetchOpStackOperatorFee(gasLimit: gasLimit)
+            }
+        )
+    }
 
-        return l1DataFee + operatorFee
+    /// Sums the two surcharges op-geth adds to its balance check. Each term
+    /// degrades on its own: Blast's oracle predates `getOperatorFee` and reverts
+    /// on it, and letting that failure take the L1 data fee down with it would
+    /// leave the chain reserving nothing at all.
+    static func opStackReserveSum(
+        chain: Chain,
+        l1DataFee: () async throws -> BigInt,
+        operatorFee: () async throws -> BigInt
+    ) async -> BigInt {
+        await reserveTerm(named: "L1 data fee", chain: chain, fetch: l1DataFee)
+            + reserveTerm(named: "operator fee", chain: chain, fetch: operatorFee)
     }
 
     /// Runs one reserve lookup, failing open. Reserving nothing is exactly the
