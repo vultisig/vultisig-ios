@@ -9,12 +9,18 @@ import SwiftUI
 
 extension View {
     /// Wraps the content in the app's standard container chrome: a filled,
-    /// rounded surface with a hairline border. The radius defaults to the
-    /// container step — this modifier is only ever applied to a card, banner
-    /// or list group, which is what `Theme.radius.xl` is for.
+    /// rounded surface with a hairline border.
+    ///
+    /// The radius stays at 12 rather than moving to the container step with
+    /// the rest of the app's cards, because four of this modifier's call
+    /// sites are nested *inside* another one — the referral screen wraps a
+    /// `containerStyle` section around `containerStyle` cards. Equal radii
+    /// one inside the other already looks flat at 12; at 24 it reads as a
+    /// bug. Which of the two levels is the container is a design question,
+    /// not one to answer by sweeping.
     func containerStyle(
         padding: CGFloat? = nil,
-        radius: CornerRadius = Theme.radius.xl,
+        radius: CornerRadius = Theme.radius.md,
         bgColor: Color = Theme.colors.bgPrimary
     ) -> some View {
         self
