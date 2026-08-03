@@ -366,7 +366,7 @@ struct MyFeatureScreen: View {
 
 ### Supported Languages
 
-`LOCALE_DIRS` in `VultisigApp/scripts/sort_localizable.py` is the authoritative locale list. It currently enumerates the eight shipping locales below, including Korean.
+`LOCALE_DIRS` in `VultisigApp/scripts/sort_localizable.py` is the authoritative locale list. The table below describes the configured shipping locales.
 
 | Language | Directory |
 |----------|-----------|
@@ -382,7 +382,7 @@ struct MyFeatureScreen: View {
 ### Rules
 
 1. **Never hardcode user-facing strings** - Use `"key".localized`
-2. **Add to every locale in `LOCALE_DIRS`** - Every new string must be translated, including Korean
+2. **Add to every locale in `LOCALE_DIRS`** - Every new string must be translated
 3. **camelCase keys** - e.g., `"sendCryptoTitle"`, `"vaultSettings"`
 4. **Alphabetical ordering** - Keep keys sorted alphabetically within each file
 5. **Use `sort_localizable.py`** after adding keys:

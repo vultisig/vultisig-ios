@@ -24,7 +24,7 @@ open VultisigApp/VultisigApp.xcodeproj
 2. If touching `Services/Tss/`: extra caution — changes affect signing across all platforms
 3. If touching `Model/`: SwiftData schema changes affect migrations
 4. If adding/removing/renaming Swift files: just create them in place under `VultisigApp/VultisigApp/` — XcodeGen picks them up on the next `make generate` run. Never edit `project.pbxproj` (it is generated).
-5. If adding/removing strings: update every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`, including `ko.lproj` (use `/localize` skill)
+5. If adding/removing strings: update every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS` (use `/localize` skill)
 6. If changing `project.yml` (targets, packages, xcframeworks): run `make generate` and commit only `project.yml` and `Package.resolved`.
 7. If deleting a screen: remove route, ViewModel, strings — full cleanup
 

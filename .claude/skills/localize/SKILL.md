@@ -7,7 +7,7 @@ description: Complete i18n workflow — add keys to every shipping locale, trans
 
 ## Locale Files
 
-The authoritative locale list is `LOCALE_DIRS` in `VultisigApp/scripts/sort_localizable.py`; it currently contains eight locales and includes `ko.lproj`. Update the corresponding `Localizable.strings` file under `VultisigApp/VultisigApp/Core/Localizables/` for every listed locale.
+The authoritative locale list is `LOCALE_DIRS` in `VultisigApp/scripts/sort_localizable.py`. Update the corresponding `Localizable.strings` file under `VultisigApp/VultisigApp/Core/Localizables/` for every listed locale.
 
 ## Usage Pattern in Swift
 
@@ -29,7 +29,7 @@ Add the entry to every locale listed in `LOCALE_DIRS`. Translate user-facing pro
 
 ### Translation Examples
 
-Use neighboring entries in each locale's existing `Localizable.strings` file as the terminology reference, including `ko.lproj`.
+Use neighboring entries in each locale's existing `Localizable.strings` file as the terminology reference.
 
 ### Step 3: Sort All Files
 ```bash
@@ -55,7 +55,7 @@ This sorts every locale listed in `LOCALE_DIRS` in-place alphabetically by key.
 
 ```text
 1. Choose camelCase key name
-2. Add "key" = "value"; to every locale listed in LOCALE_DIRS, including ko.lproj
+2. Add "key" = "value"; to every locale listed in LOCALE_DIRS
 3. Use "key".localized in Swift code
 4. Run python3 VultisigApp/scripts/sort_localizable.py
 ```

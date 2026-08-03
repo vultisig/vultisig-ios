@@ -30,7 +30,7 @@ _How to fill the Vultisig issue template so agents AND humans produce great resu
 
 - **DO NOT** edit `project.pbxproj` directly — it is generated from `VultisigApp/project.yml` by XcodeGen. Add/remove Swift files on disk and run `make generate`.
 - **DO NOT** modify TSS/crypto code without explicit review approval
-- All user-facing strings must use `.localized` and appear in every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`, including `ko.lproj`
+- All user-facing strings must use `.localized` and appear in every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`
 - All colors/fonts must use `Theme.colors.*` / `Theme.fonts.*`
 - Run `swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/` to verify
 
