@@ -286,6 +286,7 @@
 "cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Kosten";
 "createFolder" = "Ordner erstellen";
+"createNewVault" = "Neuen Tresor erstellen";
 "createQR" = "QR erstellen";
 "createReferral" = "Empfehlung erstellen";
 "createReferralCardTitle" = "Empfehlung erstellen";

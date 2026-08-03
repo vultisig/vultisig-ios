@@ -286,6 +286,7 @@
 "cosmosStakingValidatorPicker" = "검증인";
 "costs" = "비용";
 "createFolder" = "폴더 생성";
+"createNewVault" = "새 볼트 생성";
 "createQR" = "QR 생성";
 "createReferral" = "추천 코드 생성";
 "createReferralCardTitle" = "추천 만들기";

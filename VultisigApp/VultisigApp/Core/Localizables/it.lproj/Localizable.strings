@@ -286,6 +286,7 @@
 "cosmosStakingValidatorPicker" = "Validatore";
 "costs" = "Costi";
 "createFolder" = "Crea cartella";
+"createNewVault" = "Crea nuovo Vault";
 "createQR" = "Crea QR";
 "createReferral" = "Crea invito";
 "createReferralCardTitle" = "Crea invito";
