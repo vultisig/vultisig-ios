@@ -16,7 +16,6 @@ struct CoinDetailScreen: View {
     @State var showReceiveSheet: Bool = false
     @State var addressToCopy: Coin?
     @State var showContractCopiedBanner: Bool = false
-    @State var size: CGFloat?
 
     /// Where the sheet is resting. Purely presentation state — it never leaves
     /// the view, so it stays here rather than in the view model.
@@ -92,12 +91,6 @@ struct CoinDetailScreen: View {
     /// view when the sheet returns to its resting height.
     private static let topAnchor = "coinDetailTop"
 
-    /// At the partial detent the content is cut mid-chart. Left hard, that edge
-    /// reads as a clipped view; dissolving the last strip into the sheet
-    /// surface makes it read as "there is more below" instead — the same
-    /// bottom-anchored surface gradient `ModalBackgroundView` and
-    /// `ListBottomSection` already use. Gone once the sheet is expanded, since
-    /// then the edge is the actual end of the content.
     @ViewBuilder
     private var bottomFade: some View {
         if Self.supportsPartialDetent {
@@ -115,6 +108,7 @@ struct CoinDetailScreen: View {
             .allowsHitTesting(false)
             .opacity(isPartial ? 1 : 0)
             .animation(.easeInOut(duration: 0.2), value: isPartial)
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 
@@ -161,7 +155,6 @@ struct CoinDetailScreen: View {
             .padding(.bottom, 24)
         }
         .scrollDisabled(isPartial)
-        .background(ModalBackgroundView(width: size ?? 0))
         .overlay(bottomFade)
         .task {
             viewModel.setup()
@@ -184,7 +177,6 @@ struct CoinDetailScreen: View {
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)
-        .readSize { size = $0.width }
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
