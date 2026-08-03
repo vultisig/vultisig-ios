@@ -7,21 +7,47 @@
 
 import SwiftUI
 
+/// Resolution state of a single section's asset list.
+///
+/// Sections that resolve synchronously stay `.loaded` — the default — so a
+/// section with no assets and no pending work is a genuine empty result. A
+/// section backed by the network reports `.loading` / `.failed` so the picker
+/// can tell "still arriving" and "could not be fetched" apart from "none".
+enum AssetSectionState: Hashable {
+    case loaded
+    case loading
+    /// Carries its own user-facing message so the generic picker stays free of
+    /// any feature's copy.
+    case failed(message: String)
+
+    var isLoading: Bool {
+        self == .loading
+    }
+
+    var isFailed: Bool {
+        if case .failed = self { return true }
+        return false
+    }
+}
+
 struct AssetSection<SectionType: Hashable, Asset: Hashable>: Hashable {
     let title: String?
     let type: SectionType
     let assets: [Asset]
+    let state: AssetSectionState
 
-    init(title: String? = nil, type: SectionType, assets: [Asset]) {
+    init(title: String? = nil, type: SectionType, assets: [Asset], state: AssetSectionState = .loaded) {
         self.title = title
         self.type = type
         self.assets = assets
+        self.state = state
     }
 
-    init(title: String? = nil, assets: [Asset]) where SectionType == Int {
+    init(title: String? = nil, assets: [Asset], state: AssetSectionState = .loaded) where SectionType == Int {
         self.title = title
         self.type = .zero
         self.assets = assets
+        self.state = state
     }
 }
 
@@ -34,8 +60,10 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
     var onSave: () -> Void
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
-
-    @State var searchBarFocused: Bool = false
+    /// Invoked with the section type whose fetch failed. Sections never reach
+    /// `.failed` unless the caller puts them there, so this stays `nil` for
+    /// pickers whose catalogs resolve synchronously.
+    var onRetrySection: ((SectionType) -> Void)?
 
     init(
         title: String,
@@ -45,7 +73,8 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         elements: [AssetSection<SectionType, Asset>],
         onSave: @escaping () -> Void,
         cellBuilder: @escaping (Asset, SectionType) -> CellView,
-        emptyStateBuilder: @escaping () -> EmptyStateView
+        emptyStateBuilder: @escaping () -> EmptyStateView,
+        onRetrySection: ((SectionType) -> Void)? = nil
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -55,6 +84,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         self.onSave = onSave
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
+        self.onRetrySection = onRetrySection
     }
 
     var body: some View {
@@ -69,7 +99,8 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             insets: EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 0),
             elements: elements,
             cellBuilder: cellBuilder,
-            emptyStateBuilder: emptyStateBuilder
+            emptyStateBuilder: emptyStateBuilder,
+            onRetrySection: onRetrySection
         )
         .supportsLiquidGlass { view, isSupported in
             view.padding(.bottom, isSupported ? 0 : 16)
@@ -99,71 +130,6 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         .presentationBackground(Theme.colors.bgPrimary)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgPrimary)
-    }
-
-    var gradientOverlay: some View {
-        LinearGradient(
-            stops: [
-                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
-            ],
-            startPoint: UnitPoint(x: 0.5, y: 1),
-            endPoint: UnitPoint(x: 0.5, y: 0)
-        )
-        .frame(height: 60)
-    }
-
-    var textfield: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.title2)
-                .multilineTextAlignment(.leading)
-
-            if let subtitle {
-                Text(subtitle)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-                    .multilineTextAlignment(.leading)
-            }
-
-            HStack(spacing: 12) {
-                SearchTextField(value: $searchText, isFocused: $searchBarFocused)
-                Button {
-                    searchText = ""
-                    searchBarFocused.toggle()
-                } label: {
-                    Text("cancel".localized)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .font(Theme.fonts.bodySMedium)
-                }
-                .buttonStyle(.plain)
-                .transition(.opacity)
-                .showIf(searchBarFocused)
-            }
-            .animation(.easeInOut, value: searchBarFocused)
-        }
-    }
-
-    @ViewBuilder
-    var grid: some View {
-        let spacing: CGFloat = 16
-        let gridItem = GridItem(.flexible(), spacing: spacing)
-        ForEach(elements, id: \.self) { section in
-            VStack(alignment: .leading, spacing: 8) {
-                if let title = section.title, !section.assets.isEmpty {
-                    Text(title)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .font(Theme.fonts.footnote)
-                }
-                LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {
-                    ForEach(section.assets, id: \.self) { element in
-                        cellBuilder(element, section.type)
-                    }
-                }
-            }
-            .padding(.bottom, 16)
-        }
     }
 }
 
