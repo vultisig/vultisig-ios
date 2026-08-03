@@ -81,11 +81,16 @@ struct AssetSelectionGridCell: View {
                 .background(
                     UnevenRoundedRectangle(
                         cornerRadii: .init(
-                        topLeading: 24,
-                        bottomLeading: 0,
-                        bottomTrailing: 24,
-                        topTrailing: 0
-                    )).fill(Theme.colors.border)
+                            // Both corners restate the cell's radius: the badge
+                            // is drawn into the cell's bottom-trailing corner
+                            // and has to trace it.
+                            topLeading: Theme.radius.xl.points,
+                            bottomLeading: 0,
+                            bottomTrailing: Theme.radius.xl.points,
+                            topTrailing: 0
+                        ),
+                        style: Theme.radius.xl.style
+                    ).fill(Theme.colors.border)
                 )
             Theme.radius.xl.shape
                 .inset(by: 1)

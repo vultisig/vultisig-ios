@@ -389,18 +389,30 @@ struct TransactionHistoryCardView: View {
             .background(Theme.colors.bgSurface2)
             .clipShape(
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 12,
+                    topLeadingRadius: Theme.radius.md.points,
                     bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 16,
-                    topTrailingRadius: 0
+                    // The badge is overlaid on the card's bottom-trailing
+                    // corner, so this radius is not the badge's own geometry —
+                    // it traces the card's. It has to read from the same token
+                    // the card does or the badge stops following the contour it
+                    // is sitting in.
+                    bottomTrailingRadius: Theme.radius.xl.points,
+                    topTrailingRadius: 0,
+                    style: Theme.radius.xl.style
                 )
             )
             .overlay(
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 12,
+                    topLeadingRadius: Theme.radius.md.points,
                     bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 16,
-                    topTrailingRadius: 0
+                    // The badge is overlaid on the card's bottom-trailing
+                    // corner, so this radius is not the badge's own geometry —
+                    // it traces the card's. It has to read from the same token
+                    // the card does or the badge stops following the contour it
+                    // is sitting in.
+                    bottomTrailingRadius: Theme.radius.xl.points,
+                    topTrailingRadius: 0,
+                    style: Theme.radius.xl.style
                 )
                 .stroke(Theme.colors.border, lineWidth: 1)
             )

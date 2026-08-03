@@ -118,11 +118,15 @@ private struct CustomRPCChainGridCell: View {
                 .background(
                     UnevenRoundedRectangle(
                         cornerRadii: .init(
-                            topLeading: 24,
+                            // Both corners restate the tile's radius: the badge
+                            // is drawn into the tile's bottom-trailing corner
+                            // and has to trace it.
+                            topLeading: Theme.radius.xl.points,
                             bottomLeading: 0,
-                            bottomTrailing: 24,
+                            bottomTrailing: Theme.radius.xl.points,
                             topTrailing: 0
-                        )
+                        ),
+                        style: Theme.radius.xl.style
                     )
                     .fill(Theme.colors.border)
                 )
