@@ -34,6 +34,17 @@ enum LimitOrderCancelDustError: Error, Equatable {
     /// be honoured verbatim and then doubled. Every other floor in this file is
     /// a lower bound; this is the only upper one.
     case dustAmountExceedsCeiling(chain: String, computed: String, ceiling: String)
+    /// No `dust_threshold` is pinned for this chain, so there is no locally-known
+    /// bound on what a remote value could ask us to donate.
+    ///
+    /// Deliberately fatal, and deliberately not a default. A default is a number
+    /// nobody checked against the chain it is being applied to: the one this
+    /// replaced was 0.001 natural units, which sat three orders of magnitude
+    /// under XRP's real requirement and would have refused every cancel from it.
+    /// Refusing HERE says which chain is unconfigured; a wrong default says only
+    /// that some amount exceeded some ceiling, on a chain where cancelling then
+    /// never works.
+    case dustCeilingUnpinned(chain: String)
     /// The computed dust is too small for THORChain to observe at all.
     ///
     /// ⚠️ The loud failure that the 2026-07-22 ETH rehearsal needed and did not
@@ -191,47 +202,117 @@ func minimumObservableInbound(decimals: Int) -> BigInt {
     return BigInt(10).power(decimals - Coin.thorchainFixedPointExponent)
 }
 
-/// The most a cancel on `chain` could plausibly need to attach, in NATURAL
-/// units. Multiplied out to smallest units by the caller.
+// MARK: - Ceiling
+
+/// How many multiples of a cancel's NORMAL attach the ceiling permits.
 ///
-/// Deliberately an explicit table rather than a formula. The per-chain minima
-/// are known and verified, but they live in wildly different unit systems (wei
-/// vs sats vs uatom), so no single absolute number and no ratio against
-/// WalletCore's floor works across all of them — `getFixedDustThreshold()`
-/// returns 0 for every non-UTXO chain, which would collapse any relative bound.
+/// Equivalently: how far THORChain may legitimately raise a `dust_threshold`
+/// before cancelling on that chain starts failing. Ten is the rule the previous
+/// natural-units table documented for itself — "roughly an order of magnitude
+/// above each chain's live `dust_threshold` doubled" — and the centre of the
+/// spread that table actually implemented, which ranged from 5× the attach
+/// (DOGE, BCH, BSC) to 50× (BTC, ETH) with no rationale attached to any
+/// individual row.
 ///
-/// Set roughly an order of magnitude above each chain's live `dust_threshold`
-/// doubled — the amount a cancel actually attaches. Loose enough that a
-/// legitimate threshold change does not break cancelling, tight enough that a
-/// bad value cannot quietly donate a meaningful sum. If a chain legitimately
-/// raises its threshold past this, cancelling fails loudly with the computed and
-/// permitted values — which is the right way to find out.
+/// Tighter would be a truer bound but a thinner margin; looser would let a bad
+/// remote value donate more. This is the trade the ceiling is, stated once
+/// instead of eight times.
+let limitOrderCancelDustCeilingHeadroom = BigInt(10)
+
+/// The `dust_threshold` THORChain publishes for `chain`, pinned locally, in
+/// THORChain's own 1e8 fixed point — the SAME unit system the live value
+/// arrives in. `nil` for a chain THORChain publishes no inbound row for.
 ///
-/// ⚠️ Sized against the thresholds `inbound_addresses` actually publishes
-/// (captured 2026-07-22, natural units): DOGE 1, LTC 0.001, AVAX 0.001,
-/// GAIA 0.01, BCH/BSC 0.0001, BTC/ETH 0.00001. The earlier table was sized
-/// against the EVM `ConvertAmount` floor (~1e-8) rather than against these, and
-/// so sat BELOW the real attach on both LTC and AVAX — a legitimate cancel on
-/// either would have been refused outright by the ceiling.
-func limitOrderCancelDustCeiling(for chain: Chain) -> Decimal {
+/// ⚠️ **The pin is the point, and it must stay local.** The ceiling this feeds
+/// is the only defence against a wrong or hostile `dust_threshold` deciding how
+/// much of the user's money is irreversibly donated. Deriving it from the value
+/// it is meant to bound would be circular: the attach is `threshold × 2`, so
+/// any ceiling of the form `threshold × K` with `K >= 2` is satisfied by every
+/// possible remote value, however absurd. The guard would still be there and
+/// would never fire again. `min()` against an absolute cap does not rescue it
+/// either — the derived term never binds, so the expression is just the cap.
+///
+/// What a formula CAN remove is the hand-arithmetic, and that is what this
+/// shape does. These are the endpoint's numbers verbatim, so verifying an entry
+/// is a string compare against `/thorchain/inbound_addresses` rather than a
+/// 1e8 → native rescale performed in someone's head. That rescale is exactly
+/// what went wrong before: the table two revisions ago was sized against the
+/// EVM `ConvertAmount` floor instead of the published thresholds and so sat
+/// BELOW the real attach on both LTC and AVAX, refusing cancels the user was
+/// entitled to make. Here `chainSmallestUnits` does the conversion.
+///
+/// ⚠️ Captured 2026-08-03 from `/thorchain/inbound_addresses`. Every chain that
+/// endpoint publishes is listed, including ones `thorchainChainPrefix` does not
+/// yet gate in — pinning ahead of the gate is what stops the next chain
+/// addition from silently breaking cancellation on it.
+///
+/// DASH, ZCASH and NOBLE are deliberately absent, though the natural-units
+/// table this replaces carried entries for them: THORChain publishes no inbound
+/// row for any of the three, so there is no threshold to pin and no cancel to
+/// build. `resolveThorchainInboundVault` refuses them at `isThorchainRoutable`
+/// and would refuse them for want of an inbound row even if that gate opened.
+/// Inventing a number for them would reintroduce the unverified literal this
+/// table exists to remove.
+func limitOrderCancelPinnedDustThreshold(for chain: Chain) -> BigInt? {
     switch chain {
-    case .dogecoin:
-        // The outlier: a 1 DOGE threshold, so 2 DOGE is the normal attach.
-        return 10
-    case .litecoin, .avalanche:
-        // Both publish a 0.001 threshold, so 0.002 is the normal attach — over
-        // the 0.001 these two used to share with BTC.
-        return Decimal(string: "0.02") ?? 0
-    case .bitcoin, .bitcoinCash, .dash, .zcash:
-        return Decimal(string: "0.001") ?? 0
-    case .gaiaChain, .noble:
-        return Decimal(string: "0.5") ?? 0
+    case .bitcoin, .ethereum, .base:
+        return BigInt(1000)
+    case .bitcoinCash, .bscChain:
+        return BigInt(10_000)
+    case .litecoin, .avalanche, .solana:
+        return BigInt(100_000)
+    case .gaiaChain:
+        return BigInt(1_000_000)
+    case .tron:
+        return BigInt(10_000_000)
+    case .dogecoin, .ripple:
+        // The outliers: a whole 1 DOGE / 1 XRP, so 2 of each is the normal
+        // attach. XRP is why the removed `default` was not merely untidy — at
+        // 0.001 XRP it sat 2000× under the amount a cancel there must carry.
+        return BigInt(100_000_000)
     default:
-        // ETH (0.00002 attach), BSC (0.0002) and anything else. Immaterial in
-        // fiat on every supported chain while still leaving room for a
-        // threshold that moves by an order of magnitude.
-        return Decimal(string: "0.001") ?? 0
+        return nil
     }
+}
+
+/// The most a cancel on `chain` could plausibly need to attach, in that chain's
+/// SMALLEST units.
+///
+/// `pinned × safetyMultiple × headroom`: the normal attach at the pinned
+/// threshold, times the headroom. Composed from `limitOrderCancelDustSafetyMultiple`
+/// rather than restating its effect, so raising the safety multiple widens the
+/// ceiling with it instead of silently eating the margin.
+///
+/// Rescaled from THORChain's 1e8 units by the same function the amount goes
+/// through, so the ceiling and the amount cannot end up in different unit
+/// systems — the failure that made a 1e8 threshold read as 2000 wei. The
+/// rescale rounds up, which on a ceiling is the harmless direction: at most one
+/// extra smallest unit of slack.
+///
+/// - Parameter decimals: the SOURCE COIN's own precision, the same value handed
+///   to `limitOrderCancelDustAmount`. A cancel is always signed with the source
+///   chain's gas asset, so this is that asset's precision.
+func limitOrderCancelDustCeiling(
+    for chain: Chain,
+    decimals: Int,
+    chainSymbol: String
+) throws -> BigInt {
+    // ⚠️ Validated HERE, not only in `limitOrderCancelDustAmount`. Swift
+    // evaluates this call as one of that function's arguments, so it runs
+    // BEFORE that guard: a negative precision off malformed persisted metadata
+    // would reach `BigInt(10).power(8 - decimals)` first, which allocates
+    // absurdly and traps outright on `Int.min`. Same error either way, so the
+    // failure a caller sees does not depend on evaluation order.
+    guard decimals >= 0 else {
+        throw LimitOrderCancelDustError.unusableChainPrecision(chain: chainSymbol, decimals: decimals)
+    }
+    guard let pinned = limitOrderCancelPinnedDustThreshold(for: chain), pinned > 0 else {
+        throw LimitOrderCancelDustError.dustCeilingUnpinned(chain: chainSymbol)
+    }
+    let ceilingInThorchainUnits = pinned
+        * limitOrderCancelDustSafetyMultiple
+        * limitOrderCancelDustCeilingHeadroom
+    return chainSmallestUnits(fromThorchainBaseUnits: ceilingInThorchainUnits, decimals: decimals)
 }
 
 // MARK: - Memo length
