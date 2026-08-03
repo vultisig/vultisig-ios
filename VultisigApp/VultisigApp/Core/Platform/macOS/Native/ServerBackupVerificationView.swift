@@ -208,9 +208,9 @@ struct ServerBackupVerificationScreen: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(Theme.colors.bgSurface2)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(Theme.radius.md.shape)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Theme.radius.md.shape
                             .strokeBorder(Theme.colors.borderExtraLight.opacity(0.03), lineWidth: 1)
                     )
             }

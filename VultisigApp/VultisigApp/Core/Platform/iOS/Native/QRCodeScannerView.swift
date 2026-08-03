@@ -179,7 +179,17 @@
                 ZStack {
                     Path { path in
                         path.addRect(proxy.frame(in: .local))
-                        path.addRoundedRect(in: rect, cornerSize: CGSize(width: 24, height: 24))
+                        path.addRoundedRect(
+                            in: rect,
+                            // Restates the viewport frame's radius: this path is the
+                            // punch-out for the same rect the stroke draws, so the two
+                            // have to read the same token or the dimming mask stops
+                            // lining up with the frame.
+                            cornerSize: CGSize(
+                                width: Theme.radius.xl.points,
+                                height: Theme.radius.xl.points
+                            )
+                        )
                     }
                     .fill(Theme.colors.bgPrimary.opacity(0.55), style: FillStyle(eoFill: true))
 
