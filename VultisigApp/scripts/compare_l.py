@@ -1,36 +1,58 @@
+#!/usr/bin/env python3
+"""Fail when a localized strings file is missing an English key."""
+
 import re
+import sys
+from pathlib import Path
+
+
+LOCALIZABLES_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "VultisigApp"
+    / "Core"
+    / "Localizables"
+)
+ENTRY_RE = re.compile(r'^\s*"([^"]+)"\s*=')
+
 
 def extract_keys(filepath):
-    keys = set()
-    with open(filepath, 'r', encoding='utf-8') as f:
-        for line in f:
-            match = re.match(r'\"([^\"]+)\"\s*=', line)
-            if match:
-                keys.add(match.group(1))
-    return keys
+    """Return all localization keys declared in filepath."""
+    with filepath.open(encoding="utf-8") as strings_file:
+        return {
+            match.group(1)
+            for line in strings_file
+            if (match := ENTRY_RE.match(line))
+        }
 
-en_file = "VultisigApp/VultisigApp/Localizables/en.lproj/Localizable.strings"
-de_file = "VultisigApp/VultisigApp/Localizables/de.lproj/Localizable.strings"
-it_file = "VultisigApp/VultisigApp/Localizables/it.lproj/Localizable.strings"
-es_file = "VultisigApp/VultisigApp/Localizables/es.lproj/Localizable.strings"
-hr_file = "VultisigApp/VultisigApp/Localizables/hr.lproj/Localizable.strings"
-pt_file = "VultisigApp/VultisigApp/Localizables/pt.lproj/Localizable.strings"
 
-en_keys = extract_keys(en_file)
-de_keys = extract_keys(de_file)
-it_keys = extract_keys(it_file)
-es_keys = extract_keys(es_file)
-hr_keys = extract_keys(hr_file)
-pt_keys = extract_keys(pt_file)
+def main():
+    """Compare every discovered locale against the English key set."""
+    english_file = LOCALIZABLES_DIR / "en.lproj" / "Localizable.strings"
+    if not english_file.is_file():
+        print(f"Missing English localization file: {english_file}")
+        return 1
 
-print(f"English keys: {len(en_keys)}")
-print(f"German keys: {len(de_keys)}")
-print(f"Italian keys: {len(it_keys)}")
-print(f"Spanish keys: {len(es_keys)}")
-print(f"Croatian keys: {len(hr_keys)}")
-print(f"Portuguese keys: {len(pt_keys)}")
-missing_in_en = sorted(en_keys - pt_keys)
+    english_keys = extract_keys(english_file)
+    locale_files = sorted(LOCALIZABLES_DIR.glob("*.lproj/Localizable.strings"))
+    localized_files = [filepath for filepath in locale_files if filepath != english_file]
+    if not localized_files:
+        print(f"No localized strings files found in {LOCALIZABLES_DIR}")
+        return 1
 
-print("Keys in English but not in Portuguese:")
-for key in missing_in_en:
-    print(key)
+    failed = False
+    for filepath in localized_files:
+        locale = filepath.parent.stem
+        missing_keys = sorted(english_keys - extract_keys(filepath))
+        if missing_keys:
+            failed = True
+            print(f"{locale}: missing {len(missing_keys)} English key(s)")
+            for key in missing_keys:
+                print(f"  {key}")
+        else:
+            print(f"{locale}: all {len(english_keys)} English keys present")
+
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
