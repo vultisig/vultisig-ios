@@ -61,11 +61,11 @@ struct GovernanceProposalRow: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.xl.shape
                     .fill(Theme.colors.bgSurface1)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.xl.shape
                     .stroke(Theme.colors.border, lineWidth: 1)
             )
         }

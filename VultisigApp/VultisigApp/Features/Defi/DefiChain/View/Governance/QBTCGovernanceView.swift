@@ -124,11 +124,11 @@ struct QBTCGovernanceView: View {
         .frame(maxWidth: .infinity)
         .padding(24)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
