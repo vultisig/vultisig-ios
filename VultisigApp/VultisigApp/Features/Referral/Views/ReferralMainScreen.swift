@@ -132,7 +132,7 @@ struct ReferralMainScreen: View {
     }
 
     var collectedRewardsView: some View {
-        BannerView(bgImage: "referral-banner-2", radius: Theme.radius.md) {
+        BannerView(bgImage: "referral-banner-2") {
             VStack(alignment: .leading, spacing: 2) {
                 Icon(.trophy)
                     .padding(.bottom, 10)

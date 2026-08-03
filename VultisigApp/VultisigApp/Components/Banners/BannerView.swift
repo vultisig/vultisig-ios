@@ -9,10 +9,14 @@ import SwiftUI
 
 struct BannerView<Content: View>: View {
     let bgImage: String
-    /// Defaults to the container step, because a banner is usually the outer
-    /// surface on its page. A banner rendered *inside* another container has to
-    /// pass a smaller step so the nesting still reads — this view is used both
-    /// ways on the referral screen.
+    /// Defaults to the container step. **Every banner in the app takes it**,
+    /// including the collected-rewards banner nested inside the referral
+    /// section — that is a design decision, not an oversight: banners read as
+    /// banners at one radius, and this view's own 24pt padding keeps the two
+    /// edges apart where one sits inside another.
+    ///
+    /// The parameter stays as the seam for a future banner that genuinely has
+    /// to step down. There is no such call site today.
     let radius: CornerRadius
     let content: () -> Content
 
