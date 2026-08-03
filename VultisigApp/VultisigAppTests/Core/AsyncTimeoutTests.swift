@@ -11,6 +11,24 @@ final class AsyncTimeoutTests: XCTestCase {
         case boom
     }
 
+    /// Cross-actor flag: the operation closure runs off the main actor.
+    private final class Flag: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = false
+
+        func set() {
+            lock.lock()
+            value = true
+            lock.unlock()
+        }
+
+        var isSet: Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return value
+        }
+    }
+
     func testReturnsTheValueWhenTheOperationBeatsTheDeadline() async throws {
         let value = try await withTimeout(seconds: 5) { 42 }
         XCTAssertEqual(value, 42)
@@ -63,5 +81,30 @@ final class AsyncTimeoutTests: XCTestCase {
             operationDuration,
             "withTimeout must not wait for a non-cooperative operation to finish."
         )
+    }
+
+    /// An already-cancelled task fires its cancellation handler *before* the
+    /// continuation body runs. That result must be held and delivered rather than
+    /// dropped, otherwise an abandoned load would still fire its request.
+    @MainActor
+    func testAlreadyCancelledTaskFailsWithoutRunningTheOperation() async {
+        let didRun = Flag()
+
+        // Inherits the main actor, so it cannot start before `cancel()` below.
+        let task = Task { () -> Int in
+            try await withTimeout(seconds: 5) {
+                didRun.set()
+                return 1
+            }
+        }
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation.")
+        } catch {
+            XCTAssertTrue(error is CancellationError, "Got \(error)")
+        }
+        XCTAssertFalse(didRun.isSet, "A cancelled task must not start the operation.")
     }
 }

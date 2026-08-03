@@ -35,7 +35,10 @@ func withTimeout<T: Sendable>(
 
     return try await withTaskCancellationHandler {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<T, Error>) in
-            race.start(continuation)
+            // A task cancelled before this point already delivered its result to
+            // the race, and `start` consumes it. Bail out before spawning
+            // anything so an abandoned load never fires its request.
+            guard race.start(continuation) else { return }
 
             race.track(Task {
                 do {
@@ -67,11 +70,28 @@ private final class AsyncTimeoutRace<T>: @unchecked Sendable {
     private var continuation: CheckedContinuation<T, Error>?
     private var racers: [Task<Void, Never>] = []
     private var isFinished = false
+    /// A terminal result that arrived before the continuation existed. The
+    /// cancellation handler fires immediately for an already-cancelled task —
+    /// i.e. before the continuation body runs — so without this the cancellation
+    /// would be dropped and the racers would start anyway.
+    private var pendingResult: Result<T, Error>?
 
-    func start(_ continuation: CheckedContinuation<T, Error>) {
+    /// Installs the continuation. Returns `false` when a terminal result had
+    /// already arrived, in which case it is delivered here and the caller must
+    /// not start any racers.
+    func start(_ continuation: CheckedContinuation<T, Error>) -> Bool {
         lock.lock()
-        defer { lock.unlock() }
-        self.continuation = continuation
+        guard let pendingResult else {
+            self.continuation = continuation
+            lock.unlock()
+            return true
+        }
+        isFinished = true
+        self.pendingResult = nil
+        lock.unlock()
+
+        continuation.resume(with: pendingResult)
+        return false
     }
 
     /// Registers a racer. If the race is already decided the task is cancelled
@@ -90,7 +110,15 @@ private final class AsyncTimeoutRace<T>: @unchecked Sendable {
 
     func resume(_ result: Result<T, Error>) {
         lock.lock()
-        guard !isFinished, let continuation else {
+        guard !isFinished else {
+            lock.unlock()
+            return
+        }
+        guard let continuation else {
+            // Nothing to resume yet — hold the first terminal result for `start`.
+            if pendingResult == nil {
+                pendingResult = result
+            }
             lock.unlock()
             return
         }
