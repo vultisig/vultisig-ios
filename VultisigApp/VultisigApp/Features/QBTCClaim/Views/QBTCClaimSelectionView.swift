@@ -114,10 +114,10 @@ struct QBTCClaimSelectionView: View {
             )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            Theme.radius.xl.shape
                 .strokeBorder(Theme.colors.primaryAccent4.opacity(0.17), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(Theme.radius.xl.shape)
     }
 
     private var claimTabStrip: some View {

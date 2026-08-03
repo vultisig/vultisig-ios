@@ -25,10 +25,10 @@ struct ClaimQbtcPromoBanner: View {
         .frame(height: 156)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            Theme.radius.xl.shape
                 .fill(Theme.colors.bgSurface2)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(Theme.radius.xl.shape)
         .accessibilityElement(children: .combine)
     }
 

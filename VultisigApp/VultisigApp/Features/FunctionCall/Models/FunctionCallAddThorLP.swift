@@ -469,7 +469,7 @@ struct EnableThorchainCTASection: View {
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.xl)
     }
 }
 

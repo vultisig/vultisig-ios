@@ -151,7 +151,7 @@ private struct ReferralEntryCard: View {
             }
             .padding(24)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(16)
+            .cornerRadius(Theme.radius.xl)
             .contentShape(Rectangle())
         }
     }

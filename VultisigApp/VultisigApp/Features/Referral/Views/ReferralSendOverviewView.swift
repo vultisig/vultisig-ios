@@ -27,7 +27,7 @@ struct ReferralSendOverviewView: View {
         }
         .padding(24)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
     }
 
     var title: some View {

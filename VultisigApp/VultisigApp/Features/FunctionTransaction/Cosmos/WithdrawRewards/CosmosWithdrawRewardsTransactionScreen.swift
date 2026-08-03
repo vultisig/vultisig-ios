@@ -171,7 +171,7 @@ struct CosmosWithdrawRewardsTransactionScreen: View {
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(Theme.radius.xl.shape)
     }
 
     private func truncated(_ address: String) -> String {
