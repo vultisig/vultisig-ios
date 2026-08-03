@@ -33,4 +33,38 @@ final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {
     }
 }
 
+/// Test double for the selectable-position catalog. `lpDelay` and `lpError` let
+/// a test hold the pool fetch open, fail it, or make it outlive the view model's
+/// wall-clock budget — the three cases that used to blank the whole picker.
+final class MockDefiPositionsProvider: DefiPositionsProviding, @unchecked Sendable {
+    enum StubError: Error {
+        case unreachable
+    }
+
+    var bondStub: [CoinMeta] = []
+    var stakeStub: [CoinMeta] = []
+    var lpStub: [CoinMeta] = []
+    var supportsLPs = true
+    var lpDelay: Duration?
+    var lpError: Error?
+    private(set) var lpCallCount = 0
+
+    func bondCoins(for chain: Chain) -> [CoinMeta] { bondStub }
+
+    func stakeCoins(for chain: Chain) -> [CoinMeta] { stakeStub }
+
+    func supportsLiquidityPools(for chain: Chain) -> Bool { supportsLPs }
+
+    func lpCoins(for chain: Chain) async throws -> [CoinMeta] {
+        lpCallCount += 1
+        if let lpDelay {
+            try await Task.sleep(for: lpDelay)
+        }
+        if let lpError {
+            throw lpError
+        }
+        return lpStub
+    }
+}
+
 // swiftlint:enable async_without_await unused_parameter
