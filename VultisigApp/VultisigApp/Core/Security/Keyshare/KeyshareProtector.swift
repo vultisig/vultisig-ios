@@ -17,8 +17,9 @@ enum KeyshareProtectionError: Error, Equatable {
 
 /// Whether key shares are protected, and if so whether the key is available.
 enum KeyshareProtectionState {
-    /// No data key exists — shares are stored in the clear. The state every
-    /// install is in until the one-time migration runs.
+    /// No data key exists — shares are stored in the clear. This is the resting
+    /// state of every install with no passcode set, permanently rather than
+    /// transiently.
     case disabled
     /// The data key is in hand; shares seal and open.
     case unlocked(SymmetricKey)
@@ -32,12 +33,16 @@ enum KeyshareProtectionState {
 /// of whether a share is encrypted lives in exactly one place instead of being
 /// spread across keygen, keysign, reshare and backup.
 ///
-/// `open` tolerates a plaintext value whatever the state, because shares stay
-/// plaintext until the migration has run and the migration must be safe to
-/// retry. `seal` refuses to double-seal for the same reason.
+/// A share is sealed if and only if a passcode is currently set, so plaintext is
+/// the normal case rather than a legacy one. `open` therefore tolerates a
+/// plaintext value whatever the state, and `seal` returns an already-sealed value
+/// unchanged — both forms can be present at once while a store is being swept
+/// from one side of that invariant to the other.
 protocol KeyshareProtecting {
     func open(_ stored: String) throws -> String
     func seal(_ plaintext: String) throws -> String
+    /// Whether a stored value is ciphertext rather than a plaintext share.
+    func isSealed(_ stored: String) -> Bool
 }
 
 final class KeyshareProtector: KeyshareProtecting {
@@ -49,15 +54,20 @@ final class KeyshareProtector: KeyshareProtecting {
 
     init(
         cipher: KeyshareCipher = AesGcmKeyshareCipher(),
-        state: @escaping () -> KeyshareProtectionState = { .disabled }
+        state: @escaping () -> KeyshareProtectionState = { KeyshareKeySession.shared.currentState() }
     ) {
         self.cipher = cipher
         self.state = state
     }
 
+    func isSealed(_ stored: String) -> Bool {
+        cipher.isSealed(stored)
+    }
+
     func open(_ stored: String) throws -> String {
-        // A share written before the migration is plaintext and stays readable
-        // regardless of state — that is what makes the migration resumable.
+        // A share stored while no passcode was set is plaintext and stays
+        // readable regardless of state, so a store part-way through a sweep
+        // still signs correctly.
         guard cipher.isSealed(stored) else { return stored }
 
         switch state() {

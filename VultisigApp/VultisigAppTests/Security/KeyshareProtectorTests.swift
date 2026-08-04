@@ -60,8 +60,8 @@ final class KeyshareProtectorTests: XCTestCase {
     func testUnlockedOpenStillAcceptsPlaintext() throws {
         let sut = try makeUnlockedProtector()
 
-        // Shares stay plaintext until the migration has run, and the migration
-        // must be able to read them while the key already exists.
+        // A store part-way through a sweep holds both forms, so a plaintext
+        // share has to stay readable while the key is already in hand.
         XCTAssertEqual(try sut.open(dklsPlaintext), dklsPlaintext)
     }
 
@@ -71,7 +71,7 @@ final class KeyshareProtectorTests: XCTestCase {
 
         let resealed = try sut.seal(stored)
 
-        XCTAssertEqual(resealed, stored, "Re-sealing must be idempotent so the migration can retry")
+        XCTAssertEqual(resealed, stored, "Re-sealing must be idempotent so a sweep can retry")
         XCTAssertEqual(try sut.open(resealed), dklsPlaintext)
     }
 

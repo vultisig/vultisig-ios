@@ -10,8 +10,8 @@ import XCTest
 
 /// Pins the two properties this step is claiming.
 ///
-/// One: with protection disabled — the state every install is in until the
-/// migration runs — reading and writing a share is byte-for-byte what it was
+/// One: with protection disabled — the state every install with no passcode set
+/// is in, permanently — reading and writing a share is byte-for-byte what it was
 /// before the accessor existed.
 ///
 /// Two: a `.vult` backup survives a round trip with shares sealed. Getting that
@@ -52,7 +52,7 @@ final class KeyshareAccessorTests: XCTestCase {
 
         let vault = try makeVault(protector: protector)
 
-        XCTAssertEqual(vault.keyshares[0].keyshare, ecdsaShare, "Nothing should be sealed before the migration")
+        XCTAssertEqual(vault.keyshares[0].keyshare, ecdsaShare, "Nothing should be sealed while no passcode is set")
         XCTAssertEqual(vault.keyshares[1].keyshare, eddsaShare)
     }
 

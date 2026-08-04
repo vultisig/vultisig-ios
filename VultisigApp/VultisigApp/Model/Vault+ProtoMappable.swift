@@ -25,8 +25,9 @@ extension Vault {
         self.signers = proto.signers
         self.hexChainCode = proto.hexChainCode
         // Shares arrive from the backup in the clear and are sealed on the way
-        // into storage, so an imported vault is protected exactly like one that
-        // has been through the migration.
+        // into storage, so an imported vault ends up in exactly the protection
+        // state the store is already in — sealed with a passcode set, plaintext
+        // without one.
         self.keyshares = try proto.keyShares.map {
             KeyShare(pubkey: $0.publicKey, keyshare: try protector.seal($0.keyshare))
         }

@@ -21,16 +21,19 @@ enum KeyshareKeyStoreError: Error, Equatable {
 /// Custody of the data key that encrypts key shares at rest.
 ///
 /// The data key is 256 random bits, never derived from anything the user types.
-/// Exactly one of two forms is present at a time:
+/// A key share is sealed if and only if a passcode is set, so:
 ///
-/// - **no passcode** — the key sits in the Keychain in the clear. Shares are
-///   still encrypted on disk; the Keychain is what an attacker would additionally
-///   need, and it is absent from the app container and from unencrypted backups.
-/// - **passcode set** — the clear copy is deleted and a passcode-wrapped copy
-///   takes its place. Unlocking opens it; locking forgets the opened key.
+/// - **no passcode** — no key of either form exists and every stored share is
+///   plaintext, byte-for-byte what a build without this feature would write.
+/// - **passcode set** — the key is persisted only in passcode-wrapped form.
+///   Unlocking opens it; locking forgets the opened key.
 ///
-/// Changing or removing the passcode therefore rewraps 32 bytes and never
-/// rewrites a single key share.
+/// Because a share is sealed under the data key rather than under the passcode,
+/// changing the passcode rewraps 32 bytes and never rewrites a single key share.
+///
+/// The unwrapped-key API (`loadDataKey` / `storeDataKey` / `deleteDataKey`) is
+/// what remains of an earlier design that kept a clear copy alongside the
+/// shares. Nothing writes one any more.
 protocol KeyshareKeyStoring {
     func generateDataKey() throws -> SymmetricKey
 

@@ -32,9 +32,9 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
     @AppStorage("tssBatchEnabled") var tssBatchEnabled: Bool = false
     /// Opt-in for the passcode feature while it lands across several merges.
-    /// Off means the keyshare-encryption migration is not registered and the
-    /// Settings entry stays hidden, so the merged layers are inert. The key is
-    /// shared with `PasscodeFeatureFlag`, which is how non-view code reads it.
+    /// Off means the Settings entry stays hidden and no passcode can be set, so
+    /// the merged layers are inert and every key share stays plaintext. The key
+    /// is shared with `PasscodeFeatureFlag`, which is how non-view code reads it.
     @AppStorage(PasscodeFeatureFlag.defaultsKey) var passcodeFeatureEnabled: Bool = false
     /// Debug-only: force every swap quote through a single provider so a
     /// tester can verify a specific signing path in isolation. Empty string

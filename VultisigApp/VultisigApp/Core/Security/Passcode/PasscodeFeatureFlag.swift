@@ -11,16 +11,16 @@ import Foundation
 /// no key material is rewritten and no Settings entry appears. A tester opts in
 /// from Settings → Advanced.
 ///
-/// Read straight from `UserDefaults` rather than through `SettingsViewModel`.
-/// The first consumer is `AppMigrationService`, which runs at launch before any
-/// view exists; reaching for a `@MainActor` view model there would drag the
-/// settings layer into the migration path for a single boolean.
+/// Read straight from `UserDefaults` rather than through `SettingsViewModel`, so
+/// that security code reached off the main actor and before any view exists can
+/// consult it; reaching for a `@MainActor` view model there would drag the
+/// settings layer into the security path for a single boolean.
 enum PasscodeFeatureFlag {
 
     /// Backing key for the `@AppStorage` toggle on `SettingsViewModel`.
     ///
-    /// `@AppStorage` and the migration read the same defaults entry, so the key
-    /// lives here instead of as a literal repeated at each site.
+    /// The toggle and every non-view reader resolve the same defaults entry, so
+    /// the key lives here instead of as a literal repeated at each site.
     static let defaultsKey = "passcodeFeatureEnabled"
 
     /// `false` whenever the key is absent, which is what makes "off by default"
