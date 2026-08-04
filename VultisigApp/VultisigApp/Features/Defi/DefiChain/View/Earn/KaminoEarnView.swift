@@ -22,6 +22,12 @@ private enum KaminoEarnFormatters {
         formatter.maximumFractionDigits = 2
         return formatter
     }()
+
+    static let relativeDate: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter
+    }()
 }
 
 struct KaminoEarnView<EmptyState: View>: View {
@@ -153,7 +159,29 @@ struct KaminoEarnView<EmptyState: View>: View {
                 HiddenBalanceText(fiatString(for: row))
                     .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textTertiary)
+                stalenessLabel(for: row)
             }
+        }
+    }
+
+    /// How old an unconfirmed figure is.
+    ///
+    /// The card is cache-first and a failed refresh keeps the last-known
+    /// position rather than blanking it — which is right, but it means the
+    /// number on screen can be arbitrarily old with nothing saying so. This is
+    /// the whole disclosure: a live row shows nothing, an unconfirmed one says
+    /// when it was last true.
+    ///
+    /// Deliberately NOT a chain-level error banner. `DefiChainMainScreen`
+    /// reserves that for bonds, and the stake and LP segments also keep their
+    /// rows silently on failure; the difference this earns is that a Kamino
+    /// figure has no other source in the app, so its age is worth a line.
+    @ViewBuilder
+    private func stalenessLabel(for row: KaminoEarnRow) -> some View {
+        if !row.isLive, let lastUpdated = row.lastUpdated {
+            Text(String(format: "kaminoEarnLastUpdated".localized, Self.relativeDate(lastUpdated)))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.alertWarning)
         }
     }
 
@@ -233,6 +261,11 @@ struct KaminoEarnView<EmptyState: View>: View {
     private func apyDisplay(for row: KaminoEarnRow) -> String? {
         guard let apy30d = row.apy30d else { return nil }
         return KaminoEarnFormatters.apy.string(from: NSDecimalNumber(decimal: apy30d))
+    }
+
+    /// Localised "2 minutes ago" style age, in the device's own locale.
+    private static func relativeDate(_ date: Date) -> String {
+        KaminoEarnFormatters.relativeDate.localizedString(for: date, relativeTo: .now)
     }
 
     private func formatAmount(_ value: Decimal) -> String {

@@ -42,6 +42,13 @@ final class KaminoDepositViewModel: ObservableObject, Form {
     /// balance; for the SOL vault it is the balance less a reserve measured from
     /// the transaction itself (see `KaminoTransactionPreparer`).
     @Published private(set) var availableAmount: Decimal = .zero
+    /// The same ceiling in exact base units.
+    ///
+    /// `availableAmount` is a `Decimal` because the shared amount field renders
+    /// one, and rendering rounds. The build path compares against this instead,
+    /// so the number the deposit is checked against is the number that was
+    /// measured — not a projection of it that came back through a formatter.
+    @Published private(set) var availableBaseUnits: BigInt = .zero
     @Published private(set) var vaultInfo: KaminoVaultInfo?
 
     private(set) lazy var form: [FormField] = [amountField]
@@ -100,6 +107,20 @@ final class KaminoDepositViewModel: ObservableObject, Form {
     var minimumDepositText: String {
         guard let vaultInfo else { return "" }
         return String(format: "kaminoDepositMinimum".localized, vaultInfo.minDeposit.apiString, ticker)
+    }
+
+    /// `true` when no amount the user could type would produce a deposit, so
+    /// the Continue button reads as disabled instead of refusing after the tap.
+    ///
+    /// Deliberately narrow. A below-minimum or over-balance amount is NOT here:
+    /// the user can fix it, the field says so, and disabling the button would
+    /// remove the tap that reveals the error on an untouched form. What is here
+    /// are the three states no edit reaches — no wallet coin for this vault's
+    /// asset, a vault whose own minimum never loaded (without it there is no
+    /// gate at all, since the API builds a below-minimum deposit happily and the
+    /// chain rejects it after the ceremony), and nothing available to spend.
+    var isDepositUnavailable: Bool {
+        isMissingDepositCoin || vaultInfo == nil || availableAmount <= 0
     }
 
     /// Whether this vault's underlying token is wrapped SOL, which the deposit
@@ -176,6 +197,27 @@ final class KaminoDepositViewModel: ObservableObject, Form {
             return nil
         }
 
+        // The bounds are re-enforced here rather than trusted from the form.
+        // `FormScreen` does not disable Continue on validation — it cannot, since
+        // the tap is what reveals a field's errors — so an amount below the
+        // vault's minimum or above the balance reaches this function. Neither can
+        // move funds wrongly (the API accepts a below-minimum deposit and the
+        // chain then rejects it; an over-balance one fails simulation), but both
+        // would cost the user several network round trips and come back as an
+        // on-chain failure rather than as the number the form already knows is
+        // wrong.
+        guard amount.baseUnits >= vaultInfo.minDeposit.baseUnits else {
+            error = KaminoDepositError.belowMinimum(
+                minimum: vaultInfo.minDeposit.apiString,
+                ticker: ticker
+            )
+            return nil
+        }
+        guard amount.baseUnits <= availableBaseUnits else {
+            error = AmountBalanceValidator.ValidationError.exceedsBalance
+            return nil
+        }
+
         isLoading = true
         defer { isLoading = false }
 
@@ -244,7 +286,12 @@ final class KaminoDepositViewModel: ObservableObject, Form {
     private func resolveAvailableAmount(coin: Coin) async {
         guard let vaultInfo else { return }
         guard isWrappedSolVault else {
-            availableAmount = coin.balanceDecimal
+            publishAvailable(KaminoTokenAmount(
+                // The stored balance is already in base units, so this is the
+                // exact figure rather than a Decimal round trip through it.
+                baseUnits: BigInt(coin.rawBalance) ?? .zero,
+                decimals: descriptor.tokenDecimals
+            ))
             return
         }
 
@@ -255,15 +302,22 @@ final class KaminoDepositViewModel: ObservableObject, Form {
                 probe: vaultInfo.minDeposit,
                 unitPrice: unitPrice
             )
-            availableAmount = KaminoTokenAmount(
+            publishAvailable(KaminoTokenAmount(
                 baseUnits: lamports,
                 decimals: descriptor.tokenDecimals
-            ).decimalValue
+            ))
         } catch {
             logger.error("Kamino SOL reserve measurement failed: \(error.localizedDescription, privacy: .public)")
-            availableAmount = .zero
+            publishAvailable(KaminoTokenAmount(baseUnits: .zero, decimals: descriptor.tokenDecimals))
             self.error = error
         }
+    }
+
+    /// Publishes the ceiling in both forms from ONE value, so the number the
+    /// form renders and the number the build path enforces can never diverge.
+    private func publishAvailable(_ amount: KaminoTokenAmount) {
+        availableBaseUnits = amount.baseUnits
+        availableAmount = amount.decimalValue
     }
 
     /// The wallet coin a deposit into `descriptor` spends.
@@ -280,6 +334,20 @@ final class KaminoDepositViewModel: ObservableObject, Form {
             $0.chain == KaminoVaultRegistry.chain
                 && !$0.isNativeToken
                 && $0.contractAddress == descriptor.tokenMint
+        }
+    }
+}
+
+/// Why a deposit cannot be made, in the user's terms.
+enum KaminoDepositError: Error, LocalizedError, Equatable {
+    /// Below the vault's own `minDepositAmount`. The API accepts one of these
+    /// and the chain rejects it afterwards, so the refusal has to be ours.
+    case belowMinimum(minimum: String, ticker: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .belowMinimum(let minimum, let ticker):
+            return String(format: "kaminoDepositMinimum".localized, minimum, ticker)
         }
     }
 }

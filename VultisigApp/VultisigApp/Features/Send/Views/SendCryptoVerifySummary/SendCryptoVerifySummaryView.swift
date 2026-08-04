@@ -155,6 +155,23 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 getValueCell(for: row.title, with: row.value)
             }
 
+            // What a Kamino Earn transaction actually does, decoded from the
+            // bytes rather than taken from the rows above. Placed ahead of the
+            // raw-transaction disclosure and outside it, because a co-signer
+            // must not have to expand anything to learn that it is approving a
+            // vault deposit — and because a decode that disagrees with the
+            // summary is a refusal, which is not a detail.
+            // Bound once: the decode parses the wire message and derives the
+            // signer's share account for each curated vault, so reading the
+            // property twice per render would do that work twice.
+            let kamino = kaminoState
+            Group {
+                if kamino != .notKamino {
+                    Separator()
+                    KaminoVerifyDetailView(state: kamino)
+                }
+            }
+
             Group {
                 if let signDirect = input.keysignPayload?.signDirect {
                     Separator()
@@ -394,6 +411,20 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
+    }
+
+    /// Render state for a Kamino Earn transaction, derived from the KEYSIGN
+    /// PAYLOAD on whichever device is rendering.
+    ///
+    /// Always from the payload, never from `input`: this is the one view both
+    /// the initiator's Verify screen and a co-signer's Join screen render, and
+    /// the whole value of the decode is that each device derives the claim from
+    /// the bytes it is about to sign rather than from anything it was told.
+    ///
+    /// Cheap for everything else — the guard inside is `signSolana == nil`,
+    /// which every non-raw-Solana payload fails immediately.
+    var kaminoState: KaminoVerifyPresentation.State {
+        KaminoVerifyPresentation.state(for: input.keysignPayload)
     }
 
     /// Render state for an XRPL TrustSet.

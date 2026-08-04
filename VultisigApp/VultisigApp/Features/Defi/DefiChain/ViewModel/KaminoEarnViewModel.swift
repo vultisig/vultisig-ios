@@ -80,7 +80,8 @@ final class KaminoEarnViewModel: ObservableObject {
                 tokenAmount: position.tokenAmountDecimal,
                 apy30d: position.apy30d,
                 pnlToken: position.pnlToken,
-                isLive: false
+                isLive: false,
+                lastUpdated: position.lastUpdated
             )
         }
     }
@@ -121,6 +122,19 @@ final class KaminoEarnViewModel: ObservableObject {
         } catch {
             logger.error("Kamino positions read failed: \(error.localizedDescription, privacy: .public)")
             self.error = error.localizedDescription
+            // Every row keeps its cached figure and is marked stale, so the
+            // segment says how old the numbers are instead of presenting a
+            // failed read as a current one. The error itself stays out of the
+            // chain banner, which `DefiChainMainScreen` reserves for bonds —
+            // matching the stake and LP segments rather than inventing a fourth
+            // banner behaviour for the same class of failure.
+            //
+            // Generation-guarded like the success path: a superseded refresh
+            // that fails must not relabel rows a newer one already refreshed,
+            // and after a vault switch these are not even its rows.
+            if generation == refreshGeneration {
+                rows = rows.map { $0.markedStale() }
+            }
             return
         }
 
@@ -130,9 +144,14 @@ final class KaminoEarnViewModel: ObservableObject {
         // A row that could not be refreshed keeps its cached figure rather than
         // being dropped or zeroed — the deposit is still there, we just could
         // not read it this time.
+        // Re-marked as not live even when the cached row was refreshed earlier
+        // in this session: what the user is looking at is a figure this pass
+        // failed to confirm, and its age is the honest thing to show. Without
+        // this, a vault that succeeded once would keep claiming to be current
+        // for the rest of the session however many refreshes later failed.
         func keepCached(_ descriptor: KaminoVaultDescriptor) {
             if let cached = rows.first(where: { $0.id == descriptor.address }) {
-                freshRows.append(cached)
+                freshRows.append(cached.markedStale())
             }
         }
 
@@ -188,7 +207,8 @@ final class KaminoEarnViewModel: ObservableObject {
                     tokenAmount: tokenAmount.decimalValue,
                     apy30d: info.apy30d,
                     pnlToken: pnlToken,
-                    isLive: true
+                    isLive: true,
+                    lastUpdated: .now
                 )
             )
             snapshots.append(
@@ -295,6 +315,26 @@ struct KaminoEarnRow: Identifiable, Equatable {
     /// Lifetime profit and loss in the underlying token, or `nil` to hide the row.
     let pnlToken: Decimal?
     let isLive: Bool
+    /// When the figures were last confirmed against the API. Rendered only when
+    /// the row is NOT live, which is exactly when "as of" is information rather
+    /// than noise: the first cache-first paint before the refresh lands, and any
+    /// row whose refresh failed. A live row shows nothing, so nothing flickers
+    /// once the fresh value arrives.
+    let lastUpdated: Date?
+
+    /// The same row, re-marked as not confirmed by the current refresh.
+    func markedStale() -> KaminoEarnRow {
+        guard isLive else { return self }
+        return KaminoEarnRow(
+            descriptor: descriptor,
+            name: name,
+            tokenAmount: tokenAmount,
+            apy30d: apy30d,
+            pnlToken: pnlToken,
+            isLive: false,
+            lastUpdated: lastUpdated
+        )
+    }
 
     var curator: String { descriptor.curator }
     var riskTier: KaminoRiskTier { descriptor.riskTier }

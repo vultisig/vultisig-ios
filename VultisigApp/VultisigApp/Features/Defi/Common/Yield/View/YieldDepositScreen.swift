@@ -29,7 +29,6 @@ struct YieldDepositScreen: View {
                     percentageSelected: $percentageSelected,
                     percentageFieldType: .button,
                     amountField: viewModel.amountField,
-                    validForm: $viewModel.validForm,
                     customViewPosition: .bottom
                 ) {
                     Task { await handleVerify() }

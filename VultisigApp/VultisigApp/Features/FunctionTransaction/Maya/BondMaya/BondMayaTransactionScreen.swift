@@ -23,7 +23,6 @@ struct BondMayaTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: "bond".localized,
-            validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
             FormExpandableSection(
