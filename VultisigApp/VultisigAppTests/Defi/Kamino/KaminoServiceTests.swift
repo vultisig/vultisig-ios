@@ -185,15 +185,74 @@ final class KaminoServiceTests: XCTestCase {
         XCTAssertNil(http.lastRequestBody(), "no request should have been issued")
     }
 
-    func test_implausibleDecimalScaleFromTheApiIsRejected() async {
+    /// A decimal scale is not something the API gets to change: it is a property
+    /// of the mint, it scales every amount, and a wrong one mis-sizes the actual
+    /// transfer by a power of ten while every other check still passes.
+    func test_decimalScaleDisagreeingWithTheRegistryIsRejected() async {
         http.queueJSON(Fixtures.stateWithAbsurdDecimals, for: .state)
         http.queueJSON(Fixtures.allezMetrics, for: .metrics)
 
         do {
             _ = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
-            XCTFail("Expected a malformed-number error")
+            XCTFail("Expected a vault-metadata mismatch")
         } catch let error as KaminoServiceError {
-            XCTAssertEqual(error, .malformedNumber(field: "tokenMintDecimals", value: "64"))
+            XCTAssertEqual(
+                error,
+                .vaultMetadataMismatch(field: "tokenMintDecimals", expected: "9", actual: "64")
+            )
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    /// A descriptor is the app's record of a vault's identity. One that merely
+    /// carries a curated address while describing itself differently is not that
+    /// record, and hydrating it would put fabricated mints in front of every
+    /// later check.
+    func test_aDescriptorTheRegistryDoesNotRecogniseIsRejected() async {
+        let impostor = KaminoVaultDescriptor(
+            address: KaminoVaultRegistry.allezSOL.address,
+            tokenMint: KaminoVaultRegistry.allezSOL.tokenMint,
+            tokenDecimals: 9,
+            sharesMint: KaminoVaultRegistry.steakhouseUSDC.sharesMint,
+            sharesDecimals: 6,
+            farm: KaminoVaultRegistry.allezSOL.farm,
+            fallbackName: "Allez SOL",
+            curator: "Allez Labs",
+            riskTier: .conservative
+        )
+
+        do {
+            _ = try await service.fetchVaultInfo(descriptor: impostor)
+            XCTFail("Expected an unregistered-vault error")
+        } catch let error as KaminoServiceError {
+            XCTAssertEqual(error, .vaultNotInRegistry(impostor.address))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+        XCTAssertNil(http.lastRequestBody(), "no request should have been issued")
+    }
+
+    /// The mints and the farm decide where funds go, so they are pinned in the
+    /// registry and a response that disagrees is refused rather than merged. A
+    /// transaction built by the API cannot be validated against metadata the same
+    /// API supplied.
+    func test_vaultMetadataDisagreeingWithTheRegistryIsRejected() async {
+        http.queueJSON(Fixtures.stateWithSubstitutedFarm, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+
+        do {
+            _ = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+            XCTFail("Expected a vault-metadata mismatch")
+        } catch let error as KaminoServiceError {
+            XCTAssertEqual(
+                error,
+                .vaultMetadataMismatch(
+                    field: "vaultFarm",
+                    expected: "H6kauPaHmNqpdKtD5U2zw3Eb28ZB7iMeBdHVfLq1i4Kh",
+                    actual: "9FVjHqduhDPMVqvu3cXiEBjU6nvxvGdCCLRwd9WpVRZj"
+                )
+            )
         } catch {
             XCTFail("Unexpected error: \(error)")
         }
@@ -320,6 +379,19 @@ private enum Fixtures {
      "sharesMintDecimals":6,"minDepositAmount":"10000000","minWithdrawAmount":"1000",
      "vaultLookupTable":"7EzosNioQ6FDNvMKLfg6om5wTVHiJo9vVx7DZNGYBKU3",
      "vaultFarm":"H6kauPaHmNqpdKtD5U2zw3Eb28ZB7iMeBdHVfLq1i4Kh",
+     "performanceFeeBps":500,"managementFeeBps":0}}
+    """
+
+    /// The Allez vault as the API would describe it if it named another vault's
+    /// farm — the shape a response would take to stake the user's shares
+    /// somewhere the app never reads.
+    static let stateWithSubstitutedFarm = """
+    {"address":"\(allezAddress)","programId":"KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+     "state":{"name":"Allez SOL","tokenMint":"So11111111111111111111111111111111111111112",
+     "tokenMintDecimals":9,"sharesMint":"FiM4VQdXXnTXL7GgChryf9zHNG9cmvKECwf34L2y3CkN",
+     "sharesMintDecimals":6,"minDepositAmount":"10000000","minWithdrawAmount":"1000",
+     "vaultLookupTable":"7EzosNioQ6FDNvMKLfg6om5wTVHiJo9vVx7DZNGYBKU3",
+     "vaultFarm":"9FVjHqduhDPMVqvu3cXiEBjU6nvxvGdCCLRwd9WpVRZj",
      "performanceFeeBps":500,"managementFeeBps":0}}
     """
 }

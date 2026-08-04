@@ -112,6 +112,15 @@ enum KaminoServiceError: Error, LocalizedError, Equatable {
     /// An amount could not be sent: non-positive, beyond the `u64` an on-chain
     /// instruction can carry, or at an implausible decimal scale.
     case invalidAmount(String)
+    /// A vault was described to the service in terms the registry does not
+    /// recognise. The curated entry is the app's record of a vault's identity;
+    /// anything else cannot be used to size or target a transaction.
+    case vaultNotInRegistry(String)
+    /// The API described a vault differently from the registry. Mints, their
+    /// decimals and the farm are immutable properties of a kVault, so a
+    /// disagreement is either the wrong vault or a response that cannot be
+    /// trusted to size or target a transaction.
+    case vaultMetadataMismatch(field: String, expected: String, actual: String)
     /// A share/token conversion could not be performed (non-positive rate).
     case conversionFailed
 
@@ -129,6 +138,10 @@ enum KaminoServiceError: Error, LocalizedError, Equatable {
             return "Malformed Kamino number for \(field): \(value)"
         case .invalidAmount(let detail):
             return "Invalid Kamino amount: \(detail)"
+        case .vaultNotInRegistry(let address):
+            return "Vault \(address) is not one this app transacts with"
+        case .vaultMetadataMismatch(let field, let expected, let actual):
+            return "Kamino reported \(field) as \(actual); this vault's is \(expected)"
         case .conversionFailed:
             return "Kamino share conversion failed"
         }
@@ -144,16 +157,17 @@ struct KaminoVaultInfo: Hashable, Identifiable {
     let descriptor: KaminoVaultDescriptor
     /// On-chain vault name (`"Steakhouse USDC"`).
     let name: String
-    let tokenMint: String
-    let tokenDecimals: Int
-    let sharesMint: String
-    let shareDecimals: Int
     let minDeposit: KaminoTokenAmount
     let minWithdraw: KaminoShareAmount
+    /// The address lookup table the built transactions reference.
+    ///
+    /// Live rather than pinned: unlike the mints and the farm, Kamino can
+    /// legitimately repoint a vault at a new table. It is also the one live
+    /// field a transaction check does not rest on — a table only decides which
+    /// pubkey an account index *names*, and every account that matters is
+    /// compared against a locally derived value, so a substituted table renames
+    /// an account into a mismatch rather than out of one.
     let lookupTable: String
-    /// `true` when deposits auto-stake into a farm, so the shares are not visible
-    /// as a wallet token.
-    let hasFarm: Bool
     /// 30-day APY as a fraction (0.0391 = 3.91%). Display-only, so `Decimal` is
     /// fine here.
     let apy30d: Decimal
@@ -163,4 +177,22 @@ struct KaminoVaultInfo: Hashable, Identifiable {
     let tokenPriceUsd: Decimal
 
     var id: String { descriptor.address }
+
+    // The vault's identity is read from the registry, never from the response.
+    // A transaction built by the API cannot be validated against values the same
+    // API supplied.
+    var tokenMint: String { descriptor.tokenMint }
+    var tokenDecimals: Int { descriptor.tokenDecimals }
+    var sharesMint: String { descriptor.sharesMint }
+    var shareDecimals: Int { descriptor.sharesDecimals }
+    var farm: String? { descriptor.farm }
+
+    /// `true` when deposits auto-stake into a farm, so the shares are not visible
+    /// as a wallet token.
+    var hasFarm: Bool { farm != nil }
+
+    /// A vault whose underlying token is wrapped SOL. Its deposits carry a
+    /// wrap prefix — create the wSOL account, transfer lamports, sync — that no
+    /// other vault emits.
+    var isWrappedSolVault: Bool { tokenMint == KaminoVaultRegistry.wrappedSolMint }
 }
