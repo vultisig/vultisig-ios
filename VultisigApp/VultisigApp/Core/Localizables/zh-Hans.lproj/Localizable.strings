@@ -627,8 +627,13 @@
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
+"kaminoDepositMinimum" = "最低存入金额为 %@ %@。";
+"kaminoDepositMissingCoin" = "存入前请先将 Solana 上的 %@ 添加到你的保险库。";
+"kaminoDepositTitle" = "存入";
+"kaminoDepositWrappedSolRent" = "存入 SOL 会创建一个 wrapped SOL 账户。该账户的租金将被锁定，直到你提取为止。";
 "kaminoEarnApy30d" = "年化收益率（30天）";
 "kaminoEarnCuratedBy" = "由 %@ 管理";
+"kaminoEarnDeposit" = "存入";
 "kaminoEarnDeposited" = "已存入";
 "kaminoEarnPnl" = "盈亏";
 "kaminoEarnRiskConservative" = "保守型";
@@ -636,6 +641,8 @@
 "kaminoEarnTitle" = "Kamino Earn";
 "kaminoErrorVaultMetadataMismatch" = "Kamino 报告 %1$@ 为 %2$@；此金库的值为 %3$@";
 "kaminoErrorVaultNotInRegistry" = "金库 %@ 不是此应用会进行交易的金库";
+"kaminoPayerBalanceUnavailable" = "Solana 未返回该交易的成本，因此无法计算最大金额。";
+"kaminoSimulationFailed" = "该存入在 Solana 上会失败：%@";
 "keyCopied" = "密钥已复制";
 "keygen" = "密钥生成";
 "keygenFailed" = "密钥生成失败";

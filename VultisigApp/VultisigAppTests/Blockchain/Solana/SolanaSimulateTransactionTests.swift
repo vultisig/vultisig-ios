@@ -26,7 +26,7 @@ final class SolanaSimulateTransactionTests: XCTestCase {
 
     func testSimulateRequestPinsBase64EncodingAndSkipsSignatureVerification() throws {
         let envelope = try params(
-            for: .simulateTransaction(encodedTransaction: "dHg=", replaceRecentBlockhash: false)
+            for: .simulateTransaction(encodedTransaction: "dHg=", replaceRecentBlockhash: false, accountAddresses: [])
         )
 
         XCTAssertEqual(envelope["method"] as? String, "simulateTransaction")
@@ -44,13 +44,39 @@ final class SolanaSimulateTransactionTests: XCTestCase {
 
     func testSimulateRequestCarriesTheBlockhashReplacementFlag() throws {
         let envelope = try params(
-            for: .simulateTransaction(encodedTransaction: "dHg=", replaceRecentBlockhash: true)
+            for: .simulateTransaction(encodedTransaction: "dHg=", replaceRecentBlockhash: true, accountAddresses: [])
         )
         let rpcParams = try XCTUnwrap(envelope["params"] as? [Any])
         let config = try XCTUnwrap(rpcParams[1] as? [String: Any])
 
         XCTAssertEqual(config["replaceRecentBlockhash"] as? Bool, true)
         XCTAssertEqual(config["sigVerify"] as? Bool, false)
+    }
+
+    /// The `accounts` block is what turns a simulation into a measurement of
+    /// what the transaction costs its payer. Omitted entirely when nothing was
+    /// asked for: an empty `addresses` array is a different request from no
+    /// `accounts` key at all.
+    func testAccountStateIsRequestedOnlyWhenAddressesAreGiven() throws {
+        var envelope = try params(
+            for: .simulateTransaction(encodedTransaction: "dHg=", replaceRecentBlockhash: true, accountAddresses: [])
+        )
+        var rpcParams = try XCTUnwrap(envelope["params"] as? [Any])
+        var config = try XCTUnwrap(rpcParams[1] as? [String: Any])
+        XCTAssertNil(config["accounts"])
+
+        envelope = try params(
+            for: .simulateTransaction(
+                encodedTransaction: "dHg=",
+                replaceRecentBlockhash: true,
+                accountAddresses: ["9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"]
+            )
+        )
+        rpcParams = try XCTUnwrap(envelope["params"] as? [Any])
+        config = try XCTUnwrap(rpcParams[1] as? [String: Any])
+        let accounts = try XCTUnwrap(config["accounts"] as? [String: Any])
+        XCTAssertEqual(accounts["encoding"] as? String, "base64")
+        XCTAssertEqual(accounts["addresses"] as? [String], ["9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"])
     }
 
     // MARK: - Response decoding
@@ -129,6 +155,60 @@ final class SolanaSimulateTransactionTests: XCTestCase {
         } catch {
             XCTFail("unexpected error \(error)")
         }
+    }
+
+    /// Post-simulation account state is paired back to the addresses that were
+    /// asked for, positionally — which is how the RPC answers.
+    func testPostSimulationLamportsArePairedToTheRequestedAddresses() async throws {
+        let service = makeService("""
+        {"jsonrpc":"2.0","id":1,"result":{"context":{"slot":1},"value":
+        {"err":null,"logs":[],"unitsConsumed":287029,
+        "accounts":[{"lamports":2490000000,"owner":"11111111111111111111111111111111","data":["","base64"],
+        "executable":false,"rentEpoch":0}]}}}
+        """)
+
+        let result = try await service.simulateTransaction(
+            base64Transaction: "dHg=",
+            replaceRecentBlockhash: true,
+            accountAddresses: ["payer"]
+        )
+
+        XCTAssertEqual(result.accountLamports["payer"], 2_490_000_000)
+    }
+
+    /// A response whose account list does not line up with the request cannot be
+    /// paired, and a mis-paired balance would be attributed to the wrong account.
+    /// Unusable beats partially trusted.
+    func testAMismatchedAccountListIsDiscardedRatherThanMisattributed() async throws {
+        let service = makeService("""
+        {"jsonrpc":"2.0","id":1,"result":{"context":{"slot":1},"value":
+        {"err":null,"logs":[],"unitsConsumed":1,"accounts":[]}}}
+        """)
+
+        let result = try await service.simulateTransaction(
+            base64Transaction: "dHg=",
+            replaceRecentBlockhash: true,
+            accountAddresses: ["payer"]
+        )
+
+        XCTAssertTrue(result.accountLamports.isEmpty)
+    }
+
+    /// An account the node reports as non-existent is absent, not zero — zero
+    /// would read as "this wallet was emptied".
+    func testANullAccountIsAbsentRatherThanZero() async throws {
+        let service = makeService("""
+        {"jsonrpc":"2.0","id":1,"result":{"context":{"slot":1},"value":
+        {"err":null,"logs":[],"unitsConsumed":1,"accounts":[null]}}}
+        """)
+
+        let result = try await service.simulateTransaction(
+            base64Transaction: "dHg=",
+            replaceRecentBlockhash: true,
+            accountAddresses: ["payer"]
+        )
+
+        XCTAssertTrue(result.accountLamports.isEmpty)
     }
 
     func testMissingResultThrows() async {

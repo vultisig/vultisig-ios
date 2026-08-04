@@ -39,11 +39,36 @@ struct SolanaSimulationResult: Equatable {
     let failure: String?
     let unitsConsumed: UInt64?
     let logs: [String]
+    /// Lamports each requested account holds *after* the simulated transaction,
+    /// keyed by address. Empty unless the caller asked for accounts, and an
+    /// account the node reported as non-existent is absent rather than zero.
+    let accountLamports: [String: UInt64]
+
+    init(
+        failure: String?,
+        unitsConsumed: UInt64?,
+        logs: [String],
+        accountLamports: [String: UInt64] = [:]
+    ) {
+        self.failure = failure
+        self.unitsConsumed = unitsConsumed
+        self.logs = logs
+        self.accountLamports = accountLamports
+    }
 
     var succeeded: Bool { failure == nil }
 }
 
-class SolanaService: SolanaAddressLookupTableFetching {
+/// The one read the pre-keysign blockhash refresh performs.
+///
+/// Its own protocol because that refresh is the last code to touch a payload
+/// before its keysign messages are generated: what it does — and does not do —
+/// to a raw transaction has to be assertable without a network.
+protocol SolanaFinalizedBlockhashProviding {
+    func fetchFinalizedBlockhash() async throws -> String?
+}
+
+class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashProviding {
     static let shared = SolanaService()
 
     private let logger = Log.chain.service
@@ -162,17 +187,23 @@ class SolanaService: SolanaAddressLookupTableFetching {
     /// fail, and here is why" is a result the caller acts on, not a transport
     /// error. A JSON-RPC transport failure still throws.
     ///
-    /// - Parameter replaceRecentBlockhash: `true` lets the node substitute its
-    ///   own blockhash, so a transaction can be checked before the pre-keysign
-    ///   refresh gives it a live one. `false` simulates the exact bytes.
+    /// - Parameters:
+    ///   - replaceRecentBlockhash: `true` lets the node substitute its own
+    ///     blockhash, so a transaction can be checked before the pre-keysign
+    ///     refresh gives it a live one. `false` simulates the exact bytes.
+    ///   - accountAddresses: accounts whose post-execution lamports the caller
+    ///     needs. Asking for the fee payer is how a transaction's real cost is
+    ///     measured rather than estimated.
     func simulateTransaction(
         base64Transaction: String,
-        replaceRecentBlockhash: Bool
+        replaceRecentBlockhash: Bool,
+        accountAddresses: [String] = []
     ) async throws -> SolanaSimulationResult {
         let response = try await httpClient.request(
             api(.simulateTransaction(
                 encodedTransaction: base64Transaction,
-                replaceRecentBlockhash: replaceRecentBlockhash
+                replaceRecentBlockhash: replaceRecentBlockhash,
+                accountAddresses: accountAddresses
             )),
             responseType: SolanaSimulateTransactionResponse.self
         )
@@ -194,8 +225,29 @@ class SolanaService: SolanaAddressLookupTableFetching {
         return SolanaSimulationResult(
             failure: value.err?.text,
             unitsConsumed: value.unitsConsumed,
-            logs: logs
+            logs: logs,
+            accountLamports: Self.accountLamports(
+                addresses: accountAddresses,
+                accounts: value.accounts
+            )
         )
+    }
+
+    /// Pairs the returned account states back to the addresses that were asked
+    /// for. The RPC answers positionally, so a response of a different length is
+    /// unusable rather than partially trusted — a mis-paired balance would be
+    /// attributed to the wrong account.
+    private static func accountLamports(
+        addresses: [String],
+        accounts: [SolanaSimulateTransactionResponse.Result.Value.Account?]?
+    ) -> [String: UInt64] {
+        guard !addresses.isEmpty, let accounts, accounts.count == addresses.count else { return [:] }
+        var lamports: [String: UInt64] = [:]
+        for (address, account) in zip(addresses, accounts) {
+            guard let account else { continue }
+            lamports[address] = account.lamports
+        }
+        return lamports
     }
 
     /// Reads the contents of the given Address Lookup Tables, keyed by table
@@ -256,6 +308,18 @@ class SolanaService: SolanaAddressLookupTableFetching {
     }
 
     func fetchRecentPrioritizationFees() async throws -> UInt64 {
+        try await fetchPrioritizationFeeSample() ?? SolanaHelper.defaultPriorityFeePrice
+    }
+
+    /// Median of the recent non-zero prioritization fees, or `nil` when the
+    /// network reported none.
+    ///
+    /// The distinction matters: "nobody is paying a priority fee" and "the
+    /// median is X" are different answers, and a caller with its own floor needs
+    /// to apply that floor rather than inherit this file's generic default —
+    /// which is 1,000,000 µlamports and would be a fifty-fold over-tip for a
+    /// caller whose own fallback is 20,000.
+    func fetchPrioritizationFeeSample() async throws -> UInt64? {
         let response = try await httpClient.request(
             api(.getRecentPrioritizationFees),
             responseType: SolanaGetRecentPrioritizationFeesResponse.self
@@ -267,7 +331,7 @@ class SolanaService: SolanaAddressLookupTableFetching {
             .sorted()
 
         guard !nonZeroFees.isEmpty else {
-            return SolanaHelper.defaultPriorityFeePrice
+            return nil
         }
 
         let mid = nonZeroFees.count / 2
@@ -677,12 +741,24 @@ class SolanaService: SolanaAddressLookupTableFetching {
 
     /// Rent-exempt reserve (lamports) for a 200-byte stake account, cached 24h.
     func fetchSolanaRentReserve() async throws -> UInt64 {
-        let cacheKey = "solana-rent-reserve-\(SolanaStakingConfig.stakeStateSize)"
+        try await fetchRentExemptMinimum(size: SolanaStakingConfig.stakeStateSize)
+    }
+
+    /// Rent-exempt reserve (lamports) for an account of `size` data bytes,
+    /// cached 24h per size.
+    ///
+    /// `size: 0` is the floor a plain wallet account has to stay above: an
+    /// account that a transaction modifies and leaves with a non-zero balance
+    /// below its rent-exempt minimum is rejected on-chain
+    /// (`InsufficientFundsForRent`), so a "max" that spends into that band would
+    /// build a transaction that cannot execute.
+    func fetchRentExemptMinimum(size: Int) async throws -> UInt64 {
+        let cacheKey = "solana-rent-reserve-\(size)"
         if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: rentReserveCache, timeInSeconds: Self.rentReserveTTL) {
             return cached
         }
         let response = try await httpClient.request(
-            api(.getMinimumBalanceForRentExemption(size: SolanaStakingConfig.stakeStateSize)),
+            api(.getMinimumBalanceForRentExemption(size: size)),
             responseType: SolanaGetMinimumBalanceForRentExemptionResponse.self
         )
         let reserve = response.data.result

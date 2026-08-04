@@ -17,6 +17,13 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     let availableAmount: Decimal
     @Binding var percentageSelected: Double?
     let percentageFieldType: PercentageFieldType
+    /// Precision the percentage buttons write into the field.
+    ///
+    /// Four is right for a display-oriented form, but a percentage button
+    /// truncates to it, so on a nine-decimal asset a "100%" that means the
+    /// measured maximum would silently leave the last five decimals behind.
+    /// Callers whose maximum is exact pass the asset's own scale.
+    let amountDecimals: Int
     @StateObject var amountField: FormField
     @Binding var validForm: Bool
     var onVerify: () -> Void
@@ -33,6 +40,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         availableAmount: Decimal,
         percentageSelected: Binding<Double?>,
         percentageFieldType: PercentageFieldType,
+        amountDecimals: Int = 4,
         amountField: FormField,
         validForm: Binding<Bool>,
         customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,
@@ -45,6 +53,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         self.availableAmount = availableAmount
         self._percentageSelected = percentageSelected
         self.percentageFieldType = percentageFieldType
+        self.amountDecimals = amountDecimals
         self._amountField = StateObject(wrappedValue: amountField)
         self._validForm = validForm
         self.onVerify = onVerify
@@ -76,7 +85,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
                     ticker: coin.ticker,
                     type: percentageFieldType,
                     availableAmount: availableAmount,
-                    decimals: 4, // keep 4 decimals
+                    decimals: amountDecimals,
                     percentage: $percentageSelected,
                     customViewPosition: customViewPosition,
                     customView: { customView() }
