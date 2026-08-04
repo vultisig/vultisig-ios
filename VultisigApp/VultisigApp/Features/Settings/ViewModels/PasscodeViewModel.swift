@@ -58,6 +58,16 @@ final class PasscodeViewModel: ObservableObject {
         await perform {
             _ = try await self.service.unlockApp(with: self.entry)
         }
+
+        // `unlockApp` re-checks the session generation before it returns, but a
+        // `lock()` can still land in the gap between that return and this
+        // assignment — it is `nonisolated` and synchronizes with nothing. An
+        // unlock that has already been overtaken must not report success, or the
+        // screen comes down over a session that no longer holds the key.
+        if didFinish, !service.isSessionUnlocked {
+            didFinish = false
+            entry = ""
+        }
     }
 
     // MARK: - Set (enter, then confirm)
@@ -72,8 +82,29 @@ final class PasscodeViewModel: ObservableObject {
                 return failWithMismatch()
             }
             let passcode = entry
-            await perform { try await self.service.setPasscode(passcode) }
+            let failure = await perform { try await self.service.setPasscode(passcode) }
+            await closeIfThePasscodeWasSetAnyway(after: failure)
         }
+    }
+
+    /// A thrown `setPasscode` does not mean no passcode was set.
+    ///
+    /// The wrapped key is made durable and the lock mode switches to `.passcode`
+    /// as soon as that write verifies — deliberately, and well before the sweep
+    /// that seals the shares. A failure after that point leaves a passcode that
+    /// genuinely works, with its sweep unfinished; the next app unlock's resume
+    /// completes it. Reporting a failure there strands the user in a retry whose
+    /// only possible answer is `alreadySet`.
+    ///
+    /// `alreadySet` itself is excluded: it is the one failure that means the
+    /// passcode on the device is somebody else's, not the one just entered.
+    private func closeIfThePasscodeWasSetAnyway(after failure: Error?) async {
+        guard let failure else { return }
+        guard (failure as? PasscodeError) != .alreadySet else { return }
+        guard await service.isSet else { return }
+
+        errorMessage = nil
+        didFinish = true
     }
 
     // MARK: - Change (current, then new, then confirm)
@@ -135,7 +166,11 @@ final class PasscodeViewModel: ObservableObject {
 
     /// Runs an operation, clearing the field on failure so the next attempt
     /// starts from empty rather than from a half-typed value.
-    private func perform(advanceTo next: Stage? = nil, _ operation: @escaping () async throws -> Void) async {
+    ///
+    /// - Returns: the error, for the one caller that has to know whether the
+    ///   operation left durable state behind despite throwing.
+    @discardableResult
+    private func perform(advanceTo next: Stage? = nil, _ operation: @escaping () async throws -> Void) async -> Error? {
         isBusy = true
         errorMessage = nil
         defer { isBusy = false }
@@ -147,14 +182,17 @@ final class PasscodeViewModel: ObservableObject {
             } else {
                 didFinish = true
             }
+            return nil
         } catch PasscodeError.cancelledByLock {
             // The app locked mid-verification. Not a failed attempt: clear the
             // field and show nothing, since the lock screen is about to be
             // presented again anyway.
             entry = ""
             errorMessage = nil
+            return PasscodeError.cancelledByLock
         } catch {
             fail(with: Self.message(for: error))
+            return error
         }
     }
 

@@ -177,7 +177,18 @@ class AppViewModel: ObservableObject {
         isPasscodeLocked = true
     }
 
+    /// Takes the lock screen down, but only if the session still holds the data
+    /// key.
+    ///
+    /// The check sits here, immediately before the flag changes and with nothing
+    /// between them, rather than in the caller. `PasscodeService.lock()` is
+    /// `nonisolated` and synchronizes with nothing, so it can land after the
+    /// unlock has verified and before the overlay is removed — and because the
+    /// flag was already `true`, that lock leaves nothing behind to stop this
+    /// assignment. The result would be balances and addresses on screen over a
+    /// session that cannot sign.
     func markPasscodeUnlocked() {
+        guard PasscodeService.shared.isSessionUnlocked else { return }
         isPasscodeLocked = false
     }
 
