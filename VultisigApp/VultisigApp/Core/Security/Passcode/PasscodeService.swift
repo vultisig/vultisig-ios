@@ -13,9 +13,6 @@ enum PasscodeError: Error, Equatable {
     case wrongPasscode
     case notSet
     case alreadySet
-    /// No data key to wrap — the migration has not run, so there is nothing to
-    /// protect yet.
-    case noDataKey
     case lockedOut(remaining: TimeInterval)
     case invalidLength
     /// The stored wrapped key is unreadable. Distinct from a wrong passcode:

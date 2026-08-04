@@ -19,9 +19,9 @@ import Foundation
 /// no key, the session reports `.disabled`, and stored shares stay plaintext —
 /// the state the great majority of installs are in and stay in.
 ///
-/// No path writes an *unwrapped* key: removing the passcode opens every share
-/// rather than stashing the key beside them, so the two forms of the invariant
-/// agree.
+/// There is no unwrapped form of the key anywhere: the Keychain holds it only
+/// passcode-wrapped, and removing the passcode opens every share rather than
+/// stashing the key beside them.
 ///
 /// The presence of the **wrapped** key is therefore the whole of the persisted
 /// state, and reading it is the one place a Keychain failure could do real harm:

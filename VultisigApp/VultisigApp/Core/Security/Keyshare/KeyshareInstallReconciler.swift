@@ -14,8 +14,8 @@ private let logger = Log.app.store
 ///
 /// The Keychain outlives the app. Deleting the app removes the SwiftData store
 /// and every `UserDefaults` value, but leaves every Keychain item exactly where
-/// it was — so a reinstall begins with no vaults and no lock mode while the data
-/// key, its wrapped copy and the attempt counter all survive.
+/// it was — so a reinstall begins with no vaults and no lock mode while the
+/// wrapped data key and the attempt counter both survive.
 ///
 /// Once a passcode exists that asymmetry is fatal. `AppLockService.mode` lives in
 /// `UserDefaults`, so it reverts to device auth and the passcode screen is never
@@ -28,11 +28,19 @@ private let logger = Log.app.store
 ///
 /// 1. **Inherited key material** is cleared when the container is new. Bounded by
 ///    two conditions so it can never destroy a key something depends on.
-/// 2. **The lock mode** is forced back to `.passcode` whenever a wrapped key
-///    exists without a clear one, so key material always has a door in front of
-///    it even if the first step could not run.
+/// 2. **The lock mode is made to agree with the wrapped key**, in both
+///    directions: a wrapper with no passcode mode means key material with no
+///    door in front of it, and a passcode mode with no wrapper means a door with
+///    nothing behind it — `unlock` has nothing to verify against, so it could
+///    never be opened.
 ///
-/// Runs on every launch, before migrations.
+/// Runs on every launch, before migrations, and under
+/// ``KeyshareWriteCoordinator``'s transition lease: it deletes and re-decides
+/// exactly the state `PasscodeService` is moving during a set or a disable, and
+/// a launch landing in the middle of one could delete a wrapper the set had just
+/// verified — leaving the key adopted in memory with nothing on disk that wraps
+/// it. If the lease cannot be taken, reconciliation is skipped entirely and the
+/// container is left unmarked so the next launch tries again.
 struct KeyshareInstallReconciler {
 
     enum ReconcileError: Error, Equatable {
@@ -51,17 +59,20 @@ struct KeyshareInstallReconciler {
     private let keychain: KeychainService
     private let keyStore: KeyshareKeyStoring
     private let lockService: AppLockService
+    private let coordinator: KeyshareWriteCoordinator
     private let defaults: UserDefaults
 
     init(
         keychain: KeychainService = DefaultKeychainService.shared,
         keyStore: KeyshareKeyStoring = DefaultKeyshareKeyStore.shared,
         lockService: AppLockService = .shared,
+        coordinator: KeyshareWriteCoordinator = .shared,
         defaults: UserDefaults = .standard
     ) {
         self.keychain = keychain
         self.keyStore = keyStore
         self.lockService = lockService
+        self.coordinator = coordinator
         self.defaults = defaults
     }
 
@@ -78,8 +89,19 @@ struct KeyshareInstallReconciler {
     }
 
     func reconcile(isStoreEmpty: Bool) {
+        // Both halves read the wrapped key and act on what they read, so both
+        // have to be indivisible against a passcode transition. Without this a
+        // launch could clear a wrapper `setPasscode` had just made durable, or
+        // decide the lock mode from a snapshot a concurrent disable has already
+        // invalidated.
+        guard let lease = try? coordinator.beginTransition() else {
+            logger.info("Reconciliation skipped: a passcode transition or key-share write is in progress")
+            return
+        }
+        defer { coordinator.end(lease) }
+
         clearInheritedKeyMaterialIfContainerIsNew(isStoreEmpty: isStoreEmpty)
-        restoreLockModeIfKeyIsWrapped()
+        alignLockModeWithTheWrappedKey()
     }
 
     // MARK: - Inherited key material
@@ -89,20 +111,20 @@ struct KeyshareInstallReconciler {
 
         // Existing users reach this line exactly once, on the first launch of the
         // build that introduces the marker — with a full store. Clearing their
-        // data key would orphan every sealed share, which in this app is lost
+        // wrapped key would orphan every sealed share, which in this app is lost
         // funds, so the store having anything in it ends the matter here.
         //
         // It also has to be the store rather than "is anything sealed": a user
-        // who has a passcode set but is mid-way through enabling it has both
-        // forms on disk, and one who has never set one has neither, so
-        // emptiness is the only thing that distinguishes a new container.
+        // part-way through enabling a passcode has a wrapper and unsealed
+        // shares, and one who has never set one has neither, so emptiness is the
+        // only thing that distinguishes a new container.
         guard isStoreEmpty else {
             defaults.set(true, forKey: Self.markerKey)
             return
         }
 
         // A first-ever install inherits nothing, and clearing nothing still
-        // costs three Keychain deletes and their read-backs. Someone who never
+        // costs a Keychain delete and its read-back per item. Someone who never
         // sets a passcode must see no launch-time Keychain mutation at all, so
         // confirmed absence ends it here — the marker is `UserDefaults`, which
         // the acceptance test does not speak about.
@@ -116,7 +138,7 @@ struct KeyshareInstallReconciler {
             defaults.set(true, forKey: Self.markerKey)
         } catch {
             // The marker is deliberately left unset so the next launch tries
-            // again. Until it succeeds, `restoreLockModeIfKeyIsWrapped` is what
+            // again. Until it succeeds, the lock-mode alignment below is what
             // keeps the app reachable rather than silently unusable.
             logger.error("Could not clear inherited key material: \(String(describing: error), privacy: .public)")
         }
@@ -129,8 +151,7 @@ struct KeyshareInstallReconciler {
     /// clear would also set the marker — making the skip permanent, and leaving
     /// exactly the inherited-passcode state this type exists to remove.
     private func hasInheritedKeyMaterial() -> Bool {
-        if case .absent = keyStore.loadDataKey(),
-           case .absent = keyStore.loadWrappedDataKey(),
+        if case .absent = keyStore.loadWrappedDataKey(),
            case .absent = keychain.getPasscodeAttemptState() {
             return false
         }
@@ -143,7 +164,6 @@ struct KeyshareInstallReconciler {
     private func clearInheritedKeyMaterial() throws {
         logger.info("New app container over surviving Keychain state — clearing inherited key material")
 
-        try keyStore.deleteDataKey()
         try keyStore.deleteWrappedDataKey()
 
         // The attempt limiter keeps its state in the Keychain on purpose, so a
@@ -167,31 +187,38 @@ struct KeyshareInstallReconciler {
 
     // MARK: - Lock mode
 
-    /// A wrapped data key with no clear copy means a passcode is set, whatever
-    /// `UserDefaults` happens to say. Without this the app can hold key material
-    /// it has no way to ask for.
+    /// The wrapped key is the whole of the persisted passcode state, so the lock
+    /// mode has to agree with it — and being wrong in either direction locks
+    /// someone out or leaves key material undefended.
     ///
-    /// Each read fails closed in its own direction, and they are not the same
-    /// direction:
+    /// Only a **confirmed** answer moves the mode. An unreadable Keychain leaves
+    /// it exactly as it is: taking `.unavailable` for presence would raise a gate
+    /// with nothing behind it, and taking it for absence would take a real gate
+    /// down.
     ///
-    /// - the **wrapped** key must be *confirmed present*. Restoring the passcode
-    ///   mode on an unreadable read would put up a gate with no wrapper behind
-    ///   it, and `unlock` has nothing to verify against — a lock screen that can
-    ///   never open.
-    /// - the **clear** key must be *confirmed present* to suppress restoration.
-    ///   An unreadable clear key is not a reason to leave key material
-    ///   undefended, so it does not suppress anything.
-    private func restoreLockModeIfKeyIsWrapped() {
-        guard case .present = keyStore.loadWrappedDataKey() else { return }
-        guard !isClearDataKeyPresent() else { return }
-        guard lockService.mode != .passcode else { return }
-
-        logger.warning("A wrapped data key exists but the lock mode was \(lockService.mode.rawValue, privacy: .public); restoring passcode mode")
-        lockService.mode = .passcode
-    }
-
-    private func isClearDataKeyPresent() -> Bool {
-        if case .present = keyStore.loadDataKey() { return true }
-        return false
+    /// Each direction repairs a different interruption:
+    ///
+    /// - **present ⇒ `.passcode`** covers a removal that stopped half way.
+    ///   `disablePasscode` changes the mode *before* deleting the wrapper, so a
+    ///   crash in between leaves plaintext shares, a surviving wrapper and a
+    ///   persisted `.deviceAuth`. Putting the gate back up is what makes that
+    ///   ordering safe to choose in the first place.
+    /// - **absent ⇒ `.deviceAuth`** covers a wrapper that went away underneath a
+    ///   persisted `.passcode` — a reinstall clear, or the crash order the
+    ///   disable deliberately avoids. `unlock` has nothing to verify a passcode
+    ///   against, so that gate could never be opened.
+    private func alignLockModeWithTheWrappedKey() {
+        switch keyStore.loadWrappedDataKey() {
+        case .present:
+            guard lockService.mode != .passcode else { return }
+            logger.warning("A wrapped data key exists but the lock mode was \(lockService.mode.rawValue, privacy: .public); restoring passcode mode")
+            lockService.mode = .passcode
+        case .absent:
+            guard lockService.mode == .passcode else { return }
+            logger.warning("The lock mode was passcode with no wrapped data key behind it; falling back to device auth")
+            lockService.mode = .deviceAuth
+        case .unavailable:
+            return
+        }
     }
 }

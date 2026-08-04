@@ -540,19 +540,18 @@ final class PasscodeServiceTests: XCTestCase {
         XCTAssertFalse(isSet)
     }
 
-    /// No unwrapped key is left behind. An earlier design stashed one beside the
-    /// shares; a store left in that state reads as "no passcode" while its
-    /// shares are still ciphertext.
-    func testDisableLeavesNoKeyMaterialOfAnyFormBehind() async throws {
+    /// No key material of any form is left behind, and the session says so. An
+    /// earlier design stashed an unwrapped copy beside the shares; a store left
+    /// in that state reads as "no passcode" while its shares are ciphertext.
+    func testDisableLeavesNoKeyMaterialBehind() async throws {
         try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
 
         try await sut.disablePasscode(current: passcode)
 
-        XCTAssertAbsent(keyStore.loadDataKey(), "removing the passcode must not stash the key in the clear")
         XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
         if case .disabled = session.currentState() {} else {
-            XCTFail("with no key of either form the session must report .disabled")
+            XCTFail("with no key left the session must report .disabled")
         }
     }
 
@@ -947,10 +946,6 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
     }
 
     func generateDataKey() throws -> SymmetricKey { try wrapped.generateDataKey() }
-
-    func loadDataKey() -> KeychainReadResult<SymmetricKey> { wrapped.loadDataKey() }
-    func storeDataKey(_ key: SymmetricKey) throws { try wrapped.storeDataKey(key) }
-    func deleteDataKey() throws { try wrapped.deleteDataKey() }
 
     func loadWrappedDataKey() -> KeychainReadResult<Data> { wrapped.loadWrappedDataKey() }
     func storeWrappedDataKey(_ blob: Data) throws { try wrapped.storeWrappedDataKey(blob) }

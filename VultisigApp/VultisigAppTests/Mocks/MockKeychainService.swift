@@ -22,9 +22,6 @@ final class MockKeychainService: KeychainService {
     /// test can stage `.unavailable`.
     var lastMigratedVersionResult: KeychainReadResult<Int>
 
-    /// The answer ``getKeyshareDataKey()`` gives, likewise.
-    var keyshareDataKeyResult: KeychainReadResult<Data> = .absent
-
     /// The answer ``getWrappedKeyshareDataKey()`` gives, likewise.
     var wrappedKeyshareDataKeyResult: KeychainReadResult<Data> = .absent
 
@@ -35,19 +32,12 @@ final class MockKeychainService: KeychainService {
     private var fastHints: [String: KeychainReadResult<String>] = [:]
     private var deviceTokenResult: KeychainReadResult<String> = .absent
 
-    /// When set, `setKeyshareDataKey` accepts the write but stores nothing, so
-    /// the read-back verification in `DefaultKeyshareKeyStore` can be exercised.
-    var dropsKeyshareDataKeyWrites = false
-
-    /// Same, for the wrapped copy: the write is accepted and nothing is stored,
-    /// so the read-back verification that guards `setPasscode` can be driven.
+    /// When set, the write is accepted and nothing is stored, so the read-back
+    /// verification that guards `setPasscode` can be driven.
     var dropsWrappedKeyshareDataKeyWrites = false
 
-    /// When set, deletion of the clear data key silently does nothing, so the
-    /// verified-deletion path can be exercised.
-    var ignoresKeyshareDataKeyDeletion = false
-
-    /// Same, for the wrapped copy, so the disable rollback can be exercised.
+    /// When set, deleting the wrapped copy silently does nothing, so the
+    /// verified-deletion path and the disable rollback can be exercised.
     var ignoresWrappedKeyshareDataKeyDeletion = false
 
     /// When set, deleting the wrapped copy **succeeds** but leaves the item
@@ -76,12 +66,6 @@ final class MockKeychainService: KeychainService {
     var lastMigratedVersion: Int? {
         get { lastMigratedVersionResult.valueTreatingUnavailableAsAbsent }
         set { lastMigratedVersionResult = Self.result(newValue) }
-    }
-
-    /// The recorded key, for tests that only care about the stored value.
-    var keyshareDataKey: Data? {
-        get { keyshareDataKeyResult.valueTreatingUnavailableAsAbsent }
-        set { keyshareDataKeyResult = Self.result(newValue) }
     }
 
     /// The recorded wrapped key, for tests that only care about the stored value.
@@ -130,15 +114,6 @@ final class MockKeychainService: KeychainService {
     func setDeviceToken(_ token: String?) {
         writes.append("deviceToken")
         deviceTokenResult = Self.result(token)
-    }
-
-    func getKeyshareDataKey() -> KeychainReadResult<Data> { keyshareDataKeyResult }
-
-    func setKeyshareDataKey(_ data: Data?) {
-        writes.append("keyshareDataKey")
-        guard !dropsKeyshareDataKeyWrites else { return }
-        if data == nil && ignoresKeyshareDataKeyDeletion { return }
-        keyshareDataKeyResult = Self.result(data)
     }
 
     func getWrappedKeyshareDataKey() -> KeychainReadResult<Data> { wrappedKeyshareDataKeyResult }

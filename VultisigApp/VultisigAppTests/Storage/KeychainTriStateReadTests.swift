@@ -119,15 +119,10 @@ final class KeychainTriStateReadTests: XCTestCase {
                 "the migration-version read must not pass a failure off as an absent item (status \(status))"
             )
             XCTAssertEqual(
-                service.getKeyshareDataKey(),
-                .unavailable(status),
-                "an unreadable data key must never look absent — absence licenses minting a replacement, "
-                    + "and a replacement cannot open a single already-sealed share (status \(status))"
-            )
-            XCTAssertEqual(
                 service.getWrappedKeyshareDataKey(),
                 .unavailable(status),
-                "an unreadable wrapped key must never look absent, for the same reason (status \(status))"
+                "an unreadable wrapped key must never look absent — absence licenses minting a replacement, "
+                    + "and a replacement cannot open a single already-sealed share (status \(status))"
             )
             XCTAssertEqual(
                 service.getPasscodeAttemptState(),
@@ -145,7 +140,6 @@ final class KeychainTriStateReadTests: XCTestCase {
         XCTAssertEqual(service.getFastHint(pubKeyECDSA: "pub"), .absent)
         XCTAssertEqual(service.getDeviceToken(), .absent)
         XCTAssertEqual(service.getLastMigratedVersion(), .absent)
-        XCTAssertEqual(service.getKeyshareDataKey(), .absent)
         XCTAssertEqual(service.getWrappedKeyshareDataKey(), .absent)
         XCTAssertEqual(service.getPasscodeAttemptState(), .absent)
     }
@@ -157,7 +151,6 @@ final class KeychainTriStateReadTests: XCTestCase {
         XCTAssertEqual(service.getFastHint(pubKeyECDSA: "pub"), .present("7"))
         XCTAssertEqual(service.getDeviceToken(), .present("7"))
         XCTAssertEqual(service.getLastMigratedVersion(), .present(7))
-        XCTAssertEqual(service.getKeyshareDataKey(), .present(Data("7".utf8)))
         XCTAssertEqual(service.getWrappedKeyshareDataKey(), .present(Data("7".utf8)))
         XCTAssertEqual(service.getPasscodeAttemptState(), .present(Data("7".utf8)))
     }

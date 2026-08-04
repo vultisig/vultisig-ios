@@ -35,61 +35,15 @@ final class KeyshareKeyStoreTests: XCTestCase {
         XCTAssertNotEqual(first.testRawRepresentation, second.testRawRepresentation)
     }
 
-    func testStoreAndLoadDataKeyRoundTrip() throws {
-        let key = try sut.generateDataKey()
+    /// A generated key exists in memory and nowhere else. There is no unwrapped
+    /// resting place for it, so nothing on the device changes until the wrapped
+    /// form is written — which is what makes an abandoned `setPasscode` leave no
+    /// trace.
+    func testGeneratingADataKeyWritesNothing() throws {
+        _ = try sut.generateDataKey()
 
-        try sut.storeDataKey(key)
-
-        XCTAssertEqual(try XCTUnwrapPresent(sut.loadDataKey()).testRawRepresentation, key.testRawRepresentation)
-    }
-
-    func testLoadDataKeyReportsAbsentWhenThereIsNoItem() {
-        XCTAssertAbsent(sut.loadDataKey())
-    }
-
-    func testDeleteDataKeyRemovesIt() throws {
-        try sut.storeDataKey(try sut.generateDataKey())
-
-        try sut.deleteDataKey()
-
-        XCTAssertAbsent(sut.loadDataKey())
-    }
-
-    /// The read-back guard: a Keychain that silently drops the write must not
-    /// leave the caller believing the key is durable, because the next step is
-    /// encrypting key shares against it.
-    func testStoreDataKeyThrowsWhenKeychainDropsTheWrite() throws {
-        keychain.dropsKeyshareDataKeyWrites = true
-        let key = try sut.generateDataKey()
-
-        XCTAssertThrowsError(try sut.storeDataKey(key)) { error in
-            XCTAssertEqual(error as? KeyshareKeyStoreError, .persistenceFailed)
-        }
-    }
-
-    /// Present and unusable is not the same as absent — absence is what licenses
-    /// minting a replacement, and a replacement opens none of the sealed shares.
-    func testLoadDataKeyReportsUnavailableWhenTheStoredBlobIsTheWrongLength() {
-        keychain.setKeyshareDataKey(Data(repeating: 0x01, count: 16))
-
-        XCTAssertUnavailable(sut.loadDataKey())
-    }
-
-    func testLoadDataKeyPropagatesAnUnreadableKeychain() {
-        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
-
-        XCTAssertUnavailable(sut.loadDataKey())
-    }
-
-    /// The clear is recorded as done by its caller, so "probably gone" must not
-    /// pass for gone.
-    func testDeleteDataKeyThrowsWhenTheKeychainCannotConfirmItIsGone() {
-        keychain.ignoresKeyshareDataKeyDeletion = true
-        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
-
-        XCTAssertThrowsError(try sut.deleteDataKey()) { error in
-            XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
-        }
+        XCTAssertEqual(keychain.writes, [])
+        XCTAssertEqual(sut.loadWrappedDataKey(), .absent)
     }
 
     // MARK: - Wrapped data key
@@ -102,6 +56,10 @@ final class KeyshareKeyStoreTests: XCTestCase {
         XCTAssertEqual(sut.loadWrappedDataKey(), .present(blob))
     }
 
+    func testLoadWrappedDataKeyReportsAbsentWhenThereIsNoItem() {
+        XCTAssertEqual(sut.loadWrappedDataKey(), .absent)
+    }
+
     func testDeleteWrappedDataKeyRemovesIt() throws {
         try sut.storeWrappedDataKey(Data(repeating: 0x07, count: 64))
 
@@ -110,12 +68,36 @@ final class KeyshareKeyStoreTests: XCTestCase {
         XCTAssertEqual(sut.loadWrappedDataKey(), .absent)
     }
 
+    /// The read-back guard: a Keychain that silently drops the write must not
+    /// leave the caller believing the wrapper is durable, because the next step
+    /// is sealing every key share against the key it wraps.
+    func testStoreWrappedDataKeyThrowsWhenKeychainDropsTheWrite() {
+        keychain.dropsWrappedKeyshareDataKeyWrites = true
+
+        XCTAssertThrowsError(try sut.storeWrappedDataKey(Data(repeating: 0x07, count: 64))) { error in
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .persistenceFailed)
+        }
+    }
+
+    /// An unreadable read-back is not a successful write either: `.present` with
+    /// the same bytes is the only answer that proves durability.
+    func testStoreWrappedDataKeyThrowsWhenTheReadBackIsUnreadable() {
+        keychain.dropsWrappedKeyshareDataKeyWrites = true
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        XCTAssertThrowsError(try sut.storeWrappedDataKey(Data(repeating: 0x07, count: 64))) { error in
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .persistenceFailed)
+        }
+    }
+
     func testLoadWrappedDataKeyPropagatesAnUnreadableKeychain() {
         keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
 
         XCTAssertEqual(sut.loadWrappedDataKey(), .unavailable(errSecInteractionNotAllowed))
     }
 
+    /// The removal is recorded as done by its caller, so "probably gone" must not
+    /// pass for gone.
     func testDeleteWrappedDataKeyThrowsWhenTheKeychainCannotConfirmItIsGone() {
         keychain.ignoresWrappedKeyshareDataKeyDeletion = true
         keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)

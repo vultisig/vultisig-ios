@@ -3,7 +3,6 @@
 //  VultisigAppTests
 //
 
-import CryptoKit
 import Security
 import XCTest
 @testable import VultisigApp
@@ -17,6 +16,7 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
     private var keychain: MockKeychainService!
     private var keyStore: DefaultKeyshareKeyStore!
     private var lockService: AppLockService!
+    private var coordinator: KeyshareWriteCoordinator!
     private var defaults: UserDefaults!
     private var suiteName: String!
     private var sut: KeyshareInstallReconciler!
@@ -33,10 +33,12 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         keyStore = DefaultKeyshareKeyStore(keychain: keychain)
         lockService = AppLockService(defaults: defaults)
 
+        coordinator = KeyshareWriteCoordinator()
         sut = KeyshareInstallReconciler(
             keychain: keychain,
             keyStore: keyStore,
             lockService: lockService,
+            coordinator: coordinator,
             defaults: defaults
         )
     }
@@ -44,6 +46,7 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
     override func tearDown() {
         defaults.removePersistentDomain(forName: suiteName)
         sut = nil
+        coordinator = nil
         lockService = nil
         keyStore = nil
         keychain = nil
@@ -65,7 +68,6 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         sut.reconcile(isStoreEmpty: true)
 
         XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent, "The inherited passcode must not survive a new container")
-        XCTAssertAbsent(keyStore.loadDataKey())
         XCTAssertEqual(keychain.getPasscodeAttemptState(), .absent, "A new install must not start inside a lockout")
         XCTAssertEqual(
             keychain.getLastMigratedVersion(),
@@ -74,12 +76,15 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         )
     }
 
-    func testANewContainerClearsAnInheritedClearDataKey() throws {
-        try keyStore.storeDataKey(SymmetricKey(size: .bits256))
+    /// The attempt counter is inherited on its own when the previous install
+    /// was mid-lockout, and keeping it would start a new install inside a
+    /// throttle guarding a passcode that no longer exists.
+    func testANewContainerClearsAnInheritedAttemptCounter() {
+        keychain.setPasscodeAttemptState(attemptState)
 
         sut.reconcile(isStoreEmpty: true)
 
-        XCTAssertAbsent(keyStore.loadDataKey())
+        XCTAssertEqual(keychain.getPasscodeAttemptState(), .absent)
     }
 
     /// The acceptance test in one assertion: someone who never set a passcode
@@ -99,16 +104,15 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
     func testAFirstEverInstallHasNothingToClear() {
         sut.reconcile(isStoreEmpty: true)
 
-        XCTAssertAbsent(keyStore.loadDataKey())
         XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
         XCTAssertEqual(lockService.mode, .deviceAuth)
     }
 
     /// The acceptance test, asserted rather than argued: someone who never sets
     /// a passcode must see **no** launch-time Keychain mutation. Clearing an
-    /// artifact that was never there still issues three `SecItemDelete` calls
-    /// and three read-backs, and no assertion on stored values can tell that
-    /// apart from doing nothing — hence the write log.
+    /// artifact that was never there still issues a `SecItemDelete` and its
+    /// read-back per item, and no assertion on stored values can tell that apart
+    /// from doing nothing — hence the write log.
     func testAFirstEverInstallWritesNothingToTheKeychain() {
         sut.reconcile(isStoreEmpty: true)
 
@@ -156,13 +160,16 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
     /// check for the first time on the launch that introduces it, with a full
     /// store — clearing their key would orphan every sealed share.
     func testAStoreWithVaultsIsNeverPurged() throws {
-        try keyStore.storeDataKey(SymmetricKey(size: .bits256))
-        let storedKey = keychain.getKeyshareDataKey()
+        try keyStore.storeWrappedDataKey(wrappedBlob)
         keychain.setLastMigratedVersion(4)
 
         sut.reconcile(isStoreEmpty: false)
 
-        XCTAssertEqual(keychain.getKeyshareDataKey(), storedKey, "The key every sealed share depends on must survive")
+        XCTAssertEqual(
+            keyStore.loadWrappedDataKey(),
+            .present(wrappedBlob),
+            "The key every sealed share depends on must survive"
+        )
         XCTAssertEqual(keychain.getLastMigratedVersion(), .present(4), "An upgrading user must not re-run every migration")
     }
 
@@ -180,7 +187,7 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
 
     // MARK: - Lock mode invariant
 
-    func testAWrappedKeyWithoutAClearOneRestoresPasscodeMode() throws {
+    func testAWrappedKeyRestoresPasscodeMode() throws {
         sut.reconcile(isStoreEmpty: false)
         lockService.mode = .deviceAuth
         try keyStore.storeWrappedDataKey(wrappedBlob)
@@ -190,13 +197,27 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         XCTAssertEqual(lockService.mode, .passcode, "Key material must never be locked with no way to ask for it")
     }
 
-    func testAClearDataKeyLeavesTheLockModeAlone() throws {
-        lockService.mode = .deviceAuth
-        try keyStore.storeDataKey(SymmetricKey(size: .bits256))
+    /// The inverse, and the half that keeps a user from being locked out. A
+    /// passcode mode with no wrapper behind it is a gate `unlock` can never
+    /// satisfy — there is nothing to verify a passcode against — so a confirmed
+    /// absence takes it back down.
+    func testAPasscodeModeWithNoWrappedKeyFallsBackToDeviceAuth() {
+        lockService.mode = .passcode
 
         sut.reconcile(isStoreEmpty: false)
 
         XCTAssertEqual(lockService.mode, .deviceAuth)
+    }
+
+    /// Only a *confirmed* absence, though: taking an unreadable Keychain for an
+    /// empty one would remove a real passcode from in front of real key material.
+    func testAnUnreadableWrappedKeyDoesNotTakeThePasscodeGateDown() {
+        lockService.mode = .passcode
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        sut.reconcile(isStoreEmpty: false)
+
+        XCTAssertEqual(lockService.mode, .passcode)
     }
 
     /// Fail closed, but in the direction that keeps the app usable: a gate with
@@ -211,17 +232,42 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         XCTAssertEqual(lockService.mode, .deviceAuth)
     }
 
-    /// And the opposite direction on the other read: an unreadable clear key is
-    /// not a reason to leave key material with no door in front of it.
-    func testAnUnreadableClearKeyDoesNotSuppressTheLockScreen() throws {
-        sut.reconcile(isStoreEmpty: false)
-        lockService.mode = .deviceAuth
+    // MARK: - Serialization
+
+    /// Launch reconciliation deletes and re-decides exactly the state a passcode
+    /// set or removal is moving, so it has to be indivisible against one.
+    /// Without the lease, a launch landing between `setPasscode` making its
+    /// wrapper durable and adopting the key would delete that wrapper and mark
+    /// the container done — leaving the key live in memory with nothing on disk
+    /// that wraps it, and every share sealed afterwards unreadable.
+    func testReconciliationIsSkippedWhileAPasscodeTransitionIsHeld() throws {
         try keyStore.storeWrappedDataKey(wrappedBlob)
-        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+        lockService.mode = .deviceAuth
+        keychain.resetWrites()
+        let lease = try coordinator.beginTransition()
+        defer { coordinator.end(lease) }
 
-        sut.reconcile(isStoreEmpty: false)
+        sut.reconcile(isStoreEmpty: true)
 
-        XCTAssertEqual(lockService.mode, .passcode)
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .present(wrappedBlob), "a wrapper mid-transition must survive")
+        XCTAssertEqual(keychain.writes, [])
+        XCTAssertEqual(lockService.mode, .deviceAuth, "the mode must not be decided from a snapshot a transition is changing")
+    }
+
+    /// And the skip leaves the container unmarked, so the next launch reconciles
+    /// it properly rather than treating the skip as done.
+    func testASkippedReconciliationIsRetriedOnTheNextLaunch() throws {
+        try keyStore.storeWrappedDataKey(wrappedBlob)
+        let lease = try coordinator.beginTransition()
+        sut.reconcile(isStoreEmpty: true)
+        // Without the lease the wrapper would already be gone here, and the
+        // assertion below would pass over a reconciliation that never skipped.
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .present(wrappedBlob))
+        coordinator.end(lease)
+
+        sut.reconcile(isStoreEmpty: true)
+
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
     }
 
     // MARK: - Failure

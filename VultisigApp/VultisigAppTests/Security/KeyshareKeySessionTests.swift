@@ -102,20 +102,6 @@ final class KeyshareKeySessionTests: XCTestCase {
         XCTAssertFalse(sut.currentState().isLocked)
     }
 
-    /// The unwrapped item no longer participates in the state at all: a share is
-    /// sealed if and only if a passcode is set, and the wrapped key is the only
-    /// evidence of a passcode. Pinned rather than left implicit, because it is
-    /// the visible consequence of collapsing the state read — a store holding a
-    /// clear key and nothing else reads as having no passcode.
-    func testAnUnwrappedKeyAloneIsNotAPasscode() throws {
-        try store.storeDataKey(try store.generateDataKey())
-        let sut = makeSession()
-
-        guard case .disabled = sut.currentState() else {
-            return XCTFail("Expected .disabled — only a wrapped key means a passcode is set")
-        }
-    }
-
     /// The key is held in memory once adopted, so the read path does not pay a
     /// Keychain round trip per share inside TSS keygen and keysign.
     func testAnAdoptedKeyIsCachedRatherThanRereadPerCall() throws {
