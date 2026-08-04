@@ -60,6 +60,7 @@ struct ContentView: View {
             .navigationDestination(for: SigningRoute.self) { router.signingRouter.build($0) }
             .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
             .navigationDestination(for: YieldRoute.self) { router.yieldRouter.build($0) }
+            .navigationDestination(for: KaminoRoute.self) { router.kaminoRouter.build($0) }
             .navigationDestination(for: TronRoute.self) { router.tronRouter.build($0) }
             .navigationDestination(for: TransactionHistoryRoute.self) { router.transactionHistoryRouter.build($0) }
             .navigationDestination(for: QBTCClaimRoute.self) { route in

@@ -627,8 +627,13 @@
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
+"kaminoDepositMinimum" = "Minimalni polog je %@ %@.";
+"kaminoDepositMissingCoin" = "Dodaj %@ na Solani u svoj vault prije polaganja.";
+"kaminoDepositTitle" = "Položi";
+"kaminoDepositWrappedSolRent" = "Polaganje SOL-a otvara wrapped SOL račun. Njegova najamnina ostaje zaključana na tom računu dok ne podigneš sredstva.";
 "kaminoEarnApy30d" = "APY (30 d)";
 "kaminoEarnCuratedBy" = "Kurira %@";
+"kaminoEarnDeposit" = "Položi";
 "kaminoEarnDeposited" = "Položeno";
 "kaminoEarnPnl" = "Dobit i gubitak";
 "kaminoEarnRiskConservative" = "Konzervativno";
@@ -636,6 +641,8 @@
 "kaminoEarnTitle" = "Kamino Earn";
 "kaminoErrorVaultMetadataMismatch" = "Kamino je prijavio %1$@ kao %2$@; ovaj vault ima %3$@";
 "kaminoErrorVaultNotInRegistry" = "Vault %@ nije onaj s kojim ova aplikacija posluje";
+"kaminoPayerBalanceUnavailable" = "Solana nije prijavila trošak ove transakcije pa se maksimum ne može izračunati.";
+"kaminoSimulationFailed" = "Ovaj polog bi na Solani propao: %@";
 "keyCopied" = "Ključ kopiran";
 "keygen" = "Generiranje ključeva";
 "keygenFailed" = "Generiranje ključa nije uspjelo";

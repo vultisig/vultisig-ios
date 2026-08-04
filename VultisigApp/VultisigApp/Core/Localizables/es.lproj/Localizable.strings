@@ -627,8 +627,13 @@
 "joinSend" = "Unirse a Enviar";
 "joinSwap" = "Unirse al intercambio";
 "joinTransactionSigning" = "Unir firma de transacciones";
+"kaminoDepositMinimum" = "El depósito mínimo es %@ %@.";
+"kaminoDepositMissingCoin" = "Añade %@ en Solana a tu vault antes de depositar.";
+"kaminoDepositTitle" = "Depositar";
+"kaminoDepositWrappedSolRent" = "Depositar SOL abre una cuenta de SOL envuelto. Su renta queda bloqueada en esa cuenta hasta que retires.";
 "kaminoEarnApy30d" = "APY (30 d)";
 "kaminoEarnCuratedBy" = "Gestionado por %@";
+"kaminoEarnDeposit" = "Depositar";
 "kaminoEarnDeposited" = "Depositado";
 "kaminoEarnPnl" = "Ganancias y pérdidas";
 "kaminoEarnRiskConservative" = "Conservador";
@@ -636,6 +641,8 @@
 "kaminoEarnTitle" = "Kamino Earn";
 "kaminoErrorVaultMetadataMismatch" = "Kamino informó %1$@ como %2$@; este vault espera %3$@";
 "kaminoErrorVaultNotInRegistry" = "El vault %@ no es uno con el que esta app opera";
+"kaminoPayerBalanceUnavailable" = "Solana no informó el coste de esta transacción, así que no se puede calcular el máximo.";
+"kaminoSimulationFailed" = "Este depósito fallaría en Solana: %@";
 "keyCopied" = "Clave copiada";
 "keygen" = "Generación de claves";
 "keygenFailed" = "La generación de clave falló";

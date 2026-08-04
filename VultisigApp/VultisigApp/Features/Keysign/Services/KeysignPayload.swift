@@ -40,6 +40,12 @@ struct KeysignPayload: Codable, Hashable {
     /// build the unsigned transaction once; peer devices see nil and sign the
     /// relayed raw bytes. See `SolanaStakingSignDataResolver`.
     let solanaStakingPayload: SolanaStakingPayload?
+    /// Set on the initiating device when `signData` carries a Kamino vault
+    /// transaction this app built, validated and simulated. Local-only, and read
+    /// by exactly one thing: the pre-keysign blockhash refresh, which may only
+    /// splice a fresh blockhash into raw Solana bytes it knows are ours. See
+    /// `KaminoKeysignPayload`.
+    let kaminoPayload: KaminoKeysignPayload?
     let skipBroadcast: Bool
     let signData: SignData?
     let dappMetadata: DAppMetadata?
@@ -66,6 +72,7 @@ struct KeysignPayload: Codable, Hashable {
         qbtcClaimPayload: QBTCClaimPayload?,
         isQbtcClaim: Bool,
         solanaStakingPayload: SolanaStakingPayload? = nil,
+        kaminoPayload: KaminoKeysignPayload? = nil,
         skipBroadcast: Bool,
         signData: SignData?,
         dappMetadata: DAppMetadata? = nil
@@ -88,6 +95,7 @@ struct KeysignPayload: Codable, Hashable {
         self.qbtcClaimPayload = qbtcClaimPayload
         self.isQbtcClaim = isQbtcClaim
         self.solanaStakingPayload = solanaStakingPayload
+        self.kaminoPayload = kaminoPayload
         self.skipBroadcast = skipBroadcast
         self.signData = signData
         self.dappMetadata = dappMetadata
@@ -118,6 +126,7 @@ struct KeysignPayload: Codable, Hashable {
             qbtcClaimPayload: qbtcClaimPayload,
             isQbtcClaim: isQbtcClaim,
             solanaStakingPayload: solanaStakingPayload,
+            kaminoPayload: kaminoPayload,
             skipBroadcast: skipBroadcast,
             signData: signData,
             dappMetadata: dappMetadata
@@ -149,6 +158,7 @@ struct KeysignPayload: Codable, Hashable {
             qbtcClaimPayload: qbtcClaimPayload,
             isQbtcClaim: isQbtcClaim,
             solanaStakingPayload: payload,
+            kaminoPayload: kaminoPayload,
             skipBroadcast: skipBroadcast,
             signData: signData,
             dappMetadata: dappMetadata
@@ -178,6 +188,7 @@ struct KeysignPayload: Codable, Hashable {
             qbtcClaimPayload: qbtcClaimPayload,
             isQbtcClaim: isQbtcClaim,
             solanaStakingPayload: solanaStakingPayload,
+            kaminoPayload: kaminoPayload,
             skipBroadcast: skipBroadcast,
             signData: signData,
             dappMetadata: dappMetadata
