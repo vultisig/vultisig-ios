@@ -785,6 +785,7 @@
 "marketCap" = "Capitalización";
 "marketCapRank" = "Ranking";
 "marketStats" = "Datos de mercado";
+"maxSendPlanChangedError" = "Tus fondos disponibles cambiaron mientras revisabas, por lo que esta transacción ya no enviaría la cantidad mostrada. Vuelve atrás y revisa la cantidad actualizada.";
 "maxSupply" = "Suministro máximo";
 "maxTotalFee" = "Tarifa total máx.";
 "memo" = "Memorándum";
@@ -1522,6 +1523,12 @@
 "useLocalMode" = "Usar modo local";
 "usePassword" = "Usar contraseña";
 "useStandardMode" = "Usar modo estándar";
+"utxoPlanDustAmountError" = "Lo que quedaría para el destinatario está por debajo del límite de polvo de la red. Envía una cantidad mayor o reduce la tarifa de red para que quede más por enviar.";
+"utxoPlanFailedError" = "No se pudo preparar esta transacción (%@). Prueba con otra cantidad o reduce la tarifa de red.";
+"utxoPlanInsufficientFundsError" = "Tus salidas disponibles no cubren esta cantidad más la comisión de red. Prueba con una cantidad menor o reduce la tarifa de red.";
+"utxoPlanInvalidUtxoError" = "Una de tus salidas de transacción no se puede gastar ahora mismo. Actualiza tu saldo e inténtalo de nuevo.";
+"utxoPlanTransactionTooLargeError" = "Esta transacción necesita más entradas de las que cabe en una sola transacción. Envía una cantidad menor o consolida primero tus salidas.";
+"utxoPlanZeroAmountError" = "Introduce una cantidad mayor que cero.";
 "utxoSelectionFailedError" = "Falló la selección de UTXO. No se pudieron encontrar salidas de transacción adecuadas para cubrir el monto más las tarifas estimadas. Intenta reducir el monto de la transacción.";
 "utxoTooSmallError" = "Los UTXOs disponibles son demasiado pequeños para esta transacción. Las salidas de transacción individuales en tu billetera no cumplen con los requisitos mínimos. Considera consolidar cantidades más pequeñas primero.";
 "validAddressDomainError" = "Dirección incorrecta para la cadena de bloques seleccionada. Intenta agregar la cadena a tu bóveda.";

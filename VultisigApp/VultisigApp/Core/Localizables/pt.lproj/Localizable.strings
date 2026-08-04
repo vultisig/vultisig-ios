@@ -785,6 +785,7 @@
 "marketCap" = "Capitalização de mercado";
 "marketCapRank" = "Classificação";
 "marketStats" = "Dados de mercado";
+"maxSendPlanChangedError" = "Seus fundos disponíveis mudaram enquanto você revisava, então esta transação não enviaria mais o valor exibido. Volte e revise o valor atualizado.";
 "maxSupply" = "Fornecimento máximo";
 "maxTotalFee" = "Taxa total máx.";
 "memo" = "Memorando";
@@ -1522,6 +1523,12 @@
 "useLocalMode" = "Usar modo local";
 "usePassword" = "Usar senha";
 "useStandardMode" = "Usar modo padrão";
+"utxoPlanDustAmountError" = "O que sobraria para o destinatário está abaixo do limite de poeira da rede. Envie um valor maior ou reduza a taxa de rede para que sobre mais para enviar.";
+"utxoPlanFailedError" = "Não foi possível preparar esta transação (%@). Tente outro valor ou reduza a taxa de rede.";
+"utxoPlanInsufficientFundsError" = "Suas saídas disponíveis não cobrem este valor mais a taxa de rede. Tente um valor menor ou reduza a taxa de rede.";
+"utxoPlanInvalidUtxoError" = "Uma das suas saídas de transação não pode ser gasta no momento. Atualize seu saldo e tente novamente.";
+"utxoPlanTransactionTooLargeError" = "Esta transação precisa de mais entradas do que cabe em uma única transação. Envie um valor menor ou consolide suas saídas primeiro.";
+"utxoPlanZeroAmountError" = "Insira um valor maior que zero.";
 "utxoSelectionFailedError" = "Falha na seleção de UTXO. Não foi possível encontrar saídas de transação adequadas para cobrir o valor mais as taxas estimadas. Tente reduzir o valor da transação.";
 "utxoTooSmallError" = "UTXOs disponíveis são muito pequenos para esta transação. As saídas de transação individuais em sua carteira não atendem aos requisitos mínimos. Considere consolidar valores menores primeiro.";
 "validAddressDomainError" = "Endereço incorreto para o blockchain selecionado. Tente adicionar a rede ao seu cofre.";

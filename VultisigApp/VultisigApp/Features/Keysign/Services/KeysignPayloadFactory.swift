@@ -232,6 +232,13 @@ struct KeysignPayloadFactory {
 
         let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: tmpKeysignPayload)
         if plan.utxos.isEmpty {
+            // WalletCore records WHY it selected nothing. Surface that verdict
+            // instead of the blanket "insufficient UTXOs available", which sends
+            // people looking for a consolidation problem when the real cause was
+            // a sub-dust remainder or an amount that simply exceeds the balance.
+            // Only consulted on an empty selection: a plan that did pick inputs
+            // keeps its existing (working) path untouched.
+            try UTXOTransactionPlanError.validate(plan)
             throw Errors.notEnoughUTXOError
         }
         return plan.utxos.map { utxo in

@@ -34,7 +34,52 @@ final class SendGasSettingsViewModel: ObservableObject {
     @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
 
     // UTXO
-    @Published var byteFee: String = .empty
+    @Published private(set) var byteFee: String = .empty
+
+    /// Whether the rate field holds a value the user chose, rather than the one
+    /// the selected fee mode resolves to.
+    ///
+    /// This has to be tracked explicitly rather than inferred by comparing the
+    /// field to the fetched rate: re-typing the same number is still a choice,
+    /// and — worse — reopening the sheet with a rate already pinned would have
+    /// the initial fetch overwrite the field and then read back as "unedited",
+    /// silently dropping the pin on Save.
+    ///
+    /// Seeded true when the form arrives with a rate already pinned. Set by
+    /// `setByteFee`, released by `selectMode` (choosing a priority is an
+    /// explicit "follow the mode again").
+    @Published private(set) var hasUserEditedByteFee: Bool = false
+
+    /// The byte fee to pin, or `nil` to keep following the fee mode.
+    ///
+    /// Rejects anything that isn't a positive integer inside `Int64` — a zero or
+    /// negative rate plans a fee-less transaction no node will relay, and the
+    /// value ends up in WalletCore's `Int64` `byteFee`, where an out-of-range
+    /// conversion traps the process rather than failing.
+    var resolvedCustomByteFee: BigInt? {
+        guard hasUserEditedByteFee,
+              let entered = BigInt(byteFee, radix: 10),
+              entered > .zero,
+              entered <= BigInt(Int64.max) else {
+            return nil
+        }
+        return entered
+    }
+
+    /// User edit of the rate field. Pins the value so a later rate fetch — a
+    /// fee-mode change, or reopening the sheet — cannot replace it.
+    func setByteFee(_ value: String) {
+        guard value != byteFee else { return }
+        byteFee = value
+        hasUserEditedByteFee = true
+    }
+
+    /// Choosing a priority is an explicit "follow the mode", so it releases any
+    /// pinned rate and lets the fetch refill the field.
+    func selectMode(_ mode: FeeMode) {
+        hasUserEditedByteFee = false
+        selectedMode = mode
+    }
 
     init(coin: Coin, vault: Vault, gasLimit: String, byteFee: String, baseFee: String, selectedMode: FeeMode) {
         self.coin = coin
@@ -71,6 +116,9 @@ final class SendGasSettingsViewModel: ObservableObject {
         self.customGasLimit = customGasLimit
         self.gasLimit = gasLimit.description
         self.byteFee = customByteFee?.description ?? .empty
+        // Arriving with a rate already pinned means the user set it earlier; the
+        // initial fetch must not overwrite it, and Save must keep it.
+        self.hasUserEditedByteFee = customByteFee != nil
         self.baseFee = baseFee.description
         self.selectedMode = selectedMode
     }
@@ -156,6 +204,9 @@ private extension SendGasSettingsViewModel {
             feeMode: selectedMode
         )
         await MainActor.run {
+            // Never replace a rate the user pinned — that is what silently
+            // un-pinned it on Save.
+            guard !hasUserEditedByteFee else { return }
             byteFee = fee.description
         }
     }

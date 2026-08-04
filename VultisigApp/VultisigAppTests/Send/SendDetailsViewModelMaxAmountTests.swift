@@ -68,22 +68,26 @@ final class SendDetailsViewModelMaxAmountTests: XCTestCase {
     func testMaxAmountForUTXOOptimisticallyFillsBalanceThenRefinesByPlanFee() async {
         let btc = SendFormFixture.makeBTC(rawBalance: "100000000") // 1 BTC
         let interactor = MockSendInteractor()
-        interactor.fetchChainSpecificStub = { _ in
-            // UTXO max reads `.fee` off chainSpecific; the THORChain variant
-            // exposes a fee-bearing tagged enum convenient for unit tests.
-            .THORChain(accountNumber: 0, sequence: 0, fee: 5_000, isDeposit: false, transactionType: 0)
+        // UTXO Max asks the planner what a real `useMaxAmount` transaction
+        // would send and cost — a sat/vB rate is not a fee.
+        interactor.calculateMaxSendPlanStub = { _, _ in
+            SendMaxPlanResult(amount: BigInt(99_995_000), fee: BigInt(5_000), byteFee: BigInt(12))
         }
         let vm = SendFormFixture.make(coin: btc, interactor: interactor)
 
         vm.setMaxAmount(percentage: 100)
 
-        // Optimistic — full 1 BTC before the plan fee is known.
+        // Optimistic — full 1 BTC before the plan is known.
         XCTAssertEqual(vm.amount.replacingOccurrences(of: ",", with: ".").toDecimal(), Decimal(string: "1"))
 
         await vm.feeRefineTask?.value
 
-        // 1 BTC = 100_000_000 sats; minus 5_000 sats fee = 99_995_000 sats = 0.99995 BTC.
+        // The planner's own amount: 99_995_000 sats = 0.99995 BTC.
         XCTAssertEqual(vm.amount.replacingOccurrences(of: ",", with: ".").toDecimal(), Decimal(string: "0.99995"))
+        XCTAssertEqual(vm.fee, BigInt(5_000), "the planned total fee, not the byte rate")
+        XCTAssertEqual(vm.gas, BigInt(12), "gas stays the sat/vB rate the gas sheet edits")
+        XCTAssertTrue(interactor.fetchChainSpecificCalls.isEmpty,
+                      "the UTXO max path must go through the planner, not the flat-fee estimate")
     }
 
     // MARK: - Solana native
