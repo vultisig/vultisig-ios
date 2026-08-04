@@ -466,6 +466,245 @@ final class PasscodeServiceTests: XCTestCase {
         }
     }
 
+    // MARK: - Resume on unlock
+
+    /// The recovery the whole pending-passcode design depends on: a share left
+    /// plaintext behind a live passcode is sealed the next time the app is
+    /// opened, with no completion marker and no ordering to fall behind.
+    func testUnlockingTheAppSealsAShareLeftPlaintext() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        sut.lock()
+
+        try await sut.unlockApp(with: passcode)
+
+        let stored = try XCTUnwrap(try storedShares().first)
+        XCTAssertTrue(protector.isSealed(stored), "an unlock must finish what an interrupted transition started")
+        XCTAssertEqual(try protector.open(stored), share)
+    }
+
+    /// Verification is not an app unlock. `unlock(with:)` is what change and
+    /// disable call, and a resume from there would fire in the middle of a
+    /// transition that is about to move every share itself.
+    func testVerifyingAPasscodeDoesNotResume() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        sut.lock()
+
+        try await sut.unlock(with: passcode)
+
+        XCTAssertEqual(try storedShares(), [share])
+    }
+
+    func testChangingThePasscodeDoesNotResume() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+
+        try await sut.changePasscode(current: passcode, new: newPasscode)
+
+        XCTAssertEqual(try storedShares(), [share])
+    }
+
+    /// The self-deadlock regression. The app-unlock path already holds the
+    /// transition lease, and a lease is not reentrant — an acquiring resume
+    /// would throw `.busy` on the one path that has to work every time.
+    func testResumingFromInsideAHeldTransitionStillSweeps() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        let lease = try coordinator.beginTransition()
+        defer { coordinator.end(lease) }
+
+        await sut.resumeSweepUnlocked()
+
+        XCTAssertTrue(protector.isSealed(try XCTUnwrap(try storedShares().first)))
+    }
+
+    func testTheResumeRunsAtMostOncePerUnlockedSession() async throws {
+        let counting = CountingKeyshareSweeper(wrapping: sweeper)
+        let service = makeService(sweeper: counting)
+        try await service.setPasscode(passcode)
+        counting.reset()
+
+        await service.resumeSweepUnlocked()
+        await service.resumeSweepUnlocked()
+
+        XCTAssertEqual(counting.sealCount, 1)
+    }
+
+    /// And the latch is per session, reset by `lock()` bumping the session
+    /// generation — so plaintext introduced after a successful sweep is picked
+    /// up on the next lock cycle rather than never.
+    func testLockingResetsTheResumeLatch() async throws {
+        let counting = CountingKeyshareSweeper(wrapping: sweeper)
+        let service = makeService(sweeper: counting)
+        try await service.setPasscode(passcode)
+        counting.reset()
+        await service.resumeSweepUnlocked()
+
+        service.lock()
+        try await service.unlockApp(with: passcode)
+
+        XCTAssertEqual(counting.sealCount, 2)
+    }
+
+    /// The key is already adopted by the time the resume runs, so the session is
+    /// open whatever happens next. Reporting a failure would leave the lock
+    /// screen up over an unlocked app, and a persistent cause would lock the user
+    /// out of an app whose passcode they know.
+    func testAFailedResumeDoesNotFailTheUnlock() async throws {
+        let counting = CountingKeyshareSweeper(wrapping: sweeper)
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        let service = makeService(sweeper: counting)
+        service.lock()
+        counting.sealFailure = KeyshareSweeperError.busy
+
+        try await service.unlockApp(with: passcode)
+
+        let isUnlocked: Bool
+        if case .unlocked = session.currentState() { isUnlocked = true } else { isUnlocked = false }
+        XCTAssertTrue(isUnlocked, "the key is adopted before the resume runs, so the session is open either way")
+        XCTAssertEqual(
+            try storedShares(),
+            [share],
+            "the exposure the trade-off accepts: the share stays plaintext until a later unlock succeeds"
+        )
+    }
+
+    /// The latch is only set on success, so a failure is retried rather than
+    /// remembered as done.
+    func testAFailedResumeIsNotLatched() async throws {
+        let counting = CountingKeyshareSweeper(wrapping: sweeper)
+        let service = makeService(sweeper: counting)
+        try await service.setPasscode(passcode)
+        counting.reset()
+        counting.sealFailure = KeyshareSweeperError.busy
+        await service.resumeSweepUnlocked()
+
+        counting.sealFailure = nil
+        await service.resumeSweepUnlocked()
+
+        XCTAssertEqual(counting.sealCount, 2)
+    }
+
+    /// No wrapper means no passcode, and sealing there would write ciphertext
+    /// nothing can open.
+    func testTheResumeDoesNothingWithNoPasscodeSet() async throws {
+        try givenVaults([("vault-one", [share])])
+        let counting = CountingKeyshareSweeper(wrapping: sweeper)
+
+        await makeService(sweeper: counting).resumeSweepUnlocked()
+
+        XCTAssertEqual(counting.sealCount, 0)
+        XCTAssertEqual(try storedShares(), [share])
+    }
+
+    /// Nor does it run while the app is locked: there is no key to seal with,
+    /// and `seal` would throw on every share.
+    func testTheResumeDoesNothingWhileLocked() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        let counting = CountingKeyshareSweeper(wrapping: sweeper)
+        let service = makeService(sweeper: counting)
+        service.lock()
+
+        await service.resumeSweepUnlocked()
+
+        XCTAssertEqual(counting.sealCount, 0)
+        XCTAssertEqual(try storedShares(), [share])
+    }
+
+    /// The lockout this design has to avoid. A vault-creation episode outlives
+    /// the screen that started it — keygen holds one through the deferred
+    /// "Looks Good" commit — so an app that auto-locked there would be
+    /// unopenable if the unlock claimed a transition: the flow cannot be
+    /// finished without unlocking, and unlocking could not happen while the flow
+    /// is open.
+    func testUnlockingTheAppSucceedsWhileAVaultCreationEpisodeIsOpen() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        sut.lock()
+        let episode = try XCTUnwrap(coordinator.beginEpisode())
+        defer { coordinator.end(episode) }
+
+        try await sut.unlockApp(with: passcode)
+
+        XCTAssertTrue(protector.isSealed(try XCTUnwrap(try storedShares().first)))
+    }
+
+    /// It is still excluded against the operations that move the same state.
+    func testAnAppUnlockIsRefusedWhileAPasscodeTransitionIsHeld() async throws {
+        try await sut.setPasscode(passcode)
+        sut.lock()
+        let lease = try coordinator.beginTransition()
+        defer { coordinator.end(lease) }
+
+        do {
+            try await sut.unlockApp(with: passcode)
+            XCTFail("Expected .busy")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .busy)
+        }
+    }
+
+    /// `unlock` guards only the adoption. Without a second check, a lock landing
+    /// during the sweep would be followed by a successful return and the caller
+    /// would dismiss the lock screen over a session that is locked again.
+    func testALockDuringTheResumeSweepCancelsTheUnlock() async throws {
+        try await sut.setPasscode(passcode)
+        try givenVaults([("vault-one", [share])])
+        let locking = CountingKeyshareSweeper(wrapping: sweeper)
+        locking.duringSeal = { [session] in session?.clear() }
+        let service = makeService(sweeper: locking)
+        service.lock()
+
+        do {
+            try await service.unlockApp(with: passcode)
+            XCTFail("Expected .cancelledByLock")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .cancelledByLock)
+        }
+
+        if case .unlocked = session.currentState() {
+            XCTFail("the lock must stand")
+        }
+    }
+
+    /// Write leases do not exclude each other, so the coordinator alone does not
+    /// keep two app unlocks apart — and two of them are not merely wasteful. The
+    /// slower one's post-sweep generation check would clear the faster one's
+    /// perfectly good session, and both would clear the attempt limiter's
+    /// lockout check before either recorded a failure.
+    ///
+    /// Driven from inside the key derivation, so the overlap is deterministic
+    /// rather than a matter of scheduling.
+    func testASecondAppUnlockIsRefusedWhileOneIsInFlight() async throws {
+        try await sut.setPasscode(passcode)
+        sut.lock()
+
+        var nested: [PasscodeError?] = []
+        var service: PasscodeService!
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore) {
+            do {
+                try await service.unlockApp(with: self.passcode)
+                nested.append(nil)
+            } catch {
+                nested.append(error as? PasscodeError)
+            }
+            do {
+                try await service.unlock(with: self.passcode)
+                nested.append(nil)
+            } catch {
+                nested.append(error as? PasscodeError)
+            }
+        }
+        service = makeService(keyStore: hooked)
+
+        try await service.unlockApp(with: passcode)
+
+        XCTAssertEqual(nested, [.busy, .busy], "a reentrant unlock must be refused, not run alongside")
+    }
+
     // MARK: - Change — the claim the whole design rests on
 
     /// Changing the passcode must rewrap 32 bytes and leave every key share
@@ -908,6 +1147,35 @@ extension PasscodeServiceTests {
 
 // MARK: - Test doubles
 
+/// A sweeper that counts seals and can be made to fail one, so the resume
+/// latch — which is invisible from the store, because a second sweep over an
+/// already-sealed store changes nothing — can be observed.
+@MainActor
+private final class CountingKeyshareSweeper: KeyshareSweeping {
+
+    private let wrapped: KeyshareSweeping
+    private(set) var sealCount = 0
+    var sealFailure: Error?
+    /// Runs inside the sweep, so a lock landing mid-sweep is deterministic.
+    var duringSeal: (() -> Void)?
+
+    init(wrapping wrapped: KeyshareSweeping) {
+        self.wrapped = wrapped
+    }
+
+    func reset() { sealCount = 0 }
+
+    func sealAll() throws {
+        sealCount += 1
+        duringSeal?()
+        if let sealFailure { throw sealFailure }
+        try wrapped.sealAll()
+    }
+
+    func unsealAll() throws { try wrapped.unsealAll() }
+    func hasSealedShare() throws -> Bool { try wrapped.hasSealedShare() }
+}
+
 /// A sweeper that runs a hook inside the sealed-share scan — the *first*
 /// suspension point of a set, and the one a generation captured too late would
 /// leave unguarded.
@@ -939,10 +1207,16 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
 
     private let wrapped: KeyshareKeyStoring
     private let duringWrap: @MainActor () throws -> Void
+    private let duringUnwrap: @MainActor () async throws -> Void
 
-    init(wrapping wrapped: KeyshareKeyStoring, duringWrap: @escaping @MainActor () throws -> Void) {
+    init(
+        wrapping wrapped: KeyshareKeyStoring,
+        duringWrap: @escaping @MainActor () throws -> Void = {},
+        duringUnwrap: @escaping @MainActor () async throws -> Void = {}
+    ) {
         self.wrapped = wrapped
         self.duringWrap = duringWrap
+        self.duringUnwrap = duringUnwrap
     }
 
     func generateDataKey() throws -> SymmetricKey { try wrapped.generateDataKey() }
@@ -958,6 +1232,8 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
     }
 
     func unwrap(_ blob: Data, passcode: String) async throws -> SymmetricKey {
-        try await wrapped.unwrap(blob, passcode: passcode)
+        let key = try await wrapped.unwrap(blob, passcode: passcode)
+        try await duringUnwrap()
+        return key
     }
 }

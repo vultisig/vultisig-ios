@@ -67,6 +67,24 @@ actor PasscodeService {
     private let coordinator: KeyshareWriteCoordinator
     private let sweeper: KeyshareSweeping
 
+    /// The session generation whose resume sweep has already run, so it runs at
+    /// most once per unlocked session. `lock()` bumps the generation, and that is
+    /// what resets this — there is nothing to clear, which matters because
+    /// `lock()` is `nonisolated` and cannot touch actor state.
+    private var resumedGeneration: Int?
+
+    /// Set while an app unlock is in flight, and while a passcode is being
+    /// verified. Neither is covered by the coordinator — an unlock takes a
+    /// *write* lease, and writes do not exclude each other — and neither is
+    /// covered by the actor either, because both suspend across key derivation
+    /// and actors are reentrant at every `await`. Two overlapping verifications
+    /// would both clear the attempt limiter's lockout check before either
+    /// recorded a failure, which is the throttle switching itself off; two
+    /// overlapping app unlocks would let the slower one's post-sweep generation
+    /// check clear the faster one's perfectly good session.
+    private var isAppUnlockInFlight = false
+    private var isVerifyingPasscode = false
+
     init(
         keyStore: KeyshareKeyStoring = DefaultKeyshareKeyStore.shared,
         session: KeyshareKeySession = .shared,
@@ -166,12 +184,114 @@ actor PasscodeService {
 
     // MARK: - Unlock
 
+    /// Opens the app on the lock screen.
+    ///
+    /// Distinct from ``unlock(with:now:)``, which is passcode *verification* and
+    /// is what change and disable use. This one holds the coordinator for the
+    /// whole operation and finishes any sweep an earlier transition left half
+    /// done before the caller is told the app is open, so the lock screen is the
+    /// one place the invariant is re-established.
+    ///
+    /// It takes a **write** lease rather than a transition lease, and that is
+    /// the difference between a recoverable app and a bricked one: a transition
+    /// is refused while a vault-creation episode is open, keygen holds one
+    /// through the deferred "Looks Good" commit, and an app that auto-locked on
+    /// that screen could then never be unlocked — the flow cannot be finished
+    /// without unlocking, and unlocking could not happen while the flow is open.
+    /// A write lease excludes set, change and disable, which is all an unlock
+    /// needs, and is refused by none of them.
+    @discardableResult
+    func unlockApp(with passcode: String, now: Date = Date()) async throws -> SymmetricKey {
+        // Write leases do not exclude each other, so this is what keeps two app
+        // unlocks apart. Read and set with no `await` between them, which is
+        // what makes it atomic inside the actor.
+        guard !isAppUnlockInFlight else { throw PasscodeError.busy }
+        isAppUnlockInFlight = true
+        defer { isAppUnlockInFlight = false }
+
+        let lease = try beginUnlock()
+        defer { coordinator.end(lease) }
+
+        let generation = session.currentGeneration
+        let dataKey = try await unlock(with: passcode, now: now)
+        await resumeSweepUnlocked()
+
+        // `unlock` only guards the *adoption* against a lock. A lock landing
+        // during the sweep would otherwise be followed by a successful return,
+        // and the caller would dismiss the lock screen over a session that is
+        // locked again.
+        guard session.currentGeneration == generation else {
+            session.clear()
+            throw PasscodeError.cancelledByLock
+        }
+        return dataKey
+    }
+
+    /// One rule: **with the data key in hand and a wrapper present, seal any
+    /// share that is still plaintext.**
+    ///
+    /// That finishes an interrupted `setPasscode`, re-establishes the invariant
+    /// after an interrupted `disablePasscode` (whose wrapper goes last, so an
+    /// interruption leaves it present and the shares get sealed again — the user
+    /// simply presses disable twice), and closes "plaintext introduced by a
+    /// downgrade stays plaintext forever" as a side effect. It deliberately does
+    /// *not* try to tell an interrupted disable from an interrupted set: with the
+    /// wrapper present there is no way to, and guessing "disable" would silently
+    /// remove protection.
+    ///
+    /// **Non-acquiring, and there is deliberately no acquiring variant.** Both
+    /// app-unlock paths already hold a lease that excludes transitions, and an
+    /// acquiring version would ask the coordinator for one from inside it — which
+    /// is exactly what the coordinator refuses, so it would throw `.busy` on the
+    /// single path that has to work every time.
+    ///
+    /// **Failures do not fail the unlock.** The key has already been adopted by
+    /// the time this runs, so the session *is* open; reporting an error would
+    /// leave the lock screen up over an unlocked session, and a persistent cause
+    /// — an unsaved edit somewhere in the store, one share that will not open —
+    /// would lock the user out of an app whose passcode they know. Shares staying
+    /// plaintext for another lock cycle is the lesser failure, and the latch is
+    /// only set on success, so the next unlock tries again.
+    ///
+    /// The latch is per unlocked session: `lock()` bumps the session generation,
+    /// which is what invalidates it, so plaintext introduced after a successful
+    /// sweep is picked up on the next lock cycle rather than never.
+    func resumeSweepUnlocked() async {
+        guard case .unlocked = session.currentState() else { return }
+        guard case .present = keyStore.loadWrappedDataKey() else { return }
+
+        let generation = session.currentGeneration
+        guard resumedGeneration != generation else { return }
+
+        do {
+            try await sweeper.sealAll()
+            resumedGeneration = generation
+        } catch {
+            logger.error("Resume sweep failed; the app stays unlocked and the next unlock retries: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Verifies a passcode and puts the data key back in the session.
+    ///
+    /// **Not the app-unlock path.** Change and disable use this to check the
+    /// current passcode, so it takes no lease and runs no resume sweep. A lock
+    /// screen wired to this instead of ``unlockApp(with:now:)`` would look
+    /// identical and silently never finish an interrupted transition.
     @discardableResult
     func unlock(with passcode: String, now: Date = Date()) async throws -> SymmetricKey {
-        // First instruction, for the same reason it is in `setPasscode`: a
-        // `nonisolated` lock() can land during the Keychain read below as easily
-        // as during the derivation, and a generation read afterwards would let
-        // the adopt undo it.
+        // One verification at a time. The lockout is checked here and the
+        // failure recorded after the derivation, so overlapping attempts would
+        // all clear the check before any of them recorded anything — a burst of
+        // guesses collapsing into one counted failure, which is the throttle
+        // this feature depends on switching itself off.
+        guard !isVerifyingPasscode else { throw PasscodeError.busy }
+        isVerifyingPasscode = true
+        defer { isVerifyingPasscode = false }
+
+        // First instruction after that, for the same reason it is in
+        // `setPasscode`: a `nonisolated` lock() can land during the Keychain
+        // read below as easily as during the derivation, and a generation read
+        // afterwards would let the adopt undo it.
         let generation = session.currentGeneration
 
         let lockout = limiter.remainingLockout(now: now)
@@ -223,7 +343,10 @@ actor PasscodeService {
     /// unlock, which is the point — a locked app cannot sign.
     ///
     /// `nonisolated` because it touches no actor state and is called from
-    /// scene-phase hooks; `KeyshareKeySession` does its own locking.
+    /// scene-phase hooks; `KeyshareKeySession` does its own locking. Bumping the
+    /// session generation is also what resets the resume latch, which is why the
+    /// latch is keyed on the generation rather than being a flag this would have
+    /// to reach into the actor to clear.
     nonisolated func lock() {
         session.clear()
     }
@@ -352,6 +475,16 @@ actor PasscodeService {
     private func beginTransition() throws -> TransitionLease {
         do {
             return try coordinator.beginTransition()
+        } catch {
+            throw PasscodeError.busy
+        }
+    }
+
+    /// Refused only by another passcode transition — see ``unlockApp(with:now:)``
+    /// for why an unlock must not be refused by anything else.
+    private func beginUnlock() throws -> WriteLease {
+        do {
+            return try coordinator.beginWrite()
         } catch {
             throw PasscodeError.busy
         }

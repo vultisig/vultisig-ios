@@ -104,22 +104,34 @@ final class KeyshareWriteCoordinator {
     /// - Throws: `KeyshareWriteCoordinatorError.busy` if a transition holds the
     ///   coordinator, or whatever `body` throws.
     func withWriteLease<T>(_ body: () throws -> T) throws -> T {
-        lock.lock()
-        guard !isTransitionHeld else {
-            lock.unlock()
-            logger.info("Key-share write refused; a passcode transition is in progress")
-            throw KeyshareWriteCoordinatorError.busy
-        }
-        writesInFlight += 1
-        lock.unlock()
-
-        defer {
-            lock.lock()
-            writesInFlight -= 1
-            lock.unlock()
-        }
-
+        try claimWrite()
+        defer { releaseWrite() }
         return try body()
+    }
+
+    /// The same claim as ``withWriteLease(_:)``, held as a token, for the one
+    /// caller that has to `await` in the middle of it: the app unlock, which
+    /// unwraps the data key and then finishes any sweep an interrupted
+    /// transition left behind.
+    ///
+    /// **A write and not a transition, deliberately.** A transition is refused
+    /// while a vault-creation episode is open, and keygen holds one from the
+    /// protocol starting through the deferred commit — so an app that locked on
+    /// the review screen could never be opened again: the flow cannot be
+    /// finished without unlocking, and unlocking cannot happen while the flow is
+    /// open. Excluding transitions is all an unlock needs, and that is exactly
+    /// what a write lease does.
+    ///
+    /// - Throws: `KeyshareWriteCoordinatorError.busy` if a transition is held.
+    func beginWrite() throws -> WriteLease {
+        try claimWrite()
+        return WriteLease { self.releaseWrite() }
+    }
+
+    /// Releases a write lease. Calling it twice, or after the lease has already
+    /// been dropped, is a no-op.
+    func end(_ lease: WriteLease) {
+        lease.release()
     }
 
     // MARK: - Episodes
@@ -155,6 +167,23 @@ final class KeyshareWriteCoordinator {
     }
 
     // MARK: - Privates
+
+    private func claimWrite() throws {
+        lock.lock()
+        guard !isTransitionHeld else {
+            lock.unlock()
+            logger.info("Key-share write refused; a passcode transition is in progress")
+            throw KeyshareWriteCoordinatorError.busy
+        }
+        writesInFlight += 1
+        lock.unlock()
+    }
+
+    private func releaseWrite() {
+        lock.lock()
+        writesInFlight -= 1
+        lock.unlock()
+    }
 
     private func releaseTransition() {
         lock.lock()
@@ -214,6 +243,9 @@ class KeyshareLease {
 
 /// Held for the duration of one passcode set, change, disable or resume.
 final class TransitionLease: KeyshareLease {}
+
+/// Held for the duration of one key-share write that has to `await`.
+final class WriteLease: KeyshareLease {}
 
 /// Held for the duration of one keygen, reshare or vault import.
 final class EpisodeLease: KeyshareLease {}
