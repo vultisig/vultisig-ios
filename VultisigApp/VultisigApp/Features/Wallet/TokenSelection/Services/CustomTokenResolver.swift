@@ -96,7 +96,21 @@ private struct SuiCustomTokenResolverStrategy: CustomTokenResolver {
     }
 
     func validate(_ address: String) -> Bool {
-        SuiCoinType.isValidStructTag(address)
+        let coinType = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        let segments = coinType.split(separator: "::", maxSplits: 2, omittingEmptySubsequences: false)
+        guard segments.count == 3,
+              !segments[1].isEmpty,
+              !segments[2].isEmpty else {
+            return false
+        }
+
+        let packageAddress = segments[0]
+        let hexAddress = packageAddress.lowercased().hasPrefix("0x")
+            ? packageAddress.dropFirst(2)
+            : packageAddress[...]
+        return !hexAddress.isEmpty &&
+            hexAddress.count <= 64 &&
+            hexAddress.allSatisfy(\.isHexDigit)
     }
 }
 

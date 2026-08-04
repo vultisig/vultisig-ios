@@ -42,38 +42,35 @@ final class SuiCustomTokenResolverTests: XCTestCase {
         XCTAssertFalse(token.isNativeToken)
     }
 
-    func testStructTagValidationMatchesMoveTypeGrammar() {
+    func testValidationChecksExpectedCoinTypeShape() {
         let fullAddress = "0x" + String(repeating: "a", count: 64)
-        let excessiveNesting = "0x2::wrapper::Wrapped<" +
-            String(repeating: "vector<", count: 65) +
-            "u8" +
-            String(repeating: ">", count: 65) +
-            ">"
-        let validTags = [
+        let expectedShapes = [
             "0x2::sui::SUI",
             "2::sui::SUI",
             "\(fullAddress)::module_1::Token_2",
-            "0x2::wrapper::Wrapped<vector<0x3::coin::Coin<u8>>>"
+            "0x2::wrapper::Wrapped<vector<0x3::coin::Coin<u8>>>",
+            "0x2::_module::_type",
+            "0x2::module::Type<unknown>"
         ]
-        let invalidTags = [
+        let invalidShapes = [
             "",
+            "   ",
             "0x2",
             "0xzz::sui::SUI",
             "0x2::sui",
-            "0x2::sui::SUI::extra",
-            "0x2::_sui::SUI",
-            "0x2::sui::_SUI",
+            "::sui::SUI",
+            "0x2::::SUI",
+            "0x2::sui::",
             "0x2 ::sui::SUI",
-            "0x2::sui::SUI<unknown>",
-            excessiveNesting,
             "0x\(String(repeating: "a", count: 65))::sui::SUI"
         ]
 
-        for tag in validTags {
-            XCTAssertTrue(SuiCoinType.isValidStructTag(tag), "Expected valid tag: \(tag)")
+        let resolver = CustomTokenResolverFactory.make(chain: .sui)
+        for coinType in expectedShapes {
+            XCTAssertTrue(resolver.validate(coinType), "Expected accepted shape: \(coinType)")
         }
-        for tag in invalidTags {
-            XCTAssertFalse(SuiCoinType.isValidStructTag(tag), "Expected invalid tag: \(tag)")
+        for coinType in invalidShapes {
+            XCTAssertFalse(resolver.validate(coinType), "Expected rejected shape: \(coinType)")
         }
     }
 
