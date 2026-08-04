@@ -11,7 +11,21 @@ import BigInt
 import OSLog
 import WalletCore
 
-class SuiService {
+struct SuiCoinMetadata: Decodable, Equatable {
+    let decimals: Int
+    let symbol: String
+    let iconUrl: String?
+}
+
+protocol SuiCoinMetadataProviding {
+    func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata?
+}
+
+enum SuiCoinMetadataError: Error {
+    case rpc(String)
+}
+
+class SuiService: SuiCoinMetadataProviding {
     static let shared = SuiService()
 
     private let logger = Log.chain.service
@@ -239,6 +253,21 @@ class SuiService {
         return []
     }
 
+    func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata? {
+        let data = try await Utils.PostRequestRpc(
+            rpcURL: rpcURL,
+            method: "suix_getCoinMetadata",
+            params: [coinType]
+        )
+        let response = try jsonDecoder.decode(SuiCoinMetadataResponse.self, from: data)
+
+        if let error = response.error {
+            throw SuiCoinMetadataError.rpc(error.message)
+        }
+
+        return response.result
+    }
+
     func getAllTokensWithMetadata(address: String) async throws -> [CoinMeta] {
         let allTokens = try await getAllTokens(address: address) // Get tokens first
 
@@ -248,15 +277,16 @@ class SuiService {
             if let objType = token["coinType"] {
                 do {
 
-                    let metadata = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getCoinMetadata", params: [objType])
+                    guard let metadata = try await getCoinMetadata(coinType: objType) else {
+                        continue
+                    }
 
                     let tokenData: [String: String] = [
                         "objectID": token["objectID"] ?? "",
                         "type": objType,
-                        "symbol": Utils.extractResultFromJson(fromData: metadata, path: "result.symbol") as? String ?? "Unknown",
-                        "name": Utils.extractResultFromJson(fromData: metadata, path: "result.name") as? String ?? "Unknown",
-                        "decimals": (Utils.extractResultFromJson(fromData: metadata, path: "result.decimals") as? Int ?? 0).description,
-                        "logo": Utils.extractResultFromJson(fromData: metadata, path: "result.iconUrl") as? String ?? ""
+                        "symbol": metadata.symbol,
+                        "decimals": metadata.decimals.description,
+                        "logo": metadata.iconUrl ?? ""
                     ]
 
                     // Search TokensStore by ticker for any token with a valid priceProviderId
@@ -338,6 +368,15 @@ class SuiService {
             throw Errors.dryRunFailed(error.localizedDescription)
         }
     }
+}
+
+private struct SuiCoinMetadataResponse: Decodable {
+    let result: SuiCoinMetadata?
+    let error: SuiRPCError?
+}
+
+private struct SuiRPCError: Decodable {
+    let message: String
 }
 
 private extension SuiService {
