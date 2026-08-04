@@ -57,6 +57,58 @@ final class KaminoVaultRegistryTests: XCTestCase {
         XCTAssertFalse(KaminoVaultRegistry.isAllowed(""))
     }
 
+    /// Mints and farms are pinned here rather than read from the API, because a
+    /// transaction the API built cannot be validated against metadata the same
+    /// API supplied. That only helps if the pinned values are themselves real
+    /// Solana addresses.
+    func test_allowList_pinnedMintsAndFarmsAreValidSolanaAddresses() {
+        for descriptor in KaminoVaultRegistry.allowList {
+            for (label, address) in [
+                ("tokenMint", descriptor.tokenMint),
+                ("sharesMint", descriptor.sharesMint)
+            ] + (descriptor.farm.map { [("farm", $0)] } ?? []) {
+                XCTAssertNotNil(
+                    AnyAddress(string: address, coin: .solana),
+                    "\(descriptor.fallbackName) has an invalid \(label)"
+                )
+            }
+        }
+    }
+
+    /// Every launch vault stakes deposits into a farm, so the shares never reach
+    /// the user's wallet and the position cannot be read from an ATA.
+    func test_allowList_everyLaunchVaultHasAFarm() {
+        for descriptor in KaminoVaultRegistry.allowList {
+            XCTAssertNotNil(descriptor.farm, "\(descriptor.fallbackName) has no farm")
+        }
+    }
+
+    /// The decimal scales index a `10^n` factor in every conversion. They used to
+    /// be bounds-checked at the service boundary; now they are constants, so this
+    /// is where that guarantee lives.
+    func test_allowList_decimalScalesAreSane() {
+        for descriptor in KaminoVaultRegistry.allowList {
+            XCTAssertTrue((0...KaminoBaseUnits.maxDecimals).contains(descriptor.tokenDecimals))
+            XCTAssertTrue((0...KaminoBaseUnits.maxDecimals).contains(descriptor.sharesDecimals))
+        }
+    }
+
+    /// The SOL vault is the counterexample to any code that assumes a vault's two
+    /// decimal scales match.
+    func test_allezSol_pinsMismatchedDecimalScales() {
+        XCTAssertEqual(KaminoVaultRegistry.allezSOL.tokenMint, KaminoVaultRegistry.wrappedSolMint)
+        XCTAssertEqual(KaminoVaultRegistry.allezSOL.tokenDecimals, 9)
+        XCTAssertEqual(KaminoVaultRegistry.allezSOL.sharesDecimals, 6)
+    }
+
+    /// Two vaults over the same token, with different share mints and different
+    /// farms — a mix-up between them would deposit into the wrong curator's book.
+    func test_usdcVaults_shareATokenButNotAShareMintOrFarm() {
+        XCTAssertEqual(KaminoVaultRegistry.steakhouseUSDC.tokenMint, KaminoVaultRegistry.rwaUSDC.tokenMint)
+        XCTAssertNotEqual(KaminoVaultRegistry.steakhouseUSDC.sharesMint, KaminoVaultRegistry.rwaUSDC.sharesMint)
+        XCTAssertNotEqual(KaminoVaultRegistry.steakhouseUSDC.farm, KaminoVaultRegistry.rwaUSDC.farm)
+    }
+
     func test_descriptorLookup_isAddressKeyed() {
         let descriptor = KaminoVaultRegistry.descriptor(for: KaminoVaultRegistry.allezSOL.address)
         XCTAssertEqual(descriptor?.curator, "Allez Labs")
