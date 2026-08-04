@@ -186,7 +186,7 @@ final class KaminoDepositViewModel: ObservableObject, Form {
                 amount: amount,
                 unitPrice: unitPrice
             )
-            let payload = try KaminoDepositPayloadFactory.makeDeposit(
+            let payload = try KaminoKeysignPayloadFactory.makeDeposit(
                 prepared: prepared,
                 vaultInfo: vaultInfo,
                 amount: amount,

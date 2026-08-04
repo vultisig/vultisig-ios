@@ -181,6 +181,15 @@ struct KaminoTokenAmount: KaminoBaseUnitAmount {
         guard let baseUnits = BigInt(baseUnitString) else { return nil }
         self.init(baseUnits: baseUnits, decimals: decimals)
     }
+
+    /// Parses a human-units token string as returned by the metrics endpoint
+    /// (e.g. `tokensAvailable = "9581.812345"`), exactly.
+    init?(decimalString: String, decimals: Int) {
+        guard let rate = KaminoRate(apiString: decimalString),
+              let baseUnits = KaminoAmountMath.scale(rate: rate, toDecimals: decimals)
+        else { return nil }
+        self.init(baseUnits: baseUnits, decimals: decimals)
+    }
 }
 
 /// An amount denominated in a vault's **share token** (kTokens).
@@ -373,6 +382,26 @@ extension KaminoShareAmount {
     /// USD-denominated and only coincides with it on dollar-pegged vaults (Allez
     /// SOL: `sharePrice` 0.0794 vs `tokensPerShare` 0.0010749).
     func tokenValue(tokensPerShare rate: KaminoRate, tokenDecimals: Int) -> KaminoTokenAmount? {
+        tokenValue(tokensPerShare: rate, tokenDecimals: tokenDecimals, roundingUp: false)
+    }
+
+    /// The same conversion rounded **up**.
+    ///
+    /// Used for one thing only: rendering a share-denominated *minimum* as an
+    /// asset amount. `minWithdrawAmount` is in share base units, and a form
+    /// denominated in the asset has to name a figure that, converted back, still
+    /// clears it — so the displayed minimum rounds away from the user rather
+    /// than toward them. Never use this to size a transaction: rounding up is
+    /// exactly the direction that turns a partial withdraw into an over-request.
+    func tokenValueRoundedUp(tokensPerShare rate: KaminoRate, tokenDecimals: Int) -> KaminoTokenAmount? {
+        tokenValue(tokensPerShare: rate, tokenDecimals: tokenDecimals, roundingUp: true)
+    }
+
+    private func tokenValue(
+        tokensPerShare rate: KaminoRate,
+        tokenDecimals: Int,
+        roundingUp: Bool
+    ) -> KaminoTokenAmount? {
         guard rate.isPositive,
               baseUnits >= 0,
               (0...KaminoBaseUnits.maxDecimals).contains(tokenDecimals),
@@ -385,7 +414,10 @@ extension KaminoShareAmount {
         //                ÷ (10^shareDecimals × 10^rateScale)
         let numerator = baseUnits * rate.numerator * BigInt(10).power(tokenDecimals)
         let denominator = BigInt(10).power(decimals + rate.scale)
-        return KaminoTokenAmount(baseUnits: numerator / denominator, decimals: tokenDecimals)
+        let quotient = roundingUp
+            ? (numerator + denominator - 1) / denominator
+            : numerator / denominator
+        return KaminoTokenAmount(baseUnits: quotient, decimals: tokenDecimals)
     }
 }
 

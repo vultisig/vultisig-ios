@@ -24,6 +24,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
 
     private let owner = KaminoTransactionFixtures.usdcDeposit.feePayer
     private let solOwner = KaminoTransactionFixtures.solDeposit.feePayer
+    private let withdrawOwner = KaminoTransactionFixtures.usdcWithdraw.feePayer
 
     // MARK: - The pipeline reproduces the mainnet-proven bytes
 
@@ -74,6 +75,132 @@ final class KaminoTransactionPreparerTests: XCTestCase {
         let generic = SolanaHelper.priorityFeeLimit
         XCTAssertGreaterThan(BigInt(KaminoComputeBudget.tokenDepositUnitLimit), generic)
         XCTAssertGreaterThan(BigInt(KaminoComputeBudget.nativeDepositUnitLimit), generic)
+    }
+
+    // MARK: - Withdraw
+
+    /// The same assertion the deposits get: the preparer's output for the
+    /// sampled withdraw is byte-identical to the vector that was injected by the
+    /// reference implementation and simulated on mainnet with `err: null`.
+    func testUsdcWithdrawProducesTheMainnetSimulatedBytes() async throws {
+        let harness = Harness(vector: KaminoTransactionFixtures.usdcWithdraw)
+
+        let prepared = try await harness.preparer.prepareWithdraw(
+            vault: Self.steakhouseWithdrawVault,
+            owner: withdrawOwner,
+            shares: Self.usdcShares,
+            unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+        )
+
+        XCTAssertEqual(prepared.base64, KaminoTransactionFixtures.usdcWithdraw.injected)
+        XCTAssertEqual(prepared.priorityFee.limit, KaminoComputeBudget.withdrawUnitLimit)
+        XCTAssertEqual(prepared.priorityFee.price, KaminoTransactionFixtures.unitPriceMicroLamports)
+    }
+
+    /// The request is sized in SHARES. The API takes the same `amount` field for
+    /// both actions with inverted units, so this is the assertion that the
+    /// withdraw path never hands it a token figure.
+    func testTheWithdrawRequestIsDenominatedInShares() async throws {
+        let harness = Harness(vector: KaminoTransactionFixtures.usdcWithdraw)
+
+        _ = try await harness.preparer.prepareWithdraw(
+            vault: Self.steakhouseWithdrawVault,
+            owner: withdrawOwner,
+            shares: Self.usdcShares,
+            unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+        )
+
+        XCTAssertEqual(harness.service.withdrawRequests.first?.shares, Self.usdcShares)
+        XCTAssertEqual(harness.service.withdrawRequests.first?.vault, KaminoVaultRegistry.steakhouseUSDC)
+        XCTAssertTrue(harness.service.depositRequests.isEmpty)
+    }
+
+    /// A withdraw consumes 174,566 units on mainnet — above the generic Solana
+    /// limit, and below its own.
+    func testTheWithdrawLimitClearsTheGenericSolanaLimit() {
+        XCTAssertGreaterThan(BigInt(KaminoComputeBudget.withdrawUnitLimit), SolanaHelper.priorityFeeLimit)
+        XCTAssertGreaterThan(KaminoComputeBudget.withdrawUnitLimit, 174_566)
+    }
+
+    /// Phase one's contract on the withdraw path too: a response that already
+    /// carries a ComputeBudget instruction is a fee the app did not choose.
+    func testAWithdrawResponseThatAlreadyCarriesAComputeBudgetIsRefused() async {
+        let harness = Harness(
+            vector: KaminoTransactionFixtures.usdcWithdraw,
+            served: KaminoTransactionFixtures.usdcWithdraw.injected
+        )
+
+        do {
+            _ = try await harness.preparer.prepareWithdraw(
+                vault: Self.steakhouseWithdrawVault,
+                owner: withdrawOwner,
+                shares: Self.usdcShares,
+                unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+            XCTFail("expected the pre-injection validation to refuse a supplied compute budget")
+        } catch let error as KaminoValidationError {
+            XCTAssertEqual(error, .unexpectedPriorityFee(index: 0))
+        } catch {
+            XCTFail("unexpected error \(error)")
+        }
+
+        XCTAssertTrue(harness.solana.simulatedTransactions.isEmpty)
+    }
+
+    /// The backstop that makes the `u64::MAX` sentinel unreachable. The
+    /// validator pins the withdraw instruction's argument to exactly the shares
+    /// that were requested, so a response carrying "withdraw everything" is
+    /// refused before simulation and before any signature.
+    func testAResponseThatRewroteTheAmountToTheSentinelIsRefused() async {
+        let harness = Harness(vector: KaminoTransactionFixtures.usdcWithdraw)
+        // The sampled transaction burns 5,500,000 shares. Asking for one fewer
+        // makes the response's amount the larger of the two — the shape a
+        // silently widened withdraw has.
+        let requested = KaminoShareAmount(baseUnits: BigInt(5_499_999), decimals: 6)
+
+        do {
+            _ = try await harness.preparer.prepareWithdraw(
+                vault: Self.steakhouseWithdrawVault,
+                owner: withdrawOwner,
+                shares: requested,
+                unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+            XCTFail("expected an amount mismatch")
+        } catch let error as KaminoValidationError {
+            XCTAssertEqual(
+                error,
+                .amountMismatch(role: "withdraw share amount", expected: "5499999", actual: "5500000")
+            )
+        } catch {
+            XCTFail("unexpected error \(error)")
+        }
+
+        XCTAssertTrue(harness.solana.simulatedTransactions.isEmpty)
+    }
+
+    /// A withdraw that would not execute never reaches a signer, whatever the
+    /// reason — including the one this feature cannot yet name, a vault without
+    /// the liquid balance to settle it.
+    func testAWithdrawThatWouldFailIsRefused() async {
+        let harness = Harness(vector: KaminoTransactionFixtures.usdcWithdraw)
+        harness.solana.results = [.failed("{InstructionError: [1, {Custom: 6003}]}"), .ok(payer: nil)]
+
+        do {
+            _ = try await harness.preparer.prepareWithdraw(
+                vault: Self.steakhouseWithdrawVault,
+                owner: withdrawOwner,
+                shares: Self.usdcShares,
+                unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+            XCTFail("expected a refusal")
+        } catch let error as KaminoPreparationError {
+            guard case .simulationFailed(let stage, _) = error else {
+                return XCTFail("unexpected error \(error)")
+            }
+            XCTAssertEqual(stage, .asBuilt)
+        } catch {
+            XCTFail("unexpected error \(error)")
+        }
     }
 
     // MARK: - Two-phase validation
@@ -368,11 +495,23 @@ private extension KaminoTransactionPreparerTests {
 
     static let usdcAmount = KaminoTokenAmount(baseUnits: BigInt(10_000_000), decimals: 6)
     static let solAmount = KaminoTokenAmount(baseUnits: BigInt(500_000_000), decimals: 9)
+    /// The share count the sampled withdraw vector burns.
+    static let usdcShares = KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)
 
     static var steakhouseVault: KaminoVaultInfo {
         vaultInfo(
             descriptor: KaminoVaultRegistry.steakhouseUSDC,
             lookupTable: KaminoTransactionFixtures.usdcDeposit.lookupTable,
+            minDeposit: KaminoTokenAmount(baseUnits: BigInt(100_000), decimals: 6)
+        )
+    }
+
+    /// Same vault, and the same lookup table — the withdraw vector references it
+    /// too — named separately so the withdraw cases read as their own.
+    static var steakhouseWithdrawVault: KaminoVaultInfo {
+        vaultInfo(
+            descriptor: KaminoVaultRegistry.steakhouseUSDC,
+            lookupTable: KaminoTransactionFixtures.usdcWithdraw.lookupTable,
             minDeposit: KaminoTokenAmount(baseUnits: BigInt(100_000), decimals: 6)
         )
     }
@@ -446,10 +585,15 @@ private final class StubKaminoService: KaminoServiceProtocol, @unchecked Sendabl
 
     let transaction: String
     private let lock = NSLock()
-    private var _depositRequests: [(owner: String, vault: String, amount: KaminoTokenAmount)] = []
+    private var _depositRequests: [(owner: String, vault: KaminoVaultDescriptor, amount: KaminoTokenAmount)] = []
+    private var _withdrawRequests: [(owner: String, vault: KaminoVaultDescriptor, shares: KaminoShareAmount)] = []
 
-    var depositRequests: [(owner: String, vault: String, amount: KaminoTokenAmount)] {
+    var depositRequests: [(owner: String, vault: KaminoVaultDescriptor, amount: KaminoTokenAmount)] {
         lock.withLock { _depositRequests }
+    }
+
+    var withdrawRequests: [(owner: String, vault: KaminoVaultDescriptor, shares: KaminoShareAmount)] {
+        lock.withLock { _withdrawRequests }
     }
 
     init(transaction: String) {
@@ -458,15 +602,16 @@ private final class StubKaminoService: KaminoServiceProtocol, @unchecked Sendabl
 
     func buildDepositTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         amount: KaminoTokenAmount
     ) async throws -> String {
         lock.withLock { _depositRequests.append((owner, vault, amount)) }
         return transaction
     }
 
-    func buildWithdrawTransaction(owner: String, vault: String, shares: KaminoShareAmount) async throws -> String {
-        throw StubError.notUsedHere
+    func buildWithdrawTransaction(owner: String, vault: KaminoVaultDescriptor, shares: KaminoShareAmount) async throws -> String {
+        lock.withLock { _withdrawRequests.append((owner, vault, shares)) }
+        return transaction
     }
 
     func fetchVaultState(address: String) async throws -> KaminoVaultStateResponse { throw StubError.notUsedHere }

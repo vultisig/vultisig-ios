@@ -7,9 +7,7 @@
 //
 //  Each card shows the vault's name, its curator and risk tier, the deposited
 //  amount in the underlying token with its fiat value, the 30-day APY and the
-//  lifetime profit and loss, and opens the deposit form. Withdrawing is not
-//  offered yet — the farm-staked withdraw transaction has never been observed,
-//  and the validator refuses a shape it has not seen.
+//  lifetime profit and loss, and opens the deposit and withdraw forms.
 //
 
 import SwiftUI
@@ -29,6 +27,7 @@ private enum KaminoEarnFormatters {
 struct KaminoEarnView<EmptyState: View>: View {
     @ObservedObject var viewModel: KaminoEarnViewModel
     let onDeposit: (KaminoVaultDescriptor) -> Void
+    let onWithdraw: (KaminoVaultDescriptor) -> Void
     @ViewBuilder var emptyStateView: () -> EmptyState
 
     // Gated on the per-vault opt-in exactly like the stake segment: until the
@@ -96,19 +95,28 @@ struct KaminoEarnView<EmptyState: View>: View {
                 pnlRow(for: row)
             }
             Separator(color: Theme.colors.borderLight, opacity: 1)
-            depositButton(for: row)
+            actionRow(for: row)
         }
         .padding(16)
         .background(cardBackground)
         .overlay(cardBorder)
     }
 
-    /// Deposit only. A withdraw button would need a withdraw transaction the app
-    /// can validate, and the farm-staked shape every one of these positions is in
-    /// has never been observed.
-    private func depositButton(for row: KaminoEarnRow) -> some View {
-        PrimaryButton(title: "kaminoEarnDeposit".localized, size: .smallFixed) {
-            onDeposit(row.descriptor)
+    /// The withdraw button appears only once the vault holds something. Whether
+    /// that position can actually be withdrawn is the withdraw form's answer —
+    /// it depends on whether the shares are staked in the vault's farm, which
+    /// this row does not know and must not guess.
+    @ViewBuilder
+    private func actionRow(for row: KaminoEarnRow) -> some View {
+        HStack(spacing: 12) {
+            PrimaryButton(title: "kaminoEarnDeposit".localized, size: .smallFixed) {
+                onDeposit(row.descriptor)
+            }
+            if row.tokenAmount > 0 {
+                PrimaryButton(title: "kaminoEarnWithdraw".localized, type: .secondary, size: .smallFixed) {
+                    onWithdraw(row.descriptor)
+                }
+            }
         }
     }
 

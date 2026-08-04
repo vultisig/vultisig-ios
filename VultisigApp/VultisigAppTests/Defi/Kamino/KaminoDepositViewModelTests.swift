@@ -405,10 +405,10 @@ private final class StubDepositService: KaminoServiceProtocol, @unchecked Sendab
     func fetchVaultMetrics(address: String) async throws -> KaminoVaultMetricsResponse { throw StubError.unavailable }
     func fetchPositions(owner: String) async throws -> [KaminoUserPositionResponse] { throw StubError.unavailable }
     func fetchPnl(owner: String, vault: String) async throws -> KaminoPnlResponse { throw StubError.unavailable }
-    func buildDepositTransaction(owner: String, vault: String, amount: KaminoTokenAmount) async throws -> String {
+    func buildDepositTransaction(owner: String, vault: KaminoVaultDescriptor, amount: KaminoTokenAmount) async throws -> String {
         throw StubError.unavailable
     }
-    func buildWithdrawTransaction(owner: String, vault: String, shares: KaminoShareAmount) async throws -> String {
+    func buildWithdrawTransaction(owner: String, vault: KaminoVaultDescriptor, shares: KaminoShareAmount) async throws -> String {
         throw StubError.unavailable
     }
 }

@@ -208,11 +208,10 @@ struct DefiChainMainScreen: View {
                     emptyStateView: { emptyStateView }
                 )
             case .earn:
-                // Deposit only for now: withdrawing needs a transaction shape
-                // the validator has never seen, so it is not offered.
                 KaminoEarnView(
                     viewModel: kaminoEarnViewModel,
                     onDeposit: { onKaminoDeposit(descriptor: $0) },
+                    onWithdraw: { onKaminoWithdraw(descriptor: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .governance:
@@ -368,6 +367,13 @@ struct DefiChainMainScreen: View {
     func onKaminoDeposit(descriptor: KaminoVaultDescriptor) {
         guard chain == KaminoVaultRegistry.chain else { return }
         router.navigate(to: KaminoRoute.deposit(vault: vault, descriptor: descriptor))
+    }
+
+    /// Opens the withdraw form for one curated vault. Same chain guard as the
+    /// deposit route, for the same reason.
+    func onKaminoWithdraw(descriptor: KaminoVaultDescriptor) {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        router.navigate(to: KaminoRoute.withdraw(vault: vault, descriptor: descriptor))
     }
 
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {

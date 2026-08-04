@@ -12,6 +12,7 @@ import SwiftUI
 /// does not curate.
 enum KaminoRoute: Hashable {
     case deposit(vault: Vault, descriptor: KaminoVaultDescriptor)
+    case withdraw(vault: Vault, descriptor: KaminoVaultDescriptor)
 }
 
 struct KaminoRouter {
@@ -22,6 +23,8 @@ struct KaminoRouter {
         switch route {
         case .deposit(let vault, let descriptor):
             KaminoDepositScreen(vault: vault, descriptor: descriptor)
+        case .withdraw(let vault, let descriptor):
+            KaminoWithdrawScreen(vault: vault, descriptor: descriptor)
         }
     }
 }
