@@ -64,7 +64,6 @@ class SuiService: SuiCoinMetadataProviding {
     private var rpcURL: URL {
         resolver.resolvedURL(for: .sui, default: Self.defaultRPCURL)
     }
-    private let jsonDecoder = JSONDecoder()
 
     func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]]) {
         async let gasPrice = getReferenceGasPrice()
@@ -77,18 +76,16 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getAllBalances(coin: CoinMeta, address: String) async throws -> String {
-        let data = try await Utils.PostRequestRpc(
-            rpcURL: rpcURL,
-            method: "suix_getAllBalances",
-            params: [address]
+        let response = try await httpClient.request(
+            SuiAPI(baseURL: rpcURL, endpoint: .allBalances(address: address)),
+            responseType: SuiBalancesResponse.self
         )
-        let response = try jsonDecoder.decode(SuiBalancesResponse.self, from: data)
 
-        if let error = response.error {
+        if let error = response.data.error {
             throw SuiBalanceError.rpc(error.message)
         }
 
-        guard let balances = response.result else {
+        guard let balances = response.data.result else {
             throw SuiBalanceError.missingResult
         }
 

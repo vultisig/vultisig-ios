@@ -73,8 +73,8 @@ final class SuiServiceBalanceTests: XCTestCase {
         do {
             _ = try await makeService().getBalance(coin: TokensStore.Token.suiSUI, address: Self.owner)
             XCTFail("Expected the transport error to be propagated")
-        } catch let error as URLError {
-            XCTAssertEqual(error.code, .timedOut)
+        } catch HTTPError.timeout {
+            // Expected.
         } catch {
             XCTFail("Unexpected error: \(error)")
         }
