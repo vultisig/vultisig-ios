@@ -35,11 +35,14 @@ extension CustomTokenResolver {
 
 /// Builds the `CustomTokenResolver` for a chain, mirroring the dispatch order of the
 /// custom-token search: THORChain and Cardano are matched by chain, Terra/Terra
-/// Classic share the CW20 seam, Solana has its own SPL lookup, and every other chain
-/// falls through to the shared EVM/Tron/TON metadata lookup.
+/// Classic share the CW20 seam, Solana and Sui have chain-specific metadata lookups,
+/// and every other chain falls through to the shared EVM/Tron/TON metadata lookup.
 enum CustomTokenResolverFactory {
     /// - Parameter chain: The chain the custom-token screen is scoped to.
-    static func make(chain: Chain) -> CustomTokenResolver {
+    static func make(
+        chain: Chain,
+        suiMetadataProvider: SuiCoinMetadataProviding = SuiService.shared
+    ) -> CustomTokenResolver {
         if chain == .thorChain {
             return ThorchainCustomTokenResolverStrategy()
         } else if chain == .cardano {
@@ -48,11 +51,66 @@ enum CustomTokenResolverFactory {
             return Cw20CustomTokenResolverStrategy(chain: chain)
         } else if chain.chainType == .Solana {
             return SolanaCustomTokenResolverStrategy(chain: chain)
+        } else if chain == .sui {
+            return SuiCustomTokenResolverStrategy(metadataProvider: suiMetadataProvider)
         } else if chain == .ripple {
             return RippleCustomTokenResolverStrategy()
         } else {
             return EvmLikeCustomTokenResolverStrategy(chain: chain)
         }
+    }
+}
+
+// MARK: - Sui
+
+/// Sui tokens are identified by a Move struct tag rather than a wallet address.
+/// Metadata is resolved on-chain through `suix_getCoinMetadata`.
+private struct SuiCustomTokenResolverStrategy: CustomTokenResolver {
+    let metadataProvider: SuiCoinMetadataProviding
+
+    func fetchInfo(contract: String) async throws -> CoinMeta? {
+        let coinType = contract.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !SuiCoinType.isNative(coinType) else { return nil }
+
+        if let knownToken = TokensStore.TokenSelectionAssets.first(where: {
+            $0.chain == .sui && !$0.contractAddress.isEmpty &&
+                SuiCoinType.matches($0.contractAddress, coinType)
+        }) {
+            return knownToken
+        }
+
+        guard let metadata = try await metadataProvider.getCoinMetadata(coinType: coinType),
+              !metadata.symbol.isEmpty else {
+            return nil
+        }
+
+        return CoinMeta(
+            chain: .sui,
+            ticker: metadata.symbol,
+            logo: metadata.iconUrl ?? .empty,
+            decimals: metadata.decimals,
+            priceProviderId: .empty,
+            contractAddress: coinType,
+            isNativeToken: false
+        )
+    }
+
+    func validate(_ address: String) -> Bool {
+        let coinType = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        let segments = coinType.split(separator: "::", maxSplits: 2, omittingEmptySubsequences: false)
+        guard segments.count == 3,
+              !segments[1].isEmpty,
+              !segments[2].isEmpty else {
+            return false
+        }
+
+        let packageAddress = segments[0]
+        let hexAddress = packageAddress.lowercased().hasPrefix("0x")
+            ? packageAddress.dropFirst(2)
+            : packageAddress[...]
+        return !hexAddress.isEmpty &&
+            hexAddress.count <= 64 &&
+            hexAddress.allSatisfy(\.isHexDigit)
     }
 }
 

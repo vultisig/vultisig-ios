@@ -60,6 +60,16 @@ final class MarketDataServiceTests: XCTestCase {
         isNativeToken: false
     )
 
+    private static let suiToken = CoinMeta(
+        chain: .sui,
+        ticker: "CUSTOM",
+        logo: "",
+        decimals: 9,
+        priceProviderId: "",
+        contractAddress: "0x000A::custom::CUSTOM",
+        isNativeToken: false
+    )
+
     private static func seriesJSON(count: Int, startingAt price: Double = 100) -> Data {
         let pairs = (0..<count)
             .map { "[\(1_700_000_000_000 + $0 * 300_000),\(price + Double($0))]" }
@@ -81,6 +91,13 @@ final class MarketDataServiceTests: XCTestCase {
         XCTAssertEqual(
             MarketDataService.resolveSource(for: Self.evmToken),
             .contract(platform: "ethereum", address: Self.evmToken.contractAddress.lowercased())
+        )
+    }
+
+    func testResolvesSuiTokenUsingRealCaseSensitiveCoinType() {
+        XCTAssertEqual(
+            MarketDataService.resolveSource(for: Self.suiToken),
+            .contract(platform: "sui", address: "0xa::custom::CUSTOM")
         )
     }
 
