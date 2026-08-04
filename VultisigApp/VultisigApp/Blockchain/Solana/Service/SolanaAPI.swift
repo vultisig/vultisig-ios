@@ -44,7 +44,17 @@ struct SolanaAPI: TargetType {
         /// a transaction can be simulated before the pre-keysign refresh
         /// installs a fresh one; passing `false` simulates the exact bytes,
         /// which is what proves a spliced blockhash is live.
-        case simulateTransaction(encodedTransaction: String, replaceRecentBlockhash: Bool)
+        ///
+        /// `accountAddresses` asks the node to return those accounts' state
+        /// *after* the transaction ran. That is the only way to learn what a
+        /// third-party-built transaction actually costs its payer — the fee, the
+        /// rent for whatever accounts it creates, and any lamports it moves —
+        /// rather than guessing at a reserve.
+        case simulateTransaction(
+            encodedTransaction: String,
+            replaceRecentBlockhash: Bool,
+            accountAddresses: [String]
+        )
         case getBalance(address: String)
         case getRecentPrioritizationFees
         case getLatestBlockhash
@@ -123,25 +133,29 @@ struct SolanaAPI: TargetType {
                 ),
                 .jsonEncoding
             )
-        case .simulateTransaction(let encodedTransaction, let replaceRecentBlockhash):
+        case .simulateTransaction(let encodedTransaction, let replaceRecentBlockhash, let accountAddresses):
             // `sigVerify` is pinned off: the transactions this simulates still
             // carry an all-zero placeholder signature, and the RPC rejects the
             // combination of signature verification with blockhash replacement
             // outright. Commitment matches the blockhash fetch so the simulation
             // runs against the same bank the broadcast preflight will.
+            var config: [String: Any] = [
+                "encoding": "base64",
+                "commitment": "confirmed",
+                "sigVerify": false,
+                "replaceRecentBlockhash": replaceRecentBlockhash
+            ]
+            // Omitted entirely when nothing was asked for: an empty `addresses`
+            // array is a different request from no `accounts` key at all, and
+            // some nodes reject it.
+            if !accountAddresses.isEmpty {
+                config["accounts"] = [
+                    "encoding": "base64",
+                    "addresses": accountAddresses
+                ]
+            }
             return .requestParameters(
-                rpcEnvelope(
-                    method: "simulateTransaction",
-                    params: [
-                        encodedTransaction,
-                        [
-                            "encoding": "base64",
-                            "commitment": "confirmed",
-                            "sigVerify": false,
-                            "replaceRecentBlockhash": replaceRecentBlockhash
-                        ]
-                    ]
-                ),
+                rpcEnvelope(method: "simulateTransaction", params: [encodedTransaction, config]),
                 .jsonEncoding
             )
         case .getBalance(let address):
@@ -349,6 +363,14 @@ struct SolanaSimulateTransactionResponse: Decodable {
             let err: SolanaRPCJSONValue?
             let logs: [String]?
             let unitsConsumed: UInt64?
+            /// Post-execution state of the accounts the request named, in the
+            /// order they were named. `nil` when none were requested; an
+            /// individual entry is null when that account does not exist.
+            let accounts: [Account?]?
+
+            struct Account: Decodable {
+                let lamports: UInt64
+            }
         }
     }
 

@@ -213,6 +213,141 @@ struct KaminoShareAmount: KaminoBaseUnitAmount {
     }
 }
 
+/// Turns what the user typed into an exact base-unit amount.
+///
+/// The amount fields are locale-formatted — `1.234,56` on a German device,
+/// `1,234.56` on a US one — and the percentage buttons write a grouped string
+/// through `Decimal.formatToDecimal`, so grouping has to be accepted. It is not
+/// merely stripped, though: `1,23` under `en_US` is not a number, and removing
+/// its separator would turn a user who meant one-and-a-bit into a deposit of a
+/// hundred and twenty-three. Groups are validated against the locale's own
+/// grouping sizes first, and anything ambiguous is refused rather than guessed.
+///
+/// Deliberately not `NumberFormatter.number(from:)` for the value itself: that
+/// hands back a Double-backed `NSNumber`, and an amount that sizes a transaction
+/// must not pass through binary floating point.
+///
+/// Truncating toward zero is the safe direction for a deposit: the user is never
+/// charged for a base unit they did not type.
+enum KaminoAmountInput {
+
+    static func tokenAmount(
+        _ value: String,
+        decimals: Int,
+        locale: Locale = .current
+    ) -> KaminoTokenAmount? {
+        guard let baseUnits = baseUnits(value, decimals: decimals, locale: locale) else { return nil }
+        return KaminoTokenAmount(baseUnits: baseUnits, decimals: decimals)
+    }
+
+    private static func baseUnits(_ value: String, decimals: Int, locale: Locale) -> BigInt? {
+        // Trim everything whitespace-like EXCEPT the characters this locale
+        // groups with. Several locales group with a no-break or thin space, and
+        // trimming those first would quietly swallow a dangling separator —
+        // turning a half-typed `1 ` into a clean `1` instead of the refusal the
+        // rest of this parser is built to give.
+        var trimmable = CharacterSet.whitespacesAndNewlines
+        trimmable.subtract(CharacterSet(charactersIn: groupingSeparators(for: locale).joined()))
+        let trimmed = value.trimmingCharacters(in: trimmable)
+        guard !trimmed.isEmpty else { return nil }
+
+        // Decimal separator first, so the split below can be done on a single
+        // known character. On a German locale the grouping separator is "." and
+        // the decimal separator is ",", so the order matters: replacing grouping
+        // first would turn "1.234,56" into "1234,56" and then into "1234.56",
+        // which is right — but it would also silently accept "1.23,4".
+        let decimalSeparator = locale.decimalSeparator ?? "."
+        let parts = trimmed.components(separatedBy: decimalSeparator)
+        guard parts.count <= 2 else { return nil }
+
+        guard let whole = ungrouped(parts[0], locale: locale) else { return nil }
+        // A grouping separator has no meaning after the decimal point, so the
+        // fraction is digits or nothing.
+        let rawFraction = parts.count > 1 ? parts[1] : ""
+        guard let fraction = rawFraction.isEmpty ? "" : asciiDigits(rawFraction) else { return nil }
+
+        let normalized = fraction.isEmpty ? whole : whole + "." + fraction
+        guard let rate = KaminoRate(apiString: normalized), rate.numerator >= 0 else { return nil }
+        return KaminoAmountMath.scale(rate: rate, toDecimals: decimals)
+    }
+
+    /// The integer part with its grouping separators removed, or `nil` when they
+    /// are not where this locale would put them.
+    ///
+    /// Sizes come from the locale's own formatter rather than an assumed three,
+    /// so a locale that groups differently is read correctly instead of refused.
+    private static func ungrouped(_ whole: String, locale: Locale) -> String? {
+        var body = whole
+        var sign = ""
+        if body.hasPrefix("-") {
+            sign = "-"
+            body.removeFirst()
+        }
+        guard !body.isEmpty else { return nil }
+
+        let separators = groupingSeparators(for: locale)
+        let rawGroups = body.components(separatedBy: CharacterSet(charactersIn: separators.joined()))
+        let groups = rawGroups.compactMap { asciiDigits($0) }
+        guard groups.count == rawGroups.count else { return nil }
+        guard groups.count > 1 else { return sign + groups[0] }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        let primary = max(formatter.groupingSize, 1)
+        let secondary = formatter.secondaryGroupingSize > 0 ? formatter.secondaryGroupingSize : primary
+
+        // Right to left: the last group is the primary size, every group above it
+        // the secondary size, and the leading group anything that fits.
+        for (offset, group) in groups.enumerated().reversed() {
+            let expected = offset == groups.count - 1 ? primary : secondary
+            if offset == 0 {
+                guard (1...expected).contains(group.count) else { return nil }
+            } else {
+                guard group.count == expected else { return nil }
+            }
+        }
+
+        return sign + groups.joined()
+    }
+
+    /// Characters this locale may have grouped with.
+    ///
+    /// Its own separator, plus the space characters that "thin space" locales
+    /// use: `Locale.groupingSeparator` and what `NumberFormatter` actually writes
+    /// have disagreed between the no-break and narrow-no-break space across OS
+    /// versions, and a separator we failed to recognise would land inside a group
+    /// and refuse the user's own formatted balance. Widening this is safe because
+    /// the group sizes are validated separately.
+    private static func groupingSeparators(for locale: Locale) -> Set<String> {
+        Set(
+            [locale.groupingSeparator, "\u{00A0}", "\u{202F}", "\u{2009}"]
+                .compactMap { $0 }
+                .filter { !$0.isEmpty }
+        )
+    }
+
+    /// The digits of a non-empty run, rewritten as ASCII, or `nil` if anything in
+    /// it is not a decimal digit.
+    ///
+    /// `NumberFormatter` writes a locale's own numbering system, so on a device
+    /// set to `ar_EG` the percentage buttons produce Eastern Arabic numerals —
+    /// and a keyboard there can type them. Requiring ASCII would refuse those
+    /// users' own amounts. `wholeNumberValue` is defined for every Unicode
+    /// decimal digit, so this normalises rather than rejects.
+    private static func asciiDigits(_ run: String) -> String? {
+        guard !run.isEmpty else { return nil }
+        var digits = ""
+        digits.reserveCapacity(run.count)
+        for character in run {
+            guard character.isNumber, let value = character.wholeNumberValue, (0...9).contains(value)
+            else { return nil }
+            digits.append(Character(String(value)))
+        }
+        return digits
+    }
+}
+
 enum KaminoAmountMath {
 
     /// Rescales an exact rate to base units at `decimals`, truncating toward zero.

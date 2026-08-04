@@ -61,6 +61,15 @@ final class BlockChainService {
 
     static let shared = BlockChainService()
 
+    /// Injected so `refreshSolanaBlockhash` — the last thing that touches a
+    /// payload before its keysign messages are generated — can be driven
+    /// without the network.
+    private let blockhashProvider: SolanaFinalizedBlockhashProviding
+
+    init(blockhashProvider: SolanaFinalizedBlockhashProviding = SolanaService.shared) {
+        self.blockhashProvider = blockhashProvider
+    }
+
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
@@ -97,7 +106,7 @@ final class BlockChainService {
         // rooted blockhash is known to every node. This refresh runs right
         // before the ceremony, so the ~13s finalized lag still leaves ample
         // validity.
-        guard let freshBlockhash = try await sol.fetchFinalizedBlockhash() else {
+        guard let freshBlockhash = try await blockhashProvider.fetchFinalizedBlockhash() else {
             throw Errors.failToGetRecentBlockHash
         }
 
@@ -124,6 +133,20 @@ final class BlockChainService {
             return staked.withSignData(.signSolana(SignSolana(rawTransactions: [rawTransaction])))
         }
 
+        // Any other raw Solana payload. The rebuild below drops `signData`, and
+        // the signing path then falls back to building a plain transfer out of
+        // `coin` / `toAddress` / `toAmount` — so a payload that reached here with
+        // raw bytes and left without them would move the user's funds somewhere
+        // the transaction never said. Preserve it.
+        if let signSolana = payload.signSolana {
+            return try refreshRawSolana(
+                payload: payload,
+                signSolana: signSolana,
+                chainSpecific: updatedChainSpecific,
+                blockhash: freshBlockhash
+            )
+        }
+
         // Create and return updated payload with fresh blockhash
         return KeysignPayload(
             coin: payload.coin,
@@ -145,6 +168,53 @@ final class BlockChainService {
             isQbtcClaim: false,
             skipBroadcast: payload.skipBroadcast,
             signData: nil
+        )
+    }
+
+    /// Re-stamps a payload that already carries raw Solana bytes.
+    ///
+    /// Two different things happen here, and the difference is the whole point:
+    ///
+    /// - The bytes are **always preserved**. Whatever they are, dropping them
+    ///   turns this payload into a plain transfer at signing time.
+    /// - The blockhash is **spliced only into bytes this app built**. Those 32
+    ///   bytes are a blockhash in a normal transaction, but they hold the nonce
+    ///   value in a durable-nonce one, and in anything a third party supplied
+    ///   they are that party's to define — so editing them is only justified
+    ///   where the app knows what it wrote there. `kaminoPayload` is that
+    ///   knowledge; the transaction it marks came from an API request the app
+    ///   made minutes ago and genuinely does need a live blockhash.
+    ///
+    /// The splice is an in-place 32-byte replacement, so nothing else about the
+    /// transaction — the accounts, the instructions, the amount that was
+    /// validated and simulated — can change on the way through.
+    private func refreshRawSolana(
+        payload: KeysignPayload,
+        signSolana: SignSolana,
+        chainSpecific: BlockChainSpecific,
+        blockhash: String
+    ) throws -> KeysignPayload {
+        let refreshed = payload.withChainSpecific(chainSpecific)
+
+        guard let kamino = payload.kaminoPayload else {
+            return refreshed
+        }
+        guard let rawTransaction = signSolana.rawTransactions.first,
+              signSolana.rawTransactions.count == 1 else {
+            // A Kamino payload is always exactly one transaction. Anything else
+            // is not the shape this branch knows how to edit, and the signing
+            // path refuses a batch anyway — so keep the bytes untouched rather
+            // than guess which one to splice.
+            logger.error("kamino payload carried \(signSolana.rawTransactions.count) transactions; blockhash left as built")
+            return refreshed
+        }
+
+        let spliced = try SolanaV0Transaction(base64Transaction: rawTransaction)
+            .replacingBlockhash(blockhash)
+        logger.info("refreshed blockhash on kamino \(kamino.operation.rawValue, privacy: .public) transaction")
+
+        return refreshed.withSignData(
+            .signSolana(SignSolana(rawTransactions: [spliced.base64EncodedTransaction]))
         )
     }
 

@@ -86,7 +86,13 @@ struct DefiChainMainScreen: View {
                 hasAppeared = true
                 return
             }
-            Task { await invalidateSolanaStakeIfNeeded() }
+            Task {
+                await invalidateSolanaStakeIfNeeded()
+                // A returning user may have just signed a deposit. The vault is
+                // already enabled — its card is what opened the form — so this
+                // only ever updates an existing row, never creates one.
+                await refreshKaminoEarnIfNeeded()
+            }
         }
         .refreshable {
             // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
@@ -202,10 +208,11 @@ struct DefiChainMainScreen: View {
                     emptyStateView: { emptyStateView }
                 )
             case .earn:
-                // Read-only yield-vault positions. No deposit or withdraw entry
-                // point exists yet, so the segment takes no action closures.
+                // Deposit only for now: withdrawing needs a transaction shape
+                // the validator has never seen, so it is not offered.
                 KaminoEarnView(
                     viewModel: kaminoEarnViewModel,
+                    onDeposit: { onKaminoDeposit(descriptor: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .governance:
@@ -350,6 +357,17 @@ struct DefiChainMainScreen: View {
             action: .send(coin: coin, hasPreselectedCoin: true),
             vault: vault
         ))
+    }
+
+    /// Opens the deposit form for one curated vault.
+    ///
+    /// Guarded on the chain the curated vaults live on: the descriptor comes
+    /// from the registry, so the address is already curated, but a Kamino screen
+    /// reached from another chain's DeFi tab would be reading the wrong vault's
+    /// coins.
+    func onKaminoDeposit(descriptor: KaminoVaultDescriptor) {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        router.navigate(to: KaminoRoute.deposit(vault: vault, descriptor: descriptor))
     }
 
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
