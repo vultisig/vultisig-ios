@@ -36,11 +36,14 @@ enum PasscodeError: Error, Equatable {
 
 /// Sets, changes, removes and verifies the app passcode.
 ///
-/// Every operation here moves 32 bytes. The passcode wraps the data key; it does
-/// not encrypt key shares, so changing or removing it rewraps that one small blob
-/// and leaves every share on disk exactly as it was. The desktop client re-encrypts
-/// every share of every vault on each of these operations, which puts a full
-/// rewrite of key material behind a routine settings toggle.
+/// A key share is sealed **if and only if a passcode is currently set**, so the
+/// operations here split in two. `changePasscode` moves 32 bytes: the passcode
+/// wraps the data key rather than the shares, so rewrapping that one small blob
+/// leaves every share on disk exactly as it was — where the desktop client
+/// re-encrypts every share of every vault for the same toggle. `setPasscode` and
+/// `disablePasscode` are the other kind: they cross the invariant, so each one
+/// does rewrite every stored share, which is why both are transactional, both
+/// take the exclusive lease, and both are resumable.
 ///
 /// An `actor` because these are read-modify-write sequences over shared Keychain
 /// state. Concurrent failed unlocks could otherwise each read the same attempt
@@ -113,6 +116,18 @@ actor PasscodeService {
         case .absent:
             return false
         }
+    }
+
+    /// Whether the data key is currently held.
+    ///
+    /// `nonisolated` on purpose: the caller is the lock screen, deciding whether
+    /// it may still come down, and it has to be able to ask without an `await`.
+    /// An `await` would be a suspension point between the answer and the act,
+    /// which is exactly the gap this is meant to close — `lock()` is
+    /// `nonisolated` too and can land in it.
+    nonisolated var isSessionUnlocked: Bool {
+        if case .unlocked = session.currentState() { return true }
+        return false
     }
 
     // MARK: - Set
@@ -188,9 +203,15 @@ actor PasscodeService {
     ///
     /// Distinct from ``unlock(with:now:)``, which is passcode *verification* and
     /// is what change and disable use. This one holds the coordinator for the
-    /// whole operation and finishes any sweep an earlier transition left half
+    /// whole operation and *attempts* any sweep an earlier transition left half
     /// done before the caller is told the app is open, so the lock screen is the
     /// one place the invariant is re-established.
+    ///
+    /// **Attempts, not guarantees.** ``resumeSweepUnlocked()`` swallows its own
+    /// failures on purpose — see its documentation — so a successful return here
+    /// means the session is open, not that every share is sealed. A persistent
+    /// resume failure therefore leaves plaintext shares behind a live passcode,
+    /// logged and surfaced nowhere else.
     ///
     /// It takes a **write** lease rather than a transition lease, and that is
     /// the difference between a recoverable app and a bricked one: a transition
