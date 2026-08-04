@@ -37,6 +37,15 @@ class EncryptedBackupViewModel: ObservableObject {
     private let logger = Log.wallet.other
     private let keychain = DefaultKeychainService.shared
     private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
+    /// Every format below reaches storage through this and only through this.
+    /// `Vault.init(from: Decoder)` decodes `[KeyShare]` straight off the wire, so
+    /// the JSON paths would otherwise write plaintext shares into a store that
+    /// has a passcode set.
+    private let importer: ProtectedVaultImporter
+
+    init(importer: ProtectedVaultImporter = ProtectedVaultImporter()) {
+        self.importer = importer
+    }
 
     func resetData() {
         showVaultExporter = false
@@ -409,7 +418,17 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     /// Decode a vault from file data
+    ///
+    /// Whatever the format, the result is validated before it is offered to the
+    /// user: a backup carrying a share this device cannot open is refused at the
+    /// point it is read rather than after a vault picker.
     private func decodeVaultFromData(_ data: Data) throws -> Vault? {
+        guard let vault = decodeVaultInAnyFormat(data) else { return nil }
+        try importer.validate(vault)
+        return vault
+    }
+
+    private func decodeVaultInAnyFormat(_ data: Data) -> Vault? {
         // Try protobuf format first
         if let vault = tryDecodeProtobuf(data) {
             return vault
@@ -457,6 +476,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 do {
                     let vsVault = try VSVault(serializedBytes: decryptedData)
                     let vault = try Vault(proto: vsVault)
+                    try importer.validate(vault)
                     allVaults.append(vault)
                 } catch {
                     logger.error("❌ Failed to parse decrypted data (\(fileName, privacy: .public)): \(error.localizedDescription, privacy: .public)")
@@ -486,28 +506,38 @@ class EncryptedBackupViewModel: ObservableObject {
 
     /// Restore multiple vaults to the database
     func restoreMultipleVaults(modelContext: ModelContext, vaults: [Vault]) {
-        let results = importVaults(multipleVaultsToImport, to: modelContext, existing: vaults)
-
-        selectedVault = results.imported.first
-        showImportResults(results)
+        do {
+            let results = try importVaults(multipleVaultsToImport, to: modelContext, existing: vaults)
+            selectedVault = results.imported.first
+            showImportResults(results)
+        } catch {
+            logger.error("fail to restore vaults: \(error.localizedDescription, privacy: .public)")
+            showError("vaultRestoreFailed")
+        }
         cleanup()
     }
 
-    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) -> (imported: [Vault], duplicates: Int, skippedNames: [String]) {
+    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) throws -> (imported: [Vault], duplicates: Int, skippedNames: [String]) {
         var imported: [Vault] = []
         var duplicates = 0
         var skippedNames: [String] = []
 
         for vault in vaultsToImport {
             if isVaultUnique(backupVault: vault, vaults: existing + imported) {
-                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
-                modelContext.insert(vault)
                 imported.append(vault)
             } else {
                 duplicates += 1
                 skippedNames.append(vault.name)
                 logger.info("Skipped duplicate vault during zip import: \(vault.name)")
             }
+        }
+
+        // One lease, one save, for the whole batch: a partial import would leave
+        // some vaults on one side of the passcode invariant and some on the other.
+        // Default coins are added inside it, because they insert rows of their
+        // own and doing that first strands them when the import is refused.
+        try importer.commit(imported, into: modelContext) { vault in
+            VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
         }
 
         return (imported, duplicates, skippedNames)
@@ -610,9 +640,9 @@ class EncryptedBackupViewModel: ObservableObject {
                 vault.libType = LibType.DKLS
             }
 
-            VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: vault)
-            modelContext.insert(vault)
+            try importer.commit([vault], into: modelContext) { vault in
+                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
+            }
             selectedVault = vault
             isVaultImported = true
         } catch {
@@ -636,48 +666,49 @@ class EncryptedBackupViewModel: ObservableObject {
             return
         }
 
+        // Decoding and storing are separated deliberately. The fallback below
+        // exists for a *format* that the new decoder cannot read; letting a
+        // failed store fall into it would re-attempt the same bytes as a
+        // different format and report the wrong reason for the failure.
         let decoder = JSONDecoder()
+        let decoded: Vault
         do {
-            let backupVault = try decoder.decode(BackupVault.self,
-                                                 from: vaultData)
             // if version get updated , then we can process the migration here
-            if !isVaultUnique(backupVault: backupVault.vault, vaults: vaults) {
-                alertTitle = "vaultAlreadyExists"
-                showAlert = true
-                isVaultImported = false
-                return
-            }
-            VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: backupVault.vault)
-            modelContext.insert(backupVault.vault)
-            selectedVault = backupVault.vault
-            showAlert = false
-            isVaultImported = true
+            decoded = try decoder.decode(BackupVault.self, from: vaultData).vault
         } catch {
             logger.warning("failed to import with new format , fallback to the old format instead. \(error.localizedDescription, privacy: .public)")
 
             // fallback
             do {
-                let vault = try decoder.decode(Vault.self, from: vaultData)
-
-                if !isVaultUnique(backupVault: vault, vaults: vaults) {
-                    alertTitle = "vaultAlreadyExists"
-                    showAlert = true
-                    isVaultImported = false
-                    return
-                }
-                VaultDefaultCoinService(context: modelContext)
-                    .setDefaultCoinsOnce(vault: vault)
-                modelContext.insert(vault)
-                selectedVault = vault
-                showAlert = false
-                isVaultImported = true
+                decoded = try decoder.decode(Vault.self, from: vaultData)
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
                 alertTitle = "vaultRestoreFailed"
                 showAlert = true
                 isVaultImported = false
+                return
             }
+        }
+
+        guard isVaultUnique(backupVault: decoded, vaults: vaults) else {
+            alertTitle = "vaultAlreadyExists"
+            showAlert = true
+            isVaultImported = false
+            return
+        }
+
+        do {
+            try importer.commit([decoded], into: modelContext) { vault in
+                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
+            }
+            selectedVault = decoded
+            showAlert = false
+            isVaultImported = true
+        } catch {
+            logger.error("fail to restore vault: \(error.localizedDescription)")
+            alertTitle = "vaultRestoreFailed"
+            showAlert = true
+            isVaultImported = false
         }
     }
 
