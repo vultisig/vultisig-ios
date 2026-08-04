@@ -25,6 +25,11 @@ enum SuiCoinMetadataError: Error {
     case rpc(String)
 }
 
+enum SuiBalanceError: Error {
+    case rpc(String)
+    case missingResult
+}
+
 class SuiService: SuiCoinMetadataProviding {
     static let shared = SuiService()
 
@@ -67,28 +72,28 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getAllBalances(coin: CoinMeta, address: String) async throws -> String {
-        do {
-            let data = try await Utils.PostRequestRpc(
-                rpcURL: rpcURL,
-                method: "suix_getAllBalances",
-                params: [address]
-            )
+        let data = try await Utils.PostRequestRpc(
+            rpcURL: rpcURL,
+            method: "suix_getAllBalances",
+            params: [address]
+        )
+        let response = try jsonDecoder.decode(SuiBalancesResponse.self, from: data)
 
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result") as? [[String: Any]] {
-                if let item = result.first(where: {
-                    guard let coinType = $0["coinType"] as? String else { return false }
-                    return coinType.lowercased().contains("\(coin.ticker.lowercased())")
-                }),
-                   let balance = item["totalBalance"] as? String {
-                    return balance
-                }
-            }
-
-            return "0"
-        } catch {
-            logger.error("Error fetching suix_getAllBalances: \(error.localizedDescription, privacy: .public)")
-            return "0"
+        if let error = response.error {
+            throw SuiBalanceError.rpc(error.message)
         }
+
+        guard let balances = response.result else {
+            throw SuiBalanceError.missingResult
+        }
+
+        let expectedCoinType = SuiCoinType.expectedType(
+            isNativeToken: coin.isNativeToken,
+            contractAddress: coin.contractAddress
+        )
+        return balances.first(where: {
+            SuiCoinType.matches($0.coinType, expectedCoinType)
+        })?.totalBalance ?? "0"
     }
 
     /// Get token USD value with proper decimal handling
@@ -373,6 +378,16 @@ class SuiService: SuiCoinMetadataProviding {
 private struct SuiCoinMetadataResponse: Decodable {
     let result: SuiCoinMetadata?
     let error: SuiRPCError?
+}
+
+private struct SuiBalancesResponse: Decodable {
+    let result: [SuiBalance]?
+    let error: SuiRPCError?
+}
+
+private struct SuiBalance: Decodable {
+    let coinType: String
+    let totalBalance: String
 }
 
 private struct SuiRPCError: Decodable {
