@@ -60,8 +60,18 @@ actor PasscodeService {
         self.limiter = limiter
     }
 
+    /// Fails closed. An unreadable Keychain may well hold a wrapped key, and the
+    /// one thing that must never happen is a fresh data key being minted over an
+    /// existing one — a new key opens none of the shares the old one sealed, so
+    /// every vault on the device would be gone. Refusing to set a passcode
+    /// because the Keychain is momentarily unreadable costs a retry.
     var isSet: Bool {
-        keyStore.loadWrappedDataKey() != nil
+        switch keyStore.loadWrappedDataKey() {
+        case .present, .unavailable:
+            return true
+        case .absent:
+            return false
+        }
     }
 
     // MARK: - Set
@@ -70,10 +80,13 @@ actor PasscodeService {
         try validate(passcode)
         guard !isSet else { throw PasscodeError.alreadySet }
 
-        guard let dataKey = keyStore.loadDataKey() else {
+        guard case .present(let dataKey) = keyStore.loadDataKey() else {
             // Nothing is encrypted yet, so there is no key to put behind a
             // passcode. Wrapping a key we just invented would leave the shares
             // readable without it and misrepresent what the passcode protects.
+            //
+            // An unreadable key lands here too, and must: the alternative is
+            // inventing a replacement for a key that is still on the device.
             throw PasscodeError.noDataKey
         }
 
@@ -113,8 +126,17 @@ actor PasscodeService {
             throw PasscodeError.lockedOut(remaining: lockout)
         }
 
-        guard let wrapped = keyStore.loadWrappedDataKey() else {
+        let wrapped: Data
+        switch keyStore.loadWrappedDataKey() {
+        case .present(let blob):
+            wrapped = blob
+        case .absent:
             throw PasscodeError.notSet
+        case .unavailable:
+            // Not "there is no passcode". The item may be there and momentarily
+            // unreadable, and `notSet` is what sends the UI off to offer setting
+            // one — over the top of a wrapper that still exists.
+            throw PasscodeError.storageFailure
         }
 
         // Captured before the derivation, which takes long enough for the app to
@@ -174,8 +196,13 @@ actor PasscodeService {
 
     /// Puts the data key back in the clear and removes the wrapped copy.
     ///
-    /// Shares stay sealed on disk — at-rest encryption does not depend on the
-    /// passcode, so turning the passcode off does not turn encryption off.
+    /// **Not yet the inverse of `setPasscode`, and the gap is visible from
+    /// here.** The invariant is that a share is sealed if and only if a passcode
+    /// is set, so removing the passcode has to unseal every share. This still
+    /// does what an earlier design needed — leaves the shares sealed and keeps a
+    /// clear copy of the key so they stay readable — and the session no longer
+    /// reads that clear copy, so the shares survive only as long as the process
+    /// does. Both halves go when the disable path is rewired to unseal.
     func disablePasscode(current: String, now: Date = Date()) async throws {
         let dataKey = try await unlock(with: current, now: now)
 

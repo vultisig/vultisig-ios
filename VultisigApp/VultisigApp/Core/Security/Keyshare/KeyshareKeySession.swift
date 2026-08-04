@@ -8,21 +8,29 @@ import Foundation
 
 /// Holds the data key for the life of an unlocked session.
 ///
-/// The key is read from the Keychain once and kept in memory afterwards, because
-/// the read path runs inside TSS keygen and keysign — `getLocalState` is called
-/// per share by the signing layer, and paying a Keychain round trip each time
-/// would put that cost in the middle of signing.
+/// The key never comes out of the Keychain *here*: an unlock hands the opened
+/// key over through `adopt`, and it is then held in memory, because the read
+/// path runs inside TSS keygen and keysign — `getLocalState` is called per share
+/// by the signing layer, and paying a Keychain round trip each time would put
+/// that cost in the middle of signing. Forgetting it is therefore all `clear()`
+/// has to do to lock the app.
 ///
 /// A data key exists only while a passcode does. With none set the store holds
 /// no key, the session reports `.disabled`, and stored shares stay plaintext —
-/// the state the great majority of installs are in and stay in. Once a passcode
-/// is set the key is persisted only in wrapped form, so an unlock is what fills
-/// this in, which is what makes `clear()` equivalent to locking.
+/// the state the great majority of installs are in and stay in.
 ///
-/// `currentState()` also still recognises an unwrapped `keyshareDataKey`, which
-/// is what remains of an earlier design that kept one. No code writes that item
-/// any more; it is read so an install that somehow holds one is reported as
-/// unlocked rather than silently as unprotected.
+/// `disablePasscode` is the one path that still writes an *unwrapped* key, left
+/// over from an earlier design and unreadable from here, so a store it leaves
+/// behind reads as `.disabled` on the next launch. That path is rewired to
+/// unseal instead, at which point no unwrapped key is ever written.
+///
+/// The presence of the **wrapped** key is therefore the whole of the persisted
+/// state, and reading it is the one place a Keychain failure could do real harm:
+/// answering `.disabled` when the key is merely unreadable would tell every
+/// caller that shares are plaintext, and the next `seal` would write one in the
+/// clear behind a passcode that is still set. So an unreadable Keychain reads as
+/// `.locked` — the app refuses to touch key material until it can see its own
+/// state again.
 final class KeyshareKeySession {
 
     static let shared = KeyshareKeySession()
@@ -38,9 +46,11 @@ final class KeyshareKeySession {
         self.store = store
     }
 
-    /// - `disabled` — no data key of either form: shares are still plaintext.
     /// - `unlocked` — the key is in hand.
-    /// - `locked` — a wrapped key exists but has not been opened.
+    /// - `locked` — a wrapped key exists but has not been opened, **or** the
+    ///   Keychain could not be read and so may hold one.
+    /// - `disabled` — the Keychain positively answered that there is no wrapped
+    ///   key: no passcode, and shares are plaintext.
     func currentState() -> KeyshareProtectionState {
         lock.lock()
         defer { lock.unlock() }
@@ -48,14 +58,28 @@ final class KeyshareKeySession {
         if let cachedKey {
             return .unlocked(cachedKey)
         }
-        if let key = store.loadDataKey() {
-            cachedKey = key
-            return .unlocked(key)
-        }
-        if store.loadWrappedDataKey() != nil {
+        switch store.loadWrappedDataKey() {
+        case .present:
+            return .locked
+        case .absent:
+            return .disabled
+        case .unavailable:
+            // Fail closed, and the cost is understood: `seal` throws on
+            // `.locked`, so a Keychain that cannot be read fails a keygen or an
+            // import rather than completing it. That is the better half of the
+            // trade. `.disabled` is a licence to write plaintext, and taking it
+            // wrongly writes an unprotected share behind a passcode that is
+            // still set — silently, and only for the users who opted in.
+            // Failing is visible and the user retries.
+            //
+            // The exposure is also narrower than it looks: with no passcode
+            // there is no wrapped item, and a query matching no item answers
+            // `errSecItemNotFound` whatever the device's lock state. Reaching
+            // this line without a passcode takes a Keychain-wide fault, which
+            // the fast-vault password and device-token reads would be failing
+            // on too.
             return .locked
         }
-        return .disabled
     }
 
     /// Adopts a key without going back to the Keychain — used when a key has

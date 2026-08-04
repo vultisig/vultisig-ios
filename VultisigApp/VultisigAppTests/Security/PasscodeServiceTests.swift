@@ -4,6 +4,7 @@
 //
 
 import CryptoKit
+import Security
 import XCTest
 @testable import VultisigApp
 
@@ -77,8 +78,8 @@ final class PasscodeServiceTests: XCTestCase {
 
         try await sut.setPasscode(passcode)
 
-        XCTAssertNil(keyStore.loadDataKey(), "The clear copy must be gone")
-        XCTAssertNotNil(keyStore.loadWrappedDataKey())
+        XCTAssertAbsent(keyStore.loadDataKey(), "The clear copy must be gone")
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
         let isSet = await sut.isSet
         XCTAssertTrue(isSet)
     }
@@ -249,8 +250,8 @@ final class PasscodeServiceTests: XCTestCase {
 
         try await sut.disablePasscode(current: passcode)
 
-        XCTAssertNotNil(keyStore.loadDataKey())
-        XCTAssertNil(keyStore.loadWrappedDataKey())
+        _ = try XCTUnwrapPresent(keyStore.loadDataKey())
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
         let isSet = await sut.isSet
         XCTAssertFalse(isSet)
     }
@@ -280,8 +281,8 @@ final class PasscodeServiceTests: XCTestCase {
             XCTAssertEqual(error as? PasscodeError, .wrongPasscode)
         }
 
-        XCTAssertNil(keyStore.loadDataKey())
-        XCTAssertNotNil(keyStore.loadWrappedDataKey())
+        XCTAssertAbsent(keyStore.loadDataKey())
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
     }
 
     /// If the wrapped copy cannot be removed, both copies would exist and the
@@ -299,8 +300,8 @@ final class PasscodeServiceTests: XCTestCase {
             XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
         }
 
-        XCTAssertNil(keyStore.loadDataKey(), "The clear copy must have been rolled back")
-        XCTAssertNotNil(keyStore.loadWrappedDataKey())
+        XCTAssertAbsent(keyStore.loadDataKey(), "The clear copy must have been rolled back")
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
         XCTAssertEqual(lockService.mode, .passcode, "The passcode is still in force")
     }
 
@@ -459,5 +460,88 @@ extension PasscodeServiceTests {
         let limiter = PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime })
 
         XCTAssertEqual(limiter.remainingLockout(now: Date()), 0)
+    }
+
+    /// The one deliberate exception to failing closed, pinned so it is a
+    /// decision rather than an oversight. Answering an unreadable record with
+    /// the maximum delay would never decay and could not be cleared by a correct
+    /// passcode — clearing it needs a write the same Keychain would refuse — so
+    /// it is a permanent lockout, and it buys nothing: deleting the item yields
+    /// `.absent`, which is legitimately a fresh start anyway.
+    func testAnUnreadableAttemptStateIsTreatedAsNoRecordRatherThanALockout() {
+        keychain.passcodeAttemptStateResult = .unavailable(errSecInteractionNotAllowed)
+
+        let limiter = PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime })
+
+        XCTAssertEqual(limiter.remainingLockout(now: Date()), 0)
+    }
+
+    /// A *corrupt* record is a different matter and still fails closed: it is
+    /// present, so someone edited it, and resuming from zero would make editing
+    /// the blob a way to buy free attempts.
+    func testACorruptAttemptStateStillFailsClosed() {
+        keychain.setPasscodeAttemptState(Data("not json".utf8))
+
+        let limiter = PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime })
+
+        XCTAssertEqual(limiter.remainingLockout(now: Date()), PasscodeAttemptLimiter.maximumDelay)
+    }
+}
+
+// MARK: - Failing closed on an unreadable Keychain
+
+extension PasscodeServiceTests {
+
+    /// The lost-funds path this whole tri-state exercise exists to close. If an
+    /// unreadable wrapper read as "no passcode", `setPasscode` would mint a
+    /// fresh data key and store a wrapper over the top of the existing one —
+    /// and the new key opens none of the shares the old one sealed.
+    func testIsSetFailsClosedWhenTheWrapperCannotBeRead() async {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        let isSet = await sut.isSet
+
+        XCTAssertTrue(isSet, "An unreadable wrapper may well be there and must be treated as one")
+    }
+
+    func testSetPasscodeIsRefusedWhenTheWrapperCannotBeRead() async throws {
+        try givenMigratedState()
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+        keychain.resetWrites()
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected the set to be refused")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .alreadySet)
+        }
+
+        XCTAssertEqual(keychain.writes, [], "Nothing may be written while the Keychain cannot be read")
+    }
+
+    /// `notSet` is what sends the UI off to offer creating a passcode, over the
+    /// top of a wrapper that may still exist.
+    func testUnlockReportsStorageFailureRatherThanNotSetWhenTheWrapperCannotBeRead() async {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        do {
+            _ = try await sut.unlock(with: passcode)
+            XCTFail("Expected the unlock to fail")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .storageFailure)
+        }
+    }
+
+    /// An unreadable clear key must not be mistaken for "nothing is encrypted
+    /// yet", which is the one state that would license inventing a new key.
+    func testSetPasscodeIsRefusedWhenTheClearKeyCannotBeRead() async {
+        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected the set to be refused")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .noDataKey)
+        }
     }
 }

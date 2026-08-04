@@ -4,6 +4,7 @@
 //
 
 import CryptoKit
+import Security
 import XCTest
 @testable import VultisigApp
 
@@ -39,11 +40,11 @@ final class KeyshareKeyStoreTests: XCTestCase {
 
         try sut.storeDataKey(key)
 
-        XCTAssertEqual(sut.loadDataKey()?.testRawRepresentation, key.testRawRepresentation)
+        XCTAssertEqual(try XCTUnwrapPresent(sut.loadDataKey()).testRawRepresentation, key.testRawRepresentation)
     }
 
-    func testLoadDataKeyIsNilWhenAbsent() {
-        XCTAssertNil(sut.loadDataKey())
+    func testLoadDataKeyReportsAbsentWhenThereIsNoItem() {
+        XCTAssertAbsent(sut.loadDataKey())
     }
 
     func testDeleteDataKeyRemovesIt() throws {
@@ -51,7 +52,7 @@ final class KeyshareKeyStoreTests: XCTestCase {
 
         try sut.deleteDataKey()
 
-        XCTAssertNil(sut.loadDataKey())
+        XCTAssertAbsent(sut.loadDataKey())
     }
 
     /// The read-back guard: a Keychain that silently drops the write must not
@@ -66,10 +67,29 @@ final class KeyshareKeyStoreTests: XCTestCase {
         }
     }
 
-    func testLoadDataKeyIsNilWhenStoredBlobHasWrongLength() {
+    /// Present and unusable is not the same as absent — absence is what licenses
+    /// minting a replacement, and a replacement opens none of the sealed shares.
+    func testLoadDataKeyReportsUnavailableWhenTheStoredBlobIsTheWrongLength() {
         keychain.setKeyshareDataKey(Data(repeating: 0x01, count: 16))
 
-        XCTAssertNil(sut.loadDataKey())
+        XCTAssertUnavailable(sut.loadDataKey())
+    }
+
+    func testLoadDataKeyPropagatesAnUnreadableKeychain() {
+        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        XCTAssertUnavailable(sut.loadDataKey())
+    }
+
+    /// The clear is recorded as done by its caller, so "probably gone" must not
+    /// pass for gone.
+    func testDeleteDataKeyThrowsWhenTheKeychainCannotConfirmItIsGone() {
+        keychain.ignoresKeyshareDataKeyDeletion = true
+        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        XCTAssertThrowsError(try sut.deleteDataKey()) { error in
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
+        }
     }
 
     // MARK: - Wrapped data key
@@ -79,7 +99,7 @@ final class KeyshareKeyStoreTests: XCTestCase {
 
         try sut.storeWrappedDataKey(blob)
 
-        XCTAssertEqual(sut.loadWrappedDataKey(), blob)
+        XCTAssertEqual(sut.loadWrappedDataKey(), .present(blob))
     }
 
     func testDeleteWrappedDataKeyRemovesIt() throws {
@@ -87,7 +107,22 @@ final class KeyshareKeyStoreTests: XCTestCase {
 
         try sut.deleteWrappedDataKey()
 
-        XCTAssertNil(sut.loadWrappedDataKey())
+        XCTAssertEqual(sut.loadWrappedDataKey(), .absent)
+    }
+
+    func testLoadWrappedDataKeyPropagatesAnUnreadableKeychain() {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        XCTAssertEqual(sut.loadWrappedDataKey(), .unavailable(errSecInteractionNotAllowed))
+    }
+
+    func testDeleteWrappedDataKeyThrowsWhenTheKeychainCannotConfirmItIsGone() {
+        keychain.ignoresWrappedKeyshareDataKeyDeletion = true
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        XCTAssertThrowsError(try sut.deleteWrappedDataKey()) { error in
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
+        }
     }
 
     // MARK: - Passcode wrapping

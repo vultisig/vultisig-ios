@@ -176,8 +176,25 @@ final class PasscodeAttemptLimiter: PasscodeAttemptLimiting {
         }
     }
 
-    /// - Returns: `nil` when no record exists at all — a genuinely fresh start.
+    /// - Returns: `nil` when no record exists — a genuinely fresh start.
     /// - Throws: when a record exists but cannot be decoded.
+    ///
+    /// An unreadable Keychain is deliberately collapsed into "no record", which
+    /// is the one place in this feature where the strict reading is **not** the
+    /// safe one. `remainingLockout` answers an unreadable state with a flat
+    /// maximum delay that never decays and that a correct passcode cannot clear,
+    /// because clearing it needs a write this Keychain will not accept — so a
+    /// persistently unreadable item would put a permanent lockout in front of a
+    /// passcode the user knows and a wrapper that reads perfectly well.
+    ///
+    /// And the strictness would buy nothing. Anyone able to make this item
+    /// unreadable can equally delete it, and a deleted item is `.absent`, which
+    /// is legitimately a fresh start; the record is stored `WhenUnlocked`, the
+    /// same class as the wrapped key, so a lock-state read failure takes the
+    /// wrapper with it and `unlock` refuses before a guess is ever evaluated.
+    /// The throttle therefore rests on the record surviving ordinary use, not on
+    /// surviving Keychain tampering, and the collapse is spelled out rather than
+    /// inherited from an optional.
     private func loadState() throws -> State? {
         guard let data = keychain.getPasscodeAttemptState().valueTreatingUnavailableAsAbsent else {
             return nil

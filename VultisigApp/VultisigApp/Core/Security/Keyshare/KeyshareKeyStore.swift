@@ -6,6 +6,7 @@
 import CryptoKit
 import Foundation
 import OSLog
+import Security
 
 private let logger = Log.app.other
 
@@ -35,15 +36,23 @@ enum KeyshareKeyStoreError: Error, Equatable {
 ///
 /// The unwrapped-key API (`loadDataKey` / `storeDataKey` / `deleteDataKey`) is
 /// what remains of an earlier design that kept a clear copy alongside the
-/// shares. Nothing writes one any more.
+/// shares. `disablePasscode` is its last writer and stops being one when the
+/// disable path is rewired to unseal instead.
+///
+/// **Every read answers with a ``KeychainReadResult``, and the distinction is
+/// load-bearing rather than decorative.** `.absent` is the only answer that
+/// licenses minting a fresh data key, and a fresh key cannot open a single
+/// share the old one sealed — so an unreadable Keychain reported as absence is
+/// a direct path to permanently orphaned key material. Deletions verify against
+/// a *confirmed* absence for the same reason.
 protocol KeyshareKeyStoring {
     func generateDataKey() throws -> SymmetricKey
 
-    func loadDataKey() -> SymmetricKey?
+    func loadDataKey() -> KeychainReadResult<SymmetricKey>
     func storeDataKey(_ key: SymmetricKey) throws
     func deleteDataKey() throws
 
-    func loadWrappedDataKey() -> Data?
+    func loadWrappedDataKey() -> KeychainReadResult<Data>
     func storeWrappedDataKey(_ blob: Data) throws
     func deleteWrappedDataKey() throws
 
@@ -67,13 +76,23 @@ final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
         try VaultCryptoEnvelope.randomKey()
     }
 
-    func loadDataKey() -> SymmetricKey? {
-        guard let data = keychain.getKeyshareDataKey().valueTreatingUnavailableAsAbsent else { return nil }
-        guard data.count == VaultCryptoEnvelope.keyLengthBytes else {
-            logger.error("Keyshare data key has unexpected length \(data.count, privacy: .public)")
-            return nil
+    /// - Returns: ``KeychainReadResult/unavailable(_:)`` with `errSecDecode` when
+    ///   an item exists but is not a 256-bit key. It is present and unusable,
+    ///   which is not the same as absent: reporting absence would let a caller
+    ///   write a replacement over key material that is still there.
+    func loadDataKey() -> KeychainReadResult<SymmetricKey> {
+        switch keychain.getKeyshareDataKey() {
+        case .absent:
+            return .absent
+        case .unavailable(let status):
+            return .unavailable(status)
+        case .present(let data):
+            guard data.count == VaultCryptoEnvelope.keyLengthBytes else {
+                logger.error("Keyshare data key has unexpected length \(data.count, privacy: .public)")
+                return .unavailable(errSecDecode)
+            }
+            return .present(SymmetricKey(data: data))
         }
-        return SymmetricKey(data: data)
     }
 
     /// Writes the key and reads it back before returning. A silent Keychain
@@ -93,19 +112,22 @@ final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
     /// A silent deletion failure here is what makes a passcode cosmetic: the
     /// clear copy would survive, and the next lock would simply reload it from
     /// the Keychain and carry on signing.
+    ///
+    /// Only a **confirmed** absence counts. An unreadable item may still be
+    /// there, and callers record a successful clear as done and never retry it.
     func deleteDataKey() throws {
         keychain.setKeyshareDataKey(nil)
 
-        guard keychain.getKeyshareDataKey().valueTreatingUnavailableAsAbsent == nil else {
-            logger.error("Keyshare data key still present after deletion")
+        guard case .absent = keychain.getKeyshareDataKey() else {
+            logger.error("Keyshare data key still present or unreadable after deletion")
             throw KeyshareKeyStoreError.deletionFailed
         }
     }
 
     // MARK: - Wrapped data key
 
-    func loadWrappedDataKey() -> Data? {
-        keychain.getWrappedKeyshareDataKey().valueTreatingUnavailableAsAbsent
+    func loadWrappedDataKey() -> KeychainReadResult<Data> {
+        keychain.getWrappedKeyshareDataKey()
     }
 
     func storeWrappedDataKey(_ blob: Data) throws {
@@ -117,11 +139,13 @@ final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
         }
     }
 
+    /// Verified against a confirmed absence, for the same reason
+    /// ``deleteDataKey()`` is.
     func deleteWrappedDataKey() throws {
         keychain.setWrappedKeyshareDataKey(nil)
 
-        guard keychain.getWrappedKeyshareDataKey().valueTreatingUnavailableAsAbsent == nil else {
-            logger.error("Wrapped keyshare data key still present after deletion")
+        guard case .absent = keychain.getWrappedKeyshareDataKey() else {
+            logger.error("Wrapped keyshare data key still present or unreadable after deletion")
             throw KeyshareKeyStoreError.deletionFailed
         }
     }

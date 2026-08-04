@@ -49,6 +49,17 @@ final class MockKeychainService: KeychainService {
     /// verified clear in `KeyshareInstallReconciler` can be exercised.
     var ignoresPasscodeAttemptStateDeletion = false
 
+    /// Every mutating call, in order, whether or not it changed anything.
+    ///
+    /// A delete of an item that was never there still reaches `SecItemDelete`,
+    /// so it is a Keychain mutation as far as the acceptance test is concerned:
+    /// a user who never sets a passcode must see none of them at launch. Only a
+    /// counter can assert that — asserting on the stored values cannot tell a
+    /// no-op write apart from no write at all.
+    private(set) var writes: [String] = []
+
+    func resetWrites() { writes = [] }
+
     /// The recorded version, for tests that only care about the stored value.
     var lastMigratedVersion: Int? {
         get { lastMigratedVersionResult.valueTreatingUnavailableAsAbsent }
@@ -82,6 +93,7 @@ final class MockKeychainService: KeychainService {
     }
 
     func setFastPassword(_ fastPassword: String?, pubKeyECDSA: String) {
+        writes.append("fastPassword")
         fastPasswords[pubKeyECDSA] = Self.result(fastPassword)
     }
 
@@ -90,20 +102,28 @@ final class MockKeychainService: KeychainService {
     }
 
     func setFastHint(_ fastHint: String?, pubKeyECDSA: String) {
+        writes.append("fastHint")
         fastHints[pubKeyECDSA] = Self.result(fastHint)
     }
 
     func getLastMigratedVersion() -> KeychainReadResult<Int> { lastMigratedVersionResult }
 
-    func setLastMigratedVersion(_ version: Int?) { lastMigratedVersionResult = Self.result(version) }
+    func setLastMigratedVersion(_ version: Int?) {
+        writes.append("lastMigratedVersion")
+        lastMigratedVersionResult = Self.result(version)
+    }
 
     func getDeviceToken() -> KeychainReadResult<String> { deviceTokenResult }
 
-    func setDeviceToken(_ token: String?) { deviceTokenResult = Self.result(token) }
+    func setDeviceToken(_ token: String?) {
+        writes.append("deviceToken")
+        deviceTokenResult = Self.result(token)
+    }
 
     func getKeyshareDataKey() -> KeychainReadResult<Data> { keyshareDataKeyResult }
 
     func setKeyshareDataKey(_ data: Data?) {
+        writes.append("keyshareDataKey")
         guard !dropsKeyshareDataKeyWrites else { return }
         if data == nil && ignoresKeyshareDataKeyDeletion { return }
         keyshareDataKeyResult = Self.result(data)
@@ -112,6 +132,7 @@ final class MockKeychainService: KeychainService {
     func getWrappedKeyshareDataKey() -> KeychainReadResult<Data> { wrappedKeyshareDataKeyResult }
 
     func setWrappedKeyshareDataKey(_ data: Data?) {
+        writes.append("wrappedKeyshareDataKey")
         if data == nil && ignoresWrappedKeyshareDataKeyDeletion { return }
         wrappedKeyshareDataKeyResult = Self.result(data)
     }
@@ -119,6 +140,7 @@ final class MockKeychainService: KeychainService {
     func getPasscodeAttemptState() -> KeychainReadResult<Data> { passcodeAttemptStateResult }
 
     func setPasscodeAttemptState(_ data: Data?) {
+        writes.append("passcodeAttemptState")
         if data == nil && ignoresPasscodeAttemptStateDeletion { return }
         passcodeAttemptStateResult = Self.result(data)
     }

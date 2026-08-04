@@ -101,6 +101,16 @@ struct KeyshareInstallReconciler {
             return
         }
 
+        // A first-ever install inherits nothing, and clearing nothing still
+        // costs three Keychain deletes and their read-backs. Someone who never
+        // sets a passcode must see no launch-time Keychain mutation at all, so
+        // confirmed absence ends it here — the marker is `UserDefaults`, which
+        // the acceptance test does not speak about.
+        guard hasInheritedKeyMaterial() else {
+            defaults.set(true, forKey: Self.markerKey)
+            return
+        }
+
         do {
             try clearInheritedKeyMaterial()
             defaults.set(true, forKey: Self.markerKey)
@@ -110,6 +120,21 @@ struct KeyshareInstallReconciler {
             // keeps the app reachable rather than silently unusable.
             logger.error("Could not clear inherited key material: \(String(describing: error), privacy: .public)")
         }
+    }
+
+    /// Whether any passcode artifact might have been inherited.
+    ///
+    /// Only a **confirmed** absence counts as "nothing here". `.unavailable`
+    /// means the item may well be present, and a read failure that skipped the
+    /// clear would also set the marker — making the skip permanent, and leaving
+    /// exactly the inherited-passcode state this type exists to remove.
+    private func hasInheritedKeyMaterial() -> Bool {
+        if case .absent = keyStore.loadDataKey(),
+           case .absent = keyStore.loadWrappedDataKey(),
+           case .absent = keychain.getPasscodeAttemptState() {
+            return false
+        }
+        return true
     }
 
     /// Only ever reached with an empty store, so none of what it removes can be
@@ -127,7 +152,9 @@ struct KeyshareInstallReconciler {
         // along with the data it protected, so keeping the counter would only
         // start a new install inside a lockout guarding nothing.
         keychain.setPasscodeAttemptState(nil)
-        guard keychain.getPasscodeAttemptState().valueTreatingUnavailableAsAbsent == nil else {
+        // A confirmed absence, not merely an unreadable one: the marker is set
+        // on success, so "probably gone" would never be revisited.
+        guard case .absent = keychain.getPasscodeAttemptState() else {
             throw ReconcileError.clearFailed(item: "passcodeAttemptState")
         }
 
@@ -144,15 +171,27 @@ struct KeyshareInstallReconciler {
     /// `UserDefaults` happens to say. Without this the app can hold key material
     /// it has no way to ask for.
     ///
-    /// Fails closed by construction: `loadDataKey` returns `nil` for any failure
-    /// rather than only for absence, so a transient Keychain fault can add a lock
-    /// screen but never remove one.
+    /// Each read fails closed in its own direction, and they are not the same
+    /// direction:
+    ///
+    /// - the **wrapped** key must be *confirmed present*. Restoring the passcode
+    ///   mode on an unreadable read would put up a gate with no wrapper behind
+    ///   it, and `unlock` has nothing to verify against — a lock screen that can
+    ///   never open.
+    /// - the **clear** key must be *confirmed present* to suppress restoration.
+    ///   An unreadable clear key is not a reason to leave key material
+    ///   undefended, so it does not suppress anything.
     private func restoreLockModeIfKeyIsWrapped() {
-        guard keyStore.loadDataKey() == nil,
-              keyStore.loadWrappedDataKey() != nil,
-              lockService.mode != .passcode else { return }
+        guard case .present = keyStore.loadWrappedDataKey() else { return }
+        guard !isClearDataKeyPresent() else { return }
+        guard lockService.mode != .passcode else { return }
 
         logger.warning("A wrapped data key exists but the lock mode was \(lockService.mode.rawValue, privacy: .public); restoring passcode mode")
         lockService.mode = .passcode
+    }
+
+    private func isClearDataKeyPresent() -> Bool {
+        if case .present = keyStore.loadDataKey() { return true }
+        return false
     }
 }

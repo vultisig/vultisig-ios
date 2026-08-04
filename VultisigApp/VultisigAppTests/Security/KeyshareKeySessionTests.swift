@@ -4,6 +4,7 @@
 //
 
 import CryptoKit
+import Security
 import XCTest
 @testable import VultisigApp
 
@@ -50,8 +51,19 @@ final class KeyshareKeySessionTests: XCTestCase {
         _ = sut.currentState()
         _ = sut.currentState()
 
-        XCTAssertEqual(keychain.getKeyshareDataKey(), .absent)
-        XCTAssertEqual(keychain.getWrappedKeyshareDataKey(), .absent)
+        XCTAssertEqual(keychain.writes, [], "an install with no passcode must see no Keychain mutation at all")
+    }
+
+    /// The whole of the persisted state is whether a wrapped key exists, so an
+    /// unreadable Keychain must not be read as "no passcode". `.disabled` is a
+    /// licence to write plaintext, and the next `seal` would take it.
+    func testAnUnreadableKeychainReportsLockedRatherThanDisabled() {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+        let sut = makeSession()
+
+        guard case .locked = sut.currentState() else {
+            return XCTFail("Expected .locked when the Keychain cannot be read")
+        }
     }
 
     // MARK: - Wrapped key present
@@ -90,24 +102,36 @@ final class KeyshareKeySessionTests: XCTestCase {
         XCTAssertFalse(sut.currentState().isLocked)
     }
 
-    /// The unwrapped item is legacy — nothing writes one — but while the API
-    /// exists an install holding one must be reported as unlocked rather than as
-    /// unprotected, or its sealed shares would look like plaintext.
-    func testAnUnwrappedKeyIsStillRecognisedAndCached() throws {
-        let key = try store.generateDataKey()
-        try store.storeDataKey(key)
+    /// The unwrapped item no longer participates in the state at all: a share is
+    /// sealed if and only if a passcode is set, and the wrapped key is the only
+    /// evidence of a passcode. Pinned rather than left implicit, because it is
+    /// the visible consequence of collapsing the state read — a store holding a
+    /// clear key and nothing else reads as having no passcode.
+    func testAnUnwrappedKeyAloneIsNotAPasscode() throws {
+        try store.storeDataKey(try store.generateDataKey())
         let sut = makeSession()
 
+        guard case .disabled = sut.currentState() else {
+            return XCTFail("Expected .disabled — only a wrapped key means a passcode is set")
+        }
+    }
+
+    /// The key is held in memory once adopted, so the read path does not pay a
+    /// Keychain round trip per share inside TSS keygen and keysign.
+    func testAnAdoptedKeyIsCachedRatherThanRereadPerCall() throws {
+        let key = try store.generateDataKey()
+        let sut = makeSession()
+        sut.adopt(key)
+
+        keychain.resetWrites()
+        _ = sut.currentState()
+        _ = sut.currentState()
+
         guard case .unlocked(let held) = sut.currentState() else {
-            return XCTFail("Expected .unlocked from an unwrapped key")
+            return XCTFail("Expected the adopted key to stay in memory")
         }
         XCTAssertEqual(held.testRawRepresentation, key.testRawRepresentation)
-
-        // Cached, so the read path does not pay a Keychain round trip per share.
-        keychain.setKeyshareDataKey(nil)
-        guard case .unlocked = sut.currentState() else {
-            return XCTFail("Expected the key to be held in memory after the first read")
-        }
+        XCTAssertEqual(keychain.writes, [])
     }
 
     // MARK: - Clearing
