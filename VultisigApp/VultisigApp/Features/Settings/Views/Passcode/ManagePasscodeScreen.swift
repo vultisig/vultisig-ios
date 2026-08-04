@@ -21,29 +21,33 @@ struct ManagePasscodeScreen: View {
         self.lockService = lockService
     }
 
+    /// The rows on offer, which depend on whether a passcode exists. Kept as an
+    /// array rather than branching in the view body so each row can tell the
+    /// shared list container where it sits, which is what rounds the end rows
+    /// and draws the separators between them.
+    private var rows: [Row] {
+        isSet ? [.change, .autoLock, .disable] : [.set]
+    }
+
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 14) {
-                    SettingsSectionContainerView {
-                        VStack(spacing: .zero) {
-                            if isSet {
-                                row(title: "passcodeChangeTitle".localized, showSeparator: true) {
-                                    router.navigate(to: SettingsRoute.changePasscode)
-                                }
-                                row(title: "passcodeAutoLockTitle".localized, showSeparator: true) {
-                                    router.navigate(to: SettingsRoute.autoLock)
-                                }
-                                row(title: "passcodeDisableNavTitle".localized, showSeparator: false) {
-                                    showDisable = true
-                                }
-                            } else {
-                                row(title: "passcodeSetTitle".localized, showSeparator: false) {
-                                    router.navigate(to: SettingsRoute.setPasscode)
-                                }
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(spacing: .zero) {
+                        ForEach(Array(rows.enumerated()), id: \.element) { index, row in
+                            Button {
+                                handle(row)
+                            } label: {
+                                SettingsCommonOptionView(
+                                    icon: .lockPassword,
+                                    title: row.title,
+                                    type: .normal
+                                )
                             }
+                            .commonListItemContainer(index: index, itemsCount: rows.count)
                         }
                     }
+                    .commonListContainer()
 
                     explanation
                 }
@@ -75,17 +79,34 @@ struct ManagePasscodeScreen: View {
             .foregroundStyle(Theme.colors.textTertiary)
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
     }
 
-    private func row(title: String, showSeparator: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            SettingsCommonOptionView(
-                icon: .lockPassword,
-                title: title,
-                type: .normal,
-                showSeparator: showSeparator
-            )
+    enum Row: Hashable {
+        case set
+        case change
+        case autoLock
+        case disable
+
+        var title: String {
+            switch self {
+            case .set: "passcodeSetTitle".localized
+            case .change: "passcodeChangeTitle".localized
+            case .autoLock: "passcodeAutoLockTitle".localized
+            case .disable: "passcodeDisableNavTitle".localized
+            }
+        }
+    }
+
+    private func handle(_ row: Row) {
+        switch row {
+        case .set:
+            router.navigate(to: SettingsRoute.setPasscode)
+        case .change:
+            router.navigate(to: SettingsRoute.changePasscode)
+        case .autoLock:
+            router.navigate(to: SettingsRoute.autoLock)
+        case .disable:
+            showDisable = true
         }
     }
 

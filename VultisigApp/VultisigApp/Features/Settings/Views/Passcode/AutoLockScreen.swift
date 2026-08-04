@@ -16,24 +16,25 @@ struct AutoLockScreen: View {
         _selection = State(initialValue: lockService.autoLockInterval)
     }
 
+    private var intervals: [AutoLockInterval] { AutoLockInterval.allCases }
+
     var body: some View {
         Screen {
             ScrollView(showsIndicators: false) {
-                SettingsSectionContainerView {
-                    VStack(spacing: .zero) {
-                        ForEach(AutoLockInterval.allCases) { interval in
-                            Button {
-                                select(interval)
-                            } label: {
-                                SettingSelectionCell(
-                                    title: interval.titleKey.localized,
-                                    isSelected: interval == selection,
-                                    showSeparator: interval != AutoLockInterval.allCases.last
-                                )
-                            }
+                VStack(spacing: .zero) {
+                    ForEach(Array(intervals.enumerated()), id: \.element) { index, interval in
+                        Button {
+                            select(interval)
+                        } label: {
+                            SettingSelectionCell(
+                                title: interval.titleKey.localized,
+                                isSelected: interval == selection
+                            )
                         }
+                        .commonListItemContainer(index: index, itemsCount: intervals.count)
                     }
                 }
+                .commonListContainer()
             }
         }
         .screenTitle("passcodeAutoLockTitle".localized)
