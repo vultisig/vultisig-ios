@@ -38,6 +38,14 @@ struct KaminoVaultDescriptor: Hashable, Identifiable {
 /// three entries are hydrated with three ~2.8 KB per-vault requests instead.
 enum KaminoVaultRegistry {
 
+    /// The kVaults program every deposit and withdraw invokes.
+    static let programId = "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd"
+
+    /// Kamino's farms program. Every launch vault has a farm attached, so a
+    /// deposit ends with `initializeUser` + `stake` against this program and the
+    /// shares never land in the user's wallet.
+    static let farmsProgramId = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
+
     static let steakhouseUSDC = KaminoVaultDescriptor(
         address: "HDsayqAsDWy3QvANGqh2yNraqcD8Fnjgh73Mhb3WRS5E",
         fallbackName: "Steakhouse USDC",
