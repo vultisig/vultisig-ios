@@ -25,6 +25,8 @@ final class PasscodeServiceTests: XCTestCase {
     private var lockService: AppLockService!
     private var coordinator: KeyshareWriteCoordinator!
     private var sweeper: KeyshareSweeper!
+    private var biometricKeychain: InMemoryBiometricKeychain!
+    private var biometrics: BiometricUnlockStore!
     private var defaults: UserDefaults!
     private var suiteName: String!
     private var sut: PasscodeService!
@@ -55,6 +57,8 @@ final class PasscodeServiceTests: XCTestCase {
         lockService = AppLockService(defaults: defaults)
         coordinator = KeyshareWriteCoordinator()
         sweeper = KeyshareSweeper(protector: protector, context: { [context] in context })
+        biometricKeychain = InMemoryBiometricKeychain()
+        biometrics = BiometricUnlockStore(keychain: biometricKeychain)
 
         sut = makeService()
     }
@@ -62,6 +66,8 @@ final class PasscodeServiceTests: XCTestCase {
     override func tearDown() {
         defaults.removePersistentDomain(forName: suiteName)
         sut = nil
+        biometrics = nil
+        biometricKeychain = nil
         sweeper = nil
         coordinator = nil
         lockService = nil
@@ -79,7 +85,8 @@ final class PasscodeServiceTests: XCTestCase {
 
     private func makeService(
         keyStore: KeyshareKeyStoring? = nil,
-        sweeper: KeyshareSweeping? = nil
+        sweeper: KeyshareSweeping? = nil,
+        biometrics: BiometricUnlockStore? = nil
     ) -> PasscodeService {
         PasscodeService(
             keyStore: keyStore ?? self.keyStore,
@@ -87,7 +94,8 @@ final class PasscodeServiceTests: XCTestCase {
             lockService: lockService,
             limiter: PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime }),
             coordinator: coordinator,
-            sweeper: sweeper ?? self.sweeper
+            sweeper: sweeper ?? self.sweeper,
+            biometrics: biometrics ?? self.biometrics
         )
     }
 
@@ -1526,4 +1534,183 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
         try await duringUnwrap()
         return key
     }
+}
+
+// MARK: - The biometric shortcut
+
+extension PasscodeServiceTests {
+
+    /// The shortcut has to be a full app unlock, not a lighter one: it adopts
+    /// the key **and** finishes a sweep an interrupted set left behind. A
+    /// biometric path that skipped the resume would leave a passcode user with
+    /// plaintext shares for as long as they never typed their digits.
+    func testABiometricUnlockOpensTheAppAndFinishesAnInterruptedSweep() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        try await sut.enableBiometricUnlock()
+
+        // Plaintext arriving after the set — a downgrade, or an interruption.
+        let vault = try XCTUnwrap(try context.fetch(FetchDescriptor<Vault>()).first)
+        vault.keyshares = [KeyShare(pubkey: "vault-one-0", keyshare: share)]
+        try context.save()
+
+        sut.lock()
+        XCTAssertFalse(sut.isSessionUnlocked)
+
+        try await sut.unlockWithBiometrics(reason: "test")
+
+        XCTAssertTrue(sut.isSessionUnlocked)
+        XCTAssertTrue(protector.isSealed(try XCTUnwrap(try storedShares().first)))
+    }
+
+    /// The fund-loss path the binding exists for. A copy left behind by an
+    /// earlier install holds key A; the wrapper on disk holds key B. Adopting A
+    /// would let the resume sweep seal every share under a key no wrapper holds,
+    /// and nothing would ever revisit them.
+    func testACopyBoundToASupersededWrapperIsRefusedAndRemoved() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        try await sut.enableBiometricUnlock()
+
+        // The wrapper moves underneath the copy. Reached in the field by a
+        // reinstall whose reconciliation cleared the wrapper but not the
+        // shortcut, after which a new passcode mints a different key; written
+        // directly here because every route through the service now removes the
+        // copy on the way, which is the belt to this braces.
+        try keyStore.storeWrappedDataKey(Data(repeating: 9, count: 60))
+        sut.lock()
+
+        do {
+            try await sut.unlockWithBiometrics(reason: "test")
+            XCTFail("Expected the superseded copy to be refused")
+        } catch {
+            XCTAssertEqual(error as? BiometricUnlockError, .supersededCopy)
+        }
+
+        XCTAssertFalse(biometrics.isEnabled, "a copy that can never work must not be left behind")
+        XCTAssertFalse(sut.isSessionUnlocked)
+    }
+
+    /// A transition lease here would be the circular lockout: keygen holds an
+    /// episode through its deferred commit, transitions are refused while one is
+    /// open, and the flow cannot be finished without unlocking first.
+    func testABiometricUnlockSucceedsWhileAVaultCreationEpisodeIsOpen() async throws {
+        try await sut.setPasscode(passcode)
+        try await sut.enableBiometricUnlock()
+        sut.lock()
+
+        let episode = try XCTUnwrap(coordinator.beginEpisode())
+        defer { coordinator.end(episode) }
+
+        try await sut.unlockWithBiometrics(reason: "test")
+
+        XCTAssertTrue(sut.isSessionUnlocked)
+    }
+
+    /// Fails closed on an unreadable wrapper rather than on `isSet`, which reads
+    /// `.unavailable` as "set" on purpose. There is nothing to check the stored
+    /// copy against, so there is no basis for letting it through.
+    func testABiometricUnlockIsRefusedWhenTheWrapperCannotBeRead() async throws {
+        try await sut.setPasscode(passcode)
+        try await sut.enableBiometricUnlock()
+        sut.lock()
+
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        do {
+            try await sut.unlockWithBiometrics(reason: "test")
+            XCTFail("Expected an unreadable wrapper to refuse the shortcut")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .storageFailure)
+        }
+        XCTAssertFalse(sut.isSessionUnlocked)
+    }
+
+    func testABiometricUnlockIsRefusedWhenNoPasscodeIsSet() async throws {
+        do {
+            try await sut.unlockWithBiometrics(reason: "test")
+            XCTFail("Expected no passcode to refuse the shortcut")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .notSet)
+        }
+    }
+
+    /// A change rewraps the same key under new digits, so the blob the copy is
+    /// bound to moves. Without rebinding, every passcode change would silently
+    /// turn the shortcut off at its next use.
+    func testAPasscodeChangeKeepsTheShortcutWorking() async throws {
+        try await sut.setPasscode(passcode)
+        try await sut.enableBiometricUnlock()
+
+        try await sut.changePasscode(current: passcode, new: newPasscode)
+        sut.lock()
+
+        try await sut.unlockWithBiometrics(reason: "test")
+
+        XCTAssertTrue(sut.isSessionUnlocked)
+    }
+
+    /// The copy holds the same data key, so leaving it would make it a working
+    /// shortcut again the next time a passcode was set — an enablement nobody
+    /// made.
+    func testRemovingThePasscodeRemovesTheShortcut() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        try await sut.enableBiometricUnlock()
+        XCTAssertTrue(biometrics.isEnabled)
+
+        try await sut.disablePasscode(current: passcode)
+
+        XCTAssertFalse(biometrics.isEnabled)
+    }
+
+    /// A leftover copy with no passcode behind it reports the shortcut as
+    /// already enabled for a passcode the user is only now creating.
+    func testSettingAPasscodeClearsALeftoverCopy() async throws {
+        try biometrics.enable(dataKey: SymmetricKey(size: .bits256), boundTo: Data([0x09]))
+
+        try await sut.setPasscode(passcode)
+
+        XCTAssertFalse(biometrics.isEnabled)
+    }
+
+    /// Enabling needs the key in hand. Doing it from a locked session would
+    /// store nothing usable, and reporting success would advertise a shortcut
+    /// that does not exist.
+    func testTheShortcutCannotBeEnabledWhileLocked() async throws {
+        try await sut.setPasscode(passcode)
+        sut.lock()
+
+        do {
+            try await sut.enableBiometricUnlock()
+            XCTFail("Expected a locked session to refuse enabling the shortcut")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .cancelledByLock)
+        }
+        XCTAssertFalse(biometrics.isEnabled)
+    }
+}
+
+/// The real biometric Keychain is unreachable from a test bundle — it needs an
+/// entitlement and enrolled biometrics — so the passcode tests drive an
+/// in-memory stand-in. The store's own failure behaviour is covered by
+/// `BiometricUnlockStoreTests`.
+private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
+
+    private var stored: Data?
+
+    /// An add, not an upsert, mirroring `SecItemAdd`.
+    func store(_ data: Data, account _: String) throws {
+        guard stored == nil else { throw BiometricUnlockError.storageFailed }
+        stored = data
+    }
+
+    func read(account _: String, prompt _: String) throws -> Data {
+        guard let stored else { throw BiometricUnlockError.notEnabled }
+        return stored
+    }
+
+    func delete(account _: String) throws { stored = nil }
+
+    func exists(account _: String) -> Bool { stored != nil }
 }

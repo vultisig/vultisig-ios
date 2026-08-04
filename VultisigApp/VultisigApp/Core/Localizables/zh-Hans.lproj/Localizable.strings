@@ -942,6 +942,9 @@
 "partOf" = "第 %d 部分，共 %d 部分";
 "passcodeAlreadySet" = "本设备已设置密码。请返回上一页以修改或移除。";
 "passcodeAutoLockTitle" = "自动锁定";
+"passcodeBiometricReason" = "解锁 Vultisig";
+"passcodeBiometricToggle" = "使用生物识别解锁";
+"passcodeBiometricUnavailable" = "本设备已无法使用生物识别解锁。请输入密码。";
 "passcodeBusy" = "另一项操作仍在进行中。请等待其完成后重试。";
 "passcodeChangeTitle" = "修改密码";
 "passcodeChooseSubtitle" = "6 位数字。打开应用时需要输入。";

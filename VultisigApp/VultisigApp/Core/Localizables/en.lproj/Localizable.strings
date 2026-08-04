@@ -942,6 +942,9 @@
 "partOf" = "part %d of %d";
 "passcodeAlreadySet" = "A passcode is already set on this device. Go back to change or remove it.";
 "passcodeAutoLockTitle" = "Auto-lock";
+"passcodeBiometricReason" = "Unlock Vultisig";
+"passcodeBiometricToggle" = "Unlock with biometrics";
+"passcodeBiometricUnavailable" = "Biometric unlock is no longer available on this device. Enter your passcode.";
 "passcodeBusy" = "Another operation is still in progress. Wait for it to finish, then try again.";
 "passcodeChangeTitle" = "Change passcode";
 "passcodeChooseSubtitle" = "6 digits. You will need it to open the app.";

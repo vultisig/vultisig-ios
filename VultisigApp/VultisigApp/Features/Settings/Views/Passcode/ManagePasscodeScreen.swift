@@ -11,6 +11,7 @@ struct ManagePasscodeScreen: View {
 
     @Environment(\.router) var router
     @State private var isSet: Bool = false
+    @State private var isBiometricEnabled: Bool = false
     @State private var showDisable = false
 
     private let service: PasscodeService
@@ -24,7 +25,7 @@ struct ManagePasscodeScreen: View {
     /// shared list container where it sits, which is what rounds the end rows
     /// and draws the separators between them.
     private var rows: [Row] {
-        isSet ? [.change, .autoLock, .disable] : [.set]
+        isSet ? [.change, .autoLock, .biometrics, .disable] : [.set]
     }
 
     var body: some View {
@@ -33,16 +34,8 @@ struct ManagePasscodeScreen: View {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(spacing: .zero) {
                         ForEach(Array(rows.enumerated()), id: \.element) { index, row in
-                            Button {
-                                handle(row)
-                            } label: {
-                                SettingsCommonOptionView(
-                                    icon: .lockPassword,
-                                    title: row.title,
-                                    type: .normal
-                                )
-                            }
-                            .commonListItemContainer(index: index, itemsCount: rows.count)
+                            rowView(for: row)
+                                .commonListItemContainer(index: index, itemsCount: rows.count)
                         }
                     }
                     .commonListContainer()
@@ -84,14 +77,51 @@ struct ManagePasscodeScreen: View {
         case set
         case change
         case autoLock
+        case biometrics
         case disable
 
-        var title: String {
+        /// The localization key rather than the localized string:
+        /// `SettingToggleCell` localizes its own title, so the key is what has
+        /// to travel for the biometric row.
+        var titleKey: String {
             switch self {
-            case .set: "passcodeSetTitle".localized
-            case .change: "passcodeChangeTitle".localized
-            case .autoLock: "passcodeAutoLockTitle".localized
-            case .disable: "passcodeDisableNavTitle".localized
+            case .set: "passcodeSetTitle"
+            case .change: "passcodeChangeTitle"
+            case .autoLock: "passcodeAutoLockTitle"
+            case .biometrics: "passcodeBiometricToggle"
+            case .disable: "passcodeDisableNavTitle"
+            }
+        }
+    }
+
+    /// Biometrics is a toggle rather than a destination, so it renders as the
+    /// app's standard toggle row instead of a navigation cell. Both go through
+    /// the same list container, which is what keeps the separators and the
+    /// rounded end rows consistent across the group.
+    @ViewBuilder
+    private func rowView(for row: Row) -> some View {
+        switch row {
+        case .biometrics:
+            // A shortcut past the passcode, not a replacement — the passcode
+            // always works, and turning this off never locks anyone out.
+            SettingToggleCell(
+                title: row.titleKey,
+                icon: "faceid",
+                isEnabled: Binding(
+                    get: { isBiometricEnabled },
+                    set: { newValue in Task { await setBiometric(enabled: newValue) } }
+                )
+            )
+            .accessibilityIdentifier(AccessibilityID.Settings.biometricUnlockToggle)
+        default:
+            Button {
+                handle(row)
+            } label: {
+                SettingsCommonOptionView(
+                    icon: .lockPassword,
+                    title: row.titleKey.localized,
+                    type: .normal
+                )
             }
         }
     }
@@ -106,10 +136,33 @@ struct ManagePasscodeScreen: View {
             router.navigate(to: SettingsRoute.autoLock)
         case .disable:
             showDisable = true
+        case .biometrics:
+            // Rendered as a toggle, never as a tappable destination.
+            break
         }
+    }
+
+    private func setBiometric(enabled: Bool) async {
+        if enabled {
+            // Enabling needs the data key in hand, so it can only be done while
+            // unlocked. A failure leaves the toggle off rather than implying a
+            // shortcut exists.
+            do {
+                try await service.enableBiometricUnlock()
+            } catch {
+                isBiometricEnabled = false
+                return
+            }
+        } else {
+            // A failure here leaves the copy in place, so the toggle must not
+            // claim it is gone.
+            try? await service.disableBiometricUnlock()
+        }
+        await refresh()
     }
 
     private func refresh() async {
         isSet = await service.isSet
+        isBiometricEnabled = await service.isBiometricUnlockEnabled
     }
 }

@@ -69,6 +69,7 @@ actor PasscodeService {
     private let limiter: PasscodeAttemptLimiting
     private let coordinator: KeyshareWriteCoordinator
     private let sweeper: KeyshareSweeping
+    private let biometrics: BiometricUnlockStore
 
     /// The session generation whose resume sweep has already run, so it runs at
     /// most once per unlocked session. `lock()` bumps the generation, and that is
@@ -94,7 +95,8 @@ actor PasscodeService {
         lockService: AppLockService = .shared,
         limiter: PasscodeAttemptLimiting = PasscodeAttemptLimiter(),
         coordinator: KeyshareWriteCoordinator = .shared,
-        sweeper: KeyshareSweeping = KeyshareSweeper.shared
+        sweeper: KeyshareSweeping = KeyshareSweeper.shared,
+        biometrics: BiometricUnlockStore = .shared
     ) {
         self.keyStore = keyStore
         self.session = session
@@ -102,6 +104,11 @@ actor PasscodeService {
         self.limiter = limiter
         self.coordinator = coordinator
         self.sweeper = sweeper
+        self.biometrics = biometrics
+    }
+
+    var isBiometricUnlockEnabled: Bool {
+        biometrics.isEnabled
     }
 
     /// Fails closed. An unreadable Keychain may well hold a wrapped key, and the
@@ -209,6 +216,17 @@ actor PasscodeService {
             throw PasscodeError.sealedSharesWithoutKey
         }
 
+        // A biometric copy with no passcode behind it is a leftover — a previous
+        // install's, or one a reconciliation could not clear. It is bound to a
+        // wrapper that no longer exists, so it could never open the app anyway;
+        // what it *can* do is report biometric unlock as already enabled for a
+        // passcode the user is only now creating. Failing here is deliberate:
+        // the invariant is that a copy exists only alongside the wrapper it
+        // belongs to.
+        if biometrics.isEnabled {
+            try biometrics.disable()
+        }
+
         let dataKey = try keyStore.generateDataKey()
 
         let wrapped = try await keyStore.wrap(dataKey, passcode: passcode)
@@ -295,6 +313,118 @@ actor PasscodeService {
             throw PasscodeError.cancelledByLock
         }
         return dataKey
+    }
+
+    // MARK: - Biometric shortcut
+
+    /// Opens the app on a biometric match, and is the app-unlock path in every
+    /// respect the passcode one is — same in-flight guard, same **write** lease
+    /// (never a transition lease: a transition is refused while a keygen episode
+    /// is open, so an app that locked on the review screen could never be
+    /// opened), same resume sweep, same generation check on both sides of it.
+    /// Anything less and the shortcut would be a second, weaker way in.
+    ///
+    /// **Fails closed, and only against a confirmed-present wrapper.** `isSet`
+    /// deliberately reads an *unreadable* Keychain as "set", which is right for
+    /// refusing to mint a second key over an existing one and wrong here: the
+    /// stored copy has to be checked against the wrapper's actual bytes, and
+    /// there is nothing to check against if it cannot be read. Every other
+    /// outcome — cancelled, locked out, enrolment changed, item gone, copy
+    /// superseded — throws, and the passcode screen stays where it is.
+    ///
+    /// The biometric read is synchronous and blocks the actor while the system
+    /// prompt is up. That is the same shape the passcode path has while deriving
+    /// a key, and it is what keeps the generation capture genuinely ahead of
+    /// every suspension point in this method.
+    @discardableResult
+    func unlockWithBiometrics(reason: String) async throws -> SymmetricKey {
+        guard !isAppUnlockInFlight else { throw PasscodeError.busy }
+        isAppUnlockInFlight = true
+        defer { isAppUnlockInFlight = false }
+
+        let lease = try beginUnlock()
+        defer { coordinator.end(lease) }
+
+        let generation = session.currentGeneration
+
+        let wrapped: Data
+        switch keyStore.loadWrappedDataKey() {
+        case .present(let blob):
+            wrapped = blob
+        case .absent:
+            throw PasscodeError.notSet
+        case .unavailable:
+            throw PasscodeError.storageFailure
+        }
+
+        let dataKey = try biometrics.unlock(reason: reason, boundTo: wrapped)
+
+        guard session.adopt(dataKey, ifGeneration: generation) else {
+            throw PasscodeError.cancelledByLock
+        }
+        // A biometric match is a successful authentication, so it clears the
+        // passcode throttle exactly as a correct passcode does.
+        limiter.recordSuccess()
+
+        await resumeSweepUnlocked()
+
+        guard session.currentGeneration == generation else {
+            session.clear()
+            throw PasscodeError.cancelledByLock
+        }
+        return dataKey
+    }
+
+    /// Stores a biometry-guarded copy of the data key, bound to the wrapper it
+    /// belongs to. Requires the app to be unlocked, since it never unwraps
+    /// anything itself.
+    ///
+    /// Takes a write lease: it writes a copy of the key that a concurrent
+    /// `disablePasscode` is in the middle of removing, and a copy created after
+    /// that removal is precisely the orphan the binding exists to catch. A write
+    /// lease excludes every transition, which is all this needs.
+    func enableBiometricUnlock() throws {
+        let lease = try beginBiometricWrite()
+        defer { coordinator.end(lease) }
+
+        let wrapped: Data
+        switch keyStore.loadWrappedDataKey() {
+        case .present(let blob):
+            wrapped = blob
+        case .absent:
+            throw PasscodeError.notSet
+        case .unavailable:
+            throw PasscodeError.storageFailure
+        }
+
+        let generation = session.currentGeneration
+        guard case .unlocked(let dataKey) = session.currentState() else {
+            throw PasscodeError.cancelledByLock
+        }
+
+        try biometrics.enable(dataKey: dataKey, boundTo: wrapped)
+
+        // A lock can land between reading the key and storing it. Storing a
+        // shortcut for a session the user has since locked would enable one they
+        // never completed, so it is undone.
+        guard session.currentGeneration == generation else {
+            do {
+                try biometrics.disable()
+            } catch {
+                // The copy survived the rollback. Reporting only "cancelled"
+                // would leave a working shortcut behind that the UI believes
+                // does not exist.
+                throw PasscodeError.inconsistentState
+            }
+            throw PasscodeError.cancelledByLock
+        }
+    }
+
+    func disableBiometricUnlock() throws {
+        let lease = try beginBiometricWrite()
+        defer { coordinator.end(lease) }
+
+        try biometrics.disable()
     }
 
     /// One rule: **with the data key in hand and a wrapper present, seal any
@@ -481,6 +611,33 @@ actor PasscodeService {
         }
 
         try keyStore.storeWrappedDataKey(rewrapped)
+
+        rebindTheBiometricCopy(to: rewrapped, dataKey: dataKey)
+    }
+
+    /// The biometric copy is bound to the exact wrapped blob it was made for,
+    /// and a change replaces that blob — so without this the shortcut would stop
+    /// working the moment anyone changed their passcode.
+    ///
+    /// Rebinding costs no prompt: writing the item never asks for a face, only
+    /// reading does, and the data key has just been verified. If it cannot be
+    /// rebound the copy is removed instead — a stale binding is refused at the
+    /// next unlock anyway, and leaving one advertises a shortcut the app will
+    /// not honour. A failure to remove it is logged rather than thrown: the
+    /// passcode change itself succeeded, and the leftover cannot open anything.
+    private func rebindTheBiometricCopy(to wrapped: Data, dataKey: SymmetricKey) {
+        guard biometrics.isEnabled else { return }
+
+        do {
+            try biometrics.enable(dataKey: dataKey, boundTo: wrapped)
+        } catch {
+            logger.error("Could not rebind the biometric copy after a passcode change; removing it: \(String(describing: error), privacy: .public)")
+            do {
+                try biometrics.disable()
+            } catch {
+                logger.error("The superseded biometric copy could not be removed either; it will be refused and cleared at the next unlock: \(String(describing: error), privacy: .public)")
+            }
+        }
     }
 
     // MARK: - Disable
@@ -549,6 +706,17 @@ actor PasscodeService {
         let wrappedBeforeVerification = keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
 
         _ = try await unlock(with: current, now: now, anchoredTo: generation)
+
+        // The biometric copy goes first, before a single share moves. It holds
+        // the same data key, so a survivor would quietly work again the next
+        // time a passcode is set, and failing to remove it after the shares had
+        // already been opened would report an error over a passcode that was
+        // half gone. Nothing has changed yet at this point, so aborting is clean.
+        //
+        // Called directly rather than through `disableBiometricUnlock()`: this
+        // already holds the transition lease, and that one takes a write lease
+        // the transition excludes.
+        try biometrics.disable()
 
         let wrapped = wrappedBeforeVerification
             ?? keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
@@ -666,6 +834,18 @@ actor PasscodeService {
     /// Refused only by another passcode transition — see ``unlockApp(with:now:)``
     /// for why an unlock must not be refused by anything else.
     private func beginUnlock() throws -> WriteLease {
+        do {
+            return try coordinator.beginWrite()
+        } catch {
+            throw PasscodeError.busy
+        }
+    }
+
+    /// The same claim, for the two operations that move the biometric copy.
+    /// They are not transitions — no share is touched and no wrapper is written
+    /// — but they must not interleave with one, because a set and a disable both
+    /// decide what the copy should be.
+    private func beginBiometricWrite() throws -> WriteLease {
         do {
             return try coordinator.beginWrite()
         } catch {

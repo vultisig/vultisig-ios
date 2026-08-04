@@ -942,6 +942,9 @@
 "partOf" = "%d/%d 공유";
 "passcodeAlreadySet" = "이 기기에는 이미 패스코드가 설정되어 있습니다. 뒤로 돌아가 변경하거나 삭제하세요.";
 "passcodeAutoLockTitle" = "자동 잠금";
+"passcodeBiometricReason" = "Vultisig 잠금 해제";
+"passcodeBiometricToggle" = "생체 인식으로 잠금 해제";
+"passcodeBiometricUnavailable" = "이 기기에서는 생체 인식 잠금 해제를 더 이상 사용할 수 없습니다. 패스코드를 입력하세요.";
 "passcodeBusy" = "다른 작업이 아직 진행 중입니다. 완료될 때까지 기다린 뒤 다시 시도하세요.";
 "passcodeChangeTitle" = "패스코드 변경";
 "passcodeChooseSubtitle" = "6자리 숫자입니다. 앱을 열 때 필요합니다.";

@@ -43,6 +43,55 @@ final class PasscodeViewModel: ObservableObject {
         self.stage = stage
     }
 
+    // MARK: - Biometric shortcut
+
+    @Published var isBiometricUnlockAvailable = false
+
+    func refreshBiometricAvailability() async {
+        isBiometricUnlockAvailable = await service.isBiometricUnlockEnabled
+    }
+
+    /// Attempts the shortcut, and stays quiet about the failures the user just
+    /// caused and can already see.
+    func unlockWithBiometrics(reason: String) async {
+        do {
+            _ = try await service.unlockWithBiometrics(reason: reason)
+            // A lock can land between adopting the key and dismissing the lock
+            // screen. Confirming the session still holds the key means a later
+            // lock always wins rather than being cleared by an unlock that had
+            // already been overtaken.
+            didFinish = service.isSessionUnlocked
+        } catch {
+            errorMessage = Self.biometricMessage(for: error)
+        }
+    }
+
+    /// Cancelling, a face that did not match, biometry being unavailable: the
+    /// user watched those happen, the passcode field is already on screen, and
+    /// "Face ID failed" adds nothing. The rest are different — the *match*
+    /// succeeded and nothing happened — and silence there reads as the app
+    /// ignoring them.
+    private static func biometricMessage(for error: Error) -> String? {
+        switch error as? BiometricUnlockError {
+        case .supersededCopy, .malformedCopy:
+            // The match worked and the shortcut was withdrawn anyway — because
+            // the stored copy belongs to a wrapper that is gone, or is not the
+            // right shape to be a key. Either way the toggle in Settings now
+            // reads off, and saying nothing would make a successful face look
+            // like a failed one.
+            return "passcodeBiometricUnavailable".localized
+        default:
+            break
+        }
+
+        switch error as? PasscodeError {
+        case .busy, .storageFailure:
+            return message(for: error)
+        default:
+            return nil
+        }
+    }
+
     // MARK: - Unlock
 
     /// The lock screen's unlock, and it must stay on ``PasscodeService/unlockApp(with:now:)``.

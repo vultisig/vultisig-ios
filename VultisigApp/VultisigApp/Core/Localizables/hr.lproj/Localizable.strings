@@ -942,6 +942,9 @@
 "partOf" = "dio %d od %d";
 "passcodeAlreadySet" = "Na ovom uređaju već je postavljena zaporka. Vratite se natrag da biste je promijenili ili uklonili.";
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
+"passcodeBiometricReason" = "Otključaj Vultisig";
+"passcodeBiometricToggle" = "Otključavanje biometrijom";
+"passcodeBiometricUnavailable" = "Otključavanje biometrijom više nije dostupno na ovom uređaju. Unesite zaporku.";
 "passcodeBusy" = "Druga radnja je još u tijeku. Pričekajte da završi pa pokušajte ponovno.";
 "passcodeChangeTitle" = "Promijeni zaporku";
 "passcodeChooseSubtitle" = "6 znamenki. Trebat će vam za otvaranje aplikacije.";

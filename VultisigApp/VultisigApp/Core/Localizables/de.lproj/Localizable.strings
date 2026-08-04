@@ -942,6 +942,9 @@
 "partOf" = "Teil %d von %d";
 "passcodeAlreadySet" = "Auf diesem Gerät ist bereits ein Passcode gesetzt. Gehen Sie zurück, um ihn zu ändern oder zu entfernen.";
 "passcodeAutoLockTitle" = "Automatische Sperre";
+"passcodeBiometricReason" = "Vultisig entsperren";
+"passcodeBiometricToggle" = "Mit Biometrie entsperren";
+"passcodeBiometricUnavailable" = "Die biometrische Entsperrung ist auf diesem Gerät nicht mehr verfügbar. Geben Sie Ihren Passcode ein.";
 "passcodeBusy" = "Ein anderer Vorgang läuft noch. Warten Sie, bis er abgeschlossen ist, und versuchen Sie es erneut.";
 "passcodeChangeTitle" = "Passcode ändern";
 "passcodeChooseSubtitle" = "6 Ziffern. Sie benötigen ihn, um die App zu öffnen.";

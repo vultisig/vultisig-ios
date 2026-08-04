@@ -942,6 +942,9 @@
 "partOf" = "Parte %d de %d";
 "passcodeAlreadySet" = "Ya hay un código establecido en este dispositivo. Vuelve atrás para cambiarlo o quitarlo.";
 "passcodeAutoLockTitle" = "Bloqueo automático";
+"passcodeBiometricReason" = "Desbloquear Vultisig";
+"passcodeBiometricToggle" = "Desbloquear con biometría";
+"passcodeBiometricUnavailable" = "El desbloqueo biométrico ya no está disponible en este dispositivo. Introduce tu código.";
 "passcodeBusy" = "Hay otra operación en curso. Espera a que termine e inténtalo de nuevo.";
 "passcodeChangeTitle" = "Cambiar código";
 "passcodeChooseSubtitle" = "6 dígitos. Lo necesitarás para abrir la app.";
