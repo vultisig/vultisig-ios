@@ -104,4 +104,31 @@ final class KeygenVaultCommitTests: XCTestCase {
         XCTAssertEqual(try persistedVaultCount(), 1)
         XCTAssertFalse(VaultNameValidator().validateNonThrowable(value: name))
     }
+
+    // MARK: - Serialization against passcode transitions
+
+    /// The commit is the moment freshly generated shares reach the store, so it
+    /// takes a write lease of its own. A passcode transition rewriting every
+    /// stored share has to stop it rather than let it insert underneath — the
+    /// vault would otherwise land in whatever form the sweep had already passed.
+    func testCommitVaultIsRefusedWhileAPasscodeTransitionIsHeld() throws {
+        let lease = try KeyshareWriteCoordinator.shared.beginTransition()
+        defer { KeyshareWriteCoordinator.shared.end(lease) }
+
+        let vault = makeVault(name: "Treasury")
+
+        XCTAssertThrowsError(try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext)) { error in
+            XCTAssertEqual(error as? KeyshareWriteCoordinatorError, .busy)
+        }
+        XCTAssertEqual(try persistedVaultCount(), 0, "A refused commit must persist nothing")
+    }
+
+    func testCommitVaultSucceedsOnceTheTransitionEnds() throws {
+        let lease = try KeyshareWriteCoordinator.shared.beginTransition()
+        KeyshareWriteCoordinator.shared.end(lease)
+
+        try KeygenViewModel.commitVault(makeVault(name: "Treasury"), context: Storage.shared.modelContext)
+
+        XCTAssertEqual(try persistedVaultCount(), 1)
+    }
 }
