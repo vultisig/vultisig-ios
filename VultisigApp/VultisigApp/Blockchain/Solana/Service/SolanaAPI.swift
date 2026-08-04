@@ -58,6 +58,13 @@ struct SolanaAPI: TargetType {
         case getLatestBlockhashFinalized
         case getTokenAccountsByOwner(walletAddress: String, filter: TokenAccountFilter)
         case getAccountInfo(address: String)
+        /// Raw (`base64`) account data for an Address Lookup Table.
+        ///
+        /// Deliberately not `jsonParsed`: the addresses in a lookup table are
+        /// what a v0 transaction's account indices actually resolve to, so they
+        /// are the ground truth every pre-signing safety check compares against.
+        /// `jsonParsed` would delegate that decode to whichever node answered.
+        case getAddressLookupTable(address: String)
         /// All validators (vote accounts), `current` + `delinquent`.
         case getVoteAccounts
         /// Stake-program accounts owned by `staker`. `dataSize:200` excludes
@@ -164,6 +171,11 @@ struct SolanaAPI: TargetType {
         case .getAccountInfo(let address):
             return .requestParameters(
                 rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "jsonParsed"]]),
+                .jsonEncoding
+            )
+        case .getAddressLookupTable(let address):
+            return .requestParameters(
+                rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "base64", "commitment": "confirmed"]]),
                 .jsonEncoding
             )
         case .getVoteAccounts:
@@ -382,6 +394,24 @@ struct SolanaGetAccountInfoResponse: Decodable {
 
         struct Value: Decodable {
             let owner: String
+        }
+    }
+}
+
+/// `getAccountInfo` with `encoding: base64`. A missing `value` means the account
+/// does not exist, which for a lookup table is a refusal rather than an empty
+/// table — an unresolvable index cannot be checked.
+struct SolanaGetAccountInfoBase64Response: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let value: Value?
+
+        struct Value: Decodable {
+            let owner: String
+            /// `[payload, encoding]` — the RPC returns the encoding it used
+            /// alongside the data, and it is asserted rather than assumed.
+            let data: [String]
         }
     }
 }

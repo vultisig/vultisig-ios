@@ -43,7 +43,7 @@ struct SolanaSimulationResult: Equatable {
     var succeeded: Bool { failure == nil }
 }
 
-class SolanaService {
+class SolanaService: SolanaAddressLookupTableFetching {
     static let shared = SolanaService()
 
     private let logger = Log.chain.service
@@ -195,6 +195,44 @@ class SolanaService {
             failure: value.err?.text,
             unitsConsumed: value.unitsConsumed,
             logs: logs
+        )
+    }
+
+    /// Reads the contents of the given Address Lookup Tables, keyed by table
+    /// address.
+    ///
+    /// A v0 transaction names most of its accounts by position inside a table, so
+    /// nothing can say what such a transaction touches without these. Every
+    /// requested table must resolve: a partial map would let an unverifiable
+    /// account index be treated as absent.
+    func fetchAddressLookupTables(addresses: [String]) async throws -> [String: [String]] {
+        let unique = Array(Set(addresses))
+        guard !unique.isEmpty else { return [:] }
+
+        return try await withThrowingTaskGroup(of: (String, [String]).self) { group in
+            for address in unique {
+                group.addTask { (address, try await self.fetchAddressLookupTable(address: address)) }
+            }
+            var tables: [String: [String]] = [:]
+            for try await (address, contents) in group {
+                tables[address] = contents
+            }
+            return tables
+        }
+    }
+
+    func fetchAddressLookupTable(address: String) async throws -> [String] {
+        let response = try await httpClient.request(
+            api(.getAddressLookupTable(address: address)),
+            responseType: SolanaGetAccountInfoBase64Response.self
+        )
+        guard let value = response.data.result.value else {
+            throw SolanaAddressLookupTableError.accountNotFound(address)
+        }
+        return try SolanaAddressLookupTable.addresses(
+            table: address,
+            owner: value.owner,
+            data: value.data
         )
     }
 

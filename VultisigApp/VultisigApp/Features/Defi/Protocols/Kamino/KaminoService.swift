@@ -64,30 +64,23 @@ struct KaminoService: KaminoServiceProtocol {
     }
 
     func fetchVaultInfo(descriptor: KaminoVaultDescriptor) async throws -> KaminoVaultInfo {
+        // The descriptor is what every later safety check is measured against, so
+        // it has to be the registry's own entry and not merely something carrying
+        // one of its addresses.
+        guard KaminoVaultRegistry.descriptor(for: descriptor.address) == descriptor else {
+            throw KaminoServiceError.vaultNotInRegistry(descriptor.address)
+        }
+
         async let stateTask = fetchVaultState(address: descriptor.address)
         async let metricsTask = fetchVaultMetrics(address: descriptor.address)
         let state = try await stateTask.state
         let metrics = try await metricsTask
 
-        // Decimal scales come from the API and index the 10^n factors every
-        // conversion uses, so they are bounds-checked before anything derives
-        // from them.
-        guard Self.isPlausibleScale(state.tokenMintDecimals) else {
-            throw KaminoServiceError.malformedNumber(
-                field: "tokenMintDecimals",
-                value: String(state.tokenMintDecimals)
-            )
-        }
-        guard Self.isPlausibleScale(state.sharesMintDecimals) else {
-            throw KaminoServiceError.malformedNumber(
-                field: "sharesMintDecimals",
-                value: String(state.sharesMintDecimals)
-            )
-        }
+        try Self.assertMatchesRegistry(state: state, descriptor: descriptor)
 
         guard let minDeposit = KaminoTokenAmount(
             baseUnitString: state.minDepositAmount,
-            decimals: state.tokenMintDecimals
+            decimals: descriptor.tokenDecimals
         ) else {
             throw KaminoServiceError.malformedNumber(
                 field: "minDepositAmount",
@@ -99,7 +92,7 @@ struct KaminoService: KaminoServiceProtocol {
         // on the SOL vault (9 vs 6).
         guard let minWithdraw = KaminoShareAmount(
             baseUnitString: state.minWithdrawAmount,
-            decimals: state.sharesMintDecimals
+            decimals: descriptor.sharesDecimals
         ) else {
             throw KaminoServiceError.malformedNumber(
                 field: "minWithdrawAmount",
@@ -124,18 +117,47 @@ struct KaminoService: KaminoServiceProtocol {
         return KaminoVaultInfo(
             descriptor: descriptor,
             name: state.name,
-            tokenMint: state.tokenMint,
-            tokenDecimals: state.tokenMintDecimals,
-            sharesMint: state.sharesMint,
-            shareDecimals: state.sharesMintDecimals,
             minDeposit: minDeposit,
             minWithdraw: minWithdraw,
             lookupTable: state.vaultLookupTable,
-            hasFarm: Self.hasFarm(state.vaultFarm),
             apy30d: apy30d,
             tokensPerShare: tokensPerShare,
             tokenPriceUsd: tokenPriceUsd
         )
+    }
+
+    /// Refuses a response whose account of the vault differs from the registry's.
+    ///
+    /// The mints, their decimals and the farm are immutable properties of a
+    /// kVault, so this can never fire on a legitimate change. It exists because
+    /// those values decide where funds go and how amounts are scaled: taking
+    /// them from the API would mean validating a transaction the API built
+    /// against values the same API supplied, and the pair could be made
+    /// consistent. Checking here means the whole feature — not just the
+    /// transaction validator — works from a vault identity the app already knew.
+    private static func assertMatchesRegistry(
+        state: KaminoVaultStateResponse.State,
+        descriptor: KaminoVaultDescriptor
+    ) throws {
+        try assertEqual(state.tokenMint, descriptor.tokenMint, field: "tokenMint")
+        try assertEqual(state.sharesMint, descriptor.sharesMint, field: "sharesMint")
+        try assertEqual(
+            String(state.tokenMintDecimals),
+            String(descriptor.tokenDecimals),
+            field: "tokenMintDecimals"
+        )
+        try assertEqual(
+            String(state.sharesMintDecimals),
+            String(descriptor.sharesDecimals),
+            field: "sharesMintDecimals"
+        )
+        try assertEqual(farm(state.vaultFarm) ?? "", descriptor.farm ?? "", field: "vaultFarm")
+    }
+
+    private static func assertEqual(_ actual: String, _ expected: String, field: String) throws {
+        guard actual == expected else {
+            throw KaminoServiceError.vaultMetadataMismatch(field: field, expected: expected, actual: actual)
+        }
     }
 
     // MARK: - Actions
@@ -202,15 +224,15 @@ struct KaminoService: KaminoServiceProtocol {
         }
     }
 
-    /// SPL mints are a `u8`, but nothing legitimate exceeds 18 and the scale
-    /// indexes a `10^n` factor in every conversion.
-    private static func isPlausibleScale(_ decimals: Int) -> Bool {
-        (0...KaminoBaseUnits.maxDecimals).contains(decimals)
-    }
+    // The decimal scales index a `10^n` factor in every conversion, so they have
+    // to be sane. They no longer need a runtime bound check here because they
+    // come from the registry rather than the response — `KaminoVaultRegistryTests`
+    // pins each one inside `0...KaminoBaseUnits.maxDecimals`.
 
     /// The Solana default/system address doubles as "no farm attached".
-    private static func hasFarm(_ address: String) -> Bool {
-        !address.isEmpty && address != Self.systemProgramAddress
+    private static func farm(_ address: String) -> String? {
+        guard !address.isEmpty, address != Self.systemProgramAddress else { return nil }
+        return address
     }
 
     private static let systemProgramAddress = "11111111111111111111111111111111"
