@@ -19,7 +19,6 @@ struct RedeemTransactionScreen: View {
             percentageSelected: $viewModel.percentageSelected,
             percentageFieldType: .slider,
             amountField: viewModel.amountField,
-            validForm: $viewModel.validForm,
             customViewPosition: .bottom
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }

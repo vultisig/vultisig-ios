@@ -126,7 +126,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
 
         do {
-            let feeResult = try await logic.calculateFee(tx: transaction)
+            let feeResult = try await resolveFee()
 
             var newAmount = transaction.amount
             var nothingLeftAfterFee = false
@@ -294,6 +294,25 @@ class SendCryptoVerifyViewModel: ObservableObject {
         isAmountCorrect = false
     }
 
+    /// The fee the summary shows.
+    ///
+    /// A flow that pre-built its payload signs those bytes verbatim, so the fee
+    /// it will be charged is the one recorded on the payload — not one
+    /// re-estimated from `transaction`, which is a display-only stand-in whose
+    /// coin, amount and destination exist to make the summary read correctly.
+    /// For Kamino the two genuinely differ: the signed bytes carry an injected
+    /// ComputeBudget pair that a fresh estimate of a plain Solana transfer knows
+    /// nothing about.
+    ///
+    /// Falls back to the estimate when the payload records no usable fee, so a
+    /// pre-built flow that never carried one is no worse off than before.
+    private func resolveFee() async throws -> SendCryptoVerifyLogic.FeeResult {
+        if let prebuiltKeysignPayload, let fee = PrebuiltPayloadFee.fee(for: prebuiltKeysignPayload) {
+            return SendCryptoVerifyLogic.FeeResult(fee: fee, gas: fee)
+        }
+        return try await logic.calculateFee(tx: transaction)
+    }
+
     /// Load-time destination-activation guard. XRPL rejects a Payment that
     /// would create the destination account with less than the base reserve
     /// (`tecNO_DST_INSUF_XRP`) — on-chain, after the ceremony, with the fee
@@ -353,6 +372,19 @@ class SendCryptoVerifyViewModel: ObservableObject {
         hasBalanceError = true
     }
 
+    /// A Kamino transaction whose decoded bytes contradict this screen, or which
+    /// cannot be decoded at all, must not be signed.
+    ///
+    /// The decode is the only independent account of what the bytes do, so if it
+    /// disagrees with the summary above it, one of the two is wrong and nobody
+    /// looking at the screen can tell which. Rendering the contradiction and
+    /// leaving Sign enabled would make the check advisory, which is the posture
+    /// this whole feature was built to avoid. `nil` payload and every non-Kamino
+    /// payload resolve to `.notKamino`, which blocks nothing.
+    var isKaminoDecodeRefused: Bool {
+        KaminoVerifyPresentation.state(for: prebuiltKeysignPayload).blocksSigning
+    }
+
     var isValidForm: Bool {
         if isApproveRequired {
             return isAddressCorrect && isAmountCorrect && isApproveCorrect
@@ -361,7 +393,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     var signButtonDisabled: Bool {
-        !isValidForm || isLoading || hasBalanceError || hasLoadError
+        // `hasLoadError` and `isKaminoDecodeRefused` are independent fail-closed
+        // holds on the same button — the figures were never resolved, and the
+        // bytes contradict the figures. Either one alone must block Sign, so
+        // they compose rather than replace each other.
+        !isValidForm || isLoading || hasBalanceError || hasLoadError || isKaminoDecodeRefused
     }
 
     func validateForm() async throws -> KeysignPayload {
@@ -370,6 +406,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
         if !isValidForm {
             throw HelperError.runtimeError("mustAgreeTermsError")
+        }
+
+        // Re-checked here rather than trusted from the button. The button state
+        // is a rendering; this is the seam every signature passes through.
+        if isKaminoDecodeRefused {
+            throw HelperError.runtimeError("kaminoVerifyRefused".localized)
         }
 
         // A flow that pre-built its keysign payload (e.g. Circle withdraw) must

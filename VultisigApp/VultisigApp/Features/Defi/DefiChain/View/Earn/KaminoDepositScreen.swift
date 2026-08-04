@@ -37,7 +37,6 @@ struct KaminoDepositScreen: View {
                     // for display would leave part of it undeposited.
                     amountDecimals: viewModel.descriptor.tokenDecimals,
                     amountField: viewModel.amountField,
-                    validForm: $viewModel.validForm,
                     // Nothing the user can type makes a deposit possible when
                     // the wallet holds no coin for this vault's asset, when the
                     // vault's own minimum never arrived, or when the SOL reserve

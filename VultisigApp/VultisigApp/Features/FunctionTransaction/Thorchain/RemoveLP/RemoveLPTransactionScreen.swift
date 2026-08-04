@@ -21,7 +21,6 @@ struct RemoveLPTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: String(format: "removeCoinLP".localized, viewModel.position.coin1.chain.name),
-            validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
             FormExpandableSection(

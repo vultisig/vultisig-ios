@@ -45,7 +45,6 @@ struct KaminoWithdrawScreen: View {
                     // screen has to match it.
                     amountDecimals: viewModel.descriptor.tokenDecimals,
                     amountField: viewModel.amountField,
-                    validForm: $viewModel.validForm,
                     // A position that cannot be withdrawn at all — staked in the
                     // vault's farm, empty, or unreadable — is a state no amount
                     // satisfies, so the button reads as disabled rather than

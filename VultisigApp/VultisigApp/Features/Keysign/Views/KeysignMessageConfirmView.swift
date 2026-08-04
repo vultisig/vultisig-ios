@@ -84,7 +84,11 @@ struct KeysignMessageConfirmView: View {
                 PrimaryButton(title: "joinTransactionSigning", isLoading: viewModel.isJoiningCommittee) {
                     viewModel.joinKeysignCommittee()
                 }
-                .disabled(viewModel.isJoiningCommittee)
+                // A Kamino transaction whose decoded bytes contradict the summary
+                // above — or which cannot be decoded at all — is a refusal, not a
+                // note. The card renders what disagreed; this is what makes the
+                // refusal mean something.
+                .disabled(viewModel.isJoiningCommittee || viewModel.isKaminoDecodeRefused)
             }
             .task {
                 async let thor: Void = viewModel.loadThorchainID()

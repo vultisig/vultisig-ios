@@ -23,7 +23,6 @@ struct UnbondMayaTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: "unbond".localized,
-            validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
             FormExpandableSection(

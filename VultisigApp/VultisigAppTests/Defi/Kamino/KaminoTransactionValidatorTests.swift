@@ -943,7 +943,13 @@ private struct StubLookupTables: SolanaAddressLookupTableFetching {
 /// so the adversarial cases build their bytes here instead. Round-tripping an
 /// untouched transaction is asserted byte-for-byte above, which is what makes a
 /// refusal in these tests attributable to the mutation rather than to the rebuild.
-private struct MutableTransaction {
+/// A decoded v0 message that can be edited and re-serialized.
+///
+/// Internal rather than file-private: the verify-screen suite drives the same
+/// "take bytes known to execute, change exactly one thing" pattern against the
+/// decoder, and two copies of a serializer would let the two suites disagree
+/// about what a malformed transaction even is.
+struct MutableTransaction {
 
     struct Instruction {
         var programIdIndex: UInt8

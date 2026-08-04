@@ -560,6 +560,12 @@ private extension DefiChainMainScreen {
         // The Earn VM persists into the vault it was built with, so it has to
         // be rebound before the next refresh reads the new vault's address.
         kaminoEarnViewModel.update(vault: vault)
+        // And the new vault gets the same imported-selection hydration `onLoad`
+        // performs, because a restored backup carries its enabled vaults as
+        // plain addresses with no rows behind them. Without this a vault
+        // switched to — rather than launched into — reads as opted out until the
+        // screen is reloaded. Idempotent, so switching back costs nothing.
+        hydrateKaminoSelectionIfNeeded()
     }
 }
 

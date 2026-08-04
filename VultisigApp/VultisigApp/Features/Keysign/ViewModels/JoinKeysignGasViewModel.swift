@@ -58,6 +58,21 @@ struct JoinKeysignGasViewModel {
             return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
         }
 
+        // A Solana payload carrying an injected ComputeBudget pair costs
+        // `limit × price` on top of the flat estimate, and `chainSpecific.gas`
+        // does not account for it. The initiator's verify screen adds it via
+        // `PrebuiltPayloadFee`; without this the two devices would quote
+        // different fees for the same bytes, which is the one thing a co-signer
+        // has no way to reconcile.
+        if payload.coin.chainType == .Solana,
+           case .Solana(_, let priorityFee, let priorityLimit, _, _, _) = payload.chainSpecific,
+           priorityFee > 0, priorityLimit > 0,
+           let total = PrebuiltPayloadFee.fee(for: payload) {
+            let gasAmount = Decimal(total) / pow(10, nativeToken.decimals)
+            let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+            return ("\(gasInReadable) \(nativeToken.ticker)", feesInReadable(coin: payload.coin, fee: total))
+        }
+
         // For UTXO and Cardano chains, calculate total fee using WalletCore (like first device)
         var feeToUse = payload.chainSpecific.gas
         if payload.coin.chainType == .UTXO {
