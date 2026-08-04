@@ -4,6 +4,7 @@
 //
 
 @testable import VultisigApp
+import BigInt
 import SwiftData
 import XCTest
 
@@ -417,5 +418,105 @@ final class DefiBalanceServiceTests: XCTestCase {
         ], for: vault)
 
         XCTAssertEqual(service.defiPositionCount(for: .terra, vault: vault), 0)
+    }
+
+    // MARK: - Kamino Earn vaults in the Solana total
+
+    /// The whole reason the Earn snapshot is a `@Model`: this roll-up is
+    /// synchronous, so a view-model-only value could never reach it.
+    func testSolanaTotalIncludesEnabledKaminoDeposits() throws {
+        try saveKaminoRates()
+        try enableKamino(KaminoVaultRegistry.steakhouseUSDC, tokenBaseUnits: 250_000_000)
+
+        XCTAssertEqual(
+            service.totalBalanceInFiat(for: .solana, vault: vault),
+            250,
+            "250 USDC deposited at $1 must appear in the Solana DeFi total."
+        )
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 1)
+    }
+
+    /// The two launch vault families have different underlying tokens, so the
+    /// total cannot be summed before each is priced.
+    func testSolanaTotalPricesEachVaultInItsOwnUnderlyingToken() throws {
+        try saveKaminoRates()
+        try enableKamino(KaminoVaultRegistry.steakhouseUSDC, tokenBaseUnits: 100_000_000)
+        // wSOL, 9 decimals: 2 SOL at $50.
+        try enableKamino(KaminoVaultRegistry.allezSOL, tokenBaseUnits: 2_000_000_000)
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), 200)
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 2)
+    }
+
+    func testDisabledKaminoVaultIsExcludedFromTheTotal() throws {
+        try saveKaminoRates()
+        try enableKamino(KaminoVaultRegistry.steakhouseUSDC, tokenBaseUnits: 250_000_000)
+        try KaminoPositionStorageService().setEnabled(
+            false, descriptor: KaminoVaultRegistry.steakhouseUSDC, for: vault
+        )
+
+        XCTAssertEqual(
+            service.totalBalanceInFiat(for: .solana, vault: vault),
+            .zero,
+            "A disabled vault's cached position must not inflate the DeFi total."
+        )
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    /// An enabled vault the user has not deposited into is not a position yet.
+    func testEnabledKaminoVaultWithNoDepositIsNotCounted() throws {
+        try saveKaminoRates()
+        try KaminoPositionStorageService().setEnabled(
+            true, descriptor: KaminoVaultRegistry.steakhouseUSDC, for: vault
+        )
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    /// A row whose vault has left the curated allow-list has no descriptor, so
+    /// its underlying token — and therefore its rate — is unknown. It drops out
+    /// rather than being valued at a guess.
+    func testUncuratedKaminoRowIsExcludedFromTheTotal() throws {
+        try saveKaminoRates()
+        let stray = KaminoPosition(
+            vaultAddress: "NotAVaultTheAppKnowsAbout1111111111111111111",
+            isEnabled: true,
+            shares: KaminoShareAmount(baseUnits: 1_000_000, decimals: 6),
+            tokenAmount: KaminoTokenAmount(baseUnits: 250_000_000, decimals: 6),
+            vault: vault
+        )
+        Storage.shared.insert(stray)
+        try Storage.shared.save()
+
+        XCTAssertEqual(service.totalBalanceInFiat(for: .solana, vault: vault), .zero)
+        XCTAssertEqual(service.defiPositionCount(for: .solana, vault: vault), 0)
+    }
+
+    private func saveKaminoRates() throws {
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "usd-coin", value: 1),
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: "solana", value: 50)
+        ])
+    }
+
+    private func enableKamino(_ descriptor: KaminoVaultDescriptor, tokenBaseUnits: Int) throws {
+        let storage = KaminoPositionStorageService()
+        try storage.setEnabled(true, descriptor: descriptor, for: vault)
+        try storage.upsert(
+            snapshots: [
+                KaminoPositionSnapshot(
+                    vaultAddress: descriptor.address,
+                    shares: KaminoShareAmount(baseUnits: 1, decimals: descriptor.sharesDecimals),
+                    tokenAmount: KaminoTokenAmount(
+                        baseUnits: BigInt(tokenBaseUnits),
+                        decimals: descriptor.tokenDecimals
+                    ),
+                    apy30d: nil,
+                    pnlToken: nil
+                )
+            ],
+            for: vault
+        )
     }
 }

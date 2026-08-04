@@ -14,8 +14,17 @@ struct DefiChainSelectPositionsScreen: View {
     @ObservedObject var viewModel: DefiChainMainViewModel
     @Binding var isPresented: Bool
 
+    /// Coin buckets, one per `DefiPositions` field. Deliberately `[[CoinMeta]]`
+    /// and not the picker's element type: `onSave` hands everything in here to
+    /// `CoinService.addToChain`, so nothing that must not become a wallet coin
+    /// can be stored in it.
     @State var selection: [[CoinMeta]] = []
+    /// Kamino vault addresses the user has turned on. Persisted onto
+    /// `KaminoPosition.isEnabled` rather than into a `DefiPositions` bucket.
+    @State var earnSelection: Set<String> = []
     @State var isLoading: Bool = false
+
+    private let kaminoStorage = KaminoPositionStorageService()
 
     var body: some View {
         ZStack {
@@ -42,7 +51,26 @@ struct DefiChainSelectPositionsScreen: View {
     }
 
     @ViewBuilder
-    func cellBuilder(_ asset: CoinMeta, section: DefiChainPositionType) -> some View {
+    func cellBuilder(_ asset: DefiSelectableAsset, section: DefiChainPositionType) -> some View {
+        switch asset {
+        case .coin(let coin):
+            coinCell(coin, section: section)
+        case .kaminoVault(let descriptor):
+            KaminoVaultSelectionGridCell(
+                descriptor: descriptor,
+                isSelected: earnSelection.contains(descriptor.address)
+            ) { selected in
+                if selected {
+                    earnSelection.insert(descriptor.address)
+                } else {
+                    earnSelection.remove(descriptor.address)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    func coinCell(_ asset: CoinMeta, section: DefiChainPositionType) -> some View {
         let pos = section.selectionIndex
         TokenSelectionGridCell(
             coin: asset,
@@ -67,6 +95,7 @@ struct DefiChainSelectPositionsScreen: View {
             defiPositions?.staking ?? [],
             defiPositions?.lps ?? []
         ]
+        earnSelection = kaminoStorage.enabledVaultAddresses(for: viewModel.vault)
     }
 
     func add(asset: CoinMeta, section: Int) {
@@ -83,7 +112,10 @@ struct DefiChainSelectPositionsScreen: View {
         Task {
             isLoading = true
             updateVaultDefiPositions()
+            updateKaminoPositions()
 
+            // Only ever the coin buckets: `selection` cannot hold a Kamino
+            // vault, so no vault can be added to the wallet as a token.
             let vaultCoins = viewModel.vault.coins.map { $0.toCoinMeta() }
             let filteredDefiCoins = Set(selection.flatMap { $0 }).filter {
                 !vaultCoins.contains($0)
@@ -159,25 +191,53 @@ struct DefiChainSelectPositionsScreen: View {
             }
         }
     }
+
+    /// Mirrors the Earn selection onto `KaminoPosition.isEnabled`, in one save,
+    /// so a failure cannot leave half of it applied. Disabling keeps the row and
+    /// its snapshot and only clears the flag, because disabling a vault does not
+    /// withdraw from it.
+    @MainActor
+    func updateKaminoPositions() {
+        // The Earn section is only ever offered on the vaults' own chain. Without
+        // this gate, saving the picker on any other chain would see an empty
+        // `earnSelection` and switch every enabled vault off.
+        guard viewModel.chain == KaminoVaultRegistry.chain else { return }
+        do {
+            try kaminoStorage.setEnabledVaults(earnSelection, for: viewModel.vault)
+        } catch {
+            logger.error("Failed to update Kamino positions: \(error.localizedDescription, privacy: .private)")
+        }
+    }
 }
 
-private extension DefiChainPositionType {
-    /// Bucket index of this position type inside `selection`, fixed by the shape
-    /// of the persisted `DefiPositions` record. Deliberately independent of the
-    /// catalog's section order, which is presentational: deriving it from the
-    /// catalog would silently file a selection under the wrong position type if
-    /// a section were ever reordered or omitted.
-    var selectionIndex: Int? {
-        switch self {
-        case .bond:
-            0
-        case .stake:
-            1
-        case .liquidityPool:
-            2
-        case .governance:
-            // Not a selectable asset — it has no bucket.
-            nil
+/// Grid cell for a curated Kamino vault. Carries the vault's own name and its
+/// underlying token's artwork — the vault is what the user picks, the token is
+/// what they recognise.
+private struct KaminoVaultSelectionGridCell: View {
+    let descriptor: KaminoVaultDescriptor
+    var onSelection: (Bool) -> Void
+
+    @State private var isSelected: Bool
+
+    init(
+        descriptor: KaminoVaultDescriptor,
+        isSelected: Bool,
+        onSelection: @escaping (Bool) -> Void
+    ) {
+        self.descriptor = descriptor
+        self.onSelection = onSelection
+        self._isSelected = State(initialValue: isSelected)
+    }
+
+    var body: some View {
+        let coin = descriptor.underlyingCoinMeta
+        AssetSelectionGridCell(
+            name: descriptor.fallbackName,
+            ticker: coin?.ticker ?? descriptor.fallbackName,
+            logo: coin?.logo ?? "",
+            isSelected: $isSelected
+        ) {
+            onSelection(isSelected)
         }
     }
 }
