@@ -125,6 +125,28 @@ final class SolanaBlockhashRefreshTests: XCTestCase {
         )
     }
 
+    /// The withdraw payload travels the same branch. It has to: the marker gates
+    /// the splice, and a withdraw that reached keysign without one would either
+    /// carry a stale blockhash or — worse — lose its bytes and be rebuilt as a
+    /// plain transfer of the withdrawn amount to the user's own address.
+    func testAKaminoWithdrawPayloadIsRefreshedTheSameWay() async throws {
+        let service = BlockChainService(blockhashProvider: StubBlockhashProvider(Self.freshBlockhash))
+        let payload = try Self.kaminoWithdrawPayload()
+
+        let refreshed = try await service.refreshSolanaBlockhash(for: payload)
+
+        XCTAssertEqual(refreshed.kaminoPayload?.operation, .withdraw)
+        let raw = try XCTUnwrap(refreshed.signSolana?.rawTransactions.first)
+        XCTAssertEqual(try SolanaV0Transaction(base64Transaction: raw).recentBlockhash, Self.freshBlockhash)
+
+        // Still the withdraw the validator approved, at the same share amount.
+        try KaminoTransactionValidator.validate(
+            transaction: try SolanaV0Transaction(base64Transaction: raw),
+            intent: Self.withdrawIntent,
+            lookupTables: KaminoTransactionFixtures.lookupTables
+        )
+    }
+
     // MARK: - Bytes the app did not build
 
     /// A raw payload with no Kamino marker keeps its bytes untouched. Those 32
@@ -241,7 +263,7 @@ private extension SolanaBlockhashRefreshTests {
             ).recentBlockhash
         )
 
-        let payload = try KaminoDepositPayloadFactory.makeDeposit(
+        let payload = try KaminoKeysignPayloadFactory.makeDeposit(
             prepared: prepared,
             vaultInfo: steakhouseVault,
             amount: depositAmount,
@@ -273,6 +295,47 @@ private extension SolanaBlockhashRefreshTests {
             )
         }
         return payload
+    }
+
+    /// The payload a completed withdraw form produces. The wire bytes are the
+    /// mainnet-simulated withdraw vector, and its fee payer is a different
+    /// wallet from the deposit's, so the coin has to match it.
+    static func kaminoWithdrawPayload() throws -> KeysignPayload {
+        let prepared = KaminoPreparedTransaction(
+            base64: KaminoTransactionFixtures.usdcWithdraw.injected,
+            priorityFee: KaminoPriorityFee(
+                limit: KaminoTransactionFixtures.usdcWithdraw.unitLimit,
+                price: KaminoTransactionFixtures.unitPriceMicroLamports
+            ),
+            unitsConsumed: 174_566,
+            payerLamportsAfter: nil,
+            recentBlockhash: try SolanaV0Transaction(
+                base64Transaction: KaminoTransactionFixtures.usdcWithdraw.injected
+            ).recentBlockhash
+        )
+
+        return try KaminoKeysignPayloadFactory.makeWithdraw(
+            prepared: prepared,
+            vaultInfo: steakhouseVault,
+            shares: withdrawShares,
+            tokenValue: KaminoTokenAmount(baseUnits: BigInt(5_794_822), decimals: 6),
+            coin: solanaCoin(address: KaminoTransactionFixtures.usdcWithdraw.feePayer),
+            vault: testVault()
+        )
+    }
+
+    static let withdrawShares = KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)
+
+    static var withdrawIntent: KaminoTransactionIntent {
+        KaminoTransactionIntent(
+            operation: .withdraw(withdrawShares),
+            vault: steakhouseVault,
+            owner: KaminoTransactionFixtures.usdcWithdraw.feePayer,
+            priorityFee: KaminoPriorityFee(
+                limit: KaminoTransactionFixtures.usdcWithdraw.unitLimit,
+                price: KaminoTransactionFixtures.unitPriceMicroLamports
+            )
+        )
     }
 
     /// The shape the general path handles: a Solana send with no raw bytes.
@@ -307,7 +370,7 @@ private extension SolanaBlockhashRefreshTests {
         )
     }
 
-    static func solanaCoin() -> Coin {
+    static func solanaCoin(address: String = owner) -> Coin {
         let asset = CoinMeta(
             chain: .solana,
             ticker: "SOL",
@@ -317,7 +380,7 @@ private extension SolanaBlockhashRefreshTests {
             contractAddress: "",
             isNativeToken: true
         )
-        let coin = Coin(asset: asset, address: owner, hexPublicKey: "0f9a6ce9f661")
+        let coin = Coin(asset: asset, address: address, hexPublicKey: "0f9a6ce9f661")
         coin.rawBalance = "3000000000"
         return coin
     }

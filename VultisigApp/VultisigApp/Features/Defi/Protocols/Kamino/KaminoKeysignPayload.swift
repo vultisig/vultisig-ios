@@ -25,13 +25,17 @@ struct KaminoKeysignPayload: Codable, Hashable {
 
     enum Operation: String, Codable {
         case deposit
+        case withdraw
     }
 
     /// The curated vault this transaction targets.
     let vaultAddress: String
     let operation: Operation
     /// The amount as it appears in the instruction, in the operation's own unit:
-    /// underlying-token base units for a deposit.
+    /// underlying-token base units for a deposit, SHARE base units for a
+    /// withdraw. The API takes the same `amount` field for both actions with
+    /// inverted units, so the unit travels with the operation rather than being
+    /// inferred at the far end.
     let amountBaseUnits: String
     let amountDecimals: Int
 

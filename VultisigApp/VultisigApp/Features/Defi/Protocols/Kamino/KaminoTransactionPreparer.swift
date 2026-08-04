@@ -28,14 +28,17 @@ protocol KaminoSolanaMeasuring {
 
 extension SolanaService: KaminoSolanaMeasuring {}
 
+/// The compute-unit price both forms pin for the lifetime of a session.
+protocol KaminoPriorityPricing {
+    func resolveUnitPrice() async -> UInt64
+}
+
 /// What a deposit form needs from the pipeline.
 ///
 /// Separated from the concrete preparer so a form's own decisions — the minimum
 /// gate, the maximum, which unit an amount is in — can be asserted without
 /// standing up the whole build/validate/simulate chain, which has its own tests.
-protocol KaminoDepositPreparing {
-    func resolveUnitPrice() async -> UInt64
-
+protocol KaminoDepositPreparing: KaminoPriorityPricing {
     func prepareDeposit(
         vault: KaminoVaultInfo,
         owner: String,
@@ -49,6 +52,21 @@ protocol KaminoDepositPreparing {
         probe: KaminoTokenAmount,
         unitPrice: UInt64
     ) async throws -> BigInt
+}
+
+/// What a withdraw form needs from the pipeline.
+///
+/// The amount is a `KaminoShareAmount` and cannot be anything else: the API takes
+/// the same `amount` field for both actions with inverted units, and the type is
+/// what makes handing it a token amount a compile error rather than a withdraw
+/// mis-sized by the share rate.
+protocol KaminoWithdrawPreparing: KaminoPriorityPricing {
+    func prepareWithdraw(
+        vault: KaminoVaultInfo,
+        owner: String,
+        shares: KaminoShareAmount,
+        unitPrice: UInt64
+    ) async throws -> KaminoPreparedTransaction
 }
 
 /// A Kamino transaction that has passed every gate and is ready to be signed.
@@ -119,7 +137,7 @@ enum KaminoPreparationError: Error, LocalizedError, Equatable {
 /// there" and "exactly the fee we put there" are different statements, and only
 /// running both makes an injected instruction distinguishable from a supplied
 /// one.
-struct KaminoTransactionPreparer: KaminoDepositPreparing {
+struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparing {
 
     private let service: KaminoServiceProtocol
     private let solana: KaminoSolanaMeasuring
@@ -240,6 +258,42 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing {
         let floor = try await solana.fetchRentExemptMinimum(size: Self.walletAccountDataSize)
         let spendable = BigInt(remaining) + probe.baseUnits - BigInt(floor)
         return max(spendable, 0)
+    }
+
+    // MARK: - Withdraw
+
+    /// Builds, checks and budgets a withdraw of `shares` from the vault.
+    ///
+    /// The same `finish`/`inject` core as a deposit — only the build call, the
+    /// unit in the amount and the compute limit differ. What the caller decides
+    /// is the one thing this cannot: how many shares. `KaminoWithdrawMath` owns
+    /// that, and the reason it must is the API's `u64::MAX` rewrite of an
+    /// over-sized request.
+    ///
+    /// The validator's second pass pins the withdraw instruction's `u64` to
+    /// exactly `shares`, so a response that came back carrying the sentinel — or
+    /// any other amount — is refused before simulation and before signing. That
+    /// is what makes a stale balance read cost a refusal rather than a full exit.
+    func prepareWithdraw(
+        vault: KaminoVaultInfo,
+        owner: String,
+        shares: KaminoShareAmount,
+        unitPrice: UInt64
+    ) async throws -> KaminoPreparedTransaction {
+        let built = try await service.buildWithdrawTransaction(
+            owner: owner,
+            vault: vault.descriptor.address,
+            shares: shares
+        )
+
+        return try await finish(
+            base64: built,
+            operation: .withdraw(shares),
+            vault: vault,
+            owner: owner,
+            unitLimit: KaminoComputeBudget.withdrawUnitLimit,
+            unitPrice: unitPrice
+        )
     }
 
     // MARK: - Pipeline

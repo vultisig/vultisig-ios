@@ -1,12 +1,12 @@
 //
-//  KaminoDepositPayloadFactory.swift
+//  KaminoKeysignPayloadFactory.swift
 //  VultisigApp
 //
 
 import BigInt
 import Foundation
 
-/// Assembles the `KeysignPayload` for a prepared Kamino deposit.
+/// Assembles the `KeysignPayload` for a prepared Kamino transaction.
 ///
 /// The signed artefact is `signData` and nothing else: `SolanaHelper` signs those
 /// wire bytes verbatim, and every account and amount in them has already been
@@ -14,7 +14,7 @@ import Foundation
 /// payload is context — what the verify screen shows, what the fee display reads,
 /// which key signs — so it is filled in to describe the same transaction rather
 /// than to define it.
-enum KaminoDepositPayloadFactory {
+enum KaminoKeysignPayloadFactory {
 
     enum Errors: Error, LocalizedError, Equatable {
         /// The compute limit is a `u32` on chain and a `BigInt` in
@@ -41,6 +41,61 @@ enum KaminoDepositPayloadFactory {
         coin: Coin,
         vault: Vault
     ) throws -> KeysignPayload {
+        try make(
+            prepared: prepared,
+            vault: vault,
+            coin: coin,
+            // A deposit leaves the wallet for the vault, and its amount is in the
+            // underlying token — the same unit the bytes carry.
+            toAddress: vaultInfo.descriptor.address,
+            toAmount: amount.baseUnits,
+            marker: KaminoKeysignPayload(
+                vaultAddress: vaultInfo.descriptor.address,
+                operation: .deposit,
+                amount: amount
+            )
+        )
+    }
+
+    /// - Parameters:
+    ///   - shares: the SHARE amount the withdraw instruction carries. This is
+    ///     what the validator pinned and what the marker records — the bytes are
+    ///     denominated in shares, not in the asset.
+    ///   - tokenValue: the same withdraw expressed in the underlying asset, for
+    ///     the summary the user reads. A projection at the current rate, so it
+    ///     never sizes anything.
+    static func makeWithdraw(
+        prepared: KaminoPreparedTransaction,
+        vaultInfo: KaminoVaultInfo,
+        shares: KaminoShareAmount,
+        tokenValue: KaminoTokenAmount,
+        coin: Coin,
+        vault: Vault
+    ) throws -> KeysignPayload {
+        try make(
+            prepared: prepared,
+            vault: vault,
+            coin: coin,
+            // A withdraw pays the user's own account, so that is the destination
+            // — not the vault, which is where the funds come from.
+            toAddress: coin.address,
+            toAmount: tokenValue.baseUnits,
+            marker: KaminoKeysignPayload(
+                vaultAddress: vaultInfo.descriptor.address,
+                operation: .withdraw,
+                amount: shares
+            )
+        )
+    }
+
+    private static func make(
+        prepared: KaminoPreparedTransaction,
+        vault: Vault,
+        coin: Coin,
+        toAddress: String,
+        toAmount: BigInt,
+        marker: KaminoKeysignPayload
+    ) throws -> KeysignPayload {
         guard let priorityLimit = BigInt(exactly: prepared.priorityFee.limit) else {
             throw Errors.priorityLimitOutOfRange(prepared.priorityFee.limit)
         }
@@ -61,8 +116,8 @@ enum KaminoDepositPayloadFactory {
 
         return KeysignPayload(
             coin: coin,
-            toAddress: vaultInfo.descriptor.address,
-            toAmount: amount.baseUnits,
+            toAddress: toAddress,
+            toAmount: toAmount,
             chainSpecific: chainSpecific,
             utxos: [],
             memo: nil,
@@ -77,11 +132,7 @@ enum KaminoDepositPayloadFactory {
             tronTransferAssetContractPayload: nil,
             qbtcClaimPayload: nil,
             isQbtcClaim: false,
-            kaminoPayload: KaminoKeysignPayload(
-                vaultAddress: vaultInfo.descriptor.address,
-                operation: .deposit,
-                amount: amount
-            ),
+            kaminoPayload: marker,
             skipBroadcast: false,
             signData: .signSolana(SignSolana(rawTransactions: [prepared.base64]))
         )
