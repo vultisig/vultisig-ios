@@ -940,6 +940,7 @@
 "paired" = "페어링됨";
 "part" = "공유";
 "partOf" = "%d/%d 공유";
+"passcodeAlreadySet" = "이 기기에는 이미 패스코드가 설정되어 있습니다. 뒤로 돌아가 변경하거나 삭제하세요.";
 "passcodeAutoLockTitle" = "자동 잠금";
 "passcodeBusy" = "다른 작업이 아직 진행 중입니다. 완료될 때까지 기다린 뒤 다시 시도하세요.";
 "passcodeChangeTitle" = "패스코드 변경";
@@ -964,7 +965,7 @@
 "passcodeMismatch" = "일치하지 않습니다. 다시 시도하세요.";
 "passcodeNewTitle" = "새 패스코드 선택";
 "passcodeSealedSharesWithoutKey" = "이 기기의 볼트는 이미 암호화되어 있지만 이를 여는 키를 읽을 수 없습니다. 백업에서 복원하세요.";
-"passcodeSetDisclosure" = "패스코드를 설정하면 이 기기의 볼트 키 셰어가 암호화됩니다. 패스코드를 삭제하기 전까지는 이전 버전의 Vultisig에서 이 키 셰어로 서명할 수 없습니다.";
+"passcodeSetDisclosure" = "이 기기의 키 셰어가 암호화됩니다. 패스코드를 삭제하기 전까지 이전 버전의 앱에서는 서명할 수 없습니다.";
 "passcodeSetTitle" = "패스코드 설정";
 "passcodeStorageError" = "이 기기에서 패스코드를 읽을 수 없습니다. 백업에서 볼트를 복원하세요.";
 "password" = "비밀번호";

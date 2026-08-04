@@ -14,11 +14,9 @@ struct ManagePasscodeScreen: View {
     @State private var showDisable = false
 
     private let service: PasscodeService
-    private let lockService: AppLockService
 
-    init(service: PasscodeService = .shared, lockService: AppLockService = .shared) {
+    init(service: PasscodeService = .shared) {
         self.service = service
-        self.lockService = lockService
     }
 
     /// The rows on offer, which depend on whether a passcode exists. Kept as an

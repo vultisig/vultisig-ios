@@ -62,13 +62,20 @@ struct PasscodeEntryView: View {
 
             keypad
 
-            Spacer(minLength: 12)
+            Spacer(minLength: 8)
 
             if let footnote {
                 Text(footnote)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
+                    // Bounded and scalable rather than free-flowing. Nothing
+                    // here scrolls and the keypad's keys are a fixed size, so on
+                    // the shortest supported screen a long translation would be
+                    // truncated — silently cutting the end off a warning is
+                    // worse than showing it a point smaller.
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.7)
                     .padding(.horizontal, 32)
                     .padding(.bottom, 8)
                     .accessibilityIdentifier(AccessibilityID.Passcode.footnote)

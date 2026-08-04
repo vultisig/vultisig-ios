@@ -940,6 +940,7 @@
 "paired" = "已配对";
 "part" = "份额";
 "partOf" = "第 %d 部分，共 %d 部分";
+"passcodeAlreadySet" = "本设备已设置密码。请返回上一页以修改或移除。";
 "passcodeAutoLockTitle" = "自动锁定";
 "passcodeBusy" = "另一项操作仍在进行中。请等待其完成后重试。";
 "passcodeChangeTitle" = "修改密码";
@@ -964,7 +965,7 @@
 "passcodeMismatch" = "两次输入不一致，请重试。";
 "passcodeNewTitle" = "选择新密码";
 "passcodeSealedSharesWithoutKey" = "本设备上的 vault 已经加密，但无法读取用于打开它们的密钥。请从备份中恢复。";
-"passcodeSetDisclosure" = "设置密码会加密本设备上的 vault key share。在您移除密码之前，旧版本的 Vultisig 无法用它们签名。";
+"passcodeSetDisclosure" = "这会加密本设备上的 key share。在您移除密码前，旧版本应用无法用它们签名。";
 "passcodeSetTitle" = "设置密码";
 "passcodeStorageError" = "无法在本设备上读取密码。请从备份恢复您的 vault。";
 "password" = "密码";

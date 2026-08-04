@@ -940,6 +940,7 @@
 "paired" = "Emparejado";
 "part" = "Participación";
 "partOf" = "Parte %d de %d";
+"passcodeAlreadySet" = "Ya hay un código establecido en este dispositivo. Vuelve atrás para cambiarlo o quitarlo.";
 "passcodeAutoLockTitle" = "Bloqueo automático";
 "passcodeBusy" = "Hay otra operación en curso. Espera a que termine e inténtalo de nuevo.";
 "passcodeChangeTitle" = "Cambiar código";
@@ -964,7 +965,7 @@
 "passcodeMismatch" = "No coinciden. Inténtalo de nuevo.";
 "passcodeNewTitle" = "Elige un código nuevo";
 "passcodeSealedSharesWithoutKey" = "Tus vaults ya están cifrados en este dispositivo, pero no se puede leer la clave que los abre. Restáuralos desde una copia de seguridad.";
-"passcodeSetDisclosure" = "Establecer un código cifra los key shares de tu vault en este dispositivo. Las versiones anteriores de Vultisig no podrán firmar con ellos hasta que lo quites.";
+"passcodeSetDisclosure" = "Esto cifra tus key shares en este dispositivo. Las versiones anteriores de la app no podrán firmar con ellos hasta que quites el código.";
 "passcodeSetTitle" = "Establecer código";
 "passcodeStorageError" = "No se pudo leer el código en este dispositivo. Restaura tu vault desde una copia de seguridad.";
 "password" = "Contraseña";

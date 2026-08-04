@@ -940,6 +940,7 @@
 "paired" = "Paired";
 "part" = "Share";
 "partOf" = "part %d of %d";
+"passcodeAlreadySet" = "A passcode is already set on this device. Go back to change or remove it.";
 "passcodeAutoLockTitle" = "Auto-lock";
 "passcodeBusy" = "Another operation is still in progress. Wait for it to finish, then try again.";
 "passcodeChangeTitle" = "Change passcode";
@@ -964,7 +965,7 @@
 "passcodeMismatch" = "Those did not match. Try again.";
 "passcodeNewTitle" = "Choose a new passcode";
 "passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
-"passcodeSetDisclosure" = "Setting a passcode encrypts your vault key shares on this device. Older versions of Vultisig cannot sign with them until you remove it.";
+"passcodeSetDisclosure" = "This encrypts your key shares on this device. Older app versions cannot sign with them until you remove the passcode.";
 "passcodeSetTitle" = "Set passcode";
 "passcodeStorageError" = "The passcode could not be read on this device. Restore your vault from a backup.";
 "password" = "Password";

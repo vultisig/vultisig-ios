@@ -83,26 +83,32 @@ final class PasscodeViewModel: ObservableObject {
             }
             let passcode = entry
             let failure = await perform { try await self.service.setPasscode(passcode) }
-            await closeIfThePasscodeWasSetAnyway(after: failure)
+            closeIfThePasscodeIsAlreadyDurable(after: failure)
         }
     }
 
-    /// A thrown `setPasscode` does not mean no passcode was set.
+    /// `cancelledByLock` out of `setPasscode` is the one failure that proves the
+    /// passcode the user just typed is already established.
     ///
-    /// The wrapped key is made durable and the lock mode switches to `.passcode`
-    /// as soon as that write verifies — deliberately, and well before the sweep
-    /// that seals the shares. A failure after that point leaves a passcode that
-    /// genuinely works, with its sweep unfinished; the next app unlock's resume
-    /// completes it. Reporting a failure there strands the user in a retry whose
-    /// only possible answer is `alreadySet`.
+    /// It is thrown from a single place — the guard that adopts the data key —
+    /// and that guard sits after the wrapped key has verified and after the lock
+    /// mode has moved to `.passcode`. So the passcode is durable and the gate is
+    /// up; only the key was not taken into the session, because a background
+    /// lock beat it there. The lock screen is about to cover everything and the
+    /// next unlock's resume finishes the sweep, so this flow has nothing left to
+    /// do and closing it is the honest outcome.
     ///
-    /// `alreadySet` itself is excluded: it is the one failure that means the
-    /// passcode on the device is somebody else's, not the one just entered.
-    private func closeIfThePasscodeWasSetAnyway(after failure: Error?) async {
-        guard let failure else { return }
-        guard (failure as? PasscodeError) != .alreadySet else { return }
-        guard await service.isSet else { return }
-
+    /// **Nothing else qualifies, and asking `isSet` instead was wrong.** `isSet`
+    /// answers `true` for an *unreadable* wrapper as well as a present one, and
+    /// it cannot tell a wrapper this call wrote from one that was already there
+    /// — so a failed read-back verification, or a transition refused while
+    /// somebody else's set completed, would have dismissed the screen over a
+    /// passcode the user never set. A sweep that fails after the wrapper is
+    /// durable does still leave a working passcode, but there is no signal here
+    /// that distinguishes it from a sweep-shaped failure *before* the wrapper,
+    /// so it reports the error and `alreadySet` explains the retry.
+    private func closeIfThePasscodeIsAlreadyDurable(after failure: Error?) {
+        guard (failure as? PasscodeError) == .cancelledByLock else { return }
         errorMessage = nil
         didFinish = true
     }
@@ -211,8 +217,14 @@ final class PasscodeViewModel: ObservableObject {
                 : "passcodeLockedOutShortly".localized
         case .invalidLength:
             return "passcodeInvalidLength".localized
-        case .notSet, .alreadySet:
+        case .notSet:
             return "passcodeGenericError".localized
+        case .alreadySet:
+            // The set flow's one dead end: a passcode is already on the device,
+            // and re-entering digits can only answer this again. Saying so sends
+            // the user back to the screen that offers change and remove, rather
+            // than leaving a generic failure they can only retry.
+            return "passcodeAlreadySet".localized
         case .busy:
             // Contention is reported rather than queued, so it needs an answer.
             // Deliberately says nothing about *which* operation: from Settings
