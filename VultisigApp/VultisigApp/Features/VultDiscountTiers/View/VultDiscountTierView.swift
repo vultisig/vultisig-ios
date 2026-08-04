@@ -21,7 +21,7 @@ struct VultDiscountTierView: View {
     /// Deliberately off the scale. The card's 24-top / 20-bottom asymmetry is a
     /// Figma value, not a rounding of one: the footer bar peeks out from under
     /// the bottom edge and the two radii are drawn to sit together.
-    private let bottomCornerRadius: CGFloat = 20
+    private let bottomCornerRadius: CGFloat = 20 // swiftlint:disable:this no_raw_corner_radius
     private let footerRadius: CornerRadius = Theme.radius.xl
     private let footerHeight: CGFloat = 48
 

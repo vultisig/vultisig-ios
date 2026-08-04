@@ -21,13 +21,13 @@ struct TooltipShape: Shape {
     /// Fillet at the arrow tip. Part of the arrow's own geometry — sized
     /// against `arrowWidth`/`arrowHeight`, not against the bubble — so it is
     /// deliberately not a scale step.
-    let arrowCornerRadius: CGFloat = 2
+    let arrowCornerRadius: CGFloat = 2 // swiftlint:disable:this no_raw_corner_radius
     /// Radius of the rounded junction where the arrow base blends into the
     /// tooltip body, so the triangle joins the bubble with a soft fillet
     /// instead of a hard kink (matches the design-system tooltip). Like the tip
     /// fillet it belongs to the arrow, and is placed along the arrow's diagonal
     /// rather than on a corner of the bubble.
-    let arrowJunctionRadius: CGFloat = 4
+    let arrowJunctionRadius: CGFloat = 4 // swiftlint:disable:this no_raw_corner_radius
     var arrowXFraction: CGFloat = 0.5
     var arrowDirection: TooltipArrowDirection = .up
 

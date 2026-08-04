@@ -11,11 +11,13 @@ import SwiftUI
 struct AssetSelectionGridCellSkeleton: View {
     var body: some View {
         VStack(spacing: 10) {
-            RoundedRectangle(cornerRadius: 24)
+            // `xl` is the tile the real cell draws, and `xs` the scale's
+            // skeleton-bar step — the same pair the DeFi position skeletons use.
+            Theme.radius.xl.shape
                 .fill(Theme.colors.borderLight.opacity(0.3))
                 .frame(width: 74, height: 74)
 
-            RoundedRectangle(cornerRadius: 4)
+            Theme.radius.xs.shape
                 .fill(Theme.colors.borderLight.opacity(0.3))
                 .frame(width: 40, height: 12)
         }

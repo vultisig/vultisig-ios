@@ -111,18 +111,24 @@ struct TronResourcesCardView: View {
                     }
 
                     GeometryReader { geometry in
+                        // The three 2s below are off the scale on purpose: they
+                        // are the end caps of a 3pt-tall progress bar, sized
+                        // against its own thickness rather than against a
+                        // surface. At 3pt the radius is already past SwiftUI's
+                        // half-the-smaller-dimension clamp, so the bar renders
+                        // fully round whatever number is written here.
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: 2) // swiftlint:disable:this no_raw_corner_radius
                                 .fill(Theme.colors.bgPrimary)
                                 .frame(height: 3)
 
                             if isLoading {
-                                RoundedRectangle(cornerRadius: 2)
+                                RoundedRectangle(cornerRadius: 2) // swiftlint:disable:this no_raw_corner_radius
                                     .fill(accentColor.opacity(0.3))
                                     .frame(width: geometry.size.width * 0.5, height: 3)
                                     .shimmer()
                             } else {
-                                RoundedRectangle(cornerRadius: 2)
+                                RoundedRectangle(cornerRadius: 2) // swiftlint:disable:this no_raw_corner_radius
                                     .fill(accentColor)
                                     .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 3)
                             }
