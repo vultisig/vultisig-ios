@@ -7,14 +7,18 @@
 
 import Foundation
 
+/// Every read answers with a ``KeychainReadResult`` rather than an optional, so
+/// "there is no such item" and "the Keychain could not be read" stay apart all
+/// the way to the call site. Callers that want to treat them alike say so with
+/// ``KeychainReadResult/valueTreatingUnavailableAsAbsent``.
 protocol KeychainService: AnyObject {
-    func getFastPassword(pubKeyECDSA: String) -> String?
+    func getFastPassword(pubKeyECDSA: String) -> KeychainReadResult<String>
     func setFastPassword(_ fastPassword: String?, pubKeyECDSA: String)
-    func getFastHint(pubKeyECDSA: String) -> String?
+    func getFastHint(pubKeyECDSA: String) -> KeychainReadResult<String>
     func setFastHint(_ fastHint: String?, pubKeyECDSA: String)
-    func getLastMigratedVersion() -> Int?
+    func getLastMigratedVersion() -> KeychainReadResult<Int>
     func setLastMigratedVersion(_ version: Int?)
-    func getDeviceToken() -> String?
+    func getDeviceToken() -> KeychainReadResult<String>
     func setDeviceToken(_ token: String?)
 }
 
@@ -33,7 +37,7 @@ final class DefaultKeychainService: KeychainService {
         self.keychain = keychain
     }
 
-    func getFastPassword(pubKeyECDSA: String) -> String? {
+    func getFastPassword(pubKeyECDSA: String) -> KeychainReadResult<String> {
         return keychain.getString(for: Keys.fastPassword(pubKeyECDSA: pubKeyECDSA))
     }
 
@@ -41,7 +45,7 @@ final class DefaultKeychainService: KeychainService {
         keychain.setString(fastPassword, for: Keys.fastPassword(pubKeyECDSA: pubKeyECDSA))
     }
 
-    func getFastHint(pubKeyECDSA: String) -> String? {
+    func getFastHint(pubKeyECDSA: String) -> KeychainReadResult<String> {
         return keychain.getString(for: Keys.fastHint(pubKeyECDSA: pubKeyECDSA))
     }
 
@@ -49,7 +53,7 @@ final class DefaultKeychainService: KeychainService {
         keychain.setString(fastHint, for: Keys.fastHint(pubKeyECDSA: pubKeyECDSA))
     }
 
-    func getLastMigratedVersion() -> Int? {
+    func getLastMigratedVersion() -> KeychainReadResult<Int> {
         return keychain.getInt(for: Keys.lastMigratedVersion)
     }
 
@@ -57,7 +61,7 @@ final class DefaultKeychainService: KeychainService {
         keychain.setInt(version, for: Keys.lastMigratedVersion)
     }
 
-    func getDeviceToken() -> String? {
+    func getDeviceToken() -> KeychainReadResult<String> {
         return keychain.getString(for: Keys.deviceToken)
     }
 

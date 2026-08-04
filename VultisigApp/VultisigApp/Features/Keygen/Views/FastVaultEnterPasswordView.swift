@@ -26,7 +26,9 @@ struct FastVaultEnterPasswordView: View {
     private let biometryService = BiometryService.shared
 
     var hint: String? {
-        keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA)
+        // Display only: an unreadable Keychain hides the hint, exactly as an
+        // unsaved one does.
+        keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA).valueTreatingUnavailableAsAbsent
     }
 
     var body: some View {
@@ -136,7 +138,11 @@ struct FastVaultEnterPasswordView: View {
     }
 
     func tryAuthenticate() {
-        guard let fastPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+        // No saved password and an unreadable Keychain lead to the same place —
+        // the user types the password in. This path writes nothing, so the two
+        // need not be told apart.
+        let saved = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA)
+        guard let fastPassword = saved.valueTreatingUnavailableAsAbsent else {
             return
         }
 
