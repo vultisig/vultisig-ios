@@ -941,6 +941,7 @@
 "part" = "Dio";
 "partOf" = "dio %d od %d";
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
+"passcodeBusy" = "Druga radnja je još u tijeku. Pričekajte da završi pa pokušajte ponovno.";
 "passcodeChangeTitle" = "Promijeni zaporku";
 "passcodeChooseSubtitle" = "5 znamenki. Trebat će vam za otvaranje aplikacije.";
 "passcodeChooseTitle" = "Odaberite zaporku";
@@ -949,7 +950,7 @@
 "passcodeCurrentSubtitle" = "Potvrdite identitet prije odabira nove.";
 "passcodeCurrentTitle" = "Unesite trenutnu zaporku";
 "passcodeDisableNavTitle" = "Ukloni zaporku";
-"passcodeDisableSubtitle" = "Vaši key shareovi ostaju šifrirani na ovom uređaju. Uklanja se samo zaporka.";
+"passcodeDisableSubtitle" = "Vaši key shareovi ponovno se dešifriraju i uređaj se vraća u stanje prije zaporke.";
 "passcodeDisableTitle" = "Unesite zaporku";
 "passcodeEnterSubtitle" = "Vultisig je zaključan.";
 "passcodeEnterTitle" = "Unesite zaporku";
@@ -958,10 +959,11 @@
 "passcodeInvalidLength" = "Unesite svih 5 znamenki.";
 "passcodeLockedOutMinutes" = "Previše pokušaja. Pokušajte ponovno za %d minuta.";
 "passcodeLockedOutShortly" = "Previše pokušaja. Pokušajte uskoro ponovno.";
-"passcodeManageExplanation" = "Key shareovi vašeg vaulta šifrirani su na ovom uređaju bez obzira na to je li zaporka postavljena. Zaporka kontrolira pristup ključu koji ih otvara — ne zamjenjuje sigurnosnu kopiju vaulta.";
+"passcodeManageExplanation" = "Postavljanje zaporke šifrira key shareove vašeg vaulta na ovom uređaju; uklanjanje ih ponovno dešifrira. Ne zamjenjuje sigurnosnu kopiju vaulta.";
 "passcodeManageTitle" = "Zaporka";
 "passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
+"passcodeSealedSharesWithoutKey" = "Vaši vaultovi već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
 "password" = "Lozinka";

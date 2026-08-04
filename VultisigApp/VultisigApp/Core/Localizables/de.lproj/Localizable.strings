@@ -941,6 +941,7 @@
 "part" = "Anteil";
 "partOf" = "Teil %d von %d";
 "passcodeAutoLockTitle" = "Automatische Sperre";
+"passcodeBusy" = "Ein anderer Vorgang läuft noch. Warten Sie, bis er abgeschlossen ist, und versuchen Sie es erneut.";
 "passcodeChangeTitle" = "Passcode ändern";
 "passcodeChooseSubtitle" = "5 Ziffern. Sie benötigen ihn, um die App zu öffnen.";
 "passcodeChooseTitle" = "Passcode wählen";
@@ -949,7 +950,7 @@
 "passcodeCurrentSubtitle" = "Bestätigen Sie sich, bevor Sie einen neuen wählen.";
 "passcodeCurrentTitle" = "Aktuellen Passcode eingeben";
 "passcodeDisableNavTitle" = "Passcode entfernen";
-"passcodeDisableSubtitle" = "Ihre Key-Shares bleiben auf diesem Gerät verschlüsselt. Nur der Passcode wird entfernt.";
+"passcodeDisableSubtitle" = "Ihre Key-Shares werden wieder entschlüsselt und dieses Gerät kehrt in den Zustand vor dem Passcode zurück.";
 "passcodeDisableTitle" = "Passcode eingeben";
 "passcodeEnterSubtitle" = "Vultisig ist gesperrt.";
 "passcodeEnterTitle" = "Passcode eingeben";
@@ -958,10 +959,11 @@
 "passcodeInvalidLength" = "Geben Sie alle 5 Ziffern ein.";
 "passcodeLockedOutMinutes" = "Zu viele Versuche. Versuchen Sie es in %d Minuten erneut.";
 "passcodeLockedOutShortly" = "Zu viele Versuche. Versuchen Sie es gleich erneut.";
-"passcodeManageExplanation" = "Ihre Vault-Key-Shares sind auf diesem Gerät verschlüsselt, unabhängig davon, ob ein Passcode gesetzt ist. Der Passcode steuert den Zugriff auf den Schlüssel, der sie öffnet – er ersetzt Ihr Vault-Backup nicht.";
+"passcodeManageExplanation" = "Ein Passcode verschlüsselt Ihre Vault-Key-Shares auf diesem Gerät; wird er entfernt, werden sie wieder entschlüsselt. Er ersetzt Ihr Vault-Backup nicht.";
 "passcodeManageTitle" = "Passcode";
 "passcodeMismatch" = "Die Eingaben stimmen nicht überein. Erneut versuchen.";
 "passcodeNewTitle" = "Neuen Passcode wählen";
+"passcodeSealedSharesWithoutKey" = "Ihre Vaults sind auf diesem Gerät bereits verschlüsselt, aber der Schlüssel, der sie öffnet, kann nicht gelesen werden. Stellen Sie sie aus einem Backup wieder her.";
 "passcodeSetTitle" = "Passcode festlegen";
 "passcodeStorageError" = "Der Passcode konnte auf diesem Gerät nicht gelesen werden. Stellen Sie Ihren Vault aus einem Backup wieder her.";
 "password" = "Passwort";

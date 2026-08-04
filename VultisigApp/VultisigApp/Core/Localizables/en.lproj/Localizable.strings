@@ -941,6 +941,7 @@
 "part" = "Share";
 "partOf" = "part %d of %d";
 "passcodeAutoLockTitle" = "Auto-lock";
+"passcodeBusy" = "Another operation is still in progress. Wait for it to finish, then try again.";
 "passcodeChangeTitle" = "Change passcode";
 "passcodeChooseSubtitle" = "5 digits. You will need it to open the app.";
 "passcodeChooseTitle" = "Choose a passcode";
@@ -949,7 +950,7 @@
 "passcodeCurrentSubtitle" = "Confirm it is you before choosing a new one.";
 "passcodeCurrentTitle" = "Enter your current passcode";
 "passcodeDisableNavTitle" = "Remove passcode";
-"passcodeDisableSubtitle" = "Your key shares stay encrypted on this device. Only the passcode is removed.";
+"passcodeDisableSubtitle" = "Your key shares are decrypted again and this device goes back to how it was before the passcode.";
 "passcodeDisableTitle" = "Enter your passcode";
 "passcodeEnterSubtitle" = "Vultisig is locked.";
 "passcodeEnterTitle" = "Enter passcode";
@@ -958,10 +959,11 @@
 "passcodeInvalidLength" = "Enter all 5 digits.";
 "passcodeLockedOutMinutes" = "Too many attempts. Try again in %d minutes.";
 "passcodeLockedOutShortly" = "Too many attempts. Try again shortly.";
-"passcodeManageExplanation" = "Your vault key shares are encrypted on this device whether or not a passcode is set. The passcode controls access to the key that opens them — it is not a replacement for your vault backup.";
+"passcodeManageExplanation" = "Setting a passcode encrypts your vault key shares on this device; removing it decrypts them again. It is not a replacement for your vault backup.";
 "passcodeManageTitle" = "Passcode";
 "passcodeMismatch" = "Those did not match. Try again.";
 "passcodeNewTitle" = "Choose a new passcode";
+"passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
 "passcodeSetTitle" = "Set passcode";
 "passcodeStorageError" = "The passcode could not be read on this device. Restore your vault from a backup.";
 "password" = "Password";

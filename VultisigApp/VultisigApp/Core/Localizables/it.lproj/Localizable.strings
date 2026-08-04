@@ -941,6 +941,7 @@
 "part" = "Quota";
 "partOf" = "parte %d di %d";
 "passcodeAutoLockTitle" = "Blocco automatico";
+"passcodeBusy" = "Un'altra operazione è ancora in corso. Attendi che finisca e riprova.";
 "passcodeChangeTitle" = "Cambia codice";
 "passcodeChooseSubtitle" = "5 cifre. Ti servirà per aprire l'app.";
 "passcodeChooseTitle" = "Scegli un codice";
@@ -949,7 +950,7 @@
 "passcodeCurrentSubtitle" = "Conferma la tua identità prima di sceglierne uno nuovo.";
 "passcodeCurrentTitle" = "Inserisci il codice attuale";
 "passcodeDisableNavTitle" = "Rimuovi codice";
-"passcodeDisableSubtitle" = "I tuoi key share restano cifrati su questo dispositivo. Viene rimosso solo il codice.";
+"passcodeDisableSubtitle" = "I tuoi key share vengono decifrati di nuovo e questo dispositivo torna com'era prima del codice.";
 "passcodeDisableTitle" = "Inserisci il codice";
 "passcodeEnterSubtitle" = "Vultisig è bloccato.";
 "passcodeEnterTitle" = "Inserisci il codice";
@@ -958,10 +959,11 @@
 "passcodeInvalidLength" = "Inserisci tutte e 5 le cifre.";
 "passcodeLockedOutMinutes" = "Troppi tentativi. Riprova tra %d minuti.";
 "passcodeLockedOutShortly" = "Troppi tentativi. Riprova tra poco.";
-"passcodeManageExplanation" = "I key share del tuo vault sono cifrati su questo dispositivo, che tu abbia impostato un codice o meno. Il codice controlla l'accesso alla chiave che li apre: non sostituisce il backup del vault.";
+"passcodeManageExplanation" = "Impostare un codice cifra i key share del tuo vault su questo dispositivo; rimuoverlo li decifra di nuovo. Non sostituisce il backup del vault.";
 "passcodeManageTitle" = "Codice";
 "passcodeMismatch" = "Non corrispondono. Riprova.";
 "passcodeNewTitle" = "Scegli un nuovo codice";
+"passcodeSealedSharesWithoutKey" = "I tuoi vault sono già cifrati su questo dispositivo, ma la chiave che li apre non è leggibile. Ripristinali da un backup.";
 "passcodeSetTitle" = "Imposta codice";
 "passcodeStorageError" = "Non è stato possibile leggere il codice su questo dispositivo. Ripristina il vault da un backup.";
 "password" = "Password";

@@ -7,9 +7,11 @@ import SwiftUI
 
 /// Removing the passcode still requires entering it.
 ///
-/// The subtitle says plainly that key shares stay encrypted afterwards — the
-/// passcode gates access to the key, it is not what provides the encryption, and
-/// users should not believe they have just turned protection off.
+/// The subtitle says plainly what removal costs: the key shares are decrypted
+/// again and the device goes back to exactly the state it was in before the
+/// passcode. That is the point — it is a real inverse, so a backup taken
+/// afterwards restores on any build — but it is protection genuinely coming off,
+/// and the user has to be told so rather than reassured.
 struct DisablePasscodeScreen: View {
 
     @StateObject private var viewModel = PasscodeViewModel(stage: .current)

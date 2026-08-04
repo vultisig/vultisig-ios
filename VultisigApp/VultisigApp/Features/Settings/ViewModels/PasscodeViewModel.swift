@@ -45,9 +45,18 @@ final class PasscodeViewModel: ObservableObject {
 
     // MARK: - Unlock
 
+    /// The lock screen's unlock, and it must stay on ``PasscodeService/unlockApp(with:now:)``.
+    ///
+    /// `unlock(with:)` — which the change flow below uses correctly — takes the
+    /// same argument, throws the same errors and compiles here just as well. It
+    /// is passcode *verification*: no lease, and no resume sweep. Wired to it,
+    /// the lock screen would look identical and silently never finish a
+    /// transition an earlier crash left half done, so the shares an interrupted
+    /// `setPasscode` did not reach would stay in the clear behind a live
+    /// passcode for as long as the app is installed.
     func unlock() async {
         await perform {
-            try await self.service.unlock(with: self.entry)
+            _ = try await self.service.unlockApp(with: self.entry)
         }
     }
 
@@ -164,8 +173,21 @@ final class PasscodeViewModel: ObservableObject {
                 : "passcodeLockedOutShortly".localized
         case .invalidLength:
             return "passcodeInvalidLength".localized
-        case .notSet, .alreadySet, .noDataKey:
+        case .notSet, .alreadySet:
             return "passcodeGenericError".localized
+        case .busy:
+            // Contention is reported rather than queued, so it needs an answer.
+            // Deliberately says nothing about *which* operation: from Settings
+            // it is usually a keygen or an import, but on the lock screen it is
+            // another unlock or a transition, and naming vault creation there
+            // would point at something the user cannot even see.
+            return "passcodeBusy".localized
+        case .sealedSharesWithoutKey:
+            // Not the same as an unreadable passcode: the vaults are provably
+            // encrypted and the key that opens them is not there. Its own
+            // message, because "the passcode could not be read" understates it
+            // and no retry can help.
+            return "passcodeSealedSharesWithoutKey".localized
         case .storageFailure, .inconsistentState:
             return "passcodeStorageError".localized
         case .cancelledByLock:

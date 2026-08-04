@@ -70,9 +70,10 @@ struct ManagePasscodeScreen: View {
         }
     }
 
-    /// States plainly what the passcode does and does not do. Key shares are
-    /// encrypted whether or not a passcode is set — it controls access to the
-    /// key, and a user who believes otherwise may relax their backup habits.
+    /// States plainly what the passcode does and does not do. Encryption is what
+    /// the passcode buys — with none set the key shares sit in the clear, and
+    /// removing it puts them back — and it is still not a backup, which a user
+    /// who believes otherwise may relax their habits over.
     private var explanation: some View {
         Text("passcodeManageExplanation".localized)
             .font(Theme.fonts.caption12)

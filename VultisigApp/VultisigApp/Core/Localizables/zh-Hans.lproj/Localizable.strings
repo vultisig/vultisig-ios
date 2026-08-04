@@ -941,6 +941,7 @@
 "part" = "份额";
 "partOf" = "第 %d 部分，共 %d 部分";
 "passcodeAutoLockTitle" = "自动锁定";
+"passcodeBusy" = "另一项操作仍在进行中。请等待其完成后重试。";
 "passcodeChangeTitle" = "修改密码";
 "passcodeChooseSubtitle" = "5 位数字。打开应用时需要输入。";
 "passcodeChooseTitle" = "选择密码";
@@ -949,7 +950,7 @@
 "passcodeCurrentSubtitle" = "选择新密码前请先验证身份。";
 "passcodeCurrentTitle" = "输入当前密码";
 "passcodeDisableNavTitle" = "移除密码";
-"passcodeDisableSubtitle" = "您的 key share 仍会在本设备上保持加密，仅移除密码。";
+"passcodeDisableSubtitle" = "您的 key share 将被重新解密，本设备会恢复到设置密码之前的状态。";
 "passcodeDisableTitle" = "输入密码";
 "passcodeEnterSubtitle" = "Vultisig 已锁定。";
 "passcodeEnterTitle" = "输入密码";
@@ -958,10 +959,11 @@
 "passcodeInvalidLength" = "请输入全部 5 位数字。";
 "passcodeLockedOutMinutes" = "尝试次数过多，请在 %d 分钟后再试。";
 "passcodeLockedOutShortly" = "尝试次数过多，请稍后再试。";
-"passcodeManageExplanation" = "无论是否设置密码，您的 vault key share 都在本设备上加密存储。密码控制的是打开密钥的权限，不能替代 vault 备份。";
+"passcodeManageExplanation" = "设置密码会加密本设备上的 vault key share，移除密码则会将其重新解密。它不能替代 vault 备份。";
 "passcodeManageTitle" = "密码";
 "passcodeMismatch" = "两次输入不一致，请重试。";
 "passcodeNewTitle" = "选择新密码";
+"passcodeSealedSharesWithoutKey" = "本设备上的 vault 已经加密，但无法读取用于打开它们的密钥。请从备份中恢复。";
 "passcodeSetTitle" = "设置密码";
 "passcodeStorageError" = "无法在本设备上读取密码。请从备份恢复您的 vault。";
 "password" = "密码";
