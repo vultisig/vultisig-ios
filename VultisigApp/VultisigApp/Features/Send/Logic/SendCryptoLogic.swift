@@ -257,13 +257,13 @@ enum SendCryptoLogic {
     ///
     /// `rawBalance` is already a base-unit integer string, and the usual
     /// `toBigInt(decimals:)` route parses it with `NumberFormatter` — which
-    /// falls back to `Double` past `Int64`, and can round a large balance UP.
-    /// A max amount derived from a balance that is higher than the real one is
-    /// precisely the rejected broadcast this clamp exists to prevent, so parse
-    /// the integer directly, the way `canBeReaped` already does. A value that
-    /// isn't a plain integer falls back to the shared path rather than
-    /// collapsing to a zero balance.
-    private static func exactRawBalance(of coin: Coin) -> BigInt {
+    /// falls back to `Double` past `Int64`, and can round a large balance UP:
+    /// over ~9.2 units on an 18-decimal chain. Every spending decision made
+    /// against a balance larger than the real one ends the same way — a
+    /// transaction the chain refuses — so parse the integer directly, the way
+    /// `canBeReaped` already does. A value that isn't a plain integer falls
+    /// back to the shared path rather than collapsing to a zero balance.
+    static func exactRawBalance(of coin: Coin) -> BigInt {
         BigInt(coin.rawBalance) ?? coin.rawBalance.toBigInt(decimals: coin.decimals)
     }
 

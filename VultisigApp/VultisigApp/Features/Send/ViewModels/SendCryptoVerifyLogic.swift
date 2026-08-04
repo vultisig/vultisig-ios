@@ -109,7 +109,11 @@ struct SendCryptoVerifyLogic {
         }
 
         let amount = tx.amountInRaw
-        let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+        // Exactly, not via the shared `toBigInt(decimals:)` route: that one
+        // rounds a balance past `Int64` UP, which makes this check LOOSER than
+        // the truth and lets a send the wallet cannot fund walk through to a
+        // rejected broadcast.
+        let balance = SendCryptoLogic.exactRawBalance(of: tx.coin)
         // TRON staking operations: skip balance validation entirely
         // The balance is already validated in TronFreezeScreen/TronUnfreezeScreen
         // and the user sees the available balance on the screen
@@ -174,7 +178,7 @@ struct SendCryptoVerifyLogic {
             // error when the vault's ADA balance can't cover that.
             if tx.coin.chain == .cardano,
                let nativeToken = tx.vault.coins.nativeCoin(chain: .cardano) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = SendCryptoLogic.exactRawBalance(of: nativeToken)
                 let minAdaReserve = CardanoHelper.defaultMinUTXOValue * 2
                 if nativeBalance < tx.fee + minAdaReserve {
                     return BalanceValidationResult(isValid: false, errorMessage: "cardanoOutputBelowMinAda")
@@ -184,7 +188,7 @@ struct SendCryptoVerifyLogic {
             // Validate gas balance for non-native tokens. Decision 2 win:
             // vault is now non-optional, so the singleton fallback is gone.
             if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = SendCryptoLogic.exactRawBalance(of: nativeToken)
                 if tx.fee > nativeBalance {
                     let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
                     return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
@@ -333,23 +337,98 @@ struct SendCryptoVerifyLogic {
         }
     }
 
-    // MARK: - EVM max-send clamp
+    // MARK: - Fee-shortfall amount adjustment
 
-    /// True for the one send whose value is derived from the balance rather than
-    /// typed by the user: a native EVM MAX. Its amount is `balance − fee`, so it
-    /// is the only case where a fee that moved between the Verify quote and the
-    /// payload build makes the signed value unaffordable. Token sends move the
-    /// whole token balance and pay gas from the native sibling; a typed amount
-    /// is the user's number and must never be rewritten.
-    static func needsEVMMaxClamp(tx: SendTransaction) -> Bool {
-        tx.sendMaxAmount && tx.coin.isNativeToken && tx.coin.chainType == .EVM
+    /// True when the balance covers the amount but not the amount PLUS the fee.
+    /// That is the one shape Verify can rescue by clamping the amount down,
+    /// instead of dead-ending on an error whose only answer is to go back and
+    /// retype a number the user has no way to compute.
+    ///
+    /// Deliberately narrow:
+    /// - **Native coins only.** A token send pays gas out of the native sibling,
+    ///   so the token balance is never what the fee overruns.
+    /// - **Not a MAX send.** That amount is already re-derived from the fee a
+    ///   few lines earlier; clamping it twice would just fight itself.
+    /// - **Plain transfers only.** A stake, a bond, an unbond, an XRPL TrustSet
+    ///   limit or a function call carries an amount that means something other
+    ///   than "how much to move" — quietly reducing it would change the
+    ///   operation rather than make it affordable. A memo is enough to
+    ///   disqualify a send on its own: on EVM the memo IS the calldata, so the
+    ///   amount is a contract call's `msg.value` and not a transfer at all, and
+    ///   elsewhere a memo is what tells a protocol how to interpret the deposit.
+    ///   The send this issue is about carries none of that.
+    /// - **The amount alone has to fit.** If the user asked to send more than
+    ///   they hold, the fee is not what went wrong and the error is the honest
+    ///   answer. Clamping there would silently replace the send they asked for
+    ///   with a different one.
+    static func hasFeeOnlyShortfall(tx: SendTransaction) -> Bool {
+        guard tx.coin.isNativeToken,
+              !tx.sendMaxAmount,
+              !tx.isStakingOperation,
+              tx.transactionType == .unspecified,
+              tx.memo.isEmpty,
+              tx.memoFunctionDictionary.isEmpty,
+              tx.wasmContractPayload == nil,
+              tx.cosmosStakingPayload == nil,
+              tx.solanaStakingPayload == nil else {
+            return false
+        }
+
+        let balance = SendCryptoLogic.exactRawBalance(of: tx.coin)
+        let amount = tx.amountInRaw
+        return amount <= balance && amount + tx.fee > balance
     }
 
-    /// Headroom a native MAX send has to leave on OP-stack rollups, where
-    /// op-geth checks `value + gasLimit × maxFeePerGas + l1Cost + operatorCost`
-    /// against the balance. `.zero` for token sends, whose gas comes out of the
-    /// native sibling rather than the amount being sent, and for every chain
-    /// that charges neither term.
+    /// What to fall back to when the fee is what pushed the send past the
+    /// balance: the very same `balance − fee − ED − extraReserve` the MAX path
+    /// derives. Sharing it is the point — a DOT clamp keeps reserving the
+    /// existential deposit, an OP-stack clamp keeps reserving the L1 data and
+    /// operator fees op-geth bills on top of gas, and the balance is read
+    /// exactly rather than through the rounding parse.
+    ///
+    /// `nil` when there is nothing safe to fall back TO: the clamp landed at or
+    /// below zero (the balance cannot even fund its own fee — a zero-value send
+    /// is not a rescue), or it somehow came out no smaller than what was asked
+    /// for (this only ever adjusts DOWNWARD). Both leave the existing balance
+    /// error standing.
+    static func feeShortfallAdjustedAmountRaw(tx: SendTransaction, extraReserve: BigInt) -> BigInt? {
+        guard hasFeeOnlyShortfall(tx: tx) else { return nil }
+
+        let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
+            coin: tx.coin,
+            fee: tx.fee,
+            previousAmountRaw: tx.amountInRaw,
+            extraReserve: extraReserve
+        )
+        guard candidate > 0, candidate < tx.amountInRaw else { return nil }
+        return candidate
+    }
+
+    // MARK: - EVM balance-derived amount re-fit
+
+    /// True for a send whose value the APP derived from the balance rather than
+    /// the user typing it: a native EVM MAX, or a native EVM amount Verify
+    /// adjusted down to what the balance could actually fund. Both settle at
+    /// `balance − fee`, so both stop being affordable the moment the fee moves
+    /// between the Verify quote and the payload build — which is exactly when
+    /// the signed value has to be re-fitted.
+    ///
+    /// Token sends move the whole token balance and pay gas from the native
+    /// sibling, so a native fee that moved cannot underfund them. And a typed
+    /// amount the app never touched is the user's number: it must never be
+    /// rewritten, however close to the balance it sits.
+    static func needsEVMBalanceRefit(tx: SendTransaction) -> Bool {
+        (tx.sendMaxAmount || tx.amountWasAutoAdjusted)
+            && tx.coin.isNativeToken
+            && tx.coin.chainType == .EVM
+    }
+
+    /// Headroom a native send whose amount came from the balance has to leave on
+    /// OP-stack rollups, where op-geth checks
+    /// `value + gasLimit × maxFeePerGas + l1Cost + operatorCost` against the
+    /// balance — a MAX, or an amount Verify adjusted down to fit the fee.
+    /// `.zero` for token sends, whose gas comes out of the native sibling rather
+    /// than the amount being sent, and for every chain that charges neither term.
     func opStackFeeReserve(tx: SendTransaction, gasLimit: BigInt?) async -> BigInt {
         guard tx.coin.isNativeToken else { return .zero }
         return await interactor.fetchOpStackFeeReserve(coin: tx.coin, memo: tx.memo, gasLimit: gasLimit)
@@ -442,12 +521,14 @@ struct SendCryptoVerifyLogic {
                 )
             }
 
-            // A native EVM MAX is `balance − fee`, and the fee it was derived
-            // from is NOT the one in `chainSpecific` above — that is a second,
-            // independent reading of the fee market. Re-fit the value to the
-            // fee the payload actually carries, or the node rejects the send
-            // for the difference once the ceremony has already run.
-            let amount = try await clampedMaxSendAmount(tx: tx, chainSpecific: chainSpecific)
+            // An amount the app derived from the balance — a native EVM MAX, or
+            // one Verify adjusted down to fit the fee — is `balance − fee`, and
+            // the fee it was derived from is NOT the one in `chainSpecific`
+            // above: that is a second, independent reading of the fee market.
+            // Re-fit the value to the fee the payload actually carries, or the
+            // node rejects the send for the difference once the ceremony has
+            // already run.
+            let amount = try await balanceRefittedAmount(tx: tx, chainSpecific: chainSpecific)
 
             let basePayload = try await interactor.buildKeysignPayload(
                 coin: tx.coin,
@@ -514,18 +595,19 @@ struct SendCryptoVerifyLogic {
 
     /// The value to sign, given the chain-specific the payload is being built
     /// from. Passes a typed amount through untouched; re-derives a native EVM
-    /// MAX against `chainSpecific`'s own `gasLimit × maxFeePerGas` plus the
-    /// OP-stack L1 data fee, clamping down only.
+    /// amount the app took from the balance against `chainSpecific`'s own
+    /// `gasLimit × maxFeePerGas` plus the OP-stack L1 data fee, clamping down
+    /// only.
     ///
     /// Throws rather than signing when nothing is left after the fee: a send the
     /// balance cannot fund is a rejected broadcast, and refusing it here costs
     /// the user nothing where discovering it after the ceremony costs a signing
     /// round.
-    private func clampedMaxSendAmount(
+    private func balanceRefittedAmount(
         tx: SendTransaction,
         chainSpecific: BlockChainSpecific
     ) async throws -> BigInt {
-        guard Self.needsEVMMaxClamp(tx: tx) else { return tx.amountInRaw }
+        guard Self.needsEVMBalanceRefit(tx: tx) else { return tx.amountInRaw }
 
         let amount = SendCryptoLogic.evmMaxSendAmountRaw(
             coin: tx.coin,

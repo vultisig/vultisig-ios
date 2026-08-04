@@ -194,6 +194,45 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    /// The balance this check runs against has to be the balance the wallet
+    /// actually holds. `rawBalance.toBigInt(decimals:)` parses through
+    /// `NumberFormatter`, which falls back to `Double` past `Int64` and rounds
+    /// UP over ~9.2 units on an 18-decimal chain — making the check LOOSER than
+    /// the truth, so a send the wallet cannot fund clears Verify and dies at
+    /// broadcast instead.
+    ///
+    /// 9999999999999999999 wei is one wei under 10 ETH, and the nearest `Double`
+    /// to it is 1e19 — exactly the amount + fee below. Read lossily the send
+    /// "fits"; read exactly it is one wei short.
+    func testValidateBalanceWithFeeReadsABalancePastInt64Exactly() throws {
+        let oneWeiUnderTenEth = "9999999999999999999"
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: oneWeiUnderTenEth)
+        XCTAssertGreaterThan(
+            eth.rawBalance.toBigInt(decimals: eth.decimals),
+            BigInt(stringLiteral: oneWeiUnderTenEth),
+            "precondition: the shared parse must be the one that rounds this balance up"
+        )
+
+        // 9.9 ETH + 0.1 ETH fee = 10 ETH exactly, one wei more than the balance.
+        let tx = try makeTransaction(coin: eth, amount: "9.9",
+                                     fee: BigInt(stringLiteral: "100000000000000000"))
+        // Pin the total rather than trusting it: the amount parse is locale
+        // sensitive, and a "9.9" that scaled differently would make this test
+        // pass against the old lossy read too — for the wrong reason.
+        XCTAssertEqual(
+            tx.amountInRaw + tx.fee,
+            eth.rawBalance.toBigInt(decimals: eth.decimals),
+            "the send has to land exactly on the rounded-up balance for this to test anything"
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError, "a send one wei past the real balance must not clear Verify")
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
     // MARK: - validateBalanceWithFee — Terra Classic bank denom vs CW20/IBC
 
     func testValidateBalanceUSTCBankDenomSubtractsFeeFromTokenBalance() throws {
@@ -1064,7 +1103,492 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         }
     }
 
+    // MARK: - hasFeeOnlyShortfall / feeShortfallAdjustedAmountRaw
+
+    /// The whole feature turns on this distinction. `amount ≤ balance` and
+    /// `amount + fee > balance` is a send the fee broke — recoverable by
+    /// clamping. Anything else is not.
+    func testFeeOnlyShortfallIsTheGapBetweenTheAmountAndTheAmountPlusFee() throws {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000") // 1 ETH
+        let fee = BigInt(stringLiteral: "10000000000000000") // 0.01 ETH
+
+        // The whole balance, which the fee then overruns.
+        XCTAssertTrue(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: try makeTransaction(coin: eth, amount: "1", fee: fee)
+        ))
+        // Comfortably affordable — nothing to rescue.
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: try makeTransaction(coin: eth, amount: "0.5", fee: fee)
+        ))
+        // Exactly affordable: `amount + fee == balance` is not a shortfall.
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: try makeTransaction(coin: eth, amount: "0.99", fee: fee)
+        ))
+    }
+
+    /// The line the issue draws, and the one that keeps this from quietly
+    /// replacing the user's send with a different one: if the amount ALONE is
+    /// more than the wallet holds, the fee is not what went wrong.
+    func testFeeOnlyShortfallExcludesAnAmountThatExceedsTheBalanceByItself() throws {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let tx = try makeTransaction(coin: eth, amount: "2",
+                                     fee: BigInt(stringLiteral: "10000000000000000"))
+
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(tx: tx))
+        XCTAssertNil(SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(tx: tx, extraReserve: .zero))
+    }
+
+    func testFeeOnlyShortfallExcludesTokenAndMaxSends() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "1000000", contractAddress: "0xA0b8")
+        XCTAssertFalse(
+            SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+                tx: try makeTransaction(coin: usdc, amount: "1", fee: BigInt(500_000))
+            ),
+            "a token pays gas from the native sibling — its own balance is not what the fee overruns"
+        )
+
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        XCTAssertFalse(
+            SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+                tx: try makeTransaction(coin: eth, amount: "1",
+                                        fee: BigInt(stringLiteral: "10000000000000000"),
+                                        sendMaxAmount: true)
+            ),
+            "a MAX amount is already re-derived from the fee upstream"
+        )
+    }
+
+    /// A stake / bond / TrustSet / function-call amount is not "how much to
+    /// move", so reducing it would change the operation rather than fund it.
+    func testFeeOnlyShortfallExcludesOperationsWhoseAmountIsNotATransferValue() throws {
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let fee = BigInt(stringLiteral: "10000000000000000")
+        let plain = try makeTransaction(coin: eth, amount: "1", fee: fee)
+        XCTAssertTrue(SendCryptoVerifyLogic.hasFeeOnlyShortfall(tx: plain),
+                      "precondition: the same numbers ARE a shortfall for a plain send")
+
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: plain.copy(isStakingOperation: true)
+        ))
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: plain.copy(transactionType: .rippleTrustSet)
+        ))
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: plain.copy(memoFunctionDictionary: ["function": "bond"])
+        ))
+        // On EVM the memo IS the transaction's calldata, so the amount is a
+        // contract call's `msg.value`, not a transfer — reducing it would
+        // underfund the call the user is making. Elsewhere a memo is what tells
+        // a protocol how to read the deposit. Either way it is not ours to trim.
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: plain.copy(memo: "0xa9059cbb")
+        ))
+        XCTAssertFalse(SendCryptoVerifyLogic.hasFeeOnlyShortfall(
+            tx: plain.copy(wasmContractPayload: .set(
+                WasmExecuteContractPayload(
+                    senderAddress: "sender",
+                    contractAddress: "contract",
+                    executeMsg: "{}",
+                    coins: []
+                )
+            ))
+        ))
+    }
+
+    /// A balance the fee swallows whole has nothing to clamp to. Returning a
+    /// zero or negative "adjusted" amount would turn a blocked send into a
+    /// zero-value one; the balance error is the right answer.
+    func testFeeShortfallAdjustmentRefusesToClampToZeroOrBelow() throws {
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+
+        // Fee exactly equals the balance ⇒ candidate is 0.
+        let exactlyZero = try makeTransaction(coin: eth, amount: "0.5", fee: balanceRaw)
+        XCTAssertTrue(SendCryptoVerifyLogic.hasFeeOnlyShortfall(tx: exactlyZero))
+        XCTAssertNil(SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(tx: exactlyZero, extraReserve: .zero))
+
+        // Fee over the balance ⇒ candidate is negative.
+        let negative = try makeTransaction(coin: eth, amount: "0.5", fee: balanceRaw + 1)
+        XCTAssertNil(SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(tx: negative, extraReserve: .zero))
+
+        // And an `extraReserve` big enough to swallow the remainder does too.
+        let squeezed = try makeTransaction(coin: eth, amount: "1",
+                                           fee: BigInt(stringLiteral: "10000000000000000"))
+        XCTAssertNil(SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(
+            tx: squeezed,
+            extraReserve: balanceRaw
+        ))
+    }
+
+    /// The clamp is the MAX path's, not a second copy of the arithmetic — so it
+    /// reads the balance exactly, and subtracts the reserves the chain bills on
+    /// top of the quoted fee.
+    func testFeeShortfallAdjustmentReservesWhatTheChainBillsOnTopOfTheFee() throws {
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let opEth = makeCoin(.optimism, ticker: "ETH", decimals: 18, isNative: true,
+                             rawBalance: balanceRaw.description)
+        let fee = BigInt(stringLiteral: "10000000000000000")
+        let reserve = BigInt(4_293_564_911)
+        let tx = try makeTransaction(coin: opEth, amount: "1", fee: fee)
+
+        XCTAssertEqual(
+            SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(tx: tx, extraReserve: reserve),
+            balanceRaw - fee - reserve,
+            "op-geth checks value + gas + l1Cost + operatorCost, so the clamp has to leave room for all of it"
+        )
+    }
+
+    /// The existential deposit is reserved on top of the fee, so a clamped DOT
+    /// send lands at `balance − fee − ED` and clears `canBeReaped` — where a
+    /// naive `balance − fee` would leave the sender at zero and be refused
+    /// on-chain by `transfer_keep_alive` after the ceremony.
+    func testFeeShortfallAdjustmentReservesTheExistentialDepositOnDot() throws {
+        let balanceRaw = BigInt(10_000_000_000) // 1 DOT, 10 decimals
+        let dot = makeCoin(.polkadot, ticker: "DOT", decimals: 10, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let fee = BigInt(150_000_000)
+        let tx = try makeTransaction(coin: dot, amount: "1", fee: fee)
+
+        let adjusted = SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(tx: tx, extraReserve: .zero)
+        XCTAssertEqual(adjusted, balanceRaw - fee - PolkadotHelper.defaultExistentialDeposit)
+        XCTAssertLessThan(adjusted ?? .zero, balanceRaw - fee, "the ED must be reserved, not spent")
+
+        let clamped = SendCryptoLogic.amountString(coin: dot, raw: adjusted ?? .zero)
+        XCTAssertFalse(SendCryptoLogic.canBeReaped(coin: dot, amount: clamped, gas: fee),
+                       "the clamped value must survive the guard it will be re-checked against")
+    }
+
+    // MARK: - loadGasInfoForSending — auto-adjust instead of the balance dead-end
+
+    /// The dead end this replaces: a send the balance covers, that the
+    /// re-fetched fee then pushes over. Instead of an error the user can only
+    /// answer by retyping a number they cannot compute, Verify clamps the amount
+    /// to what the balance funds and shows it.
+    func testLoadGasInfoAdjustsTheAmountWhenOnlyTheFeeOvershootsTheBalance() async throws {
+        let interactor = MockSendInteractor()
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000") // 1 ETH
+        let fee = BigInt(stringLiteral: "12345000000000000")
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: fee, gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        // The user typed the whole balance — the Details screen lets this
+        // through, because on EVM it checks the amount against the gas PRICE.
+        let tx = try makeTransaction(coin: eth, amount: "1", fee: .zero)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount,
+                       SendCryptoLogic.amountString(coin: eth, raw: balanceRaw - fee),
+                       "the amount on screen must be what the balance can fund")
+        XCTAssertTrue(vm.transaction.amountWasAutoAdjusted)
+        XCTAssertFalse(vm.hasBalanceError, "the whole point is that this no longer dead-ends")
+        XCTAssertFalse(vm.showAlert)
+        XCTAssertEqual(vm.errorMessage, "")
+        // Rendering raw units to a decimal string and parsing them back is not
+        // lossless (`toDecimal` is Double-bounded past ~17 significant digits),
+        // and what gets signed is the string's value — so the property that has
+        // to hold is about the re-parse, not the BigInt the clamp produced.
+        // Re-running the balance check after the adjust is what enforces it.
+        XCTAssertLessThanOrEqual(vm.transaction.amountInRaw + fee, balanceRaw,
+                                 "the value the displayed string parses back to has to be affordable")
+    }
+
+    /// Only the fee-caused shortfall is rescued. Asking to send more than the
+    /// wallet holds still stops, because clamping there would swap the user's
+    /// send for one they never asked for.
+    func testLoadGasInfoKeepsTheErrorWhenTheAmountAloneExceedsTheBalance() async throws {
+        let interactor = MockSendInteractor()
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: BigInt(stringLiteral: "12345000000000000"),
+                                    gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let tx = try makeTransaction(coin: eth, amount: "2", fee: .zero)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount, "2", "an unaffordable amount must not be rewritten")
+        XCTAssertFalse(vm.transaction.amountWasAutoAdjusted)
+        XCTAssertTrue(vm.hasBalanceError)
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+        XCTAssertTrue(vm.signButtonDisabled)
+    }
+
+    /// A balance that cannot fund its own fee has nothing to clamp to. It must
+    /// keep the error rather than become a zero-value send.
+    func testLoadGasInfoKeepsTheErrorWhenTheFeeSwallowsTheWholeBalance() async throws {
+        let interactor = MockSendInteractor()
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: balanceRaw, gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let tx = try makeTransaction(coin: eth, amount: "0.5", fee: .zero)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount, "0.5")
+        XCTAssertFalse(vm.transaction.amountWasAutoAdjusted)
+        XCTAssertTrue(vm.hasBalanceError)
+        XCTAssertTrue(vm.signButtonDisabled)
+    }
+
+    /// The clamped value has to re-enter the guards that run after the balance
+    /// check, not skip them. Cardano's protocol floor is the sharpest case: 1.6
+    /// ADA clears it, and the 1.3 ADA the clamp produces does not — the node
+    /// would silently drop that output.
+    func testLoadGasInfoSurfacesTheMinimumSendFloorAgainstTheClampedAmount() async throws {
+        let interactor = MockSendInteractor()
+        interactor.fetchChainSpecificStub = { _ in
+            .Cardano(byteFee: BigInt(300_000), sendMaxAmount: false, ttl: 0)
+        }
+        interactor.calculatePlanFeeStub = { _, _ in BigInt(300_000) } // 0.3 ADA
+        let ada = makeCoin(.cardano, ticker: "ADA", decimals: 6, isNative: true,
+                           rawBalance: "1600000") // 1.6 ADA
+        let tx = try makeTransaction(coin: ada, amount: "1.6", fee: .zero)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount, SendCryptoLogic.amountString(coin: ada, raw: BigInt(1_300_000)),
+                       "precondition: the clamp ran and landed below the 1.4 ADA floor")
+        XCTAssertTrue(vm.hasBalanceError, "the min-send floor must be re-checked against the clamped value")
+        XCTAssertNotEqual(vm.errorMessage, "walletBalanceExceededError",
+                          "the failure is the protocol floor, not the balance")
+        XCTAssertTrue(vm.signButtonDisabled)
+    }
+
+    /// The screen asks the user to tick "the amount is correct". A retry that
+    /// re-prices an already-confirmed screen — or a first load racing the
+    /// checkbox — must not carry that tick over onto a number the app changed
+    /// underneath it: it authorized the old amount.
+    func testLoadGasInfoClearsTheAmountConfirmationWhenItRewritesTheAmount() async throws {
+        let interactor = MockSendInteractor()
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: BigInt(stringLiteral: "12345000000000000"),
+                                    gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let tx = try makeTransaction(coin: eth, amount: "1", fee: .zero)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+        vm.isAmountCorrect = true
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertTrue(vm.transaction.amountWasAutoAdjusted, "precondition: the amount was rewritten")
+        XCTAssertFalse(vm.isAmountCorrect, "a standing confirmation must not survive the rewrite")
+        XCTAssertTrue(vm.signButtonDisabled, "so Sign has to wait for the user to re-confirm")
+    }
+
+    /// A send that is only over the balance because of its memo-bearing intent
+    /// keeps the error: the amount there is a contract call's value or a
+    /// protocol deposit, not a transfer the app may trim.
+    func testLoadGasInfoDoesNotAdjustAMemoBearingSend() async throws {
+        let interactor = MockSendInteractor()
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: BigInt(stringLiteral: "12345000000000000"),
+                                    gas: BigInt(30_000_000_000), gasLimit: BigInt(21_000))
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "1000000000000000000")
+        let tx = try makeTransaction(coin: eth, amount: "1", fee: .zero).copy(memo: "0xa9059cbb")
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+
+        await vm.loadGasInfoForSending()
+
+        XCTAssertEqual(vm.transaction.amount, "1", "a contract call's value is not ours to reduce")
+        XCTAssertFalse(vm.transaction.amountWasAutoAdjusted)
+        XCTAssertTrue(vm.hasBalanceError)
+    }
+
+    // MARK: - loadGasInfoForSending — an adjusted amount is the amount that gets signed
+
+    /// The hard requirement behind auto-adjusting silently: whatever the screen
+    /// shows — crypto AND fiat — is what the keysign payload carries. Pinned end
+    /// to end, from the load that rewrites the amount through to the built
+    /// payload.
+    func testAnAdjustedAmountIsExactlyWhatGetsSigned() async throws {
+        let interactor = MockSendInteractor()
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let fee = BigInt(stringLiteral: "12345000000000000")
+        let gasLimit = BigInt(21_000)
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: fee, gas: BigInt(30_000_000_000), gasLimit: gasLimit)
+        }
+        // The payload's own fee reading agrees with the quote, so nothing is
+        // re-fitted here and the displayed value is signed verbatim.
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: fee / gasLimit, priorityFeeWei: .zero, nonce: 0, gasLimit: gasLimit)
+        }
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        setPrice(2_500, for: eth)
+
+        let tx = try makeTransaction(coin: eth, amount: "1", fee: .zero)
+        let typedFiat = vmFiat(coin: eth, amount: "1")
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+
+        await vm.loadGasInfoForSending()
+
+        // The user reads the adjusted figures and ticks "the amount is correct".
+        vm.isAmountCorrect = true
+
+        // What the screen shows.
+        let shownAmount = vm.transaction.amount
+        let shownFiat = vm.amountFiat
+        XCTAssertNotEqual(shownAmount, "1", "precondition: the amount really was adjusted")
+        XCTAssertNotEqual(shownFiat, typedFiat, "the fiat must move with the amount, not stay on the typed one")
+        XCTAssertEqual(shownFiat, vmFiat(coin: eth, amount: shownAmount))
+        XCTAssertEqual(vm.transaction.amountInFiat,
+                       SendCryptoLogic.coinAmountToFiat(amount: shownAmount, coin: eth),
+                       "the Done screen reads the stored fiat — it has to follow too")
+
+        // What gets signed.
+        let payload = try await vm.validateForm()
+
+        XCTAssertEqual(payload.toAmount, SendCryptoLogic.amountInRaw(coin: eth, amount: shownAmount),
+                       "the signed value must be the value of the string on screen")
+        XCTAssertEqual(vm.transaction.amount, shownAmount, "and the screen must not have moved under it")
+        XCTAssertEqual(vm.amountFiat, shownFiat)
+        XCTAssertLessThanOrEqual(payload.toAmount + fee, balanceRaw,
+                                 "the signed send has to be affordable — that is the whole point")
+    }
+
+    /// An adjusted amount sits at `balance − fee` exactly like a MAX, so it
+    /// inherits the MAX path's exposure to a fee that moves between the Verify
+    /// quote and the payload build — and must inherit its re-fit too, including
+    /// republishing the screen so the user still sees what is signed.
+    func testAnAdjustedAmountIsRefittedWhenTheSignedFeeGrew() async throws {
+        let interactor = MockSendInteractor()
+        let balanceRaw = BigInt(stringLiteral: "1000000000000000000")
+        let quotedFee = BigInt(stringLiteral: "12345000000000000")
+        let gasLimit = BigInt(21_000)
+        let signedMaxFeePerGas = BigInt(stringLiteral: "1000000000000") // fee market moved up
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: quotedFee, gas: BigInt(30_000_000_000), gasLimit: gasLimit)
+        }
+        interactor.fetchChainSpecificStub = { _ in
+            .Ethereum(maxFeePerGasWei: signedMaxFeePerGas, priorityFeeWei: .zero, nonce: 0, gasLimit: gasLimit)
+        }
+        let arb = makeCoin(.arbitrum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: balanceRaw.description)
+        let tx = try makeTransaction(coin: arb, amount: "1", fee: .zero)
+        let vm = SendCryptoVerifyViewModel(transaction: tx, interactor: interactor)
+        vm.isAddressCorrect = true
+
+        await vm.loadGasInfoForSending()
+        vm.isAmountCorrect = true
+        XCTAssertEqual(vm.transaction.amount,
+                       SendCryptoLogic.amountString(coin: arb, raw: balanceRaw - quotedFee),
+                       "precondition: the screen was adjusted against the quoted fee")
+        let quotedAmount = vm.transaction.amountInRaw
+
+        let payload = try await vm.validateForm()
+
+        let signedFee = gasLimit * signedMaxFeePerGas
+        XCTAssertEqual(payload.toAmount, balanceRaw - signedFee)
+        XCTAssertLessThan(payload.toAmount, quotedAmount, "the fee grew, so the signed value must shrink")
+        XCTAssertEqual(vm.transaction.amount, SendCryptoLogic.amountString(coin: arb, raw: payload.toAmount),
+                       "the screen must be republished at the value that was signed")
+    }
+
+    // MARK: - needsEVMBalanceRefit
+
+    /// An amount Verify clamped down to what the balance could fund settles at
+    /// `balance − fee`, exactly like a MAX — so it carries the same exposure to
+    /// a fee that moves before the payload is built, and needs the same re-fit.
+    func testBalanceRefitCoversAnAmountTheAppAdjusted() throws {
+        let tx = try makeTransaction(amountWasAutoAdjusted: true)
+        XCTAssertFalse(tx.sendMaxAmount, "the point of this case is that it is NOT a max send")
+        XCTAssertTrue(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    func testBalanceRefitStillCoversANativeEvmMax() throws {
+        let tx = try makeTransaction(sendMaxAmount: true)
+        XCTAssertTrue(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// The invariant this predicate protects: a number the user typed and the
+    /// app never touched is never rewritten, however close to the balance it is.
+    func testBalanceRefitSkipsATypedAmountTheAppNeverTouched() throws {
+        let tx = try makeTransaction()
+        XCTAssertFalse(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// A token send moves the token balance and pays gas from the native
+    /// sibling, so a native fee that moved cannot underfund it.
+    func testBalanceRefitSkipsATokenSend() throws {
+        let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false,
+                            rawBalance: "1000000", contractAddress: "0xA0b8")
+        let tx = try makeTransaction(coin: usdc, amountWasAutoAdjusted: true)
+        XCTAssertFalse(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// The payload-time re-fit is deliberately EVM-only. Other chains do
+    /// re-resolve their fee at build time, but they fail closed on it — a UTXO
+    /// plan that no longer covers amount + fee throws before the ceremony —
+    /// where an EVM node accepts the signature and refuses the broadcast after
+    /// it. Widening the re-fit is a separate decision, not a side effect of this
+    /// predicate.
+    func testBalanceRefitSkipsANonEvmChain() throws {
+        let dot = makeCoin(.polkadot, ticker: "DOT", decimals: 10, isNative: true,
+                           rawBalance: "100000000000")
+        let tx = try makeTransaction(coin: dot, amountWasAutoAdjusted: true)
+        XCTAssertFalse(SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: tx))
+    }
+
+    /// `copy` is a field-by-field builder whose own doc warns that every new
+    /// field is one someone must remember to add. Losing this one silently
+    /// drops the re-fit on the transaction that most needs it.
+    func testCopyCarriesTheAutoAdjustedMarker() throws {
+        let adjusted = try makeTransaction(amountWasAutoAdjusted: true)
+        XCTAssertTrue(adjusted.copy(amount: "0.2").amountWasAutoAdjusted)
+
+        let typed = try makeTransaction()
+        XCTAssertFalse(typed.copy(amount: "0.2").amountWasAutoAdjusted)
+        XCTAssertTrue(typed.copy(amountWasAutoAdjusted: true).amountWasAutoAdjusted)
+    }
+
     // MARK: - Helpers
+
+    /// Seeds a live rate so fiat assertions mean something. Without one every
+    /// fiat figure is the empty string and a "the fiat followed the amount"
+    /// assertion passes for the wrong reason.
+    private func setPrice(_ value: Double, for coin: Coin) {
+        let cryptoId = RateProvider.cryptoId(for: coin.toCoinMeta()).id
+        do {
+            try RateProvider.shared.save(rates: [
+                Rate(fiat: SettingsCurrency.current.rawValue, crypto: cryptoId, value: value)
+            ])
+        } catch {
+            XCTFail("Failed to seed rate for \(coin.ticker): \(error)")
+        }
+        XCTAssertEqual(coin.price, value, accuracy: 0.0001, "rate for \(coin.ticker) did not take effect")
+    }
+
+    /// The fiat figure the Verify header renders, for a given amount string.
+    private func vmFiat(coin: Coin, amount: String) -> String {
+        CryptoAmountFormatter.amountInFiat(
+            coin: coin,
+            amount: SendCryptoLogic.amountDecimal(coin: coin, amount: amount)
+        )
+    }
 
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int, isNative: Bool, rawBalance: String = "0", contractAddress: String? = nil) -> Coin {
         let asset = CoinMeta.make(chain: chain, ticker: ticker, decimals: decimals, isNativeToken: isNative)
@@ -1110,7 +1634,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         fee: BigInt = BigInt(stringLiteral: "1000000000000000"),
         feeMode: FeeMode = .default,
         customGasLimit: BigInt? = nil,
-        sendMaxAmount: Bool = false
+        sendMaxAmount: Bool = false,
+        amountWasAutoAdjusted: Bool = false
     ) throws -> SendTransaction {
         let vault = try TestStore.makeVault()
         let coinToUse = coin ?? makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
@@ -1135,7 +1660,8 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             transactionType: .unspecified,
             memoFunctionDictionary: [:],
             wasmContractPayload: nil,
-            feeCoin: coinToUse
+            feeCoin: coinToUse,
+            amountWasAutoAdjusted: amountWasAutoAdjusted
         )
     }
 }
