@@ -20,7 +20,7 @@ enum TronHelper {
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
-        guard keysignPayload.coin.chain.ticker == "TRX" else {
+        guard keysignPayload.coin.chain == .tron else {
             throw HelperError.runtimeError("coin is not TRX")
         }
 

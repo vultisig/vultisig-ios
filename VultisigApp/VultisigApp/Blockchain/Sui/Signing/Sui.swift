@@ -13,7 +13,7 @@ import BigInt
 enum SuiHelper {
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard keysignPayload.coin.chain.ticker == "SUI" else {
+        guard keysignPayload.coin.chain == .sui else {
             throw HelperError.runtimeError("coin is not SUI")
         }
 
