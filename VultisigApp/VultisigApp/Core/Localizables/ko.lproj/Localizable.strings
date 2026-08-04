@@ -374,6 +374,7 @@
 "dontRemind" = "다시 알리지 않기";
 "downloadViaGitHub" = "GitHub을 통해 다운로드";
 "dropFileHere" = "여기에 파일을 드롭하세요...";
+"earn" = "적립";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA 키";
 "EdDSA" = "EdDSA";
@@ -626,6 +627,13 @@
 "joinSend" = "전송 참여";
 "joinSwap" = "스왑 참여";
 "joinTransactionSigning" = "트랜잭션 서명 참여";
+"kaminoEarnApy30d" = "APY (30일)";
+"kaminoEarnCuratedBy" = "%@ 운영";
+"kaminoEarnDeposited" = "예치됨";
+"kaminoEarnPnl" = "손익";
+"kaminoEarnRiskConservative" = "보수적";
+"kaminoEarnRiskPrivateCredit" = "사모 대출";
+"kaminoEarnTitle" = "Kamino Earn";
 "kaminoErrorVaultMetadataMismatch" = "Kamino가 %1$@을(를) %2$@(으)로 보고했습니다. 이 볼트의 값은 %3$@입니다";
 "kaminoErrorVaultNotInRegistry" = "볼트 %@은(는) 이 앱이 지원하는 볼트가 아닙니다";
 "keyCopied" = "키 복사됨";

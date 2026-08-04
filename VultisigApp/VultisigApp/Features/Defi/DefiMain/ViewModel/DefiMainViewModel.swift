@@ -67,6 +67,16 @@ final class DefiMainViewModel: ObservableObject {
             }
         }
 
+        // Materialise the Earn selection an imported backup carries as plain
+        // addresses into position rows, so the DeFi total below counts a
+        // restored vault's deposits instead of showing zero until the user
+        // opens the Solana chain screen. Idempotent and additive.
+        do {
+            try KaminoPositionStorageService().hydrateEnabledVaultsIfNeeded(for: vault)
+        } catch {
+            logger.error("Failed to hydrate Kamino selection: \(error.localizedDescription)")
+        }
+
         let defiChains = vault.chainsWithCoins.filter { chain in
             vault.defiChains.contains(chain) && CoinAction.defiChains.contains(chain)
         }

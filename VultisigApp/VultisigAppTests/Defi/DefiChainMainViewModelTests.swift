@@ -51,7 +51,7 @@ final class DefiChainMainViewModelTests: XCTestCase {
     private func section(
         _ type: DefiChainPositionType,
         in vm: DefiChainMainViewModel
-    ) -> AssetSection<DefiChainPositionType, CoinMeta>? {
+    ) -> AssetSection<DefiChainPositionType, DefiSelectableAsset>? {
         vm.availablePositions.first { $0.type == type }
     }
 
@@ -66,8 +66,8 @@ final class DefiChainMainViewModelTests: XCTestCase {
 
         // No awaiting: the static catalog must be readable the instant onLoad returns.
         XCTAssertEqual(vm.availablePositions.count, 3)
-        XCTAssertEqual(section(.bond, in: vm)?.assets, [bondCoin])
-        XCTAssertEqual(section(.stake, in: vm)?.assets, [stakeCoin])
+        XCTAssertEqual(section(.bond, in: vm)?.assets, [.coin(bondCoin)])
+        XCTAssertEqual(section(.stake, in: vm)?.assets, [.coin(stakeCoin)])
         XCTAssertTrue(
             section(.liquidityPool, in: vm)?.state.isLoading ?? false,
             "LP section must report loading, not an empty result."
@@ -95,8 +95,8 @@ final class DefiChainMainViewModelTests: XCTestCase {
         vm.onLoad()
         await vm.lpLoadTask?.value
 
-        XCTAssertEqual(section(.bond, in: vm)?.assets, [bondCoin], "A pools failure must not touch the bond section.")
-        XCTAssertEqual(section(.stake, in: vm)?.assets, [stakeCoin], "A pools failure must not touch the stake section.")
+        XCTAssertEqual(section(.bond, in: vm)?.assets, [.coin(bondCoin)], "A pools failure must not touch the bond section.")
+        XCTAssertEqual(section(.stake, in: vm)?.assets, [.coin(stakeCoin)], "A pools failure must not touch the stake section.")
         XCTAssertTrue(section(.liquidityPool, in: vm)?.state.isFailed ?? false)
         XCTAssertEqual(section(.liquidityPool, in: vm)?.assets, [])
     }
@@ -113,8 +113,8 @@ final class DefiChainMainViewModelTests: XCTestCase {
             section(.liquidityPool, in: vm)?.state.isFailed ?? false,
             "A hung pool fetch must resolve to a retryable failure, not an endless spinner."
         )
-        XCTAssertEqual(section(.bond, in: vm)?.assets, [bondCoin])
-        XCTAssertEqual(section(.stake, in: vm)?.assets, [stakeCoin])
+        XCTAssertEqual(section(.bond, in: vm)?.assets, [.coin(bondCoin)])
+        XCTAssertEqual(section(.stake, in: vm)?.assets, [.coin(stakeCoin)])
     }
 
     // MARK: - Retry
@@ -134,7 +134,7 @@ final class DefiChainMainViewModelTests: XCTestCase {
 
         XCTAssertEqual(service.lpCallCount, 2)
         XCTAssertEqual(section(.liquidityPool, in: vm)?.state, .loaded)
-        XCTAssertEqual(section(.liquidityPool, in: vm)?.assets, [lpCoin])
+        XCTAssertEqual(section(.liquidityPool, in: vm)?.assets, [.coin(lpCoin)])
     }
 
     func testRetryReturnsSectionToLoadingWhileInFlight() async {
@@ -162,9 +162,9 @@ final class DefiChainMainViewModelTests: XCTestCase {
         vm.onLoad()
         await vm.lpLoadTask?.value
 
-        XCTAssertEqual(section(.bond, in: vm)?.assets, [bondCoin])
-        XCTAssertEqual(section(.stake, in: vm)?.assets, [stakeCoin])
-        XCTAssertEqual(section(.liquidityPool, in: vm)?.assets, [lpCoin])
+        XCTAssertEqual(section(.bond, in: vm)?.assets, [.coin(bondCoin)])
+        XCTAssertEqual(section(.stake, in: vm)?.assets, [.coin(stakeCoin)])
+        XCTAssertEqual(section(.liquidityPool, in: vm)?.assets, [.coin(lpCoin)])
         XCTAssertTrue(vm.availablePositions.allSatisfy { $0.state == .loaded })
     }
 
@@ -213,7 +213,7 @@ final class DefiChainMainViewModelTests: XCTestCase {
 
         let filtered = vm.filteredAvailablePositions
         XCTAssertEqual(filtered.map(\.type), [.stake])
-        XCTAssertEqual(filtered.first?.assets, [stakeCoin])
+        XCTAssertEqual(filtered.first?.assets, [.coin(stakeCoin)])
         XCTAssertEqual(filtered.first?.state, .loaded)
     }
 
@@ -244,5 +244,79 @@ final class DefiChainMainViewModelTests: XCTestCase {
         let filtered = vm.filteredAvailablePositions
         XCTAssertEqual(filtered.map(\.type), [.liquidityPool])
         XCTAssertTrue(filtered.first?.state.isFailed ?? false)
+    }
+
+    // MARK: - Earn section
+
+    func testSolanaOffersStakeAndEarnSegments() {
+        let vm = makeViewModel(chain: .solana)
+
+        XCTAssertEqual(vm.getDefiPositionTypes(), [.stake, .earn])
+    }
+
+    func testEarnSectionIsAppendedLastAndNeverDisturbsTheCoinBuckets() {
+        service.supportsLPs = false
+        service.earnStub = KaminoVaultRegistry.allowList
+        let vm = makeViewModel(chain: .solana)
+
+        vm.onLoad()
+
+        XCTAssertEqual(
+            vm.availablePositions.map(\.type),
+            [.bond, .stake, .liquidityPool, .earn],
+            "Earn is appended after the three DefiPositions buckets, whose order the picker depends on."
+        )
+        XCTAssertEqual(
+            section(.earn, in: vm)?.assets,
+            KaminoVaultRegistry.allowList.map { .kaminoVault($0) }
+        )
+        XCTAssertEqual(section(.earn, in: vm)?.state, .loaded, "The vault allow-list is static — it never loads.")
+    }
+
+    /// The Earn bucket must stay `nil`: `DefiChainSelectPositionsScreen.onSave`
+    /// adds every bucketed selection to the wallet as a coin, and a yield vault
+    /// is not a coin.
+    func testEarnAndGovernanceHaveNoSelectionBucket() {
+        XCTAssertNil(DefiChainPositionType.earn.selectionIndex)
+        XCTAssertNil(DefiChainPositionType.governance.selectionIndex)
+        XCTAssertEqual(DefiChainPositionType.bond.selectionIndex, 0)
+        XCTAssertEqual(DefiChainPositionType.stake.selectionIndex, 1)
+        XCTAssertEqual(DefiChainPositionType.liquidityPool.selectionIndex, 2)
+    }
+
+    func testChainWithoutEarnVaultsHasNoEarnSection() {
+        let vm = makeViewModel()
+
+        vm.onLoad()
+
+        XCTAssertNil(section(.earn, in: vm))
+        vm.lpLoadTask?.cancel()
+    }
+
+    func testSearchMatchesAVaultByNameAndCurator() {
+        service.supportsLPs = false
+        service.earnStub = KaminoVaultRegistry.allowList
+        let vm = makeViewModel(chain: .solana)
+        vm.onLoad()
+
+        vm.positionsSearchText = "steakhouse"
+        XCTAssertEqual(
+            vm.filteredAvailablePositions.first(where: { $0.type == .earn })?.assets,
+            [.kaminoVault(KaminoVaultRegistry.steakhouseUSDC)]
+        )
+
+        vm.positionsSearchText = "RockawayX"
+        XCTAssertEqual(
+            vm.filteredAvailablePositions.first(where: { $0.type == .earn })?.assets,
+            [.kaminoVault(KaminoVaultRegistry.rwaUSDC)],
+            "The curator is the only way to tell the two USDC vaults apart."
+        )
+    }
+
+    /// A vault must never be expressible as a coin, because every bucketed
+    /// selection is handed to `CoinService.addToChain`.
+    func testAKaminoVaultElementExposesNoCoin() {
+        XCTAssertNil(DefiSelectableAsset.kaminoVault(KaminoVaultRegistry.allezSOL).coin)
+        XCTAssertEqual(DefiSelectableAsset.coin(stakeCoin).coin, stakeCoin)
     }
 }

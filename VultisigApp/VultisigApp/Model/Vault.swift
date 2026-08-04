@@ -38,6 +38,23 @@ final class Vault: ObservableObject, Codable {
     var enabledDefiProviders: [String] = []
     /// Set once `enabledDefiProviders` has been backfilled from the legacy flags.
     var didMigrateDefiProviders: Bool = false
+    /// Kamino Earn vaults the user enabled, as registry addresses.
+    ///
+    /// Mirrors `KaminoPosition.isEnabled`, which is the runtime source of
+    /// truth. It exists because the encoded form of a vault carries plain
+    /// properties, not the position cache — `stakePositions` and `lpPositions`
+    /// are declared in `CodingKeys` but never encoded; only the `defiPositions`
+    /// opt-in is. A selection that lived solely on the position rows would be
+    /// lost on a JSON import and the user's deposits would stay hidden until
+    /// they re-enabled each vault by hand. `KaminoPositionStorageService`
+    /// writes both in one save and materialises rows from this list on load.
+    ///
+    /// Note this only covers the JSON import path. A `.vult` backup is a
+    /// `VSVault` protobuf that carries key material and identity alone — no
+    /// `defiChains`, no `defiPositions`, no `enabledDefiProviders` — so NO DeFi
+    /// preference survives one today. Changing that means changing the shared
+    /// `commondata` schema for every platform, not this feature.
+    var enabledKaminoVaults: [String] = []
     // Legacy per-provider toggle — superseded by `enabledDefiProviders`; retained
     // as the migration source and for backup back-compat, not read by feature code.
     var isCircleEnabled: Bool = true
@@ -66,6 +83,10 @@ final class Vault: ObservableObject, Codable {
     // `circlePosition` is retained for the one-time migration backfill of
     // pre-existing Circle rows; new reads/writes go here.
     @Relationship(deleteRule: .cascade) var yieldPositions: [YieldPosition] = []
+    // Kamino Earn vault positions, keyed (vault address, pubKeyECDSA). Carries
+    // the per-vault opt-in as well as the snapshot, so the Earn segment needs no
+    // `DefiPositions` bucket — see `KaminoPosition`.
+    @Relationship(deleteRule: .cascade) var kaminoPositions: [KaminoPosition] = []
     @Relationship(deleteRule: .cascade) var chainPublicKeys: [ChainPublicKey] = []
 
     enum CodingKeys: CodingKey {
@@ -83,6 +104,7 @@ final class Vault: ObservableObject, Codable {
         case defiChains
         case isCircleEnabled
         case enabledDefiProviders
+        case enabledKaminoVaults
         case defiPositions
         case activeBondedNodes
         case stakePositions
@@ -114,6 +136,7 @@ final class Vault: ObservableObject, Codable {
             enabledDefiProviders = []
             didMigrateDefiProviders = false
         }
+        enabledKaminoVaults = try container.decodeIfPresent([String].self, forKey: .enabledKaminoVaults) ?? []
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
         publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
@@ -167,6 +190,7 @@ final class Vault: ObservableObject, Codable {
         // empty) buffer — otherwise importing a pre-backfill backup would decode
         // an empty array as authoritative and drop the legacy-enabled providers.
         try container.encode(currentDefiProviders(), forKey: .enabledDefiProviders)
+        try container.encode(enabledKaminoVaults, forKey: .enabledKaminoVaults)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
         try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
