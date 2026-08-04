@@ -33,10 +33,17 @@ class AppViewModel: ObservableObject {
 
     private let logic = AccountLogic()
     private let lockService: AppLockService
+    /// Injected rather than called directly so a test can prove it runs *before*
+    /// the launch gate reads the lock mode, which is the whole property.
+    private let reconcileInstall: @MainActor () -> Void
     private var didTriggerAuthThisSession = false
 
-    init(lockService: AppLockService = .shared) {
+    init(
+        lockService: AppLockService = .shared,
+        reconcileInstall: @escaping @MainActor () -> Void = { KeyshareInstallReconciler().reconcile() }
+    ) {
         self.lockService = lockService
+        self.reconcileInstall = reconcileInstall
     }
 
     static let shared = AppViewModel()
@@ -176,7 +183,24 @@ class AppViewModel: ObservableObject {
 
     /// Restores the lock on launch when a passcode is configured, so a cold start
     /// is gated rather than only a return from the background.
+    ///
+    /// **Reconciliation runs first, synchronously, and that ordering is the
+    /// point.** The lock mode lives in `UserDefaults` and the wrapped data key
+    /// lives in the Keychain, and the two can disagree — `disablePasscode`
+    /// changes the mode *before* deleting the wrapper precisely so an
+    /// interruption leaves a repairable state rather than a gate with nothing
+    /// behind it. `KeyshareInstallReconciler` is what repairs it, in both
+    /// directions. It also runs at app `onAppear`, but nothing orders that
+    /// against this, so the gate could be chosen from a mode reconciliation was
+    /// about to change — after which the app sits open for the whole session
+    /// with a wrapped key and no lock screen. Doing it here makes the ordering
+    /// hold by construction instead of by luck; a second pass is a no-op,
+    /// because the destructive half is marked once per container and the
+    /// mode alignment only writes when it disagrees.
+    @MainActor
     func restorePasscodeLockOnLaunch() {
+        reconcileInstall()
+
         guard lockService.mode == .passcode else { return }
         PasscodeService.shared.lock()
         isPasscodeLocked = true
