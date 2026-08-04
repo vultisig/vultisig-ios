@@ -357,8 +357,6 @@
 "devicesOnSameInternet" = "Verbinde alle Geräte mit dem\nInternet und halte die Vultisig-App offen.";
 "devicesOnSameNetwork" = "Verbinde alle Geräte mit demselben\nNetzwerk und halte die Vultisig-App offen.";
 "devicesOnSameWifi" = "Geräte im gleichen Netzwerk mit Vultisig offen halten";
-"dilithiumAlreadyGeneratedSubtitle" = "Dieser Tresor hat bereits einen MLDSA-44 Post-Quantum-Schlüssel generiert. Es ist keine weitere Aktion erforderlich.";
-"dilithiumAlreadyGeneratedTitle" = "Post-Quantum-Schlüssel aktiv";
 "dilithiumKeygen" = "Post-Quantum-Schlüssel";
 "dilithiumKeygenSubtitle" = "MLDSA-44-Schlüssel für Quantenresistenz generieren";
 "directSign" = "Direkte Signatur";

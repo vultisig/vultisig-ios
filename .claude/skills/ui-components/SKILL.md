@@ -364,7 +364,9 @@ struct MyFeatureScreen: View {
 
 ## Localization
 
-### Supported Languages (7)
+### Supported Languages
+
+`LOCALE_DIRS` in `VultisigApp/scripts/sort_localizable.py` is the authoritative locale list. The table below describes the configured shipping locales.
 
 | Language | Directory |
 |----------|-----------|
@@ -373,13 +375,14 @@ struct MyFeatureScreen: View {
 | Spanish | `VultisigApp/VultisigApp/Core/Localizables/es.lproj/Localizable.strings` |
 | Croatian | `VultisigApp/VultisigApp/Core/Localizables/hr.lproj/Localizable.strings` |
 | Italian | `VultisigApp/VultisigApp/Core/Localizables/it.lproj/Localizable.strings` |
+| Korean | `VultisigApp/VultisigApp/Core/Localizables/ko.lproj/Localizable.strings` |
 | Portuguese | `VultisigApp/VultisigApp/Core/Localizables/pt.lproj/Localizable.strings` |
 | Simplified Chinese | `VultisigApp/VultisigApp/Core/Localizables/zh-Hans.lproj/Localizable.strings` |
 
 ### Rules
 
 1. **Never hardcode user-facing strings** - Use `"key".localized`
-2. **Add to ALL 7 Localizable.strings files** - Every new string must be translated
+2. **Add to every locale in `LOCALE_DIRS`** - Every new string must be translated
 3. **camelCase keys** - e.g., `"sendCryptoTitle"`, `"vaultSettings"`
 4. **Alphabetical ordering** - Keep keys sorted alphabetically within each file
 5. **Use `sort_localizable.py`** after adding keys:
@@ -410,6 +413,9 @@ In each `Localizable.strings`:
 
 // it.lproj
 "sendCryptoTitle" = "Invia Crypto";
+
+// ko.lproj
+"sendCryptoTitle" = "암호화폐 전송";
 
 // pt.lproj
 "sendCryptoTitle" = "Enviar Cripto";

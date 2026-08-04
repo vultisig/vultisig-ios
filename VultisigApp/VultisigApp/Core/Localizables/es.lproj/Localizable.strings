@@ -357,8 +357,6 @@
 "devicesOnSameInternet" = "Conecta todos los dispositivos a Internet\ncon la aplicación Vultisig abierta.";
 "devicesOnSameNetwork" = "Conecta todos los dispositivos a la misma\nred con la aplicación Vultisig abierta.";
 "devicesOnSameWifi" = "Mantén los dispositivos en la misma red con Vultisig abierto";
-"dilithiumAlreadyGeneratedSubtitle" = "Esta bóveda ya tiene una clave post-cuántica MLDSA-44 generada. No se requiere ninguna acción adicional.";
-"dilithiumAlreadyGeneratedTitle" = "Clave post-cuántica activa";
 "dilithiumKeygen" = "Clave post-cuántica";
 "dilithiumKeygenSubtitle" = "Genera una clave MLDSA-44 para resistencia cuántica";
 "directSign" = "Firma Directa";

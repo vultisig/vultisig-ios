@@ -357,8 +357,6 @@
 "devicesOnSameInternet" = "将所有设备连接到\n互联网并打开 Vultisig 应用";
 "devicesOnSameNetwork" = "将所有设备连接到同一\n网络并打开 Vultisig 应用";
 "devicesOnSameWifi" = "保持设备在同一网络上并打开 Vultisig";
-"dilithiumAlreadyGeneratedSubtitle" = "此保险库已生成 MLDSA-44 后量子密钥。无需进一步操作。";
-"dilithiumAlreadyGeneratedTitle" = "后量子密钥已激活";
 "dilithiumKeygen" = "后量子密钥";
 "dilithiumKeygenSubtitle" = "生成 MLDSA-44 密钥以实现抗量子能力";
 "directSign" = "直接签名";

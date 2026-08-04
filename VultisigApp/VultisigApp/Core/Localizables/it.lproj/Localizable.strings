@@ -357,8 +357,6 @@
 "devicesOnSameInternet" = "Collega tutti i dispositivi a Internet\ncon l'app Vultisig aperta.";
 "devicesOnSameNetwork" = "Collega tutti i dispositivi alla stessa\nrete con l'app Vultisig aperta.";
 "devicesOnSameWifi" = "Mantieni i dispositivi sulla stessa rete con Vultisig aperto";
-"dilithiumAlreadyGeneratedSubtitle" = "Questo vault ha già una chiave post-quantistica MLDSA-44 generata. Non è richiesta alcuna ulteriore azione.";
-"dilithiumAlreadyGeneratedTitle" = "Chiave post-quantistica attiva";
 "dilithiumKeygen" = "Chiave post-quantistica";
 "dilithiumKeygenSubtitle" = "Genera la chiave MLDSA-44 per la resistenza ai computer quantistici";
 "directSign" = "Firma Diretta";
