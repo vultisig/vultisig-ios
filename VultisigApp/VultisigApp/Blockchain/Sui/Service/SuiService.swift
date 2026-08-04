@@ -32,6 +32,7 @@ enum SuiBalanceError: Error {
 
 class SuiService: SuiCoinMetadataProviding {
     static let shared = SuiService()
+    static let maximumCoinPages = 100
 
     private let logger = Log.chain.service
 
@@ -184,80 +185,75 @@ class SuiService: SuiCoinMetadataProviding {
     /// `suix_getAllCoins` is paginated (default page ~50), so we follow
     /// `nextCursor`/`hasNextPage` to avoid a truncated object set on heavy wallets.
     func getAllCoins(coin: Coin) async throws -> [[String: String]] {
+        try await getAllCoinObjects(address: coin.address).map { suiCoin in
+            [
+                "objectID": suiCoin.coinObjectId,
+                "version": suiCoin.version,
+                "objectDigest": suiCoin.digest,
+                "balance": suiCoin.balance,
+                "coinType": suiCoin.coinType
+            ]
+        }
+    }
+
+    private func getAllCoinObjects(address: String) async throws -> [SuiCoin] {
+        var coins: [SuiCoin] = []
+        var cursor: String?
+        var seenCursors = Set<String>()
+        var pageCount = 0
 
         do {
-            var allCoins: [[String: String]] = []
-            var cursor: String?
-
             repeat {
-                let data = try await Utils.PostRequestRpc(
-                    rpcURL: rpcURL,
-                    method: "suix_getAllCoins",
-                    params: [coin.address, cursor]
-                )
+                guard pageCount < Self.maximumCoinPages else {
+                    throw Errors.coinPageLimitExceeded(maximum: Self.maximumCoinPages)
+                }
+                pageCount += 1
 
-                guard let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data") else {
-                    logger.error("Failed to decode coin page at cursor \(cursor ?? "<start>", privacy: .public)")
-                    throw Errors.coinPageDecodeFailed(cursor: cursor)
+                let response = try await httpClient.request(
+                    SuiAPI(baseURL: rpcURL, endpoint: .allCoins(address: address, cursor: cursor)),
+                    responseType: SuiCoinPageResponse.self
+                ).data
+
+                if let error = response.error {
+                    throw Errors.coinPageRPC(error.message)
                 }
 
-                allCoins.append(contentsOf: coins.map { suiCoin in
-                    var coinDict = [String: String]()
-                    coinDict["objectID"] = suiCoin.coinObjectId.description
-                    coinDict["version"] = String(suiCoin.version)
-                    coinDict["objectDigest"] = suiCoin.digest
-                    coinDict["balance"] = String(suiCoin.balance)
-                    coinDict["coinType"] = String(suiCoin.coinType)
-                    return coinDict
-                })
+                guard let page = response.result else {
+                    throw Errors.coinPageDecodeFailed(cursor: cursor)
+                }
+                coins.append(contentsOf: page.data)
 
-                let hasNextPage = Utils.extractResultFromJson(fromData: data, path: "result.hasNextPage") as? Bool ?? false
-                cursor = hasNextPage ? Utils.extractResultFromJson(fromData: data, path: "result.nextCursor") as? String : nil
-            } while cursor != nil
+                guard page.hasNextPage else { break }
+                guard let nextCursor = page.nextCursor,
+                      !nextCursor.isEmpty,
+                      seenCursors.insert(nextCursor).inserted else {
+                    throw Errors.invalidCoinPageCursor(cursor: page.nextCursor)
+                }
+                cursor = nextCursor
+            } while true
 
-            return allCoins
+            return coins
         } catch {
-            logger.error("Error fetching coins: \(error.localizedDescription)")
+            logger.error("Error fetching coins: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }
 
     func getAllTokens(address: String) async throws -> [[String: String]] {
+        let coinObjects = try await getAllCoinObjects(address: address)
+        var seenTypes = Set<String>()
 
-        do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getOwnedObjects", params: [address])
-
-            if let objects: [[String: Any]] = Utils.extractResultFromJson(fromData: data, path: "result.data") as? [[String: Any]] {
-                var tokens: [[String: String]] = []
-
-                for obj in objects {
-                    if let objData = obj["data"] as? [String: Any],
-                       let objectId = objData["objectId"] as? String {
-
-                        // Fetch object details
-                        let objectDetails = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_getObject", params: [objectId, ["showContent": true]])
-
-                        if let coinType = Utils.extractResultFromJson(fromData: objectDetails, path: "result.data.content.type") as? String {
-                            if let start = coinType.range(of: "<"), let end = coinType.range(of: ">") {
-                                let extractedType = String(coinType[start.upperBound..<end.lowerBound])
-                                tokens.append([
-                                    "objectID": objectId,
-                                    "coinType": extractedType
-                                ])
-                            }
-                        }
-                    }
-                }
-
-                return tokens
-            } else {
-                logger.error("Failed to decode owned objects")
+        return coinObjects
+            .filter { !$0.coinType.isEmpty && !SuiCoinType.isNative($0.coinType) }
+            .sorted { SuiCoinType.normalize($0.coinType) < SuiCoinType.normalize($1.coinType) }
+            .compactMap { coin in
+                let normalizedType = SuiCoinType.normalize(coin.coinType)
+                guard seenTypes.insert(normalizedType).inserted else { return nil }
+                return [
+                    "objectID": coin.coinObjectId,
+                    "coinType": coin.coinType
+                ]
             }
-        } catch {
-            logger.error("Error fetching tokens: \(error.localizedDescription, privacy: .public)")
-            throw error
-        }
-        return []
     }
 
     func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata? {
@@ -274,52 +270,48 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getAllTokensWithMetadata(address: String) async throws -> [CoinMeta] {
-        let allTokens = try await getAllTokens(address: address) // Get tokens first
-
+        let allTokens = try await getAllTokens(address: address)
         var tokensWithMetadata: [CoinMeta] = []
 
         for token in allTokens {
             if let objType = token["coinType"] {
-                do {
+                if let curatedToken = TokensStore.TokenSelectionAssets.first(where: {
+                    $0.chain == .sui &&
+                        !$0.isNativeToken &&
+                        !$0.contractAddress.isEmpty &&
+                        SuiCoinType.matches($0.contractAddress, objType)
+                }) {
+                    tokensWithMetadata.append(curatedToken)
+                    continue
+                }
 
+                do {
                     guard let metadata = try await getCoinMetadata(coinType: objType) else {
                         continue
                     }
-
-                    let tokenData: [String: String] = [
-                        "objectID": token["objectID"] ?? "",
-                        "type": objType,
-                        "symbol": metadata.symbol,
-                        "decimals": metadata.decimals.description,
-                        "logo": metadata.iconUrl ?? ""
-                    ]
-
-                    // Search TokensStore by ticker for any token with a valid priceProviderId
-                    let knownTokenByTicker = TokensStore.TokenSelectionAssets.first { knownAsset in
-                        knownAsset.ticker.uppercased() == tokenData["symbol"]?.uppercased() &&
-                        !knownAsset.priceProviderId.isEmpty
-                    }
-
-                    let decimals = Int(tokenData["decimals"] ?? "0")!
+                    let symbol = metadata.symbol.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !symbol.isEmpty, (0...255).contains(metadata.decimals) else { continue }
 
                     let coinMeta = CoinMeta(
                         chain: .sui,
-                        ticker: tokenData["symbol"]!,
-                        logo: tokenData["logo"]!,
-                        decimals: decimals,
-                        priceProviderId: knownTokenByTicker?.priceProviderId ?? "", // Use price provider ID from any matching token
-                        contractAddress: objType,
-                        isNativeToken: tokenData["symbol"]! == TokensStore.Token.suiSUI.ticker ? true : false
+                        ticker: symbol,
+                        logo: metadata.iconUrl ?? .empty,
+                        decimals: metadata.decimals,
+                        priceProviderId: .empty,
+                        contractAddress: SuiCoinType.normalize(objType),
+                        isNativeToken: false
                     )
 
                     tokensWithMetadata.append(coinMeta)
+                } catch is CancellationError {
+                    throw CancellationError()
                 } catch {
                     logger.error("Error fetching metadata for \(String(describing: objType), privacy: .public): \(error.localizedDescription, privacy: .public)")
                 }
             }
         }
 
-        return tokensWithMetadata.filter { $0.isNativeToken == false }
+        return tokensWithMetadata
     }
 
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String {
@@ -380,6 +372,17 @@ private struct SuiCoinMetadataResponse: Decodable {
     let error: SuiRPCError?
 }
 
+private struct SuiCoinPageResponse: Decodable {
+    let result: SuiCoinPage?
+    let error: SuiRPCError?
+}
+
+private struct SuiCoinPage: Decodable {
+    let data: [SuiCoin]
+    let nextCursor: String?
+    let hasNextPage: Bool
+}
+
 private struct SuiBalancesResponse: Decodable {
     let result: [SuiBalance]?
     let error: SuiRPCError?
@@ -402,6 +405,9 @@ private extension SuiService {
         case failedToParseGasEstimate
         case dryRunFailed(String)
         case coinPageDecodeFailed(cursor: String?)
+        case coinPageRPC(String)
+        case invalidCoinPageCursor(cursor: String?)
+        case coinPageLimitExceeded(maximum: Int)
         case broadcastFailed(String)
         case missingTransactionDigest
 
@@ -417,6 +423,12 @@ private extension SuiService {
                 return "Dry run failed: \(error)"
             case .coinPageDecodeFailed(let cursor):
                 return "Failed to decode coin page from suix_getAllCoins at cursor \(cursor ?? "<start>"). Aborting to avoid a truncated coin set."
+            case .coinPageRPC(let message):
+                return "Sui coin page RPC failed: \(message)"
+            case .invalidCoinPageCursor(let cursor):
+                return "Sui coin page returned an invalid cursor: \(cursor ?? "<nil>")"
+            case .coinPageLimitExceeded(let maximum):
+                return "Sui coin pagination exceeded the safety limit of \(maximum) pages"
             case .broadcastFailed(let error):
                 return "Sui broadcast failed: \(error)"
             case .missingTransactionDigest:

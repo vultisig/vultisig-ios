@@ -18,7 +18,7 @@ enum TokenPriceSourceRegistry {
         case .solana:
             return SolanaTokenPriceSource()
         case .sui:
-            return SuiTokenPriceSource()
+            return SuiTokenPriceSource(httpClient: httpClient)
         case .mayaChain:
             return MayaChainTokenPriceSource(httpClient: httpClient)
         case .thorChain, .thorChainChainnet, .thorChainStagenet:
@@ -50,32 +50,112 @@ struct SolanaTokenPriceSource: TokenPriceSource {
 
 // MARK: - Sui
 
-/// Prices Sui tokens from their on-chain liquidity pool via `SuiService`. Tokens
-/// without `TokensStore` metadata are skipped rather than priced with default
-/// decimals.
+/// Prices Sui tokens by coin type through CoinGecko, with the existing Cetus
+/// liquidity route as a fallback for coin types CoinGecko does not resolve.
 struct SuiTokenPriceSource: TokenPriceSource {
+    typealias FallbackPrice = (String, Int) async -> Double
+    typealias CurrencyConverter = (Double, SettingsCurrency) -> Double?
+
+    let httpClient: HTTPClientProtocol
+    let fallbackPrice: FallbackPrice
+    let currencyConverter: CurrencyConverter
     private let logger = Log.chain.service
 
-    func prices(contracts: [String], coins _: [CoinMeta]) async throws -> [Rate] {
+    init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        fallbackPrice: @escaping FallbackPrice = { contract, decimals in
+            await SuiService.getTokenUSDValue(contractAddress: contract, decimals: decimals)
+        },
+        currencyConverter: @escaping CurrencyConverter = { usdPrice, currency in
+            SuiTokenPriceSource.convertFallbackUSDPrice(usdPrice, to: currency)
+        }
+    ) {
+        self.httpClient = httpClient
+        self.fallbackPrice = fallbackPrice
+        self.currencyConverter = currencyConverter
+    }
+
+    func prices(contracts: [String], coins: [CoinMeta]) async throws -> [Rate] {
+        let currencies = SettingsCurrency.allCases
+            .map(\.rawValue)
+            .joined(separator: ",")
+        let response: [String: [String: Double]]
+
+        do {
+            response = try await httpClient.request(
+                CryptoPriceAPI.pricesByContract(
+                    network: CoinGeckoPlatform.id(for: .sui),
+                    addresses: contracts.joined(separator: ","),
+                    currencies: currencies
+                ),
+                responseType: [String: [String: Double]].self
+            ).data
+        } catch {
+            if error is CancellationError || (error as? URLError)?.code == .cancelled {
+                throw error
+            }
+            logger.warning("CoinGecko Sui token price fetch failed: \(error.localizedDescription, privacy: .public)")
+            response = [:]
+        }
+
         var rates: [Rate] = []
         for contract in contracts {
-            // Try to find the coin metadata to get proper decimals
-            guard let tokenMeta = TokensStore.TokenSelectionAssets.first(where: { asset in
-                asset.chain == .sui && asset.contractAddress.lowercased() == contract.lowercased()
+            if let priceMap = response.first(where: {
+                SuiCoinType.matches($0.key, contract)
+            })?.value {
+                let coinGeckoRates: [Rate] = SettingsCurrency.allCases.compactMap { currency in
+                    let fiat = currency.rawValue.lowercased()
+                    guard let value = priceMap[fiat], value.isFinite, value > 0 else { return nil }
+                    return Rate(fiat: fiat, crypto: SuiCoinType.rateKey(contract), value: value)
+                }
+                if !coinGeckoRates.isEmpty {
+                    rates.append(contentsOf: coinGeckoRates)
+                    continue
+                }
+            }
+
+            guard let tokenMeta = coins.first(where: {
+                $0.chain == .sui &&
+                    !$0.isNativeToken &&
+                    SuiCoinType.matches($0.contractAddress, contract)
             }) else {
-                // Skip tokens without metadata instead of using default decimals
-                logger.warning("No metadata found for SUI token \(contract), skipping price fetch")
+                logger.warning("No runtime metadata found for Sui token \(contract, privacy: .public), skipping fallback price fetch")
                 continue
             }
 
-            let decimals = tokenMeta.decimals
-
-            // Use the enhanced method with decimals
-            let poolPrice = await SuiService.getTokenUSDValue(contractAddress: contract, decimals: decimals)
-            let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
-            rates.append(poolRate)
+            let poolPrice = await fallbackPrice(contract, tokenMeta.decimals)
+            guard poolPrice.isFinite, poolPrice > 0 else {
+                logger.warning("No positive fallback price found for Sui token \(contract, privacy: .public)")
+                continue
+            }
+            rates.append(contentsOf: SettingsCurrency.allCases.compactMap { currency in
+                guard let value = currencyConverter(poolPrice, currency), value.isFinite, value > 0 else {
+                    return nil
+                }
+                return Rate(
+                    fiat: currency.rawValue.lowercased(),
+                    crypto: SuiCoinType.rateKey(contract),
+                    value: value
+                )
+            })
         }
         return rates
+    }
+
+    /// Cetus returns USD only. Derive the requested currency through the cached
+    /// native SUI cross-rate, which is refreshed from CoinGecko for every
+    /// supported wallet currency alongside token prices.
+    static func convertFallbackUSDPrice(_ usdPrice: Double, to currency: SettingsCurrency) -> Double? {
+        guard currency != .USD else { return usdPrice }
+        guard let suiUSD = RateProvider.shared.rate(for: TokensStore.Token.suiSUI, currency: .USD)?.value,
+              let suiCurrency = RateProvider.shared.rate(for: TokensStore.Token.suiSUI, currency: currency)?.value,
+              suiUSD.isFinite,
+              suiCurrency.isFinite,
+              suiUSD > 0,
+              suiCurrency > 0 else {
+            return nil
+        }
+        return usdPrice * suiCurrency / suiUSD
     }
 }
 
@@ -251,8 +331,8 @@ struct CoinGeckoContractTokenPriceSource: TokenPriceSource {
 
 // MARK: - CoinGecko platform mapping
 
-/// CoinGecko `asset_platforms` id per chain. Only EVM chains have a contract-based
-/// CoinGecko platform; any chain absent from the table maps to `.empty`.
+/// CoinGecko `asset_platforms` id per chain. Any chain absent from the table maps
+/// to `.empty`.
 enum CoinGeckoPlatform {
     static let byChain: [Chain: String] = [
         .ethereum: "ethereum",
@@ -270,6 +350,7 @@ enum CoinGeckoPlatform {
         .cronosChain: "cronos",
         .hyperliquid: "hyperliquid",
         .sei: "sei-network",
+        .sui: "sui",
         .robinhood: "robinhood"
     ]
 
