@@ -964,6 +964,7 @@
 "passcodeMismatch" = "Non corrispondono. Riprova.";
 "passcodeNewTitle" = "Scegli un nuovo codice";
 "passcodeSealedSharesWithoutKey" = "I tuoi vault sono già cifrati su questo dispositivo, ma la chiave che li apre non è leggibile. Ripristinali da un backup.";
+"passcodeSetDisclosure" = "Impostare un codice cifra i key share del tuo vault su questo dispositivo. Le versioni precedenti di Vultisig non potranno firmare con essi finché non lo rimuovi.";
 "passcodeSetTitle" = "Imposta codice";
 "passcodeStorageError" = "Non è stato possibile leggere il codice su questo dispositivo. Ripristina il vault da un backup.";
 "password" = "Password";

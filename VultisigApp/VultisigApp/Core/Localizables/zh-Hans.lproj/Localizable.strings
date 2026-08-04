@@ -964,6 +964,7 @@
 "passcodeMismatch" = "两次输入不一致，请重试。";
 "passcodeNewTitle" = "选择新密码";
 "passcodeSealedSharesWithoutKey" = "本设备上的 vault 已经加密，但无法读取用于打开它们的密钥。请从备份中恢复。";
+"passcodeSetDisclosure" = "设置密码会加密本设备上的 vault key share。在您移除密码之前，旧版本的 Vultisig 无法用它们签名。";
 "passcodeSetTitle" = "设置密码";
 "passcodeStorageError" = "无法在本设备上读取密码。请从备份恢复您的 vault。";
 "password" = "密码";

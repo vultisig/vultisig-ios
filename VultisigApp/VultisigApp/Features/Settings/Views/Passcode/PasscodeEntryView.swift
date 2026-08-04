@@ -18,6 +18,11 @@ struct PasscodeEntryView: View {
     /// Shown on the lock screen only. The settings flows are already inside a
     /// titled, branded navigation stack, so a logo there is noise.
     var showsLogo: Bool = false
+    /// Standing consequence of the choice being made, below the keypad — as
+    /// opposed to ``errorMessage``, which is about the entry just typed. It sits
+    /// there for the whole flow rather than appearing once, because the decision
+    /// it qualifies is not made until the last digit of the confirmation.
+    var footnote: String?
     @Binding var passcode: String
     /// Called once the last digit lands, so no flow needs its own submit button.
     let onComplete: (String) -> Void
@@ -58,6 +63,16 @@ struct PasscodeEntryView: View {
             keypad
 
             Spacer(minLength: 12)
+
+            if let footnote {
+                Text(footnote)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 8)
+                    .accessibilityIdentifier(AccessibilityID.Passcode.footnote)
+            }
         }
         .frame(maxWidth: .infinity)
         .onChange(of: passcode) { _, value in

@@ -964,6 +964,7 @@
 "passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
 "passcodeSealedSharesWithoutKey" = "Vaši vaultovi već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
+"passcodeSetDisclosure" = "Postavljanje zaporke šifrira key shareove vašeg vaulta na ovom uređaju. Starije verzije Vultisiga neće moći potpisivati njima dok je ne uklonite.";
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
 "password" = "Lozinka";

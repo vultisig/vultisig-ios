@@ -964,6 +964,7 @@
 "passcodeMismatch" = "Those did not match. Try again.";
 "passcodeNewTitle" = "Choose a new passcode";
 "passcodeSealedSharesWithoutKey" = "Your vaults are already encrypted on this device, but the key that opens them cannot be read. Restore them from a backup.";
+"passcodeSetDisclosure" = "Setting a passcode encrypts your vault key shares on this device. Older versions of Vultisig cannot sign with them until you remove it.";
 "passcodeSetTitle" = "Set passcode";
 "passcodeStorageError" = "The passcode could not be read on this device. Restore your vault from a backup.";
 "password" = "Password";
