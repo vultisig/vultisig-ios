@@ -242,12 +242,14 @@ enum SuiCoinType {
 }
 
 private struct SuiStructTagParser {
+    private static let maximumTypeDepth = 64
     private static let primitiveTypes: Set<String> = [
         "address", "bool", "signer", "u8", "u16", "u32", "u64", "u128", "u256"
     ]
 
     private let characters: [Character]
     private var index = 0
+    private var typeDepth = 0
 
     init(_ value: String) {
         characters = Array(value)
@@ -279,6 +281,10 @@ private struct SuiStructTagParser {
     }
 
     private mutating func parseTypeTag() -> Bool {
+        guard typeDepth < Self.maximumTypeDepth else { return false }
+        typeDepth += 1
+        defer { typeDepth -= 1 }
+
         if consume("vector") {
             guard consume("<"), parseTypeTag(), consume(">") else { return false }
             return true

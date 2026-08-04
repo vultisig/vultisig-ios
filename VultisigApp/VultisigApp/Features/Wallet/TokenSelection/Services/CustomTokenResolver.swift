@@ -71,16 +71,17 @@ private struct SuiCustomTokenResolverStrategy: CustomTokenResolver {
     func fetchInfo(contract: String) async throws -> CoinMeta? {
         let coinType = contract.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !SuiCoinType.isNative(coinType) else { return nil }
-        guard let metadata = try await metadataProvider.getCoinMetadata(coinType: coinType),
-              !metadata.symbol.isEmpty else {
-            return nil
-        }
 
         if let knownToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.chain == .sui && !$0.contractAddress.isEmpty &&
                 SuiCoinType.matches($0.contractAddress, coinType)
         }) {
             return knownToken
+        }
+
+        guard let metadata = try await metadataProvider.getCoinMetadata(coinType: coinType),
+              !metadata.symbol.isEmpty else {
+            return nil
         }
 
         return CoinMeta(

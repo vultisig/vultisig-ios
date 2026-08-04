@@ -44,6 +44,11 @@ final class SuiCustomTokenResolverTests: XCTestCase {
 
     func testStructTagValidationMatchesMoveTypeGrammar() {
         let fullAddress = "0x" + String(repeating: "a", count: 64)
+        let excessiveNesting = "0x2::wrapper::Wrapped<" +
+            String(repeating: "vector<", count: 65) +
+            "u8" +
+            String(repeating: ">", count: 65) +
+            ">"
         let validTags = [
             "0x2::sui::SUI",
             "2::sui::SUI",
@@ -60,6 +65,7 @@ final class SuiCustomTokenResolverTests: XCTestCase {
             "0x2::sui::_SUI",
             "0x2 ::sui::SUI",
             "0x2::sui::SUI<unknown>",
+            excessiveNesting,
             "0x\(String(repeating: "a", count: 65))::sui::SUI"
         ]
 
@@ -102,14 +108,15 @@ final class SuiCustomTokenResolverTests: XCTestCase {
         XCTAssertNil(token)
     }
 
-    func testResolverPrefersCuratedMetadataForKnownCoinType() async throws {
+    func testResolverReturnsCuratedMetadataWithoutRPCForKnownCoinType() async throws {
         let knownToken = try XCTUnwrap(TokensStore.TokenSelectionAssets.first {
             $0.chain == .sui && $0.ticker == "CETUS"
         })
         let shortCoinType = "0x" + String(knownToken.contractAddress.dropFirst(3))
-        let rpcMetadata = SuiCoinMetadata(decimals: 1, symbol: "WRONG", iconUrl: nil)
-        let provider = StubSuiMetadataProvider(expectedCoinType: shortCoinType, result: rpcMetadata)
-        let resolver = CustomTokenResolverFactory.make(chain: .sui, suiMetadataProvider: provider)
+        let resolver = CustomTokenResolverFactory.make(
+            chain: .sui,
+            suiMetadataProvider: FailingSuiMetadataProvider()
+        )
 
         let fetchedToken = try await resolver.fetchInfo(contract: shortCoinType)
         let token = try XCTUnwrap(fetchedToken)
@@ -174,6 +181,13 @@ private struct StubSuiMetadataProvider: SuiCoinMetadataProviding {
 
 private enum StubSuiMetadataError: Error {
     case unexpectedCoinType(String)
+    case unexpectedRequest
+}
+
+private struct FailingSuiMetadataProvider: SuiCoinMetadataProviding {
+    func getCoinMetadata(coinType _: String) async throws -> SuiCoinMetadata? { // swiftlint:disable:this async_without_await
+        throw StubSuiMetadataError.unexpectedRequest
+    }
 }
 
 private struct SuiMetadataRPCResolver: RPCEndpointResolving {

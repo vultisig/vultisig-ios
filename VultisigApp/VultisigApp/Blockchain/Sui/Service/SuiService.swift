@@ -48,9 +48,14 @@ class SuiService: SuiCoinMetadataProviding {
     /// computed per access so a runtime override change is picked up live (the
     /// shared mirror updates without a relaunch).
     private let resolver: RPCEndpointResolving
+    private let httpClient: HTTPClientProtocol
 
-    init(resolver: RPCEndpointResolving = CustomRPCStore.shared) {
+    init(
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        httpClient: HTTPClientProtocol = HTTPClient()
+    ) {
         self.resolver = resolver
+        self.httpClient = httpClient
     }
 
     /// The override-aware Sui JSON-RPC URL. Falls back to the default host when
@@ -259,18 +264,16 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata? {
-        let data = try await Utils.PostRequestRpc(
-            rpcURL: rpcURL,
-            method: "suix_getCoinMetadata",
-            params: [coinType]
+        let response = try await httpClient.request(
+            SuiAPI(baseURL: rpcURL, endpoint: .coinMetadata(coinType: coinType)),
+            responseType: SuiCoinMetadataResponse.self
         )
-        let response = try jsonDecoder.decode(SuiCoinMetadataResponse.self, from: data)
 
-        if let error = response.error {
+        if let error = response.data.error {
             throw SuiCoinMetadataError.rpc(error.message)
         }
 
-        return response.result
+        return response.data.result
     }
 
     func getAllTokensWithMetadata(address: String) async throws -> [CoinMeta] {
