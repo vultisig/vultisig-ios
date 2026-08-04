@@ -219,7 +219,7 @@ extension PasscodeEntryView {
         case "⌫":
             Button(action: deleteLast) {
                 Image(systemName: "delete.left")
-                    .font(.system(size: 24, weight: .regular))
+                    .font(Theme.fonts.keypadGlyph)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .frame(width: keyDiameter, height: keyDiameter)
                     .contentShape(Circle())
@@ -232,7 +232,7 @@ extension PasscodeEntryView {
                 append(key)
             } label: {
                 Text(key)
-                    .font(.system(size: 32, weight: .regular, design: .rounded))
+                    .font(Theme.fonts.keypadDigit)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .frame(width: keyDiameter, height: keyDiameter)
                     .contentShape(Circle())

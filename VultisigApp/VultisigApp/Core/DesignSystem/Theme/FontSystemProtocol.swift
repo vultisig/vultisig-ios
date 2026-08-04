@@ -42,4 +42,21 @@ public protocol FontSystemProtocol {
     var priceBodyL: Font { get }
     var priceFootnote: Font { get }
     var priceCaption: Font { get }
+
+    /// The passcode keypad, and the one place this scale leaves the brand faces
+    /// on purpose.
+    ///
+    /// The control exists to read as *the system passcode keypad* — same
+    /// numerals, same weight, same rounded face the platform uses — so that
+    /// entering a passcode here feels like entering one anywhere else on the
+    /// device. Brockman would be more consistent with the rest of the app and
+    /// less consistent with the thing this is imitating.
+    ///
+    /// Named here rather than spelled at the call site so the deviation is a
+    /// recorded decision in the design system instead of a magic number in a
+    /// view.
+    var keypadDigit: Font { get }
+    /// The keypad's backspace glyph, smaller than a digit the way the platform's
+    /// own keypad draws it.
+    var keypadGlyph: Font { get }
 }

@@ -42,4 +42,7 @@ struct FontSystem: FontSystemProtocol {
     var priceBodyL: Font { FontStyle.satoshiMedium.size(18) }
     var priceFootnote: Font { FontStyle.satoshiMedium.size(13) }
     var priceCaption: Font { FontStyle.satoshiMedium.size(12) }
+
+    var keypadDigit: Font { .system(size: 32, weight: .regular, design: .rounded) }
+    var keypadGlyph: Font { .system(size: 24, weight: .regular) }
 }
