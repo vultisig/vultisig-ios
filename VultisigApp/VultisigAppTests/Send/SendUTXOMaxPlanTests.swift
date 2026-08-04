@@ -139,6 +139,8 @@ final class SendUTXOMaxPlanTests: XCTestCase {
         vm.setMaxAmount(percentage: 100)
         await vm.feeRefineTask?.value
 
+        XCTAssertEqual(interactor.calculateMaxSendPlanCalls.count, 1,
+                       "the fill below is the optimistic one only if a plan was actually attempted")
         XCTAssertEqual(vm.amount.replacingOccurrences(of: ",", with: ".").toDecimal(), Decimal(string: "1"),
                        "a flaky lookup must keep the optimistic full-balance fill")
         XCTAssertFalse(vm.showAmountAlert)
@@ -179,6 +181,8 @@ final class SendUTXOMaxPlanTests: XCTestCase {
 
         await vm.feeRefineTask?.value
 
+        XCTAssertEqual(interactor.calculateMaxSendPlanCalls.count, 1,
+                       "the plan must have resolved, or there was nothing to stand down")
         XCTAssertEqual(vm.amount, "0.2", "a superseded plan must not overwrite a newer keystroke")
     }
 
@@ -338,6 +342,8 @@ final class SendUTXOMaxPlanTests: XCTestCase {
         vm.isAmountCorrect = true
 
         _ = try? await vm.validateForm()
+        XCTAssertEqual(interactor.buildKeysignPayloadCalls.count, 1,
+                       "the build must have reached the point the gate sits at, or nothing was skipped")
         XCTAssertTrue(interactor.plannedOutcomeCalls.isEmpty)
     }
 

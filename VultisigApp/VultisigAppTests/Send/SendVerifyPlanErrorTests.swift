@@ -56,6 +56,9 @@ final class SendVerifyPlanErrorTests: XCTestCase {
         let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
         await vm.loadGasInfoForSending()
 
+        // Every flag below reads the same on a load that simply succeeded, so
+        // pin that the cancelling call was made at all.
+        XCTAssertEqual(interactor.calculatePlanFeeCalls.count, 1)
         XCTAssertFalse(vm.showAlert, "a cancelled load must not raise an alert")
         XCTAssertEqual(vm.errorMessage, "")
         XCTAssertFalse(vm.isCalculatingFee)
@@ -83,11 +86,19 @@ final class SendVerifyPlanErrorTests: XCTestCase {
     func testFailedLoadKeepsSignDisabledEvenAfterBothChecksAreTicked() async {
         let interactor = MockSendInteractor()
         interactor.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: true) }
-        interactor.calculatePlanFeeStub = { _, _ in throw URLError(.timedOut) }
+        interactor.calculateMaxSendPlanStub = { _, _ in throw URLError(.timedOut) }
 
-        let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
+        // A max send: the load branches on `tx.sendMaxAmount`, so a non-max
+        // fixture would take the flat-fee path and never reach the refinement
+        // this test is about.
+        let transaction = makeUTXOTransaction().copy(amount: "1", sendMaxAmount: true)
+        let vm = SendCryptoVerifyViewModel(transaction: transaction, interactor: interactor)
         await vm.loadGasInfoForSending()
 
+        XCTAssertEqual(interactor.calculateMaxSendPlanCalls.count, 1,
+                       "the failure under test is the max-send refinement")
+        XCTAssertTrue(interactor.calculatePlanFeeCalls.isEmpty,
+                      "a max send takes its fee off the plan, never the flat-fee path")
         XCTAssertTrue(vm.hasLoadError)
         vm.isAddressCorrect = true
         vm.isAmountCorrect = true
@@ -135,6 +146,8 @@ final class SendVerifyPlanErrorTests: XCTestCase {
         failure = CancellationError()
         await vm.loadGasInfoForSending()
 
+        XCTAssertEqual(interactor.calculatePlanFeeCalls.count, 2,
+                       "the retry must have run, or the hold was never given a chance to release")
         XCTAssertTrue(vm.hasLoadError,
                       "only a load that runs to completion may release the hold")
         vm.isAddressCorrect = true
@@ -150,6 +163,9 @@ final class SendVerifyPlanErrorTests: XCTestCase {
         let vm = SendCryptoVerifyViewModel(transaction: makeUTXOTransaction(), interactor: interactor)
         await vm.loadGasInfoForSending()
 
+        // `hasLoadError` starts false, so without this the assertion below would
+        // also hold for a load that never reached the cancelling call.
+        XCTAssertEqual(interactor.calculatePlanFeeCalls.count, 1)
         XCTAssertFalse(vm.hasLoadError,
                        "a superseded load is not a failure — the newer pass owns the outcome")
     }

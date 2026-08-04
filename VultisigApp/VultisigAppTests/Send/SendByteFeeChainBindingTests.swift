@@ -88,7 +88,7 @@ final class SendByteFeeChainBindingTests: XCTestCase {
                      "the signed transaction must not price LTC at a rate pinned for BTC")
     }
 
-    func testChainSpecificRequestDropsAForeignChainRate() async {
+    func testChainSpecificRequestDropsAForeignChainRate() async throws {
         let interactor = MockSendInteractor()
         let vm = SendFormFixture.make(coin: SendFormFixture.makeBTC(), interactor: interactor)
         vm.customByteFee = BigInt(300)
@@ -98,7 +98,11 @@ final class SendByteFeeChainBindingTests: XCTestCase {
         vm.setMaxAmount(percentage: 100)
         await vm.feeRefineTask?.value
 
-        XCTAssertNil(interactor.calculateMaxSendPlanCalls.last?.customByteFee,
+        // Unwrap first: an absent request would make the nil-rate assertion below
+        // hold for the wrong reason — the refine never having run at all.
+        let request = try XCTUnwrap(interactor.calculateMaxSendPlanCalls.last,
+                                    "the refine must have planned, or there is no request to inspect")
+        XCTAssertNil(request.customByteFee,
                      "the fee request must not carry a rate pinned for another chain")
     }
 }

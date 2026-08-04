@@ -461,6 +461,9 @@ final class SendMaxAmountStickinessTests: XCTestCase {
 
         await vm.feeRefineTask?.value
 
+        // Typing already wrote "0.3", so without this the assertion below would
+        // also hold for a refine that never planned anything to stand down from.
+        XCTAssertEqual(interactor.calculateMaxSendPlanCalls.count, 1)
         XCTAssertEqual(vm.amount, "0.3",
                        "a settling max-fee refine must not overwrite a newer keystroke")
 
