@@ -28,7 +28,13 @@ enum SolanaTransactionParser {
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "Token Program",
         "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb": "Token-2022 Program",
         "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL": "Associated Token Program",
-        "ComputeBudget111111111111111111111111111111": "Compute Budget Program"
+        "ComputeBudget111111111111111111111111111111": "Compute Budget Program",
+        // Kamino Earn: the vaults program the app invokes, and the farms program
+        // its deposits auto-stake into. Without these two the verify screen shows
+        // a bare base58 program id for the instructions that actually move the
+        // user's money.
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd": "Kamino Vaults Program",
+        "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr": "Kamino Farms Program"
     ]
 
     static func parse(base64Transaction: String) throws -> ParsedSolanaTransaction {
@@ -138,12 +144,16 @@ enum SolanaTransactionParser {
             return "Create Associated Token Account"
         }
 
-        // Compute Budget Program
+        // Compute Budget Program. Discriminant 0 is the deprecated `RequestUnits`
+        // instruction, so the limit and price instructions are 2 and 3 — not 1
+        // and 2. Getting this wrong mislabels every priority-fee instruction the
+        // app injects, which is what a co-signer reads on the verify screen.
         if programId == "ComputeBudget111111111111111111111111111111" {
             switch discriminator {
-            case 0: return "Request Heap Frame"
-            case 1: return "Set Compute Unit Limit"
-            case 2: return "Set Compute Unit Price"
+            case ComputeBudgetInstruction.requestUnitsDeprecated: return "Request Units (Deprecated)"
+            case ComputeBudgetInstruction.requestHeapFrame: return "Request Heap Frame"
+            case ComputeBudgetInstruction.setUnitLimit: return "Set Compute Unit Limit"
+            case ComputeBudgetInstruction.setUnitPrice: return "Set Compute Unit Price"
             default: return "Compute Budget (\(discriminator))"
             }
         }

@@ -36,6 +36,15 @@ struct SolanaAPI: TargetType {
 
     enum Method {
         case sendTransaction(encodedTransaction: String)
+        /// Dry-runs a transaction against the current bank without broadcasting.
+        /// Used to prove a third-party-built transaction actually executes — and
+        /// to measure its compute usage — before it is put in front of a signer.
+        ///
+        /// `replaceRecentBlockhash` lets the node substitute its own blockhash so
+        /// a transaction can be simulated before the pre-keysign refresh
+        /// installs a fresh one; passing `false` simulates the exact bytes,
+        /// which is what proves a spliced blockhash is live.
+        case simulateTransaction(encodedTransaction: String, replaceRecentBlockhash: Bool)
         case getBalance(address: String)
         case getRecentPrioritizationFees
         case getLatestBlockhash
@@ -104,6 +113,27 @@ struct SolanaAPI: TargetType {
                 rpcEnvelope(
                     method: "sendTransaction",
                     params: [encodedTransaction, ["encoding": "base64", "preflightCommitment": "confirmed"]]
+                ),
+                .jsonEncoding
+            )
+        case .simulateTransaction(let encodedTransaction, let replaceRecentBlockhash):
+            // `sigVerify` is pinned off: the transactions this simulates still
+            // carry an all-zero placeholder signature, and the RPC rejects the
+            // combination of signature verification with blockhash replacement
+            // outright. Commitment matches the blockhash fetch so the simulation
+            // runs against the same bank the broadcast preflight will.
+            return .requestParameters(
+                rpcEnvelope(
+                    method: "simulateTransaction",
+                    params: [
+                        encodedTransaction,
+                        [
+                            "encoding": "base64",
+                            "commitment": "confirmed",
+                            "sigVerify": false,
+                            "replaceRecentBlockhash": replaceRecentBlockhash
+                        ]
+                    ]
                 ),
                 .jsonEncoding
             )
@@ -228,6 +258,91 @@ struct SolanaSendTransactionResponse: Decodable {
                 stringValue = try? container.decode(String.self)
             }
         }
+    }
+}
+
+/// A JSON value of unknown shape, decoded far enough to be rendered.
+///
+/// `simulateTransaction`'s `err` is polymorphic: `null` on success, a bare string
+/// (`"BlockhashNotFound"`) for transaction-level failures, and an object
+/// (`{"InstructionError":[3,{"Custom":6003}]}`) for program failures. The
+/// interesting part — which instruction failed and with what code — lives inside
+/// the object form, so it cannot be flattened to a `String?`.
+indirect enum SolanaRPCJSONValue: Decodable, Equatable {
+    case null
+    case bool(Bool)
+    case number(String)
+    case string(String)
+    case array([SolanaRPCJSONValue])
+    case object([String: SolanaRPCJSONValue])
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode(Int64.self) {
+            self = .number(String(value))
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(String(value))
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode([SolanaRPCJSONValue].self) {
+            self = .array(value)
+        } else if let value = try? container.decode([String: SolanaRPCJSONValue].self) {
+            self = .object(value)
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unsupported JSON value in Solana RPC response"
+            )
+        }
+    }
+
+    /// Stable rendering for logs and error messages. Object keys are sorted so
+    /// the same failure always reads the same way.
+    var text: String {
+        switch self {
+        case .null:
+            return "null"
+        case .bool(let value):
+            return value ? "true" : "false"
+        case .number(let value):
+            return value
+        case .string(let value):
+            return value
+        case .array(let values):
+            return "[" + values.map(\.text).joined(separator: ", ") + "]"
+        case .object(let values):
+            let body = values.sorted { $0.key < $1.key }
+                .map { "\($0.key): \($0.value.text)" }
+                .joined(separator: ", ")
+            return "{" + body + "}"
+        }
+    }
+}
+
+/// `simulateTransaction` payload. `result` and `error` are mutually exclusive:
+/// `error` is a transport-level JSON-RPC failure, while a transaction that ran
+/// and failed comes back as a successful `result` with a non-null `value.err`.
+struct SolanaSimulateTransactionResponse: Decodable {
+    let result: Result?
+    let error: RPCError?
+
+    struct Result: Decodable {
+        let value: Value
+
+        struct Value: Decodable {
+            let err: SolanaRPCJSONValue?
+            let logs: [String]?
+            let unitsConsumed: UInt64?
+        }
+    }
+
+    struct RPCError: Decodable {
+        let code: Int
+        let message: String
     }
 }
 

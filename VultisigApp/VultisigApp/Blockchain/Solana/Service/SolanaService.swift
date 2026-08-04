@@ -32,6 +32,17 @@ enum SolanaRetryableError: Error, LocalizedError, RetryableBroadcastError {
     }
 }
 
+/// Outcome of a `simulateTransaction` dry run.
+struct SolanaSimulationResult: Equatable {
+    /// `nil` when the transaction executed cleanly. Otherwise the rendered
+    /// `err`, e.g. `BlockhashNotFound` or `{InstructionError: [3, {Custom: 6003}]}`.
+    let failure: String?
+    let unitsConsumed: UInt64?
+    let logs: [String]
+
+    var succeeded: Bool { failure == nil }
+}
+
 class SolanaService {
     static let shared = SolanaService()
 
@@ -144,6 +155,47 @@ class SolanaService {
         // Unreachable: the loop either returns a result or throws on the final
         // attempt. Present to satisfy the non-optional control-flow analysis.
         return nil
+    }
+
+    /// Dry-runs a transaction against the current bank. Returns the outcome
+    /// rather than throwing on an on-chain failure — "this transaction would
+    /// fail, and here is why" is a result the caller acts on, not a transport
+    /// error. A JSON-RPC transport failure still throws.
+    ///
+    /// - Parameter replaceRecentBlockhash: `true` lets the node substitute its
+    ///   own blockhash, so a transaction can be checked before the pre-keysign
+    ///   refresh gives it a live one. `false` simulates the exact bytes.
+    func simulateTransaction(
+        base64Transaction: String,
+        replaceRecentBlockhash: Bool
+    ) async throws -> SolanaSimulationResult {
+        let response = try await httpClient.request(
+            api(.simulateTransaction(
+                encodedTransaction: base64Transaction,
+                replaceRecentBlockhash: replaceRecentBlockhash
+            )),
+            responseType: SolanaSimulateTransactionResponse.self
+        )
+
+        if let error = response.data.error {
+            throw SolanaServiceError.rpcError(message: error.message, code: error.code)
+        }
+        guard let value = response.data.result?.value else {
+            throw SolanaServiceError.rpcError(message: "simulateTransaction returned no result", code: -1)
+        }
+
+        let logs = value.logs ?? []
+        if let failure = value.err {
+            logger.warning(
+                "solana simulation failed: \(failure.text, privacy: .public)\nlogs:\n\(logs.suffix(8).joined(separator: "\n"), privacy: .public)"
+            )
+        }
+
+        return SolanaSimulationResult(
+            failure: value.err?.text,
+            unitsConsumed: value.unitsConsumed,
+            logs: logs
+        )
     }
 
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
