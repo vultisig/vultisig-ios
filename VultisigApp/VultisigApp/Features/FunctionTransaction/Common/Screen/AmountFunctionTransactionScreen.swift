@@ -26,6 +26,11 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     let amountDecimals: Int
     @StateObject var amountField: FormField
     @Binding var validForm: Bool
+    /// Hard-disables Continue, forwarded to `FormScreen`. For flows with a
+    /// pre-flight condition no amount can satisfy — a position that cannot be
+    /// withdrawn at all — so the button reads as disabled rather than silently
+    /// refusing. Defaults to `false`, leaving every existing caller unchanged.
+    let isContinueDisabled: Bool
     var onVerify: () -> Void
     var customViewPosition: AmountTextField<CustomView>.CustomViewPosition
     var customView: () -> CustomView
@@ -43,6 +48,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         amountDecimals: Int = 4,
         amountField: FormField,
         validForm: Binding<Bool>,
+        isContinueDisabled: Bool = false,
         customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,
         onVerify: @escaping () -> Void,
         @ViewBuilder customView: @escaping () -> CustomView,
@@ -56,6 +62,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         self.amountDecimals = amountDecimals
         self._amountField = StateObject(wrappedValue: amountField)
         self._validForm = validForm
+        self.isContinueDisabled = isContinueDisabled
         self.onVerify = onVerify
         self.customViewPosition = customViewPosition
         self.customView = customView
@@ -66,6 +73,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         FormScreen(
             title: title,
             validForm: $validForm,
+            isContinueDisabled: isContinueDisabled,
             onContinue: onContinue
         ) {
             topView()

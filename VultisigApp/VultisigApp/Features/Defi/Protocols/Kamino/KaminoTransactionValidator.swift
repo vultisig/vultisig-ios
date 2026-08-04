@@ -298,11 +298,8 @@ struct KaminoTransactionValidator {
     /// already exists, a token account that stays open. Everything that decides
     /// where money moves is required, and anything not listed at all is refused.
     ///
-    /// The withdraw sequence is the one that is not yet complete: every observed
-    /// withdraw spent unstaked shares, while every deposit auto-stakes, so the
-    /// farm-staked withdraw has never been seen. If it carries a farm unstake,
-    /// this refuses it — deliberately, until the real shape has been observed
-    /// rather than guessed.
+    /// The withdraw sequence is the one that is not yet complete — see the
+    /// extension point marked inside the `.withdraw` case below.
     private static func expectedSequence(for intent: KaminoTransactionIntent) -> [Step] {
         // The API emits no ComputeBudget instructions. The two below are the
         // ones the app injects, so they are expected exactly when a fee was
@@ -331,8 +328,40 @@ struct KaminoTransactionValidator {
             }
 
         case .withdraw:
+            // EXTENSION POINT — the farm-staked withdraw.
+            //
+            // Every withdraw ever observed spent UNSTAKED shares, while every
+            // deposit auto-stakes into the vault's farm. So the sequence below
+            // is the only one that has been seen, and it is not the one the
+            // users of these vaults are in: a withdraw of staked shares must
+            // unstake them first, and neither the instruction it uses nor its
+            // position in this list is known.
+            //
+            // A transaction carrying that unstake is therefore refused here as
+            // an instruction the template does not name. That is deliberate. A
+            // guessed step would validate the very shape it was guessed from and
+            // assert nothing, which is worse than refusing.
+            //
+            // Completing it is a single edit, and it needs exactly three things,
+            // all of which come from decoding ONE real mainnet withdraw of a
+            // farm-staked position:
+            //
+            //   1. a `Step.Kind` case for the unstake (its program is `farms`,
+            //      its discriminator `sha256("global:<name>")[0..<8]`, added to
+            //      `KaminoInstructionDiscriminator` and to `Context.matches`);
+            //   2. its account layout — at minimum the owner, the farm and the
+            //      user's share account — checked in `validateInstruction` the
+            //      way `validateFarmsStake` checks the deposit's;
+            //   3. the step inserted at its observed position below, `required`
+            //      when the shares being spent are staked.
+            //
+            // `KaminoWithdrawEligibility.farmStaked` is the form-level half of
+            // the same gap and comes out at the same time.
             steps.append(Step(.createTokenAccount, required: false, repeatable: true))
             steps.append(Step(.kvaultWithdraw, required: true, repeatable: false))
+            // Only on a full withdraw: the emptied token account is closed and
+            // its rent returned. The sampled vector is partial and carries none,
+            // so this is optional rather than required.
             steps.append(Step(.closeTokenAccount, required: false, repeatable: false))
         }
 
