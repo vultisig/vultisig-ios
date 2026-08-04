@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Security
 @testable import VultisigApp
 
 /// In-memory `KeychainService` so migration-ordering behaviour can be driven
@@ -38,12 +39,23 @@ final class MockKeychainService: KeychainService {
     /// the read-back verification in `DefaultKeyshareKeyStore` can be exercised.
     var dropsKeyshareDataKeyWrites = false
 
+    /// Same, for the wrapped copy: the write is accepted and nothing is stored,
+    /// so the read-back verification that guards `setPasscode` can be driven.
+    var dropsWrappedKeyshareDataKeyWrites = false
+
     /// When set, deletion of the clear data key silently does nothing, so the
     /// verified-deletion path can be exercised.
     var ignoresKeyshareDataKeyDeletion = false
 
     /// Same, for the wrapped copy, so the disable rollback can be exercised.
     var ignoresWrappedKeyshareDataKeyDeletion = false
+
+    /// When set, deleting the wrapped copy **succeeds** but leaves the item
+    /// unreadable. `deleteWrappedDataKey` verifies against a *confirmed*
+    /// absence, so it reports `deletionFailed` over a deletion that in fact
+    /// happened — the case a rollback must not read as "the wrapper is still
+    /// there".
+    var wrappedKeyshareDataKeyBecomesUnreadableOnDeletion = false
 
     /// When set, clearing the attempt state silently does nothing, so the
     /// verified clear in `KeyshareInstallReconciler` can be exercised.
@@ -133,7 +145,12 @@ final class MockKeychainService: KeychainService {
 
     func setWrappedKeyshareDataKey(_ data: Data?) {
         writes.append("wrappedKeyshareDataKey")
+        if data != nil && dropsWrappedKeyshareDataKeyWrites { return }
         if data == nil && ignoresWrappedKeyshareDataKeyDeletion { return }
+        if data == nil && wrappedKeyshareDataKeyBecomesUnreadableOnDeletion {
+            wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+            return
+        }
         wrappedKeyshareDataKeyResult = Self.result(data)
     }
 

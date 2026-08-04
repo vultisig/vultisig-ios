@@ -27,18 +27,37 @@ enum KeyshareSweeperError: Error, Equatable {
 /// mistake here is lost funds rather than a bad screen.
 ///
 /// `PasscodeService` is an `actor` and `Vault` is a SwiftData `@Model` that may
-/// only be touched on the main actor, so the sweep is its own `@MainActor` type
-/// behind this protocol and is injected rather than reached for.
-@MainActor
+/// only be touched on the main actor, so the sweep is main-actor work behind
+/// this protocol and is injected rather than reached for.
+///
+/// The isolation is stated **per requirement** rather than on the protocol.
+/// Attributing the protocol would infer main-actor isolation onto the whole
+/// conforming type, singleton included — and the actor that injects one has to
+/// name that singleton as a default argument, which no `await` can reach.
 protocol KeyshareSweeping {
     /// Seals every plaintext share **and authenticates every already-sealed
     /// one**. See ``KeyshareSweeper`` for why the second half is not optional.
-    func sealAll() throws
+    @MainActor func sealAll() throws
 
     /// Opens every sealed share back to plaintext. The GCM tag check inside
     /// `open` *is* the verification here — a successful open is proof that the
     /// value was sealed under the key in hand.
-    func unsealAll() throws
+    @MainActor func unsealAll() throws
+
+    /// Whether any stored share is already sealed.
+    ///
+    /// Asked before a fresh data key is minted, and it is the last guard against
+    /// the worst outcome this feature has: a sealed share with no readable
+    /// wrapper means a key already exists somewhere, and a replacement opens
+    /// none of the ciphertext the original produced. A `Bool` is the right
+    /// answer here — unlike a plaintext/sealed *census*, this asks a question
+    /// about the stored form rather than about whether a value verifies.
+    ///
+    /// - Throws: when the store cannot be read, **including when it is carrying
+    ///   unsaved work**. Not knowing must never be mistaken for "nothing is
+    ///   sealed": a pending edit or deletion can hide a share that is still
+    ///   sealed on disk, and the answer is used to license minting a key.
+    @MainActor func hasSealedShare() throws -> Bool
 }
 
 /// The sweep, in two phases over a context nobody else is using.
@@ -71,7 +90,12 @@ protocol KeyshareSweeping {
 /// retries. Autosave — on by default — is suspended for the transaction, since
 /// phase two dirties every swept vault at once and only the explicit save that
 /// follows may write them.
-@MainActor
+///
+/// **The isolation is on the methods, not on the type.** All of the *work* is
+/// main-actor work, but the value itself is two immutable references, and
+/// `PasscodeService` is an `actor` that has to hold one as a stored property —
+/// which a main-actor-isolated singleton could not be handed to without a hop
+/// in the middle of its initializer.
 final class KeyshareSweeper: KeyshareSweeping {
 
     static let shared = KeyshareSweeper()
@@ -87,6 +111,30 @@ final class KeyshareSweeper: KeyshareSweeping {
         self.context = context
     }
 
+    @MainActor
+    func hasSealedShare() throws -> Bool {
+        guard let context = context() else {
+            throw KeyshareSweeperError.missingModelContext
+        }
+
+        // The same refusal `sweep` makes, and for a sharper reason. A fetch
+        // answers from the context's *pending* state, so an unsaved edit or an
+        // uncommitted deletion can present a vault as plaintext — or not at all
+        // — while the durable row is still sealed. This answer licenses minting
+        // a fresh data key, and a key minted over a sealed share that then comes
+        // back from disk opens nothing.
+        guard !context.hasChanges else {
+            logger.warning("Sealed-share scan refused: the store has unsaved changes")
+            throw KeyshareSweeperError.busy
+        }
+
+        return try context.fetch(FetchDescriptor<Vault>())
+            .contains { vault in
+                vault.keyshares.contains { protector.isSealed($0.keyshare) }
+            }
+    }
+
+    @MainActor
     func sealAll() throws {
         try sweep(describedAs: "seal") { stored in
             guard !self.protector.isSealed(stored) else {
@@ -113,6 +161,7 @@ final class KeyshareSweeper: KeyshareSweeping {
         }
     }
 
+    @MainActor
     func unsealAll() throws {
         try sweep(describedAs: "unseal") { stored in
             guard self.protector.isSealed(stored) else { return nil }
@@ -154,6 +203,7 @@ private extension KeyshareSweeper {
 
     /// - Parameter transform: the new value for a share's stored bytes, or
     ///   `nil` to leave the share exactly as it is.
+    @MainActor
     func sweep(describedAs operation: String, _ transform: (String) throws -> String?) throws {
         guard let context = context() else {
             throw KeyshareSweeperError.missingModelContext
@@ -202,6 +252,7 @@ private extension KeyshareSweeper {
     /// The vault's shares after the transform, or `nil` when none of them
     /// changed. Builds a whole array for the caller to assign through the
     /// property setter — see rule 2.
+    @MainActor
     func rewrittenShares(of vault: Vault, _ transform: (String) throws -> String?) throws -> [KeyShare]? {
         var result: [KeyShare] = []
         var changed = false

@@ -36,8 +36,9 @@ enum KeyshareKeyStoreError: Error, Equatable {
 ///
 /// The unwrapped-key API (`loadDataKey` / `storeDataKey` / `deleteDataKey`) is
 /// what remains of an earlier design that kept a clear copy alongside the
-/// shares. `disablePasscode` is its last writer and stops being one when the
-/// disable path is rewired to unseal instead.
+/// shares. **Nothing writes one any more** — the disable path opens every share
+/// instead of stashing the key — so what is left is a read path that recognises
+/// an item inherited from such a build, and it goes with the item itself.
 ///
 /// **Every read answers with a ``KeychainReadResult``, and the distinction is
 /// load-bearing rather than decorative.** `.absent` is the only answer that

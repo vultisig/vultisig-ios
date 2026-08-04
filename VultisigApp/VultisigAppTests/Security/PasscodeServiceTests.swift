@@ -5,16 +5,26 @@
 
 import CryptoKit
 import Security
+import SwiftData
 import XCTest
 @testable import VultisigApp
 
+/// Driven against a **real** `KeyshareSweeper` over an in-memory store rather
+/// than a stub, because the thing worth pinning is not that the service calls a
+/// collaborator — it is that a passcode set leaves no plaintext share behind and
+/// a passcode removal leaves no sealed one.
+@MainActor
 final class PasscodeServiceTests: XCTestCase {
 
+    private var token: TestContextToken!
+    private var context: ModelContext!
     private var keychain: MockKeychainService!
     private var keyStore: DefaultKeyshareKeyStore!
     private var session: KeyshareKeySession!
     private var protector: KeyshareProtector!
     private var lockService: AppLockService!
+    private var coordinator: KeyshareWriteCoordinator!
+    private var sweeper: KeyshareSweeper!
     private var defaults: UserDefaults!
     private var suiteName: String!
     private var sut: PasscodeService!
@@ -26,11 +36,15 @@ final class PasscodeServiceTests: XCTestCase {
     private let passcode = "12345"
     private let newPasscode = "98765"
     private let share = "eyJrZXlzaGFyZSI6ImRrbHMifQ=="
+    private let otherShare = "eyJrZXlzaGFyZSI6ImRrbHMtdHdvIn0="
 
     override func setUpWithError() throws {
         try super.setUpWithError()
         suiteName = "PasscodeServiceTests.\(UUID().uuidString)"
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+
+        token = try TestStore.installInMemoryContainer()
+        context = token.container.mainContext
 
         keychain = MockKeychainService()
         let store = DefaultKeyshareKeyStore(keychain: keychain)
@@ -39,78 +53,91 @@ final class PasscodeServiceTests: XCTestCase {
         session = keySession
         protector = KeyshareProtector(state: { keySession.currentState() })
         lockService = AppLockService(defaults: defaults)
+        coordinator = KeyshareWriteCoordinator()
+        sweeper = KeyshareSweeper(protector: protector, context: { [context] in context })
 
-        sut = PasscodeService(
-            keyStore: store,
-            session: keySession,
-            lockService: lockService,
-            limiter: PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime })
-        )
+        sut = makeService()
     }
 
     override func tearDown() {
         defaults.removePersistentDomain(forName: suiteName)
         sut = nil
+        sweeper = nil
+        coordinator = nil
         lockService = nil
         protector = nil
         session = nil
         keyStore = nil
         keychain = nil
+        context = nil
+        TestStore.restore(token)
+        token = nil
         defaults = nil
         suiteName = nil
         super.tearDown()
     }
 
-    /// Puts the app in the state the migration leaves it in: a data key exists
-    /// in the clear and a share is sealed under it.
-    @discardableResult
-    private func givenMigratedState() throws -> String {
-        let key = try keyStore.generateDataKey()
-        try keyStore.storeDataKey(key)
-        session.adopt(key)
-        return try protector.seal(share)
+    private func makeService(
+        keyStore: KeyshareKeyStoring? = nil,
+        sweeper: KeyshareSweeping? = nil
+    ) -> PasscodeService {
+        PasscodeService(
+            keyStore: keyStore ?? self.keyStore,
+            session: session,
+            lockService: lockService,
+            limiter: PasscodeAttemptLimiter(keychain: keychain, uptime: { self.uptime }),
+            coordinator: coordinator,
+            sweeper: sweeper ?? self.sweeper
+        )
     }
 
     // MARK: - Set
 
-    func testSetPasscodeReplacesTheClearKeyWithAWrappedOne() async throws {
-        try givenMigratedState()
-
+    func testSetPasscodeStoresTheWrappedKeyAndReportsItselfSet() async throws {
         try await sut.setPasscode(passcode)
 
-        XCTAssertAbsent(keyStore.loadDataKey(), "The clear copy must be gone")
         _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
         let isSet = await sut.isSet
         XCTAssertTrue(isSet)
     }
 
     func testSetPasscodeSwitchesTheLockMode() async throws {
-        try givenMigratedState()
-
         try await sut.setPasscode(passcode)
 
         XCTAssertEqual(lockService.mode, .passcode)
     }
 
-    func testSetPasscodeKeepsSharesReadableInTheSameSession() async throws {
-        let sealed = try givenMigratedState()
+    /// The invariant, in one assertion: with a passcode set, no stored share is
+    /// unsealed. Opt-in encryption makes an accessor bypass *silent* — it writes
+    /// plaintext and only breaks for passcode users — so this is the loud
+    /// failure that would otherwise be missing.
+    func testSetPasscodeSealsEveryStoredShare() async throws {
+        try givenVaults([("vault-one", [share, otherShare]), ("vault-two", [share])])
 
         try await sut.setPasscode(passcode)
 
-        XCTAssertEqual(try protector.open(sealed), share)
+        let stored = try storedShares()
+        XCTAssertEqual(stored.count, 3)
+        for value in stored {
+            XCTAssertTrue(protector.isSealed(value), "no stored share may stay plaintext behind a passcode")
+        }
+        XCTAssertEqual(try stored.map { try protector.open($0) }.sorted(), [share, share, otherShare].sorted())
     }
 
-    func testSetPasscodeRefusesWhenNothingIsEncryptedYet() async {
-        do {
-            try await sut.setPasscode(passcode)
-            XCTFail("Expected .noDataKey")
-        } catch {
-            XCTAssertEqual(error as? PasscodeError, .noDataKey)
-        }
+    /// Nothing to sweep is the common case — most people set a passcode on an
+    /// empty or freshly restored device.
+    func testSetPasscodeWithNoVaultsStoresTheWrapperAndNothingElse() async throws {
+        try await sut.setPasscode(passcode)
+
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertEqual(
+            Set(keychain.writes),
+            ["wrappedKeyshareDataKey", "passcodeAttemptState"],
+            "only the wrapper and the attempt counter may be touched"
+        )
     }
 
     func testSetPasscodeRefusesWhenOneIsAlreadySet() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
 
         do {
@@ -122,8 +149,6 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testSetPasscodeRejectsAWrongLength() async throws {
-        try givenMigratedState()
-
         for candidate in ["1234", "123456", "abcde", ""] {
             do {
                 try await sut.setPasscode(candidate)
@@ -134,11 +159,269 @@ final class PasscodeServiceTests: XCTestCase {
         }
     }
 
+    /// Never mint over evidence. A sealed share with no readable wrapper means a
+    /// key already exists somewhere; the fresh one minted here would open none
+    /// of what it sealed, and storing its wrapper would make that permanent.
+    func testSetPasscodeIsRefusedWhenAShareIsAlreadySealed() async throws {
+        let foreign = try AesGcmKeyshareCipher().seal(share, with: SymmetricKey(size: .bits256))
+        try givenVaults([("vault-one", [foreign])])
+        keychain.resetWrites()
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected .sealedSharesWithoutKey")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .sealedSharesWithoutKey)
+        }
+
+        XCTAssertEqual(keychain.writes, [], "no key may be minted over a store that is already sealed")
+        XCTAssertEqual(try storedShares(), [foreign])
+    }
+
+    /// A completed disable leaves nothing sealed, so the guard above does not
+    /// make the feature one-shot.
+    func testAPasscodeCanBeSetAgainAfterBeingRemoved() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        try await sut.disablePasscode(current: passcode)
+
+        try await sut.setPasscode(newPasscode)
+
+        XCTAssertEqual(lockService.mode, .passcode)
+        XCTAssertTrue(protector.isSealed(try XCTUnwrap(try storedShares().first)))
+    }
+
+    // MARK: - Set: interruption leaves a recoverable state
+
+    /// The failure the ordering exists for. A sweep that cannot finish must
+    /// leave the wrapper **and** the gate in place: deleting the wrapper would
+    /// strand whatever had already been sealed, and dropping back to
+    /// `.deviceAuth` would hide the passcode screen that the resume runs behind.
+    func testAFailedSweepKeepsTheWrapperAndThePasscodeGate() async throws {
+        let foreign = try AesGcmKeyshareCipher().seal(share, with: SymmetricKey(size: .bits256))
+        try givenVaults([("vault-one", [share])])
+
+        // Slipped in after the sealed-share guard has already run, so the sweep
+        // is what fails rather than the precondition.
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore) { [context] in
+            let vault = try XCTUnwrap(try context?.fetch(FetchDescriptor<Vault>()).first)
+            vault.keyshares = [KeyShare(pubkey: "vault-one-0", keyshare: foreign)]
+            try context?.save()
+        }
+
+        do {
+            try await makeService(keyStore: hooked).setPasscode(passcode)
+            XCTFail("Expected the sweep to fail")
+        } catch {
+            XCTAssertEqual(error as? KeyshareSweeperError, .verificationFailed(pubkey: "vault-one-0"))
+        }
+
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertEqual(lockService.mode, .passcode, "the gate the resume runs behind must be up")
+    }
+
+    /// The other suspension point, and the one a late generation capture would
+    /// miss: a lock landing while the store is scanned must win too, or the app
+    /// finishes the set with the key live in memory behind a lock screen.
+    func testALockDuringTheSealedShareScanWins() async throws {
+        try givenVaults([("vault-one", [share])])
+        let hooked = HookedKeyshareSweeper(wrapping: sweeper) { [session] in
+            session?.clear()
+        }
+
+        do {
+            try await makeService(sweeper: hooked).setPasscode(passcode)
+            XCTFail("Expected .cancelledByLock")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .cancelledByLock)
+        }
+
+        XCTAssertEqual(try storedShares(), [share], "nothing may be sealed under a key the lock discarded")
+        if case .unlocked = session.currentState() {
+            XCTFail("the lock must not have been undone")
+        }
+    }
+
+    /// A background lock landing mid-derivation wins, and the app is left in the
+    /// pending-passcode state rather than silently unlocked: wrapper durable,
+    /// gate up, key not adopted.
+    func testALockDuringKeyDerivationWinsAndLeavesPendingPasscode() async throws {
+        try givenVaults([("vault-one", [share])])
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore) { [session] in
+            session?.clear()
+        }
+
+        do {
+            try await makeService(keyStore: hooked).setPasscode(passcode)
+            XCTFail("Expected .cancelledByLock")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .cancelledByLock)
+        }
+
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertEqual(lockService.mode, .passcode)
+        XCTAssertEqual(try storedShares(), [share], "the lock stands, so nothing was sealed under a forgotten key")
+        if case .unlocked = session.currentState() {
+            XCTFail("the lock must not have been undone")
+        }
+    }
+
+    /// The wrapper has to be durable before a single share moves. A Keychain
+    /// that accepts the write and stores nothing must therefore abort the set
+    /// with the store untouched.
+    func testAWrapperThatCannotBeStoredSealsNothing() async throws {
+        try givenVaults([("vault-one", [share])])
+        keychain.dropsWrappedKeyshareDataKeyWrites = true
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected .persistenceFailed")
+        } catch {
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .persistenceFailed)
+        }
+
+        XCTAssertEqual(try storedShares(), [share])
+        XCTAssertNotEqual(lockService.mode, .passcode)
+    }
+
+    // MARK: - Serialization
+
+    /// Actors are reentrant at every `await`, so the lease — not the actor — is
+    /// what keeps two transitions apart. The refusal has to land **before** any
+    /// Keychain write, mode change or share rewrite, which is what the
+    /// after-assertions pin: an implementation that took the lease late would
+    /// still throw `.busy` and would still be wrong.
+    func testATransitionIsRefusedWhileAnotherIsHeld() async throws {
+        try givenVaults([("vault-one", [share])])
+        keychain.resetWrites()
+        let lease = try coordinator.beginTransition()
+        defer { coordinator.end(lease) }
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected .busy")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .busy)
+        }
+
+        XCTAssertEqual(keychain.writes, [])
+        XCTAssertEqual(try storedShares(), [share])
+        XCTAssertNotEqual(lockService.mode, .passcode)
+    }
+
+    /// The interval a per-write counter misses: TSS hands over a share long
+    /// before `commitVault` stores it, and a passcode set landing in between
+    /// would sweep a store that has never seen it.
+    func testATransitionIsRefusedWhileAVaultCreationEpisodeIsOpen() async throws {
+        try givenVaults([("vault-one", [share])])
+        keychain.resetWrites()
+        let episode = try XCTUnwrap(coordinator.beginEpisode())
+        defer { coordinator.end(episode) }
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected .busy")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .busy)
+        }
+
+        XCTAssertEqual(keychain.writes, [])
+        XCTAssertEqual(try storedShares(), [share])
+    }
+
+    func testDisableIsRefusedWhileATransitionIsHeld() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        let sealed = try storedShares()
+        keychain.resetWrites()
+        let lease = try coordinator.beginTransition()
+        defer { coordinator.end(lease) }
+
+        do {
+            try await sut.disablePasscode(current: passcode)
+            XCTFail("Expected .busy")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .busy)
+        }
+
+        XCTAssertEqual(keychain.writes, [], "a refused disable must not touch the wrapper or the attempt counter")
+        XCTAssertEqual(try storedShares(), sealed, "a refused disable must not open a single share")
+        XCTAssertEqual(lockService.mode, .passcode)
+    }
+
+    func testChangeIsRefusedWhileATransitionIsHeld() async throws {
+        try await sut.setPasscode(passcode)
+        let wrappedBefore = keyStore.loadWrappedDataKey()
+        keychain.resetWrites()
+        let lease = try coordinator.beginTransition()
+        defer { coordinator.end(lease) }
+
+        do {
+            try await sut.changePasscode(current: passcode, new: newPasscode)
+            XCTFail("Expected .busy")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .busy)
+        }
+
+        XCTAssertEqual(keychain.writes, [])
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), wrappedBefore)
+    }
+
+    /// A refused transition must not leave a lease behind, or the next attempt
+    /// fails for a reason that no longer exists.
+    func testARefusedTransitionDoesNotStrandALease() async throws {
+        let episode = try XCTUnwrap(coordinator.beginEpisode())
+        _ = try? await sut.setPasscode(passcode)
+        coordinator.end(episode)
+
+        try await sut.setPasscode(passcode)
+
+        XCTAssertEqual(lockService.mode, .passcode)
+    }
+
+    /// The other half: a transition that *acquired* the lease and then threw
+    /// somewhere downstream has to release it on the way out.
+    func testATransitionThatFailsDownstreamReleasesItsLease() async throws {
+        keychain.dropsWrappedKeyshareDataKeyWrites = true
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected the wrapper write to fail")
+        } catch {
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .persistenceFailed)
+        }
+        keychain.dropsWrappedKeyshareDataKeyWrites = false
+
+        try await sut.setPasscode(passcode)
+
+        XCTAssertEqual(lockService.mode, .passcode)
+    }
+
+    /// A store carrying somebody else's unsaved work cannot answer "is anything
+    /// sealed?" truthfully — a pending edit or deletion hides the durable row —
+    /// so the set is refused before a key is minted rather than after.
+    func testASetIsRefusedOverADirtyStoreBeforeAnythingIsWritten() async throws {
+        let vaults = try givenVaults([("vault-one", [share])])
+        vaults[0].name = "renamed but not saved"
+        XCTAssertTrue(context.hasChanges)
+        keychain.resetWrites()
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected .busy")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .busy)
+        }
+
+        XCTAssertEqual(keychain.writes, [], "no wrapper may be stored over a store that cannot be scanned")
+        XCTAssertNotEqual(lockService.mode, .passcode)
+    }
+
     // MARK: - Lock / unlock
 
     func testLockMakesSealedSharesUnreadable() async throws {
-        let sealed = try givenMigratedState()
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
+        let sealed = try XCTUnwrap(try storedShares().first)
 
         sut.lock()
 
@@ -148,8 +431,9 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testUnlockRestoresAccess() async throws {
-        let sealed = try givenMigratedState()
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
+        let sealed = try XCTUnwrap(try storedShares().first)
         sut.lock()
 
         try await sut.unlock(with: passcode)
@@ -158,8 +442,9 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testUnlockWithTheWrongPasscodeLeavesTheAppLocked() async throws {
-        let sealed = try givenMigratedState()
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
+        let sealed = try XCTUnwrap(try storedShares().first)
         sut.lock()
 
         do {
@@ -188,18 +473,17 @@ final class PasscodeServiceTests: XCTestCase {
     /// every vault at this moment; if this assertion ever fails, that risk has
     /// been imported along with it.
     func testChangingThePasscodeLeavesKeyShareCiphertextByteIdentical() async throws {
-        let sealed = try givenMigratedState()
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
-        let before = sealed
+        let before = try storedShares()
 
         try await sut.changePasscode(current: passcode, new: newPasscode)
 
-        XCTAssertEqual(sealed, before, "No key share may be rewritten by a passcode change")
-        XCTAssertEqual(try protector.open(sealed), share)
+        XCTAssertEqual(try storedShares(), before, "No key share may be rewritten by a passcode change")
+        XCTAssertEqual(try protector.open(try XCTUnwrap(before.first)), share)
     }
 
     func testChangedPasscodeUnlocksAndTheOldOneDoesNot() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         try await sut.changePasscode(current: passcode, new: newPasscode)
         sut.lock()
@@ -216,7 +500,6 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testChangeWithTheWrongCurrentPasscodeChangesNothing() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         let wrappedBefore = keyStore.loadWrappedDataKey()
 
@@ -231,7 +514,6 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testChangeRejectsAnInvalidNewPasscode() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
 
         do {
@@ -244,35 +526,48 @@ final class PasscodeServiceTests: XCTestCase {
 
     // MARK: - Disable
 
-    func testDisableRestoresTheClearKeyAndRemovesTheWrappedOne() async throws {
-        try givenMigratedState()
+    /// The inverse, asserted as such: the store comes back to the exact bytes it
+    /// held before the passcode existed.
+    func testDisableRestoresTheOriginalPlaintextAndRemovesTheWrappedKey() async throws {
+        try givenVaults([("vault-one", [share, otherShare])])
         try await sut.setPasscode(passcode)
 
         try await sut.disablePasscode(current: passcode)
 
-        _ = try XCTUnwrapPresent(keyStore.loadDataKey())
+        XCTAssertEqual(try storedShares().sorted(), [share, otherShare].sorted())
         XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
         let isSet = await sut.isSet
         XCTAssertFalse(isSet)
     }
 
-    /// Turning the passcode off must not turn at-rest encryption off — the
-    /// shares stay sealed, they are simply reachable without a passcode again.
-    func testDisableLeavesSharesSealedAndReadable() async throws {
-        let sealed = try givenMigratedState()
+    /// No unwrapped key is left behind. An earlier design stashed one beside the
+    /// shares; a store left in that state reads as "no passcode" while its
+    /// shares are still ciphertext.
+    func testDisableLeavesNoKeyMaterialOfAnyFormBehind() async throws {
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
-        let before = sealed
 
         try await sut.disablePasscode(current: passcode)
 
-        XCTAssertEqual(sealed, before, "No key share may be rewritten by disabling the passcode")
-        XCTAssertTrue(sealed.hasPrefix(AesGcmKeyshareCipher.sealedPrefix))
-        XCTAssertEqual(try protector.open(sealed), share)
+        XCTAssertAbsent(keyStore.loadDataKey(), "removing the passcode must not stash the key in the clear")
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
+        if case .disabled = session.currentState() {} else {
+            XCTFail("with no key of either form the session must report .disabled")
+        }
+    }
+
+    func testDisableReturnsTheLockToDeviceAuth() async throws {
+        try await sut.setPasscode(passcode)
+
+        try await sut.disablePasscode(current: passcode)
+
+        XCTAssertEqual(lockService.mode, .deviceAuth)
     }
 
     func testDisableWithTheWrongPasscodeChangesNothing() async throws {
-        try givenMigratedState()
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
+        let sealed = try storedShares()
 
         do {
             try await sut.disablePasscode(current: "00000")
@@ -281,15 +576,15 @@ final class PasscodeServiceTests: XCTestCase {
             XCTAssertEqual(error as? PasscodeError, .wrongPasscode)
         }
 
-        XCTAssertAbsent(keyStore.loadDataKey())
+        XCTAssertEqual(try storedShares(), sealed)
         _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
     }
 
-    /// If the wrapped copy cannot be removed, both copies would exist and the
-    /// readable clear key would make the passcode meaningless. The clear copy is
-    /// rolled back so the passcode keeps protecting something.
-    func testDisableRollsBackWhenTheWrappedKeyCannotBeDeleted() async throws {
-        try givenMigratedState()
+    /// One protocol, not a choice: restore `.passcode`, reseal transactionally,
+    /// keep the wrapper, throw. The app is back to a working passcode and the
+    /// user retries — the alternative leaves plaintext shares behind a gate.
+    func testDisableResealsWhenTheWrappedKeyCannotBeDeleted() async throws {
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
         keychain.ignoresWrappedKeyshareDataKeyDeletion = true
 
@@ -300,44 +595,86 @@ final class PasscodeServiceTests: XCTestCase {
             XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
         }
 
-        XCTAssertAbsent(keyStore.loadDataKey(), "The clear copy must have been rolled back")
+        let stored = try XCTUnwrap(try storedShares().first)
+        XCTAssertTrue(protector.isSealed(stored), "the shares must go back behind the passcode that still exists")
+        XCTAssertEqual(try protector.open(stored), share)
         _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
         XCTAssertEqual(lockService.mode, .passcode, "The passcode is still in force")
     }
 
-    func testDisableReturnsTheLockToDeviceAuth() async throws {
-        try givenMigratedState()
+    /// The rollback must not take "the deletion threw" to mean "the wrapper is
+    /// still there". `deleteWrappedDataKey` verifies against a *confirmed*
+    /// absence, so an unreadable read-back reports failure over a deletion that
+    /// in fact happened — and resealing on that assumption would leave
+    /// ciphertext whose only key is in memory until the next lock.
+    func testDisableRestoresTheWrapperBeforeResealingWhenTheDeletionCannotBeConfirmed() async throws {
+        try givenVaults([("vault-one", [share])])
         try await sut.setPasscode(passcode)
-
-        try await sut.disablePasscode(current: passcode)
-
-        XCTAssertEqual(lockService.mode, .deviceAuth)
-    }
-
-    // MARK: - Attempt limiting
-
-    // MARK: - Deletion must be verified
-
-    /// If the clear copy survives, locking just reloads it from the Keychain and
-    /// the passcode is decorative. Setting one must fail loudly instead.
-    func testSetPasscodeFailsWhenTheClearKeyCannotBeDeleted() async throws {
-        try givenMigratedState()
-        keychain.ignoresKeyshareDataKeyDeletion = true
+        keychain.wrappedKeyshareDataKeyBecomesUnreadableOnDeletion = true
 
         do {
-            try await sut.setPasscode(passcode)
-            XCTFail("Expected .deletionFailed")
+            try await sut.disablePasscode(current: passcode)
+            XCTFail("Expected the deletion failure to surface")
         } catch {
             XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
         }
 
-        XCTAssertNotEqual(lockService.mode, .passcode, "The mode must not switch on a failed deletion")
+        let restored = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertFalse(restored.isEmpty)
+        let stored = try XCTUnwrap(try storedShares().first)
+        XCTAssertTrue(protector.isSealed(stored))
+        XCTAssertEqual(try protector.open(stored), share)
+        XCTAssertEqual(lockService.mode, .passcode)
     }
+
+    /// And when the wrapper cannot be made durable again, nothing is resealed.
+    /// Plaintext shares with no key of any form is the no-passcode resting
+    /// state — the only outcome here that loses nothing.
+    func testDisableLeavesSharesPlaintextWhenTheWrapperCannotBeRestored() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        keychain.wrappedKeyshareDataKeyBecomesUnreadableOnDeletion = true
+        keychain.dropsWrappedKeyshareDataKeyWrites = true
+
+        do {
+            try await sut.disablePasscode(current: passcode)
+            XCTFail("Expected .inconsistentState")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .inconsistentState)
+        }
+
+        XCTAssertEqual(try storedShares(), [share], "shares must stay readable when no wrapper can be proved")
+        XCTAssertEqual(lockService.mode, .deviceAuth, "a gate with no wrapper behind it could never be opened")
+        if case .unlocked = session.currentState() {
+            XCTFail("a key with no durable wrapper must not stay cached — the next write would seal against it")
+        }
+    }
+
+    /// A share that cannot be opened aborts the disable *before* the wrapper is
+    /// touched. Reporting the removal as done would leave that value sealed with
+    /// no passcode left to ask for.
+    func testDisableAbortsWhenAShareCannotBeOpened() async throws {
+        try await sut.setPasscode(passcode)
+        let foreign = try AesGcmKeyshareCipher().seal(share, with: SymmetricKey(size: .bits256))
+        try givenVaults([("vault-one", [foreign])])
+
+        do {
+            try await sut.disablePasscode(current: passcode)
+            XCTFail("Expected the unseal to fail")
+        } catch {
+            XCTAssertEqual(error as? KeyshareSweeperError, .verificationFailed(pubkey: "vault-one-0"))
+        }
+
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertEqual(lockService.mode, .passcode)
+        XCTAssertEqual(try storedShares(), [foreign])
+    }
+
+    // MARK: - Attempt limiting
 
     // MARK: - A malformed wrapped key is not a guess
 
     func testAMalformedWrappedKeyIsReportedAsStorageFailureAndNotCounted() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         keychain.setWrappedKeyshareDataKey(Data(repeating: 0x00, count: 64))
 
@@ -359,7 +696,6 @@ final class PasscodeServiceTests: XCTestCase {
     /// Wall time alone is user-adjustable, so a backoff has to survive the clock
     /// being moved forward.
     func testMovingTheClockForwardDoesNotClearALockout() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         for _ in 0...PasscodeAttemptLimiter.freeAttempts {
@@ -379,7 +715,6 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testRepeatedFailuresEventuallyLockOut() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
 
@@ -403,7 +738,6 @@ final class PasscodeServiceTests: XCTestCase {
     /// Both clocks have to advance: wall time alone is the clock-manipulation
     /// bypass, and the limiter deliberately refuses to honour it.
     func testLockoutExpiresOnceTimeGenuinelyPasses() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         for _ in 0...PasscodeAttemptLimiter.freeAttempts {
@@ -415,7 +749,6 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testASuccessfulUnlockClearsTheFailureCount() async throws {
-        try givenMigratedState()
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         for _ in 0..<PasscodeAttemptLimiter.freeAttempts {
@@ -430,7 +763,93 @@ final class PasscodeServiceTests: XCTestCase {
         }
         try await sut.unlock(with: passcode, now: start)
     }
+
+    // MARK: - Helpers
+
+    /// Every `@Attribute(.unique)` field is given a distinct value per vault.
+    /// `TestStore.makeVault` leaves `pubKeyEdDSA` at a shared constant, and
+    /// SwiftData answers a duplicate unique key with an *upsert* rather than an
+    /// error — so a multi-vault fixture built that way silently collapses to one
+    /// row and every multi-vault assertion passes vacuously.
+    @discardableResult
+    private func givenVaults(_ vaults: [(String, [String])]) throws -> [Vault] {
+        let inserted = vaults.map { pubKey, shares in
+            let vault = Vault(
+                name: "Vault \(pubKey)",
+                signers: [],
+                pubKeyECDSA: "ecdsa-\(pubKey)",
+                pubKeyEdDSA: "eddsa-\(pubKey)",
+                keyshares: shares.enumerated().map { index, value in
+                    KeyShare(pubkey: "\(pubKey)-\(index)", keyshare: value)
+                },
+                localPartyID: "party-\(pubKey)",
+                hexChainCode: "hex",
+                resharePrefix: nil,
+                libType: .DKLS
+            )
+            context.insert(vault)
+            return vault
+        }
+        try context.save()
+
+        XCTAssertEqual(
+            try context.fetchCount(FetchDescriptor<Vault>()),
+            vaults.count,
+            "the fixture collapsed — a unique attribute is shared between vaults"
+        )
+        return inserted
+    }
+
+    private func storedShares() throws -> [String] {
+        try context.fetch(FetchDescriptor<Vault>()).flatMap(\.keyshares).map(\.keyshare)
+    }
 }
+
+// MARK: - Failing closed on an unreadable Keychain
+
+extension PasscodeServiceTests {
+
+    /// The lost-funds path this whole tri-state exercise exists to close. If an
+    /// unreadable wrapper read as "no passcode", `setPasscode` would mint a
+    /// fresh data key and store a wrapper over the top of the existing one —
+    /// and the new key opens none of the shares the old one sealed.
+    func testIsSetFailsClosedWhenTheWrapperCannotBeRead() async {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        let isSet = await sut.isSet
+
+        XCTAssertTrue(isSet, "An unreadable wrapper may well be there and must be treated as one")
+    }
+
+    func testSetPasscodeIsRefusedWhenTheWrapperCannotBeRead() async throws {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+        keychain.resetWrites()
+
+        do {
+            try await sut.setPasscode(passcode)
+            XCTFail("Expected the set to be refused")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .alreadySet)
+        }
+
+        XCTAssertEqual(keychain.writes, [], "Nothing may be written while the Keychain cannot be read")
+    }
+
+    /// `notSet` is what sends the UI off to offer creating a passcode, over the
+    /// top of a wrapper that may still exist.
+    func testUnlockReportsStorageFailureRatherThanNotSetWhenTheWrapperCannotBeRead() async {
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        do {
+            _ = try await sut.unlock(with: passcode)
+            XCTFail("Expected the unlock to fail")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .storageFailure)
+        }
+    }
+}
+
+// MARK: - The attempt limiter's own record
 
 extension PasscodeServiceTests {
 
@@ -488,60 +907,62 @@ extension PasscodeServiceTests {
     }
 }
 
-// MARK: - Failing closed on an unreadable Keychain
+// MARK: - Test doubles
 
-extension PasscodeServiceTests {
+/// A sweeper that runs a hook inside the sealed-share scan — the *first*
+/// suspension point of a set, and the one a generation captured too late would
+/// leave unguarded.
+private final class HookedKeyshareSweeper: KeyshareSweeping {
 
-    /// The lost-funds path this whole tri-state exercise exists to close. If an
-    /// unreadable wrapper read as "no passcode", `setPasscode` would mint a
-    /// fresh data key and store a wrapper over the top of the existing one —
-    /// and the new key opens none of the shares the old one sealed.
-    func testIsSetFailsClosedWhenTheWrapperCannotBeRead() async {
-        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+    private let wrapped: KeyshareSweeping
+    private let duringScan: () throws -> Void
 
-        let isSet = await sut.isSet
-
-        XCTAssertTrue(isSet, "An unreadable wrapper may well be there and must be treated as one")
+    init(wrapping wrapped: KeyshareSweeping, duringScan: @escaping () throws -> Void) {
+        self.wrapped = wrapped
+        self.duringScan = duringScan
     }
 
-    func testSetPasscodeIsRefusedWhenTheWrapperCannotBeRead() async throws {
-        try givenMigratedState()
-        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
-        keychain.resetWrites()
-
-        do {
-            try await sut.setPasscode(passcode)
-            XCTFail("Expected the set to be refused")
-        } catch {
-            XCTAssertEqual(error as? PasscodeError, .alreadySet)
-        }
-
-        XCTAssertEqual(keychain.writes, [], "Nothing may be written while the Keychain cannot be read")
+    @MainActor
+    func hasSealedShare() throws -> Bool {
+        try duringScan()
+        return try wrapped.hasSealedShare()
     }
 
-    /// `notSet` is what sends the UI off to offer creating a passcode, over the
-    /// top of a wrapper that may still exist.
-    func testUnlockReportsStorageFailureRatherThanNotSetWhenTheWrapperCannotBeRead() async {
-        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+    @MainActor func sealAll() throws { try wrapped.sealAll() }
+    @MainActor func unsealAll() throws { try wrapped.unsealAll() }
+}
 
-        do {
-            _ = try await sut.unlock(with: passcode)
-            XCTFail("Expected the unlock to fail")
-        } catch {
-            XCTAssertEqual(error as? PasscodeError, .storageFailure)
-        }
+/// A key store that runs a hook inside `wrap`, which is the one long suspension
+/// point in a transition. Everything a background lock or a concurrent write
+/// could do mid-transition happens there, and driving it by hand is the only way
+/// to make those races deterministic rather than timing-dependent.
+private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
+
+    private let wrapped: KeyshareKeyStoring
+    private let duringWrap: @MainActor () throws -> Void
+
+    init(wrapping wrapped: KeyshareKeyStoring, duringWrap: @escaping @MainActor () throws -> Void) {
+        self.wrapped = wrapped
+        self.duringWrap = duringWrap
     }
 
-    /// An unreadable clear key must not be mistaken for "nothing is encrypted
-    /// yet", which is the one state that would license inventing a new key.
-    func testSetPasscodeIsRefusedWhenTheClearKeyCannotBeRead() async {
-        keychain.keyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+    func generateDataKey() throws -> SymmetricKey { try wrapped.generateDataKey() }
 
-        do {
-            try await sut.setPasscode(passcode)
-            XCTFail("Expected the set to be refused")
-        } catch {
-            XCTAssertEqual(error as? PasscodeError, .noDataKey)
-        }
+    func loadDataKey() -> KeychainReadResult<SymmetricKey> { wrapped.loadDataKey() }
+    func storeDataKey(_ key: SymmetricKey) throws { try wrapped.storeDataKey(key) }
+    func deleteDataKey() throws { try wrapped.deleteDataKey() }
+
+    func loadWrappedDataKey() -> KeychainReadResult<Data> { wrapped.loadWrappedDataKey() }
+    func storeWrappedDataKey(_ blob: Data) throws { try wrapped.storeWrappedDataKey(blob) }
+    func deleteWrappedDataKey() throws { try wrapped.deleteWrappedDataKey() }
+
+    func wrap(_ key: SymmetricKey, passcode: String) async throws -> Data {
+        let blob = try await wrapped.wrap(key, passcode: passcode)
+        try await MainActor.run { try duringWrap() }
+        return blob
+    }
+
+    func unwrap(_ blob: Data, passcode: String) async throws -> SymmetricKey {
+        try await wrapped.unwrap(blob, passcode: passcode)
     }
 }
