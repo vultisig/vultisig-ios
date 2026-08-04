@@ -22,7 +22,6 @@ struct BondTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: "bondRune".localized,
-            validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
             FormExpandableSection(

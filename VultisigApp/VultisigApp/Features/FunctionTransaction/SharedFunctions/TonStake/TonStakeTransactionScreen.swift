@@ -34,7 +34,6 @@ struct TonStakeTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: String(format: "stakeCoin".localized, viewModel.coin.ticker),
-            validForm: $viewModel.validForm,
             isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {

@@ -19,7 +19,6 @@ struct AddLPTransactionScreen: View {
             percentageSelected: $viewModel.percentageSelected,
             percentageFieldType: .button,
             amountField: viewModel.amountField,
-            validForm: $viewModel.validForm,
             customViewPosition: .bottom
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }

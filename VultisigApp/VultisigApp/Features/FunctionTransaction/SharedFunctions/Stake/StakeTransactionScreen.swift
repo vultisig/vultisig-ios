@@ -20,8 +20,7 @@ struct StakeTransactionScreen: View {
             availableAmount: viewModel.maxStakeableAmount,
             percentageSelected: $percentageSelected,
             percentageFieldType: .button,
-            amountField: viewModel.amountField,
-            validForm: $viewModel.validForm
+            amountField: viewModel.amountField
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)

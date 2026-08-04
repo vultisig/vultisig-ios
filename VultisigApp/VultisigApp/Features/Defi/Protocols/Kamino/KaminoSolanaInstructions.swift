@@ -111,3 +111,75 @@ enum KaminoInstructionDiscriminator {
         bytes.reversed().reduce(UInt64(0)) { $0 << 8 | UInt64($1) }
     }
 }
+
+// MARK: - Account layouts
+
+/// Positions of the accounts each instruction is checked and decoded on.
+///
+/// An Anchor instruction's account list is fixed by its IDL — only the trailing
+/// `remaining_accounts` vary, which is why the observed lists differ in length
+/// between vaults while these prefixes do not. Each index below was read out of
+/// transactions the Kamino API built for all three launch vaults.
+///
+/// Shared rather than duplicated: `KaminoTransactionValidator` checks against
+/// these before signing and `KaminoTransactionDecoder` reads the same slots back
+/// out of the signed bytes. Two copies that drifted would let the verify screen
+/// describe a different instruction from the one that was validated.
+enum KaminoInstructionAccounts {
+
+    enum KvaultDeposit {
+        static let user = 0
+        static let vault = 1
+        static let tokenMint = 3
+        static let sharesMint = 5
+        static let userTokenAccount = 6
+        static let userShareAccount = 7
+        static let minimumCount = 8
+    }
+
+    enum KvaultWithdraw {
+        static let user = 0
+        static let vault = 1
+        static let userTokenAccount = 5
+        static let tokenMint = 6
+        static let userShareAccount = 7
+        static let sharesMint = 8
+        static let minimumCount = 9
+    }
+
+    enum FarmsInitializeUser {
+        static let authority = 0
+        static let farm = 5
+        static let minimumCount = 6
+    }
+
+    enum FarmsStake {
+        static let owner = 0
+        static let farm = 2
+        static let userShareAccount = 4
+        static let sharesMint = 5
+        static let minimumCount = 6
+    }
+
+    enum AssociatedToken {
+        static let payer = 0
+        static let account = 1
+        static let wallet = 2
+        static let mint = 3
+        static let tokenProgram = 5
+        static let count = 6
+    }
+
+    enum SystemTransfer {
+        static let source = 0
+        static let destination = 1
+        static let count = 2
+    }
+
+    enum CloseAccount {
+        static let account = 0
+        static let destination = 1
+        static let authority = 2
+        static let count = 3
+    }
+}
