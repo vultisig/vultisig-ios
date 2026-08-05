@@ -368,6 +368,7 @@
 "dontRemind" = "Ne podsjećaj me ponovno";
 "downloadViaGitHub" = "Preuzmi putem GitHub-a";
 "dropFileHere" = "Ispusti datoteku ovdje...";
+"earn" = "Earn";
 "ECDSA" = "Ecdsa";
 "ECDSAKey" = "ECDSA ključ";
 "EdDSA" = "Eddsa";
@@ -620,6 +621,13 @@
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
+"kaminoEarnApy30d" = "APY (30 d)";
+"kaminoEarnCuratedBy" = "Kurira %@";
+"kaminoEarnDeposited" = "Položeno";
+"kaminoEarnPnl" = "Dobit i gubitak";
+"kaminoEarnRiskConservative" = "Konzervativno";
+"kaminoEarnRiskPrivateCredit" = "Privatni kredit";
+"kaminoEarnTitle" = "Kamino Earn";
 "keyCopied" = "Ključ kopiran";
 "keygen" = "Generiranje ključeva";
 "keygenFailed" = "Generiranje ključa nije uspjelo";

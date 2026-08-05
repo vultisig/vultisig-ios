@@ -52,6 +52,7 @@ final class MockDefiPositionsProvider: DefiPositionsProviding, @unchecked Sendab
     private var _bondStub: [CoinMeta] = []
     private var _stakeStub: [CoinMeta] = []
     private var _lpStub: [CoinMeta] = []
+    private var _earnStub: [KaminoVaultDescriptor] = []
     private var _supportsLPs = true
     private var _lpDelay: Duration?
     private var _lpError: Error?
@@ -70,6 +71,11 @@ final class MockDefiPositionsProvider: DefiPositionsProviding, @unchecked Sendab
     var lpStub: [CoinMeta] {
         get { lock.withLock { _lpStub } }
         set { lock.withLock { _lpStub = newValue } }
+    }
+
+    var earnStub: [KaminoVaultDescriptor] {
+        get { lock.withLock { _earnStub } }
+        set { lock.withLock { _earnStub = newValue } }
     }
 
     var supportsLPs: Bool {
@@ -94,6 +100,8 @@ final class MockDefiPositionsProvider: DefiPositionsProviding, @unchecked Sendab
     func bondCoins(for chain: Chain) -> [CoinMeta] { bondStub }
 
     func stakeCoins(for chain: Chain) -> [CoinMeta] { stakeStub }
+
+    func earnVaults(for chain: Chain) -> [KaminoVaultDescriptor] { earnStub }
 
     func supportsLiquidityPools(for chain: Chain) -> Bool { supportsLPs }
 

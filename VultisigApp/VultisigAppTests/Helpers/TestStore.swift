@@ -61,6 +61,7 @@ enum TestStore {
             CirclePosition.self,
             YieldPosition.self,
             YieldRedemptionRecord.self,
+            KaminoPosition.self,
             DatabaseRate.self,
             CustomRPCOverride.self,
             LimitOrder.self

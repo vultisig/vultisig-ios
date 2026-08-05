@@ -36,6 +36,13 @@ struct DefiChainCellView: View {
         .onChange(of: defiBalance) { _, _ in
             updateBalance()
         }
+        // Positions that do not live on a wallet coin — Kamino Earn deposits,
+        // stake and LP rows — change the balance and count above without
+        // touching `defiBalance`, so the row has to be told. Same signal the
+        // aggregate and chain-detail balance views already observe.
+        .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
+            updateBalance()
+        }
     }
 
     func updateBalance() {

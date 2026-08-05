@@ -368,6 +368,7 @@
 "dontRemind" = "Don’t remind me again";
 "downloadViaGitHub" = "Download via GitHub";
 "dropFileHere" = "Drop the file here...";
+"earn" = "Earn";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA Key";
 "EdDSA" = "EdDSA";
@@ -620,6 +621,13 @@
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
 "joinTransactionSigning" = "Join transaction signing";
+"kaminoEarnApy30d" = "APY (30d)";
+"kaminoEarnCuratedBy" = "Curated by %@";
+"kaminoEarnDeposited" = "Deposited";
+"kaminoEarnPnl" = "Profit & Loss";
+"kaminoEarnRiskConservative" = "Conservative";
+"kaminoEarnRiskPrivateCredit" = "Private Credit";
+"kaminoEarnTitle" = "Kamino Earn";
 "keyCopied" = "Key copied";
 "keygen" = "Keygen";
 "keygenFailed" = "Key generation failed";

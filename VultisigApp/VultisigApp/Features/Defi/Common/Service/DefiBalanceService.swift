@@ -36,7 +36,11 @@ struct DefiBalanceService {
         case .terra, .terraClassic, .qbtc:
             cosmosStakingTotalBalanceFiatDecimal(chain: chain, vault: vault)
         case .solana:
+            // Two independent Solana DeFi surfaces: native staking and the
+            // Kamino Earn yield vaults. Both are opt-in and neither implies the
+            // other, so the total is their sum.
             solanaStakingTotalBalanceFiatDecimal(for: vault)
+                + kaminoEarnTotalBalanceFiatDecimal(for: vault)
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
@@ -80,7 +84,7 @@ struct DefiBalanceService {
         case .terra, .terraClassic, .qbtc:
             cosmosStakingPositionCount(chain: chain, vault: vault)
         case .solana:
-            solanaStakingPositionCount(for: vault)
+            solanaStakingPositionCount(for: vault) + kaminoEarnPositionCount(for: vault)
         default:
             defaultPositionCount(chain: chain, for: vault)
         }
@@ -169,6 +173,47 @@ private extension DefiBalanceService {
             enabledPositions.staking.contains(solCoin.toCoinMeta())
         else { return .zero }
         return solCoin.fiat(decimal: solCoin.stakedBalanceDecimal)
+    }
+
+    /// Kamino Earn deposits, valued through each vault's underlying token.
+    ///
+    /// Reads the persisted `KaminoPosition` snapshot rather than any live
+    /// figure: this runs synchronously on the DeFi list and cannot await a
+    /// network call, which is precisely why the snapshot is a `@Model` at all.
+    /// Gated on the per-vault opt-in and on the vault still being curated, so a
+    /// disabled or delisted vault never silently inflates the total.
+    ///
+    /// Summed per vault because the launch set spans two underlying tokens —
+    /// USDC and SOL cannot be added before their rates are applied.
+    func kaminoEarnTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
+        enabledKaminoPositions(for: vault)
+            .map { position, descriptor in
+                guard let coin = descriptor.underlyingCoinMeta else { return Decimal.zero }
+                return RateProvider.shared.fiatBalance(value: position.tokenAmountDecimal, coin: coin)
+            }
+            .reduce(Decimal.zero, +)
+    }
+
+    /// Enabled Kamino vaults holding a non-zero deposit. A vault the user turned
+    /// on but never deposited into is not a position yet.
+    func kaminoEarnPositionCount(for vault: Vault) -> Int {
+        enabledKaminoPositions(for: vault)
+            .filter { position, _ in position.tokenAmountDecimal > 0 }
+            .count
+    }
+
+    /// Enabled rows paired with their registry descriptor. A row whose vault has
+    /// left the allow-list resolves to no descriptor and drops out — the same
+    /// fail-closed rule the rest of the feature applies.
+    func enabledKaminoPositions(
+        for vault: Vault
+    ) -> [(position: KaminoPosition, descriptor: KaminoVaultDescriptor)] {
+        vault.kaminoPositions.compactMap { position in
+            guard position.isEnabled,
+                  let descriptor = KaminoVaultRegistry.descriptor(for: position.vaultAddress)
+            else { return nil }
+            return (position, descriptor)
+        }
     }
 
     func defaultTotalBalanceFiatDecimal(chain: Chain, for vault: Vault) -> Decimal {

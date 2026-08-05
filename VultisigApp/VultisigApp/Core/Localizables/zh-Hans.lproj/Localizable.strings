@@ -368,6 +368,7 @@
 "dontRemind" = "不再提醒";
 "downloadViaGitHub" = "通过 GitHub 下载";
 "dropFileHere" = "将文件拖放到此处...";
+"earn" = "赚币";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "ECDSA 密钥";
 "EdDSA" = "EdDSA";
@@ -620,6 +621,13 @@
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
+"kaminoEarnApy30d" = "年化收益率（30天）";
+"kaminoEarnCuratedBy" = "由 %@ 管理";
+"kaminoEarnDeposited" = "已存入";
+"kaminoEarnPnl" = "盈亏";
+"kaminoEarnRiskConservative" = "保守型";
+"kaminoEarnRiskPrivateCredit" = "私募信贷";
+"kaminoEarnTitle" = "Kamino Earn";
 "keyCopied" = "密钥已复制";
 "keygen" = "密钥生成";
 "keygenFailed" = "密钥生成失败";
