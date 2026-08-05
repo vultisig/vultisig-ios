@@ -175,6 +175,37 @@ struct KaminoVaultInfo: Hashable, Identifiable {
     /// a rounding error in it can over-request shares.
     let tokensPerShare: KaminoRate
     let tokenPriceUsd: Decimal
+    /// The underlying balance the vault currently holds liquid, rather than
+    /// invested in lending reserves. `nil` when the metrics response did not
+    /// carry a readable value.
+    ///
+    /// Advisory only — it says what a withdraw is likely to be able to settle
+    /// immediately, and nothing sizes a transaction from it. The measured ratio
+    /// is 0.36% of the Steakhouse vault and 0.04% of the Allez vault, so a
+    /// withdraw above this buffer is the ordinary case, not an exception.
+    let tokensAvailable: KaminoTokenAmount?
+
+    init(
+        descriptor: KaminoVaultDescriptor,
+        name: String,
+        minDeposit: KaminoTokenAmount,
+        minWithdraw: KaminoShareAmount,
+        lookupTable: String,
+        apy30d: Decimal,
+        tokensPerShare: KaminoRate,
+        tokenPriceUsd: Decimal,
+        tokensAvailable: KaminoTokenAmount? = nil
+    ) {
+        self.descriptor = descriptor
+        self.name = name
+        self.minDeposit = minDeposit
+        self.minWithdraw = minWithdraw
+        self.lookupTable = lookupTable
+        self.apy30d = apy30d
+        self.tokensPerShare = tokensPerShare
+        self.tokenPriceUsd = tokenPriceUsd
+        self.tokensAvailable = tokensAvailable
+    }
 
     var id: String { descriptor.address }
 

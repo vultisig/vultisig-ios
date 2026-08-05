@@ -17,8 +17,20 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     let availableAmount: Decimal
     @Binding var percentageSelected: Double?
     let percentageFieldType: PercentageFieldType
+    /// Precision the percentage buttons write into the field.
+    ///
+    /// Four is right for a display-oriented form, but a percentage button
+    /// truncates to it, so on a nine-decimal asset a "100%" that means the
+    /// measured maximum would silently leave the last five decimals behind.
+    /// Callers whose maximum is exact pass the asset's own scale.
+    let amountDecimals: Int
     @StateObject var amountField: FormField
     @Binding var validForm: Bool
+    /// Hard-disables Continue, forwarded to `FormScreen`. For flows with a
+    /// pre-flight condition no amount can satisfy — a position that cannot be
+    /// withdrawn at all — so the button reads as disabled rather than silently
+    /// refusing. Defaults to `false`, leaving every existing caller unchanged.
+    let isContinueDisabled: Bool
     var onVerify: () -> Void
     var customViewPosition: AmountTextField<CustomView>.CustomViewPosition
     var customView: () -> CustomView
@@ -33,8 +45,10 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         availableAmount: Decimal,
         percentageSelected: Binding<Double?>,
         percentageFieldType: PercentageFieldType,
+        amountDecimals: Int = 4,
         amountField: FormField,
         validForm: Binding<Bool>,
+        isContinueDisabled: Bool = false,
         customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,
         onVerify: @escaping () -> Void,
         @ViewBuilder customView: @escaping () -> CustomView,
@@ -45,8 +59,10 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         self.availableAmount = availableAmount
         self._percentageSelected = percentageSelected
         self.percentageFieldType = percentageFieldType
+        self.amountDecimals = amountDecimals
         self._amountField = StateObject(wrappedValue: amountField)
         self._validForm = validForm
+        self.isContinueDisabled = isContinueDisabled
         self.onVerify = onVerify
         self.customViewPosition = customViewPosition
         self.customView = customView
@@ -57,6 +73,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         FormScreen(
             title: title,
             validForm: $validForm,
+            isContinueDisabled: isContinueDisabled,
             onContinue: onContinue
         ) {
             topView()
@@ -76,7 +93,7 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
                     ticker: coin.ticker,
                     type: percentageFieldType,
                     availableAmount: availableAmount,
-                    decimals: 4, // keep 4 decimals
+                    decimals: amountDecimals,
                     percentage: $percentageSelected,
                     customViewPosition: customViewPosition,
                     customView: { customView() }

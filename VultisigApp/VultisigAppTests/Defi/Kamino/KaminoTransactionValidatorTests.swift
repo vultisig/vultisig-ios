@@ -66,6 +66,52 @@ final class KaminoTransactionValidatorTests: XCTestCase {
         try assertValid(try mutable.base64(), intent: Self.usdcWithdrawIntent)
     }
 
+    // MARK: - The farm-staked withdraw is knowingly unsupported
+
+    /// The refusal `expectedSequence`'s extension point describes, pinned so it
+    /// cannot be lost.
+    ///
+    /// Every deposit into these vaults auto-stakes its shares, so a real
+    /// withdraw has to unstake them first — and that transaction has never been
+    /// observed. The validator has no template for it and refuses it as an
+    /// instruction this operation does not perform. That is the intended
+    /// behaviour until the shape is captured rather than guessed: a step written
+    /// from a guess would validate the guess.
+    ///
+    /// Trailing position: the unstake lands after the withdraw.
+    func testRefusesAWithdrawCarryingAFarmInstructionAfterIt() throws {
+        var mutable = try MutableTransaction(base64: KaminoTransactionFixtures.usdcWithdraw.source)
+        let farms = mutable.appendStaticReadonlyKey(Self.farmsProgramKey)
+        mutable.instructions.append(
+            .init(programIdIndex: farms, accounts: [Self.ownerIndex], data: Self.farmsUnstakeData)
+        )
+
+        assertRefused(
+            try mutable.base64(),
+            intent: Self.usdcWithdrawIntent,
+            expected: .unexpectedInstruction(index: 2, program: KaminoVaultRegistry.farmsProgramId)
+        )
+    }
+
+    /// Leading position: the unstake lands before the withdraw, which is where a
+    /// real one most plausibly sits. The refusal is a different one — the
+    /// template's required step no longer matches where it was expected — and
+    /// that is the point: neither ordering slips through.
+    func testRefusesAWithdrawCarryingAFarmInstructionBeforeIt() throws {
+        var mutable = try MutableTransaction(base64: KaminoTransactionFixtures.usdcWithdraw.source)
+        let farms = mutable.appendStaticReadonlyKey(Self.farmsProgramKey)
+        mutable.instructions.insert(
+            .init(programIdIndex: farms, accounts: [Self.ownerIndex], data: Self.farmsUnstakeData),
+            at: 1
+        )
+
+        assertRefused(
+            try mutable.base64(),
+            intent: Self.usdcWithdrawIntent,
+            expected: .missingInstruction("vault withdraw")
+        )
+    }
+
     /// The mutations below are only meaningful if re-serialising an unmodified
     /// transaction reproduces it byte for byte — otherwise a refusal could come
     /// from the rebuild rather than from the change under test.
@@ -750,6 +796,21 @@ private extension KaminoTransactionValidatorTests {
     static var tokenProgramKey: [UInt8] {
         guard let data = Base58.decodeNoCheck(string: SolanaTokenProgram.token.rawValue) else { return [] }
         return [UInt8](data)
+    }
+
+    static var farmsProgramKey: [UInt8] {
+        guard let data = Base58.decodeNoCheck(string: KaminoVaultRegistry.farmsProgramId) else { return [] }
+        return [UInt8](data)
+    }
+
+    /// A plausible farm unstake, derived rather than pinned: `unstake` is the
+    /// counterpart of the `stake` this app already decodes, and its Anchor
+    /// discriminator is `sha256("global:unstake")[0..<8]`. Computed here, in a
+    /// test, precisely because the real instruction has never been observed —
+    /// nothing in production asserts against it.
+    static var farmsUnstakeData: [UInt8] {
+        let digest = Hash.sha256(data: Data("global:unstake".utf8))
+        return [UInt8](digest.prefix(8)) + littleEndian(1_000_000)
     }
 
     static let steakhouseTokensPerShare = KaminoRate(apiString: "1.0536041812651029025") ?? KaminoRate(apiString: "1")!

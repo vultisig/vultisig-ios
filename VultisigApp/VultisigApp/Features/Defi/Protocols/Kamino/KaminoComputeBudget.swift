@@ -40,4 +40,27 @@ enum KaminoComputeBudget {
     /// as well as the compute: at 320,000 units this price is 6,400 lamports
     /// (0.0000064 SOL) on top of the base fee.
     static let fallbackUnitPriceMicroLamports: UInt64 = 20_000
+
+    /// Ceiling on the live price, in micro-lamports per compute unit.
+    ///
+    /// The network's recent-fee sample is a number a remote node hands us, and
+    /// it is multiplied by a six-figure compute limit to produce lamports the
+    /// user pays. Unbounded, a wrong or hostile sample is an unbounded fee. At
+    /// this ceiling and the largest limit above, the priority fee tops out at
+    /// `350,000 × 1,000,000 / 1,000,000` = 350,000 lamports (0.00035 SOL) —
+    /// generous against any real congestion, and still small.
+    static let maxUnitPriceMicroLamports: UInt64 = 1_000_000
+
+    /// Compute-unit limit for a deposit into `vault`.
+    static func depositUnitLimit(for vault: KaminoVaultInfo) -> UInt32 {
+        vault.isWrappedSolVault ? nativeDepositUnitLimit : tokenDepositUnitLimit
+    }
+
+    /// Brings a sampled network price inside `[fallback, max]`.
+    ///
+    /// The fallback is a floor rather than a default: a sample below it would
+    /// under-tip a transaction that has to land before its blockhash expires.
+    static func clampedUnitPrice(_ sampled: UInt64) -> UInt64 {
+        min(max(sampled, fallbackUnitPriceMicroLamports), maxUnitPriceMicroLamports)
+    }
 }

@@ -5,12 +5,9 @@
 //  Earn segment of the Solana DeFi chain tab: one card per curated Kamino vault
 //  the user enabled, plus a total across them.
 //
-//  Read-only by design — no deposit or withdraw entry point exists yet, so the
-//  cards carry no action buttons.
-//
 //  Each card shows the vault's name, its curator and risk tier, the deposited
 //  amount in the underlying token with its fiat value, the 30-day APY and the
-//  lifetime profit and loss.
+//  lifetime profit and loss, and opens the deposit and withdraw forms.
 //
 
 import SwiftUI
@@ -29,6 +26,8 @@ private enum KaminoEarnFormatters {
 
 struct KaminoEarnView<EmptyState: View>: View {
     @ObservedObject var viewModel: KaminoEarnViewModel
+    let onDeposit: (KaminoVaultDescriptor) -> Void
+    let onWithdraw: (KaminoVaultDescriptor) -> Void
     @ViewBuilder var emptyStateView: () -> EmptyState
 
     // Gated on the per-vault opt-in exactly like the stake segment: until the
@@ -84,10 +83,30 @@ struct KaminoEarnView<EmptyState: View>: View {
             if row.pnlToken != nil {
                 pnlRow(for: row)
             }
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+            actionRow(for: row)
         }
         .padding(16)
         .background(cardBackground)
         .overlay(cardBorder)
+    }
+
+    /// The withdraw button appears only once the vault holds something. Whether
+    /// that position can actually be withdrawn is the withdraw form's answer —
+    /// it depends on whether the shares are staked in the vault's farm, which
+    /// this row does not know and must not guess.
+    @ViewBuilder
+    private func actionRow(for row: KaminoEarnRow) -> some View {
+        HStack(spacing: 12) {
+            PrimaryButton(title: "kaminoEarnDeposit".localized, size: .smallFixed) {
+                onDeposit(row.descriptor)
+            }
+            if row.tokenAmount > 0 {
+                PrimaryButton(title: "kaminoEarnWithdraw".localized, type: .secondary, size: .smallFixed) {
+                    onWithdraw(row.descriptor)
+                }
+            }
+        }
     }
 
     @ViewBuilder
