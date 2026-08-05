@@ -10,15 +10,45 @@ import VultisigCommonData
 import XCTest
 import Foundation
 
-struct ChainHelperTestCase: Codable {
+struct ChainHelperTestCase: Decodable {
     let name: String
     let keysignPayload: VSKeysignPayload // base64 encoded JSON string of KeysignPayload
     let expectedImageHash: [String]
+    /// The live ZIP-243 consensus branch id for a Zcash vector. `UTXOSpecific`
+    /// (commondata proto) carries no such field — production resolves it
+    /// out-of-band at send time (see `JoinKeysignViewModel.withZcashBranchId`)
+    /// — so a fixture that pins a Zcash hash has to smuggle it in next to the
+    /// proto payload instead of through it.
+    let zcashBranchId: String?
 
     enum CodingKeys: String, CodingKey {
         case name
         case keysignPayload = "keysign_payload"
         case expectedImageHash = "expected_image_hash"
+    }
+    private enum KeysignPayloadKeys: String, CodingKey {
+        case blockchainSpecific = "BlockchainSpecific"
+    }
+    private enum BlockchainSpecificKeys: String, CodingKey {
+        case utxoSpecific = "UtxoSpecific"
+    }
+    private enum UtxoSpecificKeys: String, CodingKey {
+        case zcashBranchId = "zcash_branch_id"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        keysignPayload = try container.decode(VSKeysignPayload.self, forKey: .keysignPayload)
+        expectedImageHash = try container.decode([String].self, forKey: .expectedImageHash)
+
+        let payloadContainer = try container.nestedContainer(keyedBy: KeysignPayloadKeys.self, forKey: .keysignPayload)
+        if let blockchainContainer = try? payloadContainer.nestedContainer(keyedBy: BlockchainSpecificKeys.self, forKey: .blockchainSpecific),
+           let utxoContainer = try? blockchainContainer.nestedContainer(keyedBy: UtxoSpecificKeys.self, forKey: .utxoSpecific) {
+            zcashBranchId = try utxoContainer.decodeIfPresent(String.self, forKey: .zcashBranchId)
+        } else {
+            zcashBranchId = nil
+        }
     }
 }
 
@@ -76,9 +106,11 @@ struct ChainHelperTestCase: Codable {
 /// what lets these vectors catch a per-chain chain-ID regression.
 enum ChainHelperFixture: String, CaseIterable {
     case arb
+    case bittensor
     case bsc
     case cardano
     case cosmos
+    case cosmosChainMatrix = "cosmos-chain-matrix"
     case cosmosSdkSignAmino = "cosmos-sdk-sign-amino"
     case cosmosSdkSignDirect = "cosmos-sdk-sign-direct"
     case dot
@@ -89,6 +121,7 @@ enum ChainHelperFixture: String, CaseIterable {
     case maya
     case mayaswap
     case pol
+    case qbtc
     case solana
     case solanaSignData = "solana-sign-data"
     case sui
@@ -96,9 +129,11 @@ enum ChainHelperFixture: String, CaseIterable {
     case terra
     case thorchain
     case thorchainswap
+    case thorchainswapLimitOrder = "thorchainswap-limit-order"
     case ton
     case tron
     case utxo
+    case utxoDashZcash = "utxo-dash-zcash"
     case xrp
 
     /// How many signing vectors this fixture must contain.
@@ -111,9 +146,11 @@ enum ChainHelperFixture: String, CaseIterable {
     var expectedCaseCount: Int {
         switch self {
         case .arb: return 1
+        case .bittensor: return 1
         case .bsc: return 2
         case .cardano: return 2
         case .cosmos: return 4
+        case .cosmosChainMatrix: return 5
         case .cosmosSdkSignAmino: return 2
         case .cosmosSdkSignDirect: return 2
         case .dot: return 1
@@ -124,6 +161,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .maya: return 3
         case .mayaswap: return 2
         case .pol: return 1
+        case .qbtc: return 1
         case .solana: return 4
         case .solanaSignData: return 1
         case .sui: return 1
@@ -131,9 +169,11 @@ enum ChainHelperFixture: String, CaseIterable {
         case .terra: return 5
         case .thorchain: return 9
         case .thorchainswap: return 5
+        case .thorchainswapLimitOrder: return 1
         case .ton: return 3
         case .tron: return 4
         case .utxo: return 5
+        case .utxoDashZcash: return 2
         case .xrp: return 3
         }
     }
@@ -163,9 +203,11 @@ final class ChainHelperTests: XCTestCase {
     // MARK: - Per-fixture golden vectors
 
     func testArbFixture() throws { try runFixture(.arb) }
+    func testBittensorFixture() throws { try runFixture(.bittensor) }
     func testBscFixture() throws { try runFixture(.bsc) }
     func testCardanoFixture() throws { try runFixture(.cardano) }
     func testCosmosFixture() throws { try runFixture(.cosmos) }
+    func testCosmosChainMatrixFixture() throws { try runFixture(.cosmosChainMatrix) }
     func testCosmosSdkSignAminoFixture() throws { try runFixture(.cosmosSdkSignAmino) }
     func testCosmosSdkSignDirectFixture() throws { try runFixture(.cosmosSdkSignDirect) }
     func testDotFixture() throws { try runFixture(.dot) }
@@ -176,6 +218,7 @@ final class ChainHelperTests: XCTestCase {
     func testMayaFixture() throws { try runFixture(.maya) }
     func testMayaswapFixture() throws { try runFixture(.mayaswap) }
     func testPolFixture() throws { try runFixture(.pol) }
+    func testQbtcFixture() throws { try runFixture(.qbtc) }
     func testSolanaFixture() throws { try runFixture(.solana) }
     func testSolanaSignDataFixture() throws { try runFixture(.solanaSignData) }
     func testSuiFixture() throws { try runFixture(.sui) }
@@ -183,9 +226,11 @@ final class ChainHelperTests: XCTestCase {
     func testTerraFixture() throws { try runFixture(.terra) }
     func testThorchainFixture() throws { try runFixture(.thorchain) }
     func testThorchainswapFixture() throws { try runFixture(.thorchainswap) }
+    func testThorchainswapLimitOrderFixture() throws { try runFixture(.thorchainswapLimitOrder) }
     func testTonFixture() throws { try runFixture(.ton) }
     func testTronFixture() throws { try runFixture(.tron) }
     func testUtxoFixture() throws { try runFixture(.utxo) }
+    func testUtxoDashZcashFixture() throws { try runFixture(.utxoDashZcash) }
     func testXrpFixture() throws { try runFixture(.xrp) }
 
     // MARK: - Corpus guards
@@ -398,7 +443,13 @@ final class ChainHelperTests: XCTestCase {
     }
 
     private func runTestCase(_ testCase: ChainHelperTestCase) throws {
-        let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
+        var keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
+        if let zcashBranchId = testCase.zcashBranchId,
+           case .UTXO(let byteFee, let sendMaxAmount, _) = keysignPayload.chainSpecific {
+            keysignPayload = keysignPayload.withChainSpecific(
+                .UTXO(byteFee: byteFee, sendMaxAmount: sendMaxAmount, zcashBranchId: zcashBranchId)
+            )
+        }
         let chain = keysignPayload.coin.chain
         if keysignPayload.swapPayload != nil {
             switch keysignPayload.swapPayload {
@@ -427,7 +478,7 @@ final class ChainHelperTests: XCTestCase {
         let chain = keysignPayload.coin.chain
         var result: [String] = []
         switch chain {
-        case .bitcoin, .bitcoinCash, .dogecoin, .litecoin, .zcash:
+        case .bitcoin, .bitcoinCash, .dogecoin, .litecoin, .zcash, .dash:
             let utxoHelper = UTXOChainsHelper(coin: chain.coinType)
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
@@ -452,7 +503,7 @@ final class ChainHelperTests: XCTestCase {
             result +=  try SolanaHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ripple:
             result += try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-        case .terra, .terraClassic, .gaiaChain, .kujira:
+        case .terra, .terraClassic, .gaiaChain, .kujira, .osmosis, .dydx, .noble, .akash, .qbtc:
             let helper = try CosmosHelper.getHelper(forChain: chain)
             result += try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ton:
@@ -461,6 +512,8 @@ final class ChainHelperTests: XCTestCase {
             result += try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .polkadot:
             result += try PolkadotHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .bittensor:
+            result += try BittensorHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .sui:
             result += try SuiHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .cardano:
