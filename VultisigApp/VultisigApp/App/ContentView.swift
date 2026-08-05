@@ -156,9 +156,10 @@ struct ContentView: View {
     @ViewBuilder
     var passcodeGate: some View {
         if appViewModel.isPasscodeLocked {
-            EnterPasscodeScreen {
-                appViewModel.markPasscodeUnlocked()
-            }
+            EnterPasscodeScreen(
+                onUnlocked: { appViewModel.markPasscodeUnlocked() },
+                onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
+            )
             // No `.ignoresSafeArea()` here. `Screen` already paints its
             // background full-bleed while keeping content inside the safe area;
             // ignoring it at this level pushed the title under the Dynamic

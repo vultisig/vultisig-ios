@@ -33,6 +33,12 @@ class AppViewModel: ObservableObject {
 
     private let logic = AccountLogic()
     private let lockService: AppLockService
+    /// Held rather than reached through `PasscodeService.shared`, so a test can
+    /// drive a real service over a mock Keychain and watch the overlay follow
+    /// it. Only its `nonisolated` members are used here, so no `await` — and
+    /// that matters: an `await` would be a suspension point between asking
+    /// whether a gate is required and acting on the answer.
+    private let passcodeService: PasscodeService
     /// Injected rather than called directly so a test can prove it runs *before*
     /// the launch gate reads the lock mode, which is the whole property.
     private let reconcileInstall: @MainActor () -> Void
@@ -40,9 +46,11 @@ class AppViewModel: ObservableObject {
 
     init(
         lockService: AppLockService = .shared,
+        passcodeService: PasscodeService = .shared,
         reconcileInstall: @escaping @MainActor () -> Void = { KeyshareInstallReconciler().reconcile() }
     ) {
         self.lockService = lockService
+        self.passcodeService = passcodeService
         self.reconcileInstall = reconcileInstall
     }
 
@@ -166,15 +174,47 @@ class AppViewModel: ObservableObject {
         lockService.noteBackgrounded()
     }
 
-    /// Engages the passcode lock if that is the configured mode.
+    /// Engages the passcode lock: forgets the data key, then raises the overlay.
     ///
-    /// Forgetting the data key is what actually locks the app — the screen only
+    /// Forgetting the key is what actually locks the app — the screen only
     /// reflects it. Without this the shares would stay readable behind the
     /// overlay and signing would still work.
-    func lockWithPasscodeIfNeeded() {
-        guard lockService.mode == .passcode else { return }
-        PasscodeService.shared.lock()
+    ///
+    /// **Whether a gate is required is the caller's question**, asked as
+    /// ``PasscodeService/isPasscodeGateRequired`` once, immediately before this.
+    /// Re-deriving it here would mean the decision and the act came from two
+    /// reads, and a passcode transition runs on `PasscodeService`'s executor
+    /// rather than this one, so the second can disagree with the first: the
+    /// caller would return past its own device-auth fallback believing a gate had
+    /// gone up while this raised none, and the app would come back with neither.
+    func raisePasscodeGate() {
+        passcodeService.lock()
         isPasscodeLocked = true
+    }
+
+    /// Takes the gate down when the passcode behind it is confirmed gone.
+    ///
+    /// ``isPasscodeLocked`` is a cache of ``PasscodeService/isPasscodeGateRequired``
+    /// taken at the moment the gate went up, and one transition invalidates that
+    /// cache in the worst way available. A `disablePasscode` that runs to
+    /// completion across a background `lock()` leaves `.deviceAuth`, no wrapper,
+    /// and a screen whose only exit is an unlock that can now answer nothing but
+    /// `notSet` — nothing typed there is ever right, and force quitting is the
+    /// only way out. So every path that can observe the gate while it is up
+    /// re-derives the predicate rather than trusting the flag.
+    ///
+    /// Only a **confirmed** absence lowers it. An unreadable Keychain leaves the
+    /// gate standing, because taking a real gate down over a momentary read
+    /// failure is the one mistake available here that removes protection instead
+    /// of restoring access.
+    ///
+    /// The caller is the lock screen, after an attempt that did not open the
+    /// app: `unlockApp` repairs the lock mode when it finds the passcode
+    /// confirmed gone, and this is what makes that repair visible to the person
+    /// the gate is standing in front of.
+    func lowerPasscodeGateIfNoLongerRequired() {
+        guard !passcodeService.isPasscodeGateRequired else { return }
+        isPasscodeLocked = false
     }
 
     /// Takes the lock screen down, but only if the session still holds the data
@@ -188,7 +228,7 @@ class AppViewModel: ObservableObject {
     /// assignment. The result would be balances and addresses on screen over a
     /// session that cannot sign.
     func markPasscodeUnlocked() {
-        guard PasscodeService.shared.isSessionUnlocked else { return }
+        guard passcodeService.isSessionUnlocked else { return }
         isPasscodeLocked = false
     }
 
@@ -208,28 +248,63 @@ class AppViewModel: ObservableObject {
     /// hold by construction instead of by luck; a second pass is a no-op,
     /// because the destructive half is marked once per container and the
     /// mode alignment only writes when it disagrees.
+    ///
+    /// The gate itself is then ``PasscodeService/isPasscodeGateRequired``, read
+    /// *after* that repair rather than before it — reconciliation is precisely
+    /// what can move the mode the predicate's first clause reads. A cold start
+    /// with a persisted `.passcode` and a confirmed-absent wrapper therefore
+    /// opens the app rather than presenting a lock screen no passcode can
+    /// satisfy, and one whose Keychain merely did not answer still presents it.
     @MainActor
     func restorePasscodeLockOnLaunch() {
         reconcileInstall()
 
-        guard lockService.mode == .passcode else { return }
-        PasscodeService.shared.lock()
-        isPasscodeLocked = true
+        guard passcodeService.isPasscodeGateRequired else {
+            isPasscodeLocked = false
+            return
+        }
+        raisePasscodeGate()
     }
 
+    /// The foreground hook, and so the first place a transition that completed
+    /// while the app was away becomes visible.
+    ///
+    /// Which gate this install has is asked as
+    /// ``PasscodeService/isPasscodeGateRequired`` rather than read off
+    /// `AppLockService.mode`, because here the two differing is not merely a gate
+    /// nobody can open: a persisted `.passcode` over a confirmed-absent wrapper
+    /// would take the passcode branch, raise nothing, and skip the device-auth
+    /// re-lock as well — leaving the app open behind no gate at all. Asking the
+    /// predicate routes that install onto the legacy path, which is the correct
+    /// protection once there is no passcode.
+    ///
+    /// It is derived **once** and every branch acts on that one answer. The
+    /// branch that returns past the device-auth fallback must never be entered on
+    /// a `true` that has since become `false`, and a transition running on
+    /// `PasscodeService`'s executor can make a second read disagree with the
+    /// first — which is a foreground raising nothing and returning anyway.
     func enableAuth() {
         // The re-lock delay used to be five minutes hardcoded here, with no way
         // for anyone to change it. `AppLockService` owns that policy now.
         let shouldRelock = lockService.evaluateForeground()
+        let gateRequired = passcodeService.isPasscodeGateRequired
 
-        if shouldRelock, lockService.mode == .passcode {
-            // The lock goes up BEFORE the cover comes down. Dropping the cover
-            // first left the home screen — balances, addresses — visible for the
-            // frames it took the lock screen to mount, on every single unlock.
-            lockWithPasscodeIfNeeded()
+        if gateRequired {
+            if shouldRelock {
+                // The lock goes up BEFORE the cover comes down. Dropping the
+                // cover first left the home screen — balances, addresses —
+                // visible for the frames it took the lock screen to mount, on
+                // every single unlock.
+                raisePasscodeGate()
+            }
             showCover = false
             return
         }
+
+        // The same rule as `lowerPasscodeGateIfNoLongerRequired()`, from the
+        // answer already read: a gate raised before the app went away can be
+        // standing over a passcode a disable removed while it was.
+        isPasscodeLocked = false
 
         showCover = false
         guard shouldRelock else { return }

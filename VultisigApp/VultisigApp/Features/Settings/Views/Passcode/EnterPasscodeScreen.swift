@@ -11,6 +11,15 @@ struct EnterPasscodeScreen: View {
 
     @StateObject private var viewModel = PasscodeViewModel()
     let onUnlocked: () -> Void
+    /// Reported after an attempt that did not open the app.
+    ///
+    /// `PasscodeService.unlockApp` repairs the lock mode when it finds the
+    /// passcode confirmed gone, and this screen is who that repair is for:
+    /// whoever is typing here is the user a completed disable trapped, and the
+    /// error they were about to be shown is one no further entry can answer.
+    /// Whether the gate may come down stays `AppViewModel`'s decision — this
+    /// only reports that there is something to decide.
+    let onAttemptFailed: () -> Void
 
     var body: some View {
         Screen {
@@ -22,7 +31,11 @@ struct EnterPasscodeScreen: View {
                 showsLogo: true,
                 passcode: $viewModel.entry,
                 onComplete: { _ in
-                    Task { await viewModel.unlock() }
+                    Task {
+                        await viewModel.unlock()
+                        guard !viewModel.didFinish else { return }
+                        onAttemptFailed()
+                    }
                 }
             )
         }
