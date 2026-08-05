@@ -119,18 +119,45 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         XCTAssertEqual(keychain.writes, [])
     }
 
-    /// The other half of the same rule: skipping the clear is only allowed on a
-    /// *confirmed* absence. Skipping on a read failure would also set the marker,
-    /// so the inherited passcode would survive forever.
-    func testAnUnreadableKeychainIsNotMistakenForNothingToClear() {
+    /// The other half of the same rule, and the reason an unreadable Keychain is
+    /// a *deferral* rather than either answer. Skipping the clear would set the
+    /// marker, so the inherited passcode would survive forever; running it would
+    /// issue deletes on a first-ever install whose Keychain merely stuttered,
+    /// which is the launch-time mutation the acceptance test forbids. Neither is
+    /// acceptable, so nothing is written and the next launch decides with an
+    /// answer.
+    func testAnUnreadableKeychainDefersTheClearWithoutWritingAnything() {
         keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
 
         sut.reconcile(isStoreEmpty: true)
 
-        XCTAssertTrue(
-            keychain.writes.contains("wrappedKeyshareDataKey"),
-            "an item that could not be read may well be there, so the clear must still run"
-        )
+        XCTAssertEqual(keychain.writes, [], "an unreadable Keychain must not be answered with writes")
+
+        // A deferral, not a decision: once the item can be read, the clear runs.
+        keychain.wrappedKeyshareDataKeyResult = .present(wrappedBlob)
+        sut.reconcile(isStoreEmpty: true)
+
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
+    }
+
+    /// A store that cannot be read is not an occupied one. Treating it as
+    /// occupied wrote the marker, and the marker is permanent — so a genuinely
+    /// new container whose store happened to be unreadable at launch would keep
+    /// the previous install's wrapped key for good: a passcode gate that cannot
+    /// be opened and cannot be reinstalled away, which is the exact failure this
+    /// type exists to prevent.
+    func testAnUnreadableStoreDefersReconciliationRatherThanRetiringIt() throws {
+        try keyStore.storeWrappedDataKey(wrappedBlob)
+        keychain.resetWrites()
+
+        sut.reconcile(occupancy: .unknown)
+
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .present(wrappedBlob), "nothing is decided yet")
+        XCTAssertEqual(keychain.writes, [])
+
+        sut.reconcile(occupancy: .empty)
+
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent, "the deferred launch must still clear")
     }
 
     /// The marker is the only evidence a container has been seen before, and it

@@ -76,19 +76,38 @@ struct KeyshareInstallReconciler {
         self.defaults = defaults
     }
 
+    /// What the container's store says about whether it is new.
+    ///
+    /// Three cases and not a `Bool`, because "I could not read the store" is
+    /// neither of the other two and every way of pretending otherwise is wrong:
+    /// read as *occupied* it retires the clear permanently on a container that
+    /// may well be new, and read as *empty* it would delete key material a full
+    /// store still depends on.
+    enum StoreOccupancy {
+        case empty
+        case occupied
+        case unknown
+    }
+
     @MainActor
     func reconcile() {
-        // A store that cannot be read counts as "not empty". Being unable to
-        // tell must never be mistaken for a new container.
-        var isStoreEmpty = false
-        if let context = Storage.shared.modelContext,
-           let count = try? context.fetchCount(FetchDescriptor<Vault>()) {
-            isStoreEmpty = count == 0
+        reconcile(occupancy: storeOccupancy())
+    }
+
+    @MainActor
+    private func storeOccupancy() -> StoreOccupancy {
+        guard let context = Storage.shared.modelContext,
+              let count = try? context.fetchCount(FetchDescriptor<Vault>()) else {
+            return .unknown
         }
-        reconcile(isStoreEmpty: isStoreEmpty)
+        return count == 0 ? .empty : .occupied
     }
 
     func reconcile(isStoreEmpty: Bool) {
+        reconcile(occupancy: isStoreEmpty ? .empty : .occupied)
+    }
+
+    func reconcile(occupancy: StoreOccupancy) {
         // Both halves read the wrapped key and act on what they read, so both
         // have to be indivisible against a passcode transition. Without this a
         // launch could clear a wrapper `setPasscode` had just made durable, or
@@ -100,37 +119,61 @@ struct KeyshareInstallReconciler {
         }
         defer { coordinator.end(lease) }
 
-        clearInheritedKeyMaterialIfContainerIsNew(isStoreEmpty: isStoreEmpty)
+        clearInheritedKeyMaterialIfContainerIsNew(occupancy: occupancy)
         alignLockModeWithTheWrappedKey()
     }
 
     // MARK: - Inherited key material
 
-    private func clearInheritedKeyMaterialIfContainerIsNew(isStoreEmpty: Bool) {
+    private func clearInheritedKeyMaterialIfContainerIsNew(occupancy: StoreOccupancy) {
         guard !defaults.bool(forKey: Self.markerKey) else { return }
 
-        // Existing users reach this line exactly once, on the first launch of the
-        // build that introduces the marker — with a full store. Clearing their
-        // wrapped key would orphan every sealed share, which in this app is lost
-        // funds, so the store having anything in it ends the matter here.
-        //
-        // It also has to be the store rather than "is anything sealed": a user
-        // part-way through enabling a passcode has a wrapper and unsealed
-        // shares, and one who has never set one has neither, so emptiness is the
-        // only thing that distinguishes a new container.
-        guard isStoreEmpty else {
+        switch occupancy {
+        case .occupied:
+            // Existing users reach this line exactly once, on the first launch
+            // of the build that introduces the marker — with a full store.
+            // Clearing their wrapped key would orphan every sealed share, which
+            // in this app is lost funds, so the store having anything in it ends
+            // the matter here.
+            //
+            // It also has to be the store rather than "is anything sealed": a
+            // user part-way through enabling a passcode has a wrapper and
+            // unsealed shares, and one who has never set one has neither, so
+            // emptiness is the only thing that distinguishes a new container.
             defaults.set(true, forKey: Self.markerKey)
             return
+        case .unknown:
+            // The marker is permanent, so it must never be written on a guess.
+            // Setting it here would retire the clear for good on a container
+            // that may be new — and a new container that keeps the previous
+            // install's wrapped key is a passcode gate the user cannot open and
+            // cannot get rid of by reinstalling, which is the whole reason this
+            // type exists. A deferred launch costs nothing.
+            logger.info("Reconciliation deferred: the vault store could not be read")
+            return
+        case .empty:
+            break
         }
 
-        // A first-ever install inherits nothing, and clearing nothing still
-        // costs a Keychain delete and its read-back per item. Someone who never
-        // sets a passcode must see no launch-time Keychain mutation at all, so
-        // confirmed absence ends it here — the marker is `UserDefaults`, which
-        // the acceptance test does not speak about.
-        guard hasInheritedKeyMaterial() else {
+        switch inheritedKeyMaterial() {
+        case .nothing:
+            // A first-ever install inherits nothing, and clearing nothing still
+            // costs a Keychain delete and its read-back per item. Someone who
+            // never sets a passcode must see no launch-time Keychain mutation at
+            // all, so confirmed absence ends it here — the marker is
+            // `UserDefaults`, which the acceptance test does not speak about.
             defaults.set(true, forKey: Self.markerKey)
             return
+        case .unknown:
+            // Same rule, and this is the case that keeps the acceptance test
+            // absolute rather than merely usual: issuing deletes over reads that
+            // failed is a launch-time Keychain mutation for someone who has
+            // never touched this feature. Deferring writes nothing at all and
+            // the next launch decides with an answer.
+            logger.info("Reconciliation deferred: inherited key material could not be determined")
+            return
+        case .something:
+            break
         }
 
         do {
@@ -144,18 +187,32 @@ struct KeyshareInstallReconciler {
         }
     }
 
-    /// Whether any passcode artifact might have been inherited.
+    /// What, if anything, this container inherited.
     ///
-    /// Only a **confirmed** absence counts as "nothing here". `.unavailable`
-    /// means the item may well be present, and a read failure that skipped the
-    /// clear would also set the marker — making the skip permanent, and leaving
-    /// exactly the inherited-passcode state this type exists to remove.
-    private func hasInheritedKeyMaterial() -> Bool {
-        if case .absent = keyStore.loadWrappedDataKey(),
-           case .absent = keychain.getPasscodeAttemptState() {
-            return false
-        }
-        return true
+    /// Three cases for the same reason the store's is: only a **confirmed**
+    /// absence means "nothing here", and an unreadable item is neither that nor
+    /// evidence of something. Collapsing `.unknown` into `.some` would issue
+    /// deletes on a first-ever install whose Keychain answered badly for a
+    /// moment; collapsing it into `.none` would set the marker and make the skip
+    /// permanent, leaving exactly the inherited-passcode state this type exists
+    /// to remove.
+    enum InheritedKeyMaterial {
+        /// Named `nothing`/`something` rather than `none`/`some` so neither can
+        /// be read as `Optional`'s cases at a call site.
+        case nothing
+        case something
+        case unknown
+    }
+
+    private func inheritedKeyMaterial() -> InheritedKeyMaterial {
+        let wrapper = keyStore.loadWrappedDataKey()
+        let attempts = keychain.getPasscodeAttemptState()
+
+        if case .present = wrapper { return .something }
+        if case .present = attempts { return .something }
+        if case .unavailable = wrapper { return .unknown }
+        if case .unavailable = attempts { return .unknown }
+        return .nothing
     }
 
     /// Only ever reached with an empty store, so none of what it removes can be

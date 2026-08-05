@@ -426,11 +426,18 @@ actor PasscodeService {
         let lease = try beginTransition()
         defer { coordinator.end(lease) }
 
+        // Read on **both** sides of the verification, and kept for the rollback
+        // below. `unlock` cannot succeed without reading this same item, so a
+        // read that comes back unreadable on one side of it is transient rather
+        // than meaningful — and without these bytes the rollback has nothing to
+        // restore, which is the difference between "the passcode is back" and
+        // "plaintext shares behind a mode that says there is no passcode".
+        let wrappedBeforeVerification = keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
+
         _ = try await unlock(with: current, now: now)
 
-        // The exact bytes, kept for the rollback below. `unlock` has just proved
-        // they open, so this is the one moment they are known good.
-        let wrapped = keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
+        let wrapped = wrappedBeforeVerification
+            ?? keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
 
         // The GCM tag check inside every open is the verification: a share that
         // comes back out is provably recoverable, and the key is still in hand

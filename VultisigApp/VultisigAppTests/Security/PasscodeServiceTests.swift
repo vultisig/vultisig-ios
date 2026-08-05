@@ -865,6 +865,38 @@ final class PasscodeServiceTests: XCTestCase {
         XCTAssertEqual(lockService.mode, .passcode)
     }
 
+    /// The bytes the rollback needs are taken **before** the verification, not
+    /// after it. `unlock` cannot succeed without reading the same item, so a
+    /// read that comes back unreadable on the far side of it is transient — and
+    /// a rollback with nothing to restore leaves plaintext shares behind a mode
+    /// that says there is no passcode, which is protection removed while the
+    /// call reports failure.
+    func testDisableStillRestoresTheWrapperWhenItCannotBeReReadAfterVerification() async throws {
+        try givenVaults([("vault-one", [share])])
+
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore, duringUnwrap: { [keychain] in
+            // The item stops answering the moment the passcode is proved, and
+            // the deletion that follows cannot be confirmed either.
+            keychain?.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+            keychain?.wrappedKeyshareDataKeyBecomesUnreadableOnDeletion = true
+        })
+        let service = makeService(keyStore: hooked)
+        try await service.setPasscode(passcode)
+
+        do {
+            try await service.disablePasscode(current: passcode)
+            XCTFail("Expected the deletion failure to surface")
+        } catch {
+            XCTAssertEqual(error as? KeyshareKeyStoreError, .deletionFailed)
+        }
+
+        let restored = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertFalse(restored.isEmpty, "the passcode has to be put back, not lost to an unreadable moment")
+        let stored = try XCTUnwrap(try storedShares().first)
+        XCTAssertTrue(protector.isSealed(stored), "protection must not come off while the call reports failure")
+        XCTAssertEqual(lockService.mode, .passcode)
+    }
+
     /// And when the wrapper cannot be made durable again, nothing is resealed.
     /// Plaintext shares with no key of any form is the no-passcode resting
     /// state — the only outcome here that loses nothing.
