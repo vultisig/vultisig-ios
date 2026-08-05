@@ -226,11 +226,16 @@ in passing without reading the tradeoff.
   callers must never record an unverified write as durable. This gap is the price
   of that choice, and it was priced.
 
-- **TSS call sites still use the optional-collapsing `Vault.getKeyshare(pubKey:)`
-  rather than the throwing `keyshareValue(for:)`.** So a locked app and a vault
-  with no share for that key are indistinguishable at those sites. That is
-  accessor-layer scope, and `Blockchain/Tss/` is a declared critical boundary
-  requiring maintainer review.
+- **Most TSS call sites still use the optional-collapsing
+  `Vault.getKeyshare(pubKey:)` rather than the throwing `keyshareValue(for:)`.**
+  So a locked app and a vault with no share for that key are indistinguishable at
+  those sites. `Blockchain/Tss/` is *not* one of them —
+  `LocalStateAccessorImpl.getLocalState` already uses the throwing accessor and
+  reports the failure through the TSS error pointer. What is left is
+  `Blockchain/States/Keygen/` (`DKLSKeygen`, `SchnorrKeygen`),
+  `Blockchain/States/Keysign/` (`DKLSKeysign`, `SchnorrKeysign`,
+  `DilithiumKeysign`) and `KeygenViewModel`. Converting them is accessor-layer
+  scope and has not been done.
 
 - **`ProtectedVaultImporter` saves a shared `ModelContext` that may be carrying
   another flow's pending work.** SwiftData has no scoped save. The alternatives

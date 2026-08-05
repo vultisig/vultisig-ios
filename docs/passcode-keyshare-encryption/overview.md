@@ -72,10 +72,14 @@ and `KeyshareKeySession.currentState()` is the only thing that produces them:
                  .locked                 .disabled                 .locked
         a passcode exists,          no passcode; shares      fail closed — the
         the key is not in hand      are plaintext            Keychain may hold
-        → open throws               → seal is a passthrough   a wrapper we
-        → seal throws               → open passes plaintext   cannot see
-                                       through
+        → open throws on a          → seal is a passthrough   a wrapper we
+          SEALED value              → open passes plaintext   cannot see
+        → seal throws                 through
 ```
+
+A plaintext value passes straight through `open` in **every** state, `.locked`
+included — that is the first thing `open` checks, before it consults the state at
+all. Only a sealed value can throw there.
 
 `.disabled` is the **majority and permanent** state, not a transient one before
 some migration. Most installs are in it and stay in it forever. That is why
@@ -141,9 +145,6 @@ Nothing. Not "an encrypted store with the key lying around" — nothing:
             KeyshareSweeper   ProtectedVaultImporter  KeyShare.sealed
             whole-store        every backup format     every write path
             seal/unseal        normalizes on import
-                    │                 │                 │
-                    └────────► KeyshareWriteCoordinator ◄┘
-                               transition / write / episode leases
 
  KeyshareKeySession     the opened key, in memory, + the lock generation
  KeyshareInstallReconciler  launch: Keychain vs. container vs. lock mode
@@ -151,6 +152,30 @@ Nothing. Not "an encrypted store with the key lying around" — nothing:
  PasscodeAttemptLimiter the in-app guessing throttle
  AppLockService         which gate is in use (off / deviceAuth / passcode)
 ```
+
+**Serialization is a separate axis, and it does not run through the types
+above.** `KeyshareSweeper` and `KeyShare.sealed` contain no reference to
+`KeyshareWriteCoordinator` at all — they are serialized by **whoever calls
+them**, which is why deleting a caller's lease as "redundant" is a live way to
+break this. Exactly five files reach the coordinator:
+
+```
+  KeyshareWriteCoordinator
+        ▲            ▲                    ▲
+   transition      write                episode
+        │            │                      │
+  PasscodeService    ├─ LocalStateAccessorImpl  ├─ KeygenViewModel
+    set/change/      │    (seal + append)       │    .startKeygen
+    disable          ├─ KeygenViewModel         └─ ProtectedVaultImporter
+  KeyshareInstall    │    .commitVault               .commit
+    Reconciler       └─ PasscodeService
+    .reconcile            unlockApp / unlockWithBiometrics
+                          enable/disableBiometricUnlock
+```
+
+So `sealAll` is safe because `setPasscode` holds a transition lease around it;
+`KeyShare.sealed` is safe because `saveLocalState` and `commitVault` hold a write
+lease around it. Neither can protect itself.
 
 Read paths: `Vault.keyshareValue(for:)` throws so a locked app is
 distinguishable from a vault with no share; `Vault.getKeyshare(pubKey:)` is the

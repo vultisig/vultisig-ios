@@ -137,8 +137,14 @@ changed yet.
 
 ## `disablePasscode(current:)`
 
-The exact inverse of `setPasscode`: the device is left byte-for-byte in the state
-it would have been in had a passcode never been set.
+The exact inverse of `setPasscode` where key material is concerned: no data key
+in any form, and every share byte-identical to what a device that never had a
+passcode would hold.
+
+One thing does not come back. `AppLockMode` has three cases, and this writes
+`.deviceAuth` unconditionally — so someone who was on `.off` before they set a
+passcode lands on `.deviceAuth`, not back on `.off`. That is a `UserDefaults`
+preference they can change again, not key material.
 
 ```
  0  lease = coordinator.beginTransition()
@@ -318,11 +324,16 @@ over a session that is locked again.
 There is one more gap after that, in the UI: `lock()` can land between
 `unlockApp` returning and the overlay flag moving. `PasscodeService.isSessionUnlocked`
 is `nonisolated` precisely so no `await` can open a gap between asking and
-acting. `AppViewModel.markPasscodeUnlocked()` checks it immediately before the
-flag moves, with nothing in between. `PasscodeViewModel.unlock()` cannot do that
-— `perform` sets `didFinish` on success — so it re-checks the instant
-`unlockApp` returns and puts `didFinish` back to `false` if a lock landed,
-clearing the entry so the passcode can be retyped.
+acting. Three callers, three shapes, all of them making a lock win:
+
+- `AppViewModel.markPasscodeUnlocked()` checks it immediately before the flag
+  moves, with nothing in between;
+- `PasscodeViewModel.unlockWithBiometrics(reason:)` derives the flag *from* the
+  check — `didFinish = service.isSessionUnlocked`;
+- `PasscodeViewModel.unlock()` cannot do either, because the shared `perform`
+  helper sets `didFinish` on success. So it re-checks the instant `unlockApp`
+  returns and puts `didFinish` back to `false` if a lock landed, clearing the
+  entry so the passcode can be retyped.
 
 ---
 
