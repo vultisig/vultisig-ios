@@ -5,6 +5,15 @@
 
 import SwiftUI
 
+/// Unscaled line box reserved for the amount row — the full line box of
+/// `Theme.fonts.priceTitle2` (Satoshi-Medium 22) rounded up: ascent 22.22 +
+/// descent 5.28 + leading 2.20 = 29.70.
+///
+/// Scaled through `@ScaledMetric` at the point of use, so it tracks Dynamic Type
+/// the same way the font does — `Font.custom(_:size:)` scales relative to `.body`,
+/// which is also `@ScaledMetric`'s default text style.
+private let swapAmountLineHeight: CGFloat = 30
+
 /// The shared Sell/Buy (a.k.a. From/To) asset card used by BOTH swap forms — the
 /// Market form (`SwapFromToField`) and the Limit form (`LimitAssetRow`). Purely
 /// presentational (no view model): each form is a thin adapter that maps its own
@@ -57,6 +66,19 @@ struct SwapAssetCard<Focus: Hashable>: View {
     /// The Buy/To card is the same shape rotated 180° so its notch sits on the top
     /// edge; both cards' notches then meet as one circle around the shared toggle.
     let isSecondRow: Bool
+
+    /// Height the amount row reserves, so the row is one deterministic size instead
+    /// of whatever its current content happens to measure.
+    ///
+    /// The two amount branches otherwise report three different intrinsic heights
+    /// for the same font. On iOS the editable branch is a `UITextField`-backed
+    /// `TextField` measuring 28.00pt while it shows its placeholder but 29.33pt once
+    /// it holds text, and the read-only branch is a plain `Text` measuring 27.67pt.
+    /// So the row — and the fiat line and coin pill laid out against it — shifted the
+    /// instant the first character was typed, the Sell and Buy cards never shared a
+    /// baseline, and the empty field was shorter than the 29.33pt caret drawn inside
+    /// it. Reserving the font's own line box collapses all three to one height.
+    @ScaledMetric private var amountLineHeight: CGFloat = swapAmountLineHeight
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -127,6 +149,7 @@ struct SwapAssetCard<Focus: Hashable>: View {
                     .font(Theme.fonts.priceTitle2)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.trailing)
+                    .frame(height: amountLineHeight)
                 Text(fiat)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
