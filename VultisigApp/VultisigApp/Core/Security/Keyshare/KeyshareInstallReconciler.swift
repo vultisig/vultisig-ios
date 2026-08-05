@@ -58,6 +58,7 @@ struct KeyshareInstallReconciler {
 
     private let keychain: KeychainService
     private let keyStore: KeyshareKeyStoring
+    private let biometrics: BiometricUnlockStore
     private let lockService: AppLockService
     private let coordinator: KeyshareWriteCoordinator
     private let defaults: UserDefaults
@@ -65,12 +66,14 @@ struct KeyshareInstallReconciler {
     init(
         keychain: KeychainService = DefaultKeychainService.shared,
         keyStore: KeyshareKeyStoring = DefaultKeyshareKeyStore.shared,
+        biometrics: BiometricUnlockStore = .shared,
         lockService: AppLockService = .shared,
         coordinator: KeyshareWriteCoordinator = .shared,
         defaults: UserDefaults = .standard
     ) {
         self.keychain = keychain
         self.keyStore = keyStore
+        self.biometrics = biometrics
         self.lockService = lockService
         self.coordinator = coordinator
         self.defaults = defaults
@@ -210,6 +213,11 @@ struct KeyshareInstallReconciler {
 
         if case .present = wrapper { return .something }
         if case .present = attempts { return .something }
+        // The biometric copy has no tri-state to report — presence is checked
+        // without authentication and answers true even when the item exists but
+        // needs a face, so a `false` here is as close to a confirmed absence as
+        // this item gets.
+        if biometrics.isEnabled { return .something }
         if case .unavailable = wrapper { return .unknown }
         if case .unavailable = attempts { return .unknown }
         return .nothing
@@ -222,6 +230,16 @@ struct KeyshareInstallReconciler {
         logger.info("New app container over surviving Keychain state — clearing inherited key material")
 
         try keyStore.deleteWrappedDataKey()
+
+        // The biometric copy is a second copy of the same key and survives the
+        // uninstall too. Left behind it reports biometric unlock as already
+        // enabled — an enablement nobody made on this install — and it is bound
+        // to a wrapper that has just been deleted, so it could only ever be
+        // refused. Deletion tolerates a missing item, so this is a no-op on a
+        // first-ever install, and it is verified rather than fire-and-forget:
+        // a survivor is exactly the silent-shortcut case `disable()` exists to
+        // prevent.
+        try biometrics.disable()
 
         // The attempt limiter keeps its state in the Keychain on purpose, so a
         // lockout cannot be shaken off by reinstalling. That reasoning does not

@@ -15,6 +15,8 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
 
     private var keychain: MockKeychainService!
     private var keyStore: DefaultKeyshareKeyStore!
+    private var biometricKeychain: StubBiometricKeychain!
+    private var biometrics: BiometricUnlockStore!
     private var lockService: AppLockService!
     private var coordinator: KeyshareWriteCoordinator!
     private var defaults: UserDefaults!
@@ -31,12 +33,15 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
 
         keychain = MockKeychainService()
         keyStore = DefaultKeyshareKeyStore(keychain: keychain)
+        biometricKeychain = StubBiometricKeychain()
+        biometrics = BiometricUnlockStore(keychain: biometricKeychain)
         lockService = AppLockService(defaults: defaults)
 
         coordinator = KeyshareWriteCoordinator()
         sut = KeyshareInstallReconciler(
             keychain: keychain,
             keyStore: keyStore,
+            biometrics: biometrics,
             lockService: lockService,
             coordinator: coordinator,
             defaults: defaults
@@ -48,6 +53,8 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         sut = nil
         coordinator = nil
         lockService = nil
+        biometrics = nil
+        biometricKeychain = nil
         keyStore = nil
         keychain = nil
         defaults = nil
@@ -330,5 +337,84 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         sut.reconcile(isStoreEmpty: true)
 
         XCTAssertEqual(keychain.getPasscodeAttemptState(), .absent)
+    }
+
+    // MARK: - The biometric copy
+
+    /// A second copy of the same key, and it survives the uninstall too. Left
+    /// behind it reports biometric unlock as already enabled and is bound to a
+    /// wrapper this pass has just deleted, so it could only ever be refused.
+    func testANewContainerClearsTheBiometricCopy() throws {
+        try biometrics.enable(dataKey: try VaultCryptoEnvelope.randomKey(), boundTo: wrappedBlob)
+        XCTAssertTrue(biometrics.isEnabled)
+
+        sut.reconcile(isStoreEmpty: true)
+
+        XCTAssertFalse(biometrics.isEnabled)
+    }
+
+    func testAStoreWithVaultsKeepsItsBiometricCopy() throws {
+        try biometrics.enable(dataKey: try VaultCryptoEnvelope.randomKey(), boundTo: wrappedBlob)
+
+        sut.reconcile(isStoreEmpty: false)
+
+        XCTAssertTrue(biometrics.isEnabled)
+    }
+
+    func testAFailedBiometricClearIsRetriedOnTheNextLaunch() throws {
+        try biometrics.enable(dataKey: try VaultCryptoEnvelope.randomKey(), boundTo: wrappedBlob)
+        biometricKeychain.failsDeletion = true
+
+        sut.reconcile(isStoreEmpty: true)
+
+        XCTAssertTrue(biometrics.isEnabled)
+
+        biometricKeychain.failsDeletion = false
+        sut.reconcile(isStoreEmpty: true)
+
+        XCTAssertFalse(biometrics.isEnabled)
+    }
+
+    /// The short-circuit that keeps a first-ever install from writing anything
+    /// has to count the biometric copy too. A container carrying only that one
+    /// would otherwise be judged to have inherited nothing, get marked as
+    /// reconciled, and keep the leftover shortcut for good.
+    func testAnInheritedBiometricCopyAloneStillTriggersTheClear() throws {
+        try biometrics.enable(dataKey: try VaultCryptoEnvelope.randomKey(), boundTo: wrappedBlob)
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
+        XCTAssertEqual(keychain.getPasscodeAttemptState(), .absent)
+
+        sut.reconcile(isStoreEmpty: true)
+
+        XCTAssertFalse(biometrics.isEnabled)
+    }
+}
+
+/// In-memory stand-in for the biometry-protected Keychain item — the real one
+/// needs an entitlement and a device with biometrics enrolled.
+private final class StubBiometricKeychain: BiometricKeychainProtecting {
+
+    var failsDeletion = false
+
+    private var items: [String: Data] = [:]
+
+    /// An add, not an upsert, mirroring `SecItemAdd`.
+    func store(_ data: Data, account: String) throws {
+        guard items[account] == nil else { throw BiometricUnlockError.storageFailed }
+        items[account] = data
+    }
+
+    func read(account: String, prompt _: String) throws -> Data {
+        guard let data = items[account] else { throw BiometricUnlockError.notEnabled }
+        return data
+    }
+
+    func delete(account: String) throws {
+        guard !failsDeletion else { throw BiometricUnlockError.storageFailed }
+        items[account] = nil
+    }
+
+    func exists(account: String) -> Bool {
+        items[account] != nil
     }
 }
