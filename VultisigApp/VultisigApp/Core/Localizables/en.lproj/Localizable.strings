@@ -665,7 +665,6 @@
 "kaminoVerifyUnreadable" = "These bytes call the Kamino vault program but could not be read as a deposit or a withdrawal. Do not sign them.";
 "kaminoVerifyVault" = "Vault";
 "kaminoVerifyWithdraw" = "Withdraw from vault";
-"kaminoWithdrawFarmStaked" = "Your deposit in this vault is staked in its farm. Withdrawing a staked position is not supported yet.";
 "kaminoWithdrawInsufficientLiquidity" = "This vault cannot settle that withdrawal right now — only %@ %@ is available immediately.";
 "kaminoWithdrawLimitedLiquidity" = "Only %@ %@ can be withdrawn from this vault immediately. A larger withdrawal may not settle until the vault frees up more liquidity.";
 "kaminoWithdrawMinimum" = "Minimum withdrawal is %@ %@.";

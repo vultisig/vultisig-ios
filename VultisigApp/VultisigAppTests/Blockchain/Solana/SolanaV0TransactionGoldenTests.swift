@@ -213,7 +213,9 @@ final class SolanaV0TransactionGoldenTests: XCTestCase {
     func testKaminoUnitLimitsClearMeasuredUsage() {
         XCTAssertGreaterThan(KaminoComputeBudget.tokenDepositUnitLimit, 252_146)
         XCTAssertGreaterThan(KaminoComputeBudget.nativeDepositUnitLimit, 287_029)
-        XCTAssertGreaterThan(KaminoComputeBudget.withdrawUnitLimit, 174_566)
+        // The staked withdraw, not the unstaked one: 309,310 units on the
+        // wrapped-SOL vault, which is the shape the limit has to cover.
+        XCTAssertGreaterThan(KaminoComputeBudget.withdrawUnitLimit, 309_310)
 
         // `SolanaHelper.priorityFeeLimit` is the transfer-path constant; every
         // Kamino limit has to sit above it, or the transaction aborts on compute

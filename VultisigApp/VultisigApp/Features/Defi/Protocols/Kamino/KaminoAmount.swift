@@ -97,6 +97,40 @@ struct KaminoRate: Hashable {
     private var apiStringValue: String {
         KaminoBaseUnits.render(baseUnits: numerator, decimals: scale)
     }
+
+    /// This value's numerator at `target` decimal places, or `nil` when `target`
+    /// is too coarse to hold it without loss.
+    func numerator(atScale target: Int) -> BigInt? {
+        guard target >= scale else { return nil }
+        return numerator * BigInt(10).power(target - scale)
+    }
+
+    /// The exact sum of two API decimal strings, or `nil` when either is not one.
+    ///
+    /// Exists so two reported figures can be added at the precision they were
+    /// reported at, rather than after each has been truncated to a mint's scale.
+    /// See `KaminoSharePosition.accountsForItsTotal` for why that distinction is
+    /// the difference between a guard and a false refusal.
+    static func sum(_ lhs: String, _ rhs: String) -> KaminoRate? {
+        guard let left = KaminoRate(apiString: lhs), let right = KaminoRate(apiString: rhs) else { return nil }
+        let scale = max(left.scale, right.scale)
+        guard let a = left.numerator(atScale: scale), let b = right.numerator(atScale: scale) else { return nil }
+        return KaminoRate(numerator: a + b, scale: scale)
+    }
+
+    /// Whether `value` names exactly this number. `false` when it is not a plain
+    /// decimal at all — an unreadable figure is never equal to a readable one.
+    static func isEqual(_ lhs: KaminoRate, _ rhs: String) -> Bool {
+        guard let right = KaminoRate(apiString: rhs) else { return false }
+        let scale = max(lhs.scale, right.scale)
+        guard let a = lhs.numerator(atScale: scale), let b = right.numerator(atScale: scale) else { return false }
+        return a == b
+    }
+
+    private init(numerator: BigInt, scale: Int) {
+        self.numerator = numerator
+        self.scale = scale
+    }
 }
 
 /// Rendering and scaling helpers shared by the amount types.
@@ -361,15 +395,32 @@ enum KaminoAmountMath {
 
     /// Rescales an exact rate to base units at `decimals`, truncating toward zero.
     static func scale(rate: KaminoRate, toDecimals decimals: Int) -> BigInt? {
+        scaleReportingExactness(rate: rate, toDecimals: decimals)?.baseUnits
+    }
+
+    /// The same rescale, plus whether anything was truncated away.
+    ///
+    /// The flag exists for one caller and one reason. `/positions` reports share
+    /// balances at up to 14 decimal places while a share mint has 6, so the
+    /// truncated figure is *strictly below* the real balance whenever there were
+    /// extra digits — and exactly equal to it when there were not. The withdraw
+    /// maximum has to be strictly below, so it needs to know which of the two
+    /// happened. See `KaminoSharePosition.spendable`.
+    static func scaleReportingExactness(
+        rate: KaminoRate,
+        toDecimals decimals: Int
+    ) -> (baseUnits: BigInt, isExact: Bool)? {
         guard (0...KaminoBaseUnits.maxDecimals).contains(decimals),
               (0...KaminoBaseUnits.maxDecimals * 4).contains(rate.scale),
               rate.numerator >= 0
         else { return nil }
 
         if decimals >= rate.scale {
-            return rate.numerator * BigInt(10).power(decimals - rate.scale)
+            return (rate.numerator * BigInt(10).power(decimals - rate.scale), true)
         }
-        return rate.numerator / BigInt(10).power(rate.scale - decimals)
+        let divisor = BigInt(10).power(rate.scale - decimals)
+        let (quotient, remainder) = rate.numerator.quotientAndRemainder(dividingBy: divisor)
+        return (quotient, remainder.isZero)
     }
 }
 

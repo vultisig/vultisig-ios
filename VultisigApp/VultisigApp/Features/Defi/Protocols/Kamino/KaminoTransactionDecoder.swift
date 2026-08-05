@@ -116,6 +116,34 @@ struct KaminoDecodedTransaction: Equatable {
 /// transaction can hide from a co-signer, and it is bounded twice over: by the
 /// sequence, which refuses an instruction the template does not name, and by the
 /// argument checks above, which refuse the spends it could have inflated.
+///
+/// **And one residue that is specific to the farm-staked withdraw, stated
+/// exactly.** How many shares a withdraw legitimately releases from the farm is
+/// `requested − alreadyUnstaked`, and the second term is a BALANCE — it is not
+/// in the bytes and cannot be derived from them. So offline this cannot
+/// distinguish a release of exactly the shortfall from a larger one, and a
+/// relayed transaction could release up to the amount being withdrawn when less
+/// was needed. The initiating device has the balance and pins the amount
+/// exactly; a co-signer bounds it by the withdraw and no further.
+///
+/// What that residue is NOT is an unbounded one, and the three things that would
+/// have made it unbounded are closed rather than documented:
+///
+/// - An unstake without its companion — which would strand shares in the farm's
+///   pending-withdrawal state, out of the position and off every screen — is
+///   refused by the template's paired step.
+/// - A release aimed at another farm, or at another holder's position, is
+///   refused because the farms **user state** is a program address over the
+///   vault's farm and this signer, so it is recomputed here rather than read.
+///   That is what ties a farm release to the vault being withdrawn from without
+///   resolving a lookup table, and it is why the farm slot being unreadable
+///   offline does not leave the release unattributed.
+/// - The released shares landing anywhere but the account the withdraw burns
+///   from is refused by comparing the two directly.
+///
+/// So the shares a release can move are the signer's own, in this vault's own
+/// farm, into the signer's own share account. What is left unpinned offline is
+/// only HOW MANY, bounded above by the withdraw itself.
 enum KaminoTransactionDecoder {
 
     /// Whether these bytes invoke the kVaults program at all.
@@ -227,7 +255,14 @@ enum KaminoTransactionDecoder {
             // Read from the bytes rather than assumed: the pre-injection form
             // never leaves the preparer, but a relayed transaction is whatever
             // it is, and the template has to describe the one in hand.
-            hasPriorityFee: kinds.contains(.computeUnitLimit) || kinds.contains(.computeUnitPrice)
+            hasPriorityFee: kinds.contains(.computeUnitLimit) || kinds.contains(.computeUnitPrice),
+            // Which of the two withdraw shapes this is depends on how the
+            // signer's position was split when the request was built, and a
+            // co-signer holds no position at all. So both shapes are accepted
+            // and the unstake is bounded by its ARGUMENT instead — see
+            // `readArguments`, which refuses one that releases more shares than
+            // the withdraw itself burns.
+            farmUnstake: .unknown
         )
         guard case .success(let matched) = KaminoInstructionSequence.match(kinds: kinds, against: steps) else {
             return nil
@@ -245,7 +280,8 @@ enum KaminoTransactionDecoder {
             signer: signer,
             operation: operation,
             amount: amount,
-            descriptor: descriptor
+            descriptor: descriptor,
+            shareAccount: shareAccount
         ) else { return nil }
 
         return KaminoDecodedTransaction(
@@ -304,7 +340,8 @@ enum KaminoTransactionDecoder {
         signer: String,
         operation: KaminoKeysignPayload.Operation,
         amount: UInt64,
-        descriptor: KaminoVaultDescriptor
+        descriptor: KaminoVaultDescriptor,
+        shareAccount: String
     ) -> Arguments? {
         var arguments = Arguments()
         var limit: UInt32?
@@ -316,8 +353,15 @@ enum KaminoTransactionDecoder {
 
             switch kind {
             case .computeUnitPrice:
+                // Bounded on BOTH sides, because the producer clamps into
+                // exactly this range. Above the ceiling is SOL spent for
+                // nothing; below the floor is a transaction that will not be
+                // picked up before its blockhash expires — and either way it is
+                // a price this app never chooses, so accepting it would be
+                // agreeing with a number nothing produced.
                 guard indexes.isEmpty,
                       let value = KaminoInstructionDiscriminator.computeUnitPrice(data),
+                      value >= KaminoComputeBudget.fallbackUnitPriceMicroLamports,
                       value <= KaminoComputeBudget.maxUnitPriceMicroLamports
                 else { return nil }
                 price = value
@@ -358,11 +402,81 @@ enum KaminoTransactionDecoder {
                 guard indexes.count >= KaminoInstructionAccounts.FarmsInitializeUser.minimumCount
                 else { return nil }
 
+            case .farmsUnstake:
+                // The `u128` WAD-scaled release amount. The exact figure is
+                // `requested − unstaked`, and the unstaked half is a balance
+                // this device cannot read — so what is checked here is the
+                // BOUND, which needs no position: a withdraw cannot
+                // legitimately take more out of the farm than it burns.
+                //
+                // The authority is checked too, and that is the half that
+                // matters most: whatever amount is released, it is released
+                // from THIS signer's own farm position and nobody else's.
+                guard operation == .withdraw,
+                      indexes.count >= KaminoInstructionAccounts.FarmsUnstake.minimumCount,
+                      staticAddress(accounts, indexes[KaminoInstructionAccounts.FarmsUnstake.owner]) == signer,
+                      let scaled = KaminoInstructionDiscriminator.anchorArgument128(data),
+                      scaled > 0,
+                      scaled % KaminoInstructionDiscriminator.farmsStakeScale == 0,
+                      scaled <= BigInt(amount) * KaminoInstructionDiscriminator.farmsStakeScale
+                else { return nil }
+                guard actsOnSignersFarmPosition(
+                    accounts,
+                    userStateIndex: indexes[KaminoInstructionAccounts.FarmsUnstake.userState],
+                    farmIndex: indexes[KaminoInstructionAccounts.FarmsUnstake.farm],
+                    signer: signer,
+                    descriptor: descriptor
+                ) else { return nil }
+
+            case .farmsWithdrawUnstakedDeposits:
+                // Where the released shares LAND, which is the account this
+                // instruction exists to credit. It has to be the same share
+                // account the vault withdraw then burns from — the one already
+                // proven to be this signer's, for this vault's share mint — or
+                // the release and the withdraw are two unrelated movements
+                // presented as one.
+                guard operation == .withdraw,
+                      indexes.count >= KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.minimumCount,
+                      KaminoInstructionDiscriminator.hasNoAnchorArgument(data),
+                      staticAddress(
+                          accounts,
+                          indexes[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.owner]
+                      ) == signer,
+                      staticAddress(
+                          accounts,
+                          indexes[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.userShareAccount]
+                      ) == shareAccount
+                else { return nil }
+                guard actsOnSignersFarmPosition(
+                    accounts,
+                    userStateIndex: indexes[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.userState],
+                    farmIndex: indexes[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.farm],
+                    signer: signer,
+                    descriptor: descriptor
+                ) else { return nil }
+
             case .createTokenAccount:
-                guard indexes.count >= KaminoInstructionAccounts.AssociatedToken.count else { return nil }
+                // Creating an account is not free — the PAYER funds its rent —
+                // and the step is repeatable, so an extra creation for a
+                // stranger's wallet would otherwise ride along unremarked and
+                // spend the signer's SOL. Both slots that decide who pays and
+                // who owns are static keys, so both are checked. The mint and
+                // the derived address need the lookup table; the initiating
+                // validator pins those.
+                guard indexes.count >= KaminoInstructionAccounts.AssociatedToken.count,
+                      staticAddress(accounts, indexes[KaminoInstructionAccounts.AssociatedToken.payer]) == signer,
+                      staticAddress(accounts, indexes[KaminoInstructionAccounts.AssociatedToken.wallet]) == signer
+                else { return nil }
 
             case .closeTokenAccount:
-                guard indexes.count >= KaminoInstructionAccounts.CloseAccount.count else { return nil }
+                // Closing an account SENDS its rent somewhere. Where it lands,
+                // and who authorised the close, are the two things that decide
+                // whether that is the signer reclaiming their own lamports or a
+                // third party collecting them.
+                guard indexes.count >= KaminoInstructionAccounts.CloseAccount.count,
+                      staticAddress(accounts, indexes[KaminoInstructionAccounts.CloseAccount.destination]) == signer,
+                      staticAddress(accounts, indexes[KaminoInstructionAccounts.CloseAccount.authority]) == signer
+                else { return nil }
 
             case .syncNative:
                 guard !indexes.isEmpty else { return nil }
@@ -418,6 +532,40 @@ enum KaminoTransactionDecoder {
                 .ownedAccounts(owner: owner, mint: descriptor.sharesMint)
                 .contains(account)
         }
+    }
+
+    /// Whether this farms instruction acts on the signer's stake in THIS vault's
+    /// farm, established from the accounts it names.
+    ///
+    /// The farm slot itself cannot carry this offline — it is a lookup-table
+    /// entry in every captured transaction, so comparing it opportunistically
+    /// would be a check that passes by being unreadable. The **user state** can:
+    /// it is a static key in every captured transaction and it is a program
+    /// address over `(farm, owner)`, so recomputing it from the registry's farm
+    /// and the transaction's own signer pins both at once. An instruction naming
+    /// a different farm, or another user's position, cannot produce this address.
+    ///
+    /// Required rather than opportunistic, and that is deliberate: it is the only
+    /// thing tying a farm release to the vault being withdrawn from, so a
+    /// transaction that moved the user state out of the static keys would leave
+    /// the release entirely unattributed — and the honest answer to that is to
+    /// refuse to describe it.
+    private static func actsOnSignersFarmPosition(
+        _ accounts: [String],
+        userStateIndex: UInt8,
+        farmIndex: UInt8,
+        signer: String,
+        descriptor: KaminoVaultDescriptor
+    ) -> Bool {
+        guard let farm = descriptor.farm,
+              let expected = KaminoFarmsUserState.derive(farm: farm, owner: signer),
+              staticAddress(accounts, userStateIndex) == expected
+        else { return false }
+
+        // And the farm slot too, when it happens to be a static key — an
+        // attacker moving it there must not thereby escape the comparison.
+        if let named = staticAddress(accounts, farmIndex), named != farm { return false }
+        return true
     }
 
     /// The address at `index`, or `nil` when it lives in an address lookup table

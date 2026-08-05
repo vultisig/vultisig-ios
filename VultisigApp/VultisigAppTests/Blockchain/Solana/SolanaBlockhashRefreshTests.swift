@@ -328,7 +328,9 @@ private extension SolanaBlockhashRefreshTests {
 
     static var withdrawIntent: KaminoTransactionIntent {
         KaminoTransactionIntent(
-            operation: .withdraw(withdrawShares),
+            operation: .withdraw(
+                KaminoWithdrawRequest(shares: withdrawShares, unstakedShares: withdrawShares)
+            ),
             vault: steakhouseVault,
             owner: KaminoTransactionFixtures.usdcWithdraw.feePayer,
             priorityFee: KaminoPriorityFee(

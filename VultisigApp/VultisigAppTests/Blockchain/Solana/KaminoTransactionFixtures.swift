@@ -104,21 +104,230 @@ enum KaminoTransactionFixtures {
             2cy+tHvb9JXuHBu0d9Dar60DX6fr5AsQCgU1JS8TAgkOAQknFQQSCzcHCAM=
             """,
         injected: """
-            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCasw\
-            rRIFkBysDdnNhubzrF66vbPjTv/3hcdPJbSgz1/GXJg1uByBqO1HgaECiZNKznnWBakBK4T2pvqREYQQsSqo9yTugQEFGbmp\
-            LOPs4I/yp0MfoHZrmM1es+rkznnAUwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ps6fZhmN2HDYqYbzBnXEb4\
-            Pi9Sg0h5UvXVBWPj73qMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G99GZch/RVimW\
-            XJ1rZZT4BNkK8duJOew1/5TZZA1X3MMnlLs+G7Zv066EmoTc25QDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAABhz\
-            PMtGmaSVoW0JJqvbQJTVel5yDSkcJXIU4QLl1KFsBAgABQJgWwMACAAJAyBOAAAAAAAABQYAAQAQAxwBAQchABMGDhYBEAIL\
-            HBwaBAcTEQoYFxIJHBsEBxEPDA0YFRkUELcSRpyUbaEiYOxTAAAAAAABgunUZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n\
-            6+QLEAoFNSUvEwIJDgEJJxUEEgs3BwgD
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCaswrRIF\
+            kBysDdnNhubzrF66vbPjTv/3hcdPJbSgz1/GXJg1uByBqO1HgaECiZNKznnWBakBK4T2pvqREYQQsSqo9yTugQEFGbmpLOPs4I/y\
+            p0MfoHZrmM1es+rkznnAUwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ps6fZhmN2HDYqYbzBnXEb4Pi9Sg0h5UvXV\
+            BWPj73qMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G99GZch/RVimWXJ1rZZT4BNkK8duJ\
+            Oew1/5TZZA1X3MMnlLs+G7Zv066EmoTc25QDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAABhzPMtGmaSVoW0JJqvbQJTV\
+            el5yDSkcJXIU4QLl1KFsBAgABQKAGgYACAAJAyBOAAAAAAAABQYAAQAQAxwBAQchABMGDhYBEAILHBwaBAcTEQoYFxIJHBsEBxEP\
+            DA0YFRkUELcSRpyUbaEiYOxTAAAAAAABgunUZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QLEAoFNSUvEwIJDgEJJxUEEgs3\
+            BwgD
             """,
-        unitLimit: 220000,
+        unitLimit: 400000,
         feePayer: "CXFmQi2eM4Jzt9HZwm9A5JAzGvNpKwRuxo52ua3Jyceh",
         lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu"
     )
 
-    static let all: [Vector] = [usdcDeposit, solDeposit, usdcWithdraw]
+    // MARK: - Farm-staked withdraws, captured 2026-08-05
+
+    /// The shape every real holder of these vaults is actually in.
+    ///
+    /// Deposits auto-stake into the vault's farm, so the withdraw that spends
+    /// those shares has to release them first: `farms::unstake` and
+    /// `farms::withdraw_unstaked_deposits`, BOTH ahead of the vault withdraw,
+    /// with a second `createIdempotent` between them. Five instructions, not two.
+    ///
+    /// Sampled by enumerating farm `UserState` accounts rather than share-mint
+    /// token-account holders — staked shares never reach the ATA, so the older
+    /// method could only ever surface holders who had not staked, which is why
+    /// this shape went unobserved through six steps.
+    ///
+    /// Every vector below simulated `err: null` on mainnet in both forms, at the
+    /// 400,000 unit limit `KaminoComputeBudget.withdrawUnitLimit` now injects.
+    /// At the previous 220,000 all four staked shapes aborted with
+    /// `ProgramFailedToComplete — exceeded CUs meter`.
+
+    static let stakedWithdraw = Vector(
+        name: "Steakhouse USDC farm-staked withdraw (1 share)",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCkz4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUtL4CxGIrzRPpKB8rlnE4pZkJR/D/b08QafecDO1T5V4FBgYAAgAMBCABAQgEAAEOCBhaX2sqzXwy4QAA\
+            AKHtzM4bwtMAAAAAAAAIBwABDgIRFyAIJGa7MdwkhEMGBgADABMEIAEBCSEAFgcQGgMTAgwgIB4FCRYUCxwbFQogHwUJFBINDxwZ\
+            HRgQtxJGnJRtoSJAQg8AAAAAAAGC6dRmw0Z9LrKw2cy+tHvb9JXuHBu0d9Dar60DX6fr5A0QCgU1MSUvMhMCCQ4BCjMnFQQSCzcH\
+            CAM=
+            """,
+        injected: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHC0z4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAC0vgLEYivNE+koHyuWcTilmQlH8P9vTxBp95wM\
+            7VPlXgcKAAUCgBoGAAoACQMgTgAAAAAAAAYGAAIADQQhAQEIBAABDwgYWl9rKs18MuEAAACh7czOG8LTAAAAAAAACAcAAQ8CEhgh\
+            CCRmuzHcJIRDBgYAAwAUBCEBAQkhABcHERsDFAINISEfBQkXFQwdHBYLISAFCRUTDhAdGh4ZELcSRpyUbaEiQEIPAAAAAAABgunU\
+            ZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QNEAoFNTElLzITAgkOAQozJxUEEgs3BwgD
+            """,
+        unitLimit: 400000,
+        feePayer: "6BTaMq25LcNDTVhheUe9UyvwWgayqFv77njymVnG8SNy",
+        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu"
+    )
+
+    static let stakedWithdrawMaximum = Vector(
+        name: "Steakhouse USDC farm-staked withdraw at the maximum",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCkz4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUBphekrMVPaIqHm9brpOGOjMw+kXdBuXVkdhcPk3is+8FBgYAAgAMBCABAQgEAAEOCBhaX2sqzXwy4QAA\
+            SPlfaktPJ7dwAAAAAAAIBwABDgIRFyAIJGa7MdwkhEMGBgADABMEIAEBCSEAFgcQGgMTAgwgIB4FCRYUCxwbFQogHwUJFBINDxwZ\
+            HRgQtxJGnJRtoSKiOx8IAAAAAAGC6dRmw0Z9LrKw2cy+tHvb9JXuHBu0d9Dar60DX6fr5A0QCgU1MSUvMhMCCQ4BCjMnFQQSCzcH\
+            CAM=
+            """,
+        injected: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHC0z4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAAGmF6SsxU9oioeb1uuk4Y6MzD6Rd0G5dWR2Fw+\
+            TeKz7wcKAAUCgBoGAAoACQMgTgAAAAAAAAYGAAIADQQhAQEIBAABDwgYWl9rKs18MuEAAEj5X2pLTye3cAAAAAAACAcAAQ8CEhgh\
+            CCRmuzHcJIRDBgYAAwAUBCEBAQkhABcHERsDFAINISEfBQkXFQwdHBYLISAFCRUTDhAdGh4ZELcSRpyUbaEiojsfCAAAAAABgunU\
+            ZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QNEAoFNTElLzITAgkOAQozJxUEEgs3BwgD
+            """,
+        unitLimit: 400000,
+        feePayer: "6BTaMq25LcNDTVhheUe9UyvwWgayqFv77njymVnG8SNy",
+        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu"
+    )
+
+    static let stakedWithdrawSentinel = Vector(
+        name: "Steakhouse USDC farm-staked withdraw, reported balance sent verbatim",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCkz4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUbuf+XWbOlC3529elQcGMuE9HTp+9RtIczwCiV4HySwgFBgYAAgAMBCABAQgEAAEOCBhaX2sqzXwy4QAA\
+            SPlfaktPJ7dwAAAAAAAIBwABDgIRFyAIJGa7MdwkhEMGBgADABMEIAEBCSEAFgcQGgMTAgwgIB4FCRYUCxwbFQogHwUJFBINDxwZ\
+            HRgQtxJGnJRtoSL//////////wGC6dRmw0Z9LrKw2cy+tHvb9JXuHBu0d9Dar60DX6fr5A0QCgU1MSUvMhMCCQ4BCjMnFQQSCzcH\
+            CAM=
+            """,
+        injected: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHC0z4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAABu5/5dZs6ULfnb16VBwYy4T0dOn71G0hzPAKJX\
+            gfJLCAcKAAUCgBoGAAoACQMgTgAAAAAAAAYGAAIADQQhAQEIBAABDwgYWl9rKs18MuEAAEj5X2pLTye3cAAAAAAACAcAAQ8CEhgh\
+            CCRmuzHcJIRDBgYAAwAUBCEBAQkhABcHERsDFAINISEfBQkXFQwdHBYLISAFCRUTDhAdGh4ZELcSRpyUbaEi//////////8BgunU\
+            ZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QNEAoFNTElLzITAgkOAQozJxUEEgs3BwgD
+            """,
+        unitLimit: 400000,
+        feePayer: "6BTaMq25LcNDTVhheUe9UyvwWgayqFv77njymVnG8SNy",
+        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu"
+    )
+
+    static let mixedWithdrawStraddling = Vector(
+        name: "Steakhouse USDC mixed position, request above the unstaked balance",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCryY4hyc\
+            YhNaRK0DrigDccg2zc2iZlitrRXU59g3Ge7FxLQfCdiS5oA7TsQFf/YV/ZuGEwJDm6YspUdyhGq8T3b6Wwp7azb/96qwFWVdDW1M\
+            Z5DPH9mE5Unsl/XHNsrdx/7cnvMaAxxvMYRasNMMnRXWNPhl4Z1xlK/NNwsZyXiQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUu441xnHog9/eD3w8ACa6kHg/wl58PQW1mukPaOm4G9wFBgYAAgAMBCABAQgEAAMOCBhaX2sqzXwy4QAA\
+            fLkABa2Fb3IAAAAAAAAIBwADDgIRFyAIJGa7MdwkhEMGBgABABMEIAEBCSEAFgcQGgETAgwgIB4FCRYUCxwbFQogHwUJFBINDxwZ\
+            HRgQtxJGnJRtoSJg4xYAAAAAAAGC6dRmw0Z9LrKw2cy+tHvb9JXuHBu0d9Dar60DX6fr5A0QCgU1MSUvMhMCCQ4BCjMnFQQSCzcH\
+            CAM=
+            """,
+        injected: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHC7yY4hyc\
+            YhNaRK0DrigDccg2zc2iZlitrRXU59g3Ge7FxLQfCdiS5oA7TsQFf/YV/ZuGEwJDm6YspUdyhGq8T3b6Wwp7azb/96qwFWVdDW1M\
+            Z5DPH9mE5Unsl/XHNsrdx/7cnvMaAxxvMYRasNMMnRXWNPhl4Z1xlK/NNwsZyXiQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAC7jjXGceiD394PfDwAJrqQeD/CXnw9BbWa6Q9o\
+            6bgb3AcKAAUCgBoGAAoACQMgTgAAAAAAAAYGAAIADQQhAQEIBAADDwgYWl9rKs18MuEAAHy5AAWthW9yAAAAAAAACAcAAw8CEhgh\
+            CCRmuzHcJIRDBgYAAQAUBCEBAQkhABcHERsBFAINISEfBQkXFQwdHBYLISAFCRUTDhAdGh4ZELcSRpyUbaEiYOMWAAAAAAABgunU\
+            ZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QNEAoFNTElLzITAgkOAQozJxUEEgs3BwgD
+            """,
+        unitLimit: 400000,
+        feePayer: "DhCrkyWYGQayd4QNUDdLyvrALLmrJqTUHPGoA98pX2YU",
+        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu"
+    )
+
+    static let mixedWithdrawWithinUnstaked = Vector(
+        name: "Steakhouse USDC mixed position, request inside the unstaked balance",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAFCLyY4hyc\
+            YhNaRK0DrigDccg2zc2iZlitrRXU59g3Ge7FxLQfCdiS5oA7TsQFf/YV/ZuGEwJDm6YspUdyhGq8T3b6Wwp7azb/96qwFWVdDW1M\
+            Z5DPH9mE5Unsl/XHNsrdxwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ps6fZhmN2HDYqYbzBnXEb4Pi9Sg0h5UvXV\
+            BWPj73qMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G99GZch/RVimWXJ1rZZT4BNkK8duJ\
+            Oew1/5TZZA1X3MMnlLs+G7Zv066EmoTc25TGHIArL9bIi1dPO/AGld0dxV8XdwWe6ukSPeMFcDkozQIFBgABAA8DGwEBByEAEgYN\
+            FQEPAgobGxkEBxIQCRcWEQgbGgQHEA4LDBcUGBMQtxJGnJRtoSIgoQcAAAAAAAGC6dRmw0Z9LrKw2cy+tHvb9JXuHBu0d9Dar60D\
+            X6fr5AsQCgU1JS8TAgkOAQknFQQSCzcHCAM=
+            """,
+        injected: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCbyY4hyc\
+            YhNaRK0DrigDccg2zc2iZlitrRXU59g3Ge7FxLQfCdiS5oA7TsQFf/YV/ZuGEwJDm6YspUdyhGq8T3b6Wwp7azb/96qwFWVdDW1M\
+            Z5DPH9mE5Unsl/XHNsrdxwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9ps6fZhmN2HDYqYbzBnXEb4Pi9Sg0h5UvXV\
+            BWPj73qMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G99GZch/RVimWXJ1rZZT4BNkK8duJ\
+            Oew1/5TZZA1X3MMnlLs+G7Zv066EmoTc25QDBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAMYcgCsv1siLV0878AaV3R3F\
+            Xxd3BZ7q6RI94wVwOSjNBAgABQKAGgYACAAJAyBOAAAAAAAABQYAAQAQAxwBAQchABMGDhYBEAILHBwaBAcTEQoYFxIJHBsEBxEP\
+            DA0YFRkUELcSRpyUbaEiIKEHAAAAAAABgunUZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QLEAoFNSUvEwIJDgEJJxUEEgs3\
+            BwgD
+            """,
+        unitLimit: 400000,
+        feePayer: "DhCrkyWYGQayd4QNUDdLyvrALLmrJqTUHPGoA98pX2YU",
+        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu"
+    )
+
+    static let solStakedWithdraw = Vector(
+        name: "Allez SOL farm-staked withdraw (1 share)",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHDaeaaKZP\
+            jZPHIsEWiaq8CpV7zagmikPKg3uO3CGNVGHIAAbz7Jt9F3fAE6VPfali143o90zDJw70OVOjdlQqAgUmd32krI1abytflYxaVpGk\
+            S5piwAx3/S4qTYc24guoU1KIQ+MtZQ6U96hn3M2pZCLsAUWI/+CTZnW8t5ew+Yo4XVZFPiktKAME876706kc+sJJQpKC66bDAwbL\
+            HRdKrQP6HoLYlf5IbdNEuFQby9p5byRMsWwK5OpCzyixXzveqA/abOn2YZjdhw2KmG8wZ1xG+D4vUoNIeVL11QVj4+96XeboxRMf\
+            AIUjdma/pYmB40SyAoUCiU72pB4ZlbqjfOiMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G\
+            99GZch/RVimWXJ1rZZT42LAQF2PT5R8SbmFW3oXejGEwWbhEaNDaP+iioiUcxwEE2Qrx24k57DX/lNlkDVfcwyeUuz4btm/TroSa\
+            hNzblAbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpjUo01QF7ze780sQTwucxbrHhnU3VVixSKrJohI6ZJXcGCAYABAAV\
+            GgwBAQoEAAEWChhaX2sqzXwy4QAAAKHtzM4bwtMAAAAAAAAKBwABFgQCBwwIJGa7MdwkhEMIBgADABgaDAEBCyUAEAkFHAMYBBUM\
+            DCMGCxAPEiIeGRQMJAYLDxEOFxMNIhsdHyEgELcSRpyUbaEiQEIPAAAAAAAMAwMAAAEJAVy8CS9SBiaWlGOa3Uxf3wjMD/16XND2\
+            V35Wz/IAd5jIDVsbCQESCjwPBVAxAg0LHhQEHREzSD4LBwg=
+            """,
+        injected: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAIDqeaaKZP\
+            jZPHIsEWiaq8CpV7zagmikPKg3uO3CGNVGHIAAbz7Jt9F3fAE6VPfali143o90zDJw70OVOjdlQqAgUmd32krI1abytflYxaVpGk\
+            S5piwAx3/S4qTYc24guoU1KIQ+MtZQ6U96hn3M2pZCLsAUWI/+CTZnW8t5ew+Yo4XVZFPiktKAME876706kc+sJJQpKC66bDAwbL\
+            HRdKrQP6HoLYlf5IbdNEuFQby9p5byRMsWwK5OpCzyixXzveqA/abOn2YZjdhw2KmG8wZ1xG+D4vUoNIeVL11QVj4+96XeboxRMf\
+            AIUjdma/pYmB40SyAoUCiU72pB4ZlbqjfOiMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G\
+            99GZch/RVimWXJ1rZZT42LAQF2PT5R8SbmFW3oXejGEwWbhEaNDaP+iioiUcxwEE2Qrx24k57DX/lNlkDVfcwyeUuz4btm/TroSa\
+            hNzblAbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAACNSjTVAXvN\
+            7vzSxBPC5zFuseGdTdVWLFIqsmiEjpkldwgNAAUCgBoGAA0ACQMgTgAAAAAAAAgGAAQAFhsMAQEKBAABFwoYWl9rKs18MuEAAACh\
+            7czOG8LTAAAAAAAACgcAARcEAgcMCCRmuzHcJIRDCAYAAwAZGwwBAQslABEJBR0DGQQWDAwkBgsREBMjHxoVDCUGCxASDxgUDiMc\
+            HiAiIRC3EkaclG2hIkBCDwAAAAAADAMDAAABCQFcvAkvUgYmlpRjmt1MX98IzA/9elzQ9ld+Vs/yAHeYyA1bGwkBEgo8DwVQMQIN\
+            Cx4UBB0RM0g+CwcI
+            """,
+        unitLimit: 400000,
+        feePayer: "CHFeSGER1nXFUtvdAVb49rLHTgvvuxEXmeTG3GBtgKzF",
+        lookupTable: "7EzosNioQ6FDNvMKLfg6om5wTVHiJo9vVx7DZNGYBKU3"
+    )
+
+    static let all: [Vector] = [
+        usdcDeposit,
+        solDeposit,
+        usdcWithdraw,
+        stakedWithdraw,
+        stakedWithdrawMaximum,
+        mixedWithdrawStraddling,
+        mixedWithdrawWithinUnstaked,
+        solStakedWithdraw
+    ]
+
+    /// Deliberately NOT in `all`. This is the transaction the API builds when
+    /// the reported `stakedShares` string — 14 decimal places on a 6-decimal
+    /// mint — is handed straight back as the amount: its vault-withdraw `u64` is
+    /// the `u64::MAX` withdraw-everything sentinel, so it is a vector the app
+    /// must REFUSE rather than round-trip.
+    static let refusedVectors: [Vector] = [stakedWithdrawSentinel]
 
     /// Address lookup table contents, keyed by table address — read from mainnet
     /// with `getAccountInfo` on 2026-08-04. A lookup table is append-only unless

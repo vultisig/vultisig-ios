@@ -88,7 +88,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
         let prepared = try await harness.preparer.prepareWithdraw(
             vault: Self.steakhouseWithdrawVault,
             owner: withdrawOwner,
-            shares: Self.usdcShares,
+            request: Self.usdcRequest,
             unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
         )
 
@@ -106,7 +106,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
         _ = try await harness.preparer.prepareWithdraw(
             vault: Self.steakhouseWithdrawVault,
             owner: withdrawOwner,
-            shares: Self.usdcShares,
+            request: Self.usdcRequest,
             unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
         )
 
@@ -115,11 +115,12 @@ final class KaminoTransactionPreparerTests: XCTestCase {
         XCTAssertTrue(harness.service.depositRequests.isEmpty)
     }
 
-    /// A withdraw consumes 174,566 units on mainnet — above the generic Solana
-    /// limit, and below its own.
+    /// The withdraw limit has to clear the generic Solana constant AND the most
+    /// expensive withdraw shape, which is the farm-staked one on the wrapped-SOL
+    /// vault at 309,310 units — not the 173,385 an unstaked withdraw costs.
     func testTheWithdrawLimitClearsTheGenericSolanaLimit() {
         XCTAssertGreaterThan(BigInt(KaminoComputeBudget.withdrawUnitLimit), SolanaHelper.priorityFeeLimit)
-        XCTAssertGreaterThan(KaminoComputeBudget.withdrawUnitLimit, 174_566)
+        XCTAssertGreaterThan(KaminoComputeBudget.withdrawUnitLimit, 309_310)
     }
 
     /// Phase one's contract on the withdraw path too: a response that already
@@ -134,7 +135,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
             _ = try await harness.preparer.prepareWithdraw(
                 vault: Self.steakhouseWithdrawVault,
                 owner: withdrawOwner,
-                shares: Self.usdcShares,
+                request: Self.usdcRequest,
                 unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
             )
             XCTFail("expected the pre-injection validation to refuse a supplied compute budget")
@@ -162,7 +163,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
             _ = try await harness.preparer.prepareWithdraw(
                 vault: Self.steakhouseWithdrawVault,
                 owner: withdrawOwner,
-                shares: requested,
+                request: KaminoWithdrawRequest(shares: requested, unstakedShares: requested),
                 unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
             )
             XCTFail("expected an amount mismatch")
@@ -189,7 +190,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
             _ = try await harness.preparer.prepareWithdraw(
                 vault: Self.steakhouseWithdrawVault,
                 owner: withdrawOwner,
-                shares: Self.usdcShares,
+                request: Self.usdcRequest,
                 unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
             )
             XCTFail("expected a refusal")
@@ -497,6 +498,9 @@ private extension KaminoTransactionPreparerTests {
     static let solAmount = KaminoTokenAmount(baseUnits: BigInt(500_000_000), decimals: 9)
     /// The share count the sampled withdraw vector burns.
     static let usdcShares = KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)
+    /// The sampled wallet held these shares unstaked, so the request needs no
+    /// farm release and the transaction carries no farms instruction.
+    static let usdcRequest = KaminoWithdrawRequest(shares: usdcShares, unstakedShares: usdcShares)
 
     static var steakhouseVault: KaminoVaultInfo {
         vaultInfo(
