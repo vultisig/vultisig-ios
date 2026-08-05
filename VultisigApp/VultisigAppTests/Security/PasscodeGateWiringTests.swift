@@ -35,6 +35,7 @@ final class PasscodeGateWiringTests: XCTestCase {
     private var lockService: AppLockService!
     private var coordinator: KeyshareWriteCoordinator!
     private var sweeper: KeyshareSweeper!
+    private var biometrics: BiometricUnlockStore!
     private var service: PasscodeService!
     /// `AppViewModel`'s login flags are `@AppStorage`, so they read and write the
     /// standard defaults no matter which suite the lock service is on.
@@ -63,6 +64,7 @@ final class PasscodeGateWiringTests: XCTestCase {
             protector: KeyshareProtector(state: { keySession.currentState() }),
             context: { [context] in context }
         )
+        biometrics = BiometricUnlockStore(keychain: InMemoryBiometricKeychain())
         service = makeService()
 
         for key in borrowedDefaultsKeys {
@@ -81,6 +83,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         standardDefaults = [:]
         defaults.removePersistentDomain(forName: suiteName)
         service = nil
+        biometrics = nil
         sweeper = nil
         coordinator = nil
         lockService = nil
@@ -95,6 +98,12 @@ final class PasscodeGateWiringTests: XCTestCase {
         super.tearDown()
     }
 
+    /// `biometrics` is injected rather than defaulted, and it is **not** optional
+    /// polish: `BiometricUnlockStore.shared` reaches the device Keychain, so
+    /// `disablePasscode` — which removes the shortcut before any share moves —
+    /// throws `.storageFailed` out of a simulator against the default. The
+    /// dependency is invisible from the layer below, where this file was written
+    /// and passed.
     private func makeService(sweeper: KeyshareSweeping? = nil) -> PasscodeService {
         PasscodeService(
             keyStore: keyStore,
@@ -102,7 +111,8 @@ final class PasscodeGateWiringTests: XCTestCase {
             lockService: lockService,
             limiter: PasscodeAttemptLimiter(keychain: keychain, uptime: { 1_000 }),
             coordinator: coordinator,
-            sweeper: sweeper ?? self.sweeper
+            sweeper: sweeper ?? self.sweeper,
+            biometrics: biometrics
         )
     }
 
@@ -347,4 +357,26 @@ private final class LockingKeyshareSweeper: KeyshareSweeping {
     }
 
     @MainActor func hasSealedShare() throws -> Bool { try wrapped.hasSealedShare() }
+}
+
+/// The biometric shortcut's store, in memory. An add rather than an upsert,
+/// mirroring `SecItemAdd` — production cannot overwrite in place, and a double
+/// that could would make the rebinding path look like something it is not.
+private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
+
+    private var stored: Data?
+
+    func store(_ data: Data, account _: String) throws {
+        guard stored == nil else { throw BiometricUnlockError.storageFailed }
+        stored = data
+    }
+
+    func read(account _: String, prompt _: String) throws -> Data {
+        guard let stored else { throw BiometricUnlockError.notEnabled }
+        return stored
+    }
+
+    func delete(account _: String) throws { stored = nil }
+
+    func exists(account _: String) -> Bool { stored != nil }
 }
