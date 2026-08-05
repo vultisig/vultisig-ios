@@ -74,6 +74,56 @@ enum TestStore {
         return container
     }
 
+    /// Containers held for the lifetime of the test process.
+    private static var retained: [ModelContainer] = []
+
+    /// Keeps a test's container alive past its `tearDown`.
+    ///
+    /// For tests that exercise code starting unstructured work — `setDefaultCoins`
+    /// fires a token-discovery `Task` per coin — which resumes after the test
+    /// method returns and touches the `@Model` objects it captured. Letting the
+    /// container go first turns that into a trap ("this model instance was
+    /// destroyed by calling ModelContext.reset") that fails whichever test
+    /// happens to be running. The app's container is process-lifetime, so this
+    /// makes the test resemble production rather than papering over anything.
+    static func retain(_ container: ModelContainer) {
+        retained.append(container)
+    }
+
+    /// A vault carrying real secp256k1 / ed25519 key material, so `CoinFactory`
+    /// derives actual addresses and `setDefaultCoins` produces actual coins.
+    ///
+    /// Placeholder keys are not good enough for anything about default coins:
+    /// `CoinFactory.create` throws on them and `compactMap` drops the failure, so
+    /// a vault built that way derives nothing at all — and a test asserting on its
+    /// coins passes just as happily against an import that attaches none of them.
+    ///
+    /// Not inserted; the caller decides when it reaches a context. `index` picks a
+    /// distinct key pair, because `name`, `pubKeyECDSA` and `pubKeyEdDSA` are all
+    /// `@Attribute(.unique)` and SwiftData answers a duplicate with an upsert
+    /// rather than an error — two fixtures sharing one collapse into a single row.
+    static func makeDerivableVault(index: Int = 0, keyshare: String) -> Vault {
+        let ecdsa = [
+            "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770"
+        ]
+        let eddsa = [
+            "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+            "86815b267977dd277171acfe16edb857767ab5310cb4186429cee1f407549d8e"
+        ]
+        return Vault(
+            name: "Derivable Vault \(index)",
+            signers: [],
+            pubKeyECDSA: ecdsa[index],
+            pubKeyEdDSA: eddsa[index],
+            keyshares: [KeyShare(pubkey: ecdsa[index], keyshare: keyshare)],
+            localPartyID: "party-\(index)",
+            hexChainCode: "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7",
+            resharePrefix: nil,
+            libType: .DKLS
+        )
+    }
+
     /// Insert a populated Vault matching `pubKeyECDSA` so position upserts have a
     /// parent to attach via inverse relationships.
     static func makeVault(pubKey: String = "test-pub-ecdsa") -> Vault {

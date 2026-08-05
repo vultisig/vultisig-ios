@@ -202,7 +202,104 @@ final class ProtectedVaultImporterTests: XCTestCase {
         XCTAssertEqual(stored.keyId, "mldsa-key-id")
     }
 
+    // MARK: - Preparing a vault that is already stored
+
+    /// The regression, asserted where it happened. `commit` derives default
+    /// coins *after* the vault has been inserted and saved, and attaching them
+    /// by mutating `vault.coins` does not take on a vault that has been through
+    /// a `save()`: the relationship re-faults to its persisted value and the
+    /// next save writes that back over the inverse. The import reported
+    /// success, five coin rows were written belonging to nobody, and the user
+    /// opened a wallet with no chains in it.
+    ///
+    /// Written against the no-passcode state on purpose — that is the state
+    /// almost every install is in, and the one the report came from.
+    func testAnImportedVaultKeepsItsDefaultCoinsWithNoPasscodeSet() throws {
+        TestStore.retain(token.container)
+        let sut = makeImporter(state: .disabled)
+
+        try sut.commit([derivableVault()], into: context, prepare: settingDefaultCoins)
+
+        let fresh = ModelContext(token.container)
+        let stored = try XCTUnwrap(try fresh.fetch(FetchDescriptor<Vault>()).first)
+        XCTAssertEqual(
+            Set(stored.coins.map(\.chain)),
+            Set(VaultDefaultCoinService(context: context).baseDefaultChains),
+            "an imported vault must open on the same chains a freshly generated one does"
+        )
+        XCTAssertTrue(
+            try fresh.fetch(FetchDescriptor<Coin>()).allSatisfy { $0.vault != nil },
+            "no coin row may be left on disk with no vault to belong to"
+        )
+        XCTAssertTrue(stored.defiChains.contains(.thorChain), "the DeFi chains derived alongside the coins must persist too")
+    }
+
+    /// The same, with a passcode set: the shares take a different route to disk
+    /// and the coins must not.
+    func testAnImportedVaultKeepsItsDefaultCoinsWithAPasscodeSet() throws {
+        TestStore.retain(token.container)
+        let sut = makeImporter(state: .unlocked(key))
+
+        try sut.commit([derivableVault()], into: context, prepare: settingDefaultCoins)
+
+        let fresh = ModelContext(token.container)
+        let stored = try XCTUnwrap(try fresh.fetch(FetchDescriptor<Vault>()).first)
+        XCTAssertEqual(stored.coins.count, VaultDefaultCoinService(context: context).baseDefaultChains.count)
+    }
+
+    /// Every vault in a batch, not just the first — the ZIP path imports several
+    /// at once and they are prepared in one pass.
+    func testEveryVaultInABatchKeepsItsDefaultCoins() throws {
+        TestStore.retain(token.container)
+        let sut = makeImporter(state: .disabled)
+        let vaults = [derivableVault(index: 0), derivableVault(index: 1)]
+
+        try sut.commit(vaults, into: context, prepare: settingDefaultCoins)
+
+        let fresh = ModelContext(token.container)
+        let stored = try fresh.fetch(FetchDescriptor<Vault>())
+        XCTAssertEqual(stored.count, 2, "distinct key material, so two rows and not one upserted over the other")
+        for vault in stored {
+            XCTAssertFalse(vault.coins.isEmpty, "\(vault.name) came back with no chains")
+        }
+    }
+
+    /// A preparation that did not take is not a silent success. It is retried,
+    /// because it is idempotent by contract and the vault is new — and because
+    /// nothing later in the app rebuilds what it writes.
+    func testAPreparationThatDidNotTakeIsRunAgain() throws {
+        let sut = makeImporter(state: .disabled)
+        var attempts = 0
+
+        try sut.commit([makeVault(shares: [firstShare])], into: context) { _ in
+            attempts += 1
+            return false
+        }
+
+        XCTAssertEqual(attempts, 2, "one retry, and only one — a preparation that keeps failing is reported, not looped")
+    }
+
+    func testAPreparationThatTookIsNotRunAgain() throws {
+        let sut = makeImporter(state: .disabled)
+        var attempts = 0
+
+        try sut.commit([makeVault(shares: [firstShare])], into: context) { _ in
+            attempts += 1
+            return true
+        }
+
+        XCTAssertEqual(attempts, 1)
+    }
+
     // MARK: - Helpers
+
+    private func derivableVault(index: Int = 0) -> Vault {
+        TestStore.makeDerivableVault(index: index, keyshare: firstShare)
+    }
+
+    private func settingDefaultCoins(_ vault: Vault) -> Bool {
+        VaultDefaultCoinService(context: context).setDefaultCoinsOnce(vault: vault)
+    }
 
     private func makeImporter(state: KeyshareProtectionState) -> ProtectedVaultImporter {
         ProtectedVaultImporter(

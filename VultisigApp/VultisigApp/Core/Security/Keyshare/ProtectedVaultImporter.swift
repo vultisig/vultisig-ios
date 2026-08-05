@@ -97,12 +97,13 @@ struct ProtectedVaultImporter {
     ///   the call site: done before, it leaves rows behind when the import is
     ///   refused, and the token discovery it starts is unstructured work that
     ///   outlives this call and must never be aimed at a vault that could still
-    ///   be withdrawn.
+    ///   be withdrawn. It answers whether it did its work, and must be
+    ///   idempotent: a vault it leaves unprepared is put through it again.
     @MainActor
     func commit(
         _ vaults: [Vault],
         into context: ModelContext,
-        prepare: (Vault) -> Void = { _ in }
+        prepare: (Vault) -> Bool = { _ in true }
     ) throws {
         // Nothing to do is not a reason to save: an all-duplicate ZIP would
         // otherwise flush whatever unrelated work the context is carrying.
@@ -139,17 +140,55 @@ struct ProtectedVaultImporter {
 
         // Only now, over vaults that are provably on disk, and still inside the
         // lease so the rows land before a transition can begin. A failure here
-        // is not an import failure: the vaults are stored and openable, and
-        // their default coins are derived state that any later launch rebuilds.
-        vaults.forEach(prepare)
-        do {
-            try context.save()
-        } catch {
-            logger.error("Imported vaults were stored but their default coins were not: \(error.localizedDescription, privacy: .public)")
+        // is not an import failure — the vaults are stored and openable, and
+        // refusing an import that has already reached disk would leave the user
+        // a vault they cannot re-import — so it is reported rather than thrown.
+        //
+        // It is checked as a postcondition and not only as a `catch`, because
+        // the way this went wrong in practice was a save that *succeeded* and
+        // stored nothing: the coins attached to a vault that had already been
+        // saved, where that write does not take. An error-only guard saw a
+        // clean import and said nothing. And nothing else rebuilds this later —
+        // default coins are set at keygen and at import and nowhere else — so a
+        // vault that leaves here unprepared is one the user opens on an empty
+        // wallet, with no error, for good.
+        var unprepared = vaultsLeftUnprepared(among: vaults, by: prepare, in: context)
+        if !unprepared.isEmpty {
+            // `prepare` is idempotent by contract and these vaults are brand
+            // new — nothing else has touched them — so running it again is the
+            // one repair available at a point where the user cannot usefully be
+            // told anything. Once, not in a loop: a preparation that fails twice
+            // fails for a reason a third attempt will not change.
+            unprepared = vaultsLeftUnprepared(among: unprepared, by: prepare, in: context)
+        }
+        if !unprepared.isEmpty {
+            logger.error("Imported vaults were stored without their default coins: \(unprepared.count, privacy: .public) of \(vaults.count, privacy: .public) will open with no chains in them")
         }
     }
 
     // MARK: - Privates
+
+    /// Runs `prepare` over vaults that are already stored, saves what it wrote,
+    /// and answers the ones that did not come out prepared.
+    ///
+    /// A save that throws makes every vault in the batch unprepared, whatever
+    /// `prepare` said: work that is not on disk is work the next launch will not
+    /// find.
+    @MainActor
+    private func vaultsLeftUnprepared(
+        among vaults: [Vault],
+        by prepare: (Vault) -> Bool,
+        in context: ModelContext
+    ) -> [Vault] {
+        let unprepared = vaults.filter { !prepare($0) }
+        do {
+            try context.save()
+        } catch {
+            logger.error("Imported vaults were stored but their default coins were not: \(error.localizedDescription, privacy: .public)")
+            return vaults
+        }
+        return unprepared
+    }
 
     /// Undoes a failed import without taking anybody else's work with it.
     ///

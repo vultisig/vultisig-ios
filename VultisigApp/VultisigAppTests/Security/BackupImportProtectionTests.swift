@@ -105,7 +105,53 @@ final class BackupImportProtectionTests: XCTestCase {
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<Coin>()), 0, "default coins must not outlive a refused import")
     }
 
+    // MARK: - What the restored vault opens on
+
+    /// The reported regression, through the JSON entry point and with no
+    /// passcode set — the configuration nearly every install is in. Both entry
+    /// points now derive default coins after the vault is stored, and attaching
+    /// them there is exactly what stopped working: the vault imported, its coin
+    /// rows were written belonging to nobody, and the wallet came up empty with
+    /// no error anywhere.
+    func testAJsonImportComesBackWithItsDefaultCoins() throws {
+        TestStore.retain(token.container)
+        let sut = makeViewModel(state: .disabled)
+        sut.decryptedContent = try JSONEncoder()
+            .encode(BackupVault(version: .v1, vault: makeDerivableVault()))
+            .hexString
+
+        sut.restoreVault(modelContext: context, vaults: [])
+
+        XCTAssertTrue(sut.isVaultImported)
+        let stored = try XCTUnwrap(try ModelContext(token.container).fetch(FetchDescriptor<Vault>()).first)
+        XCTAssertEqual(
+            Set(stored.coins.map(\.chain)),
+            Set(VaultDefaultCoinService(context: context).baseDefaultChains)
+        )
+    }
+
+    /// And through the batch entry point, which is the one that imports several
+    /// vaults under a single lease.
+    func testAZipImportComesBackWithDefaultCoinsForEveryVault() throws {
+        TestStore.retain(token.container)
+        let sut = makeViewModel(state: .disabled)
+        sut.multipleVaultsToImport = [makeDerivableVault(index: 0), makeDerivableVault(index: 1)]
+
+        sut.restoreMultipleVaults(modelContext: context, vaults: [])
+
+        XCTAssertTrue(sut.isVaultImported)
+        let stored = try ModelContext(token.container).fetch(FetchDescriptor<Vault>())
+        XCTAssertEqual(stored.count, 2)
+        for vault in stored {
+            XCTAssertFalse(vault.coins.isEmpty, "\(vault.name) came back with no chains")
+        }
+    }
+
     // MARK: - Helpers
+
+    private func makeDerivableVault(index: Int = 0) -> Vault {
+        TestStore.makeDerivableVault(index: index, keyshare: share)
+    }
 
     private func makeViewModel(state: KeyshareProtectionState) -> EncryptedBackupViewModel {
         EncryptedBackupViewModel(
