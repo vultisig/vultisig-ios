@@ -39,6 +39,8 @@ enum KaminoInstructionSequence {
         case kvaultWithdraw
         case farmsInitializeUser
         case farmsStake
+        case farmsUnstake
+        case farmsWithdrawUnstakedDeposits
 
         var name: String {
             switch self {
@@ -52,6 +54,8 @@ enum KaminoInstructionSequence {
             case .kvaultWithdraw: return "vault withdraw"
             case .farmsInitializeUser: return "farm user initialization"
             case .farmsStake: return "farm stake"
+            case .farmsUnstake: return "farm unstake"
+            case .farmsWithdrawUnstakedDeposits: return "farm unstaked share withdrawal"
             }
         }
     }
@@ -60,12 +64,53 @@ enum KaminoInstructionSequence {
         let kind: Kind
         let isRequired: Bool
         let isRepeatable: Bool
+        /// A step this one may only appear alongside: either both are matched or
+        /// neither is.
+        ///
+        /// Optionality is per-step, and for two instructions that are halves of
+        /// ONE operation that is not enough. `farms::unstake` releases shares
+        /// into a pending-withdrawal balance and
+        /// `farms::withdraw_unstaked_deposits` is what moves them out of it —
+        /// so an unstake on its own is not a smaller version of the pair, it is
+        /// a transaction that takes shares out of the farm and strands them
+        /// somewhere neither the position read nor the verify screen describes.
+        /// Marking them optional individually would accept exactly that.
+        let pairedWith: Kind?
 
-        init(_ kind: Kind, required: Bool, repeatable: Bool) {
+        init(_ kind: Kind, required: Bool, repeatable: Bool, pairedWith: Kind? = nil) {
             self.kind = kind
             self.isRequired = required
             self.isRepeatable = repeatable
+            self.pairedWith = pairedWith
         }
+    }
+
+    /// Whether a withdraw is supposed to release shares from the vault's farm.
+    ///
+    /// The API decides this from the user's position: a request that fits inside
+    /// the shares already sitting in their share account is built as a plain
+    /// two-instruction withdraw, and anything above it is built with the farms
+    /// pair in front. Both shapes were captured — see the sequence tests — and
+    /// they are genuinely different transactions, so which one is expected is an
+    /// input to the template rather than something read out of the bytes.
+    ///
+    /// The three cases are three different claims, and the difference matters:
+    ///
+    /// - `.required` — the initiating device, which read the position and sized
+    ///   the request against it. A transaction missing the unstake is refused.
+    /// - `.forbidden` — the same device, for a request that fits the unstaked
+    ///   balance. A transaction CARRYING an unstake is refused, because the
+    ///   template does not name it and an unnamed instruction is a refusal.
+    /// - `.unknown` — the offline decode on a co-signer, which holds no position
+    ///   to compare against. Either shape is accepted, and what bounds it there
+    ///   is the argument check: the unstake amount may not exceed the shares the
+    ///   withdraw itself burns.
+    enum FarmUnstake: Equatable {
+        case required
+        case forbidden
+        case unknown
+
+        var mayAppear: Bool { self != .forbidden }
     }
 
     /// Why a transaction does not fit the template.
@@ -77,6 +122,8 @@ enum KaminoInstructionSequence {
         case unexpectedInstruction(index: Int)
         /// A required step the transaction does not have.
         case missingInstruction(String)
+        /// One half of a paired operation, without the other half.
+        case incompleteInstructionPair(String)
     }
 
     /// The shape `operation` produces against a vault with these properties,
@@ -88,17 +135,17 @@ enum KaminoInstructionSequence {
     /// already exists, a token account that stays open. Everything that decides
     /// where money moves is required, and anything not listed at all is refused.
     ///
-    /// The withdraw sequence is the one that is not yet complete — see the
-    /// extension point marked inside the `.withdraw` case below.
-    ///
     /// - Parameter hasPriorityFee: whether the app's ComputeBudget pair has been
     ///   injected. The API emits none, so before injection their presence is a
     ///   refusal and after it their absence is.
+    /// - Parameter farmUnstake: whether this withdraw has to release shares from
+    ///   the vault's farm first. Ignored for a deposit.
     static func expected(
         operation: KaminoKeysignPayload.Operation,
         isWrappedSolVault: Bool,
         hasFarm: Bool,
-        hasPriorityFee: Bool
+        hasPriorityFee: Bool,
+        farmUnstake: FarmUnstake = .unknown
     ) -> [Step] {
         var steps: [Step] = []
         if hasPriorityFee {
@@ -124,42 +171,63 @@ enum KaminoInstructionSequence {
             }
 
         case .withdraw:
-            // EXTENSION POINT — the farm-staked withdraw.
-            //
-            // Every withdraw ever observed spent UNSTAKED shares, while every
-            // deposit auto-stakes into the vault's farm. So the sequence below
-            // is the only one that has been seen, and it is not the one the
-            // users of these vaults are in: a withdraw of staked shares must
-            // unstake them first, and neither the instruction it uses nor its
-            // position in this list is known.
-            //
-            // A transaction carrying that unstake is therefore refused here as
-            // an instruction the template does not name. That is deliberate. A
-            // guessed step would validate the very shape it was guessed from and
-            // assert nothing, which is worse than refusing.
-            //
-            // Completing it is a single edit, and it needs exactly three things,
-            // all of which come from decoding ONE real mainnet withdraw of a
-            // farm-staked position:
-            //
-            //   1. a `Kind` case for the unstake (its program is `farms`, its
-            //      discriminator `sha256("global:<name>")[0..<8]`, added to
-            //      `KaminoInstructionDiscriminator` and to `kind(program:data:)`);
-            //   2. its account layout — at minimum the owner, the farm and the
-            //      user's share account — added to `KaminoInstructionAccounts`
-            //      and checked in `KaminoTransactionValidator.validateInstruction`
-            //      the way `validateFarmsStake` checks the deposit's;
-            //   3. the step inserted at its observed position below, `required`
-            //      when the shares being spent are staked.
-            //
-            // `KaminoWithdrawEligibility.farmStaked` is the form-level half of
-            // the same gap and comes out at the same time.
+            // The share account the released shares land in, created first
+            // because the two farms instructions below need it to exist.
             steps.append(Step(.createTokenAccount, required: false, repeatable: true))
+            if hasFarm, farmUnstake.mayAppear {
+                // BOTH farms instructions, and both BEFORE the vault withdraw —
+                // the shares have to be out of the farm and in the user's own
+                // account before anything can burn them. `unstake` releases
+                // them; `withdraw_unstaked_deposits` moves them.
+                //
+                // They appear together or not at all: the API emits neither when
+                // the request fits inside the shares the user already holds
+                // unstaked, and both when it does not. `farmUnstake` is what
+                // decides which of those two this transaction is supposed to be,
+                // so a caller that knows gets a REQUIRED pair and a caller that
+                // cannot know gets an optional one — never a silent "either is
+                // fine" for the device that could have checked.
+                let required = farmUnstake == .required
+                steps.append(
+                    Step(
+                        .farmsUnstake,
+                        required: required,
+                        repeatable: false,
+                        pairedWith: .farmsWithdrawUnstakedDeposits
+                    )
+                )
+                steps.append(
+                    Step(
+                        .farmsWithdrawUnstakedDeposits,
+                        required: required,
+                        repeatable: false,
+                        pairedWith: .farmsUnstake
+                    )
+                )
+                // The payout account, created after the unstake rather than
+                // alongside the first creation. Two `createIdempotent`s, not one.
+                steps.append(Step(.createTokenAccount, required: false, repeatable: true))
+            }
             steps.append(Step(.kvaultWithdraw, required: true, repeatable: false))
-            // Only on a full withdraw: the emptied token account is closed and
-            // its rent returned. The sampled vector is partial and carries none,
-            // so this is optional rather than required.
-            steps.append(Step(.closeTokenAccount, required: false, repeatable: false))
+            // Emptied token accounts, closed so their rent comes back.
+            //
+            // REPEATABLE, because a full wrapped-SOL withdraw carries TWO: the
+            // payout account and the now-empty share account. A captured
+            // mainnet transaction does exactly that, and a template allowing
+            // only one would have refused it.
+            //
+            // REQUIRED on the wrapped-SOL vault, because there closing the
+            // payout account is not housekeeping — it is what unwraps wSOL into
+            // the native SOL the form and the payload both say the user
+            // receives. A withdraw without it executes and leaves wrapped SOL in
+            // a token account while the screen promises SOL. Every wrapped-SOL
+            // withdraw sampled carries one, staked and unstaked, partial and
+            // full.
+            //
+            // Optional elsewhere: on the USDC vaults it appears only on a full
+            // withdraw of an unstaked position, and not at all on the
+            // farm-staked path — so its absence there is not a finding.
+            steps.append(Step(.closeTokenAccount, required: isWrappedSolVault, repeatable: true))
         }
 
         return steps
@@ -197,6 +265,10 @@ enum KaminoInstructionSequence {
                 return .farmsInitializeUser
             }
             if Array(data.prefix(8)) == KaminoInstructionDiscriminator.farmsStake { return .farmsStake }
+            if Array(data.prefix(8)) == KaminoInstructionDiscriminator.farmsUnstake { return .farmsUnstake }
+            if Array(data.prefix(8)) == KaminoInstructionDiscriminator.farmsWithdrawUnstakedDeposits {
+                return .farmsWithdrawUnstakedDeposits
+            }
             return nil
         }
     }
@@ -220,9 +292,19 @@ enum KaminoInstructionSequence {
 
         for step in steps {
             if step.isRepeatable {
+                // A repeatable step consumes as many as it finds — and if it is
+                // also REQUIRED it has to find at least one. Skipping that check
+                // because the loop already ran is how "one or more" silently
+                // becomes "zero or more": the wrapped-SOL withdraw's close is
+                // both, and without this its requirement would not exist.
+                var consumed = 0
                 while cursor < kinds.count, matches(step.kind, at: cursor) {
                     matched.append(step.kind)
                     cursor += 1
+                    consumed += 1
+                }
+                if step.isRequired, consumed == 0 {
+                    return .failure(.missingInstruction(step.kind.name))
                 }
                 continue
             }
@@ -236,6 +318,17 @@ enum KaminoInstructionSequence {
 
         guard cursor == kinds.count else {
             return .failure(.unexpectedInstruction(index: cursor))
+        }
+
+        // Paired steps, last: a half-operation is a refusal even when both of
+        // its halves were individually optional. This is what an OPTIONAL farms
+        // pair means — either the transaction releases shares from the farm and
+        // moves them, or it does neither.
+        for step in steps {
+            guard let companion = step.pairedWith else { continue }
+            guard matched.contains(step.kind) == matched.contains(companion) else {
+                return .failure(.incompleteInstructionPair(step.kind.name))
+            }
         }
         return .success(matched)
     }

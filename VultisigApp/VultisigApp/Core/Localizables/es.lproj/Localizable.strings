@@ -665,7 +665,6 @@
 "kaminoVerifyUnreadable" = "Estos bytes llaman al programa de vaults de Kamino, pero no se pudieron leer como un depósito o un retiro. No los firmes.";
 "kaminoVerifyVault" = "Vault";
 "kaminoVerifyWithdraw" = "Retiro del vault";
-"kaminoWithdrawFarmStaked" = "Tu depósito en este vault está en staking en su farm. Retirar una posición en staking aún no está disponible.";
 "kaminoWithdrawInsufficientLiquidity" = "Este vault no puede liquidar ese retiro ahora mismo: solo hay %@ %@ disponibles de inmediato.";
 "kaminoWithdrawLimitedLiquidity" = "Solo se pueden retirar %@ %@ de este vault de inmediato. Un retiro mayor podría no liquidarse hasta que el vault libere más liquidez.";
 "kaminoWithdrawMinimum" = "El retiro mínimo es %@ %@.";

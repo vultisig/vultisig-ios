@@ -11,15 +11,19 @@
 //  in `KaminoWithdrawMath` so the gate, the maximum and the amount actually sent
 //  cannot disagree.
 //
-//  Two things this form refuses to do, and both are the point of it:
+//  One thing this form refuses to do, and it is the point of it: it never
+//  converts a 100% withdraw. The API silently rewrites a withdraw at or above
+//  the user's share balance to `u64::MAX`, which means withdraw everything, so a
+//  maximum that round-tripped through the asset and back could turn a partial
+//  exit into a full one over a single base unit. `KaminoSharePosition.spendable`
+//  is where the maximum comes from and why it stops one base unit short of an
+//  exactly-representable balance.
 //
-//  - It never converts a 100% withdraw. The API silently rewrites a withdraw
-//    above the user's share balance to `u64::MAX`, which means withdraw
-//    everything, so a maximum that round-tripped through the asset and back
-//    could turn a partial exit into a full one over a single base unit.
-//  - It never builds a withdraw of farm-staked shares. That transaction has
-//    never been observed and the validator has no template for it, so this is an
-//    explicit refusal rather than a guess.
+//  Farm-staked shares ARE withdrawable. Releasing them from the farm is two more
+//  instructions ahead of the vault withdraw, both of them in the validator's
+//  template, and how many shares to release is arithmetic on the position split
+//  — which is why the form hands `KaminoWithdrawRequest` down rather than a bare
+//  share count.
 //
 
 import BigInt
@@ -60,11 +64,11 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
     private let preparer: KaminoWithdrawPreparing
     private let logger = Log.defi.viewModel
 
-    /// The exact share balance a full withdraw sends. Read once, at load, and
-    /// never recomputed from an asset amount.
-    private var heldShares: KaminoShareAmount?
-    /// The asset value of `heldShares`, which is both the form's ceiling and the
-    /// threshold above which a request means "everything".
+    /// The exact share figure a full withdraw sends, and the split it is held
+    /// in. Read once, at load, and never recomputed from an asset amount.
+    private var held: KaminoWithdrawableShares?
+    /// The asset value of `held.maximum`, which is both the form's ceiling and
+    /// the threshold above which a request means "everything".
     private var maximumTokens: KaminoTokenAmount?
 
     /// The compute-unit price for this whole form session, resolved once. Pinned
@@ -102,13 +106,10 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
 
     /// The reason this form cannot be used, or `nil` when it can.
     ///
-    /// Rendered as a banner rather than an alert: for the launch vaults the
-    /// farm-staked case is the state every real position is in, so it is
-    /// information about the position, not an error the user caused.
+    /// Rendered as a banner rather than an alert: both remaining cases are facts
+    /// about the position rather than errors the user caused.
     var unavailableReason: KaminoWithdrawError? {
         switch eligibility {
-        case .farmStaked?:
-            return .farmStakedNotSupported
         case .empty?:
             return .nothingToWithdraw
         case .unreadable?:
@@ -208,7 +209,7 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
             error = unavailableReason
             return nil
         }
-        guard let held = heldShares, let maximumTokens else {
+        guard let held, let maximumTokens else {
             error = KaminoWithdrawError.positionUnreadable
             return nil
         }
@@ -233,7 +234,7 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
 
         guard let shares = KaminoWithdrawMath.shares(
             forTokens: amount,
-            held: held,
+            held: held.maximum,
             maximumTokens: maximumTokens,
             tokensPerShare: vaultInfo.tokensPerShare,
             shareDecimals: descriptor.sharesDecimals
@@ -266,10 +267,15 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
         defer { isLoading = false }
 
         do {
+            // The split travels with the amount. Which transaction the API
+            // builds depends on it — a request inside the unstaked balance gets
+            // two instructions, one above it gets five — and the validator has
+            // to require the one that was actually asked for rather than accept
+            // whichever came back.
             let prepared = try await preparer.prepareWithdraw(
                 vault: vaultInfo,
                 owner: withdrawCoin.address,
-                shares: shares,
+                request: KaminoWithdrawRequest(shares: shares, unstakedShares: held.unstaked),
                 unitPrice: unitPrice
             )
             let payload = try KaminoKeysignPayloadFactory.makeWithdraw(
@@ -343,9 +349,9 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
             return
         }
 
-        guard let shares = eligibility?.withdrawableShares else { return }
+        guard let withdrawable = eligibility?.withdrawableShares else { return }
         guard let maximum = KaminoWithdrawMath.maximumTokens(
-            shares: shares,
+            shares: withdrawable.maximum,
             tokensPerShare: info.tokensPerShare,
             tokenDecimals: descriptor.tokenDecimals
         ) else {
@@ -353,7 +359,7 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
             return
         }
 
-        heldShares = shares
+        held = withdrawable
         maximumTokens = maximum
         availableAmount = maximum.decimalValue
     }
@@ -363,10 +369,10 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
     /// the form uncompletable — which is the honest outcome, rather than a
     /// Continue button that silently does nothing.
     private func installValidators(info: KaminoVaultInfo) {
-        if let held = heldShares, let maximumTokens {
+        if let held, let maximumTokens {
             amountField.validators.append(
                 KaminoMinWithdrawValidator(
-                    held: held,
+                    held: held.maximum,
                     maximumTokens: maximumTokens,
                     minimumShares: info.minWithdraw,
                     tokensPerShare: info.tokensPerShare,
@@ -419,9 +425,6 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
 
 /// Why a withdraw cannot be made, in the user's terms.
 enum KaminoWithdrawError: Error, LocalizedError, Equatable {
-    /// The shares are staked in the vault's farm, and the transaction that
-    /// spends staked shares has never been observed.
-    case farmStakedNotSupported
     case nothingToWithdraw
     case positionUnreadable
     case belowMinimum(minimum: String, ticker: String)
@@ -429,8 +432,6 @@ enum KaminoWithdrawError: Error, LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .farmStakedNotSupported:
-            return "kaminoWithdrawFarmStaked".localized
         case .nothingToWithdraw:
             return "kaminoWithdrawNothing".localized
         case .positionUnreadable:

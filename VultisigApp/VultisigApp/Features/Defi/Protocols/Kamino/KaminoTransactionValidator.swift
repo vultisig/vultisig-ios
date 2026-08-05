@@ -14,7 +14,50 @@ private let logger = Log.defi.other
 /// other — cannot be confused at the point where it is checked against the bytes.
 enum KaminoOperation {
     case deposit(KaminoTokenAmount)
-    case withdraw(KaminoShareAmount)
+    case withdraw(KaminoWithdrawRequest)
+}
+
+/// A withdraw request, split the way the transaction that answers it is built.
+///
+/// One type rather than a share amount plus a loose second parameter, because
+/// the split is not optional information: `POST /ktx/kvault/withdraw` builds a
+/// two-instruction transaction when the request fits inside the shares already
+/// in the user's own account, and a five-instruction one — with `farms::unstake`
+/// and `farms::withdraw_unstaked_deposits` in front — when it does not. Which of
+/// those two it will be is decided entirely by `shares` against `unstakedShares`,
+/// so a caller that could not state the split could not say which transaction it
+/// was expecting, and would have to accept either.
+struct KaminoWithdrawRequest: Equatable {
+
+    /// Shares the vault withdraw burns. This is the `u64` in the instruction.
+    let shares: KaminoShareAmount
+    /// Shares already sitting in the user's share account when the position was
+    /// read — the part a withdraw spends without touching the farm.
+    let unstakedShares: KaminoShareAmount
+
+    init(shares: KaminoShareAmount, unstakedShares: KaminoShareAmount) {
+        self.shares = shares
+        self.unstakedShares = unstakedShares
+    }
+
+    /// Shares the farm has to release before the withdraw can burn `shares`:
+    /// the shortfall, and nothing more.
+    ///
+    /// Measured, not assumed. Against a position holding `0.959593` unstaked and
+    /// `0.944548` staked, a request for `1.5` was built with an unstake of
+    /// `0.540407` — exactly `1.5 − 0.959593` — and a request for `0.959593` was
+    /// built with no farms instructions at all. The same subtraction reproduces
+    /// every captured vector, including the wholly-staked wallet where the
+    /// unstaked balance is zero and the shortfall is therefore the whole request.
+    var unstakeShares: KaminoShareAmount {
+        KaminoShareAmount(
+            baseUnits: max(shares.baseUnits - unstakedShares.baseUnits, 0),
+            decimals: shares.decimals
+        )
+    }
+
+    /// Whether this request needs the farm to release anything at all.
+    var requiresUnstake: Bool { unstakeShares.baseUnits > 0 }
 }
 
 /// The priority fee the app injected: a compute unit limit and a price per unit.
@@ -274,11 +317,17 @@ struct KaminoTransactionValidator {
             operation: context.operation,
             isWrappedSolVault: context.intent.vault.isWrappedSolVault,
             hasFarm: context.intent.vault.hasFarm,
-            hasPriorityFee: context.intent.priorityFee != nil
+            hasPriorityFee: context.intent.priorityFee != nil,
+            // This device read the position, so it knows which of the two
+            // withdraw shapes it asked for and says so. Never `.unknown` here:
+            // accepting either shape would let a transaction that unstakes
+            // shares pass as one that was not supposed to touch the farm.
+            farmUnstake: context.farmUnstake
         )
 
         switch KaminoInstructionSequence.match(kinds: context.kinds, against: steps) {
-        case .failure(.missingInstruction(let name)):
+        case .failure(.missingInstruction(let name)),
+             .failure(.incompleteInstructionPair(let name)):
             throw KaminoValidationError.missingInstruction(name)
         case .failure(.unexpectedInstruction(let index)):
             throw KaminoValidationError.unexpectedInstruction(
@@ -335,6 +384,17 @@ struct KaminoTransactionValidator {
 
         case .farmsStake:
             try validateFarmsStake(data: data, accounts: accounts, position: position, context)
+
+        case .farmsUnstake:
+            try validateFarmsUnstake(data: data, accounts: accounts, position: position, context)
+
+        case .farmsWithdrawUnstakedDeposits:
+            try validateFarmsWithdrawUnstakedDeposits(
+                data: data,
+                accounts: accounts,
+                position: position,
+                context
+            )
         }
     }
 
@@ -521,7 +581,7 @@ struct KaminoTransactionValidator {
         guard accounts.count >= KaminoInstructionAccounts.KvaultWithdraw.minimumCount else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "kvault withdraw accounts")
         }
-        guard case .withdraw(let shares) = context.intent.operation else {
+        guard case .withdraw(let request) = context.intent.operation else {
             throw KaminoValidationError.instructionNotForOperation(index: position, detail: "vault withdraw")
         }
 
@@ -539,7 +599,7 @@ struct KaminoTransactionValidator {
         try requireAnchorAmount(
             data: data,
             position: position,
-            expected: shares.baseUnits,
+            expected: request.shares.baseUnits,
             role: "withdraw share amount"
         )
     }
@@ -582,6 +642,104 @@ struct KaminoTransactionValidator {
                 actual: String(argument)
             )
         }
+    }
+
+    /// The release of staked shares from the farm, and the one amount in this
+    /// feature that is not a `u64`.
+    ///
+    /// `farms::unstake` takes a **`u128`, scaled by `10^18`**. Reading those 16
+    /// bytes through the `u64` reader would silently take the low half and
+    /// compare a meaningless number, so the check is done in exact `BigInt`
+    /// arithmetic against `unstakeShares × 10^18` — no division, no rounding,
+    /// and no narrowing of either side.
+    ///
+    /// Pinned to the exact shortfall rather than bounded above by it. An unstake
+    /// LARGER than the withdraw needs would release shares the transaction then
+    /// leaves sitting in the user's account, out of the farm and no longer
+    /// earning — a real loss, silent, and invisible on the verify screen, which
+    /// shows an amount and not a stake. A smaller one simply cannot settle. Both
+    /// are refusals.
+    private static func validateFarmsUnstake(
+        data: [UInt8],
+        accounts: [String],
+        position: Int,
+        _ context: Context
+    ) throws {
+        guard accounts.count >= KaminoInstructionAccounts.FarmsUnstake.minimumCount else {
+            throw KaminoValidationError.malformedInstruction(index: position, detail: "farms unstake accounts")
+        }
+        guard case .withdraw(let request) = context.intent.operation else {
+            throw KaminoValidationError.instructionNotForOperation(index: position, detail: "farm unstake")
+        }
+
+        try context.requireOwner(accounts[KaminoInstructionAccounts.FarmsUnstake.owner], role: "unstake authority")
+        try context.requireFarm(accounts[KaminoInstructionAccounts.FarmsUnstake.farm], position: position)
+        try context.requireFarmUserState(
+            accounts[KaminoInstructionAccounts.FarmsUnstake.userState],
+            position: position
+        )
+
+        guard let scaled = KaminoInstructionDiscriminator.anchorArgument128(data) else {
+            throw KaminoValidationError.malformedInstruction(index: position, detail: "farms unstake argument")
+        }
+        let expected = request.unstakeShares.baseUnits * KaminoInstructionDiscriminator.farmsStakeScale
+        guard scaled == expected else {
+            throw KaminoValidationError.amountMismatch(
+                role: "unstaked share amount",
+                expected: String(expected),
+                actual: String(scaled)
+            )
+        }
+    }
+
+    /// Moving what the unstake released into the user's own share account.
+    ///
+    /// It takes no argument — it always moves the whole released balance — so
+    /// everything checkable here is an account, and the one that matters is the
+    /// destination: this is where the shares land, and the vault withdraw two
+    /// instructions later burns from that same account. A destination belonging
+    /// to anyone else would hand the position over.
+    private static func validateFarmsWithdrawUnstakedDeposits(
+        data: [UInt8],
+        accounts: [String],
+        position: Int,
+        _ context: Context
+    ) throws {
+        guard accounts.count >= KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.minimumCount else {
+            throw KaminoValidationError.malformedInstruction(
+                index: position,
+                detail: "farms withdrawUnstakedDeposits accounts"
+            )
+        }
+        guard case .withdraw = context.intent.operation else {
+            throw KaminoValidationError.instructionNotForOperation(
+                index: position,
+                detail: "farm unstaked share withdrawal"
+            )
+        }
+        guard KaminoInstructionDiscriminator.hasNoAnchorArgument(data) else {
+            throw KaminoValidationError.malformedInstruction(
+                index: position,
+                detail: "farms withdrawUnstakedDeposits takes no argument"
+            )
+        }
+
+        try context.requireOwner(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.owner],
+            role: "unstaked share withdrawal authority"
+        )
+        try context.requireFarm(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.farm],
+            position: position
+        )
+        try context.requireFarmUserState(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.userState],
+            position: position
+        )
+        try context.requireUserShareAccount(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.userShareAccount],
+            role: "unstaked share destination"
+        )
     }
 
     // MARK: - Writable accounts
@@ -711,6 +869,23 @@ private extension KaminoTransactionValidator {
             }
         }
 
+        /// Whether this transaction is supposed to release shares from the
+        /// vault's farm, decided from the request rather than from the bytes.
+        ///
+        /// A deposit never does, and a withdraw's answer is arithmetic on two
+        /// figures the caller already stated — so this is never `.unknown` on
+        /// this device. `.forbidden` is as load-bearing as `.required`: it makes
+        /// an unstake that should not be there an instruction the template does
+        /// not name, which is a refusal.
+        var farmUnstake: KaminoInstructionSequence.FarmUnstake {
+            switch intent.operation {
+            case .deposit:
+                return .forbidden
+            case .withdraw(let request):
+                return request.requiresUnstake ? .required : .forbidden
+            }
+        }
+
         func programId(at position: Int) -> String {
             guard transaction.instructions.indices.contains(position) else { return "unknown" }
             return accounts[Int(transaction.instructions[position].programIdIndex)]
@@ -745,6 +920,28 @@ private extension KaminoTransactionValidator {
             }
             guard account == farm else {
                 throw KaminoValidationError.accountMismatch(role: "farm", expected: farm, actual: account)
+            }
+        }
+
+        /// The farms account that decides WHICH stake an instruction moves.
+        ///
+        /// Derived, not read: it is a program address over the vault's farm and
+        /// this user, so recomputing it locally is what rules out a release
+        /// aimed at another farm or another holder's position. The farm slot is
+        /// compared separately; this ties the two together.
+        func requireFarmUserState(_ account: String, position: Int) throws {
+            guard let farm = intent.vault.farm else {
+                throw KaminoValidationError.instructionNotForOperation(index: position, detail: "farm")
+            }
+            guard let expected = KaminoFarmsUserState.derive(farm: farm, owner: intent.owner) else {
+                throw KaminoValidationError.addressDerivationFailed("the farm user state for \(farm)")
+            }
+            guard account == expected else {
+                throw KaminoValidationError.accountMismatch(
+                    role: "farm user state",
+                    expected: expected,
+                    actual: account
+                )
             }
         }
 

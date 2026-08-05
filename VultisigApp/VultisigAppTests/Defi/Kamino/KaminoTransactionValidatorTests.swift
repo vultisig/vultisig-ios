@@ -66,19 +66,20 @@ final class KaminoTransactionValidatorTests: XCTestCase {
         try assertValid(try mutable.base64(), intent: Self.usdcWithdrawIntent)
     }
 
-    // MARK: - The farm-staked withdraw is knowingly unsupported
+    // MARK: - A farm release that was not asked for
 
-    /// The refusal `expectedSequence`'s extension point describes, pinned so it
-    /// cannot be lost.
+    /// The `.forbidden` half of the template, which is as load-bearing as the
+    /// `.required` half.
     ///
-    /// Every deposit into these vaults auto-stakes its shares, so a real
-    /// withdraw has to unstake them first — and that transaction has never been
-    /// observed. The validator has no template for it and refuses it as an
-    /// instruction this operation does not perform. That is the intended
-    /// behaviour until the shape is captured rather than guessed: a step written
-    /// from a guess would validate the guess.
+    /// The sampled wallet held these shares unstaked, so this request needs no
+    /// farm release at all and the API builds two instructions. A response
+    /// carrying an unstake anyway is releasing shares the withdraw did not ask
+    /// for — they would come out of the farm, stop earning, and no screen would
+    /// say so — and it is refused as an instruction this operation does not
+    /// perform.
     ///
-    /// Trailing position: the unstake lands after the withdraw.
+    /// Trailing position: the unstake lands after the withdraw, which is not
+    /// where a real one sits either.
     func testRefusesAWithdrawCarryingAFarmInstructionAfterIt() throws {
         var mutable = try MutableTransaction(base64: KaminoTransactionFixtures.usdcWithdraw.source)
         let farms = mutable.appendStaticReadonlyKey(Self.farmsProgramKey)
@@ -94,9 +95,9 @@ final class KaminoTransactionValidatorTests: XCTestCase {
     }
 
     /// Leading position: the unstake lands before the withdraw, which is where a
-    /// real one most plausibly sits. The refusal is a different one — the
-    /// template's required step no longer matches where it was expected — and
-    /// that is the point: neither ordering slips through.
+    /// REAL one sits. The refusal is a different one — the template's required
+    /// step no longer matches where it was expected — and that is the point:
+    /// this request forbids the release wherever it appears.
     func testRefusesAWithdrawCarryingAFarmInstructionBeforeIt() throws {
         var mutable = try MutableTransaction(base64: KaminoTransactionFixtures.usdcWithdraw.source)
         let farms = mutable.appendStaticReadonlyKey(Self.farmsProgramKey)
@@ -136,7 +137,7 @@ final class KaminoTransactionValidatorTests: XCTestCase {
     func testRejectsADepositTransactionOfferedAsAWithdraw() throws {
         assertRefused(
             KaminoTransactionFixtures.usdcDeposit.source,
-            intent: Self.usdcDepositIntent.replacing(operation: .withdraw(Self.usdcWithdrawShares)),
+            intent: Self.usdcDepositIntent.replacing(operation: .withdraw(Self.usdcWithdrawRequest)),
             expected: .missingInstruction("vault withdraw")
         )
     }
@@ -240,7 +241,11 @@ final class KaminoTransactionValidatorTests: XCTestCase {
 
         assertRefused(
             KaminoTransactionFixtures.usdcWithdraw.source,
-            intent: Self.usdcWithdrawIntent.replacing(operation: .withdraw(asShares)),
+            intent: Self.usdcWithdrawIntent.replacing(
+                operation: .withdraw(
+                    KaminoWithdrawRequest(shares: asShares, unstakedShares: asShares)
+                )
+            ),
             expected: .amountMismatch(
                 role: "withdraw share amount",
                 expected: String(describing: asShares.baseUnits),
@@ -803,14 +808,26 @@ private extension KaminoTransactionValidatorTests {
         return [UInt8](data)
     }
 
-    /// A plausible farm unstake, derived rather than pinned: `unstake` is the
-    /// counterpart of the `stake` this app already decodes, and its Anchor
-    /// discriminator is `sha256("global:unstake")[0..<8]`. Computed here, in a
-    /// test, precisely because the real instruction has never been observed —
-    /// nothing in production asserts against it.
+    /// A real farm unstake, derived here rather than copied from the constant
+    /// under test: `sha256("global:unstake")[0..<8]` plus a WAD-scaled `u128`.
+    ///
+    /// Deriving it independently is what makes the production constant an
+    /// assertion instead of a restatement — if `KaminoInstructionDiscriminator`
+    /// ever drifts, this stops matching.
     static var farmsUnstakeData: [UInt8] {
         let digest = Hash.sha256(data: Data("global:unstake".utf8))
-        return [UInt8](digest.prefix(8)) + littleEndian(1_000_000)
+        return [UInt8](digest.prefix(8)) + littleEndianUInt128(BigInt(1_000_000) * BigInt(10).power(18))
+    }
+
+    /// A `u128` argument, little-endian, as the farms program encodes it.
+    static func littleEndianUInt128(_ value: BigInt) -> [UInt8] {
+        var remaining = value
+        var bytes: [UInt8] = []
+        for _ in 0..<16 {
+            bytes.append(UInt8(truncatingIfNeeded: Int(remaining & BigInt(0xFF))))
+            remaining >>= 8
+        }
+        return bytes
     }
 
     static let steakhouseTokensPerShare = KaminoRate(apiString: "1.0536041812651029025") ?? KaminoRate(apiString: "1")!
@@ -850,8 +867,15 @@ private extension KaminoTransactionValidatorTests {
         KaminoTransactionIntent(operation: .deposit(solDepositAmount), vault: allezVault, owner: depositOwner)
     }
 
+    /// The sampled withdraw spends shares the wallet already held unstaked, so
+    /// its request needs no farm release and the transaction carries no farms
+    /// instruction. The staked shapes have their own intents.
+    static var usdcWithdrawRequest: KaminoWithdrawRequest {
+        KaminoWithdrawRequest(shares: usdcWithdrawShares, unstakedShares: usdcWithdrawShares)
+    }
+
     static var usdcWithdrawIntent: KaminoTransactionIntent {
-        KaminoTransactionIntent(operation: .withdraw(usdcWithdrawShares), vault: steakhouseVault, owner: withdrawOwner)
+        KaminoTransactionIntent(operation: .withdraw(usdcWithdrawRequest), vault: steakhouseVault, owner: withdrawOwner)
     }
 }
 

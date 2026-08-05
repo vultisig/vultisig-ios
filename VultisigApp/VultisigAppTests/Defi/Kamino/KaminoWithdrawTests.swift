@@ -25,9 +25,10 @@ final class KaminoWithdrawTests: XCTestCase {
 
     // MARK: - The maximum is never converted
 
-    /// A withdraw at the maximum sends the exact share balance that was read,
-    /// not a number derived from the asset amount on screen.
-    func testAFullWithdrawSendsTheExactHeldShareBalance() throws {
+    /// A withdraw at the maximum sends the exact share figure that was read —
+    /// `KaminoSharePosition.spendable`, which is the balance less at most one
+    /// base unit — and never a number derived from the asset amount on screen.
+    func testAFullWithdrawSendsTheExactHeldShareFigure() throws {
         let held = Self.usdcHeld
         let maximum = try XCTUnwrap(Self.usdcMaximum)
 
@@ -259,38 +260,186 @@ final class KaminoWithdrawTests: XCTestCase {
 
     // MARK: - Eligibility
 
-    /// The refusal every one of these positions currently hits. A deposit
-    /// auto-stakes, so `stakedShares` is where the whole position is, and the
-    /// transaction that spends it has never been observed.
-    func testAStakedPositionIsRefusedRatherThanConverted() {
+    /// The path steps 1–7 refused. A deposit auto-stakes, so this is where every
+    /// real position lives, and it is now withdrawable: releasing the shares is
+    /// `farms::unstake` + `farms::withdraw_unstaked_deposits` ahead of the vault
+    /// withdraw, both in the validator's template and both pinned by argument.
+    func testAStakedPositionIsWithdrawable() throws {
         let eligibility = KaminoWithdrawEligibility.resolve(
             response: Self.position(staked: "5.5", unstaked: "0", total: "5.5"),
             shareDecimals: 6
         )
 
-        XCTAssertEqual(eligibility, .farmStaked(KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)))
-        XCTAssertNil(eligibility.withdrawableShares)
+        let shares = try XCTUnwrap(eligibility.withdrawableShares)
+        // 5.5 is exactly representable at six decimals, so the maximum stops one
+        // base unit short of it — see the sentinel test below.
+        XCTAssertEqual(shares.maximum.baseUnits, BigInt(5_499_999))
+        XCTAssertEqual(shares.unstaked.baseUnits, BigInt(0))
     }
 
-    /// A partly staked position is refused whole. Offering to spend only the
-    /// unstaked remainder would quietly withdraw less than the user asked for,
-    /// and the 100% button would be a lie.
-    func testAPartlyStakedPositionIsRefusedWhole() {
+    /// A partly staked position is spendable as a whole rather than down to its
+    /// unstaked remainder: the transaction releases the shortfall from the farm
+    /// and burns the lot in one go.
+    func testAPartlyStakedPositionIsWithdrawableInFull() throws {
         let eligibility = KaminoWithdrawEligibility.resolve(
             response: Self.position(staked: "1", unstaked: "4.5", total: "5.5"),
             shareDecimals: 6
         )
 
-        XCTAssertEqual(eligibility, .farmStaked(KaminoShareAmount(baseUnits: BigInt(1_000_000), decimals: 6)))
+        let shares = try XCTUnwrap(eligibility.withdrawableShares)
+        XCTAssertEqual(shares.maximum.baseUnits, BigInt(5_499_999))
+        XCTAssertEqual(shares.unstaked.baseUnits, BigInt(4_500_000))
     }
 
-    func testAnEntirelyUnstakedPositionIsWithdrawable() {
+    func testAnEntirelyUnstakedPositionIsWithdrawable() throws {
         let eligibility = KaminoWithdrawEligibility.resolve(
             response: Self.position(staked: "0", unstaked: "5.5", total: "5.5"),
             shareDecimals: 6
         )
 
-        XCTAssertEqual(eligibility, .withdrawable(KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)))
+        let shares = try XCTUnwrap(eligibility.withdrawableShares)
+        XCTAssertEqual(shares.maximum.baseUnits, BigInt(5_499_999))
+        XCTAssertEqual(shares.unstaked.baseUnits, BigInt(5_500_000))
+    }
+
+    // MARK: - The reported balance is not a spendable amount
+
+    /// The captured 14-decimal string, and the reason the maximum is derived
+    /// rather than echoed.
+    ///
+    /// `/positions` reported `stakedShares: "136.26461099910218"` for a
+    /// 6-decimal share mint. Sending that string back as the amount produced a
+    /// vault-withdraw `u64` of `18446744073709551615` — the withdraw-everything
+    /// sentinel. Truncated to the mint's own scale it produced `136264610`, an
+    /// ordinary share count. So the maximum has to come from the truncation.
+    func testTheReportedFourteenDecimalBalanceTruncatesToTheMintScale() throws {
+        let eligibility = KaminoWithdrawEligibility.resolve(
+            response: Self.position(
+                staked: "136.26461099910218",
+                unstaked: "0",
+                total: "136.26461099910218"
+            ),
+            shareDecimals: 6
+        )
+
+        let shares = try XCTUnwrap(eligibility.withdrawableShares)
+        // Truncated, and NOT stepped back a unit: the discarded digits already
+        // put this strictly below the real balance.
+        XCTAssertEqual(shares.maximum.baseUnits, BigInt(136_264_610))
+        XCTAssertEqual(shares.maximum.apiString, "136.26461")
+        XCTAssertNotEqual(shares.maximum.baseUnits, BigInt(UInt64.max))
+    }
+
+    /// The half nobody predicted. The sentinel fires at greater-than-OR-EQUAL
+    /// to the balance, so truncating is necessary and not sufficient: when the
+    /// balance is exactly representable the truncation IS the balance, and
+    /// asking for it asks for everything.
+    ///
+    /// Measured on wallets whose share account holds an exact `u64`, so nothing
+    /// in the comparison is rounded: `3137.14326`, `71.999441` and `1683.002283`
+    /// each came back as the sentinel at exactly the reported balance, and each
+    /// passed through as a share count one base unit below it.
+    func testAnExactlyRepresentableBalanceStepsBackOneBaseUnit() throws {
+        let eligibility = KaminoWithdrawEligibility.resolve(
+            response: Self.position(staked: "0", unstaked: "3137.14326", total: "3137.14326"),
+            shareDecimals: 6
+        )
+
+        let shares = try XCTUnwrap(eligibility.withdrawableShares)
+        XCTAssertEqual(shares.maximum.baseUnits, BigInt(3_137_143_259))
+        XCTAssertLessThan(shares.maximum.baseUnits, shares.unstaked.baseUnits)
+    }
+
+    /// A 100% withdraw never names the sentinel, whichever of the two shapes the
+    /// balance has. This is the property the whole rule exists for.
+    func testAFullWithdrawNeverProducesTheSentinel() throws {
+        for total in ["136.26461099910218", "3137.14326", "5.5", "0.000002", "17.441877080769315"] {
+            let eligibility = KaminoWithdrawEligibility.resolve(
+                response: Self.position(staked: total, unstaked: "0", total: total),
+                shareDecimals: 6
+            )
+            let shares = try XCTUnwrap(eligibility.withdrawableShares, total)
+            let requested = KaminoWithdrawMath.shares(
+                forTokens: try XCTUnwrap(
+                    KaminoWithdrawMath.maximumTokens(
+                        shares: shares.maximum,
+                        tokensPerShare: Self.usdcRate,
+                        tokenDecimals: 6
+                    ),
+                    total
+                ),
+                held: shares.maximum,
+                maximumTokens: try XCTUnwrap(
+                    KaminoWithdrawMath.maximumTokens(
+                        shares: shares.maximum,
+                        tokensPerShare: Self.usdcRate,
+                        tokenDecimals: 6
+                    ),
+                    total
+                ),
+                tokensPerShare: Self.usdcRate,
+                shareDecimals: 6
+            )
+
+            XCTAssertEqual(requested, shares.maximum, total)
+            XCTAssertNotEqual(requested?.baseUnits, BigInt(UInt64.max), total)
+            XCTAssertTrue(try XCTUnwrap(requested, total).isValidRequestAmount, total)
+        }
+    }
+
+    /// A position of a single base unit has nothing left once the maximum steps
+    /// back, and "nothing to withdraw" is the true statement about it.
+    func testASingleBaseUnitPositionIsEmpty() {
+        XCTAssertEqual(
+            KaminoWithdrawEligibility.resolve(
+                response: Self.position(staked: "0.000001", unstaked: "0", total: "0.000001"),
+                shareDecimals: 6
+            ),
+            .empty
+        )
+    }
+
+    // MARK: - The unstake is the shortfall
+
+    /// Measured against a real mixed position: `0.959593` unstaked and
+    /// `0.944548` staked. A request of `1.5` was built with an unstake of
+    /// `0.540407` — exactly the shortfall — and a request AT the unstaked
+    /// balance was built with no farms instruction at all.
+    func testTheUnstakeIsExactlyTheShortfall() {
+        let unstaked = KaminoShareAmount(baseUnits: BigInt(959_593), decimals: 6)
+
+        let straddling = KaminoWithdrawRequest(
+            shares: KaminoShareAmount(baseUnits: BigInt(1_500_000), decimals: 6),
+            unstakedShares: unstaked
+        )
+        XCTAssertEqual(straddling.unstakeShares.baseUnits, BigInt(540_407))
+        XCTAssertTrue(straddling.requiresUnstake)
+
+        let atTheBoundary = KaminoWithdrawRequest(shares: unstaked, unstakedShares: unstaked)
+        XCTAssertEqual(atTheBoundary.unstakeShares.baseUnits, BigInt(0))
+        XCTAssertFalse(atTheBoundary.requiresUnstake)
+
+        let below = KaminoWithdrawRequest(
+            shares: KaminoShareAmount(baseUnits: BigInt(500_000), decimals: 6),
+            unstakedShares: unstaked
+        )
+        XCTAssertEqual(below.unstakeShares.baseUnits, BigInt(0))
+        XCTAssertFalse(below.requiresUnstake)
+    }
+
+    /// A wholly staked position has no unstaked balance, so the shortfall is the
+    /// whole request — which is what the captured single-share withdraw carries.
+    func testAWhollyStakedRequestUnstakesTheWholeAmount() {
+        let request = KaminoWithdrawRequest(
+            shares: KaminoShareAmount(baseUnits: BigInt(1_000_000), decimals: 6),
+            unstakedShares: KaminoShareAmount(baseUnits: BigInt(0), decimals: 6)
+        )
+
+        XCTAssertEqual(request.unstakeShares.baseUnits, BigInt(1_000_000))
+        XCTAssertEqual(
+            request.unstakeShares.baseUnits * KaminoInstructionDiscriminator.farmsStakeScale,
+            BigInt("1000000000000000000000000")
+        )
     }
 
     /// Absent from the response is a real "holds nothing" answer.

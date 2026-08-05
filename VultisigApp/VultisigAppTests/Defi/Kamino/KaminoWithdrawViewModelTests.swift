@@ -51,40 +51,75 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
         try await super.tearDown()
     }
 
-    // MARK: - The farm-staked refusal
+    // MARK: - Farm-staked positions
 
-    /// The state every real position in these vaults is in. Nothing is built,
-    /// nothing is requested, and the reason is a named, user-visible one.
-    func testAFarmStakedPositionRefusesAndBuildsNothing() async {
+    /// The state every real position in these vaults is in, and it now builds.
+    /// The form offers the whole position — not just its unstaked part — and the
+    /// request it hands down carries the split, so the validator knows to
+    /// require the farm release.
+    func testAFarmStakedPositionIsWithdrawable() async throws {
         addUsdcCoin()
         service.positions = [Self.position(staked: "5.5", unstaked: "0", total: "5.5")]
         let viewModel = makeViewModel()
 
         await viewModel.onLoad()
 
-        XCTAssertEqual(viewModel.eligibility, .farmStaked(KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)))
-        XCTAssertEqual(viewModel.unavailableReason, .farmStakedNotSupported)
-        XCTAssertEqual(viewModel.availableAmount, .zero)
+        XCTAssertNil(viewModel.unavailableReason)
+        XCTAssertNotEqual(viewModel.availableAmount, .zero)
 
         viewModel.amountField.value = "1"
-        let withdraw = await viewModel.makeWithdraw()
+        let made = await viewModel.makeWithdraw()
+        let withdraw = try XCTUnwrap(made)
 
-        XCTAssertNil(withdraw)
-        XCTAssertTrue(preparer.requests.isEmpty)
-        XCTAssertEqual(viewModel.error as? KaminoWithdrawError, .farmStakedNotSupported)
+        let request = try XCTUnwrap(preparer.requests.first?.request)
+        XCTAssertEqual(request.unstakedShares.baseUnits, BigInt(0))
+        // Nothing is unstaked, so the whole request has to come out of the farm.
+        XCTAssertEqual(request.unstakeShares, request.shares)
+        XCTAssertTrue(request.requiresUnstake)
+        XCTAssertEqual(withdraw.shares, request.shares)
     }
 
-    /// A partly staked position is refused whole rather than withdrawing the
-    /// unstaked remainder, which would silently take out less than was asked for.
-    func testAPartlyStakedPositionAlsoRefuses() async {
+    /// A partly staked position spends across the boundary in one transaction:
+    /// the unstaked part directly, the shortfall out of the farm.
+    func testAPartlyStakedPositionUnstakesOnlyTheShortfall() async throws {
+        addUsdcCoin()
+        service.positions = [Self.position(staked: "1", unstaked: "4.5", total: "5.5")]
+        let viewModel = makeViewModel()
+
+        await viewModel.onLoad()
+        XCTAssertNil(viewModel.unavailableReason)
+
+        // 5.4 shares' worth of asset, comfortably above the 4.5 unstaked.
+        viewModel.amountField.value = "5.688"
+        let made = await viewModel.makeWithdraw()
+        XCTAssertNotNil(made)
+
+        let request = try XCTUnwrap(preparer.requests.first?.request)
+        XCTAssertEqual(request.unstakedShares.baseUnits, BigInt(4_500_000))
+        XCTAssertTrue(request.requiresUnstake)
+        XCTAssertEqual(
+            request.unstakeShares.baseUnits,
+            request.shares.baseUnits - BigInt(4_500_000)
+        )
+    }
+
+    /// And a request that fits inside the unstaked balance asks for no release
+    /// at all — the two-instruction shape, which the validator then REQUIRES to
+    /// carry no farms instruction.
+    func testARequestInsideTheUnstakedBalanceNeedsNoRelease() async throws {
         addUsdcCoin()
         service.positions = [Self.position(staked: "1", unstaked: "4.5", total: "5.5")]
         let viewModel = makeViewModel()
 
         await viewModel.onLoad()
 
-        XCTAssertEqual(viewModel.unavailableReason, .farmStakedNotSupported)
-        XCTAssertEqual(viewModel.availableAmount, .zero)
+        viewModel.amountField.value = "1"
+        let made = await viewModel.makeWithdraw()
+        XCTAssertNotNil(made)
+
+        let request = try XCTUnwrap(preparer.requests.first?.request)
+        XCTAssertFalse(request.requiresUnstake)
+        XCTAssertEqual(request.unstakeShares.baseUnits, BigInt(0))
     }
 
     func testAnEmptyPositionSaysSoAndOffersNothing() async {
@@ -141,8 +176,19 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
 
         await viewModel.onLoad()
 
-        XCTAssertEqual(viewModel.eligibility, .withdrawable(KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)))
-        XCTAssertEqual(viewModel.availableAmount, Decimal(string: "5.794822"))
+        XCTAssertEqual(
+            viewModel.eligibility,
+            .withdrawable(
+                KaminoWithdrawableShares(
+                    // One base unit below the balance: `5.5` is exactly
+                    // representable, and asking for the whole of it is what the
+                    // API answers with its withdraw-everything sentinel.
+                    maximum: KaminoShareAmount(baseUnits: BigInt(5_499_999), decimals: 6),
+                    unstaked: KaminoShareAmount(baseUnits: BigInt(5_500_000), decimals: 6)
+                )
+            )
+        )
+        XCTAssertEqual(viewModel.availableAmount, Decimal(string: "5.794821"))
     }
 
     /// The trap, end to end. A 100% withdraw sends the exact share balance —
@@ -155,13 +201,15 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
         await viewModel.onLoad()
 
         // What the 100% button writes: the maximum, at the asset's own scale.
-        viewModel.amountField.value = "5.794822"
+        viewModel.amountField.value = "5.794821"
         let made = await viewModel.makeWithdraw()
         let withdraw = try XCTUnwrap(made)
 
-        XCTAssertEqual(withdraw.shares.baseUnits, BigInt(5_500_000))
-        XCTAssertEqual(preparer.requests.first?.shares.baseUnits, BigInt(5_500_000))
-        XCTAssertEqual(withdraw.payload.kaminoPayload?.amountBaseUnits, "5500000")
+        XCTAssertEqual(withdraw.shares.baseUnits, BigInt(5_499_999))
+        XCTAssertEqual(preparer.requests.first?.request.shares.baseUnits, BigInt(5_499_999))
+        XCTAssertEqual(withdraw.payload.kaminoPayload?.amountBaseUnits, "5499999")
+        // The one thing this must never be.
+        XCTAssertNotEqual(withdraw.shares.baseUnits, BigInt(UInt64.max))
     }
 
     /// And an amount ABOVE the maximum is refused rather than clamped to it.
@@ -260,14 +308,14 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
         viewModel.amountField.value = "1"
 
         preparer.onPrepare = { [weak viewModel] in
-            Task { @MainActor in viewModel?.amountField.value = "5.794822" }
+            Task { @MainActor in viewModel?.amountField.value = "5.794821" }
         }
 
         let made = await viewModel.makeWithdraw()
         let withdraw = try XCTUnwrap(made)
 
         XCTAssertEqual(withdraw.shares.baseUnits, BigInt(949_123))
-        XCTAssertEqual(preparer.requests.first?.shares.baseUnits, BigInt(949_123))
+        XCTAssertEqual(preparer.requests.first?.request.shares.baseUnits, BigInt(949_123))
         XCTAssertEqual(withdraw.transaction.amount, "0.999999")
     }
 
@@ -308,7 +356,7 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
         service.positions = [Self.unstakedPosition]
         let viewModel = makeViewModel()
         await viewModel.onLoad()
-        viewModel.amountField.value = "5.794822"
+        viewModel.amountField.value = "5.794821"
 
         let made = await viewModel.makeWithdraw()
         let withdraw = try XCTUnwrap(made)
@@ -546,7 +594,7 @@ private final class SpyWithdrawPreparer: KaminoWithdrawPreparing, @unchecked Sen
     struct Request {
         let vault: KaminoVaultInfo
         let owner: String
-        let shares: KaminoShareAmount
+        let request: KaminoWithdrawRequest
         let unitPrice: UInt64
     }
 
@@ -569,12 +617,12 @@ private final class SpyWithdrawPreparer: KaminoWithdrawPreparing, @unchecked Sen
     func prepareWithdraw(
         vault: KaminoVaultInfo,
         owner: String,
-        shares: KaminoShareAmount,
+        request: KaminoWithdrawRequest,
         unitPrice: UInt64
     ) async throws -> KaminoPreparedTransaction {
         await Task.yield()
         lock.withLock {
-            _requests.append(Request(vault: vault, owner: owner, shares: shares, unitPrice: unitPrice))
+            _requests.append(Request(vault: vault, owner: owner, request: request, unitPrice: unitPrice))
         }
         onPrepare?()
         await Task.yield()
@@ -585,7 +633,7 @@ private final class SpyWithdrawPreparer: KaminoWithdrawPreparing, @unchecked Sen
                 limit: KaminoComputeBudget.withdrawUnitLimit,
                 price: unitPrice
             ),
-            unitsConsumed: 174_566,
+            unitsConsumed: 283_786,
             payerLamportsAfter: nil,
             recentBlockhash: "6VjnGjZWnCyLtCd5FZTLpqm9GNjnzDrGGjyEfKNXfPKa"
         )

@@ -16,25 +16,80 @@ struct KaminoSharePosition: Equatable {
     let staked: KaminoShareAmount
     let unstaked: KaminoShareAmount
     let total: KaminoShareAmount
+    /// The most a withdraw may name — see the property's own note for why it is
+    /// not simply `total`.
+    let spendable: KaminoShareAmount
 
     /// Parses one `/positions` element at the vault's pinned share scale.
     /// `nil` when any of the three values is not a plain decimal — a value that
     /// is present and unreadable is a failed read, not a zero balance.
+    ///
+    /// Every value is TRUNCATED to the share mint's own decimals on the way in.
+    /// The endpoint reports up to 14 decimal places for a 6-decimal mint, and
+    /// the extra digits are not a balance anyone can spend: handing the reported
+    /// string straight back as an amount asks for more than the position holds,
+    /// which the API rewrites to its withdraw-everything sentinel.
     init?(response: KaminoUserPositionResponse, shareDecimals: Int) {
         guard let staked = KaminoShareAmount(decimalString: response.stakedShares, decimals: shareDecimals),
               let unstaked = KaminoShareAmount(decimalString: response.unstakedShares, decimals: shareDecimals),
-              let total = KaminoShareAmount(decimalString: response.totalShares, decimals: shareDecimals)
+              let total = KaminoShareAmount(decimalString: response.totalShares, decimals: shareDecimals),
+              let spendable = Self.spendable(totalShares: response.totalShares, shareDecimals: shareDecimals)
         else { return nil }
 
         self.staked = staked
         self.unstaked = unstaked
         self.total = total
+        self.spendable = spendable
+        self.accountsForItsTotal = KaminoRate.sum(response.stakedShares, response.unstakedShares)
+            .map { KaminoRate.isEqual($0, response.totalShares) } ?? false
     }
 
     init(staked: KaminoShareAmount, unstaked: KaminoShareAmount, total: KaminoShareAmount) {
         self.staked = staked
         self.unstaked = unstaked
         self.total = total
+        self.spendable = Self.spendable(total: total)
+        // Already at one scale, so the sum is exact here by construction.
+        self.accountsForItsTotal = staked.baseUnits + unstaked.baseUnits == total.baseUnits
+    }
+
+    /// The largest share amount `POST /ktx/kvault/withdraw` will size as a share
+    /// count rather than rewriting to `u64::MAX` — its *withdraw everything*
+    /// sentinel.
+    ///
+    /// The sentinel fires at greater-than-**or-equal-to** the spendable balance,
+    /// not merely above it. That was measured, not assumed, and on wallets where
+    /// the balance is an exact `u64` in a token account, so there is no rounding
+    /// anywhere in the comparison: requests of `3137.14326`, `71.999441` and
+    /// `1683.002283` against balances of exactly those figures each came back as
+    /// the sentinel, and each passed through as an ordinary share count one base
+    /// unit below. So "the whole balance" is not a request this API accepts, and
+    /// the maximum has to be the largest amount strictly beneath it.
+    ///
+    /// Truncating the reported string is necessary and NOT sufficient. It gives
+    /// a value strictly below the balance only when there were digits past the
+    /// mint's scale to throw away; when the balance is exactly representable the
+    /// truncation is the balance, and asking for it is asking for everything. So
+    /// the exact case gives up one base unit — `10^-6` of a share, which is
+    /// worth about a ten-thousandth of a cent on the launch vaults — and the
+    /// inexact case does not have to.
+    ///
+    /// Refusing the sentinel is the point of the whole withdraw guard, so it is
+    /// never accepted here to make a 100% withdraw work. The dust is the price
+    /// of the sentinel being indistinguishable, in the bytes, from an amount the
+    /// user never asked for.
+    private static func spendable(totalShares: String, shareDecimals: Int) -> KaminoShareAmount? {
+        guard let rate = KaminoRate(apiString: totalShares),
+              let scaled = KaminoAmountMath.scaleReportingExactness(rate: rate, toDecimals: shareDecimals)
+        else { return nil }
+        let baseUnits = scaled.isExact ? scaled.baseUnits - 1 : scaled.baseUnits
+        return KaminoShareAmount(baseUnits: max(baseUnits, 0), decimals: shareDecimals)
+    }
+
+    /// The same rule for a position built from already-scaled amounts, where the
+    /// total is exact by construction.
+    private static func spendable(total: KaminoShareAmount) -> KaminoShareAmount {
+        KaminoShareAmount(baseUnits: max(total.baseUnits - 1, 0), decimals: total.decimals)
     }
 
     /// Whether the three reported numbers can all be true at once.
@@ -50,42 +105,57 @@ struct KaminoSharePosition: Equatable {
             && unstaked.baseUnits <= total.baseUnits
     }
 
-    /// Whether the whole position is unstaked shares and nothing else.
+    /// Whether the two reported parts add up to the reported total.
     ///
-    /// This, rather than `staked == 0`, is what makes a withdraw of `unstaked`
-    /// a withdraw of the *position*. A response whose total exceeds the two
-    /// reported kinds has shares it has not accounted for, and an unaccounted
-    /// share may well be a staked one — in which case spending only the
-    /// unstaked remainder would present a partial exit as a complete one.
+    /// A response whose total exceeds its parts has shares it has not accounted
+    /// for, and this flow has to know exactly how the position is split: the
+    /// unstaked half is what decides how many shares the farm is asked to
+    /// release, and a request built against a wrong split is one the API will
+    /// answer with a different transaction from the one being checked for.
     ///
-    /// Stated as `unstaked == total` rather than `staked + unstaked == total`
-    /// on purpose. Both hold in the case that matters — an entirely unstaked
-    /// position reports the same figure twice, so the two strings truncate
-    /// identically at the vault's share scale — but the sum can disagree by a
-    /// base unit purely from truncating two different strings, and that would
-    /// refuse a real position over a last decimal place.
-    var holdsOnlyUnstakedShares: Bool {
-        unstaked.baseUnits == total.baseUnits
-    }
+    /// Compared at the API's OWN precision, never at the share mint's scale.
+    /// Truncating three strings to six decimals and adding two of them can miss
+    /// the third by a base unit with nothing wrong — `0.9445485 + 0.9595935`
+    /// truncates to `944548 + 959593`, one short of `1904142` — and refusing a
+    /// real position over a last decimal place is not a guard, it is a bug. At
+    /// full precision the identity holds exactly: 80 live positions across all
+    /// three launch vaults were checked and every one summed exactly.
+    let accountsForItsTotal: Bool
+}
+
+/// The share balance a withdraw may spend, and how the vault currently holds it.
+///
+/// Both halves travel together because both are needed to size ONE transaction.
+/// The maximum decides how much may be asked for; the unstaked part decides how
+/// much the farm has to release first, which is an instruction argument the
+/// validator pins. A form holding only the first would be able to build a
+/// request it could not then check.
+struct KaminoWithdrawableShares: Equatable {
+    /// The most a withdraw may name — see `KaminoSharePosition.spendable`.
+    let maximum: KaminoShareAmount
+    /// The part of the position already sitting in the user's own share account,
+    /// which a withdraw spends without touching the farm at all.
+    let unstaked: KaminoShareAmount
 }
 
 /// What a withdraw from one vault may do right now.
 ///
-/// The `farmStaked` case is the whole reason this type exists. Every deposit
-/// into the launch vaults auto-stakes its shares into the vault's farm, and the
-/// transaction that spends *staked* shares has never been observed — so the
-/// validator has no template for it, and building one would mean asserting
-/// against a guessed instruction layout. This enum makes that a named,
-/// user-visible state instead of a refusal deep inside the pipeline.
+/// Every deposit into the launch vaults auto-stakes its shares into the vault's
+/// farm, so a staked position is not an edge case here — it is what essentially
+/// every real holder is in. The transaction that spends those shares releases
+/// them from the farm first (`farms::unstake`, then
+/// `farms::withdraw_unstaked_deposits`, both ahead of the vault withdraw), and
+/// the template in `KaminoInstructionSequence` now covers it, so a staked
+/// balance is withdrawable rather than refused.
+///
+/// The refusals that remain are the ones that are about the READ, not about the
+/// shape: a response whose figures contradict each other, and one whose parts do
+/// not add up to its total. Neither describes a position this flow can size a
+/// request against.
 enum KaminoWithdrawEligibility: Equatable {
 
-    /// The observed path. The associated value is the exact unstaked share
-    /// balance, and a full withdraw sends precisely this — never a number
-    /// converted out of an asset amount.
-    case withdrawable(KaminoShareAmount)
-
-    /// Shares are staked in the vault's farm. Nothing is built.
-    case farmStaked(KaminoShareAmount)
+    /// The user holds shares that can be withdrawn, staked or not.
+    case withdrawable(KaminoWithdrawableShares)
 
     /// The user holds no shares in this vault.
     case empty
@@ -96,7 +166,7 @@ enum KaminoWithdrawEligibility: Equatable {
     case unreadable
 
     /// The share balance a withdraw may spend, or `nil` when none may be spent.
-    var withdrawableShares: KaminoShareAmount? {
+    var withdrawableShares: KaminoWithdrawableShares? {
         guard case .withdrawable(let shares) = self else { return nil }
         return shares
     }
@@ -114,18 +184,19 @@ enum KaminoWithdrawEligibility: Equatable {
               position.isPlausible
         else { return .unreadable }
 
-        // Staked first, and unconditionally: a position that is even partly
-        // staked cannot be fully withdrawn by the transaction shape this app
-        // knows, and offering to spend only the unstaked remainder of a staked
-        // position would quietly under-withdraw.
-        guard position.staked.isZero else { return .farmStaked(position.staked) }
-        // Then the shares the response did not account for. `staked == 0` alone
-        // does not mean "nothing is staked" — it means nothing was *reported*
-        // as staked, and a total larger than the parts is a position this app
-        // cannot describe.
-        guard position.holdsOnlyUnstakedShares else { return .unreadable }
-        guard !position.unstaked.isZero else { return .empty }
-        return .withdrawable(position.unstaked)
+        // Shares the response did not account for. A total larger than its parts
+        // is a position this app cannot describe: it would have to guess how
+        // much of the remainder is staked, and that guess is the argument of an
+        // instruction it then claims to have verified.
+        guard position.accountsForItsTotal else { return .unreadable }
+        // Nothing left to spend once the maximum has stepped back from the
+        // sentinel. A position of a single base unit lands here, and "nothing to
+        // withdraw" is the true statement about it.
+        guard !position.spendable.isZero else { return .empty }
+
+        return .withdrawable(
+            KaminoWithdrawableShares(maximum: position.spendable, unstaked: position.unstaked)
+        )
     }
 }
 
@@ -200,9 +271,11 @@ enum KaminoWithdrawMath {
     ///   also the only answer that stays true if the balance moved since it was
     ///   read.
     /// - **Exactly the maximum**: a full withdraw, and it sends `held` — the
-    ///   exact balance that was read — rather than a number converted out of the
-    ///   asset amount. Round-tripping the maximum through tokens and back is
-    ///   precisely how the extra base unit would be introduced.
+    ///   exact share figure that was read, which is the position minus at most
+    ///   the one base unit `KaminoSharePosition.spendable` steps back from the
+    ///   API's sentinel — rather than a number converted out of the asset amount.
+    ///   Round-tripping the maximum through tokens and back is precisely how an
+    ///   extra base unit would be introduced.
     /// - **Below it**: the conversion truncates. Both `maximumTokens` and this
     ///   division round down, so `tokens < maximumTokens` implies the result is
     ///   `≤ held` — the partial branch cannot even reach the balance.

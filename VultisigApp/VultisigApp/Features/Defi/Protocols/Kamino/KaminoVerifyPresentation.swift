@@ -87,13 +87,24 @@ enum KaminoVerifyPresentation {
         /// cannot be decoded at all, are both refusals: the bytes are the only
         /// thing that gets signed, so a screen that disagrees with them — or
         /// cannot read them — has nothing to offer an approver. `.notKamino`
-        /// and `.amountUnverifiable` are not refusals; the second is a disclosed
-        /// limit on what could be checked, not a contradiction.
+        /// and `.amountUnverifiable` are not refusals in themselves; the second
+        /// is a disclosed limit on what could be checked, not a contradiction.
+        ///
+        /// The `u64::MAX` withdraw-everything sentinel is, though, and on any
+        /// device. This app cannot produce one: the form's maximum is derived to
+        /// sit strictly below the balance precisely so the API never answers
+        /// with the sentinel, and the validator pins the instruction's amount to
+        /// the request. So a transaction carrying it did not come from here —
+        /// and it is the one amount whose consequence is the whole position
+        /// rather than the number on screen. Disclosing it while allowing the
+        /// signature would put the entire position behind a label.
         var blocksSigning: Bool {
             switch self {
             case .mismatch, .unreadable:
                 return true
-            case .notKamino, .verified, .amountUnverifiable:
+            case .verified(let display), .amountUnverifiable(let display):
+                return display.withdrawsEntirePosition
+            case .notKamino:
                 return false
             }
         }

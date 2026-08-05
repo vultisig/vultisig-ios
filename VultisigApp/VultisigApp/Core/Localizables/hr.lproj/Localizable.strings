@@ -665,7 +665,6 @@
 "kaminoVerifyUnreadable" = "Ovi bajtovi pozivaju Kamino vault program, ali ih nije bilo moguće pročitati kao polog ili podizanje. Nemoj ih potpisati.";
 "kaminoVerifyVault" = "Vault";
 "kaminoVerifyWithdraw" = "Podizanje iz vaulta";
-"kaminoWithdrawFarmStaked" = "Tvoj ulog u ovom vaultu stakan je u njegovoj farmi. Podizanje stakane pozicije još nije podržano.";
 "kaminoWithdrawInsufficientLiquidity" = "Ovaj vault trenutno ne može namiriti to podizanje — odmah je dostupno samo %@ %@.";
 "kaminoWithdrawLimitedLiquidity" = "Iz ovog vaulta odmah se može podići samo %@ %@. Veće podizanje možda neće biti namireno dok vault ne oslobodi više likvidnosti.";
 "kaminoWithdrawMinimum" = "Minimalno podizanje je %@ %@.";
