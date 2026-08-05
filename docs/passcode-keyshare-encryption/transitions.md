@@ -355,7 +355,7 @@ acting. Three callers, three shapes, all of them making a lock win:
         │        ├─ clear inherited key material if the container is new
         │        └─ align the lock mode with the wrapped key, both directions
         │
-        └─► if mode == .passcode: lock() and raise the gate
+        └─► if isPasscodeGateRequired: lock() and raise the gate
 ```
 
 **The ordering is the point.** `KeyshareInstallReconciler().reconcile()` also
@@ -392,6 +392,58 @@ forbids.
 `lastMigratedVersion` is deliberately **not** cleared. It is Keychain-held so it
 survives reinstalls, and clearing it would re-run every ordinary migration on a
 container with no passcode artifact of any kind.
+
+---
+
+## The gate is derived, never cached
+
+`AppViewModel.isPasscodeLocked` is what the user is looking at, and it is a copy
+of `PasscodeService.isPasscodeGateRequired` taken at the moment the overlay went
+up. One transition invalidates that copy in the worst way available. A
+`disablePasscode` **past its abort cut-off** completes even across a background
+`lock()` — stopping there would strand every share in the clear behind a passcode
+still being demanded — and what it completes into is `.deviceAuth`, no wrapper,
+and a screen whose only exit calls `unlockApp`, which can now answer nothing but
+`notSet`. Nothing typed there is ever right; force quitting is the only way out.
+
+So the predicate is asked again rather than remembered:
+
+```swift
+nonisolated var isPasscodeGateRequired: Bool {
+    guard lockService.mode == .passcode else { return false }
+    if case .absent = keyStore.loadWrappedDataKey() { return false }
+    return true
+}
+```
+
+Both halves matter. It is the mode **and** a wrapper that is not *confirmed*
+gone, so an unreadable Keychain leaves a real gate standing while a provably
+removed passcode takes one down. `disablePasscode` guarantees it is `false` by
+the time it returns, and `unlockApp` repairs a mode it finds standing over a
+confirmed absence on the spot, for the person already at the gate.
+
+Every site that raises or lowers the overlay derives it:
+
+| Site | Asks |
+|---|---|
+| `restorePasscodeLockOnLaunch()` — cold start | after reconciliation, never before |
+| `enableAuth()` — foreground | which gate this install has: raise, or lower a stale one and fall through to device auth |
+| `EnterPasscodeScreen`'s failed attempt | reports; `lowerPasscodeGateIfNoLongerRequired()` decides |
+
+Reading `AppLockService.mode` at either of the first two is the bug this
+replaced, and it is a strict narrowing rather than a change of policy — the
+predicate's own first clause is that mode check.
+
+**Each site derives it exactly once and every branch acts on that one answer.**
+`raisePasscodeGate()` deliberately does *not* re-derive: a transition runs on
+`PasscodeService`'s executor rather than the main one, so a second read can
+disagree with the first, and `enableAuth`'s passcode branch returns past the
+device-auth fallback. Split across two reads, a foreground could raise no gate,
+skip the fallback, and put the wallet on screen behind neither.
+
+Not forgetting the data key when no gate is required is deliberate too: with the
+wrapper confirmed gone, the session key is the last copy of something nothing can
+hand back.
 
 ---
 

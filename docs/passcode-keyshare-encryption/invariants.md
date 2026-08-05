@@ -136,6 +136,7 @@ explicitly, and the deliberate collapses all go through the conspicuously named
 | reconciler: store occupancy | **defer the clear**, marker unset (alignment still runs) | set a permanent marker on a guess, keeping a previous install's wrapper forever |
 | reconciler: inherited material | **defer the clear**, marker unset (alignment still runs) | issue launch-time Keychain deletes on a first-ever install whose Keychain stuttered |
 | reconciler: lock-mode alignment | **move nothing** | raise a gate with nothing behind it, or take a real gate down |
+| `isPasscodeGateRequired` — every overlay decision | **gate required** | take a real lock screen down over a Keychain that merely went quiet |
 | `PasscodeAttemptLimiter.loadState` | **no record** ← the one exception | put a permanent, undecayable lockout in front of a passcode the user knows |
 
 That last row is the deliberate exception and it is argued at the call site.
@@ -180,6 +181,8 @@ switch over the cases.
 | let `BiometricKeychain.store` delete-then-add in one place with one query | `SecItemDelete` takes a *search* query; the full add dictionary matches nothing and the add answers `errSecDuplicateItem`, silently breaking rebinding after a passcode change |
 | collapse `BiometricUnlockError.malformedCopy` into `.failed` | `.failed` also covers "the face did not match", which the UI stays silent about — so a *successful* Face ID would appear to do nothing while silently disabling the shortcut |
 | have `KeyshareInstallReconciler` skip taking the transition lease (it only runs at launch) | a launch landing between `setPasscode` verifying its wrapper and adopting the key deletes that wrapper **and marks the container done** |
+| raise or lower the overlay from `AppLockService.mode` instead of `isPasscodeGateRequired` | the mode is `UserDefaults` and the wrapper is Keychain; a completed disable moves them at different moments. Reading the mode leaves a lock screen standing with nothing that can dismiss it — see [transitions](transitions.md#the-gate-is-derived-never-cached) |
+| cache the gate predicate in a `@Published` flag and update it on transitions | the transitions that matter run while the overlay is already up, from a `nonisolated` `lock()` that synchronizes with nothing. Re-deriving is the only shape that cannot go stale |
 | wire the lock screen to `PasscodeService.unlock(with:)` | see below — there is **no compile-time forcing function** for this one |
 
 ### The one with no forcing function
