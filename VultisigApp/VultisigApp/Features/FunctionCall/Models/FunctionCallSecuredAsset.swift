@@ -94,10 +94,12 @@ final class FunctionCallSecuredAsset {
             return
         }
 
-        // A halted/paused source chain has no usable inbound vault; leave
+        // A trading-halted source chain has no usable inbound vault; leave
         // `toAddress` empty so the form blocks submission instead of signing
         // with an empty destination (raw `Error_invalid_address` at sign time).
-        if inbound.halted || inbound.global_trading_paused ?? false || inbound.chain_trading_paused ?? false || inbound.chain_lp_actions_paused ?? false {
+        // A mint is a plain transfer to the inbound vault, not a liquidity-provider
+        // action, so it gates on the trading flags only — see `isTradingHalted`.
+        if inbound.isTradingHalted {
             inboundStateError = String(format: "inboundPaused".localized, inbound.chain)
             updateErrorMessage()
             return

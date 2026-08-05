@@ -116,7 +116,7 @@ enum ThorchainRouterDepositBuilder {
 
     /// Resolves the L1 deposit destination for a SECURE+ mint: the THORChain
     /// inbound vault (native sources) or the ERC20 router (approve sources).
-    /// Throws on a halted/paused or missing inbound so a mint never signs to an
+    /// Throws on a trading-halted or missing inbound so a mint never signs to an
     /// empty/stranded destination. Mirrors
     /// `FunctionCallSecuredAsset.fetchInboundAddressAndSetupApproval`.
     @MainActor
@@ -133,7 +133,9 @@ enum ThorchainRouterDepositBuilder {
         guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
             throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
         }
-        if inbound.halted || inbound.global_trading_paused ?? false || inbound.chain_trading_paused ?? false || inbound.chain_lp_actions_paused ?? false {
+        // A mint is a plain transfer to the inbound vault, not a liquidity-provider
+        // action, so it gates on the trading flags only — see `isTradingHalted`.
+        if inbound.isTradingHalted {
             throw HelperError.runtimeError(String(format: "inboundPaused".localized, inbound.chain))
         }
 
