@@ -87,7 +87,7 @@ final class MockSendInteractor: SendInteractor {
     /// plan produces. Tests that care about the numbers stub it.
     var calculateMaxSendPlanStub: ((SendChainSpecificRequest, Vault) throws -> SendMaxPlanResult) = { request, _ in
         let fee = BigInt(3_000)
-        let balance = request.coin.rawBalance.toBigInt(decimals: request.coin.decimals)
+        let balance = request.coin.balanceRaw
         return SendMaxPlanResult(amount: max(balance - fee, .zero), fee: fee, byteFee: BigInt(12))
     }
     var validateUtxosIfNeededStub: ((Coin) throws -> Void) = { _ in }
