@@ -139,7 +139,7 @@ struct SendCryptoVerifyLogic {
         }
 
         let amount = tx.amountInRaw
-        let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+        let balance = tx.coin.balanceRaw
         // TRON staking operations: skip balance validation entirely
         // The balance is already validated in TronFreezeScreen/TronUnfreezeScreen
         // and the user sees the available balance on the screen
@@ -204,7 +204,7 @@ struct SendCryptoVerifyLogic {
             // error when the vault's ADA balance can't cover that.
             if tx.coin.chain == .cardano,
                let nativeToken = tx.vault.coins.nativeCoin(chain: .cardano) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = nativeToken.balanceRaw
                 let minAdaReserve = CardanoHelper.defaultMinUTXOValue * 2
                 if nativeBalance < tx.fee + minAdaReserve {
                     return BalanceValidationResult(isValid: false, errorMessage: "cardanoOutputBelowMinAda")
@@ -214,7 +214,7 @@ struct SendCryptoVerifyLogic {
             // Validate gas balance for non-native tokens. Decision 2 win:
             // vault is now non-optional, so the singleton fallback is gone.
             if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = nativeToken.balanceRaw
                 if tx.fee > nativeBalance {
                     let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
                     return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
@@ -351,7 +351,7 @@ struct SendCryptoVerifyLogic {
         )
         // The XRP balance is already reserve-net, so it is what can actually be
         // locked up and spent.
-        let spendable = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        let spendable = nativeToken.balanceRaw
         let required = ownerReserve + tx.fee
         guard spendable >= required else {
             throw HelperError.runtimeError(

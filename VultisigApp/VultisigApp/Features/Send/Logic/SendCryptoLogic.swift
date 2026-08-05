@@ -49,7 +49,7 @@ enum SendCryptoLogic {
         }
 
         let amountRaw = amountInRaw(coin: coin, amount: amount)
-        let balanceRaw = coin.rawBalance.toBigInt(decimals: coin.decimals)
+        let balanceRaw = coin.balanceRaw
 
         if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton))
             || !coin.isNativeToken {
@@ -224,7 +224,7 @@ enum SendCryptoLogic {
     ///
     /// Every other chain keeps `balance − fee − ED` unchanged.
     static func verifyMaxCandidateRaw(coin: Coin, fee: BigInt, previousAmountRaw: BigInt) -> BigInt {
-        let balance = coin.rawBalance.toBigInt(decimals: coin.decimals)
+        let balance = coin.balanceRaw
         let candidate = balance - fee - existentialDeposit(for: coin)
         guard coin.chain == .terraClassic else { return candidate }
         return Swift.min(candidate, previousAmountRaw)

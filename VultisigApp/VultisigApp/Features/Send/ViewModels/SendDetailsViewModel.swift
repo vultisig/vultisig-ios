@@ -800,7 +800,7 @@ final class SendDetailsViewModel {
         // WalletCore's `Int64` amount field, where an out-of-range conversion
         // traps rather than failing. Clamp it — an absurd balance must not
         // crash the form.
-        let probeAmount = Swift.min(coin.rawBalance.toBigInt(decimals: coin.decimals), BigInt(Int64.max))
+        let probeAmount = Swift.min(coin.balanceRaw, BigInt(Int64.max))
         // The form plans against the cached UTXO set: Max is tapped repeatedly
         // while editing, and Verify refreshes before the plan that is signed.
         let plan = try await interactor.calculateMaxSendPlan(
@@ -1183,7 +1183,7 @@ final class SendDetailsViewModel {
               let nativeToken = vault.coins.nativeCoin(chain: coin.chain) else {
             return true
         }
-        let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        let nativeBalance = nativeToken.balanceRaw
         guard fee > nativeBalance else { return true }
 
         setGeneralError(message: String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker))
