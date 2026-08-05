@@ -179,6 +179,35 @@ final class SendGasLimitAssetBindingTests: XCTestCase {
         XCTAssertEqual(vm.gasLimit, BigInt(EVMHelper.defaultERC20TransferGasUnit))
     }
 
+    /// The narrower window on the same race: the switch happens after
+    /// `setMaxAmount()` returns but before the scheduled task body runs, so the
+    /// task has not read anything yet. It must still refine the asset the user
+    /// tapped Max on — which it is no longer on — rather than adopting the new
+    /// one and quietly turning the switch into a max send of it.
+    func testRefineDoesNotAdoptAnAssetSwitchedToBeforeItStarts() async {
+        let interactor = MockSendInteractor()
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH(), interactor: interactor)
+        interactor.calculateEVMFeeStub = { _ in
+            SendInteractorFeeResult(fee: BigInt(1_000), gas: BigInt(7), gasLimit: BigInt(60_000))
+        }
+
+        vm.setMaxAmount(percentage: 100)
+        // No await in between: the picker gets its main-actor turn before the
+        // task body's first line, which is the window this covers.
+        vm.coin = SendFormFixture.makeCoin(.arbitrum, ticker: "ARB", decimals: 18, isNative: true,
+                                           rawBalance: "5000000000000000000")
+
+        await vm.feeRefineTask?.value
+
+        XCTAssertTrue(interactor.calculateEVMFeeCalls.isEmpty,
+                      "a refine that has lost its asset must stand down, not re-aim at the new one")
+        XCTAssertNil(vm.estimatedGasLimit)
+        XCTAssertEqual(vm.gas, .zero)
+        XCTAssertEqual(vm.fee, .zero)
+        XCTAssertFalse(vm.isCalculatingFee,
+                       "standing down must still take the calculating indicator down — nothing else will")
+    }
+
     /// The refresh path carries the same guard. Nothing in the app calls it
     /// today — it is reached only from here — so this test is what holds the
     /// guard in place for whenever the form starts refreshing its fee again.

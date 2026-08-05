@@ -792,8 +792,8 @@ final class SendDetailsViewModel {
     /// Background refine for the native-coin Max path. Settles the optimistic
     /// full-balance fill to what can really be sent.
     ///
-    /// Its ordering against the amount fields rests on three guards, re-checked
-    /// after the await, which between them cover every writer of the amount:
+    /// Its ordering against the amount fields rests on three guards, which
+    /// between them cover every writer of the amount:
     ///
     /// - paths that replace the amount while *keeping* the max intent cancel
     ///   this task first (`setMaxAmount`, `hydrate`), so `Task.isCancelled`
@@ -803,19 +803,30 @@ final class SendDetailsViewModel {
     ///   intent synchronously in `onAmountFieldEdited` rather than waiting for
     ///   its debounced commit;
     /// - the coin picker replaces the *asset* under an unchanged max intent
-    ///   without cancelling anything, so the refine compares the asset it asked
-    ///   about against the one the form is on now (`isStillOn(_:)`).
+    ///   without cancelling anything, so the asset the user tapped Max on is
+    ///   compared against the one the form is on (`isStillOn(_:)`) — twice:
+    ///   before the request is built, and again before its result is written.
     ///
-    /// So a refine settling into any kind of newer state stands down instead of
-    /// clobbering it.
+    /// The first two are re-checked after the await; the asset is checked on
+    /// both sides of it. So a refine settling into any kind of newer state
+    /// stands down instead of clobbering it.
+    ///
+    /// The asset is read *here*, not in the task body. An unstructured `Task`
+    /// inherits the actor but is scheduled rather than run inline, so the main
+    /// actor gets a turn — enough for the picker to write `coin` — between this
+    /// line and the body's first. Reading it inside would let the task adopt
+    /// the new asset as its own request and refine *that* under a max intent
+    /// the user formed on the old one, which is the same "send everything"
+    /// the user never asked for, arrived at by a scheduling coin flip.
     private func startFeeRefine() {
+        let requestedAsset = coin.uniqueId
         isCalculatingFee = true
         feeRefineTask = Task { [weak self] in
             guard let self else { return }
-            // Read once, before the first suspension: everything this task
-            // writes describes this asset and nothing else.
-            let requestedAsset = self.coin.uniqueId
+            // Installed before the asset check so standing down still takes the
+            // calculating indicator down with it — nothing else would.
             defer { self.isCalculatingFee = false }
+            guard self.isStillOn(requestedAsset) else { return }
             do {
                 if self.coin.chainType == .UTXO {
                     try await self.refineMaxFromPlan(asset: requestedAsset)
