@@ -8,6 +8,21 @@
 import Foundation
 import VultisigCommonData
 
+extension KeyedDecodingContainer {
+    /// proto3 JSON canonically renders 64-bit integer fields as strings (to
+    /// dodge precision loss in JS), but not every fixture in this corpus
+    /// follows that convention consistently — accept either shape.
+    func decodeFlexibleUInt64(forKey key: Key) throws -> UInt64? {
+        if let value = try? decodeIfPresent(UInt64.self, forKey: key) {
+            return value
+        }
+        guard let stringValue = try decodeIfPresent(String.self, forKey: key) else {
+            return nil
+        }
+        return UInt64(stringValue)
+    }
+}
+
 extension VSCoin: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case chain
@@ -199,6 +214,12 @@ extension VSCosmosIbcDenomTrace: @retroactive Codable {
         case baseDenom = "base_denom"
         case latestBlock = "latest_block"
     }
+    /// vultisig-android's own fixture corpus predates the `latest_block` field
+    /// name and still keys this value `height`; its Kotlin test DTO aliases it
+    /// (`IbcDenomTrace.height`), so the shared fixture JSON keeps that name too.
+    enum LegacyCodingKeys: String, CodingKey {
+        case height
+    }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(path, forKey: .path)
@@ -210,7 +231,12 @@ extension VSCosmosIbcDenomTrace: @retroactive Codable {
         self.init()
         path = try container.decode(String.self, forKey: .path)
         baseDenom = try container.decode(String.self, forKey: .baseDenom)
-        latestBlock = try container.decode(String.self, forKey: .latestBlock)
+        if let latestBlockValue = try container.decodeIfPresent(String.self, forKey: .latestBlock) {
+            latestBlock = latestBlockValue
+        } else {
+            let legacyContainer = try decoder.container(keyedBy: LegacyCodingKeys.self)
+            latestBlock = try legacyContainer.decodeIfPresent(String.self, forKey: .height) ?? ""
+        }
     }
 }
 
@@ -222,6 +248,13 @@ extension VSCosmosSpecific: @retroactive Codable {
         case transactionType = "transaction_type"
         case ibcDenomTraces = "ibc_denom_traces"
         case ibcInfo = "ibc_info"
+    }
+    /// vultisig-android's fixture corpus predates the proto's pluralized
+    /// `ibc_denom_traces` field and still keys this value `ibc_denom_trace`
+    /// (singular); its Kotlin test DTO aliases it, so the shared fixture JSON
+    /// keeps that name too.
+    enum LegacyCodingKeys: String, CodingKey {
+        case ibcDenomTrace = "ibc_denom_trace"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -241,7 +274,11 @@ extension VSCosmosSpecific: @retroactive Codable {
         gas = try container.decode(UInt64.self, forKey: .gas)
         let transactionTypeRaw = try container.decode(Int.self, forKey: .transactionType)
         transactionType = VSTransactionType(rawValue: transactionTypeRaw) ?? .unspecified
-        let tmpIbcDenomTraces = try container.decodeIfPresent(VSCosmosIbcDenomTrace.self, forKey: .ibcDenomTraces)
+        var tmpIbcDenomTraces = try container.decodeIfPresent(VSCosmosIbcDenomTrace.self, forKey: .ibcDenomTraces)
+        if tmpIbcDenomTraces == nil {
+            let legacyContainer = try decoder.container(keyedBy: LegacyCodingKeys.self)
+            tmpIbcDenomTraces = try legacyContainer.decodeIfPresent(VSCosmosIbcDenomTrace.self, forKey: .ibcDenomTrace)
+        }
         if let tmpIbcDenomTraces {
             ibcDenomTraces = tmpIbcDenomTraces
         }
@@ -316,7 +353,7 @@ extension VSPolkadotSpecific: @retroactive Codable {
         specVersion = try container.decode(UInt32.self, forKey: .specVersion)
         transactionVersion = try container.decode(UInt32.self, forKey: .transactionVersion)
         genesisHash = try container.decode(String.self, forKey: .genesisHash)
-        gas = try container.decodeIfPresent(UInt64.self, forKey: .gas) ?? 0
+        gas = try container.decodeFlexibleUInt64(forKey: .gas) ?? 0
     }
 }
 extension VSSuiCoin: @retroactive Codable {
