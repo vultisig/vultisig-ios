@@ -107,13 +107,43 @@ final class BackupImportProtectionTests: XCTestCase {
 
     // MARK: - What the restored vault opens on
 
-    /// The reported regression, through the JSON entry point and with no
+    /// The reported regression, through the batch entry point and with no
     /// passcode set — the configuration nearly every install is in. Both entry
-    /// points now derive default coins after the vault is stored, and attaching
-    /// them there is exactly what stopped working: the vault imported, its coin
-    /// rows were written belonging to nobody, and the wallet came up empty with
-    /// no error anywhere.
-    func testAJsonImportComesBackWithItsDefaultCoins() throws {
+    /// points derive default coins after the vault is stored, and attaching them
+    /// there is exactly what stopped working: the vaults imported, their coin
+    /// rows were written belonging to nobody, and the wallet came up with no
+    /// chains in it and no error anywhere.
+    ///
+    /// Several vaults, because this is the path that imports a batch under one
+    /// lease and prepares them in a single pass.
+    func testAZipImportComesBackWithDefaultCoinsForEveryVault() throws {
+        TestStore.retain(token.container)
+        let sut = makeViewModel(state: .disabled)
+        sut.multipleVaultsToImport = [makeDerivableVault(index: 0), makeDerivableVault(index: 1)]
+
+        sut.restoreMultipleVaults(modelContext: context, vaults: [])
+
+        XCTAssertTrue(sut.isVaultImported)
+        let fresh = ModelContext(token.container)
+        let stored = try fresh.fetch(FetchDescriptor<Vault>())
+        XCTAssertEqual(stored.count, 2, "distinct key material, so two rows and not one upserted over the other")
+        for vault in stored {
+            XCTAssertEqual(Set(vault.coins.map(\.chain)), Set(TestStore.derivableChains), "\(vault.name) came back with the wrong chains")
+        }
+        XCTAssertTrue(
+            try fresh.fetch(FetchDescriptor<Coin>()).allSatisfy { $0.vault != nil },
+            "no coin row may be left on disk with no vault to belong to"
+        )
+    }
+
+    /// The other entry point, and the case the reporting must not get wrong.
+    ///
+    /// The JSON backup format carries no per-chain public keys, so a key-import
+    /// vault restored from one has nothing this device can derive — and nothing
+    /// to derive is not a failure to derive. The import now *reports* whether the
+    /// preparation did its work, and reading this as "it did not" would mark
+    /// every legacy JSON import as broken.
+    func testAJsonImportWithNothingToDeriveIsStillReportedAsImported() throws {
         TestStore.retain(token.container)
         let sut = makeViewModel(state: .disabled)
         sut.decryptedContent = try JSONEncoder()
@@ -123,28 +153,10 @@ final class BackupImportProtectionTests: XCTestCase {
         sut.restoreVault(modelContext: context, vaults: [])
 
         XCTAssertTrue(sut.isVaultImported)
-        let stored = try XCTUnwrap(try ModelContext(token.container).fetch(FetchDescriptor<Vault>()).first)
-        XCTAssertEqual(
-            Set(stored.coins.map(\.chain)),
-            Set(VaultDefaultCoinService(context: context).baseDefaultChains)
-        )
-    }
-
-    /// And through the batch entry point, which is the one that imports several
-    /// vaults under a single lease.
-    func testAZipImportComesBackWithDefaultCoinsForEveryVault() throws {
-        TestStore.retain(token.container)
-        let sut = makeViewModel(state: .disabled)
-        sut.multipleVaultsToImport = [makeDerivableVault(index: 0), makeDerivableVault(index: 1)]
-
-        sut.restoreMultipleVaults(modelContext: context, vaults: [])
-
-        XCTAssertTrue(sut.isVaultImported)
-        let stored = try ModelContext(token.container).fetch(FetchDescriptor<Vault>())
-        XCTAssertEqual(stored.count, 2)
-        for vault in stored {
-            XCTAssertFalse(vault.coins.isEmpty, "\(vault.name) came back with no chains")
-        }
+        XCTAssertFalse(sut.showAlert)
+        let fresh = ModelContext(token.container)
+        XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<Vault>()), 1)
+        XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<Coin>()), 0, "nothing derived means nothing written, not orphan rows")
     }
 
     // MARK: - Helpers

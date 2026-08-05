@@ -62,6 +62,7 @@ class VaultDefaultCoinService {
             }
 
         let natives = coins.filter(\.isNativeToken)
+        var inserted: [Coin] = []
         for coin in natives where !vault.coins.contains(where: { $0.id == coin.id }) {
             self.context.insert(coin)
 
@@ -77,17 +78,40 @@ class VaultDefaultCoinService {
             // to hang that on, and the to-one write is what survives either
             // way. Do not "simplify" this back to an append.
             coin.vault = vault
+            inserted.append(coin)
+        }
 
+        // Enable default Defi chains
+        let previousDefiChains = vault.defiChains
+        vault.defiChains = Array(Set(coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }))
+
+        let attached = Set(vault.coins.map(\.id))
+        guard natives.allSatisfy({ attached.contains($0.id) }) else {
+            // All of it or none of it. A coin that did not attach is a row
+            // belonging to no vault — invisible in the app and with nothing
+            // left to find it by — and a vault left holding *some* of its coins
+            // is worse still: the `coins.isEmpty` guard above would read it as
+            // already prepared and never look again. Undone, `false` means the
+            // vault is exactly as it was found, which is the whole reason
+            // running this again is safe.
+            for coin in inserted {
+                context.delete(coin)
+            }
+            vault.defiChains = previousDefiChains
+            return false
+        }
+
+        // Only over coins that are provably attached. Token discovery is
+        // unstructured work that outlives this call, and pointing it at a coin
+        // that is about to be withdrawn is the same mistake the import's own
+        // ordering exists to avoid.
+        for coin in inserted {
             Task {
                 await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
             }
         }
 
-        // Enable default Defi chains
-        vault.defiChains = Array(Set(coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }))
-
-        let attached = Set(vault.coins.map(\.id))
-        return natives.allSatisfy { attached.contains($0.id) }
+        return true
     }
 
     func getDefaultChains(for vault: Vault) -> [Chain] {

@@ -12,7 +12,7 @@ import XCTest
 /// prepares one that has already been inserted *and saved*. Those are not the
 /// same thing to SwiftData, and the difference is where a real regression lived
 /// — attaching a coin by appending to `vault.coins` does not register on a vault
-/// that has been through a `save()`, so an import wrote five coin rows belonging
+/// that has been through a `save()`, so an import wrote its coin rows belonging
 /// to nobody and the wallet came up with no chains in it and no error anywhere.
 ///
 /// So both orders are pinned here, not just the one a given caller uses today.
@@ -50,7 +50,7 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
 
         context.insert(vault)
         try context.save()
-        XCTAssertEqual(Set(try storedChains()), Set(makeService().baseDefaultChains))
+        XCTAssertEqual(Set(try storedChains()), Set(TestStore.derivableChains))
     }
 
     /// The import's order: the vault is already on disk when it is prepared.
@@ -63,7 +63,7 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
         XCTAssertTrue(makeService().setDefaultCoinsOnce(vault: vault))
         try context.save()
 
-        XCTAssertEqual(Set(try storedChains()), Set(makeService().baseDefaultChains))
+        XCTAssertEqual(Set(try storedChains()), Set(TestStore.derivableChains))
     }
 
     /// The half that made the failure silent rather than merely wrong: the coin
@@ -94,7 +94,7 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
 
         let fresh = ModelContext(token.container)
         let stored = try XCTUnwrap(try fresh.fetch(FetchDescriptor<Vault>()).first)
-        XCTAssertTrue(stored.defiChains.contains(.thorChain))
+        XCTAssertTrue(stored.defiChains.contains(.tron))
     }
 
     // MARK: - What "prepared" means

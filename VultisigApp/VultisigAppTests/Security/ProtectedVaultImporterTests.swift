@@ -209,7 +209,7 @@ final class ProtectedVaultImporterTests: XCTestCase {
     /// by mutating `vault.coins` does not take on a vault that has been through
     /// a `save()`: the relationship re-faults to its persisted value and the
     /// next save writes that back over the inverse. The import reported
-    /// success, five coin rows were written belonging to nobody, and the user
+    /// success, the coin rows were written belonging to nobody, and the user
     /// opened a wallet with no chains in it.
     ///
     /// Written against the no-passcode state on purpose — that is the state
@@ -224,14 +224,14 @@ final class ProtectedVaultImporterTests: XCTestCase {
         let stored = try XCTUnwrap(try fresh.fetch(FetchDescriptor<Vault>()).first)
         XCTAssertEqual(
             Set(stored.coins.map(\.chain)),
-            Set(VaultDefaultCoinService(context: context).baseDefaultChains),
-            "an imported vault must open on the same chains a freshly generated one does"
+            Set(TestStore.derivableChains),
+            "an imported vault must come back holding every chain it can derive"
         )
         XCTAssertTrue(
             try fresh.fetch(FetchDescriptor<Coin>()).allSatisfy { $0.vault != nil },
             "no coin row may be left on disk with no vault to belong to"
         )
-        XCTAssertTrue(stored.defiChains.contains(.thorChain), "the DeFi chains derived alongside the coins must persist too")
+        XCTAssertTrue(stored.defiChains.contains(.tron), "the DeFi chains derived alongside the coins must persist too")
     }
 
     /// The same, with a passcode set: the shares take a different route to disk
@@ -244,7 +244,7 @@ final class ProtectedVaultImporterTests: XCTestCase {
 
         let fresh = ModelContext(token.container)
         let stored = try XCTUnwrap(try fresh.fetch(FetchDescriptor<Vault>()).first)
-        XCTAssertEqual(stored.coins.count, VaultDefaultCoinService(context: context).baseDefaultChains.count)
+        XCTAssertEqual(stored.coins.count, TestStore.derivableChains.count)
     }
 
     /// Every vault in a batch, not just the first — the ZIP path imports several

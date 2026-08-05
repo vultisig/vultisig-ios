@@ -90,38 +90,54 @@ enum TestStore {
         retained.append(container)
     }
 
-    /// A vault carrying real secp256k1 / ed25519 key material, so `CoinFactory`
-    /// derives actual addresses and `setDefaultCoins` produces actual coins.
+    /// The chains ``makeDerivableVault(index:keyshare:)`` derives.
+    ///
+    /// Both are real ECDSA chains, and both resolve to `NoTokenDiscoverer` — see
+    /// the note on the fixture for why that matters. Tron is here so the DeFi
+    /// chains `setDefaultCoins` derives alongside the coins are non-empty.
+    static let derivableChains: [Chain] = [.bitcoin, .tron]
+
+    /// A vault carrying real secp256k1 key material, so `CoinFactory` derives
+    /// actual addresses and `setDefaultCoins` produces actual coins.
     ///
     /// Placeholder keys are not good enough for anything about default coins:
     /// `CoinFactory.create` throws on them and `compactMap` drops the failure, so
     /// a vault built that way derives nothing at all — and a test asserting on its
     /// coins passes just as happily against an import that attaches none of them.
     ///
-    /// Not inserted; the caller decides when it reaches a context. `index` picks a
-    /// distinct key pair, because `name`, `pubKeyECDSA` and `pubKeyEdDSA` are all
-    /// `@Attribute(.unique)` and SwiftData answers a duplicate with an upsert
+    /// Key-import with explicit per-chain keys rather than a DKLS vault on the
+    /// base default chains, so the fixture is hermetic. `setDefaultCoins` starts
+    /// an unstructured token-discovery `Task` per coin which outlives the test,
+    /// goes to the network, and writes through `Storage.shared` — by then the
+    /// *next* test's container. Relating a row from that store to this vault
+    /// traps, and it takes down the whole test host rather than one test.
+    /// ``derivableChains`` have no token discoverer behind them, so nothing is
+    /// fetched and nothing outlives the test.
+    ///
+    /// Not inserted; the caller decides when it reaches a context. `index` picks
+    /// distinct key material, because `name`, `pubKeyECDSA` and `pubKeyEdDSA` are
+    /// all `@Attribute(.unique)` and SwiftData answers a duplicate with an upsert
     /// rather than an error — two fixtures sharing one collapse into a single row.
     static func makeDerivableVault(index: Int = 0, keyshare: String) -> Vault {
         let ecdsa = [
             "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
             "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770"
         ]
-        let eddsa = [
-            "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
-            "86815b267977dd277171acfe16edb857767ab5310cb4186429cee1f407549d8e"
-        ]
-        return Vault(
+        let vault = Vault(
             name: "Derivable Vault \(index)",
             signers: [],
             pubKeyECDSA: ecdsa[index],
-            pubKeyEdDSA: eddsa[index],
+            pubKeyEdDSA: "eddsa-\(index)",
             keyshares: [KeyShare(pubkey: ecdsa[index], keyshare: keyshare)],
             localPartyID: "party-\(index)",
             hexChainCode: "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7",
             resharePrefix: nil,
-            libType: .DKLS
+            libType: .KeyImport
         )
+        vault.chainPublicKeys = derivableChains.map {
+            ChainPublicKey(chain: $0, publicKeyHex: ecdsa[index], isEddsa: false)
+        }
+        return vault
     }
 
     /// Insert a populated Vault matching `pubKeyECDSA` so position upserts have a
