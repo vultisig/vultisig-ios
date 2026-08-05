@@ -792,7 +792,7 @@ final class SendDetailsViewModel {
     /// Background refine for the native-coin Max path. Settles the optimistic
     /// full-balance fill to what can really be sent.
     ///
-    /// Its ordering against the amount fields rests on two guards, re-checked
+    /// Its ordering against the amount fields rests on three guards, re-checked
     /// after the await, which between them cover every writer of the amount:
     ///
     /// - paths that replace the amount while *keeping* the max intent cancel
@@ -801,31 +801,49 @@ final class SendDetailsViewModel {
     /// - every path that replaces it with an *explicit* amount clears
     ///   `sendMaxAmount` as it does so — a keystroke included, which drops the
     ///   intent synchronously in `onAmountFieldEdited` rather than waiting for
-    ///   its debounced commit.
+    ///   its debounced commit;
+    /// - the coin picker replaces the *asset* under an unchanged max intent
+    ///   without cancelling anything, so the refine compares the asset it asked
+    ///   about against the one the form is on now (`isStillOn(_:)`).
     ///
-    /// So a refine settling into either kind of newer write stands down instead
-    /// of clobbering it.
+    /// So a refine settling into any kind of newer state stands down instead of
+    /// clobbering it.
     private func startFeeRefine() {
         isCalculatingFee = true
         feeRefineTask = Task { [weak self] in
             guard let self else { return }
+            // Read once, before the first suspension: everything this task
+            // writes describes this asset and nothing else.
+            let requestedAsset = self.coin.uniqueId
             defer { self.isCalculatingFee = false }
             do {
                 if self.coin.chainType == .UTXO {
-                    try await self.refineMaxFromPlan()
+                    try await self.refineMaxFromPlan(asset: requestedAsset)
                 } else {
-                    try await self.refineMaxFromFee()
+                    try await self.refineMaxFromFee(asset: requestedAsset)
                 }
             } catch is CancellationError {
                 return
             } catch {
                 // Same guards as the success paths: a verdict about a max send
-                // the user has already moved off must not paint an alert on the
-                // amount they typed instead.
-                guard !Task.isCancelled, self.sendMaxAmount else { return }
+                // the user has already moved off — in amount or in asset — must
+                // not paint an alert on what they are looking at instead.
+                guard !Task.isCancelled, self.sendMaxAmount, self.isStillOn(requestedAsset) else { return }
                 self.handleMaxRefineFailure(error)
             }
         }
+    }
+
+    /// Whether the form is still on the asset an in-flight request asked about.
+    ///
+    /// A fee result describes the asset it was requested for, and the coin
+    /// picker can replace that asset mid-flight: it cancels nothing and it
+    /// leaves the max intent alone, so neither of the other two guards catches
+    /// it. Without this, a result for the old asset would be written — and,
+    /// worse, *stamped* — against the new one, which is exactly the leak the
+    /// asset stamp exists to close.
+    private func isStillOn(_ requestedAsset: String) -> Bool {
+        coin.uniqueId == requestedAsset
     }
 
     /// The max-send request for the current form state. `amount` differs by
@@ -858,7 +876,7 @@ final class SendDetailsViewModel {
     /// so the Details figure is the one Verify will confirm rather than
     /// `balance − rate`, which reserves roughly a dozen sats for a fee of a few
     /// thousand.
-    private func refineMaxFromPlan() async throws {
+    private func refineMaxFromPlan(asset requestedAsset: String) async throws {
         // The planner ignores this value in max mode, but it still reaches
         // WalletCore's `Int64` amount field, where an out-of-range conversion
         // traps rather than failing. Clamp it — an absurd balance must not
@@ -871,7 +889,7 @@ final class SendDetailsViewModel {
             vault: vault,
             refreshUtxos: false
         )
-        guard !Task.isCancelled, sendMaxAmount else { return }
+        guard !Task.isCancelled, sendMaxAmount, isStillOn(requestedAsset) else { return }
         // `gas` stays the rate (what the gas sheet edits); `fee` becomes the
         // planned total, so the balance guard compares against a real number
         // and the hand-off transaction carries an honest fee into Verify.
@@ -884,9 +902,9 @@ final class SendDetailsViewModel {
 
     /// Every other native chain: the chain quotes a flat fee, so `balance − fee`
     /// is the max.
-    private func refineMaxFromFee() async throws {
+    private func refineMaxFromFee(asset requestedAsset: String) async throws {
         let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: maxSendRequest(amount: .zero)))
-        guard !Task.isCancelled, sendMaxAmount else { return }
+        guard !Task.isCancelled, sendMaxAmount, isStillOn(requestedAsset) else { return }
         if customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
             estimatedGasLimit = resolvedGasLimit
         }
@@ -937,6 +955,7 @@ final class SendDetailsViewModel {
 
         isCalculatingFee = true
         defer { isCalculatingFee = false }
+        let requestedAsset = coin.uniqueId
 
         do {
             let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
@@ -953,6 +972,9 @@ final class SendDetailsViewModel {
                 feeMode: feeMode,
                 fromAddress: fromAddress
             )))
+            // The picker can swap the asset while this is in flight; figures
+            // for the one the form has left must not land on the one it is on.
+            guard isStillOn(requestedAsset) else { return }
             gas = result.gas
             fee = result.fee
             // Adopt the real estimate so the displayed fee, and the gas limit
@@ -963,6 +985,7 @@ final class SendDetailsViewModel {
             }
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
+            guard isStillOn(requestedAsset) else { return }
             errorMessage = error.localizedDescription
         }
     }
