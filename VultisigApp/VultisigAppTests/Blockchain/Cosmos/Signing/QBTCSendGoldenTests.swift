@@ -19,7 +19,7 @@ import XCTest
 final class QBTCSendGoldenTests: XCTestCase {
 
     private static let fromAddress = "qbtc1lm0mwvt8pknymlrat3z2slrpz0un45ghp1cx1s"
-    private static let toAddress = "qbtc1lm0mwvt8pknymlrat3z2slrpz0un45ghp1cx1s"
+    private static let toAddress = "qbtc13vp28kmfx3kznmukw20ev8gfk8tyyt42gcqayz"
     private static let hexPublicKey = "3a2f1e0d9c8b7a6958473625140f0e0d0c0b0a090807060504030201000102"
     // Not a real ML-DSA signature — QBTCHelper.getSignedTransaction embeds it
     // in TxRaw verbatim without verifying it, so any fixed hex pins the golden.
@@ -59,20 +59,24 @@ final class QBTCSendGoldenTests: XCTestCase {
 
     func testSendPreSignedImageHash() throws {
         let hashes = try QBTCHelper.create().getPreSignedImageHash(keysignPayload: Self.makeSendPayload())
-        XCTAssertEqual(hashes, ["2030754ac3adc53e4ac351b901290f258d489ab1961b705ec41a73ec66e8de1b"])
+        XCTAssertEqual(hashes, ["b0719b343b503d381a5d755b4982b139d94f4747de095e92d980eeba50dcf81d"])
     }
 
     func testSendSignedTransactionTxRaw() throws {
         let payload = Self.makeSendPayload()
         let hashes = try QBTCHelper.create().getPreSignedImageHash(keysignPayload: payload)
+        guard hashes.count == 1, let hash = hashes.first else {
+            XCTFail("Expected exactly one QBTC pre-sign hash")
+            return
+        }
         let signatures: [String: DilithiumKeysignResponse] = [
-            hashes[0]: DilithiumKeysignResponse(msg: hashes[0], signature: Self.fakeSignatureHex)
+            hash: DilithiumKeysignResponse(msg: hash, signature: Self.fakeSignatureHex)
         ]
         let result = try QBTCHelper.create().getSignedTransaction(keysignPayload: payload, signatures: signatures)
-        XCTAssertEqual(result.transactionHash, "4AB6E961984B2FD45AE1FA6AB418D16E105C849D0938A5457028AE2C9D54B2C5")
+        XCTAssertEqual(result.transactionHash, "BDE643649573AA72FE6702AAF7478F85C993421528FE0236831F7761E8358CF0")
         XCTAssertEqual(
             result.rawTransaction,
-            "{\"tx_bytes\":\"CpABCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KK3FidGMxbG0wbXd2dDhwa255bWxyYXQzejJzbHJwejB1bjQ1Z2hwMWN4MXMSK3FidGMxbG0wbXd2dDhwa255bWxyYXQzejJzbHJwejB1bjQ1Z2hwMWN4MXMaEQoEcWJ0YxIJMTAwMDAwMDAwEmAKSgpAChsvY29zbW9zLmNyeXB0by5tbGRzYS5QdWJLZXkSIQofOi8eDZyLemlYRzYlFA8ODQwLCgkIBwYFBAMCAQABAhIECgIIARgCEhIKDAoEcWJ0YxIENTAwMBDgpxIaQKurq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6s=\",\"mode\":\"BROADCAST_MODE_SYNC\"}"
+            "{\"tx_bytes\":\"CpABCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KK3FidGMxbG0wbXd2dDhwa255bWxyYXQzejJzbHJwejB1bjQ1Z2hwMWN4MXMSK3FidGMxM3ZwMjhrbWZ4M2t6bm11a3cyMGV2OGdmazh0eXl0NDJnY3FheXoaEQoEcWJ0YxIJMTAwMDAwMDAwEmAKSgpAChsvY29zbW9zLmNyeXB0by5tbGRzYS5QdWJLZXkSIQofOi8eDZyLemlYRzYlFA8ODQwLCgkIBwYFBAMCAQABAhIECgIIARgCEhIKDAoEcWJ0YxIENTAwMBDgpxIaQKurq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6s=\",\"mode\":\"BROADCAST_MODE_SYNC\"}"
         )
     }
 

@@ -19,7 +19,14 @@ extension KeyedDecodingContainer {
         guard let stringValue = try decodeIfPresent(String.self, forKey: key) else {
             return nil
         }
-        return UInt64(stringValue)
+        guard let value = UInt64(stringValue) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: key,
+                in: self,
+                debugDescription: "Expected an unsigned 64-bit integer"
+            )
+        }
+        return value
     }
 }
 
