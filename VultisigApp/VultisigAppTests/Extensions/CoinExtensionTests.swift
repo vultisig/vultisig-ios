@@ -96,10 +96,10 @@ final class CoinExtensionTests: XCTestCase {
     /// A shape the exact integer read declines still reaches the shared parser
     /// rather than collapsing to a zero balance.
     func testBalanceRawFallsBackInsteadOfCollapsingToZero() {
-        XCTAssertNil(BigInt("1e18"), "the exact integer read has to be what declines this shape")
+        XCTAssertNil(BigInt("1e18", radix: 10), "the exact integer read has to be what declines this shape")
         let coin = makeCoin(ticker: "ETH", chain: .ethereum, isNative: true, decimals: 18, rawBalance: "1e18")
 
-        XCTAssertEqual(coin.balanceRaw, BigInt("1000000000000000000")!)
+        XCTAssertEqual(coin.balanceRaw, BigInt(stringLiteral: "1000000000000000000"))
     }
 
     // MARK: - Helpers

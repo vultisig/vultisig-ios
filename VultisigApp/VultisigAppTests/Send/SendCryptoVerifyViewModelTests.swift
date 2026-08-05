@@ -179,8 +179,12 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         // 99.999999999999999999 ETH — the lossy read rounds it to a flat 100.
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
                            rawBalance: "99999999999999999999")
-        XCTAssertEqual(eth.balanceRaw, BigInt("99999999999999999999")!)
+        XCTAssertEqual(eth.balanceRaw, BigInt(stringLiteral: "99999999999999999999"))
         let tx = try makeTransaction(coin: eth, amount: "100", fee: .zero)
+        XCTAssertEqual(
+            tx.amountInRaw, BigInt(stringLiteral: "100000000000000000000"),
+            "the send is one wei more than the vault holds"
+        )
         let vm = SendCryptoVerifyViewModel(transaction: tx)
 
         vm.validateBalanceWithFee()

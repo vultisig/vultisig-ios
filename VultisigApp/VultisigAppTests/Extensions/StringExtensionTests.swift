@@ -186,19 +186,23 @@ final class StringExtensionsTests: XCTestCase {
 
     /// Every non-digit shape keeps the pre-existing behaviour: the exact path is
     /// a precision fix, not a semantic one.
+    ///
+    /// The general path is locale-aware, so no fraction here is three, four or
+    /// two digits long — a locale that groups digits with `.` would read those
+    /// as thousands separators and reach a different number.
     func testToBigIntKeepsTheGeneralPathForNonIntegerInput() {
         // A fraction surviving the truncation is zero — this reads an already
         // scaled value, it does not scale one.
-        XCTAssertEqual("1.5".toBigInt(decimals: 18), .zero)
-        XCTAssertEqual("1.50".toBigInt(decimals: 18), .zero)
+        XCTAssertEqual("1.50000".toBigInt(decimals: 18), .zero)
+        XCTAssertEqual("1.99999".toBigInt(decimals: 2), .zero)
         XCTAssertEqual("0.000000000000000001".toBigInt(decimals: 18), .zero)
         // …but a fraction that truncates away, or is all zeros, is not.
-        XCTAssertEqual("1.5".toBigInt(decimals: 0), BigInt(1))
-        XCTAssertEqual("1.0001".toBigInt(decimals: 2), BigInt(1))
-        XCTAssertEqual("1.00".toBigInt(decimals: 18), BigInt(1))
+        XCTAssertEqual("1.50000".toBigInt(decimals: 0), BigInt(1))
+        XCTAssertEqual("1.00001".toBigInt(decimals: 2), BigInt(1))
+        XCTAssertEqual("1.00000".toBigInt(decimals: 18), BigInt(1))
         // Signs, separators and non-numerics all stay on the general path.
         XCTAssertEqual("-123".toBigInt(decimals: 18), BigInt(-123))
-        XCTAssertEqual("1e18".toBigInt(decimals: 18), BigInt("1000000000000000000")!)
+        XCTAssertEqual("1e18".toBigInt(decimals: 18), BigInt(stringLiteral: "1000000000000000000"))
         XCTAssertEqual("abc".toBigInt(decimals: 18), .zero)
         XCTAssertEqual("".toBigInt(decimals: 18), .zero)
         // Leading zeros and a negative `decimals` are the two shapes the fast

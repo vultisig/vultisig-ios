@@ -121,7 +121,12 @@ final class SendValidationTests: XCTestCase {
         // 99.999999999999999999 ETH — the lossy read rounds it to a flat 100.
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
                            rawBalance: "99999999999999999999")
-        XCTAssertEqual(eth.balanceRaw, BigInt("99999999999999999999")!)
+        XCTAssertEqual(eth.balanceRaw, BigInt(stringLiteral: "99999999999999999999"))
+        XCTAssertEqual(
+            SendCryptoLogic.amountInRaw(coin: eth, amount: "100"),
+            BigInt(stringLiteral: "100000000000000000000"),
+            "the send is one wei more than the vault holds"
+        )
 
         XCTAssertTrue(SendCryptoLogic.isAmountExceeded(
             coin: eth, amount: "100", sendMaxAmount: false,
