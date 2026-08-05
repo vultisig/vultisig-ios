@@ -79,13 +79,14 @@ enum TestStore {
 
     /// Keeps a test's container alive past its `tearDown`.
     ///
-    /// For tests that exercise code starting unstructured work — `setDefaultCoins`
-    /// fires a token-discovery `Task` per coin — which resumes after the test
-    /// method returns and touches the `@Model` objects it captured. Letting the
-    /// container go first turns that into a trap ("this model instance was
-    /// destroyed by calling ModelContext.reset") that fails whichever test
-    /// happens to be running. The app's container is process-lifetime, so this
-    /// makes the test resemble production rather than papering over anything.
+    /// For tests that exercise code starting unstructured work — the token
+    /// discovery `VaultDefaultCoinService.startTokenDiscovery()` hands out is
+    /// the case here — which resumes after the test method returns and touches
+    /// the models it resolved. Letting the container go first turns that into a
+    /// trap ("this model instance was destroyed by calling ModelContext.reset")
+    /// that fails whichever test happens to be running. The app's container is
+    /// process-lifetime, so this makes the test resemble production rather than
+    /// papering over anything.
     static func retain(_ container: ModelContainer) {
         retained.append(container)
     }

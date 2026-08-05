@@ -74,13 +74,32 @@ class VaultDefaultCoinService {
         // one of those is the failure this reports.
         guard !defaultChains.isEmpty else { return true }
 
-        // What the vault has to come out holding: the chains it was asked for,
-        // never what happened to build. Reading the expectation off the
-        // successes is what let the original failure survive its own fix — a
-        // `CoinFactory` failure simply left the list, so the postcondition was
-        // checked against the survivors, and against none of them it holds
-        // vacuously. A vault with no chains in it at all passed as prepared.
-        let expectedChains = Set(defaultChains)
+        let chains: [CoinMeta] = TokensStore.TokenSelectionAssets
+                .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
+
+        // What the vault has to come out holding, and it is neither "the chains
+        // asked for" nor "the coins that happened to build".
+        //
+        // Not the successes: reading the expectation off those is what let the
+        // original failure survive its own fix — a `CoinFactory` failure simply
+        // left the list, so the postcondition was checked against the survivors,
+        // and against none of them it holds vacuously. A vault with no chains in
+        // it at all passed as prepared.
+        //
+        // Not the chains asked for either, because one of them cannot be built
+        // by anybody: `ethereumSepolia` is offered in the key-import chain
+        // picker and has no native asset in `TokenSelectionAssets` at all, so
+        // expecting a coin for it would report every Sepolia import as broken,
+        // forever, with nothing the user or a retry could do about it. A chain
+        // with nothing to build is not a chain that failed to build.
+        //
+        // That exclusion is stated out loud rather than left to the filter,
+        // because a chain quietly dropping out of its own expectation is the
+        // exact shape of the `try?` this whole thread began with.
+        let expectedChains = Set(chains.filter(\.isNativeToken).map(\.chain))
+        for chain in Set(defaultChains).subtracting(expectedChains) {
+            Log.chain.service.error("No native asset in the catalog for \(chain.name, privacy: .public), so \(vault.name, privacy: .public) cannot be given one")
+        }
 
         // Answered rather than assumed. A vault that already holds coins is not
         // built again — but *whether it holds every chain it was asked for* is a
@@ -88,9 +107,6 @@ class VaultDefaultCoinService {
         // `true` here is what blesses a half-prepared vault as done and makes
         // the import's retry meaningless.
         guard vault.coins.isEmpty else { return holdsANativeCoin(forEach: expectedChains, in: vault) }
-
-        let chains: [CoinMeta] = TokensStore.TokenSelectionAssets
-                .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
 
         var coins: [Coin] = []
         for asset in chains {
@@ -189,19 +205,29 @@ class VaultDefaultCoinService {
     /// Starts discovering held tokens for the coins this service attached, and
     /// forgets them so a second call cannot start the same work twice.
     ///
-    /// Call it once the save that stores those coins has **succeeded**. It is
-    /// deliberately not started from ``setDefaultCoins(for:)``: discovery is
-    /// unstructured work that outlives the call, suspends on the network, and
-    /// then writes through `Storage.shared`. Started before the save, it can
-    /// come back and persist a vault whose save failed and which the caller has
-    /// already withdrawn — turning a refused keygen or a rolled-back import into
-    /// a stored one. A caller whose save threw simply never calls this.
+    /// Call it once the save that stores those coins has **succeeded**. That is
+    /// a contract with the caller and not something this method can check: a
+    /// SwiftData fetch resolves pending inserts too, so no lookup here can tell
+    /// a saved row from an unsaved one. What it can do is not start the work at
+    /// all, which is why it is deliberately not started from
+    /// ``setDefaultCoins(for:)``: discovery is unstructured work that outlives
+    /// the call, suspends on the network, and then writes through
+    /// `Storage.shared`. Started before the save, it can come back and persist a
+    /// vault whose save failed and which the caller has already withdrawn —
+    /// turning a refused keygen or a rolled-back import into a stored one. A
+    /// caller whose save threw simply never calls this.
     ///
-    /// That leaves what can happen *after* a successful save — the user deletes
-    /// the vault, a rollback takes the coins back, the context is reset — which
-    /// is why nothing live is carried across the gap. Every coin is re-resolved
-    /// from the store immediately before its own discovery runs, and one that no
-    /// longer resolves, or is no longer this vault's, is skipped.
+    /// The re-resolution covers what can happen *after* that: the user deletes
+    /// the vault, a rollback takes the coins back, the context is reset. Nothing
+    /// live is carried across the gap; every coin is looked up again through its
+    /// vault immediately before its own discovery runs, and one that no longer
+    /// resolves, or is no longer this vault's, is skipped.
+    ///
+    /// > Note: `CoinService.addDiscoveredTokens` then suspends on the network
+    /// > holding the pair, so a vault deleted *during* that call is still
+    /// > reachable. That window is `CoinService`'s and is shared with every
+    /// > other caller of it; this narrows the exposure to it, and does not
+    /// > close it.
     ///
     /// - Returns: the task doing the work, so a caller that needs to observe it
     ///   can wait. Production discards it.

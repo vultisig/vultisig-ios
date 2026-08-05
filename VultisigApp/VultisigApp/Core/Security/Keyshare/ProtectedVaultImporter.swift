@@ -102,8 +102,10 @@ struct ProtectedVaultImporter {
     ///   — default coins are the case that exists — belongs here rather than at
     ///   the call site, where it would leave rows behind when the import is
     ///   refused. It answers whether it did its work, and must be idempotent: a
-    ///   vault it leaves unprepared is put through it again, against a context
-    ///   the failed attempt has been withdrawn from.
+    ///   vault it leaves unprepared is put through it again. Where the first
+    ///   attempt left nothing behind — its save threw, and this method rolled it
+    ///   back — the second attempt is a real repair; where it kept what it could
+    ///   do, the second attempt simply answers the same way again.
     ///
     ///   It must not *start* work that outlives it. Token discovery is the case
     ///   that exists, and it is aimed at rows this method can still take back —
@@ -160,15 +162,18 @@ struct ProtectedVaultImporter {
         // saved, where that write does not take. An error-only guard saw a
         // clean import and said nothing. And nothing else rebuilds this later —
         // default coins are set at keygen and at import and nowhere else — so a
-        // vault that leaves here unprepared is one the user opens on an empty
-        // wallet, with no error, for good.
+        // vault that leaves here unprepared is one the user opens missing
+        // chains, with no error, for good.
         var unprepared = vaultsLeftUnprepared(among: vaults, by: prepare, in: context)
         if !unprepared.isEmpty {
-            // `prepare` is idempotent by contract and these vaults are brand
-            // new — nothing else has touched them — so running it again is the
-            // one repair available at a point where the user cannot usefully be
-            // told anything. Once, not in a loop: a preparation that fails twice
-            // fails for a reason a third attempt will not change.
+            // The second pass repairs the kind of failure that left nothing
+            // behind — a save that threw and was rolled back — because `prepare`
+            // is idempotent and running it again is the one repair available at
+            // a point where the user cannot usefully be told anything. Where it
+            // repairs nothing, it costs nothing and answers the same way twice,
+            // which is what reaches the log below. Once, not in a loop: a
+            // preparation that fails twice fails for a reason a third attempt
+            // will not change.
             unprepared = vaultsLeftUnprepared(among: unprepared, by: prepare, in: context)
         }
         if !unprepared.isEmpty {

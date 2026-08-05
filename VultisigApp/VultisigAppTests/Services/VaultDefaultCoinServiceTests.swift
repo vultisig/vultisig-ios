@@ -28,8 +28,8 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
         try super.setUpWithError()
         token = try TestStore.installInMemoryContainer()
         context = token.container.mainContext
-        // `setDefaultCoins` starts a token-discovery `Task` per coin that
-        // outlives the test method and touches the models it captured.
+        // `startTokenDiscovery()` hands out a `Task` that can outlive the test
+        // method and touch the models it resolved.
         TestStore.retain(token.container)
     }
 
@@ -168,8 +168,8 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
         XCTAssertEqual(try storedChains(), [.bitcoin], "and a second run must not write a second Bitcoin beside the first")
     }
 
-    /// The expectation is the chains the vault was asked for, so a default
-    /// chain the catalog carries no native asset for could never be satisfied.
+    /// A default chain the catalog carries no native asset for could never be
+    /// satisfied, so the five this app chooses for itself have to be covered.
     /// Nothing else in the app states that correspondence, and the catalog is
     /// edited far more often than this file is.
     func testEveryBaseDefaultChainHasANativeAssetToBuild() {
@@ -177,6 +177,31 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
         for chain in makeService().baseDefaultChains {
             XCTAssertTrue(natives.contains(chain), "\(chain.name) is a default chain with no native asset in the catalog")
         }
+    }
+
+    /// The other half of that, and the reason the expectation is not simply the
+    /// chains asked for. A key-import vault's chains are the user's selection,
+    /// and `ethereumSepolia` is offered in that picker while having no native
+    /// asset in the catalog at all — so this device has nothing to build for it.
+    /// Nothing to build is not a failure to build; counting it as one would
+    /// report every Sepolia import as broken, forever, with no action available.
+    func testAChainWithNothingInTheCatalogToBuildIsNotCountedAsAFailure() throws {
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        let usable = try XCTUnwrap(vault.chainPublicKeys.first).publicKeyHex
+        vault.chainPublicKeys = [
+            ChainPublicKey(chain: .bitcoin, publicKeyHex: usable, isEddsa: false),
+            ChainPublicKey(chain: .ethereumSepolia, publicKeyHex: usable, isEddsa: false)
+        ]
+        context.insert(vault)
+        try context.save()
+
+        XCTAssertTrue(
+            makeService().setDefaultCoinsOnce(vault: vault),
+            "a chain the catalog cannot build is not a chain this pass failed to build"
+        )
+        try context.save()
+
+        XCTAssertEqual(try storedChains(), [.bitcoin])
     }
 
     /// And the degenerate case the same `allSatisfy` answered `true` for:
