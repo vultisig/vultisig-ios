@@ -1119,6 +1119,207 @@ extension PasscodeServiceTests {
     }
 }
 
+// MARK: - A background lock wins over a change or a disable
+
+extension PasscodeServiceTests {
+
+    /// The window a generation captured inside the verification cannot see. A
+    /// `lock()` landing after the disable is under way but before `unlock` reads
+    /// the generation for itself would be adopted straight over: the key goes
+    /// back into the session, the lock is undone, and the removal carries on to
+    /// delete the very passcode the lock screen is waiting for.
+    ///
+    /// Driven from the disable's own pre-verification wrapper read, which is the
+    /// one collaborator it touches before the verification begins.
+    func testALockLandingBeforeADisableVerifiesWins() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        let sealed = try storedShares()
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore, duringFirstLoad: { [session] in
+            session?.clear()
+        })
+
+        do {
+            try await makeService(keyStore: hooked).disablePasscode(current: passcode)
+            XCTFail("Expected .cancelledByLock")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .cancelledByLock)
+        }
+
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertEqual(lockService.mode, .passcode, "the passcode the lock screen asks for must still exist")
+        XCTAssertEqual(try storedShares(), sealed, "nothing durable may move on the wrong side of a lock")
+        if case .unlocked = session.currentState() {
+            XCTFail("the lock must not have been undone")
+        }
+    }
+
+    /// The same contract on the change, asserted where it is observable: the
+    /// rewrapped key is the one durable thing this call produces, and a lock
+    /// landing before it is stored means the passcode stays exactly as the user
+    /// locked the app behind it.
+    ///
+    /// The change's own pre-verification window has no collaborator in it —
+    /// nothing between the lease and the verification can be driven from a test
+    /// — so the anchor it shares with the disable is covered above, and this
+    /// pins the half that is reachable.
+    func testALockDuringAChangeStoresNoNewWrapper() async throws {
+        try await sut.setPasscode(passcode)
+        let wrappedBefore = keyStore.loadWrappedDataKey()
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore, duringWrap: { [session] in
+            session?.clear()
+        })
+
+        do {
+            try await makeService(keyStore: hooked).changePasscode(current: passcode, new: newPasscode)
+            XCTFail("Expected .cancelledByLock")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .cancelledByLock)
+        }
+
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), wrappedBefore, "no new wrapper may be stored over a lock")
+        if case .unlocked = session.currentState() {
+            XCTFail("the lock must not have been undone")
+        }
+        try await sut.unlock(with: passcode)
+        sut.lock()
+        do {
+            try await sut.unlock(with: newPasscode)
+            XCTFail("The passcode must not have moved")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .wrongPasscode)
+        }
+    }
+
+    /// The cut-off is also where the rollback material has to exist. A Keychain
+    /// that goes quiet on either side of the one read that answered leaves the
+    /// disable with no bytes to put back, and the reseal that would be needed
+    /// instead is on the wrong side of the door — so it refuses before it opens
+    /// a single share rather than discovering it at the deletion.
+    func testADisableRefusesWhenItCannotSeeTheWrapperAroundItsOwnVerification() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+        let sealed = try storedShares()
+        let scripted = ScriptedReadKeyshareKeyStore(
+            wrapping: keyStore,
+            reads: [.unavailable(errSecInteractionNotAllowed), nil, .unavailable(errSecInteractionNotAllowed)]
+        )
+
+        do {
+            try await makeService(keyStore: scripted).disablePasscode(current: passcode)
+            XCTFail("Expected .storageFailure")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .storageFailure)
+        }
+
+        XCTAssertEqual(try storedShares(), sealed, "no share may be opened without a way back")
+        _ = try XCTUnwrapPresent(keyStore.loadWrappedDataKey())
+        XCTAssertEqual(lockService.mode, .passcode)
+    }
+
+    /// And with no lock in sight both still do exactly what they did before.
+    func testAChangeAndADisableAreUnaffectedWhenNoLockLands() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+
+        try await sut.changePasscode(current: passcode, new: newPasscode)
+        try await sut.disablePasscode(current: newPasscode)
+
+        XCTAssertEqual(try storedShares(), [share])
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
+        XCTAssertEqual(lockService.mode, .deviceAuth)
+    }
+}
+
+// MARK: - The gate never outlives the passcode
+
+extension PasscodeServiceTests {
+
+    /// The trapped user, and the reason the cut-off is where it is. Past the
+    /// unseal a lock cannot be honoured — resealing needs the data key the lock
+    /// has just discarded — so the disable finishes, and it has to finish
+    /// somewhere the app can be got back into.
+    ///
+    /// A gate raised while the mode still said `.passcode` is stale the instant
+    /// this returns, and the state it is stale against is the dangerous one: no
+    /// wrapper, so the unlock behind that gate can only ever answer `notSet`,
+    /// forever, until the app is force quit.
+    func testADisableThatCompletesAcrossALockLeavesNoGateStanding() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+
+        var wasGateUpWhenTheLockLanded: Bool?
+        var service: PasscodeService!
+        let locking = CountingKeyshareSweeper(wrapping: sweeper)
+        locking.afterUnseal = { [session] in
+            session?.clear()
+            wasGateUpWhenTheLockLanded = service.isPasscodeGateRequired
+        }
+        service = makeService(sweeper: locking)
+
+        try await service.disablePasscode(current: passcode)
+
+        XCTAssertEqual(wasGateUpWhenTheLockLanded, true, "the gate was legitimately up when the lock landed")
+        XCTAssertFalse(service.isPasscodeGateRequired, "no gate may be left standing over a passcode that is gone")
+        XCTAssertEqual(try storedShares(), [share], "the shares are back in the clear, as a completed disable requires")
+        XCTAssertEqual(keyStore.loadWrappedDataKey(), .absent)
+        XCTAssertEqual(lockService.mode, .deviceAuth)
+        if case .disabled = session.currentState() {} else {
+            XCTFail("with no key left the session must report .disabled")
+        }
+    }
+
+    /// The way back in, without relaunching. Someone standing in front of a gate
+    /// that outlived its passcode types the only thing they know, and the answer
+    /// has to be more than an error that repeats forever: the mode drops to
+    /// device auth on the spot, so the gate stops being required and comes down.
+    func testAnAppUnlockAgainstARemovedPasscodeTakesTheGateDown() async throws {
+        try await sut.setPasscode(passcode)
+        // The state a disable completing behind a raised gate leaves.
+        keychain.setWrappedKeyshareDataKey(nil)
+        lockService.mode = .passcode
+        sut.lock()
+
+        do {
+            try await sut.unlockApp(with: passcode)
+            XCTFail("Expected .notSet")
+        } catch {
+            XCTAssertEqual(error as? PasscodeError, .notSet)
+        }
+
+        XCTAssertEqual(lockService.mode, .deviceAuth)
+        XCTAssertFalse(sut.isPasscodeGateRequired, "a gate with nothing behind it must stop being required")
+    }
+
+    func testTheGateIsRequiredWhileAPasscodeIsSet() async throws {
+        try await sut.setPasscode(passcode)
+
+        XCTAssertTrue(sut.isPasscodeGateRequired)
+    }
+
+    func testTheGateIsNotRequiredWithNoPasscodeSet() {
+        XCTAssertFalse(sut.isPasscodeGateRequired)
+    }
+
+    func testTheGateIsNotRequiredOnceThePasscodeIsRemoved() async throws {
+        try givenVaults([("vault-one", [share])])
+        try await sut.setPasscode(passcode)
+
+        try await sut.disablePasscode(current: passcode)
+
+        XCTAssertFalse(sut.isPasscodeGateRequired)
+    }
+
+    /// Failing closed, here too. An unreadable wrapper may well be there, and a
+    /// gate taken down over a momentary read failure is protection removed.
+    func testTheGateStaysRequiredWhenTheWrapperCannotBeRead() async throws {
+        try await sut.setPasscode(passcode)
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        XCTAssertTrue(sut.isPasscodeGateRequired)
+    }
+}
+
 // MARK: - The attempt limiter's own record
 
 extension PasscodeServiceTests {
@@ -1190,6 +1391,9 @@ private final class CountingKeyshareSweeper: KeyshareSweeping {
     var sealFailure: Error?
     /// Runs inside the sweep, so a lock landing mid-sweep is deterministic.
     var duringSeal: (() -> Void)?
+    /// Runs once the unseal has been saved — the far side of the disable's abort
+    /// cut-off, where a lock can no longer be honoured.
+    var afterUnseal: (() -> Void)?
 
     init(wrapping wrapped: KeyshareSweeping) {
         self.wrapped = wrapped
@@ -1204,7 +1408,10 @@ private final class CountingKeyshareSweeper: KeyshareSweeping {
         try wrapped.sealAll()
     }
 
-    func unsealAll() throws { try wrapped.unsealAll() }
+    func unsealAll() throws {
+        try wrapped.unsealAll()
+        afterUnseal?()
+    }
     func hasSealedShare() throws -> Bool { try wrapped.hasSealedShare() }
 }
 
@@ -1231,29 +1438,80 @@ private final class HookedKeyshareSweeper: KeyshareSweeping {
     @MainActor func unsealAll() throws { try wrapped.unsealAll() }
 }
 
+/// A key store whose wrapper reads are scripted call by call, so a Keychain that
+/// answers differently either side of a verification can be reproduced. `nil`
+/// means "delegate", and anything past the end of the script delegates too.
+private final class ScriptedReadKeyshareKeyStore: KeyshareKeyStoring {
+
+    private let wrapped: KeyshareKeyStoring
+    private let reads: [KeychainReadResult<Data>?]
+    private var readCount = 0
+
+    init(wrapping wrapped: KeyshareKeyStoring, reads: [KeychainReadResult<Data>?]) {
+        self.wrapped = wrapped
+        self.reads = reads
+    }
+
+    func loadWrappedDataKey() -> KeychainReadResult<Data> {
+        defer { readCount += 1 }
+        guard readCount < reads.count, let scripted = reads[readCount] else {
+            return wrapped.loadWrappedDataKey()
+        }
+        return scripted
+    }
+
+    func generateDataKey() throws -> SymmetricKey { try wrapped.generateDataKey() }
+    func storeWrappedDataKey(_ blob: Data) throws { try wrapped.storeWrappedDataKey(blob) }
+    func deleteWrappedDataKey() throws { try wrapped.deleteWrappedDataKey() }
+
+    func wrap(_ key: SymmetricKey, passcode: String) async throws -> Data {
+        try await wrapped.wrap(key, passcode: passcode)
+    }
+
+    func unwrap(_ blob: Data, passcode: String) async throws -> SymmetricKey {
+        try await wrapped.unwrap(blob, passcode: passcode)
+    }
+}
+
 /// A key store that runs a hook inside `wrap`, which is the one long suspension
 /// point in a transition. Everything a background lock or a concurrent write
 /// could do mid-transition happens there, and driving it by hand is the only way
 /// to make those races deterministic rather than timing-dependent.
+///
+/// `duringFirstLoad` covers the other end: a transition's *first* wrapper read
+/// happens before it verifies anything, so a hook there lands in the window
+/// between the transition starting and the verification taking its own view of
+/// the session.
 private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
 
     private let wrapped: KeyshareKeyStoring
     private let duringWrap: @MainActor () throws -> Void
+    private let duringFirstLoad: () -> Void
     private let duringUnwrap: @MainActor () async throws -> Void
+    private var didLoad = false
 
+    /// `duringUnwrap` stays last so a trailing closure still lands on it.
     init(
         wrapping wrapped: KeyshareKeyStoring,
         duringWrap: @escaping @MainActor () throws -> Void = {},
+        duringFirstLoad: @escaping () -> Void = {},
         duringUnwrap: @escaping @MainActor () async throws -> Void = {}
     ) {
         self.wrapped = wrapped
         self.duringWrap = duringWrap
+        self.duringFirstLoad = duringFirstLoad
         self.duringUnwrap = duringUnwrap
     }
 
     func generateDataKey() throws -> SymmetricKey { try wrapped.generateDataKey() }
 
-    func loadWrappedDataKey() -> KeychainReadResult<Data> { wrapped.loadWrappedDataKey() }
+    func loadWrappedDataKey() -> KeychainReadResult<Data> {
+        if !didLoad {
+            didLoad = true
+            duringFirstLoad()
+        }
+        return wrapped.loadWrappedDataKey()
+    }
     func storeWrappedDataKey(_ blob: Data) throws { try wrapped.storeWrappedDataKey(blob) }
     func deleteWrappedDataKey() throws { try wrapped.deleteWrappedDataKey() }
 

@@ -130,6 +130,36 @@ actor PasscodeService {
         return false
     }
 
+    /// Whether a passcode gate still has a passcode behind it.
+    ///
+    /// A lock screen is raised from ``AppLockService/mode`` and then *held* by
+    /// whatever put it up, so it is a cache of a value a transition can move
+    /// underneath it — and one transition invalidates that cache in the worst
+    /// possible way. A `disablePasscode` that completes while the gate is up
+    /// leaves `.deviceAuth`, no wrapper, and a screen whose only exit calls
+    /// ``unlockApp(with:now:)`` — which now has nothing to verify against and can
+    /// only ever throw `notSet`. Nothing the user types opens it and force
+    /// quitting is the only way out.
+    ///
+    /// So the gate is not a flag anyone may keep: it is this question, asked
+    /// again. Nothing may leave a lock screen standing while this is `false`,
+    /// and ``disablePasscode(current:now:)`` guarantees it is `false` by the time
+    /// it returns.
+    ///
+    /// Only a **confirmed** absence lowers it. An unreadable Keychain leaves the
+    /// gate up — the item may well be there, and taking a real gate down over a
+    /// momentary read failure is the one mistake available here that removes
+    /// protection rather than restoring access.
+    ///
+    /// `nonisolated` for the same reason ``isSessionUnlocked`` is: the caller is
+    /// the lock screen, and an `await` between the answer and the act is exactly
+    /// the gap this exists to close.
+    nonisolated var isPasscodeGateRequired: Bool {
+        guard lockService.mode == .passcode else { return false }
+        if case .absent = keyStore.loadWrappedDataKey() { return false }
+        return true
+    }
+
     // MARK: - Set
 
     /// Mints a data key, puts it behind the passcode, and seals every stored
@@ -152,18 +182,19 @@ actor PasscodeService {
     ///   ciphertext. The app stays in the pending-passcode state instead, and
     ///   the next unlock's resume finishes it.
     func setPasscode(_ passcode: String) async throws {
+        // Literally the first statement, and ahead of the lease deliberately. A
+        // background `lock()` is `nonisolated` and stays outside the coordinator
+        // on purpose — it must never block on a transition — so it can land at
+        // any point from here on, including while the lease is being claimed,
+        // and `adopt(_:ifGeneration:)` at the end is how it wins. Reading this
+        // any later would silently undo a lock that landed in between, leaving
+        // the key live in memory behind a lock screen. The window cannot be
+        // closed entirely while `lock()` is deliberately unsynchronized; it can
+        // be made as small as the first instruction, and that is what this is.
+        let generation = session.currentGeneration
+
         let lease = try beginTransition()
         defer { coordinator.end(lease) }
-
-        // Read first, before anything else in this method. A background `lock()`
-        // is `nonisolated` and stays outside the coordinator on purpose — it
-        // must never block on a transition — so it can land at any point from
-        // here on, and `adopt(_:ifGeneration:)` at the end is how it wins.
-        // Reading this any later would silently undo a lock that landed in
-        // between, leaving the key live in memory behind a lock screen. The
-        // window cannot be closed entirely while `lock()` is deliberately
-        // unsynchronized; it can be made as small as the first instruction.
-        let generation = session.currentGeneration
 
         try validate(passcode)
         guard !isSet else { throw PasscodeError.alreadySet }
@@ -223,6 +254,11 @@ actor PasscodeService {
     /// needs, and is refused by none of them.
     @discardableResult
     func unlockApp(with passcode: String, now: Date = Date()) async throws -> SymmetricKey {
+        // First statement, ahead of the flag and the lease, for the reason
+        // spelled out on `setPasscode`: `lock()` can land while either is being
+        // claimed, and a generation read afterwards would not see it.
+        let generation = session.currentGeneration
+
         // Write leases do not exclude each other, so this is what keeps two app
         // unlocks apart. Read and set with no `await` between them, which is
         // what makes it atomic inside the actor.
@@ -233,8 +269,21 @@ actor PasscodeService {
         let lease = try beginUnlock()
         defer { coordinator.end(lease) }
 
-        let generation = session.currentGeneration
-        let dataKey = try await unlock(with: passcode, now: now)
+        let dataKey: SymmetricKey
+        do {
+            dataKey = try await unlock(with: passcode, now: now, anchoredTo: generation)
+        } catch PasscodeError.notSet {
+            // A gate with nothing behind it, and the user is standing in front
+            // of it. `notSet` comes only from a **confirmed** absence, so this
+            // is not a Keychain that went quiet: the passcode is genuinely gone
+            // and no entry on this screen can ever be right. Leaving the mode at
+            // `.passcode` would keep asking for it until the app is force quit,
+            // so the same repair launch reconciliation performs is done here,
+            // now, while somebody is actually locked out by it.
+            lowerThePasscodeGateWithNothingBehindIt()
+            throw PasscodeError.notSet
+        }
+
         await resumeSweepUnlocked()
 
         // `unlock` only guards the *adoption* against a lock. A lock landing
@@ -300,6 +349,24 @@ actor PasscodeService {
     /// identical and silently never finish an interrupted transition.
     @discardableResult
     func unlock(with passcode: String, now: Date = Date()) async throws -> SymmetricKey {
+        // The argument is evaluated first, so this reads the generation as the
+        // first thing this call does. Nothing ran before it, so the generation
+        // as it stands here *is* the generation this operation started at.
+        try await unlock(with: passcode, now: now, anchoredTo: session.currentGeneration)
+    }
+
+    /// The verification, anchored to the session generation its **caller**
+    /// observed as that caller's own first act.
+    ///
+    /// There is no variant that reads the generation for itself, and that is the
+    /// point. `changePasscode`, `disablePasscode` and `unlockApp` are already
+    /// under way by the time they reach here, and `lock()` is `nonisolated` and
+    /// synchronizes with nothing — so a lock landing in between would be
+    /// invisible to a generation read at this depth, the adopt below would
+    /// succeed, and the lock would be undone by the back door. For the disable
+    /// that is worse than a lost lock: it goes on to remove the very passcode
+    /// the lock screen is waiting for.
+    private func unlock(with passcode: String, now: Date, anchoredTo generation: Int) async throws -> SymmetricKey {
         // One verification at a time. The lockout is checked here and the
         // failure recorded after the derivation, so overlapping attempts would
         // all clear the check before any of them recorded anything — a burst of
@@ -309,11 +376,13 @@ actor PasscodeService {
         isVerifyingPasscode = true
         defer { isVerifyingPasscode = false }
 
-        // First instruction after that, for the same reason it is in
-        // `setPasscode`: a `nonisolated` lock() can land during the Keychain
-        // read below as easily as during the derivation, and a generation read
-        // afterwards would let the adopt undo it.
-        let generation = session.currentGeneration
+        // A lock that has already landed has already won. Half a second of key
+        // derivation whose result may not be adopted buys nothing, and the
+        // attempt is deliberately not counted — the passcode may well have been
+        // right, and it was never tested.
+        guard session.currentGeneration == generation else {
+            throw PasscodeError.cancelledByLock
+        }
 
         let lockout = limiter.remainingLockout(now: now)
         guard lockout <= 0 else {
@@ -380,14 +449,37 @@ actor PasscodeService {
     /// It still takes the transition lease: it rewrites the one item every
     /// sealed share depends on, and interleaving with a set or a disable is how
     /// the wrapper ends up holding a key that matches nothing on disk.
+    ///
+    /// A background `lock()` wins over it, on both sides of the verification.
+    /// The generation is read before the first `await` and carried through, so
+    /// the verification cannot adopt over a lock that landed while this was
+    /// getting under way, and the rewrapped key is not stored if one landed
+    /// during the derivation. Nothing durable has moved at that point, so
+    /// stopping costs the user a retry and keeps the lock they asked for.
     func changePasscode(current: String, new: String, now: Date = Date()) async throws {
+        // First statement, ahead of the lease, exactly as `setPasscode` reads
+        // it. `lock()` is `nonisolated` and stays outside the coordinator on
+        // purpose, so it can land from here on — and a generation read inside
+        // the verification below would be read *after* such a lock, letting the
+        // adopt undo it.
+        let generation = session.currentGeneration
+
         let lease = try beginTransition()
         defer { coordinator.end(lease) }
 
         try validate(new)
 
-        let dataKey = try await unlock(with: current, now: now)
+        let dataKey = try await unlock(with: current, now: now, anchoredTo: generation)
         let rewrapped = try await keyStore.wrap(dataKey, passcode: new)
+
+        // The last instant before the one durable change this method makes. A
+        // lock landing during the rewrap loses nothing — the key never left
+        // memory and every share is untouched — so the honest outcome is to
+        // leave the passcode exactly as the user locked it behind.
+        guard session.currentGeneration == generation else {
+            throw PasscodeError.cancelledByLock
+        }
+
         try keyStore.storeWrappedDataKey(rewrapped)
     }
 
@@ -414,6 +506,21 @@ actor PasscodeService {
     ///   that was half gone. Nothing has changed yet at that point, so aborting
     ///   there is clean.
     ///
+    /// A background `lock()` wins, but only up to a point, and the point is
+    /// marked in the body. Until the unseal begins, nothing durable has moved
+    /// and honouring the lock costs a retry. From the unseal onwards there is no
+    /// way back — putting the shares behind the passcode again needs the data
+    /// key in the session, and the lock is what removed it — so the call runs to
+    /// completion rather than stranding plaintext key material behind a passcode
+    /// that is still demanded.
+    ///
+    /// **Postcondition, and it is the one that keeps a user out of a lock screen
+    /// they cannot open.** When this returns without throwing, the passcode is
+    /// gone and ``isPasscodeGateRequired`` is therefore `false`. A gate raised
+    /// before the mode moved is stale from that instant, and stale is not
+    /// harmless here: its only exit is an unlock, and there is nothing left for
+    /// an unlock to verify against.
+    ///
     /// If the deletion fails there is one protocol, not a choice: prove the
     /// wrapper is durable, restore `.passcode`, reseal transactionally, throw.
     /// The app is back to a working passcode and the user retries. Proving the
@@ -423,6 +530,13 @@ actor PasscodeService {
     /// gone would leave ciphertext whose only key is in memory until the next
     /// lock.
     func disablePasscode(current: String, now: Date = Date()) async throws {
+        // First statement, ahead of the lease, exactly as `setPasscode` reads it
+        // — and here it is load-bearing twice over. It anchors the verification
+        // below, so a `lock()` landing while this was getting under way cannot
+        // be adopted over; and it is what the abort decision further down is
+        // made against.
+        let generation = session.currentGeneration
+
         let lease = try beginTransition()
         defer { coordinator.end(lease) }
 
@@ -434,10 +548,35 @@ actor PasscodeService {
         // "plaintext shares behind a mode that says there is no passcode".
         let wrappedBeforeVerification = keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
 
-        _ = try await unlock(with: current, now: now)
+        _ = try await unlock(with: current, now: now, anchoredTo: generation)
 
         let wrapped = wrappedBeforeVerification
             ?? keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
+
+        // **The abort cut-off, and it is a one-way door.** Everything above this
+        // line is reversible by doing nothing: no share has moved, the wrapper
+        // is untouched and the gate is still up, so a lock that landed while the
+        // passcode was being verified is honoured simply by stopping. Past this
+        // line it is not. The unseal writes plaintext key material to disk, and
+        // the only thing that could put it back is a reseal — which needs the
+        // data key *in the session*, which is precisely what a lock has just
+        // taken away. Aborting there would leave every share in the clear behind
+        // a passcode that is still set and still demanded, which is worse than
+        // finishing: finishing at least ends somewhere consistent.
+        //
+        // So: stop here, or see it through. There is no third option.
+        guard session.currentGeneration == generation else {
+            throw PasscodeError.cancelledByLock
+        }
+
+        // And the same line is where the rollback material has to exist. The
+        // verification cannot have succeeded without reading this item as
+        // `.present`, so both reads around it coming back empty means the
+        // Keychain went quiet either side of one that answered — not that the
+        // wrapper is gone. Crossing without those bytes would leave a failed
+        // removal with nothing to put back, and the reseal it needs is on the
+        // wrong side of the door. Nothing has moved yet, so refuse.
+        guard let wrapped else { throw PasscodeError.storageFailure }
 
         // The GCM tag check inside every open is the verification: a share that
         // comes back out is provably recoverable, and the key is still in hand
@@ -465,9 +604,12 @@ actor PasscodeService {
     /// removed the item. If it cannot be made durable, nothing is resealed:
     /// plaintext shares with no key anywhere is precisely the no-passcode
     /// resting state, and it is the only outcome here that loses nothing.
-    private func restorePasscodeAfterFailedRemoval(wrapped: Data?) async throws {
+    ///
+    /// The bytes are non-optional because the removal never begins without
+    /// them: a disable that cannot see the wrapper on either side of its own
+    /// verification refuses before it opens a single share.
+    private func restorePasscodeAfterFailedRemoval(wrapped: Data) async throws {
         do {
-            guard let wrapped else { throw PasscodeError.inconsistentState }
             try keyStore.storeWrappedDataKey(wrapped)
         } catch {
             // No provable wrapper, so the key in memory must go with it.
@@ -493,6 +635,19 @@ actor PasscodeService {
     }
 
     // MARK: - Helpers
+
+    /// Drops the persisted passcode mode once the passcode is confirmed gone.
+    ///
+    /// The same rule ``KeyshareInstallReconciler`` applies at launch, applied at
+    /// the one other moment it matters: a `.passcode` mode with no wrapper
+    /// behind it is a door with nothing to open it, and whoever is looking at
+    /// that door needs ``isPasscodeGateRequired`` to start answering `false`
+    /// before they will take it away.
+    private func lowerThePasscodeGateWithNothingBehindIt() {
+        guard lockService.mode == .passcode else { return }
+        logger.warning("A passcode gate outlived its wrapped key; falling back to device auth")
+        lockService.mode = .deviceAuth
+    }
 
     /// Claims the coordinator for one transition, mapping contention onto the
     /// service's own vocabulary.
