@@ -65,13 +65,19 @@ struct ProtectedVaultImporter {
 
     private let normalizer: KeyshareNormalizer
     private let coordinator: KeyshareWriteCoordinator
+    private let save: @MainActor (ModelContext) throws -> Void
 
+    /// - Parameter save: the store write. A seam, and only a seam: SwiftData
+    ///   offers no way to make an in-memory `save()` fail on demand, and the
+    ///   paths that matter most here are the ones a save failure opens.
     init(
         protector: KeyshareProtecting = KeyshareProtector.shared,
-        coordinator: KeyshareWriteCoordinator = .shared
+        coordinator: KeyshareWriteCoordinator = .shared,
+        save: @escaping @MainActor (ModelContext) throws -> Void = { try $0.save() }
     ) {
         self.normalizer = KeyshareNormalizer(protector: protector)
         self.coordinator = coordinator
+        self.save = save
     }
 
     /// Refuses a backup carrying a share this device cannot open, before the
@@ -94,11 +100,15 @@ struct ProtectedVaultImporter {
     /// - Parameter prepare: run per vault inside the lease, once the vault is
     ///   provably stored. Anything that touches the context on a vault's behalf
     ///   — default coins are the case that exists — belongs here rather than at
-    ///   the call site: done before, it leaves rows behind when the import is
-    ///   refused, and the token discovery it starts is unstructured work that
-    ///   outlives this call and must never be aimed at a vault that could still
-    ///   be withdrawn. It answers whether it did its work, and must be
-    ///   idempotent: a vault it leaves unprepared is put through it again.
+    ///   the call site, where it would leave rows behind when the import is
+    ///   refused. It answers whether it did its work, and must be idempotent: a
+    ///   vault it leaves unprepared is put through it again, against a context
+    ///   the failed attempt has been withdrawn from.
+    ///
+    ///   It must not *start* work that outlives it. Token discovery is the case
+    ///   that exists, and it is aimed at rows this method can still take back —
+    ///   so the caller starts it once `commit` has returned, never from inside
+    ///   `prepare`.
     @MainActor
     func commit(
         _ vaults: [Vault],
@@ -131,7 +141,7 @@ struct ProtectedVaultImporter {
         }
 
         do {
-            try context.save()
+            try save(context)
         } catch {
             withdraw(vaults, from: context, rollingBack: !wasCarryingOtherWork)
             logger.error("Vault import failed to save: \(error.localizedDescription, privacy: .public)")
@@ -173,7 +183,18 @@ struct ProtectedVaultImporter {
     ///
     /// A save that throws makes every vault in the batch unprepared, whatever
     /// `prepare` said: work that is not on disk is work the next launch will not
-    /// find.
+    /// find. And what it wrote is withdrawn before answering, because a failed
+    /// save leaves those inserts *pending*, not gone — the retry would run
+    /// against a context still holding the first attempt's rows, and after a
+    /// second failure the whole import would return with them still eligible for
+    /// an autosave or for the next unrelated `save()` anywhere in the app. That
+    /// is work this method has already given up on reaching disk by a route
+    /// nothing here can see.
+    ///
+    /// `rollback()` and not a per-row withdrawal, and it is safe here in a way
+    /// it is not in ``commit(_:into:prepare:)``: the insert's own save has
+    /// already flushed whatever the context was carrying, so everything pending
+    /// at this point was written by `prepare`.
     @MainActor
     private func vaultsLeftUnprepared(
         among vaults: [Vault],
@@ -182,8 +203,9 @@ struct ProtectedVaultImporter {
     ) -> [Vault] {
         let unprepared = vaults.filter { !prepare($0) }
         do {
-            try context.save()
+            try save(context)
         } catch {
+            context.rollback()
             logger.error("Imported vaults were stored but their default coins were not: \(error.localizedDescription, privacy: .public)")
             return vaults
         }

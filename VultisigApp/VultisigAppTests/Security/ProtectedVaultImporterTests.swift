@@ -318,7 +318,40 @@ final class ProtectedVaultImporterTests: XCTestCase {
         XCTAssertEqual(attempts, 1)
     }
 
+    /// A preparation whose save fails must not leave its work pending. Left
+    /// there, the retry runs against a context still holding the first
+    /// attempt's rows — and after the second failure `commit` returns with them
+    /// still attached and still eligible for the next autosave, or for any
+    /// unrelated `save()` anywhere in the app. That is work the import has
+    /// already given up on, reaching disk by a route nothing here can see.
+    func testAFailedPreparationSaveLeavesNothingPending() throws {
+        TestStore.retain(token.container)
+        var saves = 0
+        let sut = makeImporter(state: .disabled) { context in
+            saves += 1
+            // The insert's own save has to land — it is the preparation's that
+            // this test is about.
+            guard saves > 1 else { return try context.save() }
+            throw SaveFailure.refused
+        }
+
+        try sut.commit([derivableVault()], into: context, prepare: settingDefaultCoins)
+
+        XCTAssertEqual(saves, 3, "the insert's save, then the preparation's and the one retry")
+        XCTAssertFalse(context.hasChanges, "a preparation that could not be saved must leave nothing pending behind it")
+
+        try context.save()
+        XCTAssertEqual(
+            try ModelContext(token.container).fetchCount(FetchDescriptor<Coin>()), 0,
+            "an unrelated later save must not flush what the import gave up on"
+        )
+    }
+
     // MARK: - Helpers
+
+    private enum SaveFailure: Error {
+        case refused
+    }
 
     private func derivableVault(index: Int = 0) -> Vault {
         TestStore.makeDerivableVault(index: index, keyshare: firstShare)
@@ -328,10 +361,14 @@ final class ProtectedVaultImporterTests: XCTestCase {
         VaultDefaultCoinService(context: context).setDefaultCoinsOnce(vault: vault)
     }
 
-    private func makeImporter(state: KeyshareProtectionState) -> ProtectedVaultImporter {
+    private func makeImporter(
+        state: KeyshareProtectionState,
+        save: @escaping @MainActor (ModelContext) throws -> Void = { try $0.save() }
+    ) -> ProtectedVaultImporter {
         ProtectedVaultImporter(
             protector: KeyshareProtector(state: { state }),
-            coordinator: coordinator
+            coordinator: coordinator,
+            save: save
         )
     }
 
