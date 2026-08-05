@@ -114,7 +114,7 @@ Two alternatives were proposed and both rejected:
 | the wrapper is re-stored **before** anything is resealed in the disable rollback | ciphertext whose only key is in memory, destroyed by the next lock |
 | `session.currentGeneration` is captured as the **first instruction** of `setPasscode` and `unlock` | a background `lock()` silently undone; the key stays live behind a lock screen |
 | reconciliation runs **synchronously first** inside `restorePasscodeLockOnLaunch` | the gate chosen from a mode reconciliation is about to change; app sits open all session with a wrapped key and no lock screen |
-| `prepare:` in `ProtectedVaultImporter.commit` runs **after** the save, inside the lease | a preparation whose own save fails could no longer be undone. `rollback()` is safe there *only* because the insert's save has already flushed whatever the context was carrying, so everything still pending is provably `prepare`'s — see [below](#the-write-that-did-not-take). Ahead of that save, undoing a failed preparation either discards another flow's uncommitted work or leaves its rows pending, and pending rows reach disk through the next autosave or any unrelated `save()` |
+| `prepare:` in `ProtectedVaultImporter.commit` runs **after** the save, inside the lease | a preparation whose own save fails could no longer be taken back. `rollback()` undoes it there *only* because the insert's save has already flushed whatever the context was carrying and nothing suspends in between, so everything still pending is provably `prepare`'s — see [below](#the-write-that-did-not-take). Ahead of that save the same call would discard another flow's uncommitted work, `commit` cannot enumerate what an arbitrary `prepare` wrote in order to withdraw it row by row, and leaving it pending reaches disk anyway through the next autosave or any unrelated `save()` |
 
 ---
 
@@ -151,10 +151,13 @@ it is the caller that reaches the trap.
 `prepare` answers `Bool` and `commit` **checks the answer**, in addition to
 catching a throwing save. That is the whole point: in the failure above the save
 *succeeded* and stored nothing, so an error-only guard saw a clean import and
-said nothing. Nothing else rebuilds what the preparation writes — default coins
-are set at keygen and at import and nowhere else — so a vault that leaves
-`commit` unprepared is one the user opens missing chains, with no error, for
-good.
+said nothing. And nothing rebuilds what the preparation writes **automatically**
+— default coins are set at keygen and at import and nowhere else — so a vault
+that leaves `commit` unprepared is one the user opens missing chains, with no
+error, indefinitely. Manage Chains can add one back by hand, but only for a
+vault type that allows it (`Vault.canCustomizeChains` is false for key-import
+vaults) and only by a user who has worked out that something is missing, which
+nothing tells them.
 
 An unprepared vault is put through the idempotent preparation once more, and
 reported if it is still unprepared. It is not thrown: the vault is stored and
@@ -183,10 +186,17 @@ computing it were not:
 case that exists: it suspends on the network and then writes through
 `Storage.shared`, so started from inside the preparation it can come back and
 persist a vault whose save failed and which the caller has already withdrawn.
-The preparation records value identifiers only — a vault's public key and a coin
-id — and every caller starts `startTokenDiscovery()` after **its own** save has
-landed, which re-resolves each coin through its vault and skips the ones the
-store no longer holds that way.
+The preparation therefore records value identifiers only — a vault's public key
+and a coin id — and the caller starts `startTokenDiscovery()` afterwards: keygen
+once its own save has landed, the import once `commit` has returned.
+
+`commit` returning is **not** proof that the preparation's save landed — it
+returns normally after a preparation that failed twice and was rolled back — so
+the identifiers are what makes that safe rather than the ordering. Each coin is
+looked up again through its vault immediately before its own discovery runs, and
+one the store no longer holds that way is skipped. Hand a live `Coin` or `Vault`
+across that gap instead and the rolled-back case is not a skipped lookup but a
+detached model, which traps on the first property read.
 
 ---
 
@@ -349,11 +359,11 @@ in passing without reading the tradeoff.
   blocks every passcode change until relaunch.
 
 - **`ProtectedVaultImporter`'s lease brackets normalize → insert → save →
-  prepare, not decode → insert → save.** Decode and commit are separated by a modal password
-  prompt on the multi-file path, and a lease held across a modal leaks when the
-  user walks away. Re-normalizing at commit under the lease gives the same
-  guarantee. The cost is a narrow liveness case: a decode that seals, followed by
-  a disable, refuses the import until the user retries.
+  prepare, not decode → insert → save.** Decode and commit are separated by a
+  modal password prompt on the multi-file path, and a lease held across a modal
+  leaks when the user walks away. Re-normalizing at commit under the lease gives
+  the same guarantee. The cost is a narrow liveness case: a decode that seals,
+  followed by a disable, refuses the import until the user retries.
 
 - **No recovery path exists for stores sealed by the superseded always-encrypted
   design** (which kept a clear data key in the Keychain). Nothing shipped in that
@@ -370,7 +380,8 @@ in passing without reading the tradeoff.
 
 **Pre-existing. Not introduced by the passcode work, and not fixed by it.** It is
 recorded here because this is where the next person reading the import path will
-be, and because its consequence is the one this whole feature exists to prevent.
+be, and because its end state is the one [rule zero](#rule-zero) is about: a
+share this device can never sign with again.
 
 > An imported vault that collides with a stored one on a **single** unique
 > attribute — or on nothing but its **name** — replaces it, key shares included.
@@ -427,9 +438,9 @@ Each of these is over-specified because the plain version was written first and
   three assertions pass over one vault → fixtures assert their own row count;
 - an assertion on a `@Model` object the test is still holding cannot tell an
   attachment that was persisted from one that was not — which is exactly the
-  failure [above](#the-write-that-did-not-take) → the default-coin and import
-  fixtures read the vault back through a **fresh** `ModelContext` on the same
-  container;
+  failure [above](#the-write-that-did-not-take) → every fixture that asserts
+  coins were attached reads them back through a **fresh** `ModelContext` on the
+  same container;
 - a postcondition computed from what a pass *produced* is satisfied by an empty
   list, so a preparation that built nothing at all passes as complete → the coin
   cases include a vault nothing can be built for, and one where a single chain
