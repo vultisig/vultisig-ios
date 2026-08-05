@@ -60,6 +60,7 @@ Long-form reasoning that does not fit in code comments lives in [`docs/`](docs/)
 | Changing `KeyshareWriteCoordinator`, or any lease/`await` placement around key-share writes | [concurrency-and-leases.md](docs/passcode-keyshare-encryption/concurrency-and-leases.md) |
 | Reordering steps in `setPasscode` / `disablePasscode` / the resume sweep | [transitions.md](docs/passcode-keyshare-encryption/transitions.md) |
 | A guard there looks redundant, or you want to simplify `KeyshareSweeper` | [invariants.md](docs/passcode-keyshare-encryption/invariants.md) |
+| Importing a vault, or changing how a vault's default coins are attached | [invariants.md § the write that did not take](docs/passcode-keyshare-encryption/invariants.md#the-write-that-did-not-take) |
 
 ## Knowledge Base
 

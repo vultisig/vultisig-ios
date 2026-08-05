@@ -72,8 +72,9 @@ is left cannot be opened by anything, ever.
 
 The app cannot construct one — `seal` refuses an already-sealed value — but an
 imported `.vult` or JSON backup can carry whatever bytes it likes. Both the
-sweeper's `openedShare(from:)` and `ProtectedVaultImporter.openedShare(_:pubkey:)`
-open once and **refuse** a result that is still sealed.
+sweeper's `openedShare(from:)` and `KeyshareNormalizer.opened(_:pubkey:)` — the
+route every import takes in, shared with the keygen commit — open once and
+**refuse** a result that is still sealed.
 
 **Do not "fix" this by unwrapping recursively.** Recursion accepts adversarial
 input rather than rejecting it. One layer is the most a legitimate backup can
@@ -113,7 +114,79 @@ Two alternatives were proposed and both rejected:
 | the wrapper is re-stored **before** anything is resealed in the disable rollback | ciphertext whose only key is in memory, destroyed by the next lock |
 | `session.currentGeneration` is captured as the **first instruction** of `setPasscode` and `unlock` | a background `lock()` silently undone; the key stays live behind a lock screen |
 | reconciliation runs **synchronously first** inside `restorePasscodeLockOnLaunch` | the gate chosen from a mode reconciliation is about to change; app sits open all session with a wrapped key and no lock screen |
-| `prepare:` in `ProtectedVaultImporter.commit` runs **after** the save, inside the lease | default-coin derivation starts unstructured `Task`s that outlive `commit`; on a save failure they operate on a vault that was just withdrawn |
+| `prepare:` in `ProtectedVaultImporter.commit` runs **after** the save, inside the lease | a preparation whose own save fails could no longer be undone. `rollback()` is safe there *only* because the insert's save has already flushed whatever the context was carrying, so everything still pending is provably `prepare`'s — see [below](#the-write-that-did-not-take). Ahead of that save, undoing a failed preparation either discards another flow's uncommitted work or leaves its rows pending, and pending rows reach disk through the next autosave or any unrelated `save()` |
+
+---
+
+## The write that did not take
+
+A user reported imported vaults arriving with no chains at all. Every save along
+the way had succeeded. Two rules came out of it, and both are easy to undo by
+accident because neither failure raises anything.
+
+### Attach a coin from the coin's side
+
+`coin.vault = vault`, **never** `vault.coins.append(coin)`.
+
+On a `Vault` that has already been through a `context.save()`, appending a still
+unsaved `Coin` to the to-many side does not register. The relationship re-faults
+to its persisted value, and the next save writes that value back **over** the
+`Coin.vault` inverse the append had just set. What lands on disk is coin rows
+belonging to nobody and a vault with no chains — nothing thrown, nothing logged,
+and a wallet that simply opens empty.
+
+The to-one write is the one that survives, and on a vault that has not been
+inserted yet it does exactly what the append did — which is why it is correct
+for both callers. `VaultDefaultCoinService` also detaches from that side
+(`coin.vault = nil`) before deleting a coin it is taking back, for the same
+reason. `CoinService.addToChain` sidesteps the trap differently, by saving the
+coin before appending; there is no save to hang that on inside the preparation.
+
+Keygen never hit this — `commitVault` prepares a vault it has not inserted yet.
+The import path prepares after insert + save, for the ordering reason above, so
+it is the caller that reaches the trap.
+
+### `prepare`'s success is a postcondition, not a `catch`
+
+`prepare` answers `Bool` and `commit` **checks the answer**, in addition to
+catching a throwing save. That is the whole point: in the failure above the save
+*succeeded* and stored nothing, so an error-only guard saw a clean import and
+said nothing. Nothing else rebuilds what the preparation writes — default coins
+are set at keygen and at import and nowhere else — so a vault that leaves
+`commit` unprepared is one the user opens missing chains, with no error, for
+good.
+
+An unprepared vault is put through the idempotent preparation once more, and
+reported if it is still unprepared. It is not thrown: the vault is stored and
+openable, and refusing an import that already reached disk would leave the user a
+vault they can no longer re-import.
+
+The answer is only worth checking if it stays truthful, and two ways of
+computing it were not:
+
+- **read off what succeeded, the answer holds vacuously.** A postcondition checked
+  against the coins that *built* is satisfied by an empty list — the vault with
+  no chains at all passes as prepared, which is the reported symptom surviving
+  its own fix. It is read off the chains the vault was asked for instead, minus
+  the ones the catalog carries no native asset for at all. That subtraction is
+  logged rather than silently filtered: a chain with nothing to build (there is
+  one, `ethereumSepolia`, offered in the key-import picker) is a gap in this app;
+  a chain that failed to build is a broken key. Only the second is a failure to
+  report, and reporting the first would mark every such import broken forever
+  with nothing a user or a retry could do.
+- **a vault that already holds coins must not be blessed.** Skipping the *work*
+  for one is right; answering `true` for it is not. The retry lands exactly
+  there — first pass a chain short, second pass sees one coin and calls the
+  import clean — so the reporting the postcondition exists for reports nothing.
+
+`prepare` must also **start nothing that outlives it**. Token discovery is the
+case that exists: it suspends on the network and then writes through
+`Storage.shared`, so started from inside the preparation it can come back and
+persist a vault whose save failed and which the caller has already withdrawn.
+The preparation records value identifiers only — a vault's public key and a coin
+id — and every caller starts `startTokenDiscovery()` after **its own** save has
+landed, which re-resolves each coin through its vault and skips the ones the
+store no longer holds that way.
 
 ---
 
@@ -174,6 +247,8 @@ switch over the cases.
 | move the `session.currentGeneration` read below a "cheap" guard | that is exactly the bug that let a `lock()` be undone during the sealed-share scan |
 | unwrap doubly-sealed values recursively instead of refusing them | accepts adversarial input rather than rejecting it |
 | have the sweeper flush or roll back a dirty context so it can proceed | commits or discards another flow's half-finished work because the user toggled a setting |
+| attach a vault's default coins with `vault.coins.append(coin)` instead of `coin.vault = vault` | on a vault that has already been saved the append does not register: the relationship re-faults and the next save writes the empty value back over the inverse, so the coin rows end up belonging to nobody and the vault opens with no chains — silently, and every save reports success. See [above](#attach-a-coin-from-the-coins-side) |
+| let `prepare:` report success by not throwing, now that `commit` catches its save | the failure that shipped was a save that *succeeded* and stored nothing, which no `catch` can see. See [above](#prepares-success-is-a-postcondition-not-a-catch) |
 | replace `KeyshareSweeping`'s per-method `@MainActor` with an attribute on the protocol | attributing the protocol infers main-actor isolation onto the whole conforming type, singleton included — and an `actor` cannot name a main-actor singleton as a default argument. Same reason on `ProtectedVaultImporter` |
 | make `KeyshareSweeping` `Sendable` | cascades into `KeyshareProtecting`, whose implementation holds a non-`@Sendable` closure. A Swift 6 migration item, not a local cleanup |
 | clear `lastMigratedVersion` in the reconciler | re-runs every ordinary migration on a container with no passcode artifact — a launch-time write for people who never touched this feature |
@@ -251,9 +326,20 @@ in passing without reading the tradeoff.
   another flow's pending work.** SwiftData has no scoped save. The alternatives
   are refusing the import whenever anyone has unsaved work — which the lease
   placement deliberately rejected — or nothing. The *failure* path does preserve
-  foreign work: `context.hasChanges` is sampled before anything is inserted, and a save failure
-  rolls back only if the context was clean, otherwise it withdraws just the
-  imported vaults one by one.
+  foreign work: `context.hasChanges` is sampled before anything is inserted, and
+  a failed insert save rolls back only if the context was clean, otherwise it
+  withdraws just the imported vaults one by one. The **preparation's** save is
+  the one that rolls back unconditionally, and it may: it runs after the insert
+  save has already flushed anything foreign, and `commit` suspends nowhere in
+  between, so everything pending at that point was written by `prepare`.
+
+- **A preparation that fails twice is logged and the import still reports
+  success to the user.** The vault is stored and openable but missing at least
+  one of its default chains, and only a log line says so. Throwing instead would
+  refuse an import that has already reached disk, leaving the user a vault they
+  can no longer re-import; telling them properly needs a new error, a new
+  outcome for three import routes to render, and a string in every shipping
+  locale. Unclaimed work, priced the same way as the resume-sweep gap above.
 
 - **The keygen episode lease crosses screens.** `KeygenViewModel` takes it;
   `commitVault` is a `static` function that neither owns nor releases it. Safety
@@ -262,8 +348,8 @@ in passing without reading the tradeoff.
   `deinit`-release. This is the design's own named open question. A leaked lease
   blocks every passcode change until relaunch.
 
-- **`ProtectedVaultImporter`'s lease brackets normalize → insert → save, not
-  decode → insert → save.** Decode and commit are separated by a modal password
+- **`ProtectedVaultImporter`'s lease brackets normalize → insert → save →
+  prepare, not decode → insert → save.** Decode and commit are separated by a modal password
   prompt on the multi-file path, and a lease held across a modal leaks when the
   user walks away. Re-normalizing at commit under the lease gives the same
   guarantee. The cost is a narrow liveness case: a decode that seals, followed by
@@ -277,6 +363,43 @@ in passing without reading the tradeoff.
 - **There is no launch migration, and `KeyshareEncryptionMigration` does not
   exist.** If a document you are reading describes one, a completion marker, or a
   clear `keyshareDataKey` Keychain item, it is stale — stop and re-read the code.
+
+---
+
+## A hazard on the import path that predates this feature
+
+**Pre-existing. Not introduced by the passcode work, and not fixed by it.** It is
+recorded here because this is where the next person reading the import path will
+be, and because its consequence is the one this whole feature exists to prevent.
+
+> An imported vault that collides with a stored one on a **single** unique
+> attribute — or on nothing but its **name** — replaces it, key shares included.
+
+`EncryptedBackupViewModel.isVaultUnique` treats an incoming vault as a duplicate
+only when `pubKeyECDSA` **and** `pubKeyEdDSA` both match one already stored. But
+`Vault` declares `name`, `pubKeyECDSA` and `pubKeyEdDSA` as three *independent*
+`@Attribute(.unique)` properties. So a vault matching on one key, or on neither
+key and only the name, passes the guard, reaches `context.insert`, and SwiftData
+resolves the collision the way it always does — by **upserting** rather than by
+failing, the behaviour the fixtures below are written around. The stored row is
+replaced by the incoming vault's values, and `keyshares` is one of those values:
+a plain stored property on `Vault`, not a related row that could survive on its
+own.
+
+No error, no prompt, nothing written to the log. The displaced share is gone
+from this device, and what is left is whatever `.vult` backup the user happens to
+hold. All three import routes reach it — `restoreVault`, `restoreVaultBack` and
+the multi-file `importVaults` each guard with `isVaultUnique` and then commit
+through `ProtectedVaultImporter`.
+
+It is deliberately left alone rather than repaired in passing.
+`ZipImportDuplicateTests` currently pins the same-`pubKeyECDSA` /
+different-`pubKeyEdDSA` case as *acceptable*, so tightening the guard changes
+shipped behaviour and needs its own review, its own copy and its own decision
+about what a partial collision should mean. **Do not read that test as evidence
+the case is safe** — it pins today's behaviour, not a judgement about it. And
+note what is not covered: no test imports a vault colliding on one key alone, or
+on the name alone, so nothing in the suite would notice the replacement.
 
 ---
 
@@ -302,6 +425,15 @@ Each of these is over-specified because the plain version was written first and
 - SwiftData answers a duplicate `@Attribute(.unique)` with an **upsert rather
   than an error**, so a multi-vault fixture silently collapses to one row and
   three assertions pass over one vault → fixtures assert their own row count;
+- an assertion on a `@Model` object the test is still holding cannot tell an
+  attachment that was persisted from one that was not — which is exactly the
+  failure [above](#the-write-that-did-not-take) → the default-coin and import
+  fixtures read the vault back through a **fresh** `ModelContext` on the same
+  container;
+- a postcondition computed from what a pass *produced* is satisfied by an empty
+  list, so a preparation that built nothing at all passes as complete → the coin
+  cases include a vault nothing can be built for, and one where a single chain
+  fails while the others succeed;
 - test doubles that upsert model semantics production does not provide (the
   `SecItemAdd` case) pass for the wrong reason → the doubles mirror
   `errSecDuplicateItem`;
@@ -326,6 +458,8 @@ Check that explicitly; a test that passes both ways is documenting nothing.
    which existing repair path finds it.
 4. If you touched ordering, re-read [the table above](#ordering-constraints--do-not-reorder-these).
 5. Run the full `VultisigAppTests/Security/` and `VultisigAppTests/Storage/`
-   suites, not a subset.
+   suites, not a subset — plus
+   `VultisigAppTests/Services/VaultDefaultCoinServiceTests.swift` if you touched
+   what the import hands to `prepare:`.
 6. If you added a `PasscodeError` case, follow the exhaustive switch the
    compiler points you at rather than defaulting it.
