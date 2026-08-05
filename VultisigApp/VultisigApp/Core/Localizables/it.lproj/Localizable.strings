@@ -652,6 +652,7 @@
 "keygenInstructionsCar7DescriptionPart3" = ", migliorando la flessibilità senza compromettere la sicurezza.";
 "keygenInstructionsCar7Title" = "In evidenza";
 "keys" = "Chiavi";
+"keysharesUnreadableVaultNotSaved" = "Non è stato possibile leggere le key share di questo vault, quindi non è stato salvato. Sblocca l'app e riprova; se continua a fallire, crea di nuovo il vault.";
 "keysign" = "Firma Chiave";
 "keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";

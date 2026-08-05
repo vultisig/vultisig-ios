@@ -652,6 +652,7 @@
 "keygenInstructionsCar7DescriptionPart3" = ", mejorando la flexibilidad sin comprometer la seguridad.";
 "keygenInstructionsCar7Title" = "Destacado de funciones";
 "keys" = "Llaves";
+"keysharesUnreadableVaultNotSaved" = "No se pudieron leer las key shares de esta bóveda, por lo que no se guardó. Desbloquea la app e inténtalo de nuevo; si sigue fallando, crea la bóveda otra vez.";
 "keysign" = "Firma de Clave";
 "keysignDiscoveryDisclaimer" = "Escanea el código QR para firmar la transacción.";
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";

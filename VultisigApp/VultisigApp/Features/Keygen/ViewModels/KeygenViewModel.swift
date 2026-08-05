@@ -11,6 +11,31 @@ import WalletCore
 import CryptoKit
 import BigInt
 
+/// `commitVault` is `static`, so it cannot reach the view model's own logger.
+private let commitLogger = Log.keygen.viewModel
+
+/// Why a finished vault could not be committed to the store.
+enum KeygenCommitError: Error, Equatable, LocalizedError {
+    /// A share about to be persisted cannot be turned back into a share under
+    /// the protection state in force right now. Carries the share's public key.
+    case unreadableKeyshare(pubkey: String)
+
+    /// The review screen renders `error.localizedDescription`. Without this the
+    /// alert would fall back to the raw `NSError` form and tell the user
+    /// nothing about what actually happened.
+    ///
+    /// The copy states only what is known. `open` reports a key that is gone, a
+    /// key that does not fit, and a key merely not yet unwrapped as the same two
+    /// errors, so naming a cause here would assert something the check cannot
+    /// establish — and two of the three are recoverable by unlocking.
+    var errorDescription: String? {
+        switch self {
+        case .unreadableKeyshare:
+            return "keysharesUnreadableVaultNotSaved".localized
+        }
+    }
+}
+
 enum KeygenStatus {
     case CreatingInstance
     case KeygenECDSA
@@ -217,16 +242,69 @@ class KeygenViewModel: ObservableObject {
     /// leaves its name reusable. Inserting on the unique `pubKeyECDSA` upserts, so
     /// re-running keygen that reproduces an existing vault replaces it as before.
     @MainActor
-    static func commitVault(_ vault: Vault, context: ModelContext) throws {
+    static func commitVault(
+        _ vault: Vault,
+        context: ModelContext,
+        protector: KeyshareProtecting = KeyshareProtector.shared
+    ) throws {
         // The insert and the save are one write span. The episode lease already
         // keeps a transition out of the whole review interval, but this is the
         // moment the shares actually reach the store, so it carries its own
         // guarantee rather than relying on a lease held elsewhere.
         try KeyshareWriteCoordinator.shared.withWriteLease {
+            // Ahead of everything else, so a refusal leaves the context exactly
+            // as it found it — `setDefaultCoinsOnce` builds coins onto the vault.
+            try verifyKeysharesAreReadable(of: vault, protector: protector)
+
             VaultDefaultCoinService(context: context)
                 .setDefaultCoinsOnce(vault: vault)
             context.insert(vault)
             try context.save()
+        }
+    }
+
+    /// Proves every share still opens before any of them is persisted.
+    ///
+    /// The write lease above only excludes a transition running *concurrently*
+    /// with the insert; one that has already finished leaves nothing to exclude.
+    /// And the deferred-persistence flow holds its shares in memory across the
+    /// whole review screen, where the sweep cannot reach them — so a passcode
+    /// disabled during the review unseals every *stored* share and deletes the
+    /// data key without ever seeing these. Inserting them anyway stores a vault
+    /// sealed under a key that no longer exists: it looks complete, nothing
+    /// revisits it, and every signature it is ever asked for fails.
+    ///
+    /// A plaintext share passes untouched — that is the no-passcode case, which
+    /// is nearly every install, and `open` is a passthrough for it in every
+    /// state.
+    ///
+    /// A value that opens to *another* sealed value is refused rather than
+    /// unwrapped again, matching `KeyshareSweeper` and `ProtectedVaultImporter`:
+    /// an envelope around an envelope is not a share, and accepting one because
+    /// its outer layer authenticated would write `vlt2:` to disk under the name
+    /// of a key share.
+    @MainActor
+    private static func verifyKeysharesAreReadable(
+        of vault: Vault,
+        protector: KeyshareProtecting
+    ) throws {
+        for share in vault.keyshares {
+            let opened: String
+            do {
+                opened = try protector.open(share.keyshare)
+            } catch {
+                commitLogger.error(
+                    "Refusing to persist a vault: key share \(share.pubkey, privacy: .public) cannot be opened: \(String(describing: error), privacy: .public)"
+                )
+                throw KeygenCommitError.unreadableKeyshare(pubkey: share.pubkey)
+            }
+
+            guard !protector.isSealed(opened) else {
+                commitLogger.error(
+                    "Refusing to persist a vault: key share \(share.pubkey, privacy: .public) opened to another sealed value"
+                )
+                throw KeygenCommitError.unreadableKeyshare(pubkey: share.pubkey)
+            }
         }
     }
 

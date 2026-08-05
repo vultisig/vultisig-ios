@@ -652,6 +652,7 @@
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "keygenInstructionsCar7Title" = "Istaknuta značajka";
 "keys" = "Ključ";
+"keysharesUnreadableVaultNotSaved" = "Key shareovi ovog trezora nisu se mogli pročitati pa trezor nije spremljen. Otključajte aplikaciju i pokušajte ponovno; ako se nastavi, stvorite trezor iznova.";
 "keysign" = "Potpis ključa";
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";

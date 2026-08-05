@@ -652,6 +652,7 @@
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessere so die Flexibilität, ohne die Sicherheit zu vernachlässigen.";
 "keygenInstructionsCar7Title" = "Funktionshighlight";
 "keys" = "Schlüssel";
+"keysharesUnreadableVaultNotSaved" = "Die Key Shares dieses Tresors konnten nicht gelesen werden, daher wurde er nicht gespeichert. Entsperren Sie die App und versuchen Sie es erneut — bleibt das Problem bestehen, erstellen Sie den Tresor neu.";
 "keysign" = "Schlüsselsignatur";
 "keysignDiscoveryDisclaimer" = "Scanne den QR-Code, um die Transaktion zu signieren.";
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
