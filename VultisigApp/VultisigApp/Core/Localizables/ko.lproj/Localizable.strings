@@ -657,7 +657,6 @@
 "kaminoVerifyUnreadable" = "이 바이트는 Kamino 볼트 프로그램을 호출하지만 예치 또는 출금으로 읽을 수 없습니다. 서명하지 마세요.";
 "kaminoVerifyVault" = "볼트";
 "kaminoVerifyWithdraw" = "볼트에서 출금";
-"kaminoWithdrawFarmStaked" = "이 볼트의 예치금은 해당 팜에 스테이킹되어 있습니다. 스테이킹된 포지션의 출금은 아직 지원되지 않습니다.";
 "kaminoWithdrawInsufficientLiquidity" = "이 볼트는 지금 해당 출금을 처리할 수 없습니다. 즉시 사용 가능한 금액은 %@ %@뿐입니다.";
 "kaminoWithdrawLimitedLiquidity" = "이 볼트에서 즉시 출금할 수 있는 금액은 %@ %@뿐입니다. 더 큰 금액의 출금은 볼트가 유동성을 확보할 때까지 처리되지 않을 수 있습니다.";
 "kaminoWithdrawMinimum" = "최소 출금 금액은 %@ %@입니다.";

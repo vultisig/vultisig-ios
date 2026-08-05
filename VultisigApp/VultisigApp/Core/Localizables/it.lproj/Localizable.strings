@@ -657,7 +657,6 @@
 "kaminoVerifyUnreadable" = "Questi byte richiamano il programma vault di Kamino ma non è stato possibile leggerli come deposito o prelievo. Non firmarli.";
 "kaminoVerifyVault" = "Vault";
 "kaminoVerifyWithdraw" = "Prelievo dal vault";
-"kaminoWithdrawFarmStaked" = "Il tuo deposito in questo vault è in staking nella sua farm. Il prelievo di una posizione in staking non è ancora supportato.";
 "kaminoWithdrawInsufficientLiquidity" = "Questo vault non può liquidare quel prelievo in questo momento: solo %@ %@ sono disponibili subito.";
 "kaminoWithdrawLimitedLiquidity" = "Da questo vault si possono prelevare subito solo %@ %@. Un prelievo più grande potrebbe non essere liquidato finché il vault non libera più liquidità.";
 "kaminoWithdrawMinimum" = "Il prelievo minimo è %@ %@.";

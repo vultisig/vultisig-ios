@@ -657,7 +657,6 @@
 "kaminoVerifyUnreadable" = "这些字节调用了 Kamino 金库程序，但无法解析为存入或提取。请勿签名。";
 "kaminoVerifyVault" = "金库";
 "kaminoVerifyWithdraw" = "从金库提取";
-"kaminoWithdrawFarmStaked" = "你在该金库的存入资金已质押在其 farm 中。暂不支持提取已质押的仓位。";
 "kaminoWithdrawInsufficientLiquidity" = "该金库目前无法结算这笔提取——立即可用的仅有 %@ %@。";
 "kaminoWithdrawLimitedLiquidity" = "该金库目前仅有 %@ %@ 可立即提取。更大金额的提取可能要等到金库释放更多流动性后才能结算。";
 "kaminoWithdrawMinimum" = "最低提取金额为 %@ %@。";

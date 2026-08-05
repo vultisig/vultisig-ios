@@ -186,10 +186,16 @@ struct KaminoService: KaminoServiceProtocol {
     ) async throws -> String {
         try Self.validate(shares, label: "withdraw")
         // `u64::MAX` is the API's own "withdraw everything" sentinel: it is what
-        // an over-sized request is silently rewritten to. No legitimate share
-        // balance is 18.4 quintillion base units, so refusing the value outright
-        // means a full exit can never be requested by arithmetic — only by a
-        // balance this app read and then sent verbatim.
+        // a request AT OR ABOVE the user's balance is silently rewritten to. No
+        // legitimate share balance is 18.4 quintillion base units, so refusing
+        // the value outright costs nothing and closes the one way this app could
+        // name it directly.
+        //
+        // It is not the only way to end up with one, though, and the other way
+        // is upstream of here: asking for the whole balance produces the
+        // sentinel in the RESPONSE. `KaminoSharePosition.spendable` is what
+        // keeps every request this app makes strictly below the balance, and the
+        // validator is what refuses the response if one arrives anyway.
         guard shares.baseUnits < KaminoBaseUnits.maxBaseUnits else {
             throw KaminoServiceError.invalidAmount(
                 "withdraw amount \(shares.baseUnits) is the withdraw-everything sentinel"

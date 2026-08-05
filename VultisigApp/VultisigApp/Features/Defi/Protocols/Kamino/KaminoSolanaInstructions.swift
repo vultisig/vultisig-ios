@@ -3,7 +3,9 @@
 //  VultisigApp
 //
 
+import BigInt
 import Foundation
+import WalletCore
 
 /// Every program a Kamino Earn transaction is allowed to invoke.
 ///
@@ -49,9 +51,14 @@ enum KaminoSolanaProgram: String, CaseIterable {
 
 /// Instruction discriminators for the programs a Kamino Earn transaction uses.
 ///
-/// The four Anchor ones are `sha256("global:<name>")[0..<8]`, and each was also
+/// The six Anchor ones are `sha256("global:<name>")[0..<8]`, and each was also
 /// read back out of a mainnet-simulated transaction built by the Kamino API, so
 /// the constant and the observation agree.
+///
+/// That agreement is the point, and it is what makes these named rather than
+/// pasted. A constant copied out of a captured transaction matches the shape it
+/// was copied from and asserts nothing; one derived from the instruction's name
+/// and *then* found in the bytes says the bytes are that instruction.
 enum KaminoInstructionDiscriminator {
 
     /// `kvault::deposit(u64 tokenAmount)`.
@@ -65,6 +72,25 @@ enum KaminoInstructionDiscriminator {
     /// `farms::stake(u64 amount)`. Kamino always passes `u64::MAX`, meaning
     /// "stake the whole share balance".
     static let farmsStake: [UInt8] = [0xce, 0xb0, 0xca, 0x12, 0xc8, 0xd1, 0xb3, 0x6c]
+    /// `farms::unstake(u128 stakeSharesScaled)` — releases shares from the farm
+    /// into the user's pending-withdrawal balance.
+    ///
+    /// Its argument is the only `u128` in this feature, and it is scaled: the
+    /// farms program holds stake at `WAD`, so the value is share base units
+    /// multiplied by `10^18`. Reading those 16 bytes as a `u64` truncates
+    /// silently — see `farmsStakeScale` and `anchorArgument128`.
+    static let farmsUnstake: [UInt8] = [0x5a, 0x5f, 0x6b, 0x2a, 0xcd, 0x7c, 0x32, 0xe1]
+    /// `farms::withdraw_unstaked_deposits` — moves what `unstake` released into
+    /// the user's share account, where the vault withdraw can then burn it.
+    /// Takes no argument: it always moves the whole pending balance.
+    static let farmsWithdrawUnstakedDeposits: [UInt8] = [0x24, 0x66, 0xbb, 0x31, 0xdc, 0x24, 0x84, 0x43]
+
+    /// The fixed-point scale the farms program holds stake at: `10^18`.
+    ///
+    /// Everything else in this feature is an integer count of base units. This
+    /// one is not, so the conversion is written out rather than inferred at each
+    /// call site.
+    static let farmsStakeScale = BigInt(10).power(18)
 
     /// Associated Token Program `CreateIdempotent`.
     static let createIdempotentAssociatedTokenAccount: UInt8 = 1
@@ -89,6 +115,30 @@ enum KaminoInstructionDiscriminator {
         return littleEndianUInt64(data[8..<16])
     }
 
+    /// An Anchor instruction's `u128` argument: the 16 bytes after the
+    /// discriminator, little-endian, as an exact `BigInt`.
+    ///
+    /// Separate from `anchorArgument` and never a fallback for it. A `u128`
+    /// argument read through the `u64` reader would take the low 8 bytes of a
+    /// 16-byte field and report a number that is not the one on the wire —
+    /// `1 share × 10^18` is `0x0D3C21BCECCEDA1000000`, whose low 8 bytes are
+    /// `0xBCECCEDA1000000`, a plausible-looking value that means nothing. So the
+    /// two readers are keyed on the exact payload length and neither accepts the
+    /// other's.
+    static func anchorArgument128(_ data: [UInt8]) -> BigInt? {
+        guard data.count == 24 else { return nil }
+        return data[8..<24].reversed().reduce(BigInt(0)) { $0 << 8 | BigInt($1) }
+    }
+
+    /// An Anchor instruction that carries no argument at all: exactly the
+    /// discriminator and nothing after it.
+    ///
+    /// Checked rather than assumed. `kind(program:data:)` matches on the first
+    /// eight bytes, so trailing bytes would otherwise ride along unread.
+    static func hasNoAnchorArgument(_ data: [UInt8]) -> Bool {
+        data.count == 8
+    }
+
     static func systemTransferLamports(_ data: [UInt8]) -> UInt64? {
         guard data.count == systemTransferDataLength else { return nil }
         return littleEndianUInt64(data[4..<12])
@@ -109,6 +159,39 @@ enum KaminoInstructionDiscriminator {
 
     private static func littleEndianUInt64(_ bytes: ArraySlice<UInt8>) -> UInt64 {
         bytes.reversed().reduce(UInt64(0)) { $0 << 8 | UInt64($1) }
+    }
+}
+
+/// The farms program's per-user account, derived rather than trusted.
+///
+/// `farms::unstake` and `farms::withdraw_unstaked_deposits` both take it, and it
+/// is the account that decides WHICH stake they move. Its address is a program
+/// address over the farm and the owner, so recomputing it locally binds both
+/// instructions to one farm and one user at once — and it does so **offline**,
+/// which the farm slot itself cannot: the farm is an address-lookup-table entry
+/// in every captured transaction, and the verify screen has no way to resolve
+/// one.
+///
+/// The user state is a static key in every captured transaction, in both the
+/// as-built and compute-budget-injected forms, which is what makes this
+/// checkable there at all.
+enum KaminoFarmsUserState {
+
+    /// The farms program's own seed prefix for this account.
+    static let seed = Data("user".utf8)
+
+    /// The user state for `owner` in `farm`, or `nil` when it cannot be derived.
+    static func derive(farm: String, owner: String) -> String? {
+        guard let farmKey = Base58.decodeNoCheck(string: farm),
+              let ownerKey = Base58.decodeNoCheck(string: owner),
+              farmKey.count == 32,
+              ownerKey.count == 32
+        else { return nil }
+
+        return SolanaProgramDerivedAddress.find(
+            seeds: [seed, farmKey, ownerKey],
+            programId: KaminoSolanaProgram.farms.rawValue
+        )
     }
 }
 
@@ -159,6 +242,28 @@ enum KaminoInstructionAccounts {
         static let userShareAccount = 4
         static let sharesMint = 5
         static let minimumCount = 6
+    }
+
+    /// `farms::unstake`. Four accounts, and the fourth is the farms program's own
+    /// id — Anchor's encoding of an absent optional account — so only the first
+    /// three name anything.
+    enum FarmsUnstake {
+        static let owner = 0
+        static let userState = 1
+        static let farm = 2
+        static let minimumCount = 3
+    }
+
+    /// `farms::withdraw_unstaked_deposits`. The share account at index 3 is where
+    /// the released shares land, and it is the same account the vault withdraw
+    /// then burns from — which is what ties the two halves of a staked withdraw
+    /// to one user.
+    enum FarmsWithdrawUnstakedDeposits {
+        static let owner = 0
+        static let userState = 1
+        static let farm = 2
+        static let userShareAccount = 3
+        static let minimumCount = 4
     }
 
     enum AssociatedToken {

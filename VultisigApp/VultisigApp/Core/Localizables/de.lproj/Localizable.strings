@@ -657,7 +657,6 @@
 "kaminoVerifyUnreadable" = "Diese Bytes rufen das Kamino-Vault-Programm auf, konnten aber nicht als Ein- oder Auszahlung gelesen werden. Signiere sie nicht.";
 "kaminoVerifyVault" = "Vault";
 "kaminoVerifyWithdraw" = "Auszahlung aus Vault";
-"kaminoWithdrawFarmStaked" = "Deine Einlage in diesem Vault ist in dessen Farm gestakt. Das Auszahlen einer gestakten Position wird noch nicht unterstützt.";
 "kaminoWithdrawInsufficientLiquidity" = "Dieser Vault kann diese Auszahlung derzeit nicht abwickeln – sofort verfügbar sind nur %@ %@.";
 "kaminoWithdrawLimitedLiquidity" = "Aus diesem Vault können derzeit nur %@ %@ sofort ausgezahlt werden. Eine größere Auszahlung wird eventuell erst abgewickelt, wenn der Vault mehr Liquidität freigibt.";
 "kaminoWithdrawMinimum" = "Die Mindestauszahlung ist %@ %@.";
