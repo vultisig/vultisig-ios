@@ -177,15 +177,108 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
         XCTAssertTrue(vault.coins.isEmpty)
     }
 
+    // MARK: - When token discovery is allowed to run
+
+    /// The point of the split. Discovery is network work that outlives the call
+    /// and writes on its own; started while the vault is only *attached* it can
+    /// come back and persist one whose save failed. So the pass records, the
+    /// caller starts — and only once its save has landed.
+    func testDiscoveryRunsForEveryCoinThePassAttached() async throws {
+        let recorder = DiscoveryRecorder()
+        let service = makeService(discoveringWith: recorder)
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        context.insert(vault)
+        try context.save()
+
+        XCTAssertTrue(service.setDefaultCoinsOnce(vault: vault))
+        try context.save()
+        await service.startTokenDiscovery().value
+
+        XCTAssertEqual(Set(recorder.chains), Set(TestStore.derivableChains))
+    }
+
+    /// Started twice, it does not do the same round trip twice.
+    func testDiscoveryIsNotStartedAgainForCoinsItAlreadyCovered() async throws {
+        let recorder = DiscoveryRecorder()
+        let service = makeService(discoveringWith: recorder)
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        context.insert(vault)
+        try context.save()
+        service.setDefaultCoinsOnce(vault: vault)
+        try context.save()
+
+        await service.startTokenDiscovery().value
+        await service.startTokenDiscovery().value
+
+        XCTAssertEqual(recorder.chains.count, TestStore.derivableChains.count)
+    }
+
+    /// The withdrawal case, which is what a failed preparation save leaves
+    /// behind: the coins were attached, the save did not take, and the context
+    /// took them back. Discovery must not write against them — writing is what
+    /// would persist a vault the import gave up on.
+    func testDiscoveryDoesNotRunForCoinsAFailedSaveTookBack() async throws {
+        let recorder = DiscoveryRecorder()
+        let service = makeService(discoveringWith: recorder)
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        context.insert(vault)
+        try context.save()
+        service.setDefaultCoinsOnce(vault: vault)
+
+        context.rollback()
+        await service.startTokenDiscovery().value
+
+        XCTAssertTrue(recorder.chains.isEmpty, "the coins are not stored, so there is nothing to discover against")
+    }
+
+    /// And the case that traps rather than merely writing: the vault is gone by
+    /// the time discovery gets to run. Nothing live is carried across that gap,
+    /// so what is left is a lookup that finds nothing.
+    func testDiscoveryDoesNotRunForAVaultThatIsNoLongerStored() async throws {
+        let recorder = DiscoveryRecorder()
+        let service = makeService(discoveringWith: recorder)
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        context.insert(vault)
+        try context.save()
+        service.setDefaultCoinsOnce(vault: vault)
+        try context.save()
+
+        context.delete(vault)
+        try context.save()
+        await service.startTokenDiscovery().value
+
+        XCTAssertTrue(recorder.chains.isEmpty, "a deleted vault must not be written back to")
+    }
+
     // MARK: - Helpers
 
     private func makeService() -> VaultDefaultCoinService {
         VaultDefaultCoinService(context: context)
     }
 
+    private func makeService(discoveringWith recorder: DiscoveryRecorder) -> VaultDefaultCoinService {
+        VaultDefaultCoinService(context: context) { coin, vault in
+            recorder.record(coin, vault)
+        }
+    }
+
     /// Read back through a context that never saw the in-memory objects, so an
     /// unsaved relationship cannot answer for a saved one.
     private func storedChains() throws -> [Chain] {
         try ModelContext(token.container).fetch(FetchDescriptor<Vault>()).flatMap(\.coins).map(\.chain)
+    }
+}
+
+/// Stands in for the discovery that in production goes to the network and
+/// writes what it finds, so the tests can assert on *whether* it was asked to
+/// run rather than on what it found.
+@MainActor
+private final class DiscoveryRecorder {
+    private(set) var calls: [(chain: Chain, vaultName: String)] = []
+
+    var chains: [Chain] { calls.map(\.chain) }
+
+    func record(_ coin: Coin, _ vault: Vault) {
+        calls.append((coin.chain, vault.name))
     }
 }

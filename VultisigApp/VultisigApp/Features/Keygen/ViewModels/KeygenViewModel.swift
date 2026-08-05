@@ -271,6 +271,8 @@ class KeygenViewModel: ObservableObject {
         context: ModelContext,
         protector: KeyshareProtecting = KeyshareProtector.shared
     ) throws {
+        let coinService = VaultDefaultCoinService(context: context)
+
         // The insert and the save are one write span. The episode lease already
         // keeps a transition out of the whole review interval, but this is the
         // moment the shares actually reach the store, so it carries its own
@@ -284,11 +286,14 @@ class KeygenViewModel: ObservableObject {
             // an element is not a dependable way to mark a `@Model` dirty.
             vault.keyshares = shares
 
-            VaultDefaultCoinService(context: context)
-                .setDefaultCoinsOnce(vault: vault)
+            coinService.setDefaultCoinsOnce(vault: vault)
             context.insert(vault)
             try context.save()
         }
+
+        // Past every way this can refuse, so the network work it starts is
+        // aimed at a vault that is provably stored and cannot be withdrawn.
+        coinService.startTokenDiscovery()
     }
 
     /// The vault's shares in the form the current protection state requires,
@@ -634,10 +639,14 @@ class KeygenViewModel: ObservableObject {
             // confirmation would leave orphan rows the autosave could flush.
             // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
             if !self.deferVaultPersistence {
-                VaultDefaultCoinService(context: modelContext)
-                    .setDefaultCoinsOnce(vault: self.vault)
+                let coinService = VaultDefaultCoinService(context: modelContext)
+                coinService.setDefaultCoinsOnce(vault: self.vault)
                 modelContext.insert(self.vault)
                 try modelContext.save()
+                // Only once the save has landed. Token discovery outlives this
+                // call and writes on its own, so a vault whose save threw must
+                // never have it pointed at it.
+                coinService.startTokenDiscovery()
             }
         } else {
             try modelContext.save()
@@ -987,10 +996,14 @@ class KeygenViewModel: ObservableObject {
             // confirmation would leave orphan rows the autosave could flush.
             // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
             if !self.deferVaultPersistence {
-                VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
+                let coinService = VaultDefaultCoinService(context: context)
+                coinService.setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
                 try context.save()
+                // Only once the save has landed. Token discovery outlives this
+                // call and writes on its own, so a vault whose save threw must
+                // never have it pointed at it.
+                coinService.startTokenDiscovery()
             }
         } else {
             try context.save()
@@ -1060,10 +1073,14 @@ class KeygenViewModel: ObservableObject {
                 // confirmation would leave orphan rows the autosave could flush.
                 // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
                 if !self.deferVaultPersistence {
-                    VaultDefaultCoinService(context: context)
-                        .setDefaultCoinsOnce(vault: self.vault)
+                    let coinService = VaultDefaultCoinService(context: context)
+                    coinService.setDefaultCoinsOnce(vault: self.vault)
                     context.insert(self.vault)
                     try context.save()
+                    // Only once the save has landed. Token discovery outlives
+                    // this call and writes on its own, so a vault whose save
+                    // threw must never have it pointed at it.
+                    coinService.startTokenDiscovery()
                 }
             } else {
                 try context.save()

@@ -536,9 +536,13 @@ class EncryptedBackupViewModel: ObservableObject {
         // some vaults on one side of the passcode invariant and some on the other.
         // Default coins are added inside it, because they insert rows of their
         // own and doing that first strands them when the import is refused.
+        let coinService = VaultDefaultCoinService(context: modelContext)
         try importer.commit(imported, into: modelContext) { vault in
-            VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
+            coinService.setDefaultCoinsOnce(vault: vault)
         }
+        // Outside the commit, because the commit is what stores the rows that
+        // discovery goes on to write against.
+        coinService.startTokenDiscovery()
 
         return (imported, duplicates, skippedNames)
     }
@@ -640,9 +644,13 @@ class EncryptedBackupViewModel: ObservableObject {
                 vault.libType = LibType.DKLS
             }
 
+            let coinService = VaultDefaultCoinService(context: modelContext)
             try importer.commit([vault], into: modelContext) { vault in
-                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
+                coinService.setDefaultCoinsOnce(vault: vault)
             }
+            // Outside the commit, because the commit is what stores the rows
+            // that discovery goes on to write against.
+            coinService.startTokenDiscovery()
             selectedVault = vault
             isVaultImported = true
         } catch {
@@ -698,9 +706,13 @@ class EncryptedBackupViewModel: ObservableObject {
         }
 
         do {
+            let coinService = VaultDefaultCoinService(context: modelContext)
             try importer.commit([decoded], into: modelContext) { vault in
-                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
+                coinService.setDefaultCoinsOnce(vault: vault)
             }
+            // Outside the commit, because the commit is what stores the rows
+            // that discovery goes on to write against.
+            coinService.startTokenDiscovery()
             selectedVault = decoded
             showAlert = false
             isVaultImported = true

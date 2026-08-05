@@ -10,12 +10,35 @@ import SwiftData
 import OSLog
 
 class VaultDefaultCoinService {
+
+    /// A coin the pass attached, named by value rather than held by reference.
+    ///
+    /// Token discovery outlives the call that asks for it, and a live `@Model`
+    /// carried across that gap is a reference to something the store may no
+    /// longer have: a vault withdrawn after a failed save, deleted by the user,
+    /// or dropped by a context reset. Touching one of those traps, and writing
+    /// through one persists a vault the caller had already given up on. These
+    /// two strings are re-resolved against the store at the moment the work
+    /// actually runs, and the work is skipped if they no longer resolve.
+    private struct AttachedCoin: Hashable {
+        let vaultPubKeyECDSA: String
+        let coinID: String
+    }
+
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)
+    private let discoverTokens: @MainActor (Coin, Vault) async -> Void
+    private var attachedCoins: [AttachedCoin] = []
     let baseDefaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana, Chain.bscChain]
 
-    init(context: ModelContext) {
+    init(
+        context: ModelContext,
+        discoverTokens: @escaping @MainActor (Coin, Vault) async -> Void = { coin, vault in
+            await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+        }
+    ) {
         self.context = context
+        self.discoverTokens = discoverTokens
     }
 
     /// - Returns: whether the vault holds a native coin for every default chain
@@ -139,17 +162,77 @@ class VaultDefaultCoinService {
             return false
         }
 
-        // Only over coins that are provably attached. Token discovery is
-        // unstructured work that outlives this call, and pointing it at a coin
-        // that is about to be withdrawn is the same mistake the import's own
-        // ordering exists to avoid.
-        for coin in inserted {
-            Task {
-                await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+        // Recorded, not started. Only coins that are provably attached get this
+        // far, but "attached" is not "stored": the caller's save has not run
+        // yet, and until it has, this vault may still be withdrawn.
+        // ``startTokenDiscovery()`` is where the work begins.
+        attachedCoins.append(
+            contentsOf: inserted.map {
+                AttachedCoin(vaultPubKeyECDSA: vault.pubKeyECDSA, coinID: $0.id)
             }
-        }
+        )
 
         return true
+    }
+
+    /// Starts discovering held tokens for the coins this service attached, and
+    /// forgets them so a second call cannot start the same work twice.
+    ///
+    /// Call it once the save that stores those coins has **succeeded**. It is
+    /// deliberately not started from ``setDefaultCoins(for:)``: discovery is
+    /// unstructured work that outlives the call, suspends on the network, and
+    /// then writes through `Storage.shared`. Started before the save, it can
+    /// come back and persist a vault whose save failed and which the caller has
+    /// already withdrawn — turning a refused keygen or a rolled-back import into
+    /// a stored one. A caller whose save threw simply never calls this.
+    ///
+    /// That leaves what can happen *after* a successful save — the user deletes
+    /// the vault, a rollback takes the coins back, the context is reset — which
+    /// is why nothing live is carried across the gap. Every coin is re-resolved
+    /// from the store immediately before its own discovery runs, and one that no
+    /// longer resolves, or is no longer this vault's, is skipped.
+    ///
+    /// - Returns: the task doing the work, so a caller that needs to observe it
+    ///   can wait. Production discards it.
+    @MainActor
+    @discardableResult
+    func startTokenDiscovery() -> Task<Void, Never> {
+        var seen: Set<AttachedCoin> = []
+        // A retried preparation records the same coin twice; discovery is
+        // idempotent but the round trip is not free.
+        let pending = attachedCoins.filter { seen.insert($0).inserted }
+        attachedCoins = []
+
+        return Task {
+            for attached in pending {
+                guard let (vault, coin) = stored(attached) else {
+                    Log.chain.service.info("Skipping token discovery: the coin is no longer stored against its vault")
+                    continue
+                }
+                await discoverTokens(coin, vault)
+            }
+        }
+    }
+
+    /// The vault and coin an ``AttachedCoin`` names, or `nil` if the store no
+    /// longer holds them related that way.
+    ///
+    /// The vault is fetched by its unique key rather than kept, and the coin is
+    /// looked up *through* the vault, so this answers existence and the
+    /// relationship in one step — which is the pair of facts discovery needs and
+    /// the pair the original failure lost.
+    @MainActor
+    private func stored(_ attached: AttachedCoin) -> (Vault, Coin)? {
+        let pubKeyECDSA = attached.vaultPubKeyECDSA
+        var descriptor = FetchDescriptor<Vault>(
+            predicate: #Predicate<Vault> { $0.pubKeyECDSA == pubKeyECDSA }
+        )
+        descriptor.fetchLimit = 1
+        guard let vault = try? context.fetch(descriptor).first,
+              let coin = vault.coins.first(where: { $0.id == attached.coinID }) else {
+            return nil
+        }
+        return (vault, coin)
     }
 
     func getDefaultChains(for vault: Vault) -> [Chain] {
