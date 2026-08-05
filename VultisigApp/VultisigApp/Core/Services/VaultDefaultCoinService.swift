@@ -18,8 +18,8 @@ class VaultDefaultCoinService {
         self.context = context
     }
 
-    /// - Returns: whether the vault holds every default coin this device could
-    ///   derive for it. See ``setDefaultCoins(for:)``.
+    /// - Returns: whether the vault holds a native coin for every default chain
+    ///   this device was asked to build. See ``setDefaultCoins(for:)``.
     @discardableResult
     func setDefaultCoinsOnce(vault: Vault) -> Bool {
         semaphore.wait()
@@ -29,10 +29,11 @@ class VaultDefaultCoinService {
         return setDefaultCoins(for: vault)
     }
 
-    /// - Returns: whether the vault holds every default coin this device could
-    ///   derive for it. `false` means the coins were built but did not attach,
-    ///   which the caller cannot see any other way: the rows are written, the
-    ///   save succeeds, and the vault opens with no chains in it.
+    /// - Returns: whether the vault holds a native coin for every default chain
+    ///   this device was asked to build. `false` means the vault will open with
+    ///   chains missing, which the caller cannot see any other way: the rows are
+    ///   written or not written, the save succeeds either way, and nothing later
+    ///   in the app rebuilds what this writes.
     ///
     ///   A vault this device can derive nothing for — a legacy key-import vault
     ///   with no `chainPublicKeys` — is `true`, not a failure. So is a vault
@@ -44,22 +45,50 @@ class VaultDefaultCoinService {
         guard vault.coins.isEmpty else { return true }
 
         let defaultChains = getDefaultChains(for: vault)
+        // Nothing to derive is not a failure to derive. A legacy key-import
+        // vault predates `chainPublicKeys` and carries none, so this device has
+        // nothing to build for it and nothing is missing. Every vault past this
+        // line is expected to come out holding coins, and an empty outcome for
+        // one of those is the failure this reports.
+        guard !defaultChains.isEmpty else { return true }
+
         let chains: [CoinMeta] = TokensStore.TokenSelectionAssets
                 .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
 
-        let coins = chains
-            .compactMap { c in
-                let pubKey = vault.chainPublicKeys.first { $0.chain == c.chain}?.publicKeyHex
-                let isDerived = pubKey != nil
-                return try? CoinFactory.create(
-                    asset: c,
-                    publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
-                    publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
-                    hexChainCode: vault.hexChainCode,
-                    isDerived: isDerived,
-                    publicKeyMLDSA44: vault.publicKeyMLDSA44
+        // What the vault has to come out holding, read off the chains asked for
+        // and never off what happened to build. Reading it off the successes is
+        // what let the original failure survive its own fix: a `CoinFactory`
+        // failure simply left the list, so the postcondition was checked against
+        // the survivors — and against none of them it holds vacuously, which
+        // means a vault with no chains in it at all passed as prepared.
+        let expectedChains = Set(chains.filter(\.isNativeToken).map(\.chain))
+        guard !expectedChains.isEmpty else {
+            Log.chain.service.error("No native asset to build for any default chain of \(vault.name, privacy: .public)")
+            return false
+        }
+
+        var coins: [Coin] = []
+        for asset in chains {
+            let pubKey = vault.chainPublicKeys.first { $0.chain == asset.chain }?.publicKeyHex
+            let isDerived = pubKey != nil
+            do {
+                coins.append(
+                    try CoinFactory.create(
+                        asset: asset,
+                        publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
+                        publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
+                        hexChainCode: vault.hexChainCode,
+                        isDerived: isDerived,
+                        publicKeyMLDSA44: vault.publicKeyMLDSA44
+                    )
                 )
+            } catch {
+                // Kept rather than dropped. A `try?` here is indistinguishable
+                // from a chain that was never asked for, and a chain that cannot
+                // be built is a chain the user will not have.
+                Log.chain.service.error("Could not build \(asset.ticker, privacy: .public) on \(asset.chain.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
             }
+        }
 
         let natives = coins.filter(\.isNativeToken)
         var inserted: [Coin] = []
@@ -85,8 +114,13 @@ class VaultDefaultCoinService {
         let previousDefiChains = vault.defiChains
         vault.defiChains = Array(Set(coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }))
 
-        let attached = Set(vault.coins.map(\.id))
-        guard natives.allSatisfy({ attached.contains($0.id) }) else {
+        let attachedIDs = Set(vault.coins.map(\.id))
+        let attachedChains = Set(vault.coins.filter(\.isNativeToken).map(\.chain))
+        // Two separate ways this pass can come up short, and neither is visible
+        // in the other. A coin that was built and did not attach; and a chain
+        // whose coin was never built at all.
+        guard natives.allSatisfy({ attachedIDs.contains($0.id) }),
+              expectedChains.isSubset(of: attachedChains) else {
             // All of it or none of it. A coin that did not attach is a row
             // belonging to no vault — invisible in the app and with nothing
             // left to find it by — and a vault left holding *some* of its coins
@@ -95,6 +129,10 @@ class VaultDefaultCoinService {
             // vault is exactly as it was found, which is the whole reason
             // running this again is safe.
             for coin in inserted {
+                // Detached from the coin's side before the delete, for the same
+                // reason it was attached from that side: the to-one write is the
+                // one that takes on a vault that has been through a `save()`.
+                coin.vault = nil
                 context.delete(coin)
             }
             vault.defiChains = previousDefiChains

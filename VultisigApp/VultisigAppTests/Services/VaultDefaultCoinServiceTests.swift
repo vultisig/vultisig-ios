@@ -128,6 +128,55 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
         XCTAssertTrue(vault.coins.isEmpty)
     }
 
+    // MARK: - A chain that could not be built
+
+    /// The half the first fix was blind to. `CoinFactory.create` throwing for
+    /// one chain used to leave that chain out of the list the postcondition was
+    /// then checked against — so a vault missing a chain reported itself fully
+    /// prepared, which is the symptom that was reported in the first place.
+    ///
+    /// One corrupt per-chain key is the narrowest way to say it: Bitcoin still
+    /// builds, Tron cannot, and what must not happen is a vault stored holding
+    /// only Bitcoin and called done.
+    func testAChainThatCouldNotBeBuiltIsReportedAsUnprepared() throws {
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        let usable = try XCTUnwrap(vault.chainPublicKeys.first).publicKeyHex
+        vault.chainPublicKeys = [
+            ChainPublicKey(chain: .bitcoin, publicKeyHex: usable, isEddsa: false),
+            ChainPublicKey(chain: .tron, publicKeyHex: "not-a-public-key", isEddsa: false)
+        ]
+        context.insert(vault)
+        try context.save()
+
+        XCTAssertFalse(makeService().setDefaultCoinsOnce(vault: vault), "a chain that could not be built is a chain the user will not have")
+        try context.save()
+
+        XCTAssertTrue(vault.coins.isEmpty, "a pass that came up short leaves the vault exactly as it was found")
+        XCTAssertEqual(try ModelContext(token.container).fetchCount(FetchDescriptor<Coin>()), 0)
+    }
+
+    /// And the degenerate case the same `allSatisfy` answered `true` for:
+    /// nothing built at all. An empty list satisfies every postcondition, so the
+    /// check passed at exactly the moment there was nothing to check.
+    func testAVaultNothingCouldBeBuiltForIsReportedAsUnprepared() throws {
+        let vault = Vault(
+            name: "Unusable keys",
+            signers: [],
+            pubKeyECDSA: "not-a-public-key",
+            pubKeyEdDSA: "not-a-public-key-either",
+            keyshares: [],
+            localPartyID: "party",
+            hexChainCode: "not-a-chain-code",
+            resharePrefix: nil,
+            libType: .DKLS
+        )
+        context.insert(vault)
+        try context.save()
+
+        XCTAssertFalse(makeService().setDefaultCoinsOnce(vault: vault), "no chains at all is the failure being reported, not a vacuous success")
+        XCTAssertTrue(vault.coins.isEmpty)
+    }
+
     // MARK: - Helpers
 
     private func makeService() -> VaultDefaultCoinService {

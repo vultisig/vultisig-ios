@@ -264,6 +264,33 @@ final class ProtectedVaultImporterTests: XCTestCase {
         }
     }
 
+    /// End to end, through the ordering that made the original failure silent.
+    /// The import stores the vault, prepares it, and the preparation comes up a
+    /// chain short — Bitcoin builds, Tron cannot. What must not reach disk is a
+    /// vault holding only the chains that did build: the second pass sees coins
+    /// on it, reads that as prepared, and never looks again.
+    func testAnImportWhoseCoinsCannotAllBeBuiltStoresNoneOfThem() throws {
+        TestStore.retain(token.container)
+        let sut = makeImporter(state: .disabled)
+        let vault = derivableVault()
+        let usable = try XCTUnwrap(vault.chainPublicKeys.first).publicKeyHex
+        vault.chainPublicKeys = [
+            ChainPublicKey(chain: .bitcoin, publicKeyHex: usable, isEddsa: false),
+            ChainPublicKey(chain: .tron, publicKeyHex: "not-a-public-key", isEddsa: false)
+        ]
+        var attempts = 0
+
+        try sut.commit([vault], into: context) { vault in
+            attempts += 1
+            return self.settingDefaultCoins(vault)
+        }
+
+        XCTAssertEqual(attempts, 2, "a preparation that came up short is retried once")
+        let fresh = ModelContext(token.container)
+        XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<Vault>()), 1, "the vault is stored and openable — this is not an import failure")
+        XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<Coin>()), 0, "no half-prepared vault, and no rows belonging to nobody")
+    }
+
     /// A preparation that did not take is not a silent success. It is retried,
     /// because it is idempotent by contract and the vault is new — and because
     /// nothing later in the app rebuilds what it writes.
