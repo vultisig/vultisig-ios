@@ -83,8 +83,66 @@ final class SendDetailsViewModel {
     // MARK: - Fee / gas (derived from interactor calls)
     var gas: BigInt = .zero
     var fee: BigInt = .zero
-    var estimatedGasLimit: BigInt? = nil
-    var customGasLimit: BigInt? = nil
+
+    /// A gas limit together with the asset it was sized for.
+    ///
+    /// Reads are asset-scoped, so a limit self-invalidates the moment the form
+    /// moves to another coin or chain and no view has to remember to clear it.
+    /// The key is `Coin.uniqueId` (chain + ticker + contract): it ignores the
+    /// address, which is right here because the vault is fixed for the life of
+    /// the form, and it is stable across `Coin` instances for the same asset.
+    private struct AssetScopedGasLimit {
+        private var limit: BigInt?
+        private var assetId: String?
+
+        func value(for coin: Coin) -> BigInt? {
+            guard let assetId, assetId == coin.uniqueId else { return nil }
+            return limit
+        }
+
+        mutating func set(_ newValue: BigInt?, for coin: Coin) {
+            limit = newValue
+            assetId = newValue == nil ? nil : coin.uniqueId
+        }
+    }
+
+    private var stampedEstimatedGasLimit = AssetScopedGasLimit()
+    private var stampedCustomGasLimit = AssetScopedGasLimit()
+
+    /// The limit the current fee was estimated against — the real
+    /// `eth_estimateGas` result, adopted whenever the user hasn't pinned one.
+    ///
+    /// Asset-scoped for the same reason as `customGasLimit`, and it has to be:
+    /// `gasLimit` falls back to it, `BlockChainService` treats the requested
+    /// limit as a *floor* rather than a suggestion, and the gas sheet is seeded
+    /// with `gasLimit` and re-pins whatever it displays on Save. A stale
+    /// estimate from another asset would therefore both inflate the reserved
+    /// amount and offer the user a foreign number to confirm — which is how a
+    /// pin scoped to one asset would come back on the next.
+    var estimatedGasLimit: BigInt? {
+        get { stampedEstimatedGasLimit.value(for: coin) }
+        set { stampedEstimatedGasLimit.set(newValue, for: coin) }
+    }
+
+    /// The user-pinned gas limit from the gas settings sheet.
+    ///
+    /// A gas limit prices the execution of one specific call, not a chain: a
+    /// native transfer is sized at 23,000 units where an ERC20 transfer is
+    /// sized at 120,000 (`defaultGasLimit` below already branches on exactly
+    /// that), and a token with transfer hooks costs more again. So the stamp is
+    /// the *asset*, not the chain — a limit pinned for ETH must not size a USDC
+    /// send on the same chain. Too low is the dangerous direction: the
+    /// transaction runs out of gas on-chain, which burns the fee and delivers
+    /// nothing.
+    ///
+    /// The coin picker writes `coin` directly and no view owns clearing this,
+    /// so the binding is enforced here rather than left to a caller to
+    /// remember: the limit is only visible while the form is still on the asset
+    /// it was sized for, and re-pinning re-stamps.
+    var customGasLimit: BigInt? {
+        get { stampedCustomGasLimit.value(for: coin) }
+        set { stampedCustomGasLimit.set(newValue, for: coin) }
+    }
 
     /// Backing storage for `customByteFee`, plus the chain it was pinned for.
     private var pinnedByteFee: BigInt? = nil
@@ -98,6 +156,11 @@ final class SendDetailsViewModel {
     /// view owns clearing this, so the binding is enforced here rather than left
     /// to a caller to remember: the rate is only visible while the form is still
     /// on the chain it was set for, and re-pinning re-stamps the chain.
+    ///
+    /// The chain is the whole identity for a rate: it is a property of that
+    /// chain's fee market and holds for every asset on it. `customGasLimit`
+    /// is deliberately stricter — it prices one specific call, so it is
+    /// stamped with the asset.
     var customByteFee: BigInt? {
         get {
             guard let pinnedByteFeeChain, pinnedByteFeeChain == coin.chain else { return nil }
