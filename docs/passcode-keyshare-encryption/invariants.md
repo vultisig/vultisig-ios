@@ -6,8 +6,15 @@ you are about to change something here, find it below first.
 
 ## Rule zero
 
-> A key share that cannot be opened is a vault that can never sign again. There
-> is no server copy. There is no support ticket that fixes it.
+> A key share that cannot be opened is one this device can never sign with
+> again. There is no server copy and no support ticket that fixes it — recovery
+> depends entirely on the user having a `.vult` backup, or on the vault's other
+> signers still reaching its threshold without this device.
+
+`Vault.getThreshold()` is `ceil(signers × 2/3) − 1`, so a share loss is not
+automatically fatal to the vault — but it is entirely outside this code's
+control whether it is. Treat "the share becomes unopenable" as unrecoverable
+here, because from inside `Core/Security/` it is.
 
 Every guard in `Core/Security/Keyshare/` is there to make a specific unopenable
 state unreachable. "This check looks redundant" is almost always the sound of a
@@ -126,8 +133,8 @@ explicitly, and the deliberate collapses all go through the conspicuously named
 | `unlockWithBiometrics`' wrapper read | `.storageFailure` | leave nothing to check the bound copy against |
 | `storeWrappedDataKey` read-back | **write failed** | record an unverified write as durable, then seal against it |
 | `deleteWrappedDataKey` read-back | **delete failed** | record a removal as done and never retry it |
-| reconciler: store occupancy | **defer the pass** | set a permanent marker on a guess, keeping a previous install's wrapper forever |
-| reconciler: inherited material | **defer the pass** | issue launch-time Keychain deletes on a first-ever install whose Keychain stuttered |
+| reconciler: store occupancy | **defer the clear**, marker unset (alignment still runs) | set a permanent marker on a guess, keeping a previous install's wrapper forever |
+| reconciler: inherited material | **defer the clear**, marker unset (alignment still runs) | issue launch-time Keychain deletes on a first-ever install whose Keychain stuttered |
 | reconciler: lock-mode alignment | **move nothing** | raise a gate with nothing behind it, or take a real gate down |
 | `PasscodeAttemptLimiter.loadState` | **no record** ← the one exception | put a permanent, undecayable lockout in front of a passcode the user knows |
 

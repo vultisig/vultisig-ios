@@ -13,8 +13,9 @@ cheap and the reason a 5-digit passcode is not the thing protecting the wallet.
            │  AES-GCM seals 32 bytes
            ▼
    ┌───────────────────────────────────────────┐
-   │  wrapped data key   ← the ONLY persisted   │  Keychain item
+   │  wrapped data key — 80 bytes               │  Keychain item, WhenUnlocked
    │  VLT\x02 ‖ salt ‖ nonce ‖ ct ‖ tag         │  (absent when no passcode)
+   │  4    +   16  +  12   + 32 + 16 = 80       │
    └───────────────────────────────────────────┘
            │
            │  unwrap on unlock; held in memory only
@@ -38,8 +39,9 @@ every blob has the same shape.
 
 Three separate reasons, all load-bearing:
 
-1. **Changing a passcode is O(1).** Rewrap 32 bytes, write one Keychain item,
-   done — **no key share is read or written**. The desktop client, which does
+1. **Changing a passcode is O(1).** Rewrap the 32-byte data key into one 80-byte
+   wrapper, write one Keychain item, done — **no key share is read or written**,
+   however many vaults the device holds. The desktop client, which does
    encrypt shares under the passcode directly, has to re-encrypt every share of
    every vault for the same user action, which means it puts key material
    through a rewrite on a routine settings change. `changePasscode` here is
@@ -47,27 +49,56 @@ Three separate reasons, all load-bearing:
    ciphertext on disk is byte-identical before and after. There is a test that
    asserts exactly that.
 
-2. **A 5-digit passcode is ~16.6 bits.** However it is stretched, an attacker
-   holding the Keychain blob can enumerate it. PBKDF2 at 600k iterations does
-   not make the wrap strong — it buys a per-guess cost on the *in-app* path,
-   which is what `PasscodeAttemptLimiter` is really enforcing. The thing
-   actually protecting a share is the 256-bit data key, which is random and
-   derived from nothing the user knows. If shares were sealed under a
-   passcode-derived key, share strength would be passcode strength.
+2. **The shares are never keyed by anything the user typed.** That is what makes
+   a passcode change, and later per-vault keys, possible without re-encrypting a
+   single share.
+
+   **It is not a strength multiplier, and this doc will not pretend otherwise.**
+   An attacker who gets the wrapper *and* the sealed shares out of the Keychain
+   can derive a candidate wrapping key from each of the 100,000 possible
+   passcodes offline, and the GCM tag tells them which one is right. So
+   **resistance to an offline attack is bounded by passcode entropy plus the
+   PBKDF2 cost — roughly 16.6 bits × 600k iterations — not by the data key's 256
+   bits.** The indirection buys structure, not entropy.
+
+   The two mitigations that actually apply are different from each other and are
+   worth keeping straight: PBKDF2 at 600k iterations sets the *per-guess cost* of
+   the offline search, and `PasscodeAttemptLimiter` throttles the *in-app* path,
+   which is a different attacker entirely. Getting to the offline attack at all
+   means first defeating the Keychain, where the wrapper is stored
+   `kSecAttrAccessibleWhenUnlocked` and is therefore unreadable while the device
+   is locked.
 
 3. **Future indirection is free.** Per-vault keys (decoy vaults, say) slot in
    under the data key without touching the passcode layer at all.
 
-## Why there is no unwrapped resting state
+## Where the data key can be found
 
-The Keychain holds the key **only** in passcode-wrapped form. It is in memory
-only while the app is unlocked (`KeyshareKeySession`), and `lock()` forgets it.
-Removing the passcode does not stash a clear key beside the shares — it opens
-every share back to plaintext and deletes the wrapper.
+Exactly three places, and the third is opt-in:
 
-That means there is no third place the key can be found, and no state in which a
-share is sealed but reachable without the passcode. An earlier design did keep a
-clear `keyshareDataKey` item; it is gone, and `PasscodeError.noDataKey` with it.
+| Where | Form | When |
+|---|---|---|
+| Keychain, the wrapper item | passcode-wrapped | whenever a passcode is set |
+| memory (`KeyshareKeySession`) | opened | only while the app is unlocked; `lock()` forgets it |
+| Keychain, the biometric item | **raw**, prefixed by `SHA256(wrapper)` | only if the user turned on the biometric shortcut |
+
+**The third one is a genuine exception and not an oversight.** A shortcut that
+opens the app without the passcode has to hold a key the passcode did not
+unwrap, so `BiometricUnlockStore` persists the data key *unwrapped* — behind
+`.biometryCurrentSet` and `kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly`, so
+reaching it takes a live biometric match on that device. Everything in
+[its section below](#the-biometric-copy) — binding it to the wrapper, destroying
+it when enrolment changes, removing it first in `disablePasscode` — exists
+because that copy is raw.
+
+So the accurate statement is: **there is no copy reachable without either the
+passcode or a biometric match**, and no state in which a sealed share is
+readable with neither. Removing the passcode does not stash a clear key beside
+the shares — it opens every share back to plaintext, removes the biometric copy,
+and deletes the wrapper.
+
+An earlier design did keep a general-purpose clear `keyshareDataKey` item usable
+with no authentication at all; it is gone, and `PasscodeError.noDataKey` with it.
 If you find a source describing one, you are reading a superseded document.
 
 ## Verification, and where it comes from

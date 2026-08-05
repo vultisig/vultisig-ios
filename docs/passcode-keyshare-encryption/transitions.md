@@ -8,7 +8,8 @@ crash here" column is the argument.
 
 Two of them are cheap and two are not:
 
-- `changePasscode` moves **32 bytes** and touches no key share at all.
+- `changePasscode` rewraps the 32-byte data key into **one 80-byte wrapper** and
+  touches no key share at all.
 - `setPasscode` and `disablePasscode` **cross the invariant**, so each rewrites
   every stored share. Both are transactional, both take the exclusive transition
   lease, and both are resumable.
@@ -39,16 +40,18 @@ Two of them are cheap and two are not:
 |---|---|---|
 | 1–4 | nothing written anywhere | none needed |
 | **5–7** | a leftover biometric copy has been deleted; nothing else written | none needed — that copy could never have opened anything |
-| **8** | wrapper durable, `mode` still `.deviceAuth`, all shares plaintext | launch reconciliation sees a present wrapper and restores `.passcode`; the next unlock's resume seals |
+| **8** | wrapper durable, `mode` still whatever it was (`.deviceAuth` **or** `.off` — this step has not touched it), all shares plaintext | launch reconciliation sees a present wrapper and restores `.passcode`; the next unlock's resume seals |
 | **9** | wrapper durable, gate up, all shares plaintext | unlock → resume seals everything |
-| **10–11**, or a sweep that simply *fails* | wrapper durable, gate up, shares **not yet sealed** — the *pending-passcode* state | unlock → resume seals them |
+| **10**, or anywhere inside 11 **before its save lands**, or a sweep that simply *fails* | wrapper durable, gate up, shares **still plaintext** — the *pending-passcode* state | unlock → resume seals them |
+| **11**, after its save returned | wrapper durable, gate up, **all shares sealed** — the finished state bar the throttle reset | none needed |
 | 12 | done | none |
 
-The sweep itself is not a partial-write hazard: `KeyshareSweeper` computes and
-verifies everything first and then commits **one** `context.save()`, so a crash
-inside it leaves the store exactly as row 9 describes rather than half rewritten.
-Pending-passcode is therefore "durable wrapper, gate up, sweep not applied", and
-resume is what applies it.
+The sweep itself is not a partial-write hazard, which is why those two rows have
+a hard edge between them rather than a gradient: `KeyshareSweeper` computes and
+verifies everything first and then commits **one** `context.save()`. Before that
+save the store is untouched; after it, every share is sealed. Pending-passcode is
+therefore exactly "durable wrapper, gate up, sweep not applied", and resume is
+what applies it.
 
 A genuinely **mixed** store — some shares sealed, some plaintext — is still
 reachable, just not from this path: a keygen commits a share sealed under the
@@ -230,7 +233,7 @@ there is no passcode".
  1  validate(new)
  2  dataKey = await unlock(with: current)            ← verification; throttled
  3  rewrapped = await keyStore.wrap(dataKey, new)
- 4  keyStore.storeWrappedDataKey(rewrapped)          ← 32 bytes; read-back verified
+ 4  keyStore.storeWrappedDataKey(rewrapped)          ← one 80-byte wrapper; read-back verified
  5  rebindTheBiometricCopy(to: rewrapped, dataKey:)
 ```
 
@@ -373,14 +376,18 @@ it skips entirely and leaves the container unmarked.
 
 Its three-valued reads exist for the same reason everything else here is
 three-valued. Store occupancy is `empty` / `occupied` / **`unknown`**, and
-`unknown` **defers the whole pass**: counting an unreadable store as occupied
+`unknown` **defers the inherited-material clear and leaves the marker unset**
+ — the lock-mode alignment below still runs, because a gate that disagrees with
+the wrapper has to be repaired whether or not the store could be read. Counting
+an unreadable store as occupied
 would set the permanent marker and retire the clear for good, so a genuinely new
 container whose store stuttered at launch would keep the previous install's
 wrapped data key forever — a passcode gate nobody can open and reinstalling
 cannot remove, which is the exact failure this type exists to prevent. Inherited
 key material is `nothing` / `something` / `unknown` on the same principle, and
-`unknown` defers rather than issuing deletes, because deletes on a first-ever
-install are a launch-time Keychain mutation the acceptance test forbids.
+`unknown` defers that clear rather than issuing deletes, because deletes on a
+first-ever install are a launch-time Keychain mutation the acceptance test
+forbids.
 
 `lastMigratedVersion` is deliberately **not** cleared. It is Keychain-held so it
 survives reinstalls, and clearing it would re-run every ordinary migration on a

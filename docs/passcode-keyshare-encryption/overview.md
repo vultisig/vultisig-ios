@@ -2,10 +2,12 @@
 
 **Read this before changing anything under `Core/Security/Keyshare/` or
 `Core/Security/Passcode/`.** That code holds key material. A mistake there is
-lost funds, not a bad screen: a key share that cannot be opened is a vault that
-can never sign again, and there is no server-side copy to restore from.
+lost funds, not a bad screen: a key share that cannot be opened is one this
+device can no longer sign with, and unless the user has a `.vult` backup or the
+vault's remaining signers still make a quorum, the vault is unspendable. There
+is no server-side copy to restore from.
 
-- [Key hierarchy](key-hierarchy.md) — what encrypts what, and why changing a passcode moves 32 bytes
+- [Key hierarchy](key-hierarchy.md) — what encrypts what, why changing a passcode rewrites one 80-byte wrapper and no shares, and what the indirection does *not* buy
 - [Concurrency and the write coordinator](concurrency-and-leases.md) — the three leases and the races each closes
 - [Transitions](transitions.md) — set / disable / change / resume, step by step, with what survives a crash at each step
 - [Invariants and traps](invariants.md) — the list of things that look like safe cleanups and are not
@@ -24,7 +26,14 @@ writes, reinstalls and app downgrades.
 ## The acceptance test
 
 > **A user who never sets a passcode must be byte-for-byte indistinguishable
-> from an app build without this feature.**
+> from an app build without this feature** — in key shares, exports, and
+> Keychain state.
+
+One deliberate exception, and it is the only one: `KeyshareInstallReconciler`
+writes a `keyshareInstallReconciled` flag to `UserDefaults`. The acceptance test
+does not speak about `UserDefaults`, and the flag has to live there precisely
+*because* it must vanish with the container — its absence is the only evidence
+that a container is new. Nothing else is written.
 
 Concretely, with no passcode set:
 
@@ -101,8 +110,8 @@ would be failing on too.
 
 Nothing. Not "an encrypted store with the key lying around" — nothing:
 
-- no data key exists in any form, wrapped or clear. There is no unwrapped
-  resting state of the key anywhere in the design;
+- no data key exists in any form — no wrapper, and no biometric copy either,
+  since that shortcut requires a passcode to exist first;
 - `KeyShare.sealed(...)` calls `KeyshareProtector.seal`, which returns the
   plaintext unchanged in `.disabled`. Keygen, reshare, key import and backup
   import all route through it, so every write is a passthrough;
@@ -110,11 +119,12 @@ Nothing. Not "an encrypted store with the key lying around" — nothing:
   passes plaintext through, so export is byte-identical;
 - `KeyshareInstallReconciler` reads three items and, finding none of them,
   issues **no Keychain mutation at all** — not even a no-op delete, which still
-  reaches `SecItemDelete` and still counts. Two of the three are tri-state and an
-  `.unavailable` read **defers the whole pass** to the next launch rather than
-  issuing deletes; the biometric copy has no tri-state to report, because
-  presence is checked without authentication, so a `false` there is as close to a
-  confirmed absence as that item gets;
+  reaches `SecItemDelete` and still counts. Two of the three are tri-state, and
+  an `.unavailable` read **defers the inherited-material clear** to the next
+  launch with the marker left unset, rather than issuing deletes — lock-mode
+  alignment still runs afterwards either way. The biometric copy has no tri-state
+  to report, because presence is checked without authentication, so a `false`
+  there is as close to a confirmed absence as that item gets;
 - the whole feature is additionally behind `PasscodeFeatureFlag`, off by default
   (`SettingsViewModel.passcodeFeatureEnabled`, toggled from Settings →
   Advanced), so the Settings entry does not appear at all unless the flag is on
@@ -160,17 +170,19 @@ them**, which is why deleting a caller's lease as "redundant" is a live way to
 break this. Exactly five files reach the coordinator:
 
 ```
-  KeyshareWriteCoordinator
-        ▲            ▲                    ▲
-   transition      write                episode
-        │            │                      │
-  PasscodeService    ├─ LocalStateAccessorImpl  ├─ KeygenViewModel
-    set/change/      │    (seal + append)       │    .startKeygen
-    disable          ├─ KeygenViewModel         └─ ProtectedVaultImporter
-  KeyshareInstall    │    .commitVault               .commit
-    Reconciler       └─ PasscodeService
-    .reconcile            unlockApp / unlockWithBiometrics
-                          enable/disableBiometricUnlock
+  transition (exclusive)      write                       episode
+  ──────────────────────      ─────                       ───────
+  PasscodeService             PasscodeService             KeygenViewModel
+    setPasscode                 unlockApp                   startKeygen
+    changePasscode              unlockWithBiometrics
+    disablePasscode             enableBiometricUnlock     ProtectedVaultImporter
+                                disableBiometricUnlock      commit
+  KeyshareInstallReconciler
+    reconcile                 LocalStateAccessorImpl
+                                saveLocalState
+
+                              KeygenViewModel
+                                commitVault
 ```
 
 So `sealAll` is safe because `setPasscode` holds a transition lease around it;

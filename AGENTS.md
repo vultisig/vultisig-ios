@@ -46,7 +46,7 @@ open VultisigApp/VultisigApp.xcodeproj
 
 - Never log key material or vault shares
 - TSS bindings — do not modify without review
-- `Core/Security/Keyshare/` and `Core/Security/Passcode/` hold key material at rest and the passcode that wraps it. A share that cannot be opened is a vault that can never sign again — read [docs/passcode-keyshare-encryption/](docs/passcode-keyshare-encryption/overview.md) before changing anything there, including "obvious" cleanups
+- `Core/Security/Keyshare/` and `Core/Security/Passcode/` hold key material at rest and the passcode that wraps it. A share that cannot be opened is one this device can never sign with again, recoverable only from a user's `.vult` backup or a quorum of the vault's other signers — read [docs/passcode-keyshare-encryption/](docs/passcode-keyshare-encryption/overview.md) before changing anything there, including "obvious" cleanups
 - Never commit `.env`, credentials, or secrets
 - Always test keygen and keysign flows after refactoring
 

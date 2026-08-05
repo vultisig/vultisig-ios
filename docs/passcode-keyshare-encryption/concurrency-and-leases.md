@@ -67,8 +67,21 @@ Three hazards, three lifetimes, three levels:
 | Lease | Taken by | Span | Prevents |
 |---|---|---|---|
 | `TransitionLease` | `setPasscode`, `changePasscode`, `disablePasscode`, `KeyshareInstallReconciler.reconcile` | one whole transition, claimed **before the first `await`** | two transitions interleaving across key derivation |
-| `WriteLease` (`withWriteLease` / `beginWrite`) | `LocalStateAccessorImpl.saveLocalState`, `KeygenViewModel.commitVault`, `unlockApp`, `unlockWithBiometrics`, `enableBiometricUnlock`, `disableBiometricUnlock` | one seal **and** its persistence | a value sealed under one state being stored under another |
+| `WriteLease` (`withWriteLease` / `beginWrite`) | see the per-caller table below | one span that a transition must not split | a transition landing in the middle of a multi-step write |
 | `EpisodeLease` | `KeygenViewModel.startKeygen`, `ProtectedVaultImporter.commit` | a whole keygen / reshare / import, start through commit **or** discard | a share produced before a transition and committed after it |
+
+**A write lease does not mean "one seal and its persistence".** That is only the
+`saveLocalState` case. What the lease actually guarantees is narrower and
+uniform: *no passcode transition begins or completes inside this span.* What the
+span contains differs per caller, and conflating them hides which invariant each
+one is buying:
+
+| Caller | What the span actually covers | What a transition splitting it would do |
+|---|---|---|
+| `LocalStateAccessorImpl.saveLocalState` | seal a share **and** append it to the in-memory array | seal under one protection state, persist under another |
+| `KeygenViewModel.commitVault` | insert **and** `save()` shares sealed earlier in the episode | commit shares the sweep never saw |
+| `PasscodeService.unlockApp` / `unlockWithBiometrics` | verify or biometric-match, adopt the key, **and** run the resume sweep | a disable deleting the wrapper mid-unlock, or a sweep racing a transition |
+| `enableBiometricUnlock` / `disableBiometricUnlock` | write or delete the biometric copy only — no share is touched | a copy created just after a disable removed it, i.e. the orphan the binding exists to catch |
 
 Exclusion matrix — this is the whole semantics:
 
