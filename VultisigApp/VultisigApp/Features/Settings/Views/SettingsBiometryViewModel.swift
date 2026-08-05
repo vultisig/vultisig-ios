@@ -33,7 +33,9 @@ final class SettingsBiometryViewModel: ObservableObject {
     }
 
     func resetHintData(vault: Vault) {
-        if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
+        // The hint is a convenience the user can retype, so an unreadable
+        // Keychain leaves the field exactly where a never-saved hint would.
+        if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA).valueTreatingUnavailableAsAbsent {
            self.hint = hint
            self.initialHint = hint
        }

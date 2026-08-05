@@ -64,7 +64,11 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA) else {
+        // Either way there is no password to encrypt with, and the export is
+        // abandoned rather than written unprotected — so an unreadable Keychain
+        // takes the same branch as an absent password.
+        let saved = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA)
+        guard let vaultPassword = saved.valueTreatingUnavailableAsAbsent else {
             logger.warning("Couldn't fetch password for vault")
             return nil
         }
