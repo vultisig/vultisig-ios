@@ -20,7 +20,7 @@ struct LockedFeatureSheet: View {
     private let footerRadius: CornerRadius = Theme.radius.xl
     /// Deliberately off the scale — mirrors `VultDiscountTierView`'s card, whose
     /// 20pt bottom is a Figma value the footer bar is drawn to sit under.
-    private let cardCornerRadius: CGFloat = 20
+    private let cardCornerRadius: CGFloat = 20 // swiftlint:disable:this no_raw_corner_radius
 
     init(
         feature: LockedFeature,

@@ -36,7 +36,7 @@ struct NotchedRectangle: Shape {
     /// Radius of the notch cavity: `SwapAssetsButton`'s outer radius (~19 — its
     /// 34pt label + 2pt padding) plus the intended 8pt moat between the button's
     /// stroke ring and the cutout, so the coupling to the button size is discoverable.
-    var notchRadius: CGFloat = 27
+    var notchRadius: CGFloat = 27 // swiftlint:disable:this no_raw_corner_radius
     /// How far below the bottom edge (into the inter-card gap) the notch circle's
     /// center sits. Set to half the gap between the two stacked cards so both
     /// cards' notches become caps of one circle centered on the toggle. `0` keeps

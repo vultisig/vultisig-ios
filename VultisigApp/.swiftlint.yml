@@ -37,9 +37,10 @@ analyzer_rules:
   - unused_import
 
 # Custom rules enforce repo conventions that standard SwiftLint rules can't.
-# These fire as warnings today so existing violations are visible but don't
-# block the build; Architecture 3.i flips them to `error` after the HTTPClient
-# migration is complete.
+# The two networking rules fire as warnings today so existing violations are
+# visible but don't block the build; Architecture 3.i flips *those two* to
+# `error` after the HTTPClient migration is complete. `no_raw_corner_radius`
+# is not part of that plan and stays a warning — its own reasoning is below.
 custom_rules:
   no_raw_urlsession:
     name: "Raw URLSession outside Core/Networking"
@@ -52,6 +53,60 @@ custom_rules:
     regex: '\bURLRequest\b'
     excluded: ".*/(Core/Networking|VultisigAppTests|VultisigAppUITests)/.*"
     message: "URLRequest construction should stay inside Core/Networking/. Define a TargetType and use HTTPClient instead."
+    severity: warning
+  # Keeps corner radii on the token scale. The regex is three alternatives, one
+  # per family the phase-3 census found — a raw number can bind to a corner in
+  # more shapes than `cornerRadius:`:
+  #
+  #   1. a binder taking the number directly — `cornerRadius:` / `.cornerRadius(`
+  #      / `layer?.cornerRadius =`; the per-corner `topLeadingRadius:` family;
+  #      `RectangleCornerRadii`'s `topLeading:` family, which names corners and
+  #      never says "radius" at all; and the platform rounded-rect APIs
+  #      `addRoundedRect(in:cornerWidth:cornerHeight:)`, already used in
+  #      `Core/Utils/QRCodeGenerator`, plus `NSBezierPath(roundedRect:xRadius:
+  #      yRadius:)`, which nothing uses yet — covered because this is an AppKit
+  #      target too and that is the AppKit spelling;
+  #   2. a `let`/`var …Radius` constant holding the number one hop from its use —
+  #      the form that hid six of the survivors below;
+  #   3. `cornerSize:` / `cornerRadii:` taking a `CGSize`, where the number is
+  #      inside the `CGSize` and usually on a later line. `\s*` spans newlines, so
+  #      this one matches across the wrap; it deliberately reads `width:` rather
+  #      than firing on the label alone, which would flag the three legitimate
+  #      `CGSize(width: Theme.radius.xl.points…)` sites.
+  #
+  # The three families share one tail — optional `-`, then a zero-valued-literal
+  # guard, then a digit — so the guard is written once. It skips every spelling
+  # of zero (`0`, `00`, `0_0`, `0.0`, `-0.0`, `0e0`, `0x0`, `0b0`, `0o0`), because
+  # a zero corner means "square this corner" (`UnevenRoundedRectangle(
+  # topLeadingRadius: 0, …)`) and there is no token for it — while `0.5`, `0_1`,
+  # `0x10`, `0b10000` and `1e1` are real radii and do fire.
+  # `start`/`end`/`blur`/`shadow`/`glow` prefixes are skipped in family 2, and
+  # families 1 and 3 name their labels explicitly, so `RadialGradient`'s
+  # `startRadius:`/`endRadius:`, `.blur(radius:)` and `.shadow(radius:)` — all
+  # non-corner uses of the word — never fire.
+  #
+  # Family 2 matches on the *name*, which is an approximation in both directions.
+  # It is deliberately not narrowed to names containing "corner": this tree uses
+  # `topRadius`, `footerRadius` and `arrowJunctionRadius` for real corners, and
+  # narrowing would go blind to all three. The cost is that a rounded *shape*
+  # radius that is not a corner — `NotchedRectangle.notchRadius`, a circular
+  # cavity — also fires and needs a directive. One directive on a documented site
+  # beats three silent gaps.
+  #
+  # Known blind spots, all needing the number to be legible where it is bound:
+  # a bare `let radius = N` (`radius` alone is the same word blur, shadow and
+  # gradients use, so matching it would cry wolf), a wrapped `cornerRadius:
+  # CGFloat(N)`, and a literal returned from a function
+  # (`radius(for:) -> CGFloat { case .small: 99 }`). The last is how the app's
+  # most-rendered radius stayed hidden through three phases: a regex can see the
+  # `99`, but nothing on that line says it is a corner, and only the call site
+  # does.
+  no_raw_corner_radius:
+    name: "Raw corner radius"
+    regex: '(?:\b(?:[A-Za-z]*[Cc]ornerRadius|(?:top|bottom)(?:Leading|Trailing)(?:Radius)?|corner(?:Width|Height)|[xy]Radius)\s*[:(=]|\b(?:let|var)\s+(?!(?:start|end|blur|shadow|glow)[A-Z])[a-z][A-Za-z]*Radius\s*(?::\s*CGFloat\s*)?=|\bcorner(?:Size|Radii):\s*CGSize\(\s*width:)\s*-?(?!(?:0[xX][0_]*(?:\.[0_]*)?(?:[pP][-+]?[0-9_]+)?|0[bB][0_]+|0[oO][0_]+|[0_]*(?:\.[0_]*)?(?:[eE][-+]?[0-9_]+)?)(?![0-9A-Za-z_.]))[0-9]'
+    excluded: ".*/(VultisigAppTests|VultisigAppUITests)/.*"
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field, string]
+    message: "Corner radii come from the scale: use Theme.radius.<xs|sm|md|lg|xl|pill> — .shape, .points, or .cornerRadius(_:) — so the radius and the corner style stay in one place. This rule only checks that a token is used; it cannot check that it is the RIGHT one. That is a judgement about the surface: a container takes xl, a surface nested inside one takes a smaller step, and only the call site shows which it is. If the literal is deliberate, keep it and add // swiftlint:disable:this no_raw_corner_radius next to the comment that says why."
     severity: warning
 
 reporter: "xcode"
