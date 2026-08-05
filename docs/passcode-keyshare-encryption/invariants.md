@@ -236,7 +236,7 @@ in passing without reading the tradeoff.
   another flow's pending work.** SwiftData has no scoped save. The alternatives
   are refusing the import whenever anyone has unsaved work — which the lease
   placement deliberately rejected — or nothing. The *failure* path does preserve
-  foreign work: `context.hasChanges` is sampled on entry, and a save failure
+  foreign work: `context.hasChanges` is sampled before anything is inserted, and a save failure
   rolls back only if the context was clean, otherwise it withdraws just the
   imported vaults one by one.
 

@@ -37,11 +37,25 @@ Two of them are cheap and two are not:
 
 | Crash after | Store state | Recovery |
 |---|---|---|
-| 1–7 | nothing written anywhere | none needed |
+| 1–4 | nothing written anywhere | none needed |
+| **5–7** | a leftover biometric copy has been deleted; nothing else written | none needed — that copy could never have opened anything |
 | **8** | wrapper durable, `mode` still `.deviceAuth`, all shares plaintext | launch reconciliation sees a present wrapper and restores `.passcode`; the next unlock's resume seals |
 | **9** | wrapper durable, gate up, all shares plaintext | unlock → resume seals everything |
-| **10–11 (mid-sweep)** | wrapper durable, gate up, **some shares sealed, some plaintext** — the *pending-passcode* state | unlock → resume seals the rest. A half-swept store still signs, because `open` passes plaintext through |
+| **10–11**, or a sweep that simply *fails* | wrapper durable, gate up, shares **not yet sealed** — the *pending-passcode* state | unlock → resume seals them |
 | 12 | done | none |
+
+The sweep itself is not a partial-write hazard: `KeyshareSweeper` computes and
+verifies everything first and then commits **one** `context.save()`, so a crash
+inside it leaves the store exactly as row 9 describes rather than half rewritten.
+Pending-passcode is therefore "durable wrapper, gate up, sweep not applied", and
+resume is what applies it.
+
+A genuinely **mixed** store — some shares sealed, some plaintext — is still
+reachable, just not from this path: a keygen commits a share sealed under the
+adopted key while resume has not yet run over the older plaintext ones, or an app
+downgrade writes a plaintext share into a sealed store. That store signs
+correctly regardless, because `open` passes a plaintext value through whatever
+the state, and the next unlock's resume closes it.
 
 There is no state in that table where a sealed share exists without a durable
 wrapper. That is the property the ordering buys.
@@ -76,10 +90,14 @@ The cost of moving it up is that a throw from `setPasscode` no longer means
 ### Why a failed sweep must NOT delete the wrapper
 
 An earlier revision said the failure path should clean up by deleting the
-wrapper. **That is unsafe.** Once sealing may have begun, deleting the wrapper
-strands whatever got sealed. The consoling argument — "a later `setPasscode`
-re-sweeps idempotently" — is false: a newly minted key **cannot open ciphertext
-produced by the discarded one**.
+wrapper. **That is unsafe**, and the reason is not that today's sweeper is
+sloppy — it is that the failure does not tell you whether anything was sealed.
+`KeyshareSweeper` as written is two-phase and rolls back, so a thrown `sealAll`
+happens to leave nothing sealed; that is a property of one implementation, not of
+the contract this ordering has to survive. And the consoling argument that made
+deletion look safe — "a later `setPasscode` re-sweeps idempotently" — is false
+either way: a newly minted key **cannot open ciphertext produced by the discarded
+one**.
 
 So the app stays in the pending-passcode state and resume completes it. Deleting
 the wrapper is only safe in the window where sealing has *provably* not started,
@@ -138,8 +156,10 @@ it would have been in had a passcode never been set.
 
 | Crash after | Store state | Recovery |
 |---|---|---|
-| 1–4 | unchanged; passcode fully working | none needed |
-| **5 (mid-unseal)** | wrapper present, mode `.passcode`, some shares plaintext | resume on the next unlock re-seals them; user presses disable again |
+| 1–2 | unchanged; passcode fully working | none needed |
+| **3–4** | passcode fully working, but the biometric shortcut is gone | none needed; the user re-enables it |
+| **5** (crash inside the unseal, or an unseal that fails) | wrapper present, mode `.passcode`, shares **still sealed** — the unseal is one `save()`, so it is all or nothing | nothing to repair; the passcode still works and the user presses disable again |
+| **5**, after its save landed | wrapper present, mode `.passcode`, all shares plaintext | resume on the next unlock re-seals them; user presses disable again |
 | **6** | wrapper present, mode `.deviceAuth`, all shares plaintext | reconciliation restores `.passcode`; resume re-seals; user presses disable again |
 | **7** | no wrapper, mode `.deviceAuth`, all shares plaintext | this is the finished state |
 | 8 | done | the key is only in memory; the process died, so it is gone |
@@ -298,9 +318,11 @@ over a session that is locked again.
 There is one more gap after that, in the UI: `lock()` can land between
 `unlockApp` returning and the overlay flag moving. `PasscodeService.isSessionUnlocked`
 is `nonisolated` precisely so no `await` can open a gap between asking and
-acting, and both `AppViewModel.markPasscodeUnlocked()` and
-`PasscodeViewModel.unlock()` check it immediately before the flag moves, with
-nothing in between.
+acting. `AppViewModel.markPasscodeUnlocked()` checks it immediately before the
+flag moves, with nothing in between. `PasscodeViewModel.unlock()` cannot do that
+— `perform` sets `didFinish` on success — so it re-checks the instant
+`unlockApp` returns and puts `didFinish` back to `false` if a lock landed,
+clearing the entry so the passcode can be retyped.
 
 ---
 
@@ -331,7 +353,8 @@ construction rather than by luck. A second pass is a no-op: the destructive half
 is marked once per container, and the alignment only writes when the two
 disagree.
 
-The reconciler takes the **transition lease** around its whole body. Without it,
+The reconciler takes the **transition lease** around everything it decides or
+writes; only the store-occupancy read that feeds it sits just outside. Without it,
 a launch landing between `setPasscode` verifying its wrapper and adopting the key
 would delete that wrapper *and mark the container done* — leaving the data key
 live in memory with nothing on disk that wraps it. If the lease cannot be taken
