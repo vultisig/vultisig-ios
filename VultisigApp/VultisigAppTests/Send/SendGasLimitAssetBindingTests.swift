@@ -178,4 +178,26 @@ final class SendGasLimitAssetBindingTests: XCTestCase {
                      "an ETH estimate must not be stamped onto the USDC the form has moved to")
         XCTAssertEqual(vm.gasLimit, BigInt(EVMHelper.defaultERC20TransferGasUnit))
     }
+
+    /// The refresh path carries the same guard. Nothing in the app calls it
+    /// today — it is reached only from here — so this test is what holds the
+    /// guard in place for whenever the form starts refreshing its fee again.
+    func testLoadGasInfoDropsAResultForAnAssetTheFormHasLeft() async {
+        let interactor = MockSendInteractor()
+        let vm = SendFormFixture.make(coin: SendFormFixture.makeETH(), interactor: interactor)
+        vm.amount = "0.1"
+        let usdc = SendFormFixture.makeUSDC()
+
+        interactor.calculateEVMFeeStub = { _ in
+            vm.coin = usdc
+            return SendInteractorFeeResult(fee: BigInt(1_000), gas: BigInt(7), gasLimit: BigInt(23_000))
+        }
+
+        await vm.loadGasInfo()
+
+        XCTAssertNil(vm.estimatedGasLimit)
+        XCTAssertEqual(vm.gas, .zero,
+                       "figures fetched for the asset the form has left must not be shown against the new one")
+        XCTAssertEqual(vm.fee, .zero)
+    }
 }
