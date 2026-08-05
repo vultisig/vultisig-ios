@@ -468,9 +468,9 @@ Check that explicitly; a test that passes both ways is documenting nothing.
 3. Ask what a crash immediately after your new statement leaves on disk, and
    which existing repair path finds it.
 4. If you touched ordering, re-read [the table above](#ordering-constraints--do-not-reorder-these).
-5. Run the full `VultisigAppTests/Security/` and `VultisigAppTests/Storage/`
-   suites, not a subset — plus
-   `VultisigAppTests/Services/VaultDefaultCoinServiceTests.swift` if you touched
-   what the import hands to `prepare:`.
+5. Run the full `VultisigApp/VultisigAppTests/Security/` and
+   `VultisigApp/VultisigAppTests/Storage/` suites, not a subset — plus
+   `VultisigApp/VultisigAppTests/Services/VaultDefaultCoinServiceTests.swift` if
+   you touched what the import hands to `prepare:`.
 6. If you added a `PasscodeError` case, follow the exhaustive switch the
    compiler points you at rather than defaulting it.
