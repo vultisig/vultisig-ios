@@ -113,6 +113,26 @@ final class SendValidationTests: XCTestCase {
         ))
     }
 
+    /// Past `Int64` — about 9.223 on an 18-decimal asset — reading the balance
+    /// through the shared decimal parser rounds it UP, so the guard compares
+    /// against funds the vault does not hold and waves through a send the chain
+    /// rejects at broadcast, after the signing ceremony has already run.
+    func testIsAmountExceededReadsABalanceBeyondInt64Exactly() {
+        // 99.999999999999999999 ETH — the lossy read rounds it to a flat 100.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "99999999999999999999")
+        XCTAssertEqual(eth.balanceRaw, BigInt("99999999999999999999")!)
+
+        XCTAssertTrue(SendCryptoLogic.isAmountExceeded(
+            coin: eth, amount: "100", sendMaxAmount: false,
+            fee: .zero, gas: .zero, isStakingOperation: false
+        ))
+        XCTAssertFalse(SendCryptoLogic.isAmountExceeded(
+            coin: eth, amount: "99", sendMaxAmount: false,
+            fee: .zero, gas: .zero, isStakingOperation: false
+        ))
+    }
+
     // MARK: - canBeReaped
 
     func testCanBeReapedFalseForChainWithoutExistentialDeposit() {
