@@ -14,6 +14,27 @@ import SwiftUI
 /// which is also `@ScaledMetric`'s default text style.
 private let swapAmountLineHeight: CGFloat = 30
 
+/// The part of the card's height that is pure chrome and never scales: the 16pt
+/// top and bottom padding plus the 16pt spacing between the header and the
+/// content row.
+private let swapCardChromeHeight: CGFloat = 48
+
+/// The rest of the card's 116pt height — the header row (16) plus the content row
+/// (52). Both are driven by text, so this is the part that has to grow with
+/// Dynamic Type; `swapCardChromeHeight + swapCardTextHeight == swapCardHeight` at
+/// the default text size.
+private let swapCardTextHeight: CGFloat = 68
+
+/// The card's Figma height at the default text size, and its floor.
+///
+/// Dynamic Type scales *down* below `.large` as well as up, but the two tallest
+/// things in the card are images that don't scale at all — the 36pt coin icon
+/// (48pt once padded) and the header's 16pt chain logo. So the card can never be
+/// usefully shorter than `48 chrome + 16 header + 48 content row = 112`, and
+/// letting the scaled height fall below that would push content out of the card at
+/// small text sizes exactly the way a fixed height did at large ones.
+private let swapCardHeight: CGFloat = 116
+
 /// The shared Sell/Buy (a.k.a. From/To) asset card used by BOTH swap forms — the
 /// Market form (`SwapFromToField`) and the Limit form (`LimitAssetRow`). Purely
 /// presentational (no view model): each form is a thin adapter that maps its own
@@ -80,6 +101,18 @@ struct SwapAssetCard<Focus: Hashable>: View {
     /// it. Reserving the font's own line box collapses all three to one height.
     @ScaledMetric private var amountLineHeight: CGFloat = swapAmountLineHeight
 
+    /// Text-driven share of the card height, scaled by the same Dynamic Type factor
+    /// as `amountLineHeight` and the fonts inside the card.
+    @ScaledMetric private var cardTextHeight: CGFloat = swapCardTextHeight
+
+    /// Card height: fixed chrome plus the text-driven part, floored at the Figma
+    /// height. So the card is exactly 116pt at the default text size, never shrinks
+    /// below it, and grows only as Dynamic Type grows. It stays constant for a given
+    /// text size — content length never moves it.
+    private var cardHeight: CGFloat {
+        max(swapCardHeight, swapCardChromeHeight + cardTextHeight)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
@@ -89,8 +122,10 @@ struct SwapAssetCard<Focus: Hashable>: View {
         // Fixed card height (Figma cards are 333×112; 116 is the smallest that fits
         // the Satoshi-22 amount + 36pt coin pill + 16 padding/spacing without
         // clipping — Sell needs 115, Buy 113). Constant regardless of content, with
-        // the content pinned top-leading (header row on top) like the Figma.
-        .frame(maxWidth: .infinity, minHeight: 116, maxHeight: 116, alignment: .topLeading)
+        // the content pinned top-leading (header row on top) like the Figma. The
+        // height has to follow Dynamic Type, though: the amount and fiat lines scale,
+        // and pinning the card to a fixed 116 while they grow pushes them out of it.
+        .frame(maxWidth: .infinity, minHeight: cardHeight, maxHeight: cardHeight, alignment: .topLeading)
         .background(
             NotchedRectangle(notchCenterInset: swapCardSpacing / 2)
                 .strokeBorder(Theme.colors.borderLight, lineWidth: 1)
