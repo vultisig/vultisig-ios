@@ -41,6 +41,12 @@ final class KeygenVaultCommitTests: XCTestCase {
     /// silently collapses to a single row while every assertion still passes.
     /// (`publicKeyMLDSA44` is unique too but stays `nil`, which does not
     /// collapse — a unique index treats NULLs as distinct.)
+    ///
+    /// Every share carries a `keyId`, which is not unique and does not collapse
+    /// anything — it is here because the MLDSA share carries one in production
+    /// and `DilithiumKeysign` builds its setup message from it, so a commit that
+    /// dropped the field would leave a quantum vault unable to sign. Leaving it
+    /// `nil` in every fixture would make that silent.
     private func makeVault(name: String, shares: [String] = []) -> Vault {
         Vault(
             name: name,
@@ -48,7 +54,11 @@ final class KeygenVaultCommitTests: XCTestCase {
             pubKeyECDSA: "02\(name.lowercased())ecdsa",
             pubKeyEdDSA: "ed\(name.lowercased())eddsa",
             keyshares: shares.enumerated().map { index, value in
-                KeyShare(pubkey: "\(name.lowercased())-share-\(index)", keyshare: value)
+                KeyShare(
+                    pubkey: "\(name.lowercased())-share-\(index)",
+                    keyshare: value,
+                    keyId: "\(name.lowercased())-keyid-\(index)"
+                )
             },
             localPartyID: "iPhone-Local",
             hexChainCode: "00",
@@ -152,12 +162,12 @@ final class KeygenVaultCommitTests: XCTestCase {
         XCTAssertEqual(try persistedVaultCount(), 1)
     }
 
-    // MARK: - The shares have to still be readable
+    // MARK: - The shares have to land on the side of the invariant the passcode is on
 
     /// The overwhelmingly common case: no passcode has ever been set, so the
-    /// shares are plaintext and `open` is a passthrough. This has to stay a
-    /// passthrough — a verification that rejected plaintext would break vault
-    /// creation for nearly every install.
+    /// shares are plaintext and both halves of the normalization are
+    /// passthroughs. This has to stay byte-identical — a commit that rewrote
+    /// plaintext would change what nearly every install stores.
     func testCommitVaultPersistsPlaintextSharesWhenNoPasscodeIsSet() throws {
         let vault = makeVault(name: "Treasury", shares: [firstShare, secondShare])
 
@@ -172,7 +182,13 @@ final class KeygenVaultCommitTests: XCTestCase {
     }
 
     /// A passcode is set and stayed set: the shares were sealed under the key
-    /// still in hand, so they commit, byte for byte as keygen produced them.
+    /// still in hand, so they commit and stay sealed.
+    ///
+    /// Not byte-identical, deliberately. Normalizing opens and re-seals, and
+    /// AES-GCM takes a fresh nonce per seal, so the stored ciphertext differs
+    /// from the one keygen held. What has to hold is that it is still sealed and
+    /// still opens to the same share — the invariant is about the *form* a value
+    /// is in, not about its bytes.
     func testCommitVaultPersistsSharesSealedUnderTheCurrentKey() throws {
         // Captured once: a closure that minted a key per call would hand the
         // commit a different key from the one that sealed.
@@ -187,7 +203,90 @@ final class KeygenVaultCommitTests: XCTestCase {
         try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
 
         XCTAssertEqual(try persistedVaultCount(), 1)
-        XCTAssertEqual(try persistedShares(), [sealed], "the commit must not rewrite the share")
+        let stored = try XCTUnwrap(persistedShares().first)
+        XCTAssertTrue(protector.isSealed(stored), "a passcode is set, so the stored share must be sealed")
+        XCTAssertEqual(try protector.open(stored), firstShare, "and must open to exactly what keygen produced")
+        XCTAssertNotEqual(
+            stored,
+            sealed,
+            "an already-sealed share still goes through the seal, so the nonce — and the bytes — must differ"
+        )
+    }
+
+    /// **The mirror regression.** The readability check the commit used to make
+    /// closed only one direction: plaintext *is* readable, so a passcode **set**
+    /// during the review sailed through it.
+    ///
+    /// Same broken lease as the disable case, run the other way. Keygen produced
+    /// plaintext shares because no passcode existed at the time; the user then
+    /// sets one, and the sweep seals every *stored* share while these sit in
+    /// memory where it cannot reach them. Committing them as they are writes
+    /// plaintext key material into a store with an active passcode — readable
+    /// while the app is locked, and left that way indefinitely, since the sweep
+    /// that would have sealed it has already run.
+    ///
+    /// Unlike the disable case this is repairable, so it is repaired rather than
+    /// refused: refusing would destroy a finished keygen — unrepeatable without
+    /// every co-signer back on the same screen — to prevent an exposure that
+    /// this very write is about to end.
+    func testCommitVaultSealsPlaintextSharesWhenThePasscodeWasSetDuringTheReview() throws {
+        // Keygen brackets the whole vault-creation episode, with no passcode in
+        // force, so the shares it produces are plaintext…
+        let episode = try XCTUnwrap(KeyshareWriteCoordinator.shared.beginEpisode())
+
+        var state: KeyshareProtectionState = .disabled
+        let protector = KeyshareProtector(state: { state })
+        let vault = makeVault(name: "Treasury", shares: [firstShare, secondShare])
+
+        // …but nothing guarantees the lease outlives the review screen.
+        KeyshareWriteCoordinator.shared.end(episode)
+
+        // With the episode gone the transition is allowed through: it mints a
+        // data key and seals every share it can find in the store. These are not
+        // in the store.
+        let key = SymmetricKey(size: .bits256)
+        let transition = try KeyshareWriteCoordinator.shared.beginTransition()
+        state = .unlocked(key)
+        KeyshareWriteCoordinator.shared.end(transition)
+
+        try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+
+        XCTAssertEqual(try persistedVaultCount(), 1)
+        let stored = try persistedShares()
+        XCTAssertEqual(stored.count, 2)
+        for share in stored {
+            XCTAssertTrue(
+                protector.isSealed(share),
+                "a passcode is set, so no share may reach the store in the clear"
+            )
+        }
+        XCTAssertEqual(
+            try stored.map { try protector.open($0) }.sorted(),
+            [firstShare, secondShare].sorted(),
+            "sealing must be reversible — the stored shares have to open back to what keygen produced"
+        )
+    }
+
+    /// Normalizing rewrites the vault the caller handed over, not a copy of it,
+    /// so the review screen is not left holding plaintext shares after the store
+    /// has been told they are sealed. And it carries the rest of the share
+    /// across — a `KeyShare` is rebuilt, not mutated, so a dropped field would
+    /// be silent.
+    func testCommitVaultRewritesTheVaultItWasHandedRatherThanACopy() throws {
+        let key = SymmetricKey(size: .bits256)
+        let protector = KeyshareProtector(state: { .unlocked(key) })
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+
+        try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+
+        let share = try XCTUnwrap(vault.keyshares.first)
+        XCTAssertTrue(protector.isSealed(share.keyshare), "the vault the caller still holds must not keep plaintext")
+        XCTAssertEqual(share.pubkey, "treasury-share-0", "normalizing must not lose the pubkey")
+        XCTAssertEqual(
+            share.keyId,
+            "treasury-keyid-0",
+            "nor the key identifier — an MLDSA share cannot be signed with without it"
+        )
     }
 
     /// **The regression.** The episode lease is retained on the view model and
@@ -302,6 +401,31 @@ final class KeygenVaultCommitTests: XCTestCase {
         XCTAssertEqual(try persistedVaultCount(), 0)
     }
 
+    /// Locked with *plaintext* shares in hand is the other half of the same
+    /// refusal, and the one normalizing introduces: the shares read back
+    /// perfectly — plaintext always does — but there is no key to seal them
+    /// with, so the only two options are to store key material in the clear
+    /// behind an active passcode or to refuse. It refuses, under its own error:
+    /// nothing is lost here, and the next unlock stores the vault correctly.
+    func testCommitVaultThrowsWhenPlaintextSharesCannotBeSealedWhileLocked() throws {
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: KeyshareProtector(state: { .locked })
+            )
+        ) { error in
+            XCTAssertEqual(error as? KeygenCommitError, .unsealableKeyshare(pubkey: "treasury-share-0"))
+        }
+        XCTAssertEqual(try persistedVaultCount(), 0, "plaintext must never reach a store with a passcode set")
+        XCTAssertFalse(
+            Storage.shared.modelContext.hasChanges,
+            "a refused commit must not leave a partial write in the context"
+        )
+    }
+
     /// The loop has to name the share that failed, not the first one it looked
     /// at — a vault carries a share per curve, and key import adds one per chain.
     func testTheRefusalNamesTheShareThatCouldNotBeOpened() throws {
@@ -344,20 +468,82 @@ final class KeygenVaultCommitTests: XCTestCase {
     /// The review screen renders `error.localizedDescription`. Without the
     /// `LocalizedError` conformance the user would be shown
     /// "(VultisigApp.KeygenCommitError error 0.)" for a dead vault.
-    func testTheRefusalIsReportedInWordsRatherThanAsAnNSError() {
-        let key = "keysharesUnreadableVaultNotSaved"
-        let error = KeygenCommitError.unreadableKeyshare(pubkey: "treasury-share-0")
+    func testEveryRefusalIsReportedInWordsRatherThanAsAnNSError() {
+        let cases: [(KeygenCommitError, String)] = [
+            (.unreadableKeyshare(pubkey: "treasury-share-0"), "keysharesUnreadableVaultNotSaved"),
+            (.unsealableKeyshare(pubkey: "treasury-share-0"), "keysharesUnsealableVaultNotSaved")
+        ]
 
-        // `.localized` hands back the key itself when the key is missing, so
-        // comparing against `key.localized` alone would pass over an untranslated
-        // build. This is what proves the copy actually exists.
-        XCTAssertNotEqual(key.localized, key, "the string must be present in the bundled locale")
+        for (error, key) in cases {
+            // `.localized` hands back the key itself when the key is missing, so
+            // comparing against `key.localized` alone would pass over an
+            // untranslated build. This is what proves the copy actually exists.
+            XCTAssertNotEqual(key.localized, key, "\(key) must be present in the bundled locale")
 
-        XCTAssertEqual(error.errorDescription, key.localized)
-        XCTAssertEqual(error.localizedDescription, key.localized)
-        XCTAssertFalse(
-            error.localizedDescription.contains("KeygenCommitError"),
-            "the alert must not fall back to the raw NSError form"
+            XCTAssertEqual(error.errorDescription, key.localized)
+            XCTAssertEqual(error.localizedDescription, key.localized)
+            XCTAssertFalse(
+                error.localizedDescription.contains("KeygenCommitError"),
+                "the alert must not fall back to the raw NSError form"
+            )
+        }
+    }
+
+    /// The seal is proved to open back before it is stored, and this is the
+    /// only way to exercise that: `AesGcmKeyshareCipher` either round-trips or
+    /// throws, so nothing built on the real cipher can reach the guard.
+    ///
+    /// Without the proof this commit stores ciphertext that opens to something
+    /// other than the share — a vault that looks complete and signs nothing,
+    /// which is the exact outcome the whole check exists to prevent, arrived at
+    /// from the other side.
+    func testCommitVaultThrowsWhenASealDoesNotOpenBackToWhatWentIn() throws {
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: SealThatDoesNotOpenBack()
+            )
+        ) { error in
+            XCTAssertEqual(error as? KeygenCommitError, .unsealableKeyshare(pubkey: "treasury-share-0"))
+        }
+        XCTAssertEqual(try persistedVaultCount(), 0, "a share that cannot be read back must not reach the store")
+    }
+
+    /// The two refusals exist because they describe different operations — one
+    /// share could not be read back, the other could not be protected — and
+    /// pointing both at "could not be read" would make the second one false.
+    /// It pins the copy, and only the copy.
+    func testTheTwoRefusalsDoNotSayTheSameThing() {
+        XCTAssertNotEqual(
+            KeygenCommitError.unreadableKeyshare(pubkey: "treasury-share-0").errorDescription,
+            KeygenCommitError.unsealableKeyshare(pubkey: "treasury-share-0").errorDescription
         )
+    }
+}
+
+/// A protector that seals to something `open` will not give back.
+///
+/// It exists because the production cipher cannot express this: AES-GCM either
+/// returns the plaintext it authenticated or throws, so the round-trip proof has
+/// no reachable failure on the real wiring — and an unreachable guard that is
+/// never exercised is an unverified one.
+private struct SealThatDoesNotOpenBack: KeyshareProtecting {
+
+    func isSealed(_ stored: String) -> Bool {
+        stored.hasPrefix("vlt2:")
+    }
+
+    func seal(_ plaintext: String) throws -> String {
+        isSealed(plaintext) ? plaintext : "vlt2:\(plaintext)"
+    }
+
+    func open(_ stored: String) throws -> String {
+        // Plaintext still passes through, so the share reaches the seal exactly
+        // as it would in production and only the proof is what fails.
+        guard isSealed(stored) else { return stored }
+        return "a different share entirely"
     }
 }

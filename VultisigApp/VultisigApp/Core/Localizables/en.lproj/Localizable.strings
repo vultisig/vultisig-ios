@@ -653,6 +653,7 @@
 "keygenInstructionsCar7Title" = "Feature Highlight";
 "keys" = "Keys";
 "keysharesUnreadableVaultNotSaved" = "This vault's key shares could not be read, so it was not saved. Unlock the app and try again — if this keeps happening, create the vault again.";
+"keysharesUnsealableVaultNotSaved" = "This vault's key shares could not be protected for storage, so it was not saved. Unlock the app and try again.";
 "keysign" = "Keysign";
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";

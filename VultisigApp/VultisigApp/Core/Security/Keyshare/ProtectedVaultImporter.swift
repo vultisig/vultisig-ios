@@ -42,6 +42,8 @@ enum ProtectedVaultImportError: Error, Equatable {
 /// 2. **Every share is normalized under the protection state at the moment it is
 ///    stored** — sealed if a passcode is set, plaintext if not — so an imported
 ///    vault lands on the same side of the invariant as everything already there.
+///    That is ``KeyshareNormalizer``'s job, shared with the keygen commit, which
+///    holds its shares across an interval with the same shape.
 /// 3. **The insert and its `save()` happen inside one episode lease.** Leaving
 ///    the insert to an autosave puts it outside any span a passcode transition
 ///    can be excluded from, which is exactly how a share ends up computed under
@@ -61,14 +63,14 @@ enum ProtectedVaultImportError: Error, Equatable {
 /// name it as a default argument.
 struct ProtectedVaultImporter {
 
-    private let protector: KeyshareProtecting
+    private let normalizer: KeyshareNormalizer
     private let coordinator: KeyshareWriteCoordinator
 
     init(
         protector: KeyshareProtecting = KeyshareProtector.shared,
         coordinator: KeyshareWriteCoordinator = .shared
     ) {
-        self.protector = protector
+        self.normalizer = KeyshareNormalizer(protector: protector)
         self.coordinator = coordinator
     }
 
@@ -80,9 +82,7 @@ struct ProtectedVaultImporter {
     /// commit re-checks everything it does here.
     @MainActor
     func validate(_ vault: Vault) throws {
-        for share in vault.keyshares where protector.isSealed(share.keyshare) {
-            _ = try openedShare(share.keyshare, pubkey: share.pubkey)
-        }
+        try statedAsAnImportFailure { try normalizer.verify(vault) }
     }
 
     /// Normalizes every share, inserts, and saves — all inside one episode lease.
@@ -114,7 +114,9 @@ struct ProtectedVaultImporter {
         }
         defer { coordinator.end(episode) }
 
-        let normalized = try vaults.map { try normalizedShares(of: $0) }
+        let normalized = try statedAsAnImportFailure {
+            try vaults.map { try normalizer.normalizedShares(of: $0) }
+        }
 
         // Whatever the context was already carrying decides how a failure is
         // undone below, and it has to be sampled before anything is inserted.
@@ -167,36 +169,29 @@ struct ProtectedVaultImporter {
         }
     }
 
+    /// Restates a normalization failure in the import's own terms.
+    ///
+    /// A share that does not open is the *file's* problem, and `unreadableShare`
+    /// names it. A share that cannot be sealed is the *session's* — `seal` fails
+    /// only when there is no key to seal with — and the raw
+    /// `KeyshareProtectionError` is what this surface has always raised for it,
+    /// so it passes through unchanged. Not because a call site renders it: they
+    /// all show a fixed "restore failed" string. Because the error a caller
+    /// catches is part of what the import promises, and this change is not the
+    /// place to renegotiate it.
     @MainActor
-    private func normalizedShares(of vault: Vault) throws -> [KeyShare] {
-        try vault.keyshares.map { share in
-            let plaintext = protector.isSealed(share.keyshare)
-                ? try openedShare(share.keyshare, pubkey: share.pubkey)
-                : share.keyshare
-
-            // A passthrough with no passcode set, which is what keeps an
-            // unprotected install byte-identical to one without this feature.
-            return KeyShare(
-                pubkey: share.pubkey,
-                keyshare: try protector.seal(plaintext),
-                keyId: share.keyId
-            )
-        }
-    }
-
-    private func openedShare(_ stored: String, pubkey: String) throws -> String {
-        let opened: String
+    private func statedAsAnImportFailure<T>(_ body: () throws -> T) throws -> T {
         do {
-            opened = try protector.open(stored)
-        } catch {
-            logger.error("An imported key share could not be opened: \(String(describing: error), privacy: .public)")
-            throw ProtectedVaultImportError.unreadableShare(pubkey: pubkey)
+            return try body()
+        } catch let failure as KeyshareNormalizationFailure {
+            switch failure {
+            case .unreadable(let pubkey):
+                logger.error("Vault import refused: key share \(pubkey, privacy: .public) could not be opened")
+                throw ProtectedVaultImportError.unreadableShare(pubkey: pubkey)
+            case .unsealable(let pubkey, let underlying):
+                logger.error("Vault import refused: key share \(pubkey, privacy: .public) could not be sealed")
+                throw underlying
+            }
         }
-
-        guard !protector.isSealed(opened) else {
-            logger.error("An imported key share opened to another sealed value; refusing to treat it as a share")
-            throw ProtectedVaultImportError.unreadableShare(pubkey: pubkey)
-        }
-        return opened
     }
 }

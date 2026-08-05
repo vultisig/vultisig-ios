@@ -653,6 +653,7 @@
 "keygenInstructionsCar7Title" = "功能亮点";
 "keys" = "密钥";
 "keysharesUnreadableVaultNotSaved" = "无法读取此保险库的密钥分片，因此未保存。请解锁应用后重试；若仍然失败，请重新创建保险库。";
+"keysharesUnsealableVaultNotSaved" = "无法为存储保护此保险库的密钥分片，因此未保存。请解锁应用后重试。";
 "keysign" = "密钥签名";
 "keysignDiscoveryDisclaimer" = "扫描二维码以签署交易";
 "keysignDiscoveryDisclaimerDevice" = "-需要设备扫描";

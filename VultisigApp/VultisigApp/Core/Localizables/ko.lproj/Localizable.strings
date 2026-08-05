@@ -653,6 +653,7 @@
 "keygenInstructionsCar7Title" = "기능 하이라이트";
 "keys" = "키";
 "keysharesUnreadableVaultNotSaved" = "이 볼트의 키 셰어를 읽을 수 없어 저장되지 않았습니다. 앱을 잠금 해제한 후 다시 시도하세요. 계속 실패하면 볼트를 다시 생성하세요.";
+"keysharesUnsealableVaultNotSaved" = "이 볼트의 키 셰어를 저장용으로 보호할 수 없어 저장되지 않았습니다. 앱을 잠금 해제한 후 다시 시도하세요.";
 "keysign" = "키사인";
 "keysignDiscoveryDisclaimer" = "QR 코드를 스캔하여 트랜잭션에 서명하세요. ";
 "keysignDiscoveryDisclaimerDevice" = "기기 스캔이 필요합니다.";

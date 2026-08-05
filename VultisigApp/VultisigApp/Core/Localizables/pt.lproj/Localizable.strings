@@ -653,6 +653,7 @@
 "keygenInstructionsCar7Title" = "Destaque de recursos";
 "keys" = "Chaves";
 "keysharesUnreadableVaultNotSaved" = "Não foi possível ler as key shares deste cofre, por isso não foi guardado. Desbloqueie a app e tente novamente; se continuar a falhar, crie o cofre de novo.";
+"keysharesUnsealableVaultNotSaved" = "Não foi possível proteger as key shares deste cofre para armazenamento, por isso não foi guardado. Desbloqueie a app e tente novamente.";
 "keysign" = "Assinatura de Chave";
 "keysignDiscoveryDisclaimer" = "Escaneie o código QR para assinar a transação.";
 "keysignDiscoveryDisclaimerDevice" = "-é necessário escanear o dispositivo.";
