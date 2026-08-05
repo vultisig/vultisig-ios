@@ -139,20 +139,44 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
     /// builds, Tron cannot, and what must not happen is a vault stored holding
     /// only Bitcoin and called done.
     func testAChainThatCouldNotBeBuiltIsReportedAsUnprepared() throws {
-        let vault = TestStore.makeDerivableVault(keyshare: share)
-        let usable = try XCTUnwrap(vault.chainPublicKeys.first).publicKeyHex
-        vault.chainPublicKeys = [
-            ChainPublicKey(chain: .bitcoin, publicKeyHex: usable, isEddsa: false),
-            ChainPublicKey(chain: .tron, publicKeyHex: "not-a-public-key", isEddsa: false)
-        ]
+        let vault = vaultWithOneChainItCannotBuild()
         context.insert(vault)
         try context.save()
 
         XCTAssertFalse(makeService().setDefaultCoinsOnce(vault: vault), "a chain that could not be built is a chain the user will not have")
         try context.save()
 
-        XCTAssertTrue(vault.coins.isEmpty, "a pass that came up short leaves the vault exactly as it was found")
-        XCTAssertEqual(try ModelContext(token.container).fetchCount(FetchDescriptor<Coin>()), 0)
+        XCTAssertEqual(
+            try storedChains(), [.bitcoin],
+            "the chain that could be built is kept — keygen ignores this answer, so undoing would cost it every chain it can derive"
+        )
+    }
+
+    /// The `coins.isEmpty` short-circuit used to answer `true` for a vault
+    /// holding any coin at all. That is what made the import's retry
+    /// meaningless: the first pass comes up a chain short, the second sees
+    /// coins on the vault and blesses it as prepared, and the reporting the
+    /// whole postcondition exists for reports nothing.
+    func testAVaultStillMissingAChainIsNotBlessedOnASecondRun() throws {
+        let vault = vaultWithOneChainItCannotBuild()
+        context.insert(vault)
+        try context.save()
+        XCTAssertFalse(makeService().setDefaultCoinsOnce(vault: vault))
+        try context.save()
+
+        XCTAssertFalse(makeService().setDefaultCoinsOnce(vault: vault), "still missing Tron, so still unprepared")
+        XCTAssertEqual(try storedChains(), [.bitcoin], "and a second run must not write a second Bitcoin beside the first")
+    }
+
+    /// The expectation is the chains the vault was asked for, so a default
+    /// chain the catalog carries no native asset for could never be satisfied.
+    /// Nothing else in the app states that correspondence, and the catalog is
+    /// edited far more often than this file is.
+    func testEveryBaseDefaultChainHasANativeAssetToBuild() {
+        let natives = Set(TokensStore.TokenSelectionAssets.filter(\.isNativeToken).map(\.chain))
+        for chain in makeService().baseDefaultChains {
+            XCTAssertTrue(natives.contains(chain), "\(chain.name) is a default chain with no native asset in the catalog")
+        }
     }
 
     /// And the degenerate case the same `allSatisfy` answered `true` for:
@@ -254,6 +278,18 @@ final class VaultDefaultCoinServiceTests: XCTestCase {
 
     private func makeService() -> VaultDefaultCoinService {
         VaultDefaultCoinService(context: context)
+    }
+
+    /// Bitcoin builds from a usable per-chain key; Tron cannot build at all.
+    /// Both resolve to `NoTokenDiscoverer`, so the fixture stays hermetic.
+    private func vaultWithOneChainItCannotBuild() -> Vault {
+        let vault = TestStore.makeDerivableVault(keyshare: share)
+        let usable = vault.chainPublicKeys.first?.publicKeyHex ?? ""
+        vault.chainPublicKeys = [
+            ChainPublicKey(chain: .bitcoin, publicKeyHex: usable, isEddsa: false),
+            ChainPublicKey(chain: .tron, publicKeyHex: "not-a-public-key", isEddsa: false)
+        ]
+        return vault
     }
 
     private func makeService(discoveringWith recorder: DiscoveryRecorder) -> VaultDefaultCoinService {

@@ -172,7 +172,7 @@ struct ProtectedVaultImporter {
             unprepared = vaultsLeftUnprepared(among: unprepared, by: prepare, in: context)
         }
         if !unprepared.isEmpty {
-            logger.error("Imported vaults were stored without their default coins: \(unprepared.count, privacy: .public) of \(vaults.count, privacy: .public) will open with no chains in them")
+            logger.error("Imported vaults were stored without their default coins: \(unprepared.count, privacy: .public) of \(vaults.count, privacy: .public) will open missing at least one of their default chains")
         }
     }
 

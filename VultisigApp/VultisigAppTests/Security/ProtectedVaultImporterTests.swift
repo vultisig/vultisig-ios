@@ -266,10 +266,12 @@ final class ProtectedVaultImporterTests: XCTestCase {
 
     /// End to end, through the ordering that made the original failure silent.
     /// The import stores the vault, prepares it, and the preparation comes up a
-    /// chain short — Bitcoin builds, Tron cannot. What must not reach disk is a
-    /// vault holding only the chains that did build: the second pass sees coins
-    /// on it, reads that as prepared, and never looks again.
-    func testAnImportWhoseCoinsCannotAllBeBuiltStoresNoneOfThem() throws {
+    /// chain short — Bitcoin builds, Tron cannot.
+    ///
+    /// What must not happen is the retry reading the Bitcoin coin as proof the
+    /// vault is prepared and reporting a clean import. It is retried once, it
+    /// still comes up short, and it is still reported as unprepared.
+    func testAnImportWhoseCoinsCannotAllBeBuiltIsStillReportedAsUnprepared() throws {
         TestStore.retain(token.container)
         let sut = makeImporter(state: .disabled)
         let vault = derivableVault()
@@ -285,10 +287,14 @@ final class ProtectedVaultImporterTests: XCTestCase {
             return self.settingDefaultCoins(vault)
         }
 
-        XCTAssertEqual(attempts, 2, "a preparation that came up short is retried once")
+        XCTAssertEqual(attempts, 2, "a preparation that came up short is retried once, and the retry does not bless it")
         let fresh = ModelContext(token.container)
         XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<Vault>()), 1, "the vault is stored and openable — this is not an import failure")
-        XCTAssertEqual(try fresh.fetchCount(FetchDescriptor<Coin>()), 0, "no half-prepared vault, and no rows belonging to nobody")
+        XCTAssertEqual(
+            try fresh.fetch(FetchDescriptor<Coin>()).map(\.chain), [.bitcoin],
+            "the chain that could be built is kept, exactly once, and belongs to the vault"
+        )
+        XCTAssertTrue(try fresh.fetch(FetchDescriptor<Coin>()).allSatisfy { $0.vault != nil })
     }
 
     /// A preparation that did not take is not a silent success. It is retried,

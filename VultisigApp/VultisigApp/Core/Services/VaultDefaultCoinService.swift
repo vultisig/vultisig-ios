@@ -41,8 +41,9 @@ class VaultDefaultCoinService {
         self.discoverTokens = discoverTokens
     }
 
-    /// - Returns: whether the vault holds a native coin for every default chain
-    ///   this device was asked to build. See ``setDefaultCoins(for:)``.
+    /// - Returns: whether the vault holds an attached native coin for every
+    ///   default chain this device was asked to build. See
+    ///   ``setDefaultCoins(for:)``.
     @discardableResult
     func setDefaultCoinsOnce(vault: Vault) -> Bool {
         semaphore.wait()
@@ -52,20 +53,18 @@ class VaultDefaultCoinService {
         return setDefaultCoins(for: vault)
     }
 
-    /// - Returns: whether the vault holds a native coin for every default chain
-    ///   this device was asked to build. `false` means the vault will open with
-    ///   chains missing, which the caller cannot see any other way: the rows are
-    ///   written or not written, the save succeeds either way, and nothing later
-    ///   in the app rebuilds what this writes.
+    /// - Returns: whether the vault holds an attached native coin for every
+    ///   default chain this device was asked to build. `false` means the vault
+    ///   will open missing at least one chain, which the caller cannot see any
+    ///   other way: the rows are written or not written, the save succeeds
+    ///   either way, and nothing later in the app rebuilds what this writes.
     ///
     ///   A vault this device can derive nothing for — a legacy key-import vault
-    ///   with no `chainPublicKeys` — is `true`, not a failure. So is a vault
-    ///   that already had coins.
+    ///   with no `chainPublicKeys` — is `true`, not a failure.
     @discardableResult
     func setDefaultCoins(for vault: Vault) -> Bool {
         // Add default coins when the vault doesn't have any coins in it
         Log.chain.service.info("set default chains to vault")
-        guard vault.coins.isEmpty else { return true }
 
         let defaultChains = getDefaultChains(for: vault)
         // Nothing to derive is not a failure to derive. A legacy key-import
@@ -75,20 +74,23 @@ class VaultDefaultCoinService {
         // one of those is the failure this reports.
         guard !defaultChains.isEmpty else { return true }
 
+        // What the vault has to come out holding: the chains it was asked for,
+        // never what happened to build. Reading the expectation off the
+        // successes is what let the original failure survive its own fix — a
+        // `CoinFactory` failure simply left the list, so the postcondition was
+        // checked against the survivors, and against none of them it holds
+        // vacuously. A vault with no chains in it at all passed as prepared.
+        let expectedChains = Set(defaultChains)
+
+        // Answered rather than assumed. A vault that already holds coins is not
+        // built again — but *whether it holds every chain it was asked for* is a
+        // question about the vault, not about this pass, and an unconditional
+        // `true` here is what blesses a half-prepared vault as done and makes
+        // the import's retry meaningless.
+        guard vault.coins.isEmpty else { return holdsANativeCoin(forEach: expectedChains, in: vault) }
+
         let chains: [CoinMeta] = TokensStore.TokenSelectionAssets
                 .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
-
-        // What the vault has to come out holding, read off the chains asked for
-        // and never off what happened to build. Reading it off the successes is
-        // what let the original failure survive its own fix: a `CoinFactory`
-        // failure simply left the list, so the postcondition was checked against
-        // the survivors — and against none of them it holds vacuously, which
-        // means a vault with no chains in it at all passed as prepared.
-        let expectedChains = Set(chains.filter(\.isNativeToken).map(\.chain))
-        guard !expectedChains.isEmpty else {
-            Log.chain.service.error("No native asset to build for any default chain of \(vault.name, privacy: .public)")
-            return false
-        }
 
         var coins: [Coin] = []
         for asset in chains {
@@ -138,19 +140,13 @@ class VaultDefaultCoinService {
         vault.defiChains = Array(Set(coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }))
 
         let attachedIDs = Set(vault.coins.map(\.id))
-        let attachedChains = Set(vault.coins.filter(\.isNativeToken).map(\.chain))
-        // Two separate ways this pass can come up short, and neither is visible
-        // in the other. A coin that was built and did not attach; and a chain
-        // whose coin was never built at all.
-        guard natives.allSatisfy({ attachedIDs.contains($0.id) }),
-              expectedChains.isSubset(of: attachedChains) else {
-            // All of it or none of it. A coin that did not attach is a row
-            // belonging to no vault — invisible in the app and with nothing
-            // left to find it by — and a vault left holding *some* of its coins
-            // is worse still: the `coins.isEmpty` guard above would read it as
-            // already prepared and never look again. Undone, `false` means the
-            // vault is exactly as it was found, which is the whole reason
-            // running this again is safe.
+        guard natives.allSatisfy({ attachedIDs.contains($0.id) }) else {
+            // The attachment failure, and only it, is all or nothing. A coin
+            // that was built and did not attach is a row belonging to no vault
+            // — invisible in the app, with nothing left to find it by, and
+            // `Coin.id` is not unique so a second pass writes another one
+            // beside it. Undone, the vault is exactly as it was found, which is
+            // what makes running this again safe.
             for coin in inserted {
                 // Detached from the coin's side before the delete, for the same
                 // reason it was attached from that side: the to-one write is the
@@ -172,7 +168,22 @@ class VaultDefaultCoinService {
             }
         )
 
-        return true
+        // A chain that could not be *built* is reported and not undone, and the
+        // difference from the case above is the whole reason they are separate.
+        // Nothing was written for it, so there is no orphan row to take back —
+        // and keygen ignores this answer, so undoing here would cost a vault
+        // with one bad key every chain it *could* derive, to report a chain it
+        // could not. Partial beats empty when nothing rebuilds either.
+        return holdsANativeCoin(forEach: expectedChains, in: vault)
+    }
+
+    /// Whether every one of `chains` has a native coin attached to the vault.
+    ///
+    /// Read from `vault.coins` rather than from anything this pass built, so it
+    /// answers the same question for a vault that arrived already holding coins
+    /// as for one this pass just filled.
+    private func holdsANativeCoin(forEach chains: Set<Chain>, in vault: Vault) -> Bool {
+        chains.isSubset(of: Set(vault.coins.filter(\.isNativeToken).map(\.chain)))
     }
 
     /// Starts discovering held tokens for the coins this service attached, and
