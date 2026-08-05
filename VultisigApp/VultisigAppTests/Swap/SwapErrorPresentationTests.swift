@@ -64,10 +64,11 @@ final class SwapErrorPresentationTests: XCTestCase {
 
     private var allCases: [SwapError] { CaseTag.allCases.map(sample) }
 
-    /// Every locale the app ships. `ko` is included deliberately: the repo's own
-    /// docs list seven, but Korean is a shipping localization, and a key added to
-    /// the other seven leaks a raw camelCase identifier to Korean users.
-    private static let shippedLocales = ["en", "de", "es", "hr", "it", "ko", "pt", "zh-Hans"]
+    /// Every localization actually included in the app bundle. Deriving this
+    /// list keeps new shipping locales covered without another manifest.
+    private static var shippedLocales: [String] {
+        Bundle.main.localizations.filter { $0 != "Base" }.sorted()
+    }
 
     /// Localized value for `key` in `bundle`, or `nil` when the key is missing.
     /// `"key".localized` echoes the key back on a miss, so asserting against it

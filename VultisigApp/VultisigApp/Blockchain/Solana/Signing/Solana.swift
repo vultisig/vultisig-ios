@@ -18,7 +18,7 @@ enum SolanaHelper {
     static let ataRentLamports: BigInt = 2_039_280
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard keysignPayload.coin.chain.ticker == "SOL" else {
+        guard keysignPayload.coin.chain == .solana else {
             throw HelperError.runtimeError("coin is not SOL")
         }
         guard case .Solana(let recentBlockHash, let priorityFee, let priorityLimit, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {

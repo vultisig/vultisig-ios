@@ -94,11 +94,14 @@ struct SendDetailsAmountTextField: View {
     var amountField: some View {
         SendCryptoAmountTextField(
             amount: $viewModel.amount,
-            onChange: { viewModel.convertToFiat(newValue: $0) },
+            onChange: { viewModel.onAmountFieldEdited($0) },
             onMaxPressed: { viewModel.setMaxAmount() }
         )
         .focused($focusedField, equals: .amount)
         .onChange(of: viewModel.coin) { _, _ in
+            // Not a user edit, but the amount now describes a different asset,
+            // so the max-send intent no longer applies to it — go through
+            // `convertToFiat` directly, which drops the flag.
             viewModel.convertToFiat(newValue: viewModel.amount)
         }
     }
@@ -124,7 +127,7 @@ struct SendDetailsAmountTextField: View {
     var textFiatField: some View {
         SendCryptoAmountTextField(
             amount: $viewModel.amountInFiat,
-            onChange: { viewModel.convertFiatToCoin(newValue: $0) }
+            onChange: { viewModel.onFiatAmountFieldEdited($0) }
         )
         .focused($focusedField, equals: .amountInFiat)
     }

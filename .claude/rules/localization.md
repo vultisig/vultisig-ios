@@ -7,22 +7,14 @@ paths:
 # Localization Rules
 
 - Never hardcode user-facing strings — use `"key".localized`
-- Add every new key to ALL 7 Localizable.strings files: en, de, es, hr, it, pt, zh-Hans
+- Add every new key to every locale listed in `VultisigApp/scripts/sort_localizable.py`'s `LOCALE_DIRS`; that list is the source of truth
 - Keys must be camelCase and in alphabetical order
-- Run `python3 VultisigApp/scripts/sort_localizable.py` after any changes (sorts all 7 files in-place)
-- Use `/localize` skill for the complete i18n workflow with translation examples
+- Run `python3 VultisigApp/scripts/sort_localizable.py` after any changes; it sorts every locale in `LOCALE_DIRS` in-place
+- Use `/localize` skill for the complete i18n workflow and terminology guidance
 
-## File Paths
+## Locale Source of Truth
 
-| Language | Path |
-|----------|------|
-| English | `VultisigApp/VultisigApp/Core/Localizables/en.lproj/Localizable.strings` |
-| German | `VultisigApp/VultisigApp/Core/Localizables/de.lproj/Localizable.strings` |
-| Spanish | `VultisigApp/VultisigApp/Core/Localizables/es.lproj/Localizable.strings` |
-| Croatian | `VultisigApp/VultisigApp/Core/Localizables/hr.lproj/Localizable.strings` |
-| Italian | `VultisigApp/VultisigApp/Core/Localizables/it.lproj/Localizable.strings` |
-| Portuguese | `VultisigApp/VultisigApp/Core/Localizables/pt.lproj/Localizable.strings` |
-| Chinese (Simplified) | `VultisigApp/VultisigApp/Core/Localizables/zh-Hans.lproj/Localizable.strings` |
+The authoritative locale set is `LOCALE_DIRS` in `VultisigApp/scripts/sort_localizable.py`. Each entry maps to `VultisigApp/VultisigApp/Core/Localizables/<locale>/Localizable.strings`.
 
 ## Common Patterns
 

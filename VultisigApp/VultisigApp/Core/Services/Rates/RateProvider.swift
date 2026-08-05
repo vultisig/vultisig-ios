@@ -39,7 +39,13 @@ final class RateProvider {
 
     static func cryptoId(for coin: CoinMeta) -> CryptoId {
         switch coin.chain.chainType {
-        case .EVM, .Solana, .Sui, .THORChain:
+        case .Sui:
+            if coin.isNativeToken || !coin.priceProviderId.isEmpty {
+                return .priceProvider(coin.priceProviderId)
+            } else {
+                return .contract(SuiCoinType.rateKey(coin.contractAddress))
+            }
+        case .EVM, .Solana, .THORChain:
             if coin.isNativeToken || !coin.priceProviderId.isEmpty {
                 return .priceProvider(coin.priceProviderId)
             } else {

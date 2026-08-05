@@ -85,11 +85,9 @@ enum SwapKitTronSigner {
         signatures: [String: TssKeysignResponse],
         pubKeyHex: String
     ) throws -> SignedTransactionResult {
-        guard let pubKeyData = Data(hexString: pubKeyHex),
-              let secp = PublicKey(data: pubKeyData, type: .secp256k1Extended) else {
+        guard let publicKey = try? TronHelper.uncompressedPublicKey(fromHex: pubKeyHex) else {
             throw SwapKitTronSignerError.invalidPublicKey(pubKeyHex)
         }
-        let publicKey = secp.uncompressed
 
         let parsed = try parsePayload(payload.txPayload)
         let rawDataBytes = parsed.rawDataBytes

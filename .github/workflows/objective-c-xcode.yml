@@ -102,6 +102,9 @@ jobs:
           # No authenticated git operations in this job — don't persist the token.
           persist-credentials: false
 
+      - name: Check localization key parity
+        run: python3 VultisigApp/scripts/compare_l.py
+
       - name: Install XcodeGen
         run: brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
 

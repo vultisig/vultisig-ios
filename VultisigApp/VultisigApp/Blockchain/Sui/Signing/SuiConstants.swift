@@ -79,6 +79,17 @@ enum SuiCoinType {
         return normalize(lhs) == normalize(rhs)
     }
 
+    /// A lowercase, case-preserving storage key for fiat rates. `Rate` IDs are
+    /// lowercased globally, while Move module and struct names are case-sensitive;
+    /// encoding the normalized UTF-8 bytes prevents distinct Sui types such as
+    /// `::coin::USDC` and `::coin::usdc` from sharing the same cached rate.
+    static func rateKey(_ coinType: String) -> String {
+        let encodedType = normalize(coinType).utf8
+            .map { String(format: "%02x", $0) }
+            .joined()
+        return "sui-\(encodedType)"
+    }
+
     /// The fully-qualified type a `Coin` record represents: its `contractAddress`
     /// for tokens, or the canonical native SUI type when the record is native
     /// (native SUI carries an empty `contractAddress`).

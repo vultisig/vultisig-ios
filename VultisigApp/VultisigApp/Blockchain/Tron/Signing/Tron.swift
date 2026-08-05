@@ -20,7 +20,7 @@ enum TronHelper {
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
-        guard keysignPayload.coin.chain.ticker == "TRX" else {
+        guard keysignPayload.coin.chain == .tron else {
             throw HelperError.runtimeError("coin is not TRX")
         }
 
@@ -393,15 +393,30 @@ enum TronHelper {
         return [preSigningOutput.dataHash.hexString]
     }
 
+    /// Tron addresses derive from the uncompressed (65-byte, `0x04`-prefixed)
+    /// secp256k1 key, but a peer device's `KeysignPayload.coin.hexPublicKey`
+    /// may legitimately carry the standard compressed (33-byte) form instead
+    /// — that's what every other chain stores, and other platforms' Tron
+    /// implementations aren't guaranteed to special-case it the way this
+    /// app's `CoinFactory` does. Accept either wire format rather than
+    /// rejecting a validly-signed cross-device transaction as "invalid".
+    static func uncompressedPublicKey(fromHex hex: String) throws -> PublicKey {
+        guard let data = Data(hexString: hex) else {
+            throw CoinFactory.Errors.invalidPublicKey(pubKey: hex)
+        }
+        if let extended = PublicKey(data: data, type: .secp256k1Extended) {
+            return extended.uncompressed
+        }
+        guard let compressed = PublicKey(data: data, type: .secp256k1) else {
+            throw CoinFactory.Errors.invalidPublicKey(pubKey: hex)
+        }
+        return compressed.uncompressed
+    }
+
     static func getSignedTransaction(
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
-        guard
-            let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey),
-            let secp256k1PubKey = PublicKey(data: pubKeyData, type: .secp256k1Extended) else {
-            throw CoinFactory.Errors.invalidPublicKey(pubKey: keysignPayload.coin.hexPublicKey)
-        }
-        let publicKey = secp256k1PubKey.uncompressed
+        let publicKey = try uncompressedPublicKey(fromHex: keysignPayload.coin.hexPublicKey)
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
         )

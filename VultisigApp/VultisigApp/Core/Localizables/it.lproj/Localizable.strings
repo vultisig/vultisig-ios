@@ -357,8 +357,6 @@
 "devicesOnSameInternet" = "Collega tutti i dispositivi a Internet\ncon l'app Vultisig aperta.";
 "devicesOnSameNetwork" = "Collega tutti i dispositivi alla stessa\nrete con l'app Vultisig aperta.";
 "devicesOnSameWifi" = "Mantieni i dispositivi sulla stessa rete con Vultisig aperto";
-"dilithiumAlreadyGeneratedSubtitle" = "Questo vault ha già una chiave post-quantistica MLDSA-44 generata. Non è richiesta alcuna ulteriore azione.";
-"dilithiumAlreadyGeneratedTitle" = "Chiave post-quantistica attiva";
 "dilithiumKeygen" = "Chiave post-quantistica";
 "dilithiumKeygenSubtitle" = "Genera la chiave MLDSA-44 per la resistenza ai computer quantistici";
 "directSign" = "Firma Diretta";
@@ -787,6 +785,7 @@
 "marketCap" = "Capitalizzazione";
 "marketCapRank" = "Posizione";
 "marketStats" = "Dati di mercato";
+"maxSendPlanChangedError" = "I tuoi fondi disponibili sono cambiati durante la verifica, quindi questa transazione non invierebbe più l'importo mostrato. Torna indietro e controlla l'importo aggiornato.";
 "maxSupply" = "Offerta massima";
 "maxTotalFee" = "Commissione totale max.";
 "memo" = "Memo";
@@ -1524,6 +1523,12 @@
 "useLocalMode" = "Usa la modalità locale";
 "usePassword" = "Usa password";
 "useStandardMode" = "Usa la modalità standard";
+"utxoPlanDustAmountError" = "Ciò che resterebbe al destinatario è sotto il limite di polvere della rete. Invia un importo maggiore oppure riduci la tariffa di rete in modo che resti di più da inviare.";
+"utxoPlanFailedError" = "Non è stato possibile preparare questa transazione (%@). Prova con un importo diverso oppure riduci la tariffa di rete.";
+"utxoPlanInsufficientFundsError" = "I tuoi output spendibili non coprono questo importo più la commissione di rete. Prova con un importo minore oppure riduci la tariffa di rete.";
+"utxoPlanInvalidUtxoError" = "Uno dei tuoi output di transazione non è spendibile in questo momento. Aggiorna il saldo e riprova.";
+"utxoPlanTransactionTooLargeError" = "Questa transazione richiede più input di quanti ne possa contenere una singola transazione. Invia un importo minore oppure consolida prima i tuoi output.";
+"utxoPlanZeroAmountError" = "Inserisci un importo maggiore di zero.";
 "utxoSelectionFailedError" = "Selezione UTXO fallita. Impossibile trovare output di transazione adatti per coprire l'importo più le commissioni stimate. Prova a ridurre l'importo della transazione.";
 "utxoTooSmallError" = "Gli UTXO disponibili sono troppo piccoli per questa transazione. Gli output di transazione individuali nel tuo portafoglio non soddisfano i requisiti minimi. Considera di consolidare prima gli importi più piccoli.";
 "validAddressDomainError" = "Indirizzo errato per la blockchain selezionata. Prova ad aggiungere la catena al tuo caveau.";
