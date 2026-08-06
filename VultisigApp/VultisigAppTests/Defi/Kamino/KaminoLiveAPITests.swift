@@ -154,6 +154,47 @@ final class KaminoLiveAPITests: XCTestCase {
         }
     }
 
+    /// The deposit half of the same defect, and the reason the suite's earlier
+    /// claim that "no test here simulates a deposit" was a gap worth closing:
+    /// the form advertised `minDepositAmount` and the program refused it with
+    /// `DepositAmountBelowMinimum` (custom 7026, `vault_operations.rs:113`).
+    /// Steakhouse refuses 100,007 base units and accepts 100,008; Allez refuses
+    /// 10,000,009 and accepts 10,000,010.
+    ///
+    /// This also covers the SOL vault's maximum, which `maxNativeDepositLamports`
+    /// measures by preparing a probe deposit of exactly this amount — a probe
+    /// below the program's floor made that whole measurement throw.
+    ///
+    /// Only the minimum is asserted. The probe owner's balance is not this
+    /// app's behaviour, so a failure that is *not* the minimum error is a skip.
+    func testTheMinimumDepositTheFormAdvertisesActuallyExecutes() async throws {
+        for descriptor in KaminoVaultRegistry.allowList {
+            let vault = try await service.fetchVaultInfo(descriptor: descriptor)
+
+            let built = try await service.buildDepositTransaction(
+                owner: Self.probeOwner,
+                vault: descriptor.address,
+                amount: vault.minDeposit
+            )
+            let result = try await solana.simulateTransaction(
+                base64Transaction: built,
+                replaceRecentBlockhash: true,
+                accountAddresses: []
+            )
+            guard let failure = result.failure else { continue }
+
+            let refusedTheAmount = result.logs.contains { $0.contains("DepositAmountBelowMinimum") }
+            XCTAssertFalse(
+                refusedTheAmount,
+                "\(vault.name): a deposit at the advertised minimum of \(vault.minDeposit.apiString) "
+                + "is below the program's floor — \(failure)"
+            )
+            if !refusedTheAmount {
+                note("SKIP \(vault.name): the probe wallet could not fund a minimum deposit — \(failure)")
+            }
+        }
+    }
+
     // MARK: - Withdraw
 
     /// The farm-staked withdraw — five instructions on a token vault, six on the

@@ -115,12 +115,23 @@ final class KaminoDepositViewModel: ObservableObject, Form {
     /// Deliberately narrow. A below-minimum or over-balance amount is NOT here:
     /// the user can fix it, the field says so, and disabling the button would
     /// remove the tap that reveals the error on an untouched form. What is here
-    /// are the three states no edit reaches — no wallet coin for this vault's
-    /// asset, a vault whose own minimum never loaded (without it there is no
-    /// gate at all, since the API builds a below-minimum deposit happily and the
-    /// chain rejects it after the ceremony), and nothing available to spend.
+    /// are the states no edit reaches — no wallet coin for this vault's asset, a
+    /// vault whose own minimum never loaded (without it there is no gate at all,
+    /// since the API builds a below-minimum deposit happily and the chain
+    /// rejects it after the ceremony), and a balance that cannot reach the
+    /// minimum however it is spent.
+    ///
+    /// That last one is a real band, not a theoretical one: a wallet holding
+    /// less than the vault's minimum has no typeable amount that satisfies both
+    /// validators, so leaving the button enabled means the only feedback is a
+    /// refusal after the tap. Compared in exact base units, because the ceiling
+    /// the build path enforces is `availableBaseUnits` and the `Decimal` beside
+    /// it is a rendering of that.
     var isDepositUnavailable: Bool {
-        isMissingDepositCoin || vaultInfo == nil || availableAmount <= 0
+        guard let vaultInfo else { return true }
+        return isMissingDepositCoin
+            || availableAmount <= 0
+            || availableBaseUnits < vaultInfo.minDeposit.baseUnits
     }
 
     /// Whether this vault's underlying token is wrapped SOL, which the deposit

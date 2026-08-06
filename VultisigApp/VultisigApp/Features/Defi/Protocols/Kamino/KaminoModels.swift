@@ -22,7 +22,10 @@ struct KaminoVaultStateResponse: Decodable {
         /// vault set the pairs include (6,6), (6,9), (8,8) and (9,9). Never
         /// assume they match.
         let sharesMintDecimals: Int
-        /// Base units of the **underlying token**.
+        /// Base units of the **underlying token**. Correctly denominated, unlike
+        /// `minWithdrawAmount` — but still not a figure the program accepts: a
+        /// deposit at exactly this amount is refused. Only
+        /// `KaminoService.effectiveMinimumDeposit` may read it.
         let minDepositAmount: String
         /// Base units of the **underlying token**, despite naming the unit the
         /// withdraw endpoint takes. Reading it as a share count is a silent
@@ -161,6 +164,11 @@ struct KaminoVaultInfo: Hashable, Identifiable {
     let descriptor: KaminoVaultDescriptor
     /// On-chain vault name (`"Steakhouse USDC"`).
     let name: String
+    /// The smallest deposit the form may offer.
+    ///
+    /// DERIVED: the published `minDepositAmount` plus a margin, because the
+    /// program refuses a deposit at exactly the published figure. See
+    /// `KaminoService.effectiveMinimumDeposit`.
     let minDeposit: KaminoTokenAmount
     /// The smallest withdraw the form may offer, in SHARE base units.
     ///

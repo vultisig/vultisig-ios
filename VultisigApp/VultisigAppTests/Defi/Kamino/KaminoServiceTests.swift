@@ -81,6 +81,35 @@ final class KaminoServiceTests: XCTestCase {
         XCTAssertLessThan(steakhouse.minWithdraw.baseUnits, 1_899 * 2, "more margin than the measurement justifies")
     }
 
+    /// The deposit side has the same symptom for a different reason: the
+    /// published figure is in the right unit, but the program refuses a deposit
+    /// *at* it. Measured at one base unit of resolution — Steakhouse refuses
+    /// 100,007 and accepts 100,008; Allez refuses 10,000,009 and accepts
+    /// 10,000,010 — so the shortfall is a handful of base units, not a factor.
+    ///
+    /// The margin must clear that and stay invisible in money.
+    func test_fetchVaultInfo_addsAMarginToTheDepositMinimum() async throws {
+        http.queueJSON(Fixtures.allezState, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+        let allez = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+
+        XCTAssertEqual(allez.minDeposit.baseUnits, 10_010_000)
+        XCTAssertGreaterThan(allez.minDeposit.baseUnits, 10_000_010, "below the measured Allez floor")
+
+        http.queueJSON(Fixtures.steakhouseState, for: .state)
+        http.queueJSON(Fixtures.steakhouseMetrics, for: .metrics)
+        let steakhouse = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        XCTAssertEqual(steakhouse.minDeposit.baseUnits, 100_100)
+        XCTAssertGreaterThan(steakhouse.minDeposit.baseUnits, 100_008, "below the measured Steakhouse floor")
+        // A tenth of a percent of a ten-cent minimum. If this ever reads as a
+        // material amount of money, the margin has grown past its justification.
+        XCTAssertLessThan(
+            steakhouse.minDeposit.baseUnits, BigInt(101_000),
+            "the margin should stay a rounding allowance, not a raised minimum"
+        )
+    }
+
     /// The rounding direction is a correctness property, not a preference: a
     /// share count worth fractionally less than the minimum is exactly the
     /// failure this whole derivation exists to prevent.
@@ -113,7 +142,9 @@ final class KaminoServiceTests: XCTestCase {
         // the two decimal scales match.
         XCTAssertEqual(info.tokenDecimals, 9)
         XCTAssertEqual(info.shareDecimals, 6)
-        XCTAssertEqual(info.minDeposit.apiString, "0.01")
+        // Published 0.01 plus a tenth of a percent: the chain refuses a deposit
+        // at exactly the published figure.
+        XCTAssertEqual(info.minDeposit.apiString, "0.01001")
         // NOT the published "1000" read as shares. That figure is a TOKEN amount
         // and the program's floor is above it — see
         // `test_fetchVaultInfo_derivesTheWithdrawMinimumFromTheTokenFigure`.
