@@ -39,9 +39,7 @@ struct SettingToggleCell: View {
     }
 
     var toggle: some View {
-        Toggle(isOn: $isEnabled) { EmptyView() }
-            .scaleEffect(0.8)
-            .frame(width: 48, height: 24)
+        VultiToggle(isOn: $isEnabled)
     }
 }
 
