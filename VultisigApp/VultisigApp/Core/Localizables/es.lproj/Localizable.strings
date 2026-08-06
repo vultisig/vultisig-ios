@@ -1581,6 +1581,7 @@
 "value" = "Valor";
 "vault" = "Caja Fuerte";
 "vaultAlreadyExists" = "El almacén ya existe";
+"vaultBackupExportFailed" = "No se pudo crear el archivo de copia de seguridad. Desbloquea la app e inténtalo de nuevo.";
 "vaultCreated" = "Bóveda creada";
 "vaultDetailsDescription" = "Ver los detalles de tu caja fuerte";
 "vaultDetailsTitle" = "Detalles";

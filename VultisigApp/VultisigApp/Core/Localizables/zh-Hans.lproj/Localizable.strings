@@ -1581,6 +1581,7 @@
 "value" = "价值";
 "vault" = "保险库";
 "vaultAlreadyExists" = "保险库已存在";
+"vaultBackupExportFailed" = "无法创建备份文件。请解锁应用后重试。";
 "vaultCreated" = "保险库已创建";
 "vaultDetailsDescription" = "查看保险库名称、部分和类型";
 "vaultDetailsTitle" = "详情";

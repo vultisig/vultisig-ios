@@ -18,7 +18,7 @@ Two of them are cheap and two are not:
 
 ## `setPasscode(_:)`
 
-```
+```text
  0  lease = coordinator.beginTransition()            → .busy if a write or episode is open
  1  generation = session.currentGeneration           ← FIRST instruction after the lease
  2  validate(passcode)
@@ -74,7 +74,7 @@ lived in memory. Unrecoverable.
 With `mode = .passcode` at the *end* (an earlier revision), a failed sweep left a
 durable wrapper while the mode stayed `.deviceAuth`. The consequence chain:
 
-```
+```text
   sweep fails
     → mode stays .deviceAuth
     → launch shows no passcode gate
@@ -149,7 +149,7 @@ One thing does not come back. `AppLockMode` has three cases, and this writes
 passcode lands on `.deviceAuth`, not back on `.off`. That is a `UserDefaults`
 preference they can change again, not key material.
 
-```
+```text
  0  lease = coordinator.beginTransition()
  1  wrappedBeforeVerification = loadWrappedDataKey().valueTreatingUnavailableAsAbsent
  2  await unlock(with: current)                      ← key in memory
@@ -228,7 +228,7 @@ there is no passcode".
 
 ## `changePasscode(current:new:)`
 
-```
+```text
  0  lease = coordinator.beginTransition()
  1  validate(new)
  2  dataKey = await unlock(with: current)            ← verification; throttled
@@ -342,7 +342,7 @@ acting. Three callers, three shapes, all of them making a lock win:
 
 ## Launch
 
-```
+```text
   ContentView.onLoad
         │
         ▼

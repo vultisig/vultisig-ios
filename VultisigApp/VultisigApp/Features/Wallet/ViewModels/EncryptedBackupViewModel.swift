@@ -69,7 +69,31 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: nil)
+        return await backupFileReportingFailure(backupType, encryptionPassword: nil)
+    }
+
+    /// One place for the three export entry points to fail in.
+    ///
+    /// They each used a bare `try?`, which was survivable while the only errors
+    /// were serialization ones. Reading a key share can now throw — the passcode
+    /// seals them, and a locked app cannot open them — so the export gained a
+    /// failure mode where the user taps the button and *nothing happens at all*:
+    /// no file, no alert, no log. The error is now reported, and the message says
+    /// the thing worth saying, which is that the app has to be unlocked.
+    private func backupFileReportingFailure(
+        _ backupType: VaultBackupType,
+        encryptionPassword: String?
+    ) async -> FileExporterModel<EncryptedDataFile>? {
+        do {
+            return try await createBackupFile(backupType, encryptionPassword: encryptionPassword)
+        } catch {
+            logger.error("Vault export failed: \(String(describing: error), privacy: .public)")
+            // The alert `VaultBackupContainerView` already presents, and it
+            // localizes the title itself — so this is the key, not the string.
+            alertTitle = "vaultBackupExportFailed"
+            showAlert = true
+            return nil
+        }
     }
 
     func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
@@ -82,11 +106,11 @@ class EncryptedBackupViewModel: ObservableObject {
             return nil
         }
 
-        return try? await createBackupFile(backupType, encryptionPassword: vaultPassword)
+        return await backupFileReportingFailure(backupType, encryptionPassword: vaultPassword)
     }
 
     func exportFileWithCustomPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: encryptionPassword)
+        return await backupFileReportingFailure(backupType, encryptionPassword: encryptionPassword)
     }
 
     func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {

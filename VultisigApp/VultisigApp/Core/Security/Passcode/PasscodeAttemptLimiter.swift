@@ -45,6 +45,12 @@ final class PasscodeAttemptLimiter: PasscodeAttemptLimiting {
     static let baseDelay: TimeInterval = 5
     static let maximumDelay: TimeInterval = 15 * 60
 
+    /// A failure count `delay(forFailureCount:)` always maps to the cap — its
+    /// doublings saturate at 16, so anything past that is the same answer.
+    /// Used when a corrupt record has to be replaced by the harshest *dated*
+    /// one rather than by a verdict that never expires.
+    private static let saturatedFailureCount = freeAttempts + 17
+
     private let keychain: KeychainService
     private let uptime: () -> TimeInterval
     private let lock = NSLock()
@@ -67,6 +73,30 @@ final class PasscodeAttemptLimiter: PasscodeAttemptLimiting {
         } catch {
             // Unreadable state fails closed: the alternative is that corrupting
             // one Keychain item removes the throttle entirely.
+            //
+            // **But it has to fail closed and still end.** `loadState` throws
+            // only for a corrupt or inconsistent blob — an unreadable Keychain
+            // is treated as absent — and the value returned here is not
+            // time-based, so on its own it never decayed. Nor could anything
+            // clear it: `recordSuccess` is the only writer, and `unlock` asks
+            // this question *before* it verifies a passcode, so the right
+            // passcode never got far enough to reset anything. The lockout was
+            // permanent, and the only escape was deleting the app — which for a
+            // passcode user deletes the sealed key shares along with it.
+            //
+            // Rebasing to a maximal but *dated* record keeps the whole
+            // punishment and gives it an end. Whoever corrupted the item still
+            // waits the full delay; the owner of the wallet is no longer locked
+            // out of it forever.
+            do {
+                try store(State(
+                    failureCount: Self.saturatedFailureCount,
+                    lastFailure: now,
+                    lastFailureUptime: uptime()
+                ))
+            } catch {
+                logger.error("Could not rebase an unreadable passcode attempt record")
+            }
             return Self.maximumDelay
         }
 

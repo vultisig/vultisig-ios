@@ -1581,6 +1581,7 @@
 "value" = "가치";
 "vault" = "볼트";
 "vaultAlreadyExists" = "볼트가 이미 존재합니다";
+"vaultBackupExportFailed" = "백업 파일을 만들지 못했습니다. 앱의 잠금을 해제한 후 다시 시도하세요.";
 "vaultCreated" = "볼트가 생성되었습니다";
 "vaultDetailsDescription" = "볼트 이름, 공유 및 유형 보기";
 "vaultDetailsTitle" = "세부 정보";

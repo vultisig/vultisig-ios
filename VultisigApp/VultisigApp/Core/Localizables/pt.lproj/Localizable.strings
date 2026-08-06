@@ -1581,6 +1581,7 @@
 "value" = "Valor";
 "vault" = "Cofre";
 "vaultAlreadyExists" = "O cofre já existe";
+"vaultBackupExportFailed" = "Não foi possível criar o ficheiro de cópia de segurança. Desbloqueie a app e tente novamente.";
 "vaultCreated" = "Cofre criado";
 "vaultDetailsDescription" = "Ver os detalhes do seu cofre";
 "vaultDetailsTitle" = "Detalhes";

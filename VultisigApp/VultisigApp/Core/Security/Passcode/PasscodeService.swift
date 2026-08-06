@@ -344,14 +344,20 @@ actor PasscodeService {
     /// every suspension point in this method.
     @discardableResult
     func unlockWithBiometrics(reason: String) async throws -> SymmetricKey {
+        // First statement, exactly as `setPasscode`, `changePasscode`,
+        // `disablePasscode` and `unlockApp` read it. `lock()` is `nonisolated`
+        // and synchronizes with nothing, so it can land while the in-flight flag
+        // and the lease are being claimed — and a generation read after that
+        // would not see it, leaving `adopt` free to succeed and quietly undo the
+        // lock. It was read below the lease here alone.
+        let generation = session.currentGeneration
+
         guard !isAppUnlockInFlight else { throw PasscodeError.busy }
         isAppUnlockInFlight = true
         defer { isAppUnlockInFlight = false }
 
         let lease = try beginUnlock()
         defer { coordinator.end(lease) }
-
-        let generation = session.currentGeneration
 
         let wrapped: Data
         switch keyStore.loadWrappedDataKey() {
@@ -423,6 +429,34 @@ actor PasscodeService {
                 throw PasscodeError.inconsistentState
             }
             throw PasscodeError.cancelledByLock
+        }
+    }
+
+    /// Puts back the biometric copy a disable removed before deciding it was not
+    /// going to finish.
+    ///
+    /// Best effort by construction, and it says so rather than throwing: the
+    /// caller is already on its way out with a more important error, and
+    /// replacing that error with this one would hide why the disable stopped.
+    /// Every failure to restore is logged, and the worst case is an optional
+    /// shortcut the user has to turn on again — never a share that cannot be
+    /// opened.
+    private func restoreBiometricCopyAfterAbort(
+        _ dataKey: SymmetricKey,
+        boundTo wrapped: Data?,
+        existed: Bool
+    ) {
+        guard existed else { return }
+
+        guard let wrapped else {
+            logger.error("A disable aborted after removing the biometric copy and the wrapper it was bound to is unreadable; the shortcut is off")
+            return
+        }
+
+        do {
+            try biometrics.enable(dataKey: dataKey, boundTo: wrapped)
+        } catch {
+            logger.error("Could not restore the biometric copy after an aborted disable: \(String(describing: error), privacy: .public)")
         }
     }
 
@@ -711,7 +745,7 @@ actor PasscodeService {
         // "plaintext shares behind a mode that says there is no passcode".
         let wrappedBeforeVerification = keyStore.loadWrappedDataKey().valueTreatingUnavailableAsAbsent
 
-        _ = try await unlock(with: current, now: now, anchoredTo: generation)
+        let dataKey = try await unlock(with: current, now: now, anchoredTo: generation)
 
         // The biometric copy goes first, before a single share moves. It holds
         // the same data key, so a survivor would quietly work again the next
@@ -722,6 +756,12 @@ actor PasscodeService {
         // Called directly rather than through `disableBiometricUnlock()`: this
         // already holds the transition lease, and that one takes a write lease
         // the transition excludes.
+        //
+        // Whether there was one is captured before it is taken away: restoring
+        // on an abort has to put back exactly what was there and nothing else,
+        // and re-adding unconditionally would hand the user a shortcut they
+        // never enabled.
+        let hadBiometricCopy = biometrics.isEnabled
         try biometrics.disable()
 
         let wrapped = wrappedBeforeVerification
@@ -740,6 +780,13 @@ actor PasscodeService {
         //
         // So: stop here, or see it through. There is no third option.
         guard session.currentGeneration == generation else {
+            // "Reversible by doing nothing" is true of everything above this
+            // line *except* the biometric copy, which has already been removed
+            // on the assumption this would go through. Stopping without putting
+            // it back turns the shortcut off silently: the passcode is still
+            // set, the disable reports a cancellation, and Face ID is simply
+            // gone with nothing said about it.
+            restoreBiometricCopyAfterAbort(dataKey, boundTo: wrapped, existed: hadBiometricCopy)
             throw PasscodeError.cancelledByLock
         }
 
@@ -750,7 +797,12 @@ actor PasscodeService {
         // wrapper is gone. Crossing without those bytes would leave a failed
         // removal with nothing to put back, and the reseal it needs is on the
         // wrong side of the door. Nothing has moved yet, so refuse.
-        guard let wrapped else { throw PasscodeError.storageFailure }
+        guard let wrapped else {
+            // Same door, same debt — and here it cannot be paid: the binding a
+            // restored copy needs is the wrapper these very bytes are missing.
+            restoreBiometricCopyAfterAbort(dataKey, boundTo: nil, existed: hadBiometricCopy)
+            throw PasscodeError.storageFailure
+        }
 
         // The GCM tag check inside every open is the verification: a share that
         // comes back out is provably recoverable, and the key is still in hand
@@ -883,9 +935,18 @@ actor PasscodeService {
         }
     }
 
+    /// Six ASCII digits, and `isASCII` is doing real work there.
+    ///
+    /// `Character.isNumber` is true of every Unicode numeric character — Arabic-
+    /// Indic and Devanagari digits, but also `½` and `Ⅷ`. The iOS keypad can
+    /// only emit `0`–`9`, so nothing typed there was ever affected; the macOS
+    /// field takes a hardware keyboard and a paste, so a passcode of six such
+    /// characters could be set on the Mac and then be literally unenterable on
+    /// the phone. It also quietly widened the space the attempt limiter's
+    /// arithmetic is written against.
     private func validate(_ passcode: String) throws {
         guard passcode.count == Self.passcodeLength,
-              passcode.allSatisfy(\.isNumber) else {
+              passcode.allSatisfy({ $0.isASCII && $0.isNumber }) else {
             throw PasscodeError.invalidLength
         }
     }

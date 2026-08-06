@@ -1581,6 +1581,7 @@
 "value" = "Valore";
 "vault" = "Cassaforte";
 "vaultAlreadyExists" = "Il caveau esiste già";
+"vaultBackupExportFailed" = "Non è stato possibile creare il file di backup. Sblocca l'app e riprova.";
 "vaultCreated" = "Vault creato";
 "vaultDetailsDescription" = "Visualizza i dettagli della tua cassaforte";
 "vaultDetailsTitle" = "Dettagli";

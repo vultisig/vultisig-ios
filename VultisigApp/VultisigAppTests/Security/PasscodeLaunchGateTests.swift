@@ -36,8 +36,11 @@ final class PasscodeLaunchGateTests: XCTestCase {
     private var keychain: MockKeychainService!
     private var passcodeService: PasscodeService!
 
+    private var borrowedDidAskForAuthentication: Bool?
+
     override func setUpWithError() throws {
         try super.setUpWithError()
+        borrowedDidAskForAuthentication = UserDefaults.standard.object(forKey: "didAskForAuthentication") as? Bool
         suiteName = "PasscodeLaunchGateTests.\(UUID().uuidString)"
         defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         lockService = AppLockService(defaults: defaults)
@@ -59,6 +62,16 @@ final class PasscodeLaunchGateTests: XCTestCase {
     }
 
     override func tearDown() {
+        // `didAskForAuthentication` is `@AppStorage`, so the tests above wrote it
+        // to the *standard* defaults rather than this suite's. Left there it
+        // leaks into whatever runs next on the same simulator.
+        if let borrowed = borrowedDidAskForAuthentication {
+            UserDefaults.standard.set(borrowed, forKey: "didAskForAuthentication")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "didAskForAuthentication")
+        }
+        borrowedDidAskForAuthentication = nil
+
         defaults.removePersistentDomain(forName: suiteName)
         passcodeService = nil
         keychain = nil

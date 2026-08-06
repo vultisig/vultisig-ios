@@ -162,7 +162,11 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testSetPasscodeRejectsAWrongLength() async throws {
-        for candidate in ["12345", "1234567", "abcdef", ""] {
+        // "\u{0661}\u{0662}\u{0663}\u{0664}\u{0665}\u{0666}" is six Arabic-Indic digits: the right *length*, and
+        // `Character.isNumber` is true of every one of them. The iOS keypad cannot
+        // produce it, so a passcode set this way on macOS could never be typed on
+        // the phone.
+        for candidate in ["12345", "1234567", "abcdef", "\u{0661}\u{0662}\u{0663}\u{0664}\u{0665}\u{0666}", ""] {
             do {
                 try await sut.setPasscode(candidate)
                 XCTFail("Expected .invalidLength for \(candidate)")
@@ -216,11 +220,11 @@ final class PasscodeServiceTests: XCTestCase {
 
         // Slipped in after the sealed-share guard has already run, so the sweep
         // is what fails rather than the precondition.
-        let hooked = HookedKeyshareKeyStore(wrapping: keyStore) { [context] in
+        let hooked = HookedKeyshareKeyStore(wrapping: keyStore, duringWrap: { [context] in
             let vault = try XCTUnwrap(try context?.fetch(FetchDescriptor<Vault>()).first)
             vault.keyshares = [KeyShare(pubkey: "vault-one-0", keyshare: foreign)]
             try context?.save()
-        }
+        })
 
         do {
             try await makeService(keyStore: hooked).setPasscode(passcode)
@@ -1503,7 +1507,11 @@ private final class HookedKeyshareKeyStore: KeyshareKeyStoring {
     private let duringUnwrap: @MainActor () async throws -> Void
     private var didLoad = false
 
-    /// `duringUnwrap` stays last so a trailing closure still lands on it.
+    /// Every hook is passed by label. A trailing closure here is ambiguous to
+    /// read — which of three function-typed parameters it lands on depends on
+    /// the backward scan and on whether the body happens to be throwing or
+    /// async — and a hook silently bound to the wrong phase is a test that
+    /// passes while exercising nothing.
     init(
         wrapping wrapped: KeyshareKeyStoring,
         duringWrap: @escaping @MainActor () throws -> Void = {},

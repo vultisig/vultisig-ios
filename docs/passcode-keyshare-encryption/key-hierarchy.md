@@ -3,7 +3,7 @@
 Two levels, and the separation between them is the reason changing a passcode is
 cheap and the reason a 6-digit passcode is not the thing protecting the wallet.
 
-```
+```text
    user types 6 digits
            │
            │  PBKDF2-SHA256, 600k iterations, 16-byte random salt

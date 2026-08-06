@@ -65,7 +65,7 @@ That was decided, not overlooked.
 `KeyshareProtectionState` (in `KeyshareProtector.swift`) has exactly three cases,
 and `KeyshareKeySession.currentState()` is the only thing that produces them:
 
-```
+```text
                         cached key in memory?
                                  │
                     ┌────────yes─┴─no────────┐
@@ -133,7 +133,7 @@ Nothing. Not "an encrypted store with the key lying around" — nothing:
 
 ## Who owns what
 
-```
+```text
  Storage                     Cryptography                 Policy / lifecycle
  ───────                     ────────────                 ──────────────────
  KeychainReadResult          VaultCryptoEnvelope          PasscodeService (actor)
@@ -169,7 +169,7 @@ above.** `KeyshareSweeper` and `KeyShare.sealed` contain no reference to
 them**, which is why deleting a caller's lease as "redundant" is a live way to
 break this. Exactly five files reach the coordinator:
 
-```
+```text
   transition (exclusive)      write                       episode
   ──────────────────────      ─────                       ───────
   PasscodeService             PasscodeService             KeygenViewModel

@@ -1581,6 +1581,7 @@
 "value" = "Value";
 "vault" = "Vault";
 "vaultAlreadyExists" = "Vault already exists";
+"vaultBackupExportFailed" = "Could not create the backup file. Unlock the app and try again.";
 "vaultCreated" = "Vault created";
 "vaultDetailsDescription" = "View vault name, part and type";
 "vaultDetailsTitle" = "Details";

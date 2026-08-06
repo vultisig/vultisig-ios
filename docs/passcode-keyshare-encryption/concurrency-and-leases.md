@@ -85,7 +85,7 @@ one is buying:
 
 Exclusion matrix — this is the whole semantics:
 
-```
+```text
                     can start while ...
                     transition   write     episode
                     held?        in flight? open?
@@ -176,7 +176,7 @@ them** (which is what makes them atomic inside the actor):
 
 ## Sequence: a TSS write versus a disable
 
-```
+```text
   TSS thread                  coordinator            main actor (disable)
   ──────────                  ───────────            ────────────────────
   withWriteLease {                                   beginTransition()

@@ -1581,6 +1581,7 @@
 "value" = "Wert";
 "vault" = "Tresor";
 "vaultAlreadyExists" = "Tresor existiert bereits";
+"vaultBackupExportFailed" = "Die Sicherungsdatei konnte nicht erstellt werden. Entsperren Sie die App und versuchen Sie es erneut.";
 "vaultCreated" = "Tresor erstellt";
 "vaultDetailsDescription" = "Details zu deinem Tresor ansehen";
 "vaultDetailsTitle" = "Tresor-Details";

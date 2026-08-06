@@ -69,7 +69,17 @@ final class PasscodeViewModel: ObservableObject {
     /// cancellation when the view goes away mid-attempt. A missed reveal is a
     /// lock screen with no keypad and no way in but a force quit.
     func beginUnlock(biometricReason: String) async {
-        defer { shouldPresentEntry = true }
+        // Revealed unless the shortcut opened the app. Revealing unconditionally
+        // put the keypad on screen for the frames between a successful match and
+        // the gate coming down — and the gate leaves on a fade, so it was a
+        // keypad appearing and dissolving: the same flash this was meant to
+        // remove, moved to the end.
+        //
+        // The `didFinish` case cannot strand anyone. It only becomes `true` when
+        // the session is genuinely unlocked, which takes the gate down; and if a
+        // lock overtakes that, the lock raised a *new* gate, and a new gate is a
+        // new screen with a new view model that runs this again.
+        defer { shouldPresentEntry = !didFinish }
 
         await refreshBiometricAvailability()
         guard isBiometricUnlockAvailable else { return }

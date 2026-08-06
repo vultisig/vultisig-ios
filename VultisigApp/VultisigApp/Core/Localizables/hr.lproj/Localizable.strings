@@ -1581,6 +1581,7 @@
 "value" = "Vrijednost";
 "vault" = "Sefovi";
 "vaultAlreadyExists" = "Spremište već postoji";
+"vaultBackupExportFailed" = "Datoteku sigurnosne kopije nije bilo moguće izraditi. Otključajte aplikaciju i pokušajte ponovno.";
 "vaultCreated" = "Trezor stvoren";
 "vaultDetailsDescription" = "Pogledajte detalje vašeg sefa";
 "vaultDetailsTitle" = "Detalji";

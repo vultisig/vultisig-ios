@@ -100,7 +100,17 @@ final class AppLockService {
 
         guard autoLockInterval != .immediate else { return true }
 
+        let elapsed = now.timeIntervalSince(backgroundedAt)
+
+        // A negative elapsed time means the recorded moment is in the future,
+        // which the clock only reaches by being moved backwards while the app
+        // was away. Read literally that is "no time has passed" and the app
+        // stays open — a lock anyone can defer indefinitely by changing the date
+        // is not a lock. Treat it as expired: the one thing known for certain is
+        // that the stored timestamp can no longer be measured against.
+        guard elapsed >= 0 else { return true }
+
         // Strictly greater, matching the behaviour this replaced.
-        return now.timeIntervalSince(backgroundedAt) > autoLockInterval.duration
+        return elapsed > autoLockInterval.duration
     }
 }

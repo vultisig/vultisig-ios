@@ -250,6 +250,7 @@ struct BiometricKeychain: BiometricKeychainProtecting {
 
         let query: [String: Any] = [
             String(kSecClass): String(kSecClassGenericPassword),
+            String(kSecUseDataProtectionKeychain): kCFBooleanTrue as Any,
             String(kSecAttrAccount): account,
             String(kSecValueData): data,
             String(kSecAttrAccessControl): access
@@ -309,6 +310,7 @@ struct BiometricKeychain: BiometricKeychainProtecting {
 
         let query: [String: Any] = [
             String(kSecClass): String(kSecClassGenericPassword),
+            String(kSecUseDataProtectionKeychain): kCFBooleanTrue as Any,
             String(kSecAttrAccount): account,
             String(kSecReturnData): kCFBooleanTrue as Any,
             String(kSecMatchLimit): String(kSecMatchLimitOne),
@@ -336,6 +338,7 @@ struct BiometricKeychain: BiometricKeychainProtecting {
     func delete(account: String) throws {
         let query: [String: Any] = [
             String(kSecClass): String(kSecClassGenericPassword),
+            String(kSecUseDataProtectionKeychain): kCFBooleanTrue as Any,
             String(kSecAttrAccount): account
         ]
         let status = SecItemDelete(query as CFDictionary)
@@ -370,6 +373,7 @@ struct BiometricKeychain: BiometricKeychainProtecting {
 
         let query: [String: Any] = [
             String(kSecClass): String(kSecClassGenericPassword),
+            String(kSecUseDataProtectionKeychain): kCFBooleanTrue as Any,
             String(kSecAttrAccount): account,
             String(kSecReturnAttributes): kCFBooleanTrue as Any,
             String(kSecMatchLimit): String(kSecMatchLimitOne),

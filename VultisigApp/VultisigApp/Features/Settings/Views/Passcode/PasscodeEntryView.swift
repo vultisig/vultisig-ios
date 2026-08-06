@@ -319,7 +319,11 @@ extension PasscodeEntryView {
         SecureField("passcodeEnterTitle".localized, text: Binding(
             get: { passcode },
             set: { newValue in
-                let digits = newValue.filter(\.isNumber)
+                // ASCII only, matching what the iOS keypad can produce and what
+                // `PasscodeService.validate` accepts. `isNumber` alone lets a
+                // paste put Arabic-Indic digits into a passcode that could then
+                // never be typed on the phone.
+                let digits = newValue.filter { $0.isASCII && $0.isNumber }
                 passcode = String(digits.prefix(PasscodeService.passcodeLength))
             }
         ))
