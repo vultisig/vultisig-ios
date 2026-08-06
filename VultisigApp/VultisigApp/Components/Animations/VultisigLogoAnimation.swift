@@ -35,12 +35,15 @@ struct VultisigLogoAnimation: View {
                 Image("vultisig-logo")
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 100, maxHeight: 100)
+                    .frame(maxWidth: 64, maxHeight: 64)
                 // The wordmark the animation ends on, so the static stand-in
                 // reads as the same screen rather than a cropped version of it.
-                // Not localized: it is the product's name, matching
-                // `QRShareSheetImage`.
-                Text("Vultisig")
+                //
+                // Through a key even though every locale holds the same value:
+                // the rule here is that no user-facing string is hardcoded, and
+                // a product name is not worth the exception — a locale that ever
+                // needs to transliterate it then has somewhere to do so.
+                Text("vultisigBrandName".localized)
                     .font(Theme.fonts.title2)
                     .foregroundStyle(Theme.colors.textPrimary)
             }

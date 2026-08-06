@@ -38,6 +38,13 @@ struct VultisigBrandScreen: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(PrimaryBackgroundWithGradient())
+        // Full-bleed here rather than at each call site, because "each call
+        // site" is how the last gap got in: the cover was written
+        // `CoverView().ignoresSafeArea()` and the lock screen's copy was not, so
+        // one centred the mark on the display and the other on the safe area —
+        // about twelve points apart, and visible as a hop the moment one
+        // replaced the other. Owning it means the two cannot disagree again.
+        .ignoresSafeArea()
         #if os(iOS)
         .toolbar(.hidden, for: .navigationBar)
         #endif

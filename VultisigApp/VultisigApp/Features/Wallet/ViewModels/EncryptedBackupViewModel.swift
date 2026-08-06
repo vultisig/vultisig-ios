@@ -72,6 +72,21 @@ class EncryptedBackupViewModel: ObservableObject {
         return await backupFileReportingFailure(backupType, encryptionPassword: nil)
     }
 
+    /// The two ways a backup can fail without throwing.
+    ///
+    /// Both were previously expressed as a `nil` return, which is how they got
+    /// lost: a `nil` reads as "nothing to export" at every call site, and no
+    /// call site could tell it apart from a refusal.
+    enum BackupError: Error {
+        /// A vault's file was not produced. Fatal to a *multi*-vault backup in
+        /// particular — the ZIP is assembled from whatever landed in the
+        /// directory, so skipping one quietly ships a backup that is missing a
+        /// vault and looks complete.
+        case vaultFileNotProduced(vaultName: String)
+        /// A file was produced but the exporter could not be built from it.
+        case exportFileNotProduced
+    }
+
     /// One place for the three export entry points to fail in.
     ///
     /// They each used a bare `try?`, which was survivable while the only errors
@@ -85,7 +100,16 @@ class EncryptedBackupViewModel: ObservableObject {
         encryptionPassword: String?
     ) async -> FileExporterModel<EncryptedDataFile>? {
         do {
-            return try await createBackupFile(backupType, encryptionPassword: encryptionPassword)
+            // `createBackupFile` reports some failures by returning `nil` rather
+            // than throwing, and those were falling straight through this
+            // handler back to a silent no-op — the exact shape being fixed here.
+            guard let exporter = try await createBackupFile(
+                backupType,
+                encryptionPassword: encryptionPassword
+            ) else {
+                throw BackupError.exportFileNotProduced
+            }
+            return exporter
         } catch {
             logger.error("Vault export failed: \(String(describing: error), privacy: .public)")
             // The alert `VaultBackupContainerView` already presents, and it
@@ -133,7 +157,17 @@ class EncryptedBackupViewModel: ObservableObject {
         }
 
         for vault in vaults {
-            _ = try await generateBackupFile(vault: vault, encryptionPassword: encryptionPassword, targetDirectory: tempDir)
+            // The result is checked rather than discarded. The ZIP below is
+            // built from whatever is in the directory, so a vault that failed to
+            // generate would simply not be in it — and the user would be handed
+            // a backup that opens, restores, and is missing a wallet.
+            guard try await generateBackupFile(
+                vault: vault,
+                encryptionPassword: encryptionPassword,
+                targetDirectory: tempDir
+            ) != nil else {
+                throw BackupError.vaultFileNotProduced(vaultName: vault.name)
+            }
         }
 
         let zipGenerator = ZipFileGenerator()

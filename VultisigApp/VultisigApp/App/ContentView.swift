@@ -97,7 +97,7 @@ struct ContentView: View {
                 handleDeeplink(incomingURL)
             }
         }
-        .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
+        .overlay(appViewModel.showCover ? CoverView() : nil)
         .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
         .onLoad {
             // The cold-start gate is not decided here. It is decided in
@@ -160,10 +160,13 @@ struct ContentView: View {
                 onUnlocked: { appViewModel.markPasscodeUnlocked() },
                 onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
             )
-            // No `.ignoresSafeArea()` here. `Screen` already paints its
-            // background full-bleed while keeping content inside the safe area;
-            // ignoring it at this level pushed the title under the Dynamic
-            // Island instead.
+            // No `.ignoresSafeArea()` here, and it has to stay that way: the
+            // keypad's `Screen` already paints its background full-bleed while
+            // keeping content inside the safe area, and ignoring it at this
+            // level pushed the title under the Dynamic Island. The screen's
+            // *other* half — the brand screen shown while biometrics are tried —
+            // ignores it internally, which is what makes that half line up with
+            // the privacy cover rather than sitting twelve points off it.
             //
             // **Asymmetric, and the insertion side is the point.** A lock that
             // fades in is a lock you can see through while it arrives: the
@@ -193,7 +196,7 @@ struct ContentView: View {
         case .createVault:
             router.vaultRouter.build(.createVault(showBackButton: false))
         case .none:
-            CoverView().ignoresSafeArea()
+            CoverView()
         }
     }
 

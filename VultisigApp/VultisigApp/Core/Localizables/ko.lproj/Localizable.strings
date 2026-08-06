@@ -1664,6 +1664,7 @@
 "vultDiscountTiersDescription" = "$VULT를 보유하여 더 낮은 거래 수수료를 잠금 해제하세요.";
 "vultiserverPassword" = "Vultiserver 비밀번호";
 "vultisig-referrals" = "Vultisig 추천";
+"vultisigBrandName" = "Vultisig";
 "vultisigCommunity" = "Vultisig 커뮤니티";
 "vultisigEducation" = "Vultisig 교육";
 "vultisigFee" = "Vultisig 수수료";

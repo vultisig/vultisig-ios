@@ -1664,6 +1664,7 @@
 "vultDiscountTiersDescription" = "Mantén $VULT para desbloquear comisiones de trading más bajas.";
 "vultiserverPassword" = "Contraseña de Vultiserver";
 "vultisig-referrals" = "Vultisig Referidos";
+"vultisigBrandName" = "Vultisig";
 "vultisigCommunity" = "Comunidad Vultisig";
 "vultisigEducation" = "Educación Vultisig";
 "vultisigFee" = "Comisión de Vultisig";
