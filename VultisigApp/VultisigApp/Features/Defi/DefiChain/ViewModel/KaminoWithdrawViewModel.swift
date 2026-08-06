@@ -6,8 +6,9 @@
 //
 //  Denominated in the vault's underlying asset, which is what the user thinks in
 //  and what the position card shows. The API is not: `POST /ktx/kvault/withdraw`
-//  takes SHARES, the inverse of deposit's units, and the vault's own
-//  `minWithdrawAmount` is in shares too. Every conversion between the two lives
+//  takes SHARES, the inverse of deposit's units. (Its published
+//  `minWithdrawAmount` is a token figure, though — see
+//  `KaminoVaultInfo.minWithdraw`.) Every conversion between the two lives
 //  in `KaminoWithdrawMath` so the gate, the maximum and the amount actually sent
 //  cannot disagree.
 //
@@ -122,13 +123,29 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
     /// The vault's minimum expressed in the asset the form is denominated in.
     /// `nil` until the vault and the position have both been read — the rate is
     /// needed to convert it at all.
+    ///
+    /// Capped at the form's own maximum when the position clears the minimum in
+    /// SHARES. The two conversions round in opposite directions on purpose — the
+    /// minimum away from the user, the maximum toward them — so a position
+    /// sitting within a base unit of the minimum can render a minimum one unit
+    /// above its own balance. Withdrawing is possible there (Max sends the exact
+    /// share balance, never a figure converted back out of the asset), so a
+    /// minimum above the maximum would be the display contradicting a button
+    /// that works. Where the position genuinely holds less than the minimum the
+    /// cap does not apply and the real figure stands, because that user needs to
+    /// see what they are short of.
     var minimumWithdraw: KaminoTokenAmount? {
         guard let vaultInfo else { return nil }
-        return KaminoWithdrawMath.minimumTokens(
+        guard let minimum = KaminoWithdrawMath.minimumTokens(
             minimumShares: vaultInfo.minWithdraw,
             tokensPerShare: vaultInfo.tokensPerShare,
             tokenDecimals: descriptor.tokenDecimals
-        )
+        ) else { return nil }
+
+        guard let held, held.maximum.baseUnits >= vaultInfo.minWithdraw.baseUnits,
+              let maximumTokens, maximumTokens.baseUnits < minimum.baseUnits
+        else { return minimum }
+        return maximumTokens
     }
 
     var minimumWithdrawText: String {

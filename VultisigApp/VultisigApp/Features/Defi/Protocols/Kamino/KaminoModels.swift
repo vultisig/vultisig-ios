@@ -24,8 +24,12 @@ struct KaminoVaultStateResponse: Decodable {
         let sharesMintDecimals: Int
         /// Base units of the **underlying token**.
         let minDepositAmount: String
-        /// Base units of **shares**, not of the token. A user-entered token
-        /// amount must be converted before it is compared against this.
+        /// Base units of the **underlying token**, despite naming the unit the
+        /// withdraw endpoint takes. Reading it as a share count is a silent
+        /// error on a dollar vault (the rate is near 1) and a ~930× one on the
+        /// SOL vault. It is also not the floor the program enforces — see
+        /// `KaminoService.effectiveMinimumWithdraw`, which is what the form
+        /// should use. Nothing but that derivation may read this field.
         let minWithdrawAmount: String
         /// Address lookup table the built transactions reference.
         let vaultLookupTable: String
@@ -158,6 +162,13 @@ struct KaminoVaultInfo: Hashable, Identifiable {
     /// On-chain vault name (`"Steakhouse USDC"`).
     let name: String
     let minDeposit: KaminoTokenAmount
+    /// The smallest withdraw the form may offer, in SHARE base units.
+    ///
+    /// DERIVED, not `state.minWithdrawAmount` read at face value: that field is
+    /// denominated in the underlying token and the program's own floor is higher
+    /// than it. `KaminoService.effectiveMinimumWithdraw` holds the measurements
+    /// and the reasoning. Because the derivation goes through `tokensPerShare`,
+    /// this figure moves with the rate, and it is hydrated in the same response.
     let minWithdraw: KaminoShareAmount
     /// The address lookup table the built transactions reference.
     ///

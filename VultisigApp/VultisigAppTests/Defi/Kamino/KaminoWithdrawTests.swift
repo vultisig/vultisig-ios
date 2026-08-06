@@ -192,10 +192,10 @@ final class KaminoWithdrawTests: XCTestCase {
 
     // MARK: - The share-denominated minimum
 
-    /// `minWithdrawAmount` is in SHARE base units. Rendering it in the asset has
-    /// to round UP, or the number on screen would convert back to fewer shares
-    /// than the vault accepts and the form would refuse its own advertised
-    /// minimum.
+    /// The vault's effective minimum is a SHARE count. Rendering it in the asset
+    /// has to round UP, or the number on screen would convert back to fewer
+    /// shares than the vault accepts and the form would refuse its own
+    /// advertised minimum.
     func testTheDisplayedMinimumConvertsBackToAtLeastTheMinimum() throws {
         let minimumShares = KaminoShareAmount(baseUnits: BigInt(1_000), decimals: 6)
 

@@ -260,11 +260,14 @@ final class KaminoLiveAPITests: XCTestCase {
         try XCTSkipIf(validated == 0, "no curated vault had a live holder — the withdraw shape went unchecked")
     }
 
-    /// ⚠️ **KNOWN TO FAIL — it is describing a defect, not asserting a passing
-    /// claim.** The withdraw form's minimum comes from `state.minWithdrawAmount`,
-    /// read as SHARE base units, and a withdraw at exactly that figure does not
-    /// execute: the kVaults program throws `WithdrawAmountBelowMinimum` (custom
-    /// 7004, `vault_operations.rs:325`).
+    /// The regression test for the defect this suite found on its first run, and
+    /// the only thing that can keep the fix honest: the floor it clears was
+    /// measured against the live chain, not derived from a document.
+    ///
+    /// The form used to offer `state.minWithdrawAmount` read as SHARE base
+    /// units. A withdraw at exactly that figure does not execute — the kVaults
+    /// program throws `WithdrawAmountBelowMinimum` (custom 7004,
+    /// `vault_operations.rs:325`).
     ///
     /// Measured 2026-08-06 by binary search over the live simulation, on both
     /// shapes (the farm-staked path and the short one, which share the boundary,
@@ -281,13 +284,16 @@ final class KaminoLiveAPITests: XCTestCase {
     /// 2000.9. So the published figure is not a share count at all, and the
     /// program's floor is not the published figure either.
     ///
-    /// Nothing is at risk: the preparer's post-injection simulation requires
-    /// `err == nil`, so an amount in the band between the two refuses before a
-    /// signer sees it. What breaks is the form — it advertises a minimum,
-    /// accepts it, and then fails at verify with a simulation error.
+    /// Nothing was ever at risk: the preparer's post-injection simulation
+    /// requires `err == nil`, so an amount in the band between the two refused
+    /// before a signer saw it. What broke was the form — it advertised a
+    /// minimum, accepted it, and then failed at verify with a simulation error.
     ///
-    /// This test goes green when the gate is corrected, and fails loudly if
-    /// Kamino moves the floor again. Do not delete it to make the suite pass.
+    /// `KaminoService.effectiveMinimumWithdraw` now derives the figure from the
+    /// published TOKEN amount with a margin above the observed ×2, so this
+    /// passes. It fails again if Kamino moves the floor, or if the margin is
+    /// ever trimmed to the measurement — which is the point of running it
+    /// against the chain rather than against the arithmetic.
     func testTheMinimumWithdrawTheFormAdvertisesActuallyExecutes() async throws {
         var checked = 0
         for descriptor in KaminoVaultRegistry.allowList {
