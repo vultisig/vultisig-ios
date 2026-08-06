@@ -20,6 +20,10 @@ protocol KeychainService: AnyObject {
     func setLastMigratedVersion(_ version: Int?)
     func getDeviceToken() -> KeychainReadResult<String>
     func setDeviceToken(_ token: String?)
+    func getWrappedKeyshareDataKey() -> KeychainReadResult<Data>
+    func setWrappedKeyshareDataKey(_ data: Data?)
+    func getPasscodeAttemptState() -> KeychainReadResult<Data>
+    func setPasscodeAttemptState(_ data: Data?)
 }
 
 final class DefaultKeychainService: KeychainService {
@@ -68,6 +72,36 @@ final class DefaultKeychainService: KeychainService {
     func setDeviceToken(_ token: String?) {
         keychain.setString(token, for: Keys.deviceToken)
     }
+
+    func getWrappedKeyshareDataKey() -> KeychainReadResult<Data> {
+        return keychain.getData(for: Keys.wrappedKeyshareDataKey)
+    }
+
+    /// Stored as `WhenUnlocked` rather than the app default `ThisDeviceOnly`:
+    /// a `ThisDeviceOnly` item never leaves the device, so restoring an encrypted
+    /// backup onto a new phone would bring the encrypted key shares across
+    /// without the key that opens them.
+    func setWrappedKeyshareDataKey(_ data: Data?) {
+        keychain.setData(
+            data,
+            for: Keys.wrappedKeyshareDataKey,
+            accessibility: kSecAttrAccessibleWhenUnlocked
+        )
+    }
+
+    func getPasscodeAttemptState() -> KeychainReadResult<Data> {
+        return keychain.getData(for: Keys.passcodeAttemptState)
+    }
+
+    /// Kept in the Keychain, not `UserDefaults`, so a lockout is not cleared by
+    /// deleting and reinstalling the app.
+    func setPasscodeAttemptState(_ data: Data?) {
+        keychain.setData(
+            data,
+            for: Keys.passcodeAttemptState,
+            accessibility: kSecAttrAccessibleWhenUnlocked
+        )
+    }
 }
 
 private extension DefaultKeychainService {
@@ -77,6 +111,8 @@ private extension DefaultKeychainService {
         case fastHint(pubKeyECDSA: String)
         case lastMigratedVersion
         case deviceToken
+        case wrappedKeyshareDataKey
+        case passcodeAttemptState
 
         var identifier: String {
             return "\(DefaultKeychainService.serviceName).\(key)"
@@ -92,6 +128,10 @@ private extension DefaultKeychainService {
                 return "lastMigratedVersion"
             case .deviceToken:
                 return "deviceToken"
+            case .wrappedKeyshareDataKey:
+                return "wrappedKeyshareDataKey"
+            case .passcodeAttemptState:
+                return "passcodeAttemptState"
             }
         }
     }

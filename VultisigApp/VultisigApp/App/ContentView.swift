@@ -28,6 +28,7 @@ struct ContentView: View {
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
+    @State private var pendingDeeplinks: [URL] = []
     @State private var dismissSplashTask: Task<Void, Never>?
 
     init(navigationRouter: NavigationRouter) {
@@ -79,6 +80,10 @@ struct ContentView: View {
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
+        .onChange(of: appViewModel.isPasscodeLocked) { _, isLocked in
+            guard !isLocked else { return }
+            drainPendingDeeplinks()
+        }
         .onReceive(
             NotificationCenter.default.publisher(
                 for: NSNotification.Name("HandlePushNotification")
@@ -92,8 +97,12 @@ struct ContentView: View {
                 handleDeeplink(incomingURL)
             }
         }
-        .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
+        .overlay(appViewModel.showCover ? CoverView() : nil)
+        .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
         .onLoad {
+            // The cold-start gate is not decided here. It is decided in
+            // `VultisigApp.init()`, because this modifier runs *after* the
+            // splash child's `onAppear` has already taken the splash down.
             pushNotificationManager.hadVaultsOnStartup = !vaults.isEmpty
 
             if vaults.isEmpty {
@@ -132,6 +141,47 @@ struct ContentView: View {
         .withForegroundNotificationBanner()
     }
 
+    /// Covers the app while the passcode lock is engaged. An overlay rather than
+    /// a navigation destination, so no route, deeplink or restored screen can
+    /// appear instead of it.
+    ///
+    /// Known limitation: SwiftUI presents sheets and full-screen covers in a
+    /// separate layer that an overlay does not reach, so a sheet already on
+    /// screen when the app locks stays visible. What it shows is stale — locking
+    /// forgets the data key, so no key share can be read and nothing can be
+    /// signed — but balances and addresses remain legible. The existing
+    /// `CoverView` privacy screen has the same gap; both want the lock hosted in
+    /// a window above the presentation layer, which is a change to how the app
+    /// presents modals and does not belong in this step.
+    @ViewBuilder
+    var passcodeGate: some View {
+        if appViewModel.isPasscodeLocked {
+            EnterPasscodeScreen(
+                onUnlocked: { appViewModel.markPasscodeUnlocked() },
+                onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
+            )
+            // No `.ignoresSafeArea()` here, and it has to stay that way: the
+            // keypad's `Screen` already paints its background full-bleed while
+            // keeping content inside the safe area, and ignoring it at this
+            // level pushed the title under the Dynamic Island. The screen's
+            // *other* half — the brand screen shown while biometrics are tried —
+            // ignores it internally, which is what makes that half line up with
+            // the privacy cover rather than sitting twelve points off it.
+            //
+            // **Asymmetric, and the insertion side is the point.** A lock that
+            // fades in is a lock you can see through while it arrives: the
+            // foreground path raises the gate and drops the privacy cover in one
+            // update, so a 0.25s fade renders the home screen — balances,
+            // addresses — underneath for the whole of it. Going up is instant.
+            // Coming down still fades, because by then the app is unlocked and
+            // there is nothing left to hide.
+            .transition(.asymmetric(insertion: .identity, removal: .opacity))
+            // A raise is a new screen, never a reused one. See
+            // ``AppViewModel/passcodeGateGeneration``.
+            .id(appViewModel.passcodeGateGeneration)
+        }
+    }
+
     func navigateToHome() {
         appViewModel.showSplashView = false
         rootRoute = .home(showingVaultSelector: appViewModel.showingVaultSelector)
@@ -146,7 +196,7 @@ struct ContentView: View {
         case .createVault:
             router.vaultRouter.build(.createVault(showBackButton: false))
         case .none:
-            CoverView().ignoresSafeArea()
+            CoverView()
         }
     }
 
@@ -188,7 +238,28 @@ struct ContentView: View {
         appViewModel.authenticateUser()
     }
 
+    /// Deeplinks are held until the app is unlocked.
+    ///
+    /// Acting on one while locked would navigate, present sheets and mutate
+    /// state behind the lock screen — the gate has to apply to what the app
+    /// *does*, not only to what it shows.
     private func handleDeeplink(_ incomingURL: URL) {
+        guard !appViewModel.isPasscodeLocked else {
+            // Queued rather than replaced: a single slot silently drops every
+            // link but the last, and each one is a user action.
+            pendingDeeplinks.append(incomingURL)
+            return
+        }
+        processDeeplink(incomingURL)
+    }
+
+    private func drainPendingDeeplinks() {
+        let queued = pendingDeeplinks
+        pendingDeeplinks = []
+        queued.forEach(processDeeplink)
+    }
+
+    private func processDeeplink(_ incomingURL: URL) {
         guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
             return
         }

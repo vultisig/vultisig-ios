@@ -11,6 +11,55 @@ import WalletCore
 import CryptoKit
 import BigInt
 
+/// `commitVault` is `static`, so it cannot reach the view model's own logger.
+private let commitLogger = Log.keygen.viewModel
+
+/// Why a finished vault could not be committed to the store.
+enum KeygenCommitError: Error, Equatable, LocalizedError {
+    /// A share about to be persisted cannot be turned back into a share under
+    /// the protection state in force right now. Carries the share's public key.
+    case unreadableKeyshare(pubkey: String)
+
+    /// A share about to be persisted reads back fine but cannot be protected
+    /// under the state in force right now, so persisting it would put plaintext
+    /// key material into a protected store.
+    ///
+    /// The split is by *operation* — could not be read back, could not be
+    /// protected — and nothing finer, because nothing finer is knowable here. A
+    /// locked app produces one or the other depending only on which form the
+    /// shares happen to be in, and neither case can tell a recoverable lock from
+    /// a key that is gone. What the two do earn is separate copy: "we could not
+    /// read this" and "we could not protect this" are different sentences, and
+    /// pointing both at the first would make the second one false.
+    case unsealableKeyshare(pubkey: String)
+
+    init(_ failure: KeyshareNormalizationFailure) {
+        switch failure {
+        case .unreadable(let pubkey):
+            self = .unreadableKeyshare(pubkey: pubkey)
+        case .unsealable(let pubkey, _):
+            self = .unsealableKeyshare(pubkey: pubkey)
+        }
+    }
+
+    /// The review screen renders `error.localizedDescription`. Without this the
+    /// alert would fall back to the raw `NSError` form and tell the user
+    /// nothing about what actually happened.
+    ///
+    /// The copy states only what is known. `open` reports a key that is gone, a
+    /// key that does not fit, and a key merely not yet unwrapped as the same two
+    /// errors, so naming a cause here would assert something the check cannot
+    /// establish — and two of the three are recoverable by unlocking.
+    var errorDescription: String? {
+        switch self {
+        case .unreadableKeyshare:
+            return "keysharesUnreadableVaultNotSaved".localized
+        case .unsealableKeyshare:
+            return "keysharesUnsealableVaultNotSaved".localized
+        }
+    }
+}
+
 enum KeygenStatus {
     case CreatingInstance
     case KeygenECDSA
@@ -98,6 +147,15 @@ class KeygenViewModel: ObservableObject {
     @Published var duplicateVaultName: String = ""
     @Published var didCancelDuplicateVault = false
     @Published var keygenConnected = false
+
+    /// Held for the whole vault-creation episode, so a passcode transition
+    /// cannot land between the TSS layer producing a share and this flow
+    /// persisting it.
+    ///
+    /// Released by being set to `nil`, or by this view model going away — the
+    /// lease releases on `deinit`, which is what stops an unhandled path from
+    /// stranding it and blocking every later passcode change until relaunch.
+    private var keygenEpisode: EpisodeLease?
 
     private var duplicateVaultContinuation: CheckedContinuation<Bool, Never>?
     private var tssService: TssServiceImpl? = nil
@@ -208,15 +266,102 @@ class KeygenViewModel: ObservableObject {
     /// leaves its name reusable. Inserting on the unique `pubKeyECDSA` upserts, so
     /// re-running keygen that reproduces an existing vault replaces it as before.
     @MainActor
-    static func commitVault(_ vault: Vault, context: ModelContext) throws {
-        VaultDefaultCoinService(context: context)
-            .setDefaultCoinsOnce(vault: vault)
-        context.insert(vault)
-        try context.save()
+    static func commitVault(
+        _ vault: Vault,
+        context: ModelContext,
+        protector: KeyshareProtecting = KeyshareProtector.shared
+    ) throws {
+        let coinService = VaultDefaultCoinService(context: context)
+
+        // The insert and the save are one write span. The episode lease already
+        // keeps a transition out of the whole review interval, but this is the
+        // moment the shares actually reach the store, so it carries its own
+        // guarantee rather than relying on a lease held elsewhere.
+        try KeyshareWriteCoordinator.shared.withWriteLease {
+            // Ahead of everything else, so a refusal leaves the context exactly
+            // as it found it — `setDefaultCoinsOnce` builds coins onto the vault.
+            let shares = try normalizedKeyshares(of: vault, protector: protector)
+
+            // Whole-array assignment, never element assignment: assigning into
+            // an element is not a dependable way to mark a `@Model` dirty.
+            vault.keyshares = shares
+
+            coinService.setDefaultCoinsOnce(vault: vault)
+            context.insert(vault)
+            try context.save()
+        }
+
+        // Past every way this can refuse, so the network work it starts is
+        // aimed at a vault that is provably stored and cannot be withdrawn.
+        coinService.startTokenDiscovery()
+    }
+
+    /// The vault's shares in the form the current protection state requires,
+    /// computed before any of them is persisted.
+    ///
+    /// The write lease above only excludes a transition running *concurrently*
+    /// with the insert; one that has already finished leaves nothing to exclude.
+    /// And the deferred-persistence flow holds its shares in memory across the
+    /// whole review screen, where the sweep cannot reach them — so whichever way
+    /// the passcode moved during the review, these shares missed it:
+    ///
+    /// - Disabled during the review, and the sweep unsealed every *stored* share
+    ///   and deleted the data key without ever seeing these. Persisting them
+    ///   stores a vault sealed under a key that no longer exists: it looks
+    ///   complete, nothing revisits it, and every signature it is asked for
+    ///   fails. Nothing here can repair that, so it is refused.
+    /// - Set during the review, and the sweep sealed every *stored* share
+    ///   without ever seeing these. Persisting them puts plaintext key material
+    ///   into a store with an active passcode, readable while the app is locked
+    ///   and left that way, because the sweep has already run. That one *is*
+    ///   repairable — sealing it here is the repair — and refusing instead would
+    ///   destroy a finished keygen to prevent an exposure this very write ends.
+    ///
+    /// So the shares are normalized rather than merely checked, by the same
+    /// ``KeyshareNormalizer`` a backup import uses across its own gap. Verifying
+    /// alone would close only the first case: plaintext is readable.
+    @MainActor
+    private static func normalizedKeyshares(
+        of vault: Vault,
+        protector: KeyshareProtecting
+    ) throws -> [KeyShare] {
+        do {
+            return try KeyshareNormalizer(protector: protector).normalizedShares(of: vault)
+        } catch let failure as KeyshareNormalizationFailure {
+            // The share is named here as well as in the normalizer's own line:
+            // a vault carries one share per curve and key import adds one per
+            // chain, and the alert the user sees carries no pubkey at all.
+            let refusal = KeygenCommitError(failure)
+            commitLogger.error("Refusing to persist a vault: \(String(describing: refusal), privacy: .public)")
+            throw refusal
+        }
     }
 
     func startKeygen(context: ModelContext) async {
         self.keygenConnected = true
+
+        // A passcode transition is rewriting every stored share while it runs,
+        // and a keygen started underneath it would produce a share the sweep
+        // never sees. Transitions are short foreground actions, so the honest
+        // answer is to refuse and let the user retry.
+        guard let episode = KeyshareWriteCoordinator.shared.beginEpisode() else {
+            logger.error("Keygen refused: a passcode transition holds the key-share coordinator")
+            self.status = .KeygenFailed
+            self.keygenError = "somethingWentWrongTryAgain".localized
+            return
+        }
+        self.keygenEpisode = episode
+
+        // Every path below either persists the vault before returning or fails
+        // outright. The deferred flow is the exception: it leaves sealed shares
+        // in memory waiting for the review screen to confirm, and that interval
+        // is exactly what the episode exists to cover, so its lease outlives
+        // this call and goes when this view model does.
+        defer {
+            if !(self.deferVaultPersistence && self.status == .KeygenFinished) {
+                self.keygenEpisode = nil
+            }
+        }
 
         if self.tssType == .SingleKeygen {
             await startSingleKeygen(context: context)
@@ -302,6 +447,16 @@ class KeygenViewModel: ObservableObject {
                     throw HelperError.runtimeError("fail to get MLDSA keyshare")
                 }
 
+                // Sealed before this party reports completion. Sealing can fail,
+                // and once the peers have been told keygen succeeded there is no
+                // longer a safe way to abandon the share — the vault would be
+                // left holding a public key whose share was never stored.
+                let mldsaShare = try KeyShare.sealed(
+                    pubkey: keyshare.PubKey,
+                    keyshare: keyshare.Keyshare,
+                    keyId: keyshare.keyId
+                )
+
                 let keygenVerify = KeygenVerify(
                     serverAddr: self.mediatorURL,
                     sessionID: self.sessionID,
@@ -315,9 +470,7 @@ class KeygenViewModel: ObservableObject {
                 }
 
                 self.vault.publicKeyMLDSA44 = keyshare.PubKey
-                self.vault.keyshares.append(
-                    KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare, keyId: keyshare.keyId)
-                )
+                self.vault.keyshares.append(mldsaShare)
                 self.vault.isBackedUp = false
             }
 
@@ -444,12 +597,17 @@ class KeygenViewModel: ObservableObject {
             chainResults = collected
         }
 
+        // Seal every share up front so the vault is not left holding chain
+        // public keys whose shares never made it in.
+        var sealedChainShares: [KeyShare] = []
+        for result in chainResults where seenPubKeys.insert(result.keyshare.PubKey).inserted {
+            sealedChainShares.append(
+                try KeyShare.sealed(pubkey: result.keyshare.PubKey, keyshare: result.keyshare.Keyshare)
+            )
+        }
+
+        self.vault.keyshares.append(contentsOf: sealedChainShares)
         for result in chainResults {
-            if seenPubKeys.insert(result.keyshare.PubKey).inserted {
-                self.vault.keyshares.append(
-                    KeyShare(pubkey: result.keyshare.PubKey, keyshare: result.keyshare.Keyshare)
-                )
-            }
             self.vault.chainPublicKeys.append(
                 ChainPublicKey(
                     chain: result.chain,
@@ -481,10 +639,14 @@ class KeygenViewModel: ObservableObject {
             // confirmation would leave orphan rows the autosave could flush.
             // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
             if !self.deferVaultPersistence {
-                VaultDefaultCoinService(context: modelContext)
-                    .setDefaultCoinsOnce(vault: self.vault)
+                let coinService = VaultDefaultCoinService(context: modelContext)
+                coinService.setDefaultCoinsOnce(vault: self.vault)
                 modelContext.insert(self.vault)
                 try modelContext.save()
+                // Only once the save has landed. Token discovery outlives this
+                // call and writes on its own, so a vault whose save threw must
+                // never have it pointed at it.
+                coinService.startTokenDiscovery()
             }
         } else {
             try modelContext.save()
@@ -526,11 +688,15 @@ class KeygenViewModel: ObservableObject {
 
         self.logger.info("Finished root key import. ECDSA pub: \(rootEcdsa.PubKey), EdDSA pub: \(rootEddsa.PubKey)")
 
+        let sealedRootShares = [
+            try KeyShare.sealed(pubkey: rootEcdsa.PubKey, keyshare: rootEcdsa.Keyshare),
+            try KeyShare.sealed(pubkey: rootEddsa.PubKey, keyshare: rootEddsa.Keyshare)
+        ]
+
         self.vault.pubKeyECDSA = rootEcdsa.PubKey
         self.vault.pubKeyEdDSA = rootEddsa.PubKey
         self.vault.hexChainCode = rootEcdsa.chaincode
-        self.vault.keyshares.append(KeyShare(pubkey: rootEcdsa.PubKey, keyshare: rootEcdsa.Keyshare))
-        self.vault.keyshares.append(KeyShare(pubkey: rootEddsa.PubKey, keyshare: rootEddsa.Keyshare))
+        self.vault.keyshares.append(contentsOf: sealedRootShares)
     }
 
     private func buildChainImportJobs(chains: [Chain], wallet: HDWallet?, useParallelPath: Bool) throws -> [KeyImportChainJob] {
@@ -789,6 +955,14 @@ class KeygenViewModel: ObservableObject {
             throw HelperError.runtimeError("fail to get EdDSA keyshare")
         }
 
+        // Sealed before this party reports completion, for the same reason as
+        // above: after markLocalPartyComplete the peers consider the vault
+        // created, so a sealing failure has nowhere left to abort to.
+        let sealedShares = [
+            try KeyShare.sealed(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+            try KeyShare.sealed(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)
+        ]
+
         let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
                                         sessionID: self.sessionID,
                                         localPartyID: self.vault.localPartyID,
@@ -806,8 +980,7 @@ class KeygenViewModel: ObservableObject {
         if self.tssType == .Migrate {
             self.vault.libType = .DKLS
         }
-        self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
-                                KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+        self.vault.keyshares = sealedShares
 
         let needsInsert = self.tssType == .Keygen ||
             !self.vaultOldCommittee.contains(self.vault.localPartyID)
@@ -823,10 +996,14 @@ class KeygenViewModel: ObservableObject {
             // confirmation would leave orphan rows the autosave could flush.
             // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
             if !self.deferVaultPersistence {
-                VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
+                let coinService = VaultDefaultCoinService(context: context)
+                coinService.setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
                 try context.save()
+                // Only once the save has landed. Token discovery outlives this
+                // call and writes on its own, so a vault whose save threw must
+                // never have it pointed at it.
+                coinService.startTokenDiscovery()
             }
         } else {
             try context.save()
@@ -896,10 +1073,14 @@ class KeygenViewModel: ObservableObject {
                 // confirmation would leave orphan rows the autosave could flush.
                 // `KeygenViewModel.commitVault` does the full insert at "Looks Good".
                 if !self.deferVaultPersistence {
-                    VaultDefaultCoinService(context: context)
-                        .setDefaultCoinsOnce(vault: self.vault)
+                    let coinService = VaultDefaultCoinService(context: context)
+                    coinService.setDefaultCoinsOnce(vault: self.vault)
                     context.insert(self.vault)
                     try context.save()
+                    // Only once the save has landed. Token discovery outlives
+                    // this call and writes on its own, so a vault whose save
+                    // threw must never have it pointed at it.
+                    coinService.startTokenDiscovery()
                 }
             } else {
                 try context.save()
