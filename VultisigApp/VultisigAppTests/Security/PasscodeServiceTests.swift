@@ -58,7 +58,12 @@ final class PasscodeServiceTests: XCTestCase {
         coordinator = KeyshareWriteCoordinator()
         sweeper = KeyshareSweeper(protector: protector, context: { [context] in context })
         biometricKeychain = InMemoryBiometricKeychain()
-        biometrics = BiometricUnlockStore(keychain: biometricKeychain)
+        // Stated, not inherited — the default asks this runner's real
+        // `LAContext`, which reports nothing enrolled on a simulator.
+        biometrics = BiometricUnlockStore(
+            keychain: biometricKeychain,
+            biometryAvailability: { .available }
+        )
 
         sut = makeService()
     }

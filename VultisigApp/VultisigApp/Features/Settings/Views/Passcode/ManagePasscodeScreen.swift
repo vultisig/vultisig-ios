@@ -12,6 +12,8 @@ struct ManagePasscodeScreen: View {
     @Environment(\.router) var router
     @State private var isSet: Bool = false
     @State private var isBiometricEnabled: Bool = false
+    @State private var biometricAvailability: BiometricAvailability = .available
+    @State private var biometricError: String?
     @State private var showDisable = false
 
     private let service: PasscodeService
@@ -40,6 +42,15 @@ struct ManagePasscodeScreen: View {
                     }
                     .commonListContainer()
 
+                    if let biometricNote {
+                        Text(biometricNote)
+                            .font(Theme.fonts.caption12)
+                            .foregroundStyle(Theme.colors.alertError)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityIdentifier(AccessibilityID.Settings.biometricUnlockNote)
+                    }
+
                     explanation
                 }
             }
@@ -58,6 +69,27 @@ struct ManagePasscodeScreen: View {
         .onChange(of: showDisable) { _, isShowing in
             guard !isShowing else { return }
             Task { await refresh() }
+        }
+    }
+
+    /// What the biometric row currently has to say for itself, if anything.
+    ///
+    /// The standing reason comes first and does not need a tap to find: a device
+    /// with nothing enrolled cannot hold the shortcut, and letting someone
+    /// discover that only by flipping a switch that flips back is the behaviour
+    /// this screen was reported for. A failure from an actual attempt replaces
+    /// it, because that one is about what just happened.
+    private var biometricNote: String? {
+        if let biometricError { return biometricError }
+        guard rows.contains(.biometrics) else { return nil }
+
+        switch biometricAvailability {
+        case .available:
+            return nil
+        case .notEnrolled:
+            return "passcodeBiometricNotEnrolled".localized
+        case .unavailable:
+            return "passcodeBiometricNotAvailable".localized
         }
     }
 
@@ -143,26 +175,62 @@ struct ManagePasscodeScreen: View {
     }
 
     private func setBiometric(enabled: Bool) async {
+        // Moved before the call, so the switch follows the finger instead of
+        // snapping back for the length of a Keychain round trip and then
+        // returning. `refresh()` below overwrites it with what actually
+        // happened, so an optimistic value can never outlive the attempt.
+        isBiometricEnabled = enabled
+        biometricError = nil
+
         if enabled {
             // Enabling needs the data key in hand, so it can only be done while
             // unlocked. A failure leaves the toggle off rather than implying a
-            // shortcut exists.
+            // shortcut exists — and now says why, which is the whole of this
+            // change: every one of these used to be swallowed, so a device with
+            // nothing enrolled produced a switch that returned to off and no
+            // explanation anywhere.
             do {
                 try await service.enableBiometricUnlock()
             } catch {
-                isBiometricEnabled = false
-                return
+                biometricError = Self.message(for: error)
             }
         } else {
             // A failure here leaves the copy in place, so the toggle must not
-            // claim it is gone.
-            try? await service.disableBiometricUnlock()
+            // claim it is gone. `refresh()` re-reads it either way.
+            do {
+                try await service.disableBiometricUnlock()
+            } catch {
+                biometricError = "passcodeBiometricDisableFailed".localized
+            }
         }
         await refresh()
+    }
+
+    /// Says what the user has to do, where there is anything they can do.
+    @MainActor
+    private static func message(for error: Error) -> String {
+        switch error as? BiometricUnlockError {
+        case .notEnrolled:
+            return "passcodeBiometricNotEnrolled".localized
+        case .unavailable:
+            return "passcodeBiometricNotAvailable".localized
+        default:
+            break
+        }
+
+        // A passcode-side refusal is not about biometry at all — the app locked
+        // mid-flight, or another transition holds the lease — and
+        // `PasscodeViewModel` already has the wording for those.
+        if let passcodeError = error as? PasscodeError {
+            return PasscodeViewModel.message(for: passcodeError)
+        }
+
+        return "passcodeBiometricEnableFailed".localized
     }
 
     private func refresh() async {
         isSet = await service.isSet
         isBiometricEnabled = await service.isBiometricUnlockEnabled
+        biometricAvailability = await service.biometricAvailability
     }
 }

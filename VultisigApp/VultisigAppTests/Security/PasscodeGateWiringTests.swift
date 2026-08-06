@@ -64,7 +64,10 @@ final class PasscodeGateWiringTests: XCTestCase {
             protector: KeyshareProtector(state: { keySession.currentState() }),
             context: { [context] in context }
         )
-        biometrics = BiometricUnlockStore(keychain: InMemoryBiometricKeychain())
+        biometrics = BiometricUnlockStore(
+            keychain: InMemoryBiometricKeychain(),
+            biometryAvailability: { .available }
+        )
         service = makeService()
 
         for key in borrowedDefaultsKeys {

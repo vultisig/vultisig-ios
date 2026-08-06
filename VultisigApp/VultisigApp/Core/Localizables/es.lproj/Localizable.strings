@@ -942,6 +942,10 @@
 "partOf" = "Parte %d de %d";
 "passcodeAlreadySet" = "Ya hay un código establecido en este dispositivo. Vuelve atrás para cambiarlo o quitarlo.";
 "passcodeAutoLockTitle" = "Bloqueo automático";
+"passcodeBiometricDisableFailed" = "No se pudo desactivar el desbloqueo biométrico. Inténtalo de nuevo.";
+"passcodeBiometricEnableFailed" = "No se pudo activar el desbloqueo biométrico. Tu código sigue funcionando.";
+"passcodeBiometricNotAvailable" = "Este dispositivo no puede usar el desbloqueo biométrico.";
+"passcodeBiometricNotEnrolled" = "Configura Face ID o Touch ID en los ajustes del dispositivo para usar esto.";
 "passcodeBiometricReason" = "Desbloquear Vultisig";
 "passcodeBiometricToggle" = "Desbloquear con biometría";
 "passcodeBiometricUnavailable" = "El desbloqueo biométrico ya no está disponible en este dispositivo. Introduce tu código.";

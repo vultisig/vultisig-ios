@@ -942,6 +942,10 @@
 "partOf" = "第 %d 部分，共 %d 部分";
 "passcodeAlreadySet" = "本设备已设置密码。请返回上一页以修改或移除。";
 "passcodeAutoLockTitle" = "自动锁定";
+"passcodeBiometricDisableFailed" = "无法关闭生物识别解锁。请重试。";
+"passcodeBiometricEnableFailed" = "无法开启生物识别解锁。密码仍然可用。";
+"passcodeBiometricNotAvailable" = "本设备无法使用生物识别解锁。";
+"passcodeBiometricNotEnrolled" = "请在设备设置中设置面容 ID 或触控 ID 后再使用。";
 "passcodeBiometricReason" = "解锁 Vultisig";
 "passcodeBiometricToggle" = "使用生物识别解锁";
 "passcodeBiometricUnavailable" = "本设备已无法使用生物识别解锁。请输入密码。";

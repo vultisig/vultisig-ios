@@ -11,12 +11,40 @@ import Security
 
 private let logger = Log.app.store
 
+/// Whether this device can hold a biometry-guarded copy of the data key *right
+/// now*, and if not, why.
+///
+/// The reason is worth carrying rather than collapsing to a `Bool`, because the
+/// two failures need opposite things from the user. Nothing enrolled is fixed in
+/// Settings in ten seconds; no hardware is not fixable at all, and offering a
+/// switch that can only ever refuse is worse than not offering it.
+///
+/// Deliberately asked *before* the Keychain write rather than inferred from its
+/// failure. `SecItemAdd` under `.biometryCurrentSet` answers a handful of
+/// statuses for "the access control cannot be satisfied", they are not
+/// documented as an exhaustive set, and mapping them backwards into a reason
+/// would be guessing at what the user has to do next.
+enum BiometricAvailability: Equatable {
+    case available
+    /// Hardware is present, nothing is enrolled on it. Also the state a
+    /// simulator is in until Face ID is enrolled from the Features menu, which
+    /// is where this most often bites during development.
+    case notEnrolled
+    /// No biometric hardware, biometry locked out after too many failures, or a
+    /// device with no passcode — none of which the app can do anything about.
+    case unavailable
+}
+
 enum BiometricUnlockError: Error, Equatable {
     case notEnabled
     case unavailable
     case cancelled
     case failed
     case storageFailed
+    /// Nothing is enrolled, so the item could never be guarded. Distinct from
+    /// `.storageFailed` because it is the user's to fix and the message can say
+    /// how.
+    case notEnrolled
     /// The stored copy was made for a different wrapped key, so it holds a data
     /// key nothing on disk wraps any more.
     case supersededCopy
@@ -76,13 +104,28 @@ final class BiometricUnlockStore {
     private static var blobLength: Int { bindingLength + VaultCryptoEnvelope.keyLengthBytes }
 
     private let keychain: BiometricKeychainProtecting
+    /// Its own seam rather than a member of ``BiometricKeychainProtecting``.
+    /// That protocol has four conformers spread across this stack's branches, and
+    /// none of the other three has anything to say about `LAContext` — adding a
+    /// requirement would have made every one of them answer a question it does
+    /// not own, with `.available` as the only answer available to them. A
+    /// fail-closed component should not acquire a default that fails open.
+    private let biometryAvailability: () -> BiometricAvailability
 
-    init(keychain: BiometricKeychainProtecting = BiometricKeychain()) {
+    init(
+        keychain: BiometricKeychainProtecting = BiometricKeychain(),
+        biometryAvailability: @escaping () -> BiometricAvailability = BiometricKeychain.currentAvailability
+    ) {
         self.keychain = keychain
+        self.biometryAvailability = biometryAvailability
     }
 
     var isEnabled: Bool {
         keychain.exists(account: Self.account)
+    }
+
+    var availability: BiometricAvailability {
+        biometryAvailability()
     }
 
     /// Stores the data key behind biometry, bound to the wrapped key it belongs
@@ -92,6 +135,19 @@ final class BiometricUnlockStore {
     /// Writing the item never prompts for biometry; only reading does. That is
     /// what makes rebinding after a passcode change silent.
     func enable(dataKey: SymmetricKey, boundTo wrappedDataKey: Data) throws {
+        // Asked first, so the common refusal arrives as something the user can
+        // act on. Without it every one of these came back as a bare storage
+        // failure, and the screen above said nothing at all — the switch simply
+        // returned to off, which reads as the app ignoring the tap.
+        switch biometryAvailability() {
+        case .available:
+            break
+        case .notEnrolled:
+            throw BiometricUnlockError.notEnrolled
+        case .unavailable:
+            throw BiometricUnlockError.unavailable
+        }
+
         var blob = Self.binding(for: wrappedDataKey)
         blob.append(dataKey.withUnsafeBytes { Data($0) })
 
@@ -206,7 +262,35 @@ struct BiometricKeychain: BiometricKeychainProtecting {
         // into `errSecDuplicateItem`.
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
+            // The status is the only thing that says *why*, and it is about to
+            // be thrown away by the mapping. Everything upstream sees
+            // `.storageFailed`, so without this line a failure here is
+            // undiagnosable from a device log.
+            let message = SecCopyErrorMessageString(status, nil) as String? ?? "unknown"
+            logger.error(
+                "SecItemAdd for the biometric data key failed: \(status, privacy: .public) (\(message, privacy: .public))"
+            )
             throw BiometricUnlockError.storageFailed
+        }
+    }
+
+    static func currentAvailability() -> BiometricAvailability {
+        var error: NSError?
+        let context = LAContext()
+        guard !context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            return .available
+        }
+
+        // `.biometryNotEnrolled` and `.passcodeNotSet` are both "turn something
+        // on in Settings", and they arrive together: enrolling a face requires a
+        // device passcode, so a device with neither reports whichever it checks
+        // first. Treating them as one state keeps the message honest without
+        // pretending to know which of the two the user is missing.
+        switch (error as? LAError)?.code {
+        case .biometryNotEnrolled, .passcodeNotSet:
+            return .notEnrolled
+        default:
+            return .unavailable
         }
     }
 

@@ -111,6 +111,12 @@ actor PasscodeService {
         biometrics.isEnabled
     }
 
+    /// Whether this device could hold the shortcut at all, so Settings can say
+    /// why the switch is refusing instead of just returning it to off.
+    var biometricAvailability: BiometricAvailability {
+        biometrics.availability
+    }
+
     /// Fails closed. An unreadable Keychain may well hold a wrapped key, and the
     /// one thing that must never happen is a fresh data key being minted over an
     /// existing one — a new key opens none of the shares the old one sealed, so

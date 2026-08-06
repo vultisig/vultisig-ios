@@ -942,6 +942,10 @@
 "partOf" = "dio %d od %d";
 "passcodeAlreadySet" = "Na ovom uređaju već je postavljena zaporka. Vratite se natrag da biste je promijenili ili uklonili.";
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
+"passcodeBiometricDisableFailed" = "Otključavanje biometrijom nije se moglo isključiti. Pokušajte ponovno.";
+"passcodeBiometricEnableFailed" = "Otključavanje biometrijom nije se moglo uključiti. Vaša zaporka i dalje radi.";
+"passcodeBiometricNotAvailable" = "Ovaj uređaj ne može koristiti otključavanje biometrijom.";
+"passcodeBiometricNotEnrolled" = "Postavite Face ID ili Touch ID u postavkama uređaja da biste ovo koristili.";
 "passcodeBiometricReason" = "Otključaj Vultisig";
 "passcodeBiometricToggle" = "Otključavanje biometrijom";
 "passcodeBiometricUnavailable" = "Otključavanje biometrijom više nije dostupno na ovom uređaju. Unesite zaporku.";

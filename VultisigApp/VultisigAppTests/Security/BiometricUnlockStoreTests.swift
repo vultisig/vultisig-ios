@@ -18,6 +18,9 @@ final class BiometricUnlockStoreTests: XCTestCase {
 
     private var keychain: FakeBiometricKeychain!
     private var sut: BiometricUnlockStore!
+    /// Available unless a test says otherwise, so every case that is not about
+    /// availability reads exactly as it did before this seam existed.
+    private var availability: BiometricAvailability = .available
 
     /// Stands in for the passcode-wrapped data key the copy is bound to. Only
     /// its bytes matter here — the store digests them, it never unwraps them.
@@ -27,7 +30,11 @@ final class BiometricUnlockStoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
         keychain = FakeBiometricKeychain()
-        sut = BiometricUnlockStore(keychain: keychain)
+        availability = .available
+        sut = BiometricUnlockStore(
+            keychain: keychain,
+            biometryAvailability: { [unowned self] in self.availability }
+        )
     }
 
     override func tearDown() {
@@ -63,6 +70,59 @@ final class BiometricUnlockStoreTests: XCTestCase {
             XCTAssertEqual(error as? BiometricUnlockError, .storageFailed)
         }
         XCTAssertFalse(sut.isEnabled)
+    }
+
+    /// The reported bug: a device with nothing enrolled refused the switch and
+    /// said nothing. It has to refuse — but as its own error, so the screen can
+    /// tell the user what to go and do.
+    func testEnableRefusesWithItsOwnErrorWhenNothingIsEnrolled() throws {
+        availability = .notEnrolled
+
+        XCTAssertThrowsError(try sut.enable(dataKey: try makeKey(), boundTo: wrapper)) { error in
+            XCTAssertEqual(error as? BiometricUnlockError, .notEnrolled)
+        }
+        XCTAssertFalse(sut.isEnabled)
+    }
+
+    func testEnableRefusesWhenBiometryIsUnavailable() throws {
+        availability = .unavailable
+
+        XCTAssertThrowsError(try sut.enable(dataKey: try makeKey(), boundTo: wrapper)) { error in
+            XCTAssertEqual(error as? BiometricUnlockError, .unavailable)
+        }
+        XCTAssertFalse(sut.isEnabled)
+    }
+
+    /// Availability is checked *before* the write, not after it fails. A refusal
+    /// that had already touched the Keychain would have deleted whatever was
+    /// there — `enable` removes before it adds — and left the user with the
+    /// shortcut they had turned on earlier silently gone.
+    func testAnUnavailableDeviceLeavesAnExistingCopyAlone() throws {
+        try sut.enable(dataKey: try makeKey(), boundTo: wrapper)
+        availability = .notEnrolled
+
+        XCTAssertThrowsError(try sut.enable(dataKey: try makeKey(), boundTo: wrapper))
+        XCTAssertTrue(sut.isEnabled, "the copy that was already there survives a refusal")
+    }
+
+    /// The residual, pinned rather than claimed away. The preflight only moves
+    /// the refusals it can *see coming*; the delete-then-add is not atomic, so
+    /// enrolment changing in the gap — or the Keychain failing for its own
+    /// reasons — still loses an existing copy.
+    ///
+    /// Left as it is deliberately. Restoring it would mean reading the old blob
+    /// out before deleting, which means a biometric prompt on a path that is
+    /// documented not to need one, and the whole loss is an *optional shortcut*:
+    /// the passcode-wrapped copy is untouched and still opens everything. What
+    /// must not happen is discovering this from a bug report, so it is a test.
+    func testAStoreFailureAfterTheDeleteStillCostsTheExistingCopy() throws {
+        try sut.enable(dataKey: try makeKey(), boundTo: wrapper)
+        keychain.storeError = BiometricUnlockError.storageFailed
+
+        XCTAssertThrowsError(try sut.enable(dataKey: try makeKey(), boundTo: wrapper)) { error in
+            XCTAssertEqual(error as? BiometricUnlockError, .storageFailed)
+        }
+        XCTAssertFalse(sut.isEnabled, "known residual: the delete already happened")
     }
 
     func testDisableRemovesTheKey() throws {
@@ -244,4 +304,5 @@ private final class FakeBiometricKeychain: BiometricKeychainProtecting {
     func exists(account _: String) -> Bool {
         stored != nil
     }
+
 }

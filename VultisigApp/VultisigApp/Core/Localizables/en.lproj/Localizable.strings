@@ -942,6 +942,10 @@
 "partOf" = "part %d of %d";
 "passcodeAlreadySet" = "A passcode is already set on this device. Go back to change or remove it.";
 "passcodeAutoLockTitle" = "Auto-lock";
+"passcodeBiometricDisableFailed" = "Biometric unlock could not be turned off. Try again.";
+"passcodeBiometricEnableFailed" = "Biometric unlock could not be turned on. Your passcode still works.";
+"passcodeBiometricNotAvailable" = "This device cannot use biometric unlock.";
+"passcodeBiometricNotEnrolled" = "Set up Face ID or Touch ID in your device settings to use this.";
 "passcodeBiometricReason" = "Unlock Vultisig";
 "passcodeBiometricToggle" = "Unlock with biometrics";
 "passcodeBiometricUnavailable" = "Biometric unlock is no longer available on this device. Enter your passcode.";

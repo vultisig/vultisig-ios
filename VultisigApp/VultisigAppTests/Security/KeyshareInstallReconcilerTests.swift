@@ -34,7 +34,14 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         keychain = MockKeychainService()
         keyStore = DefaultKeyshareKeyStore(keychain: keychain)
         biometricKeychain = StubBiometricKeychain()
-        biometrics = BiometricUnlockStore(keychain: biometricKeychain)
+        // Availability is stated rather than inherited: the default reads this
+        // runner's real `LAContext`, which reports nothing enrolled on a
+        // simulator, and reconciliation is not about whether biometry works —
+        // it is about removing a copy a previous install left behind.
+        biometrics = BiometricUnlockStore(
+            keychain: biometricKeychain,
+            biometryAvailability: { .available }
+        )
         lockService = AppLockService(defaults: defaults)
 
         coordinator = KeyshareWriteCoordinator()

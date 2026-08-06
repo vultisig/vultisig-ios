@@ -942,6 +942,10 @@
 "partOf" = "%d/%d 공유";
 "passcodeAlreadySet" = "이 기기에는 이미 패스코드가 설정되어 있습니다. 뒤로 돌아가 변경하거나 삭제하세요.";
 "passcodeAutoLockTitle" = "자동 잠금";
+"passcodeBiometricDisableFailed" = "생체 인식 잠금 해제를 끄지 못했습니다. 다시 시도하세요.";
+"passcodeBiometricEnableFailed" = "생체 인식 잠금 해제를 켜지 못했습니다. 패스코드는 계속 사용할 수 있습니다.";
+"passcodeBiometricNotAvailable" = "이 기기에서는 생체 인식 잠금 해제를 사용할 수 없습니다.";
+"passcodeBiometricNotEnrolled" = "이 기능을 사용하려면 기기 설정에서 Face ID 또는 Touch ID를 설정하세요.";
 "passcodeBiometricReason" = "Vultisig 잠금 해제";
 "passcodeBiometricToggle" = "생체 인식으로 잠금 해제";
 "passcodeBiometricUnavailable" = "이 기기에서는 생체 인식 잠금 해제를 더 이상 사용할 수 없습니다. 패스코드를 입력하세요.";

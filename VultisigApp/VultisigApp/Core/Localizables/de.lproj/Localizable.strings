@@ -942,6 +942,10 @@
 "partOf" = "Teil %d von %d";
 "passcodeAlreadySet" = "Auf diesem Gerät ist bereits ein Passcode gesetzt. Gehen Sie zurück, um ihn zu ändern oder zu entfernen.";
 "passcodeAutoLockTitle" = "Automatische Sperre";
+"passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
+"passcodeBiometricEnableFailed" = "Die biometrische Entsperrung konnte nicht aktiviert werden. Ihr Passcode funktioniert weiterhin.";
+"passcodeBiometricNotAvailable" = "Dieses Gerät kann die biometrische Entsperrung nicht verwenden.";
+"passcodeBiometricNotEnrolled" = "Richten Sie Face ID oder Touch ID in den Geräteeinstellungen ein, um dies zu verwenden.";
 "passcodeBiometricReason" = "Vultisig entsperren";
 "passcodeBiometricToggle" = "Mit Biometrie entsperren";
 "passcodeBiometricUnavailable" = "Die biometrische Entsperrung ist auf diesem Gerät nicht mehr verfügbar. Geben Sie Ihren Passcode ein.";
