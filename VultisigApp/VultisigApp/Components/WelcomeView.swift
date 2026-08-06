@@ -6,16 +6,14 @@ struct WelcomeView: View {
 
     var body: some View {
         view
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(PrimaryBackgroundWithGradient())
-        #if os(iOS)
-        .toolbar(.hidden, for: .navigationBar)
-        #endif
     }
 
+    /// The brand screen with the launch loader over it. The splash is the one
+    /// place that animates — it is the only one a user is waiting on rather than
+    /// passing through — so it is also the only caller passing `isStatic: false`.
     var view: some View {
         ZStack(alignment: .bottom) {
-            VultisigLogoAnimation()
+            VultisigBrandScreen(isStatic: false)
             loader
         }
     }

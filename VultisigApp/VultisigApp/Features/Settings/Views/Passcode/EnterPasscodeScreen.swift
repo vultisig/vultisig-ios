@@ -22,55 +22,52 @@ struct EnterPasscodeScreen: View {
     let onAttemptFailed: () -> Void
 
     var body: some View {
-        Screen {
-            // Same logo, same gradient, in the same place as the entry view puts
-            // it — so the biometric attempt happens over what looks like the
-            // privacy cover rather than over a keypad that is about to vanish.
-            if viewModel.shouldPresentEntry {
-                PasscodeEntryView(
-                    title: "passcodeEnterTitle".localized,
-                    subtitle: "passcodeEnterSubtitle".localized,
-                    errorMessage: viewModel.errorMessage,
-                    isBusy: viewModel.isBusy,
-                    showsLogo: true,
-                    passcode: $viewModel.entry,
-                    onComplete: { _ in
-                        Task {
-                            await viewModel.unlock()
-                            guard !viewModel.didFinish else { return }
-                            onAttemptFailed()
-                        }
-                    }
-                )
-            } else {
-                awaitingBiometrics
+        content
+            .accessibilityIdentifier(AccessibilityID.Passcode.enterScreen)
+            .task {
+                await viewModel.beginUnlock(biometricReason: "passcodeBiometricReason".localized)
             }
-        }
-        .screenNavigationBarHidden(true)
-        .screenBackground(.gradient)
-        .accessibilityIdentifier(AccessibilityID.Passcode.enterScreen)
-        .task {
-            await viewModel.beginUnlock(biometricReason: "passcodeBiometricReason".localized)
-        }
-        .onChange(of: viewModel.didFinish) { _, finished in
-            guard finished else { return }
-            onUnlocked()
+            .onChange(of: viewModel.didFinish) { _, finished in
+                guard finished else { return }
+                onUnlocked()
+            }
+    }
+
+    /// Two screens, not one screen with two states — and the difference is
+    /// structural rather than cosmetic. The waiting half is
+    /// ``VultisigBrandScreen`` at the **top level**: putting it inside `Screen`
+    /// like the keypad would inset it for the safe area and move the logo up the
+    /// display relative to the privacy cover it takes over from, which is a jump
+    /// exactly where there should be no seam at all.
+    @ViewBuilder
+    private var content: some View {
+        if viewModel.shouldPresentEntry {
+            entry
+        } else {
+            VultisigBrandScreen()
+                .accessibilityIdentifier(AccessibilityID.Passcode.awaitingBiometrics)
         }
     }
 
-    /// What the lock screen is while it is deciding whether it needs to exist.
-    ///
-    /// Deliberately not a spinner. Nothing is loading — the app is guarding
-    /// itself — and a progress indicator would promise the user that waiting
-    /// achieves something. The logo is also what `CoverView` shows on the way
-    /// out, so backgrounding and returning look like one continuous screen
-    /// instead of a cover, a keypad and a dismissal.
-    private var awaitingBiometrics: some View {
-        Image("vultisig-logo")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 64)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .accessibilityIdentifier(AccessibilityID.Passcode.awaitingBiometrics)
+    private var entry: some View {
+        Screen {
+            PasscodeEntryView(
+                title: "passcodeEnterTitle".localized,
+                subtitle: "passcodeEnterSubtitle".localized,
+                errorMessage: viewModel.errorMessage,
+                isBusy: viewModel.isBusy,
+                showsLogo: true,
+                passcode: $viewModel.entry,
+                onComplete: { _ in
+                    Task {
+                        await viewModel.unlock()
+                        guard !viewModel.didFinish else { return }
+                        onAttemptFailed()
+                    }
+                }
+            )
+        }
+        .screenNavigationBarHidden(true)
+        .screenBackground(.gradient)
     }
 }

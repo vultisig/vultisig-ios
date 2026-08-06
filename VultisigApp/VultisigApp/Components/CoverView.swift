@@ -7,26 +7,12 @@
 
 import SwiftUI
 
-/// The privacy cover: what the app shows instead of itself while it is leaving,
-/// away, or coming back.
-///
-/// **Static, unlike the splash.** `VultisigLogoAnimation` builds its Rive model
-/// in `onLoad`, which runs after the first render — so on a cover that goes up
-/// as the app is being backgrounded there is a frame of bare gradient, then a
-/// logo popping in and starting an animation nobody is going to watch. The
-/// gradient is opaque either way, so this is about how it looks rather than what
-/// it hides. `WelcomeView` keeps the animation, because a launch splash is a
-/// screen the user is actually looking at.
+/// What the app shows instead of itself while it is leaving, away, or coming
+/// back. Named for that job; the screen it draws is shared with the splash and
+/// with the lock screen's biometric wait — see ``VultisigBrandScreen``.
 struct CoverView: View {
     var body: some View {
-        ZStack {
-            VultisigLogoAnimation(isStatic: true)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(PrimaryBackgroundWithGradient())
-        #if os(iOS)
-        .toolbar(.hidden, for: .navigationBar)
-        #endif
+        VultisigBrandScreen()
     }
 }
 
