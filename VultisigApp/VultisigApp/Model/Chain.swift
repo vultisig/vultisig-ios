@@ -188,6 +188,26 @@ extension Chain {
         self != .bscChain
     }
 
+    /// OP-stack rollups, which charge an L1 data-availability fee on top of L2
+    /// execution gas. op-geth adds that `l1Cost` to the balance check it runs
+    /// before executing a transaction — the required balance is
+    /// `value + gasLimit × maxFeePerGas + l1Cost`, not just the gas term — so a
+    /// native max send that reserves only the L2 gas is rejected by exactly the
+    /// L1 fee. Only these chains expose the `GasPriceOracle` predeploy that
+    /// prices it; on every other EVM chain the call has no code to run.
+    ///
+    /// Not exhaustive on purpose: an unlisted chain reserves nothing, which is
+    /// the pre-existing behaviour. A newly added OP-stack rollup must be listed
+    /// here or its max sends keep under-reserving.
+    var isOpStack: Bool {
+        switch self {
+        case .optimism, .base, .blast, .mantle:
+            return true
+        default:
+            return false
+        }
+    }
+
     /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce).
     /// Exhaustive on purpose (no `default:`): a newly added nonce/Cosmos-style chain must
     /// declare its value here or the compiler will flag it, avoiding a silent stale-nonce

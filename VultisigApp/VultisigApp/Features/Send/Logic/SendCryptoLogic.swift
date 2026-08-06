@@ -222,12 +222,54 @@ enum SendCryptoLogic {
     /// must never exceed it — clamping down also stays spendable when the fee
     /// rose (a smaller amount owes no more tax than the Details amount did).
     ///
+    /// `extraReserve` is balance the chain requires beyond the quoted fee — the
+    /// OP-stack L1 data fee, which op-geth adds to its pre-execution balance
+    /// check. `.zero` everywhere else, which leaves the arithmetic unchanged.
+    ///
     /// Every other chain keeps `balance − fee − ED` unchanged.
-    static func verifyMaxCandidateRaw(coin: Coin, fee: BigInt, previousAmountRaw: BigInt) -> BigInt {
-        let balance = coin.balanceRaw
-        let candidate = balance - fee - existentialDeposit(for: coin)
+    static func verifyMaxCandidateRaw(
+        coin: Coin,
+        fee: BigInt,
+        previousAmountRaw: BigInt,
+        extraReserve: BigInt = .zero
+    ) -> BigInt {
+        let candidate = coin.balanceRaw - fee - existentialDeposit(for: coin) - extraReserve
         guard coin.chain == .terraClassic else { return candidate }
         return Swift.min(candidate, previousAmountRaw)
+    }
+
+    /// Final raw amount for a native EVM MAX send, re-derived from the fee that
+    /// will actually be signed.
+    ///
+    /// The amount the Verify screen shows comes from one fee reading and the
+    /// keysign payload is built from a second, independent one; on an L2 with
+    /// ~2s blocks the base fee almost always moves in between, so the displayed
+    /// amount no longer fits under `balance − payloadFee` and the node rejects
+    /// the send with the MPC ceremony already spent. Fitting the value to the
+    /// payload's own `gasLimit × maxFeePerGas` (plus `extraReserve`) is what
+    /// makes the two agree.
+    ///
+    /// Clamps DOWN only. If the fee FELL between the two readings the affordable
+    /// amount is larger than what was displayed, and signing more than the user
+    /// was shown is never the right answer.
+    ///
+    /// May return a non-positive value when the balance cannot fund its own fee;
+    /// the caller decides what to do about that instead of signing it.
+    static func evmMaxSendAmountRaw(
+        coin: Coin,
+        displayedAmountRaw: BigInt,
+        signedFee: BigInt,
+        extraReserve: BigInt
+    ) -> BigInt {
+        Swift.min(displayedAmountRaw, coin.balanceRaw - signedFee - extraReserve)
+    }
+
+    /// Raw base-unit amount rendered as the decimal string a `SendTransaction`
+    /// carries. Full precision, so the string round-trips back through
+    /// `amountInRaw` to the same raw value.
+    static func amountString(coin: Coin, raw: BigInt) -> String {
+        let rawDecimal = Decimal(string: String(raw)) ?? 0
+        return "\(rawDecimal / pow(10, coin.decimals))"
     }
 
     /// Apply a percentage (0–100) to a max amount string. Used by the

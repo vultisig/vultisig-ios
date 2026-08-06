@@ -116,6 +116,18 @@ protocol SendInteractor {
     /// is the fix for the bug where Verify refresh ignored `tx.feeMode`.
     func calculateEVMFee(_ request: SendFeeEstimateRequest) async throws -> SendInteractorFeeResult
 
+    /// Balance an OP-stack rollup requires ON TOP OF `gasLimit × maxFeePerGas`.
+    /// op-geth checks `value + gasLimit × maxFeePerGas + l1Cost + operatorCost`
+    /// against the balance before it executes a transaction, so a native max
+    /// send that reserves only the L2 gas term is rejected by the two terms it
+    /// left out. `gasLimit` prices the operator fee and is the limit the payload
+    /// will carry; a `nil` limit skips that term.
+    ///
+    /// `.zero` on every non-OP-stack chain, and each term degrades to zero on
+    /// its own lookup failure — a fee we could not read must never block a send
+    /// that worked before this existed.
+    func fetchOpStackFeeReserve(coin: Coin, memo: String?, gasLimit: BigInt?) async -> BigInt
+
     /// UTXO/Cardano draft planning for fee display. Kept below the interactor
     /// so Verify logic does not reach into BlockchairService caches or payload
     /// factories directly.

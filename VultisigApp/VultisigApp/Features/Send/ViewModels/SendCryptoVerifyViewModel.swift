@@ -129,6 +129,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             let feeResult = try await logic.calculateFee(tx: transaction)
 
             var newAmount = transaction.amount
+            var nothingLeftAfterFee = false
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
             if transaction.sendMaxAmount, transaction.coin.isNativeToken,
                let plannedRaw = feeResult.maxSendAmountRaw {
@@ -148,16 +149,32 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 // clamps to the Details amount so the refetched fee's embedded
                 // burn tax can't push the re-derived amount past the tax fixed
                 // point and underfund the send.
+                //
+                // OP-stack rollups additionally bill an L1 data fee and an
+                // operator fee that op-geth adds to the balance check it runs
+                // before executing the transaction, so the amount has to leave
+                // room for those on top of the L2 gas. Zero on every other
+                // chain, which leaves the arithmetic exactly as it was.
                 let candidate = SendCryptoLogic.verifyMaxCandidateRaw(
                     coin: transaction.coin,
                     fee: feeResult.fee,
-                    previousAmountRaw: transaction.amountInRaw
+                    previousAmountRaw: transaction.amountInRaw,
+                    extraReserve: await logic.opStackFeeReserve(
+                        tx: transaction,
+                        gasLimit: feeResult.gasLimit
+                    )
                 )
                 if candidate > 0 {
-                    let decimals = transaction.coin.decimals
-                    let amountDecimal = Decimal(string: String(candidate)) ?? 0
-                    let formattedAmount = amountDecimal / pow(10, decimals)
-                    newAmount = "\(formattedAmount)"
+                    newAmount = SendCryptoLogic.amountString(coin: transaction.coin, raw: candidate)
+                } else {
+                    // Nothing survives the fee (plus the reserves), so there is
+                    // no max to show. Leaving the stale amount would keep Sign
+                    // enabled on a send that cannot be funded, and the failure
+                    // would only surface when the payload build refuses it.
+                    // `validateBalanceWithFee` doesn't see this on its own: it
+                    // compares the fee alone against the balance, and it is the
+                    // reserves on top that can tip it over.
+                    nothingLeftAfterFee = true
                 }
             }
 
@@ -169,9 +186,14 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 transaction = transaction.copy(amount: newAmount)
             }
 
+            try await adjustAmountForFeeShortfallIfNeeded(gasLimit: feeResult.gasLimit)
+
             isCalculatingFee = false
 
             validateBalanceWithFee()
+            if nothingLeftAfterFee, !hasBalanceError {
+                flagBalanceError("walletBalanceExceededError")
+            }
             // Keep isLoading true across the async destination guard so Sign
             // stays disabled until the load-time validation fully settles —
             // otherwise Sign briefly re-enables while account_info is in flight.
@@ -199,6 +221,77 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isCalculatingFee = false
             isLoading = false
         }
+    }
+
+    /// Clamp the amount down to what the balance can actually fund, when the
+    /// re-fetched fee — not the amount itself — is what put the send past the
+    /// balance. The alternative is the dead end this replaces: an error whose
+    /// only answer is to go back and retype a number the user cannot compute,
+    /// because it depends on a fee they never see until this screen.
+    ///
+    /// Publishing the clamped value to `transaction` BEFORE
+    /// `validateBalanceWithFee` runs is what makes it safe, and the ordering is
+    /// load-bearing:
+    ///
+    /// - the screen renders both the crypto amount and its fiat from this same
+    ///   `transaction`, so the user reads the clamped number, not the one they
+    ///   typed;
+    /// - the balance check, the existential-deposit guard (DOT) and the
+    ///   minimum-send floor (Cardano) then all run against the clamped value
+    ///   rather than the abandoned one;
+    /// - and they run against it as the screen shows it — rendering raw units to
+    ///   a decimal string and parsing them back is not lossless, so the check
+    ///   has to see the string's value, not the BigInt it came from. If the
+    ///   clamp fails any of those, the error surfaces and Sign stays disabled.
+    ///
+    /// Nothing is ever signed that the screen did not show.
+    private func adjustAmountForFeeShortfallIfNeeded(gasLimit: BigInt?) async throws {
+        // Same skip as `validateBalanceWithFee`: a pre-built payload's
+        // `transaction` is display-only and its balance is not the real source.
+        guard prebuiltKeysignPayload == nil,
+              SendCryptoVerifyLogic.hasFeeOnlyShortfall(tx: transaction) else {
+            return
+        }
+
+        // Read the OP-stack surcharges only now. It is a network call, and it is
+        // owed only by a send that is actually being clamped to the balance.
+        let pending = transaction
+        let extraReserve = await logic.opStackFeeReserve(tx: pending, gasLimit: gasLimit)
+        // The reserve lookup fails open and never throws, so cancellation has to
+        // be asked for explicitly — otherwise a superseded load pass carries on
+        // and rewrites the amount a newer one just published.
+        try Task.checkCancellation()
+        // A `transaction` that moved while this was suspended means a newer load
+        // pass published it, so this one is stale. Abort the whole pass rather
+        // than returning: carrying on would run the balance validation on the
+        // newer pass's transaction and could leave a spurious error standing on
+        // an amount that pass is still about to adjust.
+        guard transaction == pending else { throw CancellationError() }
+
+        guard let adjusted = SendCryptoVerifyLogic.feeShortfallAdjustedAmountRaw(
+            tx: pending,
+            extraReserve: extraReserve
+        ) else {
+            return
+        }
+
+        let amount = SendCryptoLogic.amountString(coin: pending.coin, raw: adjusted)
+        // The fiat figure moves with the amount. The Verify header derives its
+        // own from `amountDecimal` and follows automatically, but the Done screen
+        // reads the stored `amountInFiat` — left alone it would quote the value
+        // the user asked for rather than the one that was signed. With no rate
+        // the conversion yields "0", which is what a priceless coin showed all
+        // along; what matters is that it never keeps the pre-clamp figure.
+        transaction = pending.copy(
+            amount: amount,
+            amountInFiat: SendCryptoLogic.coinAmountToFiat(amount: amount, coin: pending.coin),
+            amountWasAutoAdjusted: true
+        )
+        // The user is confirming a number the app just changed under them. Any
+        // "the amount is correct" tick standing from before — first load racing
+        // the checkbox, or a retry re-pricing an already-confirmed screen —
+        // authorized the old amount, not this one.
+        isAmountCorrect = false
     }
 
     /// Load-time destination-activation guard. XRPL rejects a Payment that
@@ -246,11 +339,18 @@ class SendCryptoVerifyViewModel: ObservableObject {
 
         let result = logic.validateBalanceWithFee(tx: transaction)
         if !result.isValid {
-            errorMessage = result.errorMessage ?? ""
-            showAlert = true
-            isAmountCorrect = false
-            hasBalanceError = true
+            flagBalanceError(result.errorMessage ?? "")
         }
+    }
+
+    /// Surface a balance problem: alert it, clear the amount check and disable
+    /// Sign. `errorMessage` carries the localization KEY — the Verify screen's
+    /// alert runs it through `NSLocalizedString`.
+    private func flagBalanceError(_ message: String) {
+        errorMessage = message
+        showAlert = true
+        isAmountCorrect = false
+        hasBalanceError = true
     }
 
     var isValidForm: Bool {
@@ -284,7 +384,34 @@ class SendCryptoVerifyViewModel: ObservableObject {
         try await logic.validateTrustLineReserveIfNeeded(tx: transaction)
         try await logic.validateUtxosIfNeeded(tx: transaction)
         let keysignPayload = try await logic.buildKeysignPayload(tx: transaction, vault: transaction.vault)
+        syncRefittedAmount(with: keysignPayload)
         return keysignPayload
+    }
+
+    /// Republish `transaction` at the amount the payload carries.
+    ///
+    /// A native EVM amount the app derived from the balance — a MAX, or one
+    /// Verify adjusted down to fit the fee — is re-fitted at build time to the
+    /// fee the payload itself quotes, so the signed value can come out below the
+    /// one Verify displayed (never above — the clamp only reduces).
+    /// `transaction` is what the signing context, the keysign summary and the
+    /// history entry are built from, so it has to follow the payload or the user
+    /// is shown a number that isn't the one being signed. No-op for every other
+    /// send, whose amount the payload build leaves untouched.
+    private func syncRefittedAmount(with payload: KeysignPayload) {
+        guard SendCryptoVerifyLogic.needsEVMBalanceRefit(tx: transaction),
+              payload.toAmount != transaction.amountInRaw else {
+            return
+        }
+        let amount = SendCryptoLogic.amountString(coin: transaction.coin, raw: payload.toAmount)
+        // The Done screen pairs `amount` with `amountInFiat`, so the fiat figure
+        // has to follow the clamp too — same conversion the Details screen uses,
+        // so the string keeps the shape that screen produces. A coin with no
+        // rate yields nil and keeps whatever was there.
+        transaction = transaction.copy(
+            amount: amount,
+            amountInFiat: SendCryptoLogic.coinAmountToFiat(amount: amount, coin: transaction.coin)
+        )
     }
 
     func scan() async {

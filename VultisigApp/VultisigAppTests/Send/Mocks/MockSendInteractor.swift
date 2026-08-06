@@ -70,6 +70,7 @@ final class MockSendInteractor: SendInteractor {
     private(set) var calculateMaxSendPlanRefreshFlags: [Bool] = []
     private(set) var plannedOutcomeCalls: [KeysignPayload] = []
     private(set) var validateUtxosIfNeededCalls: [Coin] = []
+    private(set) var opStackFeeReserveCalls: [(coin: Coin, memo: String?, gasLimit: BigInt?)] = []
 
     // MARK: - Stubs
 
@@ -91,6 +92,8 @@ final class MockSendInteractor: SendInteractor {
         return SendMaxPlanResult(amount: max(balance - fee, .zero), fee: fee, byteFee: BigInt(12))
     }
     var validateUtxosIfNeededStub: ((Coin) throws -> Void) = { _ in }
+    /// Defaults to the production shape for a non-OP-stack chain: no reserve.
+    var opStackFeeReserveStub: ((Coin, String?, BigInt?) -> BigInt) = { _, _, _ in .zero }
     /// Default: no plan available, so the sign-time consistency check is inert
     /// unless a test opts in.
     var plannedOutcomeStub: ((KeysignPayload) throws -> SendMaxPlanResult?) = { _ in nil }
@@ -108,6 +111,11 @@ final class MockSendInteractor: SendInteractor {
         let call = CalculateEVMFeeCall(request: request)
         calculateEVMFeeCalls.append(call)
         return try calculateEVMFeeStub(call)
+    }
+
+    func fetchOpStackFeeReserve(coin: Coin, memo: String?, gasLimit: BigInt?) async -> BigInt {
+        opStackFeeReserveCalls.append((coin: coin, memo: memo, gasLimit: gasLimit))
+        return opStackFeeReserveStub(coin, memo, gasLimit)
     }
 
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {

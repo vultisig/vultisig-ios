@@ -143,6 +143,19 @@ struct SendTransaction: Hashable {
     let toAddressLabel: String?
     let amount: String
     let amountInFiat: String
+
+    /// True when `amount` is a value the APP derived from the balance, not one
+    /// the user typed — Verify clamped it down to what the balance can fund
+    /// once the re-fetched fee no longer left room for the typed number.
+    ///
+    /// It rides on the transaction because the two places that must agree about
+    /// it sit on opposite sides of the VM/logic boundary: the payload build
+    /// re-fits such an amount to the fee it is actually signing, and the VM
+    /// republishes the transaction from the payload so the screen keeps showing
+    /// the value being signed. A balance-derived amount is by definition at the
+    /// edge of the balance, so it needs that re-fit for the same reason a MAX
+    /// send does.
+    let amountWasAutoAdjusted: Bool
     let memo: String
 
     /// XRP destination tag (nil elsewhere / when absent). Carried separately
@@ -210,6 +223,7 @@ extension SendTransaction {
             lhs.toAddressLabel == rhs.toAddressLabel &&
             lhs.amount == rhs.amount &&
             lhs.amountInFiat == rhs.amountInFiat &&
+            lhs.amountWasAutoAdjusted == rhs.amountWasAutoAdjusted &&
             lhs.memo == rhs.memo &&
             lhs.destinationTag == rhs.destinationTag &&
             lhs.gas == rhs.gas &&
@@ -237,6 +251,7 @@ extension SendTransaction {
         hasher.combine(toAddressLabel)
         hasher.combine(amount)
         hasher.combine(amountInFiat)
+        hasher.combine(amountWasAutoAdjusted)
         hasher.combine(memo)
         hasher.combine(destinationTag)
         hasher.combine(gas)
@@ -282,7 +297,8 @@ extension SendTransaction {
         feeCoin: Coin,
         cosmosStakingPayload: CosmosStakingPayload? = nil,
         solanaStakingPayload: SolanaStakingPayload? = nil,
-        limitCancelContext: LimitOrderCancelRequest? = nil
+        limitCancelContext: LimitOrderCancelRequest? = nil,
+        amountWasAutoAdjusted: Bool = false
     ) {
         self.coin = coin
         self.vault = vault
@@ -293,6 +309,7 @@ extension SendTransaction {
         self.toAddressLabel = toAddressLabel
         self.amount = amount
         self.amountInFiat = amountInFiat
+        self.amountWasAutoAdjusted = amountWasAutoAdjusted
         self.memo = memo
         self.destinationTag = destinationTag
         self.gas = gas
@@ -365,6 +382,7 @@ extension SendTransaction {
         toAddressLabel: SendTransactionUpdate<String?>? = nil,
         amount: String? = nil,
         amountInFiat: String? = nil,
+        amountWasAutoAdjusted: Bool? = nil,
         memo: String? = nil,
         destinationTag: SendTransactionUpdate<UInt32?>? = nil,
         gas: BigInt? = nil,
@@ -450,7 +468,8 @@ extension SendTransaction {
             // silently dropped `minOutputOverride`, which carries the same doc
             // comment warning. A field-by-field copy is the shape that invites
             // it — every new field is one someone must remember to add here.
-            limitCancelContext: limitCancelContext
+            limitCancelContext: limitCancelContext,
+            amountWasAutoAdjusted: amountWasAutoAdjusted ?? self.amountWasAutoAdjusted
         )
     }
 

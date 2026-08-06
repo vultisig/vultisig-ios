@@ -178,6 +178,8 @@ private final class StubSendInteractor: SendInteractor {
         throw NSError(domain: "stub", code: 0)
     }
 
+    func fetchOpStackFeeReserve(coin _: Coin, memo _: String?, gasLimit _: BigInt?) async -> BigInt { .zero }
+
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         throw NSError(domain: "stub", code: 0)
     }
