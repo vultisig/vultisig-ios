@@ -433,6 +433,39 @@ class KeysignViewModel: ObservableObject {
         self.txid = newTxid
     }
 
+    /// Resolves the public key a custom message must be signed with.
+    ///
+    /// A key-import vault holds one pre-derived share per imported chain and signs with an
+    /// empty chain path, so the share handed to the ceremony *is* the signing key — nothing
+    /// derives it further. An exact chain match is preferred; failing that, any share on the
+    /// same derivation path is the very same key (every EVM chain derives from
+    /// `m/44'/60'/0'/0/0`), which is what lets a vault imported with BSC alone sign the
+    /// Ethereum-named messages the app produces.
+    ///
+    /// A path sibling must also be on the same curve as the target, checked two ways: the
+    /// persisted flag, and the curve the candidate's own chain implies. The persisted flag
+    /// alone is not enough — iOS and Android write it differently for the one MLDSA chain
+    /// (QBTC), and QBTC shares Cosmos' derivation path, so a vault restored from an Android
+    /// backup could otherwise resolve a Cosmos message to the QBTC share.
+    ///
+    /// Returns `nil` when nothing matches, leaving the caller's root-key fallback intact.
+    /// Non-import vaults get the exact match only: their root key is the signing key.
+    static func customMessagePublicKey(for chain: Chain,
+                                       in chainPublicKeys: [ChainPublicKey],
+                                       isImport: Bool) -> String? {
+        if let exactMatch = chainPublicKeys.first(where: { $0.chain == chain }) {
+            return exactMatch.publicKeyHex
+        }
+        guard isImport else { return nil }
+        let derivationPath = chain.coinType.derivationPath()
+        let isEddsa = !chain.isECDSA
+        return chainPublicKeys.first {
+            $0.isEddsa == isEddsa
+                && $0.chain.isECDSA == chain.isECDSA
+                && $0.chain.coinType.derivationPath() == derivationPath
+        }?.publicKeyHex
+    }
+
     func startKeysignDKLS(isImport: Bool) async {
         do {
             // Check if we have either keysignPayload or customMessagePayload
@@ -455,7 +488,9 @@ class KeysignViewModel: ObservableObject {
                     // Fallback to Ethereum if chain name cannot be parsed
                     chainPath = TokensStore.Token.ethereum.coinType.derivationPath()
                 }
-                publicKey = self.vault.chainPublicKeys.first(where: { $0.chain == targetChain })?.publicKeyHex
+                publicKey = Self.customMessagePublicKey(for: targetChain,
+                                                        in: self.vault.chainPublicKeys,
+                                                        isImport: isImport)
             } else {
                 throw HelperError.runtimeError("keysign payload is nil")
             }
