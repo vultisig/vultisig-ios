@@ -1,10 +1,10 @@
 # The key hierarchy
 
 Two levels, and the separation between them is the reason changing a passcode is
-cheap and the reason a 5-digit passcode is not the thing protecting the wallet.
+cheap and the reason a 6-digit passcode is not the thing protecting the wallet.
 
 ```
-   user types 5 digits
+   user types 6 digits
            │
            │  PBKDF2-SHA256, 600k iterations, 16-byte random salt
            ▼
@@ -55,11 +55,19 @@ Three separate reasons, all load-bearing:
 
    **It is not a strength multiplier, and this doc will not pretend otherwise.**
    An attacker who gets the wrapper *and* the sealed shares out of the Keychain
-   can derive a candidate wrapping key from each of the 100,000 possible
-   passcodes offline, and the GCM tag tells them which one is right. So
+   can derive a candidate wrapping key from each of the 1,000,000 passcodes the
+   keypad can produce, and the GCM tag tells them which one is right. So
    **resistance to an offline attack is bounded by passcode entropy plus the
-   PBKDF2 cost — roughly 16.6 bits × 600k iterations — not by the data key's 256
+   PBKDF2 cost — at most 19.9 bits × 600k iterations — not by the data key's 256
    bits.** The indirection buys structure, not entropy.
+
+   "The keypad can produce" is the honest scope, and the bound is *at most*.
+   Validation accepts any six characters satisfying `Character.isNumber`, which
+   is a larger set than the ten ASCII digits — the macOS field takes a hardware
+   keyboard, so a non-ASCII digit can reach it. That widens the accepted strings
+   without widening what anyone actually types, and an attacker enumerating a
+   keypad-entered passcode still has 10⁶ to try. It is written down because the
+   number below is otherwise the kind of claim that quietly becomes false.
 
    The two mitigations that actually apply are different from each other and are
    worth keeping straight: PBKDF2 at 600k iterations sets the *per-guess cost* of
