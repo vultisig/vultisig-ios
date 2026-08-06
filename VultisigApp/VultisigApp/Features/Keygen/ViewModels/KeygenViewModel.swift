@@ -99,6 +99,15 @@ class KeygenViewModel: ObservableObject {
     @Published var didCancelDuplicateVault = false
     @Published var keygenConnected = false
 
+    /// Held for the whole vault-creation episode, so a passcode transition
+    /// cannot land between the TSS layer producing a share and this flow
+    /// persisting it.
+    ///
+    /// Released by being set to `nil`, or by this view model going away — the
+    /// lease releases on `deinit`, which is what stops an unhandled path from
+    /// stranding it and blocking every later passcode change until relaunch.
+    private var keygenEpisode: EpisodeLease?
+
     private var duplicateVaultContinuation: CheckedContinuation<Bool, Never>?
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -209,14 +218,43 @@ class KeygenViewModel: ObservableObject {
     /// re-running keygen that reproduces an existing vault replaces it as before.
     @MainActor
     static func commitVault(_ vault: Vault, context: ModelContext) throws {
-        VaultDefaultCoinService(context: context)
-            .setDefaultCoinsOnce(vault: vault)
-        context.insert(vault)
-        try context.save()
+        // The insert and the save are one write span. The episode lease already
+        // keeps a transition out of the whole review interval, but this is the
+        // moment the shares actually reach the store, so it carries its own
+        // guarantee rather than relying on a lease held elsewhere.
+        try KeyshareWriteCoordinator.shared.withWriteLease {
+            VaultDefaultCoinService(context: context)
+                .setDefaultCoinsOnce(vault: vault)
+            context.insert(vault)
+            try context.save()
+        }
     }
 
     func startKeygen(context: ModelContext) async {
         self.keygenConnected = true
+
+        // A passcode transition is rewriting every stored share while it runs,
+        // and a keygen started underneath it would produce a share the sweep
+        // never sees. Transitions are short foreground actions, so the honest
+        // answer is to refuse and let the user retry.
+        guard let episode = KeyshareWriteCoordinator.shared.beginEpisode() else {
+            logger.error("Keygen refused: a passcode transition holds the key-share coordinator")
+            self.status = .KeygenFailed
+            self.keygenError = "somethingWentWrongTryAgain".localized
+            return
+        }
+        self.keygenEpisode = episode
+
+        // Every path below either persists the vault before returning or fails
+        // outright. The deferred flow is the exception: it leaves sealed shares
+        // in memory waiting for the review screen to confirm, and that interval
+        // is exactly what the episode exists to cover, so its lease outlives
+        // this call and goes when this view model does.
+        defer {
+            if !(self.deferVaultPersistence && self.status == .KeygenFinished) {
+                self.keygenEpisode = nil
+            }
+        }
 
         if self.tssType == .SingleKeygen {
             await startSingleKeygen(context: context)
