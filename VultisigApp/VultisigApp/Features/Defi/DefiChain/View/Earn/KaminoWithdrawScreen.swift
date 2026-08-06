@@ -8,10 +8,11 @@
 //  result as a pre-built payload — so what the user approves is the exact bytes
 //  that were proven to execute.
 //
-//  The screen exists even for positions it cannot withdraw. A farm-staked
-//  position is the state every real deposit into these vaults is in, and saying
-//  so where the user looked for the button is better than having no button at
-//  all and no explanation.
+//  The screen exists even for positions it cannot withdraw — an empty one, or
+//  one whose figures could not be read — because saying so where the user
+//  looked for the button is better than having no button and no explanation.
+//  Farm-staked positions ARE withdrawable; the release from the farm is part of
+//  the transaction and needs nothing from this screen.
 //
 
 import SwiftUI
@@ -45,11 +46,9 @@ struct KaminoWithdrawScreen: View {
                     // screen has to match it.
                     amountDecimals: viewModel.descriptor.tokenDecimals,
                     amountField: viewModel.amountField,
-                    validForm: $viewModel.validForm,
-                    // A position that cannot be withdrawn at all — staked in the
-                    // vault's farm, empty, or unreadable — is a state no amount
-                    // satisfies, so the button reads as disabled rather than
-                    // refusing after the tap.
+                    // A position that cannot be withdrawn at all — empty, or
+                    // unreadable — is a state no amount satisfies, so the button
+                    // reads as disabled rather than refusing after the tap.
                     isContinueDisabled: viewModel.unavailableReason != nil,
                     customViewPosition: .bottom
                 ) {
@@ -81,8 +80,8 @@ struct KaminoWithdrawScreen: View {
         }
     }
 
-    /// Why this position cannot be withdrawn — most often that it is staked in
-    /// the vault's farm. Shown as information rather than as an error: it is a
+    /// Why this position cannot be withdrawn: it holds nothing, or its figures
+    /// could not be read. Shown as information rather than as an error — it is a
     /// fact about the position, not something the user did.
     @ViewBuilder
     private var unavailableBanner: some View {

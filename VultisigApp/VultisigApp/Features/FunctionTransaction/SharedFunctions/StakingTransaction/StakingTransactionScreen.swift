@@ -45,7 +45,6 @@ struct StakingTransactionScreen<VM: StakingFormViewModel, Sheet: View>: View {
     var body: some View {
         FormScreen(
             title: String(format: viewModel.titleKey.localized, viewModel.coin.ticker),
-            validForm: $viewModel.validForm,
             isContinueDisabled: viewModel.isContinueDisabled,
             onContinue: onContinue
         ) {

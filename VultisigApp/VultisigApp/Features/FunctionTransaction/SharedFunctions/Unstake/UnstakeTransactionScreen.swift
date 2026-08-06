@@ -18,8 +18,7 @@ struct UnstakeTransactionScreen: View {
             availableAmount: viewModel.availableAmount,
             percentageSelected: $viewModel.percentageSelected,
             percentageFieldType: .slider,
-            amountField: viewModel.amountField,
-            validForm: $viewModel.validForm
+            amountField: viewModel.amountField
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)

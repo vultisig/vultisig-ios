@@ -56,9 +56,14 @@ final class KaminoDepositViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.minimumDepositText.contains("0.1"))
     }
 
-    /// A below-minimum amount fails validation, so the form's continue button
-    /// never enables. Asserted through the validator the form installs rather
-    /// than through a published flag, because that is what actually gates it.
+    /// A below-minimum amount fails validation, so the field shows the vault's
+    /// own minimum. Asserted through the validator the form installs rather than
+    /// through a published flag, because that is what actually gates it.
+    ///
+    /// The button stays TAPPABLE — `FormScreen` cannot disable Continue on
+    /// validity without removing the tap that reveals field errors — so the
+    /// build path re-enforces the same bound; see
+    /// `testABelowMinimumAmountIsRefusedBeforeAnyNetworkCall`.
     func testABelowMinimumAmountFailsValidation() async throws {
         addUsdcCoin(balance: "50000000")
         let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
@@ -223,6 +228,71 @@ final class KaminoDepositViewModelTests: XCTestCase {
         XCTAssertEqual(preparer.depositRequests.first?.amount.baseUnits, BigInt(10_000_000))
     }
 
+    // MARK: - Bounds the build path re-enforces
+
+    /// `FormScreen` does not disable Continue on validation, so a below-minimum
+    /// amount reaches `makeDeposit`. It must be refused HERE rather than sent:
+    /// the API builds a below-minimum deposit happily and the chain rejects it
+    /// afterwards, so without this the user spends several round trips to be
+    /// told what the form already knew.
+    func testABelowMinimumAmountIsRefusedBeforeAnyNetworkCall() async {
+        addUsdcCoin(balance: "50000000")
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await viewModel.onLoad()
+        viewModel.amountField.value = "0.05"
+
+        let deposit = await viewModel.makeDeposit()
+
+        XCTAssertNil(deposit)
+        XCTAssertTrue(preparer.depositRequests.isEmpty)
+        XCTAssertEqual(
+            viewModel.error as? KaminoDepositError,
+            .belowMinimum(minimum: "0.1", ticker: "USDC")
+        )
+    }
+
+    /// And the same for an amount above what is available. The ceiling is
+    /// compared in base units against the measured maximum, not against the
+    /// `Decimal` the form renders — on the SOL vault that maximum is exact to
+    /// the lamport and rendering it rounds.
+    func testAnAmountAboveTheMeasuredMaximumIsRefusedBeforeAnyNetworkCall() async {
+        addSolCoin(balance: "3000000000")
+        preparer.maxLamports = BigInt(2_490_000_001)
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.allezSOL)
+        await viewModel.onLoad()
+
+        XCTAssertEqual(viewModel.availableBaseUnits, BigInt(2_490_000_001))
+
+        viewModel.amountField.value = "2.490000002"
+        let deposit = await viewModel.makeDeposit()
+
+        XCTAssertNil(deposit)
+        XCTAssertTrue(preparer.depositRequests.isEmpty)
+
+        // Exactly the maximum still builds — the refusal is above it, not at it.
+        viewModel.amountField.value = "2.490000001"
+        let atMaximum = await viewModel.makeDeposit()
+        XCTAssertNotNil(atMaximum)
+    }
+
+    /// Continue is hard-disabled only for the states no amount reaches: no
+    /// wallet coin, an unhydrated vault, or nothing available to spend. A
+    /// below-minimum amount is NOT one of them — the user can fix it, and
+    /// disabling the button would take away the tap that shows them why.
+    func testContinueIsDisabledOnlyWhenNoAmountCouldWork() async {
+        let missingCoin = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await missingCoin.onLoad()
+        XCTAssertTrue(missingCoin.isDepositUnavailable)
+
+        addUsdcCoin(balance: "50000000")
+        let usable = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await usable.onLoad()
+        XCTAssertFalse(usable.isDepositUnavailable)
+
+        usable.amountField.value = "0.05"
+        XCTAssertFalse(usable.isDepositUnavailable)
+    }
+
     // MARK: - Payload
 
     /// What the verify screen ends up signing: the prepared bytes, verbatim,
@@ -328,6 +398,65 @@ final class KaminoDepositViewModelTests: XCTestCase {
 
         XCTAssertNil(deposit)
         XCTAssertNotNil(viewModel.error)
+    }
+
+    // MARK: - The bytes that get signed
+
+    /// ⚠️ **The property the whole flow rests on: the payload carries the
+    /// preparer's bytes verbatim.**
+    ///
+    /// Everything upstream — the pinned registry, six layers of validation, two
+    /// simulations — describes one specific byte string. A form that handed the
+    /// factory anything else, or re-derived a transaction from `coin` and
+    /// `amount` the way the general Solana path does, would leave all of that
+    /// checking a transaction nobody signs.
+    ///
+    /// Nothing else in the suite crosses this hop: the preparer tests stop at
+    /// the preparer, and the blockhash-refresh tests start from a fixture.
+    ///
+    /// The sentinel bytes are a DIFFERENT vault's vector, so a re-derivation
+    /// that happened to produce a plausible USDC deposit fails here instead of
+    /// matching by coincidence.
+    func testTheDepositPayloadCarriesThePreparedBytesVerbatim() async throws {
+        addUsdcCoin(balance: "10000000")
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await viewModel.onLoad()
+
+        let sentinel = KaminoPreparedTransaction(
+            base64: KaminoTransactionFixtures.solDeposit.injected,
+            priorityFee: KaminoPriorityFee(limit: 333_333, price: 44_444),
+            unitsConsumed: 1,
+            payerLamportsAfter: nil,
+            recentBlockhash: "6VjnGjZWnCyLtCd5FZTLpqm9GNjnzDrGGjyEfKNXfPKa"
+        )
+        preparer.prepared = sentinel
+
+        viewModel.amountField.value = "1"
+        let made = await viewModel.makeDeposit()
+        let handoff = try XCTUnwrap(made)
+
+        guard case .signSolana(let solana)? = handoff.payload.signData else {
+            return XCTFail("a Kamino deposit must sign raw Solana bytes, not a rebuilt transfer")
+        }
+        XCTAssertEqual(solana.rawTransactions, [sentinel.base64])
+
+        // The fee row and the verify screen read these, so they have to describe
+        // the transaction in `signData` rather than a second one.
+        guard case .Solana(let blockhash, let price, let limit, _, _, _) = handoff.payload.chainSpecific else {
+            return XCTFail("expected Solana chain-specific data")
+        }
+        XCTAssertEqual(blockhash, sentinel.recentBlockhash)
+        XCTAssertEqual(price, BigInt(sentinel.priorityFee.price))
+        XCTAssertEqual(limit, BigInt(sentinel.priorityFee.limit))
+
+        // And the marker, which is what the initiating device's verify screen
+        // cross-checks the decoded bytes against.
+        let marker = try XCTUnwrap(handoff.payload.kaminoPayload)
+        XCTAssertEqual(marker.vaultAddress, KaminoVaultRegistry.steakhouseUSDC.address)
+        XCTAssertEqual(marker.operation, .deposit)
+        XCTAssertEqual(marker.amountBaseUnits, "1000000")
+        XCTAssertEqual(marker.amountDecimals, 6)
+        XCTAssertEqual(handoff.payload.toAddress, KaminoVaultRegistry.steakhouseUSDC.address)
     }
 
     // MARK: - Helpers
@@ -439,6 +568,9 @@ private final class SpyPreparer: KaminoDepositPreparing, @unchecked Sendable {
     var maxLamports = BigInt(0)
     var maxError: Error?
     var depositError: Error?
+    /// Overrides what preparation returns, so a test can assert that exactly
+    /// these bytes — and no re-derivation of them — reach the payload.
+    var prepared: KaminoPreparedTransaction?
     /// Fires while the preparation is suspended, so a test can perturb the form
     /// exactly where a real keystroke would land.
     var onPrepare: (() -> Void)?
@@ -466,6 +598,7 @@ private final class SpyPreparer: KaminoDepositPreparing, @unchecked Sendable {
         onPrepare?()
         await Task.yield()
         if let depositError { throw depositError }
+        if let prepared { return prepared }
         return KaminoPreparedTransaction(
             base64: KaminoTransactionFixtures.usdcDeposit.injected,
             priorityFee: KaminoPriorityFee(

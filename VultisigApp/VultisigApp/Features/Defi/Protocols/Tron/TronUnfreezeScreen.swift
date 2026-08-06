@@ -36,7 +36,6 @@ struct TronUnfreezeScreen: View {
                 percentageSelected: $viewModel.percentageSelected,
                 percentageFieldType: .slider,
                 amountField: viewModel.amountField,
-                validForm: $viewModel.validForm,
                 onVerify: onVerify,
                 customView: { EmptyView() },
                 topView: {

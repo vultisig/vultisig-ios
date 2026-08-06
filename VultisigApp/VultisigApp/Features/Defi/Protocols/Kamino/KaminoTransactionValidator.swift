@@ -14,7 +14,50 @@ private let logger = Log.defi.other
 /// other — cannot be confused at the point where it is checked against the bytes.
 enum KaminoOperation {
     case deposit(KaminoTokenAmount)
-    case withdraw(KaminoShareAmount)
+    case withdraw(KaminoWithdrawRequest)
+}
+
+/// A withdraw request, split the way the transaction that answers it is built.
+///
+/// One type rather than a share amount plus a loose second parameter, because
+/// the split is not optional information: `POST /ktx/kvault/withdraw` builds a
+/// two-instruction transaction when the request fits inside the shares already
+/// in the user's own account, and a five-instruction one — with `farms::unstake`
+/// and `farms::withdraw_unstaked_deposits` in front — when it does not. Which of
+/// those two it will be is decided entirely by `shares` against `unstakedShares`,
+/// so a caller that could not state the split could not say which transaction it
+/// was expecting, and would have to accept either.
+struct KaminoWithdrawRequest: Equatable {
+
+    /// Shares the vault withdraw burns. This is the `u64` in the instruction.
+    let shares: KaminoShareAmount
+    /// Shares already sitting in the user's share account when the position was
+    /// read — the part a withdraw spends without touching the farm.
+    let unstakedShares: KaminoShareAmount
+
+    init(shares: KaminoShareAmount, unstakedShares: KaminoShareAmount) {
+        self.shares = shares
+        self.unstakedShares = unstakedShares
+    }
+
+    /// Shares the farm has to release before the withdraw can burn `shares`:
+    /// the shortfall, and nothing more.
+    ///
+    /// Measured, not assumed. Against a position holding `0.959593` unstaked and
+    /// `0.944548` staked, a request for `1.5` was built with an unstake of
+    /// `0.540407` — exactly `1.5 − 0.959593` — and a request for `0.959593` was
+    /// built with no farms instructions at all. The same subtraction reproduces
+    /// every captured vector, including the wholly-staked wallet where the
+    /// unstaked balance is zero and the shortfall is therefore the whole request.
+    var unstakeShares: KaminoShareAmount {
+        KaminoShareAmount(
+            baseUnits: max(shares.baseUnits - unstakedShares.baseUnits, 0),
+            decimals: shares.decimals
+        )
+    }
+
+    /// Whether this request needs the farm to release anything at all.
+    var requiresUnstake: Bool { unstakeShares.baseUnits > 0 }
 }
 
 /// The priority fee the app injected: a compute unit limit and a price per unit.
@@ -262,115 +305,49 @@ struct KaminoTransactionValidator {
 
     // MARK: - Instruction sequence
 
-    /// Walks the expected sequence and the actual instructions together. A step
-    /// that does not match is skipped only when it is optional; an instruction
-    /// left over at the end has no place in this operation at all.
+    /// Matches the transaction against the shape this operation produces, then
+    /// runs each matched instruction's own account and amount checks.
+    ///
+    /// The template lives in `KaminoInstructionSequence` because the verify
+    /// screen's offline decoder walks the same one: the two must agree on what a
+    /// Kamino transaction may contain, or a transaction this validator would
+    /// refuse could still be summarised to a co-signer as an ordinary deposit.
     private static func validateSequence(_ context: Context) throws {
-        var cursor = 0
-        for step in expectedSequence(for: context.intent) {
-            if step.isRepeatable {
-                while cursor < context.instructionCount, context.matches(step.kind, at: cursor) {
-                    try validateInstruction(step.kind, at: cursor, context)
-                    cursor += 1
-                }
-                continue
-            }
-            if cursor < context.instructionCount, context.matches(step.kind, at: cursor) {
-                try validateInstruction(step.kind, at: cursor, context)
-                cursor += 1
-            } else if step.isRequired {
-                throw KaminoValidationError.missingInstruction(step.kind.name)
-            }
-        }
-        guard cursor == context.instructionCount else {
+        let steps = KaminoInstructionSequence.expected(
+            operation: context.operation,
+            isWrappedSolVault: context.intent.vault.isWrappedSolVault,
+            hasFarm: context.intent.vault.hasFarm,
+            hasPriorityFee: context.intent.priorityFee != nil,
+            // This device read the position, so it knows which of the two
+            // withdraw shapes it asked for and says so. Never `.unknown` here:
+            // accepting either shape would let a transaction that unstakes
+            // shares pass as one that was not supposed to touch the farm.
+            farmUnstake: context.farmUnstake
+        )
+
+        switch KaminoInstructionSequence.match(kinds: context.kinds, against: steps) {
+        case .failure(.missingInstruction(let name)),
+             .failure(.incompleteInstructionPair(let name)):
+            throw KaminoValidationError.missingInstruction(name)
+        case .failure(.unexpectedInstruction(let index)):
             throw KaminoValidationError.unexpectedInstruction(
-                index: cursor,
-                program: context.programId(at: cursor)
+                index: index,
+                program: context.programId(at: index)
             )
-        }
-    }
-
-    /// The instruction shapes each operation produces, verified by decoding
-    /// transactions the Kamino API built and simulating them on mainnet.
-    ///
-    /// Optional steps are the ones whose absence cannot cost the user anything —
-    /// an idempotent account creation that was already done, a farm user that
-    /// already exists, a token account that stays open. Everything that decides
-    /// where money moves is required, and anything not listed at all is refused.
-    ///
-    /// The withdraw sequence is the one that is not yet complete — see the
-    /// extension point marked inside the `.withdraw` case below.
-    private static func expectedSequence(for intent: KaminoTransactionIntent) -> [Step] {
-        // The API emits no ComputeBudget instructions. The two below are the
-        // ones the app injects, so they are expected exactly when a fee was
-        // injected and pinned to its values when they are.
-        var steps: [Step] = []
-        if intent.priorityFee != nil {
-            steps.append(Step(.computeUnitLimit, required: true, repeatable: false))
-            steps.append(Step(.computeUnitPrice, required: true, repeatable: false))
-        }
-
-        switch intent.operation {
-        case .deposit:
-            steps.append(Step(.createTokenAccount, required: false, repeatable: true))
-            if intent.vault.isWrappedSolVault {
-                steps.append(Step(.wrapSolTransfer, required: true, repeatable: false))
-                steps.append(Step(.syncNative, required: true, repeatable: false))
-                steps.append(Step(.createTokenAccount, required: false, repeatable: true))
+        case .success(let matched):
+            for (position, kind) in matched.enumerated() {
+                try validateInstruction(kind, at: position, context)
             }
-            steps.append(Step(.kvaultDeposit, required: true, repeatable: false))
-            if intent.vault.hasFarm {
-                // Only the user's farm state may already exist. The stake itself
-                // is what makes the shares the position the app then reads, so a
-                // deposit that omits it is not the deposit that was requested.
-                steps.append(Step(.farmsInitializeUser, required: false, repeatable: false))
-                steps.append(Step(.farmsStake, required: true, repeatable: false))
-            }
-
-        case .withdraw:
-            // EXTENSION POINT — the farm-staked withdraw.
-            //
-            // Every withdraw ever observed spent UNSTAKED shares, while every
-            // deposit auto-stakes into the vault's farm. So the sequence below
-            // is the only one that has been seen, and it is not the one the
-            // users of these vaults are in: a withdraw of staked shares must
-            // unstake them first, and neither the instruction it uses nor its
-            // position in this list is known.
-            //
-            // A transaction carrying that unstake is therefore refused here as
-            // an instruction the template does not name. That is deliberate. A
-            // guessed step would validate the very shape it was guessed from and
-            // assert nothing, which is worse than refusing.
-            //
-            // Completing it is a single edit, and it needs exactly three things,
-            // all of which come from decoding ONE real mainnet withdraw of a
-            // farm-staked position:
-            //
-            //   1. a `Step.Kind` case for the unstake (its program is `farms`,
-            //      its discriminator `sha256("global:<name>")[0..<8]`, added to
-            //      `KaminoInstructionDiscriminator` and to `Context.matches`);
-            //   2. its account layout — at minimum the owner, the farm and the
-            //      user's share account — checked in `validateInstruction` the
-            //      way `validateFarmsStake` checks the deposit's;
-            //   3. the step inserted at its observed position below, `required`
-            //      when the shares being spent are staked.
-            //
-            // `KaminoWithdrawEligibility.farmStaked` is the form-level half of
-            // the same gap and comes out at the same time.
-            steps.append(Step(.createTokenAccount, required: false, repeatable: true))
-            steps.append(Step(.kvaultWithdraw, required: true, repeatable: false))
-            // Only on a full withdraw: the emptied token account is closed and
-            // its rent returned. The sampled vector is partial and carries none,
-            // so this is optional rather than required.
-            steps.append(Step(.closeTokenAccount, required: false, repeatable: false))
         }
-
-        return steps
     }
 
     // MARK: - Per-instruction checks
 
-    private static func validateInstruction(_ kind: Step.Kind, at position: Int, _ context: Context) throws {
+    private static func validateInstruction(
+        _ kind: KaminoInstructionSequence.Kind,
+        at position: Int,
+        _ context: Context
+    ) throws {
         let data = context.transaction.instructions[position].data
         let accounts = context.accountAddresses(at: position)
 
@@ -407,6 +384,17 @@ struct KaminoTransactionValidator {
 
         case .farmsStake:
             try validateFarmsStake(data: data, accounts: accounts, position: position, context)
+
+        case .farmsUnstake:
+            try validateFarmsUnstake(data: data, accounts: accounts, position: position, context)
+
+        case .farmsWithdrawUnstakedDeposits:
+            try validateFarmsWithdrawUnstakedDeposits(
+                data: data,
+                accounts: accounts,
+                position: position,
+                context
+            )
         }
     }
 
@@ -471,16 +459,16 @@ struct KaminoTransactionValidator {
     /// Creating an account is harmless in itself, but it is also where a
     /// third-party destination would first appear.
     private static func validateCreateTokenAccount(accounts: [String], position: Int, _ context: Context) throws {
-        guard accounts.count >= AssociatedTokenAccounts.count else {
+        guard accounts.count >= KaminoInstructionAccounts.AssociatedToken.count else {
             throw KaminoValidationError.malformedInstruction(
                 index: position,
-                detail: "createIdempotent needs \(AssociatedTokenAccounts.count) accounts"
+                detail: "createIdempotent needs \(KaminoInstructionAccounts.AssociatedToken.count) accounts"
             )
         }
-        try context.requireOwner(accounts[AssociatedTokenAccounts.payer], role: "token account funder")
-        try context.requireOwner(accounts[AssociatedTokenAccounts.wallet], role: "token account owner")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.AssociatedToken.payer], role: "token account funder")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.AssociatedToken.wallet], role: "token account owner")
 
-        let mint = accounts[AssociatedTokenAccounts.mint]
+        let mint = accounts[KaminoInstructionAccounts.AssociatedToken.mint]
         guard mint == context.intent.vault.tokenMint || mint == context.intent.vault.sharesMint else {
             throw KaminoValidationError.accountMismatch(
                 role: "created token account mint",
@@ -489,7 +477,7 @@ struct KaminoTransactionValidator {
             )
         }
 
-        let programId = accounts[AssociatedTokenAccounts.tokenProgram]
+        let programId = accounts[KaminoInstructionAccounts.AssociatedToken.tokenProgram]
         guard let tokenProgram = SolanaTokenProgram(programId: programId) else {
             throw KaminoValidationError.programNotAllowed(instruction: position, program: programId)
         }
@@ -500,11 +488,11 @@ struct KaminoTransactionValidator {
         ) else {
             throw KaminoValidationError.addressDerivationFailed("the associated token account for \(mint)")
         }
-        guard accounts[AssociatedTokenAccounts.account] == derived else {
+        guard accounts[KaminoInstructionAccounts.AssociatedToken.account] == derived else {
             throw KaminoValidationError.accountMismatch(
                 role: "created token account",
                 expected: derived,
-                actual: accounts[AssociatedTokenAccounts.account]
+                actual: accounts[KaminoInstructionAccounts.AssociatedToken.account]
             )
         }
     }
@@ -519,13 +507,13 @@ struct KaminoTransactionValidator {
         position: Int,
         _ context: Context
     ) throws {
-        guard accounts.count >= SystemTransferAccounts.count,
+        guard accounts.count >= KaminoInstructionAccounts.SystemTransfer.count,
               let lamports = KaminoInstructionDiscriminator.systemTransferLamports(data) else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "system transfer")
         }
-        try context.requireOwner(accounts[SystemTransferAccounts.source], role: "SOL transfer source")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.SystemTransfer.source], role: "SOL transfer source")
         try context.requireUserTokenAccount(
-            accounts[SystemTransferAccounts.destination],
+            accounts[KaminoInstructionAccounts.SystemTransfer.destination],
             role: "SOL transfer destination"
         )
 
@@ -545,15 +533,15 @@ struct KaminoTransactionValidator {
     /// Closing a token account sends its remaining lamports somewhere. Both the
     /// account being closed and where its rent lands have to be the user's.
     private static func validateCloseTokenAccount(accounts: [String], position: Int, _ context: Context) throws {
-        guard accounts.count >= CloseAccountAccounts.count else {
+        guard accounts.count >= KaminoInstructionAccounts.CloseAccount.count else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "closeAccount")
         }
-        let closed = accounts[CloseAccountAccounts.account]
+        let closed = accounts[KaminoInstructionAccounts.CloseAccount.account]
         guard context.userTokenAccounts.contains(closed) || context.userShareAccounts.contains(closed) else {
             throw KaminoValidationError.accountNotOwnedByUser(role: "closed token account", actual: closed)
         }
-        try context.requireOwner(accounts[CloseAccountAccounts.destination], role: "closed account rent destination")
-        try context.requireOwner(accounts[CloseAccountAccounts.authority], role: "closed account authority")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.CloseAccount.destination], role: "closed account rent destination")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.CloseAccount.authority], role: "closed account authority")
     }
 
     private static func validateKvaultDeposit(
@@ -562,19 +550,19 @@ struct KaminoTransactionValidator {
         position: Int,
         _ context: Context
     ) throws {
-        guard accounts.count >= KvaultDepositAccounts.minimumCount else {
+        guard accounts.count >= KaminoInstructionAccounts.KvaultDeposit.minimumCount else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "kvault deposit accounts")
         }
         guard case .deposit(let amount) = context.intent.operation else {
             throw KaminoValidationError.instructionNotForOperation(index: position, detail: "vault deposit")
         }
 
-        try context.requireOwner(accounts[KvaultDepositAccounts.user], role: "deposit authority")
-        try context.requireVault(accounts[KvaultDepositAccounts.vault])
-        try context.requireMint(accounts[KvaultDepositAccounts.tokenMint], expected: context.intent.vault.tokenMint, role: "deposit token mint")
-        try context.requireMint(accounts[KvaultDepositAccounts.sharesMint], expected: context.intent.vault.sharesMint, role: "deposit shares mint")
-        try context.requireUserTokenAccount(accounts[KvaultDepositAccounts.userTokenAccount], role: "deposit source")
-        try context.requireUserShareAccount(accounts[KvaultDepositAccounts.userShareAccount], role: "deposit share destination")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.KvaultDeposit.user], role: "deposit authority")
+        try context.requireVault(accounts[KaminoInstructionAccounts.KvaultDeposit.vault])
+        try context.requireMint(accounts[KaminoInstructionAccounts.KvaultDeposit.tokenMint], expected: context.intent.vault.tokenMint, role: "deposit token mint")
+        try context.requireMint(accounts[KaminoInstructionAccounts.KvaultDeposit.sharesMint], expected: context.intent.vault.sharesMint, role: "deposit shares mint")
+        try context.requireUserTokenAccount(accounts[KaminoInstructionAccounts.KvaultDeposit.userTokenAccount], role: "deposit source")
+        try context.requireUserShareAccount(accounts[KaminoInstructionAccounts.KvaultDeposit.userShareAccount], role: "deposit share destination")
 
         try requireAnchorAmount(
             data: data,
@@ -590,19 +578,19 @@ struct KaminoTransactionValidator {
         position: Int,
         _ context: Context
     ) throws {
-        guard accounts.count >= KvaultWithdrawAccounts.minimumCount else {
+        guard accounts.count >= KaminoInstructionAccounts.KvaultWithdraw.minimumCount else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "kvault withdraw accounts")
         }
-        guard case .withdraw(let shares) = context.intent.operation else {
+        guard case .withdraw(let request) = context.intent.operation else {
             throw KaminoValidationError.instructionNotForOperation(index: position, detail: "vault withdraw")
         }
 
-        try context.requireOwner(accounts[KvaultWithdrawAccounts.user], role: "withdraw authority")
-        try context.requireVault(accounts[KvaultWithdrawAccounts.vault])
-        try context.requireMint(accounts[KvaultWithdrawAccounts.tokenMint], expected: context.intent.vault.tokenMint, role: "withdraw token mint")
-        try context.requireMint(accounts[KvaultWithdrawAccounts.sharesMint], expected: context.intent.vault.sharesMint, role: "withdraw shares mint")
-        try context.requireUserTokenAccount(accounts[KvaultWithdrawAccounts.userTokenAccount], role: "withdraw destination")
-        try context.requireUserShareAccount(accounts[KvaultWithdrawAccounts.userShareAccount], role: "withdraw share source")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.KvaultWithdraw.user], role: "withdraw authority")
+        try context.requireVault(accounts[KaminoInstructionAccounts.KvaultWithdraw.vault])
+        try context.requireMint(accounts[KaminoInstructionAccounts.KvaultWithdraw.tokenMint], expected: context.intent.vault.tokenMint, role: "withdraw token mint")
+        try context.requireMint(accounts[KaminoInstructionAccounts.KvaultWithdraw.sharesMint], expected: context.intent.vault.sharesMint, role: "withdraw shares mint")
+        try context.requireUserTokenAccount(accounts[KaminoInstructionAccounts.KvaultWithdraw.userTokenAccount], role: "withdraw destination")
+        try context.requireUserShareAccount(accounts[KaminoInstructionAccounts.KvaultWithdraw.userShareAccount], role: "withdraw share source")
 
         // Shares, not tokens. The API takes the same `amount` field for both
         // actions with inverted units, and an amount above the user's balance is
@@ -611,17 +599,17 @@ struct KaminoTransactionValidator {
         try requireAnchorAmount(
             data: data,
             position: position,
-            expected: shares.baseUnits,
+            expected: request.shares.baseUnits,
             role: "withdraw share amount"
         )
     }
 
     private static func validateFarmsInitializeUser(accounts: [String], position: Int, _ context: Context) throws {
-        guard accounts.count >= FarmsInitializeUserAccounts.minimumCount else {
+        guard accounts.count >= KaminoInstructionAccounts.FarmsInitializeUser.minimumCount else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "farms initializeUser accounts")
         }
-        try context.requireOwner(accounts[FarmsInitializeUserAccounts.authority], role: "farm user authority")
-        try context.requireFarm(accounts[FarmsInitializeUserAccounts.farm], position: position)
+        try context.requireOwner(accounts[KaminoInstructionAccounts.FarmsInitializeUser.authority], role: "farm user authority")
+        try context.requireFarm(accounts[KaminoInstructionAccounts.FarmsInitializeUser.farm], position: position)
     }
 
     /// The stake that makes the deposit's shares invisible in the wallet. It must
@@ -633,13 +621,13 @@ struct KaminoTransactionValidator {
         position: Int,
         _ context: Context
     ) throws {
-        guard accounts.count >= FarmsStakeAccounts.minimumCount else {
+        guard accounts.count >= KaminoInstructionAccounts.FarmsStake.minimumCount else {
             throw KaminoValidationError.malformedInstruction(index: position, detail: "farms stake accounts")
         }
-        try context.requireOwner(accounts[FarmsStakeAccounts.owner], role: "stake authority")
-        try context.requireFarm(accounts[FarmsStakeAccounts.farm], position: position)
-        try context.requireUserShareAccount(accounts[FarmsStakeAccounts.userShareAccount], role: "stake source")
-        try context.requireMint(accounts[FarmsStakeAccounts.sharesMint], expected: context.intent.vault.sharesMint, role: "stake shares mint")
+        try context.requireOwner(accounts[KaminoInstructionAccounts.FarmsStake.owner], role: "stake authority")
+        try context.requireFarm(accounts[KaminoInstructionAccounts.FarmsStake.farm], position: position)
+        try context.requireUserShareAccount(accounts[KaminoInstructionAccounts.FarmsStake.userShareAccount], role: "stake source")
+        try context.requireMint(accounts[KaminoInstructionAccounts.FarmsStake.sharesMint], expected: context.intent.vault.sharesMint, role: "stake shares mint")
 
         // Kamino stakes the whole share balance rather than the freshly minted
         // amount, so the argument is the u64 sentinel. A different value is a
@@ -654,6 +642,104 @@ struct KaminoTransactionValidator {
                 actual: String(argument)
             )
         }
+    }
+
+    /// The release of staked shares from the farm, and the one amount in this
+    /// feature that is not a `u64`.
+    ///
+    /// `farms::unstake` takes a **`u128`, scaled by `10^18`**. Reading those 16
+    /// bytes through the `u64` reader would silently take the low half and
+    /// compare a meaningless number, so the check is done in exact `BigInt`
+    /// arithmetic against `unstakeShares × 10^18` — no division, no rounding,
+    /// and no narrowing of either side.
+    ///
+    /// Pinned to the exact shortfall rather than bounded above by it. An unstake
+    /// LARGER than the withdraw needs would release shares the transaction then
+    /// leaves sitting in the user's account, out of the farm and no longer
+    /// earning — a real loss, silent, and invisible on the verify screen, which
+    /// shows an amount and not a stake. A smaller one simply cannot settle. Both
+    /// are refusals.
+    private static func validateFarmsUnstake(
+        data: [UInt8],
+        accounts: [String],
+        position: Int,
+        _ context: Context
+    ) throws {
+        guard accounts.count >= KaminoInstructionAccounts.FarmsUnstake.minimumCount else {
+            throw KaminoValidationError.malformedInstruction(index: position, detail: "farms unstake accounts")
+        }
+        guard case .withdraw(let request) = context.intent.operation else {
+            throw KaminoValidationError.instructionNotForOperation(index: position, detail: "farm unstake")
+        }
+
+        try context.requireOwner(accounts[KaminoInstructionAccounts.FarmsUnstake.owner], role: "unstake authority")
+        try context.requireFarm(accounts[KaminoInstructionAccounts.FarmsUnstake.farm], position: position)
+        try context.requireFarmUserState(
+            accounts[KaminoInstructionAccounts.FarmsUnstake.userState],
+            position: position
+        )
+
+        guard let scaled = KaminoInstructionDiscriminator.anchorArgument128(data) else {
+            throw KaminoValidationError.malformedInstruction(index: position, detail: "farms unstake argument")
+        }
+        let expected = request.unstakeShares.baseUnits * KaminoInstructionDiscriminator.farmsStakeScale
+        guard scaled == expected else {
+            throw KaminoValidationError.amountMismatch(
+                role: "unstaked share amount",
+                expected: String(expected),
+                actual: String(scaled)
+            )
+        }
+    }
+
+    /// Moving what the unstake released into the user's own share account.
+    ///
+    /// It takes no argument — it always moves the whole released balance — so
+    /// everything checkable here is an account, and the one that matters is the
+    /// destination: this is where the shares land, and the vault withdraw two
+    /// instructions later burns from that same account. A destination belonging
+    /// to anyone else would hand the position over.
+    private static func validateFarmsWithdrawUnstakedDeposits(
+        data: [UInt8],
+        accounts: [String],
+        position: Int,
+        _ context: Context
+    ) throws {
+        guard accounts.count >= KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.minimumCount else {
+            throw KaminoValidationError.malformedInstruction(
+                index: position,
+                detail: "farms withdrawUnstakedDeposits accounts"
+            )
+        }
+        guard case .withdraw = context.intent.operation else {
+            throw KaminoValidationError.instructionNotForOperation(
+                index: position,
+                detail: "farm unstaked share withdrawal"
+            )
+        }
+        guard KaminoInstructionDiscriminator.hasNoAnchorArgument(data) else {
+            throw KaminoValidationError.malformedInstruction(
+                index: position,
+                detail: "farms withdrawUnstakedDeposits takes no argument"
+            )
+        }
+
+        try context.requireOwner(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.owner],
+            role: "unstaked share withdrawal authority"
+        )
+        try context.requireFarm(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.farm],
+            position: position
+        )
+        try context.requireFarmUserState(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.userState],
+            position: position
+        )
+        try context.requireUserShareAccount(
+            accounts[KaminoInstructionAccounts.FarmsWithdrawUnstakedDeposits.userShareAccount],
+            role: "unstaked share destination"
+        )
     }
 
     // MARK: - Writable accounts
@@ -720,115 +806,6 @@ struct KaminoTransactionValidator {
     }
 }
 
-// MARK: - Sequence model
-
-private extension KaminoTransactionValidator {
-
-    struct Step {
-        enum Kind {
-            case computeUnitLimit
-            case computeUnitPrice
-            case createTokenAccount
-            case wrapSolTransfer
-            case syncNative
-            case closeTokenAccount
-            case kvaultDeposit
-            case kvaultWithdraw
-            case farmsInitializeUser
-            case farmsStake
-
-            var name: String {
-                switch self {
-                case .computeUnitLimit: return "compute unit limit"
-                case .computeUnitPrice: return "compute unit price"
-                case .createTokenAccount: return "create associated token account"
-                case .wrapSolTransfer: return "SOL wrap transfer"
-                case .syncNative: return "wrapped SOL sync"
-                case .closeTokenAccount: return "close token account"
-                case .kvaultDeposit: return "vault deposit"
-                case .kvaultWithdraw: return "vault withdraw"
-                case .farmsInitializeUser: return "farm user initialization"
-                case .farmsStake: return "farm stake"
-                }
-            }
-        }
-
-        let kind: Kind
-        let isRequired: Bool
-        let isRepeatable: Bool
-
-        init(_ kind: Kind, required: Bool, repeatable: Bool) {
-            self.kind = kind
-            self.isRequired = required
-            self.isRepeatable = repeatable
-        }
-    }
-}
-
-// MARK: - Account layouts
-
-/// Positions of the accounts each instruction is checked on.
-///
-/// An Anchor instruction's account list is fixed by its IDL — only the trailing
-/// `remaining_accounts` vary, which is why the observed lists differ in length
-/// between vaults while these prefixes do not. Each index below was read out of
-/// transactions the Kamino API built for all three launch vaults.
-private enum KvaultDepositAccounts {
-    static let user = 0
-    static let vault = 1
-    static let tokenMint = 3
-    static let sharesMint = 5
-    static let userTokenAccount = 6
-    static let userShareAccount = 7
-    static let minimumCount = 8
-}
-
-private enum KvaultWithdrawAccounts {
-    static let user = 0
-    static let vault = 1
-    static let userTokenAccount = 5
-    static let tokenMint = 6
-    static let userShareAccount = 7
-    static let sharesMint = 8
-    static let minimumCount = 9
-}
-
-private enum FarmsInitializeUserAccounts {
-    static let authority = 0
-    static let farm = 5
-    static let minimumCount = 6
-}
-
-private enum FarmsStakeAccounts {
-    static let owner = 0
-    static let farm = 2
-    static let userShareAccount = 4
-    static let sharesMint = 5
-    static let minimumCount = 6
-}
-
-private enum AssociatedTokenAccounts {
-    static let payer = 0
-    static let account = 1
-    static let wallet = 2
-    static let mint = 3
-    static let tokenProgram = 5
-    static let count = 6
-}
-
-private enum SystemTransferAccounts {
-    static let source = 0
-    static let destination = 1
-    static let count = 2
-}
-
-private enum CloseAccountAccounts {
-    static let account = 0
-    static let destination = 1
-    static let authority = 2
-    static let count = 3
-}
-
 // MARK: - Context
 
 private extension KaminoTransactionValidator {
@@ -841,6 +818,9 @@ private extension KaminoTransactionValidator {
         let accounts: [String]
         /// The program each instruction invokes, `nil` when it is not allow-listed.
         let programs: [KaminoSolanaProgram?]
+        /// The template step each instruction looks like, from its program and
+        /// discriminator alone. `nil` for anything the template does not name.
+        let kinds: [KaminoInstructionSequence.Kind?]
         /// The user's associated token accounts for the vault's underlying token,
         /// one per token program.
         let userTokenAccounts: Set<String>
@@ -854,8 +834,12 @@ private extension KaminoTransactionValidator {
             self.intent = intent
             self.transaction = transaction
             self.accounts = accounts
-            self.programs = transaction.instructions.map {
+            let programs = transaction.instructions.map {
                 KaminoSolanaProgram(programId: accounts[Int($0.programIdIndex)])
+            }
+            self.programs = programs
+            self.kinds = zip(programs, transaction.instructions).map { program, instruction in
+                KaminoInstructionSequence.kind(program: program, data: instruction.data)
             }
 
             let owner = intent.owner
@@ -878,7 +862,29 @@ private extension KaminoTransactionValidator {
                 .union([owner, intent.vault.descriptor.address, intent.vault.tokenMint, intent.vault.sharesMint])
         }
 
-        var instructionCount: Int { transaction.instructions.count }
+        var operation: KaminoKeysignPayload.Operation {
+            switch intent.operation {
+            case .deposit: return .deposit
+            case .withdraw: return .withdraw
+            }
+        }
+
+        /// Whether this transaction is supposed to release shares from the
+        /// vault's farm, decided from the request rather than from the bytes.
+        ///
+        /// A deposit never does, and a withdraw's answer is arithmetic on two
+        /// figures the caller already stated — so this is never `.unknown` on
+        /// this device. `.forbidden` is as load-bearing as `.required`: it makes
+        /// an unstake that should not be there an instruction the template does
+        /// not name, which is a refusal.
+        var farmUnstake: KaminoInstructionSequence.FarmUnstake {
+            switch intent.operation {
+            case .deposit:
+                return .forbidden
+            case .withdraw(let request):
+                return request.requiresUnstake ? .required : .forbidden
+            }
+        }
 
         func programId(at position: Int) -> String {
             guard transaction.instructions.indices.contains(position) else { return "unknown" }
@@ -887,44 +893,6 @@ private extension KaminoTransactionValidator {
 
         func accountAddresses(at position: Int) -> [String] {
             transaction.instructions[position].accountIndexes.map { accounts[Int($0)] }
-        }
-
-        /// Whether the instruction at `position` is the kind a template step is
-        /// looking for. Program and discriminator only: everything else about the
-        /// instruction is checked once it has been matched, so a wrong account
-        /// refuses rather than silently failing to match.
-        func matches(_ kind: Step.Kind, at position: Int) -> Bool {
-            guard let program = programs[position] else { return false }
-            let data = transaction.instructions[position].data
-
-            switch kind {
-            case .computeUnitLimit:
-                return program == .computeBudget && data.first == ComputeBudgetInstruction.setUnitLimit
-            case .computeUnitPrice:
-                return program == .computeBudget && data.first == ComputeBudgetInstruction.setUnitPrice
-            case .createTokenAccount:
-                return program == .associatedToken
-                    && data.first == KaminoInstructionDiscriminator.createIdempotentAssociatedTokenAccount
-            case .wrapSolTransfer:
-                return program == .system
-                    && Array(data.prefix(4)) == KaminoInstructionDiscriminator.systemTransfer
-            case .syncNative:
-                return program.isTokenProgram && data == [KaminoInstructionDiscriminator.tokenSyncNative]
-            case .closeTokenAccount:
-                return program.isTokenProgram && data == [KaminoInstructionDiscriminator.tokenCloseAccount]
-            case .kvaultDeposit:
-                return program == .kvault
-                    && Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultDeposit
-            case .kvaultWithdraw:
-                return program == .kvault
-                    && Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultWithdraw
-            case .farmsInitializeUser:
-                return program == .farms
-                    && Array(data.prefix(8)) == KaminoInstructionDiscriminator.farmsInitializeUser
-            case .farmsStake:
-                return program == .farms
-                    && Array(data.prefix(8)) == KaminoInstructionDiscriminator.farmsStake
-            }
         }
 
         func requireOwner(_ account: String, role: String) throws {
@@ -952,6 +920,28 @@ private extension KaminoTransactionValidator {
             }
             guard account == farm else {
                 throw KaminoValidationError.accountMismatch(role: "farm", expected: farm, actual: account)
+            }
+        }
+
+        /// The farms account that decides WHICH stake an instruction moves.
+        ///
+        /// Derived, not read: it is a program address over the vault's farm and
+        /// this user, so recomputing it locally is what rules out a release
+        /// aimed at another farm or another holder's position. The farm slot is
+        /// compared separately; this ties the two together.
+        func requireFarmUserState(_ account: String, position: Int) throws {
+            guard let farm = intent.vault.farm else {
+                throw KaminoValidationError.instructionNotForOperation(index: position, detail: "farm")
+            }
+            guard let expected = KaminoFarmsUserState.derive(farm: farm, owner: intent.owner) else {
+                throw KaminoValidationError.addressDerivationFailed("the farm user state for \(farm)")
+            }
+            guard account == expected else {
+                throw KaminoValidationError.accountMismatch(
+                    role: "farm user state",
+                    expected: expected,
+                    actual: account
+                )
             }
         }
 
