@@ -110,7 +110,7 @@ final class KaminoLiveAPITests: XCTestCase {
 
             let built = try await service.buildDepositTransaction(
                 owner: Self.probeOwner,
-                vault: descriptor.address,
+                vault: descriptor,
                 amount: amount
             )
             let transaction = try SolanaV0Transaction(base64Transaction: built)
@@ -173,7 +173,7 @@ final class KaminoLiveAPITests: XCTestCase {
 
             let built = try await service.buildDepositTransaction(
                 owner: Self.probeOwner,
-                vault: descriptor.address,
+                vault: descriptor,
                 amount: vault.minDeposit
             )
             let result = try await solana.simulateTransaction(
@@ -245,7 +245,7 @@ final class KaminoLiveAPITests: XCTestCase {
             do {
                 built = try await service.buildWithdrawTransaction(
                     owner: owner,
-                    vault: descriptor.address,
+                    vault: descriptor,
                     shares: shares
                 )
             } catch let skip as XCTSkip {
@@ -394,7 +394,7 @@ final class KaminoLiveAPITests: XCTestCase {
         let within = try SolanaV0Transaction(
             base64Transaction: try await service.buildWithdrawTransaction(
                 owner: holder.owner,
-                vault: descriptor.address,
+                vault: descriptor,
                 shares: unstaked
             )
         )
@@ -415,7 +415,7 @@ final class KaminoLiveAPITests: XCTestCase {
         let above = try SolanaV0Transaction(
             base64Transaction: try await service.buildWithdrawTransaction(
                 owner: holder.owner,
-                vault: descriptor.address,
+                vault: descriptor,
                 shares: straddling
             )
         )
@@ -705,7 +705,7 @@ final class KaminoLiveAPITests: XCTestCase {
     ) async throws -> (base64: String, decoded: KaminoDecodedTransaction) {
         let built = try await service.buildWithdrawTransaction(
             owner: owner,
-            vault: descriptor.address,
+            vault: descriptor,
             shares: shares
         )
         let transaction = try SolanaV0Transaction(base64Transaction: built)
@@ -828,7 +828,7 @@ extension SkipOnTransportFailure: KaminoServiceProtocol where Wrapped: KaminoSer
 
     func buildDepositTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         amount: KaminoTokenAmount
     ) async throws -> String {
         try await skipping {
@@ -838,7 +838,7 @@ extension SkipOnTransportFailure: KaminoServiceProtocol where Wrapped: KaminoSer
 
     func buildWithdrawTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         shares: KaminoShareAmount
     ) async throws -> String {
         try await skipping {
