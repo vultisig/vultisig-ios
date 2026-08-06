@@ -496,6 +496,56 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
         )
     }
 
+    // MARK: - The bytes that get signed
+
+    /// The withdraw half of the same property — see the deposit test for why
+    /// this hop is worth its own assertion.
+    ///
+    /// The marker records SHARES, not the asset amount the user typed: the bytes
+    /// are denominated in shares and `toAmount` is a projection at the current
+    /// rate. Getting those two the wrong way round is the mistake the typed
+    /// amounts exist to prevent, and this is where it would surface.
+    func testTheWithdrawPayloadCarriesThePreparedBytesVerbatim() async throws {
+        addUsdcCoin()
+        service.positions = [Self.unstakedPosition]
+        let viewModel = makeViewModel()
+        await viewModel.onLoad()
+
+        let sentinel = KaminoPreparedTransaction(
+            base64: KaminoTransactionFixtures.solDeposit.injected,
+            priorityFee: KaminoPriorityFee(limit: 222_222, price: 55_555),
+            unitsConsumed: 1,
+            payerLamportsAfter: nil,
+            recentBlockhash: "6VjnGjZWnCyLtCd5FZTLpqm9GNjnzDrGGjyEfKNXfPKa"
+        )
+        preparer.prepared = sentinel
+
+        viewModel.amountField.value = "1"
+        let made = await viewModel.makeWithdraw()
+        let withdraw = try XCTUnwrap(made)
+
+        guard case .signSolana(let solana)? = withdraw.payload.signData else {
+            return XCTFail("a Kamino withdraw must sign raw Solana bytes, not a rebuilt transfer")
+        }
+        XCTAssertEqual(solana.rawTransactions, [sentinel.base64])
+
+        guard case .Solana(let blockhash, let price, let limit, _, _, _) = withdraw.payload.chainSpecific else {
+            return XCTFail("expected Solana chain-specific data")
+        }
+        XCTAssertEqual(blockhash, sentinel.recentBlockhash)
+        XCTAssertEqual(price, BigInt(sentinel.priorityFee.price))
+        XCTAssertEqual(limit, BigInt(sentinel.priorityFee.limit))
+
+        let marker = try XCTUnwrap(withdraw.payload.kaminoPayload)
+        XCTAssertEqual(marker.operation, .withdraw)
+        XCTAssertEqual(
+            marker.amountBaseUnits, String(withdraw.shares.baseUnits),
+            "the marker must record the shares the bytes carry, not the asset amount typed"
+        )
+        // A withdraw pays the user, so the destination is their own account.
+        XCTAssertEqual(withdraw.payload.toAddress, owner)
+    }
+
     // MARK: - Helpers
 
     private func makeViewModel() -> KaminoWithdrawViewModel {
@@ -637,6 +687,9 @@ private final class SpyWithdrawPreparer: KaminoWithdrawPreparing, @unchecked Sen
 
     var unitPrice = KaminoTransactionFixtures.unitPriceMicroLamports
     var error: Error?
+    /// Overrides what preparation returns, so a test can assert that exactly
+    /// these bytes — and no re-derivation of them — reach the payload.
+    var prepared: KaminoPreparedTransaction?
     /// Fires while the preparation is suspended, so a test can perturb the form
     /// exactly where a real keystroke would land.
     var onPrepare: (() -> Void)?
@@ -661,6 +714,7 @@ private final class SpyWithdrawPreparer: KaminoWithdrawPreparing, @unchecked Sen
         onPrepare?()
         await Task.yield()
         if let error { throw error }
+        if let prepared { return prepared }
         return KaminoPreparedTransaction(
             base64: KaminoTransactionFixtures.usdcWithdraw.injected,
             priorityFee: KaminoPriorityFee(
