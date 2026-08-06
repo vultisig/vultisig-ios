@@ -944,7 +944,7 @@
 "passcodeAutoLockTitle" = "Auto-lock";
 "passcodeBusy" = "Another operation is still in progress. Wait for it to finish, then try again.";
 "passcodeChangeTitle" = "Change passcode";
-"passcodeChooseSubtitle" = "5 digits. You will need it to open the app.";
+"passcodeChooseSubtitle" = "6 digits. You will need it to open the app.";
 "passcodeChooseTitle" = "Choose a passcode";
 "passcodeConfirmSubtitle" = "Enter it once more.";
 "passcodeConfirmTitle" = "Confirm your passcode";
@@ -957,7 +957,7 @@
 "passcodeEnterTitle" = "Enter passcode";
 "passcodeGenericError" = "Something went wrong. Try again.";
 "passcodeIncorrect" = "Incorrect passcode.";
-"passcodeInvalidLength" = "Enter all 5 digits.";
+"passcodeInvalidLength" = "Enter all 6 digits.";
 "passcodeLockedOutMinutes" = "Too many attempts. Try again in %d minutes.";
 "passcodeLockedOutShortly" = "Too many attempts. Try again shortly.";
 "passcodeManageExplanation" = "Setting a passcode encrypts your vault key shares on this device; removing it decrypts them again. It is not a replacement for your vault backup.";

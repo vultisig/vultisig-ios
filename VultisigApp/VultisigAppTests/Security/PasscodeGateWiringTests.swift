@@ -41,7 +41,7 @@ final class PasscodeGateWiringTests: XCTestCase {
     private var standardDefaults: [String: Any?] = [:]
     private let borrowedDefaultsKeys = ["showCover", "isAuthenticationEnabled", "showOnboarding"]
 
-    private let passcode = "12345"
+    private let passcode = "123456"
     private let share = "eyJrZXlzaGFyZSI6ImRrbHMifQ=="
 
     override func setUpWithError() throws {
@@ -313,7 +313,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         sut.raisePasscodeGate()
 
         do {
-            try await service.unlockApp(with: "99999")
+            try await service.unlockApp(with: "999999")
             XCTFail("Expected .wrongPasscode")
         } catch {
             XCTAssertEqual(error as? PasscodeError, .wrongPasscode)

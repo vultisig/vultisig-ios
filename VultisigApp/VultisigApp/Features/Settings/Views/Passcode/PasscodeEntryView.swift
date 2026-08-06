@@ -5,7 +5,9 @@
 
 import SwiftUI
 
-/// Five-digit entry: filled dots plus a keypad on iOS, hardware keyboard on macOS.
+/// Fixed-length entry: filled dots plus a keypad on iOS, hardware keyboard on
+/// macOS. The number of dots comes from ``PasscodeService/passcodeLength``, so
+/// nothing here has the length written into it.
 ///
 /// One component for every flow — lock screen, set, confirm, change, disable — so
 /// entering a passcode looks and behaves the same everywhere it is asked for.

@@ -944,7 +944,7 @@
 "passcodeAutoLockTitle" = "Bloqueo automático";
 "passcodeBusy" = "Hay otra operación en curso. Espera a que termine e inténtalo de nuevo.";
 "passcodeChangeTitle" = "Cambiar código";
-"passcodeChooseSubtitle" = "5 dígitos. Lo necesitarás para abrir la app.";
+"passcodeChooseSubtitle" = "6 dígitos. Lo necesitarás para abrir la app.";
 "passcodeChooseTitle" = "Elige un código";
 "passcodeConfirmSubtitle" = "Introdúcelo una vez más.";
 "passcodeConfirmTitle" = "Confirma tu código";
@@ -957,7 +957,7 @@
 "passcodeEnterTitle" = "Introduce el código";
 "passcodeGenericError" = "Algo salió mal. Inténtalo de nuevo.";
 "passcodeIncorrect" = "Código incorrecto.";
-"passcodeInvalidLength" = "Introduce los 5 dígitos.";
+"passcodeInvalidLength" = "Introduce los 6 dígitos.";
 "passcodeLockedOutMinutes" = "Demasiados intentos. Inténtalo en %d minutos.";
 "passcodeLockedOutShortly" = "Demasiados intentos. Inténtalo en un momento.";
 "passcodeManageExplanation" = "Establecer un código cifra los key shares de tu vault en este dispositivo; quitarlo los descifra de nuevo. No sustituye a la copia de seguridad de tu vault.";

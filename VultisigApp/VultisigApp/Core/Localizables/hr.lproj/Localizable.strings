@@ -944,7 +944,7 @@
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
 "passcodeBusy" = "Druga radnja je još u tijeku. Pričekajte da završi pa pokušajte ponovno.";
 "passcodeChangeTitle" = "Promijeni zaporku";
-"passcodeChooseSubtitle" = "5 znamenki. Trebat će vam za otvaranje aplikacije.";
+"passcodeChooseSubtitle" = "6 znamenki. Trebat će vam za otvaranje aplikacije.";
 "passcodeChooseTitle" = "Odaberite zaporku";
 "passcodeConfirmSubtitle" = "Unesite je još jednom.";
 "passcodeConfirmTitle" = "Potvrdite zaporku";
@@ -957,7 +957,7 @@
 "passcodeEnterTitle" = "Unesite zaporku";
 "passcodeGenericError" = "Nešto je pošlo po zlu. Pokušajte ponovno.";
 "passcodeIncorrect" = "Netočna zaporka.";
-"passcodeInvalidLength" = "Unesite svih 5 znamenki.";
+"passcodeInvalidLength" = "Unesite svih 6 znamenki.";
 "passcodeLockedOutMinutes" = "Previše pokušaja. Pokušajte ponovno za %d minuta.";
 "passcodeLockedOutShortly" = "Previše pokušaja. Pokušajte uskoro ponovno.";
 "passcodeManageExplanation" = "Postavljanje zaporke šifrira key shareove vašeg vaulta na ovom uređaju; uklanjanje ih ponovno dešifrira. Ne zamjenjuje sigurnosnu kopiju vaulta.";

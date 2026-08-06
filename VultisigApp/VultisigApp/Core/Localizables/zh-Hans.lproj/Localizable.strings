@@ -944,7 +944,7 @@
 "passcodeAutoLockTitle" = "自动锁定";
 "passcodeBusy" = "另一项操作仍在进行中。请等待其完成后重试。";
 "passcodeChangeTitle" = "修改密码";
-"passcodeChooseSubtitle" = "5 位数字。打开应用时需要输入。";
+"passcodeChooseSubtitle" = "6 位数字。打开应用时需要输入。";
 "passcodeChooseTitle" = "选择密码";
 "passcodeConfirmSubtitle" = "请再输入一次。";
 "passcodeConfirmTitle" = "确认密码";
@@ -957,7 +957,7 @@
 "passcodeEnterTitle" = "输入密码";
 "passcodeGenericError" = "出现问题，请重试。";
 "passcodeIncorrect" = "密码错误。";
-"passcodeInvalidLength" = "请输入全部 5 位数字。";
+"passcodeInvalidLength" = "请输入全部 6 位数字。";
 "passcodeLockedOutMinutes" = "尝试次数过多，请在 %d 分钟后再试。";
 "passcodeLockedOutShortly" = "尝试次数过多，请稍后再试。";
 "passcodeManageExplanation" = "设置密码会加密本设备上的 vault key share，移除密码则会将其重新解密。它不能替代 vault 备份。";
