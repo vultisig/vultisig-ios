@@ -77,11 +77,6 @@ final class AdvancedSwapSheetLayoutTests: XCTestCase {
         }
     }
 
-    /// The gap under the card mirrors the card's own horizontal inset.
-    func testCardInsetMirrorsTheHorizontalInset() {
-        XCTAssertEqual(AdvancedSwapSheet.MainLayout.cardInset, 16)
-    }
-
     // MARK: - Measured content fits the detent
 
     /// The header and the rows are measured as SwiftUI actually lays them out,
@@ -115,6 +110,14 @@ final class AdvancedSwapSheetLayoutTests: XCTestCase {
             rowHeight,
             AdvancedSwapSheet.MainLayout.rowHeight,
             "A one-line row no longer fits its per-row allowance (measured \(rowHeight)pt)"
+        )
+        // Guards the premise: if the External Recipient row stops wrapping at
+        // this width, the loop below is no longer testing the worst case and
+        // this test's name is a lie.
+        XCTAssertGreaterThan(
+            wrappedRowHeight,
+            rowHeight,
+            "The External Recipient row is expected to wrap at \(cardWidth)pt (measured \(wrappedRowHeight)pt)"
         )
 
         for combination in Self.combinations {

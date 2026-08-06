@@ -107,8 +107,9 @@ struct AdvancedSwapSheet: View {
         static let chrome: CGFloat = 120
         /// One `AdvancedSwapMainRow` — 68pt on one line — plus its 1pt separator.
         static let rowHeight: CGFloat = 70
-        /// Gap below the card, mirroring its horizontal inset so the card reads
-        /// as inset on all four sides instead of clipped by the sheet edge.
+        /// The card's inset from the sheet's edges — the same value on the sides
+        /// and below, so the card reads as inset rather than clipped by the
+        /// sheet edge.
         static let cardInset: CGFloat = 16
     }
 
@@ -200,7 +201,7 @@ struct AdvancedSwapSheet: View {
                 Theme.radius.xl.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
-            .padding(.horizontal, 16)
+            .padding(.horizontal, MainLayout.cardInset)
             .padding(.bottom, MainLayout.cardInset)
         }
     }
