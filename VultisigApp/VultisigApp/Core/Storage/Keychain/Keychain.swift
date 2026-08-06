@@ -81,11 +81,38 @@ struct Keychain {
         setString(string, for: key)
     }
 
+    // MARK: - Data
+
+    func getData(for key: KeychainIdentifier) -> KeychainReadResult<Data> {
+        return get(for: key)
+    }
+
+    /// - Parameter accessibility: the item's `kSecAttrAccessible` class. Defaults
+    ///   to the app-wide `WhenUnlockedThisDeviceOnly`; key material that has to
+    ///   survive a device migration overrides it, since a `ThisDeviceOnly` item
+    ///   is absent from every backup and would leave a restored device unable to
+    ///   open its own vaults.
+    @discardableResult
+    func setData(
+        _ value: Data?,
+        for key: KeychainIdentifier,
+        accessibility: CFString = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+    ) -> Bool {
+        set(value, for: key, accessibility: accessibility)
+    }
+
     // MARK: - Helpers
 
-    func delete(for key: KeychainIdentifier) {
+    @discardableResult
+    func delete(for key: KeychainIdentifier) -> Bool {
         let query = generateQuery(for: key)
-        _ = itemStore.delete(query)
+        let status = itemStore.delete(query)
+
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            logger.error("Keychain delete failed for \(key.identifier, privacy: .public): status=\(status, privacy: .public)")
+            return false
+        }
+        return true
     }
 
 }
@@ -94,25 +121,55 @@ struct Keychain {
 
 private extension Keychain {
 
-    func set(_ data: Data?, for key: KeychainIdentifier) {
+    /// Writes an item, updating in place when one already exists.
+    ///
+    /// Deliberately not delete-then-add: that destroys the stored value before
+    /// the replacement is known to have landed, so a failing write loses the old
+    /// value as well as the new one. Harmless for a re-enterable password, fatal
+    /// for the key that opens the vault key shares — losing it during a passcode
+    /// change would leave every share encrypted under a key that no longer
+    /// exists.
+    ///
+    /// - Returns: whether the value is stored. Callers holding key material are
+    ///   expected to verify by reading back; the return value and the log entry
+    ///   are so a failure is never silent.
+    @discardableResult
+    func set(
+        _ data: Data?,
+        for key: KeychainIdentifier,
+        accessibility: CFString = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+    ) -> Bool {
 
         guard let data = data else {
-            delete(for: key)
-            return
+            return delete(for: key)
         }
 
         var query = generateQuery(for: key)
-
-        _ = itemStore.delete(query)
-
         query.removeValue(forKey: kSecReturnDataValue)
-        query.updateValue(data, forKey: kSecValueDataValue)
-        query.updateValue(kSecAttrAccessibleWhenUnlockedThisDeviceOnly, forKey: kSecAttrAccessibleValue)
 
-        let status = itemStore.add(query)
-        guard status == errSecSuccess else {
-            return
+        let attributes: [String: Any] = [
+            kSecValueDataValue: data,
+            kSecAttrAccessibleValue: accessibility
+        ]
+
+        let updateStatus = itemStore.update(query, attributes: attributes)
+        if updateStatus == errSecSuccess {
+            return true
         }
+        guard updateStatus == errSecItemNotFound else {
+            logger.error("Keychain update failed for \(key.identifier, privacy: .public): status=\(updateStatus, privacy: .public)")
+            return false
+        }
+
+        query.updateValue(data, forKey: kSecValueDataValue)
+        query.updateValue(accessibility, forKey: kSecAttrAccessibleValue)
+
+        let addStatus = itemStore.add(query)
+        guard addStatus == errSecSuccess else {
+            logger.error("Keychain add failed for \(key.identifier, privacy: .public): status=\(addStatus, privacy: .public)")
+            return false
+        }
+        return true
     }
 
     /// Reads one item, keeping apart the three outcomes the Security framework

@@ -74,6 +74,73 @@ enum TestStore {
         return container
     }
 
+    /// Containers held for the lifetime of the test process.
+    private static var retained: [ModelContainer] = []
+
+    /// Keeps a test's container alive past its `tearDown`.
+    ///
+    /// For tests that exercise code starting unstructured work — the token
+    /// discovery `VaultDefaultCoinService.startTokenDiscovery()` hands out is
+    /// the case here — which resumes after the test method returns and touches
+    /// the models it resolved. Letting the container go first turns that into a
+    /// trap ("this model instance was destroyed by calling ModelContext.reset")
+    /// that fails whichever test happens to be running. The app's container is
+    /// process-lifetime, so this makes the test resemble production rather than
+    /// papering over anything.
+    static func retain(_ container: ModelContainer) {
+        retained.append(container)
+    }
+
+    /// The chains ``makeDerivableVault(index:keyshare:)`` derives.
+    ///
+    /// Both are real ECDSA chains, and both resolve to `NoTokenDiscoverer` — see
+    /// the note on the fixture for why that matters. Tron is here so the DeFi
+    /// chains `setDefaultCoins` derives alongside the coins are non-empty.
+    static let derivableChains: [Chain] = [.bitcoin, .tron]
+
+    /// A vault carrying real secp256k1 key material, so `CoinFactory` derives
+    /// actual addresses and `setDefaultCoins` produces actual coins.
+    ///
+    /// Placeholder keys are not good enough for anything about default coins:
+    /// `CoinFactory.create` throws on them and `compactMap` drops the failure, so
+    /// a vault built that way derives nothing at all — and a test asserting on its
+    /// coins passes just as happily against an import that attaches none of them.
+    ///
+    /// Key-import with explicit per-chain keys rather than a DKLS vault on the
+    /// base default chains, so the fixture is hermetic. `setDefaultCoins` starts
+    /// an unstructured token-discovery `Task` per coin which outlives the test,
+    /// goes to the network, and writes through `Storage.shared` — by then the
+    /// *next* test's container. Relating a row from that store to this vault
+    /// traps, and it takes down the whole test host rather than one test.
+    /// ``derivableChains`` have no token discoverer behind them, so nothing is
+    /// fetched and nothing outlives the test.
+    ///
+    /// Not inserted; the caller decides when it reaches a context. `index` picks
+    /// distinct key material, because `name`, `pubKeyECDSA` and `pubKeyEdDSA` are
+    /// all `@Attribute(.unique)` and SwiftData answers a duplicate with an upsert
+    /// rather than an error — two fixtures sharing one collapse into a single row.
+    static func makeDerivableVault(index: Int = 0, keyshare: String) -> Vault {
+        let ecdsa = [
+            "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770"
+        ]
+        let vault = Vault(
+            name: "Derivable Vault \(index)",
+            signers: [],
+            pubKeyECDSA: ecdsa[index],
+            pubKeyEdDSA: "eddsa-\(index)",
+            keyshares: [KeyShare(pubkey: ecdsa[index], keyshare: keyshare)],
+            localPartyID: "party-\(index)",
+            hexChainCode: "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7",
+            resharePrefix: nil,
+            libType: .KeyImport
+        )
+        vault.chainPublicKeys = derivableChains.map {
+            ChainPublicKey(chain: $0, publicKeyHex: ecdsa[index], isEddsa: false)
+        }
+        return vault
+    }
+
     /// Insert a populated Vault matching `pubKeyECDSA` so position upserts have a
     /// parent to attach via inverse relationships.
     static func makeVault(pubKey: String = "test-pub-ecdsa") -> Vault {

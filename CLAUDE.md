@@ -7,6 +7,7 @@ HIGH — Wallet app with TSS key management. Crypto/JNI changes require maintain
 ## Critical Boundaries
 
 - `VultisigApp/Blockchain/Tss/` — TSS keygen/keysign bindings. Do not modify without explicit review.
+- `VultisigApp/Core/Security/Keyshare/` and `Core/Security/Passcode/` — key material at rest and the passcode that wraps it. A mistake here is lost funds, not a bad screen: a share that cannot be opened is one this device can never sign with again, recoverable only from a user's `.vult` backup or a quorum of the vault's other signers. Read [docs/passcode-keyshare-encryption/](docs/passcode-keyshare-encryption/overview.md) before changing anything, including "obvious" cleanups — most of the guards there exist because a review caught a real fund-loss bug.
 - `VultisigApp/Model/` — SwiftData @Model classes (core entities only: Vault, Coin, Chain, KeyShare, etc.). Schema changes affect migrations.
 - `VultisigApp/project.yml` — XcodeGen spec. The `.xcodeproj` is generated from this file; never edit `project.pbxproj` directly. Run `make generate` (from the repo root) after changing sources or dependencies. See the `/make` skill for all available commands.
 
@@ -87,6 +88,18 @@ Domain knowledge loads on-demand via skills:
 | `/check-platforms` | Search Android, Windows, backend repos for feature implementations |
 | `/reference-codebases` | Port features from sibling repos with pattern mapping |
 | `/figma` | Implement UI from Figma designs via MCP with mandatory property mapping |
+
+## In-Repo Docs
+
+Long-form reasoning that does not fit in code comments lives in [`docs/`](docs/). Read the routed page **before** changing the code, not after:
+
+| Situation | Read |
+|-----------|------|
+| Touching passcode or key-share encryption | [docs/passcode-keyshare-encryption/overview.md](docs/passcode-keyshare-encryption/overview.md) |
+| Changing `KeyshareWriteCoordinator`, or any lease/`await` placement around key-share writes | [concurrency-and-leases.md](docs/passcode-keyshare-encryption/concurrency-and-leases.md) |
+| Reordering steps in `setPasscode` / `disablePasscode` / the resume sweep | [transitions.md](docs/passcode-keyshare-encryption/transitions.md) |
+| A guard there looks redundant, or you want to simplify `KeyshareSweeper` | [invariants.md](docs/passcode-keyshare-encryption/invariants.md) |
+| Importing a vault, or changing how a vault's default coins are attached | [invariants.md § the write that did not take](docs/passcode-keyshare-encryption/invariants.md#the-write-that-did-not-take) |
 
 ## Knowledge Base
 

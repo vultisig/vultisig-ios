@@ -46,8 +46,21 @@ open VultisigApp/VultisigApp.xcodeproj
 
 - Never log key material or vault shares
 - TSS bindings — do not modify without review
+- `Core/Security/Keyshare/` and `Core/Security/Passcode/` hold key material at rest and the passcode that wraps it. A share that cannot be opened is one this device can never sign with again, recoverable only from a user's `.vult` backup or a quorum of the vault's other signers — read [docs/passcode-keyshare-encryption/](docs/passcode-keyshare-encryption/overview.md) before changing anything there, including "obvious" cleanups
 - Never commit `.env`, credentials, or secrets
 - Always test keygen and keysign flows after refactoring
+
+## In-Repo Docs
+
+Long-form reasoning that does not fit in code comments lives in [`docs/`](docs/). Read the routed page **before** changing the code, not after:
+
+| Situation | Read |
+|-----------|------|
+| Touching passcode or key-share encryption | [docs/passcode-keyshare-encryption/overview.md](docs/passcode-keyshare-encryption/overview.md) |
+| Changing `KeyshareWriteCoordinator`, or any lease/`await` placement around key-share writes | [concurrency-and-leases.md](docs/passcode-keyshare-encryption/concurrency-and-leases.md) |
+| Reordering steps in `setPasscode` / `disablePasscode` / the resume sweep | [transitions.md](docs/passcode-keyshare-encryption/transitions.md) |
+| A guard there looks redundant, or you want to simplify `KeyshareSweeper` | [invariants.md](docs/passcode-keyshare-encryption/invariants.md) |
+| Importing a vault, or changing how a vault's default coins are attached | [invariants.md § the write that did not take](docs/passcode-keyshare-encryption/invariants.md#the-write-that-did-not-take) |
 
 ## Knowledge Base
 

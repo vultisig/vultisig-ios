@@ -63,12 +63,7 @@ final class SchnorrKeysign {
     }
 
     func getKeyshareString() -> String? {
-        for ks in vault.keyshares {
-            if ks.pubkey == self.publicKeyEdDSA {
-                return ks.keyshare
-            }
-        }
-        return nil
+        return vault.getKeyshare(pubKey: self.publicKeyEdDSA)
     }
 
     func getKeyshareBytes() throws -> [UInt8] {

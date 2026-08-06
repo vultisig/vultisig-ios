@@ -36,6 +36,7 @@ struct SettingsAdvancedView: View {
         case thorchainStagenet
         case sell
         case tssBatching
+        case passcode
         case forcedSwapProvider
         case clearSwapKitTokensCache
         case resetTransactionHistory
@@ -77,6 +78,12 @@ struct SettingsAdvancedView: View {
                 title: "TSS Batching",
                 icon: "bolt.horizontal",
                 isEnabled: $settingsViewModel.tssBatchEnabled
+            )
+        case .passcode:
+            SettingToggleCell(
+                title: "Passcode",
+                icon: "lock",
+                isEnabled: $settingsViewModel.passcodeFeatureEnabled
             )
         case .forcedSwapProvider:
             SettingPickerCell(

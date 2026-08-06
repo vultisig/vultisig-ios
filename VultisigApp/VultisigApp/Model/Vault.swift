@@ -349,8 +349,26 @@ final class Vault: ObservableObject, Codable {
         coins.map { $0.chain }.uniqueBy { $0 }
     }
 
+    /// The usable key share for a public key, opened if it is stored sealed.
+    ///
+    /// Returns `nil` both when no share exists and when one exists but cannot be
+    /// opened. Callers that need to tell those apart use
+    /// `keyshareValue(for:)` and handle the thrown `KeyshareProtectionError`.
     func getKeyshare(pubKey: String) -> String? {
-        return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
+        return try? keyshareValue(for: pubKey)
+    }
+
+    /// - Throws: `KeyshareProtectionError.locked` when the share is sealed and
+    ///   the data key is unavailable, so a locked app is distinguishable from a
+    ///   vault that simply has no share for this key.
+    func keyshareValue(
+        for pubKey: String,
+        protector: KeyshareProtecting = KeyshareProtector.shared
+    ) throws -> String? {
+        guard let stored = keyshares.first(where: { $0.pubkey == pubKey })?.keyshare else {
+            return nil
+        }
+        return try protector.open(stored)
     }
 
     static func getUniqueVaultName(modelContext: ModelContext, setupType: KeyImportSetupType? = nil) -> String {

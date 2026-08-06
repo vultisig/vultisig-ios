@@ -12,8 +12,35 @@ import OSLog
 import VultisigCommonData
 import UniformTypeIdentifiers
 
+/// What to do with an incoming backup vault, decided before it ever reaches
+/// `modelContext.insert`.
+///
+/// `Vault` marks `name`, `pubKeyECDSA`, `pubKeyEdDSA` and `publicKeyMLDSA44` as
+/// `@Attribute(.unique)`. SwiftData turns an insert that collides on any one of
+/// them into an *upsert*: the incoming row replaces the stored one and the
+/// stored vault's key shares go with it, with nothing thrown and nothing logged.
+/// So "is this a duplicate?" and "can this be stored without clobbering
+/// something?" are two separate questions, and both have to be answered.
+enum VaultImportDecision: Equatable {
+    /// Safe to store. `name` is the backup's own name, disambiguated when a
+    /// vault already on the device holds it.
+    case insert(name: String)
+    /// The same vault is already on the device — it shares key material.
+    case duplicate
+    /// The backup would still collide on a unique attribute after its name was
+    /// resolved, and the colliding value carries no identity (an empty public
+    /// key), so it cannot be called a duplicate either. Storing it would
+    /// overwrite a stored vault, so it is refused.
+    case unsafeCollision
+}
+
 @MainActor
 class EncryptedBackupViewModel: ObservableObject {
+    /// Outcome of a multi-vault (zip) import. `unsafeNames` is kept apart from
+    /// `skippedNames` because "already on this device" and "refusing to
+    /// overwrite what is on this device" are different things to tell the user.
+    typealias ImportResults = (imported: [Vault], duplicates: Int, skippedNames: [String], unsafeNames: [String])
+
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
     @Published var decryptedContent: String?
@@ -37,6 +64,15 @@ class EncryptedBackupViewModel: ObservableObject {
     private let logger = Log.wallet.other
     private let keychain = DefaultKeychainService.shared
     private let backupEncryption: VaultBackupEncryption = Pbkdf2VaultBackupEncryption()
+    /// Every format below reaches storage through this and only through this.
+    /// `Vault.init(from: Decoder)` decodes `[KeyShare]` straight off the wire, so
+    /// the JSON paths would otherwise write plaintext shares into a store that
+    /// has a passcode set.
+    private let importer: ProtectedVaultImporter
+
+    init(importer: ProtectedVaultImporter = ProtectedVaultImporter()) {
+        self.importer = importer
+    }
 
     func resetData() {
         showVaultExporter = false
@@ -60,7 +96,55 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: nil)
+        return await backupFileReportingFailure(backupType, encryptionPassword: nil)
+    }
+
+    /// The two ways a backup can fail without throwing.
+    ///
+    /// Both were previously expressed as a `nil` return, which is how they got
+    /// lost: a `nil` reads as "nothing to export" at every call site, and no
+    /// call site could tell it apart from a refusal.
+    enum BackupError: Error {
+        /// A vault's file was not produced. Fatal to a *multi*-vault backup in
+        /// particular — the ZIP is assembled from whatever landed in the
+        /// directory, so skipping one quietly ships a backup that is missing a
+        /// vault and looks complete.
+        case vaultFileNotProduced(vaultName: String)
+        /// A file was produced but the exporter could not be built from it.
+        case exportFileNotProduced
+    }
+
+    /// One place for the three export entry points to fail in.
+    ///
+    /// They each used a bare `try?`, which was survivable while the only errors
+    /// were serialization ones. Reading a key share can now throw — the passcode
+    /// seals them, and a locked app cannot open them — so the export gained a
+    /// failure mode where the user taps the button and *nothing happens at all*:
+    /// no file, no alert, no log. The error is now reported, and the message says
+    /// the thing worth saying, which is that the app has to be unlocked.
+    private func backupFileReportingFailure(
+        _ backupType: VaultBackupType,
+        encryptionPassword: String?
+    ) async -> FileExporterModel<EncryptedDataFile>? {
+        do {
+            // `createBackupFile` reports some failures by returning `nil` rather
+            // than throwing, and those were falling straight through this
+            // handler back to a silent no-op — the exact shape being fixed here.
+            guard let exporter = try await createBackupFile(
+                backupType,
+                encryptionPassword: encryptionPassword
+            ) else {
+                throw BackupError.exportFileNotProduced
+            }
+            return exporter
+        } catch {
+            logger.error("Vault export failed: \(String(describing: error), privacy: .public)")
+            // The alert `VaultBackupContainerView` already presents, and it
+            // localizes the title itself — so this is the key, not the string.
+            alertTitle = "vaultBackupExportFailed"
+            showAlert = true
+            return nil
+        }
     }
 
     func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
@@ -73,11 +157,11 @@ class EncryptedBackupViewModel: ObservableObject {
             return nil
         }
 
-        return try? await createBackupFile(backupType, encryptionPassword: vaultPassword)
+        return await backupFileReportingFailure(backupType, encryptionPassword: vaultPassword)
     }
 
     func exportFileWithCustomPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: encryptionPassword)
+        return await backupFileReportingFailure(backupType, encryptionPassword: encryptionPassword)
     }
 
     func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
@@ -100,7 +184,17 @@ class EncryptedBackupViewModel: ObservableObject {
         }
 
         for vault in vaults {
-            _ = try await generateBackupFile(vault: vault, encryptionPassword: encryptionPassword, targetDirectory: tempDir)
+            // The result is checked rather than discarded. The ZIP below is
+            // built from whatever is in the directory, so a vault that failed to
+            // generate would simply not be in it — and the user would be handed
+            // a backup that opens, restores, and is missing a wallet.
+            guard try await generateBackupFile(
+                vault: vault,
+                encryptionPassword: encryptionPassword,
+                targetDirectory: tempDir
+            ) != nil else {
+                throw BackupError.vaultFileNotProduced(vaultName: vault.name)
+            }
         }
 
         let zipGenerator = ZipFileGenerator()
@@ -123,7 +217,7 @@ class EncryptedBackupViewModel: ObservableObject {
     func generateBackupFile(vault: Vault, encryptionPassword: String?, targetDirectory: URL? = nil) async throws -> URL? {
         var vaultContainer = VSVaultContainer()
         vaultContainer.version = 1 // current version 1
-        let vsVault = vault.mapToProtobuff()
+        let vsVault = try vault.mapToProtobuff()
         let data = try vsVault.serializedData()
 
         if let encryptionPassword {
@@ -409,7 +503,17 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     /// Decode a vault from file data
+    ///
+    /// Whatever the format, the result is validated before it is offered to the
+    /// user: a backup carrying a share this device cannot open is refused at the
+    /// point it is read rather than after a vault picker.
     private func decodeVaultFromData(_ data: Data) throws -> Vault? {
+        guard let vault = decodeVaultInAnyFormat(data) else { return nil }
+        try importer.validate(vault)
+        return vault
+    }
+
+    private func decodeVaultInAnyFormat(_ data: Data) -> Vault? {
         // Try protobuf format first
         if let vault = tryDecodeProtobuf(data) {
             return vault
@@ -457,6 +561,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 do {
                     let vsVault = try VSVault(serializedBytes: decryptedData)
                     let vault = try Vault(proto: vsVault)
+                    try importer.validate(vault)
                     allVaults.append(vault)
                 } catch {
                     logger.error("❌ Failed to parse decrypted data (\(fileName, privacy: .public)): \(error.localizedDescription, privacy: .public)")
@@ -486,36 +591,73 @@ class EncryptedBackupViewModel: ObservableObject {
 
     /// Restore multiple vaults to the database
     func restoreMultipleVaults(modelContext: ModelContext, vaults: [Vault]) {
-        let results = importVaults(multipleVaultsToImport, to: modelContext, existing: vaults)
-
-        selectedVault = results.imported.first
-        showImportResults(results)
+        do {
+            let results = try importVaults(multipleVaultsToImport, to: modelContext, existing: vaults)
+            selectedVault = results.imported.first
+            showImportResults(results)
+        } catch {
+            logger.error("fail to restore vaults: \(error.localizedDescription, privacy: .public)")
+            showError("vaultRestoreFailed")
+        }
         cleanup()
     }
 
-    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) -> (imported: [Vault], duplicates: Int, skippedNames: [String]) {
+    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) throws -> ImportResults {
         var imported: [Vault] = []
         var duplicates = 0
         var skippedNames: [String] = []
+        var unsafeNames: [String] = []
 
         for vault in vaultsToImport {
-            if isVaultUnique(backupVault: vault, vaults: existing + imported) {
-                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
-                modelContext.insert(vault)
+            // `imported` carries the already-resolved names, so a batch that
+            // contains two vaults called "Savings" disambiguates the second
+            // against the first rather than upserting it.
+            switch insertIfSafe(vault, existing: existing + imported) {
+            case .insert:
                 imported.append(vault)
-            } else {
+            case .duplicate:
                 duplicates += 1
                 skippedNames.append(vault.name)
                 logger.info("Skipped duplicate vault during zip import: \(vault.name)")
+            case .unsafeCollision:
+                unsafeNames.append(vault.name)
+                logger.error("Refused a vault during zip import: storing it would have overwritten a vault already on this device")
             }
         }
 
-        return (imported, duplicates, skippedNames)
+        // One lease, one save, for the whole batch: a partial import would leave
+        // some vaults on one side of the passcode invariant and some on the other.
+        // Default coins are added inside it, because they insert rows of their
+        // own and doing that first strands them when the import is refused.
+        let coinService = VaultDefaultCoinService(context: modelContext)
+        try importer.commit(imported, into: modelContext) { vault in
+            coinService.setDefaultCoinsOnce(vault: vault)
+        }
+        // Outside the commit, because the commit is what stores the rows that
+        // discovery goes on to write against.
+        coinService.startTokenDiscovery()
+
+        return (imported, duplicates, skippedNames, unsafeNames)
     }
 
-    func showImportResults(_ results: (imported: [Vault], duplicates: Int, skippedNames: [String])) {
+    func showImportResults(_ results: ImportResults) {
         let successCount = results.imported.count
         let duplicateCount = results.duplicates
+
+        // A backup refused because storing it would have overwritten a vault on
+        // the device is not "already imported" — it gets its own message rather
+        // than being folded into the duplicate count.
+        if !results.unsafeNames.isEmpty {
+            alertTitle = String(
+                format: NSLocalizedString("zipImportUnsafeVaults", comment: ""),
+                successCount,
+                duplicateCount + results.unsafeNames.count,
+                results.unsafeNames.joined(separator: ", ")
+            )
+            showAlert = true
+            isVaultImported = successCount > 0
+            return
+        }
 
         if successCount > 0 && duplicateCount > 0 {
             // Mixed: some imported, some skipped
@@ -600,21 +742,26 @@ class EncryptedBackupViewModel: ObservableObject {
         do {
             let vsVault = try VSVault(serializedBytes: vaultData)
             let vault = try Vault(proto: vsVault)
-            if !isVaultUnique(backupVault: vault, vaults: vaults) {
-                alertTitle = "vaultAlreadyExists"
-                showAlert = true
-                isVaultImported = false
-                return
-            }
             if isDKLS(filename: self.importedFileName ?? ""), vault.libType != LibType.GG20, vault.libType != LibType.KeyImport {
                 vault.libType = LibType.DKLS
             }
 
-            VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: vault)
-            modelContext.insert(vault)
-            selectedVault = vault
-            isVaultImported = true
+            switch insertIfSafe(vault, existing: vaults) {
+            case .insert:
+                let coinService = VaultDefaultCoinService(context: modelContext)
+                try importer.commit([vault], into: modelContext) { vault in
+                    coinService.setDefaultCoinsOnce(vault: vault)
+                }
+                // Outside the commit, because the commit is what stores the rows
+                // that discovery goes on to write against.
+                coinService.startTokenDiscovery()
+                selectedVault = vault
+                isVaultImported = true
+            case .duplicate:
+                showError("vaultAlreadyExists")
+            case .unsafeCollision:
+                showError("vaultImportWouldOverwriteExisting")
+            }
         } catch {
             logger.error("fail to restore vault: \(error.localizedDescription)")
             alertTitle = "vaultRestoreFailed"
@@ -636,60 +783,143 @@ class EncryptedBackupViewModel: ObservableObject {
             return
         }
 
+        // Decoding and storing are separated deliberately. The fallback below
+        // exists for a *format* that the new decoder cannot read; letting a
+        // failed store fall into it would re-attempt the same bytes as a
+        // different format and report the wrong reason for the failure.
         let decoder = JSONDecoder()
+        let decoded: Vault
         do {
-            let backupVault = try decoder.decode(BackupVault.self,
-                                                 from: vaultData)
             // if version get updated , then we can process the migration here
-            if !isVaultUnique(backupVault: backupVault.vault, vaults: vaults) {
-                alertTitle = "vaultAlreadyExists"
-                showAlert = true
-                isVaultImported = false
-                return
-            }
-            VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: backupVault.vault)
-            modelContext.insert(backupVault.vault)
-            selectedVault = backupVault.vault
-            showAlert = false
-            isVaultImported = true
+            decoded = try decoder.decode(BackupVault.self, from: vaultData).vault
         } catch {
             logger.warning("failed to import with new format , fallback to the old format instead. \(error.localizedDescription, privacy: .public)")
 
             // fallback
             do {
-                let vault = try decoder.decode(Vault.self, from: vaultData)
-
-                if !isVaultUnique(backupVault: vault, vaults: vaults) {
-                    alertTitle = "vaultAlreadyExists"
-                    showAlert = true
-                    isVaultImported = false
-                    return
-                }
-                VaultDefaultCoinService(context: modelContext)
-                    .setDefaultCoinsOnce(vault: vault)
-                modelContext.insert(vault)
-                selectedVault = vault
-                showAlert = false
-                isVaultImported = true
+                decoded = try decoder.decode(Vault.self, from: vaultData)
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
                 alertTitle = "vaultRestoreFailed"
                 showAlert = true
                 isVaultImported = false
+                return
             }
+        }
+
+        switch insertIfSafe(decoded, existing: vaults) {
+        case .duplicate:
+            showError("vaultAlreadyExists")
+            return
+        case .unsafeCollision:
+            showError("vaultImportWouldOverwriteExisting")
+            return
+        case .insert:
+            break
+        }
+
+        do {
+            let coinService = VaultDefaultCoinService(context: modelContext)
+            try importer.commit([decoded], into: modelContext) { vault in
+                coinService.setDefaultCoinsOnce(vault: vault)
+            }
+            // Outside the commit, because the commit is what stores the rows
+            // that discovery goes on to write against.
+            coinService.startTokenDiscovery()
+            selectedVault = decoded
+            showAlert = false
+            isVaultImported = true
+        } catch {
+            logger.error("fail to restore vault: \(error.localizedDescription)")
+            alertTitle = "vaultRestoreFailed"
+            showAlert = true
+            isVaultImported = false
         }
     }
 
-    func isVaultUnique(backupVault: Vault, vaults: [Vault]) -> Bool {
-        for vault in vaults {
-            if vault.pubKeyECDSA == backupVault.pubKeyECDSA &&
-                vault.pubKeyEdDSA == backupVault.pubKeyEdDSA {
-                return false
-            }
+    // MARK: - Import safety
 
+    /// "Is this the same vault we already have?"
+    ///
+    /// A vault cannot legitimately share a public key with a *different* vault,
+    /// so a match on any single key means the same key material — one shared key
+    /// and one differing key is not a distinct vault, it is a sign something is
+    /// wrong. Empty/absent keys carry no identity and never count as a match;
+    /// whether they are safe to store is the separate question that
+    /// ``importDecision(for:existing:)`` answers.
+    func isVaultUnique(backupVault: Vault, vaults: [Vault]) -> Bool {
+        let ecdsa = backupVault.pubKeyECDSA.nilIfEmpty
+        let eddsa = backupVault.pubKeyEdDSA.nilIfEmpty
+        let mldsa = backupVault.publicKeyMLDSA44?.nilIfEmpty
+
+        for vault in vaults {
+            if let ecdsa, vault.pubKeyECDSA == ecdsa { return false }
+            if let eddsa, vault.pubKeyEdDSA == eddsa { return false }
+            if let mldsa, vault.publicKeyMLDSA44?.nilIfEmpty == mldsa { return false }
         }
         return true
+    }
+
+    /// "Can this vault be stored without overwriting one already on the device?"
+    ///
+    /// A name collision between two genuinely different vaults is resolved, not
+    /// rejected — the name is user-chosen and `Main`/`Savings`/`Test` are exactly
+    /// the names people reuse across devices. Anything still colliding after that
+    /// is refused: `pubKeyECDSA`/`pubKeyEdDSA` default to `""`, and `""` is a
+    /// real value in the unique index, so two key-less backups would upsert each
+    /// other. The final check restates the raw index semantics — one clause per
+    /// `@Attribute(.unique)` field on `Vault` — rather than reusing the duplicate
+    /// rule, whose empty/`nil` tolerance is exactly what would let those through.
+    /// It is the single place to extend when a unique attribute is added.
+    func importDecision(for backupVault: Vault, existing: [Vault]) -> VaultImportDecision {
+        guard isVaultUnique(backupVault: backupVault, vaults: existing) else {
+            return .duplicate
+        }
+
+        let name = availableVaultName(basedOn: backupVault.name, taken: Set(existing.map(\.name)))
+
+        let collides = existing.contains { vault in
+            vault.name == name
+                || vault.pubKeyECDSA == backupVault.pubKeyECDSA
+                || vault.pubKeyEdDSA == backupVault.pubKeyEdDSA
+                || (vault.publicKeyMLDSA44 != nil && vault.publicKeyMLDSA44 == backupVault.publicKeyMLDSA44)
+        }
+        guard !collides else { return .unsafeCollision }
+
+        return .insert(name: name)
+    }
+
+    /// A vault name no stored vault holds, derived from the backup's own name
+    /// (`Savings` → `Savings (2)`) so the user keeps the name they chose rather
+    /// than a generated one. Terminates by pigeonhole: at most `taken.count`
+    /// names are unavailable, and the scan covers `taken.count + 1` candidates.
+    func availableVaultName(basedOn name: String, taken: Set<String>) -> String {
+        guard taken.contains(name) else { return name }
+
+        var suffix = 2
+        var candidate = "\(name) (\(suffix))"
+        while taken.contains(candidate), suffix <= taken.count + 1 {
+            suffix += 1
+            candidate = "\(name) (\(suffix))"
+        }
+        return candidate
+    }
+
+    /// Runs the import gate and renames `vault` to an available name when it is
+    /// safe to store. Returns the decision so the caller can surface the
+    /// outcome. Storage itself never happens here: it must go through
+    /// ``ProtectedVaultImporter/commit(_:into:prepare:)``, which normalizes,
+    /// inserts and saves inside a single passcode-transition-safe lease — a
+    /// direct `modelContext.insert` here would land outside that lease.
+    private func insertIfSafe(_ vault: Vault, existing: [Vault]) -> VaultImportDecision {
+        let decision = importDecision(for: vault, existing: existing)
+        guard case .insert(let name) = decision else { return decision }
+
+        if vault.name != name {
+            logger.info("Renamed an imported vault to avoid colliding with a stored vault's name")
+            vault.name = name
+        }
+        return decision
     }
 
     private func isValidFormat(_ url: URL) -> Bool {

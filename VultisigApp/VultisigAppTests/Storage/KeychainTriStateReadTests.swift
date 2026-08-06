@@ -118,6 +118,18 @@ final class KeychainTriStateReadTests: XCTestCase {
                 .unavailable(status),
                 "the migration-version read must not pass a failure off as an absent item (status \(status))"
             )
+            XCTAssertEqual(
+                service.getWrappedKeyshareDataKey(),
+                .unavailable(status),
+                "an unreadable wrapped key must never look absent — absence licenses minting a replacement, "
+                    + "and a replacement cannot open a single already-sealed share (status \(status))"
+            )
+            XCTAssertEqual(
+                service.getPasscodeAttemptState(),
+                .unavailable(status),
+                "an unreadable attempt state must never look absent — absence means no failures yet, "
+                    + "which is the throttle switching itself off (status \(status))"
+            )
         }
     }
 
@@ -128,6 +140,8 @@ final class KeychainTriStateReadTests: XCTestCase {
         XCTAssertEqual(service.getFastHint(pubKeyECDSA: "pub"), .absent)
         XCTAssertEqual(service.getDeviceToken(), .absent)
         XCTAssertEqual(service.getLastMigratedVersion(), .absent)
+        XCTAssertEqual(service.getWrappedKeyshareDataKey(), .absent)
+        XCTAssertEqual(service.getPasscodeAttemptState(), .absent)
     }
 
     func testEveryServiceReadReturnsTheStoredValue() {
@@ -137,6 +151,8 @@ final class KeychainTriStateReadTests: XCTestCase {
         XCTAssertEqual(service.getFastHint(pubKeyECDSA: "pub"), .present("7"))
         XCTAssertEqual(service.getDeviceToken(), .present("7"))
         XCTAssertEqual(service.getLastMigratedVersion(), .present(7))
+        XCTAssertEqual(service.getWrappedKeyshareDataKey(), .present(Data("7".utf8)))
+        XCTAssertEqual(service.getPasscodeAttemptState(), .present(Data("7".utf8)))
     }
 
     // MARK: - The deliberate collapse
@@ -174,6 +190,8 @@ private struct FakeItemStore: KeychainItemStore {
     }
 
     func add(_: [String: Any]) -> OSStatus { errSecSuccess }
+
+    func update(_: [String: Any], attributes _: [String: Any]) -> OSStatus { errSecSuccess }
 
     func delete(_: [String: Any]) -> OSStatus { errSecSuccess }
 }

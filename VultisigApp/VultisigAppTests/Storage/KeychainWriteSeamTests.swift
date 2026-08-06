@@ -2,12 +2,13 @@
 //  KeychainWriteSeamTests.swift
 //  VultisigAppTests
 //
-//  Making reads tri-state moved `Keychain`'s `SecItem` calls behind
-//  `KeychainItemStore`. The write path is supposed to come through that move
-//  untouched — precisely the sort of claim nothing was checking, since a unit
-//  test bundle has no keychain entitlement and could never observe a real
-//  write. These pin the query, the attributes and the delete-then-add order the
-//  Keychain has always used.
+//  What `Keychain` hands to `SecItem` on a write — the query, the attributes and
+//  the call order — pinned through the `KeychainItemStore` seam, since a unit
+//  test bundle has no keychain entitlement and could never observe a real write.
+//
+//  `KeychainWriteTests` covers the same seam from the other side: this file
+//  pins the payloads, that one pins the add-versus-update state machine and what
+//  a failed write leaves behind.
 //
 
 import Security
@@ -18,24 +19,41 @@ final class KeychainWriteSeamTests: XCTestCase {
 
     private static let serviceName = "com.vultisig.tests.keychain"
 
-    func testWritingAValueDeletesTheExistingItemBeforeAddingTheNewOne() {
+    /// Update first, add only when there is nothing to update — never
+    /// delete-then-add, which would destroy the stored value before knowing the
+    /// replacement landed.
+    func testWritingAValueUpdatesFirstAndAddsOnlyWhenNoItemExists() {
         let store = RecordingItemStore()
 
         Keychain(serviceName: Self.serviceName, itemStore: store).setString("hunter2", for: TestKey())
 
-        XCTAssertEqual(store.calls, ["delete", "add"])
+        XCTAssertEqual(store.calls, ["update", "add"])
     }
 
-    func testTheDeleteCarriesTheGeneratedQuery() throws {
+    func testTheUpdateCarriesTheGeneratedQueryWithoutTheReturnFlag() throws {
         let store = RecordingItemStore()
 
         Keychain(serviceName: Self.serviceName, itemStore: store).setString("hunter2", for: TestKey())
 
-        let query = try XCTUnwrap(store.deletedQueries.first)
+        let query = try XCTUnwrap(store.updatedQueries.first)
         XCTAssertEqual(query[kSecClass as String] as? String, kSecClassGenericPassword as String)
         XCTAssertEqual(query[kSecAttrService as String] as? String, Self.serviceName)
         XCTAssertEqual(query[kSecAttrAccount as String] as? String, TestKey().identifier)
-        XCTAssertNotNil(query[kSecReturnData as String])
+        XCTAssertNil(query[kSecReturnData as String], "the return flag belongs to reads, not to a write query")
+    }
+
+    func testTheUpdateCarriesOnlyTheValueAndAccessibility() throws {
+        let store = RecordingItemStore()
+
+        Keychain(serviceName: Self.serviceName, itemStore: store).setString("hunter2", for: TestKey())
+
+        let attributes = try XCTUnwrap(store.updatedAttributes.first)
+        XCTAssertEqual(attributes[kSecValueData as String] as? Data, Data("hunter2".utf8))
+        XCTAssertEqual(
+            attributes[kSecAttrAccessible as String] as? String,
+            kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String
+        )
+        XCTAssertNil(attributes[kSecAttrService as String], "an update must not restate the item's identity")
     }
 
     func testTheAddCarriesTheValueAndAccessibilityWithoutTheReturnFlag() throws {
@@ -68,7 +86,7 @@ final class KeychainWriteSeamTests: XCTestCase {
         XCTAssertEqual(attributes[kSecValueData as String] as? Data, Data("42".utf8))
     }
 
-    func testWritingNilDeletesWithoutAdding() {
+    func testWritingNilDeletesWithoutAddingOrUpdating() {
         let store = RecordingItemStore()
 
         Keychain(serviceName: Self.serviceName, itemStore: store).setString(nil, for: TestKey())
@@ -84,23 +102,24 @@ final class KeychainWriteSeamTests: XCTestCase {
         XCTAssertEqual(store.calls, ["delete"])
     }
 
-    /// A failing write has always been swallowed here. Pinned so the seam is not
-    /// blamed if that ever needs to change.
-    func testAFailedAddIsIgnoredWithoutRetrying() {
+    /// A failing add is not retried, and — the property that matters — nothing
+    /// is deleted on the way, so whatever was stored is still stored.
+    func testAFailedAddIsNotRetriedAndDeletesNothing() {
         let store = RecordingItemStore(addStatus: errSecDuplicateItem)
 
         Keychain(serviceName: Self.serviceName, itemStore: store).setString("hunter2", for: TestKey())
 
-        XCTAssertEqual(store.calls, ["delete", "add"])
+        XCTAssertEqual(store.calls, ["update", "add"])
     }
 }
 
-/// Records what the write path hands to `SecItem`, and answers reads as if the
-/// item were absent.
+/// Records what the write path hands to `SecItem`, and answers reads and updates
+/// as if the item were absent.
 private final class RecordingItemStore: KeychainItemStore {
 
     private(set) var calls: [String] = []
-    private(set) var deletedQueries: [[String: Any]] = []
+    private(set) var updatedQueries: [[String: Any]] = []
+    private(set) var updatedAttributes: [[String: Any]] = []
     private(set) var addedAttributes: [[String: Any]] = []
 
     private let addStatus: OSStatus
@@ -119,9 +138,15 @@ private final class RecordingItemStore: KeychainItemStore {
         return addStatus
     }
 
-    func delete(_ query: [String: Any]) -> OSStatus {
+    func update(_ query: [String: Any], attributes: [String: Any]) -> OSStatus {
+        calls.append("update")
+        updatedQueries.append(query)
+        updatedAttributes.append(attributes)
+        return errSecItemNotFound
+    }
+
+    func delete(_: [String: Any]) -> OSStatus {
         calls.append("delete")
-        deletedQueries.append(query)
         return errSecSuccess
     }
 }
