@@ -275,6 +275,40 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
         XCTAssertNoThrow(try viewModel.amountField.validateErrors())
     }
 
+    /// The minimum rounds away from the user and the maximum rounds toward
+    /// them, so a position sitting on the minimum can render a minimum one base
+    /// unit above its own balance — a form that says "at least 5.794822" over a
+    /// balance of 5.794821, while Max still works, because Max sends the exact
+    /// share count rather than a figure converted back out of the asset.
+    ///
+    /// The displayed minimum is capped at the maximum in that case only.
+    func testTheDisplayedMinimumNeverExceedsABalanceThatCanSatisfyIt() async throws {
+        addUsdcCoin()
+        service.positions = [Self.unstakedPosition]
+        // Exactly the spendable share balance: 5.5 shares truncates exactly, so
+        // `spendable` steps back one base unit to stay clear of the sentinel.
+        service.minWithdrawShares = BigInt(5_499_999)
+        let viewModel = makeViewModel()
+        await viewModel.onLoad()
+
+        // 5_499_999 × 1.0536041812651029025 = 5_794_821.94…, so the two
+        // conversions land either side of it.
+        XCTAssertEqual(viewModel.minimumWithdraw?.baseUnits, BigInt(5_794_821))
+    }
+
+    /// But a position that genuinely cannot reach the minimum keeps the real
+    /// figure, because that user needs to see what they are short of.
+    func testAPositionBelowTheMinimumStillShowsTheRealMinimum() async throws {
+        addUsdcCoin()
+        service.positions = [Self.unstakedPosition]
+        service.minWithdrawShares = BigInt(6_000_000)
+        let viewModel = makeViewModel()
+        await viewModel.onLoad()
+
+        // 6_000_000 × 1.0536041812651029025 = 6_321_625.08…, rounded up.
+        XCTAssertEqual(viewModel.minimumWithdraw?.baseUnits, BigInt(6_321_626))
+    }
+
     /// And the build refuses it too, so a form bug cannot spend a ceremony on a
     /// transaction the chain rejects.
     func testABelowMinimumWithdrawIsRefusedAtBuildTime() async {

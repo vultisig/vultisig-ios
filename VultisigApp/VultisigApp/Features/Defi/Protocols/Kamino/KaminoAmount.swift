@@ -240,7 +240,10 @@ struct KaminoShareAmount: KaminoBaseUnitAmount {
     }
 
     /// Parses a base-unit string as it appears in `VaultState` (e.g.
-    /// `minWithdrawAmount = "1000"`, which is in SHARE base units, not token ones).
+    /// `minDepositAmount = "100000"`). The caller supplies the scale, because
+    /// the response never says which of the two mints a figure belongs to —
+    /// `minWithdrawAmount` is a token amount despite naming the unit the
+    /// withdraw endpoint takes.
     init?(baseUnitString: String, decimals: Int) {
         guard let baseUnits = BigInt(baseUnitString) else { return nil }
         self.init(baseUnits: baseUnits, decimals: decimals)
@@ -439,7 +442,7 @@ extension KaminoShareAmount {
     /// The same conversion rounded **up**.
     ///
     /// Used for one thing only: rendering a share-denominated *minimum* as an
-    /// asset amount. `minWithdrawAmount` is in share base units, and a form
+    /// asset amount. `KaminoVaultInfo.minWithdraw` is a share count, and a form
     /// denominated in the asset has to name a figure that, converted back, still
     /// clears it — so the displayed minimum rounds away from the user rather
     /// than toward them. Never use this to size a transaction: rounding up is
@@ -485,6 +488,29 @@ extension KaminoTokenAmount {
     /// withdraw into a full exit. For the same reason a 100% withdraw must send
     /// the held share balance directly and never a number derived from here.
     func shareAmount(tokensPerShare rate: KaminoRate, shareDecimals: Int) -> KaminoShareAmount? {
+        shareAmount(tokensPerShare: rate, shareDecimals: shareDecimals, roundingUp: false)
+    }
+
+    /// The same conversion rounded **up**.
+    ///
+    /// Used for one thing only: turning a token-denominated *minimum* into the
+    /// share count a withdraw has to name to clear it. Rounding down there would
+    /// produce a share figure worth fractionally less than the minimum, which is
+    /// the whole bug this exists to avoid.
+    ///
+    /// Never use it to size a transaction. Rounding up is precisely the
+    /// direction that turns a partial withdraw into an over-request, and an
+    /// over-request is rewritten by the API to `u64::MAX` — *withdraw
+    /// everything*.
+    func shareAmountRoundedUp(tokensPerShare rate: KaminoRate, shareDecimals: Int) -> KaminoShareAmount? {
+        shareAmount(tokensPerShare: rate, shareDecimals: shareDecimals, roundingUp: true)
+    }
+
+    private func shareAmount(
+        tokensPerShare rate: KaminoRate,
+        shareDecimals: Int,
+        roundingUp: Bool
+    ) -> KaminoShareAmount? {
         guard rate.isPositive,
               baseUnits >= 0,
               (0...KaminoBaseUnits.maxDecimals).contains(shareDecimals),
@@ -497,6 +523,9 @@ extension KaminoTokenAmount {
         //                ÷ (10^tokenDecimals × numerator)
         let numerator = baseUnits * BigInt(10).power(rate.scale + shareDecimals)
         let denominator = BigInt(10).power(decimals) * rate.numerator
-        return KaminoShareAmount(baseUnits: numerator / denominator, decimals: shareDecimals)
+        let quotient = roundingUp
+            ? (numerator + denominator - 1) / denominator
+            : numerator / denominator
+        return KaminoShareAmount(baseUnits: quotient, decimals: shareDecimals)
     }
 }

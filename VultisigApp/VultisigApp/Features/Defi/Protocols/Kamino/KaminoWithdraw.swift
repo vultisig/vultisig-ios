@@ -8,9 +8,10 @@ import Foundation
 
 /// The user's share balance in one vault, split the way `/positions` reports it.
 ///
-/// Shares, never tokens: the withdraw endpoint takes shares, the vault's
-/// `minWithdrawAmount` is in shares, and the balance a full withdraw must send
-/// is a share count. The token figure the form is denominated in is a projection
+/// Shares, never tokens: the withdraw endpoint takes shares and the balance a
+/// full withdraw must send is a share count. (The vault's published
+/// `minWithdrawAmount` is the exception — it is a TOKEN figure, which is why
+/// `KaminoVaultInfo.minWithdraw` is derived rather than parsed.) The token figure the form is denominated in is a projection
 /// of these at the current rate, and it is derived — never the other way round.
 struct KaminoSharePosition: Equatable {
     let staked: KaminoShareAmount
@@ -297,9 +298,9 @@ enum KaminoWithdrawMath {
 }
 
 /// Rejects an entered asset amount whose share equivalent is below the vault's
-/// `minWithdrawAmount`.
+/// effective minimum.
 ///
-/// The minimum is in SHARE base units, so it can only be judged **after** the
+/// The minimum is a SHARE count, so it can only be judged **after** the
 /// conversion. Comparing the typed token amount against it directly would be
 /// wrong by the whole share rate — on the SOL vault that rate is 0.0010749
 /// tokens per share, so the naive comparison is off by a factor of about 930.
