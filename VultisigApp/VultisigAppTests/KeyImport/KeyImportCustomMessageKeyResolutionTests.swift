@@ -106,6 +106,31 @@ final class KeyImportCustomMessageKeyResolutionTests: XCTestCase {
         XCTAssertNil(resolved)
     }
 
+    /// The **exact** match deliberately does not filter on the persisted curve flag, unlike
+    /// Android's resolvers. `chain` is the entry's primary identity — it forms the
+    /// `@Attribute(.unique)` id and is written from the same import job as the key itself —
+    /// so a share filed under a chain *is* that chain's key, whatever the flag says. Were
+    /// the flag ever inconsistent, filtering would drop through to the root share at path
+    /// `m`: a signature that verifies against nothing, which is the precise failure this
+    /// fix exists to remove. Trusting `chain` over the flag keeps the safer failure mode.
+    ///
+    /// Neither platform's write path can actually produce this state for a chain that
+    /// reaches this helper: QBTC is the only chain whose `isEddsa` the two platforms
+    /// disagree on, and the `.MLDSA` branch signs with `vault.publicKeyMLDSA44` instead of
+    /// this helper's result. The test pins the intent so the check is not "fixed" later.
+    func testExactMatchWithInconsistentCurveMetadataStillWins() {
+        let vault = makeKeyImportVault(keys: [(.ethereum, ethKey)], isEddsaOverride: true)
+
+        let resolved = KeysignViewModel.customMessagePublicKey(
+            for: .ethereum,
+            in: vault.chainPublicKeys,
+            isImport: true
+        )
+
+        XCTAssertEqual(resolved, ethKey, "The chain's own share must win over an inconsistent curve flag, never the root key")
+        XCTAssertNotEqual(resolved, vault.pubKeyECDSA)
+    }
+
     // MARK: - The fallback must not cross curves
 
     func testEcdsaTargetDoesNotPickUpAnEddsaShare() {
