@@ -56,6 +56,21 @@ class AppViewModel: ObservableObject {
     /// the launch gate reads the lock mode, which is the whole property.
     private let reconcileInstall: @MainActor () -> Void
     private var didTriggerAuthThisSession = false
+    /// Whether the app has actually been to the background since the last time
+    /// it came forward.
+    ///
+    /// The auto-lock interval is a rule about time spent *away*, but the hook
+    /// that enforced it ran on every activation — and plenty of activations are
+    /// not returns from anywhere. A Face ID sheet, Control Centre, an incoming
+    /// call and a permission alert all make the app `.inactive` and then
+    /// `.active` again without it ever leaving.
+    ///
+    /// That is what produced the Face ID loop: the sheet the lock screen itself
+    /// raised counted as a foreground, `immediate` answered "relock, yes", and
+    /// the gate went back up over the unlock that had just succeeded — which
+    /// rebuilt the lock screen, which raised the sheet again. Requiring a real
+    /// backgrounding is the fix for the whole family, not just the one case.
+    private var didBackgroundSinceForeground = false
 
     init(
         lockService: AppLockService = .shared,
@@ -207,6 +222,7 @@ class AppViewModel: ObservableObject {
     func revokeAuth() {
         showCover = true
         didTriggerAuthThisSession = false
+        didBackgroundSinceForeground = true
         lockService.noteBackgrounded()
     }
 
@@ -349,7 +365,16 @@ class AppViewModel: ObservableObject {
     func enableAuth() {
         // The re-lock delay used to be five minutes hardcoded here, with no way
         // for anyone to change it. `AppLockService` owns that policy now.
-        let shouldRelock = lockService.evaluateForeground()
+        //
+        // **A relock needs a backgrounding to be a relock *of* something.** The
+        // interval measures time spent away, and an activation that follows no
+        // departure has measured nothing — so the question is not even asked.
+        // Short-circuiting matters as much as the answer: `evaluateForeground()`
+        // rewrites the stored timestamp, and letting a Face ID sheet reset the
+        // clock would move the moment the user actually left.
+        let didBackground = didBackgroundSinceForeground
+        didBackgroundSinceForeground = false
+        let shouldRelock = didBackground && lockService.evaluateForeground()
         let gateRequired = passcodeService.isPasscodeGateRequired
 
         if gateRequired {

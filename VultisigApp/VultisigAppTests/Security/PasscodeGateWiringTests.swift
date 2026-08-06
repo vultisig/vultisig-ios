@@ -159,12 +159,16 @@ final class PasscodeGateWiringTests: XCTestCase {
         try context.fetch(FetchDescriptor<Vault>()).flatMap(\.keyshares).map(\.keyshare)
     }
 
-    /// The app was away long enough that returning re-locks. Without this there
-    /// is no recorded timestamp, `evaluateForeground()` answers `false`, and the
-    /// foreground does not gate at all.
-    private func givenTheAppWasAwayLongEnoughToRelock() {
+    /// The app was away long enough that returning re-locks.
+    ///
+    /// It goes through `revokeAuth()` rather than seeding the timestamp
+    /// directly, because a relock now requires the app to have actually left —
+    /// an activation that followed no departure measures no time away, and a
+    /// biometric sheet is exactly such an activation. Reaching past that and
+    /// setting the clock by hand would test a sequence the app cannot produce.
+    private func givenTheAppWasAwayLongEnoughToRelock(_ sut: AppViewModel) {
         lockService.autoLockInterval = .immediate
-        lockService.noteBackgrounded()
+        sut.revokeAuth()
     }
 
     // MARK: - Raising
@@ -172,9 +176,9 @@ final class PasscodeGateWiringTests: XCTestCase {
     func testAForegroundRelockRaisesTheGateWhileAPasscodeIsSet() async throws {
         try givenAVault(shares: [share])
         try await service.setPasscode(passcode)
-        givenTheAppWasAwayLongEnoughToRelock()
-
         let sut = makeViewModel()
+        givenTheAppWasAwayLongEnoughToRelock(sut)
+
         sut.enableAuth()
 
         XCTAssertTrue(sut.isPasscodeLocked)
@@ -186,9 +190,9 @@ final class PasscodeGateWiringTests: XCTestCase {
     /// discard the only copy of something no wrapper can hand back.
     func testAForegroundRelockRaisesNoGateWhenTheWrapperIsConfirmedAbsent() {
         lockService.mode = .passcode
-        givenTheAppWasAwayLongEnoughToRelock()
-
         let sut = makeViewModel()
+        givenTheAppWasAwayLongEnoughToRelock(sut)
+
         sut.enableAuth()
 
         XCTAssertFalse(sut.isPasscodeLocked)
@@ -198,9 +202,9 @@ final class PasscodeGateWiringTests: XCTestCase {
     func testAForegroundRelockRaisesTheGateWhenTheWrapperCannotBeRead() {
         lockService.mode = .passcode
         keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
-        givenTheAppWasAwayLongEnoughToRelock()
-
         let sut = makeViewModel()
+        givenTheAppWasAwayLongEnoughToRelock(sut)
+
         sut.enableAuth()
 
         XCTAssertTrue(sut.isPasscodeLocked)
@@ -212,9 +216,9 @@ final class PasscodeGateWiringTests: XCTestCase {
     /// foreground that re-locks would leave the wallet on screen behind neither.
     func testAForegroundRelockWithNoPasscodeGateStillTakesTheDeviceAuthPath() {
         lockService.mode = .passcode
-        givenTheAppWasAwayLongEnoughToRelock()
-
         let sut = makeViewModel()
+        givenTheAppWasAwayLongEnoughToRelock(sut)
+
         sut.isAuthenticationEnabled = true
         sut.isAuthenticated = true
         sut.showSplashView = false
@@ -242,8 +246,8 @@ final class PasscodeGateWiringTests: XCTestCase {
         try givenAVault(shares: [share])
         try await service.setPasscode(passcode)
 
-        givenTheAppWasAwayLongEnoughToRelock()
         let sut = makeViewModel()
+        givenTheAppWasAwayLongEnoughToRelock(sut)
         sut.enableAuth()
         XCTAssertTrue(sut.isPasscodeLocked, "the gate was legitimately up when the disable started")
 
@@ -390,7 +394,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         _ = try await service.unlock(with: passcode)
         // Without a recorded backgrounding `shouldRelock` answers "first launch,
         // do nothing" and this passes without the guard ever being consulted.
-        lockService.noteBackgrounded()
+        sut.revokeAuth()
         XCTAssertTrue(lockService.shouldRelock(), "precondition: the interval says relock")
 
         sut.enableAuth()
@@ -410,7 +414,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         lockService.autoLockInterval = .immediate
 
         let sut = makeViewModel()
-        lockService.noteBackgrounded()
+        sut.revokeAuth()
         XCTAssertFalse(sut.isPasscodeLocked, "precondition: nothing is up")
         XCTAssertTrue(lockService.shouldRelock(), "precondition: the interval says relock")
 
@@ -432,6 +436,55 @@ final class PasscodeGateWiringTests: XCTestCase {
         sut.raisePasscodeGate()
 
         XCTAssertNotEqual(sut.passcodeGateGeneration, first)
+    }
+
+    /// The Face ID loop, end to end. The lock screen raises the sheet itself,
+    /// the sheet makes the app `.inactive` and then `.active`, and at
+    /// `immediate` the old code answered "relock" to that — putting the gate
+    /// back over the unlock that had just succeeded, rebuilding the lock screen
+    /// and raising the sheet again.
+    ///
+    /// The timestamp is seeded on purpose: an earlier, real backgrounding did
+    /// happen, so the interval alone still says yes. What says no is that *this*
+    /// activation followed no departure.
+    func testAnActivationThatFollowedNoBackgroundingDoesNotRelock() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.raisePasscodeGate()
+        // The shortcut opening the app, then the screen coming down.
+        _ = try await service.unlock(with: passcode)
+        sut.markPasscodeUnlocked()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: the unlock succeeded")
+
+        lockService.noteBackgrounded()
+        XCTAssertTrue(lockService.shouldRelock(), "precondition: the interval on its own says relock")
+
+        sut.enableAuth()
+
+        XCTAssertFalse(
+            sut.isPasscodeLocked,
+            "a biometric sheet is not a backgrounding; relocking here restarts the prompt forever"
+        )
+    }
+
+    /// And the departure that is real still relocks, at the same interval, so
+    /// the guard above is not simply switching auto-lock off.
+    func testAnActivationAfterARealBackgroundingStillRelocks() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.raisePasscodeGate()
+        _ = try await service.unlock(with: passcode)
+        sut.markPasscodeUnlocked()
+        XCTAssertFalse(sut.isPasscodeLocked)
+
+        sut.revokeAuth()
+        sut.enableAuth()
+
+        XCTAssertTrue(sut.isPasscodeLocked, "the app did leave, and the interval is immediate")
     }
 
     // MARK: - The lock screen's opening move
