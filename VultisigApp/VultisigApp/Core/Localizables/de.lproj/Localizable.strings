@@ -973,7 +973,6 @@
 "passcodeMismatch" = "Die Eingaben stimmen nicht überein. Erneut versuchen.";
 "passcodeNewTitle" = "Neuen Passcode wählen";
 "passcodeSealedSharesWithoutKey" = "Ihre Vaults sind auf diesem Gerät bereits verschlüsselt, aber der Schlüssel, der sie öffnet, kann nicht gelesen werden. Stellen Sie sie aus einem Backup wieder her.";
-"passcodeSetDisclosure" = "Das verschlüsselt Ihre Key-Shares auf diesem Gerät. Ältere App-Versionen können damit erst signieren, wenn Sie den Passcode entfernen.";
 "passcodeSetTitle" = "Passcode festlegen";
 "passcodeStorageError" = "Der Passcode konnte auf diesem Gerät nicht gelesen werden. Stellen Sie Ihren Vault aus einem Backup wieder her.";
 "password" = "Passwort";

@@ -24,7 +24,6 @@ struct SetPasscodeScreen: View {
                 subtitle: subtitle,
                 errorMessage: viewModel.errorMessage,
                 isBusy: viewModel.isBusy,
-                footnote: "passcodeSetDisclosure".localized,
                 passcode: $viewModel.entry,
                 onComplete: { _ in
                     Task { await viewModel.submitForSet() }

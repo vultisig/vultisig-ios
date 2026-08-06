@@ -973,7 +973,6 @@
 "passcodeMismatch" = "Ne podudaraju se. Pokušajte ponovno.";
 "passcodeNewTitle" = "Odaberite novu zaporku";
 "passcodeSealedSharesWithoutKey" = "Vaši vaultovi već su šifrirani na ovom uređaju, ali ključ koji ih otvara nije čitljiv. Vratite ih iz sigurnosne kopije.";
-"passcodeSetDisclosure" = "Ovime se vaši key shareovi šifriraju na ovom uređaju. Starije verzije aplikacije njima ne mogu potpisivati dok ne uklonite zaporku.";
 "passcodeSetTitle" = "Postavi zaporku";
 "passcodeStorageError" = "Zaporku nije bilo moguće pročitati na ovom uređaju. Vratite vault iz sigurnosne kopije.";
 "password" = "Lozinka";

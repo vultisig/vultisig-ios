@@ -34,7 +34,7 @@ enum AccessibilityID {
         static let deleteKey = "passcode.deleteKey"
         static let macField = "passcode.macField"
         static let enterScreen = "passcode.enterScreen"
-        static let footnote = "passcode.footnote"
+        static let awaitingBiometrics = "passcode.awaitingBiometrics"
 
         static func digitKey(_ digit: String) -> String {
             "passcode.digit.\(digit)"
