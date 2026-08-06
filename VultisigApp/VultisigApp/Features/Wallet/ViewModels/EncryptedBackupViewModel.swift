@@ -753,9 +753,10 @@ class EncryptedBackupViewModel: ObservableObject {
     /// the names people reuse across devices. Anything still colliding after that
     /// is refused: `pubKeyECDSA`/`pubKeyEdDSA` default to `""`, and `""` is a
     /// real value in the unique index, so two key-less backups would upsert each
-    /// other. The final check is deliberately a raw re-derivation over every
-    /// unique attribute rather than a restatement of the duplicate rule, so a
-    /// unique attribute added later cannot quietly slip past this gate.
+    /// other. The final check restates the raw index semantics — one clause per
+    /// `@Attribute(.unique)` field on `Vault` — rather than reusing the duplicate
+    /// rule, whose empty/`nil` tolerance is exactly what would let those through.
+    /// It is the single place to extend when a unique attribute is added.
     func importDecision(for backupVault: Vault, existing: [Vault]) -> VaultImportDecision {
         guard isVaultUnique(backupVault: backupVault, vaults: existing) else {
             return .duplicate
