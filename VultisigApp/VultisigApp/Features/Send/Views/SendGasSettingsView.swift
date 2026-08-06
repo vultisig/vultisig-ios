@@ -53,7 +53,12 @@ struct SendGasSettingsView: View {
     var networkRateRow: some View {
         VStack {
             title(text: "Network rate (sats/vbyte)")
-            textField(title: "Network rate", text: $viewModel.byteFee)
+            // Routed through the VM so a keystroke pins the rate: a later fetch
+            // (fee-mode change, reopening the sheet) must not replace it.
+            textField(title: "Network rate", text: Binding(
+                get: { viewModel.byteFee },
+                set: { viewModel.setByteFee($0) }
+            ))
         }
     }
 
@@ -129,7 +134,7 @@ struct SendGasSettingsView: View {
 
     func modeTab(mode: FeeMode) -> some View {
         PrimaryButton(title: mode.title, type: viewModel.selectedMode == mode ? .primary : .secondary, size: .small) {
-            viewModel.selectedMode = mode
+            viewModel.selectMode(mode)
         }
     }
 
@@ -165,13 +170,15 @@ struct SendGasSettingsView: View {
 
     func save() {
         let gasLimit = BigInt(viewModel.gasLimit, radix: 10)
-        let byteFee = BigInt(viewModel.byteFee, radix: 10)
 
         output.didSetFeeSettings(
             chain: viewModel.chain,
             mode: viewModel.selectedMode,
             gasLimit: gasLimit,
-            byteFee: byteFee
+            // Only a rate the user actually edited is pinned. Reporting the
+            // displayed value unconditionally would pin the fee mode's own rate
+            // and make later mode changes inert.
+            byteFee: viewModel.resolvedCustomByteFee
         )
     }
 }

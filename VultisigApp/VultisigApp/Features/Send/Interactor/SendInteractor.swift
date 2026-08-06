@@ -31,6 +31,12 @@ struct SendChainSpecificRequest: Equatable {
     /// default) so the chain-specific build can honor an explicit override
     /// instead of overwriting it with a fresh estimate.
     let customGasLimit: BigInt?
+    /// The user-pinned sat/vB rate from the Send form's gas settings, when set.
+    /// UTXO chains price a transaction as `rate × size`, so this is the one
+    /// input that lets the user actually lower (or raise) a UTXO fee — without
+    /// it the chain-specific build recomputes the rate from `feeMode` and the
+    /// gas sheet's "Network rate" field does nothing.
+    let customByteFee: BigInt?
     let feeMode: FeeMode
     let fromAddress: String
 
@@ -44,6 +50,7 @@ struct SendChainSpecificRequest: Equatable {
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
         customGasLimit: BigInt? = nil,
+        customByteFee: BigInt? = nil,
         feeMode: FeeMode,
         fromAddress: String
     ) {
@@ -56,6 +63,7 @@ struct SendChainSpecificRequest: Equatable {
         self.transactionType = transactionType
         self.gasLimit = gasLimit
         self.customGasLimit = customGasLimit
+        self.customByteFee = customByteFee
         self.feeMode = feeMode
         self.fromAddress = fromAddress
     }
@@ -71,6 +79,7 @@ struct SendChainSpecificRequest: Equatable {
             transactionType: tx.transactionType,
             gasLimit: tx.gasLimit,
             customGasLimit: tx.customGasLimit,
+            customByteFee: tx.customByteFee,
             feeMode: tx.feeMode,
             fromAddress: tx.fromAddress
         )
@@ -84,6 +93,7 @@ struct SendFeeEstimateRequest: Equatable {
     var fromAddress: String { chainSpecific.fromAddress }
     var gasLimit: BigInt? { chainSpecific.gasLimit }
     var customGasLimit: BigInt? { chainSpecific.customGasLimit }
+    var customByteFee: BigInt? { chainSpecific.customByteFee }
     var feeMode: FeeMode { chainSpecific.feeMode }
 
     init(chainSpecific: SendChainSpecificRequest) {
@@ -111,8 +121,39 @@ protocol SendInteractor {
     /// factories directly.
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt
 
+    /// Plan a real max send for the UTXO family and report what it would
+    /// actually send and cost.
+    ///
+    /// A UTXO fee is `rate × size`, and the size is only known once inputs are
+    /// selected — so the sat/vB rate carried on `BlockChainSpecific` is not a
+    /// fee, and `balance − rate` is not a max amount. Build the transaction the
+    /// signer will build, with `useMaxAmount` on, and read the planner's own
+    /// amount and fee off it. `request.sendMaxAmount` must be `true`.
+    ///
+    /// UTXO-family only: Cardano derives its fee from the signed size at payload
+    /// build time, so its `BlockChainSpecific` fee is already a usable total.
+    ///
+    /// `refreshUtxos` re-fetches the UTXO set before planning. The Send form
+    /// plans against the cached set (Max is tapped repeatedly while editing);
+    /// the Verify screen refreshes, matching `calculatePlanFee`, because that
+    /// plan is the one about to be signed.
+    func calculateMaxSendPlan(
+        _ request: SendChainSpecificRequest,
+        vault: Vault,
+        refreshUtxos: Bool
+    ) async throws -> SendMaxPlanResult
+
     /// Validate UTXO availability before payload construction.
     func validateUtxosIfNeeded(coin: Coin) async throws
+
+    /// Re-plan an already-built payload and report what it will actually send
+    /// and pay. `nil` for chains that have no such plan.
+    ///
+    /// Exists so the signing path can confirm the transaction it is about to
+    /// hand to the ceremony still matches the one the user approved — the input
+    /// set is refetched between the two, and a `useMaxAmount` plan is defined by
+    /// whatever that set contains.
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult?
 
     /// Build the final keysign payload to hand off to signing. UTXO + Cardano
     /// chains plan a draft transfer internally; other chains read directly
@@ -129,6 +170,18 @@ protocol SendInteractor {
 
     /// Refresh balance for a single coin.
     func updateBalance(for coin: Coin) async
+}
+
+/// What a real `useMaxAmount` UTXO transaction plan would send and cost.
+struct SendMaxPlanResult: Equatable {
+    /// What the recipient actually receives — the selected inputs minus the
+    /// fee. More honest than `balance − fee`: it already excludes any output
+    /// the spendability filter left out of the selection.
+    let amount: BigInt
+    /// The fee the planned transaction really pays, for its real size.
+    let fee: BigInt
+    /// The sat/vB rate the plan was priced at, for the gas-settings display.
+    let byteFee: BigInt
 }
 
 struct SendInteractorFeeResult: Equatable {
@@ -185,6 +238,7 @@ extension SendInteractor {
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
         customGasLimit: BigInt? = nil,
+        customByteFee: BigInt? = nil,
         feeMode: FeeMode,
         fromAddress: String
     ) async throws -> SendInteractorFeeResult {
@@ -198,6 +252,7 @@ extension SendInteractor {
             transactionType: transactionType,
             gasLimit: gasLimit,
             customGasLimit: customGasLimit,
+            customByteFee: customByteFee,
             feeMode: feeMode,
             fromAddress: fromAddress
         )))

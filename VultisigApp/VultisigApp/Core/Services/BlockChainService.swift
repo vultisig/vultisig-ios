@@ -213,6 +213,7 @@ final class BlockChainService {
         transactionType: VSTransactionType,
         gasLimit: BigInt?,
         customGasLimit: BigInt?,
+        customByteFee: BigInt? = nil,
         feeMode: FeeMode,
         fromAddress: String
     ) async throws -> BlockChainSpecific {
@@ -243,7 +244,8 @@ final class BlockChainService {
             toAddress: toAddress,
             memo: memo,
             feeMode: feeMode,
-            amount: amount
+            amount: amount,
+            customByteFee: customByteFee
         )
     }
 
@@ -265,7 +267,9 @@ final class BlockChainService {
             fromAddress: fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast, quote: quoteHash
+            feeMode: .fast,
+            customByteFee: nil,  // Swaps never carry the send form's pinned rate
+            quote: quoteHash
         )
         if let cachedResult = shouldUseCache(for: fromCoin.chain, cacheKey: cacheKey) {
             return cachedResult
@@ -320,6 +324,10 @@ final class BlockChainService {
         return result
     }
 
+    /// `customByteFee` is part of the key because it overrides the rate
+    /// `feeMode` would otherwise resolve to — without it, editing the sat/vB
+    /// value would be served the previous rate's cached chain-specific for the
+    /// cache lifetime and the edit would look ignored.
     func getCacheKey(for coin: Coin,
                      action: Action,
                      sendMaxAmount: Bool,
@@ -329,9 +337,11 @@ final class BlockChainService {
                      toAddress: String?,
                      memo: String?,
                      feeMode: FeeMode,
+                     customByteFee: BigInt?,
                      quote: String?) -> String {
         let memoKey = memo?.isEmpty == false ? "memo-\(memo!.count)" : "none"
-        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode) -\(quote ?? "")"
+        let byteFeeKey = customByteFee.map(\.description) ?? "auto"
+        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode)-\(byteFeeKey) -\(quote ?? "")"
     }
 }
 
@@ -427,6 +437,7 @@ private extension BlockChainService {
                                    toAddress: tx.toAddress,
                                    memo: tx.memo,
                                    feeMode: tx.feeMode,
+                                   customByteFee: tx.customByteFee,
                                    quote: amountCacheComponent)
 
         // Use centralized cache checking method
@@ -445,7 +456,8 @@ private extension BlockChainService {
             toAddress: tx.toAddress,
             memo: tx.memo,
             feeMode: tx.feeMode,
-            amount: tx.amountInRaw
+            amount: tx.amountInRaw,
+            customByteFee: tx.customByteFee
         )
         // Use centralized cache setting method
         setCacheIfAllowed(for: tx.coin.chain, cacheKey: cacheKey, blockSpecific: blockSpecific)
@@ -462,6 +474,7 @@ private extension BlockChainService {
                                    toAddress: tx.toAddress,
                                    memo: tx.memo,
                                    feeMode: tx.feeMode,
+                                   customByteFee: nil,  // EVM prices by gas, not by byte rate
                                    quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
@@ -502,6 +515,7 @@ private extension BlockChainService {
                        memo: String?,
                        feeMode: FeeMode,
                        amount: BigInt?,
+                       customByteFee: BigInt? = nil,
                        signData: SignData? = nil) async throws -> BlockChainSpecific {
         // dApp-supplied Sui PTBs (`signSui`) arrive already fully built: coins,
         // gas budget and reference gas price are baked into the BCS bytes that
@@ -518,13 +532,32 @@ private extension BlockChainService {
             // with the payload to the signing helpers (covers native sends and
             // SwapKit ZEC swaps). nil when the RPC is down — signing then
             // refuses rather than producing a network-rejected tx.
+            //
+            // `customByteFee` is deliberately ignored: Zcash prices by ZIP-317
+            // logical actions, not by byte rate, so a pinned sat/vB value would
+            // not describe the fee the network requires.
             let zcashBranchId = await ZcashService.shared.getConsensusBranchIdHex()
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount, zcashBranchId: zcashBranchId)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            let  byteFeeValue = try await fetchUTXOFee(coin: coin, feeMode: feeMode)
+            // A rate the user pinned in the gas sheet wins over the one the fee
+            // mode resolves to — it is the only control that can actually move a
+            // UTXO fee. Out-of-range values fall back to the mode's rate rather
+            // than being honored: a non-positive rate plans a fee-less
+            // transaction no node will relay, and anything past `Int64.max`
+            // traps the process in WalletCore's `Int64` byteFee conversion.
+            let byteFeeValue: BigInt
+            if let customByteFee, customByteFee > .zero, customByteFee <= BigInt(Int64.max) {
+                byteFeeValue = customByteFee
+            } else {
+                byteFeeValue = try await fetchUTXOFee(coin: coin, feeMode: feeMode)
+            }
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let ttl = try await cardano.calculateDynamicTTL()
+            // `customByteFee` does not apply here: Cardano's fee is derived from
+            // the signed transaction's size by the initiator and forced
+            // identically on every co-signer for sighash parity, so a pinned
+            // rate would be overwritten a moment later anyway.
             // Placeholder fee only — UTXOs aren't selected yet here. The real
             // size-based `byteFee` is computed once by the initiator in
             // `KeysignPayloadFactory.buildTransfer` (via

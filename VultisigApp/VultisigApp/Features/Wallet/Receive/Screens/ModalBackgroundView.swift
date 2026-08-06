@@ -16,7 +16,7 @@ struct ModalBackgroundView: View {
         // the platform owns. The scale stops at 24 for the same reason it has no
         // sheet step — a number that has to match a platform default is not ours
         // to standardise.
-        let cornerRadius: CGFloat = 34
+        let cornerRadius: CGFloat = 34 // swiftlint:disable:this no_raw_corner_radius
         ZStack(alignment: .bottom) {
             magicPattern
                 .frame(maxWidth: width)

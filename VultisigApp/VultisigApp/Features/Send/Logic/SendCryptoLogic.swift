@@ -49,7 +49,7 @@ enum SendCryptoLogic {
         }
 
         let amountRaw = amountInRaw(coin: coin, amount: amount)
-        let balanceRaw = coin.rawBalance.toBigInt(decimals: coin.decimals)
+        let balanceRaw = coin.balanceRaw
 
         if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton))
             || !coin.isNativeToken {
@@ -179,6 +179,17 @@ enum SendCryptoLogic {
         return formatAmountInput(maxValue, digits: digits)
     }
 
+    /// Format a raw (base-unit) amount for the amount field, with the same
+    /// precision rule `computeMaxAmount` uses. For amounts that come from a
+    /// transaction planner rather than from `balance − fee` arithmetic.
+    /// Truncates (never rounds up), so the displayed figure can't exceed what
+    /// was planned.
+    static func formatRawAmount(_ raw: BigInt, coin: Coin) -> String {
+        let digits = coin.decimals > 8 ? 8 : coin.decimals
+        let value = raw > .zero ? coin.decimal(for: raw) : .zero
+        return formatAmountInput(value, digits: digits)
+    }
+
     /// Fixed-point max amount for Terra Classic accounting for the proportional
     /// burn tax. `baseGasFee` is the flat gas portion in the send denom.
     private static func terraClassicMaxValue(coin: Coin, baseGasFee: BigInt) -> Decimal {
@@ -213,7 +224,7 @@ enum SendCryptoLogic {
     ///
     /// Every other chain keeps `balance − fee − ED` unchanged.
     static func verifyMaxCandidateRaw(coin: Coin, fee: BigInt, previousAmountRaw: BigInt) -> BigInt {
-        let balance = coin.rawBalance.toBigInt(decimals: coin.decimals)
+        let balance = coin.balanceRaw
         let candidate = balance - fee - existentialDeposit(for: coin)
         guard coin.chain == .terraClassic else { return candidate }
         return Swift.min(candidate, previousAmountRaw)

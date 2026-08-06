@@ -793,6 +793,7 @@
 "marketCap" = "Marktkapitalisierung";
 "marketCapRank" = "Rang";
 "marketStats" = "Marktdaten";
+"maxSendPlanChangedError" = "Dein verfügbares Guthaben hat sich während der Überprüfung geändert, daher würde diese Transaktion nicht mehr den angezeigten Betrag senden. Geh zurück und prüfe den aktualisierten Betrag.";
 "maxSupply" = "Maximale Menge";
 "maxTotalFee" = "Max. Gesamtgebühr";
 "memo" = "Memo";
@@ -1565,6 +1566,12 @@
 "useLocalMode" = "Lokalen Modus verwenden";
 "usePassword" = "Passwort verwenden";
 "useStandardMode" = "Standardmodus verwenden";
+"utxoPlanDustAmountError" = "Was für den Empfänger übrig bliebe, liegt unter der Dust-Grenze des Netzwerks. Sende einen größeren Betrag oder senke die Netzwerkrate, damit mehr zum Senden übrig bleibt.";
+"utxoPlanFailedError" = "Diese Transaktion konnte nicht vorbereitet werden (%@). Versuche einen anderen Betrag oder senke die Netzwerkrate.";
+"utxoPlanInsufficientFundsError" = "Deine verfügbaren Transaktionsausgaben decken diesen Betrag plus Netzwerkgebühr nicht. Versuche einen kleineren Betrag oder senke die Netzwerkrate.";
+"utxoPlanInvalidUtxoError" = "Eine deiner Transaktionsausgaben kann derzeit nicht ausgegeben werden. Aktualisiere dein Guthaben und versuche es erneut.";
+"utxoPlanTransactionTooLargeError" = "Diese Transaktion benötigt mehr Eingaben, als eine Transaktion aufnehmen kann. Sende einen kleineren Betrag oder konsolidiere zuerst deine Ausgaben.";
+"utxoPlanZeroAmountError" = "Gib einen Betrag größer als null ein.";
 "utxoSelectionFailedError" = "UTXO-Auswahl fehlgeschlagen. Konnte keine geeigneten Transaktionsausgaben finden, um den Betrag plus geschätzte Gebühren zu decken. Versuche den Transaktionsbetrag zu reduzieren.";
 "utxoTooSmallError" = "Verfügbare UTXOs sind zu klein für diese Transaktion. Die einzelnen Transaktionsausgaben in deiner Brieftasche erfüllen nicht die Mindestanforderungen. Erwäge zuerst kleinere Beträge zu konsolidieren.";
 "validAddressDomainError" = "Falsche Adresse für die ausgewählte Blockchain. Versuchen Sie, die Chain zu Ihrem Tresor hinzuzufügen.";

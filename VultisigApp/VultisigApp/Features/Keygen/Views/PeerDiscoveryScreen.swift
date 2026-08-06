@@ -303,9 +303,9 @@ struct PeerDiscoveryScreen: View {
             // pairing flow is built around. Both radii are the same number
             // because they are the same edge, so they move together or not at
             // all.
-            .cornerRadius(33)
+            .cornerRadius(33) // swiftlint:disable:this no_raw_corner_radius
             .overlay(
-                RoundedRectangle(cornerRadius: 33)
+                RoundedRectangle(cornerRadius: 33) // swiftlint:disable:this no_raw_corner_radius
                     .stroke(
                         isInternetMode
                         ? AnyShapeStyle(LinearGradient.qrBorderGradient)

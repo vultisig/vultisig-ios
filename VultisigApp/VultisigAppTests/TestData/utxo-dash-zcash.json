@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Send Dash",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Dash",
+        "ticker": "DASH",
+        "address": "Xp5BeZrh7EEKndd4ai6BRdFB8A7RkVXK7K",
+        "decimals": 8,
+        "price_provider_id": "dash",
+        "is_native_token": true,
+        "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "logo": "dash.png"
+      },
+      "to_address": "Xp5BeZrh7EEKndd4ai6BRdFB8A7RkVXK7K",
+      "to_amount": "49900000",
+      "BlockchainSpecific": {
+        "UtxoSpecific": {
+          "byte_fee": "100",
+          "send_max_amount": false
+        }
+      },
+      "utxo_info": [
+        {
+          "hash": "195b4b2cd6350ed5c32a99945a515d14f76f1a0dc85333eaa388bb5c2fdb6bef",
+          "amount": 50000000,
+          "index": 0
+        }
+      ],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "0046894e17acad06b8136e15af0e0dab11945981209e4fe3c450425e2941b652"
+    ]
+  },
+  {
+    "name": "Send Zcash",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Zcash",
+        "ticker": "ZEC",
+        "address": "t1XFwpecw7qoLEL5NfFb5hufJYUipVx91hP",
+        "decimals": 8,
+        "price_provider_id": "zcash",
+        "is_native_token": true,
+        "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "logo": "zcash.png"
+      },
+      "to_address": "t1XFwpecw7qoLEL5NfFb5hufJYUipVx91hP",
+      "to_amount": "49900000",
+      "BlockchainSpecific": {
+        "UtxoSpecific": {
+          "byte_fee": "100",
+          "send_max_amount": false,
+          "zcash_branch_id": "c2d6d0b4"
+        }
+      },
+      "utxo_info": [
+        {
+          "hash": "a9437afd5b2a04dd0e724f6c3ce047391ae30aebe16e809c94a482b1bc9f8653",
+          "amount": 50000000,
+          "index": 0
+        }
+      ],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "716868b06c7c6739f45f9b283e3282db6a57d23d0b1f15105b30965b27eb009e"
+    ]
+  }
+]

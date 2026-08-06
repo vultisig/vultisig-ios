@@ -188,7 +188,10 @@ private extension CryptoPriceService {
             case .priceProvider(let id):
                 providerIds.append(id)
             case .contract(let id):
-                contracts[coin.chain, default: []].append(id)
+                // Sui uses a case-preserving encoded key in the rate cache, but
+                // its RPC/CoinGecko requests still require the real coin type.
+                let requestContract = coin.chain == .sui ? coin.contractAddress : id
+                contracts[coin.chain, default: []].append(requestContract)
             }
         }
 

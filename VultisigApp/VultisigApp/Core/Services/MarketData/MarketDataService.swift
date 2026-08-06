@@ -86,8 +86,11 @@ final class MarketDataService: MarketDataServiceProtocol {
             return .id(id.lowercased())
         case .contract(let address):
             let platform = CoinGeckoPlatform.id(for: coin.chain)
-            guard !platform.isEmpty, !address.isEmpty else { return nil }
-            return .contract(platform: platform.lowercased(), address: address.lowercased())
+            let requestAddress = coin.chain == .sui
+                ? SuiCoinType.normalize(coin.contractAddress)
+                : address.lowercased()
+            guard !platform.isEmpty, !requestAddress.isEmpty else { return nil }
+            return .contract(platform: platform.lowercased(), address: requestAddress)
         }
     }
 

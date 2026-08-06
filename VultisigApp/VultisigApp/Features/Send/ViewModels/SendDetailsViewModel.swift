@@ -83,9 +83,94 @@ final class SendDetailsViewModel {
     // MARK: - Fee / gas (derived from interactor calls)
     var gas: BigInt = .zero
     var fee: BigInt = .zero
-    var estimatedGasLimit: BigInt? = nil
-    var customGasLimit: BigInt? = nil
-    var customByteFee: BigInt? = nil
+
+    /// A gas limit together with the asset it was sized for.
+    ///
+    /// Reads are asset-scoped, so a limit self-invalidates the moment the form
+    /// moves to another coin or chain and no view has to remember to clear it.
+    /// The key is `Coin.uniqueId` (chain + ticker + contract): it ignores the
+    /// address, which is right here because the vault is fixed for the life of
+    /// the form, and it is stable across `Coin` instances for the same asset.
+    private struct AssetScopedGasLimit {
+        private var limit: BigInt?
+        private var assetId: String?
+
+        func value(for coin: Coin) -> BigInt? {
+            guard let assetId, assetId == coin.uniqueId else { return nil }
+            return limit
+        }
+
+        mutating func set(_ newValue: BigInt?, for coin: Coin) {
+            limit = newValue
+            assetId = newValue == nil ? nil : coin.uniqueId
+        }
+    }
+
+    private var stampedEstimatedGasLimit = AssetScopedGasLimit()
+    private var stampedCustomGasLimit = AssetScopedGasLimit()
+
+    /// The limit the current fee was estimated against — the real
+    /// `eth_estimateGas` result, adopted whenever the user hasn't pinned one.
+    ///
+    /// Asset-scoped for the same reason as `customGasLimit`, and it has to be:
+    /// `gasLimit` falls back to it, `BlockChainService` treats the requested
+    /// limit as a *floor* rather than a suggestion, and the gas sheet is seeded
+    /// with `gasLimit` and re-pins whatever it displays on Save. A stale
+    /// estimate from another asset would therefore both inflate the reserved
+    /// amount and offer the user a foreign number to confirm — which is how a
+    /// pin scoped to one asset would come back on the next.
+    var estimatedGasLimit: BigInt? {
+        get { stampedEstimatedGasLimit.value(for: coin) }
+        set { stampedEstimatedGasLimit.set(newValue, for: coin) }
+    }
+
+    /// The user-pinned gas limit from the gas settings sheet.
+    ///
+    /// A gas limit prices the execution of one specific call, not a chain: a
+    /// native transfer is sized at 23,000 units where an ERC20 transfer is
+    /// sized at 120,000 (`defaultGasLimit` below already branches on exactly
+    /// that), and a token with transfer hooks costs more again. So the stamp is
+    /// the *asset*, not the chain — a limit pinned for ETH must not size a USDC
+    /// send on the same chain. Too low is the dangerous direction: the
+    /// transaction runs out of gas on-chain, which burns the fee and delivers
+    /// nothing.
+    ///
+    /// The coin picker writes `coin` directly and no view owns clearing this,
+    /// so the binding is enforced here rather than left to a caller to
+    /// remember: the limit is only visible while the form is still on the asset
+    /// it was sized for, and re-pinning re-stamps.
+    var customGasLimit: BigInt? {
+        get { stampedCustomGasLimit.value(for: coin) }
+        set { stampedCustomGasLimit.set(newValue, for: coin) }
+    }
+
+    /// Backing storage for `customByteFee`, plus the chain it was pinned for.
+    private var pinnedByteFee: BigInt? = nil
+    private var pinnedByteFeeChain: Chain? = nil
+
+    /// The user-pinned sat/vB rate from the gas settings sheet.
+    ///
+    /// A byte rate is meaningless off its own chain — DOGE quotes six figures
+    /// per byte where BTC quotes tens — so one pinned for BTC must never price a
+    /// later LTC or DOGE send. The coin picker writes `coin` directly and no
+    /// view owns clearing this, so the binding is enforced here rather than left
+    /// to a caller to remember: the rate is only visible while the form is still
+    /// on the chain it was set for, and re-pinning re-stamps the chain.
+    ///
+    /// The chain is the whole identity for a rate: it is a property of that
+    /// chain's fee market and holds for every asset on it. `customGasLimit`
+    /// is deliberately stricter — it prices one specific call, so it is
+    /// stamped with the asset.
+    var customByteFee: BigInt? {
+        get {
+            guard let pinnedByteFeeChain, pinnedByteFeeChain == coin.chain else { return nil }
+            return pinnedByteFee
+        }
+        set {
+            pinnedByteFee = newValue
+            pinnedByteFeeChain = newValue == nil ? nil : coin.chain
+        }
+    }
 
     // MARK: - VM state (replaces `FunctionCallForm.isCalculatingFee` etc.)
     var isLoading: Bool = false
@@ -160,6 +245,11 @@ final class SendDetailsViewModel {
     }
 
     func hydrate(from seed: SendDetailsSeed) {
+        // The seed replaces every field, including the max intent, so nothing
+        // derived from the state it replaces may still land: drop the pending
+        // keystroke commit and the background max-fee refine alike.
+        cancelPendingAmountCommit()
+        cancelFeeRefine()
         fromAddress = seed.fromAddress
         toAddress = seed.toAddress
         toAddressLabel = seed.toAddressLabel
@@ -532,13 +622,114 @@ final class SendDetailsViewModel {
         return isValid
     }
 
+    // MARK: - Amount editing
+
+    /// How long the amount fields wait after the last keystroke before the typed
+    /// value is committed (converted into the other field, max intent settled).
+    private static let amountCommitDebounce: Duration = .milliseconds(500)
+
+    /// The commit armed by the last keystroke in either amount field, while it
+    /// is still pending.
+    ///
+    /// A superseded commit has to be **cancelled**, not merely detected and
+    /// skipped. Detection would have to compare the commit's value against the
+    /// field, and that cannot tell the two intents apart: typing the full
+    /// balance and then tapping Max produces the *same string*. Applying the
+    /// typed one clears `sendMaxAmount` while the amount stays at the full
+    /// balance — the state that makes WalletCore's exact coin selector try to
+    /// fund `balance + fee` out of `balance`, return no inputs, and surface as a
+    /// generic "insufficient UTXOs available" on a healthy wallet.
+    ///
+    /// Cancelling is only meaningful if the debouncer is *owned*: a process-wide
+    /// one holds a single slot any caller can steal, so it can express "whatever
+    /// was last debounced anywhere", never "this form's pending amount commit".
+    /// One slot per form gives both halves of the ordering — the two fields
+    /// share it, so moving from the crypto field to the fiat field cancels the
+    /// field the user left, and every path that writes the amount itself cancels
+    /// it before writing (see `cancelPendingAmountCommit`).
+    ///
+    /// Exposed (like `feeRefineTask`) so tests can await the settle.
+    @ObservationIgnored private(set) var amountCommitTask: Task<Void, Never>?
+
+    /// Arm the debounced commit for a keystroke, replacing any commit still
+    /// pending. `delayedTask` sleeps before running `commit`, so cancelling the
+    /// task stops the commit at that checkpoint and swallows the cancellation —
+    /// a superseded keystroke is ordinary control flow, not a failure.
+    ///
+    /// The slot holds only *pending* commits: a commit that has passed the
+    /// checkpoint releases it before running, so its own conversion doesn't find
+    /// the task that is executing it and cancel that.
+    private func scheduleAmountCommit(_ commit: @MainActor @escaping () -> Void) {
+        amountCommitTask?.cancel()
+        amountCommitTask = delayedTask(after: Self.amountCommitDebounce) { [weak self] in
+            self?.amountCommitTask = nil
+            commit()
+        }
+    }
+
+    /// Called by every path that writes the amount fields itself — a
+    /// percentage/Max preset, a QR/deeplink fill, a coin switch, the background
+    /// max-fee refine's commit, a reset, a re-hydrate. The pending keystroke
+    /// commit is dropped, so it cannot land afterwards and undo the write.
+    ///
+    /// This is the half a shared debouncer could not provide: none of those paths
+    /// arm a debounce, so they had nothing of their own to cancel and the stale
+    /// commit ran regardless.
+    ///
+    /// Those paths cancel *within the same main-actor turn* as their write, and
+    /// nothing suspends in between, so a pending commit cannot interleave —
+    /// whether the cancel comes before the write (`setMaxAmount`) or with the
+    /// conversion that follows it (the QR fill, the fee refine).
+    private func cancelPendingAmountCommit() {
+        amountCommitTask?.cancel()
+        amountCommitTask = nil
+    }
+
+    /// A keystroke in the crypto amount field, reported by the field's binding
+    /// after it has written `amount`. The conversion is debounced; the max-send
+    /// intent is dropped now (see `dropMaxIntentForUserEdit`).
+    func onAmountFieldEdited(_ newValue: String) {
+        dropMaxIntentForUserEdit()
+        scheduleAmountCommit { [weak self] in self?.convertToFiat(newValue: newValue) }
+    }
+
+    /// A keystroke in the fiat amount field. Shares the crypto field's single
+    /// pending slot, so an in-flight commit from the field the user just left
+    /// cannot clobber the one they moved to.
+    func onFiatAmountFieldEdited(_ newValue: String) {
+        dropMaxIntentForUserEdit()
+        scheduleAmountCommit { [weak self] in self?.convertFiatToCoin(newValue: newValue) }
+    }
+
+    /// The part of a keystroke that must not wait for the debounce.
+    ///
+    /// Continue does not wait for a pending commit, so if the max-send intent
+    /// only lapsed when the commit ran, `makeTransaction` could snapshot a
+    /// hand-typed amount still flagged `sendMaxAmount` — and a UTXO signer would
+    /// sweep the wallet for a user who asked to send a specific figure. Both
+    /// entry points run this on the main actor before any suspension point, so
+    /// no Continue tap can observe the intent the keystroke has already dropped.
+    ///
+    /// The inverse property is the cancellation above, and the two are
+    /// independent: a *superseded* commit is cancelled and so cannot clear the
+    /// flag, while a *genuine* edit clears it immediately.
+    private func dropMaxIntentForUserEdit() {
+        sendMaxAmount = false
+    }
+
     // MARK: - Fiat / crypto conversion
 
     /// Convert a fiat-typed value to the equivalent coin amount. Empty input
     /// clears `amount` instead of leaving a stale value (Phase D lesson).
+    ///
+    /// Typing a fiat figure is an explicit amount choice, so it drops the
+    /// max-send flag — including on the clearing branch, where leaving the flag
+    /// set would pair "send everything" with an empty amount field.
     func convertFiatToCoin(newValue: String) {
+        cancelPendingAmountCommit()
         guard let coinAmount = SendCryptoLogic.fiatToCoinAmount(fiat: newValue, coin: coin) else {
             amount = ""
+            sendMaxAmount = false
             return
         }
         amount = coinAmount
@@ -550,6 +741,7 @@ final class SendDetailsViewModel {
     /// the legacy flag — when true, this update is from the max-amount path
     /// and shouldn't reset the sendMaxAmount flag.
     func convertToFiat(newValue: String, setMaxValue: Bool = false) {
+        cancelPendingAmountCommit()
         guard let fiatAmount = SendCryptoLogic.coinAmountToFiat(amount: newValue, coin: coin) else {
             amountInFiat = ""
             sendMaxAmount = setMaxValue ? sendMaxAmount : false
@@ -574,7 +766,13 @@ final class SendDetailsViewModel {
     /// precise fee validation before signing.
     func setMaxAmount(percentage: Double = 100) {
         cancelFeeRefine()
+        // Drop any amount-field commit still pending: the preset is the newer
+        // intent, and a late commit must not undo it.
+        cancelPendingAmountCommit()
         errorMessage = ""
+        // Drop a planner verdict left over from a previous preset — this attempt
+        // gets to state its own outcome.
+        showAmountAlert = false
 
         sendMaxAmount = percentage == 100
 
@@ -591,50 +789,156 @@ final class SendDetailsViewModel {
         startFeeRefine()
     }
 
-    /// Background refine for the native-coin Max path. Re-fetches the real
-    /// max-send fee and settles `amount` to `balance − fee`. Guarded so a
-    /// stale refine can't clobber a newer fill (another preset tap, manual
-    /// edit) — the task is cancelled at the top of `setMaxAmount`, and we
-    /// re-check cancellation after the await before writing.
+    /// Background refine for the native-coin Max path. Settles the optimistic
+    /// full-balance fill to what can really be sent.
+    ///
+    /// Its ordering against the amount fields rests on three guards, which
+    /// between them cover every writer of the amount:
+    ///
+    /// - paths that replace the amount while *keeping* the max intent cancel
+    ///   this task first (`setMaxAmount`, `hydrate`), so `Task.isCancelled`
+    ///   catches them;
+    /// - every path that replaces it with an *explicit* amount clears
+    ///   `sendMaxAmount` as it does so — a keystroke included, which drops the
+    ///   intent synchronously in `onAmountFieldEdited` rather than waiting for
+    ///   its debounced commit;
+    /// - the coin picker replaces the *asset* under an unchanged max intent
+    ///   without cancelling anything, so the asset the user tapped Max on is
+    ///   compared against the one the form is on (`isStillOn(_:)`) — twice:
+    ///   before the request is built, and again before its result is written.
+    ///
+    /// The first two are re-checked after the await; the asset is checked on
+    /// both sides of it. So a refine settling into any kind of newer state
+    /// stands down instead of clobbering it.
+    ///
+    /// The asset is read *here*, not in the task body. An unstructured `Task`
+    /// inherits the actor but is scheduled rather than run inline, so the main
+    /// actor gets a turn — enough for the picker to write `coin` — between this
+    /// line and the body's first. Reading it inside would let the task adopt
+    /// the new asset as its own request and refine *that* under a max intent
+    /// the user formed on the old one, which is the same "send everything"
+    /// the user never asked for, arrived at by a scheduling coin flip.
     private func startFeeRefine() {
+        let requestedAsset = coin.uniqueId
         isCalculatingFee = true
         feeRefineTask = Task { [weak self] in
             guard let self else { return }
+            // Installed before the asset check so standing down still takes the
+            // calculating indicator down with it — nothing else would.
             defer { self.isCalculatingFee = false }
+            guard self.isStillOn(requestedAsset) else { return }
             do {
-                let result = try await self.interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
-                    coin: self.coin,
-                    toAddress: self.toAddress.isEmpty ? self.coin.address : self.toAddress,
-                    amount: .zero,
-                    memo: self.memo.isEmpty ? nil : self.memo,
-                    sendMaxAmount: true,
-                    isDeposit: self.isDeposit,
-                    transactionType: self.transactionType,
-                    gasLimit: self.gasLimit,
-                    customGasLimit: self.customGasLimit,
-                    feeMode: self.feeMode,
-                    fromAddress: self.fromAddress
-                )))
-                // Skip the refine write if the user moved off Max in the
-                // meantime — a manual amount edit flips `sendMaxAmount` via
-                // `convertToFiat` without cancelling this task, so guard on it
-                // too or we'd clobber their input.
-                guard !Task.isCancelled, self.sendMaxAmount else { return }
-                if self.customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
-                    self.estimatedGasLimit = resolvedGasLimit
+                if self.coin.chainType == .UTXO {
+                    try await self.refineMaxFromPlan(asset: requestedAsset)
+                } else {
+                    try await self.refineMaxFromFee(asset: requestedAsset)
                 }
-                let refined = SendCryptoLogic.computeMaxAmount(coin: self.coin, fee: result.fee)
-                self.amount = refined
-                self.convertToFiat(newValue: refined, setMaxValue: true)
             } catch is CancellationError {
                 return
             } catch {
-                // Keep the optimistic full-balance value rather than wiping the
-                // field; the Verify screen recomputes and validates the real
-                // fee before signing.
-                guard !Task.isCancelled else { return }
-                self.logger.error("setMaxAmount fee refine failed: \(error.localizedDescription, privacy: .public)")
+                // Same guards as the success paths: a verdict about a max send
+                // the user has already moved off — in amount or in asset — must
+                // not paint an alert on what they are looking at instead.
+                guard !Task.isCancelled, self.sendMaxAmount, self.isStillOn(requestedAsset) else { return }
+                self.handleMaxRefineFailure(error)
             }
+        }
+    }
+
+    /// Whether the form is still on the asset an in-flight request asked about.
+    ///
+    /// A fee result describes the asset it was requested for, and the coin
+    /// picker can replace that asset mid-flight: it cancels nothing and it
+    /// leaves the max intent alone, so neither of the other two guards catches
+    /// it. Without this, a result for the old asset would be written — and,
+    /// worse, *stamped* — against the new one, which is exactly the leak the
+    /// asset stamp exists to close.
+    private func isStillOn(_ requestedAsset: String) -> Bool {
+        coin.uniqueId == requestedAsset
+    }
+
+    /// The max-send request for the current form state. `amount` differs by
+    /// path: the UTXO planner is handed the whole balance (it ignores the value
+    /// in max mode and derives the output from the selected inputs), while the
+    /// flat-fee estimate keeps passing zero so an EVM `eth_estimateGas` isn't
+    /// simulated against a value the account can't also cover gas for.
+    private func maxSendRequest(amount: BigInt) -> SendChainSpecificRequest {
+        SendChainSpecificRequest(
+            coin: coin,
+            // The output script type affects the transaction's size, hence the
+            // fee, so planning needs an address — fall back to our own.
+            toAddress: toAddress.isEmpty ? coin.address : toAddress,
+            amount: amount,
+            memo: memo.isEmpty ? nil : memo,
+            sendMaxAmount: true,
+            isDeposit: isDeposit,
+            transactionType: transactionType,
+            gasLimit: gasLimit,
+            customGasLimit: customGasLimit,
+            customByteFee: customByteFee,
+            feeMode: feeMode,
+            fromAddress: fromAddress
+        )
+    }
+
+    /// UTXO Max. A sat/vB rate is not a fee: the fee is `rate × size`, and the
+    /// size only exists once inputs are selected. Ask WalletCore what a real
+    /// `useMaxAmount` transaction would send and cost, and show exactly that —
+    /// so the Details figure is the one Verify will confirm rather than
+    /// `balance − rate`, which reserves roughly a dozen sats for a fee of a few
+    /// thousand.
+    private func refineMaxFromPlan(asset requestedAsset: String) async throws {
+        // The planner ignores this value in max mode, but it still reaches
+        // WalletCore's `Int64` amount field, where an out-of-range conversion
+        // traps rather than failing. Clamp it — an absurd balance must not
+        // crash the form.
+        let probeAmount = Swift.min(coin.balanceRaw, BigInt(Int64.max))
+        // The form plans against the cached UTXO set: Max is tapped repeatedly
+        // while editing, and Verify refreshes before the plan that is signed.
+        let plan = try await interactor.calculateMaxSendPlan(
+            maxSendRequest(amount: probeAmount),
+            vault: vault,
+            refreshUtxos: false
+        )
+        guard !Task.isCancelled, sendMaxAmount, isStillOn(requestedAsset) else { return }
+        // `gas` stays the rate (what the gas sheet edits); `fee` becomes the
+        // planned total, so the balance guard compares against a real number
+        // and the hand-off transaction carries an honest fee into Verify.
+        gas = plan.byteFee
+        fee = plan.fee
+        let refined = SendCryptoLogic.formatRawAmount(plan.amount, coin: coin)
+        amount = refined
+        convertToFiat(newValue: refined, setMaxValue: true)
+    }
+
+    /// Every other native chain: the chain quotes a flat fee, so `balance − fee`
+    /// is the max.
+    private func refineMaxFromFee(asset requestedAsset: String) async throws {
+        let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: maxSendRequest(amount: .zero)))
+        guard !Task.isCancelled, sendMaxAmount, isStillOn(requestedAsset) else { return }
+        if customGasLimit == nil, let resolvedGasLimit = result.gasLimit {
+            estimatedGasLimit = resolvedGasLimit
+        }
+        let refined = SendCryptoLogic.computeMaxAmount(coin: coin, fee: result.fee)
+        amount = refined
+        convertToFiat(newValue: refined, setMaxValue: true)
+    }
+
+    /// Keep the optimistic full-balance fill on a transport failure — the Verify
+    /// screen recomputes and validates the real fee before signing, so a flaky
+    /// lookup must not wipe the field or block the flow.
+    ///
+    /// A planner or UTXO-selection verdict is different in kind: it will not
+    /// resolve itself on retry, and leaving it silent until Verify is exactly
+    /// the late, mislabelled failure this path exists to prevent. Surface it
+    /// inline, under the amount field, while the amount is still editable.
+    private func handleMaxRefineFailure(_ error: Error) {
+        logger.error("setMaxAmount fee refine failed: \(error.localizedDescription, privacy: .public)")
+        switch error {
+        case is UTXOTransactionPlanError, is KeysignPayloadFactory.Errors:
+            setAmountError(message: error.localizedDescription)
+        default:
+            break
         }
     }
 
@@ -662,6 +966,7 @@ final class SendDetailsViewModel {
 
         isCalculatingFee = true
         defer { isCalculatingFee = false }
+        let requestedAsset = coin.uniqueId
 
         do {
             let result = try await interactor.fetchGasAndFee(SendFeeEstimateRequest(chainSpecific: SendChainSpecificRequest(
@@ -674,9 +979,13 @@ final class SendDetailsViewModel {
                 transactionType: transactionType,
                 gasLimit: gasLimit,
                 customGasLimit: customGasLimit,
+                customByteFee: customByteFee,
                 feeMode: feeMode,
                 fromAddress: fromAddress
             )))
+            // The picker can swap the asset while this is in flight; figures
+            // for the one the form has left must not land on the one it is on.
+            guard isStillOn(requestedAsset) else { return }
             gas = result.gas
             fee = result.fee
             // Adopt the real estimate so the displayed fee, and the gas limit
@@ -687,6 +996,7 @@ final class SendDetailsViewModel {
             }
         } catch {
             logger.error("loadGasInfo failed: \(error.localizedDescription, privacy: .public)")
+            guard isStillOn(requestedAsset) else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -970,7 +1280,7 @@ final class SendDetailsViewModel {
               let nativeToken = vault.coins.nativeCoin(chain: coin.chain) else {
             return true
         }
-        let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        let nativeBalance = nativeToken.balanceRaw
         guard fee > nativeBalance else { return true }
 
         setGeneralError(message: String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker))
@@ -1072,6 +1382,7 @@ final class SendDetailsViewModel {
     /// Replaces the legacy `tx.reset(coin:)` that #4347 removed from the Done
     /// screen. Phase D lesson: clear *every* derived field, not just amount.
     func reset(to newCoin: Coin) {
+        cancelPendingAmountCommit()
         amountValidationTask?.cancel()
         amountValidationTask = nil
         amountValidation = .valid

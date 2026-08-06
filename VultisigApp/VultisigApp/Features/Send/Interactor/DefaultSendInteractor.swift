@@ -39,6 +39,7 @@ struct DefaultSendInteractor: SendInteractor {
             transactionType: request.transactionType,
             gasLimit: request.gasLimit,
             customGasLimit: request.customGasLimit,
+            customByteFee: request.customByteFee,
             feeMode: request.feeMode,
             fromAddress: request.fromAddress
         )
@@ -135,8 +136,78 @@ struct DefaultSendInteractor: SendInteractor {
                 throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
             }
             let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            // A failed plan has `fee == 0`. Returning it would quote a free
+            // transaction on the Verify screen and let the balance check pass on
+            // arithmetic that never held, so the failure only surfaced at Sign
+            // time as a generic message. Fail here, with the planner's reason.
+            try UTXOTransactionPlanError.validate(plan)
             return BigInt(plan.fee)
         }
+    }
+
+    func calculateMaxSendPlan(
+        _ request: SendChainSpecificRequest,
+        vault: Vault,
+        refreshUtxos: Bool
+    ) async throws -> SendMaxPlanResult {
+        guard request.coin.chainType == .UTXO else {
+            throw HelperError.runtimeError("Max-send planning is only supported for UTXO chains")
+        }
+        guard let utxoHelper = UTXOChainsHelper.getHelper(coin: request.coin) else {
+            throw HelperError.runtimeError("UTXO helper not available for \(request.coin.chain.name)")
+        }
+
+        if refreshUtxos {
+            await utxo.clearUTXOCache(for: request.coin)
+            _ = try await utxo.fetchBlockchairData(coin: request.coin.toCoinMeta(), address: request.coin.address)
+        }
+
+        let chainSpecific = try await fetchChainSpecific(request)
+
+        // Plan against the sender's own address when there is no recipient yet:
+        // the output script type affects the transaction's size, and therefore
+        // the fee, so planning needs *an* address rather than none.
+        let payload = try await keysignFactory.buildTransfer(
+            coin: request.coin,
+            toAddress: request.toAddress.isEmpty ? request.coin.address : request.toAddress,
+            amount: request.amount,
+            memo: request.memo,
+            chainSpecific: chainSpecific,
+            swapPayload: nil,
+            vault: vault
+        )
+
+        let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: payload)
+        try UTXOTransactionPlanError.validate(plan)
+        // A plan with no error but nothing to send is still not a max send —
+        // treat it as the funding verdict it is rather than filling the field
+        // with zero.
+        guard plan.amount > 0, plan.fee > 0 else {
+            throw UTXOTransactionPlanError.insufficientFunds
+        }
+
+        return SendMaxPlanResult(
+            amount: BigInt(plan.amount),
+            fee: BigInt(plan.fee),
+            byteFee: chainSpecific.gas
+        )
+    }
+
+    // `async` is required by the protocol so MainActor-isolated conformers (the
+    // test mock) can implement it; WalletCore planning itself is synchronous.
+    // swiftlint:disable:next async_without_await
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? {
+        guard payload.coin.chainType == .UTXO,
+              let utxoHelper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
+            return nil
+        }
+        let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: payload)
+        try UTXOTransactionPlanError.validate(plan)
+        return SendMaxPlanResult(
+            amount: BigInt(plan.amount),
+            fee: BigInt(plan.fee),
+            byteFee: payload.chainSpecific.gas
+        )
     }
 
     func validateUtxosIfNeeded(coin: Coin) async throws {

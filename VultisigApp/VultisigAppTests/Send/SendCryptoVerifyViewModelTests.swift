@@ -170,6 +170,29 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    /// Past `Int64` — about 9.223 on an 18-decimal asset — reading the balance
+    /// through the shared decimal parser rounds it UP, so `amount + fee` is
+    /// weighed against funds the vault does not hold. The send clears Verify
+    /// and is rejected at broadcast, after the signing ceremony has already run
+    /// and been spent.
+    func testValidateBalanceWithFeeReadsABalanceBeyondInt64Exactly() throws {
+        // 99.999999999999999999 ETH — the lossy read rounds it to a flat 100.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "99999999999999999999")
+        XCTAssertEqual(eth.balanceRaw, BigInt(stringLiteral: "99999999999999999999"))
+        let tx = try makeTransaction(coin: eth, amount: "100", fee: .zero)
+        XCTAssertEqual(
+            tx.amountInRaw, BigInt(stringLiteral: "100000000000000000000"),
+            "the send is one wei more than the vault holds"
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError)
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
     func testValidateBalanceWithFeeSetsErrorForSendMaxWhenFeeExceedsBalance() throws {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
                            rawBalance: "5000000000000000") // 0.005 ETH

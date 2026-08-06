@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Place limit order: RUNE to DOGE",
+    "keysign_payload": {
+      "coin": {
+        "chain": "THORChain",
+        "ticker": "RUNE",
+        "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+        "decimals": 8,
+        "price_provider_id": "rune",
+        "is_native_token": true,
+        "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "contract_address": "",
+        "logo": "rune.png"
+      },
+      "to_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+      "to_amount": "100000000",
+      "BlockchainSpecific": {
+        "ThorchainSpecific": {
+          "account_number": 109315,
+          "sequence": 218,
+          "fee": 2000000,
+          "is_deposit": false,
+          "transaction_type": 0
+        }
+      },
+      "memo": "=<:DOGE.DOGE:DSxRrchVLpu6r9rvSRTy9LR9si7NuLrGdm:2000000000/14400/0:va:50",
+      "utxo_info": [],
+      "SwapPayload": {
+        "ThorchainSwapPayload": {
+          "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+          "from_coin": {
+            "ticker": "RUNE",
+            "chain": "THORChain",
+            "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+            "contract_address": "",
+            "decimals": 8,
+            "is_native_token": true,
+            "price_provider_id": "thorChain",
+            "logo": "rune",
+            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+          },
+          "to_coin": {
+            "ticker": "DOGE",
+            "chain": "Dogecoin",
+            "address": "DSxRrchVLpu6r9rvSRTy9LR9si7NuLrGdm",
+            "contract_address": "",
+            "decimals": 8,
+            "is_native_token": true,
+            "price_provider_id": "dogecoin",
+            "logo": "doge",
+            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+          },
+          "vault_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+          "from_amount": "500000000",
+          "to_amount_decimal": "2000000000",
+          "to_amount_limit": "2000000000",
+          "streaming_interval": "1",
+          "streaming_quantity": "0",
+          "is_affiliate": true,
+          "fee": "",
+          "expiration_time": 1753426406
+        }
+      },
+      "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "0823f800d8d1dfbe5dced6f296ae48440f25c1bb071a586fd12d48da22dc3990"
+    ]
+  }
+]

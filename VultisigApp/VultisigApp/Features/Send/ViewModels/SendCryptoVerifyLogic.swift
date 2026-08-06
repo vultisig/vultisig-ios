@@ -30,6 +30,16 @@ struct SendCryptoVerifyLogic {
     struct FeeResult {
         let fee: BigInt
         let gas: BigInt
+        /// For a UTXO max send: the recipient amount the plan this fee came from
+        /// will actually produce. `nil` everywhere else, where the amount is
+        /// re-derived as `balance − fee`.
+        ///
+        /// A UTXO max send signs `Σ selected inputs − fee`, which is not
+        /// `balance − fee` whenever an output was left out of the selection
+        /// (dust, unconfirmed, a chain whose balance and UTXO sources differ).
+        /// Carrying the planned amount is what keeps the figure Verify confirms
+        /// equal to the one that gets signed.
+        var maxSendAmountRaw: BigInt? = nil
     }
 
     func calculateFee(tx: SendTransaction) async throws -> FeeResult {
@@ -55,7 +65,31 @@ struct SendCryptoVerifyLogic {
 
         switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
-            fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
+            do {
+                // A UTXO max send: take the amount AND the fee off ONE plan, so
+                // the summary the user confirms describes the transaction that
+                // will be signed. `balance − fee` diverges from it whenever the
+                // selection excluded an output.
+                if tx.coin.chainType == .UTXO, tx.sendMaxAmount, tx.coin.isNativeToken {
+                    let plan = try await interactor.calculateMaxSendPlan(
+                        SendChainSpecificRequest(tx: tx),
+                        vault: tx.vault,
+                        refreshUtxos: true
+                    )
+                    return FeeResult(fee: plan.fee, gas: plan.fee, maxSendAmountRaw: plan.amount)
+                }
+                fee = try await interactor.calculatePlanFee(tx: tx, chainSpecific: chainSpecific)
+            } catch is CancellationError {
+                // A superseded load pass must stay a cancellation — the caller
+                // aborts quietly on it and would otherwise show a spurious alert.
+                throw CancellationError()
+            } catch {
+                // The load path reaches the same UTXO builder as the Sign path,
+                // so it must speak the same language. Without this it surfaced
+                // the raw `localizedDescription` and the identical failure read
+                // differently depending on when it happened.
+                throw Self.sendFailure(error)
+            }
 
         case .Cosmos, .THORChain:
             // Cosmos batched-claim signs one msg per validator and the
@@ -105,7 +139,7 @@ struct SendCryptoVerifyLogic {
         }
 
         let amount = tx.amountInRaw
-        let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+        let balance = tx.coin.balanceRaw
         // TRON staking operations: skip balance validation entirely
         // The balance is already validated in TronFreezeScreen/TronUnfreezeScreen
         // and the user sees the available balance on the screen
@@ -170,7 +204,7 @@ struct SendCryptoVerifyLogic {
             // error when the vault's ADA balance can't cover that.
             if tx.coin.chain == .cardano,
                let nativeToken = tx.vault.coins.nativeCoin(chain: .cardano) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = nativeToken.balanceRaw
                 let minAdaReserve = CardanoHelper.defaultMinUTXOValue * 2
                 if nativeBalance < tx.fee + minAdaReserve {
                     return BalanceValidationResult(isValid: false, errorMessage: "cardanoOutputBelowMinAda")
@@ -180,7 +214,7 @@ struct SendCryptoVerifyLogic {
             // Validate gas balance for non-native tokens. Decision 2 win:
             // vault is now non-optional, so the singleton fallback is gone.
             if let nativeToken = tx.vault.coins.nativeCoin(chain: tx.coin.chain) {
-                let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                let nativeBalance = nativeToken.balanceRaw
                 if tx.fee > nativeBalance {
                     let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, tx.coin.ticker)
                     return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
@@ -317,7 +351,7 @@ struct SendCryptoVerifyLogic {
         )
         // The XRP balance is already reserve-net, so it is what can actually be
         // locked up and spent.
-        let spendable = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+        let spendable = nativeToken.balanceRaw
         let required = ownerReserve + tx.fee
         guard spendable >= required else {
             throw HelperError.runtimeError(
@@ -426,6 +460,8 @@ struct SendCryptoVerifyLogic {
                 vault: vault
             )
 
+            try await assertPlanMatchesDisplayed(tx: tx, payload: basePayload)
+
             // Cosmos staking branch — when the per-flow builder produced a
             // `cosmosStakingPayload`, swap the base payload's `signData` for
             // a freshly-resolved `.signDirect(...)` carrying the proto-encoded
@@ -460,22 +496,61 @@ struct SendCryptoVerifyLogic {
 
             return basePayload
 
+        } catch is CancellationError {
+            // Matches the convention the destination guards above already
+            // follow: a cancelled build is not a failure to report. Wrapping it
+            // into a `HelperError` would raise an alert on a screen that is
+            // tearing down, or on a pass a newer one has already superseded.
+            throw CancellationError()
         } catch {
-            // Handle UTXO-specific errors with more user-friendly messages
-            let errorMessage: String
-            switch error {
-            case KeysignPayloadFactory.Errors.notEnoughUTXOError:
-                errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
-            case KeysignPayloadFactory.Errors.utxoTooSmallError:
-                errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
-            case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
-                errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
-            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
-                errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
-            default:
-                errorMessage = error.localizedDescription
-            }
-            throw HelperError.runtimeError(errorMessage)
+            throw Self.sendFailure(error)
         }
+    }
+
+    /// Closes the display/sign gap on the one path where the signed amount is
+    /// not fixed by the form.
+    ///
+    /// A UTXO max send signs `Σ selected inputs − fee`, so the transaction is
+    /// defined by the input set at *build* time — and `validateUtxosIfNeeded`
+    /// deliberately refetches that set moments before the payload is built. If
+    /// an output confirmed (or arrived) since the Verify screen planned what it
+    /// displayed, the ceremony would sign a larger amount and a larger fee than
+    /// the user approved. Refuse rather than sign it, and let them review the
+    /// updated figures.
+    ///
+    /// Only max sends are gated: every other send pins its recipient amount in
+    /// the payload, so a changed input set can move the fee but never the amount.
+    private func assertPlanMatchesDisplayed(tx: SendTransaction, payload: KeysignPayload) async throws {
+        guard tx.sendMaxAmount, tx.coin.chainType == .UTXO, tx.coin.isNativeToken else { return }
+        guard let outcome = try await interactor.plannedOutcome(for: payload) else { return }
+        guard outcome.amount == tx.amountInRaw, outcome.fee == tx.fee else {
+            throw HelperError.runtimeError("maxSendPlanChangedError".localized)
+        }
+    }
+
+    /// Maps a send-build failure onto the message the Verify screen presents.
+    ///
+    /// The screen's alert plumbing only presents `HelperError`, so everything is
+    /// rewrapped. Shared by the Sign path (`buildKeysignPayload`) and the
+    /// fee-load path (`calculateNonEVMFee`) so the same underlying failure can
+    /// never read two different ways depending on which one hit it first.
+    ///
+    /// `UTXOTransactionPlanError` needs no case here: it is a `LocalizedError`,
+    /// so the default branch already yields its own mapped message.
+    static func sendFailure(_ error: Error) -> HelperError {
+        let errorMessage: String
+        switch error {
+        case KeysignPayloadFactory.Errors.notEnoughUTXOError:
+            errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
+        case KeysignPayloadFactory.Errors.utxoTooSmallError:
+            errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
+        case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
+            errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
+        case KeysignPayloadFactory.Errors.notEnoughBalanceError:
+            errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
+        default:
+            errorMessage = error.localizedDescription
+        }
+        return HelperError.runtimeError(errorMessage)
     }
 }

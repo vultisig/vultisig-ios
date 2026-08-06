@@ -191,7 +191,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
+        .background(Theme.radius.md.shape.fill(Theme.colors.bgSurface1))
     }
 }
 

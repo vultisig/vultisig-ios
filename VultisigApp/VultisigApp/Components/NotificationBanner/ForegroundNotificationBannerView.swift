@@ -22,8 +22,8 @@ struct ForegroundNotificationBannerView: View {
                 // stuck to the top of the screen.
                 .clipShape(
                     UnevenRoundedRectangle(
-                        bottomLeadingRadius: 40,
-                        bottomTrailingRadius: 40
+                        bottomLeadingRadius: 40, // swiftlint:disable:this no_raw_corner_radius
+                        bottomTrailingRadius: 40 // swiftlint:disable:this no_raw_corner_radius
                     )
                 )
             VStack(spacing: 11) {

@@ -793,6 +793,7 @@
 "marketCap" = "市值";
 "marketCapRank" = "排名";
 "marketStats" = "市场数据";
+"maxSendPlanChangedError" = "在您确认期间可用余额发生了变化，此交易将不再发送所显示的金额。请返回并查看更新后的金额";
 "maxSupply" = "最大供应量";
 "maxTotalFee" = "最大总费用";
 "memo" = "备忘录";
@@ -1565,6 +1566,12 @@
 "useLocalMode" = "使用本地模式";
 "usePassword" = "使用密码";
 "useStandardMode" = "使用标准模式";
+"utxoPlanDustAmountError" = "留给收款方的金额低于网络的尘埃限额。请发送更大的金额，或降低网络费率以留下更多可发送金额";
+"utxoPlanFailedError" = "无法准备此交易 (%@)。请尝试其他金额或降低网络费率";
+"utxoPlanInsufficientFundsError" = "您可用的交易输出不足以支付此金额加网络手续费。请尝试较小的金额或降低网络费率";
+"utxoPlanInvalidUtxoError" = "您的某个交易输出目前无法花费。请刷新余额后重试";
+"utxoPlanTransactionTooLargeError" = "此交易需要的输入超过单笔交易可容纳的数量。请发送较小的金额，或先合并您的交易输出";
+"utxoPlanZeroAmountError" = "请输入大于零的金额";
 "utxoSelectionFailedError" = "UTXO 选择失败。无法找到合适的交易输出来支付金额加估算费用。尝试减少交易金额";
 "utxoTooSmallError" = "可用的 UTXO 对于此交易来说太小。您钱包中的单个交易输出不符合最低要求。考虑先合并较小的金额";
 "validAddressDomainError" = "所选区块链的地址错误。尝试将链添加到您的保险库。";

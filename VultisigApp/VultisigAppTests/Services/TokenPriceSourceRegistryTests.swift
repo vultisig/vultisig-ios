@@ -46,7 +46,7 @@ final class TokenPriceSourceRegistryTests: XCTestCase {
         XCTAssertTrue(TokenPriceSourceRegistry.source(for: .bitcoin) is CoinGeckoContractTokenPriceSource)
     }
 
-    // MARK: - CoinGecko platform table (EVM-only) matches the old switch
+    // MARK: - CoinGecko platform table
 
     func test_coinGeckoPlatform_evmChainsMapToTheirPlatformIds() {
         XCTAssertEqual(CoinGeckoPlatform.id(for: .ethereum), "ethereum")
@@ -64,13 +64,13 @@ final class TokenPriceSourceRegistryTests: XCTestCase {
         XCTAssertEqual(CoinGeckoPlatform.id(for: .cronosChain), "cronos")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .hyperliquid), "hyperliquid")
         XCTAssertEqual(CoinGeckoPlatform.id(for: .sei), "sei-network")
+        XCTAssertEqual(CoinGeckoPlatform.id(for: .sui), "sui")
     }
 
     func test_coinGeckoPlatform_nonEvmChainsMapToEmpty() {
         XCTAssertEqual(CoinGeckoPlatform.id(for: .thorChain), .empty)
         XCTAssertEqual(CoinGeckoPlatform.id(for: .mayaChain), .empty)
         XCTAssertEqual(CoinGeckoPlatform.id(for: .solana), .empty)
-        XCTAssertEqual(CoinGeckoPlatform.id(for: .sui), .empty)
         XCTAssertEqual(CoinGeckoPlatform.id(for: .bitcoin), .empty)
     }
 }
