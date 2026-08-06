@@ -64,14 +64,19 @@ struct ActionBannerView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 32)
             .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
+            .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
         }
         .clipShape(
             .rect(
-                topLeadingRadius: 12,
+                topLeadingRadius: Theme.radius.xl.points,
                 bottomLeadingRadius: 0,
                 bottomTrailingRadius: 0,
-                topTrailingRadius: 12
+                topTrailingRadius: Theme.radius.xl.points,
+                // Only the top corners are rounded, so this cannot use the
+                // token's `shape` and the style has to be carried across by
+                // hand — otherwise the docked banner would keep the SDK's
+                // default while everything else follows the token.
+                style: Theme.radius.xl.style
             )
         )
     }

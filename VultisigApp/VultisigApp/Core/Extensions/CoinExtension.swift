@@ -5,6 +5,7 @@
 //  Created by Johnny Luo on 15/3/2024.
 //
 
+import BigInt
 import Foundation
 import WalletCore
 
@@ -18,6 +19,21 @@ extension Coin {
 
     var isDefiOnly: Bool {
         Coin.defiOnlyTickers.contains(ticker.uppercased())
+    }
+
+    /// The balance in base units, read exactly.
+    ///
+    /// `rawBalance` is a base-unit integer string, and this is the reading of it
+    /// that the send affordability guards share, so none of them can drift onto
+    /// a value that is merely close to the real one. A value that isn't a plain
+    /// integer still goes through the shared parse rather than collapsing to a
+    /// zero balance.
+    ///
+    /// Not yet universal: guards outside Send still weigh amounts against
+    /// `balanceDecimal`, which divides through the same `Double`-backed parser
+    /// this exists to avoid.
+    var balanceRaw: BigInt {
+        rawBalance.toBigInt(decimals: decimals)
     }
 }
 

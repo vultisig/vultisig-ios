@@ -15,13 +15,13 @@ import SwiftUI
 /// outer 24 on all corners. The paired Sell/Buy rows below keep the uneven
 /// pairing shape via `NotchedRectangle` (24 outside / 12 where they meet), so the
 /// shared toggle seats in a real cutout instead of page-colored paint.
-private let limitSectionCornerRadius: CGFloat = 24
+private let limitSectionCornerRadius = Theme.radius.xl
 
 /// Corner radius for the inline notice/warning rows. Deliberately NOT the section
 /// radius: these rows are single-line annotations (~39pt tall), and a 24pt radius
 /// exceeds half their height, degenerating the shape into a capsule and making
 /// them read as pills rather than as messages.
-private let limitNoticeCornerRadius: CGFloat = 12
+private let limitNoticeCornerRadius: CornerRadius = Theme.radius.md
 
 /// The limit form's editable fields, as focus identities.
 ///
@@ -383,10 +383,10 @@ private struct LimitPriceCard: View {
         }
         .padding(16)
         .overlay(
-            RoundedRectangle(cornerRadius: limitSectionCornerRadius)
+            limitSectionCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
+        .clipShape(limitSectionCornerRadius.shape)
     }
 
     @ViewBuilder
@@ -710,7 +710,7 @@ private struct LimitChartRangePills: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 5)
                         .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 100))
+                        .clipShape(Theme.radius.pill.shape)
                         // The pill is `maxWidth: .infinity` but an unselected one
                         // fills with `Color.clear`, so without an explicit content
                         // shape the tap area collapses to the glyphs and most of
@@ -825,7 +825,11 @@ private struct LimitPriceToggle: View {
         }
         .padding(3)
         .background(Theme.colors.bgSurface1)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        // Track and thumb are one pair and move together. Neither `20` nor the
+        // thumb's `18` was a chosen radius: both already exceeded half of the
+        // 38pt track / 32pt thumb, so both rendered as the clamp. `pill` names
+        // that and keeps them clamping in step if either size changes.
+        .clipShape(Theme.radius.pill.shape)
     }
 
     private func toggleButton(unit: PriceDisplayUnit, systemImage: String) -> some View {
@@ -846,7 +850,7 @@ private struct LimitPriceToggle: View {
                     // The selected indicator is a single matched-geometry thumb, so
                     // it slides between the two chips instead of hard-switching.
                     if isActive {
-                        RoundedRectangle(cornerRadius: 18)
+                        Theme.radius.pill.shape
                             .fill(Theme.colors.primaryAccent3)
                             .matchedGeometryEffect(id: "thumb", in: thumb)
                     }
@@ -882,10 +886,10 @@ private struct LimitExpiryCard: View {
         }
         .padding(14)
         .overlay(
-            RoundedRectangle(cornerRadius: limitSectionCornerRadius)
+            limitSectionCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitSectionCornerRadius))
+        .clipShape(limitSectionCornerRadius.shape)
     }
 
     private func pill(titleKey: String, hours: Int) -> some View {
@@ -900,10 +904,10 @@ private struct LimitExpiryCard: View {
                 .padding(.vertical, 6)
                 .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 100)
+                    Theme.radius.pill.shape
                         .stroke(Theme.colors.border, lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 100))
+                .clipShape(Theme.radius.pill.shape)
         }
         .buttonStyle(.plain)
     }
@@ -1167,7 +1171,7 @@ private extension View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .overlay(
-                RoundedRectangle(cornerRadius: 100)
+                Theme.radius.pill.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
     }
@@ -1267,10 +1271,10 @@ private struct LimitUnavailableRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
+            limitNoticeCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 }
 
@@ -1302,10 +1306,10 @@ private struct LimitNoticeRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
+            limitNoticeCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 }
 
@@ -1331,10 +1335,10 @@ private struct LimitWarningRow: View {
         .padding(12)
         .background(Theme.colors.bgSurface1)
         .overlay(
-            RoundedRectangle(cornerRadius: limitNoticeCornerRadius)
+            limitNoticeCornerRadius.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: limitNoticeCornerRadius))
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 
     private var messageKey: String {

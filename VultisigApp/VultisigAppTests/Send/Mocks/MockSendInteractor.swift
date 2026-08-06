@@ -37,6 +37,7 @@ final class MockSendInteractor: SendInteractor {
         var isDeposit: Bool { request.isDeposit }
         var transactionType: VSTransactionType { request.transactionType }
         var gasLimit: BigInt? { request.gasLimit }
+        var customByteFee: BigInt? { request.customByteFee }
         var feeMode: FeeMode { request.feeMode }
         var fromAddress: String { request.fromAddress }
     }
@@ -65,6 +66,9 @@ final class MockSendInteractor: SendInteractor {
     private(set) var buildKeysignPayloadCalls: [BuildKeysignPayloadCall] = []
     private(set) var updateBalanceCalls: [Coin] = []
     private(set) var calculatePlanFeeCalls: [(tx: SendTransaction, chainSpecific: BlockChainSpecific)] = []
+    private(set) var calculateMaxSendPlanCalls: [SendChainSpecificRequest] = []
+    private(set) var calculateMaxSendPlanRefreshFlags: [Bool] = []
+    private(set) var plannedOutcomeCalls: [KeysignPayload] = []
     private(set) var validateUtxosIfNeededCalls: [Coin] = []
     private(set) var opStackFeeReserveCalls: [(coin: Coin, memo: String?, gasLimit: BigInt?)] = []
 
@@ -80,9 +84,19 @@ final class MockSendInteractor: SendInteractor {
     var calculatePlanFeeStub: ((SendTransaction, BlockChainSpecific) throws -> BigInt) = { _, chainSpecific in
         chainSpecific.fee
     }
+    /// Default: `balance − fee` at a 3_000-unit fee, the shape a real UTXO max
+    /// plan produces. Tests that care about the numbers stub it.
+    var calculateMaxSendPlanStub: ((SendChainSpecificRequest, Vault) throws -> SendMaxPlanResult) = { request, _ in
+        let fee = BigInt(3_000)
+        let balance = request.coin.balanceRaw
+        return SendMaxPlanResult(amount: max(balance - fee, .zero), fee: fee, byteFee: BigInt(12))
+    }
     var validateUtxosIfNeededStub: ((Coin) throws -> Void) = { _ in }
     /// Defaults to the production shape for a non-OP-stack chain: no reserve.
     var opStackFeeReserveStub: ((Coin, String?, BigInt?) -> BigInt) = { _, _, _ in .zero }
+    /// Default: no plan available, so the sign-time consistency check is inert
+    /// unless a test opts in.
+    var plannedOutcomeStub: ((KeysignPayload) throws -> SendMaxPlanResult?) = { _ in nil }
     var buildKeysignPayloadStub: ((BuildKeysignPayloadCall) throws -> KeysignPayload)?
 
     // MARK: - Conformance
@@ -107,6 +121,21 @@ final class MockSendInteractor: SendInteractor {
     func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         calculatePlanFeeCalls.append((tx: tx, chainSpecific: chainSpecific))
         return try calculatePlanFeeStub(tx, chainSpecific)
+    }
+
+    func calculateMaxSendPlan(
+        _ request: SendChainSpecificRequest,
+        vault: Vault,
+        refreshUtxos: Bool
+    ) async throws -> SendMaxPlanResult {
+        calculateMaxSendPlanCalls.append(request)
+        calculateMaxSendPlanRefreshFlags.append(refreshUtxos)
+        return try calculateMaxSendPlanStub(request, vault)
+    }
+
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? {
+        plannedOutcomeCalls.append(payload)
+        return try plannedOutcomeStub(payload)
     }
 
     func validateUtxosIfNeeded(coin: Coin) async throws {

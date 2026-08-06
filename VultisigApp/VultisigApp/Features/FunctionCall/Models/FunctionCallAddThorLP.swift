@@ -141,7 +141,13 @@ final class FunctionCallAddThorLP {
         // `toAddress` empty so `isTheFormValid` blocks submission — otherwise
         // signing proceeds with an empty destination and wallet-core rejects
         // it with the raw `Error_invalid_address` enum.
-        if inbound.halted || inbound.global_trading_paused ?? false || inbound.chain_trading_paused ?? false || inbound.chain_lp_actions_paused ?? false {
+        //
+        // This is an LP add, so it must also honour `chain_lp_actions_paused`
+        // (the `PauseLP<CHAIN>` mimir) — hence `isLPActionsHalted`, which is
+        // strictly stricter than the `isTradingHalted` gate the non-LP flows
+        // use. Do not relax this one to `isTradingHalted`: THORChain rejects an
+        // LP add while LP actions are paused, and the funds would be stranded.
+        if inbound.isLPActionsHalted {
             customErrorMessage = String(format: "inboundPaused".localized, inbound.chain)
             return
         }
@@ -424,7 +430,7 @@ struct AddThorLPFormView: View {
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .background(Theme.colors.bgSurface1.opacity(0.1))
-                    .cornerRadius(10)
+                    .cornerRadius(Theme.radius.md)
             }
 
             StyledFloatingPointField(
@@ -469,7 +475,7 @@ struct EnableThorchainCTASection: View {
         }
         .padding(16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.xl)
     }
 }
 
@@ -503,7 +509,7 @@ struct PoolSelectorSection: View {
         .frame(height: 48)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
     }
 
     private var errorView: some View {
@@ -534,7 +540,7 @@ struct PoolSelectorSection: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(10)
+            .cornerRadius(Theme.radius.md)
         }
     }
 

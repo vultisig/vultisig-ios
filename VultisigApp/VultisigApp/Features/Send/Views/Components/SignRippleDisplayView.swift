@@ -42,7 +42,7 @@ struct SignRippleDisplayView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+        .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
     }
 
     @ViewBuilder
@@ -81,11 +81,11 @@ struct SignRippleDisplayView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
                 .background(Theme.colors.bgPrimary)
-                .cornerRadius(8)
+                .cornerRadius(Theme.radius.sm)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+        .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
     }
 
     // MARK: - Building blocks

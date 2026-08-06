@@ -134,18 +134,21 @@ final class EvmMaxSendClampTests: XCTestCase {
         XCTAssertEqual(clamped + signedFee, balanceRaw)
     }
 
-    /// A balance past `Int64` is parsed through `Double` by the shared
-    /// `toBigInt(decimals:)` route and rounds UP — which would hand the clamp a
-    /// balance larger than the real one and produce exactly the unaffordable
-    /// amount it exists to prevent. Both helpers must read the raw integer.
+    /// The clamp is only as good as the balance it subtracts the fee from: a
+    /// balance read larger than the real one produces exactly the unaffordable
+    /// amount the clamp exists to prevent. Both helpers take that reading from
+    /// `Coin.balanceRaw`, which carries every wei past `Int64` — beyond ~9.2
+    /// units on an 18-decimal chain, where a `Double`-backed read would round
+    /// the balance UP. Pin that the exactness reaches the clamp, not just the
+    /// parser underneath it.
     func testClampReadsBalancesBeyondInt64Exactly() {
         let balanceRaw = BigInt(stringLiteral: "12345678901234567890123") // > Int64.max
         let eth = makeCoin(.ethereum, rawBalance: balanceRaw.description)
         let fee = BigInt(stringLiteral: "10000000000000000")
 
-        XCTAssertNotEqual(
-            eth.rawBalance.toBigInt(decimals: eth.decimals), balanceRaw,
-            "if this starts passing, the shared balance parser gained full precision and this guard is stale"
+        XCTAssertEqual(
+            eth.balanceRaw, balanceRaw,
+            "the reading both clamps subtract the fee from must be the balance the vault holds"
         )
 
         XCTAssertEqual(
@@ -394,7 +397,9 @@ final class EvmMaxSendClampTests: XCTestCase {
         return coin
     }
 
+    /// The same reading the clamps take, so a fixture's balance and the value
+    /// the code under test subtracts from can never be two different numbers.
     private func balance(_ coin: Coin) -> BigInt {
-        coin.rawBalance.toBigInt(decimals: coin.decimals)
+        coin.balanceRaw
     }
 }

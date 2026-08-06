@@ -65,7 +65,7 @@ git checkout -b feature/ISSUE-description
 Split implementation across independent modules/files:
 - Agent A: Core logic (ViewModels, Services)
 - Agent B: UI components (Views)
-- Agent C: Localization (all 7 Localizable.strings files)
+- Agent C: Localization (every locale in `sort_localizable.py`'s `LOCALE_DIRS`)
 - Agent D: Tests
 
 Follow ALL `.claude/rules/` strictly.
@@ -131,7 +131,7 @@ EOF
 - **Code Quality Agent**: DRY violations, dead code, force unwraps, SwiftLint compliance
 - **Concurrency Agent**: async/await correctness, MainActor usage, data races
 - **UI Agent**: Theme token usage, PrimaryButton, Screen component, .foregroundStyle()
-- **Localization Agent**: All 7 files updated, camelCase keys, alphabetical order
+- **Localization Agent**: Every locale in `LOCALE_DIRS` updated; camelCase keys, alphabetical order
 - **Security Agent**: Key material exposure, credential leaks, TSS boundary violations
 
 ### Stage 3 — Synthesize & Report (SEQUENTIAL)
@@ -147,6 +147,6 @@ EOF
 - [ ] Implementation complete
 - [ ] SwiftLint passes
 - [ ] All `.claude/rules/` satisfied
-- [ ] Localization: all 7 files updated and sorted
+- [ ] Localization: every locale in `LOCALE_DIRS` updated and sorted
 - [ ] Commit with conventional format + Co-Authored-By
 - [ ] PR created as draft

@@ -33,6 +33,22 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var hasBalanceError = false
 
+    /// Whether the last fee/amount load failed.
+    ///
+    /// Kept separate from `hasBalanceError`, which means "the amount doesn't fit
+    /// the balance" and gates the XRP destination guards. This one means "the
+    /// figures on screen were never resolved": the summary still shows whatever
+    /// the Details screen handed over — for a max send after a failed refine,
+    /// the optimistic full balance at a zero fee — while Sign would build and
+    /// sign a fresh plan from live data the user was never shown.
+    ///
+    /// Sign stays disabled until a load runs to completion — only that path
+    /// clears this. Clearing on load *entry* instead would let a cancelled retry
+    /// release the hold with the previous failure's figures still on screen and
+    /// nothing having re-resolved them. Recovery is the alert's Retry button,
+    /// since `.onLoad` runs once.
+    @Published var hasLoadError = false
+
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
 
@@ -94,6 +110,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
         isLoading = true
         errorMessage = ""
         hasBalanceError = false
+        // `hasLoadError` is deliberately NOT cleared here. Clearing on entry
+        // would let a *cancelled* retry release the hold: the previous failure's
+        // figures would still be on screen, with nothing having re-resolved them.
+        // Only a load that runs to completion clears it.
 
         // Ensure balance is loaded before validation (protects against stale/empty balances)
         await interactor.updateBalance(for: transaction.coin)
@@ -111,7 +131,16 @@ class SendCryptoVerifyViewModel: ObservableObject {
             var newAmount = transaction.amount
             var nothingLeftAfterFee = false
             // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
-            if transaction.sendMaxAmount && transaction.coin.isNativeToken {
+            if transaction.sendMaxAmount, transaction.coin.isNativeToken,
+               let plannedRaw = feeResult.maxSendAmountRaw {
+                // UTXO max: the plan this fee came from already says exactly what
+                // the recipient will get. Re-deriving `balance − fee` here would
+                // show a figure the signer does not produce whenever the input
+                // selection excluded an output.
+                if plannedRaw > 0 {
+                    newAmount = SendCryptoLogic.formatRawAmount(plannedRaw, coin: transaction.coin)
+                }
+            } else if transaction.sendMaxAmount && transaction.coin.isNativeToken {
                 // `balance − fee − ED`. The ED reservation lets a DOT max-send
                 // settle at `balance − fee − ED` (`transfer_keep_alive` rejects
                 // a transfer that would reap the sender); zero for non-ED chains
@@ -169,6 +198,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
             // stays disabled until the load-time validation fully settles —
             // otherwise Sign briefly re-enables while account_info is in flight.
             try await validateDestinationActivationIfNeeded()
+            // The figures on screen have now been resolved end to end, so a
+            // previous failure's hold is released. Reached only on the success
+            // path: a throw or a cancellation leaves the hold as it was.
+            hasLoadError = false
             isLoading = false
         } catch is CancellationError {
             // The load pass was cancelled/superseded. Abort quietly — don't
@@ -181,6 +214,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
             Log.send.viewModel.error("Error calculating fee: \(error.localizedDescription, privacy: .public)")
             errorMessage = error.localizedDescription
             showAlert = true
+            // The amount and fee on screen were never resolved against the
+            // chain. Signing from here would build a fresh plan the user has not
+            // seen, so hold Sign until a load succeeds.
+            hasLoadError = true
             isCalculatingFee = false
             isLoading = false
         }
@@ -324,7 +361,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     var signButtonDisabled: Bool {
-        !isValidForm || isLoading || hasBalanceError
+        !isValidForm || isLoading || hasBalanceError || hasLoadError
     }
 
     func validateForm() async throws -> KeysignPayload {

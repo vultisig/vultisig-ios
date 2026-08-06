@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Send TAO",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Bittensor",
+        "ticker": "TAO",
+        "address": "5Ej64CJQSZFsPK4byPVCZhNWiYeRXnELwYw4KYQBq6yfvaQ3",
+        "decimals": 9,
+        "price_provider_id": "bittensor",
+        "is_native_token": true,
+        "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+        "logo": "tao"
+      },
+      "to_address": "5DtJMgqtYZg6NyCM1KDkmgZ6nW7pKgL1fneDHQtwPjBrQuXG",
+      "to_amount": "1000000000",
+      "BlockchainSpecific": {
+        "PolkadotSpecific": {
+          "recent_block_hash": "0xe3b45c86765f382bf3df23251099c2eb8f253cb6f962738a559db79ba90c3c79",
+          "nonce": 0,
+          "current_block_number": "5234567",
+          "spec_version": 260,
+          "transaction_version": 5,
+          "genesis_hash": "0xc41ec96637a215f4ea0505043f6055c8de087bf1d526b860990f340ea25d155d",
+          "gas": "200000"
+        }
+      },
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["0500005088e7e9faef052bbf655fe91f9a9effb421d4fd68a1597645918803d84c660c02286bee75000000000401000005000000c41ec96637a215f4ea0505043f6055c8de087bf1d526b860990f340ea25d155de3b45c86765f382bf3df23251099c2eb8f253cb6f962738a559db79ba90c3c7900"]
+  }
+]

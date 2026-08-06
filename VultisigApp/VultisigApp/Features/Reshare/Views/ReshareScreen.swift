@@ -192,10 +192,10 @@ private struct ReshareOptionCard: View {
             .padding(24)
             .background(Theme.colors.bgSurface1)
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
+                Theme.radius.xl.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .clipShape(Theme.radius.xl.shape)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

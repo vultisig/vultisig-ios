@@ -58,7 +58,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                             Image(icon)
                                 .resizable()
                                 .frame(width: 16, height: 16)
-                                .cornerRadius(32)
+                                .cornerRadius(Theme.radius.pill)
                         }
 
                         if let bracketValue {

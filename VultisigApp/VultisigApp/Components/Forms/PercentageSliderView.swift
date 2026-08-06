@@ -31,7 +31,7 @@ struct PercentageSliderView: View {
 
             ZStack(alignment: .leading) {
                 // Background track
-                RoundedRectangle(cornerRadius: 4)
+                Theme.radius.xs.shape
                     .fill(Color.gray.opacity(0.3))
                     .frame(height: 4)
 

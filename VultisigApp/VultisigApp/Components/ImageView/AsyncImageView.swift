@@ -108,6 +108,6 @@ struct AsyncImageView: View {
             .frame(width: size.width, height: size.height)
             .background(Color.white)
             .foregroundStyle(Theme.colors.bgSurface1)
-            .cornerRadius(100)
+            .cornerRadius(Theme.radius.pill)
     }
 }

@@ -170,6 +170,29 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
+    /// Past `Int64` — about 9.223 on an 18-decimal asset — reading the balance
+    /// through the shared decimal parser rounds it UP, so `amount + fee` is
+    /// weighed against funds the vault does not hold. The send clears Verify
+    /// and is rejected at broadcast, after the signing ceremony has already run
+    /// and been spent.
+    func testValidateBalanceWithFeeReadsABalanceBeyondInt64Exactly() throws {
+        // 99.999999999999999999 ETH — the lossy read rounds it to a flat 100.
+        let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
+                           rawBalance: "99999999999999999999")
+        XCTAssertEqual(eth.balanceRaw, BigInt(stringLiteral: "99999999999999999999"))
+        let tx = try makeTransaction(coin: eth, amount: "100", fee: .zero)
+        XCTAssertEqual(
+            tx.amountInRaw, BigInt(stringLiteral: "100000000000000000000"),
+            "the send is one wei more than the vault holds"
+        )
+        let vm = SendCryptoVerifyViewModel(transaction: tx)
+
+        vm.validateBalanceWithFee()
+
+        XCTAssertTrue(vm.hasBalanceError)
+        XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
+    }
+
     func testValidateBalanceWithFeeSetsErrorForSendMaxWhenFeeExceedsBalance() throws {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
                            rawBalance: "5000000000000000") // 0.005 ETH
@@ -194,36 +217,36 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "walletBalanceExceededError")
     }
 
-    /// The balance this check runs against has to be the balance the wallet
-    /// actually holds. `rawBalance.toBigInt(decimals:)` parses through
-    /// `NumberFormatter`, which falls back to `Double` past `Int64` and rounds
-    /// UP over ~9.2 units on an 18-decimal chain — making the check LOOSER than
-    /// the truth, so a send the wallet cannot fund clears Verify and dies at
-    /// broadcast instead.
+    /// The exactness has to survive the FEE term too: it is `amount + fee`, not
+    /// the amount alone, that this guard weighs against the balance. A balance
+    /// read even one wei high lets a send through that the chain rejects at
+    /// broadcast, after the ceremony has run and been spent.
     ///
-    /// 9999999999999999999 wei is one wei under 10 ETH, and the nearest `Double`
-    /// to it is 1e19 — exactly the amount + fee below. Read lossily the send
-    /// "fits"; read exactly it is one wei short.
-    func testValidateBalanceWithFeeReadsABalancePastInt64Exactly() throws {
+    /// 9999999999999999999 wei is one wei under 10 ETH, and it is the fee that
+    /// takes the send past it: 9.9 ETH would fit on its own.
+    func testValidateBalanceWithFeeCountsTheFeeAgainstAnExactBalancePastInt64() throws {
         let oneWeiUnderTenEth = "9999999999999999999"
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
                            rawBalance: oneWeiUnderTenEth)
-        XCTAssertGreaterThan(
-            eth.rawBalance.toBigInt(decimals: eth.decimals),
-            BigInt(stringLiteral: oneWeiUnderTenEth),
-            "precondition: the shared parse must be the one that rounds this balance up"
+        XCTAssertEqual(
+            eth.balanceRaw, BigInt(stringLiteral: oneWeiUnderTenEth),
+            "precondition: the guard has to be reading every wei of the balance"
         )
 
         // 9.9 ETH + 0.1 ETH fee = 10 ETH exactly, one wei more than the balance.
         let tx = try makeTransaction(coin: eth, amount: "9.9",
                                      fee: BigInt(stringLiteral: "100000000000000000"))
         // Pin the total rather than trusting it: the amount parse is locale
-        // sensitive, and a "9.9" that scaled differently would make this test
-        // pass against the old lossy read too — for the wrong reason.
+        // sensitive, and a "9.9" that scaled differently would still raise the
+        // error below — for the wrong reason.
         XCTAssertEqual(
             tx.amountInRaw + tx.fee,
-            eth.rawBalance.toBigInt(decimals: eth.decimals),
-            "the send has to land exactly on the rounded-up balance for this to test anything"
+            eth.balanceRaw + 1,
+            "the send has to land exactly one wei past the balance for this to test anything"
+        )
+        XCTAssertLessThanOrEqual(
+            tx.amountInRaw, eth.balanceRaw,
+            "the amount alone must fit, or the fee is not what this is measuring"
         )
         let vm = SendCryptoVerifyViewModel(transaction: tx)
 

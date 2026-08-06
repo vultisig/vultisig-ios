@@ -189,9 +189,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         }
         .padding(24)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(LinearGradient.borderGreen, lineWidth: 1)
         )
         .padding(1)
@@ -320,7 +320,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     Image(input.coinImage)
                         .resizable()
                         .frame(width: 24, height: 24)
-                        .cornerRadius(32)
+                        .cornerRadius(Theme.radius.pill)
 
                     CoinAmountFiatLabel(
                         amount: input.amount,
@@ -391,7 +391,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     .padding(16)
                 }
                 .frame(maxHeight: 300)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
+                .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
     }

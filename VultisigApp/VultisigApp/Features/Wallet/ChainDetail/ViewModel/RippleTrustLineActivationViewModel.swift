@@ -97,7 +97,7 @@ final class RippleTrustLineActivationViewModel: ObservableObject {
         quote = RippleTrustLineActivationQuote(
             ownerReserveDrops: ownerReserve,
             feeDrops: fee,
-            spendableDrops: nativeCoin.rawBalance.toBigInt(decimals: nativeCoin.decimals),
+            spendableDrops: nativeCoin.balanceRaw,
             limitValue: limitValue,
             currencyCode: currencyCode,
             issuer: issuer

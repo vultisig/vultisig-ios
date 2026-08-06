@@ -33,11 +33,7 @@ struct AppMigrationService {
             return
         }
 
-        // Get the last migrated version from Keychain
-        // there is no way to figure out whether it is a new installation , or an update from a version without AppMigrationService
-        // So when the last migrated version is nil , we need to do the migration
-        // thus we need to make sure the migration is idempotent
-         let lastVersion = keychainService.getLastMigratedVersion() ?? -1
+        let lastVersion = lastMigratedVersion()
 
         // If already migrated to the latest version, skip
         if lastVersion >= latestMigrationVersion {
@@ -51,6 +47,31 @@ struct AppMigrationService {
         executeMigrations(from: lastVersion, migrations: migrations)
 
         logger.info("✅ [Migration] Completed all migrations")
+    }
+
+    /// The version below every registered migration, so that all of them are eligible.
+    private static let noVersionRecorded = -1
+
+    /// The last recorded migration version, or ``noVersionRecorded`` when there
+    /// is none to be had.
+    ///
+    /// A stored version cannot say whether this is a fresh install or an update
+    /// from a build that predates this service, so an absent record has always
+    /// meant "run everything" and the migrations are written to be idempotent.
+    /// An unreadable Keychain is folded into the same answer deliberately: the
+    /// cost is repeating idempotent work, whereas skipping migrations on a
+    /// transient read failure would leave the store half-converted. Nothing here
+    /// writes a secret, so `unavailable` carries no risk of overwriting one.
+    private func lastMigratedVersion() -> Int {
+        switch keychainService.getLastMigratedVersion() {
+        case .present(let version):
+            return version
+        case .absent:
+            return Self.noVersionRecorded
+        case .unavailable(let status):
+            logger.error("⚠️ [Migration] Could not read the last migrated version (status \(status, privacy: .public)) - re-running the idempotent migrations")
+            return Self.noVersionRecorded
+        }
     }
 
     /// Executes all necessary migrations after the last migrated version
@@ -79,7 +100,8 @@ struct AppMigrationService {
             THORChainDuplicateTokensMigration(),
             TonGramRebrandMigration(),
             PromoBannerDismissalMigration(),
-            RujiAutoCompoundPositionMigration()
+            RujiAutoCompoundPositionMigration(),
+            TonGramDefiPositionsMigration()
         ]
     }
 }

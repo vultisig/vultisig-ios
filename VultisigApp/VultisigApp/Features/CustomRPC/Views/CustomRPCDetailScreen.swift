@@ -65,11 +65,11 @@ struct CustomRPCDetailScreen: View {
             .padding(16)
             .frame(minHeight: 120, alignment: .topLeading)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .fill(Theme.colors.bgSurface1)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
 
@@ -97,11 +97,11 @@ struct CustomRPCDetailScreen: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }

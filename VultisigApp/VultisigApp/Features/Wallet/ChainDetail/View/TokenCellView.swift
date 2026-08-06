@@ -28,7 +28,7 @@ struct TokenCellView: View {
                 AsyncImageView(
                     logo: coin.logo,
                     size: CGSize(width: 36, height: 36),
-                    ticker: coin.chain.ticker,
+                    ticker: coin.ticker,
                     tokenChainLogo: coin.tokenChainLogo
                 )
 
@@ -41,7 +41,7 @@ struct TokenCellView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface2))
+                        .background(Theme.radius.sm.shape.fill(Theme.colors.bgSurface2))
                         .fixedSize()
                         .contentTransition(.numericText())
                         .animation(.interpolatingSpring, value: coin.price)

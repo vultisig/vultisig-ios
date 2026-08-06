@@ -49,7 +49,7 @@ enum SendCryptoLogic {
         }
 
         let amountRaw = amountInRaw(coin: coin, amount: amount)
-        let balanceRaw = coin.rawBalance.toBigInt(decimals: coin.decimals)
+        let balanceRaw = coin.balanceRaw
 
         if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton))
             || !coin.isNativeToken {
@@ -179,6 +179,17 @@ enum SendCryptoLogic {
         return formatAmountInput(maxValue, digits: digits)
     }
 
+    /// Format a raw (base-unit) amount for the amount field, with the same
+    /// precision rule `computeMaxAmount` uses. For amounts that come from a
+    /// transaction planner rather than from `balance − fee` arithmetic.
+    /// Truncates (never rounds up), so the displayed figure can't exceed what
+    /// was planned.
+    static func formatRawAmount(_ raw: BigInt, coin: Coin) -> String {
+        let digits = coin.decimals > 8 ? 8 : coin.decimals
+        let value = raw > .zero ? coin.decimal(for: raw) : .zero
+        return formatAmountInput(value, digits: digits)
+    }
+
     /// Fixed-point max amount for Terra Classic accounting for the proportional
     /// burn tax. `baseGasFee` is the flat gas portion in the send denom.
     private static func terraClassicMaxValue(coin: Coin, baseGasFee: BigInt) -> Decimal {
@@ -222,7 +233,7 @@ enum SendCryptoLogic {
         previousAmountRaw: BigInt,
         extraReserve: BigInt = .zero
     ) -> BigInt {
-        let candidate = exactRawBalance(of: coin) - fee - existentialDeposit(for: coin) - extraReserve
+        let candidate = coin.balanceRaw - fee - existentialDeposit(for: coin) - extraReserve
         guard coin.chain == .terraClassic else { return candidate }
         return Swift.min(candidate, previousAmountRaw)
     }
@@ -250,21 +261,7 @@ enum SendCryptoLogic {
         signedFee: BigInt,
         extraReserve: BigInt
     ) -> BigInt {
-        Swift.min(displayedAmountRaw, exactRawBalance(of: coin) - signedFee - extraReserve)
-    }
-
-    /// The raw balance, exactly.
-    ///
-    /// `rawBalance` is already a base-unit integer string, and the usual
-    /// `toBigInt(decimals:)` route parses it with `NumberFormatter` — which
-    /// falls back to `Double` past `Int64`, and can round a large balance UP:
-    /// over ~9.2 units on an 18-decimal chain. Every spending decision made
-    /// against a balance larger than the real one ends the same way — a
-    /// transaction the chain refuses — so parse the integer directly, the way
-    /// `canBeReaped` already does. A value that isn't a plain integer falls
-    /// back to the shared path rather than collapsing to a zero balance.
-    static func exactRawBalance(of coin: Coin) -> BigInt {
-        BigInt(coin.rawBalance) ?? coin.rawBalance.toBigInt(decimals: coin.decimals)
+        Swift.min(displayedAmountRaw, coin.balanceRaw - signedFee - extraReserve)
     }
 
     /// Raw base-unit amount rendered as the decimal string a `SendTransaction`

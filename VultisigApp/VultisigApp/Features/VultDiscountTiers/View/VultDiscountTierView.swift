@@ -17,9 +17,12 @@ struct VultDiscountTierView: View {
     @State var isExpanded: Bool = false
     @State var isActiveInternal: Bool = false
 
-    private let topCornerRadius: CGFloat = 24
-    private let bottomCornerRadius: CGFloat = 20
-    private let footerCornerRadius: CGFloat = 24
+    private let topRadius: CornerRadius = Theme.radius.xl
+    /// Deliberately off the scale. The card's 24-top / 20-bottom asymmetry is a
+    /// Figma value, not a rounding of one: the footer bar peeks out from under
+    /// the bottom edge and the two radii are drawn to sit together.
+    private let bottomCornerRadius: CGFloat = 20 // swiftlint:disable:this no_raw_corner_radius
+    private let footerRadius: CornerRadius = Theme.radius.xl
     private let footerHeight: CGFloat = 48
 
     var holdAmountText: String {
@@ -83,9 +86,9 @@ private extension VultDiscountTierView {
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
             .background(Theme.colors.bgSurface1)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(Theme.radius.lg.shape)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                Theme.radius.lg.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
             .fixedSize(horizontal: true, vertical: true)
@@ -132,9 +135,22 @@ private extension VultDiscountTierView {
             .padding(.bottom, 14)
             .background(footerGradient)
             .overlay(footerInnerShadow)
-            .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
+            // Both radii below are the CARD's bottom radius, not the footer's
+            // own: the bar sits behind `cardBody` and peeks out from under it,
+            // so its bottom edge has to trace the edge it emerges from. Written
+            // as a literal `20` they were a silent copy — move the card and the
+            // footer would have cut across the corner it is meant to follow.
+            .clipShape(
+                UnevenRoundedRectangle(
+                    bottomLeadingRadius: bottomCornerRadius,
+                    bottomTrailingRadius: bottomCornerRadius
+                )
+            )
             .offset(y: isExpanded ? 48 : 2)
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.colors.borderLight, lineWidth: 1))
+            .overlay(
+                RoundedRectangle(cornerRadius: bottomCornerRadius)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
             .onTapGesture {
                 if isUnlockTappable {
                     onUnlock()
@@ -179,11 +195,11 @@ private extension VultDiscountTierView {
     }
 
     var footerInnerShadow: some View {
-        RoundedRectangle(cornerRadius: footerCornerRadius)
+        footerRadius.shape
             .stroke(Color.white.opacity(0.1), lineWidth: 1)
             .blur(radius: 1)
             .mask(
-                RoundedRectangle(cornerRadius: footerCornerRadius)
+                footerRadius.shape
                     .fill(
                         LinearGradient(
                             colors: [.white, .clear],
@@ -198,11 +214,16 @@ private extension VultDiscountTierView {
     var cardShape: some Shape {
         UnevenRoundedRectangle(
             cornerRadii: .init(
-                topLeading: topCornerRadius,
+                topLeading: topRadius.points,
                 bottomLeading: bottomCornerRadius,
                 bottomTrailing: bottomCornerRadius,
-                topTrailing: topCornerRadius
-            )
+                topTrailing: topRadius.points
+            ),
+            // The top corners come from the token, so the style has to come
+            // from it too — a radius on the scale drawn with whatever style the
+            // SDK happens to default to is the one pairing that silently stops
+            // tracking the design system.
+            style: topRadius.style
         )
     }
 

@@ -1,0 +1,167 @@
+[
+  {
+    "name": "Send OSMO",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Osmosis",
+        "ticker": "OSMO",
+        "address": "osmo1lm0mwvt8pknymlrat3z2slrpz0un45ghpmlf6h",
+        "decimals": 6,
+        "price_provider_id": "osmosis",
+        "is_native_token": true,
+        "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+        "contract_address": "",
+        "logo": "osmo"
+      },
+      "to_address": "osmo1lm0mwvt8pknymlrat3z2slrpz0un45ghpmlf6h",
+      "to_amount": "100000",
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 200870,
+          "gas": 7500,
+          "sequence": 5,
+          "transaction_type": 0
+        }
+      },
+      "memo": "",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["557f36584851a68e8897adafcd08ab5bd283467f3f87d48f0cb5a86369e135e2"]
+  },
+  {
+    "name": "Send DYDX",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Dydx",
+        "ticker": "DYDX",
+        "address": "dydx1lm0mwvt8pknymlrat3z2slrpz0un45ghqezavj",
+        "decimals": 18,
+        "price_provider_id": "dydx-chain",
+        "is_native_token": true,
+        "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+        "contract_address": "",
+        "logo": "dydx"
+      },
+      "to_address": "dydx1lm0mwvt8pknymlrat3z2slrpz0un45ghqezavj",
+      "to_amount": "100000",
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 200870,
+          "gas": 7500,
+          "sequence": 5,
+          "transaction_type": 0
+        }
+      },
+      "memo": "",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["ba5baa96f1f77c31e52f919bc152717c281e666b3357cee0504b247bde22fe49"]
+  },
+  {
+    "name": "Send Noble USDC",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Noble",
+        "ticker": "USDC",
+        "address": "noble1lm0mwvt8pknymlrat3z2slrpz0un45ghpre35t",
+        "decimals": 6,
+        "price_provider_id": "usd-coin",
+        "is_native_token": true,
+        "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+        "contract_address": "",
+        "logo": "usdc"
+      },
+      "to_address": "noble1lm0mwvt8pknymlrat3z2slrpz0un45ghpre35t",
+      "to_amount": "100000",
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 200870,
+          "gas": 7500,
+          "sequence": 5,
+          "transaction_type": 0
+        }
+      },
+      "memo": "",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["83fac8cb7231468de078941bac10cab911d4a2f7a5fc57d12df7f5c9561221d0"]
+  },
+  {
+    "name": "Send AKT",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Akash",
+        "ticker": "AKT",
+        "address": "akash1lm0mwvt8pknymlrat3z2slrpz0un45ghymp74l",
+        "decimals": 6,
+        "price_provider_id": "akash-network",
+        "is_native_token": true,
+        "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+        "contract_address": "",
+        "logo": "akash"
+      },
+      "to_address": "akash1lm0mwvt8pknymlrat3z2slrpz0un45ghymp74l",
+      "to_amount": "100000",
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 200870,
+          "gas": 7500,
+          "sequence": 5,
+          "transaction_type": 0
+        }
+      },
+      "memo": "",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["bb27b6228a4e78cfc0e9f72523a6f41e798779bd3c945221c39fdbb52cb8c6b1"]
+  },
+  {
+    "name": "Send OSMO IBC to Cosmos",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Osmosis",
+        "ticker": "OSMO",
+        "address": "osmo1lm0mwvt8pknymlrat3z2slrpz0un45ghpmlf6h",
+        "decimals": 6,
+        "price_provider_id": "osmosis",
+        "is_native_token": true,
+        "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+        "contract_address": "",
+        "logo": "osmo"
+      },
+      "to_address": "cosmos1lm0mwvt8pknymlrat3z2slrpz0un45ghfqvev9",
+      "to_amount": "100000",
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 200870,
+          "gas": 7500,
+          "sequence": 5,
+          "transaction_type": 3,
+          "ibc_denom_trace": {
+            "path": "",
+            "height": "32597414_1753579499419760896",
+            "base_denom": ""
+          }
+        }
+      },
+      "memo": "Cosmos:channel-0:cosmos1lm0mwvt8pknymlrat3z2slrpz0un45ghfqvev9",
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": ["eefe5e1f76961fbaab364f1b8e594c9fa23380e91d36f7486f204148bb0e743c"]
+  }
+]

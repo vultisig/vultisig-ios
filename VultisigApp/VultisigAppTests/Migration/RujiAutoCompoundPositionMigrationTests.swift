@@ -138,8 +138,11 @@ final class RujiAutoCompoundPositionMigrationTests: XCTestCase {
         AppMigrationService(keychainService: keychain).performMigrationsIfNeeded()
 
         XCTAssertEqual(stakingTickers(vault), ["RUJI", "SRUJI"])
-        XCTAssertEqual(
-            keychain.lastMigratedVersion,
+        // At least this migration's version, not exactly it: the service runs
+        // every migration newer than the seed, so pinning the equality here makes
+        // the next migration anyone registers fail this test for no reason.
+        XCTAssertGreaterThanOrEqual(
+            keychain.lastMigratedVersion ?? -1,
             RujiAutoCompoundPositionMigration().version,
             "the migration version must ratchet forward so it does not re-run"
         )

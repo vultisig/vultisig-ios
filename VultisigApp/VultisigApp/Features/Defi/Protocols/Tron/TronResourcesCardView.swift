@@ -49,11 +49,11 @@ struct TronResourcesCardView: View {
         }
         .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .fill(Theme.colors.bgSurface1)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+            TronConstants.Design.cornerRadius.shape
                 .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
         )
         .overlay(alignment: .topTrailing) {
@@ -89,7 +89,7 @@ struct TronResourcesCardView: View {
 
             HStack(spacing: 8) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8)
+                    Theme.radius.sm.shape
                         .fill(accentColor.opacity(0.15))
                         .frame(width: 36, height: 36)
 
@@ -100,7 +100,7 @@ struct TronResourcesCardView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     if isLoading {
-                        RoundedRectangle(cornerRadius: 4)
+                        Theme.radius.xs.shape
                             .fill(Theme.colors.bgSurface1)
                             .frame(width: 60, height: 14)
                             .shimmer()
@@ -111,18 +111,24 @@ struct TronResourcesCardView: View {
                     }
 
                     GeometryReader { geometry in
+                        // The three 2s below are off the scale on purpose: they
+                        // are the end caps of a 3pt-tall progress bar, sized
+                        // against its own thickness rather than against a
+                        // surface. At 3pt the radius is already past SwiftUI's
+                        // half-the-smaller-dimension clamp, so the bar renders
+                        // fully round whatever number is written here.
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: 2) // swiftlint:disable:this no_raw_corner_radius
                                 .fill(Theme.colors.bgPrimary)
                                 .frame(height: 3)
 
                             if isLoading {
-                                RoundedRectangle(cornerRadius: 2)
+                                RoundedRectangle(cornerRadius: 2) // swiftlint:disable:this no_raw_corner_radius
                                     .fill(accentColor.opacity(0.3))
                                     .frame(width: geometry.size.width * 0.5, height: 3)
                                     .shimmer()
                             } else {
-                                RoundedRectangle(cornerRadius: 2)
+                                RoundedRectangle(cornerRadius: 2) // swiftlint:disable:this no_raw_corner_radius
                                     .fill(accentColor)
                                     .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 3)
                             }

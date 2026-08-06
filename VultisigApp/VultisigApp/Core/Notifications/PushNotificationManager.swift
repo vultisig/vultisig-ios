@@ -93,7 +93,10 @@ class PushNotificationManager: ObservableObject {
 
     func setDeviceToken(_ token: Data) {
         let tokenString = token.map { String(format: "%02x", $0) }.joined()
-        let previousToken = keychainService.getDeviceToken()
+        // An unreadable Keychain counts as "no previous token", which re-registers
+        // every opted-in vault. Re-registering an unchanged token is harmless;
+        // skipping a registration for a token that really did change is not.
+        let previousToken = keychainService.getDeviceToken().valueTreatingUnavailableAsAbsent
         deviceToken = tokenString
         keychainService.setDeviceToken(tokenString)
 

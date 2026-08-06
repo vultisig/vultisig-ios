@@ -10,6 +10,7 @@
 import BigInt
 import Foundation
 import Tss
+import VultisigCommonData
 import WalletCore
 @testable import VultisigApp
 
@@ -35,16 +36,24 @@ extension SigningGoldenFactory {
     private static var sends: [SigningGoldenVector] {
         [
             bitcoinSend,
+            zcashSend,
+            dashSend,
             ethereumSend,
             erc20Send,
             thorchainSend,
             thorchainDeposit,
             cosmosSend,
+            osmosisSend,
+            dydxSend,
+            nobleSend,
+            akashSend,
+            cosmosIBCTransfer,
             solanaSend,
             suiSignSui,
             rippleSend,
             tonSend,
             polkadotSend,
+            bittensorSend,
             tronSend
         ]
     }
@@ -67,6 +76,56 @@ extension SigningGoldenFactory {
                         index: 0
                     )],
                     memo: "golden"
+                )
+            },
+            imageHashes: { try UTXOChainsHelper(coin: $0.coin.coinType).getPreSignedImageHash(keysignPayload: $0) },
+            signedTransaction: { .regular(try UTXOChainsHelper(coin: $0.coin.coinType).getSignedTransaction(keysignPayload: $0, signatures: $1)) }
+        )
+    }
+
+    /// Zcash carries the live ZIP-243 `zcashBranchId` on `.UTXO` — the one field
+    /// that distinguishes its signing path from a plain UTXO chain.
+    private static var zcashSend: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "utxo_zcash_send",
+            curve: .secp256k1,
+            expectedLeaf: "UTXOChainsHelper",
+            makePayload: {
+                let coin = coin(chain: .zcash, ticker: "ZEC", decimals: 8, curve: .secp256k1)
+                return payload(
+                    coin: coin,
+                    toAddress: recipient(.zcash),
+                    toAmount: BigInt(500_000),
+                    chainSpecific: .UTXO(byteFee: 20, sendMaxAmount: false, zcashBranchId: "c2d6d0b4"),
+                    utxos: [UtxoInfo(
+                        hash: "631fad872ac6bea810cf6073f02e6cbd121cac83193b79f381f711ce93b531f0",
+                        amount: 1_000_000,
+                        index: 0
+                    )]
+                )
+            },
+            imageHashes: { try UTXOChainsHelper(coin: $0.coin.coinType).getPreSignedImageHash(keysignPayload: $0) },
+            signedTransaction: { .regular(try UTXOChainsHelper(coin: $0.coin.coinType).getSignedTransaction(keysignPayload: $0, signatures: $1)) }
+        )
+    }
+
+    private static var dashSend: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "utxo_dash_send",
+            curve: .secp256k1,
+            expectedLeaf: "UTXOChainsHelper",
+            makePayload: {
+                let coin = coin(chain: .dash, ticker: "DASH", decimals: 8, curve: .secp256k1)
+                return payload(
+                    coin: coin,
+                    toAddress: recipient(.dash),
+                    toAmount: BigInt(500_000),
+                    chainSpecific: .UTXO(byteFee: 20, sendMaxAmount: false),
+                    utxos: [UtxoInfo(
+                        hash: "631fad872ac6bea810cf6073f02e6cbd121cac83193b79f381f711ce93b531f0",
+                        amount: 1_000_000,
+                        index: 0
+                    )]
                 )
             },
             imageHashes: { try UTXOChainsHelper(coin: $0.coin.coinType).getPreSignedImageHash(keysignPayload: $0) },
@@ -174,6 +233,76 @@ extension SigningGoldenFactory {
         )
     }
 
+    /// One send per remaining Cosmos-family chain not covered by `cosmosSend`.
+    /// `dydx` in particular routes through `DydxHelperStruct`, a distinct leaf
+    /// from the shared `CosmosHelperStruct` the others use.
+    private static func cosmosFamilySend(name: String, chain: Chain, ticker: String, decimals: Int) -> SigningGoldenVector {
+        SigningGoldenVector(
+            name: name,
+            curve: .secp256k1,
+            expectedLeaf: "CosmosHelper",
+            makePayload: {
+                let coin = coin(chain: chain, ticker: ticker, decimals: decimals, curve: .secp256k1)
+                return payload(
+                    coin: coin,
+                    toAddress: recipient(chain),
+                    toAmount: BigInt(1_000_000),
+                    chainSpecific: .Cosmos(accountNumber: 7, sequence: 3, gas: 200_000, transactionType: 0, ibcDenomTrace: nil, gasLimit: nil)
+                )
+            },
+            imageHashes: { try CosmosHelper.getHelper(forChain: $0.coin.chain).getPreSignedImageHash(keysignPayload: $0) },
+            signedTransaction: { .regular(try CosmosHelper.getHelper(forChain: $0.coin.chain).getSignedTransaction(keysignPayload: $0, signatures: $1)) }
+        )
+    }
+
+    private static var osmosisSend: SigningGoldenVector {
+        cosmosFamilySend(name: "cosmos_osmosis_send", chain: .osmosis, ticker: "OSMO", decimals: 6)
+    }
+
+    private static var dydxSend: SigningGoldenVector {
+        cosmosFamilySend(name: "cosmos_dydx_send", chain: .dydx, ticker: "DYDX", decimals: 18)
+    }
+
+    private static var nobleSend: SigningGoldenVector {
+        cosmosFamilySend(name: "cosmos_noble_send", chain: .noble, ticker: "USDC", decimals: 6)
+    }
+
+    private static var akashSend: SigningGoldenVector {
+        cosmosFamilySend(name: "cosmos_akash_send", chain: .akash, ticker: "AKT", decimals: 6)
+    }
+
+    /// A genuine IBC transfer (`transactionType: .ibcTransfer`), routed through
+    /// `CosmosHelperStruct`'s `.ibcTransfer` branch — as opposed to a plain send
+    /// whose memo merely looks like IBC routing info. The memo format
+    /// (`<destChain>:<channel>:<optionalMemo>`) is parsed by that branch to pull
+    /// the source channel.
+    private static var cosmosIBCTransfer: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "cosmos_osmosis_ibc_transfer_to_gaia",
+            curve: .secp256k1,
+            expectedLeaf: "CosmosHelper",
+            makePayload: {
+                let coin = coin(chain: .osmosis, ticker: "OSMO", decimals: 6, curve: .secp256k1)
+                return payload(
+                    coin: coin,
+                    toAddress: recipient(.gaiaChain),
+                    toAmount: BigInt(1_000_000),
+                    chainSpecific: .Cosmos(
+                        accountNumber: 7,
+                        sequence: 3,
+                        gas: 200_000,
+                        transactionType: VSTransactionType.ibcTransfer.rawValue,
+                        ibcDenomTrace: CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "32597414_1753579499419760896"),
+                        gasLimit: nil
+                    ),
+                    memo: "Cosmos:channel-0:\(recipient(.gaiaChain))"
+                )
+            },
+            imageHashes: { try CosmosHelper.getHelper(forChain: $0.coin.chain).getPreSignedImageHash(keysignPayload: $0) },
+            signedTransaction: { .regular(try CosmosHelper.getHelper(forChain: $0.coin.chain).getSignedTransaction(keysignPayload: $0, signatures: $1)) }
+        )
+    }
+
     private static var solanaSend: SigningGoldenVector {
         SigningGoldenVector(
             name: "solana_send",
@@ -273,6 +402,30 @@ extension SigningGoldenFactory {
         )
     }
 
+    /// Bittensor bypasses WalletCore's `TransactionCompiler` entirely — a
+    /// hand-rolled SCALE-encoded extrinsic (see `BittensorHelper`'s doc: TW Core
+    /// doesn't support the `CheckMetadataHash` signed extension Bittensor
+    /// requires). It reuses `.Polkadot` chainSpecific for its nonce/block/spec
+    /// fields even though it isn't dispatched through `PolkadotHelper`.
+    private static var bittensorSend: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "bittensor_send",
+            curve: .ed25519,
+            expectedLeaf: "BittensorHelper",
+            makePayload: {
+                let coin = coin(chain: .bittensor, ticker: "TAO", decimals: 9, curve: .ed25519)
+                return payload(
+                    coin: coin,
+                    toAddress: recipient(.bittensor),
+                    toAmount: BigInt(1_000_000_000),
+                    chainSpecific: .Polkadot(recentBlockHash: Const.polkadotGenesis, nonce: 0, currentBlockNumber: BigInt(5_234_567), specVersion: 260, transactionVersion: 5, genesisHash: Const.polkadotGenesis)
+                )
+            },
+            imageHashes: { try BittensorHelper.getPreSignedImageHash(keysignPayload: $0) },
+            signedTransaction: { .regular(try BittensorHelper.getSignedTransaction(keysignPayload: $0, signatures: $1)) }
+        )
+    }
+
     private static var tronSend: SigningGoldenVector {
         SigningGoldenVector(
             name: "tron_send",
@@ -307,6 +460,7 @@ extension SigningGoldenFactory {
     private static var swaps: [SigningGoldenVector] {
         [
             thorchainSwap,
+            thorchainLimitOrderSwap,
             // Distinct router + calldata per provider so each golden pins that
             // aggregator's actual EVM swap bytes (not an identical placeholder).
             genericSwap(
@@ -360,6 +514,50 @@ extension SigningGoldenFactory {
                     toAmount: BigInt(100_000_000),
                     chainSpecific: .THORChain(accountNumber: 12, sequence: 3, fee: 2_000_000, isDeposit: true),
                     memo: "=:BTC.BTC:\(recipient(.bitcoin)):0/1/0",
+                    swapPayload: .thorchain(swap)
+                )
+            },
+            imageHashes: {
+                guard case .thorchain(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
+                return try THORChainSwaps().getPreSignedImageHash(swapPayload: swap, keysignPayload: $0, incrementNonce: false)
+            },
+            signedTransaction: {
+                guard case .thorchain(let swap) = $0.swapPayload else { throw SigningGoldenError.missingSwapPayload }
+                return .regular(try THORChainSwaps().getSignedTransaction(swapPayload: swap, keysignPayload: $0, signatures: $1, incrementNonce: false))
+            }
+        )
+    }
+
+    /// Placing a THORChain limit order is an ordinary swap deposit — it differs
+    /// from `thorchainSwap` only in its memo: the real `buildLimitSwapMemo`
+    /// (`=<:...`) instead of a market swap's `=:...`. Pins that the limit-order
+    /// memo path signs through the exact same deposit leaf.
+    private static var thorchainLimitOrderSwap: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "swap_thorchain_limit_order_rune_to_doge",
+            curve: .secp256k1,
+            expectedLeaf: "THORChainSwaps",
+            makePayload: {
+                let rune = coin(chain: .thorChain, ticker: "RUNE", decimals: 8, curve: .secp256k1)
+                let doge = coin(chain: .dogecoin, ticker: "DOGE", decimals: 8, curve: .secp256k1)
+                let swap = thorSwapPayload(from: rune, to: doge, amount: BigInt(100_000_000))
+                let memo = try buildLimitSwapMemo(LimitSwapInputs(
+                    sourceAsset: "THOR.RUNE",
+                    sourceAmount: BigInt(100_000_000),
+                    sourceDecimals: 8,
+                    targetAsset: "DOGE.DOGE",
+                    destAddress: recipient(.dogecoin),
+                    targetPrice: Decimal(20),
+                    expiryHours: 4,
+                    affiliate: "va",
+                    affiliateBps: "50"
+                ))
+                return payload(
+                    coin: rune,
+                    toAddress: swap.vaultAddress,
+                    toAmount: BigInt(100_000_000),
+                    chainSpecific: .THORChain(accountNumber: 12, sequence: 3, fee: 2_000_000, isDeposit: true),
+                    memo: memo,
                     swapPayload: .thorchain(swap)
                 )
             },

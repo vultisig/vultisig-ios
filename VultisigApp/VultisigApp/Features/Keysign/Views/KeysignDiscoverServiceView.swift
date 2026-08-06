@@ -23,7 +23,7 @@ struct KeysignDiscoverServiceView: View {
         .multilineTextAlignment(.center)
         .padding(30)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.xl)
         .onAppear {
             viewModel.discoverService()
         }

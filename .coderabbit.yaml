@@ -31,10 +31,10 @@ reviews:
         - Use "key".localized for all user-facing strings
     - path: "**/Localizable.strings"
       instructions: |
-        Localization changes must be applied to ALL 7 locale files.
-        Check: en.lproj/, de.lproj/, es.lproj/, hr.lproj/, it.lproj/, pt.lproj/, zh-Hans.lproj/
+        Localization changes must be applied to every locale in VultisigApp/scripts/sort_localizable.py's LOCALE_DIRS.
+        Flag any locale omitted from a localization change.
         Keys must be camelCase and in alphabetical order.
-        Flag any untranslated strings (English text in non-English files).
+        Flag untranslated prose, but allow established English terminology already used by the locale.
     - path: "**/*.pbxproj"
       instructions: |
         Xcode-generated changes are allowed.

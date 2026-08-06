@@ -154,6 +154,12 @@ final class SendInteractorTests: XCTestCase {
     }
 }
 
+// The `SendInteractor` protocol requires `async` on every method and passes
+// arguments this stub has no use for; it answers synchronously and records only
+// what the assertions read. Section-disabled to keep the stub readable, same
+// pattern as `MockSendInteractor`.
+// swiftlint:disable async_without_await unused_parameter
+
 /// Minimal stub recording the `feeMode` it last received. Lets us assert the
 /// bug fix at the protocol level without hitting real services.
 private final class StubSendInteractor: SendInteractor {
@@ -179,6 +185,18 @@ private final class StubSendInteractor: SendInteractor {
         throw NSError(domain: "stub", code: 0)
     }
 
+    func calculateMaxSendPlan(
+        _ request: SendChainSpecificRequest,
+        vault: Vault,
+        refreshUtxos: Bool
+    ) async throws -> SendMaxPlanResult {
+        lastGasLimit = request.gasLimit
+        lastFeeMode = request.feeMode
+        throw NSError(domain: "stub", code: 0)
+    }
+
+    func plannedOutcome(for payload: KeysignPayload) async throws -> SendMaxPlanResult? { nil }
+
     func validateUtxosIfNeeded(coin: Coin) async throws {}
 
     func buildKeysignPayload(
@@ -195,3 +213,5 @@ private final class StubSendInteractor: SendInteractor {
 
     func updateBalance(for coin: Coin) async {}
 }
+
+// swiftlint:enable async_without_await unused_parameter

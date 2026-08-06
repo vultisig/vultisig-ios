@@ -47,9 +47,9 @@ struct HiddenTextField: View {
         .frame(height: 56)
         .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.md)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
         )
     }

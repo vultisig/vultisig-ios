@@ -58,9 +58,9 @@ struct CounterView: View {
             content()
         }
         .foregroundStyle(Theme.colors.textPrimary)
-        .cornerRadius(12)
+        .cornerRadius(Theme.radius.md)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(1)

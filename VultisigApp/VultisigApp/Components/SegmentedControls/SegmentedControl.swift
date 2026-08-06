@@ -53,7 +53,7 @@ struct SegmentedControl<T: Hashable>: View {
                                     .foregroundStyle(Theme.colors.alertInfo)
                                     .padding(6)
                                     .background(Theme.colors.alertInfo.opacity(0.12))
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .clipShape(Theme.radius.sm.shape)
                             }
                         }
                         .fixedSize(horizontal: true, vertical: false)

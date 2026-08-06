@@ -21,16 +21,22 @@ let swapCardSpacing: CGFloat = 12
 /// a solid page color that page-colored "filler" paint could hide behind.
 ///
 /// Rotate 180° (as `SwapFromToField` already does for the "to"/Buy card) to
-/// mirror it: the 24/12 corners swap and the notch moves to the top edge.
+/// mirror it: the outer and inner corners swap and the notch moves to the top
+/// edge.
+///
+/// The four corners are the container and nested steps of the scale — the card's
+/// outer edge is a container, the edge where the two cards meet is the nested
+/// one. Only the radius travels from the token: the path is hand-built from
+/// `addArc`, which has no corner style.
 struct NotchedRectangle: Shape {
-    var topLeadingRadius: CGFloat = 24
-    var topTrailingRadius: CGFloat = 24
-    var bottomLeadingRadius: CGFloat = 12
-    var bottomTrailingRadius: CGFloat = 12
+    var topLeadingRadius: CGFloat = Theme.radius.xl.points
+    var topTrailingRadius: CGFloat = Theme.radius.xl.points
+    var bottomLeadingRadius: CGFloat = Theme.radius.md.points
+    var bottomTrailingRadius: CGFloat = Theme.radius.md.points
     /// Radius of the notch cavity: `SwapAssetsButton`'s outer radius (~19 — its
     /// 34pt label + 2pt padding) plus the intended 8pt moat between the button's
     /// stroke ring and the cutout, so the coupling to the button size is discoverable.
-    var notchRadius: CGFloat = 27
+    var notchRadius: CGFloat = 27 // swiftlint:disable:this no_raw_corner_radius
     /// How far below the bottom edge (into the inter-card gap) the notch circle's
     /// center sits. Set to half the gap between the two stacked cards so both
     /// cards' notches become caps of one circle centered on the toggle. `0` keeps

@@ -137,10 +137,10 @@ struct SwapDoneSummaryCard: View {
             .bold()
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(60)
+            .cornerRadius(Theme.radius.pill)
             .padding(8)
             .background(Theme.colors.bgPrimary)
-            .cornerRadius(60)
+            .cornerRadius(Theme.radius.pill)
             .overlay(
                 Circle()
                     .stroke(Theme.colors.border, lineWidth: 1)
@@ -202,9 +202,9 @@ struct SwapDoneSummaryCard: View {
         }
         .padding(.horizontal, 24)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -300,9 +300,9 @@ struct SwapDoneSummaryCard: View {
         .frame(height: 130)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .cornerRadius(Theme.radius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }

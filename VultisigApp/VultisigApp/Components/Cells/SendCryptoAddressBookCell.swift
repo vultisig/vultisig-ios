@@ -30,7 +30,7 @@ struct SendCryptoAddressBookCell: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 22)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.xl.shape
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
@@ -61,7 +61,7 @@ struct SendCryptoAddressBookCell: View {
             }
         }
         .frame(width: 32, height: 32)
-        .cornerRadius(30)
+        .cornerRadius(Theme.radius.pill)
     }
 
     var placeholderImage: some View {

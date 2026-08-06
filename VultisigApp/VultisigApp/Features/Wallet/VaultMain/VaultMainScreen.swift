@@ -14,7 +14,10 @@ struct VaultMainScreen: View {
     @Binding var addressToCopy: Coin?
     @Binding var showUpgradeVaultSheet: Bool
     @Binding var showBackupNow: Bool
-    @Binding var showBalanceInHeader: Bool
+    /// Shared with the top bar and written from this screen's scroll offset.
+    /// Held as a plain `let`, deliberately un-observed: this screen must not be
+    /// invalidated by a scroll, only the two leaves that render a balance are.
+    let collapse: HomeHeaderCollapse
     @Binding var shouldRefresh: Bool
     var onCamera: () -> Void
 
@@ -26,7 +29,6 @@ struct VaultMainScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.openURL) var openURL
 
-    @State private var scrollOffset: CGFloat = 0
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var showReceiveList: Bool = false
@@ -53,7 +55,7 @@ struct VaultMainScreen: View {
                         showsIndicators: false,
                         topInset: contentInset,
                         bottomInset: 0,
-                        scrollOffset: $scrollOffset
+                        onOffsetChange: onScrollOffsetChange
                     ) {
                         LazyVStack(spacing: 20) {
                             topContentSection(width: capturedGeometryWidth)
@@ -80,9 +82,6 @@ struct VaultMainScreen: View {
                     if !showChainSelection && !showReceiveList {
                         capturedGeometryWidth = newWidth
                     }
-                }
-                .onChange(of: scrollOffset) { _, newValue in
-                    onScrollOffsetChange(newValue)
                 }
                 .onChange(of: showSearchHeader) { _, showSearchHeader in
                     if showSearchHeader {
@@ -163,6 +162,7 @@ struct VaultMainScreen: View {
                     balanceToShow: totalBalanceToShow,
                     style: .wallet
                 )
+                    .headerCollapseFade(collapse, tab: .wallet)
                     .padding(.bottom, 32)
                 CoinActionsView(
                     actions: viewModel.availableActions,
@@ -276,9 +276,7 @@ struct VaultMainScreen: View {
     }
 
     func onScrollOffsetChange(_ offset: CGFloat) {
-        let showBalanceInHeader: Bool = offset < contentInset
-        guard showBalanceInHeader != self.showBalanceInHeader else { return }
-        self.showBalanceInHeader = showBalanceInHeader
+        collapse.update(tab: .wallet, offset: offset, restingOffset: contentInset)
     }
 
     func clearSearch() {
@@ -389,7 +387,7 @@ struct VaultMainScreen: View {
         addressToCopy: .constant(nil),
         showUpgradeVaultSheet: .constant(false),
         showBackupNow: .constant(false),
-        showBalanceInHeader: .constant(false),
+        collapse: HomeHeaderCollapse(),
         shouldRefresh: .constant(false),
         onCamera: {}
     )

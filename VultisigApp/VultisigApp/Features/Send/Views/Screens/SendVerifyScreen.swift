@@ -55,10 +55,23 @@ struct SendVerifyScreen: View {
             )
         }
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            let title = Text(NSLocalizedString("error", comment: ""))
+            let message = Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: ""))
+            // A failed load holds Sign until the figures on screen have been
+            // resolved. `.onLoad` runs once, so without a way to re-run it here
+            // a transient failure would strand the user with a disabled Sign
+            // and no option but to back out of the flow.
+            guard sendCryptoVerifyViewModel.hasLoadError else {
+                return Alert(title: title, message: message,
+                             dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
+            }
+            return Alert(
+                title: title,
+                message: message,
+                primaryButton: .default(Text(NSLocalizedString("retry", comment: ""))) {
+                    Task { await sendCryptoVerifyViewModel.loadGasInfoForSending() }
+                },
+                secondaryButton: .cancel(Text(NSLocalizedString("ok", comment: "")))
             )
         }
         .onLoad {

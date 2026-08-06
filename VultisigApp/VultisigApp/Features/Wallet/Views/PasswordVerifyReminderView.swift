@@ -25,7 +25,9 @@ struct PasswordVerifyReminderView: View {
     private let keychain = DefaultKeychainService.shared
 
     private var hint: String? {
-        keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA)
+        // Display only: an unreadable Keychain hides the hint, exactly as an
+        // unsaved one does.
+        keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA).valueTreatingUnavailableAsAbsent
     }
 
     var body: some View {

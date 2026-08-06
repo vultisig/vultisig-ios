@@ -18,7 +18,7 @@ struct SwapFromToCoin: View {
         }
         .padding(6)
         .background(Theme.colors.bgSurface2)
-        .cornerRadius(60)
+        .cornerRadius(Theme.radius.pill)
     }
 
     var fromToCoinIcon: some View {

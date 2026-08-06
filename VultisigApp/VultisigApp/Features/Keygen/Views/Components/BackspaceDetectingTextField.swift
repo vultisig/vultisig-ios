@@ -36,7 +36,12 @@ struct BackspaceDetectingTextField: NSViewRepresentable {
         textField.backgroundColor = NSColor.clear
 
         textField.wantsLayer = true
-        textField.layer?.cornerRadius = 12
+        // Only the radius travels here. `CALayer` states its corner shape as
+        // `cornerCurve`, a separate axis from SwiftUI's `RoundedCornerStyle`,
+        // and this field has always drawn the AppKit default. Adopting the
+        // token's number keeps it in step with the SwiftUI fields it sits
+        // among; changing the curve would be a visual change to the control.
+        textField.layer?.cornerRadius = Theme.radius.md.points
         textField.focusRingType = .none
 
         return textField

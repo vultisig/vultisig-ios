@@ -27,7 +27,8 @@ struct DefiChainSelectPositionsScreen: View {
                 elements: viewModel.filteredAvailablePositions,
                 onSave: onSave,
                 cellBuilder: cellBuilder,
-                emptyStateBuilder: { PositionNotFoundEmptyStateView() }
+                emptyStateBuilder: { PositionNotFoundEmptyStateView() },
+                onRetrySection: { _ in viewModel.loadLiquidityPools() }
             )
             .showIf(!selection.isEmpty)
             .withLoading(isLoading: $isLoading)
@@ -42,14 +43,15 @@ struct DefiChainSelectPositionsScreen: View {
 
     @ViewBuilder
     func cellBuilder(_ asset: CoinMeta, section: DefiChainPositionType) -> some View {
-        let pos = viewModel.availablePositions.firstIndex(where: { $0.type == section }) ?? 0
+        let pos = section.selectionIndex
         TokenSelectionGridCell(
             coin: asset,
             // Prefix for LPs
             name: section == .liquidityPool ? "\(viewModel.chain.ticker)/\(asset.ticker)" : asset.ticker,
             showChainIcon: section == .liquidityPool,
-            isSelected: selection[safe: pos]?.contains(asset) ?? false
+            isSelected: pos.flatMap { selection[safe: $0]?.contains(asset) } ?? false
         ) { selected in
+            guard let pos else { return }
             if selected {
                 add(asset: asset, section: pos)
             } else {
@@ -159,6 +161,27 @@ struct DefiChainSelectPositionsScreen: View {
     }
 }
 
+private extension DefiChainPositionType {
+    /// Bucket index of this position type inside `selection`, fixed by the shape
+    /// of the persisted `DefiPositions` record. Deliberately independent of the
+    /// catalog's section order, which is presentational: deriving it from the
+    /// catalog would silently file a selection under the wrong position type if
+    /// a section were ever reordered or omitted.
+    var selectionIndex: Int? {
+        switch self {
+        case .bond:
+            0
+        case .stake:
+            1
+        case .liquidityPool:
+            2
+        case .governance:
+            // Not a selectable asset — it has no bucket.
+            nil
+        }
+    }
+}
+
 private struct PositionNotFoundEmptyStateView: View {
     var body: some View {
         VStack {
@@ -171,7 +194,7 @@ private struct PositionNotFoundEmptyStateView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 32)
             .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
+            .background(Theme.radius.xl.shape.fill(Theme.colors.bgSurface1))
             Spacer()
         }
     }

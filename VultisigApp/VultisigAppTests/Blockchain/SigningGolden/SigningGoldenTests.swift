@@ -34,7 +34,12 @@
 //      `thor1` address the Maya helper rejects); a Maya vector needs a
 //      custom-HRP address fixture. Routing (native → MayaChainHelper; EVM-token
 //      → THORChainSwaps) is still covered by the routing-contract table.
-//    - Native Sui Pay / QBTC (ML-DSA) / Bittensor: out of scope for this pass.
+//    - Native Sui Pay / QBTC MsgSend (ML-DSA): out of scope for this pass — QBTC
+//      signs with `DilithiumKeysignResponse`, not the `TssKeysignResponse` this
+//      harness's vectors are typed on. See `QBTCSendGoldenTests` for a
+//      dedicated pre-image-hash + TxRaw golden covering QBTC's plain-send path
+//      instead; `QBTCSignDirectCosignByteEqualityTests` already covers its
+//      vote/signDirect path against real Windows/SDK vectors.
 //  These are additive — each is one more `SigningGoldenVector`.
 //
 //  Record mode: `RECORD_SIGNING_GOLDENS=1` — see `SigningGoldenStore`.

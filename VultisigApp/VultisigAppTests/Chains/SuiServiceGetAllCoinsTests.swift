@@ -68,6 +68,56 @@ final class SuiServiceGetAllCoinsTests: XCTestCase {
         }
     }
 
+    func testGetAllCoinsThrowsWhenNextPageHasNoCursor() async {
+        StubRPCProtocol.pages = [
+            Self.page(coins: [Self.coinJSON(id: "0x1")], nextCursor: nil, hasNextPage: true)
+        ]
+
+        let service = SuiService(resolver: StubResolver(host: Self.stubHost))
+
+        do {
+            _ = try await service.getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected an invalid pagination cursor to throw")
+        } catch {
+            XCTAssertEqual(StubRPCProtocol.requestCount, 1)
+        }
+    }
+
+    func testGetAllCoinsThrowsWhenCursorRepeats() async {
+        StubRPCProtocol.pages = [
+            Self.page(coins: [Self.coinJSON(id: "0x1")], nextCursor: "cursor-1", hasNextPage: true),
+            Self.page(coins: [Self.coinJSON(id: "0x2")], nextCursor: "cursor-1", hasNextPage: true)
+        ]
+
+        let service = SuiService(resolver: StubResolver(host: Self.stubHost))
+
+        do {
+            _ = try await service.getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected a repeated pagination cursor to throw")
+        } catch {
+            XCTAssertEqual(StubRPCProtocol.requestCount, 2)
+        }
+    }
+
+    func testGetAllCoinsThrowsWhenPaginationExceedsSafetyLimit() async {
+        StubRPCProtocol.pages = (0...SuiService.maximumCoinPages).map { index in
+            Self.page(
+                coins: [Self.coinJSON(id: "0x\(index)")],
+                nextCursor: "cursor-\(index)",
+                hasNextPage: true
+            )
+        }
+
+        let service = SuiService(resolver: StubResolver(host: Self.stubHost))
+
+        do {
+            _ = try await service.getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected the pagination safety limit to throw")
+        } catch {
+            XCTAssertEqual(StubRPCProtocol.requestCount, SuiService.maximumCoinPages)
+        }
+    }
+
     // MARK: - Fixtures
 
     private static func makeCoin() -> Coin {

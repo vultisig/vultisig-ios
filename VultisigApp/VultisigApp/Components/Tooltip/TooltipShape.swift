@@ -11,15 +11,23 @@ enum TooltipArrowDirection {
 }
 
 struct TooltipShape: Shape {
-    let cornerRadius: CGFloat = 16
-    let smallCornerRadius: CGFloat = 4
+    /// The bubble's own corners, read from the scale. The path is drawn with
+    /// `addArc`, so only the radius travels from the token — the corner style
+    /// does not apply to a hand-built path.
+    let cornerRadius: CGFloat = Theme.radius.lg.points
+    let smallCornerRadius: CGFloat = Theme.radius.xs.points
     let arrowWidth: CGFloat = 20
     let arrowHeight: CGFloat = 10
-    let arrowCornerRadius: CGFloat = 2
+    /// Fillet at the arrow tip. Part of the arrow's own geometry — sized
+    /// against `arrowWidth`/`arrowHeight`, not against the bubble — so it is
+    /// deliberately not a scale step.
+    let arrowCornerRadius: CGFloat = 2 // swiftlint:disable:this no_raw_corner_radius
     /// Radius of the rounded junction where the arrow base blends into the
     /// tooltip body, so the triangle joins the bubble with a soft fillet
-    /// instead of a hard kink (matches the design-system tooltip).
-    let arrowJunctionRadius: CGFloat = 4
+    /// instead of a hard kink (matches the design-system tooltip). Like the tip
+    /// fillet it belongs to the arrow, and is placed along the arrow's diagonal
+    /// rather than on a corner of the bubble.
+    let arrowJunctionRadius: CGFloat = 4 // swiftlint:disable:this no_raw_corner_radius
     var arrowXFraction: CGFloat = 0.5
     var arrowDirection: TooltipArrowDirection = .up
 

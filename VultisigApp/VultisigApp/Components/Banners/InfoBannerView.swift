@@ -53,7 +53,7 @@ struct InfoBannerView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            Theme.radius.md.shape
                 .inset(by: 1)
                 .fill(bgColor)
                 .stroke(borderColor, lineWidth: 1)

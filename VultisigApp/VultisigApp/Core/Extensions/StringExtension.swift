@@ -199,9 +199,27 @@ extension String {
         return valueBigInt
     }
 
-    // We must truncate before converting to bigInt.
+    /// Base-unit integer value of a numeric string, truncated to at most
+    /// `decimals` fraction digits. Anything still fractional after the
+    /// truncation yields zero — this reads an already-scaled value, it does not
+    /// scale one (`"1.5"` with 18 decimals is zero, not 1.5e18).
+    ///
+    /// A string of plain ASCII digits is read exactly. The general path goes
+    /// through `NumberFormatter`, which returns a `Double`-backed `NSNumber`
+    /// once the value no longer fits in `Int64` — about 9.223 on an 18-decimal
+    /// asset — and keeps only 17 significant digits. That commonly rounds the
+    /// value UP, and a balance reported larger than it really is lets an
+    /// affordability guard pass a send the chain then rejects at broadcast,
+    /// after the signing ceremony has already run.
+    ///
+    /// Non-integer input still takes the `NumberFormatter` path, imprecision
+    /// included, rather than collapsing to zero; no caller passes one, because
+    /// a surviving fraction is already the zero case above.
     func toBigInt(decimals: Int) -> BigInt {
-        self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
+        if decimals >= 0, isNotEmpty, allSatisfy({ $0.isASCII && $0.isNumber }), let exact = BigInt(self) {
+            return exact
+        }
+        return self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
 
     func isValidDecimal() -> Bool {

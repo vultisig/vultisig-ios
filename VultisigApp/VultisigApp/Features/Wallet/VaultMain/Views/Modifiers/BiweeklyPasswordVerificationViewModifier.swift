@@ -16,7 +16,10 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
     private let keychain = DefaultKeychainService.shared
 
     private var hasHint: Bool {
-        guard let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) else { return false }
+        // Only decides the sheet's height, so an unreadable Keychain sizes it as
+        // if no hint were stored.
+        let saved = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA)
+        guard let hint = saved.valueTreatingUnavailableAsAbsent else { return false }
         return !hint.isEmpty
     }
 

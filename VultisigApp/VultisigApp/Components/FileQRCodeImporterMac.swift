@@ -53,7 +53,7 @@ struct FileQRCodeImporterMac: View {
         .frame(height: 250)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgButtonPrimary.opacity(0.15))
-        .cornerRadius(10)
+        .cornerRadius(Theme.radius.md)
         .overlay(
             ZStack {
                 getOverlay(isUploading ? 2 : 1)
@@ -93,7 +93,7 @@ struct FileQRCodeImporterMac: View {
     }
 
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: 10)
+        Theme.radius.md.shape
             .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: lineWidth, dash: [10]))
     }
 }

@@ -5,7 +5,29 @@
 //  Created by Gaston Mazzeo on 13/11/2025.
 //
 
-struct DefiPositionsService {
+/// Source of the selectable DeFi position catalog.
+///
+/// Bond and stake are static, in-app lists and resolve without any network
+/// access; only liquidity pools need a live pool list. Callers rely on that
+/// split to publish the static sections immediately instead of gating the whole
+/// catalog on a network round-trip.
+///
+/// `Sendable` because the pool fetch is handed to a detached task: the view
+/// model captures its provider into the closure it races against a timeout, so
+/// every conformer has to be safe to use from another isolation domain.
+protocol DefiPositionsProviding: Sendable {
+    func bondCoins(for chain: Chain) -> [CoinMeta]
+    func stakeCoins(for chain: Chain) -> [CoinMeta]
+    /// Whether `lpCoins(for:)` performs a network fetch for this chain. Lets a
+    /// caller tell "this chain has no liquidity pools" apart from "the pool list
+    /// has not arrived yet", so a chain without LPs never shows a loading state.
+    func supportsLiquidityPools(for chain: Chain) -> Bool
+    /// Throws on a failed pool fetch so the caller can surface the failure and
+    /// offer a retry — an empty return means "this chain genuinely has none".
+    func lpCoins(for chain: Chain) async throws -> [CoinMeta]
+}
+
+struct DefiPositionsService: DefiPositionsProviding {
     private let thorchainService = THORChainAPIService()
 
     func bondCoins(for chain: Chain) -> [CoinMeta] {
@@ -66,16 +88,24 @@ struct DefiPositionsService {
     static let nativeSolanaMeta: CoinMeta? = TokensStore.TokenSelectionAssets
         .first { $0.chain == .solana && $0.isNativeToken }
 
-    func lpCoins(for chain: Chain) async -> [CoinMeta] {
+    /// Keep in sync with the network-backed branches of `lpCoins(for:)`.
+    func supportsLiquidityPools(for chain: Chain) -> Bool {
+        switch chain {
+        case .thorChain, .mayaChain:
+            true
+        default:
+            false
+        }
+    }
+
+    func lpCoins(for chain: Chain) async throws -> [CoinMeta] {
         switch chain {
         case .thorChain:
-            let pools = (try? await thorchainService.getPools()) ?? []
-            let coins = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
-            return coins
+            let pools = try await thorchainService.getPools()
+            return pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
         case .mayaChain:
-            let pools = (try? await MayaChainAPIService().getPoolStats(period: SettingsAPRPeriod.current.rawValue)) ?? []
-            let coins = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
-            return coins
+            let pools = try await MayaChainAPIService().getPoolStats(period: SettingsAPRPeriod.current.rawValue)
+            return pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
         default:
             return []
         }

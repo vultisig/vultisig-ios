@@ -107,7 +107,12 @@ struct FastVaultPasswordScreen: View {
         HStack(spacing: 12) {
             ForEach(Array(stepIcons.enumerated()), id: \.offset) { index, icon in
                 if index > 0 {
-                    RoundedRectangle(cornerRadius: 1)
+                    // Off the scale on purpose: the fillet on a 16×1 hairline
+                    // joining two step icons. A line, not a surface — no step of
+                    // the scale describes it, and at 1pt thick the corner is
+                    // already past the clamp, so the connector renders fully
+                    // round whatever number is written here.
+                    RoundedRectangle(cornerRadius: 1) // swiftlint:disable:this no_raw_corner_radius
                         .fill(Theme.colors.border)
                         .frame(width: 16, height: 1)
                 }

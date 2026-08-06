@@ -66,7 +66,7 @@ private struct LoadingBanner: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(RoundedRectangle(cornerRadius: 24)
+            .background(Theme.radius.xl.shape
                 .inset(by: 0.5)
                 .stroke(Theme.colors.border, lineWidth: 1)
                 .fill(Theme.colors.bgSurface1)

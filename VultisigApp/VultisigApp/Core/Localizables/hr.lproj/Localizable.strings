@@ -286,6 +286,7 @@
 "cosmosStakingValidatorPicker" = "Validator";
 "costs" = "Troškovi";
 "createFolder" = "Kreiraj mapu";
+"createNewVault" = "Stvori novi trezor";
 "createQR" = "Stvori QR";
 "createReferral" = "Kreiraj preporuku";
 "createReferralCardTitle" = "Kreiraj preporuku";
@@ -356,8 +357,6 @@
 "devicesOnSameInternet" = "Povežite sve uređaje na\ninternet s otvorenom aplikacijom Vultisig.";
 "devicesOnSameNetwork" = "Povežite sve uređaje na istu\nmrežu s otvorenom aplikacijom Vultisig.";
 "devicesOnSameWifi" = "Držite uređaje na istoj mreži s Vultisigom otvorenim";
-"dilithiumAlreadyGeneratedSubtitle" = "Ovaj trezor već ima generiran MLDSA-44 postkvantni ključ. Nije potrebna nikakva daljnja radnja.";
-"dilithiumAlreadyGeneratedTitle" = "Postkvantni ključ aktivan";
 "dilithiumKeygen" = "Postkvantni ključ";
 "dilithiumKeygenSubtitle" = "Generiraj MLDSA-44 ključ za otpornost na kvantna računala";
 "directSign" = "Izravni Potpis";
@@ -786,6 +785,7 @@
 "marketCap" = "Tržišna kapitalizacija";
 "marketCapRank" = "Rang";
 "marketStats" = "Tržišni podaci";
+"maxSendPlanChangedError" = "Vaša raspoloživa sredstva promijenila su se dok ste pregledavali, pa ova transakcija više ne bi poslala prikazani iznos. Vratite se i pregledajte ažurirani iznos.";
 "maxSupply" = "Maksimalna ponuda";
 "maxTotalFee" = "Maks. ukupna naknada";
 "memo" = "Bilješka";
@@ -1523,6 +1523,12 @@
 "useLocalMode" = "Koristi lokalni način";
 "usePassword" = "Koristi lozinku";
 "useStandardMode" = "Koristi standardni način";
+"utxoPlanDustAmountError" = "Ono što bi ostalo primatelju ispod je mrežnog praga za prašinu. Pošaljite veći iznos ili smanjite mrežnu stopu kako bi ostalo više za slanje.";
+"utxoPlanFailedError" = "Ovu transakciju nije bilo moguće pripremiti (%@). Pokušajte s drugim iznosom ili smanjite mrežnu stopu.";
+"utxoPlanInsufficientFundsError" = "Vaši potrošivi izlazi ne pokrivaju ovaj iznos plus mrežnu naknadu. Pokušajte s manjim iznosom ili smanjite mrežnu stopu.";
+"utxoPlanInvalidUtxoError" = "Jedan od vaših izlaza transakcije trenutačno se ne može potrošiti. Osvježite stanje i pokušajte ponovno.";
+"utxoPlanTransactionTooLargeError" = "Ova transakcija treba više ulaza nego što jedna transakcija može nositi. Pošaljite manji iznos ili prvo konsolidirajte svoje izlaze.";
+"utxoPlanZeroAmountError" = "Unesite iznos veći od nule.";
 "utxoSelectionFailedError" = "Odabir UTXO-a neuspješan. Nije moguće pronaći prikladne izlaze transakcije za pokrivanje iznosa plus procijenjene naknade. Pokušajte smanjiti iznos transakcije.";
 "utxoTooSmallError" = "Dostupni UTXO-i su premali za ovu transakciju. Pojedinačni izlazi transakcije u vašem novčaniku ne zadovoljavaju minimalne zahtjeve. Razmislite o konsolidaciji manjih iznosa prvo.";
 "validAddressDomainError" = "Pogrešna adresa za odabrani blockchain. Pokušajte dodati lanac u svoj trezor.";

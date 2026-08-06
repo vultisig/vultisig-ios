@@ -20,9 +20,9 @@ struct DestinationTagTextField: View {
             .font(Theme.fonts.bodyMMedium)
             .padding(16)
             .background(Theme.colors.bgSurface1)
-            .cornerRadius(12)
+            .cornerRadius(Theme.radius.md)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                Theme.radius.md.shape
                     .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             )
             .padding(1)

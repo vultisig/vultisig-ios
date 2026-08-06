@@ -29,7 +29,7 @@ struct TonUnstakeTransactionScreen: View {
 
     var body: some View {
         FormScreen(
-            title: String(format: "unstakeCoin".localized, viewModel.coin.chain.ticker),
+            title: String(format: "unstakeCoin".localized, viewModel.coin.ticker),
             fixedHeight: false,
             validForm: $validForm,
             isContinueDisabled: !viewModel.hasSufficientBalance,
@@ -39,7 +39,7 @@ struct TonUnstakeTransactionScreen: View {
                 ContainerView {
                     VStack(alignment: .leading, spacing: 12) {
                         infoRow(
-                            title: String(format: "stakedCoin".localized, viewModel.coin.chain.ticker),
+                            title: String(format: "stakedCoin".localized, viewModel.coin.ticker),
                             value: stakedAmountText
                         )
                         Separator(color: Theme.colors.border, opacity: 1)
@@ -56,7 +56,7 @@ struct TonUnstakeTransactionScreen: View {
                     .foregroundStyle(Theme.colors.textSecondary)
 
                 if !viewModel.hasSufficientBalance {
-                    InsufficientFeeNotice(ticker: viewModel.coin.chain.ticker)
+                    InsufficientFeeNotice(ticker: viewModel.coin.ticker)
                 }
 
                 Spacer()
