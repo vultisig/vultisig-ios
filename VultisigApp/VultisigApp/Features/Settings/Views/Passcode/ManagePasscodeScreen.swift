@@ -59,6 +59,7 @@ struct ManagePasscodeScreen: View {
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .crossPlatformSheet(isPresented: $showDisable) {
             DisablePasscodeScreen(isPresented: $showDisable)
+                .presentationDragIndicator(.visible)
         }
         // `.onAppear` as well as `.task`: returning from the pushed set/change
         // screens does not re-run `.task`, and a stale `isSet` would keep
