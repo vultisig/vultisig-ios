@@ -83,6 +83,13 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
             }
         }
         .onChange(of: isPresented) { _, newValue in
+            // A reopen cancels the pending close. Dismissing arms a task that
+            // lowers `isPresented` 300ms later so the animation can finish; if
+            // the sheet is presented again inside that window, the old task is
+            // still holding an order to close and would shut the new one.
+            if newValue {
+                dismissTask?.cancel()
+            }
             withAnimation(.interpolatingSpring(duration: 0.2)) {
                 internalIsPresented = newValue
             }

@@ -216,11 +216,27 @@ struct PasscodeEntryView: View {
     /// themselves, so rejecting it would reject the one keyboard someone is most
     /// likely to type six digits on.
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
-        if press.modifiers.contains(.command) {
-            guard press.characters == "v" else { return .ignored }
+        // Neither of these two is intent. Caps lock says nothing about a digit,
+        // and macOS sets `.numericPad` on the keypad keys themselves — treating
+        // that as a modifier would reject the one keyboard someone is most
+        // likely to type six digits on.
+        let modifiers = press.modifiers.subtracting([.capsLock, .numericPad])
+
+        // Exactly ⌘V, and only on the way down. Anything else carrying command
+        // is a shortcut aimed at the app, not at this field — and a held ⌘V must
+        // not paste once per repeat.
+        if modifiers.contains(.command) {
+            guard modifiers == .command, press.phase == .down, press.characters == "v" else {
+                return .ignored
+            }
             paste()
             return .handled
         }
+
+        // Every remaining path is a bare key. Checked before the actions rather
+        // than inside one of them, so ⌥⌫ and ⌃⌫ cannot reach the delete branch
+        // by being handled ahead of the test.
+        guard modifiers.isEmpty else { return .ignored }
 
         let isDelete = press.key == .delete || press.key == .deleteForward
         // Held keys repeat for delete only. A held digit would fill all six
@@ -232,8 +248,7 @@ struct PasscodeEntryView: View {
             return .handled
         }
 
-        guard press.modifiers.subtracting([.shift, .capsLock, .numericPad]).isEmpty,
-              press.characters.count == 1,
+        guard press.characters.count == 1,
               let digit = press.characters.first,
               digit.isASCII, digit.isNumber else {
             return .ignored
@@ -245,17 +260,24 @@ struct PasscodeEntryView: View {
 
     /// ⌘V, which the text field this replaced got for free.
     ///
-    /// Filtered exactly as a typed digit is, and truncated rather than refused —
-    /// a six-digit code copied with a trailing newline is still the code the
-    /// user meant. Landing a full-length value here completes the entry through
-    /// the same `onChange` a typed sixth digit does.
+    /// The clipboard has to already *be* a passcode — surrounding whitespace is
+    /// forgiven, nothing else is. Sieving the digits out of arbitrary text turns
+    /// "Order 12-34-56 shipped" into a complete entry, and reaching six digits
+    /// submits, so a stray paste would spend one of the throttled attempts on a
+    /// value the user never saw. Over-long is refused rather than truncated for
+    /// the same reason: silently keeping the first six of seven submits
+    /// something nobody typed.
     private func paste() {
         guard !isBusy, let pasted = ClipboardManager.pasteFromClipboard() else { return }
 
-        let digits = pasted.filter { $0.isASCII && $0.isNumber }
-        guard !digits.isEmpty else { return }
+        let candidate = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !candidate.isEmpty,
+              candidate.count <= PasscodeService.passcodeLength,
+              candidate.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+            return
+        }
 
-        passcode = String(digits.prefix(PasscodeService.passcodeLength))
+        passcode = candidate
         isKeypadFocused = true
     }
     #endif

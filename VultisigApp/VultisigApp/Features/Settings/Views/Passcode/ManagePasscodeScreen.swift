@@ -15,6 +15,9 @@ struct ManagePasscodeScreen: View {
     @State private var biometricAvailability: BiometricAvailability = .available
     @State private var biometricError: String?
     @State private var showDisable = false
+    /// Raised while the remove flow is actually rewriting key material, which is
+    /// the one stretch the sheet must not be dismissable over.
+    @State private var isRemoving = false
 
     private let service: PasscodeService
 
@@ -57,8 +60,12 @@ struct ManagePasscodeScreen: View {
         }
         .screenTitle("passcodeManageTitle".localized)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
-        .crossPlatformSheet(isPresented: $showDisable) {
-            DisablePasscodeScreen(isPresented: $showDisable)
+        // Not dismissable mid-removal. The swipe and the backdrop tap are
+        // refused for the same reason the close button is disabled: leaving does
+        // not stop the transition, it only means this list re-reads the passcode
+        // while it is still there and never hears that it went.
+        .crossPlatformSheet(isPresented: $showDisable, isDismissable: !isRemoving) {
+            DisablePasscodeScreen(isPresented: $showDisable, isRemoving: $isRemoving)
                 .presentationDragIndicator(.visible)
         }
         // `.onAppear` as well as `.task`: returning from the pushed set/change

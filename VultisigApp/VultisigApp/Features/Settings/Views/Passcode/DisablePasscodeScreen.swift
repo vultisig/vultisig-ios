@@ -25,6 +25,16 @@ struct DisablePasscodeScreen: View {
     /// one thing both sheet implementations agree on.
     @Binding var isPresented: Bool
 
+    /// Mirrors the removal being in flight up to the presenter, which is the
+    /// only place that can refuse the swipe and the backdrop tap.
+    ///
+    /// Removal rewrites every stored key share. Walking out of it does not
+    /// cancel it — the work is an unstructured task that outlives this screen —
+    /// it only means the settings list refreshes while the passcode is still
+    /// there and never hears that it went, so it goes on offering to change a
+    /// passcode that no longer exists.
+    @Binding var isRemoving: Bool
+
     var body: some View {
         Screen {
             PasscodeEntryView(
@@ -55,7 +65,11 @@ struct DisablePasscodeScreen: View {
                 ToolbarButton(image: .xmark) {
                     isPresented = false
                 }
+                .disabled(viewModel.isBusy)
             }
+        }
+        .onChange(of: viewModel.isBusy) { _, isBusy in
+            isRemoving = isBusy
         }
         .onChange(of: viewModel.didFinish) { _, finished in
             guard finished else { return }
