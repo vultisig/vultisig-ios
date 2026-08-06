@@ -28,9 +28,22 @@ struct VultisigLogoAnimation: View {
     @ViewBuilder
     private var content: some View {
         if isStatic {
-            Image("vultisig-logo")
-                .resizable()
-                .scaledToFit()
+            VStack(spacing: 12) {
+                // Bounded rather than free-scaling. Left to `scaledToFit` alone
+                // the mark took whatever width the container offered, which on
+                // the privacy cover meant a logo the height of the screen.
+                Image("vultisig-logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 100, maxHeight: 100)
+                // The wordmark the animation ends on, so the static stand-in
+                // reads as the same screen rather than a cropped version of it.
+                // Not localized: it is the product's name, matching
+                // `QRShareSheetImage`.
+                Text("Vultisig")
+                    .font(Theme.fonts.title2)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
         } else {
             animationVM?.view()
         }
