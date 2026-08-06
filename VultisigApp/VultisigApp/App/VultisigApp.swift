@@ -212,12 +212,18 @@ extension VultisigApp {
                         SwapTrackingRegistry.shared.setActiveOnAll(true)
                         await SwapTrackingRegistry.shared.resumeAllInFlight()
                     }
+                case .inactive:
+                    // Before `.background`, and that is the whole reason it is
+                    // here: the app-switcher snapshot is taken around this
+                    // phase, so a cover raised at `.background` is raised after
+                    // the picture of the wallet has been taken.
+                    appViewModel.coverForPrivacy()
                 case .background:
                     resetLogin()
                     Task { @MainActor in
                         SwapTrackingRegistry.shared.setActiveOnAll(false)
                     }
-                default:
+                @unknown default:
                     break
                 }
             }

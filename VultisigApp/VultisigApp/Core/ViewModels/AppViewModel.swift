@@ -20,6 +20,19 @@ class AppViewModel: ObservableObject {
     @Published var isAuthenticated = false
     /// Whether the passcode lock screen should be covering the app.
     @Published var isPasscodeLocked = false
+    /// Bumped every time the gate goes up, and used as the lock screen's
+    /// identity so each raise gets a brand new one.
+    ///
+    /// Without it the lock screen is only *usually* new. A gate raised again
+    /// while the previous one is still fading out is a re-insertion of a view
+    /// SwiftUI may still be holding, and it comes back with the finished flag
+    /// from the unlock that was dismissing it — so the next successful entry
+    /// sets `didFinish` from `true` to `true`, `onChange` never fires, and a
+    /// perfectly good passcode stops taking the screen down. A force quit is
+    /// the only way out of that, which is the worst failure this screen has.
+    /// Identity is what makes "new gate, new screen" true rather than likely,
+    /// and it clears the stale entry text and error message with it.
+    @Published private(set) var passcodeGateGeneration = 0
     @Published var showSplashView = true
     @Published var didUserCancelAuthentication = false
     @Published var canLogin = true
@@ -197,6 +210,23 @@ class AppViewModel: ObservableObject {
         lockService.noteBackgrounded()
     }
 
+    /// Puts the logo over the app without touching any lock bookkeeping.
+    ///
+    /// `.inactive` is not `.background`, and the difference matters in both
+    /// directions. It is the phase the system takes its app-switcher snapshot
+    /// in, so a cover raised only at `.background` is raised *after* the picture
+    /// of the balances has already been taken — and it is also what fires for a
+    /// Control Centre pull or an incoming call, where the app has not gone
+    /// anywhere.
+    ///
+    /// So: cover, yes — that is exactly what those moments need. Timestamp, no.
+    /// `noteBackgrounded()` starts the auto-lock clock, and starting it because
+    /// somebody glanced at Control Centre would re-lock people who never left
+    /// the app.
+    func coverForPrivacy() {
+        showCover = true
+    }
+
     /// Engages the passcode lock: forgets the data key, then raises the overlay.
     ///
     /// Forgetting the key is what actually locks the app — the screen only
@@ -212,6 +242,7 @@ class AppViewModel: ObservableObject {
     /// gone up while this raised none, and the app would come back with neither.
     func raisePasscodeGate() {
         passcodeService.lock()
+        passcodeGateGeneration &+= 1
         isPasscodeLocked = true
     }
 
@@ -322,7 +353,15 @@ class AppViewModel: ObservableObject {
         let gateRequired = passcodeService.isPasscodeGateRequired
 
         if gateRequired {
-            if shouldRelock {
+            // `!isPasscodeLocked` is not an optimisation. A biometric prompt
+            // makes the app `.inactive` and then `.active` again, so this runs
+            // *during* an unlock the user is in the middle of — and at the
+            // `immediate` interval `shouldRelock` is unconditionally true.
+            // Re-raising there calls `lock()` on the session the shortcut has
+            // just opened and rebuilds the screen underneath it, which restarts
+            // the prompt: a Face ID loop with no way out. A gate that is already
+            // up needs nothing done to it.
+            if shouldRelock, !isPasscodeLocked {
                 // The lock goes up BEFORE the cover comes down. Dropping the
                 // cover first left the home screen — balances, addresses —
                 // visible for the frames it took the lock screen to mount, on

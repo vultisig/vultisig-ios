@@ -7,11 +7,6 @@ import SwiftUI
 
 /// Two steps: choose a passcode, then confirm it. A mismatch sends the user back
 /// to choosing rather than silently accepting the second entry.
-///
-/// Carries the compatibility disclosure, because this screen is where the choice
-/// is actually made. Setting a passcode encrypts every stored key share, and an
-/// older build has no way to read the result — so the cost is stated before the
-/// last digit rather than discovered later at a signing screen.
 struct SetPasscodeScreen: View {
 
     @StateObject private var viewModel = PasscodeViewModel(stage: .new)

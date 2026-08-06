@@ -164,7 +164,18 @@ struct ContentView: View {
             // background full-bleed while keeping content inside the safe area;
             // ignoring it at this level pushed the title under the Dynamic
             // Island instead.
-            .transition(.opacity)
+            //
+            // **Asymmetric, and the insertion side is the point.** A lock that
+            // fades in is a lock you can see through while it arrives: the
+            // foreground path raises the gate and drops the privacy cover in one
+            // update, so a 0.25s fade renders the home screen — balances,
+            // addresses — underneath for the whole of it. Going up is instant.
+            // Coming down still fades, because by then the app is unlocked and
+            // there is nothing left to hide.
+            .transition(.asymmetric(insertion: .identity, removal: .opacity))
+            // A raise is a new screen, never a reused one. See
+            // ``AppViewModel/passcodeGateGeneration``.
+            .id(appViewModel.passcodeGateGeneration)
         }
     }
 

@@ -47,8 +47,36 @@ final class PasscodeViewModel: ObservableObject {
 
     @Published var isBiometricUnlockAvailable = false
 
+    /// Whether the passcode field has anything to say for itself yet.
+    ///
+    /// Starts `false` on the lock screen so the keypad does not appear during
+    /// the automatic biometric attempt. With the shortcut enabled the attempt
+    /// usually succeeds, and a keypad rendered for those few hundred
+    /// milliseconds is a lock screen that flashes up and dismisses itself for
+    /// no reason the user can see — which is exactly what it looked like.
+    @Published var shouldPresentEntry = false
+
     func refreshBiometricAvailability() async {
         isBiometricUnlockAvailable = await service.isBiometricUnlockEnabled
+    }
+
+    /// The lock screen's whole opening move: offer the shortcut if there is one,
+    /// and reveal the keypad the moment that question is settled.
+    ///
+    /// `defer` rather than a line at each exit. The reveal is what stands
+    /// between the user and a screen they cannot get past, so it has to happen
+    /// on *every* path out of here — including a thrown error, and including
+    /// cancellation when the view goes away mid-attempt. A missed reveal is a
+    /// lock screen with no keypad and no way in but a force quit.
+    func beginUnlock(biometricReason: String) async {
+        defer { shouldPresentEntry = true }
+
+        await refreshBiometricAvailability()
+        guard isBiometricUnlockAvailable else { return }
+
+        // Offered immediately so the common case is one glance rather than six
+        // taps. Declining or failing falls through to the keypad below.
+        await unlockWithBiometrics(reason: biometricReason)
     }
 
     /// Attempts the shortcut, and stays quiet about the failures the user just

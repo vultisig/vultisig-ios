@@ -35,6 +35,7 @@ final class PasscodeGateWiringTests: XCTestCase {
     private var lockService: AppLockService!
     private var coordinator: KeyshareWriteCoordinator!
     private var sweeper: KeyshareSweeper!
+    private var biometricKeychain: InMemoryBiometricKeychain!
     private var biometrics: BiometricUnlockStore!
     private var service: PasscodeService!
     /// `AppViewModel`'s login flags are `@AppStorage`, so they read and write the
@@ -64,8 +65,9 @@ final class PasscodeGateWiringTests: XCTestCase {
             protector: KeyshareProtector(state: { keySession.currentState() }),
             context: { [context] in context }
         )
+        biometricKeychain = InMemoryBiometricKeychain()
         biometrics = BiometricUnlockStore(
-            keychain: InMemoryBiometricKeychain(),
+            keychain: biometricKeychain,
             biometryAvailability: { .available }
         )
         service = makeService()
@@ -87,6 +89,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         defaults.removePersistentDomain(forName: suiteName)
         service = nil
         biometrics = nil
+        biometricKeychain = nil
         sweeper = nil
         coordinator = nil
         lockService = nil
@@ -335,6 +338,140 @@ final class PasscodeGateWiringTests: XCTestCase {
 
         XCTAssertTrue(sut.isPasscodeLocked)
     }
+
+    // MARK: - The privacy cover
+
+    /// `.inactive` fires for a Control Centre pull and an incoming call as well
+    /// as for a real backgrounding. Covering is right in all of them; starting
+    /// the auto-lock clock is not, or a glance at Control Centre re-locks
+    /// somebody who never left the app.
+    func testCoveringForPrivacyDoesNotStartTheAutoLockClock() {
+        let sut = makeViewModel()
+        sut.showCover = false
+        defaults.removeObject(forKey: "lastRecordedTime")
+
+        sut.coverForPrivacy()
+
+        XCTAssertTrue(sut.showCover)
+        XCTAssertNil(
+            defaults.string(forKey: "lastRecordedTime"),
+            "covering is not leaving; the interval must not start here"
+        )
+    }
+
+    /// The other half, so the pair is not just "cover does nothing": a real
+    /// backgrounding still both covers and starts the clock.
+    func testBackgroundingCoversAndStartsTheClock() {
+        let sut = makeViewModel()
+        sut.showCover = false
+        defaults.removeObject(forKey: "lastRecordedTime")
+
+        sut.revokeAuth()
+
+        XCTAssertTrue(sut.showCover)
+        XCTAssertNotNil(defaults.string(forKey: "lastRecordedTime"))
+    }
+
+    // MARK: - A foreground that lands mid-unlock
+
+    /// The Face ID loop. A biometric prompt drives the app `.inactive` and then
+    /// `.active`, so this runs while the user is still looking at the sheet —
+    /// and at `immediate` the relock answer is unconditionally yes. Re-raising
+    /// there would `lock()` the session the shortcut is opening and rebuild the
+    /// screen underneath it, which starts the prompt again.
+    func testAForegroundDoesNotRelockAGateThatIsAlreadyUp() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.raisePasscodeGate()
+        let raisedGeneration = sut.passcodeGateGeneration
+        // Something a re-raise would destroy: the shortcut's adopted key.
+        _ = try await service.unlock(with: passcode)
+        // Without a recorded backgrounding `shouldRelock` answers "first launch,
+        // do nothing" and this passes without the guard ever being consulted.
+        lockService.noteBackgrounded()
+        XCTAssertTrue(lockService.shouldRelock(), "precondition: the interval says relock")
+
+        sut.enableAuth()
+
+        XCTAssertTrue(sut.isPasscodeLocked, "the gate stays up; it was already up")
+        XCTAssertEqual(
+            sut.passcodeGateGeneration,
+            raisedGeneration,
+            "a re-raise would rebuild the lock screen and restart the biometric prompt"
+        )
+    }
+
+    /// The half that must keep working: a foreground with no gate standing still
+    /// raises one when the interval says so.
+    func testAForegroundStillRaisesTheGateWhenNoneIsUp() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        lockService.noteBackgrounded()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: nothing is up")
+        XCTAssertTrue(lockService.shouldRelock(), "precondition: the interval says relock")
+
+        sut.enableAuth()
+
+        XCTAssertTrue(sut.isPasscodeLocked)
+    }
+
+    /// Identity, not luck. A gate raised again while the previous screen is
+    /// still fading out must not come back carrying the finished flag from the
+    /// unlock that was dismissing it — that is the state where a correct
+    /// passcode stops taking the screen down and only a force quit helps.
+    func testEachRaiseGivesTheLockScreenAFreshIdentity() {
+        let sut = makeViewModel()
+
+        sut.raisePasscodeGate()
+        let first = sut.passcodeGateGeneration
+        sut.markPasscodeUnlocked()
+        sut.raisePasscodeGate()
+
+        XCTAssertNotEqual(sut.passcodeGateGeneration, first)
+    }
+
+    // MARK: - The lock screen's opening move
+
+    /// The reported flash: with the shortcut enabled, the lock screen appeared
+    /// and dismissed itself a moment later, because the keypad rendered while
+    /// the automatic biometric attempt was still running. The keypad now waits
+    /// until that question is settled.
+    func testTheKeypadIsHiddenUntilTheBiometricAttemptResolves() async throws {
+        let viewModel = PasscodeViewModel(service: service)
+
+        XCTAssertFalse(
+            viewModel.shouldPresentEntry,
+            "a keypad on screen during the attempt is the flash this fixes"
+        )
+
+        await viewModel.beginUnlock(biometricReason: "reason")
+
+        XCTAssertTrue(viewModel.shouldPresentEntry)
+    }
+
+    /// And it reveals on *every* path, including the one where the shortcut was
+    /// offered and did not open the app. A missed reveal is a lock screen with
+    /// no keypad, which no passcode can get past.
+    func testTheKeypadIsRevealedAfterAnOfferedShortcutFailsToOpenTheApp() async throws {
+        try await service.setPasscode(passcode)
+        try await service.enableBiometricUnlock()
+        // The copy is present, so the shortcut is offered — and the wrapper it
+        // is bound to is about to stop being the one on disk, so the attempt
+        // runs and refuses rather than being skipped.
+        try await service.changePasscode(current: passcode, new: "654321")
+        biometricKeychain.failsRead = true
+        service.lock()
+
+        let viewModel = PasscodeViewModel(service: service)
+        await viewModel.beginUnlock(biometricReason: "reason")
+
+        XCTAssertFalse(viewModel.didFinish, "precondition: the shortcut did not open the app")
+        XCTAssertTrue(viewModel.shouldPresentEntry, "the passcode must still be reachable")
+    }
 }
 
 /// Lands a lock at the far side of the disable's unseal — the point past which
@@ -368,6 +505,7 @@ private final class LockingKeyshareSweeper: KeyshareSweeping {
 private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
 
     private var stored: Data?
+    var failsRead = false
 
     func store(_ data: Data, account _: String) throws {
         guard stored == nil else { throw BiometricUnlockError.storageFailed }
@@ -375,6 +513,7 @@ private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
     }
 
     func read(account _: String, prompt _: String) throws -> Data {
+        if failsRead { throw BiometricUnlockError.failed }
         guard let stored else { throw BiometricUnlockError.notEnabled }
         return stored
     }
