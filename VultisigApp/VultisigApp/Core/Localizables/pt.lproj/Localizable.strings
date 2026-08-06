@@ -1542,6 +1542,7 @@
 "vaultCreated" = "Cofre criado";
 "vaultDetailsDescription" = "Ver os detalhes do seu cofre";
 "vaultDetailsTitle" = "Detalhes";
+"vaultImportWouldOverwriteExisting" = "Este backup não pode ser importado: ele substituiria um cofre que já está neste dispositivo.";
 "vaultInfo" = "Informações do cofre";
 "vaultLibType" = "tipo de cofre";
 "vaultManagement" = "Gerenciamento de cofre";
@@ -1686,3 +1687,4 @@
 "yourVaultSetup" = "Sua configuração de cofre";
 "zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
 "zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";
+"zipImportUnsafeVaults" = "Importados %1$d cofre(s). Ignorados %2$d. %3$@ não pôde ser importado: substituiria um cofre que já está neste dispositivo.";

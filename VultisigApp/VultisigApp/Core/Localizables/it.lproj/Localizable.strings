@@ -1542,6 +1542,7 @@
 "vaultCreated" = "Vault creato";
 "vaultDetailsDescription" = "Visualizza i dettagli della tua cassaforte";
 "vaultDetailsTitle" = "Dettagli";
+"vaultImportWouldOverwriteExisting" = "Questo backup non può essere importato: sovrascriverebbe un vault già presente su questo dispositivo.";
 "vaultInfo" = "Informazioni sul Vault";
 "vaultLibType" = "Tipo di cassaforte";
 "vaultManagement" = "Gestione del caveau";
@@ -1686,3 +1687,4 @@
 "yourVaultSetup" = "La tua configurazione del vault";
 "zipImportAllDuplicates" = "Tutti i %d vault esistono già e sono stati saltati: %@.";
 "zipImportPartialSuccess" = "Importati %d vault. Saltati %d duplicati: %@.";
+"zipImportUnsafeVaults" = "Importati %1$d vault. Saltati %2$d. %3$@ non è stato importato: sovrascriverebbe un vault già presente su questo dispositivo.";
