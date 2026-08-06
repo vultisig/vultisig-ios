@@ -17,6 +17,7 @@
 
 @testable import VultisigApp
 import BigInt
+import WalletCore
 import XCTest
 
 final class SolanaV0TransactionGoldenTests: XCTestCase {
@@ -342,5 +343,83 @@ final class SolanaV0TransactionGoldenTests: XCTestCase {
     private func littleEndianUInt64(_ bytes: ArraySlice<UInt8>) -> UInt64? {
         guard bytes.count == 8 else { return nil }
         return bytes.reversed().reduce(UInt64(0)) { ($0 << 8) | UInt64($1) }
+    }
+}
+
+// MARK: - Why the compute budget is injected locally
+
+/// WalletCore exposes `SolanaTransaction.setComputeUnitPrice/Limit`, which do on
+/// paper what `injectingComputeBudget` does. Preferring a library's crypto and
+/// transaction helpers over hand-rolled ones is the right default, so this
+/// records what was actually measured rather than leaving the choice to
+/// assumption.
+///
+/// **WalletCore works on these transactions.** Given the base64 v0 message with
+/// its address lookup table, both setters return a result, it is the same 592
+/// bytes long, and it simulates `err: null` on mainnet. The reason for not using
+/// it is therefore not capability.
+///
+/// **It produces a DIFFERENT transaction.** Measured 2026-08-06 against the
+/// USDC deposit vector: ours consumed 249,353 compute units and WalletCore's
+/// 250,939, so the two differ in more than encoding. That matters here more than
+/// it would elsewhere:
+///
+/// - The signed artefact is the bytes. `SolanaHelper.getPreSignedImageHashForRaw`
+///   hashes the wire message verbatim, deliberately avoiding a WalletCore proto
+///   round trip, because a one-byte re-encode drift breaks Secure Vault
+///   co-signing before any TSS message is emitted. A decode/re-encode helper
+///   reintroduces exactly that on the Kamino path.
+/// - Our injection is pinned by vectors that were simulated on mainnet, and the
+///   validator asserts the resulting instruction layout. A library upgrade that
+///   changed its output would change what both devices sign, silently.
+///
+/// Everything else on this path already uses WalletCore: `Base58`, `Hash.sha256`,
+/// `PublicKey`, and the associated-token-account derivation through
+/// `SolanaAddress.defaultTokenAddress`. Only the general program-derived address
+/// has no WalletCore equivalent at all.
+final class SolanaComputeBudgetWalletCoreParityTests: XCTestCase {
+
+    func testWalletCoreCanBudgetTheseTransactionsButNotIdentically() throws {
+        let vector = KaminoTransactionFixtures.usdcDeposit
+
+        let priced = try XCTUnwrap(
+            SolanaTransaction.setComputeUnitPrice(
+                encodedTx: vector.source,
+                price: String(KaminoTransactionFixtures.unitPriceMicroLamports)
+            ),
+            "WalletCore no longer accepts a base64 v0 transaction — the comparison below is moot"
+        )
+        let budgeted = try XCTUnwrap(
+            SolanaTransaction.setComputeUnitLimit(encodedTx: priced, limit: String(vector.unitLimit)),
+            "WalletCore no longer accepts a base64 v0 transaction — the comparison below is moot"
+        )
+
+        XCTAssertNotEqual(
+            budgeted, vector.injected,
+            "WalletCore now reproduces the mainnet-verified injected bytes exactly — "
+            + "the local editor can be reconsidered"
+        )
+
+        // It is a real transaction either way, just not ours: same length, and
+        // it simulated cleanly when this was measured.
+        XCTAssertEqual(
+            Data(base64Encoded: budgeted)?.count,
+            Data(base64Encoded: vector.injected)?.count,
+            "the two injections should at least agree on size"
+        )
+    }
+
+    /// WalletCore's Solana helpers are base58-oriented; Kamino serves base64.
+    /// Pinned because passing the wrong encoding returns `nil` rather than
+    /// throwing, which is the sort of thing that reads as "unsupported".
+    func testWalletCoreRejectsTheBase58FormOfTheSameTransaction() throws {
+        let bytes = try XCTUnwrap(Data(base64Encoded: KaminoTransactionFixtures.usdcDeposit.source))
+
+        XCTAssertNil(
+            SolanaTransaction.setComputeUnitPrice(
+                encodedTx: Base58.encodeNoCheck(data: bytes),
+                price: "20000"
+            )
+        )
     }
 }
