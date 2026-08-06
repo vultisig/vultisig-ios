@@ -1585,6 +1585,7 @@
 "vaultCreated" = "Vault created";
 "vaultDetailsDescription" = "View vault name, part and type";
 "vaultDetailsTitle" = "Details";
+"vaultImportWouldOverwriteExisting" = "This backup can't be imported: it would overwrite a vault already on this device.";
 "vaultInfo" = "Vault Info";
 "vaultLibType" = "Vault Type";
 "vaultManagement" = "Vault";
@@ -1730,3 +1731,4 @@
 "yourVaultSetup" = "Your vault setup";
 "zipImportAllDuplicates" = "All %d vault(s) already exist and were skipped: %@.";
 "zipImportPartialSuccess" = "Imported %d vault(s). Skipped %d duplicate(s): %@.";
+"zipImportUnsafeVaults" = "Imported %1$d vault(s). Skipped %2$d. %3$@ could not be imported: it would overwrite a vault already on this device.";

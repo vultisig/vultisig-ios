@@ -1585,6 +1585,7 @@
 "vaultCreated" = "Trezor stvoren";
 "vaultDetailsDescription" = "Pogledajte detalje vašeg sefa";
 "vaultDetailsTitle" = "Detalji";
+"vaultImportWouldOverwriteExisting" = "Ova sigurnosna kopija ne može se uvesti: prebrisala bi trezor koji već postoji na ovom uređaju.";
 "vaultInfo" = "Informacije o trezorima";
 "vaultLibType" = "Tip trezora";
 "vaultManagement" = "Upravljanje trezorima";
@@ -1730,3 +1731,4 @@
 "yourVaultSetup" = "Vaša postavka trezora";
 "zipImportAllDuplicates" = "Svih %d trezor(a) već postoji i preskočeno je: %@.";
 "zipImportPartialSuccess" = "Uvezeno %d trezor(a). Preskočeno %d duplikat(a): %@.";
+"zipImportUnsafeVaults" = "Uvezeno %1$d trezor(a). Preskočeno %2$d. %3$@ nije moguće uvesti: prebrisalo bi trezor koji već postoji na ovom uređaju.";

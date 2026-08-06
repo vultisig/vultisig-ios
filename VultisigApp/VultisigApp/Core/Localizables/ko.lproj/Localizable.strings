@@ -1585,6 +1585,7 @@
 "vaultCreated" = "볼트가 생성되었습니다";
 "vaultDetailsDescription" = "볼트 이름, 공유 및 유형 보기";
 "vaultDetailsTitle" = "세부 정보";
+"vaultImportWouldOverwriteExisting" = "이 백업은 가져올 수 없습니다: 이 기기에 이미 있는 볼트를 덮어쓰게 됩니다.";
 "vaultInfo" = "볼트 정보";
 "vaultLibType" = "볼트 유형";
 "vaultManagement" = "볼트";
@@ -1730,3 +1731,4 @@
 "yourVaultSetup" = "볼트 설정";
 "zipImportAllDuplicates" = "모든 볼트 %d개가 이미 존재하여 건너뛰었습니다: %@.";
 "zipImportPartialSuccess" = "%d개의 볼트를 가져왔습니다. %d개의 중복을 건너뛰었습니다: %@.";
+"zipImportUnsafeVaults" = "%1$d개의 볼트를 가져왔습니다. %2$d개를 건너뛰었습니다. %3$@은(는) 가져올 수 없습니다: 이 기기에 이미 있는 볼트를 덮어쓰게 됩니다.";
