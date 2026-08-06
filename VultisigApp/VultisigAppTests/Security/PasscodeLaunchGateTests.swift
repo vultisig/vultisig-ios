@@ -144,6 +144,54 @@ final class PasscodeLaunchGateTests: XCTestCase {
 
         XCTAssertTrue(sut.isPasscodeLocked)
     }
+
+    // MARK: - The splash, and the legacy gate behind it
+
+    /// The bug this pair exists for: the splash used to authenticate and uncover
+    /// the app before anything had decided whether to lock it.
+    ///
+    /// `authenticateUser()` is what the splash calls. With the launch gate up it
+    /// must not reach the device-auth branch — a system biometric sheet in front
+    /// of the lock screen is two gates for a user who picked one — and it must
+    /// still take the splash down, because the lock screen already covers the app
+    /// and a splash left underneath is where the launch would strand once the
+    /// passcode is accepted.
+    func testTheLegacyDeviceAuthIsNotRunWhileTheLaunchGateIsUp() {
+        lockService.mode = .passcode
+
+        let sut = makeViewModel { }
+        // `@AppStorage`, so it is standard defaults rather than this suite's and
+        // survives whatever ran before. Pinned rather than assumed.
+        sut.didAskForAuthentication = false
+        sut.restorePasscodeLockOnLaunch()
+        XCTAssertTrue(sut.isPasscodeLocked, "precondition: the gate is up")
+
+        sut.authenticateUser()
+
+        XCTAssertTrue(sut.isPasscodeLocked, "the passcode gate survives the splash's authentication")
+        XCTAssertFalse(sut.showSplashView, "the splash comes down; the lock screen is what covers the app")
+        XCTAssertFalse(
+            sut.didAskForAuthentication,
+            "reaching the device-auth branch is what sets this, and it must not be reached"
+        )
+    }
+
+    /// The other half: with no passcode gate, nothing here has changed. The
+    /// legacy path still runs, so this is not a check that the guard is simply
+    /// never taken.
+    func testTheLegacyDeviceAuthStillRunsWithNoPasscodeGate() {
+        lockService.mode = .deviceAuth
+        keychain.wrappedKeyshareDataKey = nil
+
+        let sut = makeViewModel { }
+        sut.didAskForAuthentication = false
+        sut.restorePasscodeLockOnLaunch()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: no gate")
+
+        sut.authenticateUser()
+
+        XCTAssertTrue(sut.didAskForAuthentication, "the legacy device-auth path was taken")
+    }
 }
 
 /// The launch path locks and asks about the wrapper; it never sweeps. Failing

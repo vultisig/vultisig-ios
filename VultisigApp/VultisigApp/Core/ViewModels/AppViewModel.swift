@@ -113,6 +113,29 @@ class AppViewModel: ObservableObject {
         }
         #endif
 
+        // The passcode gate is this install's lock, and the launch decision has
+        // already been made — in the app's initializer, before any view existed.
+        // Everything below is the legacy device-auth gate, and running it here
+        // would put a system Face ID sheet in front of the lock screen for a
+        // user who has already chosen a different lock.
+        //
+        // The splash comes down rather than staying up: the lock screen is an
+        // overlay above everything, so it is already covering the app, and
+        // leaving the splash underneath would strand the launch there once the
+        // passcode is accepted — `onAppear` does not fire twice.
+        //
+        // Read off the flag, not off the predicate. `enableAuth()` derives the
+        // predicate itself because it is the first thing to run after a
+        // foreground and nothing has decided yet; here something has, and asking
+        // again would be a second read that a transition on `PasscodeService`'s
+        // executor could answer differently — the two disagreeing is how the app
+        // ends up open behind no gate at all.
+        guard !isPasscodeLocked else {
+            showSplashView = false
+            didUserCancelAuthentication = false
+            return
+        }
+
         let context = LAContext()
         var error: NSError?
 
@@ -234,6 +257,15 @@ class AppViewModel: ObservableObject {
 
     /// Restores the lock on launch when a passcode is configured, so a cold start
     /// is gated rather than only a return from the background.
+    ///
+    /// **Called from `VultisigApp.init()`, before any view is built.** That is
+    /// not a detail of where it was convenient to put it. From a view's
+    /// `onAppear` this cannot win: the splash is a child of the view that would
+    /// carry the modifier, a child's `onAppear` runs first, and the splash's
+    /// first act is to authenticate and uncover the app. The gate then went up
+    /// over an already-visible home screen. Deciding before the first body is
+    /// evaluated also means the flag never transitions, so the overlay has
+    /// nothing to animate and the first frame drawn is the lock screen.
     ///
     /// **Reconciliation runs first, synchronously, and that ordering is the
     /// point.** The lock mode lives in `UserDefaults` and the wrapped data key

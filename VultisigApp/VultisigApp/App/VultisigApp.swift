@@ -44,6 +44,26 @@ struct VultisigApp: App {
             exit(0) // Exit after printing version
         }
 #endif
+        // The launch gate is decided here, before a single view exists.
+        //
+        // It used to be decided from `ContentView`'s `onLoad`, and that lost a
+        // race it could not win: `WelcomeView` is a *child* of the view carrying
+        // that modifier, SwiftUI runs a child's `onAppear` before its parent's,
+        // and the first thing `WelcomeView` does is authenticate and take the
+        // splash down. So the home screen — balances, addresses — was uncovered
+        // by the child before the parent had decided whether to lock, and the
+        // lock screen then faded in over it.
+        //
+        // Doing it in the app's initializer removes the race rather than
+        // reordering it. Stored properties with initializers run before this
+        // body, so `sharedModelContainer` has already installed
+        // `Storage.shared.modelContext` and reconciliation can read the vault
+        // store — which is the ordering `restorePasscodeLockOnLaunch()` requires
+        // and documents. And because the flag is already `true` when the first
+        // body is evaluated, there is no false-to-true transition for the
+        // overlay's animation to fade: the app's first frame is the lock screen.
+        AppViewModel.shared.restorePasscodeLockOnLaunch()
+
         // Register every swap-tracking provider with the shared registry so
         // the tx-history viewmodel and the native status poller can route by
         // `providerKind`. New providers register here.
@@ -208,11 +228,31 @@ extension VultisigApp {
                 }
                 #endif
 
-                // The Keychain outlives the app, so a reinstall can start
-                // with key material the container knows nothing about. Clears
-                // what a previous install left behind and puts the lock mode
-                // back in front of a key that survived.
-                KeyshareInstallReconciler().reconcile()
+                // Reconciliation is NOT repeated here. It ran in `init()`,
+                // strictly earlier in the same process, and the launch gate was
+                // derived from its result — so a second raw pass is not a
+                // harmless retry, it is a second decision nothing reconciles
+                // with the first. It can move the lock mode after
+                // `isPasscodeLocked` has already been settled from the old one,
+                // which leaves the app either open for the whole session with a
+                // wrapper and no gate, or behind an overlay whose passcode is
+                // gone.
+                //
+                // What is given up by dropping it is a same-launch retry, and
+                // the trade is deliberate. One of reconciliation's two deferrals
+                // genuinely cannot happen here — no transition has started by
+                // `init()`, so the lease is always free. The other one can:
+                // `storeOccupancy` reads the vault count through `try?`, and a
+                // `fetchCount` that throws still answers `.unknown` however early
+                // it is asked. In that case the inherited-material clear waits for
+                // the next cold launch while lock-mode alignment still runs, so a
+                // new container over a previous install's wrapper can sit behind a
+                // gate its passcode cannot open until the app is relaunched.
+                //
+                // That is recoverable and it is rare. A competing decision is
+                // neither: it silently leaves the app open all session with a
+                // wrapper and no gate. A retry that runs milliseconds later, from
+                // a read that just failed, is not worth buying that with.
 
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
@@ -282,11 +322,31 @@ extension VultisigApp {
                 continueLogin()
             }
             .onAppear {
-                // The Keychain outlives the app, so a reinstall can start
-                // with key material the container knows nothing about. Clears
-                // what a previous install left behind and puts the lock mode
-                // back in front of a key that survived.
-                KeyshareInstallReconciler().reconcile()
+                // Reconciliation is NOT repeated here. It ran in `init()`,
+                // strictly earlier in the same process, and the launch gate was
+                // derived from its result — so a second raw pass is not a
+                // harmless retry, it is a second decision nothing reconciles
+                // with the first. It can move the lock mode after
+                // `isPasscodeLocked` has already been settled from the old one,
+                // which leaves the app either open for the whole session with a
+                // wrapper and no gate, or behind an overlay whose passcode is
+                // gone.
+                //
+                // What is given up by dropping it is a same-launch retry, and
+                // the trade is deliberate. One of reconciliation's two deferrals
+                // genuinely cannot happen here — no transition has started by
+                // `init()`, so the lease is always free. The other one can:
+                // `storeOccupancy` reads the vault count through `try?`, and a
+                // `fetchCount` that throws still answers `.unknown` however early
+                // it is asked. In that case the inherited-material clear waits for
+                // the next cold launch while lock-mode alignment still runs, so a
+                // new container over a previous install's wrapper can sit behind a
+                // gate its passcode cannot open until the app is relaunched.
+                //
+                // That is recoverable and it is rare. A competing decision is
+                // neither: it silently leaves the app open all session with a
+                // wrapper and no gate. A retry that runs milliseconds later, from
+                // a read that just failed, is not worth buying that with.
 
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()

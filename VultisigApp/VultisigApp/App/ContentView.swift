@@ -100,9 +100,9 @@ struct ContentView: View {
         .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
         .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
         .onLoad {
-            // A cold start must be gated too, not just a return from the
-            // background.
-            appViewModel.restorePasscodeLockOnLaunch()
+            // The cold-start gate is not decided here. It is decided in
+            // `VultisigApp.init()`, because this modifier runs *after* the
+            // splash child's `onAppear` has already taken the splash down.
             pushNotificationManager.hadVaultsOnStartup = !vaults.isEmpty
 
             if vaults.isEmpty {
