@@ -56,7 +56,6 @@ struct ManagePasscodeScreen: View {
             }
         }
         .screenTitle("passcodeManageTitle".localized)
-        .screenBackground(.gradient)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .crossPlatformSheet(isPresented: $showDisable) {
             DisablePasscodeScreen()
