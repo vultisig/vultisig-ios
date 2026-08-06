@@ -82,10 +82,20 @@ struct KaminoService: KaminoServiceProtocol {
 
         try Self.assertMatchesRegistry(state: state, descriptor: descriptor)
 
-        guard let minDeposit = KaminoTokenAmount(
+        guard let publishedMinDeposit = KaminoTokenAmount(
             baseUnitString: state.minDepositAmount,
             decimals: descriptor.tokenDecimals
         ) else {
+            throw KaminoServiceError.malformedNumber(
+                field: "minDepositAmount",
+                value: state.minDepositAmount
+            )
+        }
+        // The published figures are numbers a remote service hands us, and they
+        // end up bounding what a user may spend. A non-positive or absurd one is
+        // refused rather than propagated into a minimum nothing can satisfy.
+        let minDeposit = Self.effectiveMinimumDeposit(published: publishedMinDeposit)
+        guard publishedMinDeposit.isValidRequestAmount, minDeposit.isValidRequestAmount else {
             throw KaminoServiceError.malformedNumber(
                 field: "minDepositAmount",
                 value: state.minDepositAmount
@@ -123,7 +133,7 @@ struct KaminoService: KaminoServiceProtocol {
             published: publishedMinWithdraw,
             tokensPerShare: tokensPerShare,
             shareDecimals: descriptor.sharesDecimals
-        ) else {
+        ), publishedMinWithdraw.isValidRequestAmount, minWithdraw.isValidRequestAmount else {
             throw KaminoServiceError.malformedNumber(
                 field: "minWithdrawAmount",
                 value: state.minWithdrawAmount
@@ -147,6 +157,46 @@ struct KaminoService: KaminoServiceProtocol {
             )
         )
     }
+
+    /// The smallest deposit the form may offer.
+    ///
+    /// The published `minDepositAmount` is in the right unit — unlike its
+    /// withdraw counterpart — but the program still refuses a deposit *at* it,
+    /// with `DepositAmountBelowMinimum` (custom 7026,
+    /// `vault_operations.rs:113`). Measured at one base unit of resolution:
+    /// Steakhouse USDC refuses 100,007 and accepts 100,008 against a published
+    /// 100,000; Allez SOL refuses 10,000,009 and accepts 10,000,010 against
+    /// 10,000,000. So the shortfall is a handful of base units rather than the
+    /// withdraw side's factor of two, and it moves with the share rate — the
+    /// gap is a rounding loss in the share the deposit mints, not a second
+    /// threshold.
+    ///
+    /// The margin is therefore proportional, with an absolute floor for a vault
+    /// whose minimum is small enough that a tenth of a percent rounds away. Both
+    /// bounds are generous against what was measured — 100 base units where 8
+    /// were needed, 10,000 where 10 were — and both are invisible in money: a
+    /// tenth of a percent of a ten-cent minimum.
+    ///
+    /// This also repairs the SOL vault's maximum. `maxNativeDepositLamports`
+    /// probes with exactly this amount and the preparer requires the probe to
+    /// simulate cleanly, so a probe below the program's floor made the whole
+    /// measurement throw.
+    private static func effectiveMinimumDeposit(published: KaminoTokenAmount) -> KaminoTokenAmount {
+        let proportional = (published.baseUnits + minimumDepositMarginDivisor - 1) / minimumDepositMarginDivisor
+        let margin = max(proportional, minimumDepositMarginFloor)
+        return KaminoTokenAmount(
+            baseUnits: published.baseUnits + margin,
+            decimals: published.decimals
+        )
+    }
+
+    /// A margin of one part in this many — a tenth of a percent.
+    private static let minimumDepositMarginDivisor = BigInt(1_000)
+
+    /// Smallest margin in base units, for a minimum too small for the
+    /// proportional one to clear a rounding loss. Larger than either measured
+    /// shortfall.
+    private static let minimumDepositMarginFloor = BigInt(16)
 
     /// Multiple of the published minimum a withdraw's token value must reach.
     ///
