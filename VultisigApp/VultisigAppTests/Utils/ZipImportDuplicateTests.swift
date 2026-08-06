@@ -13,6 +13,7 @@
 
 import XCTest
 import SwiftData
+import VultisigCommonData
 @testable import VultisigApp
 
 @MainActor
@@ -322,6 +323,9 @@ final class ZipImportDuplicateTests: XCTestCase {
         viewModel.multipleVaultsToImport = [incoming]
         viewModel.restoreMultipleVaults(modelContext: context, vaults: [stored])
 
+        // Save so the unique indexes are actually applied by the store, not
+        // just reasoned about in memory.
+        try context.save()
         let all = try context.fetch(FetchDescriptor<Vault>())
         XCTAssertEqual(all.count, 2, "A name-only collision must not replace the stored vault")
         XCTAssertEqual(Set(all.map(\.name)), ["Savings", "Savings (2)"])
@@ -346,6 +350,9 @@ final class ZipImportDuplicateTests: XCTestCase {
         viewModel.multipleVaultsToImport = [incoming]
         viewModel.restoreMultipleVaults(modelContext: context, vaults: [stored])
 
+        // Save so the unique indexes are actually applied by the store, not
+        // just reasoned about in memory.
+        try context.save()
         let all = try context.fetch(FetchDescriptor<Vault>())
         XCTAssertEqual(all.count, 1, "A partial key collision must be skipped, not upserted")
         XCTAssertEqual(all.first?.keyshares.map(\.keyshare), ["stored-share"])
@@ -365,9 +372,77 @@ final class ZipImportDuplicateTests: XCTestCase {
         viewModel.multipleVaultsToImport = [first, second]
         viewModel.restoreMultipleVaults(modelContext: context, vaults: [])
 
+        // Save so the unique indexes are actually applied by the store, not
+        // just reasoned about in memory.
+        try context.save()
         let all = try context.fetch(FetchDescriptor<Vault>())
         XCTAssertEqual(all.count, 2, "Two same-named vaults in one batch must both land")
         XCTAssertEqual(Set(all.map(\.name)), ["Savings", "Savings (2)"])
+    }
+
+    // The three single-vault entry points share `insertIfSafe` with the zip
+    // batch, but each is its own fund-safety call site — an accidental bypass in
+    // any of them would compile and pass a suite that only drove the batch path.
+
+    func testBakRestoreRenamesInsteadOfOverwritingAStoredVault() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let context = token.container.mainContext
+
+        let stored = storeVault(named: "Savings", key: "zzstored", in: context)
+
+        let incoming = makeVault(name: "Savings", ecdsa: "zzincoming-ecdsa", eddsa: "zzincoming-eddsa")
+        let vaultData = try incoming.mapToProtobuff().serializedData()
+
+        viewModel.restoreVaultBack(modelContext: context, vaults: [stored], vaultData: vaultData)
+
+        try context.save()
+        let all = try context.fetch(FetchDescriptor<Vault>())
+        XCTAssertEqual(Set(all.map(\.name)), ["Savings", "Savings (2)"])
+        XCTAssertEqual(survivingKeyshares(in: all), ["stored-share"])
+        XCTAssertTrue(viewModel.isVaultImported)
+    }
+
+    func testJsonRestoreSkipsAVaultSharingOnlyOnePublicKey() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let context = token.container.mainContext
+
+        let stored = storeVault(named: "Savings", key: "zzstored", in: context)
+
+        let incoming = makeVault(name: "Holidays", ecdsa: "zzstored-ecdsa", eddsa: "zzincoming-eddsa")
+        let backup = BackupVault(version: .v1, vault: incoming)
+        viewModel.decryptedContent = try JSONEncoder().encode(backup).hexString
+
+        viewModel.restoreVault(modelContext: context, vaults: [stored])
+
+        try context.save()
+        let all = try context.fetch(FetchDescriptor<Vault>())
+        XCTAssertEqual(all.count, 1, "A partial key collision must be skipped, not upserted")
+        XCTAssertEqual(survivingKeyshares(in: all), ["stored-share"])
+        XCTAssertFalse(viewModel.isVaultImported)
+        XCTAssertEqual(viewModel.alertTitle, "vaultAlreadyExists")
+    }
+
+    func testLegacyJsonRestoreRenamesInsteadOfOverwritingAStoredVault() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let context = token.container.mainContext
+
+        let stored = storeVault(named: "Savings", key: "zzstored", in: context)
+
+        // A bare `Vault` payload has no `version` key, so the new-format decode
+        // fails and the legacy fallback branch handles it.
+        let incoming = makeVault(name: "Savings", ecdsa: "zzincoming-ecdsa", eddsa: "zzincoming-eddsa")
+        viewModel.decryptedContent = try JSONEncoder().encode(incoming).hexString
+
+        viewModel.restoreVault(modelContext: context, vaults: [stored])
+
+        try context.save()
+        let all = try context.fetch(FetchDescriptor<Vault>())
+        XCTAssertEqual(Set(all.map(\.name)), ["Savings", "Savings (2)"])
+        XCTAssertEqual(survivingKeyshares(in: all), ["stored-share"])
+        XCTAssertTrue(viewModel.isVaultImported)
     }
 
     // MARK: - Helpers
@@ -378,6 +453,19 @@ final class ZipImportDuplicateTests: XCTestCase {
         vault.pubKeyEdDSA = eddsa
         vault.publicKeyMLDSA44 = mldsa
         return vault
+    }
+
+    /// A stored vault holding one key share, so a test can assert the share
+    /// survived rather than being upserted away with its owner.
+    private func storeVault(named name: String, key: String, in context: ModelContext) -> Vault {
+        let vault = makeVault(name: name, ecdsa: "\(key)-ecdsa", eddsa: "\(key)-eddsa")
+        vault.keyshares = [KeyShare(pubkey: "\(key)-ecdsa", keyshare: "stored-share")]
+        context.insert(vault)
+        return vault
+    }
+
+    private func survivingKeyshares(in vaults: [Vault]) -> [String] {
+        vaults.flatMap { $0.keyshares.map(\.keyshare) }.filter { $0 == "stored-share" }
     }
 
     /// `VaultDefaultCoinService` only derives default coins for a vault with no
