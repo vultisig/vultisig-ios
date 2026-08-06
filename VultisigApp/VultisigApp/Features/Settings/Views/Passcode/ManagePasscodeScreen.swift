@@ -65,16 +65,24 @@ struct ManagePasscodeScreen: View {
         // offering "Set passcode" after one had just been set.
         .task { await refresh() }
         .onAppear { Task { await refresh() } }
-        // And the navigation path on top of both, because on macOS neither
-        // lifecycle callback fires when a pushed screen pops: this view is never
-        // torn down, so it keeps the `isSet` it was built with and goes on
-        // offering "Set passcode" over a passcode that now exists. The path is
-        // the one thing that provably changes when the set or change screen
-        // dismisses itself, and it is published, so a live subscription hears it
-        // whether or not the view is told it reappeared.
+        // And the navigation path on top of both, but only where the two above
+        // are not enough: on macOS neither lifecycle callback fires when a
+        // pushed screen pops, and this view is not torn down either, so it keeps
+        // the `isSet` it was built with and goes on offering "Set passcode" over
+        // a passcode that now exists. The path is the one thing that provably
+        // changes when the set or change screen dismisses itself, and it is
+        // published, so a live subscription hears the return whether or not the
+        // view is told it reappeared.
+        //
+        // Confined to macOS because it is not free: `Published` replays on
+        // subscribe and fires again for every push and pop anywhere in the
+        // stack, so on iOS — where `.onAppear` already works — it would only add
+        // Keychain and biometry reads for a screen that is often not on top.
+        #if os(macOS)
         .onReceive(router.$navPath) { _ in
             Task { await refresh() }
         }
+        #endif
         .onChange(of: showDisable) { _, isShowing in
             guard !isShowing else { return }
             Task { await refresh() }

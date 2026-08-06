@@ -91,16 +91,24 @@ struct PasscodeEntryView: View {
         .focusEffectDisabled()
         .focused($isKeypadFocused)
         .onAppear { isKeypadFocused = true }
-        .onKeyPress(phases: .down) { handleKeyPress($0) }
+        .onKeyPress(phases: [.down, .repeat]) { handleKeyPress($0) }
         #endif
     }
 
+    /// Both labels are fixed vertically so they wrap to whatever height they
+    /// need instead of being compressed into one truncated line. The keypad is
+    /// tall and the spacers around it are greedy, so on a short window — the
+    /// remove-passcode sheet on macOS is the shortest — the layout will
+    /// otherwise take the height back out of the text, and the sentence
+    /// explaining what removing a passcode costs is the last thing that should
+    /// end in an ellipsis.
     private var header: some View {
         VStack(spacing: 8) {
             Text(title)
                 .font(Theme.fonts.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .id(title)
                 .transition(.opacity.combined(with: .move(edge: .top)))
 
@@ -109,6 +117,7 @@ struct PasscodeEntryView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .id(subtitle)
                     .transition(.opacity)
             }
@@ -192,20 +201,39 @@ struct PasscodeEntryView: View {
     }
 
     #if os(macOS)
-    /// Routes a hardware key to the same two operations the on-screen keys call,
-    /// so typing and clicking cannot diverge.
+    /// Routes a hardware key to the same operations the on-screen keys call, so
+    /// typing and clicking cannot diverge.
     ///
-    /// ASCII digits only, which is what ``PasscodeService/validate(_:)`` accepts
-    /// and what the pad can produce. A keyboard laid out for Arabic-Indic digits
-    /// would otherwise enter a passcode that could never be typed on the phone
-    /// this vault is also on.
+    /// ASCII digits only, which is what `PasscodeService` accepts and what the
+    /// pad can produce. A keyboard laid out for Arabic-Indic digits would
+    /// otherwise enter a passcode that could never be typed on the phone this
+    /// vault is also on.
+    ///
+    /// Modifiers have to be inspected because `characters` reports the key with
+    /// them stripped. Without that check ⌘1 — a window shortcut nobody aims at a
+    /// passcode — enters a digit and spends one of the throttled attempts.
+    /// `.numericPad` is deliberately allowed: macOS sets it on the keypad keys
+    /// themselves, so rejecting it would reject the one keyboard someone is most
+    /// likely to type six digits on.
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
-        if press.key == .delete || press.key == .deleteForward {
+        if press.modifiers.contains(.command) {
+            guard press.characters == "v" else { return .ignored }
+            paste()
+            return .handled
+        }
+
+        let isDelete = press.key == .delete || press.key == .deleteForward
+        // Held keys repeat for delete only. A held digit would fill all six
+        // places and submit an entry the user never finished typing.
+        guard press.phase == .down || isDelete else { return .ignored }
+
+        if isDelete {
             deleteLast()
             return .handled
         }
 
-        guard press.characters.count == 1,
+        guard press.modifiers.subtracting([.shift, .capsLock, .numericPad]).isEmpty,
+              press.characters.count == 1,
               let digit = press.characters.first,
               digit.isASCII, digit.isNumber else {
             return .ignored
@@ -213,6 +241,22 @@ struct PasscodeEntryView: View {
 
         append(String(digit))
         return .handled
+    }
+
+    /// ⌘V, which the text field this replaced got for free.
+    ///
+    /// Filtered exactly as a typed digit is, and truncated rather than refused —
+    /// a six-digit code copied with a trailing newline is still the code the
+    /// user meant. Landing a full-length value here completes the entry through
+    /// the same `onChange` a typed sixth digit does.
+    private func paste() {
+        guard !isBusy, let pasted = ClipboardManager.pasteFromClipboard() else { return }
+
+        let digits = pasted.filter { $0.isASCII && $0.isNumber }
+        guard !digits.isEmpty else { return }
+
+        passcode = String(digits.prefix(PasscodeService.passcodeLength))
+        isKeypadFocused = true
     }
     #endif
 }
