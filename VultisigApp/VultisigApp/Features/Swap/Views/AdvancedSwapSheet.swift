@@ -85,13 +85,62 @@ struct AdvancedSwapSheet: View {
         }
     }
 
-    /// Main-sheet height grows with the optional rows it renders: the Gas Limit
-    /// row (EVM only) and the Select route row (provider selection available).
     private var mainDetentHeight: CGFloat {
-        var height: CGFloat = 260
-        if isGasLimitSupported { height += 70 }
-        if vm.canSelectProvider { height += 70 }
-        return height
+        Self.mainDetentHeight(
+            isGasLimitSupported: isGasLimitSupported,
+            canSelectProvider: vm.canSelectProvider,
+            isSecuredMint: vm.isSecuredMint
+        )
+    }
+
+    /// Fixed heights the main state is built from. The detent sizes the content
+    /// area — the system adds the bottom safe area on top of it — so everything
+    /// the card needs has to be accounted for here, the inset below it included:
+    /// content is top-aligned, so anything that doesn't fit is clipped by the
+    /// sheet edge rather than compressed.
+    enum MainLayout {
+        /// The header, plus headroom. The header itself measures 76pt; the rest
+        /// absorbs a row wrapping onto a second line, which a long title does in
+        /// several locales (and in English once the External Recipient row shows
+        /// an address). Unused headroom only ever becomes extra space below the
+        /// card, so it's cheaper than clipping the card when a row grows.
+        static let chrome: CGFloat = 120
+        /// One `AdvancedSwapMainRow` — 68pt on one line — plus its 1pt separator.
+        static let rowHeight: CGFloat = 70
+        /// Gap below the card, mirroring its horizontal inset so the card reads
+        /// as inset on all four sides instead of clipped by the sheet edge.
+        static let cardInset: CGFloat = 16
+    }
+
+    /// Rows the card renders. Mirrors the conditions in `mainView` and has to
+    /// stay in step with them: Slippage is always shown, Gas Limit is EVM-only,
+    /// Select route needs more than one quote to pick from, and a secured mint
+    /// drops External Recipient.
+    static func mainRowCount(
+        isGasLimitSupported: Bool,
+        canSelectProvider: Bool,
+        isSecuredMint: Bool
+    ) -> Int {
+        var rows = 1
+        if isGasLimitSupported { rows += 1 }
+        if canSelectProvider { rows += 1 }
+        if !isSecuredMint { rows += 1 }
+        return rows
+    }
+
+    /// Main-sheet height: fixed chrome, one row per row the card actually
+    /// renders, and the inset that keeps the card off the sheet's bottom edge.
+    static func mainDetentHeight(
+        isGasLimitSupported: Bool,
+        canSelectProvider: Bool,
+        isSecuredMint: Bool
+    ) -> CGFloat {
+        let rows = mainRowCount(
+            isGasLimitSupported: isGasLimitSupported,
+            canSelectProvider: canSelectProvider,
+            isSecuredMint: isSecuredMint
+        )
+        return MainLayout.chrome + CGFloat(rows) * MainLayout.rowHeight + MainLayout.cardInset
     }
 
     private var mainView: some View {
@@ -152,6 +201,7 @@ struct AdvancedSwapSheet: View {
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
             .padding(.horizontal, 16)
+            .padding(.bottom, MainLayout.cardInset)
         }
     }
 
