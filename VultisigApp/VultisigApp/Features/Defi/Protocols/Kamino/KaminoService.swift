@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import BigInt
 import Foundation
 import OSLog
 
@@ -88,11 +89,12 @@ struct KaminoService: KaminoServiceProtocol {
             )
         }
 
-        // Share base units, not token base units — the two decimal scales differ
-        // on the SOL vault (9 vs 6).
-        guard let minWithdraw = KaminoShareAmount(
+        // TOKEN base units. The field's name suggests a share count and the two
+        // scales differ on the SOL vault (9 vs 6), so reading it wrong is silent
+        // — see `effectiveMinimumWithdraw` for how that was established.
+        guard let publishedMinWithdraw = KaminoTokenAmount(
             baseUnitString: state.minWithdrawAmount,
-            decimals: descriptor.sharesDecimals
+            decimals: descriptor.tokenDecimals
         ) else {
             throw KaminoServiceError.malformedNumber(
                 field: "minWithdrawAmount",
@@ -114,6 +116,17 @@ struct KaminoService: KaminoServiceProtocol {
             )
         }
 
+        guard let minWithdraw = Self.effectiveMinimumWithdraw(
+            published: publishedMinWithdraw,
+            tokensPerShare: tokensPerShare,
+            shareDecimals: descriptor.sharesDecimals
+        ) else {
+            throw KaminoServiceError.malformedNumber(
+                field: "minWithdrawAmount",
+                value: state.minWithdrawAmount
+            )
+        }
+
         return KaminoVaultInfo(
             descriptor: descriptor,
             name: state.name,
@@ -129,6 +142,57 @@ struct KaminoService: KaminoServiceProtocol {
                 decimalString: metrics.tokensAvailable,
                 decimals: descriptor.tokenDecimals
             )
+        )
+    }
+
+    /// Multiple of the published minimum a withdraw's token value must reach.
+    ///
+    /// The measured floor sits just above two; the third is margin, because the
+    /// rule below is a reading of observed behaviour rather than a documented
+    /// contract.
+    static let minimumWithdrawMultiple = BigInt(3)
+
+    /// The smallest withdraw the form may offer, in SHARE base units.
+    ///
+    /// Deliberately **not** `state.minWithdrawAmount` converted, and that is the
+    /// whole point of this function. Two things about that field were
+    /// established by simulating the transactions the API builds, at one base
+    /// unit of resolution:
+    ///
+    /// 1. **It is denominated in the underlying TOKEN, not in shares.** The
+    ///    withdraw endpoint itself takes shares, which is what made the opposite
+    ///    reading look right, and on the dollar vaults the rate is near 1 so the
+    ///    two readings are within rounding of each other. On the SOL vault they
+    ///    differ by a factor of about 930.
+    /// 2. **The program's floor is higher than the published figure.** A
+    ///    withdraw whose token value does not exceed twice the published amount
+    ///    is refused on chain with `WithdrawAmountBelowMinimum`. Steakhouse USDC
+    ///    refuses 1898 share base units (worth 2000.2 tokens) and accepts 1899
+    ///    (2001.3); Allez SOL refuses 1861 (2000.9 lamports) and accepts 1862
+    ///    (2002.0). Both withdraw shapes — the farm-staked one and the short one
+    ///    — share the boundary, so it belongs to the vault withdraw and not to
+    ///    the farm release.
+    ///
+    /// Read as shares, the published figure is roughly half of what the chain
+    /// will accept, so the form advertised a minimum, accepted it, and then
+    /// failed at the simulation gate with an error about an amount the user had
+    /// been told was allowed. Nothing was ever at risk — that gate is what
+    /// caught it — but the number on screen was wrong.
+    ///
+    /// Rounded up, because a share count worth fractionally less than the
+    /// minimum is exactly the failure being fixed.
+    private static func effectiveMinimumWithdraw(
+        published: KaminoTokenAmount,
+        tokensPerShare: KaminoRate,
+        shareDecimals: Int
+    ) -> KaminoShareAmount? {
+        let required = KaminoTokenAmount(
+            baseUnits: published.baseUnits * minimumWithdrawMultiple,
+            decimals: published.decimals
+        )
+        return required.shareAmountRoundedUp(
+            tokensPerShare: tokensPerShare,
+            shareDecimals: shareDecimals
         )
     }
 

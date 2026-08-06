@@ -70,9 +70,10 @@ final class KaminoAmountTests: XCTestCase {
         let minDeposit = KaminoTokenAmount(baseUnitString: "100000", decimals: 6)
         XCTAssertEqual(minDeposit?.apiString, "0.1")
 
-        // The withdraw minimum is in SHARE base units — a distinct type so it can
-        // never be compared against a token amount by accident.
-        let minWithdraw = KaminoShareAmount(baseUnitString: "1000", decimals: 6)
+        // BOTH published minimums are TOKEN figures, despite the withdraw
+        // endpoint taking shares. What the form offers is derived from this one
+        // rather than parsed as a share count — see `KaminoServiceTests`.
+        let minWithdraw = KaminoTokenAmount(baseUnitString: "1000", decimals: 6)
         XCTAssertEqual(minWithdraw?.apiString, "0.001")
     }
 

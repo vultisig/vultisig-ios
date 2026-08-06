@@ -46,6 +46,61 @@ final class KaminoServiceTests: XCTestCase {
         XCTAssertEqual(response.state.performanceFeeBps, 500)
     }
 
+    /// `minWithdrawAmount` is a TOKEN figure, and the chain refuses a withdraw
+    /// worth less than twice it — measured on both vaults at one base unit of
+    /// resolution: Steakhouse refuses 1898 share base units and accepts 1899,
+    /// Allez refuses 1861 and accepts 1862.
+    ///
+    /// Reading it as a share count, which is what the field's name suggests,
+    /// produced 1000 — below both floors — so the withdraw form advertised a
+    /// minimum the chain rejects. This pins the derivation and the margin: the
+    /// result must clear the measured floor, and it must not run away from it
+    /// either, since it is the smallest amount a user can take out.
+    func test_fetchVaultInfo_derivesTheWithdrawMinimumFromTheTokenFigure() async throws {
+        http.queueJSON(Fixtures.allezState, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+        let allez = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+
+        XCTAssertEqual(allez.minWithdraw.baseUnits, 2_791)
+        XCTAssertGreaterThan(allez.minWithdraw.baseUnits, 1_862, "below the measured Allez floor")
+        XCTAssertLessThan(allez.minWithdraw.baseUnits, 1_862 * 2, "more margin than the measurement justifies")
+
+        // The published figure read the old way, for contrast: the same "1000"
+        // as a share count is little more than half of what executes.
+        XCTAssertLessThan(
+            BigInt(1_000), allez.minWithdraw.baseUnits,
+            "the derivation must not reproduce the published figure as a share count"
+        )
+
+        http.queueJSON(Fixtures.steakhouseState, for: .state)
+        http.queueJSON(Fixtures.steakhouseMetrics, for: .metrics)
+        let steakhouse = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        XCTAssertEqual(steakhouse.minWithdraw.baseUnits, 2_847)
+        XCTAssertGreaterThan(steakhouse.minWithdraw.baseUnits, 1_899, "below the measured Steakhouse floor")
+        XCTAssertLessThan(steakhouse.minWithdraw.baseUnits, 1_899 * 2, "more margin than the measurement justifies")
+    }
+
+    /// The rounding direction is a correctness property, not a preference: a
+    /// share count worth fractionally less than the minimum is exactly the
+    /// failure this whole derivation exists to prevent.
+    func test_effectiveWithdrawMinimum_roundsUpRatherThanTruncating() throws {
+        // 3 × 1000 token base units at a rate that does not divide evenly.
+        let required = KaminoTokenAmount(baseUnits: BigInt(3_000), decimals: 9)
+        let rate = try XCTUnwrap(KaminoRate(apiString: "0.0010749299151180878396"))
+
+        let roundedUp = try XCTUnwrap(required.shareAmountRoundedUp(tokensPerShare: rate, shareDecimals: 6))
+        let truncated = try XCTUnwrap(required.shareAmount(tokensPerShare: rate, shareDecimals: 6))
+
+        XCTAssertEqual(roundedUp.baseUnits, 2_791)
+        XCTAssertEqual(truncated.baseUnits, 2_790, "the exact quotient falls between the two")
+        XCTAssertGreaterThan(
+            try XCTUnwrap(roundedUp.tokenValue(tokensPerShare: rate, tokenDecimals: 9)).baseUnits,
+            BigInt(3_000) - 1,
+            "rounded up, the share count is still worth the minimum it was derived from"
+        )
+    }
+
     func test_fetchVaultInfo_mergesRegistryWithLiveStateAndMetrics() async throws {
         http.queueJSON(Fixtures.allezState, for: .state)
         http.queueJSON(Fixtures.allezMetrics, for: .metrics)
@@ -59,7 +114,10 @@ final class KaminoServiceTests: XCTestCase {
         XCTAssertEqual(info.tokenDecimals, 9)
         XCTAssertEqual(info.shareDecimals, 6)
         XCTAssertEqual(info.minDeposit.apiString, "0.01")
-        XCTAssertEqual(info.minWithdraw.apiString, "0.001")
+        // NOT the published "1000" read as shares. That figure is a TOKEN amount
+        // and the program's floor is above it — see
+        // `test_fetchVaultInfo_derivesTheWithdrawMinimumFromTheTokenFigure`.
+        XCTAssertEqual(info.minWithdraw.apiString, "0.002791")
         XCTAssertTrue(info.hasFarm, "all three launch vaults auto-stake shares into a farm")
         XCTAssertEqual(info.apy30d, KaminoDecimal.parse("0.066908831669281033201"))
         XCTAssertEqual(info.tokensPerShare, KaminoRate(apiString: "0.0010749299151180878396"))
@@ -350,6 +408,16 @@ private enum Fixtures {
      "vaultLookupTable":"7EzosNioQ6FDNvMKLfg6om5wTVHiJo9vVx7DZNGYBKU3",
      "vaultFarm":"H6kauPaHmNqpdKtD5U2zw3Eb28ZB7iMeBdHVfLq1i4Kh",
      "performanceFeeBps":500,"managementFeeBps":0}}
+    """
+
+    /// Captured alongside the state above. The rate is what makes the token/share
+    /// distinction visible on a dollar vault: it is near 1, so reading
+    /// `minWithdrawAmount` in the wrong unit is off by only ~5% here — and by a
+    /// factor of ~930 on the SOL vault.
+    static let steakhouseMetrics = """
+    {"apy30d":"0.039385625354500915856","tokensPerShare":"1.053852800799466169",
+     "sharePrice":"1.053852800799466169","tokenPrice":"0.99987",
+     "tokensAvailable":"72296.121119","tokensInvested":"19825431.882"}
     """
 
     static let allezMetrics = """
