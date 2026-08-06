@@ -65,6 +65,16 @@ struct ManagePasscodeScreen: View {
         // offering "Set passcode" after one had just been set.
         .task { await refresh() }
         .onAppear { Task { await refresh() } }
+        // And the navigation path on top of both, because on macOS neither
+        // lifecycle callback fires when a pushed screen pops: this view is never
+        // torn down, so it keeps the `isSet` it was built with and goes on
+        // offering "Set passcode" over a passcode that now exists. The path is
+        // the one thing that provably changes when the set or change screen
+        // dismisses itself, and it is published, so a live subscription hears it
+        // whether or not the view is told it reappeared.
+        .onReceive(router.$navPath) { _ in
+            Task { await refresh() }
+        }
         .onChange(of: showDisable) { _, isShowing in
             guard !isShowing else { return }
             Task { await refresh() }
