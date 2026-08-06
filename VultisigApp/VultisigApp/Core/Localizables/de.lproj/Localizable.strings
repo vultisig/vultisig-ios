@@ -1542,6 +1542,7 @@
 "vaultCreated" = "Tresor erstellt";
 "vaultDetailsDescription" = "Details zu deinem Tresor ansehen";
 "vaultDetailsTitle" = "Tresor-Details";
+"vaultImportWouldOverwriteExisting" = "Dieses Backup kann nicht importiert werden: Es würde einen bereits auf diesem Gerät vorhandenen Tresor überschreiben.";
 "vaultInfo" = "Vault -Info";
 "vaultLibType" = "Tresortyp";
 "vaultManagement" = "Tresorverwaltung";
@@ -1686,3 +1687,4 @@
 "yourVaultSetup" = "Ihre Tresor-Einrichtung";
 "zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
 "zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
+"zipImportUnsafeVaults" = "%1$d Tresor(e) importiert. %2$d übersprungen. %3$@ konnte nicht importiert werden: Es würde einen bereits auf diesem Gerät vorhandenen Tresor überschreiben.";
