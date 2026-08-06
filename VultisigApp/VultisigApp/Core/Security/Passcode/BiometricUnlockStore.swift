@@ -346,18 +346,50 @@ struct BiometricKeychain: BiometricKeychainProtecting {
     }
 
     func exists(account: String) -> Bool {
-        // Deliberately does not read the data: presence must be checkable
-        // without prompting for a face every time a settings screen appears.
+        // Presence must be checkable without prompting for a face every time a
+        // settings screen appears — but **not** by skipping the item, which is
+        // what asking for it used to do.
+        //
+        // `kSecUseAuthenticationUISkip` does what it says: it *silently skips*
+        // every item that requires authentication. Ours requires exactly that,
+        // so the search excluded it and answered `errSecItemNotFound` — and this
+        // returned `false` for a copy that was sitting right there. Enabling the
+        // shortcut on a real device therefore stored the key, threw nothing, and
+        // then reported itself off; the switch snapped back with no error to
+        // show. The old `errSecInteractionNotAllowed` branch was describing a
+        // different flag's behaviour and could never be reached.
+        //
+        // Two things now keep it from prompting. The query asks for *attributes*
+        // and never the data — the access control guards the secret, not the
+        // fact that a row exists — and the context refuses interaction outright
+        // if some OS version decides otherwise. A refusal still answers the
+        // question: an item that declined to authenticate is an item that is
+        // there.
+        let context = LAContext()
+        context.interactionNotAllowed = true
+
         let query: [String: Any] = [
             String(kSecClass): String(kSecClassGenericPassword),
             String(kSecAttrAccount): account,
-            String(kSecReturnData): kCFBooleanFalse as Any,
-            String(kSecUseAuthenticationUI): kSecUseAuthenticationUISkip
+            String(kSecReturnAttributes): kCFBooleanTrue as Any,
+            String(kSecMatchLimit): String(kSecMatchLimitOne),
+            String(kSecUseAuthenticationContext): context
         ]
 
         let status = SecItemCopyMatching(query as CFDictionary, nil)
-        // `interactionNotAllowed` means the item exists but needs authentication,
-        // which is exactly the state we are asking about.
-        return status == errSecSuccess || status == errSecInteractionNotAllowed
+
+        switch status {
+        case errSecSuccess, errSecInteractionNotAllowed:
+            return true
+        case errSecItemNotFound:
+            return false
+        default:
+            // Neither present nor confirmed absent. Answering `false` is the
+            // safe direction — it under-reports the shortcut rather than
+            // claiming one exists — but it is a guess, and the last time this
+            // function guessed it cost a device-only bug that no test could see.
+            logger.error("Biometric data key presence check failed: \(status, privacy: .public)")
+            return false
+        }
     }
 }
