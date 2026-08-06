@@ -110,8 +110,8 @@ final class DefaultKeyshareKeyStore: KeyshareKeyStoring {
     /// PBKDF2 at 600k iterations costs roughly half a second, so both of these
     /// run off the calling thread the way `VaultBackupEncryption` does.
     ///
-    /// The stretching is not what makes the wrap strong — a 5-digit passcode is
-    /// only ~16.6 bits however it is stretched, and an attacker who can read the
+    /// The stretching is not what makes the wrap strong — a 6-digit passcode is
+    /// only ~19.9 bits however it is stretched, and an attacker who can read the
     /// wrapped blob out of the Keychain already owns the device. What it buys is
     /// a throttle on the in-app guessing path.
     func wrap(_ key: SymmetricKey, passcode: String) async throws -> Data {

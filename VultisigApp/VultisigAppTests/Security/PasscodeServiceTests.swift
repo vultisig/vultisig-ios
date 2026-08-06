@@ -33,8 +33,8 @@ final class PasscodeServiceTests: XCTestCase {
     /// clock-vs-uptime interaction is observable.
     private var uptime: TimeInterval = 1_000
 
-    private let passcode = "12345"
-    private let newPasscode = "98765"
+    private let passcode = "123456"
+    private let newPasscode = "987654"
     private let share = "eyJrZXlzaGFyZSI6ImRrbHMifQ=="
     private let otherShare = "eyJrZXlzaGFyZSI6ImRrbHMtdHdvIn0="
 
@@ -149,7 +149,7 @@ final class PasscodeServiceTests: XCTestCase {
     }
 
     func testSetPasscodeRejectsAWrongLength() async throws {
-        for candidate in ["1234", "123456", "abcde", ""] {
+        for candidate in ["12345", "1234567", "abcdef", ""] {
             do {
                 try await sut.setPasscode(candidate)
                 XCTFail("Expected .invalidLength for \(candidate)")
@@ -448,7 +448,7 @@ final class PasscodeServiceTests: XCTestCase {
         sut.lock()
 
         do {
-            try await sut.unlock(with: "00000")
+            try await sut.unlock(with: "000000")
             XCTFail("Expected .wrongPasscode")
         } catch {
             XCTAssertEqual(error as? PasscodeError, .wrongPasscode)
@@ -743,7 +743,7 @@ final class PasscodeServiceTests: XCTestCase {
         let wrappedBefore = keyStore.loadWrappedDataKey()
 
         do {
-            try await sut.changePasscode(current: "00000", new: newPasscode)
+            try await sut.changePasscode(current: "000000", new: newPasscode)
             XCTFail("Expected .wrongPasscode")
         } catch {
             XCTAssertEqual(error as? PasscodeError, .wrongPasscode)
@@ -808,7 +808,7 @@ final class PasscodeServiceTests: XCTestCase {
         let sealed = try storedShares()
 
         do {
-            try await sut.disablePasscode(current: "00000")
+            try await sut.disablePasscode(current: "000000")
             XCTFail("Expected .wrongPasscode")
         } catch {
             XCTAssertEqual(error as? PasscodeError, .wrongPasscode)
@@ -969,7 +969,7 @@ final class PasscodeServiceTests: XCTestCase {
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         for _ in 0...PasscodeAttemptLimiter.freeAttempts {
-            _ = try? await sut.unlock(with: "00000", now: start)
+            _ = try? await sut.unlock(with: "000000", now: start)
         }
 
         // A year later by the wall clock, but the device has not been up that
@@ -989,10 +989,10 @@ final class PasscodeServiceTests: XCTestCase {
         let start = Date(timeIntervalSince1970: 1_700_000_000)
 
         for _ in 0..<PasscodeAttemptLimiter.freeAttempts {
-            _ = try? await sut.unlock(with: "00000", now: start)
+            _ = try? await sut.unlock(with: "000000", now: start)
         }
         // The next failure crosses into the throttled range.
-        _ = try? await sut.unlock(with: "00000", now: start)
+        _ = try? await sut.unlock(with: "000000", now: start)
 
         do {
             try await sut.unlock(with: passcode, now: start)
@@ -1011,7 +1011,7 @@ final class PasscodeServiceTests: XCTestCase {
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         for _ in 0...PasscodeAttemptLimiter.freeAttempts {
-            _ = try? await sut.unlock(with: "00000", now: start)
+            _ = try? await sut.unlock(with: "000000", now: start)
         }
 
         uptime += 3600
@@ -1022,14 +1022,14 @@ final class PasscodeServiceTests: XCTestCase {
         try await sut.setPasscode(passcode)
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         for _ in 0..<PasscodeAttemptLimiter.freeAttempts {
-            _ = try? await sut.unlock(with: "00000", now: start)
+            _ = try? await sut.unlock(with: "000000", now: start)
         }
 
         try await sut.unlock(with: passcode, now: start)
 
         // Fresh budget: the free attempts are available again.
         for _ in 0..<PasscodeAttemptLimiter.freeAttempts {
-            _ = try? await sut.unlock(with: "00000", now: start)
+            _ = try? await sut.unlock(with: "000000", now: start)
         }
         try await sut.unlock(with: passcode, now: start)
     }

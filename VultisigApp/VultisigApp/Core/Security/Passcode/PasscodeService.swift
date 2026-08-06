@@ -61,7 +61,7 @@ actor PasscodeService {
 
     static let shared = PasscodeService()
 
-    static let passcodeLength = 5
+    static let passcodeLength = 6
 
     private let keyStore: KeyshareKeyStoring
     private let session: KeyshareKeySession

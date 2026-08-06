@@ -20,8 +20,8 @@ enum PasscodeAttemptLimiterError: Error, Equatable {
 
 /// Throttles passcode guessing in the app.
 ///
-/// This is the only thing standing between five digits and 100,000 tries, and it
-/// protects the in-app path *only* — it is irrelevant to anyone holding the
+/// This is the only thing standing between six digits and 1,000,000 tries, and
+/// it protects the in-app path *only* — it is irrelevant to anyone holding the
 /// stored blob, which is why the data key is a random 256 bits rather than
 /// something derived from the passcode.
 ///
