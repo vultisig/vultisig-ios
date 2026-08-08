@@ -105,6 +105,37 @@ final class BackupImportProtectionTests: XCTestCase {
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<Coin>()), 0, "default coins must not outlive a refused import")
     }
 
+    /// The third protection state, which nothing pinned until an import test
+    /// started failing for a reason no assertion named.
+    ///
+    /// `.locked` is not only "a passcode is set and not yet entered". A Keychain
+    /// that cannot be read resolves here too, deliberately — `.disabled` is a
+    /// licence to write plaintext, and taking it wrongly stores an unprotected
+    /// share behind a passcode that is still set. So the refusal is the intended
+    /// behaviour and this states it: a backup carrying key shares does not
+    /// import, and nothing of it is left behind.
+    ///
+    /// It also records the shape of the surprise. Normalization runs over the
+    /// *incoming* shares, so a vault with none imports perfectly well in this
+    /// state — which is why a suite full of share-less fixtures can look healthy
+    /// while every real vault, all of which carry shares, is refused.
+    func testAnImportIsRefusedWhileTheKeyIsOutOfReach() throws {
+        let sut = makeViewModel(state: .locked)
+        sut.decryptedContent = try backupVaultJSONHex()
+
+        sut.restoreVault(modelContext: context, vaults: [])
+
+        XCTAssertFalse(sut.isVaultImported)
+        XCTAssertEqual(
+            try context.fetchCount(FetchDescriptor<Vault>()), 0,
+            "a share that cannot be sealed must not reach the store"
+        )
+        XCTAssertEqual(
+            try context.fetchCount(FetchDescriptor<Coin>()), 0,
+            "default coins must not outlive a refused import"
+        )
+    }
+
     // MARK: - What the restored vault opens on
 
     /// The reported regression, through the batch entry point and with no

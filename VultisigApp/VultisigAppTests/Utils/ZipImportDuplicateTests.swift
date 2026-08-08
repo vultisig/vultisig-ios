@@ -23,7 +23,21 @@ final class ZipImportDuplicateTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        viewModel = EncryptedBackupViewModel()
+        // "No passcode set" has to be stated, not inherited. The default
+        // protector reads the real Keychain, which the test host cannot read, and
+        // an unreadable Keychain deliberately fails closed to `.locked` — under
+        // which `seal` throws and *any* import carrying key shares is refused.
+        // Left to the default, these tests would be asserting collision handling
+        // against an import that never got as far as the collision.
+        //
+        // The coordinator is fresh for the same reason: the shared one carries
+        // whatever lease state another test left behind.
+        viewModel = EncryptedBackupViewModel(
+            importer: ProtectedVaultImporter(
+                protector: KeyshareProtector(state: { .disabled }),
+                coordinator: KeyshareWriteCoordinator()
+            )
+        )
     }
 
     override func tearDown() {
