@@ -32,7 +32,6 @@ enum AccessibilityID {
     enum Passcode {
         static let dots = "passcode.dots"
         static let deleteKey = "passcode.deleteKey"
-        static let macField = "passcode.macField"
         static let enterScreen = "passcode.enterScreen"
         static let awaitingBiometrics = "passcode.awaitingBiometrics"
 

@@ -16,6 +16,7 @@ struct MacOSToolbarView<Content: View>: View {
     let content: Content
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.screenBackgroundType) private var screenBackgroundType
 
     init(
         items: [CustomToolbarItem],
@@ -42,11 +43,28 @@ struct MacOSToolbarView<Content: View>: View {
             VStack(spacing: 0) {
                 // macOS toolbar
                 toolbarContent
-                    .background(Theme.colors.bgPrimary)
+                    .background(barBackground)
 
                 // Content below toolbar
                 content
             }
+        }
+    }
+
+    /// The bar fills itself only over a screen that is a flat colour anyway.
+    ///
+    /// `bgPrimary` behind the bar is invisible on a `.plain` screen and a seam on
+    /// any other: over a gradient it cuts an opaque band across the top sixty
+    /// points, and over `.clear` it paints a background the caller asked not to
+    /// have. The screen already draws its own background edge to edge, so
+    /// stepping out of the way is all this has to do.
+    @ViewBuilder
+    private var barBackground: some View {
+        switch screenBackgroundType {
+        case .plain:
+            Theme.colors.bgPrimary
+        case .gradient, .clear:
+            Color.clear
         }
     }
 

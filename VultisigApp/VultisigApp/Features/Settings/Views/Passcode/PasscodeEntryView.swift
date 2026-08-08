@@ -5,12 +5,18 @@
 
 import SwiftUI
 
-/// Fixed-length entry: filled dots plus a keypad on iOS, hardware keyboard on
-/// macOS. The number of dots comes from ``PasscodeService/passcodeLength``, so
-/// nothing here has the length written into it.
+/// Fixed-length entry: filled dots over a keypad, on both platforms. The number
+/// of dots comes from ``PasscodeService/passcodeLength``, so nothing here has the
+/// length written into it.
 ///
 /// One component for every flow — lock screen, set, confirm, change, disable — so
 /// entering a passcode looks and behaves the same everywhere it is asked for.
+///
+/// macOS shows the same keypad rather than a text field. A passcode is six digits
+/// on a numeric pad, and rendering it as a bordered `SecureField` made it look
+/// like a password box on one platform and a passcode on the other. The hardware
+/// keyboard still types into it — see ``handleKeyPress(_:)`` — so the pad is an
+/// addition on the Mac, not a replacement for the keys under the user's hands.
 struct PasscodeEntryView: View {
 
     let title: String
@@ -27,7 +33,11 @@ struct PasscodeEntryView: View {
     /// Bumped on each error to drive the shake; the value itself is meaningless.
     @State private var shakeTravel: CGFloat = 0
     #if os(macOS)
-    @FocusState private var isFieldFocused: Bool
+    /// Held by the keypad so hardware key presses reach it. Clicking a key takes
+    /// focus away to the button, so it is taken back on every entry rather than
+    /// only on appearance — otherwise one click ends typing for the rest of the
+    /// flow.
+    @FocusState private var isKeypadFocused: Bool
     #endif
 
     private var digitCount: Int { PasscodeService.passcodeLength }
@@ -71,14 +81,34 @@ struct PasscodeEntryView: View {
             guard message?.isEmpty == false else { return }
             reactToError()
         }
+        #if os(macOS)
+        // Focused rather than merely focusable: whoever opened this screen came
+        // here to type six digits, and a first keystroke that goes nowhere
+        // because nothing claimed focus reads as a screen that is not listening.
+        // The focus ring is suppressed because the dots already show where the
+        // input is going.
+        .focusable()
+        .focusEffectDisabled()
+        .focused($isKeypadFocused)
+        .onAppear { isKeypadFocused = true }
+        .onKeyPress(phases: [.down, .repeat]) { handleKeyPress($0) }
+        #endif
     }
 
+    /// Both labels are fixed vertically so they wrap to whatever height they
+    /// need instead of being compressed into one truncated line. The keypad is
+    /// tall and the spacers around it are greedy, so on a short window — the
+    /// remove-passcode sheet on macOS is the shortest — the layout will
+    /// otherwise take the height back out of the text, and the sentence
+    /// explaining what removing a passcode costs is the last thing that should
+    /// end in an ellipsis.
     private var header: some View {
         VStack(spacing: 8) {
             Text(title)
                 .font(Theme.fonts.title2)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .id(title)
                 .transition(.opacity.combined(with: .move(edge: .top)))
 
@@ -87,6 +117,7 @@ struct PasscodeEntryView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .id(subtitle)
                     .transition(.opacity)
             }
@@ -154,6 +185,8 @@ struct PasscodeEntryView: View {
         passcode.append(digit)
         #if os(iOS)
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        #else
+        isKeypadFocused = true
         #endif
     }
 
@@ -162,8 +195,92 @@ struct PasscodeEntryView: View {
         passcode.removeLast()
         #if os(iOS)
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        #else
+        isKeypadFocused = true
         #endif
     }
+
+    #if os(macOS)
+    /// Routes a hardware key to the same operations the on-screen keys call, so
+    /// typing and clicking cannot diverge.
+    ///
+    /// ASCII digits only, which is what `PasscodeService` accepts and what the
+    /// pad can produce. A keyboard laid out for Arabic-Indic digits would
+    /// otherwise enter a passcode that could never be typed on the phone this
+    /// vault is also on.
+    ///
+    /// Modifiers have to be inspected because `characters` reports the key with
+    /// them stripped. Without that check ⌘1 — a window shortcut nobody aims at a
+    /// passcode — enters a digit and spends one of the throttled attempts.
+    /// `.numericPad` is deliberately allowed: macOS sets it on the keypad keys
+    /// themselves, so rejecting it would reject the one keyboard someone is most
+    /// likely to type six digits on.
+    private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
+        // Neither of these two is intent. Caps lock says nothing about a digit,
+        // and macOS sets `.numericPad` on the keypad keys themselves — treating
+        // that as a modifier would reject the one keyboard someone is most
+        // likely to type six digits on.
+        let modifiers = press.modifiers.subtracting([.capsLock, .numericPad])
+
+        // Exactly ⌘V, and only on the way down. Anything else carrying command
+        // is a shortcut aimed at the app, not at this field — and a held ⌘V must
+        // not paste once per repeat.
+        if modifiers.contains(.command) {
+            guard modifiers == .command, press.phase == .down, press.characters == "v" else {
+                return .ignored
+            }
+            paste()
+            return .handled
+        }
+
+        // Every remaining path is a bare key. Checked before the actions rather
+        // than inside one of them, so ⌥⌫ and ⌃⌫ cannot reach the delete branch
+        // by being handled ahead of the test.
+        guard modifiers.isEmpty else { return .ignored }
+
+        let isDelete = press.key == .delete || press.key == .deleteForward
+        // Held keys repeat for delete only. A held digit would fill all six
+        // places and submit an entry the user never finished typing.
+        guard press.phase == .down || isDelete else { return .ignored }
+
+        if isDelete {
+            deleteLast()
+            return .handled
+        }
+
+        guard press.characters.count == 1,
+              let digit = press.characters.first,
+              digit.isASCII, digit.isNumber else {
+            return .ignored
+        }
+
+        append(String(digit))
+        return .handled
+    }
+
+    /// ⌘V, which the text field this replaced got for free.
+    ///
+    /// The clipboard has to already *be* a passcode — surrounding whitespace is
+    /// forgiven, nothing else is. Sieving the digits out of arbitrary text turns
+    /// "Order 12-34-56 shipped" into a complete entry, and reaching six digits
+    /// submits, so a stray paste would spend one of the throttled attempts on a
+    /// value the user never saw. Over-long is refused rather than truncated for
+    /// the same reason: silently keeping the first six of seven submits
+    /// something nobody typed.
+    private func paste() {
+        guard !isBusy, let pasted = ClipboardManager.pasteFromClipboard() else { return }
+
+        let candidate = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !candidate.isEmpty,
+              candidate.count <= PasscodeService.passcodeLength,
+              candidate.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+            return
+        }
+
+        passcode = candidate
+        isKeypadFocused = true
+    }
+    #endif
 }
 
 /// Horizontal shake driven by one animatable value, so the whole wiggle is a
@@ -185,7 +302,6 @@ private struct ShakeEffect: GeometryEffect {
     }
 }
 
-#if os(iOS)
 extension PasscodeEntryView {
 
     private static let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"]
@@ -251,90 +367,62 @@ extension PasscodeEntryView {
 /// Uses the same treatment as `ToolbarButton` / `VultiTabBar` — `.glassEffect`
 /// on iOS 26, with their gradient-stroke fallback below it — rather than
 /// `.ultraThinMaterial`, which renders as flat opaque grey over a dark
-/// background and loses the translucency entirely.
+/// background and loses the translucency entirely. macOS takes the same
+/// fallback: `glassEffect` is iOS-only, and the stroke is what carries the shape
+/// there.
 private struct PasscodeKeyButtonStyle: ButtonStyle {
     let hasFill: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        Group {
+        configuration.label
+            .background { fill }
+            .overlay {
+                if configuration.isPressed {
+                    Circle().fill(Theme.colors.textPrimary.opacity(0.22))
+                }
+            }
+            .clipShape(Circle())
+            // Press compresses hard and fast; release overshoots slightly before
+            // settling. A single symmetric spring reads as mushy next to the
+            // platform keypad, which snaps down and bounces back.
+            .scaleEffect(configuration.isPressed ? 0.88 : 1)
+            .animation(
+                configuration.isPressed
+                    ? .spring(response: 0.12, dampingFraction: 0.55)
+                    : .spring(response: 0.34, dampingFraction: 0.42),
+                value: configuration.isPressed
+            )
+    }
+
+    @ViewBuilder
+    private var fill: some View {
+        if hasFill {
+            #if os(iOS)
             if #available(iOS 26.0, *) {
-                configuration.label
-                    .background {
-                        if hasFill {
-                            Circle()
-                                .fill(.clear)
-                                .glassEffect(.clear.interactive(), in: Circle())
-                        }
-                    }
+                Circle()
+                    .fill(.clear)
+                    .glassEffect(.clear.interactive(), in: Circle())
             } else {
-                configuration.label
-                    .background {
-                        if hasFill {
-                            Circle()
-                                .fill(Theme.colors.bgSurface1.opacity(0.35))
-                                .overlay(
-                                    Circle().stroke(
-                                        LinearGradient(
-                                            colors: [.white.opacity(0.6), .clear, .clear, .white.opacity(0.4)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
-                                )
-                        }
-                    }
+                strokedFill
             }
+            #else
+            strokedFill
+            #endif
         }
-        .overlay {
-            if configuration.isPressed {
-                Circle().fill(Theme.colors.textPrimary.opacity(0.22))
-            }
-        }
-        .clipShape(Circle())
-        // Press compresses hard and fast; release overshoots slightly before
-        // settling. A single symmetric spring reads as mushy next to the
-        // platform keypad, which snaps down and bounces back.
-        .scaleEffect(configuration.isPressed ? 0.88 : 1)
-        .animation(
-            configuration.isPressed
-                ? .spring(response: 0.12, dampingFraction: 0.55)
-                : .spring(response: 0.34, dampingFraction: 0.42),
-            value: configuration.isPressed
-        )
+    }
+
+    private var strokedFill: some View {
+        Circle()
+            .fill(Theme.colors.bgSurface1.opacity(0.35))
+            .overlay(
+                Circle().stroke(
+                    LinearGradient(
+                        colors: [.white.opacity(0.6), .clear, .clear, .white.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+            )
     }
 }
-#endif
-
-#if os(macOS)
-extension PasscodeEntryView {
-
-    /// No on-screen keypad on macOS — the hardware keyboard drives entry and the
-    /// dots above render the state.
-    ///
-    /// The field is visible and focused on appearance rather than hidden at one
-    /// pixel: an invisible field gives the user nothing to click when focus is
-    /// lost, which makes entry unreliable and occasionally impossible.
-    var keypad: some View {
-        SecureField("passcodeEnterTitle".localized, text: Binding(
-            get: { passcode },
-            set: { newValue in
-                // ASCII only, matching what the iOS keypad can produce and what
-                // `PasscodeService.validate` accepts. `isNumber` alone lets a
-                // paste put Arabic-Indic digits into a passcode that could then
-                // never be typed on the phone.
-                let digits = newValue.filter { $0.isASCII && $0.isNumber }
-                passcode = String(digits.prefix(PasscodeService.passcodeLength))
-            }
-        ))
-        .textFieldStyle(.roundedBorder)
-        .font(Theme.fonts.bodyMMedium)
-        .frame(maxWidth: 220)
-        .padding(.bottom, 24)
-        .focused($isFieldFocused)
-        .disabled(isBusy)
-        .onAppear { isFieldFocused = true }
-        .accessibilityIdentifier(AccessibilityID.Passcode.macField)
-    }
-}
-#endif

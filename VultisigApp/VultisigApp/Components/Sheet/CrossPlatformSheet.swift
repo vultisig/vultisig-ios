@@ -83,6 +83,13 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
             }
         }
         .onChange(of: isPresented) { _, newValue in
+            // A reopen cancels the pending close. Dismissing arms a task that
+            // lowers `isPresented` 300ms later so the animation can finish; if
+            // the sheet is presented again inside that window, the old task is
+            // still holding an order to close and would shut the new one.
+            if newValue {
+                dismissTask?.cancel()
+            }
             withAnimation(.interpolatingSpring(duration: 0.2)) {
                 internalIsPresented = newValue
             }
@@ -185,6 +192,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
             }
         }
         .onChange(of: item) { _, newValue in
+            // A new item cancels the pending close, as in the boolean sheet
+            // above — and here the stale task carries `onDismiss` with it, so
+            // letting it run would hand the incoming sheet the outgoing one's
+            // dismissal callback as well as closing it.
+            if newValue != nil {
+                dismissTask?.cancel()
+            }
             withAnimation(.interpolatingSpring(duration: 0.2)) {
                 internalItem = newValue
             }

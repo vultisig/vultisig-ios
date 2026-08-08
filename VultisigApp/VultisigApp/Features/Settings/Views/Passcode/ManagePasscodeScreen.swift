@@ -15,6 +15,9 @@ struct ManagePasscodeScreen: View {
     @State private var biometricAvailability: BiometricAvailability = .available
     @State private var biometricError: String?
     @State private var showDisable = false
+    /// Raised while the remove flow is actually rewriting key material, which is
+    /// the one stretch the sheet must not be dismissable over.
+    @State private var isRemoving = false
 
     private let service: PasscodeService
 
@@ -56,16 +59,38 @@ struct ManagePasscodeScreen: View {
             }
         }
         .screenTitle("passcodeManageTitle".localized)
-        .screenBackground(.gradient)
         .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
-        .crossPlatformSheet(isPresented: $showDisable) {
-            DisablePasscodeScreen()
+        // Not dismissable mid-removal. The swipe and the backdrop tap are
+        // refused for the same reason the close button is disabled: leaving does
+        // not stop the transition, it only means this list re-reads the passcode
+        // while it is still there and never hears that it went.
+        .crossPlatformSheet(isPresented: $showDisable, isDismissable: !isRemoving) {
+            DisablePasscodeScreen(isPresented: $showDisable, isRemoving: $isRemoving)
+                .presentationDragIndicator(.visible)
         }
         // `.onAppear` as well as `.task`: returning from the pushed set/change
         // screens does not re-run `.task`, and a stale `isSet` would keep
         // offering "Set passcode" after one had just been set.
         .task { await refresh() }
         .onAppear { Task { await refresh() } }
+        // And the navigation path on top of both, but only where the two above
+        // are not enough: on macOS neither lifecycle callback fires when a
+        // pushed screen pops, and this view is not torn down either, so it keeps
+        // the `isSet` it was built with and goes on offering "Set passcode" over
+        // a passcode that now exists. The path is the one thing that provably
+        // changes when the set or change screen dismisses itself, and it is
+        // published, so a live subscription hears the return whether or not the
+        // view is told it reappeared.
+        //
+        // Confined to macOS because it is not free: `Published` replays on
+        // subscribe and fires again for every push and pop anywhere in the
+        // stack, so on iOS — where `.onAppear` already works — it would only add
+        // Keychain and biometry reads for a screen that is often not on top.
+        #if os(macOS)
+        .onReceive(router.$navPath) { _ in
+            Task { await refresh() }
+        }
+        #endif
         .onChange(of: showDisable) { _, isShowing in
             guard !isShowing else { return }
             Task { await refresh() }
