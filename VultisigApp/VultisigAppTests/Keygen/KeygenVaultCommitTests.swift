@@ -24,6 +24,9 @@ final class KeygenVaultCommitTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         token = try TestStore.installInMemoryContainer()
+        // A successful commit hands out a token-discovery `Task` that can
+        // outlive the test method and touch the models it resolved.
+        TestStore.retain(try XCTUnwrap(token).container)
     }
 
     override func tearDown() async throws {
@@ -76,6 +79,30 @@ final class KeygenVaultCommitTests: XCTestCase {
             .fetch(FetchDescriptor<Vault>())
             .flatMap(\.keyshares)
             .map(\.keyshare)
+    }
+
+    /// Read through a context that never saw the in-memory objects, so a
+    /// pending insert cannot answer for a stored row. `Storage.shared`'s own
+    /// context resolves pending inserts in every fetch, which is exactly the
+    /// confusion the tests below are about.
+    private func storedVaults() throws -> [Vault] {
+        try ModelContext(try XCTUnwrap(token).container).fetch(FetchDescriptor<Vault>())
+    }
+
+    /// A store write that fails the way a real one does — the container
+    /// unreachable, data protection unavailable, the disk full. SwiftData
+    /// offers no way to make an in-memory `save()` fail on demand, which is why
+    /// `commitVault` takes the write as a seam.
+    private struct StoreUnavailable: Error {}
+
+    private func failingSave(_: ModelContext) throws {
+        throw StoreUnavailable()
+    }
+
+    /// Read through a context that never saw the in-memory objects, for the
+    /// same reason as ``storedVaults()``.
+    private func storedShares() throws -> [String] {
+        try storedVaults().flatMap(\.keyshares).map(\.keyshare)
     }
 
     // MARK: - Tests
@@ -465,13 +492,246 @@ final class KeygenVaultCommitTests: XCTestCase {
         XCTAssertEqual(try persistedVaultCount(), 0)
     }
 
+    // MARK: - All of it or none of it, when the save throws
+
+    /// **The regression.** A throwing `save()` writes nothing to the store, so
+    /// nothing is half-written *there* — but the vault and its coins stay
+    /// registered in a context the whole app shares, and SwiftData resolves a
+    /// pending insert in every fetch. The review screen said the vault could not
+    /// be saved and the app went on answering that it existed.
+    func testAFailedSaveLeavesNothingFetchableAndNothingPending() throws {
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: KeyshareProtector(state: { .disabled }),
+                save: failingSave
+            )
+        ) { error in
+            XCTAssertTrue(error is StoreUnavailable, "the store's own failure has to reach the caller unchanged")
+        }
+
+        XCTAssertEqual(try persistedVaultCount(), 0, "a vault whose save threw must not answer a fetch")
+        XCTAssertFalse(
+            Storage.shared.modelContext.hasChanges,
+            "and must not be left pending for something else to flush"
+        )
+    }
+
+    /// The half that makes it durable. Nothing about the failure stops the next
+    /// unrelated `save()` anywhere in the app — or the main context's autosave —
+    /// from writing the pending insert for real, minutes later and *outside* the
+    /// write lease this commit holds.
+    func testAFailedSaveDoesNotBecomeDurableOnTheNextUnrelatedSave() throws {
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: KeyshareProtector(state: { .disabled }),
+                save: failingSave
+            )
+        )
+
+        // Something else in the app saves the shared context.
+        try Storage.shared.modelContext.save()
+
+        XCTAssertEqual(try storedVaults().count, 0, "a refused vault must not reach disk on somebody else's save")
+    }
+
+    /// The vault is handed back in the form it arrived in, not the form the
+    /// commit computed. Keygen produced plaintext shares, the user set a
+    /// passcode during the review, so the commit sealed them — and then the save
+    /// threw. Left sealed, disabling the passcode before retrying would make
+    /// them unopenable under every state and the vault uncommittable for good.
+    func testAFailedSaveGivesTheSharesBackInTheFormTheyArrivedIn() throws {
+        var state: KeyshareProtectionState = .disabled
+        let protector = KeyshareProtector(state: { state })
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+
+        // A passcode set while the review screen was up.
+        state = .unlocked(SymmetricKey(size: .bits256))
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: protector,
+                save: failingSave
+            )
+        )
+
+        XCTAssertEqual(
+            vault.keyshares.map(\.keyshare),
+            [firstShare],
+            "a failed commit must not leave the caller holding shares it sealed"
+        )
+
+        // The user disables the passcode and taps again. Against a commit that
+        // kept its own seal this throws `.unreadableKeyshare`, permanently.
+        state = .disabled
+        try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+        XCTAssertEqual(try storedShares(), [firstShare], "read back from the store, not from a pending insert")
+    }
+
+    /// "Looks Good" is the retry, so it has to work — and it has to bring the
+    /// default coins with it, not just the vault.
+    func testARetryAfterAFailedSaveStoresTheVaultAndItsCoins() throws {
+        let vault = TestStore.makeDerivableVault(keyshare: firstShare)
+        let protector = KeyshareProtector(state: { .disabled })
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: protector,
+                save: failingSave
+            )
+        )
+
+        try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+
+        let stored = try storedVaults()
+        XCTAssertEqual(stored.count, 1)
+        XCTAssertEqual(
+            Set(stored.first?.coins.map(\.chain) ?? []),
+            Set(TestStore.derivableChains),
+            "the retry has to attach the default coins, not only store the vault"
+        )
+        // The undo deliberately leaves the coin preparation's own output alone.
+        // Reverting `defiChains` while the rollback leaves the coin objects
+        // attached would drop them for good: a preparation that finds coins
+        // already there does not recompute the DeFi chains.
+        XCTAssertTrue(
+            stored.first?.defiChains.contains(.tron) ?? false,
+            "the DeFi chains derived alongside the coins have to survive the retry too"
+        )
+    }
+
+    /// The undo for a vault this commit has to insert is a `rollback()`, and
+    /// `rollback()` discards *every* pending change in the context — measured:
+    /// a foreign pending insert is destroyed outright and a foreign pending
+    /// edit is reverted. `Storage.shared.modelContext` is the app-wide context
+    /// and episodes overlap by design, so a commit that could not take its own
+    /// work back without taking somebody else's is refused before it starts.
+    func testACommitIsRefusedWhileTheStoreIsCarryingWorkItCouldNotTakeBack() throws {
+        let foreign = makeVault(name: "Savings", shares: [secondShare])
+        Storage.shared.modelContext.insert(foreign)   // never saved
+
+        let vault = makeVault(name: "Treasury", shares: [firstShare])
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: KeyshareProtector(state: { .disabled }),
+                save: failingSave
+            )
+        ) { error in
+            XCTAssertEqual(error as? KeygenCommitError, .busy)
+        }
+
+        XCTAssertEqual(
+            try Storage.shared.modelContext.fetch(FetchDescriptor<Vault>()).map(\.name),
+            ["Savings"],
+            "the refused vault must not even be registered — a pending insert answers every fetch in the app"
+        )
+        XCTAssertTrue(vault.coins.isEmpty, "and no coins may have been built for it")
+        XCTAssertTrue(
+            Storage.shared.modelContext.hasChanges,
+            "while the work the context was carrying is left exactly where it was"
+        )
+    }
+
+    /// And the refusal is the transient thing it claims to be: any save settles
+    /// the context and the same button then works, completely — coins included.
+    func testTheRefusalClearsOnceTheStoreSettles() throws {
+        let protector = KeyshareProtector(state: { .disabled })
+        Storage.shared.modelContext.insert(makeVault(name: "Savings", shares: [secondShare]))
+
+        let vault = TestStore.makeDerivableVault(keyshare: firstShare)
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+        ) { error in
+            XCTAssertEqual(error as? KeygenCommitError, .busy)
+        }
+
+        // Anything at all saves the shared context — the main one autosaves.
+        try Storage.shared.modelContext.save()
+
+        try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+
+        let stored = try storedVaults()
+        XCTAssertEqual(Set(stored.map(\.name)), ["Savings", vault.name])
+        XCTAssertEqual(
+            Set(stored.first { $0.name == vault.name }?.coins.map(\.chain) ?? []),
+            Set(TestStore.derivableChains),
+            "a retry that stores the vault without its chains is the failure this undo exists to avoid"
+        )
+    }
+
+    /// **Not every vault reaching the commit is new.** A secure reshare on a
+    /// device that was already a signer has its reshared vault saved outright by
+    /// `finalizeDKLSKeygen`, and still routes through the review screen — where
+    /// the screen's own `isBackedUp = false` leaves the context dirty, which is
+    /// precisely the branch that withdraws row by row.
+    ///
+    /// Deleting the vault there does not remove the row — a delete that follows
+    /// this call's own no-op `insert` of an already-registered object leaves it
+    /// in place — but the `.cascade` on `Vault.coins` runs anyway, so the
+    /// reshared wallet comes back with **no chains in it**, silently, because a
+    /// re-save failed. Which is why the fixture has to be a vault whose coins
+    /// actually build: a placeholder-key vault attaches none, and the cascade
+    /// then has nothing to take.
+    func testAFailedCommitDoesNotWithdrawAVaultItDidNotInsert() throws {
+        let protector = KeyshareProtector(state: { .disabled })
+        let vault = TestStore.makeDerivableVault(keyshare: firstShare)
+
+        // The reshare's own save, before the review screen is shown.
+        try KeygenViewModel.commitVault(vault, context: Storage.shared.modelContext, protector: protector)
+        vault.isBackedUp = true
+        try Storage.shared.modelContext.save()
+        XCTAssertEqual(try storedVaults().first?.coins.count, TestStore.derivableChains.count)
+
+        // What the review screen does on the way in, leaving the context dirty.
+        vault.isBackedUp = false
+        XCTAssertTrue(Storage.shared.modelContext.hasChanges, "the fixture has to reach the coins-only undo")
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: protector,
+                save: failingSave
+            )
+        )
+
+        try Storage.shared.modelContext.save()
+
+        let stored = try storedVaults()
+        XCTAssertEqual(stored.count, 1, "an already-stored vault must survive a failed re-commit")
+        XCTAssertEqual(
+            Set(stored.first?.coins.map(\.chain) ?? []),
+            Set(TestStore.derivableChains),
+            "and must keep its chains — nothing rebuilds default coins after keygen and import"
+        )
+        XCTAssertEqual(
+            stored.first?.keyshares.map(\.keyshare),
+            [firstShare],
+            "and its key shares"
+        )
+    }
+
     /// The review screen renders `error.localizedDescription`. Without the
     /// `LocalizedError` conformance the user would be shown
     /// "(VultisigApp.KeygenCommitError error 0.)" for a dead vault.
     func testEveryRefusalIsReportedInWordsRatherThanAsAnNSError() {
         let cases: [(KeygenCommitError, String)] = [
             (.unreadableKeyshare(pubkey: "treasury-share-0"), "keysharesUnreadableVaultNotSaved"),
-            (.unsealableKeyshare(pubkey: "treasury-share-0"), "keysharesUnsealableVaultNotSaved")
+            (.unsealableKeyshare(pubkey: "treasury-share-0"), "keysharesUnsealableVaultNotSaved"),
+            (.busy, "somethingWentWrongTryAgain")
         ]
 
         for (error, key) in cases {
