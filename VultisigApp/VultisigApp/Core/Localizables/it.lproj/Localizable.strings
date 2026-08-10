@@ -1133,6 +1133,7 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destinazione";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Emittente";
 "rippleFieldOfferSequence" = "Offer Sequence";
 "rippleFieldSendMax" = "Send Max";
@@ -1160,6 +1161,8 @@
 "rippleTrustLineUnreviewable" = "Impossibile verificare";
 "rippleTrustLineUnreviewableValue" = "Non è stato possibile leggere valuta, emittente o limite di questa linea di fiducia, quindi le sue condizioni non possono essere mostrate. Non firmarla.";
 "rippleUndecodedNotice" = "Impossibile decodificare questa transazione. Controlla attentamente il JSON grezzo prima di firmare.";
+"rippleWarningCustomPaths" = "Il sito ha scelto il percorso che questo pagamento segue nella rete.";
+"rippleWarningPartialPayment" = "Questo è un pagamento parziale. L'importo mostrato è un massimo, non una consegna garantita: il destinatario può ricevere meno mentre tu paghi fino a quel massimo.";
 "routerNotAvailable" = "Router non disponibile per approvazioni su %@. Riprova più tardi.";
 "rune" = "RUNE";
 "sameAddressError" = "L'indirizzo del destinatario deve essere diverso dall'indirizzo del mittente";
