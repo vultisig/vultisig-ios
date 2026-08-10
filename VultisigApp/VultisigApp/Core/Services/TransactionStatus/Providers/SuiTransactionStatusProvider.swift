@@ -94,11 +94,16 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
     /// miss a digest its peer already has. Treating the first miss as final
     /// would poll a landed transaction until the poller gave up, so the walk
     /// continues and only reports `notFound` once every host has missed.
+    /// A result the node returned *with* a record but *without* effects is not
+    /// absence — it proves the node knows the digest and has not finished
+    /// populating it. Walking past it would let another host's refusal overwrite
+    /// that evidence with a terminal `failed`, which the poller records as an
+    /// error the user cannot undo.
     private static func isHostLocalMiss(_ response: SuiTransactionStatusResponse) -> Bool {
         if let error = response.error {
             // -32602 is Sui's "invalid params" for a digest it cannot resolve.
             return error.code == -32602
         }
-        return response.result?.effects == nil
+        return response.result == nil
     }
 }

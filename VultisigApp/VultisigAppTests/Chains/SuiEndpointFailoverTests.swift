@@ -126,11 +126,20 @@ final class SuiEndpointFailoverTests: XCTestCase {
             )
         }
 
+        // Host policy and capability, not request defects — and 404 in
+        // particular must fail over, or the status poller stops at the first
+        // host that has not seen a digest the fallback host broadcast.
+        for hostFault: HTTPError in [.statusCode(401, nil), .statusCode(403, nil), .statusCode(404, nil)] {
+            XCTAssertTrue(
+                SuiFailoverPolicy.shouldTryNextHost(after: hostFault),
+                "expected failover after \(hostFault)"
+            )
+        }
+
         for terminal: HTTPError in [
             .statusCode(400, nil),
-            .statusCode(401, nil),
-            .statusCode(403, nil),
-            .statusCode(404, nil),
+            .statusCode(413, nil),
+            .statusCode(422, nil),
             .invalidURL,
             .encodingFailed
         ] {
@@ -139,6 +148,28 @@ final class SuiEndpointFailoverTests: XCTestCase {
                 "expected no failover after \(terminal)"
             )
         }
+    }
+
+    func testAMissPlusAnUnansweredHostThrowsRatherThanReportingTheMiss() async {
+        // "Not here" from one host and silence from another is not the same
+        // evidence as "not here" from all of them.
+        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
+        http.queueError(HTTPError.statusCode(503, nil))
+
+        do {
+            _ = try await makeClient(hosts: [Self.primary, Self.secondary]).request(
+                responseType: SuiReferenceGasPriceResponse.self,
+                shouldTryNextHost: { $0.result == nil },
+                makeTarget: { SuiAPI(baseURL: $0, endpoint: .referenceGasPrice) }
+            )
+            XCTFail("Expected the unanswered host's failure to be thrown")
+        } catch HTTPError.statusCode(let code, _) {
+            XCTAssertEqual(code, 503)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
     }
 
     func testAHostLocalMissKeepsWalkingAndReturnsTheLastMissWhenAllHostsMiss() async throws {

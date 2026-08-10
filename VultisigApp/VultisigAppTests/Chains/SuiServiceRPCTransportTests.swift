@@ -171,6 +171,27 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
+    func testDryRunThrowsOnUnparseableGasCosts() async {
+        // Zero here collapses the budget to the protocol minimum instead of
+        // letting the caller fall back to the default budget on a thrown error.
+        http.queueDecoded(Self.dryRun(computationCost: "n/a", storageCost: "988000"))
+
+        await assertThrows(
+            { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
+            description: "Failed to parse gas estimate from dry run"
+        )
+    }
+
+    func testReferenceGasPriceRejectsZero() async {
+        // Sui's reference gas price is a positive protocol parameter.
+        http.queueDecoded(SuiReferenceGasPriceResponse(result: "0", error: nil))
+
+        await assertThrows(
+            { _ = try await self.makeService().getReferenceGasPrice() },
+            description: "Sui did not return a reference gas price"
+        )
+    }
+
     func testDryRunWithoutGasCostsThrows() async {
         http.queueDecoded(SuiDryRunResponse(result: nil, error: nil))
 

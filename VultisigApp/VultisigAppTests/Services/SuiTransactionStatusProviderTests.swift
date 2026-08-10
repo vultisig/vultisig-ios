@@ -105,6 +105,50 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
     }
 
+    func testARecordWithoutEffectsIsNotTreatedAsAbsence() async throws {
+        // The node knows the digest and has not finished populating it. Walking
+        // on would let another host's refusal overwrite that with a terminal
+        // `failed`, which the poller records as an error the user cannot undo.
+        let provider = SuiTransactionStatusProvider(
+            httpClient: http,
+            resolver: FixedSuiResolver(url: nil)
+        )
+        http.queueDecoded(SuiTransactionStatusResponse(
+            jsonrpc: "2.0",
+            id: 1,
+            result: SuiTransactionStatusResponse.SuiTxResult(effects: nil, checkpoint: nil),
+            error: nil
+        ))
+        http.queueDecoded(SuiTransactionStatusResponse(
+            jsonrpc: "2.0",
+            id: 1,
+            result: nil,
+            error: SuiTransactionStatusResponse.SuiError(code: -32000, message: "node unavailable")
+        ))
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .notFound)
+        XCTAssertEqual(http.requestedURLs, [SuiAPI.defaultHost])
+    }
+
+    func testA404OnTheFirstHostStillReachesTheSecond() async throws {
+        // A host that does not serve this path (or has pruned the digest) must
+        // not end the lookup — the fallback host may be the one that broadcast.
+        let provider = SuiTransactionStatusProvider(
+            httpClient: http,
+            resolver: FixedSuiResolver(url: nil)
+        )
+        http.queueError(HTTPError.statusCode(404, nil))
+        http.queueDecoded(Self.response(status: "success", checkpoint: "88"))
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .confirmed)
+        XCTAssertEqual(result.blockNumber, 88)
+        XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
+    }
+
     func testANodeRefusalIsReportedAsFailedRatherThanNotFound() async throws {
         let provider = makeProvider()
         http.queueDecoded(SuiTransactionStatusResponse(

@@ -166,7 +166,9 @@ class SuiService: SuiCoinMetadataProviding {
             // `String.toBigInt()` answers zero for anything it cannot parse, so
             // it must not be used here: a zero price is indistinguishable from a
             // node returning garbage, and both under-price the transaction.
-            guard let result = response.result, let price = BigInt(result) else {
+            // Sui's reference gas price is a positive protocol parameter, so
+            // zero is never a legitimate answer either.
+            guard let result = response.result, let price = BigInt(result), price > .zero else {
                 throw Errors.missingReferenceGasPrice
             }
 
@@ -360,12 +362,15 @@ class SuiService: SuiCoinMetadataProviding {
                 throw Errors.simulationFailed(error)
             }
 
-            // Extract gas costs
+            // Parse explicitly rather than through `String.toBigInt()`, which
+            // answers zero for anything it cannot read: a zero estimate silently
+            // collapses the budget to the protocol minimum instead of falling
+            // back to the default budget the caller applies on a thrown error.
             if let computationCostStr = response.result?.effects?.gasUsed?.computationCost,
-               let storageCostStr = response.result?.effects?.gasUsed?.storageCost {
-
-                let computationCost = computationCostStr.toBigInt()
-                let storageCost = storageCostStr.toBigInt()
+               let storageCostStr = response.result?.effects?.gasUsed?.storageCost,
+               let computationCost = BigInt(computationCostStr),
+               let storageCost = BigInt(storageCostStr),
+               computationCost >= .zero, storageCost >= .zero {
 
                 return (computationCost, storageCost)
             }

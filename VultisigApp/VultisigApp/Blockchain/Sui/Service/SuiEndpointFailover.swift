@@ -59,14 +59,20 @@ enum SuiEndpointFailoverError: Error, LocalizedError {
 /// Decides whether a failed attempt is worth repeating against the next host.
 enum SuiFailoverPolicy {
 
+    /// Status codes that say the *request* is wrong rather than the host. Every
+    /// host would reject these identically, so replaying them wastes a round
+    /// trip, re-sends signed material to another operator for nothing, and
+    /// buries the meaningful first error under whatever the last host said.
+    ///
+    /// Note what is deliberately absent: 401, 403 and 404 are host policy or
+    /// capability (a node behind an API key, a proxy that does not serve this
+    /// path), not request defects — and 404 in particular must fail over, or the
+    /// transaction-status poller stops at the first host that has not seen a
+    /// digest the fallback host broadcast.
+    private static let requestFaultStatusCodes: Set<Int> = [400, 413, 414, 422, 431]
+
     /// `true` when the failure is a property of the host or the connection, so a
     /// different host plausibly succeeds.
-    ///
-    /// Errors that would recur identically everywhere — a request we failed to
-    /// build, or a request the node understood and rejected — are deliberately
-    /// excluded. Replaying those wastes a round trip, sends signed material to
-    /// another operator for no reason, and buries the meaningful first error
-    /// under whatever the last host happened to say.
     static func shouldTryNextHost(after error: Error) -> Bool {
         guard let httpError = error as? HTTPError else {
             // A non-`HTTPError` reached us from outside the transport (only
@@ -83,10 +89,7 @@ enum SuiFailoverPolicy {
             // That is a property of this host, not of the request.
             return true
         case .statusCode(let code, _):
-            // 5xx is the node or a proxy in front of it; 408/429 are explicit
-            // "come back later" answers. Every other 4xx is about the request,
-            // and would be rejected identically by the next host.
-            return code >= 500 || code == 408 || code == 429
+            return !requestFaultStatusCodes.contains(code)
         case .invalidURL, .encodingFailed:
             // Built locally. Every host would fail the same way.
             return false
@@ -131,8 +134,13 @@ struct SuiFailoverClient {
     /// `shouldTryNextHost` lets a caller treat a *successfully decoded* response
     /// as a host-local miss and keep walking — the transaction-status poller
     /// needs this, because a digest broadcast through the fallback host is
-    /// legitimately absent from the primary. When every host misses, the last
-    /// decoded response is returned so the caller still sees a real answer.
+    /// legitimately absent from the primary.
+    ///
+    /// The last miss is returned only when **every** host answered and missed.
+    /// If any host failed to answer at all, its failure is thrown instead: "not
+    /// here" from one host and silence from another is not the same evidence as
+    /// "not here" from all of them, and reporting it as such would let a partial
+    /// outage masquerade as a verdict.
     func request<T: Decodable>(
         responseType: T.Type,
         shouldTryNextHost: (T) -> Bool = { _ in false },
@@ -157,8 +165,9 @@ struct SuiFailoverClient {
             }
         }
 
+        if let lastFailure { throw lastFailure }
         if let lastMiss { return lastMiss }
-        throw lastFailure ?? SuiEndpointFailoverError.noEndpointsConfigured
+        throw SuiEndpointFailoverError.noEndpointsConfigured
     }
 
     /// Convenience for the common shape: one `SuiAPI` endpoint, one host list.
