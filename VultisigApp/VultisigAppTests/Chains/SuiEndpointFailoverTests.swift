@@ -87,6 +87,76 @@ final class SuiEndpointFailoverTests: XCTestCase {
         XCTAssertEqual(http.requestedHosts, [Self.primary])
     }
 
+    func testARequestLevelRejectionIsNotReplayedAgainstOtherHosts() async {
+        // A 400 is about the request, so the next host rejects it identically.
+        // Replaying it wastes a round trip, sends signed material to another
+        // operator for nothing, and buries this error under the last host's.
+        http.queueError(HTTPError.statusCode(400, nil))
+        http.queueDecoded(SuiReferenceGasPriceResponse(result: "100", error: nil))
+
+        do {
+            _ = try await makeClient(hosts: [Self.primary, Self.secondary])
+                .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
+            XCTFail("Expected the rejection to be rethrown immediately")
+        } catch HTTPError.statusCode(let code, _) {
+            XCTAssertEqual(code, 400)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(http.requestedHosts, [Self.primary])
+    }
+
+    func testFailoverClassifierSplitsHostFaultsFromRequestFaults() {
+        for retryable: HTTPError in [
+            .timeout,
+            .networkError(URLError(.notConnectedToInternet)),
+            .invalidSSLCertificate,
+            .invalidResponse,
+            .noData,
+            .decodingFailed(URLError(.badServerResponse)),
+            .statusCode(500, nil),
+            .statusCode(503, nil),
+            .statusCode(408, nil),
+            .statusCode(429, nil)
+        ] {
+            XCTAssertTrue(
+                SuiFailoverPolicy.shouldTryNextHost(after: retryable),
+                "expected failover after \(retryable)"
+            )
+        }
+
+        for terminal: HTTPError in [
+            .statusCode(400, nil),
+            .statusCode(401, nil),
+            .statusCode(403, nil),
+            .statusCode(404, nil),
+            .invalidURL,
+            .encodingFailed
+        ] {
+            XCTAssertFalse(
+                SuiFailoverPolicy.shouldTryNextHost(after: terminal),
+                "expected no failover after \(terminal)"
+            )
+        }
+    }
+
+    func testAHostLocalMissKeepsWalkingAndReturnsTheLastMissWhenAllHostsMiss() async throws {
+        // The generalized form of the status poller's problem: a response that
+        // decoded fine but says "not here".
+        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
+        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
+
+        let response = try await makeClient(hosts: [Self.primary, Self.secondary]).request(
+            responseType: SuiReferenceGasPriceResponse.self,
+            shouldTryNextHost: { $0.result == nil },
+            makeTarget: { SuiAPI(baseURL: $0, endpoint: .referenceGasPrice) }
+        )
+
+        XCTAssertNil(response.result)
+        XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
+    }
+
     func testCancellationPropagatesWithoutTryingOtherHosts() async {
         http.queueError(CancellationError())
 
@@ -127,12 +197,16 @@ final class SuiEndpointFailoverTests: XCTestCase {
     }
 
     func testUnparseableOverrideFallsBackToTheDefaultList() {
-        let resolver = SuiEndpointResolver(
-            resolver: FixedResolver(url: ""),
-            defaultHosts: [Self.primary, Self.secondary]
-        )
+        // A stored override that will not parse must not strand Sui on an empty
+        // host list — it falls back rather than failing every request.
+        for malformed in ["", "http://[not-a-host"] {
+            let resolver = SuiEndpointResolver(
+                resolver: FixedResolver(url: malformed),
+                defaultHosts: [Self.primary, Self.secondary]
+            )
 
-        XCTAssertEqual(resolver.hosts(), [Self.primary, Self.secondary])
+            XCTAssertEqual(resolver.hosts(), [Self.primary, Self.secondary], "override: \(malformed)")
+        }
     }
 
     func testAnEmptyDefaultListStillYieldsAHost() {
@@ -162,6 +236,8 @@ private struct StaticEndpoints: SuiEndpointProviding {
     func hosts() -> [URL] { urls }
 }
 
+/// Returns the stored override verbatim, so the resolver's own parse guard is
+/// what the tests exercise.
 private struct FixedResolver: RPCEndpointResolving {
     let overrideURL: String?
 
@@ -169,10 +245,7 @@ private struct FixedResolver: RPCEndpointResolving {
         self.overrideURL = url
     }
 
-    func url(for _: Chain) -> String? {
-        guard let overrideURL, !overrideURL.isEmpty else { return nil }
-        return overrideURL
-    }
+    func url(for _: Chain) -> String? { overrideURL }
 }
 
 /// Replays a FIFO queue of outcomes and records the host of every attempt, so a

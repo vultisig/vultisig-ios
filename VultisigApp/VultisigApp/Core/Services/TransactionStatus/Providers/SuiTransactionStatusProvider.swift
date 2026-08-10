@@ -24,7 +24,10 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
-            let response = try await client.request(responseType: SuiTransactionStatusResponse.self) { host in
+            let response = try await client.request(
+                responseType: SuiTransactionStatusResponse.self,
+                shouldTryNextHost: Self.isHostLocalMiss
+            ) { host in
                 SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash, host: host)
             }
 
@@ -81,5 +84,21 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
             }
             throw error
         }
+    }
+
+    /// Whether a decoded response says "this node has not seen that digest",
+    /// as opposed to reporting the transaction's outcome.
+    ///
+    /// Absence is host-local: a transaction broadcast through the fallback host
+    /// is legitimately unknown to the primary, and a pruned or lagging node can
+    /// miss a digest its peer already has. Treating the first miss as final
+    /// would poll a landed transaction until the poller gave up, so the walk
+    /// continues and only reports `notFound` once every host has missed.
+    private static func isHostLocalMiss(_ response: SuiTransactionStatusResponse) -> Bool {
+        if let error = response.error {
+            // -32602 is Sui's "invalid params" for a digest it cannot resolve.
+            return error.code == -32602
+        }
+        return response.result?.effects == nil
     }
 }

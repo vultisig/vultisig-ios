@@ -163,11 +163,14 @@ class SuiService: SuiCoinMetadataProviding {
                 throw Errors.referenceGasPriceRPC(error.message)
             }
 
-            guard let result = response.result, !result.isEmpty else {
+            // `String.toBigInt()` answers zero for anything it cannot parse, so
+            // it must not be used here: a zero price is indistinguishable from a
+            // node returning garbage, and both under-price the transaction.
+            guard let result = response.result, let price = BigInt(result) else {
                 throw Errors.missingReferenceGasPrice
             }
 
-            return result.toBigInt()
+            return price
         } catch {
             logger.error("Error fetching reference gas price: \(error.localizedDescription, privacy: .public)")
             throw error

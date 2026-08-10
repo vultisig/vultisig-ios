@@ -53,16 +53,22 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(http.requestedURLs, [SuiService.defaultRPCURL])
     }
 
-    func testStatusPollerAndServiceResolveTheSameHost() {
-        // Both sides must read the same chain key and the same default, or the
-        // poller drifts off the node that broadcast.
-        let override = "https://sui-shared-host.local/rpc"
-        let resolver = FixedSuiResolver(url: override)
-
-        XCTAssertEqual(
-            resolver.resolvedURL(for: .sui, default: SuiService.defaultRPCURL).absoluteString,
-            override
+    func testADigestMissingFromTheFirstHostIsLookedUpOnTheNext() async throws {
+        // A transaction broadcast through the fallback host is legitimately
+        // unknown to the primary. Stopping at the first miss would poll a
+        // landed transaction until the poller gave up.
+        let provider = SuiTransactionStatusProvider(
+            httpClient: http,
+            resolver: FixedSuiResolver(url: nil)
         )
+        http.queueDecoded(Self.notFound())
+        http.queueDecoded(Self.response(status: "success", checkpoint: "77"))
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .confirmed)
+        XCTAssertEqual(result.blockNumber, 77)
+        XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
     }
 
     // MARK: - Mapping (unchanged by the host fix, pinned so it stays that way)
@@ -86,24 +92,47 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.status, .failed(reason: "Transaction failed"))
     }
 
-    func testUnknownDigestMapsToNotFound() async throws {
+    func testADigestMissingEverywhereMapsToNotFound() async throws {
+        let provider = SuiTransactionStatusProvider(
+            httpClient: http,
+            resolver: FixedSuiResolver(url: nil)
+        )
+        SuiAPI.defaultHosts.forEach { _ in http.queueDecoded(Self.notFound()) }
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .notFound)
+        XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
+    }
+
+    func testANodeRefusalIsReportedAsFailedRatherThanNotFound() async throws {
         let provider = makeProvider()
         http.queueDecoded(SuiTransactionStatusResponse(
             jsonrpc: "2.0",
             id: 1,
             result: nil,
-            error: SuiTransactionStatusResponse.SuiError(code: -32602, message: "not found")
+            error: SuiTransactionStatusResponse.SuiError(code: -32000, message: "node unavailable")
         ))
 
         let result = try await provider.checkStatus(query: Self.query)
 
-        XCTAssertEqual(result.status, .notFound)
+        XCTAssertEqual(result.status, .failed(reason: "node unavailable"))
     }
 
     // MARK: - Helpers
 
     private func makeProvider() -> SuiTransactionStatusProvider {
         SuiTransactionStatusProvider(httpClient: http, resolver: FixedSuiResolver(url: nil))
+    }
+
+    /// Sui's answer for a digest the node cannot resolve.
+    private static func notFound() -> SuiTransactionStatusResponse {
+        SuiTransactionStatusResponse(
+            jsonrpc: "2.0",
+            id: 1,
+            result: nil,
+            error: SuiTransactionStatusResponse.SuiError(code: -32602, message: "not found")
+        )
     }
 
     private static func response(

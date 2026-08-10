@@ -52,6 +52,17 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
+    func testReferenceGasPriceThrowsOnAnUnparseableResult() async {
+        // `String.toBigInt()` answers zero for anything it cannot parse, which
+        // would reinstate the silent-zero bug behind a non-empty string.
+        http.queueDecoded(SuiReferenceGasPriceResponse(result: "not-a-number", error: nil))
+
+        await assertThrows(
+            { _ = try await self.makeService().getReferenceGasPrice() },
+            description: "Sui did not return a reference gas price"
+        )
+    }
+
     func testReferenceGasPriceSurfacesTheNodeRefusal() async {
         http.queueDecoded(SuiReferenceGasPriceResponse(
             result: nil,
@@ -169,7 +180,79 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
+    // MARK: - Decoding real node payloads
+
+    // The models above are hand-written replacements for dot-path probing of raw
+    // JSON, so they are pinned against payloads shaped like the node's.
+
+    func testReferenceGasPriceDecodesARealPayload() throws {
+        let response = try Self.decode(
+            SuiReferenceGasPriceResponse.self,
+            from: #"{"jsonrpc":"2.0","id":1,"result":"100"}"#
+        )
+
+        XCTAssertEqual(response.result, "100")
+        XCTAssertNil(response.error)
+    }
+
+    func testBroadcastDecodesARealPayloadAndIgnoresTheUnmodelledEffects() throws {
+        let response = try Self.decode(
+            SuiExecuteTransactionResponse.self,
+            from: """
+            {"jsonrpc":"2.0","id":1,"result":{"digest":"9N37cT18Na72Mr6VKSw3DzofkKL8YwkceougBP31yuKx",\
+            "confirmedLocalExecution":false,"effects":{"messageVersion":"v1","status":{"status":"success"}}}}
+            """
+        )
+
+        XCTAssertEqual(response.result?.digest, "9N37cT18Na72Mr6VKSw3DzofkKL8YwkceougBP31yuKx")
+        XCTAssertNil(response.error)
+    }
+
+    func testBroadcastDecodesAnErrorPayload() throws {
+        let response = try Self.decode(
+            SuiExecuteTransactionResponse.self,
+            from: #"{"jsonrpc":"2.0","id":1,"error":{"code":-32002,"message":"Invalid user signature"}}"#
+        )
+
+        XCTAssertNil(response.result)
+        XCTAssertEqual(response.error, SuiRPCError(code: -32002, message: "Invalid user signature"))
+    }
+
+    func testDryRunDecodesARealPayload() throws {
+        let response = try Self.decode(
+            SuiDryRunResponse.self,
+            from: """
+            {"jsonrpc":"2.0","id":1,"result":{"effects":{"messageVersion":"v1",\
+            "status":{"status":"success"},"executedEpoch":"1215",\
+            "gasUsed":{"computationCost":"100000","storageCost":"988000",\
+            "storageRebate":"978120","nonRefundableStorageFee":"9880"}}}}
+            """
+        )
+
+        XCTAssertEqual(response.result?.effects?.gasUsed?.computationCost, "100000")
+        XCTAssertEqual(response.result?.effects?.gasUsed?.storageCost, "988000")
+        XCTAssertEqual(response.result?.effects?.status?.status, "success")
+        XCTAssertNil(response.result?.effects?.status?.error)
+    }
+
+    func testDryRunDecodesAnAbortedExecution() throws {
+        let response = try Self.decode(
+            SuiDryRunResponse.self,
+            from: """
+            {"jsonrpc":"2.0","id":1,"result":{"effects":{"status":\
+            {"status":"failure","error":"MoveAbort(...) in command 0"}}}}
+            """
+        )
+
+        XCTAssertEqual(response.result?.effects?.status?.error, "MoveAbort(...) in command 0")
+        XCTAssertNil(response.result?.effects?.gasUsed)
+    }
+
     // MARK: - Helpers
+
+    private static func decode<T: Decodable>(_ type: T.Type, from json: String) throws -> T {
+        try JSONDecoder().decode(type, from: Data(json.utf8))
+    }
 
     private func makeService() -> SuiService {
         SuiService(resolver: NoOverrideSuiResolver(), httpClient: http)

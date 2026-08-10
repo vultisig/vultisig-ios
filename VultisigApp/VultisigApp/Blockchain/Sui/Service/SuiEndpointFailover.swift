@@ -56,6 +56,44 @@ enum SuiEndpointFailoverError: Error, LocalizedError {
     }
 }
 
+/// Decides whether a failed attempt is worth repeating against the next host.
+enum SuiFailoverPolicy {
+
+    /// `true` when the failure is a property of the host or the connection, so a
+    /// different host plausibly succeeds.
+    ///
+    /// Errors that would recur identically everywhere — a request we failed to
+    /// build, or a request the node understood and rejected — are deliberately
+    /// excluded. Replaying those wastes a round trip, sends signed material to
+    /// another operator for no reason, and buries the meaningful first error
+    /// under whatever the last host happened to say.
+    static func shouldTryNextHost(after error: Error) -> Bool {
+        guard let httpError = error as? HTTPError else {
+            // A non-`HTTPError` reached us from outside the transport (only
+            // `CancellationError` does today, and the caller handles that
+            // first). Treat it as deterministic rather than guessing.
+            return false
+        }
+
+        switch httpError {
+        case .timeout, .networkError, .invalidSSLCertificate:
+            return true
+        case .invalidResponse, .noData, .decodingFailed:
+            // The host answered with something that is not a Sui RPC response.
+            // That is a property of this host, not of the request.
+            return true
+        case .statusCode(let code, _):
+            // 5xx is the node or a proxy in front of it; 408/429 are explicit
+            // "come back later" answers. Every other 4xx is about the request,
+            // and would be rejected identically by the next host.
+            return code >= 500 || code == 408 || code == 429
+        case .invalidURL, .encodingFailed:
+            // Built locally. Every host would fail the same way.
+            return false
+        }
+    }
+}
+
 /// Posts Sui RPC requests, failing over across the hosts from `endpoints`.
 ///
 /// Failover covers **transport** faults only — an unreachable host, a TLS
@@ -87,27 +125,40 @@ struct SuiFailoverClient {
     }
 
     /// Builds a target per host with `makeTarget` and returns the first decoded
-    /// response. Throws the last transport failure when every host fails.
+    /// response. Throws the last retryable failure when every host fails, or
+    /// rethrows immediately on a failure no other host would survive.
+    ///
+    /// `shouldTryNextHost` lets a caller treat a *successfully decoded* response
+    /// as a host-local miss and keep walking — the transaction-status poller
+    /// needs this, because a digest broadcast through the fallback host is
+    /// legitimately absent from the primary. When every host misses, the last
+    /// decoded response is returned so the caller still sees a real answer.
     func request<T: Decodable>(
         responseType: T.Type,
+        shouldTryNextHost: (T) -> Bool = { _ in false },
         makeTarget: (URL) -> TargetType
     ) async throws -> T {
-        var lastTransportFailure: Error?
+        var lastFailure: Error?
+        var lastMiss: T?
 
         for host in endpoints.hosts() {
             do {
-                return try await httpClient.request(makeTarget(host), responseType: responseType).data
-            } catch is CancellationError {
-                throw CancellationError()
+                let decoded = try await httpClient.request(makeTarget(host), responseType: responseType).data
+                guard shouldTryNextHost(decoded) else { return decoded }
+                lastMiss = decoded
+            } catch let cancellation as CancellationError {
+                throw cancellation
             } catch {
+                guard SuiFailoverPolicy.shouldTryNextHost(after: error) else { throw error }
                 logger.warning(
                     "Sui RPC host \(host.absoluteString, privacy: .public) failed, trying the next: \(error.localizedDescription, privacy: .public)"
                 )
-                lastTransportFailure = error
+                lastFailure = error
             }
         }
 
-        throw lastTransportFailure ?? SuiEndpointFailoverError.noEndpointsConfigured
+        if let lastMiss { return lastMiss }
+        throw lastFailure ?? SuiEndpointFailoverError.noEndpointsConfigured
     }
 
     /// Convenience for the common shape: one `SuiAPI` endpoint, one host list.
