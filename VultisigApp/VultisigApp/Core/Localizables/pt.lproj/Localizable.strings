@@ -1355,6 +1355,7 @@
 "suiResultOfCmd" = "Resultado do cmd";
 "suiSplitFrom" = "Dividir de";
 "suiTransaction" = "Transação Sui";
+"suiTransactionFailed" = "A transação falhou";
 "suiTransactionSummary" = "Resumo da transação";
 "support" = "Suporte";
 "supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak, .vult & .zip";

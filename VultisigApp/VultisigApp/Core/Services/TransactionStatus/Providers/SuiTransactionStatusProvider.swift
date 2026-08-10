@@ -80,7 +80,10 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
             )
         case .failed:
             return TransactionStatusResult(
-                status: .failed(reason: effects.failureReason ?? "Transaction failed"),
+                // The node authors `failureReason`, so it passes through as
+                // returned. The fallback is ours and reaches the user through
+                // the transaction-history detail sheet, so it is localized.
+                status: .failed(reason: effects.failureReason ?? "suiTransactionFailed".localized),
                 blockNumber: blockNumber,
                 confirmations: nil
             )

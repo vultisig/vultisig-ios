@@ -91,14 +91,35 @@ enum SuiCoinType {
     }
 
     /// Normalizes the leading address of one `address::module::struct` token.
-    /// A token with no `::` is an address on its own.
+    ///
+    /// A delimiter-free token is only an address if it *looks* like one. Move's
+    /// primitives and type constructors — `u64`, `bool`, `vector` — are also
+    /// delimiter-free, and running them through `normalizeAddress` invents types
+    /// that do not exist (`0xu64`, `0xvector<0xu8>`). Since this value is
+    /// persisted as a token's `contractAddress`, a mangled one would never match
+    /// the real coin again.
     private static func normalizeSegment(_ segment: String) -> String {
         guard !segment.isEmpty else { return segment }
         guard let separator = segment.range(of: "::") else {
+            guard segment.lowercased().hasPrefix("0x") else { return segment }
             return normalizeAddress(segment)
         }
         let address = String(segment[..<separator.lowerBound])
         return normalizeAddress(address) + String(segment[separator.lowerBound...])
+    }
+
+    /// Whether `repr` is a Move struct type we can fully account for —
+    /// `address::module::struct`, optionally generic, with balanced brackets.
+    ///
+    /// Used to tell "this object is genuinely not a coin" from "we could not
+    /// read this object at all". The first is out of scope and safe to skip; the
+    /// second means we do not know what we are dropping from a fund-path set.
+    static func isWellFormedStructType(_ repr: String) -> Bool {
+        guard hasBalancedBrackets(repr) else { return false }
+        let head = repr.prefix { $0 != "<" }
+        let parts = head.components(separatedBy: "::")
+        guard parts.count == 3 else { return false }
+        return parts.allSatisfy { !$0.isEmpty }
     }
 
     /// The `0x2::coin::Coin` wrapper struct, in canonical form.

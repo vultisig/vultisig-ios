@@ -198,7 +198,7 @@ class SuiService: SuiCoinMetadataProviding {
 
             return price
         } catch {
-            logger.error("Error fetching reference gas price: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error fetching reference gas price: \(error.localizedDescription, privacy: .private)")
             throw error
         }
     }
@@ -268,7 +268,7 @@ class SuiService: SuiCoinMetadataProviding {
 
             return coins
         } catch {
-            logger.error("Error fetching coins: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error fetching coins: \(error.localizedDescription, privacy: .private)")
             throw error
         }
     }
@@ -291,10 +291,30 @@ class SuiService: SuiCoinMetadataProviding {
         from nodes: [SuiCoinObjectsData.Node],
         cursor: String?
     ) throws -> [SuiCoin] {
-        try nodes.map { node in
-            guard let repr = node.contents?.type?.repr,
-                  let coinType = SuiCoinType.unwrap(repr),
-                  let coinObjectId = node.address, !coinObjectId.isEmpty,
+        try nodes.compactMap { node in
+            guard let repr = node.contents?.type?.repr else {
+                throw Errors.coinPageDecodeFailed(cursor: cursor)
+            }
+
+            guard let coinType = SuiCoinType.unwrap(repr) else {
+                // Not a `Coin<T>`. Verified against mainnet: the server-side
+                // `type: "0x2::coin::Coin"` filter matches the exact struct, so
+                // an address holding 37 `TreasuryCap`s returns none of them
+                // here. This branch is therefore defence in depth against the
+                // filter's semantics changing — and it splits the two cases
+                // rather than collapsing them, because they are not the same
+                // risk. A well-formed Move type that simply is not a coin is
+                // out of scope and costs nothing to skip; a type string we
+                // cannot parse at all means we do not know what we are dropping
+                // from a set that funds a transaction, and that must still
+                // abort.
+                guard SuiCoinType.isWellFormedStructType(repr) else {
+                    throw Errors.coinPageDecodeFailed(cursor: cursor)
+                }
+                return nil
+            }
+
+            guard let coinObjectId = node.address, !coinObjectId.isEmpty,
                   // `UInt53` arrives as a JSON number where JSON-RPC sent a
                   // decimal string; `SuiHelper` parses it back with `UInt64(_:)`,
                   // so the round trip is exact.
@@ -400,7 +420,7 @@ class SuiService: SuiCoinMetadataProviding {
                 } catch is CancellationError {
                     throw CancellationError()
                 } catch {
-                    logger.error("Error fetching metadata for \(String(describing: objType), privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    logger.error("Error fetching metadata for \(String(describing: objType), privacy: .public): \(error.localizedDescription, privacy: .private)")
                 }
             }
         }
@@ -498,7 +518,7 @@ class SuiService: SuiCoinMetadataProviding {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            logger.error("Error in dry run transaction: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error in dry run transaction: \(error.localizedDescription, privacy: .private)")
             throw Errors.dryRunFailed(error.localizedDescription)
         }
     }

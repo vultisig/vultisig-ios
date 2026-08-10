@@ -723,7 +723,11 @@ private extension BlockChainService {
                     gasBudget = max((totalCost * 115) / 100, BigInt(2000))
                 } catch {
                     logger.warning(
-                        "Sui dry run failed, using default gas budget: \(error.localizedDescription, privacy: .public)"
+                        // Private: `SuiService.Errors.dryRunFailed` wraps the
+                        // underlying description, which for a custom RPC can be
+                        // the endpoint URL — and a hosted provider embeds its
+                        // API key there.
+                        "Sui dry run failed, using default gas budget: \(error.localizedDescription, privacy: .private)"
                     )
                     // Fall back to default + 15% safety margin
                     gasBudget = (defaultBudget * 115) / 100

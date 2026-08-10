@@ -182,6 +182,60 @@ final class SuiTransportByteParityTests: XCTestCase {
         }
     }
 
+    func testNormalizePreservesMovePrimitivesAndVectors() {
+        // `vector`, `u8`, `u64` and `bool` are delimiter-free like an address,
+        // but they are not addresses. Normalizing them invents types that do not
+        // exist — and this value is persisted as a token's `contractAddress`, so
+        // a mangled one never matches the real coin again.
+        let cases: [(input: String, expected: String)] = [
+            ("0x0abc::pool::LP<u64, bool>", "0xabc::pool::LP<u64, bool>"),
+            ("0x0abc::pool::LP<vector<u8>>", "0xabc::pool::LP<vector<u8>>"),
+            ("0x0002::coin::Coin<0x0002::sui::SUI>", "0x2::coin::Coin<0x2::sui::SUI>"),
+            ("vector<u8>", "vector<u8>"),
+            ("u64", "u64")
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(SuiCoinType.normalize(testCase.input), testCase.expected, testCase.input)
+        }
+    }
+
+    func testCoinTypeUnwrapKeepsPrimitiveTypeArgumentsIntact() {
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+
+        XCTAssertEqual(
+            SuiCoinType.unwrap("\(padded)::coin::Coin<0x00abc::pool::LP<vector<u8>, u64>>"),
+            "0xabc::pool::LP<vector<u8>, u64>"
+        )
+    }
+
+    // MARK: - Telling "not a coin" from "unreadable"
+
+    func testWellFormedNonCoinTypesAreRecognisedAsSuch() {
+        // Verified against mainnet: the `type: "0x2::coin::Coin"` filter matches
+        // the exact struct, so an address holding 37 `TreasuryCap`s returns none
+        // of them. These are the objects that WOULD arrive if that ever changed
+        // — genuinely not coins, and safe to skip rather than abort on.
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        for repr in [
+            "\(padded)::coin::TreasuryCap<0x2::sui::SUI>",
+            "\(padded)::coin::CoinMetadata<0x2::sui::SUI>",
+            "0x2::balance::Balance<0x2::sui::SUI>",
+            "0x2::sui::SUI"
+        ] {
+            XCTAssertNil(SuiCoinType.unwrap(repr), "not a coin: \(repr)")
+            XCTAssertTrue(SuiCoinType.isWellFormedStructType(repr), "should be well formed: \(repr)")
+        }
+    }
+
+    func testUnreadableTypesAreNotMistakenForOutOfScopeObjects() {
+        // These must NOT be skipped: we cannot say what they are, so we cannot
+        // say that dropping them from a fund-path set is safe.
+        for repr in ["", "garbage", "0x2::coin", "0x2::coin::Coin<0x2::sui::SUI", "::::", "0x2::::X"] {
+            XCTAssertFalse(SuiCoinType.isWellFormedStructType(repr), "should be rejected: \(repr)")
+        }
+    }
+
     func testCoinTypeUnwrapDoesNotCrashOnUnicodeOrOddInput() {
         // Bounds arithmetic on a Swift String is grapheme-based; these exist to
         // prove the parser cannot trap on input a node should never send.

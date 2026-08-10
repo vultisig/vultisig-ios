@@ -93,12 +93,36 @@ final class HTTPClient: HTTPClientProtocol {
     }
 }
 
+// MARK: - URL composition
+extension HTTPClient {
+
+    /// The URL a target actually requests.
+    ///
+    /// An empty `path` must append **nothing**. `appendingPathComponent("")`
+    /// does not do that — it appends a trailing slash — which is invisible on a
+    /// bare origin (`https://host` and `https://host/` are the same request) but
+    /// changes the resource for any base URL that already carries a path.
+    /// `https://graphql.mainnet.sui.io/graphql` became
+    /// `https://graphql.mainnet.sui.io/graphql/`, which that endpoint answers
+    /// with a 404.
+    ///
+    /// Fixed here rather than in the one target that noticed, because the trap
+    /// belongs to the composition: any future `TargetType` that posts to a
+    /// base URL with a path and an empty `path` would hit it again. Checked
+    /// against every empty-path target in the app first — the only URLs this
+    /// changes are ones that were wrong.
+    static func url(for target: TargetType) -> URL {
+        guard !target.path.isEmpty else { return target.baseURL }
+        return target.baseURL.appendingPathComponent(target.path)
+    }
+}
+
 // MARK: - Private Methods
 private extension HTTPClient {
 
     /// Builds URLRequest from TargetType
     func buildURLRequest(from target: TargetType) throws -> URLRequest {
-        let url = target.baseURL.appendingPathComponent(target.path)
+        let url = Self.url(for: target)
         var urlRequest = URLRequest(url: url, timeoutInterval: target.timeoutInterval)
 
         urlRequest.httpMethod = target.method.rawValue

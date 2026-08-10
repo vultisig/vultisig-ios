@@ -39,9 +39,25 @@ struct SuiEndpointResolver: SuiEndpointProviding {
 
     func hosts() -> [URL] {
         if let raw = resolver.url(for: .sui), let parsed = URL(string: raw) {
-            return [parsed]
+            return [Self.normalized(parsed)]
         }
         return defaultHosts
+    }
+
+    /// Drops a trailing slash from a user-typed endpoint.
+    ///
+    /// Sui's GraphQL endpoint answers `/graphql` and 404s on `/graphql/`, and
+    /// pasting a URL with a trailing slash is an ordinary thing to do. Only the
+    /// slash is removed, and only when a path remains — a bare origin is left
+    /// alone, where the two forms are the same request anyway.
+    private static func normalized(_ url: URL) -> URL {
+        let text = url.absoluteString
+        guard text.hasSuffix("/") else { return url }
+        let trimmed = String(text.dropLast())
+        guard let candidate = URL(string: trimmed), candidate.host != nil, !candidate.path.isEmpty else {
+            return url
+        }
+        return candidate
     }
 }
 
@@ -147,20 +163,38 @@ struct SuiFailoverClient {
         shouldTryNextHost: (T) -> Bool = { _ in false },
         makeTarget: (URL) -> TargetType
     ) async throws -> T {
+        try await answer(responseType: responseType, shouldTryNextHost: shouldTryNextHost, makeTarget: makeTarget).value
+    }
+
+    /// The decoded response **and the host that produced it**.
+    ///
+    /// The host is not cosmetic: a message that names an endpoint the user never
+    /// contacted is worse than no endpoint at all, and the one caller that
+    /// reports an endpoint by name is telling someone to go change a setting.
+    func answer<T: Decodable>(
+        responseType: T.Type,
+        shouldTryNextHost: (T) -> Bool = { _ in false },
+        makeTarget: (URL) -> TargetType
+    ) async throws -> (value: T, host: URL) {
         var lastFailure: Error?
-        var lastMiss: T?
+        var lastMiss: (value: T, host: URL)?
 
         for host in endpoints.hosts() {
             do {
                 let decoded = try await httpClient.request(makeTarget(host), responseType: responseType).data
-                guard shouldTryNextHost(decoded) else { return decoded }
-                lastMiss = decoded
+                guard shouldTryNextHost(decoded) else { return (decoded, host) }
+                lastMiss = (decoded, host)
             } catch let cancellation as CancellationError {
                 throw cancellation
             } catch {
                 guard SuiFailoverPolicy.shouldTryNextHost(after: error) else { throw error }
+                // Host component only, and private: a hosted node provider
+                // commonly embeds an API key in the path or query string, so a
+                // custom RPC URL is user secret material. The error description
+                // is private for the same reason — `legacyJSONRPCEndpoint`
+                // carries the endpoint it was given.
                 logger.warning(
-                    "Sui RPC host \(host.absoluteString, privacy: .public) failed, trying the next: \(error.localizedDescription, privacy: .public)"
+                    "Sui RPC host \(host.host ?? "<unknown>", privacy: .private) failed, trying the next: \(error.localizedDescription, privacy: .private)"
                 )
                 lastFailure = error
             }
@@ -192,7 +226,7 @@ struct SuiFailoverClient {
         responseType: T.Type,
         shouldTryNextHost: @escaping (T) -> Bool = { _ in false }
     ) async throws -> T {
-        let envelope = try await request(
+        let (envelope, host) = try await answer(
             responseType: SuiGraphQLResponse<T>.self,
             shouldTryNextHost: { envelope in
                 if envelope.isRetryableNodeError { return true }
@@ -216,7 +250,8 @@ struct SuiFailoverClient {
         if let data = envelope.data { return data }
 
         if envelope.jsonrpc != nil {
-            let host = endpoints.hosts().last ?? SuiGraphQLAPI.defaultHost
+            // The host that actually answered, not the last configured one:
+            // this message tells the user which endpoint to go fix.
             throw SuiRPCError.legacyJSONRPCEndpoint(host: host.absoluteString)
         }
 

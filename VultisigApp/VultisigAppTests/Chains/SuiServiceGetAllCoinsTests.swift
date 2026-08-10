@@ -122,6 +122,70 @@ final class SuiServiceGetAllCoinsTests: XCTestCase {
         }
     }
 
+    // MARK: - Objects the coin filter should never return
+
+    func testANonCoinObjectIsSkippedRatherThanAbortingThePage() async throws {
+        // Defence in depth. Verified against mainnet that the server-side
+        // `type: "0x2::coin::Coin"` filter matches the exact struct — an address
+        // holding 37 `TreasuryCap`s returns none of them — so this cannot happen
+        // today. If it ever did, losing every Sui balance and every send over an
+        // object the wallet does not even spend would be the wrong trade.
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        let treasuryCap = """
+        {"address":"0xcap","version":1,"digest":"digest-cap",\
+        "contents":{"type":{"repr":"\(padded)::coin::TreasuryCap<\(padded)::sui::SUI>"},\
+        "json":{}}}
+        """
+        StubRPCProtocol.pages = [
+            Self.page(coins: [treasuryCap, Self.coinJSON(id: "0x1")], nextCursor: nil, hasNextPage: false)
+        ]
+
+        let coins = try await SuiService(resolver: StubResolver(host: Self.stubHost))
+            .getAllCoins(coin: Self.makeCoin())
+
+        XCTAssertEqual(coins.map { $0["objectID"] }, ["0x1"], "the TreasuryCap is skipped, the coin is kept")
+    }
+
+    func testAnUnreadableTypeStillAbortsThePage() async {
+        // The other half of the split: a type string we cannot parse means we do
+        // not know what we are dropping from a set that funds a transaction.
+        let unreadable = """
+        {"address":"0xbad","version":1,"digest":"digest-bad",\
+        "contents":{"type":{"repr":"not-a-move-type"},"json":{"balance":"1"}}}
+        """
+        StubRPCProtocol.pages = [
+            Self.page(coins: [unreadable, Self.coinJSON(id: "0x1")], nextCursor: nil, hasNextPage: false)
+        ]
+
+        do {
+            _ = try await SuiService(resolver: StubResolver(host: Self.stubHost))
+                .getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected an unreadable object type to abort the page")
+        } catch {
+            // Expected: a truncated coin set is worse than no coin set.
+        }
+    }
+
+    func testACoinWithAMalformedBalanceStillAbortsThePage() async {
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        let badBalance = """
+        {"address":"0xbad","version":1,"digest":"digest-bad",\
+        "contents":{"type":{"repr":"\(padded)::coin::Coin<\(padded)::sui::SUI>"},\
+        "json":{"balance":"not-a-number"}}}
+        """
+        StubRPCProtocol.pages = [
+            Self.page(coins: [badBalance], nextCursor: nil, hasNextPage: false)
+        ]
+
+        do {
+            _ = try await SuiService(resolver: StubResolver(host: Self.stubHost))
+                .getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected a malformed coin balance to abort the page")
+        } catch {
+            // Expected.
+        }
+    }
+
     // MARK: - Fixtures
 
     private static func makeCoin() -> Coin {
