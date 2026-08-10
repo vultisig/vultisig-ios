@@ -61,7 +61,6 @@ struct HomeScreen: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
-    @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @ObservedObject private var transactionPoller = TransactionStatusPoller.shared
     @Environment(\.modelContext) private var modelContext
@@ -96,14 +95,6 @@ struct HomeScreen: View {
         // protect against. An alert is presented in a layer the gate's overlay
         // cannot reach, so one raised then sits on top of the lock screen.
         .presentsWhenUnlocked($phoneCheckUpdateViewModel.showUpdateAlert)
-        // The document scene's hand-off is held while the app is locked, so it
-        // can land long after `setData()` asked once and found nothing. Only the
-        // screen that consumes it opens the import, which is what keeps a second
-        // mounted scene from pushing the same route again.
-        .onReceive(vultExtensionViewModel.$isDocumentImportPending.filter { $0 }) { _ in
-            guard vultExtensionViewModel.consumeDocumentImport() else { return }
-            navigateToImportBackup()
-        }
         .onReceive(
             NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
         ) { _ in
@@ -445,9 +436,6 @@ extension HomeScreen {
     }
 
     fileprivate func presetValuesForDeeplink() {
-        if vultExtensionViewModel.consumeDocumentImport() {
-            navigateToImportBackup()
-        }
 
         guard let type = deeplinkViewModel.type else {
             return
@@ -659,9 +647,6 @@ extension HomeScreen {
                 hasPreselectedCoin: true))
     }
 
-    fileprivate func navigateToImportBackup() {
-        router.navigate(to: OnboardingRoute.importVaultShare)
-    }
 }
 
 private extension HomeScreen {

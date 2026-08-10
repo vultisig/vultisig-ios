@@ -85,6 +85,21 @@ struct ContentView: View {
             guard !isLocked else { return }
             drainPendingDeeplinks()
         }
+        // The document scene's hand-off is owned here rather than by `HomeScreen`,
+        // because `HomeScreen` is not always there: an install with no vaults
+        // routes straight to create-vault, and a `.vult` opened from Files then
+        // had nothing listening at all — the user's backup never opened. This view
+        // is mounted in every scene the app can open, and for the whole of each.
+        //
+        // A trigger rather than a subscription on the flag: `@Published` publishes
+        // from `willSet`, so anything that reacts by *reading* the flag reads the
+        // value from before the hand-off, declines, and leaves it raised with
+        // nobody left to ask. `consumeDocumentImport()` is what keeps a second
+        // mounted scene from pushing the same route twice.
+        .presentsWhenUnlocked(on: vultExtensionViewModel.isDocumentImportPending) {
+            guard vultExtensionViewModel.consumeDocumentImport() else { return }
+            navigationRouter.navigate(to: OnboardingRoute.importVaultShare)
+        }
         .onReceive(
             NotificationCenter.default.publisher(
                 for: NSNotification.Name("HandlePushNotification")

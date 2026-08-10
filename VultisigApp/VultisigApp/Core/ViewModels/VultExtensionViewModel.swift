@@ -20,6 +20,13 @@ class VultExtensionViewModel: ObservableObject {
     /// `DocumentGroup` — and the document stays set until the import screen
     /// reads it. Two screens both seeing it there is two pushes of the same
     /// import route for one file.
+    ///
+    /// **Use it as a trigger, never as a subscription that reads it back.**
+    /// `@Published` publishes from `willSet`, so a `sink`/`onReceive` that then
+    /// asks ``consumeDocumentImport()`` is asking about the value from *before*
+    /// the hand-off: the consume declines, the flag stays raised, and there is
+    /// nobody left to ask — a user's `.vult` backup silently dropped. Read it
+    /// where the view update reads it, by which time it has settled.
     @Published private(set) var isDocumentImportPending: Bool = false
 
     func handOff(documentData: FileDocumentConfiguration<VULTFileDocument>) {

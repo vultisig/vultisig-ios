@@ -270,6 +270,15 @@ final class AppLockPanelHost: ObservableObject {
         })
     }
 
+    /// Detaching and ordering out is the whole teardown: the host drops its only
+    /// reference immediately afterwards, and the panel deallocates then, taking
+    /// its hosting controller and the lock screen inside it along.
+    ///
+    /// No `close()`. `isReleasedWhenClosed` being false does not mean AppKit holds
+    /// the window — measured over repeated cycles, an ordered-out panel is gone
+    /// from `NSApp.windows` and deallocated with or without it. Key has already
+    /// been handed back to the parent by the time this runs, so nothing else is
+    /// holding on either.
     private func dismantle(_ panel: AppLockPanel) {
         panel.parent?.removeChildWindow(panel)
         panel.orderOut(nil)

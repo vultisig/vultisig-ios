@@ -58,6 +58,11 @@ final class AppLockWindowHost: ObservableObject {
     /// What was key in each scene before the gate took it, so unlocking gives it
     /// back. Per scene, because key windows are.
     private var previousKeyWindows: [ObjectIdentifier: WeakWindow] = [:]
+    /// The scene whose window carries the keypad. Held so a raise keeps it where
+    /// it is rather than picking again — `connectedScenes` is a `Set`, so with two
+    /// foreground-active scenes (iPad Split View, Stage Manager) "the first
+    /// foreground-active one" is not a stable answer.
+    private weak var interactiveScene: UIWindowScene?
     private var current: AppLockPresentation = .uncovered
     private var callbacks: Callbacks?
     /// Invalidates the completion of a fade that a re-raise has overtaken, so a
@@ -144,13 +149,22 @@ final class AppLockWindowHost: ObservableObject {
 
         // Exactly one scene gets the interactive lock screen. `EnterPasscodeScreen`
         // starts a biometric attempt from its `.task`, so one per scene would be
-        // one Face ID prompt per scene; the others are covered instead, and the
-        // election is redone whenever a different scene activates.
-        let interactiveScene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+        // one Face ID prompt per scene; the others are covered instead.
+        //
+        // The scene already carrying it wins, and that is not an optimisation:
+        // `connectedScenes` is a `Set`, so on an iPad with two foreground-active
+        // scenes "the first foreground-active one" can answer differently from one
+        // raise to the next, and the keypad would move out from under whoever was
+        // typing. Which scene it moves *to* is decided by `elect(_:)`, from the
+        // scene the user actually activated.
+        let elected = scenes.first { $0 === interactiveScene && $0.activationState == .foregroundActive }
+            ?? scenes.first { $0.activationState == .foregroundActive }
+            ?? scenes.first
+        interactiveScene = elected
 
         for scene in scenes {
             show(
-                scene === interactiveScene ? presentation : .cover,
+                scene === elected ? presentation : .cover,
                 in: scene,
                 onUnlocked: onUnlocked,
                 onAttemptFailed: onAttemptFailed
@@ -233,6 +247,10 @@ final class AppLockWindowHost: ObservableObject {
             previousKeyWindows[key]?.window?.makeKey()
         }
         previousKeyWindows = [:]
+        // `interactiveScene` deliberately survives: it is "the scene the user was
+        // last in", which is still the right answer for the next gate. Clearing it
+        // here would throw the only stable election away and send the next raise
+        // back to picking an arbitrary member of an unordered `Set`.
 
         guard animated else {
             windows = [:]
@@ -271,8 +289,9 @@ final class AppLockWindowHost: ObservableObject {
             forName: UIScene.didActivateNotification,
             object: nil,
             queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in self?.reelectInteractiveScene() }
+        ) { [weak self] notification in
+            guard let scene = notification.object as? UIWindowScene else { return }
+            Task { @MainActor in self?.elect(scene) }
         }
 
         center.addObserver(
@@ -286,11 +305,27 @@ final class AppLockWindowHost: ObservableObject {
         }
     }
 
-    /// Hands the interactive lock screen to whichever scene the user just moved
-    /// to. Without it the scene that happened to be active when the gate went up
-    /// keeps the keypad, and every other one is left with a screen that cannot be
-    /// typed into.
-    private func reelectInteractiveScene() {
+    /// Hands the interactive lock screen to the scene the user just moved to, so
+    /// the keypad is in the one being looked at.
+    ///
+    /// It takes the scene from the notification rather than working it out again:
+    /// re-running the election would answer with whichever scene the `Set` happens
+    /// to yield first, which on an iPad with two foreground-active scenes need not
+    /// be the one that just activated — and then this method would do nothing but
+    /// churn.
+    ///
+    /// A no-op when the keypad is already there, which is what keeps the
+    /// `makeKeyAndVisible` inside the re-raise from electing its way round in a
+    /// circle.
+    ///
+    /// The scene is recorded whether or not a gate is up. Only *moving* the
+    /// keypad needs a gate; knowing which scene the user is in is worth having
+    /// ready for the next one, and activations that happen while the app is
+    /// unlocked are most of them.
+    private func elect(_ scene: UIWindowScene) {
+        guard scene !== interactiveScene else { return }
+        interactiveScene = scene
+
         guard current.isGate, let callbacks else { return }
         raise(
             current,
@@ -299,10 +334,30 @@ final class AppLockWindowHost: ObservableObject {
         )
     }
 
+    /// Takes a disconnected scene's window down — and, if that scene was the one
+    /// holding the keypad, finds somewhere else to put it.
+    ///
+    /// Without the re-election the gate survives its own keypad: every remaining
+    /// window is showing the passive cover, `hostsLockScreen` is still `true` so
+    /// the root overlay is drawing the floor rather than the lock screen, and
+    /// there is nothing anywhere to type a passcode into until some other scene
+    /// happens to activate. If no scene is left, the re-raise reports that and the
+    /// overlay takes the lock screen back.
     private func discardWindow(for key: ObjectIdentifier) {
         previousKeyWindows[key] = nil
-        guard let window = windows.removeValue(forKey: key) else { return }
-        dismantle(window)
+        let heldTheKeypad = interactiveScene.map { ObjectIdentifier($0) == key } ?? true
+
+        if let window = windows.removeValue(forKey: key) {
+            dismantle(window)
+        }
+
+        guard current.isGate, heldTheKeypad, let callbacks else { return }
+        interactiveScene = nil
+        raise(
+            current,
+            onUnlocked: callbacks.onUnlocked,
+            onAttemptFailed: callbacks.onAttemptFailed
+        )
     }
 }
 #endif
