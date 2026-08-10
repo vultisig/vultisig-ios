@@ -935,6 +935,14 @@ private struct MutableTransaction {
         instructions = instructions.map { instruction in
             var shifted = instruction
             shifted.accounts = instruction.accounts.map { Int($0) >= oldStaticCount ? $0 + 1 : $0 }
+            // The program is addressed by the same index space as the accounts.
+            // No current vector invokes a program that lives in a lookup table —
+            // every fixture's programIdIndex is static — so this shift is inert
+            // today. It is here so that a vector which does will exercise the
+            // mutation under test rather than a refusal caused by the insertion.
+            if Int(instruction.programIdIndex) >= oldStaticCount {
+                shifted.programIdIndex = instruction.programIdIndex + 1
+            }
             return shifted
         }
         return UInt8(oldStaticCount)

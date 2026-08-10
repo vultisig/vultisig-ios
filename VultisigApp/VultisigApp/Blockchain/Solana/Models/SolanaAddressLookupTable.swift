@@ -16,15 +16,15 @@ enum SolanaAddressLookupTableError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .accountNotFound(let table):
-            return "Address lookup table \(table) does not exist on chain"
+            return String(format: "solanaAddressLookupTableErrorAccountNotFound".localized, table)
         case .wrongOwner(let table, let owner):
-            return "Account \(table) is owned by \(owner), not the Address Lookup Table program"
+            return String(format: "solanaAddressLookupTableErrorWrongOwner".localized, table, owner)
         case .unsupportedEncoding(let table):
-            return "Address lookup table \(table) was returned in an unexpected encoding"
+            return String(format: "solanaAddressLookupTableErrorUnsupportedEncoding".localized, table)
         case .malformedAccountData(let table):
-            return "Address lookup table \(table) has malformed account data"
+            return String(format: "solanaAddressLookupTableErrorMalformedData".localized, table)
         case .uninitialized(let table):
-            return "Address lookup table \(table) is not initialized"
+            return String(format: "solanaAddressLookupTableErrorUninitialized".localized, table)
         }
     }
 }

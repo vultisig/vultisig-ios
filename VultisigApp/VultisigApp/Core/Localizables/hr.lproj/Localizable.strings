@@ -626,6 +626,8 @@
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
+"kaminoErrorVaultMetadataMismatch" = "Kamino je prijavio %1$@ kao %2$@; ovaj vault ima %3$@";
+"kaminoErrorVaultNotInRegistry" = "Vault %@ nije onaj s kojim ova aplikacija posluje";
 "keyCopied" = "Ključ kopiran";
 "keygen" = "Generiranje ključeva";
 "keygenFailed" = "Generiranje ključa nije uspjelo";
@@ -1293,6 +1295,11 @@
 "slippageHelperText" = "Ograničava koliko se cijena može promijeniti prije nego se izvršenje otkaže.";
 "slippageMaxNote" = "Klizanje je ograničeno na %@.";
 "slippageTolerance" = "Tolerancija klizanja";
+"solanaAddressLookupTableErrorAccountNotFound" = "Address lookup table %@ ne postoji na lancu";
+"solanaAddressLookupTableErrorMalformedData" = "Address lookup table %@ ima neispravne podatke računa";
+"solanaAddressLookupTableErrorUninitialized" = "Address lookup table %@ nije inicijalizirana";
+"solanaAddressLookupTableErrorUnsupportedEncoding" = "Address lookup table %@ vraćena je u neočekivanom kodiranju";
+"solanaAddressLookupTableErrorWrongOwner" = "Račun %1$@ u vlasništvu je %2$@, a ne programa Address Lookup Table";
 "solanaBatchSigningNotSupported" = "Potpisivanje više Solana transakcija odjednom još nije podržano.";
 "solanaStakingActionDelegate" = "Ulog";
 "solanaStakingActionUnstake" = "Skidanje stake-a";
