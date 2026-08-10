@@ -58,15 +58,36 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
     /// episode lease; keysign holds no lease, and there the two directions are
     /// not symmetric:
     ///
-    /// - snapshot plaintext, store then sealed: a later lock no longer stops
-    ///   this read, where re-reading the model would have. The value is already
-    ///   in this process's memory and only a ceremony this app is itself driving
-    ///   can ask for it again, so this is recorded rather than closed;
-    /// - snapshot sealed, store then unsealed by a disable: this read fails
+    /// - snapshot **plaintext**, store then sealed: `open` passes a plaintext
+    ///   value through in every state, so on its own it could not notice, and a
+    ///   later lock would go on handing this share to the signing layer where
+    ///   re-reading the model would have refused. That is the one way a snapshot
+    ///   could be weaker than the read it replaced, so it is closed below rather
+    ///   than accepted — see ``lockGeneration``;
+    /// - snapshot **sealed**, store then unsealed by a disable: this read fails
     ///   closed where re-reading would have succeeded, so the ceremony fails
-    ///   visibly and the user retries.
+    ///   visibly and the user retries. Availability, never safety, and there is
+    ///   no way to see the unsealed value without reading the model.
     private let vaultShares: [String: String]
     private let protector: KeyshareProtecting
+    private let session: KeyshareKeySession
+
+    /// The session generation at the moment the snapshot was taken.
+    ///
+    /// `KeyshareKeySession.clear()` — which is all `PasscodeService.lock()`
+    /// does — bumps this counter, so a value different from the one captured
+    /// here means *the app has locked since the shares were copied*. That is the
+    /// signal a plaintext snapshot has no other way to get: the store may have
+    /// been sealed behind it, and the key that would open the sealed form is
+    /// gone.
+    ///
+    /// It is the **cheap** half of the test, deliberately. Reading it costs one
+    /// `NSLock`-guarded integer, so the ordinary read pays nothing; only once a
+    /// lock has actually landed is the protection state consulted, which is
+    /// where a Keychain round trip could otherwise appear in the middle of
+    /// signing — the exact cost `KeyshareKeySession` is documented as existing
+    /// to keep off this path.
+    private let lockGeneration: Int
 
     /// Snapshots the vault on the MainActor.
     ///
@@ -75,14 +96,18 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
     /// inside the ceremony instead of ahead of it. Both call sites — the GG20
     /// keygen and the GG20 keysign view models — are already main-actor bound.
     @MainActor
-    convenience init(vault: Vault, protector: KeyshareProtecting = KeyshareProtector.shared) {
+    convenience init(
+        vault: Vault,
+        protector: KeyshareProtecting = KeyshareProtector.shared,
+        session: KeyshareKeySession = .shared
+    ) {
         // `first` wins on a duplicate public key, matching the `first(where:)`
         // the vault accessor used to do.
         let shares = Dictionary(
             vault.keyshares.map { ($0.pubkey, $0.keyshare) },
             uniquingKeysWith: { first, _ in first }
         )
-        self.init(vaultShares: shares, protector: protector)
+        self.init(vaultShares: shares, protector: protector, session: session)
     }
 
     /// Private on purpose: a module-visible dictionary initializer would let a
@@ -90,14 +115,29 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
     /// result in, which is the exact thing the main-actor initializer exists to
     /// stop. Every construction — production and test — goes through
     /// `init(vault:)`.
-    private init(vaultShares: [String: String], protector: KeyshareProtecting) {
+    private init(
+        vaultShares: [String: String],
+        protector: KeyshareProtecting,
+        session: KeyshareKeySession
+    ) {
         self.vaultShares = vaultShares
         self.protector = protector
+        self.session = session
+        // Captured with the shares, not later: it is only meaningful as "the
+        // generation those values were copied at".
+        self.lockGeneration = session.currentGeneration
         super.init()
     }
 
     func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
         guard let pubKey, let stored = vaultShares[pubKey] else {
+            return ""
+        }
+
+        if isRefusedByALockTakenAfterTheSnapshot(stored) {
+            let lockedError = KeyshareProtectionError.locked
+            logger.error("Refusing a snapshotted key share: the app locked after the ceremony started")
+            error?.pointee = lockedError as NSError
             return ""
         }
 
@@ -112,6 +152,39 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
             error?.pointee = openError as NSError
             return ""
         }
+    }
+
+    /// Whether a lock landed after the snapshot was taken and left this value
+    /// one the app must no longer hand over.
+    ///
+    /// Only a value that is **plaintext in the snapshot** can be answered wrongly
+    /// without this: `open` already refuses a sealed value with no key in hand,
+    /// and passes a plaintext one through in every state — a passthrough that is
+    /// deliberate and permanent, because most installs never set a passcode and
+    /// their shares stay plaintext forever. So it cannot tell "plaintext because
+    /// there is no passcode" from "plaintext because the passcode arrived after
+    /// this was copied", and that second case is the whole hazard.
+    ///
+    /// Three conditions, cheapest first, all required:
+    ///
+    /// 1. the snapshotted value is not sealed — otherwise `open` decides and
+    ///    this must not second-guess it;
+    /// 2. the session generation moved, i.e. a `lock()` ran since the snapshot.
+    ///    One integer read, and it is false on every ordinary call;
+    /// 3. the protection state is now `.locked` — a wrapper exists and its key is
+    ///    not in hand. An install with no passcode answers `.disabled` here and
+    ///    is served exactly as before; an app that locked and was then unlocked
+    ///    answers `.unlocked` and is served too, which is what re-reading the
+    ///    model would have done.
+    private func isRefusedByALockTakenAfterTheSnapshot(_ stored: String) -> Bool {
+        guard !protector.isSealed(stored), session.currentGeneration != lockGeneration else {
+            return false
+        }
+
+        if case .locked = session.currentState() {
+            return true
+        }
+        return false
     }
 
     func saveLocalState(_ pubkey: String?, localState: String?) throws {

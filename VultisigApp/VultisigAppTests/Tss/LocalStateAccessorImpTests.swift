@@ -3,6 +3,7 @@
 //  VultisigAppTests
 //
 
+import CryptoKit
 import XCTest
 
 // The type under test is handed to a Go binding that calls it from arbitrary
@@ -21,12 +22,15 @@ import XCTest
 /// on a `@Model` is undefined behaviour, not a deterministic failure, so no test
 /// can make the old code trap on demand. What they pin instead is the **seam** —
 /// that the callback answers out of a value snapshot rather than out of the
-/// model, which is checkable, fails against the previous implementation, and is
-/// the only thing a future change could quietly undo.
+/// model, and that the snapshot cannot outlive the protection state it was taken
+/// under.
 ///
-/// Everything here constructs through `init(vault:)`, the one initializer
-/// production uses, so a test cannot pass through a seam production does not
-/// have.
+/// Two things keep them from passing for the wrong reason. Everything
+/// constructs through `init(vault:)`, the one initializer production uses. And
+/// the protection state is driven through the **real** `KeyshareKeySession` and
+/// `KeyshareProtector` over a mock Keychain, rather than a hand-held state
+/// closure — so "set a passcode", "lock" and "unlock" are the state transitions
+/// production performs, not a test's idea of them.
 @MainActor
 final class LocalStateAccessorImpTests: XCTestCase {
 
@@ -35,9 +39,51 @@ final class LocalStateAccessorImpTests: XCTestCase {
     private let ecdsaShare = "eyJrZXlzaGFyZSI6ImVjZHNhIn0="
     private let eddsaShare = #"{"PubKey":"03bbb","ShareID":{"value":"9"}}"#
 
-    private func makeUnlockedProtector() throws -> KeyshareProtector {
-        let key = try VaultCryptoEnvelope.randomKey()
-        return KeyshareProtector(state: { .unlocked(key) })
+    /// A real session and protector over a mock Keychain, wired the way
+    /// production wires them: the protector reads its state from the session.
+    private struct Environment {
+        let keychain: MockKeychainService
+        let session: KeyshareKeySession
+        let protector: KeyshareProtector
+
+        /// Models `setPasscode`: the wrapper becomes durable and the key is
+        /// adopted, so the session reports `.unlocked`.
+        @discardableResult
+        func setPasscode() throws -> SymmetricKey {
+            let key = try VaultCryptoEnvelope.randomKey()
+            keychain.wrappedKeyshareDataKeyResult = .present(Data([0x01]))
+            session.adopt(key)
+            return key
+        }
+
+        /// Models `PasscodeService.lock()` — the only thing it does is forget
+        /// the key, which bumps the session generation.
+        func lock() {
+            session.clear()
+        }
+
+        /// Models the unlock that follows: the key comes back without the
+        /// generation moving again.
+        func unlock(_ key: SymmetricKey) {
+            session.adopt(key)
+        }
+
+        /// Models `disablePasscode`: every share is opened back to plaintext and
+        /// the wrapper is deleted, so the session reports `.disabled`.
+        func disablePasscode() {
+            keychain.wrappedKeyshareDataKeyResult = .absent
+            session.clear()
+        }
+    }
+
+    private func makeEnvironment() -> Environment {
+        let keychain = MockKeychainService()
+        let session = KeyshareKeySession(store: DefaultKeyshareKeyStore(keychain: keychain))
+        return Environment(
+            keychain: keychain,
+            session: session,
+            protector: KeyshareProtector(state: { session.currentState() })
+        )
     }
 
     private func makeVault(protector: KeyshareProtecting) throws -> Vault {
@@ -57,6 +103,10 @@ final class LocalStateAccessorImpTests: XCTestCase {
         return vault
     }
 
+    private func makeAccessor(vault: Vault, env: Environment) -> LocalStateAccessorImpl {
+        LocalStateAccessorImpl(vault: vault, protector: env.protector, session: env.session)
+    }
+
     // MARK: - The snapshot seam
 
     /// The regression this change exists for: after construction the callback
@@ -64,9 +114,9 @@ final class LocalStateAccessorImpTests: XCTestCase {
     /// the observable stand-in for "the model is touched" — the previous
     /// implementation read `vault.keyshares` on every call and answered `""`.
     func testTheShareSnapshotIsNotReReadFromTheModel() throws {
-        let protector = KeyshareProtector(state: { .disabled })
-        let vault = try makeVault(protector: protector)
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        let sut = makeAccessor(vault: vault, env: env)
 
         vault.keyshares = []
 
@@ -77,9 +127,9 @@ final class LocalStateAccessorImpTests: XCTestCase {
 
     /// The same property from the thread the TSS binding actually uses.
     func testABackgroundCallbackAnswersFromTheSnapshot() throws {
-        let protector = KeyshareProtector(state: { .disabled })
-        let vault = try makeVault(protector: protector)
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        let sut = makeAccessor(vault: vault, env: env)
 
         vault.keyshares = []
 
@@ -99,9 +149,9 @@ final class LocalStateAccessorImpTests: XCTestCase {
     /// Reached concurrently during a ceremony, so the snapshot has to be
     /// readable from many threads at once without a lock.
     func testConcurrentReadsAllAnswerFromTheSnapshot() throws {
-        let protector = KeyshareProtector(state: { .disabled })
-        let vault = try makeVault(protector: protector)
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        let sut = makeAccessor(vault: vault, env: env)
         let expected = ecdsaShare
         let pubKey = ecdsaPubKey
 
@@ -115,13 +165,13 @@ final class LocalStateAccessorImpTests: XCTestCase {
     /// `Vault.keyshareValue(for:)` resolved duplicates with `first(where:)`;
     /// the snapshot has to resolve them the same way.
     func testADuplicatePublicKeyKeepsTheFirstShare() {
-        let protector = KeyshareProtector(state: { .disabled })
+        let env = makeEnvironment()
         let vault = Vault(name: "Duplicate Vault")
         vault.keyshares = [
             KeyShare(pubkey: ecdsaPubKey, keyshare: ecdsaShare),
             KeyShare(pubkey: ecdsaPubKey, keyshare: "second-share-for-the-same-key")
         ]
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let sut = makeAccessor(vault: vault, env: env)
 
         var error: NSError?
         XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &error), ecdsaShare)
@@ -131,8 +181,8 @@ final class LocalStateAccessorImpTests: XCTestCase {
     // MARK: - The read contract the TSS layer depends on
 
     func testAnUnknownPublicKeyAnswersEmptyWithNoError() throws {
-        let protector = KeyshareProtector(state: { .disabled })
-        let sut = LocalStateAccessorImpl(vault: try makeVault(protector: protector), protector: protector)
+        let env = makeEnvironment()
+        let sut = makeAccessor(vault: try makeVault(protector: env.protector), env: env)
 
         var error: NSError?
         XCTAssertEqual(sut.getLocalState("not-a-key", error: &error), "")
@@ -140,8 +190,8 @@ final class LocalStateAccessorImpTests: XCTestCase {
     }
 
     func testANilPublicKeyAnswersEmptyWithNoError() throws {
-        let protector = KeyshareProtector(state: { .disabled })
-        let sut = LocalStateAccessorImpl(vault: try makeVault(protector: protector), protector: protector)
+        let env = makeEnvironment()
+        let sut = makeAccessor(vault: try makeVault(protector: env.protector), env: env)
 
         var error: NSError?
         XCTAssertEqual(sut.getLocalState(nil, error: &error), "")
@@ -153,11 +203,12 @@ final class LocalStateAccessorImpTests: XCTestCase {
     /// the snapshot from parking plaintext key material in memory for the whole
     /// ceremony.
     func testASealedShareIsOpenedOnRead() throws {
-        let protector = try makeUnlockedProtector()
-        let vault = try makeVault(protector: protector)
+        let env = makeEnvironment()
+        try env.setPasscode()
+        let vault = try makeVault(protector: env.protector)
         XCTAssertTrue(vault.keyshares[0].keyshare.hasPrefix(AesGcmKeyshareCipher.sealedPrefix))
 
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let sut = makeAccessor(vault: vault, env: env)
 
         var error: NSError?
         XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &error), ecdsaShare)
@@ -169,11 +220,12 @@ final class LocalStateAccessorImpTests: XCTestCase {
     /// distinguishable to the TSS layer — they need different handling and both
     /// used to look like `""`.
     func testALockedShareIsReportedThroughTheErrorPointer() throws {
-        let unlocked = try makeUnlockedProtector()
-        let vault = try makeVault(protector: unlocked)
-        let locked = KeyshareProtector(state: { .locked })
+        let env = makeEnvironment()
+        try env.setPasscode()
+        let vault = try makeVault(protector: env.protector)
+        env.lock()
 
-        let sut = LocalStateAccessorImpl(vault: vault, protector: locked)
+        let sut = makeAccessor(vault: vault, env: env)
 
         var error: NSError?
         XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &error), "")
@@ -184,79 +236,130 @@ final class LocalStateAccessorImpTests: XCTestCase {
     /// when the snapshot was taken unreadable. Opening at construction instead
     /// would defeat that.
     func testAShareSealedAtConstructionBecomesUnreadableOnceTheKeyIsGone() throws {
-        let key = try VaultCryptoEnvelope.randomKey()
-        var state: KeyshareProtectionState = .unlocked(key)
-        let protector = KeyshareProtector(state: { state })
-        let vault = try makeVault(protector: protector)
+        let env = makeEnvironment()
+        try env.setPasscode()
+        let vault = try makeVault(protector: env.protector)
 
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let sut = makeAccessor(vault: vault, env: env)
 
         var beforeLock: NSError?
         XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &beforeLock), ecdsaShare)
         XCTAssertNil(beforeLock)
 
-        state = .locked
+        env.lock()
 
         var afterLock: NSError?
         XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &afterLock), "")
         XCTAssertEqual(afterLock as? KeyshareProtectionError, .locked)
     }
 
-    // MARK: - What the snapshot costs when the store moves under it
+    // MARK: - The snapshot cannot outlive the protection state it was taken under
 
-    /// A disable unseals the store and destroys the key. A ceremony holding a
-    /// snapshot taken before it fails closed rather than signing — worse
-    /// availability than re-reading the model, never worse safety. Recorded so
-    /// the trade is visible rather than discovered.
+    /// The window a snapshot opens that a per-call re-read did not, driven
+    /// end-to-end through the real session: no passcode, ceremony starts, a
+    /// passcode is set and the store is swept, then the app locks.
+    ///
+    /// Without the generation check `open` would hand the plaintext over
+    /// forever, because a plaintext value passes through in **every** state —
+    /// so a locked app would go on signing. That is the one direction in which
+    /// snapshotting could be weaker than the read it replaced.
+    func testAPlaintextSnapshotIsRefusedOnceAPasscodeIsSetAndTheAppLocks() throws {
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        XCTAssertEqual(vault.keyshares[0].keyshare, ecdsaShare, "No passcode: shares are stored in the clear")
+
+        let sut = makeAccessor(vault: vault, env: env)
+
+        var beforeTransition: NSError?
+        XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &beforeTransition), ecdsaShare)
+        XCTAssertNil(beforeTransition)
+
+        // setPasscode: the wrapper lands, the key is adopted, the sweep seals
+        // the store behind the live ceremony.
+        try env.setPasscode()
+        vault.keyshares = [try KeyShare.sealed(pubkey: ecdsaPubKey, keyshare: ecdsaShare, protector: env.protector)]
+
+        // Still unlocked, so signing continues — exactly what re-reading the
+        // model and opening with the live key would have done.
+        var whileUnlocked: NSError?
+        XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &whileUnlocked), ecdsaShare)
+        XCTAssertNil(whileUnlocked)
+
+        env.lock()
+
+        var afterLock: NSError?
+        XCTAssertEqual(
+            sut.getLocalState(ecdsaPubKey, error: &afterLock),
+            "",
+            "A locked app must not keep handing a snapshotted plaintext share to the TSS layer"
+        )
+        XCTAssertEqual(afterLock as? KeyshareProtectionError, .locked)
+    }
+
+    /// The unlock that follows has to give the ceremony its share back, or the
+    /// refusal above would turn a lock into a permanently broken keysign.
+    func testAPlaintextSnapshotIsServedAgainOnceTheAppIsUnlocked() throws {
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        let sut = makeAccessor(vault: vault, env: env)
+
+        let key = try env.setPasscode()
+        env.lock()
+
+        var afterLock: NSError?
+        XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &afterLock), "")
+        XCTAssertEqual(afterLock as? KeyshareProtectionError, .locked)
+
+        env.unlock(key)
+
+        var afterUnlock: NSError?
+        XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &afterUnlock), ecdsaShare)
+        XCTAssertNil(afterUnlock)
+    }
+
+    /// The guard that matters most: an install with **no passcode** is the
+    /// permanent majority, and nothing about the refusal above may reach it. A
+    /// generation bump with no wrapper in the Keychain still reads `.disabled`,
+    /// so the share is served exactly as before.
+    func testALockWithNoPasscodeSetStillServesThePlaintextSnapshot() throws {
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        let sut = makeAccessor(vault: vault, env: env)
+
+        env.lock()
+
+        var error: NSError?
+        XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &error), ecdsaShare)
+        XCTAssertNil(error)
+    }
+
+    /// The other direction, unchanged and deliberately so: a disable unseals the
+    /// store and destroys the key, and a ceremony holding a snapshot taken
+    /// before it fails closed rather than signing. Worse availability than
+    /// re-reading the model, never worse safety — and there is no way to see the
+    /// unsealed value without reading the model this cannot touch.
     func testASnapshotTakenBeforeADisableFailsClosed() throws {
-        let key = try VaultCryptoEnvelope.randomKey()
-        var state: KeyshareProtectionState = .unlocked(key)
-        let protector = KeyshareProtector(state: { state })
-        let vault = try makeVault(protector: protector)
+        let env = makeEnvironment()
+        try env.setPasscode()
+        let vault = try makeVault(protector: env.protector)
 
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
+        let sut = makeAccessor(vault: vault, env: env)
 
-        // The disable unseals every stored share and then deletes the wrapper,
-        // so the model holds plaintext and the session holds nothing.
+        // The disable opens every stored share and then deletes the wrapper.
         vault.keyshares = [KeyShare(pubkey: ecdsaPubKey, keyshare: ecdsaShare)]
-        state = .disabled
+        env.disablePasscode()
 
         var error: NSError?
         XCTAssertEqual(sut.getLocalState(ecdsaPubKey, error: &error), "")
         XCTAssertEqual(error as? KeyshareProtectionError, .locked)
     }
 
-    /// The other direction, and the one that is genuinely weaker than the old
-    /// re-read: a snapshot taken while shares were plaintext keeps answering
-    /// after a sweep has sealed the store and a lock has taken the key away.
-    /// Pinned deliberately — if someone later decides to close it, this test is
-    /// where the decision is recorded.
-    func testASnapshotTakenBeforeASweepStillAnswersAfterALock() throws {
-        var state: KeyshareProtectionState = .disabled
-        let protector = KeyshareProtector(state: { state })
-        let vault = try makeVault(protector: protector)
-
-        let sut = LocalStateAccessorImpl(vault: vault, protector: protector)
-
-        // A resume sweep seals the store behind the ceremony, then the app locks.
-        let unlocked = try makeUnlockedProtector()
-        vault.keyshares = [try KeyShare.sealed(pubkey: ecdsaPubKey, keyshare: ecdsaShare, protector: unlocked)]
-        state = .locked
-
-        var error: NSError?
-        XCTAssertEqual(
-            sut.getLocalState(ecdsaPubKey, error: &error),
-            ecdsaShare,
-            "A plaintext snapshot keeps answering; the model being sealed behind it is not observed"
-        )
-        XCTAssertNil(error)
-    }
-
     // MARK: - The write path is unchanged
 
     func testSaveLocalStateSealsThroughTheInjectedProtector() throws {
-        let protector = try makeUnlockedProtector()
-        let sut = LocalStateAccessorImpl(vault: makeEmptyVault(), protector: protector)
+        let env = makeEnvironment()
+        try env.setPasscode()
+        let sut = makeAccessor(vault: makeEmptyVault(), env: env)
 
         try sut.saveLocalState(ecdsaPubKey, localState: ecdsaShare)
 
@@ -264,12 +367,12 @@ final class LocalStateAccessorImpTests: XCTestCase {
         let stored = try XCTUnwrap(sut.keyshares.first)
         XCTAssertEqual(stored.pubkey, ecdsaPubKey)
         XCTAssertTrue(stored.keyshare.hasPrefix(AesGcmKeyshareCipher.sealedPrefix))
-        XCTAssertEqual(try protector.open(stored.keyshare), ecdsaShare)
+        XCTAssertEqual(try env.protector.open(stored.keyshare), ecdsaShare)
     }
 
     func testSaveLocalStateStoresPlaintextWhileProtectionIsDisabled() throws {
-        let protector = KeyshareProtector(state: { .disabled })
-        let sut = LocalStateAccessorImpl(vault: makeEmptyVault(), protector: protector)
+        let env = makeEnvironment()
+        let sut = makeAccessor(vault: makeEmptyVault(), env: env)
 
         try sut.saveLocalState(ecdsaPubKey, localState: ecdsaShare)
 
@@ -277,10 +380,8 @@ final class LocalStateAccessorImpTests: XCTestCase {
     }
 
     func testSaveLocalStateRejectsMissingArguments() {
-        let sut = LocalStateAccessorImpl(
-            vault: makeEmptyVault(),
-            protector: KeyshareProtector(state: { .disabled })
-        )
+        let env = makeEnvironment()
+        let sut = makeAccessor(vault: makeEmptyVault(), env: env)
 
         XCTAssertThrowsError(try sut.saveLocalState(nil, localState: ecdsaShare))
         XCTAssertThrowsError(try sut.saveLocalState(ecdsaPubKey, localState: nil))
