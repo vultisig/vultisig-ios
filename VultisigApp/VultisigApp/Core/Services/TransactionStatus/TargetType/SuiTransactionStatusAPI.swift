@@ -8,10 +8,18 @@
 import Foundation
 
 enum SuiTransactionStatusAPI: TargetType {
-    case getTransactionBlock(txHash: String)
+    /// The resolved Sui host (override-aware) is baked in by the provider so the
+    /// status lookup queries the SAME node that broadcast the transaction. A
+    /// custom node and the default host do not necessarily share a view of a
+    /// just-submitted digest, so polling the default while broadcasting to an
+    /// override reports a live transaction as `notFound`.
+    case getTransactionBlock(txHash: String, host: URL)
 
     var baseURL: URL {
-        URL(string: Endpoint.suiServiceRpc)!
+        switch self {
+        case .getTransactionBlock(_, let host):
+            return host
+        }
     }
 
     var path: String {
@@ -24,7 +32,7 @@ enum SuiTransactionStatusAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
-        case .getTransactionBlock(let txHash):
+        case .getTransactionBlock(let txHash, _):
             let body: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,

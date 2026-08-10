@@ -9,15 +9,23 @@ import Foundation
 
 struct SuiTransactionStatusProvider: TransactionStatusProvider {
     private let httpClient: HTTPClientProtocol
+    /// Resolves the Sui custom RPC override so the status lookup targets the
+    /// same host as broadcast/reads (`SuiService`).
+    private let resolver: RPCEndpointResolving
 
-    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+    init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        resolver: RPCEndpointResolving = CustomRPCStore.shared
+    ) {
         self.httpClient = httpClient
+        self.resolver = resolver
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
+            let host = resolver.resolvedURL(for: .sui, default: SuiService.defaultRPCURL)
             let response = try await httpClient.request(
-                SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash),
+                SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash, host: host),
                 responseType: SuiTransactionStatusResponse.self
             )
 
