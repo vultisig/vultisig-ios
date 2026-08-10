@@ -102,20 +102,29 @@ struct KaminoEarnView<EmptyState: View>: View {
                 )
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(row.name)
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .lineLimit(1)
+                // The risk tier rides on the name line, not the curator line.
+                // Sharing a line with the curator left roughly 180pt for a string
+                // that needs ~190 ("Curated by Steakhouse Finance"), so the
+                // curator truncated while the name line beside it sat half empty.
+                // The tier is two short fixed strings and is pinned at its
+                // intrinsic width, so the name yields first and the curator gets
+                // the whole line below.
                 HStack(spacing: 8) {
-                    Text(String(format: "kaminoEarnCuratedBy".localized, row.curator))
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
+                    Text(row.name)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     Text(row.riskTier.title)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(riskColor(for: row.riskTier))
+                        .fixedSize(horizontal: true, vertical: false)
                 }
+                Text(String(format: "kaminoEarnCuratedBy".localized, row.curator))
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
@@ -164,7 +173,7 @@ struct KaminoEarnView<EmptyState: View>: View {
                 Spacer()
                 HiddenBalanceText("\(formatAmount(pnl)) \(row.coin?.ticker ?? "")")
                     .font(Theme.fonts.priceBodyS)
-                    .foregroundStyle(pnl < 0 ? Theme.colors.alertError : Theme.colors.alertSuccess)
+                    .foregroundStyle(pnlColor(pnl))
             }
         }
     }
@@ -188,6 +197,15 @@ struct KaminoEarnView<EmptyState: View>: View {
 
     private func fiatString(for row: KaminoEarnRow) -> String {
         fiatValue(for: row).formatToFiat(includeCurrencySymbol: true)
+    }
+
+    /// Green means the position made money, red means it lost some. Exactly zero
+    /// means neither, and it is the number every vault the user has never
+    /// deposited into shows — a card sitting at 0 USDC read as a gain in green.
+    private func pnlColor(_ pnl: Decimal) -> Color {
+        if pnl > 0 { return Theme.colors.alertSuccess }
+        if pnl < 0 { return Theme.colors.alertError }
+        return Theme.colors.textPrimary
     }
 
     private func riskColor(for tier: KaminoRiskTier) -> Color {
