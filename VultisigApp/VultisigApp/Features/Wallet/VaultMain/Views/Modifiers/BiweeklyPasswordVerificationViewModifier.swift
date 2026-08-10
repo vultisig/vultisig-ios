@@ -36,10 +36,17 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
                     .frame(width: 400, height: sheetHeight)
                 #endif
             }
-            .onLoad {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    checkIfNeeded()
-                }
+            // Gated rather than merely delayed. This raises a *credential* sheet
+            // — the fast-vault server password — from the view's own load, so on
+            // a cold start behind the passcode gate it would appear over the lock
+            // screen and take input, in a layer the gate cannot reach.
+            //
+            // The whole second of delay lives here, and the check raises the
+            // sheet the moment it decides to. Split across two waits, the second
+            // one ran ungated: a relock landing inside it put the sheet up
+            // anyway.
+            .presentsWhenUnlocked(after: .seconds(1)) {
+                checkIfNeeded()
             }
     }
 
@@ -57,9 +64,7 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
         let difference = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastVerifyDate), to: calendar.startOfDay(for: currentDate))
 
         if let days = difference.day, days >= 15 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                shouldShow = true
-            }
+            shouldShow = true
         }
     }
 }

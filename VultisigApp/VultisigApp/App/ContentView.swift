@@ -97,6 +97,13 @@ struct ContentView: View {
                 handleDeeplink(incomingURL)
             }
         }
+        // Below the two overlays, and that is the whole reason it moved. The
+        // banner modifier wraps what it is applied to in a `VStack` rather than
+        // layering over it, so applied *after* the gate it is a sibling of the
+        // gate — it pushed the lock screen down the display and drew a decoded
+        // keysign summary in the space it vacated. Applied before, the overlays
+        // cover it like anything else.
+        .withForegroundNotificationBanner()
         .overlay(appViewModel.showCover ? CoverView() : nil)
         .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
         .onLoad {
@@ -138,7 +145,6 @@ struct ContentView: View {
             // Retry action - clear error to allow user to try again
             deeplinkError = nil
         }
-        .withForegroundNotificationBanner()
     }
 
     /// Covers the app while the passcode lock is engaged. An overlay rather than
