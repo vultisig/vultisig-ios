@@ -1551,6 +1551,8 @@
 "switchRouteUnavailable" = "No se pudo conectar con THORChain para confirmar la dirección de depósito. Verifique su conexión e inténtelo de nuevo.";
 "switchToLocalMode" = "Cambiar a modo local";
 "systemErrorMessage" = "Error del sistema. Inténtalo de nuevo.";
+"targetAsset" = "Target Asset: %@";
+"tcyUnstakeBelowMinimum" = "Monto demasiado pequeño — retira al menos %@ %@";
 "termsOfService" = "Términos de Servicio";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Este Dispositivo";

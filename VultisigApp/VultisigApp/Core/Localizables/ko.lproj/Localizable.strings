@@ -1551,6 +1551,8 @@
 "switchRouteUnavailable" = "THORChain에 연결하여 입금 주소를 확인할 수 없습니다. 연결을 확인하고 다시 시도해 주세요.";
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";
+"targetAsset" = "대상 자산: %@";
+"tcyUnstakeBelowMinimum" = "금액이 너무 적음 — 최소 %@ %@을(를) 출금하세요";
 "termsOfService" = "서비스 약관";
 "theUnmerge" = "병합 해제";
 "thisDevice" = "이 기기";

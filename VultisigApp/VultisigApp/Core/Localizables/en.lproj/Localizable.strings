@@ -1551,6 +1551,8 @@
 "switchRouteUnavailable" = "Couldn't reach THORChain to confirm the deposit address. Please check your connection and try again.";
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
+"targetAsset" = "Target Asset: %@";
+"tcyUnstakeBelowMinimum" = "Amount too small — withdraw at least %@ %@";
 "termsOfService" = "Terms of Service";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "This Device";

@@ -1551,6 +1551,8 @@
 "switchRouteUnavailable" = "THORChain konnte nicht erreicht werden, um die Einzahlungsadresse zu bestätigen. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
+"targetAsset" = "Target Asset: %@";
+"tcyUnstakeBelowMinimum" = "Betrag zu klein — mindestens %@ %@ abheben";
 "termsOfService" = "Nutzungsbedingungen";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Dieses Gerät";

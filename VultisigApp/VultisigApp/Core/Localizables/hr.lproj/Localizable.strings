@@ -1551,6 +1551,8 @@
 "switchRouteUnavailable" = "THORChain nije dosegnut radi potvrde adrese za uplatu. Provjerite svoju vezu i pokušajte ponovno.";
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
+"targetAsset" = "Ciljna imovina: %@";
+"tcyUnstakeBelowMinimum" = "Iznos je premalen — podignite barem %@ %@";
 "termsOfService" = "Uvjeti korištenja";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";

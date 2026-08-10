@@ -174,9 +174,16 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
 
         switch coin.ticker.uppercased() {
         case "TCY":
+            // Unlike its siblings below, TCY converts the amount straight to
+            // basis points instead of through a whole percentage — see
+            // `TCYUnstakeBasisPoints`. A zero means the amount is too small for
+            // the memo to express; `TCYUnstakeAmountValidator` normally stops it
+            // reaching here, and refusing to build is the backstop.
+            let basisPoints = tcyBasisPoints
+            guard basisPoints >= TCYUnstakeBasisPoints.min else { return nil }
             return TCYUnstakeTransactionBuilder(
                 coin: coin,
-                percentage: Int(resolvedPercentage),
+                basisPoints: basisPoints,
                 autoCompoundAmount: autocompoundBalance,
                 sendMaxAmount: isMaxAmount,
                 isAutoCompound: isAutocompound
@@ -258,9 +265,28 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     }
 
     var percentageFromAmount: Double {
-        guard availableAmount != .zero else { return 0 }
-        let decimal = (amountField.value.toDecimal() / availableAmount) * 100.0
-        return (decimal as NSDecimalNumber).doubleValue
+        PercentageAmount.percentage(ofAmount: amountField.value.toDecimal(), available: availableAmount) ?? 0
+    }
+
+    /// The share of the staked position the TCY memo will ask for, in basis
+    /// points.
+    ///
+    /// Derived from the amount rather than from `percentageSelected`, because the
+    /// amount is the finer of the two: the slider moves in whole percent, so
+    /// reading the percentage would re-impose the very truncation this replaces.
+    /// The two agree whenever the slider is what set the amount.
+    ///
+    /// Closing the position pins the ceiling exactly instead of deriving it, so a
+    /// full exit can never leave a rounding remainder staked.
+    var tcyBasisPoints: Int {
+        guard availableAmount > 0 else { return 0 }
+        // Pinned rather than derived: the amount field renders 4 decimals, so on
+        // a small position MAX can round to 9999 and leave a sliver staked.
+        guard !isMaxAmount else { return TCYUnstakeBasisPoints.max }
+        return TCYUnstakeBasisPoints.value(
+            forAmount: amountField.value.toDecimal(),
+            available: availableAmount
+        )
     }
 
     func onPercentage(_ percentage: Double) {
@@ -268,9 +294,18 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     }
 
     func setupAmountField() {
-        self.amountField.validators = [
+        var validators: [FormFieldValidator] = [
             AmountBalanceValidator(balance: self.availableAmount)
         ]
+        if coin.ticker.uppercased() == "TCY" {
+            // The TCY memo asks for a fraction of the position in
+            // ten-thousandths, so an amount can be positive, inside the balance,
+            // and still round away to "withdraw nothing".
+            validators.append(
+                TCYUnstakeAmountValidator(available: self.availableAmount, ticker: coin.ticker)
+            )
+        }
+        self.amountField.validators = validators
         self.percentageSelected = 100
         self.isMaxAmount = true
     }
