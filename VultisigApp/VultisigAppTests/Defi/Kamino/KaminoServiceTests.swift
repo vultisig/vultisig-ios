@@ -86,19 +86,23 @@ final class KaminoServiceTests: XCTestCase {
 
     // MARK: - Actions
 
+    /// Deliberately the Allez SOL vault, whose token scale (9) differs from its
+    /// share scale (6). On a vault where the two match, a deposit serialized with
+    /// share decimals — or a withdraw serialized with token decimals — produces
+    /// the identical string and the regression goes unseen.
     func test_deposit_sendsTokenUnits_withdraw_sendsShareUnits() async throws {
         http.queueJSON(Fixtures.actionResponse, for: .deposit)
         _ = try await service.buildDepositTransaction(
             owner: Fixtures.owner,
-            vault: Fixtures.steakhouseAddress,
-            amount: KaminoTokenAmount(baseUnits: 10_000_000, decimals: 6)
+            vault: KaminoVaultRegistry.allezSOL,
+            amount: KaminoTokenAmount(baseUnits: 10_000_000_000, decimals: 9)
         )
         XCTAssertEqual(http.lastRequestBody()?.amount, "10", "deposit amount is in token units")
 
         http.queueJSON(Fixtures.actionResponse, for: .withdraw)
         _ = try await service.buildWithdrawTransaction(
             owner: Fixtures.owner,
-            vault: Fixtures.steakhouseAddress,
+            vault: KaminoVaultRegistry.allezSOL,
             shares: KaminoShareAmount(baseUnits: 5_500_000, decimals: 6)
         )
         XCTAssertEqual(http.lastRequestBody()?.amount, "5.5", "withdraw amount is in SHARE units")
@@ -109,7 +113,7 @@ final class KaminoServiceTests: XCTestCase {
 
         let transaction = try await service.buildDepositTransaction(
             owner: Fixtures.owner,
-            vault: Fixtures.steakhouseAddress,
+            vault: KaminoVaultRegistry.steakhouseUSDC,
             amount: KaminoTokenAmount(baseUnits: 10_000_000, decimals: 6)
         )
 
@@ -164,21 +168,21 @@ final class KaminoServiceTests: XCTestCase {
         await assertInvalidAmount {
             try await self.service.buildDepositTransaction(
                 owner: Fixtures.owner,
-                vault: Fixtures.steakhouseAddress,
+                vault: KaminoVaultRegistry.steakhouseUSDC,
                 amount: KaminoTokenAmount(baseUnits: 0, decimals: 6)
             )
         }
         await assertInvalidAmount {
             try await self.service.buildWithdrawTransaction(
                 owner: Fixtures.owner,
-                vault: Fixtures.steakhouseAddress,
+                vault: KaminoVaultRegistry.steakhouseUSDC,
                 shares: KaminoShareAmount(baseUnits: BigInt(UInt64.max) + 1, decimals: 6)
             )
         }
         await assertInvalidAmount {
             try await self.service.buildWithdrawTransaction(
                 owner: Fixtures.owner,
-                vault: Fixtures.steakhouseAddress,
+                vault: KaminoVaultRegistry.steakhouseUSDC,
                 shares: KaminoShareAmount(baseUnits: -1, decimals: 6)
             )
         }
@@ -229,6 +233,50 @@ final class KaminoServiceTests: XCTestCase {
             XCTAssertEqual(error, .vaultNotInRegistry(impostor.address))
         } catch {
             XCTFail("Unexpected error: \(error)")
+        }
+        XCTAssertNil(http.lastRequestBody(), "no request should have been issued")
+    }
+
+    /// The same refusal, at the transaction boundary.
+    ///
+    /// Hydration is not the only way into the service: the builders send a vault
+    /// straight to Kamino. Narrowing them to `KaminoVaultDescriptor` stops a bare
+    /// address, but the struct has a memberwise initialiser, so the type alone
+    /// proves nothing — only the registry comparison does. Nothing may be built
+    /// against a vault the app did not curate.
+    func test_buildersRefuseAVaultTheRegistryDoesNotRecognise() async {
+        let impostor = KaminoVaultDescriptor(
+            address: "5YxwKgsvyTdT8q2CBgwA4L9BKbnKNrB66K9wUzij5wH",
+            tokenMint: KaminoVaultRegistry.wrappedSolMint,
+            tokenDecimals: 9,
+            sharesMint: KaminoVaultRegistry.allezSOL.sharesMint,
+            sharesDecimals: 6,
+            farm: nil,
+            fallbackName: "Not A Real Vault",
+            curator: "Nobody",
+            riskTier: .conservative
+        )
+
+        for build in [
+            { try await self.service.buildDepositTransaction(
+                owner: Fixtures.owner,
+                vault: impostor,
+                amount: KaminoTokenAmount(baseUnits: 10_000_000_000, decimals: 9)
+            ) },
+            { try await self.service.buildWithdrawTransaction(
+                owner: Fixtures.owner,
+                vault: impostor,
+                shares: KaminoShareAmount(baseUnits: 5_500_000, decimals: 6)
+            ) }
+        ] {
+            do {
+                _ = try await build()
+                XCTFail("Expected an unregistered-vault error")
+            } catch let error as KaminoServiceError {
+                XCTAssertEqual(error, .vaultNotInRegistry(impostor.address))
+            } catch {
+                XCTFail("Unexpected error: \(error)")
+            }
         }
         XCTAssertNil(http.lastRequestBody(), "no request should have been issued")
     }

@@ -139,9 +139,9 @@ enum KaminoServiceError: Error, LocalizedError, Equatable {
         case .invalidAmount(let detail):
             return "Invalid Kamino amount: \(detail)"
         case .vaultNotInRegistry(let address):
-            return "Vault \(address) is not one this app transacts with"
+            return String(format: "kaminoErrorVaultNotInRegistry".localized, address)
         case .vaultMetadataMismatch(let field, let expected, let actual):
-            return "Kamino reported \(field) as \(actual); this vault's is \(expected)"
+            return String(format: "kaminoErrorVaultMetadataMismatch".localized, field, actual, expected)
         case .conversionFailed:
             return "Kamino share conversion failed"
         }

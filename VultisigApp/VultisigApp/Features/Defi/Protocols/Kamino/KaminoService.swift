@@ -16,9 +16,12 @@ protocol KaminoServiceProtocol: Sendable {
 
     /// Builds an unsigned deposit transaction. The amount is in the vault's
     /// **underlying token**.
+    ///
+    /// Takes a descriptor rather than an address so the curated set is enforced
+    /// by the type: an arbitrary vault string cannot reach Kamino through here.
     func buildDepositTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         amount: KaminoTokenAmount
     ) async throws -> String
 
@@ -26,7 +29,7 @@ protocol KaminoServiceProtocol: Sendable {
     /// the inverse of deposit. This asymmetry is the API's, not ours.
     func buildWithdrawTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         shares: KaminoShareAmount
     ) async throws -> String
 }
@@ -164,24 +167,39 @@ struct KaminoService: KaminoServiceProtocol {
 
     func buildDepositTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         amount: KaminoTokenAmount
     ) async throws -> String {
+        try Self.assertCurated(vault)
         try Self.validate(amount, label: "deposit")
-        let request = KaminoActionRequest(wallet: owner, kvault: vault, amount: amount.apiString)
+        let request = KaminoActionRequest(wallet: owner, kvault: vault.address, amount: amount.apiString)
         let response = try await self.request(.deposit(request: request), as: KaminoActionResponse.self)
         return response.transaction
     }
 
     func buildWithdrawTransaction(
         owner: String,
-        vault: String,
+        vault: KaminoVaultDescriptor,
         shares: KaminoShareAmount
     ) async throws -> String {
+        try Self.assertCurated(vault)
         try Self.validate(shares, label: "withdraw")
-        let request = KaminoActionRequest(wallet: owner, kvault: vault, amount: shares.apiString)
+        let request = KaminoActionRequest(wallet: owner, kvault: vault.address, amount: shares.apiString)
         let response = try await self.request(.withdraw(request: request), as: KaminoActionResponse.self)
         return response.transaction
+    }
+
+    /// Refuses to build against anything but the registry's own entry.
+    ///
+    /// The descriptor type narrows the parameter, but it is a struct with a
+    /// memberwise initialiser — a caller can still assemble one that merely
+    /// looks curated. Comparing against the registry entry is what makes the
+    /// invariant hold, and it is the same check `fetchVaultInfo` runs: identity
+    /// is decided here, not by whatever the API is willing to build.
+    private static func assertCurated(_ descriptor: KaminoVaultDescriptor) throws {
+        guard KaminoVaultRegistry.descriptor(for: descriptor.address) == descriptor else {
+            throw KaminoServiceError.vaultNotInRegistry(descriptor.address)
+        }
     }
 
     // MARK: - Plumbing

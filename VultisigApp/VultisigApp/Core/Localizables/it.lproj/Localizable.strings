@@ -626,6 +626,8 @@
 "joinSend" = "Unisciti a Invia";
 "joinSwap" = "Partecipa a Swap";
 "joinTransactionSigning" = "Unisciti alla firma delle transazioni";
+"kaminoErrorVaultMetadataMismatch" = "Kamino ha riportato %1$@ come %2$@; quello di questo vault è %3$@";
+"kaminoErrorVaultNotInRegistry" = "Il vault %@ non è uno di quelli con cui questa app opera";
 "keyCopied" = "Chiave copiata";
 "keygen" = "Generazione chiavi";
 "keygenFailed" = "Generazione della chiave fallita";
@@ -1309,6 +1311,11 @@
 "slippageHelperText" = "Limita quanto il prezzo può cambiare prima che l'esecuzione venga annullata.";
 "slippageMaxNote" = "Lo slippage è limitato a %@.";
 "slippageTolerance" = "Tolleranza di slippage";
+"solanaAddressLookupTableErrorAccountNotFound" = "La address lookup table %@ non esiste sulla chain";
+"solanaAddressLookupTableErrorMalformedData" = "La address lookup table %@ ha dati dell'account non validi";
+"solanaAddressLookupTableErrorUninitialized" = "La address lookup table %@ non è inizializzata";
+"solanaAddressLookupTableErrorUnsupportedEncoding" = "La address lookup table %@ è stata restituita in una codifica inattesa";
+"solanaAddressLookupTableErrorWrongOwner" = "L'account %1$@ appartiene a %2$@, non al programma Address Lookup Table";
 "solanaBatchSigningNotSupported" = "La firma di più transazioni Solana contemporaneamente non è ancora supportata.";
 "solanaStakingActionDelegate" = "Palo";
 "solanaStakingActionUnstake" = "Ritira stake";

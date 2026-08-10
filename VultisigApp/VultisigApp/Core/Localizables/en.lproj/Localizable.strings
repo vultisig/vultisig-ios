@@ -626,6 +626,8 @@
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
 "joinTransactionSigning" = "Join transaction signing";
+"kaminoErrorVaultMetadataMismatch" = "Kamino reported %1$@ as %2$@; this vault's is %3$@";
+"kaminoErrorVaultNotInRegistry" = "Vault %@ is not one this app transacts with";
 "keyCopied" = "Key copied";
 "keygen" = "Keygen";
 "keygenFailed" = "Key generation failed";
@@ -1309,6 +1311,11 @@
 "slippageHelperText" = "Limits how much the price can change before execution is canceled.";
 "slippageMaxNote" = "Slippage is capped at %@.";
 "slippageTolerance" = "Slippage Tolerance";
+"solanaAddressLookupTableErrorAccountNotFound" = "Address lookup table %@ does not exist on chain";
+"solanaAddressLookupTableErrorMalformedData" = "Address lookup table %@ has malformed account data";
+"solanaAddressLookupTableErrorUninitialized" = "Address lookup table %@ is not initialized";
+"solanaAddressLookupTableErrorUnsupportedEncoding" = "Address lookup table %@ was returned in an unexpected encoding";
+"solanaAddressLookupTableErrorWrongOwner" = "Account %1$@ is owned by %2$@, not the Address Lookup Table program";
 "solanaBatchSigningNotSupported" = "Signing multiple Solana transactions at once isn't supported yet.";
 "solanaStakingActionDelegate" = "Stake";
 "solanaStakingActionUnstake" = "Unstake";

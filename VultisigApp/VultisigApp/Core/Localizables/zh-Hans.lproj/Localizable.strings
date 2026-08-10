@@ -626,6 +626,8 @@
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
+"kaminoErrorVaultMetadataMismatch" = "Kamino 报告 %1$@ 为 %2$@；此金库的值为 %3$@";
+"kaminoErrorVaultNotInRegistry" = "金库 %@ 不是此应用会进行交易的金库";
 "keyCopied" = "密钥已复制";
 "keygen" = "密钥生成";
 "keygenFailed" = "密钥生成失败";
@@ -1309,6 +1311,11 @@
 "slippageHelperText" = "限制价格在执行被取消前可以变动的幅度。";
 "slippageMaxNote" = "滑点上限为 %@。";
 "slippageTolerance" = "滑点容差";
+"solanaAddressLookupTableErrorAccountNotFound" = "地址查找表 %@ 在链上不存在";
+"solanaAddressLookupTableErrorMalformedData" = "地址查找表 %@ 的账户数据格式错误";
+"solanaAddressLookupTableErrorUninitialized" = "地址查找表 %@ 尚未初始化";
+"solanaAddressLookupTableErrorUnsupportedEncoding" = "地址查找表 %@ 以意外的编码返回";
+"solanaAddressLookupTableErrorWrongOwner" = "账户 %1$@ 的所有者是 %2$@，而非地址查找表程序";
 "solanaBatchSigningNotSupported" = "暂不支持一次性签署多笔 Solana 交易。";
 "solanaStakingActionDelegate" = "质押";
 "solanaStakingActionUnstake" = "取消质押";
