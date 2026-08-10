@@ -354,6 +354,80 @@ final class LocalStateAccessorImpTests: XCTestCase {
         XCTAssertEqual(error as? KeyshareProtectionError, .locked)
     }
 
+    /// The ordering guarantee the refusal actually rests on, hammered
+    /// concurrently: **a read that begins after `lock()` has returned is
+    /// refused.**
+    ///
+    /// There is deliberately no mutual exclusion between a lock and a read.
+    /// `PasscodeService.lock()` is `nonisolated` and synchronizes with nothing —
+    /// a scene-phase lock must never block, least of all on an in-flight TSS
+    /// round — so a lock that lands *concurrently* with a read is simply
+    /// unordered against it, and no lease could change that: the signing layer
+    /// is already holding the bytes it was handed earlier in the ceremony.
+    ///
+    /// What has to hold, and what this asserts, is the edge: once `lock()` has
+    /// completed, nothing started afterwards hands the share over. The latch is
+    /// set under its own lock *after* `lock()` returns, so a reader that
+    /// observes it has a happens-before edge to `session.clear()` and must see
+    /// the bumped generation.
+    func testNoReadStartedAfterALockCompletesReturnsThePlaintextShare() throws {
+        let env = makeEnvironment()
+        let vault = try makeVault(protector: env.protector)
+        XCTAssertEqual(vault.keyshares[0].keyshare, ecdsaShare, "The snapshot has to be plaintext for this to be the interesting case")
+
+        let sut = makeAccessor(vault: vault, env: env)
+        // A passcode arrives mid-ceremony, so a later lock has something to
+        // refuse against.
+        try env.setPasscode()
+
+        let latch = LockLatch()
+        let readsAfterLock = AtomicCounter()
+        let plaintextAfterLock = AtomicCounter()
+        let unexpectedAnswers = AtomicCounter()
+        let pubKey = ecdsaPubKey
+        let plaintext = ecdsaShare
+        let deadline = Date().addingTimeInterval(10)
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            env.lock()
+            latch.mark()
+        }
+
+        DispatchQueue.concurrentPerform(iterations: 32) { _ in
+            var observed = 0
+            while observed < 25, Date() < deadline {
+                // Sampled *before* the read starts, so "after the lock" means
+                // the read began after `lock()` had already returned.
+                let startedAfterLock = latch.isSet
+                var error: NSError?
+                let answer = sut.getLocalState(pubKey, error: &error)
+
+                if answer != plaintext, !answer.isEmpty {
+                    unexpectedAnswers.increment()
+                }
+                if startedAfterLock {
+                    observed += 1
+                    readsAfterLock.increment()
+                    if answer == plaintext {
+                        plaintextAfterLock.increment()
+                    }
+                }
+            }
+        }
+
+        XCTAssertEqual(unexpectedAnswers.value, 0, "A read may only answer the share or nothing")
+        XCTAssertGreaterThan(
+            readsAfterLock.value,
+            0,
+            "Vacuous otherwise: the run has to actually contain reads that began after the lock returned"
+        )
+        XCTAssertEqual(
+            plaintextAfterLock.value,
+            0,
+            "\(plaintextAfterLock.value) of \(readsAfterLock.value) reads begun after lock() returned still handed over the share"
+        )
+    }
+
     // MARK: - The write path is unchanged
 
     func testSaveLocalStateSealsThroughTheInjectedProtector() throws {
@@ -386,5 +460,43 @@ final class LocalStateAccessorImpTests: XCTestCase {
         XCTAssertThrowsError(try sut.saveLocalState(nil, localState: ecdsaShare))
         XCTAssertThrowsError(try sut.saveLocalState(ecdsaPubKey, localState: nil))
         XCTAssertTrue(sut.keyshares.isEmpty)
+    }
+}
+
+/// Set once, under its own lock, **after** `lock()` has returned — so a reader
+/// that observes it set has a happens-before edge to `KeyshareKeySession.clear()`
+/// and is obliged to see the bumped generation.
+private final class LockLatch {
+    private let lock = NSLock()
+    private var value = false
+
+    func mark() {
+        lock.lock()
+        value = true
+        lock.unlock()
+    }
+
+    var isSet: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+}
+
+/// `DispatchQueue.concurrentPerform` bodies race on a plain `Int`.
+private final class AtomicCounter {
+    private let lock = NSLock()
+    private var count = 0
+
+    func increment() {
+        lock.lock()
+        count += 1
+        lock.unlock()
+    }
+
+    var value: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return count
     }
 }
