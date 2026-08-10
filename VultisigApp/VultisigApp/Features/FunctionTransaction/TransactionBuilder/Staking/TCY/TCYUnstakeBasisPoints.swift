@@ -21,9 +21,9 @@ import Foundation
 /// one of those coarse steps is 20.03 TCY, and that is the reported bug: a request
 /// for 1002.73 floored to 50% and paid out 1001.37.
 ///
-/// Converting straight to basis points and rounding to the nearest one leaves an
-/// error of at most half a basis point — 0.005% of the position, about 0.10 TCY on
-/// that same position — which is as close as the memo can get to any given amount.
+/// Converting straight to basis points and rounding DOWN (see `value(forAmount:available:)`
+/// for why down) leaves at most one basis point behind — 0.01% of the position,
+/// about 0.20 TCY on that same position — and never takes more than was asked for.
 /// Because the result can no longer land on the user's exact figure, the screens
 /// around signing quote the quantised amount rather than the typed one; see
 /// `TCYUnstakePresentation`.
