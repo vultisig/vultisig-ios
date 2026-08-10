@@ -36,17 +36,53 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
         return storedKeyshares
     }
 
-    private var vault: Vault
-    init(vault: Vault) {
-        self.vault = vault
+    /// The vault's stored key-share values, keyed by public key, copied out of
+    /// the `@Model` once on the MainActor before the ceremony starts.
+    ///
+    /// `getLocalState` is a synchronous callback the TSS binding makes on
+    /// whichever thread entered it — in this app always a
+    /// `Task.detached(priority: .high)` worker, never main. Reading a SwiftData
+    /// `@Model` from there is undefined behaviour, and undefined behaviour that
+    /// happens to work is the worst kind here: it can hold for years and then
+    /// hand back a torn value on a build with a different scheduler.
+    ///
+    /// Values are kept **as stored** — sealed if a passcode is set, plaintext
+    /// otherwise — and opened per call, so the snapshot never extends the
+    /// lifetime of plaintext key material and a `lock()` mid-ceremony still
+    /// makes a sealed share unreadable, exactly as before.
+    private let vaultShares: [String: String]
+    private let protector: KeyshareProtecting
+
+    /// Snapshots the vault on the MainActor.
+    ///
+    /// `@MainActor` is the forcing function: it is what stops a future caller
+    /// re-introducing the off-MainActor `@Model` read by constructing this from
+    /// inside the ceremony instead of ahead of it. Both call sites — the GG20
+    /// keygen and the GG20 keysign view models — are already main-actor bound.
+    @MainActor
+    convenience init(vault: Vault, protector: KeyshareProtecting = KeyshareProtector.shared) {
+        // `first` wins on a duplicate public key, matching the `first(where:)`
+        // the vault accessor used to do.
+        let shares = Dictionary(
+            vault.keyshares.map { ($0.pubkey, $0.keyshare) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        self.init(vaultShares: shares, protector: protector)
     }
+
+    init(vaultShares: [String: String], protector: KeyshareProtecting = KeyshareProtector.shared) {
+        self.vaultShares = vaultShares
+        self.protector = protector
+        super.init()
+    }
+
     func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
-        guard let pubKey else {
+        guard let pubKey, let stored = vaultShares[pubKey] else {
             return ""
         }
 
         do {
-            return try vault.keyshareValue(for: pubKey) ?? ""
+            return try protector.open(stored)
         } catch let openError {
             // Only reachable once shares are stored sealed: the share exists but
             // cannot be opened. Reported through the error pointer so the TSS
@@ -75,7 +111,7 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
         // synchronously, because this is a callback the TSS layer makes from an
         // arbitrary thread and cannot await.
         try KeyshareWriteCoordinator.shared.withWriteLease {
-            let share = try KeyShare.sealed(pubkey: pubkey, keyshare: localState)
+            let share = try KeyShare.sealed(pubkey: pubkey, keyshare: localState, protector: protector)
             sharesLock.lock()
             storedKeyshares.append(share)
             sharesLock.unlock()
