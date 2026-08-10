@@ -165,11 +165,19 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
         )
     }
 
-    /// ⚠️ A dust position must still be closable. Comparing against a minimum
-    /// rounded up to display precision made any position smaller than that
-    /// rounding unwithdrawable — not even at MAX, because the validator blocks
-    /// the form before the builder is ever asked.
-    func testADustPositionCanStillBeWithdrawnInFull() throws {
+    /// ⚠️ Neither the sub-basis-point guard nor this validator may be what stops
+    /// a dust position being emptied. Comparing against a minimum rounded up to
+    /// display precision made any position smaller than that rounding
+    /// unwithdrawable — not even at MAX, because the validator blocks the form
+    /// before the builder is ever asked.
+    ///
+    /// Scope: this covers the guard and the validator. The screen-facing half of
+    /// the same boundary — that a dust full exit is *named* rather than rendered
+    /// as zero — is `TCYUnstakeVerifyHeroTests`. What still bounds a dust
+    /// withdrawal end to end is the shared amount field, which renders 4
+    /// decimals, so a position under 0.0001 TCY reaches `AmountBalanceValidator`
+    /// as "0". That is pre-existing and shared by every flow using the field.
+    func testADustPositionIsNotBlockedByTheBasisPointGuard() throws {
         let dust = Decimal(string: "0.00005")!
         let validator = TCYUnstakeAmountValidator(available: dust, ticker: "TCY")
 

@@ -77,7 +77,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         // Grouping separators are locale-dependent, so match the part that is not.
         // Not "1002.73" — the memo cannot express that, and the screen must quote
         // what the chain will actually pay out.
-        XCTAssertTrue(coin.amount.contains("002.57"), "rendered \(coin.amount)")
+        XCTAssertTrue(coin.amount.contains("002.571644"), "rendered \(coin.amount)")
         XCTAssertFalse(coin.amount.contains("002.73"), "the typed figure is not the delivered one")
         // A missing localization would leave the raw key here.
         XCTAssertNotEqual(title, "tcyUnstakeVerifyTitle")
@@ -97,6 +97,74 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
 
         XCTAssertEqual(copied.withdrawDisplayAmount, tx.withdrawDisplayAmount)
         XCTAssertNotNil(TCYUnstakePresentation.hero(for: copied))
+    }
+
+    /// ⚠️ The screen has to render at the ASSET'S precision, not the amount
+    /// field's. THORChain settles in whole base units, so truncating the exact
+    /// product at `coin.decimals` reproduces the payout exactly — 2002.74 at 5006
+    /// bps is 1002.571644 both ways. Four decimals understated that same
+    /// withdrawal by 0.000044 TCY, which is the defect this screen exists to
+    /// remove, just smaller.
+    func testTheHeroRendersEveryDigitTheChainWillActuallyPay() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let tx = try makeWithdrawal(typing: "1002.73")
+        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        guard case .send(_, let coin) = hero else {
+            return XCTFail("a withdrawal should render as a resolved single-sided amount")
+        }
+
+        // The chain's own integer maths: 200274000000 base units × 5006 / 10000.
+        let stakedBaseUnits = 200_274_000_000
+        let chainPaysBaseUnits = stakedBaseUnits * 5006 / 10_000
+        let chainPays = Decimal(chainPaysBaseUnits) / pow(10, 8)
+        XCTAssertEqual(coin.amount, chainPays.formatToDecimal(digits: 8))
+        XCTAssertTrue(coin.amount.contains("571644"), "rendered \(coin.amount)")
+    }
+
+    /// ⚠️ Emptying a dust position must read as the amount it pays, not as zero.
+    /// At four decimals a full exit of this position rendered "0.0001", and
+    /// anything under 0.00005 TCY rendered a flat "0" — turning "You're sending 0
+    /// TCY" into "You are withdrawing 0 TCY", which is not a fix.
+    ///
+    /// The three have to agree at this boundary: the memo asks for the whole
+    /// position (`tcy-:10000`), the sub-basis-point guard must not refuse it as
+    /// if it were the `tcy-:0` case, and the screen must name the real figure.
+    func testADustPositionsFullExitIsNamedNotShownAsZero() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault()
+        let dust = Decimal(string: "0.00012345")!
+
+        let viewModel = UnstakeTransactionViewModel(
+            coin: makeTCYCoin(),
+            vault: vault,
+            isAutocompound: false,
+            availableToUnstake: dust
+        )
+        viewModel.availableAmount = dust
+        viewModel.setupAmountField()          // MAX — what the sheet opens on
+        // What the shared amount field renders at its own 4 decimals. The full
+        // exit is still driven by MAX, so the memo takes the whole position and
+        // the screen must say so rather than echoing this truncated figure.
+        viewModel.amountField.value = "0.0001"
+        viewModel.validForm = true
+
+        let builder = try XCTUnwrap(viewModel.transactionBuilder, "a dust full exit must not be refused")
+        XCTAssertEqual(builder.memo, "tcy-:10000")
+
+        let tx = builder.buildSendTransaction(vault: vault)
+        XCTAssertEqual(tx.withdrawDisplayAmount, dust)
+
+        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        guard case .send(_, let coin) = hero else {
+            return XCTFail("a withdrawal should render as a resolved single-sided amount")
+        }
+        XCTAssertEqual(coin.amount, dust.formatToDecimal(digits: 8))
+        XCTAssertNotEqual(coin.amount, "0")
+        XCTAssertFalse(coin.amount.hasPrefix("0.0000") && !coin.amount.contains("12345"),
+                       "the whole position is leaving; rendered \(coin.amount)")
     }
 
     /// ⚠️ The auto-compounding sTCY position is share-based: its balance is a
