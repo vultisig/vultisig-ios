@@ -38,6 +38,19 @@ struct PasscodeEntryView: View {
     /// only on appearance — otherwise one click ends typing for the rest of the
     /// flow.
     @FocusState private var isKeypadFocused: Bool
+    /// Bookkeeping for keys accepted but not yet applied — see ``enqueue(_:)``.
+    ///
+    /// A reference type rather than `@State` of a value: it is not something the
+    /// view draws, and writing to it must not invalidate the view. The write
+    /// happens while a key is being delivered, which on this screen is inside a
+    /// view update — invalidating from there is the very thing being fixed.
+    @State private var keyboard = KeyboardEntry()
+
+    /// The entry as it will stand once every accepted key has been applied, or
+    /// `nil` when nothing is queued and the binding is the truth.
+    private final class KeyboardEntry {
+        var expected: String?
+    }
     #endif
 
     private var digitCount: Int { PasscodeService.passcodeLength }
@@ -180,9 +193,29 @@ struct PasscodeEntryView: View {
         #endif
     }
 
-    private func append(_ digit: String) {
-        guard passcode.count < digitCount, !isBusy else { return }
-        passcode.append(digit)
+    /// What a digit key does to an entry, as a value rather than a statement.
+    ///
+    /// The rule is returned rather than applied because the two inputs reach the
+    /// entry differently — a click edits it now, a hardware key edits it a turn
+    /// later — and the one thing that must not differ between them is *whether*
+    /// a key applies at all. `nil` means it does not: the entry is already full.
+    private func appending(_ digit: String) -> (String) -> String? {
+        { entry in entry.count < digitCount ? entry + digit : nil }
+    }
+
+    /// As ``appending(_:)``. `nil` when there is nothing left to delete.
+    private var deletingLast: (String) -> String? {
+        { entry in entry.isEmpty ? nil : String(entry.dropLast()) }
+    }
+
+    /// Edits the entry now. What the on-screen keys do, on both platforms.
+    private func apply(_ edit: (String) -> String?) {
+        guard !isBusy, let next = edit(passcode) else { return }
+        passcode = next
+        confirmEntry()
+    }
+
+    private func confirmEntry() {
         #if os(iOS)
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         #else
@@ -190,14 +223,12 @@ struct PasscodeEntryView: View {
         #endif
     }
 
+    private func append(_ digit: String) {
+        apply(appending(digit))
+    }
+
     private func deleteLast() {
-        guard !passcode.isEmpty, !isBusy else { return }
-        passcode.removeLast()
-        #if os(iOS)
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        #else
-        isKeypadFocused = true
-        #endif
+        apply(deletingLast)
     }
 
     #if os(macOS)
@@ -229,8 +260,8 @@ struct PasscodeEntryView: View {
             guard modifiers == .command, press.phase == .down, press.characters == "v" else {
                 return .ignored
             }
-            paste()
-            return .handled
+            guard let pasted = clipboardPasscode() else { return .handled }
+            return enqueue { _ in pasted }
         }
 
         // Every remaining path is a bare key. Checked before the actions rather
@@ -244,8 +275,7 @@ struct PasscodeEntryView: View {
         guard press.phase == .down || isDelete else { return .ignored }
 
         if isDelete {
-            deleteLast()
-            return .handled
+            return enqueue(deletingLast)
         }
 
         guard press.characters.count == 1,
@@ -254,31 +284,77 @@ struct PasscodeEntryView: View {
             return .ignored
         }
 
-        append(String(digit))
+        return enqueue(appending(String(digit)))
+    }
+
+    /// Accepts a key now and applies its edit a turn later.
+    ///
+    /// **Why it cannot be applied now.** The lock screen is hosted in a panel
+    /// over the app rather than in the app's own view hierarchy, and a hardware
+    /// key arrives there while SwiftUI is mid-update. `passcode` is a binding
+    /// onto a published property, so editing it inline publishes a change from
+    /// within that update — undefined behaviour, and logged as such. One hop to
+    /// the next main-queue turn puts the edit after the update instead.
+    ///
+    /// **Why the queue and not a `Task`.** `DispatchQueue.main` is FIFO and an
+    /// unstructured task's ordering is not guaranteed. Digits have to land in
+    /// the order they were pressed, or the entry that submits is not the one the
+    /// user typed — and a wrong entry spends one of the throttled attempts.
+    ///
+    /// **Why `expected` exists.** A key is judged against the entry as it will
+    /// stand once the keys already accepted have been applied, never against the
+    /// binding. Two keys can arrive in one turn, before any of their edits have
+    /// run: judged against the binding, the second one reads an entry the first
+    /// has not reached yet, and a digit followed by a delete leaves the digit.
+    ///
+    /// **Why the applied edit re-checks.** Between accepting a key and applying
+    /// it the entry can be taken away — a stage advancing, an attempt failing,
+    /// both of which clear it. Such a key was typed into an entry that no longer
+    /// exists, and applying it would seed the next one with a digit nobody typed
+    /// there: seven digits into "choose a passcode" would silently start the
+    /// confirmation, and a pasted six would submit it.
+    private func enqueue(_ edit: (String) -> String?) -> KeyPress.Result {
+        let base = keyboard.expected ?? passcode
+        guard !isBusy, let next = edit(base) else { return .handled }
+        keyboard.expected = next
+
+        DispatchQueue.main.async {
+            guard passcode == base else {
+                keyboard.expected = nil
+                return
+            }
+            passcode = next
+            if keyboard.expected == next {
+                keyboard.expected = nil
+            }
+            confirmEntry()
+        }
         return .handled
     }
 
-    /// ⌘V, which the text field this replaced got for free.
+    /// The clipboard, if it is already a passcode. ⌘V, which the text field this
+    /// replaced got for free.
     ///
-    /// The clipboard has to already *be* a passcode — surrounding whitespace is
-    /// forgiven, nothing else is. Sieving the digits out of arbitrary text turns
-    /// "Order 12-34-56 shipped" into a complete entry, and reaching six digits
-    /// submits, so a stray paste would spend one of the throttled attempts on a
-    /// value the user never saw. Over-long is refused rather than truncated for
-    /// the same reason: silently keeping the first six of seven submits
-    /// something nobody typed.
-    private func paste() {
-        guard !isBusy, let pasted = ClipboardManager.pasteFromClipboard() else { return }
+    /// Surrounding whitespace is forgiven, nothing else is. Sieving the digits
+    /// out of arbitrary text turns "Order 12-34-56 shipped" into a complete
+    /// entry, and reaching six digits submits, so a stray paste would spend one
+    /// of the throttled attempts on a value the user never saw. Over-long is
+    /// refused rather than truncated for the same reason: silently keeping the
+    /// first six of seven submits something nobody typed.
+    ///
+    /// Read when ⌘V is pressed rather than when the edit runs, so what lands is
+    /// what was on the clipboard at the moment the user asked for it.
+    private func clipboardPasscode() -> String? {
+        guard let pasted = ClipboardManager.pasteFromClipboard() else { return nil }
 
         let candidate = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !candidate.isEmpty,
               candidate.count <= PasscodeService.passcodeLength,
               candidate.allSatisfy({ $0.isASCII && $0.isNumber }) else {
-            return
+            return nil
         }
 
-        passcode = candidate
-        isKeypadFocused = true
+        return candidate
     }
     #endif
 }
