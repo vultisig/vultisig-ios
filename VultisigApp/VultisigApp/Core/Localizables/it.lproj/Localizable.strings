@@ -1538,6 +1538,7 @@
 "switchToLocalMode" = "Passa alla modalità locale";
 "systemErrorMessage" = "Errore di sistema. Riprova.";
 "targetAsset" = "Asset Target: %@";
+"tcyUnstakeBelowMinimum" = "Importo troppo piccolo — preleva almeno %@ %@";
 "termsOfService" = "Termini di servizio";
 "theUnmerge" = "La Separazione";
 "thisDevice" = "Questo Dispositivo";

@@ -28,6 +28,24 @@ struct AmountTextField<CustomView: View>: View {
     let customViewPosition: CustomViewPosition
     @State var amountInternal: String = ""
     @State var size: CGSize?
+    /// The last percentage this field *derived* from a typed amount, as opposed
+    /// to one the slider or a percentage button commanded.
+    ///
+    /// Typing used to blank the percentage outright. That left the slider
+    /// reading its `percentage ?? 100` fallback — a confident 100% sitting under
+    /// an amount the user had just typed as something else — and hid the
+    /// percentage caption entirely. Deriving the percentage instead re-opens the
+    /// feedback loop the blanking existed to prevent: a `percentage` change
+    /// calls `setupAmount()`, which would overwrite the half-typed amount with a
+    /// rounded one on every keystroke.
+    ///
+    /// So the derived value is remembered and compared. A `percentage` change
+    /// equal to it is this field's own echo and is ignored; anything else is a
+    /// real interaction with the slider or the buttons and is allowed to set the
+    /// amount. A transient boolean flag cannot do this job — `onChange` runs on
+    /// the next view update, by which point a flag set and cleared around the
+    /// assignment has already been cleared.
+    @State private var lastDerivedPercentage: Double?
 
     init(
         amount: Binding<String>,
@@ -127,17 +145,29 @@ struct AmountTextField<CustomView: View>: View {
         .onChange(of: amountInternal) { _, newValue in
             guard amount != newValue else { return }
             amount = newValue
-            percentage = nil
+            syncPercentage(toTypedAmount: newValue)
         }
         .onChange(of: amount) { _, newValue in
             amountInternal = newValue
         }
-        .onChange(of: percentage) { _, _ in
+        .onChange(of: percentage) { _, newValue in
+            // Our own derived write echoing back. Only a real slider or button
+            // interaction may rewrite the amount; see `lastDerivedPercentage`.
+            guard newValue != lastDerivedPercentage else { return }
             setupAmount()
         }
         .onLoad { setupAmount() }
         .onChange(of: availableAmount) { _, _ in
-            setupAmount()
+            if percentage != nil, percentage == lastDerivedPercentage {
+                // The amount is the user's and the percentage was ours, so the
+                // amount is what has to survive a balance that arrived late —
+                // re-derive the percentage against the new balance instead of
+                // recomputing the amount from it. Blanking the percentage used
+                // to give this for free, by making `setupAmount()` return early.
+                syncPercentage(toTypedAmount: amountInternal)
+            } else {
+                setupAmount()
+            }
         }
         .readSize(onChange: { size = $0 })
     }
@@ -165,9 +195,17 @@ struct AmountTextField<CustomView: View>: View {
 
     func setupAmount() {
         guard let percentage else { return }
-        let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = availableAmount * multiplier
+        let amountDecimal = PercentageAmount.amount(forPercentage: percentage, available: availableAmount)
         amount = amountDecimal.formatToDecimal(digits: decimals)
+    }
+
+    /// Points the percentage control at the amount that was just typed, so the
+    /// slider and the caption report the share of the balance actually being
+    /// acted on.
+    func syncPercentage(toTypedAmount typed: String) {
+        let derived = PercentageAmount.percentage(ofAmount: typed.toDecimal(), available: availableAmount)
+        lastDerivedPercentage = derived
+        percentage = derived
     }
 
     @ViewBuilder

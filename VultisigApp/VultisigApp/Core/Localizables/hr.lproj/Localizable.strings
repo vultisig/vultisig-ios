@@ -1538,6 +1538,7 @@
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "targetAsset" = "Ciljna imovina: %@";
+"tcyUnstakeBelowMinimum" = "Iznos je premalen — podignite barem %@ %@";
 "termsOfService" = "Uvjeti korištenja";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";
