@@ -34,13 +34,19 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     /// the same class of lie as the "You're sending 0 TCY" this replaces, just a
     /// smaller one.
     ///
-    /// True on the auto-compound (sTCY) branch too, even though that one spends
-    /// receipt units through a wasm payload rather than the memo: the sheet's
-    /// ceiling for TCY *is* the receipt balance (`receiptBalanceIsAvailableAmount`),
-    /// so `stakedAmount` and `autoCompoundAmount` are the same quantity and the
-    /// same fraction of it is taken either way.
+    /// ⚠️ **Nil for the auto-compound (sTCY) position**, which is share-based.
+    /// There, `stakedAmount` is a count of `x/staking-tcy` receipt shares, not
+    /// TCY: `liquid.unbond` burns shares and returns the pool principal they are
+    /// worth, and a share is worth more than 1 TCY and drifts further as revenue
+    /// compounds (`fetchTcyAutoCompoundAmount` is the same share read that
+    /// `fetchRujiStakingReceiptAmount` documents as "not a display value").
+    /// Quoting a fraction of the share count as "X TCY" would understate the
+    /// payout on the screen where it is approved. Naming no figure is worse copy
+    /// than naming one, but it is not a wrong number, and pricing shares
+    /// correctly means resolving the live redemption ratio — a different change
+    /// on a position this issue does not cover.
     var withdrawDisplayAmount: Decimal? {
-        guard stakedAmount > 0, basisPoints > 0 else { return nil }
+        guard !isAutoCompound, stakedAmount > 0, basisPoints > 0 else { return nil }
         return (stakedAmount * Decimal(basisPoints)) / Decimal(TCYUnstakeBasisPoints.max)
     }
 

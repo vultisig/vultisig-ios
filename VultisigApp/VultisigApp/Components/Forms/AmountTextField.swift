@@ -201,7 +201,7 @@ struct AmountTextField<CustomView: View>: View {
 
     func setupAmount() {
         guard let percentage else { return }
-        let amountDecimal = PercentageAmount.amount(forPercentage: percentage, available: availableAmount)
+        let amountDecimal = AmountPercentageBinding.amount(forPercentage: percentage, available: availableAmount)
         amount = amountDecimal.formatToDecimal(digits: decimals)
     }
 
@@ -209,7 +209,7 @@ struct AmountTextField<CustomView: View>: View {
     /// slider and the caption report the share of the balance actually being
     /// acted on.
     func syncPercentage(toTypedAmount typed: String) {
-        let derived = PercentageAmount.percentage(ofAmount: typed.toDecimal(), available: availableAmount)
+        let derived = AmountPercentageBinding.percentage(ofAmount: typed.toDecimal(), available: availableAmount)
         lastDerivedPercentage = derived
         percentage = derived
     }

@@ -99,6 +99,35 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         XCTAssertNotNil(TCYUnstakePresentation.hero(for: copied))
     }
 
+    /// ⚠️ The auto-compounding sTCY position is share-based: its balance is a
+    /// count of `x/staking-tcy` receipt shares, each worth more than 1 TCY and
+    /// drifting further as revenue compounds. Quoting a fraction of that count as
+    /// "X TCY" would understate the payout on the screen where it is approved, so
+    /// this position names no figure until the redemption ratio is resolved.
+    func testTheAutoCompoundPositionNamesNoFigureRatherThanAShareCount() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault()
+
+        let viewModel = UnstakeTransactionViewModel(
+            coin: makeTCYCoin(),
+            vault: vault,
+            isAutocompound: true,
+            availableToUnstake: staked
+        )
+        viewModel.availableAmount = staked
+        viewModel.autocompoundBalance = staked
+        viewModel.amountField.value = "1002.73"
+        viewModel.percentageSelected = viewModel.percentageFromAmount
+        viewModel.onPercentage(viewModel.percentageFromAmount)
+        viewModel.validForm = true
+
+        let builder = try XCTUnwrap(viewModel.transactionBuilder)
+        XCTAssertNotNil(builder.wasmContractPayload, "the compounding position still redeems its shares")
+        XCTAssertNil(builder.withdrawDisplayAmount)
+        XCTAssertNil(TCYUnstakePresentation.hero(for: builder.buildSendTransaction(vault: vault)))
+    }
+
     /// Every other function call keeps the presentation it has.
     func testAnOrdinarySendGetsNoWithdrawalHero() throws {
         let token = try TestStore.installInMemoryContainer()
