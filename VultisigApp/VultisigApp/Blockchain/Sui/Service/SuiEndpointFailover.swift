@@ -9,9 +9,9 @@ import OSLog
 /// Supplies the Sui RPC hosts to attempt, most-preferred first.
 ///
 /// Kept behind a protocol so the *transport* can change without touching any
-/// call site: when Sui's JSON-RPC is replaced, only the host list and the
-/// request bodies move — the failover walk, the retry policy and every caller
-/// stay as they are.
+/// call site — which is exactly what happened: moving from JSON-RPC to GraphQL
+/// changed only the host list and the request bodies, leaving the failover walk,
+/// the retry policy and every caller as they were.
 protocol SuiEndpointProviding: Sendable {
     /// Hosts in attempt order. Never empty.
     func hosts() -> [URL]

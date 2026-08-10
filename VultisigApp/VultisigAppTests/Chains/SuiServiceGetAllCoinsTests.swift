@@ -159,7 +159,7 @@ private struct StubResolver: RPCEndpointResolving {
     func url(for _: Chain) -> String? { "https://\(host)/rpc" }
 }
 
-/// Serves canned JSON-RPC responses in order. Each call to `getAllCoins` issues
+/// Serves canned GraphQL responses in order. Each call to `getAllCoins` issues
 /// one POST per page; we pop the next queued page off `pages`.
 private final class StubRPCProtocol: URLProtocol {
     static var pages: [Data] = []

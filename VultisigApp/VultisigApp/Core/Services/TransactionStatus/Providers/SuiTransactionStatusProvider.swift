@@ -31,59 +31,69 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
-        do {
-            let data = try await client.query(
-                SuiGraphQLDocument.transaction,
-                variables: ["digest": query.txHash],
-                responseType: SuiTransactionData.self,
-                shouldTryNextHost: { $0.transaction == nil }
+        // Note what this does NOT do: translate an HTTP status into an outcome.
+        // Absence is `transaction: null`, never a 404 — a 404 means the endpoint
+        // did not serve the request at all (a wrong custom-RPC path, or the last
+        // host in a partial outage). Mapping it to `notFound` would hide a broken
+        // endpoint behind "still pending", and would undo the failover client's
+        // deliberate refusal to treat a miss plus an unanswered host as a verdict.
+        let data = try await client.query(
+            SuiGraphQLDocument.transaction,
+            variables: ["digest": query.txHash],
+            responseType: SuiTransactionData.self,
+            shouldTryNextHost: { $0.transaction == nil }
+        )
+
+        // A null transaction is host-local absence: the digest has not landed
+        // here yet, or this node has pruned it.
+        guard let transaction = data.transaction else {
+            return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
+        }
+
+        // The answer has to be about the transaction we asked about. A custom
+        // RPC — or a buggy one — returning a different digest would otherwise
+        // have ITS outcome recorded against this send, and the poller writes
+        // failure permanently.
+        guard let digest = transaction.digest, !digest.isEmpty else {
+            throw SuiRPCError.incompleteResponse("transaction record without a digest")
+        }
+        guard digest == query.txHash else {
+            throw SuiRPCError.digestMismatch(requested: query.txHash, returned: digest)
+        }
+
+        // A transaction record with no effects is NOT absence — the node knows
+        // the digest and has not finished populating it. Reporting `notFound`
+        // would misstate what the node said; `pending` is what it means, and
+        // both keep the poller running.
+        guard let effects = transaction.effects else {
+            return TransactionStatusResult(status: .pending, blockNumber: nil, confirmations: nil)
+        }
+
+        let blockNumber = effects.checkpoint?.sequenceNumber.map(Int.init)
+
+        switch effects.outcome {
+        case .succeeded:
+            return TransactionStatusResult(
+                status: .confirmed,
+                blockNumber: blockNumber,
+                confirmations: nil
             )
-
-            // A null transaction is host-local absence: the digest has not
-            // landed here yet, or this node has pruned it.
-            guard let transaction = data.transaction else {
-                return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
-            }
-
-            // A transaction record with no effects is NOT absence — the node
-            // knows the digest and has not finished populating it. Reporting
-            // `notFound` would be a lie about what the node said; `pending` is
-            // what it actually means, and both keep the poller running.
-            guard let effects = transaction.effects else {
-                return TransactionStatusResult(status: .pending, blockNumber: nil, confirmations: nil)
-            }
-
-            let blockNumber = effects.checkpoint?.sequenceNumber.map(Int.init)
-
-            switch effects.outcome {
-            case .succeeded:
-                return TransactionStatusResult(
-                    status: .confirmed,
-                    blockNumber: blockNumber,
-                    confirmations: nil
-                )
-            case .failed:
-                return TransactionStatusResult(
-                    status: .failed(reason: effects.failureReason ?? "Transaction failed"),
-                    blockNumber: blockNumber,
-                    confirmations: nil
-                )
-            case .undetermined:
-                // An absent or unrecognised status must not become a terminal
-                // failure: the poller records `failed` permanently, and a status
-                // enum Sui adds later would otherwise condemn every transaction
-                // carrying it. Keep polling instead.
-                return TransactionStatusResult(
-                    status: .pending,
-                    blockNumber: blockNumber,
-                    confirmations: nil
-                )
-            }
-        } catch let error as HTTPError {
-            if case .statusCode(let code, _) = error, code == 404 {
-                return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
-            }
-            throw error
+        case .failed:
+            return TransactionStatusResult(
+                status: .failed(reason: effects.failureReason ?? "Transaction failed"),
+                blockNumber: blockNumber,
+                confirmations: nil
+            )
+        case .undetermined:
+            // An absent or unrecognised status must not become a terminal
+            // failure: the poller records `failed` permanently, and a status
+            // enum Sui adds later would otherwise condemn every transaction
+            // carrying it. Keep polling instead.
+            return TransactionStatusResult(
+                status: .pending,
+                blockNumber: blockNumber,
+                confirmations: nil
+            )
         }
     }
 }

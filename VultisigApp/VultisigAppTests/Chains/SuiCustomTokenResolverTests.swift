@@ -166,17 +166,26 @@ final class SuiCustomTokenResolverTests: XCTestCase {
         }
     }
 
-    func testSuiServiceReturnsNilWhenMetadataOmitsRequiredFields() async throws {
-        // A coin the node cannot describe must be dropped rather than shown at a
-        // guessed magnitude or under a placeholder ticker.
+    func testSuiServiceThrowsWhenMetadataOmitsRequiredFields() async {
+        // `nil` is the resolver's "definitively not a token". A metadata object
+        // that EXISTS but cannot be read does not support that claim — it is a
+        // node contract violation, and answering "not a token" would silently
+        // truncate discovery.
         SuiMetadataRPCStub.response = Data(
             #"{"data":{"coinMetadata":{"decimals":null,"symbol":"WAT","iconUrl":null}}}"#.utf8
         )
         let service = SuiService(resolver: SuiMetadataRPCResolver(host: Self.stubHost))
 
-        let metadata = try await service.getCoinMetadata(coinType: Self.customCoinType)
-
-        XCTAssertNil(metadata)
+        do {
+            _ = try await service.getCoinMetadata(coinType: Self.customCoinType)
+            XCTFail("Expected incomplete metadata to throw")
+        } catch let error as SuiRPCError {
+            guard case .incompleteResponse = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 }
 

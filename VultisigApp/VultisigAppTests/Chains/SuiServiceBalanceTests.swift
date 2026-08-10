@@ -71,14 +71,10 @@ final class SuiServiceBalanceTests: XCTestCase {
         )
     }
 
-    func testLongFormNativeTypeIsAcceptedFromTheNode() async throws {
-        // The node spells the address zero-padded; the value is returned as-is
-        // because the app only ever asked about one type.
-        SuiBalanceRPCStub.configure(response: Self.balanceResponse("789"))
-
-        let balance = try await makeService().getBalance(coin: TokensStore.Token.suiSUI, address: Self.owner)
-
-        XCTAssertEqual(balance, "789")
+    func testTheRequestedNativeTypeMatchesTheNodesLongFormSpelling() {
+        // The node spells the address zero-padded; the type the app sends is the
+        // short form. They have to be the same coin, or the balance asked for is
+        // not the balance shown.
         XCTAssertTrue(SuiCoinType.matches(Self.nativeLong, SuiConstants.nativeCoinType))
     }
 
@@ -92,6 +88,21 @@ final class SuiServiceBalanceTests: XCTestCase {
         let balance = try await makeService().getBalance(coin: TokensStore.Token.suiSUI, address: Self.owner)
 
         XCTAssertEqual(balance, "0")
+    }
+
+    func testAnAbsentAddressIsAPartialResponseNotAZero() async {
+        // `address: null` is not "never held this coin" — it is a response that
+        // never resolved the owner. Reading it as zero would show a funded
+        // wallet as empty.
+        SuiBalanceRPCStub.configure(response: Data(#"{"data":{"address":null}}"#.utf8))
+
+        await assertThrowsIncompleteResponse()
+    }
+
+    func testABalanceObjectWithoutATotalIsAPartialResponseNotAZero() async {
+        SuiBalanceRPCStub.configure(response: Data(#"{"data":{"address":{"balance":{}}}}"#.utf8))
+
+        await assertThrowsIncompleteResponse()
     }
 
     func testTransportFailureIsPropagated() async {
@@ -174,6 +185,22 @@ final class SuiServiceBalanceTests: XCTestCase {
             XCTAssertTrue(error.localizedDescription.contains("JSON-RPC"))
         } catch {
             XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    private func assertThrowsIncompleteResponse(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        do {
+            _ = try await makeService().getBalance(coin: TokensStore.Token.suiSUI, address: Self.owner)
+            XCTFail("Expected a partial response to throw", file: file, line: line)
+        } catch let error as SuiRPCError {
+            guard case .incompleteResponse = error else {
+                return XCTFail("Unexpected error: \(error)", file: file, line: line)
+            }
+        } catch {
+            XCTFail("Unexpected error: \(error)", file: file, line: line)
         }
     }
 

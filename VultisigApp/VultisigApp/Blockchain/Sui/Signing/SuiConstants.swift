@@ -52,8 +52,8 @@ enum SuiConstants {
 ///
 /// SUI coin objects are identified by a fully-qualified `address::module::struct`
 /// type. The first segment (the package address) can appear in either short form
-/// (`0x2`) or the 64-hex-digit long form the node returns from
-/// `suix_getAllCoins` (`0x0000…0002`). Matching coin objects by ticker substring
+/// (`0x2`) or the 64-hex-digit long form the node returns from the coin-object
+/// connection (`0x0000…0002`). Matching coin objects by ticker substring
 /// is wrong: it cannot distinguish `0x2::sui::SUI` from `0x…::xsui::XSUI`, and it
 /// fails for tokens whose on-chain symbol differs from their display ticker
 /// (e.g. Wormhole-bridged `…::coin::COIN`). This enum compares the full type

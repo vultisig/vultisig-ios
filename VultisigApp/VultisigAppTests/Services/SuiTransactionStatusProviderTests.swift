@@ -163,6 +163,44 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         }
     }
 
+    func testAResponseAboutADifferentTransactionIsRejected() async {
+        // A custom or buggy endpoint answering with someone else's digest would
+        // otherwise have THAT transaction's outcome recorded against this send —
+        // and the poller writes failure permanently.
+        let provider = makeProvider()
+        http.queue(Data("""
+        {"data":{"transaction":{"digest":"0xsomeoneelse","effects":{"status":"FAILURE",\
+        "executionError":{"message":"not ours","abortCode":null,"identifier":null},"checkpoint":null}}}}
+        """.utf8))
+
+        do {
+            _ = try await provider.checkStatus(query: Self.query)
+            XCTFail("Expected the digest mismatch to be rejected")
+        } catch let error as SuiRPCError {
+            XCTAssertEqual(error, .digestMismatch(requested: "0xdigest", returned: "0xsomeoneelse"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testA404IsNotReportedAsNotFound() async {
+        // Absence is `transaction: null`. A 404 means the endpoint did not serve
+        // the request — a wrong custom-RPC path, or the last host in a partial
+        // outage — and calling that "not found" would hide a broken endpoint
+        // behind "still pending" until the poll timed out.
+        let provider = makeProvider()
+        http.queueError(HTTPError.statusCode(404, nil))
+
+        do {
+            _ = try await provider.checkStatus(query: Self.query)
+            XCTFail("Expected the 404 to propagate")
+        } catch HTTPError.statusCode(let code, _) {
+            XCTAssertEqual(code, 404)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
     // MARK: - Cross-host lookup
 
     func testADigestMissingFromTheFirstHostIsLookedUpOnTheNext() async throws {
@@ -220,8 +258,13 @@ private struct FixedSuiResolver: RPCEndpointResolving {
 /// types are exercised rather than assumed.
 private final class RecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
+    private enum Outcome {
+        case payload(Data)
+        case error(Error)
+    }
+
     private let lock = NSLock()
-    private var payloads: [Data] = []
+    private var outcomes: [Outcome] = []
     private var recorded: [URL] = []
     private var bodies: [[String: Any]] = []
 
@@ -240,7 +283,13 @@ private final class RecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable
     func queue(_ payload: Data) {
         lock.lock()
         defer { lock.unlock() }
-        payloads.append(payload)
+        outcomes.append(.payload(payload))
+    }
+
+    func queueError(_ error: Error) {
+        lock.lock()
+        defer { lock.unlock() }
+        outcomes.append(.error(error))
     }
 
     // Protocol requires `async`; the body is sync. SwiftLint can't see across
@@ -252,13 +301,19 @@ private final class RecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable
         if case .requestParameters(let body, _) = target.task {
             bodies.append(body)
         }
-        let next = payloads.isEmpty ? nil : payloads.removeFirst()
+        let next = outcomes.isEmpty ? nil : outcomes.removeFirst()
         lock.unlock()
 
-        guard let next else { throw HTTPError.noData }
-        // Force-unwrap is safe: a 200 response for a valid URL always initializes.
-        let response = HTTPURLResponse(url: target.baseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!
-        return HTTPResponse(data: next, response: response)
+        switch next {
+        case .payload(let data):
+            // Force-unwrap is safe: a 200 response for a valid URL always initializes.
+            let response = HTTPURLResponse(url: target.baseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return HTTPResponse(data: data, response: response)
+        case .error(let error):
+            throw error
+        case nil:
+            throw HTTPError.noData
+        }
     }
     // swiftlint:enable async_without_await
 }

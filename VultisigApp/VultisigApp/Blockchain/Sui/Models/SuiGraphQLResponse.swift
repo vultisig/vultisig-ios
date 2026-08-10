@@ -62,6 +62,10 @@ enum SuiRPCError: Error, LocalizedError, Equatable {
     case malformedResponse
     /// The configured endpoint answered with a JSON-RPC envelope.
     case legacyJSONRPCEndpoint(host: String)
+    /// A required branch of the selection set came back absent.
+    case incompleteResponse(String)
+    /// The node answered with a different transaction than the one asked about.
+    case digestMismatch(requested: String, returned: String)
 
     var errorDescription: String? {
         switch self {
@@ -75,6 +79,10 @@ enum SuiRPCError: Error, LocalizedError, Equatable {
             The custom Sui RPC \(host) speaks JSON-RPC, which Sui has retired. \
             Set a Sui GraphQL RPC URL, or reset to the default endpoint.
             """
+        case .incompleteResponse(let detail):
+            return "Sui RPC returned an incomplete response: \(detail)"
+        case .digestMismatch(let requested, let returned):
+            return "Sui returned transaction \(returned) when asked about \(requested)"
         }
     }
 }

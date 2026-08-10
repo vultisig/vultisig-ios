@@ -85,12 +85,23 @@ class SuiService: SuiCoinMetadataProviding {
             responseType: SuiBalanceData.self
         )
 
-        // An address that has never held the coin type resolves to null rather
-        // than an error — a genuine zero, not an upstream fault. A refusal
-        // (malformed address, indexer outage) arrives as a populated `errors`
-        // array and has already been raised by the transport.
-        guard let totalBalance = data.address?.balance?.totalBalance else {
-            return "0"
+        // Exactly one of these levels being absent is a legitimate zero; the
+        // others are partial responses. Collapsing all three into "0" would show
+        // a funded wallet as empty, which is the worst thing a balance call can
+        // do — so only the one that genuinely means "never held this coin"
+        // returns zero.
+        guard let owner = data.address else {
+            throw SuiRPCError.incompleteResponse("balance query returned no address")
+        }
+
+        // An address that has never held the coin type resolves `balance` to
+        // null — a genuine zero, not an upstream fault. A refusal (malformed
+        // address, indexer outage) arrives as a populated `errors` array and has
+        // already been raised by the transport.
+        guard let balance = owner.balance else { return "0" }
+
+        guard let totalBalance = balance.totalBalance else {
+            throw SuiRPCError.incompleteResponse("balance object without a totalBalance")
         }
 
         // A present-but-unparseable amount is a node contract violation, not an
@@ -289,7 +300,13 @@ class SuiService: SuiCoinMetadataProviding {
                   // so the round trip is exact.
                   let version = node.version,
                   let digest = node.digest, !digest.isEmpty,
-                  let balance = node.contents?.json?.balance, !balance.isEmpty else {
+                  let balance = node.contents?.json?.balance,
+                  // Not merely non-empty: `SuiCoinType`'s selection parses this
+                  // with `toBigInt()`, which answers zero for anything it cannot
+                  // read. A malformed balance would therefore survive the page
+                  // guards and then quietly drop out of coin selection, leaving
+                  // an under-funded input set rather than a loud failure.
+                  UInt64(balance) != nil else {
                 throw Errors.coinPageDecodeFailed(cursor: cursor)
             }
 
@@ -333,11 +350,14 @@ class SuiService: SuiCoinMetadataProviding {
         // outage is never read as "this coin has no metadata".
         guard let metadata = data.coinMetadata else { return nil }
 
-        // `decimals` and `symbol` are required: a coin the node cannot describe
-        // must be dropped rather than shown at a guessed magnitude or under a
-        // placeholder ticker.
+        // `decimals` and `symbol` are required, and their absence is NOT the
+        // same answer as a null metadata object. `nil` means "this coin
+        // publishes no metadata", which `CustomTokenResolver` reports as
+        // definitively not a token; a metadata object that exists but cannot be
+        // read is a node contract violation, and saying "not a token" would be a
+        // claim we cannot support.
         guard let decimals = metadata.decimals, let symbol = metadata.symbol else {
-            return nil
+            throw SuiRPCError.incompleteResponse("coin metadata for \(coinType) is missing decimals or symbol")
         }
 
         return SuiCoinMetadata(decimals: decimals, symbol: symbol, iconUrl: metadata.iconUrl)
