@@ -154,6 +154,12 @@ struct AmountTextField<CustomView: View>: View {
             // Our own derived write echoing back. Only a real slider or button
             // interaction may rewrite the amount; see `lastDerivedPercentage`.
             guard newValue != lastDerivedPercentage else { return }
+            // A real interaction — so the derived value is spent. Leaving it set
+            // would suppress a LATER move back to the same percentage: type the
+            // full balance (derives 100), drag to 99%, drag back to 100%, and
+            // that last move would be mistaken for the original echo, leaving the
+            // amount at 99% while the screen reports a MAX withdrawal.
+            lastDerivedPercentage = nil
             setupAmount()
         }
         .onLoad { setupAmount() }

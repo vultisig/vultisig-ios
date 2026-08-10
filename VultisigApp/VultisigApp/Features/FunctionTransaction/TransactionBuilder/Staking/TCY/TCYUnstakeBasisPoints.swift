@@ -37,39 +37,57 @@ enum TCYUnstakeBasisPoints {
     /// of the position rounds to `tcy-:0`, which asks for nothing.
     static let min = 1
 
-    /// Basis points of `available` that `amount` comes to, rounded to nearest and
-    /// clamped to `1...10000`, or `0` when the amount is too small to survive the
-    /// rounding (or there is nothing staked). A `0` is never a valid memo — it is
-    /// the signal for `TCYUnstakeAmountValidator` to reject the amount.
+    /// Basis points of `available` that `amount` comes to, rounded DOWN and
+    /// clamped to `1...10000`, or `0` when the amount is smaller than a single
+    /// basis point (or there is nothing staked). A `0` is never a valid memo — it
+    /// is the signal for `TCYUnstakeAmountValidator` to reject the amount.
+    ///
+    /// ⚠️ **Down, not to nearest.** Rounding to nearest tracks the typed figure
+    /// more closely on average, but it can round *up*, and up has a cliff at the
+    /// top: anything from 99.995% of the position upwards reaches 10000 and
+    /// closes the position outright. Someone asking to withdraw 2002.64 of 2002.74
+    /// is asking to keep 0.10 TCY, and taking the last of it is not a rounding
+    /// difference — it is a different outcome. Rounding down makes the invariant
+    /// simple and checkable: **a withdrawal never takes more of the position than
+    /// was asked for, and only an explicit full exit reaches 10000.**
+    ///
+    /// The cost is up to one whole basis point left behind (0.01% of the
+    /// position, ~0.20 TCY on that same position) instead of half of one. Still
+    /// 100× finer than the whole-percent truncation this replaces, and the
+    /// remainder stays staked rather than being taken. `RUJILiquidUnbondTransactionBuilder`
+    /// rounds down for the same reason.
     static func value(forAmount amount: Decimal, available: Decimal) -> Int {
         guard available > 0, amount > 0 else { return 0 }
 
         var raw = (amount / available) * Decimal(max)
         var rounded = Decimal()
-        // `.plain` rounds half away from zero. Nearest is what tracks the user's
-        // intent most closely; the clamp below is what stops it exceeding the
-        // position, so rounding up can never over-withdraw.
-        NSDecimalRound(&rounded, &raw, 0, .plain)
+        NSDecimalRound(&rounded, &raw, 0, .down)
 
         let bps = NSDecimalNumber(decimal: rounded).intValue
         guard bps >= min else { return 0 }
         return Swift.min(bps, max)
     }
 
-    /// One whole basis point of `available`, rounded UP to 4 decimals — the floor
-    /// `TCYUnstakeAmountValidator` enforces, and the figure its message quotes.
+    /// Exactly one basis point of `available` — the threshold below which
+    /// `value(forAmount:available:)` returns 0 and there is nothing to ask the
+    /// chain for.
     ///
-    /// A full basis point rather than the half that would technically survive
-    /// rounding: half a basis point *does* round up to one, but then the user
-    /// receives twice what they asked for. Refusing the amount and naming a
-    /// figure that behaves is better than silently doubling it. Rounding the
-    /// quoted figure up keeps the message honest — retyping exactly what it says
-    /// passes.
+    /// ⚠️ Deliberately NOT rounded. Rounding the threshold up to a display
+    /// precision makes small positions unwithdrawable: a 0.00005 TCY position
+    /// would be compared against a 0.0001 minimum and could never be closed, not
+    /// even at MAX.
     static func minimumAmount(forAvailable available: Decimal) -> Decimal {
         guard available > 0 else { return 0 }
-        var raw = available / Decimal(max)
+        return available / Decimal(max)
+    }
+
+    /// The same threshold rounded UP to `digits`, for the figure the error
+    /// message quotes. Up, so that retyping exactly what the message says
+    /// passes the comparison against the exact threshold above.
+    static func quotedMinimum(forAvailable available: Decimal, digits: Int) -> Decimal {
+        var raw = minimumAmount(forAvailable: available)
         var rounded = Decimal()
-        NSDecimalRound(&rounded, &raw, 4, .up)
+        NSDecimalRound(&rounded, &raw, digits, .up)
         return rounded
     }
 }

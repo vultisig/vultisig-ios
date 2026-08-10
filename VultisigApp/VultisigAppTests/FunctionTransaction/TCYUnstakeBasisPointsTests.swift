@@ -63,21 +63,35 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
 
     // MARK: - The reported bug
 
-    /// ⚠️ The regression test for #5074's third symptom. On the parent commit
-    /// this builds `tcy-:5000` — 50% of 2002.74 = **1001.37**, exactly the figure
-    /// the user reported receiving after asking for 1002.73.
+    /// ⚠️ The regression test for the reported third symptom. Verified to FAIL on
+    /// the parent commit, where the same inputs build `tcy-:5000` — 50% of
+    /// 2002.74 = **1001.37**, exactly the figure the user reported receiving
+    /// after asking for 1002.73.
     func testAWithdrawalAsksForTheAmountThatWasTypedNotAFlooredPercentage() throws {
-        XCTAssertEqual(try memo(typing: "1002.73"), "tcy-:5007")
+        XCTAssertEqual(try memo(typing: "1002.73"), "tcy-:5006")
     }
 
-    /// What the truncation cost, stated as money. 5007 bps of 2002.74 is
-    /// 1002.7719…; 5000 bps is 1001.37. The old path was off by 1.40 TCY, the new
-    /// one by 0.04.
-    func testBasisPointPrecisionLandsWithinHalfABasisPointOfTheRequest() {
-        let bps = TCYUnstakeBasisPoints.value(forAmount: Decimal(string: "1002.73")!, available: staked)
+    /// What the truncation cost, stated as money. 5006 bps of 2002.74 is
+    /// 1002.5717; 5000 bps is 1001.37. The old path was off by 1.36 TCY, the new
+    /// one by 0.16 — and never in the direction of taking more.
+    func testBasisPointPrecisionLandsWithinOneBasisPointOfTheRequest() {
+        let requested = Decimal(string: "1002.73")!
+        let bps = TCYUnstakeBasisPoints.value(forAmount: requested, available: staked)
         let delivered = (staked * Decimal(bps)) / Decimal(TCYUnstakeBasisPoints.max)
-        let error = abs(NSDecimalNumber(decimal: delivered - Decimal(string: "1002.73")!).doubleValue)
-        XCTAssertLessThan(error, 0.11, "a basis point of this position is 0.20 TCY, so half of one is the ceiling")
+
+        XCTAssertLessThanOrEqual(delivered, requested, "a withdrawal must never take more than was asked for")
+        let error = NSDecimalNumber(decimal: requested - delivered).doubleValue
+        XCTAssertLessThan(error, 0.21, "one basis point of this position is 0.20 TCY")
+    }
+
+    /// ⚠️ Rounding must never close a position the user asked to keep something
+    /// in. Asking to withdraw 2002.64 of 2002.74 is asking to keep 0.10 TCY;
+    /// rounding to nearest would reach 10000 and take the last of it, which is a
+    /// different outcome rather than a rounding difference.
+    func testRoundingNeverClosesAPositionTheUserAskedToKeep() {
+        let bps = TCYUnstakeBasisPoints.value(forAmount: Decimal(string: "2002.64")!, available: staked)
+        XCTAssertLessThan(bps, TCYUnstakeBasisPoints.max)
+        XCTAssertEqual(bps, 9999)
     }
 
     // MARK: - Conversion
@@ -134,14 +148,33 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
         XCTAssertThrowsError(try validator.validate(value: "0.05"))
     }
 
+    /// The message has to name a figure that actually passes, or it sends the
+    /// user in a circle.
     func testTheQuotedMinimumIsItselfAcceptable() throws {
-        let minimum = TCYUnstakeBasisPoints.minimumAmount(forAvailable: staked)
         let validator = TCYUnstakeAmountValidator(available: staked, ticker: "TCY")
-        XCTAssertNoThrow(try validator.validate(value: minimum.formatToDecimal(digits: 4)))
+        let quoted = TCYUnstakeBasisPoints.quotedMinimum(
+            forAvailable: staked,
+            digits: TCYUnstakeAmountValidator.quotedDigits
+        )
+        XCTAssertNoThrow(
+            try validator.validate(value: quoted.formatToDecimal(digits: TCYUnstakeAmountValidator.quotedDigits))
+        )
         XCTAssertGreaterThanOrEqual(
-            TCYUnstakeBasisPoints.value(forAmount: minimum, available: staked),
+            TCYUnstakeBasisPoints.value(forAmount: quoted, available: staked),
             TCYUnstakeBasisPoints.min
         )
+    }
+
+    /// ⚠️ A dust position must still be closable. Comparing against a minimum
+    /// rounded up to display precision made any position smaller than that
+    /// rounding unwithdrawable — not even at MAX, because the validator blocks
+    /// the form before the builder is ever asked.
+    func testADustPositionCanStillBeWithdrawnInFull() throws {
+        let dust = Decimal(string: "0.00005")!
+        let validator = TCYUnstakeAmountValidator(available: dust, ticker: "TCY")
+
+        XCTAssertNoThrow(try validator.validate(value: "0.00005"))
+        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: dust, available: dust), TCYUnstakeBasisPoints.max)
     }
 
     /// Reporting a malformed or over-balance amount is `AmountBalanceValidator`'s

@@ -50,7 +50,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
 
         let tx = try makeWithdrawal(typing: "1002.73")
         XCTAssertEqual(tx.amount, "0")
-        XCTAssertEqual(tx.memo, "tcy-:5007")
+        XCTAssertEqual(tx.memo, "tcy-:5006")
     }
 
     func testTheHeroQuotesTheAmountThatWillActuallyBeWithdrawn() throws {
@@ -58,8 +58,8 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         defer { TestStore.restore(token) }
 
         let tx = try makeWithdrawal(typing: "1002.73")
-        // 5007 bps of 2002.74 — the quantised figure, not the typed one.
-        let expected = (staked * 5007) / 10_000
+        // 5006 bps of 2002.74 — the quantised figure, not the typed one.
+        let expected = (staked * 5006) / 10_000
         let carried = try XCTUnwrap(tx.withdrawDisplayAmount)
         XCTAssertEqual(
             NSDecimalNumber(decimal: carried).doubleValue,
@@ -75,7 +75,10 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         XCTAssertFalse(coin.amount.isEmpty)
         XCTAssertNotEqual(coin.amount, "0")
         // Grouping separators are locale-dependent, so match the part that is not.
-        XCTAssertTrue(coin.amount.contains("002.77"), "rendered \(coin.amount)")
+        // Not "1002.73" — the memo cannot express that, and the screen must quote
+        // what the chain will actually pay out.
+        XCTAssertTrue(coin.amount.contains("002.57"), "rendered \(coin.amount)")
+        XCTAssertFalse(coin.amount.contains("002.73"), "the typed figure is not the delivered one")
         // A missing localization would leave the raw key here.
         XCTAssertNotEqual(title, "tcyUnstakeVerifyTitle")
         XCTAssertEqual(title, "tcyUnstakeVerifyTitle".localized)

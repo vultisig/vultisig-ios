@@ -24,6 +24,10 @@ struct TCYUnstakeAmountValidator: FormFieldValidator {
         return formatter
     }()
 
+    /// TCY's own precision — enough digits that the quoted minimum is a figure
+    /// the user can actually type, however small the position.
+    static let quotedDigits = 8
+
     let available: Decimal
     let ticker: String
 
@@ -51,10 +55,13 @@ struct TCYUnstakeAmountValidator: FormFieldValidator {
             return
         }
 
-        let minimum = TCYUnstakeBasisPoints.minimumAmount(forAvailable: available)
-        guard amount >= minimum else {
+        // Compared against the EXACT threshold, quoted at display precision.
+        // Comparing against the rounded-up figure instead would make a position
+        // smaller than that figure impossible to close at all.
+        guard amount >= TCYUnstakeBasisPoints.minimumAmount(forAvailable: available) else {
+            let quoted = TCYUnstakeBasisPoints.quotedMinimum(forAvailable: available, digits: Self.quotedDigits)
             throw ValidationError.belowMinimum(
-                minimum: minimum.formatToDecimal(digits: 4),
+                minimum: quoted.formatToDecimal(digits: Self.quotedDigits),
                 ticker: ticker
             )
         }
