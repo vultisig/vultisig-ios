@@ -87,6 +87,17 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
     /// where a Keychain round trip could otherwise appear in the middle of
     /// signing — the exact cost `KeyshareKeySession` is documented as existing
     /// to keep off this path.
+    ///
+    /// What it buys is an **ordering**, not mutual exclusion: a read that begins
+    /// after `lock()` has returned is refused, because `clear()` bumps the
+    /// counter under the same lock this read takes. A read already in flight
+    /// when the lock lands is *concurrent* with it and may still answer — the
+    /// thread can be descheduled anywhere, so this is preemption rather than
+    /// anything `open` waits on. Closing that would mean making `lock()` wait on
+    /// a callback the Go layer makes from an arbitrary thread, and it would move
+    /// no key material: the share reaches the signing layer on either side of
+    /// the lock. What would actually stop it is cancelling the ceremony, which
+    /// lives in the keysign flow, not here.
     private let lockGeneration: Int
 
     /// Snapshots the vault on the MainActor.
@@ -95,19 +106,38 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
     /// re-introducing the off-MainActor `@Model` read by constructing this from
     /// inside the ceremony instead of ahead of it. Both call sites — the GG20
     /// keygen and the GG20 keysign view models — are already main-actor bound.
+    /// - Important: `protector` and `session` must observe the **same** session,
+    ///   or the guard below tests a lock the protector never saw. The defaults
+    ///   do — `KeyshareProtector.shared` reads `KeyshareKeySession.shared` — and
+    ///   no production caller passes either one.
     @MainActor
     convenience init(
         vault: Vault,
         protector: KeyshareProtecting = KeyshareProtector.shared,
         session: KeyshareKeySession = .shared
     ) {
+        // Literally the first statement, ahead of the copy, for the same reason
+        // `setPasscode` and `unlock` read it as their first instruction: a
+        // `lock()` landing between the two is otherwise absorbed into the
+        // baseline. The shares would be the ones copied *before* the lock while
+        // the generation was the one recorded *after* it, so every later read
+        // would compare equal and serve — a lock the ceremony never notices, for
+        // as long as it runs. Reading it first makes such a lock land outside
+        // the baseline instead, where the guard sees it and fails closed.
+        let generation = session.currentGeneration
+
         // `first` wins on a duplicate public key, matching the `first(where:)`
         // the vault accessor used to do.
         let shares = Dictionary(
             vault.keyshares.map { ($0.pubkey, $0.keyshare) },
             uniquingKeysWith: { first, _ in first }
         )
-        self.init(vaultShares: shares, protector: protector, session: session)
+        self.init(
+            vaultShares: shares,
+            protector: protector,
+            session: session,
+            lockGeneration: generation
+        )
     }
 
     /// Private on purpose: a module-visible dictionary initializer would let a
@@ -115,17 +145,20 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol {
     /// result in, which is the exact thing the main-actor initializer exists to
     /// stop. Every construction — production and test — goes through
     /// `init(vault:)`.
+    ///
+    /// `lockGeneration` is passed in rather than read here so the read cannot
+    /// drift below the share copy: the ordering is the point, and it is only
+    /// visible at the call site above.
     private init(
         vaultShares: [String: String],
         protector: KeyshareProtecting,
-        session: KeyshareKeySession
+        session: KeyshareKeySession,
+        lockGeneration: Int
     ) {
         self.vaultShares = vaultShares
         self.protector = protector
         self.session = session
-        // Captured with the shares, not later: it is only meaningful as "the
-        // generation those values were copied at".
-        self.lockGeneration = session.currentGeneration
+        self.lockGeneration = lockGeneration
         super.init()
     }
 
