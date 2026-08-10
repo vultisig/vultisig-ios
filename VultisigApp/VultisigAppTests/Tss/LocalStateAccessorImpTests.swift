@@ -466,7 +466,9 @@ final class LocalStateAccessorImpTests: XCTestCase {
 /// Set once, under its own lock, **after** `lock()` has returned — so a reader
 /// that observes it set has a happens-before edge to `KeyshareKeySession.clear()`
 /// and is obliged to see the bumped generation.
-private final class LockLatch {
+/// `@unchecked Sendable` is the truthful annotation: every access goes through
+/// the `NSLock` below, which is what the readers and the locking thread rely on.
+private final class LockLatch: @unchecked Sendable {
     private let lock = NSLock()
     private var value = false
 
@@ -484,7 +486,7 @@ private final class LockLatch {
 }
 
 /// `DispatchQueue.concurrentPerform` bodies race on a plain `Int`.
-private final class AtomicCounter {
+private final class AtomicCounter: @unchecked Sendable {
     private let lock = NSLock()
     private var count = 0
 
