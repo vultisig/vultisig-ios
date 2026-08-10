@@ -724,6 +724,46 @@ final class KeygenVaultCommitTests: XCTestCase {
         )
     }
 
+    /// The other half of the same branch, and the one the reshare case above
+    /// cannot reach: a stored vault that does **not** yet hold its default
+    /// coins. The commit builds and attaches them, the save throws, and the
+    /// coins have to come back out — together with the DeFi chains that were
+    /// derived from them in the same pass, or the vault is left offering DeFi
+    /// on chains it holds no coin for.
+    func testAFailedCommitTakesBackTheCoinsItAttachedToAnAlreadyStoredVault() throws {
+        let protector = KeyshareProtector(state: { .disabled })
+        let vault = TestStore.makeDerivableVault(keyshare: firstShare)
+
+        // Stored, but with no coins yet — inserted directly rather than through
+        // the commit, which would have attached them.
+        Storage.shared.modelContext.insert(vault)
+        try Storage.shared.modelContext.save()
+        XCTAssertTrue(vault.coins.isEmpty)
+
+        // Dirty, the way the review screen leaves it on the reshare path.
+        vault.isBackedUp = true
+        XCTAssertTrue(Storage.shared.modelContext.hasChanges)
+
+        XCTAssertThrowsError(
+            try KeygenViewModel.commitVault(
+                vault,
+                context: Storage.shared.modelContext,
+                protector: protector,
+                save: failingSave
+            )
+        )
+
+        XCTAssertTrue(vault.coins.isEmpty, "the coins this commit attached have to come back out")
+        XCTAssertTrue(vault.defiChains.isEmpty, "and the DeFi chains derived from them in the same pass")
+
+        try Storage.shared.modelContext.save()
+
+        let stored = try XCTUnwrap(try storedVaults().first)
+        XCTAssertTrue(stored.coins.isEmpty, "nothing the failed commit built may reach the store")
+        XCTAssertTrue(stored.defiChains.isEmpty)
+        XCTAssertEqual(stored.keyshares.map(\.keyshare), [firstShare])
+    }
+
     /// The review screen renders `error.localizedDescription`. Without the
     /// `LocalizedError` conformance the user would be shown
     /// "(VultisigApp.KeygenCommitError error 0.)" for a dead vault.
