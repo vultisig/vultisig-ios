@@ -1227,10 +1227,17 @@ class KeysignViewModel: ObservableObject {
             return
         }
 
-        // Private: a broadcast failure can carry a chain error that embeds the
-        // user's custom RPC endpoint, and hosted providers put API keys in it.
+        // Full detail stays in the log, marked private so OSLog does not hand it
+        // to anything that collects device logs.
         logger.error("\(errMessage, privacy: .private)")
-        self.keysignError = errMessage
+        // On screen, the same message with any URL cut back to scheme/host/port.
+        // The chain's diagnostic — "insufficient gas", "object version
+        // conflict", "already processed" — is what makes a failure actionable,
+        // so it is kept; what goes is the path and query of a custom RPC
+        // endpoint, where hosted providers keep the API key. Users screenshot
+        // this screen into Discord and GitHub issues, which is a wider
+        // disclosure than a log.
+        self.keysignError = errMessage.redactingEndpointCredentials()
         setStatus(.KeysignFailed)
     }
 

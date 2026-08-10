@@ -1,0 +1,110 @@
+//
+//  RedactedEndpointsTests.swift
+//  VultisigAppTests
+//
+
+@testable import VultisigApp
+import XCTest
+
+/// A broadcast failure is shown on screen, and users screenshot that screen into
+/// Discord and GitHub issues when asking for help. A custom RPC endpoint can
+/// carry a hosted provider's API key in its path or query, so the message must
+/// not — while still saying what actually went wrong, which is the part that
+/// makes the failure actionable.
+final class RedactedEndpointsTests: XCTestCase {
+
+    // MARK: - What must be removed
+
+    func testAPIKeysInThePathAreRemoved() {
+        // QuickNode-style: the token is a path component.
+        let message = "Failed to broadcast transaction,error:https://cold-frosty.quiknode.pro/9f3c1a7b2d/ refused"
+
+        let redacted = message.redactingEndpointCredentials()
+
+        XCTAssertFalse(redacted.contains("9f3c1a7b2d"))
+        XCTAssertTrue(redacted.contains("cold-frosty.quiknode.pro"))
+        XCTAssertTrue(redacted.contains("refused"), "the diagnostic must survive")
+    }
+
+    func testAPIKeysInTheQueryAreRemoved() {
+        let message = "error: https://rpc.example.com/sui?apiKey=SUPERSECRET timed out"
+
+        let redacted = message.redactingEndpointCredentials()
+
+        XCTAssertFalse(redacted.contains("SUPERSECRET"))
+        XCTAssertFalse(redacted.contains("apiKey"))
+        XCTAssertTrue(redacted.contains("rpc.example.com"))
+        XCTAssertTrue(redacted.contains("timed out"))
+    }
+
+    func testUserInfoCredentialsAreRemoved() {
+        let message = "error: https://user:hunter2@rpc.example.com/rpc failed"
+
+        let redacted = message.redactingEndpointCredentials()
+
+        XCTAssertFalse(redacted.contains("hunter2"))
+        XCTAssertFalse(redacted.contains("user:"))
+    }
+
+    func testEveryURLInAMessageIsRedacted() {
+        let message = "primary https://a.example/k/SECRET1 then https://b.example/k/SECRET2"
+
+        let redacted = message.redactingEndpointCredentials()
+
+        XCTAssertFalse(redacted.contains("SECRET1"))
+        XCTAssertFalse(redacted.contains("SECRET2"))
+        XCTAssertTrue(redacted.contains("a.example"))
+        XCTAssertTrue(redacted.contains("b.example"))
+    }
+
+    func testThePortIsKeptSoTheEndpointStaysIdentifiable() {
+        let redacted = "error: https://rpc.example.com:8443/k/SECRET".redactingEndpointCredentials()
+
+        XCTAssertEqual(redacted, "error: https://rpc.example.com:8443/…")
+    }
+
+    // MARK: - What must be kept
+
+    func testAMessageWithNoURLIsUntouched() {
+        // The common case by far. Every chain's diagnostic must pass through
+        // byte-identical, or this change would have degraded error reporting
+        // for every chain in the app.
+        let messages = [
+            "Failed to broadcast transaction,error:insufficient gas",
+            "Failed to broadcast transaction,error:Object version conflict",
+            "Failed to broadcast transaction,error:This transaction has already been processed",
+            "account sequence mismatch, expected 42, got 41",
+            ""
+        ]
+
+        for message in messages {
+            XCTAssertEqual(message.redactingEndpointCredentials(), message, message)
+        }
+    }
+
+    func testABareOriginKeepsItsForm() {
+        // Nothing credential-bearing to remove, so nothing is added either.
+        let redacted = "error: https://graphql.mainnet.sui.io failed".redactingEndpointCredentials()
+
+        XCTAssertEqual(redacted, "error: https://graphql.mainnet.sui.io failed")
+    }
+
+    func testSomethingThatIsNotAURLIsLeftAlone() {
+        let message = "error: move_abort::0x2::coin::EInsufficientBalance at 1://2"
+
+        XCTAssertEqual(message.redactingEndpointCredentials(), message)
+    }
+
+    // MARK: - The Sui path specifically
+
+    func testTheLegacyEndpointErrorSurvivesRedactionIntact() {
+        // Already redacted at source, so this must be a no-op rather than
+        // double-mangling a message the user needs in order to fix a setting.
+        let error = SuiRPCError.legacyEndpoint(URL(staticString: "https://node.example:8443/rpc/KEY?x=1"))
+        let description = error.errorDescription ?? ""
+
+        XCTAssertEqual(description.redactingEndpointCredentials(), description)
+        XCTAssertFalse(description.contains("KEY"))
+        XCTAssertTrue(description.contains("node.example"))
+    }
+}

@@ -137,7 +137,13 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
     func testANullTransactionMapsToNotFound() async throws {
         // A digest that hasn't landed resolves to null with no errors — safe to
         // keep polling, and distinct from a refusal.
-        let provider = makeProvider()
+        //
+        // Pinned to one host on purpose: a null transaction is a host-local
+        // miss, so with a longer list the provider would walk it and this test
+        // would be asserting failover instead of mapping. The shipped default
+        // list gains a second entry as soon as a second Sui GraphQL endpoint
+        // exists, and that must not silently change what this test measures.
+        let provider = makeProvider(hosts: [Self.singleHost])
         http.queue(Data(#"{"data":{"transaction":null}}"#.utf8))
 
         let result = try await provider.checkStatus(query: Self.query)
@@ -188,7 +194,9 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         // the request — a wrong custom-RPC path, or the last host in a partial
         // outage — and calling that "not found" would hide a broken endpoint
         // behind "still pending" until the poll timed out.
-        let provider = makeProvider()
+        // One host: a 404 is retryable, so a longer list would walk past it and
+        // surface whatever the next host said instead.
+        let provider = makeProvider(hosts: [Self.singleHost])
         http.queueError(HTTPError.statusCode(404, nil))
 
         do {
@@ -229,8 +237,14 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeProvider() -> SuiTransactionStatusProvider {
-        SuiTransactionStatusProvider(httpClient: http, resolver: FixedSuiResolver(url: nil))
+    /// A single explicit host, for tests whose subject is response mapping
+    /// rather than failover.
+    private static let singleHost = URL(staticString: "https://sui-only.local")
+
+    private func makeProvider(
+        hosts: [URL] = SuiGraphQLAPI.defaultHosts
+    ) -> SuiTransactionStatusProvider {
+        SuiTransactionStatusProvider(httpClient: http, resolver: FixedSuiResolver(url: nil), hosts: hosts)
     }
 
     private static func confirmed(checkpoint: Int? = nil) -> Data {

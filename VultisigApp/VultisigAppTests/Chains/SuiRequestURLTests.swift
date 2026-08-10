@@ -67,6 +67,15 @@ final class SuiRequestURLTests: XCTestCase {
         )
 
         URLCapturingProtocol.reset()
+        // A matching transaction record, so the provider does NOT treat this as
+        // a host-local miss and walk the list. Without it the assertion would
+        // land on whichever host answered last, and would start failing the day
+        // a second default host is added — while the first request URL, the
+        // thing this test is about, was correct all along.
+        URLCapturingProtocol.stub(body: Data("""
+        {"data":{"transaction":{"digest":"0xdigest","effects":{"status":"SUCCESS",\
+        "executionError":null,"checkpoint":null}}}}
+        """.utf8))
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [URLCapturingProtocol.self]
         let provider = SuiTransactionStatusProvider(
@@ -76,8 +85,9 @@ final class SuiRequestURLTests: XCTestCase {
 
         _ = try? await provider.checkStatus(query: TransactionStatusQuery(txHash: "0xdigest", chain: .sui))
 
-        let status = try XCTUnwrap(URLCapturingProtocol.lastURL?.absoluteString)
-        XCTAssertEqual(status, "https://graphql.mainnet.sui.io/graphql")
+        XCTAssertEqual(URLCapturingProtocol.capturedURLs.count, 1, "no failover should have occurred")
+        let status = try XCTUnwrap(URLCapturingProtocol.capturedURLs.first?.absoluteString)
+        XCTAssertEqual(status, SuiGraphQLAPI.defaultHost.absoluteString)
         XCTAssertEqual(reads, status)
     }
 
@@ -170,13 +180,14 @@ final class SuiRequestURLTests: XCTestCase {
     /// Drives the real `HTTPClient` over a real `URLSession` and returns the URL
     /// the request carried when it reached the protocol layer.
     private func capturedURL(for target: TargetType) async throws -> String {
+        URLCapturingProtocol.reset()
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [URLCapturingProtocol.self]
         let client = HTTPClient(session: URLSession(configuration: configuration))
 
         _ = try? await client.request(target)
 
-        return try XCTUnwrap(URLCapturingProtocol.lastURL?.absoluteString)
+        return try XCTUnwrap(URLCapturingProtocol.capturedURLs.first?.absoluteString)
     }
 }
 
@@ -202,25 +213,36 @@ private struct OverrideResolver: RPCEndpointResolving {
 private final class URLCapturingProtocol: URLProtocol {
 
     private static let lock = NSLock()
-    private static var captured: URL?
+    private static var captured: [URL] = []
+    private static var stubbedBody = Data(#"{"data":{}}"#.utf8)
 
-    static var lastURL: URL? {
+    /// Every URL requested, in order. Tests assert on `.first`: the subject here
+    /// is the URL the app *composes*, and a caller that fails over would
+    /// otherwise let the assertion drift onto a later host.
+    static var capturedURLs: [URL] {
         lock.lock()
         defer { lock.unlock() }
         return captured
     }
 
+    static func stub(body: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        stubbedBody = body
+    }
+
     static func reset() {
         lock.lock()
         defer { lock.unlock() }
-        captured = nil
+        captured = []
+        stubbedBody = Data(#"{"data":{}}"#.utf8)
     }
 
     // These are required `URLProtocol` class-method overrides; they cannot be `static`.
     // swiftlint:disable static_over_final_class
     override class func canInit(with request: URLRequest) -> Bool {
         lock.lock()
-        captured = request.url
+        if let url = request.url { captured.append(url) }
         lock.unlock()
         return true
     }
@@ -237,8 +259,12 @@ private final class URLCapturingProtocol: URLProtocol {
             httpVersion: "HTTP/1.1",
             headerFields: ["Content-Type": "application/json"]
         )!
+        Self.lock.lock()
+        let body = Self.stubbedBody
+        Self.lock.unlock()
+
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: Data(#"{"data":{}}"#.utf8))
+        client?.urlProtocol(self, didLoad: body)
         client?.urlProtocolDidFinishLoading(self)
     }
 
