@@ -40,6 +40,10 @@ private enum LimitFocusField: Hashable {
     /// The Sell amount — the only balance-derived field, so the only one that
     /// gets the percentage buttons.
     case sellAmount
+    /// The percent-offset-from-market field. Bound two-way to the price, and the
+    /// only field whose sign is meaningful, so it takes a keyboard with a minus
+    /// key rather than the decimal pad the others use.
+    case pctFromMarket
 }
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
@@ -69,6 +73,15 @@ struct LimitSwapBodyView: View {
 
     @State private var sourceAmountText: String = ""
     @State private var priceText: String = ""
+    /// Percent-offset-from-market mirror of the price. Editable; two-way bound to
+    /// `draft.targetPrice` through the VM's `pctFromMarketChanged` / `pctFromMarket`.
+    @State private var pctText: String = ""
+    /// The last value written to `pctText` PROGRAMMATICALLY (by `syncPctText`),
+    /// absorbed by `onChange(pctText)` exactly as `lastSyncedUsdText` is for the
+    /// USD mirror. Without it, a resync triggered while the field is focused
+    /// (a chart drag, a preset tap, a fresh quote) would echo back through the
+    /// two-decimal display form and re-round the canonical price it just read.
+    @State private var lastSyncedPctText: String?
     /// USD-mode mirror of `priceText`. Editable in USD mode; kept in sync with
     /// `draft.targetPrice` (× the target USD rate) so switching modes shows the
     /// right value. The canonical price stays `draft.targetPrice` (asset terms).
@@ -119,6 +132,7 @@ struct LimitSwapBodyView: View {
                         vm: vm,
                         priceText: $priceText,
                         usdText: $usdText,
+                        pctText: $pctText,
                         focusedField: $focusedField,
                         onPickFromAsset: onPickFromAsset,
                         onPickToAsset: onPickToAsset
@@ -174,7 +188,12 @@ struct LimitSwapBodyView: View {
                 }
                 Spacer()
                 Button {
-                    hideKeyboard()
+                    // Clearing focus rather than resigning first responder via
+                    // UIApplication: this toolbar's own contents switch on
+                    // `focusedField`, so dismissing by a route that leaves that
+                    // value stale would leave the accessory believing a field is
+                    // still being edited.
+                    focusedField = nil
                 } label: {
                     Text("done".localized)
                 }
@@ -196,6 +215,22 @@ struct LimitSwapBodyView: View {
             if sourceAmountText.isEmpty, vm.draft.sourceAmount > 0 {
                 sourceAmountText = formatPrice(fromCoin.decimal(for: vm.draft.sourceAmount))
             }
+            syncPctText()
+        }
+        .onChange(of: pctText) { _, newText in
+            // Absorb the one echo of a programmatic sync, so a resync that lands
+            // while the field is focused can't round-trip the canonical price
+            // through this field's 2-dp display form.
+            let synced = lastSyncedPctText
+            lastSyncedPctText = nil
+            guard isUserFieldEdit(newText: newText, lastSyncedText: synced) else { return }
+            vm.pctFromMarketChanged(parseLimitPercent(newText))
+        }
+        .onChange(of: vm.marketPriceRef) { _, _ in
+            // The reference the offset is measured against moved (pair change, or
+            // the first quote landing) — the same price is now a different offset,
+            // so the readout has to be re-derived even mid-edit.
+            syncPctText()
         }
         .onChange(of: sourceAmountText) { _, newText in
             vm.amountChanged(parseLimitAmount(newText, decimals: vm.draft.fromAsset.decimals))
@@ -218,7 +253,7 @@ struct LimitSwapBodyView: View {
             // 2-dp USD display (or silently clear the active preset).
             let synced = lastSyncedUsdText
             lastSyncedUsdText = nil
-            guard isUserUsdPriceEdit(newText: newText, lastSyncedText: synced) else { return }
+            guard isUserFieldEdit(newText: newText, lastSyncedText: synced) else { return }
             vm.targetPriceChangedFromUsd(parseLimitPrice(newText))
         }
         .onChange(of: vm.draft.targetPrice) { _, newPrice in
@@ -229,6 +264,7 @@ struct LimitSwapBodyView: View {
                 priceText = newPrice == 0 ? "" : formatPrice(newPrice)
             }
             syncUsdText(for: newPrice)
+            syncPctText()
         }
         .onChange(of: vm.targetUsdPricePerUnit) { _, _ in
             // The target asset (and thus its USD rate) changed — re-derive the USD
@@ -279,6 +315,52 @@ struct LimitSwapBodyView: View {
             ?? NSDecimalNumber(decimal: value).stringValue
     }
 
+    /// Re-derive `pctText` from the canonical target price and the live market
+    /// reference — but only when the field's current text no longer describes
+    /// that price.
+    ///
+    /// The guard is a VALUE comparison, not a focus check. Gating on focus looks
+    /// equivalent and is not: it suppresses every resync while the field is being
+    /// edited, so a price moved by something else in that window — a chart drag,
+    /// a preset, a fresh market quote arriving — would leave the offset reading a
+    /// number that is no longer true of the order.
+    ///
+    /// Agreement is checked in BOTH directions, and it needs both. Mapping the
+    /// text forward through the VM's own price arithmetic asks the semantically
+    /// primary question — *does your text describe the order we would place?* —
+    /// but that mapping rounds to 8 decimals and is not injective at the bottom
+    /// of the range, where wildly different offsets collapse onto one price. So
+    /// the offset itself is compared too, which is the quantity the field
+    /// actually shows (see `limitPercentAgrees`).
+    ///
+    /// Text agrees → it is this field's own value, so leave it: the caret stays
+    /// put mid-edit, and a typed `7.555` survives instead of being rounded into
+    /// the two-decimal display form (which would leave the field disagreeing with
+    /// the price actually being placed). Text disagrees → the price moved without
+    /// this field, so follow it.
+    ///
+    /// With no market reference the offset is undefined, so the field clears
+    /// rather than showing a stale percentage against a price that no longer
+    /// exists (it is also disabled in that state).
+    private func syncPctText() {
+        guard vm.marketPriceRef != nil, vm.draft.targetPrice > 0 else {
+            guard !pctText.isEmpty else { return }
+            lastSyncedPctText = ""
+            pctText = ""
+            return
+        }
+        let typed = parseLimitPercent(pctText)
+        if let mapped = vm.targetPrice(forPctFromMarket: typed),
+           mapped == vm.draft.targetPrice,
+           limitPercentAgrees(typed: typed, canonical: vm.pctFromMarket) {
+            return
+        }
+        let text = formatLimitPercent(vm.pctFromMarket)
+        guard text != pctText else { return }
+        lastSyncedPctText = text
+        pctText = text
+    }
+
     /// Re-derive `usdText` from the canonical target price, skipping the rewrite
     /// when the current text already maps to `targetPrice` (so active USD typing
     /// isn't clobbered — the mapping is exact because both sides divide the typed
@@ -324,6 +406,7 @@ private struct LimitPriceCard: View {
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
     @Binding var usdText: String
+    @Binding var pctText: String
     /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
     var focusedField: FocusState<LimitFocusField?>.Binding
     let onPickFromAsset: () -> Void
@@ -368,6 +451,17 @@ private struct LimitPriceCard: View {
                 )
             }
 
+            // Directly under the price: the market reference and the offset from
+            // it are the number the target is measured against and the measure
+            // itself, so they read as one row. The offset is an editable FIELD
+            // rather than a readout, which is what makes an arbitrary target
+            // (+7.5%) as reachable as the preset pills' whole numbers.
+            LimitMarketOffsetRow(
+                vm: vm,
+                pctText: $pctText,
+                focusedField: focusedField
+            )
+
             // Between the price and the presets on purpose: the chart is what
             // gives a preset its meaning, so it reads as the thing the pills act
             // on rather than as an illustration tacked on below them.
@@ -379,7 +473,7 @@ private struct LimitPriceCard: View {
             // unreachable for every pair.
             LimitPriceChartDisclosure(vm: vm)
 
-            LimitPresetPills(vm: vm)
+            LimitPresetPills(vm: vm, focusedField: focusedField)
         }
         .padding(16)
         .overlay(
@@ -495,6 +589,121 @@ private struct LimitPriceCard: View {
         formatter.maximumFractionDigits = 2
         formatter.groupingSeparator = ","
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0.00"
+    }
+}
+
+// MARK: - Market reference + percent offset
+//
+// The live market price on the left, and the target's offset from it — editable —
+// on the right. The offset used to exist only as a label inside the Market preset
+// pill, which meant the number was visible only after a manual price edit and
+// could not be typed into at all. As a field it is both a permanent readout and
+// the most direct way to express a limit price ("5% up from here"), which is how
+// traders state one.
+//
+// Disabled with the price until a market reference resolves. That is deliberate
+// surface: before this row existed, tapping a preset pill with no reference
+// silently did nothing.
+
+private struct LimitMarketOffsetRow: View {
+
+    @Bindable var vm: LimitSwapFormViewModel
+    @Binding var pctText: String
+    /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
+    var focusedField: FocusState<LimitFocusField?>.Binding
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(marketReferenceText)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Spacer(minLength: 8)
+
+            offsetField
+        }
+    }
+
+    private var marketReferenceText: String {
+        guard let market = vm.marketPriceRef else {
+            return "limitSwap.price.marketLoading".localized
+        }
+        return String(
+            format: "limitSwap.price.marketReference".localized,
+            formatMarketPrice(market),
+            vm.draft.toAsset.ticker
+        )
+    }
+
+    private var offsetField: some View {
+        HStack(spacing: 3) {
+            Text("limitSwap.price.vsMarket".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            // Literal placeholder, matching the price and amount fields: it is a
+            // numeral, not a phrase, and every shipping locale renders it the same.
+            TextField("0", text: $pctText.signedDecimalOnly())
+                // `.plain` strips macOS's default bordered chrome; iOS is
+                // unaffected. Matches the price and amount fields.
+                .textFieldStyle(.plain)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(offsetTint)
+                .multilineTextAlignment(.trailing)
+                // Sized to the widest realistic value ("-100.00") rather than
+                // `.fixedSize()`: an intrinsically-sized field would resize on
+                // every keystroke, sliding the "%" sideways as digits are typed.
+                .frame(width: 52)
+                .lineLimit(1)
+                .focused(focusedField, equals: .pctFromMarket)
+                #if os(iOS)
+                // No `.decimalPad` here — it has no minus key, and a negative
+                // offset is a legitimate entry (take the price now, with an
+                // expiry attached). `.numbersAndPunctuation` keeps the sign
+                // reachable; `signedDecimalOnly` rejects everything else.
+                .keyboardType(.numbersAndPunctuation)
+                #endif
+
+            Text("%")
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(Theme.colors.bgSurface1)
+        .overlay(
+            Theme.radius.pill.shape
+                .stroke(
+                    focusedField.wrappedValue == .pctFromMarket
+                        ? Theme.colors.primaryAccent3
+                        : Theme.colors.borderLight,
+                    lineWidth: 1
+                )
+        )
+        .clipShape(Theme.radius.pill.shape)
+        .disabled(vm.marketPriceRef == nil)
+        .opacity(vm.marketPriceRef == nil ? 0.5 : 1)
+    }
+
+    /// A below-market target is the one case worth colouring: it means the order
+    /// fills the moment it rests, which is the opposite of what most people think
+    /// they are placing. The matching warning row spells it out; this is the
+    /// glanceable version of the same fact.
+    private var offsetTint: Color {
+        vm.pctFromMarket < 0 ? Theme.colors.alertWarning : Theme.colors.textPrimary
+    }
+
+    /// Market reference formatting — 8 significant decimals like the price field,
+    /// so the reference and the target are directly comparable digit for digit.
+    private func formatMarketPrice(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 8
+        return formatter.string(from: NSDecimalNumber(decimal: value))
+            ?? NSDecimalNumber(decimal: value).stringValue
     }
 }
 
@@ -1059,191 +1268,60 @@ private struct LimitAssetRow: View {
 
 // MARK: - Preset pills
 //
-// Layout uses a custom `LimitPillFlow` so pills wrap to a second row when the
-// dynamic Market pill's content (e.g. "+12.5% ✕") is too wide for one row. The
-// +1% / +5% / +10% pills are always static and just call `selectPresetPct(pct)`.
-// The Market pill is dynamic but only after a *manual* edit — when any preset is
-// the live source (`vm.lastPresetPct != nil`), it stays static "Market". Tapping
-// any pill dismisses the keyboard so it doesn't linger after a selection.
+// Shortcuts into the offset field above, not a separate mechanism: each pill
+// calls the same `selectPresetPct` the field's arithmetic goes through, and the
+// field shows the resulting offset whether it came from a pill or a keystroke.
+//
+// All four render statically. The Market pill used to swap its label for the
+// live delta ("+12.5% ✕") after a manual price edit, which needed a wrapping
+// layout for the widened pill and a piece of view state to decide which form to
+// draw. The offset field now shows that delta permanently, so both are gone.
+//
+// Tapping a pill dismisses the keyboard (by clearing focus, which keeps the
+// shared keyboard accessory's state truthful). The offset field then re-derives
+// to the pill's value — not because focus changed, but because the pill moved
+// the price, and any text that no longer describes it is resynced.
 
 private struct LimitPresetPills: View {
 
     @Bindable var vm: LimitSwapFormViewModel
+    /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
+    var focusedField: FocusState<LimitFocusField?>.Binding
 
     var body: some View {
-        LimitPillFlow(spacing: 6) {
-            marketPill
-            staticPill(titleKey: "limitSwap.preset.plus1", pct: 1)
-            staticPill(titleKey: "limitSwap.preset.plus5", pct: 5)
-            staticPill(titleKey: "limitSwap.preset.plus10", pct: 10)
+        HStack(spacing: 6) {
+            pill(titleKey: "limitSwap.preset.market", pct: 0)
+            pill(titleKey: "limitSwap.preset.plus1", pct: 1)
+            pill(titleKey: "limitSwap.preset.plus5", pct: 5)
+            pill(titleKey: "limitSwap.preset.plus10", pct: 10)
         }
     }
 
-    @ViewBuilder
-    private var marketPill: some View {
-        let rounded = roundedPctFromMarket
-        // Render statically when *any* preset is the live source (including the
-        // Market preset) OR when there's effectively no delta from market. The
-        // dynamic state only kicks in after the user manually edits the price
-        // (which sets `vm.lastPresetPct = nil`).
-        let renderStatic = vm.lastPresetPct != nil || rounded == 0
+    private func pill(titleKey: String, pct: Int) -> some View {
         Button {
-            dismissKeyboard()
-            vm.selectPresetPct(0)
-        } label: {
-            HStack(spacing: 4) {
-                if renderStatic {
-                    Text("limitSwap.preset.market".localized)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                } else {
-                    Text(formatRoundedPct(rounded))
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textSecondary)
-                    Image(systemName: "xmark")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
-            }
-            .lineLimit(1)
-            .pillShape()
-        }
-        .buttonStyle(.plain)
-        .disabled(vm.marketPriceRef == nil)
-    }
-
-    private func staticPill(titleKey: String, pct: Int) -> some View {
-        Button {
-            dismissKeyboard()
+            // Native focus release rather than a `resignFirstResponder` hop, so
+            // the shared keyboard accessory — whose contents switch on this
+            // value — doesn't keep rendering a dismissed field's controls.
+            focusedField.wrappedValue = nil
             vm.selectPresetPct(pct)
         } label: {
             Text(titleKey.localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .lineLimit(1)
-                .pillShape()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .overlay(
+                    Theme.radius.pill.shape
+                        .stroke(Theme.colors.borderLight, lineWidth: 1)
+                )
+                // `maxWidth: .infinity` with no fill leaves the tap area collapsed
+                // to the glyphs without an explicit content shape — most of the
+                // pill would be dead, and worse the wider the screen.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(vm.marketPriceRef == nil)
-    }
-
-    /// Rounds `vm.pctFromMarket` to the nearest 0.5%. Returns 0 when no market
-    /// reference is loaded yet, when target price is 0, or when the actual pct
-    /// rounds to 0 (i.e. |pct| < 0.25%).
-    private var roundedPctFromMarket: Decimal {
-        guard vm.marketPriceRef != nil, vm.draft.targetPrice > 0 else { return 0 }
-        var doubled = vm.pctFromMarket * 2
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &doubled, 0, .plain)
-        return rounded / 2
-    }
-
-    private func formatRoundedPct(_ pct: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 1
-        formatter.maximumFractionDigits = 1
-        formatter.positivePrefix = "+"
-        let value = formatter.string(from: NSDecimalNumber(decimal: pct)) ?? "0"
-        return "\(value)%"
-    }
-
-    private func dismissKeyboard() {
-        #if os(iOS)
-        UIApplication.shared.sendAction(
-            #selector(UIResponder.resignFirstResponder),
-            to: nil, from: nil, for: nil
-        )
-        #endif
-    }
-}
-
-// MARK: - Preset pill shape
-//
-// Intrinsically-sized rounded outline: each pill hugs its own content so
-// `LimitPillFlow` can wrap a grown Market pill to its own row instead of
-// cropping it.
-
-private extension View {
-    func pillShape() -> some View {
-        self
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .overlay(
-                Theme.radius.pill.shape
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
-            )
-    }
-}
-
-// MARK: - Pill flow layout
-//
-// Wraps subviews to a second row when content overflows the available width.
-// Each child is sized by its own intrinsic content (so the dynamic Market pill
-// grows when its label becomes "+12.5% ✕"); other pills can drop to the next line
-// instead of getting cropped.
-
-private struct LimitPillFlow: Layout {
-
-    let spacing: CGFloat
-
-    init(spacing: CGFloat = 6) {
-        self.spacing = spacing
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
-        let lines = arrange(subviews: subviews, in: width)
-        let totalHeight = lines.map(\.height).reduce(0, +)
-            + CGFloat(max(0, lines.count - 1)) * spacing
-        let widestLine = lines.map(\.width).max() ?? 0
-        return CGSize(width: widestLine, height: totalHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
-        let lines = arrange(subviews: subviews, in: bounds.width)
-        var y = bounds.minY
-        for line in lines {
-            var x = bounds.minX
-            for index in line.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
-                subviews[index].place(
-                    at: CGPoint(x: x, y: y),
-                    anchor: .topLeading,
-                    proposal: ProposedViewSize(size)
-                )
-                x += size.width + spacing
-            }
-            y += line.height + spacing
-        }
-    }
-
-    private struct Line {
-        var indices: [Int] = []
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-    }
-
-    private func arrange(subviews: Subviews, in maxWidth: CGFloat) -> [Line] {
-        var lines: [Line] = [Line()]
-        for (i, sub) in subviews.enumerated() {
-            let size = sub.sizeThatFits(.unspecified)
-            let extraSpacing: CGFloat = lines[lines.count - 1].indices.isEmpty ? 0 : spacing
-            let prospectiveWidth = lines[lines.count - 1].width + extraSpacing + size.width
-            if prospectiveWidth > maxWidth, !lines[lines.count - 1].indices.isEmpty {
-                var newLine = Line()
-                newLine.indices = [i]
-                newLine.width = size.width
-                newLine.height = size.height
-                lines.append(newLine)
-            } else {
-                lines[lines.count - 1].indices.append(i)
-                lines[lines.count - 1].width = prospectiveWidth
-                lines[lines.count - 1].height = max(lines[lines.count - 1].height, size.height)
-            }
-        }
-        return lines
     }
 }
 
@@ -1362,6 +1440,26 @@ private extension Binding where Value == String {
             get: { wrappedValue },
             set: { newValue in
                 if newValue.isDecimalInput() { wrappedValue = newValue }
+            }
+        )
+    }
+
+    /// `decimalOnly`, plus a single leading `+`/`-`.
+    ///
+    /// Only the percent-from-market field needs this: it is the one input whose
+    /// sign carries meaning, and `isDecimalInput` rejects a minus outright — so
+    /// binding it through `decimalOnly` would make a below-market offset
+    /// untypeable. The sign is accepted only in first position, so `"5-"` and
+    /// `"1-2"` are still rejected, and a lone `"-"` is allowed through as a valid
+    /// in-progress entry (`parseLimitPercent` reads it as 0).
+    func signedDecimalOnly() -> Binding<String> {
+        Binding<String>(
+            get: { wrappedValue },
+            set: { newValue in
+                let magnitude = (newValue.first == "-" || newValue.first == "+")
+                    ? String(newValue.dropFirst())
+                    : newValue
+                if magnitude.isDecimalInput() { wrappedValue = newValue }
             }
         )
     }

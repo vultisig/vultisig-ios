@@ -108,13 +108,126 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice, 42)
     }
 
-    func testTargetPriceChangedFromUsdClearsPresetSelection() {
-        // A USD edit is a manual edit — the active preset highlight must clear.
+    // MARK: - percent-from-market field (two-way with the price)
+
+    func testPctFromMarketChangedSetsPriceRelativeToMarket() {
         let vm = makeViewModel()
-        vm.targetUsdPricePerUnit = 2
-        vm.lastPresetPct = 5
-        vm.targetPriceChangedFromUsd(6000)
-        XCTAssertNil(vm.lastPresetPct)
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.draft.targetPrice, 105)
+    }
+
+    func testPctFromMarketChangedAcceptsFractionalOffsets() {
+        // The whole point of the field over the pills: an offset the presets
+        // don't offer.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 200
+        vm.pctFromMarketChanged(Decimal(string: "7.5")!)
+        XCTAssertEqual(vm.draft.targetPrice, 215)
+    }
+
+    func testPctFromMarketChangedAcceptsNegativeOffsets() {
+        // A below-market target is legitimate — it fills as soon as it rests —
+        // and is explained by the `priceAtOrBelowMarket` warning, not blocked.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(-3)
+        XCTAssertEqual(vm.draft.targetPrice, 97)
+        XCTAssertEqual(vm.displayedWarning, .priceAtOrBelowMarket)
+    }
+
+    func testPctFromMarketChangedIsNoOpWithoutMarketReference() {
+        // An offset has nothing to offset from; the price must not move.
+        let vm = makeViewModel()
+        vm.marketPriceRef = nil
+        vm.draft.targetPrice = 42
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.draft.targetPrice, 42)
+    }
+
+    func testPctFromMarketChangedRoundsToEightDecimals() {
+        // Same rule as every other price-setting path: never store more precision
+        // than the signed memo's 1e8 LIM can express.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.123456789")!
+        vm.pctFromMarketChanged(1)
+
+        var rounded = Decimal()
+        var value = vm.draft.targetPrice
+        NSDecimalRound(&rounded, &value, 8, .plain)
+        XCTAssertEqual(vm.draft.targetPrice, rounded)
+    }
+
+    func testPctFromMarketRoundTripsThroughPctFromMarketChanged() {
+        // The field is two-way: what `pctFromMarket` reads back must be what was
+        // written, or the readout and the control disagree.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 250
+        vm.pctFromMarketChanged(Decimal(string: "12.5")!)
+        XCTAssertEqual(vm.pctFromMarket, Decimal(string: "12.5")!)
+    }
+
+    func testTargetPriceForPctIsNilWithoutMarketReference() {
+        let vm = makeViewModel()
+        vm.marketPriceRef = nil
+        XCTAssertNil(vm.targetPrice(forPctFromMarket: 5))
+    }
+
+    func testTargetPriceForPctMatchesWhatPctFromMarketChangedStores() {
+        // The view asks this function "does the offset field's text still describe
+        // the price we hold?" and skips the resync when it does. If it disagreed
+        // with what the setter actually stores, the field would be rewritten on
+        // every keystroke — rounding a typed 7.555 into the 2-dp display form and
+        // leaving the readout disagreeing with the price being placed.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "27.4218")!
+        let pct = Decimal(string: "7.555")!
+
+        let mapped = vm.targetPrice(forPctFromMarket: pct)
+        vm.pctFromMarketChanged(pct)
+
+        XCTAssertEqual(mapped, vm.draft.targetPrice)
+    }
+
+    func testExternalPriceChangeMakesTheOffsetTextStopMatching() {
+        // The resync's trigger condition, from the other side: after something
+        // else moves the price (a chart drag here), the offset the field is
+        // showing no longer maps to it — which is exactly what tells the view to
+        // re-derive the readout rather than leave a stale number on screen.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(5)
+        let textPct = Decimal(5)
+        XCTAssertEqual(vm.targetPrice(forPctFromMarket: textPct), vm.draft.targetPrice)
+
+        vm.targetPriceChangedFromChart(140)
+        XCTAssertNotEqual(vm.targetPrice(forPctFromMarket: textPct), vm.draft.targetPrice)
+    }
+
+    func testMarketReferenceMovingMakesTheOffsetTextStopMatching() {
+        // Same trigger, different cause: a fresh quote re-bases the offset, so a
+        // field left reading "+5.00" would be describing the OLD market.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.draft.targetPrice, 105)
+
+        vm.marketPriceRef = 110
+        XCTAssertNotEqual(vm.targetPrice(forPctFromMarket: 5), vm.draft.targetPrice)
+    }
+
+    func testPresetPillAndPctFieldProduceTheSamePrice() {
+        // The pills are shortcuts into the same arithmetic — if these ever
+        // diverge, tapping +5% and typing 5 would place different orders.
+        let viaPill = makeViewModel()
+        viaPill.marketPriceRef = Decimal(string: "27.4218")!
+        viaPill.selectPresetPct(5)
+
+        let viaField = makeViewModel()
+        viaField.marketPriceRef = Decimal(string: "27.4218")!
+        viaField.pctFromMarketChanged(5)
+
+        XCTAssertEqual(viaPill.draft.targetPrice, viaField.draft.targetPrice)
     }
 
     func testSelectExpiryHoursUpdatesDraft() {
@@ -703,7 +816,6 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         var value = vm.draft.targetPrice
         NSDecimalRound(&rounded, &value, 8, .plain)
         XCTAssertEqual(vm.draft.targetPrice, rounded, "Preset price must be pre-rounded to 8 dp")
-        XCTAssertEqual(vm.lastPresetPct, 1)
     }
 
     // MARK: - Advanced Swap Queue mimir gate (fail-closed)

@@ -809,6 +809,9 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.marketLoading" = "Dohvaćanje tržišne cijene…";
+"limitSwap.price.marketReference" = "Tržište %1$@ %2$@";
+"limitSwap.price.vsMarket" = "vs. tržište";
 "limitSwap.progress.filledFormat" = "%@ izvršeno";
 "limitSwap.sell" = "Prodaj";
 "limitSwap.status.cancelled" = "Otkazano";

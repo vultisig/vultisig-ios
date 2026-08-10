@@ -238,14 +238,18 @@ func limitDefaultSourceCoin(
     return coin
 }
 
-/// Whether a change to the USD price field is a genuine USER edit rather than the
-/// echo of a value the view just wrote PROGRAMMATICALLY (`newText ==
-/// lastSyncedText`). The limit price display keeps a USD mirror of the
-/// asset-terms target price; a preset tap / rate change / mode switch rewrites
-/// that mirror, and without this guard the resulting field change would convert
-/// back through the 2-dp USD display and silently round the canonical
-/// (LIM-source) price. Pure so the feedback-suppression is unit-testable.
-func isUserUsdPriceEdit(newText: String, lastSyncedText: String?) -> Bool {
+/// Whether a change to a mirrored price field is a genuine USER edit rather than
+/// the echo of a value the view just wrote PROGRAMMATICALLY (`newText ==
+/// lastSyncedText`).
+///
+/// Two fields mirror the canonical asset-terms target price: the USD display and
+/// the percent-from-market offset. Both are rewritten by the view whenever the
+/// price moves for some other reason (a preset tap, a chart drag, a new rate, a
+/// mode switch), and in both cases the resulting field change would otherwise
+/// convert straight back through that field's coarser display precision and
+/// silently round the canonical (LIM-source) price. Pure so the
+/// feedback-suppression is unit-testable.
+func isUserFieldEdit(newText: String, lastSyncedText: String?) -> Bool {
     newText != lastSyncedText
 }
 
@@ -253,8 +257,14 @@ func computeExpiryBlocks(hours: Int) -> Int {
     return THORChainConstants.blocks(forHours: hours)
 }
 
-func computePresetPrice(marketPrice: Decimal, pctAboveMarket pct: Int) -> Decimal {
-    let multiplier = (Decimal(100) + Decimal(pct)) / Decimal(100)
+/// Target price at `pct` percent above (or below, when negative) `marketPrice`.
+///
+/// `pct` is a `Decimal` rather than an `Int` because the offset is user-typed —
+/// `+7.5%` is as valid an intent as the preset pills' whole numbers, and routing
+/// both through one function keeps the pills and the field from drifting apart.
+/// It is the exact inverse of `computePctFromMarket`.
+func computePresetPrice(marketPrice: Decimal, pctAboveMarket pct: Decimal) -> Decimal {
+    let multiplier = (Decimal(100) + pct) / Decimal(100)
     return marketPrice * multiplier
 }
 
@@ -302,6 +312,73 @@ func parseLimitDecimal(_ text: String, locale: Locale = .current) -> Decimal {
 /// Locale-aware parse of the target-price field into asset-terms `Decimal`.
 func parseLimitPrice(_ text: String, locale: Locale = .current) -> Decimal {
     parseLimitDecimal(text, locale: locale)
+}
+
+/// Locale-aware parse of the **percent-from-market** field, which — unlike every
+/// other numeric field in this form — has a meaningful sign: a negative offset is
+/// how a user asks to take the current price with an expiry attached, and the
+/// existing `priceAtOrBelowMarket` warning explains the consequence.
+///
+/// `parseLimitDecimal` is reused for the magnitude so grouping/locale handling
+/// stays identical to the price and amount fields; only the sign is handled here.
+/// A lone `"-"` or `"+"` (mid-typing) parses to 0 rather than failing, so the
+/// field doesn't fight the user on the first keystroke.
+func parseLimitPercent(_ text: String, locale: Locale = .current) -> Decimal {
+    let trimmed = text.trimmingCharacters(in: .whitespaces)
+    guard let first = trimmed.first else { return 0 }
+    guard first == "-" || first == "+" else {
+        return parseLimitDecimal(trimmed, locale: locale)
+    }
+    let magnitude = parseLimitDecimal(String(trimmed.dropFirst()), locale: locale)
+    return first == "-" ? -magnitude : magnitude
+}
+
+/// How far a typed offset may sit from the canonical one and still count as
+/// describing it — half of the field's two-decimal display step.
+let limitPercentAgreementTolerance = Decimal(string: "0.005")!
+
+/// Whether a typed percent offset still describes `canonical`.
+///
+/// The view's resync asks this to tell "the field holds its own value, leave the
+/// caret alone" from "the price moved elsewhere, re-derive the readout". Price
+/// equality alone cannot answer it: the canonical price is rounded to 8 decimals,
+/// and that mapping is **not injective** near the bottom of the range — against a
+/// market of `0.000000006`, both `+0.00%` and `+66.67%` round to a target of
+/// `0.00000001`, so an empty field would look like it agreed with a price it is
+/// nowhere near. (Such an order is separately unplaceable: `computeLim` scales the
+/// price by 1e8 and truncates, so anything under `1e-8` floors the LIM to zero and
+/// throws. The display should still not lie about it.)
+///
+/// Comparing in percent space closes that hole, because the offset is the quantity
+/// the field actually shows. The tolerance is what lets a typed `7.555` survive the
+/// round trip through an 8-decimal price without being rewritten as `+7.56`.
+func limitPercentAgrees(typed: Decimal, canonical: Decimal) -> Bool {
+    let delta = typed - canonical
+    return (delta < 0 ? -delta : delta) < limitPercentAgreementTolerance
+}
+
+/// The percent-from-market field's display form: always signed, two decimals.
+///
+/// The `+` is explicit because the sign is the whole point of the readout — an
+/// unsigned `5.00%` reads as a magnitude, while `+5.00%` reads as a direction.
+/// ASCII `-` (not the typographic minus) so the formatted value round-trips
+/// through `parseLimitPercent` when it is written back into the editable field.
+///
+/// `locale` is explicit rather than left to the formatter's ambient default so
+/// the decimal separator it emits is the same one `parseLimitPercent` is asked
+/// to read back — the two are a matched pair, and a test that formats under the
+/// host's locale while parsing under a fixed one passes or fails by machine.
+func formatLimitPercent(_ pct: Decimal, locale: Locale = .current) -> String {
+    let formatter = NumberFormatter()
+    formatter.locale = locale
+    formatter.numberStyle = .decimal
+    formatter.minimumFractionDigits = 2
+    formatter.maximumFractionDigits = 2
+    formatter.usesGroupingSeparator = false
+    formatter.positivePrefix = "+"
+    formatter.negativePrefix = "-"
+    return formatter.string(from: NSDecimalNumber(decimal: pct))
+        ?? NSDecimalNumber(decimal: pct).stringValue
 }
 
 /// Locale-aware parse of the sell-amount field into the source coin's smallest

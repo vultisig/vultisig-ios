@@ -809,6 +809,9 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.marketLoading" = "시장 가격 불러오는 중…";
+"limitSwap.price.marketReference" = "시장 %1$@ %2$@";
+"limitSwap.price.vsMarket" = "시장 대비";
 "limitSwap.progress.filledFormat" = "%@ 체결";
 "limitSwap.sell" = "매도";
 "limitSwap.status.cancelled" = "취소됨";

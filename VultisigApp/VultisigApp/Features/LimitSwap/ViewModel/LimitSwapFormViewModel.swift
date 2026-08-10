@@ -28,12 +28,6 @@ final class LimitSwapFormViewModel {
     /// Current market price reference, used for % from market and preset pills.
     var marketPriceRef: Decimal?
 
-    /// Tracks the preset that last set `draft.targetPrice`. `nil` after a
-    /// manual edit (typed input). Used by the dynamic Market pill to render
-    /// statically ("Market") whenever a preset is the live source — and only
-    /// flip into the rounded-pct + reset affordance after a manual edit.
-    var lastPresetPct: Int?
-
     /// Set of chains currently routable through THORChain (intersection of
     /// our static prefix table and THORChain's live `inbound_addresses`,
     /// minus halted/paused chains, plus `.thorChain` since RUNE deposits
@@ -358,10 +352,45 @@ final class LimitSwapFormViewModel {
 
     func targetPriceChanged(_ price: Decimal) {
         draft.targetPrice = price
-        lastPresetPct = nil
         // A manual edit: a pending pair refresh must not overwrite it with the
         // delayed Market preset.
         targetPriceEditSeq += 1
+    }
+
+    /// Set the target price from a typed **percent offset against market** — the
+    /// exact inverse of `pctFromMarket`, and the same arithmetic the preset pills
+    /// run, so the field and the pills can never disagree.
+    ///
+    /// No-op without a market reference: an offset has nothing to offset from,
+    /// and the field is disabled in that state anyway. Rounded to 8 decimals like
+    /// every other price-setting path so the stored price never carries more
+    /// precision than the signed memo's LIM can express.
+    ///
+    /// Routed through `targetPriceChanged`, so a typed offset counts as the
+    /// deliberate price choice it is and a pending pair refresh's delayed Market
+    /// auto-seed cannot clobber it.
+    func pctFromMarketChanged(_ pct: Decimal) {
+        guard let price = targetPrice(forPctFromMarket: pct) else { return }
+        targetPriceChanged(price)
+    }
+
+    /// The canonical target price a given percent offset maps to, or `nil` when
+    /// there is no market reference to offset from.
+    ///
+    /// Exposed (rather than inlined into `pctFromMarketChanged`) because the view
+    /// needs the SAME mapping to answer a different question: *does the offset
+    /// field's current text still describe the price we hold?* If it does, the
+    /// field is left alone — which preserves a typed `7.555` instead of rounding
+    /// it to the two-decimal display form, and keeps the caret still mid-edit. If
+    /// it doesn't, the price moved for some other reason (a chart drag, a preset,
+    /// a fresh market quote) and the field has to follow it. Two copies of this
+    /// arithmetic would let those two answers drift apart.
+    func targetPrice(forPctFromMarket pct: Decimal) -> Decimal? {
+        guard let market = marketPriceRef else { return nil }
+        var raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &raw, 8, .plain)
+        return rounded
     }
 
     /// Set the target price from a USD-denominated edit of the price display.
@@ -387,19 +416,18 @@ final class LimitSwapFormViewModel {
     /// Set the target price from a preset pill (`Market`/`+1%`/`+5%`/`+10%`).
     /// No-op if `marketPriceRef` is unset (preset is meaningless without a base).
     /// Result is rounded to 8 decimals so the price text↔draft round-trip is
-    /// stable (formatter caps at 8; without rounding, parse(format(x)) != x
-    /// for high-precision quotes and the sync would clobber `lastPresetPct`).
+    /// stable (the formatter caps at 8; without rounding, parse(format(x)) != x
+    /// for high-precision quotes).
     /// `userInitiated` is `true` for a preset PILL tap (a deliberate price
     /// selection that must not be overwritten by a pending auto-seed) and `false`
     /// for the programmatic Market auto-seed (on load / pair change).
     func selectPresetPct(_ pct: Int, userInitiated: Bool = true) {
         guard let market = marketPriceRef else { return }
-        let raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
+        let raw = computePresetPrice(marketPrice: market, pctAboveMarket: Decimal(pct))
         var rounded = Decimal()
         var input = raw
         NSDecimalRound(&rounded, &input, 8, .plain)
         draft.targetPrice = rounded
-        lastPresetPct = pct
         if userInitiated {
             // A user's preset selection is a price choice — a pending pair
             // refresh's delayed Market auto-seed must not clobber it.
@@ -504,7 +532,6 @@ final class LimitSwapFormViewModel {
         // per-source too — drop it so a fee for the previous source can't be
         // snapshotted into the order.
         marketPriceRef = nil
-        lastPresetPct = nil
         // Pair changed — the prior pair's routability verdict no longer applies;
         // clear it so the CTA isn't stale-blocked until the new probe resolves.
         pairUnroutableReason = nil
@@ -519,7 +546,6 @@ final class LimitSwapFormViewModel {
     func selectToAsset(_ asset: LimitSwapAsset) {
         draft.toAsset = asset
         marketPriceRef = nil
-        lastPresetPct = nil
         // Pair changed — clear the prior routability verdict (see selectFromAsset).
         pairUnroutableReason = nil
         marketPriceRequestID = UUID()

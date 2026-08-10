@@ -479,21 +479,21 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(chain, .ethereum)
     }
 
-    // MARK: - isUserUsdPriceEdit (USD field feedback suppression)
+    // MARK: - isUserFieldEdit (mirrored-field feedback suppression)
 
     func testIsUserUsdPriceEditTreatsProgrammaticEchoAsNonEdit() {
         // The value the view just wrote programmatically must NOT be treated as a
         // user edit — otherwise a preset/rate/mode redraw would round the
         // canonical price through the 2-dp USD display.
-        XCTAssertFalse(isUserUsdPriceEdit(newText: "2870", lastSyncedText: "2870"))
+        XCTAssertFalse(isUserFieldEdit(newText: "2870", lastSyncedText: "2870"))
     }
 
     func testIsUserUsdPriceEditTreatsDifferentTextAsUserEdit() {
-        XCTAssertTrue(isUserUsdPriceEdit(newText: "3000", lastSyncedText: "2870"))
+        XCTAssertTrue(isUserFieldEdit(newText: "3000", lastSyncedText: "2870"))
     }
 
     func testIsUserUsdPriceEditTreatsChangeWithNoPriorSyncAsUserEdit() {
-        XCTAssertTrue(isUserUsdPriceEdit(newText: "3000", lastSyncedText: nil))
+        XCTAssertTrue(isUserFieldEdit(newText: "3000", lastSyncedText: nil))
     }
 
     // MARK: - computeExpiryBlocks
@@ -536,6 +536,125 @@ final class LimitMathTests: XCTestCase {
     func testPresetPriceWithFractionalMarket() {
         // 0.0625 × 1.05 = 0.065625
         XCTAssertEqual(computePresetPrice(marketPrice: Decimal(string: "0.0625")!, pctAboveMarket: 5), Decimal(string: "0.065625")!)
+    }
+
+    func testPresetPriceWithFractionalPercent() {
+        // The offset field's reason for existing: 7.5% is not a preset.
+        XCTAssertEqual(
+            computePresetPrice(marketPrice: 200, pctAboveMarket: Decimal(string: "7.5")!),
+            215
+        )
+    }
+
+    func testPresetPriceWithNegativePercent() {
+        XCTAssertEqual(computePresetPrice(marketPrice: 100, pctAboveMarket: -3), 97)
+    }
+
+    func testPresetPriceInvertsPctFromMarket() {
+        // The field writes through one and reads back through the other, so the
+        // two must be exact inverses or the readout drifts from the control.
+        let market = Decimal(string: "27.4218")!
+        let pct = Decimal(string: "12.5")!
+        let price = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
+        XCTAssertEqual(computePctFromMarket(targetPrice: price, marketPrice: market), pct)
+    }
+
+    // MARK: - parseLimitPercent
+
+    func testParsePercentUnsigned() {
+        XCTAssertEqual(parseLimitPercent("5", locale: Locale(identifier: "en_US")), 5)
+    }
+
+    func testParsePercentExplicitPlus() {
+        XCTAssertEqual(parseLimitPercent("+7.5", locale: Locale(identifier: "en_US")), Decimal(string: "7.5")!)
+    }
+
+    func testParsePercentNegative() {
+        XCTAssertEqual(parseLimitPercent("-3.25", locale: Locale(identifier: "en_US")), Decimal(string: "-3.25")!)
+    }
+
+    func testParsePercentLoneSignIsZeroNotGarbage() {
+        // First keystroke of a negative entry — must not throw the field into a
+        // nonsense price while the user is still typing.
+        XCTAssertEqual(parseLimitPercent("-", locale: Locale(identifier: "en_US")), 0)
+        XCTAssertEqual(parseLimitPercent("+", locale: Locale(identifier: "en_US")), 0)
+    }
+
+    func testParsePercentEmptyIsZero() {
+        XCTAssertEqual(parseLimitPercent("", locale: Locale(identifier: "en_US")), 0)
+    }
+
+    func testParsePercentCommaDecimalLocale() {
+        // Shares the price/amount parser, so a comma-decimal locale behaves.
+        XCTAssertEqual(parseLimitPercent("-2,5", locale: Locale(identifier: "de_DE")), Decimal(string: "-2.5")!)
+    }
+
+    // MARK: - limitPercentAgrees
+
+    func testPercentAgreesWithItself() {
+        XCTAssertTrue(limitPercentAgrees(typed: 5, canonical: 5))
+    }
+
+    func testPercentAgreesAcrossTheEightDecimalPriceRoundTrip() {
+        // A typed 7.555 comes back as very slightly off after the price it set is
+        // rounded to 8 dp. It must still count as agreeing, or the field would be
+        // rewritten to +7.56 and then disagree with the price being placed.
+        XCTAssertTrue(limitPercentAgrees(typed: Decimal(string: "7.555")!,
+                                         canonical: Decimal(string: "7.55500001")!))
+    }
+
+    func testPercentDisagreesOnADisplayVisibleDifference() {
+        XCTAssertFalse(limitPercentAgrees(typed: 5, canonical: Decimal(string: "5.02")!))
+    }
+
+    func testPercentDisagreesWhenPriceRoundingCollapsesDistinctOffsets() {
+        // The reason price equality alone is not enough: against a market of
+        // 6e-9, an empty field (0%) and the true +66.67% both round to the same
+        // 8-decimal target price, so only the percent-space check catches it.
+        let market = Decimal(string: "0.000000006")!
+        let target = Decimal(string: "0.00000001")!
+
+        var mapped = Decimal()
+        var raw = computePresetPrice(marketPrice: market, pctAboveMarket: 0)
+        NSDecimalRound(&mapped, &raw, 8, .plain)
+        XCTAssertEqual(mapped, target, "precondition: price equality cannot separate these")
+
+        let canonical = computePctFromMarket(targetPrice: target, marketPrice: market)
+        XCTAssertFalse(limitPercentAgrees(typed: 0, canonical: canonical))
+    }
+
+    func testPercentAgreementIsSymmetricAroundZero() {
+        XCTAssertTrue(limitPercentAgrees(typed: -2, canonical: Decimal(string: "-2.004")!))
+        XCTAssertFalse(limitPercentAgrees(typed: -2, canonical: Decimal(string: "-2.02")!))
+    }
+
+    // MARK: - formatLimitPercent
+
+    func testFormatPercentSignsPositiveExplicitly() {
+        XCTAssertEqual(formatLimitPercent(5, locale: Locale(identifier: "en_US")), "+5.00")
+    }
+
+    func testFormatPercentUsesAsciiMinusSoItRoundTrips() {
+        let text = formatLimitPercent(Decimal(string: "-2.5")!, locale: Locale(identifier: "en_US"))
+        XCTAssertEqual(text, "-2.50")
+        // The formatted value is written back into the editable field, so the
+        // parser has to accept its own formatter's output.
+        XCTAssertEqual(parseLimitPercent(text, locale: Locale(identifier: "en_US")), Decimal(string: "-2.5")!)
+    }
+
+    func testFormatPercentRoundTripsInACommaDecimalLocale() {
+        // The formatter and the parser are a matched pair: whatever separator the
+        // format emits, the parse under the same locale has to read back. Pinning
+        // only the parser (and letting the formatter take the host's locale) is
+        // what makes a suite pass on one machine and fail on another.
+        let locale = Locale(identifier: "de_DE")
+        let text = formatLimitPercent(Decimal(string: "-2.5")!, locale: locale)
+        XCTAssertEqual(text, "-2,50")
+        XCTAssertEqual(parseLimitPercent(text, locale: locale), Decimal(string: "-2.5")!)
+    }
+
+    func testFormatPercentZero() {
+        XCTAssertEqual(formatLimitPercent(0, locale: Locale(identifier: "en_US")), "+0.00")
     }
 
     // MARK: - computePctFromMarket

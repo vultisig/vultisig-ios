@@ -809,6 +809,9 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.marketLoading" = "Recupero prezzo di mercato…";
+"limitSwap.price.marketReference" = "Mercato %1$@ %2$@";
+"limitSwap.price.vsMarket" = "vs. mercato";
 "limitSwap.progress.filledFormat" = "%@ eseguito";
 "limitSwap.sell" = "Vendi";
 "limitSwap.status.cancelled" = "Annullato";
