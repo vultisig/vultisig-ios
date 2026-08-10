@@ -108,20 +108,6 @@ enum SuiCoinType {
         return normalizeAddress(address) + String(segment[separator.lowerBound...])
     }
 
-    /// Whether `repr` is a Move struct type we can fully account for —
-    /// `address::module::struct`, optionally generic, with balanced brackets.
-    ///
-    /// Used to tell "this object is genuinely not a coin" from "we could not
-    /// read this object at all". The first is out of scope and safe to skip; the
-    /// second means we do not know what we are dropping from a fund-path set.
-    static func isWellFormedStructType(_ repr: String) -> Bool {
-        guard hasBalancedBrackets(repr) else { return false }
-        let head = repr.prefix { $0 != "<" }
-        let parts = head.components(separatedBy: "::")
-        guard parts.count == 3 else { return false }
-        return parts.allSatisfy { !$0.isEmpty }
-    }
-
     /// The `0x2::coin::Coin` wrapper struct, in canonical form.
     private static let coinWrapperType = "0x2::coin::Coin"
 
@@ -149,8 +135,9 @@ enum SuiCoinType {
     /// for must be rejected rather than half-parsed: the wrapper has to be
     /// exactly `0x2::coin::Coin`, the generic argument has to run to the end of
     /// the input, and its angle brackets have to balance. Anything else — a
-    /// different wrapper, trailing text, a stray `>` — returns `nil`, and the
-    /// caller drops the object instead of storing a type nobody can match.
+    /// different wrapper, trailing text, a stray `>` — returns `nil`, and
+    /// `classifyNonCoin` then decides whether that is an object we never wanted
+    /// or one we failed to read.
     static func unwrap(_ repr: String) -> String? {
         guard let open = repr.firstIndex(of: "<"), repr.hasSuffix(">") else { return nil }
 
@@ -176,6 +163,62 @@ enum SuiCoinType {
             }
         }
         return depth == 0
+    }
+
+    /// What to do with a coin-object type that `unwrap` refused.
+    enum ForeignTypeVerdict: Equatable {
+        /// Definitively a different struct — `TreasuryCap<T>`, `CoinMetadata<T>`.
+        /// Not a coin, so dropping it loses nothing.
+        case differentStruct
+        /// Cannot be accounted for. We do not know what it is, so we cannot say
+        /// dropping it is safe.
+        case unreadable
+    }
+
+    /// Classifies a type string that is not a `0x2::coin::Coin<T>`.
+    ///
+    /// The distinction is the whole point: skipping a `TreasuryCap` costs
+    /// nothing, whereas skipping something we merely failed to parse silently
+    /// shrinks a set that funds a transaction. Anything shaped like the coin
+    /// wrapper but not successfully unwrapped is therefore `unreadable`, never
+    /// `differentStruct` — a truncated `Coin<T>` must not be able to disguise
+    /// itself as an object we never wanted.
+    static func classifyNonCoin(_ repr: String) -> ForeignTypeVerdict {
+        guard hasBalancedBrackets(repr) else { return .unreadable }
+
+        // A generic instantiation has to close at the very end; trailing text
+        // means there is more here than we understand.
+        if repr.contains("<"), !repr.hasSuffix(">") { return .unreadable }
+
+        let head = String(repr.prefix { $0 != "<" })
+        let parts = head.components(separatedBy: "::")
+        guard parts.count == 3,
+              isHexAddress(parts[0]),
+              isMoveIdentifier(parts[1]),
+              isMoveIdentifier(parts[2]) else {
+            return .unreadable
+        }
+
+        // It IS the coin wrapper, and `unwrap` still refused it — an empty type
+        // argument, a missing one, or trailing text. That is a broken coin, not
+        // a foreign object.
+        guard normalize(head) != coinWrapperType else { return .unreadable }
+
+        return .differentStruct
+    }
+
+    /// `0x`-prefixed hexadecimal, which every Move package address is.
+    private static func isHexAddress(_ segment: String) -> Bool {
+        guard segment.lowercased().hasPrefix("0x") else { return false }
+        let digits = segment.dropFirst(2)
+        return !digits.isEmpty && digits.allSatisfy(\.isHexDigit)
+    }
+
+    /// A Move identifier: ASCII alphanumerics and underscores, not starting with
+    /// a digit.
+    private static func isMoveIdentifier(_ segment: String) -> Bool {
+        guard let first = segment.first, first.isLetter || first == "_" else { return false }
+        return segment.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "_") }
     }
 
     /// Returns whether two fully-qualified coin types refer to the same coin,

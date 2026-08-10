@@ -211,11 +211,11 @@ final class SuiTransportByteParityTests: XCTestCase {
 
     // MARK: - Telling "not a coin" from "unreadable"
 
-    func testWellFormedNonCoinTypesAreRecognisedAsSuch() {
+    func testGenuinelyDifferentStructsAreSafeToSkip() {
         // Verified against mainnet: the `type: "0x2::coin::Coin"` filter matches
         // the exact struct, so an address holding 37 `TreasuryCap`s returns none
         // of them. These are the objects that WOULD arrive if that ever changed
-        // — genuinely not coins, and safe to skip rather than abort on.
+        // — genuinely not coins, and losing nothing by being skipped.
         let padded = "0x" + String(repeating: "0", count: 63) + "2"
         for repr in [
             "\(padded)::coin::TreasuryCap<0x2::sui::SUI>",
@@ -224,15 +224,41 @@ final class SuiTransportByteParityTests: XCTestCase {
             "0x2::sui::SUI"
         ] {
             XCTAssertNil(SuiCoinType.unwrap(repr), "not a coin: \(repr)")
-            XCTAssertTrue(SuiCoinType.isWellFormedStructType(repr), "should be well formed: \(repr)")
+            XCTAssertEqual(SuiCoinType.classifyNonCoin(repr), .differentStruct, repr)
+        }
+    }
+
+    func testABrokenCoinWrapperIsNeverMistakenForADifferentStruct() {
+        // The dangerous case. Each of these IS shaped like the coin wrapper but
+        // fails to unwrap, so treating it as "some other object" would drop a
+        // real coin out of a set that funds a transaction — silently, and with
+        // the page count still looking right.
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        for repr in [
+            "0x2::coin::Coin",
+            "0x2::coin::Coin<>",
+            "0x2::coin::Coin<0x2::sui::SUI>garbage",
+            "\(padded)::coin::Coin<0x2::sui::SUI",
+            "\(padded)::coin::Coin<0x2::sui::SUI>>"
+        ] {
+            XCTAssertNil(SuiCoinType.unwrap(repr), "must not unwrap: \(repr)")
+            XCTAssertEqual(SuiCoinType.classifyNonCoin(repr), .unreadable, repr)
         }
     }
 
     func testUnreadableTypesAreNotMistakenForOutOfScopeObjects() {
-        // These must NOT be skipped: we cannot say what they are, so we cannot
-        // say that dropping them from a fund-path set is safe.
-        for repr in ["", "garbage", "0x2::coin", "0x2::coin::Coin<0x2::sui::SUI", "::::", "0x2::::X"] {
-            XCTAssertFalse(SuiCoinType.isWellFormedStructType(repr), "should be rejected: \(repr)")
+        // We cannot say what these are, so we cannot say dropping them is safe.
+        for repr in [
+            "",
+            "garbage",
+            "0x2::coin",
+            "::::",
+            "0x2::::X",
+            "0xZZ::coin::TreasuryCap<0x2::sui::SUI>",   // address is not hex
+            "0x2::9bad::TreasuryCap<0x2::sui::SUI>",    // module is not an identifier
+            "0x2::coin::Trea sury<0x2::sui::SUI>"       // struct is not an identifier
+        ] {
+            XCTAssertEqual(SuiCoinType.classifyNonCoin(repr), .unreadable, "should be rejected: \(repr)")
         }
     }
 

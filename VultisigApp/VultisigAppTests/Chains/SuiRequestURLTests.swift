@@ -58,16 +58,26 @@ final class SuiRequestURLTests: XCTestCase {
     }
 
     func testTheStatusPollerRequestsTheSameURLAsTheReads() async throws {
-        // The poller composes its own target; if it drifted, a user could see
-        // reads work and status polling 404.
+        // Drives the real provider, not a hand-built target: if the poller ever
+        // constructs its request differently, a user could see reads work and
+        // status polling 404, and asserting on a target we built here would not
+        // notice.
         let reads = try await capturedURL(
             for: SuiGraphQLAPI(baseURL: SuiGraphQLAPI.defaultHost, document: SuiGraphQLDocument.referenceGasPrice)
         )
+
         URLCapturingProtocol.reset()
-        let status = try await capturedURL(
-            for: SuiGraphQLAPI(baseURL: SuiGraphQLAPI.defaultHost, document: SuiGraphQLDocument.transaction)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [URLCapturingProtocol.self]
+        let provider = SuiTransactionStatusProvider(
+            httpClient: HTTPClient(session: URLSession(configuration: configuration)),
+            resolver: OverrideResolver(url: nil)
         )
 
+        _ = try? await provider.checkStatus(query: TransactionStatusQuery(txHash: "0xdigest", chain: .sui))
+
+        let status = try XCTUnwrap(URLCapturingProtocol.lastURL?.absoluteString)
+        XCTAssertEqual(status, "https://graphql.mainnet.sui.io/graphql")
         XCTAssertEqual(reads, status)
     }
 
@@ -118,6 +128,41 @@ final class SuiRequestURLTests: XCTestCase {
         let resolver = SuiEndpointResolver(resolver: OverrideResolver(url: "https://my-sui.example/"))
 
         XCTAssertEqual(resolver.hosts().map(\.absoluteString), ["https://my-sui.example/"])
+    }
+
+    func testNormalizationTouchesOnlyThePath() {
+        // Hosted providers put API keys in the query string. Trimming the URL
+        // string instead of the path component would corrupt a key that happens
+        // to end in `/`, and would miss the unwanted path slash entirely
+        // whenever a query follows it.
+        let cases: [(input: String, expected: String)] = [
+            ("https://h.example/graphql/?apiKey=x", "https://h.example/graphql?apiKey=x"),
+            ("https://h.example/graphql?apiKey=abc/", "https://h.example/graphql?apiKey=abc/"),
+            ("https://h.example/graphql/#frag/", "https://h.example/graphql#frag/"),
+            ("https://h.example:8443/graphql/", "https://h.example:8443/graphql"),
+            ("https://h.example/a%2Fb/", "https://h.example/a%2Fb"),
+            ("https://h.example/", "https://h.example/")
+        ]
+
+        for testCase in cases {
+            let resolver = SuiEndpointResolver(resolver: OverrideResolver(url: testCase.input))
+            XCTAssertEqual(resolver.hosts().map(\.absoluteString), [testCase.expected], testCase.input)
+        }
+    }
+
+    func testTheLegacyEndpointErrorNamesTheHostWithoutItsCredentials() {
+        // This value is shown on screen AND logged by generic keysign sinks, so
+        // it must identify the endpoint without carrying the API key a hosted
+        // provider keeps in the path or query.
+        let error = SuiRPCError.legacyEndpoint(
+            URL(staticString: "https://node.example:8443/rpc/SECRETKEY?apiKey=alsosecret")
+        )
+
+        XCTAssertEqual(error, .legacyJSONRPCEndpoint(host: "https://node.example:8443"))
+        let description = try? XCTUnwrap(error.errorDescription)
+        XCTAssertFalse(description?.contains("SECRETKEY") ?? true)
+        XCTAssertFalse(description?.contains("alsosecret") ?? true)
+        XCTAssertTrue(description?.contains("node.example") ?? false)
     }
 
     // MARK: - Helpers

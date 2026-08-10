@@ -44,20 +44,28 @@ struct SuiEndpointResolver: SuiEndpointProviding {
         return defaultHosts
     }
 
-    /// Drops a trailing slash from a user-typed endpoint.
+    /// Drops a trailing slash from the **path** of a user-typed endpoint.
     ///
     /// Sui's GraphQL endpoint answers `/graphql` and 404s on `/graphql/`, and
-    /// pasting a URL with a trailing slash is an ordinary thing to do. Only the
-    /// slash is removed, and only when a path remains — a bare origin is left
-    /// alone, where the two forms are the same request anyway.
+    /// pasting a URL with a trailing slash is an ordinary thing to do.
+    ///
+    /// Only the path is touched. Trimming the string instead would edit whatever
+    /// happened to be last — a query value ending in `/` is part of an API key
+    /// on some hosted providers, and a URL with a query would keep its unwanted
+    /// path slash anyway because the slash is no longer at the end. Userinfo,
+    /// port, query and fragment are carried through untouched, and a root path
+    /// is left alone since `https://host/` and `https://host` are the same
+    /// request.
     private static func normalized(_ url: URL) -> URL {
-        let text = url.absoluteString
-        guard text.hasSuffix("/") else { return url }
-        let trimmed = String(text.dropLast())
-        guard let candidate = URL(string: trimmed), candidate.host != nil, !candidate.path.isEmpty else {
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return url
         }
-        return candidate
+
+        let path = components.percentEncodedPath
+        guard path.count > 1, path.hasSuffix("/") else { return url }
+
+        components.percentEncodedPath = String(path.dropLast())
+        return components.url ?? url
     }
 }
 
@@ -251,8 +259,10 @@ struct SuiFailoverClient {
 
         if envelope.jsonrpc != nil {
             // The host that actually answered, not the last configured one:
-            // this message tells the user which endpoint to go fix.
-            throw SuiRPCError.legacyJSONRPCEndpoint(host: host.absoluteString)
+            // this message tells the user which endpoint to go fix. Redacted to
+            // scheme/host/port — enough to identify it, without the path or
+            // query where a hosted provider keeps its API key.
+            throw SuiRPCError.legacyEndpoint(host)
         }
 
         throw SuiRPCError.malformedResponse

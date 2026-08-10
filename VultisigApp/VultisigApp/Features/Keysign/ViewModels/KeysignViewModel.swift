@@ -1227,7 +1227,9 @@ class KeysignViewModel: ObservableObject {
             return
         }
 
-        logger.error("\(errMessage, privacy: .public)")
+        // Private: a broadcast failure can carry a chain error that embeds the
+        // user's custom RPC endpoint, and hosted providers put API keys in it.
+        logger.error("\(errMessage, privacy: .private)")
         self.keysignError = errMessage
         setStatus(.KeysignFailed)
     }
@@ -1315,7 +1317,7 @@ class KeysignViewModel: ObservableObject {
                         break
                     }
                 } catch {
-                    log.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    log.warning("hash-verify lookup failed (attempt \(attempt)/\(maxAttempts)) for \(hash, privacy: .public): \(error.localizedDescription, privacy: .private)")
                 }
 
                 if attempt < maxAttempts {

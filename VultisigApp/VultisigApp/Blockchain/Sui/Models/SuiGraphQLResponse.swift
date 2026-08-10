@@ -60,12 +60,28 @@ enum SuiRPCError: Error, LocalizedError, Equatable {
     case node(message: String, code: String?)
     /// Neither `data` nor `errors` came back.
     case malformedResponse
-    /// The configured endpoint answered with a JSON-RPC envelope.
+    /// The configured endpoint answered with a JSON-RPC envelope. `host` is
+    /// already redacted by `SuiRPCError.legacyEndpoint(_:)` — construct it that
+    /// way rather than passing a raw URL.
     case legacyJSONRPCEndpoint(host: String)
     /// A required branch of the selection set came back absent.
     case incompleteResponse(String)
     /// The node answered with a different transaction than the one asked about.
     case digestMismatch(requested: String, returned: String)
+
+    /// A `legacyJSONRPCEndpoint` naming only `scheme://host:port`.
+    ///
+    /// Enough for the user to recognise which endpoint to change, and nothing
+    /// more: hosted node providers put API keys in the path or the query string,
+    /// and this value is both shown on screen and logged by generic keysign
+    /// sinks that cannot know it is sensitive.
+    static func legacyEndpoint(_ url: URL) -> SuiRPCError {
+        var redacted = "\(url.scheme ?? "https")://\(url.host ?? "<unknown host>")"
+        if let port = url.port {
+            redacted += ":\(port)"
+        }
+        return .legacyJSONRPCEndpoint(host: redacted)
+    }
 
     var errorDescription: String? {
         switch self {

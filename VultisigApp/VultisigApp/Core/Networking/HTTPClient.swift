@@ -112,8 +112,9 @@ extension HTTPClient {
     /// against every empty-path target in the app first — the only URLs this
     /// changes are ones that were wrong.
     static func url(for target: TargetType) -> URL {
-        guard !target.path.isEmpty else { return target.baseURL }
-        return target.baseURL.appendingPathComponent(target.path)
+        let path = target.path
+        guard !path.isEmpty else { return target.baseURL }
+        return target.baseURL.appendingPathComponent(path)
     }
 }
 

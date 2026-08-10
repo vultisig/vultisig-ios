@@ -308,7 +308,7 @@ class SuiService: SuiCoinMetadataProviding {
                 // cannot parse at all means we do not know what we are dropping
                 // from a set that funds a transaction, and that must still
                 // abort.
-                guard SuiCoinType.isWellFormedStructType(repr) else {
+                guard SuiCoinType.classifyNonCoin(repr) == .differentStruct else {
                     throw Errors.coinPageDecodeFailed(cursor: cursor)
                 }
                 return nil
