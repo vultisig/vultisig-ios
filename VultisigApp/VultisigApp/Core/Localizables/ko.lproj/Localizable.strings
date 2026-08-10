@@ -635,7 +635,6 @@
 "kaminoEarnCuratedBy" = "%@ 운영";
 "kaminoEarnDeposit" = "예치";
 "kaminoEarnDeposited" = "예치됨";
-"kaminoEarnLastUpdated" = "%@ 업데이트됨";
 "kaminoEarnPnl" = "손익";
 "kaminoEarnRiskConservative" = "보수적";
 "kaminoEarnRiskPrivateCredit" = "사모 대출";

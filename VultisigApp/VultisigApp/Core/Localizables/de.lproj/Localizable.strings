@@ -635,7 +635,6 @@
 "kaminoEarnCuratedBy" = "Kuratiert von %@";
 "kaminoEarnDeposit" = "Einzahlen";
 "kaminoEarnDeposited" = "Eingezahlt";
-"kaminoEarnLastUpdated" = "Aktualisiert %@";
 "kaminoEarnPnl" = "Gewinn & Verlust";
 "kaminoEarnRiskConservative" = "Konservativ";
 "kaminoEarnRiskPrivateCredit" = "Private Credit";
