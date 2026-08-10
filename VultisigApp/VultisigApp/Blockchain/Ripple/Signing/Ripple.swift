@@ -583,12 +583,24 @@ enum RippleHelper {
         // had the same gap.
         try assertEveryCurrencyCodeIsSignable(in: tx)
 
+        // The type has to be a STRING before anything dispatches on it. XRPL's
+        // codec also accepts a transaction's NUMERIC type code — `0` is
+        // `Payment` — and a numeric spelling reaches the signer as a payment
+        // while every `as? String == "Payment"` comparison below reads false.
+        // That would route a payment down the branch meant for offers and trust
+        // lines, which binds neither destination nor amount. Refuse instead of
+        // teaching each comparison a second spelling: nothing legitimate sends
+        // a numeric type, and the review screen cannot render one either.
+        guard let transactionType = tx["TransactionType"] as? String else {
+            throw HelperError.runtimeError("signRipple rawJson TransactionType is not a string")
+        }
+
         // Payments are additionally expressible by the payload metadata, so bind
         // them to the reviewed destination and amount, then refuse the flags
         // that would quietly unbind that amount again. Other types (offers /
         // trust lines / escrows) are not reconstructable from toAddress/toAmount
         // and pass on the Account and currency-code checks alone.
-        if tx["TransactionType"] as? String == "Payment" {
+        if transactionType == "Payment" {
             try bindPaymentToReviewedValues(tx: tx, keysignPayload: keysignPayload)
             try assertPaymentDeliveryIsBounded(tx: tx)
         }
@@ -898,7 +910,7 @@ enum RippleHelper {
         }
         guard flags & RippleDAppTransaction.tfPartialPayment != 0 else { return }
 
-        guard isPositiveXrplAmount(tx["DeliverMin"]) else {
+        guard isDeliveryFloor(tx["DeliverMin"], for: tx["Amount"]) else {
             throw HelperError.runtimeError(
                 "signRipple rawJson sets tfPartialPayment without a usable DeliverMin floor"
             )
@@ -911,31 +923,75 @@ enum RippleHelper {
     /// before it can burn CPU on its way to being rejected anyway.
     private static let maxDropsStringLength = 20
 
-    /// Whether a value is a well-formed, strictly positive XRPL amount — a
-    /// drops string or an issued-currency object.
+    /// Whether `deliverMin` actually floors the delivery `amount` describes.
     ///
-    /// A `DeliverMin` only floors a delivery if it is one. `null`, `{}`, `"0"`
-    /// and `{"value":"0",…}` all satisfy "the field is present" while bounding
-    /// nothing, so presence alone cannot stand in for a floor.
+    /// Presence is not the question, and neither is positivity alone.
     ///
-    /// An issued value below the smallest representable unit truncates to zero
-    /// through `parseIssuedCurrencyValue` and is refused on the same grounds: a
-    /// floor under the resolution of the ledger amount is not a floor.
-    private static func isPositiveXrplAmount(_ value: Any?) -> Bool {
-        if let drops = value as? String {
-            guard drops.count <= maxDropsStringLength, let parsed = BigInt(drops) else {
+    /// **It has to be positive.** `null`, `{}`, `"0"` and `{"value":"0",…}` all
+    /// satisfy "the field is there" while bounding nothing.
+    ///
+    /// **It has to floor the SAME asset.** XRPL gives an issuer two special
+    /// readings on a `Payment`: an `Amount` whose issuer is the `Destination`
+    /// means "any issuer the destination will take", and a `SendMax` whose
+    /// issuer is the `Account` means "any issuer the sender holds". A floor
+    /// carrying one of those wildcards is a floor on *some* issuer's version of
+    /// the currency — which can be worth nothing — while the card names a
+    /// definite issuer. Pinning `DeliverMin`'s currency and issuer to
+    /// `Amount`'s closes that, and costs nothing legitimate: the ledger already
+    /// requires the two to agree, so a floor that disagrees was never going to
+    /// execute. `Amount` in turn is bound to the reviewed coin by
+    /// `bindPaymentToReviewedValues`, so the floor ends up pinned to the asset
+    /// the co-signer actually reviewed.
+    ///
+    /// Currency codes are compared through `toXrplCurrencyCode`, the same
+    /// normalisation the reviewed-amount binding uses, so hex case and ASCII
+    /// packing do not read as different currencies. It stops short of equating
+    /// a 3-byte code with the 40-hex spelling of the SAME currency, which the
+    /// ledger does treat as equal — a payment naming `USD` in `Amount` and
+    /// `0000…5553440000…` in `DeliverMin` is refused here and would have
+    /// executed. That divergence is deliberate: it errs toward refusing, no
+    /// real payload spells one currency two ways across two fields of one
+    /// transaction, and a bespoke canonicaliser sitting in the middle of a
+    /// signing gate is a worse thing to own than a rare false rejection.
+    ///
+    /// Normalising for the COMPARISON is safe in a way normalising for the
+    /// verdict would not be — the raw bytes still reach the signer untouched,
+    /// and `assertEveryCurrencyCodeIsSignable` has already refused any code the
+    /// signer would rewrite.
+    ///
+    /// An issued value below the resolution `parseIssuedCurrencyValue` works at
+    /// truncates to zero and is refused on the first ground. That matches the
+    /// SDK, and a floor finer than the resolution the reviewed amount itself is
+    /// compared at cannot bound anything this signer can reason about.
+    private static func isDeliveryFloor(_ deliverMin: Any?, for amount: Any?) -> Bool {
+        if amount is String {
+            // Native XRP: both sides are drops strings.
+            guard let drops = deliverMin as? String,
+                  drops.count <= maxDropsStringLength,
+                  let parsed = BigInt(drops) else {
                 return false
             }
             return parsed > 0
         }
-        if let iou = value as? [String: Any] {
-            guard iou["currency"] is String,
-                  iou["issuer"] is String,
-                  let iouValue = iou["value"] as? String,
-                  let parsed = try? RippleIssuedCurrency.parseIssuedCurrencyValue(iouValue) else {
+        if let amountIou = amount as? [String: Any] {
+            guard let floor = deliverMin as? [String: Any],
+                  let amountCurrency = amountIou["currency"] as? String,
+                  let amountIssuer = amountIou["issuer"] as? String,
+                  let floorCurrency = floor["currency"] as? String,
+                  floor["issuer"] as? String == amountIssuer,
+                  let floorValue = floor["value"] as? String else {
                 return false
             }
-            return parsed > 0
+            do {
+                guard try RippleIssuedCurrency.toXrplCurrencyCode(floorCurrency)
+                    == RippleIssuedCurrency.toXrplCurrencyCode(amountCurrency) else {
+                    return false
+                }
+                return try RippleIssuedCurrency.parseIssuedCurrencyValue(floorValue) > 0
+            } catch {
+                // A malformed code or value is not a floor. Never a crash.
+                return false
+            }
         }
         return false
     }

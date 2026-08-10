@@ -630,17 +630,44 @@ final class RippleSignRippleTests: XCTestCase {
         let hollowFloors = [
             "null",
             "{}",
+            "[]",
             "\"0\"",
             "\"-1\"",
             "\"not-a-number\"",
-            "123456",
-            "{\"currency\":\"USD\",\"issuer\":\"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\"}",
-            "{\"currency\":\"USD\",\"issuer\":\"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\"value\":\"0\"}"
+            "123456"
         ]
         for floor in hollowFloors {
             assertBoundPaymentRefused(
                 Self.boundPaymentJson(extraFields: ",\"DeliverMin\":\(floor),\"Flags\":131072"),
                 "a DeliverMin of \(floor) bounds nothing and must not license a partial payment"
+            )
+        }
+    }
+
+    /// The same, for an issued-currency delivery: a floor missing its value, or
+    /// carrying a zero one, floors nothing.
+    func testIssuedPartialPaymentWithAHollowDeliverMinIsRefused() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "USD.\(issuer)", decimals: 15)
+        let hollowFloors = [
+            "{\"currency\":\"USD\",\"issuer\":\"\(issuer)\"}",
+            "{\"currency\":\"USD\",\"issuer\":\"\(issuer)\",\"value\":\"0\"}",
+            "{\"currency\":\"USD\",\"issuer\":\"\(issuer)\",\"value\":\"-1\"}",
+            "\"900000\""
+        ]
+        for floor in hollowFloors {
+            let rawJson = """
+            {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":\(floor),"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+            """
+            let payload = Self.makePayload(
+                rawJson: rawJson,
+                coin: coin,
+                toAddress: Self.destination,
+                toAmount: BigInt("1500000000000000")
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "a DeliverMin of \(floor) bounds nothing on an issued-currency delivery"
             )
         }
     }
@@ -721,6 +748,70 @@ final class RippleSignRippleTests: XCTestCase {
         XCTAssertNoThrow(
             try RippleHelper.getPreSignedInputData(keysignPayload: payload),
             "tfImmediateOrCancel on an offer must not be read as a partial payment"
+        )
+    }
+
+    /// XRPL's codec also accepts a transaction's NUMERIC type code — `0` is
+    /// `Payment` — so a numeric spelling would reach the signer as a payment
+    /// while every `as? String == "Payment"` comparison read false, routing it
+    /// down the branch meant for offers, which binds neither destination nor
+    /// amount. The fixture is the full attack: wrong destination, wrong amount,
+    /// tfPartialPayment, no floor.
+    func testNumericTransactionTypeIsRefused() {
+        let rawJson = """
+        {"TransactionType":0,"Account":"\(Self.account)","Destination":"rAttackerAAAAAAAAAAAAAAAAAAAAAAAAA","Amount":"999999999","Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+        XCTAssertThrowsError(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "a numeric TransactionType must not slip past the Payment bindings"
+        )
+    }
+
+    /// XRPL reads an `Amount` whose issuer is the `Destination` as "any issuer
+    /// the destination will take". A `DeliverMin` carrying that wildcard floors
+    /// *some* issuer's version of the currency — possibly a worthless one —
+    /// while the card names a definite issuer. The floor must be pinned to the
+    /// same asset `Amount` names.
+    func testPartialPaymentWithAMismatchedDeliverMinIssuerIsRefused() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "USD.\(issuer)", decimals: 15)
+
+        // The wildcard spelling: DeliverMin.issuer = Destination.
+        let wildcard = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":{"currency":"USD","issuer":"\(Self.destination)","value":"1.4"},"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        // A floor in an entirely different currency floors nothing that Amount
+        // describes, and the ledger would refuse it too.
+        let otherCurrency = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":{"currency":"EUR","issuer":"\(issuer)","value":"1.4"},"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        for rawJson in [wildcard, otherCurrency] {
+            let payload = Self.makePayload(
+                rawJson: rawJson,
+                coin: coin,
+                toAddress: Self.destination,
+                toAmount: BigInt("1500000000000000")
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "a DeliverMin that does not floor the asset Amount names must be refused"
+            )
+        }
+    }
+
+    /// The floor has to match the shape of the delivery too: an issued-currency
+    /// floor bounds nothing about a native XRP `Amount`.
+    func testNativePartialPaymentWithAnIssuedDeliverMinIsRefused() {
+        let iou = "{\"currency\":\"USD\",\"issuer\":\"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\"value\":\"1\"}"
+        assertBoundPaymentRefused(
+            Self.boundPaymentJson(extraFields: ",\"DeliverMin\":\(iou),\"Flags\":131072"),
+            "an issued-currency floor cannot bound a native XRP delivery"
         )
     }
 

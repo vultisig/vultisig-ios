@@ -122,6 +122,16 @@ final class RippleDAppTransactionParserTests: XCTestCase {
         """))
     }
 
+    /// XRPL's codec also accepts a transaction's numeric type code — `0` is
+    /// `Payment`. This decoder renders only the string spelling, so a numeric
+    /// one falls back to the raw JSON rather than a card that omits whatever
+    /// the type turns out to mean.
+    func testNumericTransactionTypeReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":0,"Account":"rAcc","Destination":"rDest","Amount":"1000000"}
+        """))
+    }
+
     /// A present Amount that is a JSON number (not a drops string) can't be
     /// decoded → the whole parse fails closed to nil (never hide value behind a
     /// seemingly-complete screen).

@@ -246,6 +246,15 @@ struct RippleDAppTransaction: Equatable {
     /// `UInt32.max` is exactly representable as a `Double`, so the integral /
     /// range checks below lose nothing inside the valid window, and every value
     /// wide enough for `Double` to round is already past the upper bound.
+    ///
+    /// This grammar is deliberately NOT the signer's, and both directions of
+    /// the difference fail safe. It is stricter on `Flags: null`, which the
+    /// signer would take as zero — a refusal no real payload runs into, and the
+    /// SDK and extension refuse it identically. It is looser on spellings like
+    /// `131072.0`, which it reads as the bitmask while the signer's u32 decoder
+    /// rejects the field outright: reading a flag the signer will not accept
+    /// costs a transaction that was never going to be signed, never a signature
+    /// over terms nobody reviewed.
     static func parseFlags(_ value: Any?) -> UInt32? {
         guard let value else { return 0 }
         guard let number = value as? NSNumber,
