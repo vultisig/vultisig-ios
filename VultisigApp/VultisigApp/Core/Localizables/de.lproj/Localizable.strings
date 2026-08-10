@@ -644,12 +644,12 @@
 "kaminoErrorVaultNotInRegistry" = "Vault %@ ist keiner, mit dem diese App Transaktionen durchführt";
 "kaminoPayerBalanceUnavailable" = "Solana hat die Kosten dieser Transaktion nicht gemeldet, daher kann das Maximum nicht berechnet werden.";
 "kaminoSimulationFailed" = "Diese Transaktion würde auf Solana fehlschlagen: %@";
-"kaminoVerifyAction" = "Aktion";
 "kaminoVerifyAmount" = "Betrag";
 "kaminoVerifyAmountUnverifiable" = "Der Betrag oben ist eine Schätzung des anderen Geräts und lässt sich nicht gegen diese Bytes prüfen. Signiert wird die Anteilsmenge unten.";
 "kaminoVerifyCurator" = "Kurator";
-"kaminoVerifyDeposit" = "Einzahlung in Vault";
 "kaminoVerifyEntirePosition" = "Deine gesamte Position";
+"kaminoVerifyHeaderDeposit" = "Kamino-Einzahlung";
+"kaminoVerifyHeaderWithdraw" = "Kamino-Auszahlung";
 "kaminoVerifyMismatchAmount" = "Der Betrag in dieser Transaktion ist nicht der oben angezeigte. Signiere sie nicht.";
 "kaminoVerifyMismatchAsset" = "Der oben angezeigte Vermögenswert gehört nicht zu diesem Vault, der Betrag steht also unter dem falschen Token. Signiere sie nicht.";
 "kaminoVerifyMismatchDestination" = "Diese Transaktion zahlt an ein anderes Konto als das oben angezeigte. Signiere sie nicht.";
@@ -659,11 +659,9 @@
 "kaminoVerifyMismatchVault" = "Diese Transaktion richtet sich an einen anderen Vault als den oben angezeigten. Signiere sie nicht.";
 "kaminoVerifyRefused" = "Der Inhalt dieser Transaktion stimmt nicht mit dem Angezeigten überein, sie kann daher nicht signiert werden.";
 "kaminoVerifyShares" = "Vault-Anteile";
-"kaminoVerifyTitle" = "Kamino-Earn-Transaktion";
 "kaminoVerifyTokens" = "Token";
 "kaminoVerifyUnreadable" = "Diese Bytes rufen das Kamino-Vault-Programm auf, konnten aber nicht als Ein- oder Auszahlung gelesen werden. Signiere sie nicht.";
 "kaminoVerifyVault" = "Vault";
-"kaminoVerifyWithdraw" = "Auszahlung aus Vault";
 "kaminoWithdrawInsufficientLiquidity" = "Dieser Vault kann diese Auszahlung derzeit nicht abwickeln – sofort verfügbar sind nur %@ %@.";
 "kaminoWithdrawLimitedLiquidity" = "Aus diesem Vault können derzeit nur %@ %@ sofort ausgezahlt werden. Eine größere Auszahlung wird eventuell erst abgewickelt, wenn der Vault mehr Liquidität freigibt.";
 "kaminoWithdrawMinimum" = "Die Mindestauszahlung ist %@ %@.";

@@ -130,17 +130,39 @@ enum KaminoVerifyPresentation {
         /// everything" rather than as a share count.
         let withdrawsEntirePosition: Bool
 
-        var operationTitle: String {
-            switch operation {
-            case .deposit: return "kaminoVerifyDeposit".localized
-            case .withdraw: return "kaminoVerifyWithdraw".localized
-            }
-        }
-
         /// The amount as the screen should read it. The sentinel is not a
         /// quantity, so it is not rendered as one.
         var amountWithUnit: String {
             withdrawsEntirePosition ? "kaminoVerifyEntirePosition".localized : "\(amount) \(unit)"
+        }
+
+        /// Whether the decoded amount says something the summary's own headline
+        /// does not.
+        ///
+        /// A deposit's bytes carry the same token amount the header already
+        /// shows, so repeating it is noise. A withdraw's carry SHARES against a
+        /// header showing a token projection, and a full exit carries a sentinel
+        /// rather than a quantity — in both cases this is the only figure on
+        /// screen that came from what will be signed.
+        var amountAddsInformation: Bool {
+            operation == .withdraw || withdrawsEntirePosition
+        }
+
+        /// Names the operation where the summary would otherwise say "you're
+        /// sending", which describes a transfer — the one thing a vault deposit
+        /// is not. Deliberately carries the protocol name: on a co-signer this
+        /// line is the first thing that says what is being approved.
+        var headerTitle: String {
+            switch operation {
+            case .deposit: return "kaminoVerifyHeaderDeposit".localized
+            case .withdraw: return "kaminoVerifyHeaderWithdraw".localized
+            }
+        }
+
+        /// Curator and risk tier as one value, so the pair fits a standard
+        /// summary row instead of needing a section that can style a trailing tag.
+        var curatorWithRiskTier: String {
+            "\(curator) · \(riskTier.title)"
         }
     }
 

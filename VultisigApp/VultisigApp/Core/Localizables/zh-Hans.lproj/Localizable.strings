@@ -644,12 +644,12 @@
 "kaminoErrorVaultNotInRegistry" = "金库 %@ 不是此应用会进行交易的金库";
 "kaminoPayerBalanceUnavailable" = "Solana 未返回该交易的成本，因此无法计算最大金额。";
 "kaminoSimulationFailed" = "该交易在 Solana 上会失败：%@";
-"kaminoVerifyAction" = "操作";
 "kaminoVerifyAmount" = "数量";
 "kaminoVerifyAmountUnverifiable" = "上方的数量是另一台设备给出的估算值，无法与这些字节核对。实际签名的是下方的份额数量。";
 "kaminoVerifyCurator" = "管理方";
-"kaminoVerifyDeposit" = "存入金库";
 "kaminoVerifyEntirePosition" = "你的全部仓位";
+"kaminoVerifyHeaderDeposit" = "Kamino 存入";
+"kaminoVerifyHeaderWithdraw" = "Kamino 提取";
 "kaminoVerifyMismatchAmount" = "该交易中的数量与上方显示的数量不一致。请勿签名。";
 "kaminoVerifyMismatchAsset" = "上方显示的资产不属于该金库，因此数量显示在了错误的代币下。请勿签名。";
 "kaminoVerifyMismatchDestination" = "该交易支付的账户与上方显示的账户不同。请勿签名。";
@@ -659,11 +659,9 @@
 "kaminoVerifyMismatchVault" = "该交易指向的金库与上方显示的金库不同。请勿签名。";
 "kaminoVerifyRefused" = "该交易的内容与所显示的不一致，因此无法签名。";
 "kaminoVerifyShares" = "金库份额";
-"kaminoVerifyTitle" = "Kamino Earn 交易";
 "kaminoVerifyTokens" = "代币";
 "kaminoVerifyUnreadable" = "这些字节调用了 Kamino 金库程序，但无法解析为存入或提取。请勿签名。";
 "kaminoVerifyVault" = "金库";
-"kaminoVerifyWithdraw" = "从金库提取";
 "kaminoWithdrawInsufficientLiquidity" = "该金库目前无法结算这笔提取——立即可用的仅有 %@ %@。";
 "kaminoWithdrawLimitedLiquidity" = "该金库目前仅有 %@ %@ 可立即提取。更大金额的提取可能要等到金库释放更多流动性后才能结算。";
 "kaminoWithdrawMinimum" = "最低提取金额为 %@ %@。";

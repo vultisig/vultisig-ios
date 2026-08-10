@@ -106,6 +106,17 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .showIf(input.toAddress.isNotEmpty)
             }
 
+            // Which vault the address above actually is, and who curates it —
+            // read out of the bytes, not out of the request. In the normal row
+            // list rather than a section of their own: they identify the
+            // destination, which is what the rows around them are for.
+            if let kamino = kaminoState.display {
+                getValueCell(for: "kaminoVerifyVault", with: kamino.vaultName)
+                Separator()
+                getValueCell(for: "kaminoVerifyCurator", with: kamino.curatorWithRiskTier)
+                Separator()
+            }
+
             if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
                 getValueCell(
                     for: "amount",
@@ -328,16 +339,26 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .padding(.bottom, 8)
         } else {
             VStack(spacing: 8) {
-                Text(NSLocalizedString("youreSending", comment: ""))
+                // A Kamino transaction says what it is here rather than "you're
+                // sending", which describes a transfer and is the one thing a
+                // vault deposit is not.
+                Text(kaminoState.display?.headerTitle ?? NSLocalizedString("youreSending", comment: ""))
                     .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.bodyMMedium)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 8) {
-                    Image(input.coinImage)
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .cornerRadius(Theme.radius.pill)
+                    // `Image(_:)` resolves a bundled asset by name and renders
+                    // nothing when there is no such asset. Native coins ship one;
+                    // a token's `logo` is a remote URL, so every SPL/ERC-20 send
+                    // drew a blank square here. `AsyncImageView` handles both and
+                    // falls back to the ticker rather than to empty space.
+                    AsyncImageView(
+                        logo: input.coinImage,
+                        size: CGSize(width: 24, height: 24),
+                        ticker: input.coinTicker,
+                        tokenChainLogo: nil
+                    )
 
                     CoinAmountFiatLabel(
                         amount: input.amount,

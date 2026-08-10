@@ -644,12 +644,12 @@
 "kaminoErrorVaultNotInRegistry" = "볼트 %@은(는) 이 앱이 지원하는 볼트가 아닙니다";
 "kaminoPayerBalanceUnavailable" = "Solana가 이 트랜잭션의 비용을 반환하지 않아 최대 금액을 계산할 수 없습니다.";
 "kaminoSimulationFailed" = "이 트랜잭션은 Solana에서 실패합니다: %@";
-"kaminoVerifyAction" = "작업";
 "kaminoVerifyAmount" = "수량";
 "kaminoVerifyAmountUnverifiable" = "위의 수량은 다른 기기가 계산한 추정치이며 이 바이트로 확인할 수 없습니다. 실제로 서명되는 것은 아래의 지분 수량입니다.";
 "kaminoVerifyCurator" = "운영사";
-"kaminoVerifyDeposit" = "볼트에 예치";
 "kaminoVerifyEntirePosition" = "전체 포지션";
+"kaminoVerifyHeaderDeposit" = "Kamino 예치";
+"kaminoVerifyHeaderWithdraw" = "Kamino 출금";
 "kaminoVerifyMismatchAmount" = "이 트랜잭션에 담긴 수량이 위에 표시된 수량과 다릅니다. 서명하지 마세요.";
 "kaminoVerifyMismatchAsset" = "위에 표시된 자산은 이 볼트의 자산이 아니므로 수량이 잘못된 토큰으로 표시됩니다. 서명하지 마세요.";
 "kaminoVerifyMismatchDestination" = "이 트랜잭션은 위에 표시된 계정과 다른 계정으로 지급합니다. 서명하지 마세요.";
@@ -659,11 +659,9 @@
 "kaminoVerifyMismatchVault" = "이 트랜잭션은 위에 표시된 것과 다른 볼트를 대상으로 합니다. 서명하지 마세요.";
 "kaminoVerifyRefused" = "이 트랜잭션의 내용이 표시된 것과 일치하지 않아 서명할 수 없습니다.";
 "kaminoVerifyShares" = "볼트 지분";
-"kaminoVerifyTitle" = "Kamino Earn 트랜잭션";
 "kaminoVerifyTokens" = "토큰";
 "kaminoVerifyUnreadable" = "이 바이트는 Kamino 볼트 프로그램을 호출하지만 예치 또는 출금으로 읽을 수 없습니다. 서명하지 마세요.";
 "kaminoVerifyVault" = "볼트";
-"kaminoVerifyWithdraw" = "볼트에서 출금";
 "kaminoWithdrawInsufficientLiquidity" = "이 볼트는 지금 해당 출금을 처리할 수 없습니다. 즉시 사용 가능한 금액은 %@ %@뿐입니다.";
 "kaminoWithdrawLimitedLiquidity" = "이 볼트에서 즉시 출금할 수 있는 금액은 %@ %@뿐입니다. 더 큰 금액의 출금은 볼트가 유동성을 확보할 때까지 처리되지 않을 수 있습니다.";
 "kaminoWithdrawMinimum" = "최소 출금 금액은 %@ %@입니다.";
