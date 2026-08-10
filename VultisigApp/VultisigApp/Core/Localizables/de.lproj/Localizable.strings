@@ -626,7 +626,7 @@
 "joinSend" = "Senden beitreten";
 "joinSwap" = "Tausch beitreten";
 "joinTransactionSigning" = "Verbinden Sie die Transaktionsunterzeichnung";
-"kaminoErrorVaultMetadataMismatch" = "Kamino meldet %1$@ als %2$@; dieser Vault hat %3$@";
+"kaminoErrorVaultMetadataMismatch" = "Kamino meldet für %1$@ den Wert %2$@; dieser Vault erwartet %3$@";
 "kaminoErrorVaultNotInRegistry" = "Vault %@ ist keiner, mit dem diese App Transaktionen durchführt";
 "keyCopied" = "Schlüssel kopiert";
 "keygen" = "Schlüsselerzeugung";
