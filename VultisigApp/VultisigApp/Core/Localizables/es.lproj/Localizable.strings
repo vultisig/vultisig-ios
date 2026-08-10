@@ -635,7 +635,6 @@
 "kaminoEarnRiskPrivateCredit" = "Crédito privado";
 "kaminoEarnTitle" = "Kamino Earn";
 "kaminoErrorVaultMetadataMismatch" = "Kamino informó %1$@ como %2$@; este vault espera %3$@";
-"kaminoErrorVaultMetadataMismatch" = "Kamino informó %1$@ como %2$@; el de este vault es %3$@";
 "kaminoErrorVaultNotInRegistry" = "El vault %@ no es uno con el que esta app opera";
 "keyCopied" = "Clave copiada";
 "keygen" = "Generación de claves";
