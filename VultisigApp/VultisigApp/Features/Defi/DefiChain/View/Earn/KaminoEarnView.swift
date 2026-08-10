@@ -38,10 +38,15 @@ struct KaminoEarnView<EmptyState: View>: View {
     // pull-to-refresh (cache-first: persist + refresh, never blank).
     var body: some View {
         Group {
-            if !viewModel.hasEnabledVaults {
-                emptyStateView()
-            } else {
+            if viewModel.hasEnabledVaults {
                 populatedState
+            } else if viewModel.isLoading {
+                // Enabled, but nothing seeded to paint yet. `refresh` returns
+                // before it sets `isLoading` when the user has enabled nothing,
+                // so this branch cannot swallow the opt-in banner.
+                KaminoEarnPositionSkeletonView()
+            } else {
+                emptyStateView()
             }
         }
     }
@@ -78,10 +83,16 @@ struct KaminoEarnView<EmptyState: View>: View {
             vaultIdentityRow(for: row)
             Separator(color: Theme.colors.borderLight, opacity: 1)
             depositedRow(for: row)
-            if row.apy30d != nil {
+            // Kept on screen while the value is still being fetched, rather than
+            // appearing once it lands. A row that pops into existence reads as a
+            // layout jump; a labelled row with a shimmering value says which
+            // figure the screen is waiting on. Both are genuinely absent until
+            // the API answers — unlike the deposited amount, whose zero is a
+            // real value, so nothing there is placeheld.
+            if row.apy30d != nil || viewModel.isLoading {
                 apyRow(for: row)
             }
-            if row.pnlToken != nil {
+            if row.pnlToken != nil || viewModel.isLoading {
                 pnlRow(for: row)
             }
         }
@@ -149,31 +160,46 @@ struct KaminoEarnView<EmptyState: View>: View {
 
     @ViewBuilder
     private func apyRow(for row: KaminoEarnRow) -> some View {
-        if let apyText = apyDisplay(for: row) {
-            HStack(spacing: 4) {
-                Icon(.circlePercentage, color: Theme.colors.textTertiary, size: 16)
-                Text("kaminoEarnApy30d".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
+        HStack(spacing: 4) {
+            Icon(.circlePercentage, color: Theme.colors.textTertiary, size: 16)
+            Text("kaminoEarnApy30d".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            if let apyText = apyDisplay(for: row) {
                 Text(apyText)
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.alertSuccess)
+            } else {
+                valuePlaceholder(width: 54)
             }
         }
     }
 
+    /// Stands in for a figure this refresh has not produced yet. Sized to the
+    /// value it replaces so the row does not resize when the number arrives.
+    private func valuePlaceholder(width: CGFloat) -> some View {
+        Theme.radius.xs.shape
+            .fill(Theme.colors.borderLight.opacity(0.3))
+            .frame(width: width, height: 14)
+            .redacted(reason: .placeholder)
+            .shimmer()
+            .accessibilityHidden(true)
+    }
+
     @ViewBuilder
     private func pnlRow(for row: KaminoEarnRow) -> some View {
-        if let pnl = row.pnlToken {
-            HStack(spacing: 4) {
-                Text("kaminoEarnPnl".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                Spacer()
+        HStack(spacing: 4) {
+            Text("kaminoEarnPnl".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+            Spacer()
+            if let pnl = row.pnlToken {
                 HiddenBalanceText("\(formatAmount(pnl)) \(row.coin?.ticker ?? "")")
                     .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(pnlColor(pnl))
+            } else {
+                valuePlaceholder(width: 72)
             }
         }
     }
