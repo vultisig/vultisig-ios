@@ -37,33 +37,21 @@ class SuiService: SuiCoinMetadataProviding {
     private let logger = Log.chain.service
 
     /// Default Sui JSON-RPC host.
-    static let defaultRPCURL: URL = {
-        guard let url = URL(string: Endpoint.suiServiceRpc) else {
-            preconditionFailure("Invalid Sui default RPC URL: \(Endpoint.suiServiceRpc)")
-        }
-        return url
-    }()
+    static let defaultRPCURL: URL = SuiAPI.defaultHost
 
-    /// Resolves the Sui custom RPC override. Injected so the request URL is
-    /// derived from a dependency rather than a global reach-in; resolution is
-    /// computed per access so a runtime override change is picked up live (the
-    /// shared mirror updates without a relaunch).
-    private let resolver: RPCEndpointResolving
-    private let httpClient: HTTPClientProtocol
+    /// Walks the resolved host list, failing over on transport faults only. The
+    /// custom-RPC override is resolved per request, so a runtime override change
+    /// is picked up live (the shared mirror updates without a relaunch).
+    private let client: SuiFailoverClient
 
     init(
         resolver: RPCEndpointResolving = CustomRPCStore.shared,
         httpClient: HTTPClientProtocol = HTTPClient()
     ) {
-        self.resolver = resolver
-        self.httpClient = httpClient
-    }
-
-    /// The override-aware Sui JSON-RPC URL. Falls back to the default host when
-    /// no override is set. Sui exposes a single JSON-RPC endpoint that the
-    /// request methods post to directly, so the override is the complete URL.
-    private var rpcURL: URL {
-        resolver.resolvedURL(for: .sui, default: Self.defaultRPCURL)
+        self.client = SuiFailoverClient(
+            httpClient: httpClient,
+            endpoints: SuiEndpointResolver(resolver: resolver)
+        )
     }
 
     func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]]) {
@@ -77,16 +65,16 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getAllBalances(coin: CoinMeta, address: String) async throws -> String {
-        let response = try await httpClient.request(
-            SuiAPI(baseURL: rpcURL, endpoint: .allBalances(address: address)),
+        let response = try await client.request(
+            .allBalances(address: address),
             responseType: SuiBalancesResponse.self
         )
 
-        if let error = response.data.error {
+        if let error = response.error {
             throw SuiBalanceError.rpc(error.message)
         }
 
-        guard let balances = response.data.result else {
+        guard let balances = response.result else {
             throw SuiBalanceError.missingResult
         }
 
@@ -159,21 +147,31 @@ class SuiService: SuiCoinMetadataProviding {
         }
     }
 
+    /// The network's reference gas price.
+    ///
+    /// A missing or unparseable result throws rather than returning zero: a zero
+    /// reference gas price silently under-prices the transaction that is built
+    /// from it, which fails on chain instead of failing here.
     func getReferenceGasPrice() async throws -> BigInt {
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params: [])
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
-               let resultString = result as? String {
-                let intResult = resultString.toBigInt()
-                return intResult
-            } else {
-                logger.error("JSON decoding error")
+            let response = try await client.request(
+                .referenceGasPrice,
+                responseType: SuiReferenceGasPriceResponse.self
+            )
+
+            if let error = response.error {
+                throw Errors.referenceGasPriceRPC(error.message)
             }
+
+            guard let result = response.result, !result.isEmpty else {
+                throw Errors.missingReferenceGasPrice
+            }
+
+            return result.toBigInt()
         } catch {
-            logger.error("Error fetching balance: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error fetching reference gas price: \(error.localizedDescription, privacy: .public)")
             throw error
         }
-        return BigInt.zero
     }
 
     /// Fetches every coin object owned by the address.
@@ -209,10 +207,10 @@ class SuiService: SuiCoinMetadataProviding {
                 }
                 pageCount += 1
 
-                let response = try await httpClient.request(
-                    SuiAPI(baseURL: rpcURL, endpoint: .allCoins(address: address, cursor: cursor)),
+                let response = try await client.request(
+                    .allCoins(address: address, cursor: cursor),
                     responseType: SuiCoinPageResponse.self
-                ).data
+                )
 
                 if let error = response.error {
                     throw Errors.coinPageRPC(error.message)
@@ -257,16 +255,16 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata? {
-        let response = try await httpClient.request(
-            SuiAPI(baseURL: rpcURL, endpoint: .coinMetadata(coinType: coinType)),
+        let response = try await client.request(
+            .coinMetadata(coinType: coinType),
             responseType: SuiCoinMetadataResponse.self
         )
 
-        if let error = response.data.error {
+        if let error = response.error {
             throw SuiCoinMetadataError.rpc(error.message)
         }
 
-        return response.data.result
+        return response.result
     }
 
     func getAllTokensWithMetadata(address: String) async throws -> [CoinMeta] {
@@ -314,17 +312,24 @@ class SuiService: SuiCoinMetadataProviding {
         return tokensWithMetadata
     }
 
+    /// Broadcasts an already-signed transaction. `unsignedTransaction` is the
+    /// base64 BCS `TransactionData` and `signature` the base64 submit-format
+    /// envelope; both are forwarded verbatim — nothing here re-encodes signed
+    /// material.
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String {
-        let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
+        let response = try await client.request(
+            .executeTransactionBlock(txBytes: unsignedTransaction, signature: signature),
+            responseType: SuiExecuteTransactionResponse.self
+        )
 
         // A non-success execution returns an `error.message`; throw it instead
         // of returning the text as a digest so a failed broadcast is never shown
         // as success or persisted/polled as a fake txid.
-        if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String, !error.isEmpty {
-            throw Errors.broadcastFailed(error)
+        if let message = response.error?.message, !message.isEmpty {
+            throw Errors.broadcastFailed(message)
         }
 
-        guard let digest = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String, !digest.isEmpty else {
+        guard let digest = response.result?.digest, !digest.isEmpty else {
             throw Errors.missingTransactionDigest
         }
 
@@ -336,20 +341,25 @@ class SuiService: SuiCoinMetadataProviding {
     /// - Returns: Tuple of (computationCost, storageCost)
     func dryRunTransaction(transactionBytes: String) async throws -> (computationCost: BigInt, storageCost: BigInt) {
         do {
-            let data = try await Utils.PostRequestRpc(
-                rpcURL: rpcURL,
-                method: "sui_dryRunTransactionBlock",
-                params: [transactionBytes]
+            let response = try await client.request(
+                .dryRunTransactionBlock(txBytes: transactionBytes),
+                responseType: SuiDryRunResponse.self
             )
 
-            // Check for error first
-            if let error = Utils.extractResultFromJson(fromData: data, path: "result.effects.status.error") as? String, !error.isEmpty {
+            // A refused simulation reports the reason in the JSON-RPC `error`
+            // member; a simulation that ran and aborted reports it inside the
+            // effects. Both are the node's verdict, not a parse failure.
+            if let message = response.error?.message, !message.isEmpty {
+                throw Errors.simulationFailed(message)
+            }
+
+            if let error = response.result?.effects?.status?.error, !error.isEmpty {
                 throw Errors.simulationFailed(error)
             }
 
             // Extract gas costs
-            if let computationCostStr = Utils.extractResultFromJson(fromData: data, path: "result.effects.gasUsed.computationCost") as? String,
-               let storageCostStr = Utils.extractResultFromJson(fromData: data, path: "result.effects.gasUsed.storageCost") as? String {
+            if let computationCostStr = response.result?.effects?.gasUsed?.computationCost,
+               let storageCostStr = response.result?.effects?.gasUsed?.storageCost {
 
                 let computationCost = computationCostStr.toBigInt()
                 let storageCost = storageCostStr.toBigInt()
@@ -393,10 +403,6 @@ private struct SuiBalance: Decodable {
     let totalBalance: String
 }
 
-private struct SuiRPCError: Decodable {
-    let message: String
-}
-
 private extension SuiService {
 
     enum Errors: Error, LocalizedError {
@@ -410,6 +416,8 @@ private extension SuiService {
         case coinPageLimitExceeded(maximum: Int)
         case broadcastFailed(String)
         case missingTransactionDigest
+        case referenceGasPriceRPC(String)
+        case missingReferenceGasPrice
 
         var errorDescription: String? {
             switch self {
@@ -433,6 +441,10 @@ private extension SuiService {
                 return "Sui broadcast failed: \(error)"
             case .missingTransactionDigest:
                 return "Sui broadcast did not return a transaction digest"
+            case .referenceGasPriceRPC(let message):
+                return "Sui reference gas price RPC failed: \(message)"
+            case .missingReferenceGasPrice:
+                return "Sui did not return a reference gas price"
             }
         }
     }

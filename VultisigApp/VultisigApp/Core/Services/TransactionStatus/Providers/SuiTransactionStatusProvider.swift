@@ -8,29 +8,28 @@
 import Foundation
 
 struct SuiTransactionStatusProvider: TransactionStatusProvider {
-    private let httpClient: HTTPClientProtocol
-    /// Resolves the Sui custom RPC override so the status lookup targets the
-    /// same host as broadcast/reads (`SuiService`).
-    private let resolver: RPCEndpointResolving
+    /// Walks the same host list `SuiService` uses, so the poller queries the
+    /// node that broadcast the transaction — including the user's custom RPC.
+    private let client: SuiFailoverClient
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
         resolver: RPCEndpointResolving = CustomRPCStore.shared
     ) {
-        self.httpClient = httpClient
-        self.resolver = resolver
+        self.client = SuiFailoverClient(
+            httpClient: httpClient,
+            endpoints: SuiEndpointResolver(resolver: resolver)
+        )
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
-            let host = resolver.resolvedURL(for: .sui, default: SuiService.defaultRPCURL)
-            let response = try await httpClient.request(
-                SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash, host: host),
-                responseType: SuiTransactionStatusResponse.self
-            )
+            let response = try await client.request(responseType: SuiTransactionStatusResponse.self) { host in
+                SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash, host: host)
+            }
 
             // Check for RPC error
-            if let error = response.data.error {
+            if let error = response.error {
                 // Error code -32602 typically means transaction not found
                 if error.code == -32602 {
                     return TransactionStatusResult(
@@ -48,7 +47,7 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
             }
 
             // Parse successful response
-            if let result = response.data.result, let effects = result.effects {
+            if let result = response.result, let effects = result.effects {
                 let blockNum = result.checkpoint.flatMap { Int($0) }
 
                 if effects.status.status.lowercased() == "success" {
