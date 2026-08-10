@@ -83,8 +83,13 @@ final class SuiRequestURLTests: XCTestCase {
             resolver: OverrideResolver(url: nil)
         )
 
-        _ = try? await provider.checkStatus(query: TransactionStatusQuery(txHash: "0xdigest", chain: .sui))
+        // `try`, not `try?`: the point of the matching stub is that the provider
+        // reaches a real verdict. Swallowing the error would let this pass while
+        // decoding or mapping was broken, and the single-request assertion would
+        // then be measuring a failure rather than the absence of failover.
+        let result = try await provider.checkStatus(query: TransactionStatusQuery(txHash: "0xdigest", chain: .sui))
 
+        XCTAssertEqual(result.status, .confirmed)
         XCTAssertEqual(URLCapturingProtocol.capturedURLs.count, 1, "no failover should have occurred")
         let status = try XCTUnwrap(URLCapturingProtocol.capturedURLs.first?.absoluteString)
         XCTAssertEqual(status, SuiGraphQLAPI.defaultHost.absoluteString)
