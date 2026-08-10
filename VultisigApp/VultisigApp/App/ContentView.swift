@@ -25,6 +25,7 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @Environment(\.sheetPresentedCounterManager) var sheetPresentedCounterManager
+    @ObservedObject private var appLockHost = AppLockHost.shared
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
@@ -106,6 +107,14 @@ struct ContentView: View {
         .withForegroundNotificationBanner()
         .overlay(appViewModel.showCover ? CoverView() : nil)
         .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
+        // Additive to the two overlays above, not a replacement for them. The
+        // overlays are what the app draws; the window is what reaches the layer
+        // sheets and alerts are presented in, which no overlay can.
+        .hostsAppLock(
+            appLockPresentation,
+            onUnlocked: { appViewModel.markPasscodeUnlocked() },
+            onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
+        )
         .onLoad {
             // The cold-start gate is not decided here. It is decided in
             // `VultisigApp.init()`, because this modifier runs *after* the
@@ -147,44 +156,72 @@ struct ContentView: View {
         }
     }
 
+    /// What the app is covering itself with, as one value — see
+    /// ``AppLockPresentation``.
+    private var appLockPresentation: AppLockPresentation {
+        if appViewModel.isPasscodeLocked {
+            return .gate(generation: appViewModel.passcodeGateGeneration)
+        }
+        return appViewModel.showCover ? .cover : .uncovered
+    }
+
     /// Covers the app while the passcode lock is engaged. An overlay rather than
     /// a navigation destination, so no route, deeplink or restored screen can
     /// appear instead of it.
     ///
-    /// Known limitation: SwiftUI presents sheets and full-screen covers in a
-    /// separate layer that an overlay does not reach, so a sheet already on
-    /// screen when the app locks stays visible. What it shows is stale — locking
-    /// forgets the data key, so no key share can be read and nothing can be
-    /// signed — but balances and addresses remain legible. The existing
-    /// `CoverView` privacy screen has the same gap; both want the lock hosted in
-    /// a window above the presentation layer, which is a change to how the app
-    /// presents modals and does not belong in this step.
+    /// **The overlay is the floor, not the lock.** SwiftUI presents sheets and
+    /// full-screen covers in a layer an overlay does not reach, so the lock
+    /// screen itself is hosted in a window above that layer — see
+    /// ``SwiftUI/View/hostsAppLock(_:onUnlocked:onAttemptFailed:)``. The overlay
+    /// stays because the window cannot cover the cold start: a `UIWindow` needs a
+    /// `UIWindowScene`, and the gate is decided in `VultisigApp.init()`, before
+    /// any scene exists. This is what makes the first frame drawn the lock screen
+    /// rather than the wallet.
     @ViewBuilder
     var passcodeGate: some View {
         if appViewModel.isPasscodeLocked {
+            gateContent
+                // No `.ignoresSafeArea()` here, and it has to stay that way: the
+                // keypad's `Screen` already paints its background full-bleed
+                // while keeping content inside the safe area, and ignoring it at
+                // this level pushed the title under the Dynamic Island. The
+                // screen's *other* half — the brand screen shown while biometrics
+                // are tried — ignores it internally, which is what makes that
+                // half line up with the privacy cover rather than sitting twelve
+                // points off it.
+                //
+                // **Asymmetric, and the insertion side is the point.** A lock
+                // that fades in is a lock you can see through while it arrives:
+                // the foreground path raises the gate and drops the privacy cover
+                // in one update, so a 0.25s fade renders the home screen —
+                // balances, addresses — underneath for the whole of it. Going up
+                // is instant. Coming down still fades, because by then the app is
+                // unlocked and there is nothing left to hide.
+                .transition(.asymmetric(insertion: .identity, removal: .opacity))
+                // A raise is a new screen, never a reused one. See
+                // ``AppViewModel/passcodeGateGeneration``.
+                .id(appViewModel.passcodeGateGeneration)
+        }
+    }
+
+    /// Exactly one of these mounts an interactive lock screen, and which one is
+    /// the host's to say.
+    ///
+    /// ``EnterPasscodeScreen`` starts a biometric attempt from its `.task`, so a
+    /// second live copy is a second Face ID prompt. When the window is carrying
+    /// the lock, this draws the brand screen instead — the same pixels the lock
+    /// screen itself shows while that attempt runs, so nothing moves if the two
+    /// are ever seen in sequence — and it is only there to stop the wallet being
+    /// visible underneath.
+    @ViewBuilder
+    private var gateContent: some View {
+        if appLockHost.hostsLockScreen {
+            VultisigBrandScreen()
+        } else {
             EnterPasscodeScreen(
                 onUnlocked: { appViewModel.markPasscodeUnlocked() },
                 onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
             )
-            // No `.ignoresSafeArea()` here, and it has to stay that way: the
-            // keypad's `Screen` already paints its background full-bleed while
-            // keeping content inside the safe area, and ignoring it at this
-            // level pushed the title under the Dynamic Island. The screen's
-            // *other* half — the brand screen shown while biometrics are tried —
-            // ignores it internally, which is what makes that half line up with
-            // the privacy cover rather than sitting twelve points off it.
-            //
-            // **Asymmetric, and the insertion side is the point.** A lock that
-            // fades in is a lock you can see through while it arrives: the
-            // foreground path raises the gate and drops the privacy cover in one
-            // update, so a 0.25s fade renders the home screen — balances,
-            // addresses — underneath for the whole of it. Going up is instant.
-            // Coming down still fades, because by then the app is unlocked and
-            // there is nothing left to hide.
-            .transition(.asymmetric(insertion: .identity, removal: .opacity))
-            // A raise is a new screen, never a reused one. See
-            // ``AppViewModel/passcodeGateGeneration``.
-            .id(appViewModel.passcodeGateGeneration)
         }
     }
 
