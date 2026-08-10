@@ -76,6 +76,24 @@ enum KaminoVerifyPresentation {
             }
         }
 
+        /// Whether anything is left to render below the summary's own rows.
+        ///
+        /// Since the vault, curator and action moved into those rows, a verified
+        /// deposit with no rent disclosure has nothing further to say — and
+        /// rendering it anyway costs a separator and a blank band under the fee.
+        /// A withdraw still carries its share figure, and every state that warns
+        /// about something always renders.
+        var hasVisibleDetail: Bool {
+            switch self {
+            case .notKamino:
+                return false
+            case .unreadable, .amountUnverifiable, .mismatch:
+                return true
+            case .verified(let display):
+                return display.amountAddsInformation || display.strandsWrappedSolRent
+            }
+        }
+
         var isMismatch: Bool {
             if case .mismatch = self { return true }
             return false

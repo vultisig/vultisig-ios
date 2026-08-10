@@ -228,6 +228,46 @@ final class KaminoVerifyPresentationTests: XCTestCase {
         XCTAssertEqual(state, .mismatch(try XCTUnwrap(state.display), .asset))
     }
 
+    /// The summary renders this block only when it has something to say, and a
+    /// verified token deposit does not: its vault, curator and action are rows
+    /// above, its amount is the headline, and it strands no rent. Rendering it
+    /// regardless left a separator and an empty band under the fee row.
+    ///
+    /// The three states that warn about something always render, and so does a
+    /// withdraw — its bytes are in shares, which no other row on the screen says.
+    func testAVerifiedTokenDepositHasNothingLeftToRender() throws {
+        let deposit = KaminoVerifyPresentation.state(
+            for: payload(
+                transaction: KaminoTransactionFixtures.usdcDeposit.injected,
+                marker: nil,
+                toAddress: KaminoVaultRegistry.steakhouseUSDC.address,
+                toAmount: BigInt(10_000_000)
+            )
+        )
+        XCTAssertEqual(deposit, .verified(try XCTUnwrap(deposit.display)))
+        XCTAssertFalse(deposit.hasVisibleDetail)
+
+        // The SOL deposit is verified too, but strands wrapped-SOL rent — a
+        // disclosure that exists nowhere else on this screen.
+        let native = try XCTUnwrap(DefiPositionsService.nativeSolanaMeta)
+        let solDeposit = KaminoVerifyPresentation.state(
+            for: payload(
+                transaction: KaminoTransactionFixtures.solDeposit.injected,
+                marker: nil,
+                toAddress: KaminoVaultRegistry.allezSOL.address,
+                toAmount: BigInt(500_000_000),
+                contractAddress: native.contractAddress,
+                decimals: native.decimals,
+                ticker: native.ticker,
+                priorityLimit: KaminoComputeBudget.nativeDepositUnitLimit
+            )
+        )
+        XCTAssertTrue(solDeposit.hasVisibleDetail)
+
+        XCTAssertTrue(KaminoVerifyPresentation.State.unreadable.hasVisibleDetail)
+        XCTAssertFalse(KaminoVerifyPresentation.State.notKamino.hasVisibleDetail)
+    }
+
     /// The asset check must not refuse the SOL vault. Its underlying mint is
     /// WRAPPED SOL, which the wallet never holds as a coin — the transaction
     /// wraps native SOL itself — so the coin on the payload is native SOL and

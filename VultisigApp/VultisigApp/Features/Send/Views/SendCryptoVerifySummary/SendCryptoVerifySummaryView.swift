@@ -166,18 +166,23 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 getValueCell(for: row.title, with: row.value)
             }
 
-            // What a Kamino Earn transaction actually does, decoded from the
-            // bytes rather than taken from the rows above. Placed ahead of the
-            // raw-transaction disclosure and outside it, because a co-signer
-            // must not have to expand anything to learn that it is approving a
-            // vault deposit — and because a decode that disagrees with the
-            // summary is a refusal, which is not a detail.
+            // What the decode has left to say once the vault, curator and action
+            // are already rows above: a withdraw's share figure, and anything
+            // this transaction needs to warn about. Placed ahead of the
+            // raw-transaction disclosure and outside it, because a co-signer must
+            // not have to expand anything to learn that a decode disagreed with
+            // the summary — that is a refusal, not a detail.
+            //
+            // Gated on `hasVisibleDetail` rather than on "is this Kamino": a
+            // verified deposit has nothing further to report, and rendering it
+            // anyway leaves a separator and an empty band under the fee row.
+            //
             // Bound once: the decode parses the wire message and derives the
             // signer's share account for each curated vault, so reading the
             // property twice per render would do that work twice.
             let kamino = kaminoState
             Group {
-                if kamino != .notKamino {
+                if kamino.hasVisibleDetail {
                     Separator()
                     KaminoVerifyDetailView(state: kamino)
                 }
