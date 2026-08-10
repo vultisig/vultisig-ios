@@ -303,6 +303,15 @@ class PushNotificationManager: ObservableObject {
 
     @discardableResult
     func handleForegroundNotification(_ content: UNNotificationContent) -> Bool {
+        // Asked before anything is fetched or parsed. The banner carries the
+        // vault name and a decoded transaction summary — "Send 1.2 ETH to 0x…" —
+        // for thirty seconds, which is exactly what the lock screen is standing
+        // in front of.
+        guard !ForegroundNotificationPresentationPolicy.isAppLocked else {
+            logger.info("Custom foreground banner declined while the app is locked")
+            return false
+        }
+
         guard canPresentForegroundBanner() else {
             logger.info("Custom foreground banner unavailable while a modal is presented")
             return false
@@ -392,16 +401,12 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         completion: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         guard let onForegroundNotification else {
-            completion(ForegroundNotificationPresentationPolicy.systemOptions)
+            completion(ForegroundNotificationPresentationPolicy.options(handled: false))
             return
         }
 
         onForegroundNotification(content) { handled in
-            completion(
-                handled
-                    ? ForegroundNotificationPresentationPolicy.customOptions
-                    : ForegroundNotificationPresentationPolicy.systemOptions
-            )
+            completion(ForegroundNotificationPresentationPolicy.options(handled: handled))
         }
     }
 }
@@ -410,14 +415,33 @@ enum ForegroundNotificationPresentationPolicy {
     static let customOptions: UNNotificationPresentationOptions = [.sound]
     static let systemOptions: UNNotificationPresentationOptions = [.banner, .list, .sound]
 
+    /// What a notification arriving behind the lock screen is allowed to do.
+    ///
+    /// Declining the custom banner is not enough on its own, and that is the
+    /// point of this being its own case rather than a fall-through: a decline
+    /// lands on ``systemOptions``, and the system banner is drawn by the OS above
+    /// every window the app owns — including the one the lock screen is hosted
+    /// in — carrying the same vault name and transaction summary the custom
+    /// banner would have. `.list` goes with it, because an entry in Notification
+    /// Center is the same disclosure a swipe later.
+    static let lockedOptions: UNNotificationPresentationOptions = [.sound]
+
+    /// Read off the app's own gate flag rather than
+    /// ``PasscodeService/isPasscodeGateRequired``. The predicate is true for
+    /// every install that *has* a passcode, gate up or not, so using it here
+    /// would silence notifications for those users the entire time they are
+    /// using the app.
+    static var isAppLocked: Bool { AppViewModel.shared.isPasscodeLocked }
+
+    static func options(handled: Bool) -> UNNotificationPresentationOptions {
+        guard !isAppLocked else { return lockedOptions }
+        return handled ? customOptions : systemOptions
+    }
+
     @MainActor
     static var canPresentCustomBanner: Bool {
         #if os(iOS)
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first(where: { $0.activationState == .foregroundActive }),
-              let keyWindow = windowScene.windows.first(where: \.isKeyWindow),
-              let rootViewController = keyWindow.rootViewController else {
+        guard let rootViewController = UIApplication.shared.activeContentWindow?.rootViewController else {
             return false
         }
         return rootViewController.presentedViewController == nil

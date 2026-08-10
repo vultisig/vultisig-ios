@@ -61,7 +61,6 @@ struct HomeScreen: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
-    @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @ObservedObject private var transactionPoller = TransactionStatusPoller.shared
     @Environment(\.modelContext) private var modelContext
@@ -90,6 +89,12 @@ struct HomeScreen: View {
             showVaultSelector = showingVaultSelector
             setData()
         }
+        // The flag is gated rather than the lookup, because the lookup is
+        // asynchronous and its answer can land at any moment — including after
+        // the app has relocked, which starting it while unlocked would not
+        // protect against. An alert is presented in a layer the gate's overlay
+        // cannot reach, so one raised then sits on top of the lock screen.
+        .presentsWhenUnlocked($phoneCheckUpdateViewModel.showUpdateAlert)
         .onReceive(
             NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
         ) { _ in
@@ -431,9 +436,6 @@ extension HomeScreen {
     }
 
     fileprivate func presetValuesForDeeplink() {
-        if vultExtensionViewModel.documentData != nil {
-            navigateToImportBackup()
-        }
 
         guard let type = deeplinkViewModel.type else {
             return
@@ -645,9 +647,6 @@ extension HomeScreen {
                 hasPreselectedCoin: true))
     }
 
-    fileprivate func navigateToImportBackup() {
-        router.navigate(to: OnboardingRoute.importVaultShare)
-    }
 }
 
 private extension HomeScreen {

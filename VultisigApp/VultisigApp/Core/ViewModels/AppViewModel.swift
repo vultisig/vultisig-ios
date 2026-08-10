@@ -10,12 +10,31 @@ import LocalAuthentication
 
 class AppViewModel: ObservableObject {
     @AppStorage("showOnboarding") var showOnboarding: Bool = true
-    @AppStorage("showCover") var showCover: Bool = true
+    @AppStorage("showCover") private var storedShowCover: Bool = true
     @AppStorage("isAuthenticationEnabled") var isAuthenticationEnabled: Bool = true
     @AppStorage("didAskForAuthentication") var didAskForAuthentication: Bool = false
     @AppStorage("lastRecordedTime") var lastRecordedTime: String = ""
     @AppStorage("vaultName") var vaultName: String = ""
     @AppStorage("selectedPubKeyECDSA") var selectedPubKeyECDSA: String = ""
+
+    /// Whether the privacy cover is up.
+    ///
+    /// Written through rather than left as bare `@AppStorage`, because
+    /// `@AppStorage` is a `DynamicProperty`: it publishes from a *view*, and from
+    /// inside an `ObservableObject` it writes `UserDefaults` and tells nobody.
+    /// The overlay got away with that by accident — every writer runs off a
+    /// scene-phase change, which re-evaluates the app's body and re-reads the
+    /// value on the way past. Anything that is not a view has no such accident to
+    /// lean on, and a cover raised without being observed is a cover nothing
+    /// takes down.
+    var showCover: Bool {
+        get { storedShowCover }
+        set {
+            guard newValue != storedShowCover else { return }
+            objectWillChange.send()
+            storedShowCover = newValue
+        }
+    }
 
     @Published var isAuthenticated = false
     /// Whether the passcode lock screen should be covering the app.

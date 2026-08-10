@@ -1022,9 +1022,14 @@ extension EncryptedBackupViewModel {
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
 
-        if let rootViewController = UIApplication.shared.windows.first?.rootViewController {
-            rootViewController.present(alert, animated: true, completion: nil)
+        guard let rootViewController = UIApplication.shared.activeContentWindow?.rootViewController else {
+            // Nothing to present into, so the import stalls here rather than
+            // finding somewhere else to put a password field — the window the
+            // app raises over its content while locked is not a fallback.
+            logger.error("No content window to present the backup password prompt in")
+            return
         }
+        rootViewController.present(alert, animated: true, completion: nil)
     }
 
     func promptForPasswordAndImportMultiple(encryptedVaultData: [(fileName: String, data: Data)], processedVaults: [Vault]) {
@@ -1056,9 +1061,14 @@ extension EncryptedBackupViewModel {
             }
         }))
 
-        if let rootViewController = UIApplication.shared.windows.first?.rootViewController {
-            rootViewController.present(alert, animated: true, completion: nil)
+        guard let rootViewController = UIApplication.shared.activeContentWindow?.rootViewController else {
+            // Nothing to present into, so the import stalls here rather than
+            // finding somewhere else to put a password field — the window the
+            // app raises over its content while locked is not a fallback.
+            logger.error("No content window to present the backup password prompt in")
+            return
         }
+        rootViewController.present(alert, animated: true, completion: nil)
     }
 }
 #endif
