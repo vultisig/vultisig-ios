@@ -19,8 +19,24 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     let autoCompoundAmount: Decimal
     let sendMaxAmount: Bool
     let isAutoCompound: Bool
+    /// The position this withdrawal is a fraction of — the balance the sheet was
+    /// showing. `basisPoints` of it is what the chain will pay out, and what the
+    /// screens around signing quote.
+    let stakedAmount: Decimal
 
     var amount: String { "0" }
+
+    /// The figure the verify screen announces, quantised to `basisPoints`.
+    ///
+    /// Deliberately NOT the amount that was typed. The memo can only ask for
+    /// ten-thousandths of the position, so the typed figure and the delivered one
+    /// differ by up to half a basis point — and quoting the typed one would be
+    /// the same class of lie as the "You're sending 0 TCY" this replaces, just a
+    /// smaller one.
+    var withdrawDisplayAmount: Decimal? {
+        guard stakedAmount > 0, basisPoints > 0 else { return nil }
+        return (stakedAmount * Decimal(basisPoints)) / Decimal(TCYUnstakeBasisPoints.max)
+    }
 
     var memo: String {
         if !isAutoCompound {

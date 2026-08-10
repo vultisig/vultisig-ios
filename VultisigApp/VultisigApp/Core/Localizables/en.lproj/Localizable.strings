@@ -1539,6 +1539,7 @@
 "systemErrorMessage" = "System error. Please try again.";
 "targetAsset" = "Target Asset: %@";
 "tcyUnstakeBelowMinimum" = "Amount too small — withdraw at least %@ %@";
+"tcyUnstakeVerifyTitle" = "You are withdrawing";
 "termsOfService" = "Terms of Service";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "This Device";

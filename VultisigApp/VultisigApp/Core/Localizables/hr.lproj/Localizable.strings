@@ -1539,6 +1539,7 @@
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "targetAsset" = "Ciljna imovina: %@";
 "tcyUnstakeBelowMinimum" = "Iznos je premalen — podignite barem %@ %@";
+"tcyUnstakeVerifyTitle" = "Podižete";
 "termsOfService" = "Uvjeti korištenja";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";

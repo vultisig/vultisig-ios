@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 04/11/2025.
 //
 
+import Foundation
 import VultisigCommonData
 
 protocol TransactionBuilder {
@@ -31,6 +32,19 @@ protocol TransactionBuilder {
     /// this specific order — the memo alone identifies the order only to
     /// THORChain, not to our own table.
     var limitCancelContext: LimitOrderCancelRequest? { get }
+    /// What this transaction withdraws, when `amount` cannot say.
+    ///
+    /// A THORChain staking withdrawal is a memo-only `MsgDeposit`: its `amount`
+    /// is the literal `"0"` and the instruction is a *fraction* of the staked
+    /// position (`tcy-:<bps>`), so nothing downstream can recover the figure —
+    /// which is how the verify screen came to announce "You're sending 0 TCY"
+    /// over a withdrawal of a thousand of them.
+    ///
+    /// Already quantised to what the memo can express, so it is what the chain
+    /// will pay out rather than the raw string that was typed. Populated only by
+    /// the TCY unstake builder; every other builder uses the default `nil` and
+    /// keeps its existing presentation.
+    var withdrawDisplayAmount: Decimal? { get }
 }
 
 extension TransactionBuilder {
@@ -44,6 +58,9 @@ extension TransactionBuilder {
 
     /// Default — only the limit-order cancel builder overrides this.
     var limitCancelContext: LimitOrderCancelRequest? { nil }
+
+    /// Default — only the TCY unstake builder overrides this.
+    var withdrawDisplayAmount: Decimal? { nil }
 
     /// Builds the immutable `SendTransaction` struct directly. `gas` /
     /// `fee` and runtime-only fields default to the construction-time
@@ -73,7 +90,8 @@ extension TransactionBuilder {
             feeCoin: SendTransaction.resolveFeeCoin(coin: coin, vault: vault),
             cosmosStakingPayload: cosmosStakingPayload,
             solanaStakingPayload: solanaStakingPayload,
-            limitCancelContext: limitCancelContext
+            limitCancelContext: limitCancelContext,
+            withdrawDisplayAmount: withdrawDisplayAmount
         )
     }
 }

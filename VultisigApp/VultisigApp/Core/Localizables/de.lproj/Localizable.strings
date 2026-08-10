@@ -1539,6 +1539,7 @@
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "targetAsset" = "Target Asset: %@";
 "tcyUnstakeBelowMinimum" = "Betrag zu klein — mindestens %@ %@ abheben";
+"tcyUnstakeVerifyTitle" = "Du hebst ab";
 "termsOfService" = "Nutzungsbedingungen";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Dieses Gerät";

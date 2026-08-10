@@ -1539,6 +1539,7 @@
 "systemErrorMessage" = "Errore di sistema. Riprova.";
 "targetAsset" = "Asset Target: %@";
 "tcyUnstakeBelowMinimum" = "Importo troppo piccolo — preleva almeno %@ %@";
+"tcyUnstakeVerifyTitle" = "Stai prelevando";
 "termsOfService" = "Termini di servizio";
 "theUnmerge" = "La Separazione";
 "thisDevice" = "Questo Dispositivo";

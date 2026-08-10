@@ -100,7 +100,12 @@ struct FunctionCallVerifyScreen: View {
                 // route, or "You're sending 2 DOGE" on the L1 one, where the two
                 // DOGE are dust donated to the pool. `nil` for everything else,
                 // which keeps the existing presentation.
-                hero: LimitOrderCancelPresentation.hero(for: transaction),
+                // A staked-TCY withdrawal is not a send either — its `amount` is
+                // literally 0 and the instruction lives in the `tcy-:<bps>` memo,
+                // so the generic header announced "You're sending 0 TCY" over a
+                // withdrawal of a thousand of them.
+                hero: TCYUnstakePresentation.hero(for: transaction)
+                    ?? LimitOrderCancelPresentation.hero(for: transaction),
                 additionalRows: cancelLimitOrderRows
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
