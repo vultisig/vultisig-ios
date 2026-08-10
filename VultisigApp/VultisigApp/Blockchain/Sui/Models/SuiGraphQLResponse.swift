@@ -131,12 +131,7 @@ struct SuiCoinObjectsData: Decodable {
         /// `UInt53` — a JSON number, where JSON-RPC returned a decimal string.
         let version: UInt64?
         let digest: String?
-        let previousTransaction: DigestRef?
         let contents: Contents?
-    }
-
-    struct DigestRef: Decodable {
-        let digest: String?
     }
 
     struct Contents: Decodable {
@@ -227,13 +222,30 @@ struct SuiTransactionEffectsFields: Decodable {
         let nonRefundableStorageFee: UInt64?
     }
 
-    /// Whether the transaction executed successfully.
+    /// The execution outcome, keeping "the node did not tell us" distinct from
+    /// "the node said it failed".
     ///
-    /// Fails closed: only an explicit `SUCCESS` counts. GraphQL spells the enum
-    /// uppercase where JSON-RPC used lowercase `"success"`, so a comparison left
-    /// on the old spelling would read every confirmed transaction as failed.
-    var succeeded: Bool {
-        status?.uppercased() == "SUCCESS"
+    /// Collapsing the two into a boolean is what makes this dangerous: the
+    /// status poller records a failure as terminal, so an unrecognised status —
+    /// a field the node omitted, or an enum case Sui adds later — would
+    /// permanently mark a transaction the user cannot un-mark. Only an explicit
+    /// `FAILURE` is a failure; anything unrecognised stays undecided and keeps
+    /// polling.
+    enum Outcome {
+        case succeeded
+        case failed
+        case undetermined
+    }
+
+    var outcome: Outcome {
+        // GraphQL spells the enum uppercase where JSON-RPC used lowercase
+        // `"success"`, so both spellings are accepted rather than leaving a
+        // comparison that silently stops matching.
+        switch status?.uppercased() {
+        case "SUCCESS": return .succeeded
+        case "FAILURE": return .failed
+        default: return .undetermined
+        }
     }
 
     /// The execution failure reason, or `nil` when the transaction did not abort.

@@ -95,9 +95,10 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.blockNumber, 7)
     }
 
-    func testAnUnknownStatusFailsClosed() async throws {
-        // Only an explicit SUCCESS confirms. Anything else is a failure, not a
-        // reason to declare the transaction good.
+    func testAnUnknownStatusStaysPendingRatherThanFailingTerminally() async throws {
+        // The poller records `.failed` as terminal and the user cannot undo it,
+        // so a status Sui adds later — or omits — must not condemn the
+        // transaction. Only an explicit FAILURE is a failure.
         let provider = makeProvider()
         http.queue(Data("""
         {"data":{"transaction":{"digest":"0xdigest","effects":{"status":"SOMETHING_NEW",\
@@ -106,7 +107,31 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
 
         let result = try await provider.checkStatus(query: Self.query)
 
-        XCTAssertEqual(result.status, .failed(reason: "Transaction failed"))
+        XCTAssertEqual(result.status, .pending)
+    }
+
+    func testAnAbsentStatusStaysPending() async throws {
+        let provider = makeProvider()
+        http.queue(Data("""
+        {"data":{"transaction":{"digest":"0xdigest","effects":{"status":null,\
+        "executionError":null,"checkpoint":null}}}}
+        """.utf8))
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .pending)
+    }
+
+    func testARecordWithoutEffectsIsPendingNotAbsent() async throws {
+        // The node returned a transaction record, which proves it knows the
+        // digest — it just has not finished populating it. Reporting `notFound`
+        // would misstate what the node said.
+        let provider = makeProvider()
+        http.queue(Data(#"{"data":{"transaction":{"digest":"0xdigest","effects":null}}}"#.utf8))
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .pending)
     }
 
     func testANullTransactionMapsToNotFound() async throws {

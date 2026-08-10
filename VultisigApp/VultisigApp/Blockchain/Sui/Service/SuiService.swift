@@ -231,16 +231,26 @@ class SuiService: SuiCoinMetadataProviding {
                     responseType: SuiCoinObjectsData.self
                 )
 
-                guard let page = data.address?.objects else {
+                // Every part of the page is required. A missing connection, a
+                // missing `pageInfo` or a missing `nodes` list are all node
+                // contract violations, and reading any of them as "an empty but
+                // valid page" would end the walk early and hand back a truncated
+                // coin set — which `SuiHelper` then turns into a transaction
+                // missing its gas object or its token objects. Fail loudly
+                // instead; that is what this whole function is shaped around.
+                guard let page = data.address?.objects,
+                      let pageInfo = page.pageInfo,
+                      let hasNextPage = pageInfo.hasNextPage,
+                      let nodes = page.nodes else {
                     throw Errors.coinPageDecodeFailed(cursor: cursor)
                 }
-                coins.append(contentsOf: Self.coins(from: page.nodes ?? []))
+                coins.append(contentsOf: try Self.coins(from: nodes, cursor: cursor))
 
-                guard page.pageInfo?.hasNextPage == true else { break }
-                guard let nextCursor = page.pageInfo?.endCursor,
+                guard hasNextPage else { break }
+                guard let nextCursor = pageInfo.endCursor,
                       !nextCursor.isEmpty,
                       seenCursors.insert(nextCursor).inserted else {
-                    throw Errors.invalidCoinPageCursor(cursor: page.pageInfo?.endCursor)
+                    throw Errors.invalidCoinPageCursor(cursor: pageInfo.endCursor)
                 }
                 cursor = nextCursor
             } while true
@@ -257,26 +267,38 @@ class SuiService: SuiCoinMetadataProviding {
     ///
     /// The connection reports the wrapper struct `0x2::coin::Coin<T>`, so the
     /// type is unwrapped and address-normalized here — at the boundary, before
-    /// anything downstream compares or persists it. A node that cannot be
-    /// unwrapped is dropped rather than carried through as a coin of unknown
-    /// type: the query filters to coin objects, so this should not occur, and
-    /// guessing would be worse than omitting.
-    private static func coins(from nodes: [SuiCoinObjectsData.Node]) -> [SuiCoin] {
-        nodes.compactMap { node in
+    /// anything downstream compares or persists it.
+    ///
+    /// Every field is required and a node that cannot be fully represented
+    /// aborts the whole fetch. Dropping it instead would silently shrink the
+    /// coin set, which is the same truncation the pagination guards exist to
+    /// prevent — except harder to notice, because the page count would look
+    /// right. `SuiHelper` needs the object id, version and digest to build an
+    /// object reference and the balance to select inputs; an empty string for
+    /// any of them produces an invalid transaction rather than a smaller one.
+    private static func coins(
+        from nodes: [SuiCoinObjectsData.Node],
+        cursor: String?
+    ) throws -> [SuiCoin] {
+        try nodes.map { node in
             guard let repr = node.contents?.type?.repr,
-                  let coinType = SuiCoinType.unwrap(repr) else {
-                return nil
+                  let coinType = SuiCoinType.unwrap(repr),
+                  let coinObjectId = node.address, !coinObjectId.isEmpty,
+                  // `UInt53` arrives as a JSON number where JSON-RPC sent a
+                  // decimal string; `SuiHelper` parses it back with `UInt64(_:)`,
+                  // so the round trip is exact.
+                  let version = node.version,
+                  let digest = node.digest, !digest.isEmpty,
+                  let balance = node.contents?.json?.balance, !balance.isEmpty else {
+                throw Errors.coinPageDecodeFailed(cursor: cursor)
             }
+
             return SuiCoin(
                 coinType: coinType,
-                coinObjectId: node.address ?? .empty,
-                // `UInt53` arrives as a JSON number where JSON-RPC sent a
-                // decimal string; `SuiHelper` parses it back with `UInt64(_:)`,
-                // so the round trip is exact.
-                version: node.version.map(String.init) ?? .empty,
-                digest: node.digest ?? .empty,
-                balance: node.contents?.json?.balance ?? .empty,
-                previousTransaction: node.previousTransaction?.digest ?? .empty
+                coinObjectId: coinObjectId,
+                version: String(version),
+                digest: digest,
+                balance: balance
             )
         }
     }
@@ -383,13 +405,18 @@ class SuiService: SuiCoinMetadataProviding {
 
         // A rejected broadcast surfaces as a populated `errors` array, already
         // raised by the transport. An *executed* transaction that aborted on
-        // chain reports it here instead — fail closed on both, so a failed
-        // broadcast is never shown as success or polled as a fake txid.
-        if let reason = effects.failureReason {
-            throw Errors.broadcastFailed(reason)
-        }
-        if !effects.succeeded {
-            throw Errors.broadcastFailed(effects.status ?? "unknown execution status")
+        // chain reports it here instead. Fail closed on both — and on a status
+        // we do not recognise, because returning a digest for a transaction we
+        // cannot confirm executed would persist it and poll it as real.
+        switch effects.outcome {
+        case .succeeded:
+            break
+        case .failed:
+            throw Errors.broadcastFailed(effects.failureReason ?? "transaction failed")
+        case .undetermined:
+            throw Errors.broadcastFailed(
+                "unrecognized execution status: \(effects.status ?? "<absent>")"
+            )
         }
 
         guard let digest = effects.digest, !digest.isEmpty else {
@@ -422,8 +449,21 @@ class SuiService: SuiCoinMetadataProviding {
             // raised by the transport. A simulation that ran and aborted reports
             // it here instead — the node's verdict either way, not a parse
             // failure.
-            if let reason = effects.failureReason {
-                throw Errors.simulationFailed(reason)
+            //
+            // The gas summary is only trustworthy for a simulation that actually
+            // succeeded. A `FAILURE` can still carry costs, and an absent or
+            // unrecognised status says nothing at all; consuming either would
+            // price a transaction the node just told us will not execute, and
+            // that estimate goes on to be signed.
+            switch effects.outcome {
+            case .succeeded:
+                break
+            case .failed:
+                throw Errors.simulationFailed(effects.failureReason ?? "transaction failed")
+            case .undetermined:
+                throw Errors.simulationFailed(
+                    "unrecognized execution status: \(effects.status ?? "<absent>")"
+                )
             }
 
             guard let gasSummary = effects.gasEffects?.gasSummary,

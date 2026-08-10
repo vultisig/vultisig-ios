@@ -39,31 +39,46 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
                 shouldTryNextHost: { $0.transaction == nil }
             )
 
-            // A null transaction is host-local absence: the digest has not landed
-            // here yet, or this node has pruned it.
-            guard let transaction = data.transaction, let effects = transaction.effects else {
+            // A null transaction is host-local absence: the digest has not
+            // landed here yet, or this node has pruned it.
+            guard let transaction = data.transaction else {
                 return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
+            }
+
+            // A transaction record with no effects is NOT absence — the node
+            // knows the digest and has not finished populating it. Reporting
+            // `notFound` would be a lie about what the node said; `pending` is
+            // what it actually means, and both keep the poller running.
+            guard let effects = transaction.effects else {
+                return TransactionStatusResult(status: .pending, blockNumber: nil, confirmations: nil)
             }
 
             let blockNumber = effects.checkpoint?.sequenceNumber.map(Int.init)
 
-            // Fails closed: only an explicit SUCCESS confirms. GraphQL spells the
-            // status uppercase where JSON-RPC used lowercase, so a comparison
-            // left on the old spelling would read every confirmed transaction as
-            // failed — and the poller writes that as a terminal error.
-            guard effects.succeeded else {
+            switch effects.outcome {
+            case .succeeded:
+                return TransactionStatusResult(
+                    status: .confirmed,
+                    blockNumber: blockNumber,
+                    confirmations: nil
+                )
+            case .failed:
                 return TransactionStatusResult(
                     status: .failed(reason: effects.failureReason ?? "Transaction failed"),
                     blockNumber: blockNumber,
                     confirmations: nil
                 )
+            case .undetermined:
+                // An absent or unrecognised status must not become a terminal
+                // failure: the poller records `failed` permanently, and a status
+                // enum Sui adds later would otherwise condemn every transaction
+                // carrying it. Keep polling instead.
+                return TransactionStatusResult(
+                    status: .pending,
+                    blockNumber: blockNumber,
+                    confirmations: nil
+                )
             }
-
-            return TransactionStatusResult(
-                status: .confirmed,
-                blockNumber: blockNumber,
-                confirmations: nil
-            )
         } catch let error as HTTPError {
             if case .statusCode(let code, _) = error, code == 404 {
                 return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)

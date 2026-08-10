@@ -73,6 +73,8 @@ final class SuiServiceRPCTransportTests: XCTestCase {
     }
 
     func testBroadcastFailsClosedOnAnUnknownStatus() async {
+        // A digest returned for a transaction we cannot confirm executed would
+        // be persisted and polled as real.
         http.queue(Data("""
         {"data":{"executeTransaction":{"effects":{"digest":"0xdigest","status":"SOMETHING_NEW","executionError":null}}}}
         """.utf8))
@@ -84,7 +86,7 @@ final class SuiServiceRPCTransportTests: XCTestCase {
                     signature: Self.signature
                 )
             },
-            description: "Sui broadcast failed: SOMETHING_NEW"
+            description: "Sui broadcast failed: unrecognized execution status: SOMETHING_NEW"
         )
     }
 
@@ -143,9 +145,14 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
-    func testDryRunAndBroadcastSendIdenticalBytesForTheSameTransaction() async throws {
-        // The simulated transaction and the broadcast one must be the same
-        // bytes, or the fee was estimated for something else.
+    func testTheTransportPassesTheSameBytesToBothSimulateAndExecute() async throws {
+        // Scoped to the transport: given one payload, both calls put THOSE bytes
+        // on the wire, in their respective envelopes. It does not claim the
+        // production dry-run and broadcast payloads are identical — they are
+        // not, because the dry run prices a draft built with the default gas
+        // budget and the signed transaction is rebuilt with the estimate. What
+        // it pins is that nothing between the caller and the socket rewrites
+        // them.
         http.queue(Self.simulation(computation: 1, storage: 1))
         http.queue(Data("""
         {"data":{"executeTransaction":{"effects":{"digest":"0xdigest","status":"SUCCESS","executionError":null}}}}
@@ -165,6 +172,35 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         let broadcast = (bodies[1]["variables"] as? [String: Any])?["txBytes"] as? String
         XCTAssertEqual(simulated, broadcast)
         XCTAssertEqual(simulated, Self.txBytes)
+    }
+
+    func testDryRunRejectsAFailedSimulationEvenWhenItCarriesCosts() async {
+        // A FAILURE with a populated gas summary and no execution error would
+        // otherwise be consumed as a valid estimate — pricing a transaction the
+        // node has just said will not execute, and then signing it.
+        http.queue(Data("""
+        {"data":{"simulateTransaction":{"effects":{"digest":null,"status":"FAILURE",\
+        "executionError":null,"gasEffects":{"gasSummary":{"computationCost":1,\
+        "storageCost":1,"storageRebate":0,"nonRefundableStorageFee":0}}}}}}
+        """.utf8))
+
+        await assertThrows(
+            { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
+            description: "Simulation Error: transaction failed"
+        )
+    }
+
+    func testDryRunRejectsAnUnrecognizedSimulationStatus() async {
+        http.queue(Data("""
+        {"data":{"simulateTransaction":{"effects":{"digest":null,"status":null,\
+        "executionError":null,"gasEffects":{"gasSummary":{"computationCost":1,\
+        "storageCost":1,"storageRebate":0,"nonRefundableStorageFee":0}}}}}}
+        """.utf8))
+
+        await assertThrows(
+            { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
+            description: "Simulation Error: unrecognized execution status: <absent>"
+        )
     }
 
     func testDryRunSurfacesAnExecutionAbort() async {

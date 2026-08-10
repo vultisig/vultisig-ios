@@ -13,21 +13,18 @@ class SuiCoin: Codable {
     var version: String
     var digest: String
     var balance: String
-    var previousTransaction: String
 
     init(
         coinType: String,
         coinObjectId: String,
         version: String,
         digest: String,
-        balance: String,
-        previousTransaction: String
+        balance: String
     ) {
         self.coinType = coinType
         self.coinObjectId = coinObjectId
         self.version = version
         self.digest = digest
         self.balance = balance
-        self.previousTransaction = previousTransaction
     }
 }

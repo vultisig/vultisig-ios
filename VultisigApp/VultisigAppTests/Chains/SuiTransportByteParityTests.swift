@@ -21,12 +21,25 @@ import XCTest
 
 final class SuiTransportByteParityTests: XCTestCase {
 
-    /// Base64 BCS `TransactionData` and a submit-format signature envelope.
-    /// Deliberately chosen to contain `+`, `/` and `=` — the characters a naive
-    /// re-encoding (URL-safe base64, percent-encoding, JSON escaping) would
-    /// mangle.
-    private static let txBytes = "AAACAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKzEcQySgAAAAAAQ=="
-    private static let signature = "AGRlYWRiZWVmL2RlYWRiZWVmK2RlYWRiZWVmZGVhZGJlZWZkZWFkYmVlZg=="
+    /// Valid base64 whose *text* contains literal `+`, `/` and `=`. Those three
+    /// characters are the ones a naive re-encoding mangles — URL-safe base64
+    /// rewrites `+`/`/` to `-`/`_`, percent-encoding escapes them, and some
+    /// encoders strip `=` padding — so the fixtures have to carry them
+    /// literally, not merely decode to bytes that would produce them.
+    private static let txBytes = "AP/v+/8AAAACAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAKzEcQySgAAAAAAQ=="
+    private static let signature = "AGRlYWRiZWVm+2RlYWRiZWVm/2RlYWRiZWVmZGVhZGJlZWZkZWFkYmVlZg=="
+
+    /// Guards the fixtures themselves: a future edit that removed the special
+    /// characters would make every assertion below pass without testing
+    /// anything.
+    func testFixturesActuallyContainTheCharactersUnderTest() {
+        for fixture in [Self.txBytes, Self.signature] {
+            XCTAssertTrue(fixture.contains("+"), "fixture lost its literal '+': \(fixture)")
+            XCTAssertTrue(fixture.contains("/"), "fixture lost its literal '/': \(fixture)")
+            XCTAssertTrue(fixture.hasSuffix("="), "fixture lost its padding: \(fixture)")
+            XCTAssertNotNil(Data(base64Encoded: fixture), "fixture is not valid base64: \(fixture)")
+        }
+    }
 
     // MARK: - Broadcast
 
@@ -39,16 +52,26 @@ final class SuiTransportByteParityTests: XCTestCase {
         let body = try Self.serializedBody(of: target)
         let text = try XCTUnwrap(String(data: body, encoding: .utf8))
 
-        // The literal strings must survive JSON serialization character for
-        // character — no escaping of `+` or `/`, no stripped `=` padding.
-        XCTAssertTrue(text.contains(Self.txBytes), "transaction bytes were altered in the request body")
-        XCTAssertTrue(text.contains(Self.signature), "signature envelope was altered in the request body")
-
-        // And they must round-trip back out of the wire format identically.
+        // What the node receives, after parsing, must be identical. This is the
+        // assertion that matters: it is the value Sui verifies the signature
+        // against.
         let parsed = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
         let variables = try XCTUnwrap(parsed["variables"] as? [String: Any])
         XCTAssertEqual(variables["txBytes"] as? String, Self.txBytes)
         XCTAssertEqual(variables["signatures"] as? [String], [Self.signature])
+
+        // On the wire, `Foundation` escapes every `/` as `\/`. That is a valid
+        // JSON string escape and any conformant parser reverses it — verified
+        // against mainnet, where a real PTB whose base64 contains both `+` and
+        // `/` simulates to SUCCESS when sent in exactly this encoding. `+` and
+        // the `=` padding are NOT escaped, and must not be: a `+` rewritten to
+        // `-`, or padding stripped, would be URL-safe base64 and a different
+        // value.
+        XCTAssertTrue(text.contains(Self.txBytes.replacingOccurrences(of: "/", with: "\\/")))
+        XCTAssertTrue(text.contains(Self.signature.replacingOccurrences(of: "/", with: "\\/")))
+        XCTAssertTrue(text.contains("+"), "'+' must be sent literally, not URL-safe-encoded")
+        XCTAssertTrue(text.contains("=="), "base64 padding must not be stripped")
+        XCTAssertFalse(text.contains("%2B"), "the body must not be percent-encoded")
     }
 
     // MARK: - Dry run
@@ -122,12 +145,49 @@ final class SuiTransportByteParityTests: XCTestCase {
         )
     }
 
-    func testCoinTypeUnwrapRejectsANonGenericType() {
-        // The query filters to coin objects, so this should not occur — and if
-        // it does, dropping the object beats guessing at its type.
-        XCTAssertNil(SuiCoinType.unwrap("0x2::sui::SUI"))
-        XCTAssertNil(SuiCoinType.unwrap("0x2::coin::Coin<>"))
-        XCTAssertNil(SuiCoinType.unwrap(""))
+    func testCoinTypeUnwrapNormalizesNestedGenericAddresses() {
+        // A coin's type argument can itself be generic — LP coins are real. If
+        // only the outer address is normalized, the same coin is persisted under
+        // two different `contractAddress` spellings depending on which endpoint
+        // reported it, and is rediscovered as a duplicate vault entry.
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        let repr = "\(padded)::coin::Coin<0x00abc::pool::LP<\(padded)::sui::SUI, 0x000def::usdc::USDC>>"
+
+        XCTAssertEqual(
+            SuiCoinType.unwrap(repr),
+            "0xabc::pool::LP<0x2::sui::SUI, 0xdef::usdc::USDC>"
+        )
+    }
+
+    func testCoinTypeUnwrapRejectsAnythingItCannotFullyAccountFor() {
+        // The result is persisted and later compared against catalog entries, so
+        // a half-parse is worse than a rejection: the object is dropped, which is
+        // loud, instead of stored under a type nothing will ever match.
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        let rejected = [
+            "0x2::sui::SUI",                                  // not generic at all
+            "0x2::coin::Coin<>",                              // empty argument
+            "",                                               // empty input
+            "\(padded)::coin::Coin<0x2::sui::SUI>trailing",   // trailing text
+            "\(padded)::coin::Coin<0x2::sui::SUI",            // unclosed
+            "\(padded)::coin::Coin<0x2::sui::SUI>>",          // unbalanced extra '>'
+            "\(padded)::coin::Coin<A>B<C>",                   // two arguments spliced
+            "0x2::balance::Balance<0x2::sui::SUI>",           // a different wrapper
+            "0x3::coin::Coin<0x2::sui::SUI>",                 // wrong package
+            "0x2::coin::Treasury<0x2::sui::SUI>"              // wrong struct
+        ]
+
+        for repr in rejected {
+            XCTAssertNil(SuiCoinType.unwrap(repr), "should have been rejected: \(repr)")
+        }
+    }
+
+    func testCoinTypeUnwrapDoesNotCrashOnUnicodeOrOddInput() {
+        // Bounds arithmetic on a Swift String is grapheme-based; these exist to
+        // prove the parser cannot trap on input a node should never send.
+        for repr in ["🙂<🙂>", "<>", "><", "0x2::coin::Coin<🙂::a::B>", String(repeating: "<", count: 64)] {
+            _ = SuiCoinType.unwrap(repr)
+        }
     }
 
     func testUnwrappedTypesStillMatchTheCanonicalNativeType() {

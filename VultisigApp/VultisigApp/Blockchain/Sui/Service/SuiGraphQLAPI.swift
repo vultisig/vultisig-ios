@@ -93,7 +93,6 @@ enum SuiGraphQLDocument {
             address
             version
             digest
-            previousTransaction { digest }
             contents { type { repr } json }
           }
         }

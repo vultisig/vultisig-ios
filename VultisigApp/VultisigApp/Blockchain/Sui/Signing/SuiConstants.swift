@@ -61,17 +61,48 @@ enum SuiConstants {
 enum SuiCoinType {
 
     /// Normalizes a fully-qualified coin type for exact comparison by collapsing
-    /// only the package-address segment to a canonical lowercased,
+    /// every package-address segment to a canonical lowercased,
     /// leading-zero-stripped form. Move module and struct identifiers remain
     /// case-sensitive because `::coin::USDC` and `::coin::usdc` are distinct
     /// types.
+    ///
+    /// **Every** address, not just the leading one: a generic instantiation such
+    /// as `0xabc::pool::LP<0x000…002::sui::SUI, 0xdef::usdc::USDC>` carries
+    /// addresses inside its type arguments too. Normalizing only the outer one
+    /// leaves the same coin comparing unequal to itself depending on which
+    /// endpoint spelled it — and `getAllTokensWithMetadata` persists this string
+    /// as a discovered token's `contractAddress`, so the inconsistency becomes a
+    /// duplicate vault entry rather than a transient mismatch.
     static func normalize(_ coinType: String) -> String {
-        guard let separator = coinType.range(of: "::") else {
-            return normalizeAddress(coinType)
+        var result = ""
+        var segment = ""
+
+        for character in coinType {
+            if character == "<" || character == ">" || character == "," || character == " " {
+                result += normalizeSegment(segment)
+                result.append(character)
+                segment = ""
+            } else {
+                segment.append(character)
+            }
         }
-        let address = String(coinType[..<separator.lowerBound])
-        return normalizeAddress(address) + String(coinType[separator.lowerBound...])
+
+        return result + normalizeSegment(segment)
     }
+
+    /// Normalizes the leading address of one `address::module::struct` token.
+    /// A token with no `::` is an address on its own.
+    private static func normalizeSegment(_ segment: String) -> String {
+        guard !segment.isEmpty else { return segment }
+        guard let separator = segment.range(of: "::") else {
+            return normalizeAddress(segment)
+        }
+        let address = String(segment[..<separator.lowerBound])
+        return normalizeAddress(address) + String(segment[separator.lowerBound...])
+    }
+
+    /// The `0x2::coin::Coin` wrapper struct, in canonical form.
+    private static let coinWrapperType = "0x2::coin::Coin"
 
     /// The coin type a `0x2::coin::Coin<T>` object holds, in the same spelling
     /// JSON-RPC returned.
@@ -83,8 +114,8 @@ enum SuiCoinType {
     ///
     /// 1. **Unwrap.** A wrapper string matches no known coin, so `isNative` and
     ///    `matches` both fail and every native send is misread as a token send.
-    /// 2. **Normalize the address.** GraphQL always spells it zero-padded
-    ///    (`0x000…002::sui::SUI`) where JSON-RPC returned it stripped
+    /// 2. **Normalize the addresses.** GraphQL always spells them zero-padded
+    ///    (`0x000…002::sui::SUI`) where JSON-RPC returned them stripped
     ///    (`0x2::sui::SUI`). Comparisons tolerate either — that is what
     ///    `normalize` is for — but `SuiService.getAllTokensWithMetadata`
     ///    *persists* this string as a discovered token's `contractAddress`, so
@@ -92,17 +123,38 @@ enum SuiCoinType {
     ///    second vault entry differing from the pre-migration one only by
     ///    padding.
     ///
-    /// Returns `nil` for anything that is not a generic instantiation, which the
-    /// query's type filter already excludes.
+    /// Parsing is strict on purpose. The result is persisted and later compared
+    /// against curated catalog entries, so a string this cannot fully account
+    /// for must be rejected rather than half-parsed: the wrapper has to be
+    /// exactly `0x2::coin::Coin`, the generic argument has to run to the end of
+    /// the input, and its angle brackets have to balance. Anything else — a
+    /// different wrapper, trailing text, a stray `>` — returns `nil`, and the
+    /// caller drops the object instead of storing a type nobody can match.
     static func unwrap(_ repr: String) -> String? {
-        guard let open = repr.firstIndex(of: "<"),
-              let close = repr.lastIndex(of: ">"),
-              open < close else {
-            return nil
-        }
-        let inner = String(repr[repr.index(after: open)..<close])
-        guard !inner.isEmpty else { return nil }
+        guard let open = repr.firstIndex(of: "<"), repr.hasSuffix(">") else { return nil }
+
+        guard normalize(String(repr[..<open])) == coinWrapperType else { return nil }
+
+        let inner = String(repr[repr.index(after: open)..<repr.index(before: repr.endIndex)])
+        guard !inner.isEmpty, hasBalancedBrackets(inner) else { return nil }
+
         return normalize(inner)
+    }
+
+    /// Whether every `<` in `type` is closed, and no `>` appears before its `<`.
+    /// Rejects both `LP<A` and `A>B`, either of which would otherwise slice into
+    /// a plausible-looking but wrong type.
+    private static func hasBalancedBrackets(_ type: String) -> Bool {
+        var depth = 0
+        for character in type {
+            if character == "<" {
+                depth += 1
+            } else if character == ">" {
+                depth -= 1
+                if depth < 0 { return false }
+            }
+        }
+        return depth == 0
     }
 
     /// Returns whether two fully-qualified coin types refer to the same coin,
