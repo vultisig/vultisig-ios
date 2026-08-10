@@ -5,7 +5,12 @@
 
 import XCTest
 
-@testable import VultisigApp
+// The type under test is handed to a Go binding that calls it from arbitrary
+// threads, so these tests deliberately reach it from off the main actor. That is
+// the behaviour being pinned, not an oversight, and the module is not built
+// under Swift 6 checking — so the `Sendable` diagnostics it would raise here
+// would be noise around the one place they are least informative.
+@preconcurrency @testable import VultisigApp
 
 /// The TSS binding calls `getLocalState` synchronously on whichever thread
 /// entered it — in this app a `Task.detached(priority: .high)` worker, never the
