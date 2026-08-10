@@ -19,8 +19,8 @@
 //  (decoded into `tx_payload` by `SwapPayloadBuilder`). We prepend the three
 //  intent-prefix bytes and hash with Blake2b-32. The submit-format signature
 //  envelope is `[flag=0x00 ed25519, sig (64 bytes), pubkey (32 bytes)]`
-//  base64-encoded — this is the `signatures[0]` argument to
-//  `sui_executeTransactionBlock`. The `tx_bytes` argument to the RPC is the
+//  base64-encoded — this is the `signatures` argument to the GraphQL
+//  `executeTransaction` mutation. Its `transactionDataBcs` argument is the
 //  same base64 PTB SwapKit handed us, passed verbatim.
 //
 

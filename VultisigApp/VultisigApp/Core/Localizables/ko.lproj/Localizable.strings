@@ -1073,6 +1073,7 @@
 "receive" = "수신";
 "recipient" = "수신자";
 "recipientNameNotFound" = "이름을 찾을 수 없습니다. 이름을 확인하고 다시 시도해 주세요.";
+"redactedEndpoint" = "[엔드포인트 숨김]";
 "redeem" = "상환";
 "redeemCoin" = "%@ 상환";
 "reEnterPassword" = "비밀번호 재입력";
@@ -1360,6 +1361,7 @@
 "suiResultOfCmd" = "명령 결과";
 "suiSplitFrom" = "분할 원본";
 "suiTransaction" = "Sui 트랜잭션";
+"suiTransactionFailed" = "거래 실패";
 "suiTransactionSummary" = "거래 요약";
 "support" = "지원";
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";

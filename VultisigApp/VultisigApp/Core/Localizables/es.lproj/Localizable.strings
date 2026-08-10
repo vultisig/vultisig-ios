@@ -1073,6 +1073,7 @@
 "receive" = "Recibir";
 "recipient" = "Destinatario";
 "recipientNameNotFound" = "Nombre no encontrado. Verifica el nombre e inténtalo de nuevo.";
+"redactedEndpoint" = "[endpoint oculto]";
 "redeem" = "Canjear";
 "redeemCoin" = "Canjear %@";
 "reEnterPassword" = "Vuelve a introducir la contraseña";
@@ -1360,6 +1361,7 @@
 "suiResultOfCmd" = "Resultado del cmd";
 "suiSplitFrom" = "Dividir de";
 "suiTransaction" = "Transacción Sui";
+"suiTransactionFailed" = "La transacción falló";
 "suiTransactionSummary" = "Resumen de transacción";
 "support" = "Apoyo";
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";

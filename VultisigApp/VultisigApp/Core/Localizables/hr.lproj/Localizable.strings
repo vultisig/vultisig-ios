@@ -1073,6 +1073,7 @@
 "receive" = "Primi";
 "recipient" = "Primatelj";
 "recipientNameNotFound" = "Naziv nije pronađen. Provjerite naziv i pokušajte ponovno.";
+"redactedEndpoint" = "[krajnja točka skrivena]";
 "redeem" = "Otkupi";
 "redeemCoin" = "Otkupi %@";
 "reEnterPassword" = "Ponovno unesite lozinku";
@@ -1360,6 +1361,7 @@
 "suiResultOfCmd" = "Rezultat naredbe";
 "suiSplitFrom" = "Podijeli od";
 "suiTransaction" = "Sui transakcija";
+"suiTransactionFailed" = "Transakcija nije uspjela";
 "suiTransactionSummary" = "Sažetak transakcije";
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";

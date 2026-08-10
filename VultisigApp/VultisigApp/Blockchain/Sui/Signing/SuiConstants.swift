@@ -52,8 +52,8 @@ enum SuiConstants {
 ///
 /// SUI coin objects are identified by a fully-qualified `address::module::struct`
 /// type. The first segment (the package address) can appear in either short form
-/// (`0x2`) or the 64-hex-digit long form the node returns from
-/// `suix_getAllCoins` (`0x0000…0002`). Matching coin objects by ticker substring
+/// (`0x2`) or the 64-hex-digit long form the node returns from the coin-object
+/// connection (`0x0000…0002`). Matching coin objects by ticker substring
 /// is wrong: it cannot distinguish `0x2::sui::SUI` from `0x…::xsui::XSUI`, and it
 /// fails for tokens whose on-chain symbol differs from their display ticker
 /// (e.g. Wormhole-bridged `…::coin::COIN`). This enum compares the full type
@@ -61,16 +61,164 @@ enum SuiConstants {
 enum SuiCoinType {
 
     /// Normalizes a fully-qualified coin type for exact comparison by collapsing
-    /// only the package-address segment to a canonical lowercased,
+    /// every package-address segment to a canonical lowercased,
     /// leading-zero-stripped form. Move module and struct identifiers remain
     /// case-sensitive because `::coin::USDC` and `::coin::usdc` are distinct
     /// types.
+    ///
+    /// **Every** address, not just the leading one: a generic instantiation such
+    /// as `0xabc::pool::LP<0x000…002::sui::SUI, 0xdef::usdc::USDC>` carries
+    /// addresses inside its type arguments too. Normalizing only the outer one
+    /// leaves the same coin comparing unequal to itself depending on which
+    /// endpoint spelled it — and `getAllTokensWithMetadata` persists this string
+    /// as a discovered token's `contractAddress`, so the inconsistency becomes a
+    /// duplicate vault entry rather than a transient mismatch.
     static func normalize(_ coinType: String) -> String {
-        guard let separator = coinType.range(of: "::") else {
-            return normalizeAddress(coinType)
+        var result = ""
+        var segment = ""
+
+        for character in coinType {
+            if character == "<" || character == ">" || character == "," || character == " " {
+                result += normalizeSegment(segment)
+                result.append(character)
+                segment = ""
+            } else {
+                segment.append(character)
+            }
         }
-        let address = String(coinType[..<separator.lowerBound])
-        return normalizeAddress(address) + String(coinType[separator.lowerBound...])
+
+        return result + normalizeSegment(segment)
+    }
+
+    /// Normalizes the leading address of one `address::module::struct` token.
+    ///
+    /// A delimiter-free token is only an address if it *looks* like one. Move's
+    /// primitives and type constructors — `u64`, `bool`, `vector` — are also
+    /// delimiter-free, and running them through `normalizeAddress` invents types
+    /// that do not exist (`0xu64`, `0xvector<0xu8>`). Since this value is
+    /// persisted as a token's `contractAddress`, a mangled one would never match
+    /// the real coin again.
+    private static func normalizeSegment(_ segment: String) -> String {
+        guard !segment.isEmpty else { return segment }
+        guard let separator = segment.range(of: "::") else {
+            guard segment.lowercased().hasPrefix("0x") else { return segment }
+            return normalizeAddress(segment)
+        }
+        let address = String(segment[..<separator.lowerBound])
+        return normalizeAddress(address) + String(segment[separator.lowerBound...])
+    }
+
+    /// The `0x2::coin::Coin` wrapper struct, in canonical form.
+    private static let coinWrapperType = "0x2::coin::Coin"
+
+    /// The coin type a `0x2::coin::Coin<T>` object holds, in the same spelling
+    /// JSON-RPC returned.
+    ///
+    /// GraphQL's object connection reports the **wrapper** struct, where
+    /// `suix_getAllCoins` reported the bare `T`. Two things then have to happen
+    /// before the rest of the app sees the string, or the transport swap stops
+    /// being invisible:
+    ///
+    /// 1. **Unwrap.** A wrapper string matches no known coin, so `isNative` and
+    ///    `matches` both fail and every native send is misread as a token send.
+    /// 2. **Normalize the addresses.** GraphQL always spells them zero-padded
+    ///    (`0x000…002::sui::SUI`) where JSON-RPC returned them stripped
+    ///    (`0x2::sui::SUI`). Comparisons tolerate either — that is what
+    ///    `normalize` is for — but `SuiService.getAllTokensWithMetadata`
+    ///    *persists* this string as a discovered token's `contractAddress`, so
+    ///    without stripping, a token discovered after the migration becomes a
+    ///    second vault entry differing from the pre-migration one only by
+    ///    padding.
+    ///
+    /// Parsing is strict on purpose. The result is persisted and later compared
+    /// against curated catalog entries, so a string this cannot fully account
+    /// for must be rejected rather than half-parsed: the wrapper has to be
+    /// exactly `0x2::coin::Coin`, the generic argument has to run to the end of
+    /// the input, and its angle brackets have to balance. Anything else — a
+    /// different wrapper, trailing text, a stray `>` — returns `nil`, and
+    /// `classifyNonCoin` then decides whether that is an object we never wanted
+    /// or one we failed to read.
+    static func unwrap(_ repr: String) -> String? {
+        guard let open = repr.firstIndex(of: "<"), repr.hasSuffix(">") else { return nil }
+
+        guard normalize(String(repr[..<open])) == coinWrapperType else { return nil }
+
+        let inner = String(repr[repr.index(after: open)..<repr.index(before: repr.endIndex)])
+        guard !inner.isEmpty, hasBalancedBrackets(inner) else { return nil }
+
+        return normalize(inner)
+    }
+
+    /// Whether every `<` in `type` is closed, and no `>` appears before its `<`.
+    /// Rejects both `LP<A` and `A>B`, either of which would otherwise slice into
+    /// a plausible-looking but wrong type.
+    private static func hasBalancedBrackets(_ type: String) -> Bool {
+        var depth = 0
+        for character in type {
+            if character == "<" {
+                depth += 1
+            } else if character == ">" {
+                depth -= 1
+                if depth < 0 { return false }
+            }
+        }
+        return depth == 0
+    }
+
+    /// What to do with a coin-object type that `unwrap` refused.
+    enum ForeignTypeVerdict: Equatable {
+        /// Definitively a different struct — `TreasuryCap<T>`, `CoinMetadata<T>`.
+        /// Not a coin, so dropping it loses nothing.
+        case differentStruct
+        /// Cannot be accounted for. We do not know what it is, so we cannot say
+        /// dropping it is safe.
+        case unreadable
+    }
+
+    /// Classifies a type string that is not a `0x2::coin::Coin<T>`.
+    ///
+    /// The distinction is the whole point: skipping a `TreasuryCap` costs
+    /// nothing, whereas skipping something we merely failed to parse silently
+    /// shrinks a set that funds a transaction. Anything shaped like the coin
+    /// wrapper but not successfully unwrapped is therefore `unreadable`, never
+    /// `differentStruct` — a truncated `Coin<T>` must not be able to disguise
+    /// itself as an object we never wanted.
+    static func classifyNonCoin(_ repr: String) -> ForeignTypeVerdict {
+        guard hasBalancedBrackets(repr) else { return .unreadable }
+
+        // A generic instantiation has to close at the very end; trailing text
+        // means there is more here than we understand.
+        if repr.contains("<"), !repr.hasSuffix(">") { return .unreadable }
+
+        let head = String(repr.prefix { $0 != "<" })
+        let parts = head.components(separatedBy: "::")
+        guard parts.count == 3,
+              isHexAddress(parts[0]),
+              isMoveIdentifier(parts[1]),
+              isMoveIdentifier(parts[2]) else {
+            return .unreadable
+        }
+
+        // It IS the coin wrapper, and `unwrap` still refused it — an empty type
+        // argument, a missing one, or trailing text. That is a broken coin, not
+        // a foreign object.
+        guard normalize(head) != coinWrapperType else { return .unreadable }
+
+        return .differentStruct
+    }
+
+    /// `0x`-prefixed hexadecimal, which every Move package address is.
+    private static func isHexAddress(_ segment: String) -> Bool {
+        guard segment.lowercased().hasPrefix("0x") else { return false }
+        let digits = segment.dropFirst(2)
+        return !digits.isEmpty && digits.allSatisfy(\.isHexDigit)
+    }
+
+    /// A Move identifier: ASCII alphanumerics and underscores, not starting with
+    /// a digit.
+    private static func isMoveIdentifier(_ segment: String) -> Bool {
+        guard let first = segment.first, first.isLetter || first == "_" else { return false }
+        return segment.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "_") }
     }
 
     /// Returns whether two fully-qualified coin types refer to the same coin,

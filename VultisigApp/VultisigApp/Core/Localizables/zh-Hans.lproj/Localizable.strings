@@ -1073,6 +1073,7 @@
 "receive" = "接收";
 "recipient" = "接收方";
 "recipientNameNotFound" = "未找到名称。请检查名称后重试。";
+"redactedEndpoint" = "[已隐藏端点]";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "reEnterPassword" = "重新输入密码";
@@ -1360,6 +1361,7 @@
 "suiResultOfCmd" = "命令结果";
 "suiSplitFrom" = "拆分来源";
 "suiTransaction" = "Sui 交易";
+"suiTransactionFailed" = "交易失败";
 "suiTransactionSummary" = "交易摘要";
 "support" = "支持";
 "supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";

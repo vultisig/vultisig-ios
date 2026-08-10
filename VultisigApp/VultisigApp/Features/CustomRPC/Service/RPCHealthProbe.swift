@@ -218,21 +218,37 @@ struct RPCHealthProbe {
         }
     }
 
-    // MARK: - Sui (liveness-only: sui_getLatestCheckpointSequenceNumber)
+    // MARK: - Sui (liveness-only: GraphQL `checkpoint { sequenceNumber }`)
 
+    /// Probes a Sui endpoint over **GraphQL**, because Sui is decommissioning
+    /// JSON-RPC and the app no longer speaks it.
+    ///
+    /// This is also the migration path for a custom RPC saved before the switch.
+    /// A JSON-RPC-only host answers this GraphQL POST with a JSON-RPC error
+    /// envelope, which decodes to neither `data` nor `errors` — reported here as
+    /// `.invalidResponse` rather than `.unreachable`, so the custom-RPC screen
+    /// tells the user their endpoint answered but is not usable, instead of
+    /// implying the node is down. `SuiFailoverClient` raises the same condition
+    /// at request time with an explicit "speaks JSON-RPC" message.
     private func probeSui(url: URL) async -> RPCHealthResult {
         let target = RPCProbeTarget(
             url: url,
             method: .post,
             task: .requestParameters(
-                ["jsonrpc": "2.0", "id": 1, "method": "sui_getLatestCheckpointSequenceNumber", "params": [] as [Any]],
+                ["query": SuiGraphQLDocument.latestCheckpoint, "variables": [String: Any]()],
                 .jsonEncoding
             )
         )
         let start = CFAbsoluteTimeGetCurrent()
         do {
-            let response = try await httpClient.request(target, responseType: JSONRPCResultPresentResponse.self)
-            guard response.data.result != nil else { return .invalidResponse }
+            let response = try await httpClient.request(
+                target,
+                responseType: SuiGraphQLResponse<SuiCheckpointData>.self
+            )
+            guard !response.data.hasErrors,
+                  response.data.data?.checkpoint?.sequenceNumber != nil else {
+                return .invalidResponse
+            }
             return .ok(latencyMs: latencyMs(since: start), networkVerified: false)
         } catch {
             return mapFailure(error)

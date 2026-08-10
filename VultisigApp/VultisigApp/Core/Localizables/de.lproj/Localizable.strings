@@ -1073,6 +1073,7 @@
 "receive" = "Empfangen";
 "recipient" = "Empfänger";
 "recipientNameNotFound" = "Name nicht gefunden. Überprüfen Sie den Namen und versuchen Sie es erneut.";
+"redactedEndpoint" = "[Endpunkt ausgeblendet]";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "reEnterPassword" = "Passwort erneut eingeben";
@@ -1360,6 +1361,7 @@
 "suiResultOfCmd" = "Ergebnis von Befehl";
 "suiSplitFrom" = "Aufteilen von";
 "suiTransaction" = "Sui-Transaktion";
+"suiTransactionFailed" = "Transaktion fehlgeschlagen";
 "suiTransactionSummary" = "Transaktionsübersicht";
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";

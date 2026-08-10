@@ -40,10 +40,10 @@ final class SuiTokenDiscoveryTests: XCTestCase {
 
         XCTAssertEqual(tokens.map(\.ticker), ["GOLD", "SILVER"])
         let requests = await client.recordedRequests()
-        XCTAssertEqual(requests.filter { $0.method == "suix_getAllCoins" }.map(\.cursor), [nil, "page-2"])
-        XCTAssertEqual(requests.filter { $0.method == "suix_getCoinMetadata" }.count, 2)
-        XCTAssertFalse(requests.contains { $0.method == "suix_getOwnedObjects" })
-        XCTAssertFalse(requests.contains { $0.method == "sui_getObject" })
+        XCTAssertEqual(requests.filter { $0.method == "getAllCoins" }.map(\.cursor), [nil, "page-2"])
+        XCTAssertEqual(requests.filter { $0.method == "getCoinMetadata" }.count, 2)
+        XCTAssertFalse(requests.contains { $0.method == "getOwnedObjects" })
+        XCTAssertFalse(requests.contains { $0.method == "object" })
     }
 
     func testDiscoveryDeduplicatesNormalizedTypesAndExcludesNativeSui() async throws {
@@ -73,7 +73,7 @@ final class SuiTokenDiscoveryTests: XCTestCase {
         XCTAssertEqual(token.contractAddress, SuiCoinType.normalize(Self.goldType))
 
         let requests = await client.recordedRequests()
-        let metadataRequests = requests.filter { $0.method == "suix_getCoinMetadata" }
+        let metadataRequests = requests.filter { $0.method == "getCoinMetadata" }
         XCTAssertEqual(metadataRequests.count, 1)
         XCTAssertTrue(SuiCoinType.matches(try XCTUnwrap(metadataRequests.first?.coinType), Self.goldType))
     }
@@ -100,16 +100,22 @@ final class SuiTokenDiscoveryTests: XCTestCase {
         XCTAssertEqual(tokens.first?.priceProviderId, curated.priceProviderId)
         XCTAssertEqual(tokens.first?.logo, curated.logo)
         let requests = await client.recordedRequests()
-        XCTAssertEqual(requests.map(\.method), ["suix_getAllCoins"])
+        XCTAssertEqual(requests.map(\.method), ["getAllCoins"])
     }
 
     private func makeService(client: HTTPClientProtocol) -> SuiService {
         SuiService(resolver: SuiDiscoveryRPCResolver(), httpClient: client)
     }
 
+    /// A coin-object node carrying the WRAPPER type the node returns, so the
+    /// discovery tests exercise the unwrap on every fixture rather than being
+    /// handed the already-bare type the old JSON-RPC payload provided.
     private static func coin(type: String, id: String) -> String {
-        """
-        {"coinType":"\(type)","coinObjectId":"\(id)","version":"1","digest":"digest-\(id)","balance":"10","previousTransaction":"previous"}
+        let wrapper = "0x2::coin::Coin<\(type)>"
+        return """
+        {"address":"\(id)","version":1,"digest":"digest-\(id)",\
+        "previousTransaction":{"digest":"previous"},\
+        "contents":{"type":{"repr":"\(wrapper)"},"json":{"balance":"10"}}}
         """
     }
 
@@ -117,7 +123,9 @@ final class SuiTokenDiscoveryTests: XCTestCase {
         let cursor = nextCursor.map { "\"\($0)\"" } ?? "null"
         return Data(
             """
-            {"jsonrpc":"2.0","id":1,"result":{"data":[\(coins.joined(separator: ","))],"nextCursor":\(cursor),"hasNextPage":\(hasNextPage)}}
+            {"data":{"address":{"objects":{\
+            "pageInfo":{"hasNextPage":\(hasNextPage),"endCursor":\(cursor)},\
+            "nodes":[\(coins.joined(separator: ","))]}}}}
             """.utf8
         )
     }
@@ -125,7 +133,7 @@ final class SuiTokenDiscoveryTests: XCTestCase {
     private static func metadata(symbol: String, decimals: Int) -> Data {
         Data(
             """
-            {"jsonrpc":"2.0","id":1,"result":{"decimals":\(decimals),"symbol":"\(symbol)","iconUrl":null}}
+            {"data":{"coinMetadata":{"decimals":\(decimals),"symbol":"\(symbol)","iconUrl":null}}}
             """.utf8
         )
     }
@@ -173,27 +181,32 @@ private actor SuiDiscoveryHTTPClient: HTTPClientProtocol {
 
     func request(_ target: TargetType) async throws -> HTTPResponse<Data> { // swiftlint:disable:this async_without_await
         guard case .requestParameters(let body, _) = target.task,
-              let method = body["method"] as? String,
-              let parameters = body["params"] as? [Any] else {
+              let document = body["query"] as? String,
+              let variables = body["variables"] as? [String: Any] else {
             throw StubError.invalidRequest
         }
 
+        // The GraphQL operation name stands in for the JSON-RPC method these
+        // assertions were originally written against, so the test still says
+        // "which call was made, with what" rather than matching on document text.
+        let method = Self.operation(in: document)
+
         let data: Data
         switch method {
-        case "suix_getAllCoins":
-            guard parameters.first as? String == "0xowner" else {
+        case "getAllCoins":
+            guard variables["owner"] as? String == "0xowner" else {
                 throw StubError.invalidRequest
             }
-            let cursor = parameters.dropFirst().first.flatMap { parameter -> String? in
-                guard !(parameter is NSNull) else { return nil }
-                return parameter as? String
+            let cursor = variables["cursor"].flatMap { value -> String? in
+                guard !(value is NSNull) else { return nil }
+                return value as? String
             }
             requests.append(RecordedRequest(method: method, cursor: cursor, coinType: nil))
             let page = cursor.map(Page.cursor) ?? .first
             guard let response = allCoinPages[page] else { throw StubError.unexpectedRequest }
             data = response
-        case "suix_getCoinMetadata":
-            guard let coinType = parameters.first as? String else { throw StubError.invalidRequest }
+        case "getCoinMetadata":
+            guard let coinType = variables["coinType"] as? String else { throw StubError.invalidRequest }
             requests.append(RecordedRequest(method: method, cursor: nil, coinType: coinType))
             guard let response = metadata.first(where: {
                 SuiCoinType.matches($0.key, coinType)
@@ -213,6 +226,12 @@ private actor SuiDiscoveryHTTPClient: HTTPClientProtocol {
             headerFields: nil
         )!
         return HTTPResponse(data: data, response: response)
+    }
+
+    /// The operation name from `query getAllCoins(...)` / `mutation foo(...)`.
+    private static func operation(in document: String) -> String {
+        let head = document.prefix(while: { $0 != "(" && $0 != "{" })
+        return head.split(separator: " ").dropFirst().first.map(String.init) ?? ""
     }
 
     private enum StubError: Error {

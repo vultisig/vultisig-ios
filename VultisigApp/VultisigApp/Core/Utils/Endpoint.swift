@@ -110,8 +110,6 @@ class Endpoint {
         "\(CetusAPI.cetusBaseURL.absoluteString)/v2/sui/swap/count"
     }
 
-    static let suiServiceRpc = "https://sui-rpc.publicnode.com"
-
     /// Polkadot Asset Hub RPC endpoint for JSON-RPC calls (balance, broadcast,
     /// transaction status via `author_pendingExtrinsics`).
     static let polkadotServiceRpc = "https://api.vultisig.com/dot/"
