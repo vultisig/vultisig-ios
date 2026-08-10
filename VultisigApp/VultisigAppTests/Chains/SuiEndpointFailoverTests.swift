@@ -7,13 +7,18 @@
 import XCTest
 
 /// Sui shipped with one hardcoded host and no fallback, so a single unreachable
-/// node took balances, fee estimates and broadcast down with it. These pin the
-/// failover walk and — just as important — the cases where it must NOT fire.
+/// node took balances, fee estimates and broadcast down with it. The GraphQL
+/// endpoint list has one entry today — `graphql.mainnet.sui.io` is the only
+/// public Sui GraphQL host that answers — so these pin the seam that makes a
+/// second host a configuration change, and, just as importantly, the cases where
+/// failover must NOT fire.
 final class SuiEndpointFailoverTests: XCTestCase {
 
     private static let primary = URL(staticString: "https://sui-primary.local")
     private static let secondary = URL(staticString: "https://sui-secondary.local")
     private static let tertiary = URL(staticString: "https://sui-tertiary.local")
+
+    private static let gasPrice = #"{"data":{"epoch":{"referenceGasPrice":"750"}}}"#
 
     private var http: SequencedHTTPClient!
 
@@ -31,24 +36,24 @@ final class SuiEndpointFailoverTests: XCTestCase {
 
     func testFirstHostTransportFailureFallsBackToSecond() async throws {
         http.queueError(HTTPError.timeout)
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: "750", error: nil))
+        http.queue(Data(Self.gasPrice.utf8))
 
-        let response = try await makeClient(hosts: [Self.primary, Self.secondary])
-            .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
+        let data = try await makeClient(hosts: [Self.primary, Self.secondary])
+            .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
 
-        XCTAssertEqual(response.result, "750")
+        XCTAssertEqual(data.epoch?.referenceGasPrice, "750")
         XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
     }
 
     func testFailoverWalksEveryHostInOrder() async throws {
         http.queueError(HTTPError.networkError(URLError(.cannotConnectToHost)))
         http.queueError(HTTPError.statusCode(503, nil))
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: "100", error: nil))
+        http.queue(Data(Self.gasPrice.utf8))
 
-        let response = try await makeClient(hosts: [Self.primary, Self.secondary, Self.tertiary])
-            .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
+        let data = try await makeClient(hosts: [Self.primary, Self.secondary, Self.tertiary])
+            .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
 
-        XCTAssertEqual(response.result, "100")
+        XCTAssertEqual(data.epoch?.referenceGasPrice, "750")
         XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary, Self.tertiary])
     }
 
@@ -58,7 +63,7 @@ final class SuiEndpointFailoverTests: XCTestCase {
 
         do {
             _ = try await makeClient(hosts: [Self.primary, Self.secondary])
-                .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
+                .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
             XCTFail("Expected the last transport failure to be rethrown")
         } catch HTTPError.statusCode(let code, _) {
             XCTAssertEqual(code, 502)
@@ -69,34 +74,94 @@ final class SuiEndpointFailoverTests: XCTestCase {
         XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
     }
 
-    // MARK: - Cases where failover must NOT fire
+    // MARK: - GraphQL node errors
 
-    func testNodeRefusalIsSurfacedWithoutTryingOtherHosts() async throws {
-        // A JSON-RPC `error` member arrives inside a well-formed HTTP 200 body.
-        // The node understood the request and declined it, so replaying it
-        // against every remaining host only delays the same answer.
-        http.queueDecoded(SuiReferenceGasPriceResponse(
-            result: nil,
-            error: SuiRPCError(code: -32602, message: "invalid params")
+    func testARetryableNodeErrorFailsOverToTheNextHost() async throws {
+        // The node was reached but could not answer this time. A broadcast is
+        // safe to replay because Sui keys a transaction by the digest of its
+        // signed bytes, so re-submitting identical bytes is idempotent.
+        http.queue(Data(
+            #"{"data":null,"errors":[{"message":"overloaded","extensions":{"code":"INTERNAL_SERVER_ERROR"}}]}"#.utf8
         ))
+        http.queue(Data(Self.gasPrice.utf8))
 
-        let response = try await makeClient(hosts: [Self.primary, Self.secondary])
-            .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
+        let data = try await makeClient(hosts: [Self.primary, Self.secondary])
+            .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
 
-        XCTAssertEqual(response.error?.message, "invalid params")
-        XCTAssertEqual(http.requestedHosts, [Self.primary])
+        XCTAssertEqual(data.epoch?.referenceGasPrice, "750")
+        XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
     }
 
-    func testARequestLevelRejectionIsNotReplayedAgainstOtherHosts() async {
-        // A 400 is about the request, so the next host rejects it identically.
-        // Replaying it wastes a round trip, sends signed material to another
-        // operator for nothing, and buries this error under the last host's.
-        http.queueError(HTTPError.statusCode(400, nil))
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: "100", error: nil))
+    func testANodeVerdictIsRaisedWithoutTryingOtherHosts() async {
+        // A refusal the node has already judged reads the same everywhere, so
+        // replaying it only delays the identical answer — and on the fund path
+        // it means sending signed material to another operator for nothing.
+        http.queue(Data(
+            #"{"data":null,"errors":[{"message":"invalid signature","extensions":{"code":"BAD_USER_INPUT"}}]}"#.utf8
+        ))
 
         do {
             _ = try await makeClient(hosts: [Self.primary, Self.secondary])
-                .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
+                .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
+            XCTFail("Expected the node verdict to be raised")
+        } catch let error as SuiRPCError {
+            XCTAssertEqual(error, .node(message: "invalid signature", code: "BAD_USER_INPUT"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(http.requestedHosts, [Self.primary])
+    }
+
+    func testAnEnvelopeWithNeitherDataNorErrorsIsMalformed() async {
+        // GraphQL answers HTTP 200 even when it refuses, so this is never an
+        // empty result.
+        http.queue(Data("{}".utf8))
+        http.queue(Data("{}".utf8))
+
+        do {
+            _ = try await makeClient(hosts: [Self.primary]).query(
+                SuiGraphQLDocument.referenceGasPrice,
+                responseType: SuiEpochData.self
+            )
+            XCTFail("Expected a malformed-response error")
+        } catch let error as SuiRPCError {
+            XCTAssertEqual(error, .malformedResponse)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testAJSONRPCEnvelopeIsReportedAsALegacyEndpoint() async {
+        // Only a custom RPC saved before the migration can produce this, and the
+        // fix is the user's to make — so it must not read as "the node is broken".
+        http.queue(Data(
+            #"{"jsonrpc":"2.0","error":{"code":-32600,"message":"Invalid Request"},"id":null}"#.utf8
+        ))
+
+        do {
+            _ = try await makeClient(hosts: [Self.primary]).query(
+                SuiGraphQLDocument.referenceGasPrice,
+                responseType: SuiEpochData.self
+            )
+            XCTFail("Expected the legacy-endpoint error")
+        } catch let error as SuiRPCError {
+            XCTAssertEqual(error, .legacyJSONRPCEndpoint(host: Self.primary.absoluteString))
+            XCTAssertTrue(error.localizedDescription.contains("JSON-RPC"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    // MARK: - Cases where failover must NOT fire
+
+    func testARequestLevelRejectionIsNotReplayedAgainstOtherHosts() async {
+        http.queueError(HTTPError.statusCode(400, nil))
+        http.queue(Data(Self.gasPrice.utf8))
+
+        do {
+            _ = try await makeClient(hosts: [Self.primary, Self.secondary])
+                .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
             XCTFail("Expected the rejection to be rethrown immediately")
         } catch HTTPError.statusCode(let code, _) {
             XCTAssertEqual(code, 400)
@@ -126,9 +191,7 @@ final class SuiEndpointFailoverTests: XCTestCase {
             )
         }
 
-        // Host policy and capability, not request defects — and 404 in
-        // particular must fail over, or the status poller stops at the first
-        // host that has not seen a digest the fallback host broadcast.
+        // Host policy and capability, not request defects.
         for hostFault: HTTPError in [.statusCode(401, nil), .statusCode(403, nil), .statusCode(404, nil)] {
             XCTAssertTrue(
                 SuiFailoverPolicy.shouldTryNextHost(after: hostFault),
@@ -150,17 +213,34 @@ final class SuiEndpointFailoverTests: XCTestCase {
         }
     }
 
+    func testCancellationPropagatesWithoutTryingOtherHosts() async {
+        http.queueError(CancellationError())
+
+        do {
+            _ = try await makeClient(hosts: [Self.primary, Self.secondary])
+                .query(SuiGraphQLDocument.referenceGasPrice, responseType: SuiEpochData.self)
+            XCTFail("Expected the cancellation to propagate")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(http.requestedHosts, [Self.primary])
+    }
+
     func testAMissPlusAnUnansweredHostThrowsRatherThanReportingTheMiss() async {
         // "Not here" from one host and silence from another is not the same
         // evidence as "not here" from all of them.
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
+        http.queue(Data(#"{"data":{"transaction":null}}"#.utf8))
         http.queueError(HTTPError.statusCode(503, nil))
 
         do {
-            _ = try await makeClient(hosts: [Self.primary, Self.secondary]).request(
-                responseType: SuiReferenceGasPriceResponse.self,
-                shouldTryNextHost: { $0.result == nil },
-                makeTarget: { SuiAPI(baseURL: $0, endpoint: .referenceGasPrice) }
+            _ = try await makeClient(hosts: [Self.primary, Self.secondary]).query(
+                SuiGraphQLDocument.transaction,
+                variables: ["digest": "0xabc"],
+                responseType: SuiTransactionData.self,
+                shouldTryNextHost: { $0.transaction == nil }
             )
             XCTFail("Expected the unanswered host's failure to be thrown")
         } catch HTTPError.statusCode(let code, _) {
@@ -172,36 +252,19 @@ final class SuiEndpointFailoverTests: XCTestCase {
         XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
     }
 
-    func testAHostLocalMissKeepsWalkingAndReturnsTheLastMissWhenAllHostsMiss() async throws {
-        // The generalized form of the status poller's problem: a response that
-        // decoded fine but says "not here".
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
+    func testAHostLocalMissReturnsTheLastMissWhenEveryHostMisses() async throws {
+        http.queue(Data(#"{"data":{"transaction":null}}"#.utf8))
+        http.queue(Data(#"{"data":{"transaction":null}}"#.utf8))
 
-        let response = try await makeClient(hosts: [Self.primary, Self.secondary]).request(
-            responseType: SuiReferenceGasPriceResponse.self,
-            shouldTryNextHost: { $0.result == nil },
-            makeTarget: { SuiAPI(baseURL: $0, endpoint: .referenceGasPrice) }
+        let data = try await makeClient(hosts: [Self.primary, Self.secondary]).query(
+            SuiGraphQLDocument.transaction,
+            variables: ["digest": "0xabc"],
+            responseType: SuiTransactionData.self,
+            shouldTryNextHost: { $0.transaction == nil }
         )
 
-        XCTAssertNil(response.result)
+        XCTAssertNil(data.transaction)
         XCTAssertEqual(http.requestedHosts, [Self.primary, Self.secondary])
-    }
-
-    func testCancellationPropagatesWithoutTryingOtherHosts() async {
-        http.queueError(CancellationError())
-
-        do {
-            _ = try await makeClient(hosts: [Self.primary, Self.secondary])
-                .request(.referenceGasPrice, responseType: SuiReferenceGasPriceResponse.self)
-            XCTFail("Expected the cancellation to propagate")
-        } catch is CancellationError {
-            // Expected.
-        } catch {
-            XCTFail("Unexpected error: \(error)")
-        }
-
-        XCTAssertEqual(http.requestedHosts, [Self.primary])
     }
 
     // MARK: - Host resolution
@@ -228,8 +291,6 @@ final class SuiEndpointFailoverTests: XCTestCase {
     }
 
     func testUnparseableOverrideFallsBackToTheDefaultList() {
-        // A stored override that will not parse must not strand Sui on an empty
-        // host list — it falls back rather than failing every request.
         for malformed in ["", "http://[not-a-host"] {
             let resolver = SuiEndpointResolver(
                 resolver: FixedResolver(url: malformed),
@@ -241,17 +302,20 @@ final class SuiEndpointFailoverTests: XCTestCase {
     }
 
     func testAnEmptyDefaultListStillYieldsAHost() {
-        // A zero-host transport would fail every request with
-        // `noEndpointsConfigured` instead of talking to Sui at all.
         let resolver = SuiEndpointResolver(resolver: FixedResolver(url: nil), defaultHosts: [])
 
-        XCTAssertEqual(resolver.hosts(), [SuiAPI.defaultHost])
+        XCTAssertEqual(resolver.hosts(), [SuiGraphQLAPI.defaultHost])
     }
 
-    func testShippedDefaultsLeadWithTheHistoricalHost() {
-        XCTAssertEqual(SuiAPI.defaultHosts.first, SuiAPI.defaultHost)
-        XCTAssertEqual(SuiAPI.defaultHost.absoluteString, "https://sui-rpc.publicnode.com")
-        XCTAssertGreaterThan(SuiAPI.defaultHosts.count, 1, "Sui must ship with a fallback host")
+    func testShippedDefaultsPointAtSuiGraphQL() {
+        // JSON-RPC is being decommissioned; nothing in the default list may
+        // still point at a JSON-RPC-only host.
+        XCTAssertEqual(SuiGraphQLAPI.defaultHosts, [SuiGraphQLAPI.defaultHost])
+        XCTAssertEqual(
+            SuiGraphQLAPI.defaultHost.absoluteString,
+            "https://graphql.mainnet.sui.io/graphql"
+        )
+        XCTAssertEqual(SuiService.defaultRPCURL, SuiGraphQLAPI.defaultHost)
     }
 
     // MARK: - Helpers
@@ -267,8 +331,6 @@ private struct StaticEndpoints: SuiEndpointProviding {
     func hosts() -> [URL] { urls }
 }
 
-/// Returns the stored override verbatim, so the resolver's own parse guard is
-/// what the tests exercise.
 private struct FixedResolver: RPCEndpointResolving {
     let overrideURL: String?
 
@@ -279,12 +341,13 @@ private struct FixedResolver: RPCEndpointResolving {
     func url(for _: Chain) -> String? { overrideURL }
 }
 
-/// Replays a FIFO queue of outcomes and records the host of every attempt, so a
-/// test can assert the exact failover sequence.
+/// Replays a FIFO queue of raw payloads through the real `JSONDecoder` and
+/// records the host of every attempt, so a test can assert the exact failover
+/// sequence.
 private final class SequencedHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
     private enum Outcome {
-        case value(Any)
+        case payload(Data)
         case error(Error)
     }
 
@@ -298,10 +361,10 @@ private final class SequencedHTTPClient: HTTPClientProtocol, @unchecked Sendable
         return recorded
     }
 
-    func queueDecoded<T>(_ value: T) {
+    func queue(_ payload: Data) {
         lock.lock()
         defer { lock.unlock() }
-        queue.append(.value(value))
+        queue.append(.payload(payload))
     }
 
     func queueError(_ error: Error) {
@@ -313,21 +376,17 @@ private final class SequencedHTTPClient: HTTPClientProtocol, @unchecked Sendable
     // Protocol requires `async`; the body is sync. SwiftLint can't see across
     // protocol conformance, so silence the false-positive lint here.
     // swiftlint:disable async_without_await
-    func request(_: TargetType) async throws -> HTTPResponse<Data> {
-        // Only the typed overload is exercised; this path should not run.
-        throw HTTPError.invalidResponse
-    }
-
-    func request<T: Decodable>(_ target: TargetType, responseType _: T.Type) async throws -> HTTPResponse<T> {
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         lock.lock()
         recorded.append(target.baseURL)
         let next = queue.isEmpty ? nil : queue.removeFirst()
         lock.unlock()
 
         switch next {
-        case .value(let value):
-            guard let typed = value as? T else { throw HTTPError.invalidResponse }
-            return HTTPResponse(data: typed, response: Self.okResponse(url: target.baseURL))
+        case .payload(let data):
+            // Force-unwrap is safe: a 200 response for a valid URL always initializes.
+            let response = HTTPURLResponse(url: target.baseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return HTTPResponse(data: data, response: response)
         case .error(let error):
             throw error
         case nil:
@@ -335,9 +394,4 @@ private final class SequencedHTTPClient: HTTPClientProtocol, @unchecked Sendable
         }
     }
     // swiftlint:enable async_without_await
-
-    private static func okResponse(url: URL) -> HTTPURLResponse {
-        // Force-unwrap is safe: a 200 response for a valid URL always initializes.
-        HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
-    }
 }

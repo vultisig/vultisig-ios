@@ -6,15 +6,17 @@
 @testable import VultisigApp
 import XCTest
 
-/// Sui's gas-price, broadcast and dry-run calls used to bypass `HTTPClient`
-/// through a raw `URLSession` helper that discarded the `URLResponse` entirely.
-/// These pin the behaviour of the typed replacements, and — for the two calls on
-/// the fund path — that the already-signed base64 strings reach the wire byte
-/// for byte.
+/// The fund path over GraphQL.
+///
+/// `executeTransaction` and `simulateTransaction` carry material that has already
+/// been signed, so the assertion that matters most is not what comes back but
+/// what goes out: the base64 `TransactionData` and the signature envelope must
+/// reach the wire byte for byte, with the BCS bytes wrapped in the JSON-encoded
+/// `sui.rpc.v2.Transaction` the simulate argument expects and nowhere re-encoded.
 final class SuiServiceRPCTransportTests: XCTestCase {
 
-    /// A real base64 BCS `TransactionData` payload shape: it must survive the
-    /// transport untouched, padding and all.
+    /// A base64 BCS `TransactionData` payload: it must survive the transport
+    /// untouched, padding and all.
     private static let txBytes = "AAACAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKzEcQySgAAAAAAQ=="
     private static let signature = "AGRlYWRiZWVmZGVhZGJlZWZkZWFkYmVlZmRlYWRiZWVmZGVhZGJlZWY="
 
@@ -30,58 +32,12 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Reference gas price
-
-    func testReferenceGasPriceDecodesTheResult() async throws {
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: "750", error: nil))
-
-        let price = try await makeService().getReferenceGasPrice()
-
-        XCTAssertEqual(price.description, "750")
-        XCTAssertEqual(Self.method(of: http.recordedTargets[0]), "suix_getReferenceGasPrice")
-    }
-
-    func testReferenceGasPriceThrowsInsteadOfReturningZeroOnAMissingResult() async {
-        // Returning zero here silently under-prices the transaction built from
-        // it, which then fails on chain instead of failing at the fetch.
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: nil, error: nil))
-
-        await assertThrows(
-            { _ = try await self.makeService().getReferenceGasPrice() },
-            description: "Sui did not return a reference gas price"
-        )
-    }
-
-    func testReferenceGasPriceThrowsOnAnUnparseableResult() async {
-        // `String.toBigInt()` answers zero for anything it cannot parse, which
-        // would reinstate the silent-zero bug behind a non-empty string.
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: "not-a-number", error: nil))
-
-        await assertThrows(
-            { _ = try await self.makeService().getReferenceGasPrice() },
-            description: "Sui did not return a reference gas price"
-        )
-    }
-
-    func testReferenceGasPriceSurfacesTheNodeRefusal() async {
-        http.queueDecoded(SuiReferenceGasPriceResponse(
-            result: nil,
-            error: SuiRPCError(code: -32000, message: "node unavailable")
-        ))
-
-        await assertThrows(
-            { _ = try await self.makeService().getReferenceGasPrice() },
-            description: "Sui reference gas price RPC failed: node unavailable"
-        )
-    }
-
-    // MARK: - Broadcast
+    // MARK: - Broadcast: the bytes on the wire
 
     func testBroadcastSendsTheSignedBytesVerbatim() async throws {
-        http.queueDecoded(SuiExecuteTransactionResponse(
-            result: SuiExecuteTransactionResponse.Result(digest: "0xdigest"),
-            error: nil
-        ))
+        http.queue(Data("""
+        {"data":{"executeTransaction":{"effects":{"digest":"0xdigest","status":"SUCCESS","executionError":null}}}}
+        """.utf8))
 
         let digest = try await makeService().executeTransactionBlock(
             unsignedTransaction: Self.txBytes,
@@ -90,19 +46,20 @@ final class SuiServiceRPCTransportTests: XCTestCase {
 
         XCTAssertEqual(digest, "0xdigest")
 
-        let body = Self.body(of: http.recordedTargets[0])
-        XCTAssertEqual(body["method"] as? String, "sui_executeTransactionBlock")
-        let params = body["params"] as? [Any]
-        XCTAssertEqual(params?.count, 2)
-        XCTAssertEqual(params?[0] as? String, Self.txBytes)
-        XCTAssertEqual(params?[1] as? [String], [Self.signature])
+        let body = try XCTUnwrap(http.recordedBodies.first)
+        XCTAssertTrue((body["query"] as? String)?.contains("executeTransaction(transactionDataBcs:") == true)
+        let variables = try XCTUnwrap(body["variables"] as? [String: Any])
+        XCTAssertEqual(variables["txBytes"] as? String, Self.txBytes)
+        XCTAssertEqual(variables["signatures"] as? [String], [Self.signature])
     }
 
-    func testBroadcastFailureThrowsRatherThanReturningTheMessageAsADigest() async {
-        http.queueDecoded(SuiExecuteTransactionResponse(
-            result: nil,
-            error: SuiRPCError(code: -32002, message: "invalid signature")
-        ))
+    func testBroadcastRejectsAnExecutionFailureInsteadOfReturningItsDigest() async {
+        // A transaction that reached the chain and aborted must not be reported
+        // as a successful send, or it is persisted and polled as a real txid.
+        http.queue(Data("""
+        {"data":{"executeTransaction":{"effects":{"digest":"0xdigest","status":"FAILURE",\
+        "executionError":{"message":"InsufficientGas","abortCode":null,"identifier":null}}}}}
+        """.utf8))
 
         await assertThrows(
             {
@@ -111,15 +68,30 @@ final class SuiServiceRPCTransportTests: XCTestCase {
                     signature: Self.signature
                 )
             },
-            description: "Sui broadcast failed: invalid signature"
+            description: "Sui broadcast failed: InsufficientGas"
+        )
+    }
+
+    func testBroadcastFailsClosedOnAnUnknownStatus() async {
+        http.queue(Data("""
+        {"data":{"executeTransaction":{"effects":{"digest":"0xdigest","status":"SOMETHING_NEW","executionError":null}}}}
+        """.utf8))
+
+        await assertThrows(
+            {
+                _ = try await self.makeService().executeTransactionBlock(
+                    unsignedTransaction: Self.txBytes,
+                    signature: Self.signature
+                )
+            },
+            description: "Sui broadcast failed: SOMETHING_NEW"
         )
     }
 
     func testBroadcastWithoutADigestThrows() async {
-        http.queueDecoded(SuiExecuteTransactionResponse(
-            result: SuiExecuteTransactionResponse.Result(digest: ""),
-            error: nil
-        ))
+        http.queue(Data("""
+        {"data":{"executeTransaction":{"effects":{"digest":null,"status":"SUCCESS","executionError":null}}}}
+        """.utf8))
 
         await assertThrows(
             {
@@ -132,10 +104,26 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
-    // MARK: - Dry run
+    func testBroadcastSurfacesANodeRefusal() async {
+        http.queue(Data(
+            #"{"data":null,"errors":[{"message":"Invalid signature format","extensions":{"code":"BAD_USER_INPUT"}}]}"#.utf8
+        ))
 
-    func testDryRunSendsTheSameBytesAndReturnsTheGasSplit() async throws {
-        http.queueDecoded(Self.dryRun(computationCost: "100000", storageCost: "988000"))
+        await assertThrows(
+            {
+                _ = try await self.makeService().executeTransactionBlock(
+                    unsignedTransaction: Self.txBytes,
+                    signature: Self.signature
+                )
+            },
+            description: "Sui RPC error (BAD_USER_INPUT): Invalid signature format"
+        )
+    }
+
+    // MARK: - Dry run: the same bytes, wrapped
+
+    func testDryRunWrapsTheSameBytesAndReturnsTheGasSplit() async throws {
+        http.queue(Self.simulation(computation: 100_000, storage: 988_000))
 
         let (computation, storage) = try await makeService()
             .dryRunTransaction(transactionBytes: Self.txBytes)
@@ -143,13 +131,48 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         XCTAssertEqual(computation.description, "100000")
         XCTAssertEqual(storage.description, "988000")
 
-        let body = Self.body(of: http.recordedTargets[0])
-        XCTAssertEqual(body["method"] as? String, "sui_dryRunTransactionBlock")
-        XCTAssertEqual((body["params"] as? [Any])?.first as? String, Self.txBytes)
+        let body = try XCTUnwrap(http.recordedBodies.first)
+        XCTAssertTrue((body["query"] as? String)?.contains("simulateTransaction(transaction:") == true)
+        let variables = try XCTUnwrap(body["variables"] as? [String: Any])
+        let transaction = try XCTUnwrap(variables["tx"] as? [String: Any])
+        let bcs = try XCTUnwrap(transaction["bcs"] as? [String: Any])
+        XCTAssertEqual(
+            bcs["value"] as? String,
+            Self.txBytes,
+            "The BCS bytes must ride inside the JSON transaction unchanged"
+        )
+    }
+
+    func testDryRunAndBroadcastSendIdenticalBytesForTheSameTransaction() async throws {
+        // The simulated transaction and the broadcast one must be the same
+        // bytes, or the fee was estimated for something else.
+        http.queue(Self.simulation(computation: 1, storage: 1))
+        http.queue(Data("""
+        {"data":{"executeTransaction":{"effects":{"digest":"0xdigest","status":"SUCCESS","executionError":null}}}}
+        """.utf8))
+
+        let service = makeService()
+        _ = try await service.dryRunTransaction(transactionBytes: Self.txBytes)
+        _ = try await service.executeTransactionBlock(
+            unsignedTransaction: Self.txBytes,
+            signature: Self.signature
+        )
+
+        let bodies = http.recordedBodies
+        XCTAssertEqual(bodies.count, 2)
+        let simulated = ((bodies[0]["variables"] as? [String: Any])?["tx"] as? [String: Any])
+            .flatMap { $0["bcs"] as? [String: Any] }?["value"] as? String
+        let broadcast = (bodies[1]["variables"] as? [String: Any])?["txBytes"] as? String
+        XCTAssertEqual(simulated, broadcast)
+        XCTAssertEqual(simulated, Self.txBytes)
     }
 
     func testDryRunSurfacesAnExecutionAbort() async {
-        http.queueDecoded(Self.dryRun(statusError: "MoveAbort(...)"))
+        http.queue(Data("""
+        {"data":{"simulateTransaction":{"effects":{"digest":null,"status":"FAILURE",\
+        "executionError":{"message":"MoveAbort(...)","abortCode":null,"identifier":null},\
+        "gasEffects":null}}}}
+        """.utf8))
 
         await assertThrows(
             { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
@@ -157,24 +180,13 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
-    func testDryRunSurfacesANodeRefusalInsteadOfAParseFailure() async {
-        // Previously a JSON-RPC error fell through to "failed to parse gas
-        // estimate", which hid the real reason from the user.
-        http.queueDecoded(SuiDryRunResponse(
-            result: nil,
-            error: SuiRPCError(code: -32602, message: "cannot decode transaction")
-        ))
-
-        await assertThrows(
-            { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
-            description: "Simulation Error: cannot decode transaction"
-        )
-    }
-
-    func testDryRunThrowsOnUnparseableGasCosts() async {
-        // Zero here collapses the budget to the protocol minimum instead of
-        // letting the caller fall back to the default budget on a thrown error.
-        http.queueDecoded(Self.dryRun(computationCost: "n/a", storageCost: "988000"))
+    func testDryRunWithoutAGasSummaryThrows() async {
+        // Falling back to zero would collapse the budget to the protocol
+        // minimum instead of letting the caller apply its default budget.
+        http.queue(Data("""
+        {"data":{"simulateTransaction":{"effects":{"digest":null,"status":"SUCCESS",\
+        "executionError":null,"gasEffects":null}}}}
+        """.utf8))
 
         await assertThrows(
             { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
@@ -182,9 +194,18 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
-    func testReferenceGasPriceRejectsZero() async {
-        // Sui's reference gas price is a positive protocol parameter.
-        http.queueDecoded(SuiReferenceGasPriceResponse(result: "0", error: nil))
+    // MARK: - Reference gas price
+
+    func testReferenceGasPriceDecodesTheResult() async throws {
+        http.queue(Data(#"{"data":{"epoch":{"referenceGasPrice":"750"}}}"#.utf8))
+
+        let price = try await makeService().getReferenceGasPrice()
+
+        XCTAssertEqual(price.description, "750")
+    }
+
+    func testReferenceGasPriceThrowsOnAnUnparseableResult() async {
+        http.queue(Data(#"{"data":{"epoch":{"referenceGasPrice":"not-a-number"}}}"#.utf8))
 
         await assertThrows(
             { _ = try await self.makeService().getReferenceGasPrice() },
@@ -192,88 +213,27 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         )
     }
 
-    func testDryRunWithoutGasCostsThrows() async {
-        http.queueDecoded(SuiDryRunResponse(result: nil, error: nil))
+    func testReferenceGasPriceRejectsZero() async {
+        // Sui's reference gas price is a positive protocol parameter, and a zero
+        // silently under-prices every transaction built from it.
+        http.queue(Data(#"{"data":{"epoch":{"referenceGasPrice":"0"}}}"#.utf8))
 
         await assertThrows(
-            { _ = try await self.makeService().dryRunTransaction(transactionBytes: Self.txBytes) },
-            description: "Failed to parse gas estimate from dry run"
+            { _ = try await self.makeService().getReferenceGasPrice() },
+            description: "Sui did not return a reference gas price"
         )
     }
 
-    // MARK: - Decoding real node payloads
+    func testReferenceGasPriceThrowsWhenTheEpochIsAbsent() async {
+        http.queue(Data(#"{"data":{"epoch":null}}"#.utf8))
 
-    // The models above are hand-written replacements for dot-path probing of raw
-    // JSON, so they are pinned against payloads shaped like the node's.
-
-    func testReferenceGasPriceDecodesARealPayload() throws {
-        let response = try Self.decode(
-            SuiReferenceGasPriceResponse.self,
-            from: #"{"jsonrpc":"2.0","id":1,"result":"100"}"#
+        await assertThrows(
+            { _ = try await self.makeService().getReferenceGasPrice() },
+            description: "Sui did not return a reference gas price"
         )
-
-        XCTAssertEqual(response.result, "100")
-        XCTAssertNil(response.error)
-    }
-
-    func testBroadcastDecodesARealPayloadAndIgnoresTheUnmodelledEffects() throws {
-        let response = try Self.decode(
-            SuiExecuteTransactionResponse.self,
-            from: """
-            {"jsonrpc":"2.0","id":1,"result":{"digest":"9N37cT18Na72Mr6VKSw3DzofkKL8YwkceougBP31yuKx",\
-            "confirmedLocalExecution":false,"effects":{"messageVersion":"v1","status":{"status":"success"}}}}
-            """
-        )
-
-        XCTAssertEqual(response.result?.digest, "9N37cT18Na72Mr6VKSw3DzofkKL8YwkceougBP31yuKx")
-        XCTAssertNil(response.error)
-    }
-
-    func testBroadcastDecodesAnErrorPayload() throws {
-        let response = try Self.decode(
-            SuiExecuteTransactionResponse.self,
-            from: #"{"jsonrpc":"2.0","id":1,"error":{"code":-32002,"message":"Invalid user signature"}}"#
-        )
-
-        XCTAssertNil(response.result)
-        XCTAssertEqual(response.error, SuiRPCError(code: -32002, message: "Invalid user signature"))
-    }
-
-    func testDryRunDecodesARealPayload() throws {
-        let response = try Self.decode(
-            SuiDryRunResponse.self,
-            from: """
-            {"jsonrpc":"2.0","id":1,"result":{"effects":{"messageVersion":"v1",\
-            "status":{"status":"success"},"executedEpoch":"1215",\
-            "gasUsed":{"computationCost":"100000","storageCost":"988000",\
-            "storageRebate":"978120","nonRefundableStorageFee":"9880"}}}}
-            """
-        )
-
-        XCTAssertEqual(response.result?.effects?.gasUsed?.computationCost, "100000")
-        XCTAssertEqual(response.result?.effects?.gasUsed?.storageCost, "988000")
-        XCTAssertEqual(response.result?.effects?.status?.status, "success")
-        XCTAssertNil(response.result?.effects?.status?.error)
-    }
-
-    func testDryRunDecodesAnAbortedExecution() throws {
-        let response = try Self.decode(
-            SuiDryRunResponse.self,
-            from: """
-            {"jsonrpc":"2.0","id":1,"result":{"effects":{"status":\
-            {"status":"failure","error":"MoveAbort(...) in command 0"}}}}
-            """
-        )
-
-        XCTAssertEqual(response.result?.effects?.status?.error, "MoveAbort(...) in command 0")
-        XCTAssertNil(response.result?.effects?.gasUsed)
     }
 
     // MARK: - Helpers
-
-    private static func decode<T: Decodable>(_ type: T.Type, from json: String) throws -> T {
-        try JSONDecoder().decode(type, from: Data(json.utf8))
-    }
 
     private func makeService() -> SuiService {
         SuiService(resolver: NoOverrideSuiResolver(), httpClient: http)
@@ -293,35 +253,12 @@ final class SuiServiceRPCTransportTests: XCTestCase {
         }
     }
 
-    private static func dryRun(
-        computationCost: String? = nil,
-        storageCost: String? = nil,
-        statusError: String? = nil
-    ) -> SuiDryRunResponse {
-        SuiDryRunResponse(
-            result: SuiDryRunResponse.Result(
-                effects: SuiDryRunResponse.Effects(
-                    status: SuiDryRunResponse.Status(status: "success", error: statusError),
-                    gasUsed: SuiDryRunResponse.GasUsed(
-                        computationCost: computationCost,
-                        storageCost: storageCost
-                    )
-                )
-            ),
-            error: nil
-        )
-    }
-
-    private static func body(of target: TargetType) -> [String: Any] {
-        guard case .requestParameters(let params, .jsonEncoding) = target.task else {
-            XCTFail("Expected JSON-encoded parameters")
-            return [:]
-        }
-        return params
-    }
-
-    private static func method(of target: TargetType) -> String? {
-        body(of: target)["method"] as? String
+    private static func simulation(computation: Int, storage: Int) -> Data {
+        Data("""
+        {"data":{"simulateTransaction":{"effects":{"digest":"0xsim","status":"SUCCESS",\
+        "executionError":null,"gasEffects":{"gasSummary":{"computationCost":\(computation),\
+        "storageCost":\(storage),"storageRebate":0,"nonRefundableStorageFee":0}}}}}}
+        """.utf8)
     }
 }
 
@@ -329,64 +266,42 @@ private struct NoOverrideSuiResolver: RPCEndpointResolving {
     func url(for _: Chain) -> String? { nil }
 }
 
-/// Captures every `TargetType` it is handed so a test can assert on the request
-/// body, and replays a FIFO queue of decoded responses.
+/// Replays raw payloads through the real `JSONDecoder` and records every request
+/// body, so both the GraphQL envelope decoding and the exact bytes sent are
+/// exercised rather than assumed.
 private final class SuiRecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
-    private enum Outcome {
-        case value(Any)
-        case error(Error)
-    }
-
     private let lock = NSLock()
-    private var queue: [Outcome] = []
-    private var targets: [TargetType] = []
+    private var payloads: [Data] = []
+    private var bodies: [[String: Any]] = []
 
-    var recordedTargets: [TargetType] {
+    var recordedBodies: [[String: Any]] {
         lock.lock()
         defer { lock.unlock() }
-        return targets
+        return bodies
     }
 
-    func queueDecoded<T>(_ value: T) {
+    func queue(_ payload: Data) {
         lock.lock()
         defer { lock.unlock() }
-        queue.append(.value(value))
-    }
-
-    func queueError(_ error: Error) {
-        lock.lock()
-        defer { lock.unlock() }
-        queue.append(.error(error))
+        payloads.append(payload)
     }
 
     // Protocol requires `async`; the body is sync. SwiftLint can't see across
     // protocol conformance, so silence the false-positive lint here.
     // swiftlint:disable async_without_await
-    func request(_: TargetType) async throws -> HTTPResponse<Data> {
-        throw HTTPError.invalidResponse
-    }
-
-    func request<T: Decodable>(_ target: TargetType, responseType _: T.Type) async throws -> HTTPResponse<T> {
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         lock.lock()
-        targets.append(target)
-        let next = queue.isEmpty ? nil : queue.removeFirst()
+        if case .requestParameters(let body, _) = target.task {
+            bodies.append(body)
+        }
+        let next = payloads.isEmpty ? nil : payloads.removeFirst()
         lock.unlock()
 
-        switch next {
-        case .value(let value):
-            guard let typed = value as? T else { throw HTTPError.invalidResponse }
-            return HTTPResponse(data: typed, response: Self.okResponse(url: target.baseURL))
-        case .error(let error):
-            throw error
-        case nil:
-            throw HTTPError.noData
-        }
+        guard let next else { throw HTTPError.noData }
+        // Force-unwrap is safe: a 200 response for a valid URL always initializes.
+        let response = HTTPURLResponse(url: target.baseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return HTTPResponse(data: next, response: response)
     }
     // swiftlint:enable async_without_await
-
-    private static func okResponse(url: URL) -> HTTPURLResponse {
-        // Force-unwrap is safe: a 200 response for a valid URL always initializes.
-        HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
-    }
 }

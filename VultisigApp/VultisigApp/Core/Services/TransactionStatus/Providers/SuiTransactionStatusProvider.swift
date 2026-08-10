@@ -7,6 +7,13 @@
 
 import Foundation
 
+/// Sui transaction status over GraphQL RPC.
+///
+/// The digest is looked up with `transaction(digest:)`. A digest the node cannot
+/// resolve comes back as a null transaction with no `errors` — a genuine
+/// not-found, safe to keep polling — whereas a refusal arrives as a populated
+/// `errors` array that the transport raises, so a persistent node failure is
+/// reported instead of being masked as a pending poll forever.
 struct SuiTransactionStatusProvider: TransactionStatusProvider {
     /// Walks the same host list `SuiService` uses, so the poller queries the
     /// node that broadcast the transaction — including the user's custom RPC.
@@ -14,96 +21,54 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
 
     init(
         httpClient: HTTPClientProtocol = HTTPClient(),
-        resolver: RPCEndpointResolving = CustomRPCStore.shared
+        resolver: RPCEndpointResolving = CustomRPCStore.shared,
+        hosts: [URL] = SuiGraphQLAPI.defaultHosts
     ) {
         self.client = SuiFailoverClient(
             httpClient: httpClient,
-            endpoints: SuiEndpointResolver(resolver: resolver)
+            endpoints: SuiEndpointResolver(resolver: resolver, defaultHosts: hosts)
         )
     }
 
     func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
-            let response = try await client.request(
-                responseType: SuiTransactionStatusResponse.self,
-                shouldTryNextHost: Self.isHostLocalMiss
-            ) { host in
-                SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash, host: host)
+            let data = try await client.query(
+                SuiGraphQLDocument.transaction,
+                variables: ["digest": query.txHash],
+                responseType: SuiTransactionData.self,
+                shouldTryNextHost: { $0.transaction == nil }
+            )
+
+            // A null transaction is host-local absence: the digest has not landed
+            // here yet, or this node has pruned it.
+            guard let transaction = data.transaction, let effects = transaction.effects else {
+                return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
             }
 
-            // Check for RPC error
-            if let error = response.error {
-                // Error code -32602 typically means transaction not found
-                if error.code == -32602 {
-                    return TransactionStatusResult(
-                        status: .notFound,
-                        blockNumber: nil,
-                        confirmations: nil
-                    )
-                }
-                // Other error
+            let blockNumber = effects.checkpoint?.sequenceNumber.map(Int.init)
+
+            // Fails closed: only an explicit SUCCESS confirms. GraphQL spells the
+            // status uppercase where JSON-RPC used lowercase, so a comparison
+            // left on the old spelling would read every confirmed transaction as
+            // failed — and the poller writes that as a terminal error.
+            guard effects.succeeded else {
                 return TransactionStatusResult(
-                    status: .failed(reason: error.message),
-                    blockNumber: nil,
+                    status: .failed(reason: effects.failureReason ?? "Transaction failed"),
+                    blockNumber: blockNumber,
                     confirmations: nil
                 )
             }
 
-            // Parse successful response
-            if let result = response.result, let effects = result.effects {
-                let blockNum = result.checkpoint.flatMap { Int($0) }
-
-                if effects.status.status.lowercased() == "success" {
-                    return TransactionStatusResult(
-                        status: .confirmed,
-                        blockNumber: blockNum,
-                        confirmations: nil
-                    )
-                } else {
-                    return TransactionStatusResult(
-                        status: .failed(reason: "Transaction failed"),
-                        blockNumber: blockNum,
-                        confirmations: nil
-                    )
-                }
-            }
-
-            // No result
             return TransactionStatusResult(
-                status: .notFound,
-                blockNumber: nil,
+                status: .confirmed,
+                blockNumber: blockNumber,
                 confirmations: nil
             )
         } catch let error as HTTPError {
             if case .statusCode(let code, _) = error, code == 404 {
-                return TransactionStatusResult(
-                    status: .notFound,
-                    blockNumber: nil,
-                    confirmations: nil
-                )
+                return TransactionStatusResult(status: .notFound, blockNumber: nil, confirmations: nil)
             }
             throw error
         }
-    }
-
-    /// Whether a decoded response says "this node has not seen that digest",
-    /// as opposed to reporting the transaction's outcome.
-    ///
-    /// Absence is host-local: a transaction broadcast through the fallback host
-    /// is legitimately unknown to the primary, and a pruned or lagging node can
-    /// miss a digest its peer already has. Treating the first miss as final
-    /// would poll a landed transaction until the poller gave up, so the walk
-    /// continues and only reports `notFound` once every host has missed.
-    /// A result the node returned *with* a record but *without* effects is not
-    /// absence — it proves the node knows the digest and has not finished
-    /// populating it. Walking past it would let another host's refusal overwrite
-    /// that evidence with a terminal `failed`, which the poller records as an
-    /// error the user cannot undo.
-    private static func isHostLocalMiss(_ response: SuiTransactionStatusResponse) -> Bool {
-        if let error = response.error {
-            // -32602 is Sui's "invalid params" for a digest it cannot resolve.
-            return error.code == -32602
-        }
-        return response.result == nil
     }
 }

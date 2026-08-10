@@ -3,12 +3,16 @@
 //  VultisigApp
 //
 //  Pins the fail-loud pagination contract of `SuiService.getAllCoins`: when a
-//  page of `suix_getAllCoins` cannot be decoded mid-pagination, the call must
-//  THROW rather than return the coins decoded so far. A truncated coin set is
-//  worse than no set — downstream coin-object selection in `SuiHelper` would
+//  page of the coin-object connection cannot be decoded mid-pagination, the call
+//  must THROW rather than return the coins decoded so far. A truncated coin set
+//  is worse than no set — downstream coin-object selection in `SuiHelper` would
 //  silently miss the SUI gas object or the token's objects and build an invalid
-//  transaction (the silent-failure class this PR exists to close). The happy
-//  path must still follow `nextCursor`/`hasNextPage` to completion.
+//  transaction. The happy path must still follow `hasNextPage`/`endCursor` to
+//  completion.
+//
+//  These assertions are deliberately unchanged from the JSON-RPC era: only the
+//  fixture shapes moved to GraphQL, so a passing run says the transport swap
+//  preserved the contract rather than that the contract was rewritten to fit.
 //
 
 @testable import VultisigApp
@@ -54,7 +58,7 @@ final class SuiServiceGetAllCoinsTests: XCTestCase {
         // (no `result.data`). A truncated set must never be returned.
         StubRPCProtocol.pages = [
             Self.page(coins: [Self.coinJSON(id: "0x1")], nextCursor: "cursor-1", hasNextPage: true),
-            Data(#"{"jsonrpc":"2.0","id":1,"result":{"unexpected":true}}"#.utf8)
+            Data(#"{"data":{"address":null}}"#.utf8)
         ]
 
         let service = SuiService(resolver: StubResolver(host: Self.stubHost))
@@ -124,16 +128,25 @@ final class SuiServiceGetAllCoinsTests: XCTestCase {
         Coin(asset: TokensStore.Token.suiSUI, address: "0xowner", hexPublicKey: "pub")
     }
 
+    /// One node of the coin-object connection, carrying the WRAPPER type the
+    /// node actually returns — `0x2::coin::Coin<T>`, zero-padded — so the
+    /// fixtures exercise the unwrap rather than assuming it away.
     private static func coinJSON(id: String) -> String {
-        """
-        {"coinType":"0x2::sui::SUI","coinObjectId":"\(id)","version":"1","digest":"digest-\(id)","balance":"100","previousTransaction":"prev"}
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        return """
+        {"address":"\(id)","version":1,"digest":"digest-\(id)",\
+        "previousTransaction":{"digest":"prev"},\
+        "contents":{"type":{"repr":"\(padded)::coin::Coin<\(padded)::sui::SUI>"},\
+        "json":{"balance":"100"}}}
         """
     }
 
     private static func page(coins: [String], nextCursor: String?, hasNextPage: Bool) -> Data {
         let cursorJSON = nextCursor.map { "\"\($0)\"" } ?? "null"
         let body = """
-        {"jsonrpc":"2.0","id":1,"result":{"data":[\(coins.joined(separator: ","))],"nextCursor":\(cursorJSON),"hasNextPage":\(hasNextPage)}}
+        {"data":{"address":{"objects":{\
+        "pageInfo":{"hasNextPage":\(hasNextPage),"endCursor":\(cursorJSON)},\
+        "nodes":[\(coins.joined(separator: ","))]}}}}
         """
         return Data(body.utf8)
     }

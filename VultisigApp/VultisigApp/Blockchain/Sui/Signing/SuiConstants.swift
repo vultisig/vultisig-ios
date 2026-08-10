@@ -73,6 +73,38 @@ enum SuiCoinType {
         return normalizeAddress(address) + String(coinType[separator.lowerBound...])
     }
 
+    /// The coin type a `0x2::coin::Coin<T>` object holds, in the same spelling
+    /// JSON-RPC returned.
+    ///
+    /// GraphQL's object connection reports the **wrapper** struct, where
+    /// `suix_getAllCoins` reported the bare `T`. Two things then have to happen
+    /// before the rest of the app sees the string, or the transport swap stops
+    /// being invisible:
+    ///
+    /// 1. **Unwrap.** A wrapper string matches no known coin, so `isNative` and
+    ///    `matches` both fail and every native send is misread as a token send.
+    /// 2. **Normalize the address.** GraphQL always spells it zero-padded
+    ///    (`0x000…002::sui::SUI`) where JSON-RPC returned it stripped
+    ///    (`0x2::sui::SUI`). Comparisons tolerate either — that is what
+    ///    `normalize` is for — but `SuiService.getAllTokensWithMetadata`
+    ///    *persists* this string as a discovered token's `contractAddress`, so
+    ///    without stripping, a token discovered after the migration becomes a
+    ///    second vault entry differing from the pre-migration one only by
+    ///    padding.
+    ///
+    /// Returns `nil` for anything that is not a generic instantiation, which the
+    /// query's type filter already excludes.
+    static func unwrap(_ repr: String) -> String? {
+        guard let open = repr.firstIndex(of: "<"),
+              let close = repr.lastIndex(of: ">"),
+              open < close else {
+            return nil
+        }
+        let inner = String(repr[repr.index(after: open)..<close])
+        guard !inner.isEmpty else { return nil }
+        return normalize(inner)
+    }
+
     /// Returns whether two fully-qualified coin types refer to the same coin,
     /// independent of package-address form (short `0x2` vs long `0x00…02`).
     static func matches(_ lhs: String, _ rhs: String) -> Bool {

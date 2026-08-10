@@ -29,12 +29,12 @@ struct SuiEndpointResolver: SuiEndpointProviding {
 
     init(
         resolver: RPCEndpointResolving = CustomRPCStore.shared,
-        defaultHosts: [URL] = SuiAPI.defaultHosts
+        defaultHosts: [URL] = SuiGraphQLAPI.defaultHosts
     ) {
         self.resolver = resolver
         // An empty list would make every request throw `noEndpointsConfigured`,
         // so fall back to the primary host rather than ship a dead transport.
-        self.defaultHosts = defaultHosts.isEmpty ? [SuiAPI.defaultHost] : defaultHosts
+        self.defaultHosts = defaultHosts.isEmpty ? [SuiGraphQLAPI.defaultHost] : defaultHosts
     }
 
     func hosts() -> [URL] {
@@ -97,14 +97,15 @@ enum SuiFailoverPolicy {
     }
 }
 
-/// Posts Sui RPC requests, failing over across the hosts from `endpoints`.
+/// Posts Sui GraphQL requests, failing over across the hosts from `endpoints`.
 ///
 /// Failover covers **transport** faults only — an unreachable host, a TLS
 /// failure, a timeout, a 5xx, a response that will not decode. A refusal that
-/// arrives *inside* a well-formed body (the JSON-RPC `error` member, which Sui
-/// returns with HTTP 200) decodes successfully and is handed to the caller
-/// untouched, so it is never replayed against the remaining hosts: the node
-/// already answered, and every other node would answer the same.
+/// arrives *inside* a well-formed body (the GraphQL `errors` array, which Sui
+/// returns with HTTP 200) decodes successfully and is the node's considered
+/// verdict, so it is raised rather than replayed against the remaining hosts:
+/// every other node would answer the same. The exception is the small set of
+/// codes that mean "ask again" — see `SuiGraphQLError.retryableCodes`.
 ///
 /// Failing a **broadcast** over to another host is safe. Sui identifies a
 /// transaction by the digest of its signed bytes, so re-submitting identical
@@ -170,13 +171,55 @@ struct SuiFailoverClient {
         throw SuiEndpointFailoverError.noEndpointsConfigured
     }
 
-    /// Convenience for the common shape: one `SuiAPI` endpoint, one host list.
-    func request<T: Decodable>(
-        _ endpoint: SuiAPI.Endpoint,
-        responseType: T.Type
+    /// Runs a GraphQL document and returns its decoded `data`.
+    ///
+    /// The GraphQL half of the contract lives here rather than at each call site:
+    /// a populated `errors` array is the node's considered answer and is raised,
+    /// except for the small set of codes that mean "ask again", which fail over
+    /// to the next host; an envelope with neither `data` nor `errors` is
+    /// malformed; and an envelope carrying `jsonrpc` means the configured host
+    /// still speaks the retired protocol, which is worth its own message because
+    /// only a custom RPC override can produce it.
+    ///
+    /// `shouldTryNextHost` additionally lets a caller treat a successfully
+    /// decoded payload as a host-local miss — the transaction-status poller uses
+    /// it, because a digest broadcast through one host is legitimately absent
+    /// from another, and a pruned node can miss a digest its peer already has.
+    func query<T: Decodable>(
+        _ document: String,
+        variables: [String: Any] = [:],
+        // swiftlint:disable:next unused_parameter
+        responseType: T.Type,
+        shouldTryNextHost: @escaping (T) -> Bool = { _ in false }
     ) async throws -> T {
-        try await request(responseType: responseType) { host in
-            SuiAPI(baseURL: host, endpoint: endpoint)
+        let envelope = try await request(
+            responseType: SuiGraphQLResponse<T>.self,
+            shouldTryNextHost: { envelope in
+                if envelope.isRetryableNodeError { return true }
+                guard let data = envelope.data, !envelope.hasErrors else { return false }
+                return shouldTryNextHost(data)
+            },
+            makeTarget: { host in
+                SuiGraphQLAPI(baseURL: host, document: document, variables: variables)
+            }
+        )
+
+        if envelope.hasErrors {
+            let errors = envelope.errors ?? []
+            let message = errors.compactMap(\.message).joined(separator: "; ")
+            throw SuiRPCError.node(
+                message: message.isEmpty ? "unknown error" : message,
+                code: errors.compactMap { $0.extensions?.code }.first
+            )
         }
+
+        if let data = envelope.data { return data }
+
+        if envelope.jsonrpc != nil {
+            let host = endpoints.hosts().last ?? SuiGraphQLAPI.defaultHost
+            throw SuiRPCError.legacyJSONRPCEndpoint(host: host.absoluteString)
+        }
+
+        throw SuiRPCError.malformedResponse
     }
 }

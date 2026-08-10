@@ -125,7 +125,7 @@ final class SuiCustomTokenResolverTests: XCTestCase {
 
     func testSuiServiceRequestsAndDecodesCoinMetadata() async throws {
         SuiMetadataRPCStub.response = Data(
-            #"{"jsonrpc":"2.0","id":1,"result":{"decimals":9,"name":"Custom","symbol":"CUSTOM","description":"","iconUrl":"https://example.com/icon.png","id":null}}"#.utf8
+            #"{"data":{"coinMetadata":{"decimals":9,"symbol":"CUSTOM","iconUrl":"https://example.com/icon.png"}}}"#.utf8
         )
         let service = SuiService(resolver: SuiMetadataRPCResolver(host: Self.stubHost))
 
@@ -134,12 +134,15 @@ final class SuiCustomTokenResolverTests: XCTestCase {
 
         XCTAssertEqual(metadata, SuiCoinMetadata(decimals: 9, symbol: "CUSTOM", iconUrl: "https://example.com/icon.png"))
         let request = try XCTUnwrap(SuiMetadataRPCStub.requestBody)
-        XCTAssertEqual(request["method"] as? String, "suix_getCoinMetadata")
-        XCTAssertEqual(request["params"] as? [String], [Self.customCoinType])
+        XCTAssertEqual(
+            (request["variables"] as? [String: Any])?["coinType"] as? String,
+            Self.customCoinType
+        )
+        XCTAssertTrue((request["query"] as? String)?.contains("coinMetadata") == true)
     }
 
     func testSuiServiceReturnsNilForNullMetadata() async throws {
-        SuiMetadataRPCStub.response = Data(#"{"jsonrpc":"2.0","id":1,"result":null}"#.utf8)
+        SuiMetadataRPCStub.response = Data(#"{"data":{"coinMetadata":null}}"#.utf8)
         let service = SuiService(resolver: SuiMetadataRPCResolver(host: Self.stubHost))
 
         let metadata = try await service.getCoinMetadata(coinType: Self.customCoinType)
@@ -149,18 +152,31 @@ final class SuiCustomTokenResolverTests: XCTestCase {
 
     func testSuiServiceThrowsRPCError() async {
         SuiMetadataRPCStub.response = Data(
-            #"{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid coin type"}}"#.utf8
+            #"{"data":null,"errors":[{"message":"Invalid coin type","extensions":{"code":"BAD_USER_INPUT"}}]}"#.utf8
         )
         let service = SuiService(resolver: SuiMetadataRPCResolver(host: Self.stubHost))
 
         do {
             _ = try await service.getCoinMetadata(coinType: Self.customCoinType)
-            XCTFail("Expected the JSON-RPC error to be propagated")
-        } catch SuiCoinMetadataError.rpc(let message) {
-            XCTAssertEqual(message, "Invalid coin type")
+            XCTFail("Expected the node error to be propagated")
+        } catch let error as SuiRPCError {
+            XCTAssertEqual(error, .node(message: "Invalid coin type", code: "BAD_USER_INPUT"))
         } catch {
             XCTFail("Unexpected error: \(error)")
         }
+    }
+
+    func testSuiServiceReturnsNilWhenMetadataOmitsRequiredFields() async throws {
+        // A coin the node cannot describe must be dropped rather than shown at a
+        // guessed magnitude or under a placeholder ticker.
+        SuiMetadataRPCStub.response = Data(
+            #"{"data":{"coinMetadata":{"decimals":null,"symbol":"WAT","iconUrl":null}}}"#.utf8
+        )
+        let service = SuiService(resolver: SuiMetadataRPCResolver(host: Self.stubHost))
+
+        let metadata = try await service.getCoinMetadata(coinType: Self.customCoinType)
+
+        XCTAssertNil(metadata)
     }
 }
 

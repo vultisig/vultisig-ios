@@ -6,10 +6,16 @@
 @testable import VultisigApp
 import XCTest
 
-/// The status poller must query the same node that broadcast the transaction.
-/// It previously built its URL from the hardcoded default while `SuiService`
-/// honoured the user's custom RPC override, so a user on a custom node polled a
-/// host that had never seen the digest and saw a live transaction as `notFound`.
+/// The status poller decides whether a transaction the user has already signed
+/// and broadcast is confirmed, still pending, or failed — and the poller records
+/// `failed` as terminal, so a misread is not recoverable from the UI.
+///
+/// Two classes of bug are pinned here. One predates GraphQL: the poller built its
+/// URL from the hardcoded default while `SuiService` honoured the user's custom
+/// RPC, so anyone on a custom node polled a host that had never seen the digest.
+/// The other arrives with it: GraphQL spells the execution status `SUCCESS` where
+/// JSON-RPC spelled it `success`, and a comparison left on the old spelling reads
+/// every confirmed transaction as failed.
 final class SuiTransactionStatusProviderTests: XCTestCase {
 
     private static let query = TransactionStatusQuery(txHash: "0xdigest", chain: .sui)
@@ -34,7 +40,7 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
             httpClient: http,
             resolver: FixedSuiResolver(url: override)
         )
-        http.queueDecoded(Self.response(status: "success"))
+        http.queue(Self.confirmed())
 
         _ = try await provider.checkStatus(query: Self.query)
 
@@ -42,40 +48,32 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
     }
 
     func testCheckStatusFallsBackToDefaultHostWithoutOverride() async throws {
-        let provider = SuiTransactionStatusProvider(
-            httpClient: http,
-            resolver: FixedSuiResolver(url: nil)
-        )
-        http.queueDecoded(Self.response(status: "success"))
+        let provider = makeProvider()
+        http.queue(Self.confirmed())
 
         _ = try await provider.checkStatus(query: Self.query)
 
         XCTAssertEqual(http.requestedURLs, [SuiService.defaultRPCURL])
     }
 
-    func testADigestMissingFromTheFirstHostIsLookedUpOnTheNext() async throws {
-        // A transaction broadcast through the fallback host is legitimately
-        // unknown to the primary. Stopping at the first miss would poll a
-        // landed transaction until the poller gave up.
-        let provider = SuiTransactionStatusProvider(
-            httpClient: http,
-            resolver: FixedSuiResolver(url: nil)
-        )
-        http.queueDecoded(Self.notFound())
-        http.queueDecoded(Self.response(status: "success", checkpoint: "77"))
+    func testCheckStatusSendsTheDigestAsAGraphQLVariable() async throws {
+        let provider = makeProvider()
+        http.queue(Self.confirmed())
 
-        let result = try await provider.checkStatus(query: Self.query)
+        _ = try await provider.checkStatus(query: Self.query)
 
-        XCTAssertEqual(result.status, .confirmed)
-        XCTAssertEqual(result.blockNumber, 77)
-        XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
+        let body = try XCTUnwrap(http.recordedBodies.first)
+        XCTAssertEqual((body["variables"] as? [String: Any])?["digest"] as? String, "0xdigest")
+        XCTAssertTrue((body["query"] as? String)?.contains("transaction(digest:") == true)
     }
 
-    // MARK: - Mapping (unchanged by the host fix, pinned so it stays that way)
+    // MARK: - Status mapping
 
-    func testSuccessfulEffectsMapToConfirmed() async throws {
+    func testUppercaseSuccessMapsToConfirmed() async throws {
+        // The spelling change that would otherwise report every confirmed
+        // transaction as pending until the poll timed out.
         let provider = makeProvider()
-        http.queueDecoded(Self.response(status: "success", checkpoint: "42"))
+        http.queue(Self.confirmed(checkpoint: 42))
 
         let result = try await provider.checkStatus(query: Self.query)
 
@@ -83,84 +81,87 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         XCTAssertEqual(result.blockNumber, 42)
     }
 
-    func testFailedEffectsMapToFailed() async throws {
+    func testFailureMapsToFailedWithTheExecutionError() async throws {
         let provider = makeProvider()
-        http.queueDecoded(Self.response(status: "failure"))
+        http.queue(Data("""
+        {"data":{"transaction":{"digest":"0xdigest","effects":{"status":"FAILURE",\
+        "executionError":{"message":"MoveAbort(...) in command 0","abortCode":null,"identifier":null},\
+        "checkpoint":{"sequenceNumber":7}}}}}
+        """.utf8))
+
+        let result = try await provider.checkStatus(query: Self.query)
+
+        XCTAssertEqual(result.status, .failed(reason: "MoveAbort(...) in command 0"))
+        XCTAssertEqual(result.blockNumber, 7)
+    }
+
+    func testAnUnknownStatusFailsClosed() async throws {
+        // Only an explicit SUCCESS confirms. Anything else is a failure, not a
+        // reason to declare the transaction good.
+        let provider = makeProvider()
+        http.queue(Data("""
+        {"data":{"transaction":{"digest":"0xdigest","effects":{"status":"SOMETHING_NEW",\
+        "executionError":null,"checkpoint":null}}}}
+        """.utf8))
 
         let result = try await provider.checkStatus(query: Self.query)
 
         XCTAssertEqual(result.status, .failed(reason: "Transaction failed"))
     }
 
-    func testADigestMissingEverywhereMapsToNotFound() async throws {
-        let provider = SuiTransactionStatusProvider(
-            httpClient: http,
-            resolver: FixedSuiResolver(url: nil)
-        )
-        SuiAPI.defaultHosts.forEach { _ in http.queueDecoded(Self.notFound()) }
+    func testANullTransactionMapsToNotFound() async throws {
+        // A digest that hasn't landed resolves to null with no errors — safe to
+        // keep polling, and distinct from a refusal.
+        let provider = makeProvider()
+        http.queue(Data(#"{"data":{"transaction":null}}"#.utf8))
 
         let result = try await provider.checkStatus(query: Self.query)
 
         XCTAssertEqual(result.status, .notFound)
-        XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
     }
 
-    func testARecordWithoutEffectsIsNotTreatedAsAbsence() async throws {
-        // The node knows the digest and has not finished populating it. Walking
-        // on would let another host's refusal overwrite that with a terminal
-        // `failed`, which the poller records as an error the user cannot undo.
-        let provider = SuiTransactionStatusProvider(
-            httpClient: http,
-            resolver: FixedSuiResolver(url: nil)
-        )
-        http.queueDecoded(SuiTransactionStatusResponse(
-            jsonrpc: "2.0",
-            id: 1,
-            result: SuiTransactionStatusResponse.SuiTxResult(effects: nil, checkpoint: nil),
-            error: nil
-        ))
-        http.queueDecoded(SuiTransactionStatusResponse(
-            jsonrpc: "2.0",
-            id: 1,
-            result: nil,
-            error: SuiTransactionStatusResponse.SuiError(code: -32000, message: "node unavailable")
+    func testANodeRefusalIsRaisedRatherThanReportedAsNotFound() async {
+        // A populated `errors` array is the node saying it cannot answer. Masking
+        // it as not-found would poll a persistent failure until timeout.
+        let provider = makeProvider()
+        http.queue(Data(
+            #"{"data":null,"errors":[{"message":"indexer unavailable","extensions":{"code":"INTERNAL_SERVER_ERROR"}}]}"#.utf8
         ))
 
-        let result = try await provider.checkStatus(query: Self.query)
-
-        XCTAssertEqual(result.status, .notFound)
-        XCTAssertEqual(http.requestedURLs, [SuiAPI.defaultHost])
+        do {
+            _ = try await provider.checkStatus(query: Self.query)
+            XCTFail("Expected the node refusal to be raised")
+        } catch let error as SuiRPCError {
+            XCTAssertEqual(error, .node(message: "indexer unavailable", code: "INTERNAL_SERVER_ERROR"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
-    func testA404OnTheFirstHostStillReachesTheSecond() async throws {
-        // A host that does not serve this path (or has pruned the digest) must
-        // not end the lookup — the fallback host may be the one that broadcast.
+    // MARK: - Cross-host lookup
+
+    func testADigestMissingFromTheFirstHostIsLookedUpOnTheNext() async throws {
+        // A transaction broadcast through the fallback host is legitimately
+        // unknown to the primary, and a pruned node can miss a digest its peer
+        // already has. Stopping at the first miss would poll a landed
+        // transaction until the poller gave up.
+        let hosts = [
+            URL(staticString: "https://sui-a.local"),
+            URL(staticString: "https://sui-b.local")
+        ]
         let provider = SuiTransactionStatusProvider(
             httpClient: http,
-            resolver: FixedSuiResolver(url: nil)
+            resolver: FixedSuiResolver(url: nil),
+            hosts: hosts
         )
-        http.queueError(HTTPError.statusCode(404, nil))
-        http.queueDecoded(Self.response(status: "success", checkpoint: "88"))
+        http.queue(Data(#"{"data":{"transaction":null}}"#.utf8))
+        http.queue(Self.confirmed(checkpoint: 88))
 
         let result = try await provider.checkStatus(query: Self.query)
 
         XCTAssertEqual(result.status, .confirmed)
         XCTAssertEqual(result.blockNumber, 88)
-        XCTAssertEqual(http.requestedURLs, SuiAPI.defaultHosts)
-    }
-
-    func testANodeRefusalIsReportedAsFailedRatherThanNotFound() async throws {
-        let provider = makeProvider()
-        http.queueDecoded(SuiTransactionStatusResponse(
-            jsonrpc: "2.0",
-            id: 1,
-            result: nil,
-            error: SuiTransactionStatusResponse.SuiError(code: -32000, message: "node unavailable")
-        ))
-
-        let result = try await provider.checkStatus(query: Self.query)
-
-        XCTAssertEqual(result.status, .failed(reason: "node unavailable"))
+        XCTAssertEqual(http.requestedURLs, hosts)
     }
 
     // MARK: - Helpers
@@ -169,31 +170,12 @@ final class SuiTransactionStatusProviderTests: XCTestCase {
         SuiTransactionStatusProvider(httpClient: http, resolver: FixedSuiResolver(url: nil))
     }
 
-    /// Sui's answer for a digest the node cannot resolve.
-    private static func notFound() -> SuiTransactionStatusResponse {
-        SuiTransactionStatusResponse(
-            jsonrpc: "2.0",
-            id: 1,
-            result: nil,
-            error: SuiTransactionStatusResponse.SuiError(code: -32602, message: "not found")
-        )
-    }
-
-    private static func response(
-        status: String,
-        checkpoint: String? = nil
-    ) -> SuiTransactionStatusResponse {
-        SuiTransactionStatusResponse(
-            jsonrpc: "2.0",
-            id: 1,
-            result: SuiTransactionStatusResponse.SuiTxResult(
-                effects: SuiTransactionStatusResponse.SuiEffects(
-                    status: SuiTransactionStatusResponse.SuiStatus(status: status)
-                ),
-                checkpoint: checkpoint
-            ),
-            error: nil
-        )
+    private static func confirmed(checkpoint: Int? = nil) -> Data {
+        let checkpointJSON = checkpoint.map { "{\"sequenceNumber\":\($0)}" } ?? "null"
+        return Data("""
+        {"data":{"transaction":{"digest":"0xdigest","effects":{"status":"SUCCESS",\
+        "executionError":null,"checkpoint":\(checkpointJSON)}}}}
+        """.utf8)
     }
 }
 
@@ -208,18 +190,15 @@ private struct FixedSuiResolver: RPCEndpointResolving {
     func url(for _: Chain) -> String? { overrideURL }
 }
 
-/// Records the URL of every request so a test can assert which host was hit,
-/// and replays queued decoded values through the typed overload.
+/// Records the URL and body of every request and replays queued raw payloads
+/// through the real `JSONDecoder`, so the GraphQL envelope and the selection-set
+/// types are exercised rather than assumed.
 private final class RecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable {
 
-    private enum Queued {
-        case value(Any)
-        case error(Error)
-    }
-
     private let lock = NSLock()
-    private var queue: [Queued] = []
+    private var payloads: [Data] = []
     private var recorded: [URL] = []
+    private var bodies: [[String: Any]] = []
 
     var requestedURLs: [URL] {
         lock.lock()
@@ -227,46 +206,34 @@ private final class RecordingHTTPClient: HTTPClientProtocol, @unchecked Sendable
         return recorded
     }
 
-    func queueDecoded<T>(_ value: T) {
+    var recordedBodies: [[String: Any]] {
         lock.lock()
         defer { lock.unlock() }
-        queue.append(.value(value))
+        return bodies
     }
 
-    func queueError(_ error: Error) {
+    func queue(_ payload: Data) {
         lock.lock()
         defer { lock.unlock() }
-        queue.append(.error(error))
+        payloads.append(payload)
     }
 
     // Protocol requires `async`; the body is sync. SwiftLint can't see across
     // protocol conformance, so silence the false-positive lint here.
     // swiftlint:disable async_without_await
-    func request(_: TargetType) async throws -> HTTPResponse<Data> {
-        // The provider only uses the typed overload; this path should not run.
-        throw HTTPError.invalidResponse
-    }
-
-    func request<T: Decodable>(_ target: TargetType, responseType _: T.Type) async throws -> HTTPResponse<T> {
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         lock.lock()
         recorded.append(target.baseURL)
-        let next = queue.isEmpty ? nil : queue.removeFirst()
+        if case .requestParameters(let body, _) = target.task {
+            bodies.append(body)
+        }
+        let next = payloads.isEmpty ? nil : payloads.removeFirst()
         lock.unlock()
 
-        switch next {
-        case .value(let value):
-            guard let typed = value as? T else { throw HTTPError.invalidResponse }
-            return HTTPResponse(data: typed, response: Self.okResponse(url: target.baseURL))
-        case .error(let error):
-            throw error
-        case nil:
-            throw HTTPError.noData
-        }
+        guard let next else { throw HTTPError.noData }
+        // Force-unwrap is safe: a 200 response for a valid URL always initializes.
+        let response = HTTPURLResponse(url: target.baseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return HTTPResponse(data: next, response: response)
     }
     // swiftlint:enable async_without_await
-
-    private static func okResponse(url: URL) -> HTTPURLResponse {
-        // Force-unwrap is safe: a 200 response for a valid URL always initializes.
-        HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
-    }
 }
