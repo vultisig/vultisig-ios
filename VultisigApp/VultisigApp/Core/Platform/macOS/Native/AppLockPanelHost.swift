@@ -35,15 +35,9 @@ final class AppLockPanel: NSWindow {
         isOpaque = true
         hasShadow = false
         isReleasedWhenClosed = false
-        // Above the app's own windows, and their attached sheets with them: a
-        // sheet is a child of the window it belongs to, and takes that window's
-        // level.
-        level = .modalPanel
-        // Levels are global on the Mac, so a window this high in an app that is
-        // *not* frontmost would float over whatever is. Hiding on deactivate is
-        // what keeps the lock screen inside its own app. What the app looks like
-        // once it is no longer frontmost is the root overlay's job.
-        hidesOnDeactivate = true
+        // The level is **not** set here. It belongs to the app's activation state
+        // and is owned by ``AppLockPanelHost/applyPanelLevel()`` — see there for
+        // why it cannot simply be raised once and left.
         collectionBehavior = [.fullScreenAuxiliary]
     }
 
@@ -51,8 +45,9 @@ final class AppLockPanel: NSWindow {
     override var canBecomeMain: Bool { false }
 }
 
-/// The Mac's half of ``AppLockHost``: an elevated panel over each of the app's
-/// windows.
+/// The Mac's half of ``AppLockHost``: a panel attached over each of the app's
+/// windows, above everything that window can present — and never above another
+/// application, which is what ``applyPanelLevel()`` is for.
 ///
 /// Needed on every macOS version, not only where `CrossPlatformSheet` uses a
 /// native sheet. Below macOS 26 that modifier does draw its sheets inside the
@@ -77,6 +72,9 @@ final class AppLockPanelHost: ObservableObject {
     /// Invalidates the completion of a fade that a re-raise has overtaken, so a
     /// panel just put back up is not torn down underneath itself.
     private var lowerToken = 0
+    /// Whether the app is frontmost. The only condition under which a panel may
+    /// be elevated — see ``applyPanelLevel()``.
+    private var isAppActive = NSApp.isActive
 
     private let lowerDuration: TimeInterval = 0.25
 
@@ -150,8 +148,39 @@ final class AppLockPanelHost: ObservableObject {
             )
         }
 
+        applyPanelLevel()
         callbacks = Callbacks(onUnlocked: onUnlocked, onAttemptFailed: onAttemptFailed)
         current = presentation
+    }
+
+    /// Elevates the panels **only while the app is frontmost**.
+    ///
+    /// Both halves of that are load bearing, and the first version of this got the
+    /// second half wrong badly enough to make the app unusable.
+    ///
+    /// **It has to be elevated at all**, because a child window does not beat an
+    /// attached sheet. Measured, not assumed: a borderless child added with
+    /// `ordered: .above` lands *below* the parent's attached sheet at `.normal`,
+    /// whether it was attached before the sheet began or after — and above it at
+    /// `.modalPanel`. Sheet coverage is the whole reason this panel exists, so
+    /// plain child ordering does not do the job.
+    ///
+    /// **It has to stop being elevated when the app is not frontmost**, because
+    /// levels on macOS are *global, not per-app*: anything above `.normal` floats
+    /// over every other application. Raised unconditionally, the lock screen sat
+    /// on top of Finder and everything else — and it did it exactly when the app
+    /// went to the background, which is when the cover goes up. `hidesOnDeactivate`
+    /// did not contain that and could not: the panel is ordered front *after* the
+    /// app has deactivated, so the hide it was meant to trigger had already
+    /// happened.
+    ///
+    /// While the app *is* frontmost, an elevated window of its own costs nothing —
+    /// every other application is behind the active app regardless.
+    private func applyPanelLevel() {
+        let level: NSWindow.Level = isAppActive ? .modalPanel : .normal
+        for panel in panels.values where panel.level != level {
+            panel.level = level
+        }
     }
 
     private func show(
@@ -168,11 +197,8 @@ final class AppLockPanelHost: ObservableObject {
 
         if panel.parent !== window {
             window.addChildWindow(panel, ordered: .above)
-            // After the attachment, not before: `addChildWindow` gives the child
-            // its parent's level, which is the one thing being escaped here.
-            panel.level = .modalPanel
         }
-        panel.setFrame(window.frame, display: true)
+        panel.setFrame(window.appLockCoverFrame, display: true)
         // A fade may still be running on this panel, and assigning `alphaValue`
         // outside an animation context would give that animation a new target
         // rather than stopping it — leaving the lock translucent over the wallet.
@@ -316,6 +342,32 @@ final class AppLockPanelHost: ObservableObject {
                 }
             }
         }
+
+        // The activation state is what decides whether the panels may be
+        // elevated, so it is tracked rather than sampled: `NSApp.isActive` is
+        // still `true` inside `willResignActive`, and that notification is the
+        // very moment the privacy cover goes up.
+        center.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.isAppActive = true
+                self?.applyPanelLevel()
+            }
+        }
+
+        center.addObserver(
+            forName: NSApplication.willResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.isAppActive = false
+                self?.applyPanelLevel()
+            }
+        }
     }
 
     /// Hands the interactive lock screen to the window the user just moved to, so
@@ -335,12 +387,27 @@ final class AppLockPanelHost: ObservableObject {
 
     private func syncPanelFrame(over window: NSWindow) {
         guard let panel = panels[ObjectIdentifier(window)] else { return }
-        panel.setFrame(window.frame, display: true)
+        panel.setFrame(window.appLockCoverFrame, display: true)
     }
 
     private func discardPanel(for key: ObjectIdentifier) {
         guard let panel = panels.removeValue(forKey: key) else { return }
         dismantle(panel)
+    }
+}
+
+private extension NSWindow {
+
+    /// The part of a window the lock has to cover: everything the app draws, and
+    /// nothing else.
+    ///
+    /// Not `frame`. Covering the title bar takes the traffic lights with it, and
+    /// a lock screen behind which the window can be neither closed nor minimised
+    /// is one there is no way out of short of force quitting.
+    /// `contentLayoutRect` stops below the title bar, which shows a window title
+    /// and nothing about a wallet.
+    var appLockCoverFrame: NSRect {
+        convertToScreen(contentLayoutRect)
     }
 }
 #endif
