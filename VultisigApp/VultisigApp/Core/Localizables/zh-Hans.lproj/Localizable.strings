@@ -635,7 +635,6 @@
 "kaminoEarnCuratedBy" = "由 %@ 管理";
 "kaminoEarnDeposit" = "存入";
 "kaminoEarnDeposited" = "已存入";
-"kaminoEarnLastUpdated" = "更新于 %@";
 "kaminoEarnPnl" = "盈亏";
 "kaminoEarnRiskConservative" = "保守型";
 "kaminoEarnRiskPrivateCredit" = "私募信贷";
