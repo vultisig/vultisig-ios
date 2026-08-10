@@ -34,6 +34,15 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     /// the same class of lie as the "You're sending 0 TCY" this replaces, just a
     /// smaller one.
     ///
+    /// ⚠️ **It is a projection, not a commitment.** The memo commits to a
+    /// FRACTION, applied to whatever is staked when THORChain executes it; this
+    /// figure applies that fraction to the balance the form was showing. If the
+    /// position changes in between — rewards landing, or another device staking —
+    /// the payout moves with it. Quoting the balance the user was just looking at
+    /// is the closest an absolute figure can get, and it is what the issue asks
+    /// the screen to show; naming the fraction instead would be exact but would
+    /// not answer "did it take the number I typed".
+    ///
     /// ⚠️ **Nil for the auto-compound (sTCY) position**, which is share-based.
     /// There, `stakedAmount` is a count of `x/staking-tcy` receipt shares, not
     /// TCY: `liquid.unbond` burns shares and returns the pool principal they are

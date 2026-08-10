@@ -28,24 +28,18 @@ struct AmountTextField<CustomView: View>: View {
     let customViewPosition: CustomViewPosition
     @State var amountInternal: String = ""
     @State var size: CGSize?
-    /// The last percentage this field *derived* from a typed amount, as opposed
-    /// to one the slider or a percentage button commanded.
+    /// Which of the amount and the percentage the user currently owns.
     ///
-    /// Typing used to blank the percentage outright. That left the slider
-    /// reading its `percentage ?? 100` fallback — a confident 100% sitting under
-    /// an amount the user had just typed as something else — and hid the
-    /// percentage caption entirely. Deriving the percentage instead re-opens the
-    /// feedback loop the blanking existed to prevent: a `percentage` change
-    /// calls `setupAmount()`, which would overwrite the half-typed amount with a
-    /// rounded one on every keystroke.
-    ///
-    /// So the derived value is remembered and compared. A `percentage` change
-    /// equal to it is this field's own echo and is ignored; anything else is a
-    /// real interaction with the slider or the buttons and is allowed to set the
-    /// amount. A transient boolean flag cannot do this job — `onChange` runs on
-    /// the next view update, by which point a flag set and cleared around the
-    /// assignment has already been cleared.
-    @State private var lastDerivedPercentage: Double?
+    /// Typing used to blank the percentage outright. That left the slider reading
+    /// its `percentage ?? 100` fallback — a confident 100% sitting under an amount
+    /// the user had just typed as something else — and hid the percentage caption
+    /// entirely. Deriving the percentage instead re-opens the feedback loop the
+    /// blanking existed to prevent: a `percentage` change calls `setupAmount()`,
+    /// which would overwrite the half-typed amount with a rounded one on every
+    /// keystroke. `AmountPercentageSync` is what tells this field's own derived
+    /// write apart from a real slider interaction; the reasoning lives there, with
+    /// the tests.
+    @State private var sync = AmountPercentageSync()
 
     init(
         amount: Binding<String>,
@@ -151,29 +145,15 @@ struct AmountTextField<CustomView: View>: View {
             amountInternal = newValue
         }
         .onChange(of: percentage) { _, newValue in
-            // Our own derived write echoing back. Only a real slider or button
-            // interaction may rewrite the amount; see `lastDerivedPercentage`.
-            guard newValue != lastDerivedPercentage else { return }
-            // A real interaction — so the derived value is spent. Leaving it set
-            // would suppress a LATER move back to the same percentage: type the
-            // full balance (derives 100), drag to 99%, drag back to 100%, and
-            // that last move would be mistaken for the original echo, leaving the
-            // amount at 99% while the screen reports a MAX withdrawal.
-            lastDerivedPercentage = nil
-            setupAmount()
+            apply(sync.percentageChanged(to: newValue))
         }
         .onLoad { setupAmount() }
         .onChange(of: availableAmount) { _, _ in
-            if percentage != nil, percentage == lastDerivedPercentage {
-                // The amount is the user's and the percentage was ours, so the
-                // amount is what has to survive a balance that arrived late —
-                // re-derive the percentage against the new balance instead of
-                // recomputing the amount from it. Blanking the percentage used
-                // to give this for free, by making `setupAmount()` return early.
-                syncPercentage(toTypedAmount: amountInternal)
-            } else {
-                setupAmount()
-            }
+            // A balance landing late must not overwrite a figure the user typed
+            // while waiting for it — re-derive the percentage against the new
+            // balance instead. Blanking the percentage used to give this for
+            // free, by making `setupAmount()` return early.
+            apply(sync.balanceChanged())
         }
         .readSize(onChange: { size = $0 })
     }
@@ -210,8 +190,19 @@ struct AmountTextField<CustomView: View>: View {
     /// acted on.
     func syncPercentage(toTypedAmount typed: String) {
         let derived = AmountPercentageBinding.percentage(ofAmount: typed.toDecimal(), available: availableAmount)
-        lastDerivedPercentage = derived
+        sync.amountWasTyped(derivingPercentage: derived)
         percentage = derived
+    }
+
+    func apply(_ action: AmountPercentageSyncAction) {
+        switch action {
+        case .setAmountFromPercentage:
+            setupAmount()
+        case .derivePercentageFromAmount:
+            syncPercentage(toTypedAmount: amountInternal)
+        case .ignore:
+            break
+        }
     }
 
     @ViewBuilder
