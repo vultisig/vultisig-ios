@@ -1,5 +1,5 @@
 //
-//  PercentageAmount.swift
+//  AmountPercentageBinding.swift
 //  VultisigApp
 //
 
@@ -15,7 +15,15 @@ import Foundation
 /// view model falls back to when no percentage was chosen, and one shared
 /// definition is what keeps the figure the slider shows and the figure the
 /// transaction is built from from drifting apart.
-enum PercentageAmount {
+///
+/// ⚠️ **Not `PercentageAmountLogic`**, despite the similar name. That one serves
+/// the Send / Swap / Limit Swap "25 / 50 / 75 / 100%" presets: it works from
+/// `BigInt` base units, truncates to the asset's own precision, and only goes
+/// percentage → amount. This one serves the function-transaction amount field,
+/// works in `Decimal` against a human-readable balance, and is needed in both
+/// directions because the field has to answer "what percentage is this?" for a
+/// figure the user typed.
+enum AmountPercentageBinding {
 
     /// The percentage of `available` that `amount` comes to, clamped to 0…100,
     /// or `nil` when there is no balance to take a percentage of.

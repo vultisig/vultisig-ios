@@ -1,5 +1,5 @@
 //
-//  PercentageAmountTests.swift
+//  AmountPercentageBindingTests.swift
 //  VultisigAppTests
 //
 //  The amount ↔ percentage binding behind every stake / unstake / LP amount
@@ -11,10 +11,10 @@
 @testable import VultisigApp
 import XCTest
 
-final class PercentageAmountTests: XCTestCase {
+final class AmountPercentageBindingTests: XCTestCase {
 
     private func percentage(_ amount: String, of available: String) -> Double? {
-        PercentageAmount.percentage(
+        AmountPercentageBinding.percentage(
             ofAmount: Decimal(string: amount)!,
             available: Decimal(string: available)!
         )
@@ -50,8 +50,8 @@ final class PercentageAmountTests: XCTestCase {
 
     func testPercentageAndAmountRoundTrip() throws {
         let available = Decimal(string: "2002.74")!
-        let derived = try XCTUnwrap(PercentageAmount.percentage(ofAmount: Decimal(string: "500.685")!, available: available))
-        let back = PercentageAmount.amount(forPercentage: derived, available: available)
+        let derived = try XCTUnwrap(AmountPercentageBinding.percentage(ofAmount: Decimal(string: "500.685")!, available: available))
+        let back = AmountPercentageBinding.amount(forPercentage: derived, available: available)
         XCTAssertEqual(NSDecimalNumber(decimal: back).doubleValue, 500.685, accuracy: 0.0001)
     }
 }

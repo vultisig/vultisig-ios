@@ -266,7 +266,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     }
 
     var percentageFromAmount: Double {
-        PercentageAmount.percentage(ofAmount: amountField.value.toDecimal(), available: availableAmount) ?? 0
+        AmountPercentageBinding.percentage(ofAmount: amountField.value.toDecimal(), available: availableAmount) ?? 0
     }
 
     /// The share of the staked position the TCY memo will ask for, in basis
