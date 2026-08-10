@@ -32,11 +32,18 @@ final class KaminoEarnViewModel: ObservableObject {
     private let storage: KaminoPositionStorageService
     private let priceService: CryptoPriceServiceProtocol
     private let logger = Log.defi.viewModel
-    /// Bumped by every `refresh` and by `update(vault:)`. A refresh publishes
-    /// only if it is still the current one, so a slower earlier call cannot
-    /// overwrite a newer result — or resurrect a vault the user just disabled,
-    /// since the enabled set is read when the refresh starts.
-    private var refreshGeneration = 0
+    /// The refresh currently in flight, if any.
+    ///
+    /// A new refresh — or a vault switch — cancels it, which is what stops a
+    /// slower earlier pass from overwriting a newer result, or from resurrecting
+    /// a vault the user just disabled: the enabled set is read when the refresh
+    /// starts, so a superseded pass is working from a stale one.
+    ///
+    /// Cancellation rather than a discard token, because it also stops the work.
+    /// The pass is one request per enabled vault plus a rates fetch, and a
+    /// superseded one used to run every one of them to completion before its
+    /// result was thrown away.
+    private var refreshTask: Task<Void, Never>?
 
     init(
         vault: Vault,
@@ -64,7 +71,8 @@ final class KaminoEarnViewModel: ObservableObject {
     func update(vault: Vault) {
         guard vault.pubKeyECDSA != self.vault.pubKeyECDSA else { return }
         self.vault = vault
-        refreshGeneration += 1
+        refreshTask?.cancel()
+        refreshTask = nil
         seedFromPersistedSnapshot()
     }
 
@@ -79,8 +87,7 @@ final class KaminoEarnViewModel: ObservableObject {
                 name: descriptor.fallbackName,
                 tokenAmount: position.tokenAmountDecimal,
                 apy30d: position.apy30d,
-                pnlToken: position.pnlToken,
-                isLive: false
+                pnlToken: position.pnlToken
             )
         }
     }
@@ -96,9 +103,17 @@ final class KaminoEarnViewModel: ObservableObject {
     ///
     /// An empty `/positions` response is a real "holds nothing" answer and is
     /// allowed to zero a row — the vault stays listed, since the user enabled it.
+    ///
+    /// Supersedes any refresh already running, then awaits this one, so a caller
+    /// driving a pull-to-refresh still gets a spinner that ends when the work does.
     func refresh(owner: String) async {
-        refreshGeneration += 1
-        let generation = refreshGeneration
+        refreshTask?.cancel()
+        let task = Task { await performRefresh(owner: owner) }
+        refreshTask = task
+        await task.value
+    }
+
+    private func performRefresh(owner: String) async {
         let enabled = enabledPositions().map(\.descriptor)
         guard !enabled.isEmpty else {
             rows = []
@@ -106,7 +121,10 @@ final class KaminoEarnViewModel: ObservableObject {
         }
 
         isLoading = true
-        defer { isLoading = false }
+        // Only the pass that is still current clears the spinner. A superseded
+        // one unwinds after its replacement has already set this, and would
+        // otherwise switch it off with a refresh still running.
+        defer { if !Task.isCancelled { isLoading = false } }
         error = nil
 
         await refreshRates(for: enabled)
@@ -119,6 +137,10 @@ final class KaminoEarnViewModel: ObservableObject {
                 uniquingKeysWith: { first, _ in first }
             )
         } catch {
+            // A cancelled read is a superseded pass, not a failure the user
+            // should see: reporting it would put "cancelled" in the error slot
+            // while the refresh that replaced it is still running.
+            guard !Task.isCancelled else { return }
             logger.error("Kamino positions read failed: \(error.localizedDescription, privacy: .public)")
             self.error = error.localizedDescription
             return
@@ -137,6 +159,11 @@ final class KaminoEarnViewModel: ObservableObject {
         }
 
         for descriptor in enabled {
+            // Checked per vault rather than only at the end: this loop is one
+            // hydration and one PnL read each, and a superseded pass should stop
+            // issuing them rather than finish the set and discard the answer.
+            guard !Task.isCancelled else { return }
+
             // The whole descriptor is passed through, never just the address:
             // `fetchVaultInfo` requires the registry's own entry, and the mints,
             // their decimals and the farm are what every later safety check is
@@ -187,8 +214,7 @@ final class KaminoEarnViewModel: ObservableObject {
                     name: info.name,
                     tokenAmount: tokenAmount.decimalValue,
                     apy30d: info.apy30d,
-                    pnlToken: pnlToken,
-                    isLive: true
+                    pnlToken: pnlToken
                 )
             )
             snapshots.append(
@@ -204,8 +230,9 @@ final class KaminoEarnViewModel: ObservableObject {
 
         // A refresh that has been superseded — by a newer one, or by a vault
         // switch — must not publish or persist: its enabled set and its owner
-        // address are both stale by now.
-        guard generation == refreshGeneration else { return }
+        // address are both stale by now. Persisting is the half that would
+        // outlive the session, writing an old vault's figures into the store.
+        guard !Task.isCancelled else { return }
         rows = freshRows
         persist(snapshots)
     }
@@ -280,8 +307,7 @@ final class KaminoEarnViewModel: ObservableObject {
 /// One Kamino Earn vault row.
 ///
 /// A display projection: it carries no shares and no rate, so nothing can size a
-/// transaction from it. `isLive` marks a row that has been refreshed this
-/// session, as opposed to one painted from the persisted snapshot.
+/// transaction from it.
 struct KaminoEarnRow: Identifiable, Equatable {
     var id: String { descriptor.address }
 
@@ -294,7 +320,6 @@ struct KaminoEarnRow: Identifiable, Equatable {
     let apy30d: Decimal?
     /// Lifetime profit and loss in the underlying token, or `nil` to hide the row.
     let pnlToken: Decimal?
-    let isLive: Bool
 
     var curator: String { descriptor.curator }
     var riskTier: KaminoRiskTier { descriptor.riskTier }

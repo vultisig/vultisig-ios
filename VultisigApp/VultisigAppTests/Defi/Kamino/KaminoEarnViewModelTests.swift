@@ -122,7 +122,6 @@ final class KaminoEarnViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.rows.count, 1)
         XCTAssertEqual(viewModel.rows.first?.tokenAmount, Decimal(string: "1.074929915"))
         XCTAssertEqual(viewModel.rows.first?.pnlToken, Decimal(string: "0.5"))
-        XCTAssertFalse(viewModel.rows.first?.isLive ?? true, "A seed row has not been refreshed yet.")
         XCTAssertEqual(service.positionsCallCount, 0)
     }
 
@@ -145,7 +144,6 @@ final class KaminoEarnViewModelTests: XCTestCase {
             "sharePrice is USD per share; using it here would inflate the position by the price of SOL."
         )
         XCTAssertEqual(row.apy30d, KaminoFixtures.allezInfo.apy30d)
-        XCTAssertTrue(row.isLive)
         XCTAssertEqual(row.coin?.ticker, "SOL", "wSOL is a 1:1 escrow of SOL and is displayed and priced as SOL.")
     }
 
@@ -223,7 +221,6 @@ final class KaminoEarnViewModelTests: XCTestCase {
         // at a stale rate — or nothing.
         let stale = try XCTUnwrap(viewModel.rows.first(where: { $0.id == allez.address }))
         XCTAssertEqual(stale.tokenAmount, Decimal(string: "1.074929915"))
-        XCTAssertFalse(stale.isLive)
     }
 
     /// An absent vault means "holds nothing"; an unparseable share value means
@@ -372,6 +369,56 @@ final class KaminoEarnViewModelTests: XCTestCase {
         )
     }
 
+    // MARK: - Supersession
+
+    /// A refresh that a newer one has replaced must neither publish its rows nor
+    /// persist its snapshot.
+    ///
+    /// Both halves matter and they fail differently: publishing makes the screen
+    /// flick back to an older figure, while persisting outlives the session and
+    /// leaves the store holding a number no refresh ever confirmed. The first
+    /// pass here is held open inside `/positions` and reports 1000 shares; the
+    /// second reports 2000 and is the only one allowed to land.
+    func testASupersededRefreshNeitherPublishesNorPersists() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        let viewModel = makeViewModel()
+
+        let firstSuspended = expectation(description: "the first refresh suspended inside /positions")
+        let secondReached = expectation(description: "the second refresh reached /positions")
+        service.onPositionsCall { call in
+            if call == 1 { firstSuspended.fulfill() } else { secondReached.fulfill() }
+        }
+        service.holdNextPositions()
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+
+        let first = Task { await viewModel.refresh(owner: owner) }
+        await fulfillment(of: [firstSuspended], timeout: 5)
+
+        // Queue the value the surviving pass should produce, then supersede.
+        // Waiting for the second call proves the cancellation has already
+        // happened before the first pass is let go — otherwise releasing could
+        // beat it and the first would publish after all.
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "2000")]
+        let second = Task { await viewModel.refresh(owner: owner) }
+        await fulfillment(of: [secondReached], timeout: 5)
+
+        service.releasePositions()
+        await second.value
+        await first.value
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertEqual(
+            row.tokenAmount,
+            Decimal(string: "2107.208362"),
+            "The superseded pass's 1000 shares must not reach the rows."
+        )
+        XCTAssertEqual(
+            storage.position(for: vault, vaultAddress: steakhouse.address)?.tokenAmountDecimal,
+            Decimal(string: "2107.208362"),
+            "Nor the store — a discarded figure that persists outlives the session."
+        )
+    }
+
     /// The whole registry descriptor travels to the service, not just the
     /// address: `fetchVaultInfo` requires the registry's own entry, and refuses
     /// anything that merely carries a curated address.
@@ -463,6 +510,9 @@ private final class FakeKaminoService: KaminoServiceProtocol, @unchecked Sendabl
     private var _pnl: [String: KaminoPnlResponse] = [:]
     private var _positionsCallCount = 0
     private var _hydratedDescriptors: [KaminoVaultDescriptor] = []
+    private var _positionsGate: CheckedContinuation<Void, Never>?
+    private var _holdNextPositions = false
+    private var _onPositionsCall: (@Sendable (Int) -> Void)?
 
     var positions: [KaminoUserPositionResponse] {
         get { lock.withLock { _positions } }
@@ -495,9 +545,45 @@ private final class FakeKaminoService: KaminoServiceProtocol, @unchecked Sendabl
 
     var hydratedVaults: [String] { hydratedDescriptors.map(\.address) }
 
+    /// Arms a one-shot suspension inside the NEXT `fetchPositions`, released by
+    /// `releasePositions()`. One-shot on purpose: a later call must run straight
+    /// through, or it would overwrite the held continuation and strand the first.
+    func holdNextPositions() {
+        lock.withLock { _holdNextPositions = true }
+    }
+
+    /// Fires with the call number each time `fetchPositions` is entered — after
+    /// the continuation is stored, so a test that releases on this signal can
+    /// never beat the suspension it is releasing.
+    func onPositionsCall(_ body: @escaping @Sendable (Int) -> Void) {
+        lock.withLock { _onPositionsCall = body }
+    }
+
+    func releasePositions() {
+        let waiter = lock.withLock { () -> CheckedContinuation<Void, Never>? in
+            let c = _positionsGate
+            _positionsGate = nil
+            return c
+        }
+        waiter?.resume()
+    }
+
     func fetchPositions(owner: String) async throws -> [KaminoUserPositionResponse] {
-        let (error, result) = lock.withLock {
+        let (hold, notify, call) = lock.withLock { () -> (Bool, (@Sendable (Int) -> Void)?, Int) in
             _positionsCallCount += 1
+            let hold = _holdNextPositions
+            _holdNextPositions = false
+            return (hold, _onPositionsCall, _positionsCallCount)
+        }
+        if hold {
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                lock.withLock { _positionsGate = c }
+                notify?(call)
+            }
+        } else {
+            notify?(call)
+        }
+        let (error, result) = lock.withLock {
             return (_positionsError, _positions)
         }
         if let error { throw error }
