@@ -1073,6 +1073,7 @@
 "receive" = "Empfangen";
 "recipient" = "Empfänger";
 "recipientNameNotFound" = "Name nicht gefunden. Überprüfen Sie den Namen und versuchen Sie es erneut.";
+"redactedEndpoint" = "[Endpunkt ausgeblendet]";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "reEnterPassword" = "Passwort erneut eingeben";

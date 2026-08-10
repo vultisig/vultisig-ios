@@ -117,7 +117,25 @@ final class RedactedEndpointsTests: XCTestCase {
         let redacted = message.redactingEndpointCredentials()
 
         XCTAssertFalse(redacted.contains("SECRETKEY"))
+        XCTAssertFalse(redacted.contains("rpc.example"))
         XCTAssertTrue(redacted.contains("failed"))
+    }
+
+    func testTheFallbackMarkerIsLocalized() {
+        // It reaches `keysignError`, so the user reads it — and reads it in
+        // their own language.
+        let marker = "redactedEndpoint".localized
+
+        XCTAssertNotEqual(
+            marker,
+            "redactedEndpoint",
+            "`.localized` returns the key itself when the entry is missing from the table"
+        )
+        XCTAssertFalse(marker.isEmpty)
+
+        let redacted = "error: https://rpc.example:bad/SECRET failed".redactingEndpointCredentials()
+
+        XCTAssertEqual(redacted, "error: \(marker) failed")
     }
 
     func testSentencePunctuationSurvives() {

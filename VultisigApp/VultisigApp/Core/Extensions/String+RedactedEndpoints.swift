@@ -25,6 +25,12 @@ extension String {
     /// **Fails closed.** Anything URL-shaped that cannot be parsed is replaced
     /// wholesale rather than passed through, because the reason it did not parse
     /// is not knowable here and the cost of guessing wrong is a leaked key.
+    ///
+    /// The result is **user-facing**: the fallback marker is localized, so it
+    /// reads in the user's language. Do not log this value — log the original
+    /// privately and display this, which is what `KeysignViewModel` does. A
+    /// localized string in a log is worse than no redaction, because support
+    /// then cannot match on it.
     func redactingEndpointCredentials() -> String {
         guard let detector = Self.urlDetector, !isEmpty else { return self }
 
@@ -98,7 +104,19 @@ extension String {
         return carriedMore ? redacted + "/…" : redacted
     }
 
-    private static let redactionMarker = "<redacted endpoint>"
+    /// Shown in place of a URL that could not be parsed.
+    ///
+    /// Computed rather than stored. It is read at most once per failed
+    /// broadcast, so caching buys nothing, while a `static let` would fix the
+    /// string for the whole process lifetime.
+    ///
+    /// Today the two behave identically — `SettingsOptionsStore` notes that a
+    /// language change "must restart the app to have effect" — so this is not
+    /// fixing a live bug. It is the form that stays correct if in-session
+    /// switching ever lands.
+    private static var redactionMarker: String {
+        "redactedEndpoint".localized
+    }
 
     /// Characters that end a sentence rather than a URL. Trimmed before parsing
     /// and restored afterwards.

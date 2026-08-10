@@ -1073,6 +1073,7 @@
 "receive" = "接收";
 "recipient" = "接收方";
 "recipientNameNotFound" = "未找到名称。请检查名称后重试。";
+"redactedEndpoint" = "[已隐藏端点]";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "reEnterPassword" = "重新输入密码";

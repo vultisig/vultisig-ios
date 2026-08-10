@@ -1073,6 +1073,7 @@
 "receive" = "Primi";
 "recipient" = "Primatelj";
 "recipientNameNotFound" = "Naziv nije pronađen. Provjerite naziv i pokušajte ponovno.";
+"redactedEndpoint" = "[krajnja točka skrivena]";
 "redeem" = "Otkupi";
 "redeemCoin" = "Otkupi %@";
 "reEnterPassword" = "Ponovno unesite lozinku";
