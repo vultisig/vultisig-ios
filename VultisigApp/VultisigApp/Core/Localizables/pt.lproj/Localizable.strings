@@ -1553,6 +1553,7 @@
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";
 "targetAsset" = "Target Asset: %@";
 "tcyUnstakeBelowMinimum" = "Valor muito pequeno — retire pelo menos %@ %@";
+"tcyUnstakeVerifyTitle" = "Você está retirando";
 "termsOfService" = "Termos de Serviço";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Este Dispositivo";

@@ -191,6 +191,13 @@ struct SendTransaction: Hashable {
     /// says nothing about our own storage key.
     let limitCancelContext: LimitOrderCancelRequest?
 
+    /// What this transaction withdraws, when `amount` cannot say — see
+    /// `TransactionBuilder.withdrawDisplayAmount`.
+    ///
+    /// Local-only, like `limitCancelContext`: it is display context for the
+    /// screens around signing, not part of what gets signed.
+    let withdrawDisplayAmount: Decimal?
+
     /// Native coin that pays for gas — `coin` itself for native sends, the
     /// chain's native sibling (e.g. ETH for a USDC source) otherwise.
     /// Precomputed at construction so Verify/Done don't need the vault's
@@ -240,7 +247,8 @@ extension SendTransaction {
             lhs.feeCoinSnapshot == rhs.feeCoinSnapshot &&
             lhs.cosmosStakingPayload == rhs.cosmosStakingPayload &&
             lhs.solanaStakingPayload == rhs.solanaStakingPayload &&
-            lhs.limitCancelContext == rhs.limitCancelContext
+            lhs.limitCancelContext == rhs.limitCancelContext &&
+            lhs.withdrawDisplayAmount == rhs.withdrawDisplayAmount
     }
 
     func hash(into hasher: inout Hasher) {
@@ -269,6 +277,7 @@ extension SendTransaction {
         hasher.combine(cosmosStakingPayload)
         hasher.combine(solanaStakingPayload)
         hasher.combine(limitCancelContext)
+        hasher.combine(withdrawDisplayAmount)
     }
 }
 
@@ -298,6 +307,7 @@ extension SendTransaction {
         cosmosStakingPayload: CosmosStakingPayload? = nil,
         solanaStakingPayload: SolanaStakingPayload? = nil,
         limitCancelContext: LimitOrderCancelRequest? = nil,
+        withdrawDisplayAmount: Decimal? = nil,
         amountWasAutoAdjusted: Bool = false
     ) {
         self.coin = coin
@@ -328,6 +338,7 @@ extension SendTransaction {
         self.cosmosStakingPayload = cosmosStakingPayload
         self.solanaStakingPayload = solanaStakingPayload
         self.limitCancelContext = limitCancelContext
+        self.withdrawDisplayAmount = withdrawDisplayAmount
     }
 }
 
@@ -469,6 +480,10 @@ extension SendTransaction {
             // comment warning. A field-by-field copy is the shape that invites
             // it — every new field is one someone must remember to add here.
             limitCancelContext: limitCancelContext,
+            // Carried through unconditionally for the same reason, and it is the
+            // `copy(gas:)` on the function-call path that would drop it — the one
+            // this field exists to survive.
+            withdrawDisplayAmount: withdrawDisplayAmount,
             amountWasAutoAdjusted: amountWasAutoAdjusted ?? self.amountWasAutoAdjusted
         )
     }

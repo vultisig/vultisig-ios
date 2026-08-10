@@ -186,7 +186,8 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 basisPoints: basisPoints,
                 autoCompoundAmount: autocompoundBalance,
                 sendMaxAmount: isMaxAmount,
-                isAutoCompound: isAutocompound
+                isAutoCompound: isAutocompound,
+                stakedAmount: availableAmount
             )
         case "BRUNE":
             return BRUNEUnstakeTransactionBuilder(
