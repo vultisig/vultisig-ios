@@ -1136,6 +1136,8 @@
 "rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "발행자";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1161,8 +1163,8 @@
 "rippleTrustLineUnreviewable" = "검토할 수 없음";
 "rippleTrustLineUnreviewableValue" = "이 신뢰선의 통화, 발행자 또는 한도를 읽을 수 없어 조건을 표시할 수 없습니다. 서명하지 마세요.";
 "rippleUndecodedNotice" = "이 트랜잭션을 디코딩할 수 없습니다. 서명하기 전에 원시 JSON을 주의 깊게 확인하세요.";
-"rippleWarningCustomPaths" = "이 결제가 네트워크를 지나는 경로를 사이트가 선택했습니다.";
-"rippleWarningPartialPayment" = "부분 결제입니다. 표시된 금액은 상한이며 전달이 보장된 금액이 아닙니다. 수령인은 더 적게 받을 수 있지만 보내는 사람은 그 상한까지 지불합니다.";
+"rippleWarningCustomPaths" = "이 결제의 경로 후보를 사이트가 직접 제시했습니다. 그중에서 원장이 선택합니다.";
+"rippleWarningPartialPayment" = "부분 결제입니다. 표시된 금액은 수령인이 받을 수 있는 최대치이며 전달이 보장된 금액이 아닙니다. 수령인은 더 적게 받을 수 있고 보내는 사람에게는 Send Max까지 청구됩니다.";
 "routerNotAvailable" = "%@에서 승인을 위한 라우터를 사용할 수 없습니다. 나중에 다시 시도하세요.";
 "rune" = "RUNE";
 "sameAddressError" = "받는 주소는 보내는 주소와 달라야 합니다";

@@ -10,7 +10,7 @@
 //  `SignRippleDisplay`.
 //
 //  Caveats that redefine those rows lead the card: a `tfPartialPayment` payment
-//  whose amount is only a ceiling, and a site-supplied routing path. Both are
+//  whose amount is only a ceiling, and site-supplied candidate routes. Both are
 //  signed verbatim, so a screen showing the rows without them would state
 //  better terms than the ones being approved.
 //

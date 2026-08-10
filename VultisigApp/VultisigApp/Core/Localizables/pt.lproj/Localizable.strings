@@ -1136,6 +1136,8 @@
 "rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Emissor";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1161,8 +1163,8 @@
 "rippleTrustLineUnreviewable" = "Não é possível rever";
 "rippleTrustLineUnreviewableValue" = "Não foi possível ler a moeda, o emissor ou o limite desta linha de confiança, por isso as suas condições não podem ser mostradas. Não a assine.";
 "rippleUndecodedNotice" = "Não foi possível decodificar esta transação. Revise cuidadosamente o JSON bruto antes de assinar.";
-"rippleWarningCustomPaths" = "O site escolheu a rota que este pagamento percorre na rede.";
-"rippleWarningPartialPayment" = "Este é um pagamento parcial. O valor exibido é um máximo, não uma entrega garantida: o destinatário pode receber menos enquanto você paga até esse máximo.";
+"rippleWarningCustomPaths" = "O site propôs as suas próprias rotas para este pagamento. O ledger escolhe entre elas.";
+"rippleWarningPartialPayment" = "Este é um pagamento parcial: o valor é o máximo que o destinatário pode receber, não uma entrega garantida. Ele pode receber menos enquanto você é cobrado até o Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "O endereço de destino deve ser diferente do endereço de origem";

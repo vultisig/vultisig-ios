@@ -212,6 +212,30 @@ final class RippleDAppTransactionParserTests: XCTestCase {
         """))
     }
 
+    // MARK: - TrustSet quality
+
+    /// `QualityIn` / `QualityOut` set the exchange rate applied to balances on
+    /// the trust line, so a card showing only `LimitAmount` would look complete
+    /// while hiding what the line is worth.
+    func testTrustSetQualityRows() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"QualityIn":900000000,"QualityOut":1100000000}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldQualityIn"), .text("900000000"))
+        XCTAssertEqual(field(tx, "rippleFieldQualityOut"), .text("1100000000"))
+    }
+
+    /// A present-but-undecodable quality fails the decode rather than being
+    /// dropped — silently omitting it would hide the rate it sets.
+    func testUndecodableQualityReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"QualityIn":"900000000"}
+        """))
+        XCTAssertNil(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"QualityOut":-1}
+        """))
+    }
+
     // MARK: - Flags and Paths
 
     /// The display half of the acceptance case: `tfPartialPayment` turns the

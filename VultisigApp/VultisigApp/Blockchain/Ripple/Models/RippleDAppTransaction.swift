@@ -13,9 +13,9 @@ import Foundation
 ///
 /// Alongside the rows it reports the caveats that redefine what those rows
 /// mean: a `tfPartialPayment` `Payment` whose `Amount` is a ceiling rather than
-/// a delivery, and a dApp-chosen `Paths` steering how the payment routes. Both
-/// are signed either way, so omitting them would show terms strictly better
-/// than the ones being approved.
+/// a delivery, and a dApp-supplied `Paths` proposing the routes the payment may
+/// take. Both are signed either way, so omitting them would show terms strictly
+/// better than the ones being approved.
 ///
 /// This is NOT a security boundary: the signing fail-closed checks live in
 /// `RippleHelper.dappSigningInput`. This parser only decides what to render.
@@ -34,7 +34,8 @@ struct RippleDAppTransaction: Equatable {
     enum Warning: Equatable {
         /// `tfPartialPayment` is set: `Amount` is a ceiling, not a delivery.
         case partialPayment
-        /// The transaction carries its own `Paths` routing.
+        /// The transaction carries its own `Paths`: routes the dApp proposed
+        /// for the ledger to choose among.
         case customPaths
 
         var labelKey: String {
@@ -80,6 +81,13 @@ struct RippleDAppTransaction: Equatable {
         ("TakerGets", "rippleFieldTakerGets"),
         ("TakerPays", "rippleFieldTakerPays"),
         ("LimitAmount", "rippleFieldTrustLimit")
+    ]
+
+    /// The `TrustSet` quality fields, in render order. Integers, not amounts —
+    /// each is a rate in billionths applied to balances on the trust line.
+    private static let qualityFields: [(field: String, labelKey: String)] = [
+        ("QualityIn", "rippleFieldQualityIn"),
+        ("QualityOut", "rippleFieldQualityOut")
     ]
 
     private static let dropsPerXrp = BigInt(1_000_000)
@@ -147,7 +155,20 @@ struct RippleDAppTransaction: Equatable {
             fields.append(Field(labelKey: "rippleFieldOfferSequence", value: .text(offerSequence)))
         }
 
-        // 5. Flags, named where this reviewer recognises the bit. Omitted when
+        // 5. QualityIn / QualityOut — the exchange rate a TrustSet applies to
+        //    balances on that line. Value-relevant and dApp-controllable, so a
+        //    card that showed only `LimitAmount` would look complete while
+        //    hiding what the line is actually worth. A present-but-undecodable
+        //    one fails the decode, like the amount fields above: this pair
+        //    changes value, so omitting a malformed one would hide it.
+        for key in qualityFields where tx[key.field] != nil {
+            guard let quality = integerValue(tx[key.field]) else {
+                return nil
+            }
+            fields.append(Field(labelKey: key.labelKey, value: .text(quality)))
+        }
+
+        // 6. Flags, named where this reviewer recognises the bit. Omitted when
         //    nothing is set — an absent field and a zero bitmask say the same
         //    thing, and an empty row is noise on a screen meant to be read.
         if flags != 0 {
