@@ -540,6 +540,8 @@ enum RippleHelper {
     ///    issued-currency object, currency + issuer + value against the
     ///    reviewed coin's token id. Offers, escrows and trust lines pass on the
     ///    `Account` check alone (they carry no reviewed toAddress/toAmount).
+    /// 3. A `Payment` must not set `tfPartialPayment` without a delivery floor,
+    ///    since that flag turns the just-bound `Amount` back into a ceiling.
     private static func dappSigningInput(
         keysignPayload: KeysignPayload,
         rawJson: String,
@@ -582,11 +584,13 @@ enum RippleHelper {
         try assertEveryCurrencyCodeIsSignable(in: tx)
 
         // Payments are additionally expressible by the payload metadata, so bind
-        // them to the reviewed destination and amount. Other types (offers /
+        // them to the reviewed destination and amount, then refuse the flags
+        // that would quietly unbind that amount again. Other types (offers /
         // trust lines / escrows) are not reconstructable from toAddress/toAmount
         // and pass on the Account and currency-code checks alone.
         if tx["TransactionType"] as? String == "Payment" {
             try bindPaymentToReviewedValues(tx: tx, keysignPayload: keysignPayload)
+            try assertPaymentDeliveryIsBounded(tx: tx)
         }
 
         guard let publicKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -856,6 +860,84 @@ enum RippleHelper {
             // Missing or unrepresentable Amount.
             throw amountMismatch
         }
+    }
+
+    /// Refuses a dApp `Payment` whose reviewed `Amount` no longer bounds what
+    /// the recipient actually gets.
+    ///
+    /// The binding `bindPaymentToReviewedValues` just established only means
+    /// something while `Amount` is a delivery. `tfPartialPayment` turns it into
+    /// a ceiling: the ledger hands over whatever the chosen path can source and
+    /// records the real figure only in the executed transaction's metadata
+    /// (`delivered_amount`). The reviewed `toAmount` still matches byte for
+    /// byte, still describes nothing the recipient will receive, and the sender
+    /// can be charged the full `SendMax`. The cross-currency self-swap —
+    /// `Destination` is the sender's own address — turns an attractive receive
+    /// figure into dust for the price of the whole `SendMax`.
+    ///
+    /// A well-formed, strictly positive `DeliverMin` restores a floor, so a
+    /// partial payment carrying one is forwarded unchanged; they are
+    /// legitimate. Without one there is nothing left binding the outcome, so
+    /// refuse rather than sign terms no reviewer could have seen. `Flags` that
+    /// cannot be read as a uint32 are refused for the same reason: they may
+    /// carry the very bit being checked.
+    ///
+    /// Scoped to `Payment` deliberately — `0x00020000` is namespace-sensitive.
+    /// It is `tfImmediateOrCancel` on an `OfferCreate`, and as an account-root
+    /// flag it is `lsfRequireDestTag`; reading it as partial payment anywhere
+    /// else would be wrong.
+    ///
+    /// `Paths` is NOT refused. It is legitimate on a cross-currency payment and
+    /// refusing it would break real DEX flows; the review screen surfaces it
+    /// instead, which is where a routing choice belongs.
+    private static func assertPaymentDeliveryIsBounded(tx: [String: Any]) throws {
+        // Read from the SAME decoded object every other check reads, so the
+        // duplicate-key guard that already ran covers this field too.
+        guard let flags = RippleDAppTransaction.parseFlags(tx["Flags"]) else {
+            throw HelperError.runtimeError("signRipple rawJson Flags is not a uint32 bitmask")
+        }
+        guard flags & RippleDAppTransaction.tfPartialPayment != 0 else { return }
+
+        guard isPositiveXrplAmount(tx["DeliverMin"]) else {
+            throw HelperError.runtimeError(
+                "signRipple rawJson sets tfPartialPayment without a usable DeliverMin floor"
+            )
+        }
+    }
+
+    /// Upper bound on the length of a drops string before it reaches `BigInt`.
+    /// XRPL's maximum is 10^17 drops (18 digits); 20 characters covers that
+    /// plus a sign and slack, while a pathologically long string is refused
+    /// before it can burn CPU on its way to being rejected anyway.
+    private static let maxDropsStringLength = 20
+
+    /// Whether a value is a well-formed, strictly positive XRPL amount — a
+    /// drops string or an issued-currency object.
+    ///
+    /// A `DeliverMin` only floors a delivery if it is one. `null`, `{}`, `"0"`
+    /// and `{"value":"0",…}` all satisfy "the field is present" while bounding
+    /// nothing, so presence alone cannot stand in for a floor.
+    ///
+    /// An issued value below the smallest representable unit truncates to zero
+    /// through `parseIssuedCurrencyValue` and is refused on the same grounds: a
+    /// floor under the resolution of the ledger amount is not a floor.
+    private static func isPositiveXrplAmount(_ value: Any?) -> Bool {
+        if let drops = value as? String {
+            guard drops.count <= maxDropsStringLength, let parsed = BigInt(drops) else {
+                return false
+            }
+            return parsed > 0
+        }
+        if let iou = value as? [String: Any] {
+            guard iou["currency"] is String,
+                  iou["issuer"] is String,
+                  let iouValue = iou["value"] as? String,
+                  let parsed = try? RippleIssuedCurrency.parseIssuedCurrencyValue(iouValue) else {
+                return false
+            }
+            return parsed > 0
+        }
+        return false
     }
 
     /// Raw-JSON signing input carrying a text memo as an on-chain XRPL `Memos`

@@ -216,6 +216,12 @@ struct RippleDAppTransaction: Equatable {
     /// sugar some client libraries accept — so callers fail closed rather than
     /// mistaking an undecodable value for zero.
     ///
+    /// **Shared with the signing gate on purpose.** Unlike the rest of this
+    /// display-only type, `RippleHelper` calls this too. The row the reviewer
+    /// reads and the bit the gate refuses have to come from one decoder: two
+    /// decoders that disagree about a `Flags` value would recreate the exact
+    /// reviewer-versus-signer mismatch the signing path exists to close.
+    ///
     /// `UInt32.max` is exactly representable as a `Double`, so the integral /
     /// range checks below lose nothing inside the valid window, and every value
     /// wide enough for `Double` to round is already past the upper bound.
