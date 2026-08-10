@@ -108,19 +108,52 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
     func testTheHeroRendersEveryDigitTheChainWillActuallyPay() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault()
 
-        let tx = try makeWithdrawal(typing: "1002.73")
+        // ⚠️ A position that uses all 8 decimals, deliberately. The reported
+        // 2002.74 is 200274×10^6 base units, so `units × bps` is ALWAYS divisible
+        // by 10000 and truncation never happens — a test built on it passes
+        // whether the formatter truncates or rounds, which is no test at all.
+        // 200274123456 base units at 5002 bps lands on
+        // 1001.771165526912: truncating gives 1001.77116552 (what the chain
+        // pays), rounding would give ...53 and overstate it by a base unit.
+        let staked = Decimal(string: "2002.74123456")!
+        let stakedBaseUnits = 200_274_123_456
+
+        let viewModel = UnstakeTransactionViewModel(
+            coin: makeTCYCoin(),
+            vault: vault,
+            isAutocompound: false,
+            availableToUnstake: staked
+        )
+        viewModel.availableAmount = staked
+        viewModel.amountField.value = "1001.7712"
+        viewModel.percentageSelected = viewModel.percentageFromAmount
+        viewModel.onPercentage(viewModel.percentageFromAmount)
+        viewModel.validForm = true
+
+        let builder = try XCTUnwrap(viewModel.transactionBuilder)
+        XCTAssertEqual(builder.memo, "tcy-:5002")
+
+        let tx = builder.buildSendTransaction(vault: vault)
         let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
         guard case .send(_, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
 
-        // The chain's own integer maths: 200274000000 base units × 5006 / 10000.
-        let stakedBaseUnits = 200_274_000_000
-        let chainPaysBaseUnits = stakedBaseUnits * 5006 / 10_000
-        let chainPays = Decimal(chainPaysBaseUnits) / pow(10, 8)
+        // The chain's own integer maths, reproduced independently of the code
+        // under test: floor(units × bps / 10000) base units.
+        //
+        // This equality is what makes the test truncation-sensitive: `chainPays`
+        // is already an exact base-unit count, so it formats the same either way,
+        // while `coin.amount` formats the un-truncated 1001.771165526912. A
+        // rounding formatter would render ...553 here and the two would diverge.
+        let chainPays = Decimal(stakedBaseUnits * 5002 / 10_000) / pow(10, 8)
         XCTAssertEqual(coin.amount, chainPays.formatToDecimal(digits: 8))
-        XCTAssertTrue(coin.amount.contains("571644"), "rendered \(coin.amount)")
+        // Grouping separators are locale-dependent, so match past them.
+        XCTAssertTrue(coin.amount.contains("001.77116552"), "rendered \(coin.amount)")
+        // The one-base-unit overstatement a rounding formatter would produce.
+        XCTAssertFalse(coin.amount.contains("001.77116553"), "rendered \(coin.amount)")
     }
 
     /// ⚠️ Emptying a dust position must read as the amount it pays, not as zero.
@@ -149,6 +182,16 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         // exit is still driven by MAX, so the memo takes the whole position and
         // the screen must say so rather than echoing this truncated figure.
         viewModel.amountField.value = "0.0001"
+
+        // ⚠️ Run the REAL validator chain rather than asserting `validForm` into
+        // existence. `transactionBuilder` only asks the fields to publish their
+        // errors — it never recomputes `validForm` — so a hand-set flag would let
+        // this pass while production's Continue button stayed blocked, which is
+        // precisely the failure this test is meant to catch.
+        XCTAssertNoThrow(
+            try viewModel.amountField.validate(),
+            "the sub-basis-point guard must not refuse a full exit of a dust position"
+        )
         viewModel.validForm = true
 
         let builder = try XCTUnwrap(viewModel.transactionBuilder, "a dust full exit must not be refused")
