@@ -37,13 +37,29 @@ enum TCYUnstakePresentation {
         return .send(
             title: "tcyUnstakeVerifyTitle".localized,
             coin: HeroCoinAmount(
-                // `formatToDecimal`, not `formatForDisplay`: the latter
-                // abbreviates anything over a million ("1.2M TCY" is not a figure
-                // anyone can check against what they asked for) and, below a
-                // million, ignores its own `maxDecimals` and renders 8 places.
-                // Four matches the precision of the field the amount was typed
-                // into, so the two read as the same number.
-                amount: amount.formatToDecimal(digits: 4),
+                // Rendered at the ASSET'S OWN precision, and that number is
+                // derived rather than picked for looking generous.
+                //
+                // `formatToDecimal` truncates (`roundingMode = .down`), and the
+                // chain settles in whole base units — THORChain computes
+                // `stakedBaseUnits × bps / 10000` in integer maths and drops the
+                // remainder. Truncating the exact product at `coin.decimals` is
+                // therefore not an approximation of the payout, it *is* the
+                // payout: for a 2002.74 position at 5006 bps both come to
+                // 1002.571644 exactly.
+                //
+                // ⚠️ Four decimals — the precision of the amount FIELD — was
+                // wrong here, and wrong in the way this whole screen exists to
+                // prevent. It quietly understated that same withdrawal by
+                // 0.000044 TCY, and rendered a dust position's full exit as
+                // "0.0001" or, below 0.00005, as a flat "0". The field's
+                // precision is a property of the field; what the screen has to
+                // state is what the chain will pay.
+                //
+                // Not `formatForDisplay`: it abbreviates past a million ("1.2M
+                // TCY" is not a figure anyone can check against what they asked
+                // for) and, below a million, ignores its own `maxDecimals`.
+                amount: amount.formatToDecimal(digits: transaction.coin.decimals),
                 ticker: transaction.coin.ticker,
                 logo: transaction.coin.logo
             )
