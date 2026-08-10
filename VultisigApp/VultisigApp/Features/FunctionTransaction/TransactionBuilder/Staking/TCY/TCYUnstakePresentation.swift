@@ -37,10 +37,13 @@ enum TCYUnstakePresentation {
         return .send(
             title: "tcyUnstakeVerifyTitle".localized,
             coin: HeroCoinAmount(
-                // Not abbreviated: a withdrawal of 1.2M TCY has to read as a
-                // number the user can check against what they asked for, and
-                // "1.2M" is not that number.
-                amount: amount.formatForDisplay(maxDecimals: 4, skipAbbreviation: true),
+                // `formatToDecimal`, not `formatForDisplay`: the latter
+                // abbreviates anything over a million ("1.2M TCY" is not a figure
+                // anyone can check against what they asked for) and, below a
+                // million, ignores its own `maxDecimals` and renders 8 places.
+                // Four matches the precision of the field the amount was typed
+                // into, so the two read as the same number.
+                amount: amount.formatToDecimal(digits: 4),
                 ticker: transaction.coin.ticker,
                 logo: transaction.coin.logo
             )

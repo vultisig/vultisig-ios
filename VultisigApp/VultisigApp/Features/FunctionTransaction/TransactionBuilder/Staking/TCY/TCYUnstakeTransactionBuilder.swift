@@ -28,11 +28,17 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
 
     /// The figure the verify screen announces, quantised to `basisPoints`.
     ///
-    /// Deliberately NOT the amount that was typed. The memo can only ask for
-    /// ten-thousandths of the position, so the typed figure and the delivered one
-    /// differ by up to half a basis point — and quoting the typed one would be
+    /// Deliberately NOT the amount that was typed. The withdrawal can only ask
+    /// for ten-thousandths of the position, so the typed figure and the delivered
+    /// one differ by up to one basis point — and quoting the typed one would be
     /// the same class of lie as the "You're sending 0 TCY" this replaces, just a
     /// smaller one.
+    ///
+    /// True on the auto-compound (sTCY) branch too, even though that one spends
+    /// receipt units through a wasm payload rather than the memo: the sheet's
+    /// ceiling for TCY *is* the receipt balance (`receiptBalanceIsAvailableAmount`),
+    /// so `stakedAmount` and `autoCompoundAmount` are the same quantity and the
+    /// same fraction of it is taken either way.
     var withdrawDisplayAmount: Decimal? {
         guard stakedAmount > 0, basisPoints > 0 else { return nil }
         return (stakedAmount * Decimal(basisPoints)) / Decimal(TCYUnstakeBasisPoints.max)
