@@ -1133,8 +1133,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destination";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Issuer";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1160,6 +1163,8 @@
 "rippleTrustLineUnreviewable" = "Cannot review";
 "rippleTrustLineUnreviewableValue" = "This trust line's currency, issuer or limit could not be read, so its terms cannot be shown. Do not sign it.";
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";
+"rippleWarningCustomPaths" = "The site supplied its own candidate routes for this payment. The ledger picks among them.";
+"rippleWarningPartialPayment" = "This is a partial payment: the Amount is the most the recipient can receive, not a guaranteed delivery. They can receive less while you are still charged up to the Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "The to address must be different from the from address";

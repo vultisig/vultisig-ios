@@ -122,6 +122,16 @@ final class RippleDAppTransactionParserTests: XCTestCase {
         """))
     }
 
+    /// XRPL's codec also accepts a transaction's numeric type code — `0` is
+    /// `Payment`. This decoder renders only the string spelling, so a numeric
+    /// one falls back to the raw JSON rather than a card that omits whatever
+    /// the type turns out to mean.
+    func testNumericTransactionTypeReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":0,"Account":"rAcc","Destination":"rDest","Amount":"1000000"}
+        """))
+    }
+
     /// A present Amount that is a JSON number (not a drops string) can't be
     /// decoded → the whole parse fails closed to nil (never hide value behind a
     /// seemingly-complete screen).
@@ -210,6 +220,138 @@ final class RippleDAppTransactionParserTests: XCTestCase {
         XCTAssertNil(parse("""
         {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":{"value":"10abc","currency":"USD","issuer":"rIssuer"}}
         """))
+    }
+
+    // MARK: - TrustSet quality
+
+    /// `QualityIn` / `QualityOut` set the exchange rate applied to balances on
+    /// the trust line, so a card showing only `LimitAmount` would look complete
+    /// while hiding what the line is worth.
+    func testTrustSetQualityRows() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"QualityIn":900000000,"QualityOut":1100000000}
+        """))
+        XCTAssertEqual(field(tx, "rippleFieldQualityIn"), .text("900000000"))
+        XCTAssertEqual(field(tx, "rippleFieldQualityOut"), .text("1100000000"))
+    }
+
+    /// A present-but-undecodable quality fails the decode rather than being
+    /// dropped — silently omitting it would hide the rate it sets.
+    func testUndecodableQualityReturnsNil() {
+        XCTAssertNil(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"QualityIn":"900000000"}
+        """))
+        XCTAssertNil(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"QualityOut":-1}
+        """))
+    }
+
+    // MARK: - Flags and Paths
+
+    /// The display half of the acceptance case: `tfPartialPayment` turns the
+    /// `Amount` row from a delivery into a ceiling, so the card has to say so.
+    func testPartialPaymentPaymentWarns() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","SendMax":"999999999","Flags":131072}
+        """))
+        XCTAssertEqual(tx.warnings, [.partialPayment])
+        XCTAssertEqual(field(tx, "rippleFieldFlags"), .text("tfPartialPayment"))
+    }
+
+    /// 0x00020000 is namespace-sensitive — `tfImmediateOrCancel` on an
+    /// `OfferCreate`, `tfSetNoRipple` on a `TrustSet`. Neither touches
+    /// delivery, so neither may borrow the partial-payment warning, and each
+    /// must be named for its own namespace.
+    func testPartialPaymentBitOnOtherTypesIsNeitherWarnedNorMislabelled() throws {
+        let offer = try XCTUnwrap(parse("""
+        {"TransactionType":"OfferCreate","Account":"rAcc","TakerGets":"5000000","TakerPays":{"value":"10","currency":"USD","issuer":"rIssuer"},"Flags":131072}
+        """))
+        XCTAssertEqual(offer.warnings, [])
+        XCTAssertEqual(field(offer, "rippleFieldFlags"), .text("tfImmediateOrCancel"))
+
+        let trustSet = try XCTUnwrap(parse("""
+        {"TransactionType":"TrustSet","Account":"rAcc","LimitAmount":{"value":"1000","currency":"USD","issuer":"rIssuer"},"Flags":131072}
+        """))
+        XCTAssertEqual(trustSet.warnings, [])
+        XCTAssertEqual(field(trustSet, "rippleFieldFlags"), .text("tfSetNoRipple"))
+    }
+
+    /// `Paths` is surfaced rather than refused, and it does not depend on
+    /// `Flags` — a payment can be routed by the site without being partial.
+    func testPathsWarns() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","Paths":[[{"currency":"USD","issuer":"rIssuer"}]]}
+        """))
+        XCTAssertEqual(tx.warnings, [.customPaths])
+    }
+
+    /// Both caveats can apply at once, and the partial-payment one leads.
+    func testPartialPaymentAndPathsBothWarn() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","Flags":131072,"Paths":[[{"currency":"USD","issuer":"rIssuer"}]]}
+        """))
+        XCTAssertEqual(tx.warnings, [.partialPayment, .customPaths])
+    }
+
+    /// A `Flags` the XRPL codec could not have encoded as a uint32 fails the
+    /// whole decode. Reading it as "nothing set" would render a partial payment
+    /// as an exact one — the precise mistake this decode exists to prevent.
+    func testUndecodableFlagsReturnsNil() {
+        let undecodable = [
+            "{\"tfPartialPayment\":true}",
+            "\"131072\"",
+            "true",
+            "-1",
+            "131072.5",
+            "4294967296",
+            "null",
+            "[131072]"
+        ]
+        for flags in undecodable {
+            XCTAssertNil(parse("""
+            {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","Flags":\(flags)}
+            """), "an undecodable Flags must route to the raw-JSON fallback: \(flags)")
+        }
+    }
+
+    /// `tfFullyCanonicalSig` (0x80000000) is above `INT32_MAX` and applies to
+    /// every type, so it must survive the uint32 bound and be named.
+    func testFullyCanonicalSigFlagParses() throws {
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","Flags":2147483648}
+        """))
+        XCTAssertEqual(tx.warnings, [])
+        XCTAssertEqual(field(tx, "rippleFieldFlags"), .text("tfFullyCanonicalSig"))
+    }
+
+    /// A bit this reviewer does not have a name for renders as a hex residue
+    /// beside the ones it does, so the row never claims to have shown
+    /// everything that is set.
+    func testUnknownFlagBitsRenderAsAHexResidue() throws {
+        // 0x00060001 = tfPartialPayment | tfLimitQuality | 0x00000001 (unnamed).
+        let tx = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","Flags":393217}
+        """))
+        XCTAssertEqual(
+            field(tx, "rippleFieldFlags"),
+            .text("tfPartialPayment, tfLimitQuality, 0x00000001")
+        )
+    }
+
+    /// No flags set, and an absent `Flags`, say the same thing — neither earns
+    /// a row.
+    func testZeroOrAbsentFlagsAddsNoRow() throws {
+        let absent = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000"}
+        """))
+        XCTAssertNil(field(absent, "rippleFieldFlags"))
+        XCTAssertEqual(absent.warnings, [])
+
+        let zero = try XCTUnwrap(parse("""
+        {"TransactionType":"Payment","Account":"rAcc","Destination":"rDest","Amount":"1000000","Flags":0}
+        """))
+        XCTAssertNil(field(zero, "rippleFieldFlags"))
+        XCTAssertEqual(zero.warnings, [])
     }
 
     /// Fractional and signed decimal IOU values remain valid.

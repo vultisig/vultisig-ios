@@ -1133,8 +1133,11 @@
 "rippleFieldDeliverMin" = "最小交付额";
 "rippleFieldDestination" = "目标地址";
 "rippleFieldDestinationTag" = "目标标签";
+"rippleFieldFlags" = "标志";
 "rippleFieldIssuer" = "发行方";
 "rippleFieldOfferSequence" = "挂单序号";
+"rippleFieldQualityIn" = "接收质量";
+"rippleFieldQualityOut" = "发送质量";
 "rippleFieldSendMax" = "最大发送额";
 "rippleFieldTakerGets" = "Taker 获得";
 "rippleFieldTakerPays" = "Taker 支付";
@@ -1160,6 +1163,8 @@
 "rippleTrustLineUnreviewable" = "无法审核";
 "rippleTrustLineUnreviewableValue" = "无法读取此信任线的货币、发行方或上限，因此无法显示其条款。请勿签名。";
 "rippleUndecodedNotice" = "无法解码此交易。签名前请仔细核对原始 JSON。";
+"rippleWarningCustomPaths" = "该网站为这笔付款提供了自己的候选路径，由账本从中选择。";
+"rippleWarningPartialPayment" = "这是一笔部分付款：金额是收款方最多可能收到的数额，而非保证到账的数额。收款方可能收到更少，而你仍会被扣除至多「最大发送额」。";
 "routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
 "rune" = "RUNE";
 "sameAddressError" = "收件人地址必须与发件人地址不同";

@@ -1133,8 +1133,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Odredište";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Izdavatelj";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1160,6 +1163,8 @@
 "rippleTrustLineUnreviewable" = "Pregled nije moguć";
 "rippleTrustLineUnreviewableValue" = "Valuta, izdavatelj ili ograničenje ove linije povjerenja nisu se mogli pročitati, pa se njezini uvjeti ne mogu prikazati. Nemojte je potpisati.";
 "rippleUndecodedNotice" = "Ovu transakciju nije bilo moguće dekodirati. Pažljivo pregledajte neobrađeni JSON prije potpisivanja.";
+"rippleWarningCustomPaths" = "Stranica je predložila vlastite moguće rute za ovo plaćanje. Ledger bira među njima.";
+"rippleWarningPartialPayment" = "Ovo je djelomično plaćanje: iznos je najviše što primatelj može primiti, a ne zajamčena isporuka. Može primiti manje, dok se vama i dalje naplaćuje do iznosa Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "Adresa primatelja mora se razlikovati od adrese pošiljatelja";
