@@ -99,7 +99,8 @@ final class KaminoEarnViewModel: ObservableObject {
     ///   must not make a position look like it vanished);
     /// - a failed per-vault state/metrics read keeps that row's cached values,
     ///   because without `tokensPerShare` the shares cannot be valued at all;
-    /// - a failed `/pnl` read only drops the profit-and-loss line.
+    /// - a failed `/pnl` read keeps the last figure that was read, and only
+    ///   leaves the profit-and-loss line blank when there has never been one.
     ///
     /// An empty `/positions` response is a real "holds nothing" answer and is
     /// allowed to zero a row — the vault stays listed, since the user enabled it.
@@ -206,7 +207,14 @@ final class KaminoEarnViewModel: ObservableObject {
                 continue
             }
 
+            // A `/pnl` failure is a "could not confirm", exactly like the reads
+            // above, so it keeps what the last successful one established. The
+            // figure is persisted as well as displayed: without the fallback a
+            // single flaky read would write `nil` over a real value, and the
+            // next launch would seed a row whose profit-and-loss line has
+            // quietly gone — a display gap outliving the outage that caused it.
             let pnlToken = await pnlToken(owner: owner, descriptor: descriptor)
+                ?? cachedPnlToken(for: descriptor)
 
             freshRows.append(
                 KaminoEarnRow(
@@ -282,6 +290,10 @@ final class KaminoEarnViewModel: ObservableObject {
 
     /// Profit and loss in the underlying token. Quietly `nil` on failure — it is
     /// one display line, and dropping it must never cost the user their position.
+    ///
+    /// `nil` means "could not read", never "the position has no profit and
+    /// loss": a real zero arrives as a parseable `0`. The caller is what turns
+    /// that into the cached figure rather than into an erasure.
     private func pnlToken(owner: String, descriptor: KaminoVaultDescriptor) async -> Decimal? {
         do {
             let pnl = try await service.fetchPnl(owner: owner, vault: descriptor.address)
@@ -292,6 +304,13 @@ final class KaminoEarnViewModel: ObservableObject {
             )
             return nil
         }
+    }
+
+    /// The profit and loss a previous pass established for this vault, read from
+    /// the rows on display — which are the persisted ones until this refresh
+    /// publishes, exactly the source `keepCached` reads.
+    private func cachedPnlToken(for descriptor: KaminoVaultDescriptor) -> Decimal? {
+        rows.first(where: { $0.id == descriptor.address })?.pnlToken
     }
 
     private func persist(_ snapshots: [KaminoPositionSnapshot]) {
