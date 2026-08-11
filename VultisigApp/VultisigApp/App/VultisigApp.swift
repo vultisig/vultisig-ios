@@ -62,6 +62,13 @@ struct VultisigApp: App {
         // and documents. And because the flag is already `true` when the first
         // body is evaluated, there is no false-to-true transition for the
         // overlay's animation to fade: the app's first frame is the lock screen.
+#if DEBUG
+        // DEBUG-only, and additionally behind an explicit launch argument, so an
+        // ordinary debug run is unaffected. Runs before the launch gate because
+        // the gate and the reconciler both read the vault store.
+        MainActor.assumeIsolated { SyntheticVaultSeeder.runIfRequested() }
+#endif
+
         AppViewModel.shared.restorePasscodeLockOnLaunch()
 
         // Register every swap-tracking provider with the shared registry so
