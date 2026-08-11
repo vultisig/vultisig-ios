@@ -80,11 +80,13 @@ struct JoinKeysignDoneView: View {
                 amountFiat: keysignPayload.toSendAmountFiatString,
                 // An XRPL TrustSet carries the trust-line LIMIT in `toAmount`, so
                 // it has to claim the hero before the amount slot describes it as
-                // a transfer of that many tokens.
-                hero: RippleTrustSetPresentation.hero(for: keysignPayload)
-                    ?? LimitOrderCancelPresentation.hero(
-                        forSignedMemo: keysignPayload.memo
-                    ) ?? viewModel.heroContent,
+                // a transfer of that many tokens. Which presentations may claim
+                // it here is `TransactionHeroResolver`'s to say; a co-signer's
+                // payload is all any of them get to read. The simulation-derived
+                // hero stays the fallback, because it is this screen's, not a
+                // provider's.
+                hero: TransactionHeroResolver.hero(on: .keysignDone, for: keysignPayload)
+                    ?? viewModel.heroContent,
                 hash: viewModel.txid,
                 explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                 memo: viewModel.memo ?? "",
