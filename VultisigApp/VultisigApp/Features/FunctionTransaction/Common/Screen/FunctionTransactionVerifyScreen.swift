@@ -95,17 +95,15 @@ struct FunctionTransactionVerifyScreen: View {
                 coinImage: transaction.coin.logo,
                 amount: getAmount(),
                 coinTicker: transaction.coin.ticker,
-                // A limit-order cancel is not a send, and the generic header
-                // would call it one — "You're sending 0 RUNE" on the THORChain
-                // route, or "You're sending 2 DOGE" on the L1 one, where the two
-                // DOGE are dust donated to the pool. `nil` for everything else,
-                // which keeps the existing presentation.
-                // A staked-TCY withdrawal is not a send either — its `amount` is
-                // literally 0 and the instruction lives in the `tcy-:<bps>` memo,
-                // so the generic header announced "You're sending 0 TCY" over a
-                // withdrawal of a thousand of them.
-                hero: TCYUnstakePresentation.hero(for: transaction)
-                    ?? LimitOrderCancelPresentation.hero(for: transaction),
+                // Some function calls are not sends and the generic header calls
+                // them one anyway — "You're sending 0 RUNE" over a limit-order
+                // cancel, "You're sending 2 DOGE" over the dust an L1 cancel
+                // donates to the pool, "You're sending 0 TCY" over a withdrawal
+                // of a thousand of them. Which presentation gets to speak, and in
+                // what order, is `TransactionHeroResolver`'s to decide; this
+                // screen only says which screen it is. `nil` keeps the existing
+                // presentation, which is every other function call.
+                hero: TransactionHeroResolver.hero(on: .functionCallVerify, for: transaction),
                 additionalRows: cancelLimitOrderRows
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
