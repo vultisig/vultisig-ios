@@ -14,7 +14,10 @@ struct LimitSwapDraft: Equatable {
     var toAsset: LimitSwapAsset
     var sourceAmount: BigInt
     var targetPrice: Decimal
-    var expiryHours: Int
+    /// Order lifetime in THORChain blocks — the unit the `=<` memo encodes and
+    /// the unit `LimitOrder` persists, so the form holds no second representation
+    /// that could drift from it. The duration picker converts minutes at its edge.
+    var expiryBlocks: Int
     var displayUnit: PriceDisplayUnit
     var isFastVault: Bool
     var fastVaultPassword: String
@@ -24,7 +27,7 @@ struct LimitSwapDraft: Equatable {
         toAsset: LimitSwapAsset,
         sourceAmount: BigInt = 0,
         targetPrice: Decimal = 0,
-        expiryHours: Int = 24,
+        expiryBlocks: Int = THORChainConstants.blocks(forHours: 24),
         displayUnit: PriceDisplayUnit = .asset,
         isFastVault: Bool = false,
         fastVaultPassword: String = ""
@@ -33,7 +36,7 @@ struct LimitSwapDraft: Equatable {
         self.toAsset = toAsset
         self.sourceAmount = sourceAmount
         self.targetPrice = targetPrice
-        self.expiryHours = expiryHours
+        self.expiryBlocks = expiryBlocks
         self.displayUnit = displayUnit
         self.isFastVault = isFastVault
         self.fastVaultPassword = fastVaultPassword

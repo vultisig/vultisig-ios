@@ -548,7 +548,7 @@ extension SigningGoldenFactory {
                     targetAsset: "DOGE.DOGE",
                     destAddress: recipient(.dogecoin),
                     targetPrice: Decimal(20),
-                    expiryHours: 4,
+                    expiryBlocks: THORChainConstants.blocks(forHours: 4),
                     affiliate: "va",
                     affiliateBps: "50"
                 ))

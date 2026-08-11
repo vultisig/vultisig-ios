@@ -496,25 +496,6 @@ final class LimitMathTests: XCTestCase {
         XCTAssertTrue(isUserFieldEdit(newText: "3000", lastSyncedText: nil))
     }
 
-    // MARK: - computeExpiryBlocks
-
-    func testComputeExpiryBlocksFor12Hours() {
-        XCTAssertEqual(computeExpiryBlocks(hours: 12), 7200)
-    }
-
-    func testComputeExpiryBlocksFor24Hours() {
-        XCTAssertEqual(computeExpiryBlocks(hours: 24), 14400)
-    }
-
-    func testComputeExpiryBlocksFor72Hours() {
-        XCTAssertEqual(computeExpiryBlocks(hours: 72), 43200)
-    }
-
-    func testComputeExpiryBlocksScalesByThorchainBlockRate() {
-        // Sanity: any hour count × 600 (THORChain blocks per hour at 6s blocks)
-        XCTAssertEqual(computeExpiryBlocks(hours: 1), 600)
-    }
-
     // MARK: - computePresetPrice
 
     func testPresetPriceMarket() {
@@ -587,6 +568,98 @@ final class LimitMathTests: XCTestCase {
     func testParsePercentCommaDecimalLocale() {
         // Shares the price/amount parser, so a comma-decimal locale behaves.
         XCTAssertEqual(parseLimitPercent("-2,5", locale: Locale(identifier: "de_DE")), Decimal(string: "-2.5")!)
+    }
+
+    // MARK: - clampLimitExpiryBlocks
+
+    func testExpiryInsideTheRangeIsUnchanged() {
+        let blocks = THORChainConstants.blocks(forHours: 24)
+        XCTAssertEqual(clampLimitExpiryBlocks(blocks, maxBlocks: 43_200), blocks)
+    }
+
+    func testExpiryAboveTheCeilingClampsDown() {
+        XCTAssertEqual(
+            clampLimitExpiryBlocks(THORChainConstants.blocks(forHours: 24 * 7), maxBlocks: 43_200),
+            43_200
+        )
+    }
+
+    func testExpiryBelowTheFloorClampsUp() {
+        XCTAssertEqual(
+            clampLimitExpiryBlocks(1, maxBlocks: 43_200),
+            THORChainConstants.minLimitSwapAgeBlocks
+        )
+    }
+
+    func testExpiryClampHonoursACeilingBelowTheAppFloor() {
+        // The floor is ours, the ceiling is the protocol's — so if a mimir ever
+        // reported a cap under 10 minutes, the protocol has to win rather than
+        // the clamp producing an out-of-range value from an empty range.
+        XCTAssertEqual(clampLimitExpiryBlocks(600, maxBlocks: 60), 60)
+        XCTAssertEqual(clampLimitExpiryBlocks(1, maxBlocks: 60), 60)
+    }
+
+    func testClampAndValidationAgreeOnTheFloorWhenTheCeilingIsLower() {
+        // The regression this helper exists for: with a ceiling under the app
+        // floor, the clamp produced the ceiling and validation then rejected that
+        // very value, leaving no placeable expiry at all.
+        let lowCeiling = 60
+        let clamped = clampLimitExpiryBlocks(1, maxBlocks: lowCeiling)
+        XCTAssertEqual(clamped, lowCeiling)
+        XCTAssertGreaterThanOrEqual(clamped, effectiveMinExpiryBlocks(maxBlocks: lowCeiling))
+    }
+
+    func testEffectiveFloorIsTheAppFloorWhenTheCeilingIsHigher() {
+        XCTAssertEqual(
+            effectiveMinExpiryBlocks(maxBlocks: THORChainConstants.defaultLimitSwapMaxAgeBlocks),
+            THORChainConstants.minLimitSwapAgeBlocks
+        )
+    }
+
+    // MARK: - formatLimitExpiry
+
+    func testFormatExpiryWholeHours() {
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 12)), "12h")
+    }
+
+    func testFormatExpiryWholeDays() {
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 72)), "3d")
+    }
+
+    func testFormatExpiryReproducesTheHistoricalPresetLabels() {
+        // The preset pills render through this formatter, so it has to spell the
+        // shipped set exactly. Splitting days from one day up would relabel the
+        // 24h pill as "1d" — a change to a row that was meant to stay untouched.
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 12)), "12h")
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 24)), "24h")
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 72)), "3d")
+    }
+
+    func testFormatExpiryKeepsHoursBelowTwoDays() {
+        // 36h reads better than "1d 12h" at this scale, and keeps the threshold
+        // consistent with the 24h preset.
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 36)), "36h")
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 47)), "47h")
+    }
+
+    func testFormatExpiryOmitsZeroComponents() {
+        // `2d`, not `2d 0h 0m` — and 48h is the first duration that splits days.
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 48)), "2d")
+    }
+
+    func testFormatExpiryMixedComponents() {
+        let blocks = THORChainConstants.blocks(forMinutes: 2 * 1440 + 6 * 60 + 30)
+        XCTAssertEqual(formatLimitExpiry(blocks: blocks), "2d 6h 30m")
+    }
+
+    func testFormatExpiryMinutesOnly() {
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forMinutes: 90)), "1h 30m")
+    }
+
+    func testFormatExpirySubMinuteDoesNotClaimADuration() {
+        // Only reachable from a hand-built memo, never from the picker — floor it
+        // to 0m rather than rendering an empty string.
+        XCTAssertEqual(formatLimitExpiry(blocks: 5), "0m")
     }
 
     // MARK: - limitPercentAgrees

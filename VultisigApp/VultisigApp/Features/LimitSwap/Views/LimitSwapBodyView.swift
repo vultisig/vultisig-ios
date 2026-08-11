@@ -1079,19 +1079,43 @@ private struct LimitExpiryCard: View {
 
     @Bindable var vm: LimitSwapFormViewModel
 
+    /// The presets, unchanged from what shipped. `3d` is both the default and —
+    /// on current mainnet mimir — the ceiling, so there is deliberately no longer
+    /// preset to offer; anything shorter or in between is reached through Custom.
+    private static let presetHours = [12, 24, 72]
+
+    @State private var isEditingCustom = false
+
     var body: some View {
-        HStack {
-            Text("limitSwap.expiry".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
+        VStack(alignment: .trailing, spacing: 8) {
+            HStack {
+                Text("limitSwap.expiry".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
-            Spacer()
+                Spacer()
 
-            HStack(spacing: 6) {
-                pill(titleKey: "limitSwap.expiry.12h", hours: 12)
-                pill(titleKey: "limitSwap.expiry.24h", hours: 24)
-                pill(titleKey: "limitSwap.expiry.3d", hours: 72)
+                HStack(spacing: 6) {
+                    ForEach(Self.presetHours, id: \.self) { hours in
+                        presetPill(hours: hours)
+                    }
+                    customPill
+                }
             }
+
+            // Relative, never a wall-clock time. The TTL is counted from the block
+            // the order joins the queue — after the deposit is observed and
+            // confirmation-counted — so a timestamp computed at entry would be
+            // wrong by however long the source chain takes, which on Bitcoin is
+            // routinely tens of minutes. The Done screen shows a real countdown,
+            // sourced from the queue itself.
+            Text(String(
+                format: "limitSwap.expiry.restsFor".localized,
+                formatLimitExpiry(blocks: vm.draft.expiryBlocks)
+            ))
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textTertiary)
+            .multilineTextAlignment(.trailing)
         }
         .padding(14)
         .overlay(
@@ -1099,16 +1123,49 @@ private struct LimitExpiryCard: View {
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .clipShape(limitSectionCornerRadius.shape)
+        .crossPlatformSheet(isPresented: $isEditingCustom) {
+            LimitCustomExpirySheet(vm: vm, isPresented: $isEditingCustom)
+        }
     }
 
-    private func pill(titleKey: String, hours: Int) -> some View {
-        let isSelected = vm.draft.expiryHours == hours
-        return Button {
-            vm.selectExpiryHours(hours)
-        } label: {
-            Text(titleKey.localized)
+    /// A preset is "selected" only when the draft's blocks match it exactly, so
+    /// picking 90m through Custom leaves every preset unhighlighted rather than
+    /// rounding onto the nearest one.
+    private func presetPill(hours: Int) -> some View {
+        let blocks = THORChainConstants.blocks(forHours: hours)
+        return pill(
+            // Same formatter the Custom pill and the Verify screen use, so one
+            // duration is never spelled two ways. It reproduces the historical
+            // labels exactly: 12h, 24h, 3d.
+            title: formatLimitExpiry(blocks: blocks),
+            isSelected: vm.draft.expiryBlocks == blocks
+        ) {
+            vm.selectExpiryBlocks(blocks)
+        }
+    }
+
+    /// Carries its own value when it is the live choice, so the row always states
+    /// the expiry that is actually set instead of a generic "Custom".
+    private var customPill: some View {
+        let isCustom = !Self.presetHours
+            .map(THORChainConstants.blocks(forHours:))
+            .contains(vm.draft.expiryBlocks)
+        return pill(
+            title: isCustom
+                ? formatLimitExpiry(blocks: vm.draft.expiryBlocks)
+                : "limitSwap.expiry.custom".localized,
+            isSelected: isCustom
+        ) {
+            isEditingCustom = true
+        }
+    }
+
+    private func pill(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
+                .foregroundStyle(isSelected ? Theme.colors.textPrimary : Theme.colors.textSecondary)
+                .lineLimit(1)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(isSelected ? Theme.colors.bgSurface2 : Color.clear)
@@ -1119,6 +1176,183 @@ private struct LimitExpiryCard: View {
                 .clipShape(Theme.radius.pill.shape)
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Custom expiry sheet
+//
+// Edits a DURATION, because a duration is what the memo stores. A date/time
+// picker was the original request, but the TTL is a block count started when the
+// order joins the queue, so an absolute time chosen here would silently drift by
+// the whole deposit-confirmation delay. Days/hours/minutes is the honest control,
+// and the copy states what it is relative to.
+
+private struct LimitCustomExpirySheet: View {
+
+    @Bindable var vm: LimitSwapFormViewModel
+    @Binding var isPresented: Bool
+
+    @State private var days = 0
+    @State private var hours = 0
+    @State private var minutes = 0
+
+    private var selectedBlocks: Int {
+        THORChainConstants.blocks(forMinutes: days * 1440 + hours * 60 + minutes)
+    }
+
+    private var isAtCeiling: Bool { selectedBlocks >= vm.maxExpiryBlocks }
+    private var isBelowFloor: Bool { selectedBlocks < vm.minExpiryBlocks }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("limitSwap.expiry.customTitle".localized)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                Spacer()
+                Text(String(
+                    format: "limitSwap.expiry.maxHint".localized,
+                    formatLimitExpiry(blocks: vm.maxExpiryBlocks)
+                ))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+            }
+
+            HStack(spacing: 10) {
+                stepper(titleKey: "limitSwap.expiry.daysUnit", value: $days, range: 0...maxDays)
+                stepper(titleKey: "limitSwap.expiry.hoursUnit", value: $hours, range: 0...23)
+                stepper(titleKey: "limitSwap.expiry.minutesUnit", value: $minutes, range: 0...59, step: 5)
+            }
+
+            noticeRow
+
+            PrimaryButton(title: "limitSwap.expiry.set".localized) {
+                vm.selectExpiryBlocks(selectedBlocks)
+                isPresented = false
+            }
+            .disabled(isBelowFloor)
+        }
+        .padding(16)
+        .onLoad {
+            // Seed from the live draft so reopening the sheet shows what is set.
+            let total = THORChainConstants.minutes(forBlocks: vm.draft.expiryBlocks)
+            days = total / 1440
+            hours = (total % 1440) / 60
+            minutes = total % 60
+        }
+    }
+
+    private var maxDays: Int {
+        THORChainConstants.minutes(forBlocks: vm.maxExpiryBlocks) / 1440
+    }
+
+    /// Says which bound was hit and why, instead of letting the value be silently
+    /// corrected. THORChain clamps an over-long TTL on-chain without an error, so
+    /// an app that mirrored that behaviour would leave the user believing they had
+    /// set a week.
+    @ViewBuilder
+    private var noticeRow: some View {
+        if isAtCeiling {
+            LimitInlineNotice(
+                systemImage: "exclamationmark.triangle.fill",
+                tint: Theme.colors.alertWarning,
+                message: String(
+                    format: "limitSwap.expiry.ceilingNotice".localized,
+                    formatLimitExpiry(blocks: vm.maxExpiryBlocks)
+                )
+            )
+        } else if isBelowFloor {
+            LimitInlineNotice(
+                systemImage: "exclamationmark.triangle.fill",
+                tint: Theme.colors.alertWarning,
+                message: String(
+                    format: "limitSwap.expiry.floorNotice".localized,
+                    formatLimitExpiry(blocks: vm.minExpiryBlocks)
+                )
+            )
+        } else {
+            LimitInlineNotice(
+                systemImage: "clock",
+                tint: Theme.colors.alertSuccess,
+                message: String(
+                    format: "limitSwap.expiry.restsFor".localized,
+                    formatLimitExpiry(blocks: selectedBlocks)
+                )
+            )
+        }
+    }
+
+    private func stepper(titleKey: String, value: Binding<Int>, range: ClosedRange<Int>, step: Int = 1) -> some View {
+        VStack(spacing: 6) {
+            Text(titleKey.localized)
+                .font(Theme.fonts.caption10)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .textCase(.uppercase)
+
+            HStack(spacing: 8) {
+                stepButton(systemImage: "minus", enabled: value.wrappedValue > range.lowerBound) {
+                    value.wrappedValue = max(range.lowerBound, value.wrappedValue - step)
+                }
+                Text("\(value.wrappedValue)")
+                    .font(Theme.fonts.priceBodyS)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .frame(minWidth: 26)
+                stepButton(systemImage: "plus", enabled: value.wrappedValue < range.upperBound) {
+                    value.wrappedValue = min(range.upperBound, value.wrappedValue + step)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .overlay(
+            Theme.radius.md.shape
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(Theme.radius.md.shape)
+    }
+
+    private func stepButton(systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(enabled ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+                .frame(width: 24, height: 24)
+                .background(Theme.colors.bgSurface2)
+                .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+    }
+}
+
+// MARK: - Inline notice (shared shape)
+
+private struct LimitInlineNotice: View {
+
+    let systemImage: String
+    let tint: Color
+    let message: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.system(size: 14))
+                .foregroundStyle(tint)
+
+            Text(message)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .multilineTextAlignment(.leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Theme.colors.bgSurface1)
+        .overlay(
+            limitNoticeCornerRadius.shape
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
+        .clipShape(limitNoticeCornerRadius.shape)
     }
 }
 

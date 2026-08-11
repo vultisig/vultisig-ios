@@ -8,7 +8,10 @@ import Foundation
 enum LimitSwapValidationError: Error, Equatable {
     case sourceAmountNotPositive
     case targetPriceNotPositive
-    case expiryHoursUnsupported(Int)
+    /// The chosen lifetime falls outside what THORChain will honour. Carries the
+    /// bounds because the ceiling is read from a mimir and can move, so a message
+    /// that hard-codes "3 days" would eventually be wrong.
+    case expiryOutOfRange(blocks: Int, minBlocks: Int, maxBlocks: Int)
     case destAddressEmpty
     case sourceAssetMalformed(String)
     case targetAssetMalformed(String)

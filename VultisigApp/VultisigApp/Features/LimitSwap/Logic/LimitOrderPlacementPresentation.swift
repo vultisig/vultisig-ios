@@ -112,7 +112,7 @@ enum LimitOrderPlacementPresentation {
                 sourceTicker: sourceTicker,
                 targetTicker: parsed.targetTicker
             ),
-            expiryValue: parsed.expiryHours.map { "\($0)h" }
+            expiryValue: formatLimitExpiry(blocks: parsed.expiryBlocks)
         )
     }
 
@@ -164,12 +164,14 @@ enum LimitOrderPlacementPresentation {
     struct ParsedPlacement: Equatable {
         let targetTicker: String
         let lim: BigInt
-        /// `nil` when the memo's block interval isn't a whole number of hours —
-        /// see `Display.expiryValue`.
-        let expiryHours: Int?
+        /// The memo's raw block interval. Kept as blocks rather than converted to
+        /// whole hours: a custom expiry need not land on an hour boundary, and
+        /// the previous `Int?` went nil for exactly those orders — dropping the
+        /// expiry row from a co-signer's screen precisely when it was unusual.
+        let expiryBlocks: Int
     }
 
-    /// Parse a placement memo into the target ticker, LIM and expiry hours.
+    /// Parse a placement memo into the target ticker, LIM and expiry blocks.
     ///
     /// Wire layout (see `composeLimitSwapMemo`):
     ///
@@ -199,19 +201,10 @@ enum LimitOrderPlacementPresentation {
             return nil
         }
 
-        // Only surface an expiry when the interval is an exact whole-hour count.
-        // Every order this app builds is (`computeExpiryBlocks(hours:)` =
-        // hours × `blocksPerHour`); a stray remainder means a memo we can't state
-        // in whole hours, so we omit the field rather than floor it to a wrong —
-        // possibly `0h` — value.
-        let expiryHours = intervalBlocks.isMultiple(of: THORChainConstants.blocksPerHour)
-            ? THORChainConstants.hours(forBlocks: intervalBlocks)
-            : nil
-
         return ParsedPlacement(
             targetTicker: targetTicker,
             lim: lim,
-            expiryHours: expiryHours
+            expiryBlocks: intervalBlocks
         )
     }
 }

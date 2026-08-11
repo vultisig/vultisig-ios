@@ -73,6 +73,33 @@ final class LimitSwapFormViewModel {
     /// Convenience for the view: `true` only when the queue is confirmed live.
     var isAdvancedSwapQueueEnabled: Bool { advancedSwapQueueEnabled == true }
 
+    /// Longest lifetime THORChain will honour for a resting order, in blocks —
+    /// the `StreamingLimitSwapMaxAge` mimir, refreshed by `refreshMaxExpiry()`.
+    ///
+    /// Seeded with the documented default so the duration picker has a usable
+    /// bound on first paint rather than a disabled or unbounded one, and so a
+    /// failed fetch degrades to today's behaviour. Read from the mimir rather
+    /// than hard-coded because the cap can be changed on-chain: if it is raised,
+    /// the picker widens on its own.
+    var maxExpiryBlocks: Int = THORChainConstants.defaultLimitSwapMaxAgeBlocks
+
+    /// Whether `maxExpiryBlocks` reflects a COMPLETED fetch rather than the seed.
+    ///
+    /// The seed is a plausible value, not a resolved one — mainnet happens to run
+    /// the default today, but a lower live cap would mean advertising (and
+    /// signing) a window THORChain then silently shortens. Placement therefore
+    /// waits for the fetch, exactly as it waits for the queue gate.
+    ///
+    /// This is a *resolution* flag, not a success flag: the fetch fails soft to
+    /// the default, so this turns true either way. That keeps a network blip from
+    /// blocking placement forever while still closing the pre-fetch window.
+    private(set) var isMaxExpiryResolved = false
+
+    /// Floor is the app's own, not the protocol's, and collapses to the ceiling
+    /// if a mimir ever reports a cap below it — shared with the clamp and the
+    /// validator so all three agree.
+    var minExpiryBlocks: Int { effectiveMinExpiryBlocks(maxBlocks: maxExpiryBlocks) }
+
     /// Whether the current draft can be placed — gates the entry screen's Place
     /// Order button. Requires a positive amount + target price, the Advanced Swap
     /// Queue confirmed live, AND a RESOLVED network-fee estimate
@@ -92,6 +119,10 @@ final class LimitSwapFormViewModel {
         draft.targetPrice > 0
             && draft.sourceAmount > 0
             && isAdvancedSwapQueueEnabled
+            // The TTL ceiling has to be a resolved value, not the seeded default:
+            // a lower live cap would mean signing a window the chain shortens.
+            // Resolution (not success) is the bar — the fetch fails soft.
+            && isMaxExpiryResolved
             && networkFeeEstimate > 0
             // Affordability: the vault must hold the sell amount, and the fee on
             // top of it. Same rule as the market tab's Continue gate.
@@ -517,8 +548,14 @@ final class LimitSwapFormViewModel {
         pairChart = chart
     }
 
-    func selectExpiryHours(_ hours: Int) {
-        draft.expiryHours = hours
+    /// Set the order's lifetime, clamped to what THORChain will honour.
+    ///
+    /// Clamping on the way IN (rather than only at validation) keeps the form
+    /// self-consistent: the pill row, the memo and the queue then all agree on
+    /// one number, instead of the UI showing a duration the chain quietly
+    /// shortened.
+    func selectExpiryBlocks(_ blocks: Int) {
+        draft.expiryBlocks = clampLimitExpiryBlocks(blocks, maxBlocks: maxExpiryBlocks)
     }
 
     func toggleDisplayUnit() {
@@ -586,6 +623,20 @@ final class LimitSwapFormViewModel {
     func refreshAdvancedSwapQueueGate() async {
         advancedSwapQueueEnabled = await interactor.isAdvancedSwapQueueEnabled()
         logger.info("EnableAdvSwapQueue gate resolved: \(self.advancedSwapQueueEnabled == true, privacy: .public)")
+    }
+
+    /// Resolve the live TTL ceiling and re-clamp the current draft against it.
+    ///
+    /// Re-clamping matters when the fetched cap is LOWER than the default the
+    /// draft was seeded with: the draft may already hold an expiry the chain
+    /// would now silently shorten, and leaving it would show a duration the
+    /// order never gets. Raising the cap never invalidates an existing choice,
+    /// so the clamp is a no-op in that direction.
+    func refreshMaxExpiry() async {
+        maxExpiryBlocks = await interactor.fetchLimitSwapMaxAgeBlocks()
+        isMaxExpiryResolved = true
+        draft.expiryBlocks = clampLimitExpiryBlocks(draft.expiryBlocks, maxBlocks: maxExpiryBlocks)
+        logger.info("StreamingLimitSwapMaxAge resolved: \(self.maxExpiryBlocks, privacy: .public) blocks")
     }
 
     func refreshMarketPrice() async {
@@ -795,14 +846,14 @@ final class LimitSwapFormViewModel {
             targetAsset: targetAsset,
             destAddress: destAddress,
             targetPrice: draft.targetPrice,
-            expiryHours: draft.expiryHours,
+            expiryBlocks: draft.expiryBlocks,
             affiliate: affiliate ?? THORChainSwaps.affiliateFeeAddress,
             affiliateBps: affiliateBps ?? String(THORChainSwaps.affiliateFeeRateBp)
         )
 
         // Run the shared input validation in production. Previously the live
         // path built the memo directly and skipped this gate entirely.
-        let validationErrors = validateLimitSwapInputs(inputs)
+        let validationErrors = validateLimitSwapInputs(inputs, maxExpiryBlocks: maxExpiryBlocks)
         guard validationErrors.isEmpty else {
             logger.error("Place order rejected: validation failed \(String(describing: validationErrors), privacy: .public)")
             placeOrderError = .invalidInputs(validationErrors)
@@ -858,11 +909,10 @@ final class LimitSwapFormViewModel {
             targetAsset: targetAsset,
             destAddress: destAddress,
             targetPrice: draft.targetPrice,
-            expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
+            expiryBlocks: draft.expiryBlocks,
             createdAt: Date(),
             status: .pending,
             memo: memo,
-            expiryHours: draft.expiryHours,
             minOutputOverride: effectiveMinOutput,
             // Captured here because this is the only moment all three are known
             // exactly. `sourceAmount` on the record is in the coin's NATIVE

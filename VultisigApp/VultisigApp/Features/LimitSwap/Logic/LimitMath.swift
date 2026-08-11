@@ -253,8 +253,65 @@ func isUserFieldEdit(newText: String, lastSyncedText: String?) -> Bool {
     newText != lastSyncedText
 }
 
-func computeExpiryBlocks(hours: Int) -> Int {
-    return THORChainConstants.blocks(forHours: hours)
+/// The lowest expiry the app will accept, given the ceiling currently in force.
+///
+/// Normally this is just the app's own floor. It collapses to the ceiling when a
+/// mimir ever reports a cap BELOW that floor: the floor is ours and the ceiling
+/// is the protocol's, so the protocol has to win — otherwise the accepted range
+/// is empty and no order can be placed at all.
+///
+/// Shared by the clamp and the validator on purpose. They encode one rule, and
+/// when each spelled it out separately they disagreed in exactly this case: the
+/// clamp produced the ceiling and the validator then rejected the value the
+/// clamp had just produced.
+func effectiveMinExpiryBlocks(maxBlocks: Int) -> Int {
+    min(THORChainConstants.minLimitSwapAgeBlocks, max(maxBlocks, 1))
+}
+
+/// Constrain a chosen expiry to what THORChain will actually honour.
+///
+/// The ceiling matters because the chain clamps **silently**: an interval above
+/// `StreamingLimitSwapMaxAge` is overwritten with the max rather than rejected,
+/// so an unclamped app would show the user a window the chain never granted.
+/// Clamping here means the number on screen, the number in the memo, and the
+/// number the queue enforces are the same one.
+func clampLimitExpiryBlocks(_ blocks: Int, maxBlocks: Int) -> Int {
+    let ceiling = max(maxBlocks, 1)
+    return min(max(blocks, effectiveMinExpiryBlocks(maxBlocks: ceiling)), ceiling)
+}
+
+/// A block count as a duration a person reads — `45m`, `12h`, `2d 6h`.
+///
+/// Shared by the expiry card, the custom-duration sheet, and the co-signer's
+/// Verify screen, which previously rendered `"\(hours)h"` from a separate
+/// whole-hours field. With custom durations that field could no longer state
+/// every order (a 150-minute expiry is not a whole number of hours), so the
+/// block count became the single representation and this is how it is spelled.
+///
+/// Zero-valued components are omitted rather than padded, so `2d` doesn't render
+/// as `2d 0h 0m`. Sub-minute counts (only reachable from a hand-built memo, never
+/// from this app's picker) floor to `0m` rather than claiming a duration.
+/// Days are only split out from **two** days up. That threshold is not cosmetic:
+/// it is what makes this one function reproduce the preset row the app has always
+/// shown — `12h`, `24h`, `3d`. Splitting at one day would render the 24h preset as
+/// `1d`, quietly renaming a pill nobody asked to change, and would leave the pills
+/// and this formatter speaking differently about the same duration.
+func formatLimitExpiry(blocks: Int) -> String {
+    let totalMinutes = max(THORChainConstants.minutes(forBlocks: blocks), 0)
+    let splitsDays = totalMinutes >= 2 * 1440
+    let days = splitsDays ? totalMinutes / 1440 : 0
+    let remainder = totalMinutes - days * 1440
+    let hours = remainder / 60
+    let minutes = remainder % 60
+
+    var parts: [String] = []
+    if days > 0 { parts.append(String(format: "limitSwap.expiry.days".localized, days)) }
+    if hours > 0 { parts.append(String(format: "limitSwap.expiry.hours".localized, hours)) }
+    if minutes > 0 { parts.append(String(format: "limitSwap.expiry.minutes".localized, minutes)) }
+    guard !parts.isEmpty else {
+        return String(format: "limitSwap.expiry.minutes".localized, 0)
+    }
+    return parts.joined(separator: " ")
 }
 
 /// Target price at `pct` percent above (or below, when negative) `marketPrice`.
