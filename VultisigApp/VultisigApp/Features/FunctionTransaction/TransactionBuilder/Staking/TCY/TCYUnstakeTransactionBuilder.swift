@@ -12,7 +12,7 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     static let destinationAddress = TCYAutoCompoundConstants.contract
     let coin: Coin
     /// The share of the position to withdraw, in ten-thousandths — the unit the
-    /// `tcy-:<bps>` memo carries. See `TCYUnstakeBasisPoints` for why it is not a
+    /// `tcy-:<bps>` memo carries. See `WithdrawBasisPoints` for why it is not a
     /// percentage: routing it through one spent 100 of the memo's 10 000 steps
     /// and floored a request for 1002.73 TCY down to 1001.37.
     let basisPoints: Int
@@ -56,7 +56,7 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     /// on a position this issue does not cover.
     var withdrawDisplayAmount: Decimal? {
         guard !isAutoCompound, stakedAmount > 0, basisPoints > 0 else { return nil }
-        return (stakedAmount * Decimal(basisPoints)) / Decimal(TCYUnstakeBasisPoints.max)
+        return (stakedAmount * Decimal(basisPoints)) / Decimal(WithdrawBasisPoints.max)
     }
 
     var memo: String {
@@ -80,7 +80,7 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
         guard isAutoCompound else { return nil }
 
         let withdrawAmount = (coin.decimalToCrypto(value: autoCompoundAmount) * Decimal(basisPoints))
-            / Decimal(TCYUnstakeBasisPoints.max)
+            / Decimal(WithdrawBasisPoints.max)
         let units = withdrawAmount.toInt()
         guard units >= 1 else { return nil }
 

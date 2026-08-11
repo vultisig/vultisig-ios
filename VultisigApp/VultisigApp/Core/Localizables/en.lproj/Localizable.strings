@@ -1538,7 +1538,6 @@
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
 "targetAsset" = "Target Asset: %@";
-"tcyUnstakeBelowMinimum" = "Amount too small — withdraw at least %@ %@";
 "tcyUnstakeVerifyTitle" = "You are withdrawing";
 "termsOfService" = "Terms of Service";
 "theUnmerge" = "The Unmerge";
@@ -1787,6 +1786,7 @@
 "Withdraw RUJI" = "Withdraw RUJI";
 "Withdraw Secured Asset" = "Withdraw Secured Asset";
 "withdrawAmount" = "Withdraw %@";
+"withdrawBelowMinimum" = "Amount too small — withdraw at least %@ %@";
 "withdrawBelowOutboundFee" = "Amount below outbound fee — withdraw at least %@ %@ to cover network costs";
 "withdrawingShareOfStakedPosition" = "%1$@ of your staked %2$@";
 "withdrawPercentage" = "Withdraw Percentage";

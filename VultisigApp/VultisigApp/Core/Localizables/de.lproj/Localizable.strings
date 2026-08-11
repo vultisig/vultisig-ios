@@ -1538,7 +1538,6 @@
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "targetAsset" = "Target Asset: %@";
-"tcyUnstakeBelowMinimum" = "Betrag zu klein — mindestens %@ %@ abheben";
 "tcyUnstakeVerifyTitle" = "Du hebst ab";
 "termsOfService" = "Nutzungsbedingungen";
 "theUnmerge" = "The Unmerge";
@@ -1787,6 +1786,7 @@
 "Withdraw RUJI" = "RUJI abheben";
 "Withdraw Secured Asset" = "Gesicherten Vermögenswert abheben";
 "withdrawAmount" = "%@ abheben";
+"withdrawBelowMinimum" = "Betrag zu klein — mindestens %@ %@ abheben";
 "withdrawBelowOutboundFee" = "Betrag unter Ausgangsgebühr — mindestens %@ %@ abheben, um Netzwerkkosten zu decken";
 "withdrawingShareOfStakedPosition" = "%1$@ deines gestakten %2$@";
 "withdrawPercentage" = "Abhebungsprozentsatz";

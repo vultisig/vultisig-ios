@@ -1,46 +1,49 @@
 //
-//  TCYUnstakeBasisPoints.swift
+//  WithdrawBasisPoints.swift
 //  VultisigApp
 //
 
 import Foundation
 
-/// Converts a TCY withdrawal amount into the basis points the `tcy-:<bps>` memo
-/// actually carries.
+/// Converts a withdrawal amount into the basis points a *fractional* withdrawal
+/// memo carries.
 ///
-/// ⚠️ **The memo names a fraction of the position, never an amount.** THORChain's
-/// `tcy-` handler reads ten-thousandths of whatever is staked at execution time,
-/// so an arbitrary decimal amount is not representable and no amount of app-side
-/// care can make one withdraw exactly. (Contrast `RUJIUnstakeTransactionBuilder`,
-/// whose `withdraw:<asset>:<raw>` memo *does* carry an absolute amount and is
-/// therefore exact — the difference is the protocol, not this code.)
+/// ⚠️ **Such a memo names a fraction of the position, never an amount.** THORChain's
+/// `tcy-:<bps>` handler and MAYAChain's `POOL-:<bps>` one both read ten-thousandths
+/// of whatever is staked at execution time, so an arbitrary decimal amount is not
+/// representable and no amount of app-side care can make one withdraw exactly.
+/// (Contrast `RUJIUnstakeTransactionBuilder`, whose `withdraw:<asset>:<raw>` memo
+/// *does* carry an absolute amount and is therefore exact — the difference is the
+/// protocol, not this code.)
 ///
 /// What was representable and was being thrown away is the resolution. The amount
 /// used to reach the memo through a whole percentage — `Int(50.0679) * 100` — which
-/// spends 100 of the 10 000 steps the memo can address. On a 2002.74 TCY position
-/// one of those coarse steps is 20.03 TCY, and that is the reported bug: a request
-/// for 1002.73 floored to 50% and paid out 1001.37.
+/// spends 100 of the 10 000 steps the memo can address. Worked through on the
+/// staked-TCY position the defect was reported against: 2002.74 TCY, where one of
+/// those coarse steps is 20.03 TCY, so a request for 1002.73 floored to 50% and
+/// paid out 1001.37. The same arithmetic applies to any position and any of these
+/// memos — the ten-thousandths are a property of the convention, not of TCY.
 ///
 /// Converting straight to basis points and rounding DOWN (see `value(forAmount:available:)`
 /// for why down) leaves at most one basis point behind — 0.01% of the position,
 /// about 0.20 TCY on that same position — and never takes more than was asked for.
 /// Because the result can no longer land on the user's exact figure, the screens
-/// around signing quote the quantised amount rather than the typed one; see
-/// `TCYUnstakePresentation`.
-enum TCYUnstakeBasisPoints {
+/// around signing quote the quantised amount rather than the typed one; the TCY
+/// instance of that is `TCYUnstakePresentation`.
+enum WithdrawBasisPoints {
 
     /// A full exit. Also the clamp ceiling — a memo can never ask for more of the
     /// position than all of it.
     static let max = 10_000
 
     /// The smallest fraction the memo can express. Anything under one basis point
-    /// of the position rounds to `tcy-:0`, which asks for nothing.
+    /// of the position rounds to a `:0` memo, which asks for nothing.
     static let min = 1
 
     /// Basis points of `available` that `amount` comes to, rounded DOWN and
     /// clamped to `1...10000`, or `0` when the amount is smaller than a single
     /// basis point (or there is nothing staked). A `0` is never a valid memo — it
-    /// is the signal for `TCYUnstakeAmountValidator` to reject the amount.
+    /// is the signal for `WithdrawMinimumAmountValidator` to reject the amount.
     ///
     /// ⚠️ **Down, not to nearest.** Rounding to nearest tracks the typed figure
     /// more closely on average, but it can round *up*, and up has a cliff at the
@@ -73,9 +76,9 @@ enum TCYUnstakeBasisPoints {
     /// chain for.
     ///
     /// ⚠️ Deliberately NOT rounded. Rounding the threshold up to a display
-    /// precision makes small positions unwithdrawable: a 0.00005 TCY position
-    /// would be compared against a 0.0001 minimum and could never be closed, not
-    /// even at MAX.
+    /// precision makes small positions unwithdrawable: a 0.00005 position would
+    /// be compared against a 0.0001 minimum and could never be closed, not even
+    /// at MAX.
     static func minimumAmount(forAvailable available: Decimal) -> Decimal {
         guard available > 0 else { return 0 }
         return available / Decimal(max)

@@ -176,11 +176,11 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         case "TCY":
             // Unlike its siblings below, TCY converts the amount straight to
             // basis points instead of through a whole percentage — see
-            // `TCYUnstakeBasisPoints`. A zero means the amount is too small for
-            // the memo to express; `TCYUnstakeAmountValidator` normally stops it
-            // reaching here, and refusing to build is the backstop.
+            // `WithdrawBasisPoints`. A zero means the amount is too small for
+            // the memo to express; `WithdrawMinimumAmountValidator` normally
+            // stops it reaching here, and refusing to build is the backstop.
             let basisPoints = tcyBasisPoints
-            guard basisPoints >= TCYUnstakeBasisPoints.min else { return nil }
+            guard basisPoints >= WithdrawBasisPoints.min else { return nil }
             return TCYUnstakeTransactionBuilder(
                 coin: coin,
                 basisPoints: basisPoints,
@@ -283,8 +283,8 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         guard availableAmount > 0 else { return 0 }
         // Pinned rather than derived: the amount field renders 4 decimals, so on
         // a small position MAX can round to 9999 and leave a sliver staked.
-        guard !isMaxAmount else { return TCYUnstakeBasisPoints.max }
-        return TCYUnstakeBasisPoints.value(
+        guard !isMaxAmount else { return WithdrawBasisPoints.max }
+        return WithdrawBasisPoints.value(
             forAmount: amountField.value.toDecimal(),
             available: availableAmount
         )
@@ -303,7 +303,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             // ten-thousandths, so an amount can be positive, inside the balance,
             // and still round away to "withdraw nothing".
             validators.append(
-                TCYUnstakeAmountValidator(available: self.availableAmount, ticker: coin.ticker)
+                WithdrawMinimumAmountValidator(available: self.availableAmount, ticker: coin.ticker)
             )
         }
         self.amountField.validators = validators
