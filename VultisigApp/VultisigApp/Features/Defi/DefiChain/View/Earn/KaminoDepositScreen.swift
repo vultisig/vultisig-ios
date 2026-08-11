@@ -38,6 +38,15 @@ struct KaminoDepositScreen: View {
                     amountDecimals: viewModel.descriptor.tokenDecimals,
                     amountField: viewModel.amountField,
                     validForm: $viewModel.validForm,
+                    // Nothing the user can type makes a deposit possible when
+                    // the wallet holds no coin for this vault's asset, when the
+                    // vault's own minimum never arrived, or when the SOL reserve
+                    // could not be measured. Those are the states the button
+                    // must read as disabled in; a below-minimum or over-balance
+                    // amount is not one of them — it is a field error the user
+                    // can fix, and the button stays tappable so tapping it
+                    // reveals the error.
+                    isContinueDisabled: viewModel.isDepositUnavailable,
                     customViewPosition: .bottom
                 ) {
                     Task { await handleVerify() }
