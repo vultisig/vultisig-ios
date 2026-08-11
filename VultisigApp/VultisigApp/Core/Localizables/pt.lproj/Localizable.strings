@@ -943,6 +943,10 @@
 "partOf" = "parte %d de %d";
 "passcodeAlreadySet" = "Já existe um código definido neste dispositivo. Volte atrás para o alterar ou remover.";
 "passcodeAutoLockTitle" = "Bloqueio automático";
+"passcodeBackupPromptBackUpNow" = "Fazer cópia agora";
+"passcodeBackupPromptHasBackup" = "Já tenho uma cópia de segurança";
+"passcodeBackupPromptSubtitle" = "Um código encripta os seus key shares com uma chave guardada neste dispositivo. Se essa chave se perder, a sua cópia .vult é a única forma de os recuperar — o próprio código não pode ser recuperado.";
+"passcodeBackupPromptTitle" = "Faça uma cópia de segurança antes de definir um código";
 "passcodeBiometricDisableFailed" = "Não foi possível desativar o desbloqueio biométrico. Tente novamente.";
 "passcodeBiometricEnableFailed" = "Não foi possível ativar o desbloqueio biométrico. O seu código continua a funcionar.";
 "passcodeBiometricNotAvailable" = "Este dispositivo não pode usar o desbloqueio biométrico.";

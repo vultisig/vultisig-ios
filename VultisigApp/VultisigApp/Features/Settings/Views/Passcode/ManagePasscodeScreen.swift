@@ -10,7 +10,18 @@ import SwiftUI
 struct ManagePasscodeScreen: View {
 
     @Environment(\.router) var router
+    @EnvironmentObject var appViewModel: AppViewModel
     @State private var isSet: Bool = false
+    /// Raised by "Set passcode" instead of navigating, so the backup prompt is
+    /// answered before the passcode screen is reached at all.
+    ///
+    /// An *item* rather than a flag, because both answers end in a navigation
+    /// push and only `crossPlatformSheet(item:onDismiss:)` can run one after the
+    /// dismissal has settled. Pushing while the sheet is still on screen races
+    /// the dismissal animation and the destination can be dropped.
+    @State private var backupPrompt: BackupPrompt?
+    /// Which button was pressed, held until the sheet is off screen.
+    @State private var backupPromptAnswer: BackupPromptAnswer?
     @State private var isBiometricEnabled: Bool = false
     @State private var biometricAvailability: BiometricAvailability = .available
     @State private var biometricError: String?
@@ -67,6 +78,23 @@ struct ManagePasscodeScreen: View {
         .crossPlatformSheet(isPresented: $showDisable, isDismissable: !isRemoving) {
             DisablePasscodeScreen(isPresented: $showDisable, isRemoving: $isRemoving)
                 .presentationDragIndicator(.visible)
+        }
+        // Dismissable on purpose. Backing out of it is backing out of setting a
+        // passcode at all, which leaves the key shares exactly as they are — the
+        // one outcome here that cannot cost anyone their funds, and it answers
+        // nothing so `onDismiss` has nothing to carry out.
+        .crossPlatformSheet(item: $backupPrompt, onDismiss: actOnBackupPromptAnswer) { _ in
+            BackUpBeforePasscodeScreen(
+                isPresented: Binding(
+                    get: { backupPrompt != nil },
+                    set: { isPresented in
+                        guard !isPresented else { return }
+                        backupPrompt = nil
+                    }
+                ),
+                onBackUpNow: { answerBackupPrompt(with: .backUp) },
+                onContinue: { answerBackupPrompt(with: .alreadyHasBackup) }
+            )
         }
         // `.onAppear` as well as `.task`: returning from the pushed set/change
         // screens does not re-run `.task`, and a stale `isSet` would keep
@@ -130,6 +158,17 @@ struct ManagePasscodeScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// Presence is what presents the backup prompt; it carries nothing, because
+    /// the answer travels separately and outlives the dismissal.
+    struct BackupPrompt: Identifiable, Equatable {
+        let id = UUID()
+    }
+
+    enum BackupPromptAnswer {
+        case backUp
+        case alreadyHasBackup
+    }
+
     enum Row: Hashable {
         case set
         case change
@@ -186,7 +225,7 @@ struct ManagePasscodeScreen: View {
     private func handle(_ row: Row) {
         switch row {
         case .set:
-            router.navigate(to: SettingsRoute.setPasscode)
+            backupPrompt = BackupPrompt()
         case .change:
             router.navigate(to: SettingsRoute.changePasscode)
         case .autoLock:
@@ -196,6 +235,47 @@ struct ManagePasscodeScreen: View {
         case .biometrics:
             // Rendered as a toggle, never as a tappable destination.
             break
+        }
+    }
+
+    /// Records the answer and closes the sheet. Acting on it waits for
+    /// ``actOnBackupPromptAnswer()``.
+    private func answerBackupPrompt(with answer: BackupPromptAnswer) {
+        backupPromptAnswer = answer
+        backupPrompt = nil
+    }
+
+    /// Carries out the answer, once the sheet is actually off screen.
+    ///
+    /// Both destinations are navigation pushes, and a push issued while the
+    /// sheet is still dismissing can be dropped — which is why the prompt is an
+    /// item-based sheet at all.
+    private func actOnBackupPromptAnswer() {
+        guard let answer = backupPromptAnswer else { return }
+        backupPromptAnswer = nil
+
+        switch answer {
+        case .backUp:
+            // The passcode seals the key shares of *every* stored vault, not
+            // just the selected one, so the destination is the backup
+            // **selection** screen — the one entry point that can export more
+            // than the current vault. Which vaults to take is left to the user
+            // there rather than decided here.
+            guard let vault = appViewModel.selectedVault else {
+                // No vault means nothing to export and nothing to lose, so the
+                // prompt has nothing to offer. Falling through to the passcode
+                // screen beats a button that does nothing.
+                router.navigate(to: SettingsRoute.setPasscode)
+                return
+            }
+            router.navigate(to: VaultRoute.backupSelection(vault: vault))
+        case .alreadyHasBackup:
+            // Taken at face value deliberately: `Vault.isBackedUp` is set by any
+            // export or import and never cleared when the vault changes
+            // afterwards, so it can neither confirm this answer nor contradict
+            // it. Recording it as if it could would put a claim in the store
+            // that later code might trust.
+            router.navigate(to: SettingsRoute.setPasscode)
         }
     }
 

@@ -943,6 +943,10 @@
 "partOf" = "parte %d di %d";
 "passcodeAlreadySet" = "Su questo dispositivo è già impostato un codice. Torna indietro per cambiarlo o rimuoverlo.";
 "passcodeAutoLockTitle" = "Blocco automatico";
+"passcodeBackupPromptBackUpNow" = "Fai il backup ora";
+"passcodeBackupPromptHasBackup" = "Ho già un backup";
+"passcodeBackupPromptSubtitle" = "Un codice cifra i tuoi key share con una chiave conservata su questo dispositivo. Se quella chiave va persa, il tuo backup .vult è l'unico modo per recuperarli: il codice stesso non può essere recuperato.";
+"passcodeBackupPromptTitle" = "Fai un backup prima di impostare un codice";
 "passcodeBiometricDisableFailed" = "Non è stato possibile disattivare lo sblocco con la biometria. Riprova.";
 "passcodeBiometricEnableFailed" = "Non è stato possibile attivare lo sblocco con la biometria. Il codice continua a funzionare.";
 "passcodeBiometricNotAvailable" = "Questo dispositivo non può usare lo sblocco con la biometria.";
