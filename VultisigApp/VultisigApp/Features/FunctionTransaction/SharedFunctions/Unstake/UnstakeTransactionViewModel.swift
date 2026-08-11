@@ -174,12 +174,12 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
 
         switch coin.ticker.uppercased() {
         case "TCY":
-            // Unlike its siblings below, TCY converts the amount straight to
-            // basis points instead of through a whole percentage — see
-            // `WithdrawBasisPoints`. A zero means the amount is too small for
-            // the memo to express; `WithdrawMinimumAmountValidator` normally
-            // stops it reaching here, and refusing to build is the backstop.
-            let basisPoints = tcyBasisPoints
+            // Converts the amount straight to basis points instead of through a
+            // whole percentage — see `WithdrawBasisPoints`. A zero means the
+            // amount is too small for the memo to express;
+            // `WithdrawMinimumAmountValidator` normally stops it reaching here,
+            // and refusing to build is the backstop.
+            let basisPoints = withdrawBasisPoints
             guard basisPoints >= WithdrawBasisPoints.min else { return nil }
             return TCYUnstakeTransactionBuilder(
                 coin: coin,
@@ -217,10 +217,14 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             )
 
         case "CACAO":
-            return CacaoUnstakeTransactionBuilder(
-                coin: coin,
-                bps: Int(resolvedPercentage) * 100,
-            )
+            // `POOL-:<bps>` is the same 0…10000 fractional withdrawal TCY's memo
+            // is, on MAYAChain rather than THORChain, and it was reached the same
+            // wrong way: `Int(percentage) * 100` spends 100 of the memo's 10 000
+            // steps, so a step is a whole 1% of the position and everything
+            // between two steps is floored away.
+            let basisPoints = withdrawBasisPoints
+            guard basisPoints >= WithdrawBasisPoints.min else { return nil }
+            return CacaoUnstakeTransactionBuilder(coin: coin, bps: basisPoints)
         default:
             return nil
         }
@@ -269,8 +273,30 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         AmountPercentageBinding.percentage(ofAmount: amountField.value.toDecimal(), available: availableAmount) ?? 0
     }
 
-    /// The share of the staked position the TCY memo will ask for, in basis
-    /// points.
+    /// Whether this position is addressed in ten-thousandths of itself — the unit
+    /// THORChain's `tcy-:<bps>` and MAYAChain's `POOL-:<bps>` carry, and the unit
+    /// the TCY auto-compound redemption scales its receipt shares by.
+    ///
+    /// What it decides is the FIELD: these positions carry
+    /// `WithdrawMinimumAmountValidator`, so an amount too small for the memo to
+    /// express is refused instead of quietly becoming a fee paid to withdraw
+    /// nothing.
+    ///
+    /// ⚠️ It does not dispatch the conversion — `transactionBuilder`'s switch does
+    /// that, because each ticker also selects a different builder. So this list and
+    /// the branches that call `withdrawBasisPoints` are two statements of the same
+    /// fact and have to be changed together. A branch converted without being added
+    /// here gets the finer conversion with no floor under it, which is the
+    /// round-to-zero hazard the validator exists to close.
+    ///
+    /// bRUNE/ybRUNE and RUJI-compound are deliberately absent: they scale receipt
+    /// base units by `percentage / 100` instead of addressing the position in
+    /// ten-thousandths, which is a different mechanism and a different change.
+    private var withdrawsInBasisPoints: Bool {
+        ["TCY", "CACAO"].contains(coin.ticker.uppercased())
+    }
+
+    /// The share of the position the memo will ask for, in basis points.
     ///
     /// Derived from the amount rather than from `percentageSelected`, because the
     /// amount is the finer of the two: the slider moves in whole percent, so
@@ -279,7 +305,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     ///
     /// Closing the position pins the ceiling exactly instead of deriving it, so a
     /// full exit can never leave a rounding remainder staked.
-    var tcyBasisPoints: Int {
+    var withdrawBasisPoints: Int {
         guard availableAmount > 0 else { return 0 }
         // Pinned rather than derived: the amount field renders 4 decimals, so on
         // a small position MAX can round to 9999 and leave a sliver staked.
@@ -298,10 +324,10 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         var validators: [FormFieldValidator] = [
             AmountBalanceValidator(balance: self.availableAmount)
         ]
-        if coin.ticker.uppercased() == "TCY" {
-            // The TCY memo asks for a fraction of the position in
-            // ten-thousandths, so an amount can be positive, inside the balance,
-            // and still round away to "withdraw nothing".
+        if withdrawsInBasisPoints {
+            // These memos ask for a fraction of the position in ten-thousandths,
+            // so an amount can be positive, inside the balance, and still round
+            // away to "withdraw nothing".
             validators.append(
                 WithdrawMinimumAmountValidator(available: self.availableAmount, ticker: coin.ticker)
             )

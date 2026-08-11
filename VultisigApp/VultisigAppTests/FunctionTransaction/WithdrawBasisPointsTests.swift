@@ -208,13 +208,95 @@ final class WithdrawBasisPointsTests: XCTestCase {
 
     // MARK: - Scope
 
-    /// bRUNE, RUJI-compound and CACAO reach the same view model through the same
-    /// percentage expression and are deliberately left on it — this issue fences
-    /// them off. If someone converts them later, this is the test that should be
-    /// updated rather than silently passing.
-    func testTheCacaoSiblingStillBuildsFromAWholePercentage() throws {
+    /// MAYAChain's `POOL-:<bps>` addresses the position in the same
+    /// ten-thousandths THORChain's `tcy-:` does, so it gets the same conversion —
+    /// `POOL-:5000` here would be the 1%-granularity defect, on a different chain.
+    func testTheCacaoWithdrawalAsksForTheAmountThatWasTypedToo() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
+        let viewModel = try makeCacaoViewModel(typing: "1002.73")
+
+        XCTAssertEqual(try XCTUnwrap(viewModel.transactionBuilder).memo, "POOL-:5006")
+    }
+
+    /// The floor applies on MAYAChain for the same reason it does on THORChain:
+    /// under one basis point of the position, `POOL-:0` is a fee paid to withdraw
+    /// nothing.
+    func testACacaoAmountBelowOneBasisPointIsRefused() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let viewModel = try makeCacaoViewModel(typing: "0.05")
+
+        // ⚠️ The REAL validator chain, not a hand-set `validForm`: the minimum has
+        // to be installed on the CACAO field, not just computed correctly.
+        XCTAssertThrowsError(try viewModel.amountField.validate())
+        XCTAssertNil(viewModel.transactionBuilder)
+    }
+
+    /// ⚠️ bRUNE/ybRUNE and RUJI-compound are still on the whole-percentage
+    /// expression, deliberately: they scale receipt base units by
+    /// `percentage / 100` rather than addressing the position in ten-thousandths,
+    /// which is a different mechanism and a different change. If someone converts
+    /// them later, this is the test that should be updated rather than silently
+    /// passing.
+    ///
+    /// The withdrawn units are the assertion because neither unbond carries a memo
+    /// — the fraction rides in the wasm execute's funds. Both share 8 decimals with
+    /// their receipt token, so both land on the same figure for the same position.
+    func testTheReceiptScalingSiblingsStillBuildFromAWholePercentage() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        for asset in [TokensStore.brune, TokensStore.ruji] {
+            let viewModel = UnstakeTransactionViewModel(
+                coin: Coin(
+                    asset: asset,
+                    address: "thor1fixturereceiptvaultaddress0000000000",
+                    hexPublicKey: "02" + String(repeating: "00", count: 32)
+                ),
+                vault: TestStore.makeVault(),
+                isAutocompound: true,
+                availableToUnstake: staked
+            )
+            viewModel.availableAmount = staked
+            viewModel.autocompoundBalance = staked
+            type("1002.73", into: viewModel)
+
+            let payload = try XCTUnwrap(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
+            // Int(50.0679) = 50 — the flooring this issue fences off. Addressing
+            // the same position in ten-thousandths would redeem 5006 bps of
+            // 200274000000 = 100257164400 units instead.
+            XCTAssertEqual(payload.coins.first?.amount, "100137000000", "\(asset.ticker)")
+        }
+    }
+
+    /// The bonded RUJI position is exact already and must stay untouched: its
+    /// `withdraw:<asset>:<raw>` memo carries an ABSOLUTE amount, so there is no
+    /// fraction to quantise and nothing here applies to it.
+    func testTheBondedRujiWithdrawalStillCarriesTheTypedAmount() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = UnstakeTransactionViewModel(
+            coin: Coin(
+                asset: TokensStore.ruji,
+                address: "thor1fixturerujivaultaddress00000000000000",
+                hexPublicKey: "02" + String(repeating: "00", count: 32)
+            ),
+            vault: TestStore.makeVault(),
+            isAutocompound: false,
+            availableToUnstake: staked
+        )
+        viewModel.availableAmount = staked
+        type("1002.73", into: viewModel)
+
+        XCTAssertEqual(
+            try XCTUnwrap(viewModel.transactionBuilder).memo,
+            "withdraw:x/ruji:100273000000"
+        )
+    }
+
+    private func makeCacaoViewModel(typing amount: String) throws -> UnstakeTransactionViewModel {
         let cacao = Coin(
             asset: TokensStore.cacao,
             address: "maya1fixturecacaovaultaddress000000000000",
@@ -227,8 +309,10 @@ final class WithdrawBasisPointsTests: XCTestCase {
             availableToUnstake: staked
         )
         viewModel.availableAmount = staked
-        type("1002.73", into: viewModel)
-
-        XCTAssertEqual(try XCTUnwrap(viewModel.transactionBuilder).memo, "POOL-:5000")
+        // What `onLoad()` does before the user touches anything — it is what
+        // installs the field's validators.
+        viewModel.setupAmountField()
+        type(amount, into: viewModel)
+        return viewModel
     }
 }
