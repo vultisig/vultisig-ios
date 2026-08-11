@@ -302,6 +302,37 @@ final class KaminoEarnViewModelTests: XCTestCase {
         XCTAssertTrue(persistedAllez.isEnabled)
     }
 
+    /// A `/pnl` outage is a failed read like every other one here, and the store
+    /// is where the difference shows: a `nil` written over a real figure outlives
+    /// the outage that produced it, and the next launch seeds a row whose profit
+    /// and loss has silently gone.
+    func testAFailedPnlReadKeepsTheCachedFigureRatherThanErasingIt() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        service.pnl = [steakhouse.address: KaminoFixtures.pnl(token: "12.5")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+        XCTAssertEqual(viewModel.rows.first?.pnlToken, Decimal(string: "12.5"))
+
+        // The next pass finds `/pnl` down. Every other read still answers, so
+        // the row is rebuilt rather than kept by `keepCached`.
+        service.pnl = [:]
+        await viewModel.refresh(owner: owner)
+
+        XCTAssertEqual(viewModel.rows.first?.pnlToken, Decimal(string: "12.5"))
+        XCTAssertEqual(
+            storage.position(for: vault, vaultAddress: steakhouse.address)?.pnlToken,
+            Decimal(string: "12.5"),
+            "A transient PnL failure must not overwrite the persisted figure."
+        )
+        XCTAssertEqual(
+            makeViewModel().rows.first?.pnlToken,
+            Decimal(string: "12.5"),
+            "The relaunch seed reads the store, so an erasure there is permanent."
+        )
+    }
+
     // MARK: - Rates
 
     /// Fiat is read from `RateProvider`'s cache, which is populated from the
