@@ -14,7 +14,11 @@ enum RootRoute {
 }
 
 struct ContentView: View {
-    @Query var vaults: [Vault]
+    /// Deliberately not a `@Query`. This view is the root of the whole
+    /// `NavigationStack`, so a live query here re-evaluates every screen in the
+    /// app on every store change of every model type — and nothing this view
+    /// draws reads the vault list. See ``SwiftData/ModelContext/fetchAllVaults()``.
+    @Environment(\.modelContext) private var modelContext
 
     @ObservedObject var navigationRouter: NavigationRouter
     @StateObject var router: VultisigRouter
@@ -131,6 +135,8 @@ struct ContentView: View {
             onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
         )
         .onLoad {
+            let vaults = modelContext.fetchAllVaults()
+
             // The cold-start gate is not decided here. It is decided in
             // `VultisigApp.init()`, because this modifier runs *after* the
             // splash child's `onAppear` has already taken the splash down.
@@ -283,7 +289,13 @@ struct ContentView: View {
             return
         }
 
-        guard !appViewModel.showOnboarding && !vaults.isEmpty else {
+        // An unreadable store must not read as "no vaults" here: that answer
+        // takes the branch below, which drops the splash without ever asking for
+        // authentication. Unknown counts as "there are vaults", so a store that
+        // cannot be read costs a biometric prompt rather than skipping one.
+        let hasVaults = modelContext.fetchVaultsIfAvailable().map { !$0.isEmpty } ?? true
+
+        guard !appViewModel.showOnboarding && hasVaults else {
             dismissSplashTask?.cancel()
             dismissSplashTask = Task { @MainActor in
                 try? await Task.sleep(for: .seconds(2))
@@ -352,7 +364,7 @@ struct ContentView: View {
 
     private func handleDeepLinkURL(_ url: URL) {
         do {
-            try deeplinkViewModel.extractParameters(url, vaults: vaults)
+            try deeplinkViewModel.extractParameters(url, vaults: modelContext.fetchAllVaults())
             deeplinkError = nil
         } catch {
             deeplinkError = error

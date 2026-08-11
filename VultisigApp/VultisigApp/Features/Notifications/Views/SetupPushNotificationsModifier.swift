@@ -8,7 +8,12 @@ import SwiftUI
 
 struct SetupPushNotificationsModifier: ViewModifier {
     let vault: Vault
-    @Query var vaults: [Vault]
+    /// Deliberately not a `@Query`. This modifier is applied to the home screen,
+    /// so a live query here reinstates on the home tree the whole-window
+    /// invalidation that ``ContentView`` gave up — and `checkIfNeeded()` is the
+    /// only reader, from an event handler.
+    /// See ``SwiftData/ModelContext/fetchAllVaults()``.
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var shouldShow: Bool = false
@@ -58,17 +63,19 @@ struct SetupPushNotificationsModifier: ViewModifier {
 
         // Case 1: First app opening with existing vaults — show intro
         if !pushNotificationManager.hasSeenNotificationPrompt
-            && pushNotificationManager.hadVaultsOnStartup
-            && !vaults.isEmpty {
+            && pushNotificationManager.hadVaultsOnStartup {
 
-            pushNotificationManager.hasSeenNotificationPrompt = true
-            for vault in vaults {
-                pushNotificationManager.markVaultNotificationPrompted(vault)
+            let vaults = modelContext.fetchAllVaults()
+            if !vaults.isEmpty {
+                pushNotificationManager.hasSeenNotificationPrompt = true
+                for vault in vaults {
+                    pushNotificationManager.markVaultNotificationPrompted(vault)
+                }
+
+                activeSheetType = .intro
+                shouldShow = true
+                return
             }
-
-            activeSheetType = .intro
-            shouldShow = true
-            return
         }
 
         // Case 2: New/imported vault — show single vault opt-in
