@@ -313,9 +313,19 @@ struct PasscodeEntryView: View {
     /// exists, and applying it would seed the next one with a digit nobody typed
     /// there: seven digits into "choose a passcode" would silently start the
     /// confirmation, and a pasted six would submit it.
+    ///
+    /// **Why a complete entry takes no keys at all.** An entry submits the moment
+    /// it fills, so once it is complete what is waiting on it is a verification
+    /// that reads `entry` when it runs. An edit applied a turn later — a delete,
+    /// a paste — would have that verification check a passcode the user never
+    /// submitted, and spend one of the throttled attempts on it. `isBusy` covers
+    /// the verification itself but is only set once the submitting task has
+    /// started; this covers the gap between the entry filling and that happening.
+    /// It has to be judged on `base` rather than the binding, for the same reason
+    /// everything else here is.
     private func enqueue(_ edit: (String) -> String?) -> KeyPress.Result {
         let base = keyboard.expected ?? passcode
-        guard !isBusy, let next = edit(base) else { return .handled }
+        guard !isBusy, base.count < digitCount, let next = edit(base) else { return .handled }
         keyboard.expected = next
 
         DispatchQueue.main.async {
