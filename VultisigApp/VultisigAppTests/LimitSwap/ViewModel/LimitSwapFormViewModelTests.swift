@@ -230,6 +230,133 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(viaPill.draft.targetPrice, viaField.draft.targetPrice)
     }
 
+    // MARK: - two-way amounts (the driver rule)
+
+    func testTypingSellMakesSellTheDriver() {
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.amountChanged(BigInt(100_000_000))
+        XCTAssertEqual(vm.draft.amountDriver, .sell)
+    }
+
+    func testTypingBuyDerivesTheSellAmount() {
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)  // want 16 ETH at 16 ETH/BTC → 1 BTC
+        XCTAssertEqual(vm.draft.amountDriver, .buy)
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(100_000_000))
+    }
+
+    func testPriceChangeMovesTheSellSideWhenBuyIsDriving() {
+        // The rule's whole point: "I want 16 ETH" survives a price change, and
+        // what it COSTS is what moves.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(100_000_000))
+
+        vm.targetPriceChanged(8)  // half the price → twice the deposit
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(200_000_000))
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 16, "the stated output must not drift")
+    }
+
+    func testPriceChangeMovesTheBuySideWhenSellIsDriving() {
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.amountChanged(BigInt(100_000_000))
+        XCTAssertEqual(vm.expectedBuyAmount, 16)
+
+        vm.targetPriceChanged(8)
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(100_000_000), "the stated deposit must not drift")
+        XCTAssertEqual(vm.expectedBuyAmount, 8)
+    }
+
+    func testPresetPillAlsoHonoursTheDriver() {
+        // Presets assign the price directly instead of going through
+        // `targetPriceChanged`, so without an explicit call there the rule would
+        // hold for typing and silently break for tapping.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 16
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        let before = vm.draft.sourceAmount
+
+        vm.selectPresetPct(100)  // price doubles → the same output costs half
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 16)
+        XCTAssertLessThan(vm.draft.sourceAmount, before)
+    }
+
+    func testBuyDrivenEntryNeverOverstatesTheGuaranteedOutput() {
+        // A typed output may settle slightly lower after the deposit truncates —
+        // that is the order's real minimum. It must never settle HIGHER.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = Decimal(string: "3.7")!
+        vm.buyAmountChanged(10)
+        XCTAssertLessThanOrEqual(vm.expectedBuyAmount, 10)
+    }
+
+    func testChangingTheTargetAssetHandsControlBackToSell() {
+        // The stated output referred to the OLD target asset.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        XCTAssertEqual(vm.draft.amountDriver, .buy)
+
+        vm.selectToAsset(ethAsset())
+        XCTAssertEqual(vm.draft.amountDriver, .sell)
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 0)
+    }
+
+    func testChangingTheSourceAssetHandsControlBackToSell() {
+        // A derived deposit was scaled to the OLD source's decimals.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+
+        vm.selectFromAsset(btcAsset())
+        XCTAssertEqual(vm.draft.amountDriver, .sell)
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 0)
+    }
+
+    func testBuyDrivenAmountInvalidatesTheNetworkFee() {
+        // The deposit changed, so a fee estimated against the previous one must
+        // not be snapshotted into the order.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        vm.buyAmountChanged(16)
+        XCTAssertEqual(vm.networkFeeEstimate, .zero)
+    }
+
+    func testAnUnchangedDerivedDepositKeepsTheFeeEstimate() {
+        // The fee refresh is driven by an observer on `draft.sourceAmount`. If a
+        // derived write zeroed the estimate WITHOUT moving the deposit, nothing
+        // would observe a change, no replacement would be scheduled, and the CTA
+        // — which requires a resolved fee — would stay disabled forever.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        let deposit = vm.draft.sourceAmount
+        vm.networkFeeEstimate = BigInt(4_200)
+
+        // Re-stating the same output derives the same deposit.
+        vm.buyAmountChanged(16)
+
+        XCTAssertEqual(vm.draft.sourceAmount, deposit)
+        XCTAssertEqual(vm.networkFeeEstimate, BigInt(4_200), "an unchanged deposit must not strand the fee at zero")
+    }
+
+    func testCanPlaceOrderRejectsADepositThatFloorsTheLimToZero() async {
+        // A positive deposit isn't enough: computeLim truncates again into 1e8
+        // fixed point, so dust at a low price yields LIM = 0 and throws at memo
+        // build. The CTA must not enable for an order that can only fail.
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(1))
+        vm.draft.targetPrice = Decimal(string: "0.00000001")!
+
+        XCTAssertEqual(vm.expectedBuyAmount, 0, "precondition: this amount/price yields no derivable output")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()))
+    }
+
     // MARK: - expiry
 
     func testSelectExpiryBlocksUpdatesDraft() {

@@ -19,6 +19,16 @@ struct LimitSwapDraft: Equatable {
     /// that could drift from it. The duration picker converts minutes at its edge.
     var expiryBlocks: Int
     var displayUnit: PriceDisplayUnit
+    /// Which amount the user stated; the other is derived. See `LimitAmountDriver`.
+    var amountDriver: LimitAmountDriver
+    /// The output the user asked for, retained while `amountDriver == .buy`.
+    ///
+    /// Kept rather than read back off the displayed buy amount, because that
+    /// display is itself derived from the CURRENT price — recomputing the sell
+    /// side from it on every price change would compound the derivation and walk
+    /// the figure the user typed away from them. This holds the stated intent.
+    /// Meaningless (and left at 0) while Sell is driving.
+    var desiredTargetOutput: Decimal
     var isFastVault: Bool
     var fastVaultPassword: String
 
@@ -29,6 +39,8 @@ struct LimitSwapDraft: Equatable {
         targetPrice: Decimal = 0,
         expiryBlocks: Int = THORChainConstants.blocks(forHours: 24),
         displayUnit: PriceDisplayUnit = .asset,
+        amountDriver: LimitAmountDriver = .sell,
+        desiredTargetOutput: Decimal = 0,
         isFastVault: Bool = false,
         fastVaultPassword: String = ""
     ) {
@@ -38,6 +50,8 @@ struct LimitSwapDraft: Equatable {
         self.targetPrice = targetPrice
         self.expiryBlocks = expiryBlocks
         self.displayUnit = displayUnit
+        self.amountDriver = amountDriver
+        self.desiredTargetOutput = desiredTargetOutput
         self.isFastVault = isFastVault
         self.fastVaultPassword = fastVaultPassword
     }
@@ -146,4 +160,20 @@ extension LimitSwapAsset {
 enum PriceDisplayUnit: Equatable {
     case usd
     case asset
+}
+
+/// Which side of the trade the user last stated, and therefore which one holds
+/// when the price moves.
+///
+/// `sell × price = buy` has three quantities and two degrees of freedom. The
+/// price is never the dependent one — stating a price IS the limit order — so
+/// Sell and Buy are the two ends of one lever and this names the end being held.
+/// Without it, a price change has no principled answer to "which amount moves?",
+/// and a user who typed the output they wanted would watch it drift.
+enum LimitAmountDriver: Equatable {
+    /// The user stated what they are spending; Buy is derived. The historical
+    /// behaviour, and the default.
+    case sell
+    /// The user stated what they want to receive; Sell is derived.
+    case buy
 }

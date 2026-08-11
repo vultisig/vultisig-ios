@@ -40,6 +40,11 @@ private enum LimitFocusField: Hashable {
     /// The Sell amount — the only balance-derived field, so the only one that
     /// gets the percentage buttons.
     case sellAmount
+    /// The Buy amount. Editable, but deliberately WITHOUT the percentage
+    /// buttons: those are percentages of the source balance, which is a Sell
+    /// concept — offering them here would apply a share of what you hold to the
+    /// side describing what you want.
+    case buyAmount
     /// The percent-offset-from-market field. Bound two-way to the price, and the
     /// only field whose sign is meaningful, so it takes a keyboard with a minus
     /// key rather than the decimal pad the others use.
@@ -72,6 +77,18 @@ struct LimitSwapBodyView: View {
     let toCoin: Coin
 
     @State private var sourceAmountText: String = ""
+    /// Buy-side amount text. Editable; when the user types here the Sell side
+    /// becomes the derived one (see `LimitAmountDriver`).
+    @State private var buyAmountText: String = ""
+    /// Absorbs the one echo of a programmatic write to `buyAmountText`, the same
+    /// guard the USD and percent mirrors use — without it, settling the field to
+    /// the re-derived `expectedBuyAmount` would read as a fresh user edit and
+    /// re-enter `buyAmountChanged` with a rounded figure.
+    @State private var lastSyncedBuyText: String?
+    /// Echo guard for programmatic writes to `sourceAmountText` — the Sell field
+    /// is now written to as well as read, whenever a Buy-driven entry moves the
+    /// deposit.
+    @State private var lastSyncedSellText: String?
     @State private var priceText: String = ""
     /// Percent-offset-from-market mirror of the price. Editable; two-way bound to
     /// `draft.targetPrice` through the VM's `pctFromMarketChanged` / `pctFromMarket`.
@@ -122,6 +139,7 @@ struct LimitSwapBodyView: View {
                         fromCoin: fromCoin,
                         toCoin: toCoin,
                         sourceAmountText: $sourceAmountText,
+                        buyAmountText: $buyAmountText,
                         focusedField: $focusedField,
                         onPickFromAsset: onPickFromAsset,
                         onPickToAsset: onPickToAsset,
@@ -164,7 +182,15 @@ struct LimitSwapBodyView: View {
 
             PrimaryButton(
                 title: "limitSwap.placeOrder".localized,
-                action: onPlaceOrder
+                action: {
+                    // Settle both amount fields before handing off. Tapping the
+                    // CTA does not resign focus on its own, so a Buy amount typed
+                    // and never blurred would still be showing the REQUESTED
+                    // figure while the order guarantees the derived one.
+                    focusedField = nil
+                    settleAmountFields()
+                    onPlaceOrder()
+                }
             )
             .disabled(!vm.canPlaceOrder(sourceCoin: fromCoin))
             .padding(.bottom, 16)
@@ -216,6 +242,7 @@ struct LimitSwapBodyView: View {
                 sourceAmountText = formatPrice(fromCoin.decimal(for: vm.draft.sourceAmount))
             }
             syncPctText()
+            syncBuyText()
         }
         .onChange(of: pctText) { _, newText in
             // Absorb the one echo of a programmatic sync, so a resync that lands
@@ -233,9 +260,43 @@ struct LimitSwapBodyView: View {
             syncPctText()
         }
         .onChange(of: sourceAmountText) { _, newText in
+            // Absorb the echo of a programmatic settle. Without this, writing the
+            // DERIVED deposit back into the Sell field would read as a user edit
+            // and hand the driver straight back to Sell — undoing the Buy-driven
+            // entry on the very frame it was applied.
+            let synced = lastSyncedSellText
+            lastSyncedSellText = nil
+            guard isUserFieldEdit(newText: newText, lastSyncedText: synced) else { return }
             vm.amountChanged(parseLimitAmount(newText, decimals: vm.draft.fromAsset.decimals))
             // A manual edit clears the selected-percentage highlight (market parity).
             showAllPercentageButtons = true
+            syncBuyText()
+        }
+        .onChange(of: vm.draft.sourceAmount) { _, _ in
+            // The deposit is what gets signed. When it moves because the user
+            // stated an OUTPUT (or the price shifted under a Buy-driven entry),
+            // the Sell field has to follow — otherwise the screen shows one
+            // deposit and the memo carries another.
+            syncSellText()
+        }
+        .onChange(of: focusedField) { _, _ in
+            // Both amount fields settle to their derived values on blur. Their
+            // guards are focus-based (a value comparison would fight the caret
+            // mid-typing, since every keystroke re-derives the other side), so
+            // losing focus is what has to trigger the settle.
+            syncBuyText()
+            syncSellText()
+        }
+        .onChange(of: buyAmountText) { _, newText in
+            // Absorb the one echo of a programmatic settle, so re-deriving the
+            // field can't re-enter the setter with its own rounded output.
+            let synced = lastSyncedBuyText
+            lastSyncedBuyText = nil
+            guard isUserFieldEdit(newText: newText, lastSyncedText: synced) else { return }
+            vm.buyAmountChanged(parseLimitDecimal(newText))
+        }
+        .onChange(of: vm.expectedBuyAmount) { _, _ in
+            syncBuyText()
         }
         .onChange(of: priceText) { _, newText in
             let parsed = parseLimitPrice(newText)
@@ -271,6 +332,12 @@ struct LimitSwapBodyView: View {
             // field from the unchanged canonical price.
             syncUsdText(for: vm.draft.targetPrice)
         }
+        .onChange(of: toCoin) { _, _ in
+            // A new target asset makes the old buy figure meaningless (the VM has
+            // already handed control back to Sell); re-derive rather than leave a
+            // number denominated in an asset that is no longer selected.
+            syncBuyText()
+        }
         .onChange(of: fromCoin) { _, newCoin in
             // The source coin's decimals changed. `sourceAmountText`'s onChange
             // only fires on TEXT edits, so without this the visible amount ("1")
@@ -289,7 +356,14 @@ struct LimitSwapBodyView: View {
     /// the same reason: macOS has no keyboard accessory, so it has no caller.
     private func handleSellPercentage(_ pct: Int) {
         showAllPercentageButtons = false
-        sourceAmountText = vm.sourceAmountText(forPercentage: pct, of: fromCoin)
+        let text = vm.sourceAmountText(forPercentage: pct, of: fromCoin)
+        sourceAmountText = text
+        // Tell the VM directly rather than relying on the text observer: when the
+        // percentage resolves to the text already displayed, no change fires, and
+        // the driver would stay `.buy` even though Sell is plainly the side the
+        // user just acted on — after which a price change would move the amount
+        // they had just pinned.
+        vm.amountChanged(parseLimitAmount(text, decimals: vm.draft.fromAsset.decimals))
     }
     #endif
 
@@ -313,6 +387,83 @@ struct LimitSwapBodyView: View {
         formatter.usesGroupingSeparator = false
         return formatter.string(from: NSDecimalNumber(decimal: value))
             ?? NSDecimalNumber(decimal: value).stringValue
+    }
+
+    /// Settle both amount fields to their canonical values, ignoring focus.
+    ///
+    /// The per-field syncs decline to write while their field is focused, which
+    /// is right during editing but wrong at the moment of commitment: `@FocusState`
+    /// is not guaranteed to have cleared by the time the action body runs, so the
+    /// guards cannot be relied on to have lifted. This forces the settle.
+    private func settleAmountFields() {
+        forceSyncSellText()
+        forceSyncBuyText()
+    }
+
+    /// Re-derive the Sell field from the deposit currently in the draft.
+    ///
+    /// The draft's `sourceAmount` is what gets signed and broadcast, so the field
+    /// showing it must never lag behind: a Buy-driven entry, or a price change
+    /// while Buy is driving, both move the deposit without the Sell field being
+    /// touched. Declines to write while Sell is focused — that text is the user's
+    /// own — and records the value it writes so `onChange(sourceAmountText)` can
+    /// tell its own echo from a real edit and not flip the driver back.
+    private func syncSellText() {
+        guard focusedField != .sellAmount else { return }
+        forceSyncSellText()
+    }
+
+    private func forceSyncSellText() {
+        let amount = vm.draft.sourceAmount
+        guard amount > 0 else {
+            guard !sourceAmountText.isEmpty else { return }
+            lastSyncedSellText = ""
+            sourceAmountText = ""
+            return
+        }
+        guard parseLimitAmount(sourceAmountText, decimals: vm.draft.fromAsset.decimals) != amount else {
+            return
+        }
+        let text = formatPrice(fromCoin.decimal(for: amount))
+        lastSyncedSellText = text
+        sourceAmountText = text
+    }
+
+    /// Re-derive the Buy field from the order's guaranteed output.
+    ///
+    /// Same value-comparison guard the percent mirror uses, and for the same
+    /// reason: while Buy is the field being typed into, its text is the user's
+    /// stated intent and rewriting it would move the caret. Once the derived
+    /// output no longer matches what the text says — because Sell was edited, the
+    /// price moved, or the deposit was truncated — the field settles to the
+    /// figure the order actually guarantees.
+    ///
+    /// That settle is why a typed `10` can read back as `9.99999998`: it is the
+    /// real minimum, not a rounding artefact, and showing the typed value instead
+    /// would overstate what the order promises.
+    private func syncBuyText() {
+        guard focusedField != .buyAmount else { return }
+        forceSyncBuyText()
+    }
+
+    private func forceSyncBuyText() {
+        let derived = vm.expectedBuyAmount
+        guard derived > 0 else {
+            guard !buyAmountText.isEmpty else { return }
+            lastSyncedBuyText = ""
+            buyAmountText = ""
+            return
+        }
+        guard parseLimitDecimal(buyAmountText) != derived else { return }
+        // `formatPrice`, NOT `NSDecimalNumber.stringValue`: this field is now
+        // EDITABLE and its parser is locale-aware, so writing a locale-neutral
+        // "." into a comma-decimal locale would let the value be re-read with the
+        // point treated as a grouping separator — the 1000x misparse
+        // `parseLimitDecimal` documents. The read-only field this replaced could
+        // not be re-parsed, so it never had the hazard.
+        let text = formatPrice(derived)
+        lastSyncedBuyText = text
+        buyAmountText = text
     }
 
     /// Re-derive `pctText` from the canonical target price and the live market
@@ -1367,6 +1518,7 @@ private struct LimitAssetSwapForm: View {
     let fromCoin: Coin
     let toCoin: Coin
     @Binding var sourceAmountText: String
+    @Binding var buyAmountText: String
     /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
     var focusedField: FocusState<LimitFocusField?>.Binding
     let onPickFromAsset: () -> Void
@@ -1393,9 +1545,12 @@ private struct LimitAssetSwapForm: View {
                     kind: .buy,
                     coin: toCoin,
                     asset: vm.draft.toAsset,
-                    amountText: .constant(formattedBuyAmount),
-                    editableFocus: nil,
+                    amountText: $buyAmountText,
+                    editableFocus: .buyAmount,
                     focusedField: focusedField,
+                    // The fiat sub-line reads the DERIVED output, not the typed
+                    // text, so it states what the order actually guarantees even
+                    // while the field still shows what was asked for.
                     computedAmount: buyAmountDecimal,
                     usdPricePerUnit: vm.targetUsdPricePerUnit,
                     onPickAsset: onPickToAsset
@@ -1409,9 +1564,9 @@ private struct LimitAssetSwapForm: View {
         }
     }
 
-    /// Buy amount preview — the VM derives it from the signed `computeLim`
-    /// path so it can't diverge from the memo's truncated LIM. `nil` when not
-    /// yet computable (row shows "0").
+    /// Buy amount as the ORDER guarantees it — the VM derives it from the signed
+    /// `computeLim` path so it can't diverge from the memo's truncated LIM. `nil`
+    /// when not yet computable (row shows "0").
     private var buyAmountDecimal: Decimal? {
         let amount = vm.expectedBuyAmount
         return amount > 0 ? amount : nil

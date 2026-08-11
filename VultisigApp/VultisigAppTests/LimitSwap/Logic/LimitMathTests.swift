@@ -570,6 +570,78 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(parseLimitPercent("-2,5", locale: Locale(identifier: "de_DE")), Decimal(string: "-2.5")!)
     }
 
+    // MARK: - limitSourceAmount (Buy-driven entry)
+
+    func testSourceAmountForTargetOutputIsTheInverseOfExpectedOutput() {
+        // 0.25 BTC at 28.79289 ETH/BTC buys ~7.198 ETH; asking for that output
+        // must come back to the same deposit.
+        let price = Decimal(string: "28.79289")!
+        let output = limitOrderExpectedOutput(
+            sourceAmount: BigInt(25_000_000),
+            sourceDecimals: 8,
+            targetPrice: price
+        )
+        let source = limitSourceAmount(forTargetOutput: output, targetPrice: price, sourceDecimals: 8)
+        XCTAssertEqual(source, BigInt(25_000_000))
+    }
+
+    func testSourceAmountTruncatesRatherThanRoundingUp() {
+        // Rounding up would spend more of the balance than asked, purely to make
+        // a screen figure come out exact. One smallest-unit short is the safe
+        // direction: the re-derived output is what the order guarantees.
+        let source = limitSourceAmount(
+            forTargetOutput: Decimal(string: "0.000000015")!,
+            targetPrice: 1,
+            sourceDecimals: 8
+        )
+        XCTAssertEqual(source, BigInt(1), "1.5 smallest units must truncate to 1, not round to 2")
+    }
+
+    func testSourceAmountNeverOverstatesTheGuaranteedOutput() {
+        // The invariant that makes truncation safe: re-deriving the output from
+        // the truncated deposit must never exceed what was asked for.
+        let price = Decimal(string: "3.7")!
+        for requested in ["1", "10", "0.5", "123.456789"] {
+            let output = Decimal(string: requested)!
+            let source = limitSourceAmount(forTargetOutput: output, targetPrice: price, sourceDecimals: 18)
+            let derived = limitOrderExpectedOutput(sourceAmount: source, sourceDecimals: 18, targetPrice: price)
+            XCTAssertLessThanOrEqual(derived, output, "asked for \(requested)")
+        }
+    }
+
+    func testSourceAmountIsZeroForNonPositiveInputs() {
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: 0, targetPrice: 16, sourceDecimals: 8), 0)
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: 10, targetPrice: 0, sourceDecimals: 8), 0)
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: -1, targetPrice: 16, sourceDecimals: 8), 0)
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: 10, targetPrice: -1, sourceDecimals: 8), 0)
+    }
+
+    func testSourceAmountBelowOneSmallestUnitIsZeroNotOne() {
+        // Dust: an output too small to cost even one smallest unit must not
+        // fabricate a deposit.
+        let source = limitSourceAmount(
+            forTargetOutput: Decimal(string: "0.000000001")!,
+            targetPrice: 1_000,
+            sourceDecimals: 8
+        )
+        XCTAssertEqual(source, 0)
+    }
+
+    func testSourceAmountIsQuantizedToDisplayPrecision() {
+        // An 18-decimal source would otherwise derive a deposit carrying more
+        // decimals than the Sell field renders, so the amount on screen would not
+        // be the amount signed. The derived value must survive a round trip
+        // through the field's own precision.
+        let price = Decimal(string: "3.7")!
+        let source = limitSourceAmount(forTargetOutput: 10, targetPrice: price, sourceDecimals: 18)
+
+        let natural = Decimal(string: source.description)! / pow(Decimal(10), 18)
+        var rounded = Decimal()
+        var value = natural
+        NSDecimalRound(&rounded, &value, limitAmountDisplayPrecision, .down)
+        XCTAssertEqual(natural, rounded, "a derived deposit must not carry more decimals than the field shows")
+    }
+
     // MARK: - clampLimitExpiryBlocks
 
     func testExpiryInsideTheRangeIsUnchanged() {

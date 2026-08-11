@@ -118,6 +118,13 @@ final class LimitSwapFormViewModel {
     func canPlaceOrder(sourceCoin: Coin) -> Bool {
         draft.targetPrice > 0
             && draft.sourceAmount > 0
+            // A positive deposit is not sufficient: `computeLim` truncates a
+            // second time into 1e8 fixed point, so a dust amount at a low price
+            // still floors the LIM to zero and throws at memo build. Requiring a
+            // derivable output means the CTA can't enable for an order that can
+            // only fail — reachable from either entry direction, and easier to
+            // reach now that a deposit can be derived from a small stated output.
+            && expectedBuyAmount > 0
             && isAdvancedSwapQueueEnabled
             // The TTL ceiling has to be a resolved value, not the seeded default:
             // a lower live cap would mean signing a window the chain shortens.
@@ -320,6 +327,10 @@ final class LimitSwapFormViewModel {
     // MARK: - User input mutations
 
     func amountChanged(_ amount: BigInt) {
+        // Typing the Sell side makes it the stated one; Buy goes back to being
+        // derived (`expectedBuyAmount` already reads from the signed-LIM path).
+        draft.amountDriver = .sell
+        draft.desiredTargetOutput = 0
         draft.sourceAmount = amount
         // The network fee (UTXO especially) is amount-dependent; drop the stale
         // estimate so a fee from a previous amount can never be snapshotted into
@@ -386,6 +397,64 @@ final class LimitSwapFormViewModel {
         // A manual edit: a pending pair refresh must not overwrite it with the
         // delayed Market preset.
         targetPriceEditSeq += 1
+        reconcileAmountsAfterPriceChange()
+    }
+
+    /// Hold the amount the user stated and move the other one.
+    ///
+    /// Only the Buy-driven case needs work: when Sell is driving, the Buy display
+    /// is `expectedBuyAmount`, already derived from the live price, so it follows
+    /// on its own. When Buy is driving, the deposit is what has to change — the
+    /// user asked for an output, and a different price means a different cost.
+    ///
+    /// Called from EVERY path that moves the price (the price field, the USD
+    /// mirror, the percent field, the preset pills, a chart drag), because a rule
+    /// that held for only some of them would be worse than no rule: the figure
+    /// the user typed would survive one interaction and silently drift on another.
+    private func reconcileAmountsAfterPriceChange() {
+        guard draft.amountDriver == .buy, draft.desiredTargetOutput > 0 else { return }
+        setDerivedSourceAmount(limitSourceAmount(
+            forTargetOutput: draft.desiredTargetOutput,
+            targetPrice: draft.targetPrice,
+            sourceDecimals: draft.fromAsset.decimals
+        ))
+    }
+
+    /// Write a DERIVED deposit, invalidating the fee estimate only if it actually
+    /// moved.
+    ///
+    /// The fee refresh is driven by an observer on `draft.sourceAmount`, so an
+    /// unconditional invalidation is a deadlock when truncation leaves the
+    /// deposit unchanged: the estimate is zeroed, nothing observes a change, no
+    /// replacement is scheduled, and `canPlaceOrder` — which requires a resolved
+    /// fee — stays false indefinitely. Small price nudges under a Buy-driven
+    /// entry hit this readily, since the derived deposit often lands on the same
+    /// smallest unit.
+    private func setDerivedSourceAmount(_ amount: BigInt) {
+        guard amount != draft.sourceAmount else { return }
+        draft.sourceAmount = amount
+        invalidateNetworkFeeEstimate()
+    }
+
+    /// Set the output the user wants to receive, deriving the deposit that buys it.
+    ///
+    /// The stated output is retained (`desiredTargetOutput`) rather than being
+    /// re-read from the display later: the displayed buy is itself derived from
+    /// the current price, so recomputing from it on each price change would walk
+    /// the typed figure away from what was asked for.
+    ///
+    /// The Buy field then settles to `expectedBuyAmount` — re-derived from the
+    /// truncated deposit through the same path the signed memo's LIM uses — so a
+    /// typed `10` may read back as `9.99999998`. That is the order's real
+    /// guaranteed minimum, and it keeps display == memo.
+    func buyAmountChanged(_ output: Decimal) {
+        draft.amountDriver = .buy
+        draft.desiredTargetOutput = output
+        setDerivedSourceAmount(limitSourceAmount(
+            forTargetOutput: output,
+            targetPrice: draft.targetPrice,
+            sourceDecimals: draft.fromAsset.decimals
+        ))
     }
 
     /// Set the target price from a typed **percent offset against market** — the
@@ -464,6 +533,9 @@ final class LimitSwapFormViewModel {
             // refresh's delayed Market auto-seed must not clobber it.
             targetPriceEditSeq += 1
         }
+        // Assigns the price directly rather than going through
+        // `targetPriceChanged`, so the driver rule has to be applied here too.
+        reconcileAmountsAfterPriceChange()
     }
 
     /// Set the target price from a drag on the chart.
@@ -564,6 +636,12 @@ final class LimitSwapFormViewModel {
 
     func selectFromAsset(_ asset: LimitSwapAsset) {
         draft.fromAsset = asset
+        // The stated amount referred to the previous pair — a desired output in
+        // the old target asset means nothing in the new one, and a source amount
+        // derived from it was scaled to the old source's decimals. Hand control
+        // back to the Sell side rather than silently reinterpreting either.
+        draft.amountDriver = .sell
+        draft.desiredTargetOutput = 0
         // Pair changed; the cached market price is stale and any prior
         // preset/manual selection no longer applies. The network-fee estimate is
         // per-source too — drop it so a fee for the previous source can't be
@@ -582,6 +660,12 @@ final class LimitSwapFormViewModel {
 
     func selectToAsset(_ asset: LimitSwapAsset) {
         draft.toAsset = asset
+        // The stated amount referred to the previous pair — a desired output in
+        // the old target asset means nothing in the new one, and a source amount
+        // derived from it was scaled to the old source's decimals. Hand control
+        // back to the Sell side rather than silently reinterpreting either.
+        draft.amountDriver = .sell
+        draft.desiredTargetOutput = 0
         marketPriceRef = nil
         // Pair changed — clear the prior routability verdict (see selectFromAsset).
         pairUnroutableReason = nil

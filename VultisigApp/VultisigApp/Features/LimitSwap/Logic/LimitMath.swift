@@ -103,6 +103,59 @@ func limNaturalOutput(_ lim: BigInt) -> Decimal {
     return natural
 }
 
+/// Decimal places the amount fields render, and therefore the precision a
+/// DERIVED amount must be quantized to.
+///
+/// A derived deposit that carries more decimals than the field shows would make
+/// the screen disagree with the signed transaction. Matches the 1e8 fixed point
+/// THORChain uses for the LIM, so the two ends of the form round the same way.
+let limitAmountDisplayPrecision = 8
+
+/// The source amount needed to buy `targetOutput` of the target asset at
+/// `targetPrice` — the inverse of `limitOrderExpectedOutput`, for the entry
+/// direction where the user states what they want to RECEIVE.
+///
+/// **Truncates, never rounds up.** Rounding up would make a typed buy figure come
+/// out exact on screen at the cost of spending more of the user's balance than
+/// they asked for — the display would be flattering and the deposit would be
+/// larger. Truncating means the derived sell is at most one smallest-unit short,
+/// and the buy the caller then re-derives through `limitOrderExpectedOutput` is
+/// the order's real guaranteed minimum. So a typed `10` may settle to
+/// `9.99999998`: the same **display == memo** rule the rest of this file keeps,
+/// applied to the direction the user did not type.
+///
+/// Returns 0 for a non-positive output or price — there is no meaningful source
+/// amount for either, and the caller's validation rejects both upstream.
+func limitSourceAmount(
+    forTargetOutput targetOutput: Decimal,
+    targetPrice: Decimal,
+    sourceDecimals: Int
+) -> BigInt {
+    guard targetOutput > 0, targetPrice > 0 else { return 0 }
+
+    // Quantize to the precision the Sell field can DISPLAY before scaling into
+    // the coin's smallest units. Without this, an 18-decimal source derives an
+    // amount carrying more decimals than the field renders, so the deposit shown
+    // on screen is not the deposit that gets signed — the exact divergence this
+    // form is built to prevent. Truncating (not rounding) keeps the derived
+    // deposit at or below what the stated output requires.
+    var rawUnits = targetOutput / targetPrice
+    var units = Decimal()
+    NSDecimalRound(&units, &rawUnits, limitAmountDisplayPrecision, .down)
+
+    var scaled = Decimal()
+    NSDecimalMultiplyByPowerOf10(&scaled, &units, Int16(sourceDecimals), .down)
+    var truncated = Decimal()
+    NSDecimalRound(&truncated, &scaled, 0, .down)
+
+    guard !truncated.isNaN,
+          let amount = BigInt(NSDecimalNumber(decimal: truncated).stringValue),
+          amount > 0 else {
+        return 0
+    }
+    return amount
+}
+
 /// Source amount (in the source coin's smallest units) to probe THORChain with
 /// when seeding the market-price reference *before* the user enters an amount.
 ///
