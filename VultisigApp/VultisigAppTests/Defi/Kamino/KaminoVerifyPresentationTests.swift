@@ -118,6 +118,44 @@ final class KaminoVerifyPresentationTests: XCTestCase {
         XCTAssertNil(KaminoTransactionDecoder.decode(try SolanaV0Transaction(base64Transaction: mutable.base64())))
     }
 
+    /// The bytes have to be the shape this app is willing to SIGN, not merely
+    /// one it can read. The raw signing path hashes the message verbatim and
+    /// replaces signature slot 0 only, so a transaction that requires a second
+    /// signature would be approved on a screen describing an ordinary deposit —
+    /// with whatever the other signer authorises nowhere on it. The initiator's
+    /// validator asserts this before building; a relayed transaction reaches
+    /// nothing but the decoder.
+    func testRefusesATransactionThatRequiresMoreThanOneSignature() throws {
+        var mutable = try MutableTransaction(base64: KaminoTransactionFixtures.usdcDeposit.source)
+        mutable.numRequiredSignatures = 2
+        let base64 = try mutable.base64()
+
+        let transaction = try SolanaV0Transaction(base64Transaction: base64)
+        XCTAssertTrue(KaminoTransactionDecoder.invokesKaminoVault(transaction))
+        XCTAssertNil(KaminoTransactionDecoder.decode(transaction))
+        // And the screen says so, rather than falling back to an ordinary
+        // Solana payload that mentions none of this.
+        XCTAssertEqual(
+            KaminoVerifyPresentation.state(for: payload(transaction: base64, marker: nil)),
+            .unreadable
+        )
+    }
+
+    /// The same for a signature slot that is already filled: the splice at index
+    /// 0 assumes an empty placeholder, so bytes carrying a contribution somebody
+    /// else made are not the unsigned transaction this screen claims to show.
+    func testRefusesATransactionWhoseSignatureSlotIsAlreadyFilled() throws {
+        let mutable = try MutableTransaction(base64: KaminoTransactionFixtures.usdcDeposit.source)
+        var bytes = try mutable.bytes()
+        // One required signature, so the compact length is a single byte and the
+        // slot it counts begins immediately after it.
+        bytes[1] = 0x01
+
+        let transaction = try SolanaV0Transaction(base64Transaction: Data(bytes).base64EncodedString())
+        XCTAssertTrue(KaminoTransactionDecoder.invokesKaminoVault(transaction))
+        XCTAssertNil(KaminoTransactionDecoder.decode(transaction))
+    }
+
     /// Two kvault instructions means two amounts, and picking one to display
     /// would be a guess about which the user cares about.
     func testRefusesTwoVaultInstructions() throws {

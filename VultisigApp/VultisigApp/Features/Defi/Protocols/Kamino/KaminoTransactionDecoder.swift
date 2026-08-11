@@ -201,6 +201,19 @@ enum KaminoTransactionDecoder {
         let accounts = transaction.staticAccountAddresses
         guard let signer = accounts.first else { return nil }
 
+        // The shape this app is willing to SIGN, not merely one it can read: a
+        // single required signature, still an empty placeholder, paid for by the
+        // account in slot 0. The initiator asserts the same precondition before
+        // building, but a relayed transaction never passed through that path —
+        // and the raw signing path splices a signature into slot 0 without
+        // inspecting how many the message requires. Without this, a payload
+        // carrying a second required signer, or a prefilled signature that some
+        // other key already contributed, would be summarised as an ordinary
+        // deposit and stamped verified.
+        guard (try? transaction.validateUnsignedSingleSigner(feePayer: signer)) != nil else {
+            return nil
+        }
+
         let programs = transaction.instructions.map { instruction -> KaminoSolanaProgram? in
             let index = Int(instruction.programIdIndex)
             guard accounts.indices.contains(index) else { return nil }
