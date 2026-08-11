@@ -51,6 +51,10 @@ private enum Fixture {
         snapshotHeight: 205,
         snapshotTimestamp: 1_700_000_500
     )
+    static let bondCoin = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
+    static let bondNode = BondNode(coin: bondCoin, address: "thor1node", state: .active)
+    static let churnDate = Date(timeIntervalSince1970: 1_700_000_000)
+    static let otherChurnDate = Date(timeIntervalSince1970: 1_700_090_000)
 }
 
 // MARK: - DTO factories
@@ -174,6 +178,52 @@ private func applyPublishesChange(_ position: StakePosition, _ dto: StakePositio
     }
     position.apply(dto)
     return recorder.didChange
+}
+
+/// Bond rows are upserted by copying fields inline in
+/// `DefiPositionsStorageService.upsert(_:for:)` rather than through an
+/// `apply(_:)` on the model, so this probe drives the real service call — which
+/// also puts the `Storage.shared.save()` + `.defiPositionsDidChange` post on the
+/// measured path, exactly as production runs it.
+@MainActor
+private func upsertPublishesChange(
+    _ positions: [BondPosition],
+    for vault: Vault,
+    observing existing: BondPosition
+) throws -> Bool {
+    let recorder = ChangeRecorder()
+    withObservationTracking {
+        _ = existing.amount
+        _ = existing.apy
+        _ = existing.nextReward
+        _ = existing.nextChurn
+    } onChange: {
+        recorder.record()
+    }
+    try DefiPositionsStorageService().upsert(positions, for: vault)
+    return recorder.didChange
+}
+
+/// Mirrors how `THORChainBondInteractor.materialize` builds rows: a fresh
+/// `BondPosition` bound to the same vault, whose `id` therefore collides with the
+/// persisted row and drives the upsert's update branch.
+@MainActor
+private func bondPosition(
+    node: BondNode = Fixture.bondNode,
+    amount: Decimal = 100,
+    apy: Double = 0.15,
+    nextReward: Decimal = 5,
+    nextChurn: Date? = Fixture.churnDate,
+    vault: Vault
+) -> BondPosition {
+    BondPosition(
+        node: node,
+        amount: amount,
+        apy: apy,
+        nextReward: nextReward,
+        nextChurn: nextChurn,
+        vault: vault
+    )
 }
 
 @MainActor
@@ -445,5 +495,123 @@ final class DefiPositionApplyGuardTests: XCTestCase {
 
         XCTAssertEqual(position.stakeAccountPubkey, "stake-account-A", "A non-nil pubkey is never rewritten.")
         XCTAssertEqual(position.amount, 77)
+    }
+
+    // MARK: - BondPosition upsert: the no-op case
+
+    /// Bond has no `apply(_:)` — the fields are copied inline by the service, so
+    /// this is the same defect in a different shape and is asserted through the
+    /// real `upsert` call.
+    func testBondUpsertWithIdenticalPositionPublishesNoChange() throws {
+        try DefiPositionsStorageService().upsert([bondPosition(vault: vault)], for: vault)
+        let persisted = try XCTUnwrap(vault.bondPositions.first)
+
+        let published = try upsertPublishesChange(
+            [bondPosition(vault: vault)],
+            for: vault,
+            observing: persisted
+        )
+
+        XCTAssertFalse(
+            published,
+            "An identical bond position must not mutate the persisted row. SwiftData notifies "
+                + "without comparing, so blind re-assignment re-invalidates every SwiftUI reader."
+        )
+    }
+
+    // MARK: - BondPosition upsert: the real-update case
+
+    func testBondUpsertWithDifferingPositionWritesEveryField() throws {
+        try DefiPositionsStorageService().upsert([bondPosition(vault: vault)], for: vault)
+        let persisted = try XCTUnwrap(vault.bondPositions.first)
+        let idBefore = persisted.id
+
+        let published = try upsertPublishesChange(
+            [bondPosition(amount: 999, apy: 0.99, nextReward: 77, nextChurn: Fixture.otherChurnDate, vault: vault)],
+            for: vault,
+            observing: persisted
+        )
+
+        XCTAssertTrue(published)
+        XCTAssertEqual(persisted.amount, 999)
+        XCTAssertEqual(persisted.apy, 0.99)
+        XCTAssertEqual(persisted.nextReward, 77)
+        XCTAssertEqual(persisted.nextChurn, Fixture.otherChurnDate)
+
+        // The upsert updates in place — same row, same id, no duplicate inserted.
+        XCTAssertEqual(vault.bondPositions.count, 1)
+        XCTAssertEqual(persisted.id, idBefore)
+    }
+
+    /// One case per field the upsert assigns, including `nextChurn` going nil.
+    ///
+    /// Cases are separated by NODE, not by vault: `TestStore.makeVault(pubKey:)`
+    /// varies only `name`/`pubKeyECDSA` and hardcodes `pubKeyEdDSA`, which is also
+    /// `@Attribute(.unique)` — so per-case vaults would be collapsed into one row
+    /// by SwiftData's silent unique-attribute upsert and the isolation would be an
+    /// illusion. A distinct node address gives each case its own bond `id` inside
+    /// the single fixture vault instead.
+    func testBondUpsertPublishesChangeForEverySingleFieldDifference() throws {
+        let cases: [(field: String, changed: (BondNode, Vault) -> BondPosition, verify: (BondPosition) -> Void)] = [
+            ("amount", { bondPosition(node: $0, amount: 999, vault: $1) },
+             { XCTAssertEqual($0.amount, 999) }),
+            ("apy", { bondPosition(node: $0, apy: 0.99, vault: $1) },
+             { XCTAssertEqual($0.apy, 0.99) }),
+            ("nextReward", { bondPosition(node: $0, nextReward: 77, vault: $1) },
+             { XCTAssertEqual($0.nextReward, 77) }),
+            ("nextChurn", { bondPosition(node: $0, nextChurn: Fixture.otherChurnDate, vault: $1) },
+             { XCTAssertEqual($0.nextChurn, Fixture.otherChurnDate) }),
+            ("nextChurn→nil", { bondPosition(node: $0, nextChurn: nil, vault: $1) },
+             { XCTAssertNil($0.nextChurn) })
+        ]
+
+        for (index, testCase) in cases.enumerated() {
+            // The upsert's delete-stale pass drops every row absent from the
+            // input, so each iteration removes the previous case's row. That is
+            // harmless because no earlier row is read again — but it is why the
+            // cases must not share a node address.
+            let node = BondNode(coin: Fixture.bondCoin, address: "thor1node-\(index)", state: .active)
+            try DefiPositionsStorageService().upsert([bondPosition(node: node, vault: vault)], for: vault)
+            let persisted = try XCTUnwrap(vault.bondPositions.first { $0.node.address == node.address })
+
+            let published = try upsertPublishesChange(
+                [testCase.changed(node, vault)],
+                for: vault,
+                observing: persisted
+            )
+
+            XCTAssertTrue(
+                published,
+                "\(testCase.field) differs from the stored value — upsert must write it"
+            )
+            testCase.verify(persisted)
+        }
+    }
+
+    // MARK: - BondPosition upsert: insert and delete-stale still work
+
+    /// The guard restructured `if let existing … else insert` into
+    /// `guard let existing else { insert; continue }`, so the insert branch is
+    /// pinned explicitly.
+    func testBondUpsertInsertsPositionWithNoPersistedRow() throws {
+        try DefiPositionsStorageService().upsert([bondPosition(vault: vault)], for: vault)
+
+        XCTAssertEqual(vault.bondPositions.count, 1)
+        XCTAssertEqual(vault.bondPositions.first?.amount, 100)
+    }
+
+    func testBondUpsertDeletesRowsAbsentFromInput() throws {
+        let nodeA = BondNode(coin: Fixture.bondCoin, address: "thor1nodeA", state: .active)
+        let nodeB = BondNode(coin: Fixture.bondCoin, address: "thor1nodeB", state: .active)
+        try DefiPositionsStorageService().upsert(
+            [bondPosition(node: nodeA, vault: vault), bondPosition(node: nodeB, vault: vault)],
+            for: vault
+        )
+        XCTAssertEqual(vault.bondPositions.count, 2)
+
+        try DefiPositionsStorageService().upsert([bondPosition(node: nodeA, vault: vault)], for: vault)
+
+        XCTAssertEqual(vault.bondPositions.count, 1, "Bond upsert deletes rows absent from the input.")
+        XCTAssertEqual(vault.bondPositions.first?.node.address, "thor1nodeA")
     }
 }
