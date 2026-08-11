@@ -30,10 +30,13 @@ struct KeysignMessageConfirmView: View {
                 // XRP SWAPS keep the raw memo (their on-chain routing memo).
                 let isRipplePlainPayment = ripplePayload?.coin.chain == .ripple && ripplePayload?.swapPayload == nil
                 // A limit-order PLACEMENT, reconstructed from the `=<:` memo the
-                // way the cancel path reads its `m=<:` one. When present it takes
-                // precedence over the generic simulation hero, which would show a
-                // co-signer a plain deposit/swap rather than the resting order it
-                // is actually signing. `nil` for every non-placement memo.
+                // way the cancel path reads its `m=<:` one — here for the target
+                // price and expiry ROWS. `nil` for every non-placement memo.
+                //
+                // The hero reconstructs it again inside the resolver rather than
+                // being handed this value: a shared entry point that takes one
+                // provider's input is the coupling the registry exists to remove,
+                // and the cost is splitting a short string twice.
                 let placement = LimitOrderPlacementPresentation.display(for: viewModel.keysignPayload)
                 SendCryptoVerifySummaryView(
                     input: SendCryptoVerifySummary(
@@ -56,17 +59,17 @@ struct KeysignMessageConfirmView: View {
                         amountFiat: lpDictionary == nil ? viewModel.getAmountFiat() : "",
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
-                        // A co-signer sees only the payload, so the `m=<` memo is
-                        // what identifies a limit-order cancel — the same thing
-                        // THORChain reads. It takes precedence over the
-                        // simulation-derived hero: a cancel's dust transfer
-                        // simulates as an ordinary send, which is exactly the
-                        // reading this replaces.
-                        hero: LimitOrderCancelPresentation.hero(
-                            forSignedMemo: viewModel.keysignPayload?.memo
-                        ) ?? LimitOrderPlacementPresentation.hero(
-                            memo: viewModel.keysignPayload?.memo,
-                            display: placement
+                        // A co-signer sees only the payload, so the memo is what
+                        // identifies what is being signed — the same thing
+                        // THORChain reads. Any presentation that recognises it
+                        // takes precedence over the simulation-derived hero: a
+                        // cancel's dust transfer simulates as an ordinary send,
+                        // which is exactly the reading this replaces. Which
+                        // presentations get asked here, and in what order, is
+                        // `TransactionHeroResolver`'s to say.
+                        hero: TransactionHeroResolver.hero(
+                            on: .keysignConfirm,
+                            for: viewModel.keysignPayload
                         ) ?? viewModel.heroContent,
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
