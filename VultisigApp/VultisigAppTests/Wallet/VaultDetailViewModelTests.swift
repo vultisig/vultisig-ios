@@ -479,6 +479,21 @@ final class VaultDetailViewModelTests: XCTestCase {
         )
     }
 
+    /// A backup encodes `enabledKaminoVaults`, not the position rows — those are
+    /// materialised on the first visit to the DeFi screen. So a restored vault
+    /// arrives already enabled with no rows at all, and a gate that only reads
+    /// rows would advertise the feature back to the user who turned it on.
+    func testKaminoBanner_isHiddenForARestoredVaultBeforeItsRowsExist() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let restored = makeVault(pubKey: "restored", chains: [.solana])
+
+        restored.enabledKaminoVaults = [KaminoVaultRegistry.steakhouseUSDC.address]
+        XCTAssertTrue(restored.kaminoPositions.isEmpty, "The import restores the choice, not the cache.")
+
+        XCTAssertFalse(logic.setupBanners(for: restored, store: store, now: fixedNow).contains(.kaminoEarn))
+    }
+
     /// AC: different intents are independent — dismissing one banner does not
     /// suppress another.
     func testDismiss_isPerIntent_doesNotSuppressOtherBanners() {

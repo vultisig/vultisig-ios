@@ -294,7 +294,15 @@ struct VaultDetailLogic {
                     // at all — the banner opens the Solana DeFi screen — and
                     // the user has to not already be earning, since a promo for
                     // something you are doing is just noise on your own screen.
+                    //
+                    // "Already earning" is read from BOTH records because they
+                    // arrive at different times. `enabledKaminoVaults` is what a
+                    // backup encodes and what an import restores; the position
+                    // rows are materialised later, on the first visit to the
+                    // DeFi screen. Reading only the rows would promote the
+                    // feature to a restored user who had already turned it on.
                     return vault.nativeCoin(for: .solana) != nil
+                        && vault.enabledKaminoVaults.isEmpty
                         && !vault.kaminoPositions.contains(where: \.isEnabled)
                 case .buyVult, .followVultisig:
                     return true
