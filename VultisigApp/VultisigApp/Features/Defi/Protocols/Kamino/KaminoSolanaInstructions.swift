@@ -22,6 +22,10 @@ enum KaminoSolanaProgram: String, CaseIterable {
     case computeBudget = "ComputeBudget111111111111111111111111111111"
     case kvault = "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd"
     case farms = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
+    /// SPL Memo v3, carrying this app's attribution tag. Never present in what
+    /// Kamino builds — the app appends it, which is why a memo arriving from the
+    /// API is a refusal rather than something to pass through.
+    case memo = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 
     init?(programId: String) {
         self.init(rawValue: programId)
@@ -39,7 +43,7 @@ enum KaminoSolanaProgram: String, CaseIterable {
         switch self {
         case .system, .token, .token2022, .associatedToken:
             return true
-        case .computeBudget, .kvault, .farms:
+        case .computeBudget, .kvault, .farms, .memo:
             return false
         }
     }
@@ -47,6 +51,23 @@ enum KaminoSolanaProgram: String, CaseIterable {
     var isTokenProgram: Bool {
         self == .token || self == .token2022
     }
+}
+
+/// The attribution tag this app writes into every Kamino transaction it builds.
+///
+/// Kamino's kvault API takes no referrer or partner parameter, so attribution is
+/// client-side: one SPL Memo instruction carrying this literal, appended after
+/// the API has built the transaction and before it is validated and signed.
+///
+/// The bytes are the whole point. This tag is the filter every downstream
+/// measurement of Vultisig-originated deposits keys on — Kamino's own
+/// attribution and the public Dune queries alike — and it has to be
+/// byte-identical here, on Android and on Windows. So it is written once, and
+/// the injector, the validator and the verify-screen decoder all read it from
+/// here rather than each spelling it out.
+enum KaminoAttribution {
+    static let memoTag = "vs"
+    static let memoTagBytes = [UInt8](Data(memoTag.utf8))
 }
 
 /// Instruction discriminators for the programs a Kamino Earn transaction uses.

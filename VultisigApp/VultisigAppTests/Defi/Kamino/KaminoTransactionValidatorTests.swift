@@ -434,6 +434,82 @@ final class KaminoTransactionValidatorTests: XCTestCase {
 
     // MARK: - Priority fee
 
+    // MARK: - Attribution memo
+
+    /// The validator runs again on its own output, so the tagged form — budget
+    /// pair in front, attribution memo behind — has to pass. If it did not, the
+    /// memo could never be injected before the final gate.
+    func testAcceptsTheTaggedTransactions() throws {
+        try assertValid(
+            try KaminoTransactionFixtures.usdcDeposit.tagged,
+            intent: Self.usdcDepositIntent
+                .replacing(priorityFee: Self.fee(KaminoTransactionFixtures.usdcDeposit))
+                .expectingAttributionMemo()
+        )
+        try assertValid(
+            try KaminoTransactionFixtures.usdcWithdraw.tagged,
+            intent: Self.usdcWithdrawIntent
+                .replacing(priorityFee: Self.fee(KaminoTransactionFixtures.usdcWithdraw))
+                .expectingAttributionMemo()
+        )
+    }
+
+    /// Kamino emits no memo, so one arriving with the response is text this app
+    /// would be logging on chain under the user's signature without having
+    /// written it.
+    func testRejectsAMemoTheAppDidNotWrite() throws {
+        let tagged = try KaminoTransactionFixtures.usdcDeposit.tagged
+        let memoIndex = try SolanaV0Transaction(base64Transaction: tagged).instructions.count - 1
+
+        assertRefused(
+            tagged,
+            intent: Self.usdcDepositIntent
+                .replacing(priorityFee: Self.fee(KaminoTransactionFixtures.usdcDeposit)),
+            expected: .unexpectedMemo(index: memoIndex)
+        )
+    }
+
+    /// The tag is the whole reason the Memo program is allow-listed, and it is
+    /// matched whole. A memo that merely STARTS with the tag is a different
+    /// memo — and the attribution filter downstream keys on the exact bytes.
+    func testRejectsAMemoCarryingAnythingButTheTag() throws {
+        for text in ["v", "vsx", "VS", "vs "] {
+            var mutable = try MutableTransaction(base64: try KaminoTransactionFixtures.usdcDeposit.tagged)
+            mutable.instructions[mutable.instructions.count - 1].data = [UInt8](Data(text.utf8))
+
+            assertRefused(
+                try mutable.base64(),
+                intent: Self.usdcDepositIntent
+                    .replacing(priorityFee: Self.fee(KaminoTransactionFixtures.usdcDeposit))
+                    .expectingAttributionMemo(),
+                // The template names the memo as a REQUIRED last step, and this
+                // is not it — `kind` refuses the payload before the walk can
+                // match it — so the refusal is the missing step rather than an
+                // extra instruction. Either way the transaction does not pass.
+                expected: .missingInstruction("attribution memo")
+            )
+        }
+    }
+
+    /// A memo listing accounts is the Memo program attesting that they signed.
+    /// Attribution is not an attestation, and the accounts it would name are the
+    /// user's.
+    func testRejectsAMemoThatNamesAccounts() throws {
+        var mutable = try MutableTransaction(base64: try KaminoTransactionFixtures.usdcDeposit.tagged)
+        mutable.instructions[mutable.instructions.count - 1].accounts = [0]
+
+        assertRefused(
+            try mutable.base64(),
+            intent: Self.usdcDepositIntent
+                .replacing(priorityFee: Self.fee(KaminoTransactionFixtures.usdcDeposit))
+                .expectingAttributionMemo(),
+            expected: .malformedInstruction(
+                index: mutable.instructions.count - 1,
+                detail: "attribution memo takes no accounts"
+            )
+        )
+    }
+
     /// The fee is `limit × price` lamports out of the user's balance and Kamino
     /// emits no ComputeBudget instruction at all, so one arriving with the
     /// response is a spend nobody asked for.
@@ -892,7 +968,23 @@ private extension KaminoTransactionIntent {
     }
 
     func replacing(priorityFee: KaminoPriorityFee?) -> KaminoTransactionIntent {
-        KaminoTransactionIntent(operation: operation, vault: vault, owner: owner, priorityFee: priorityFee)
+        KaminoTransactionIntent(
+            operation: operation,
+            vault: vault,
+            owner: owner,
+            priorityFee: priorityFee,
+            carriesAttributionMemo: carriesAttributionMemo
+        )
+    }
+
+    func expectingAttributionMemo() -> KaminoTransactionIntent {
+        KaminoTransactionIntent(
+            operation: operation,
+            vault: vault,
+            owner: owner,
+            priorityFee: priorityFee,
+            carriesAttributionMemo: true
+        )
     }
 
     func replacing(descriptor: KaminoVaultDescriptor) -> KaminoTransactionIntent {
@@ -900,7 +992,8 @@ private extension KaminoTransactionIntent {
             operation: operation,
             vault: vault.replacing(descriptor: descriptor),
             owner: owner,
-            priorityFee: priorityFee
+            priorityFee: priorityFee,
+            carriesAttributionMemo: carriesAttributionMemo
         )
     }
 

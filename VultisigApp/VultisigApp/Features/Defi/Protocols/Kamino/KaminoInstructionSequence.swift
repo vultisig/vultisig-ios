@@ -41,6 +41,7 @@ enum KaminoInstructionSequence {
         case farmsStake
         case farmsUnstake
         case farmsWithdrawUnstakedDeposits
+        case attributionMemo
 
         var name: String {
             switch self {
@@ -56,6 +57,7 @@ enum KaminoInstructionSequence {
             case .farmsStake: return "farm stake"
             case .farmsUnstake: return "farm unstake"
             case .farmsWithdrawUnstakedDeposits: return "farm unstaked share withdrawal"
+            case .attributionMemo: return "attribution memo"
             }
         }
     }
@@ -138,6 +140,11 @@ enum KaminoInstructionSequence {
     /// - Parameter hasPriorityFee: whether the app's ComputeBudget pair has been
     ///   injected. The API emits none, so before injection their presence is a
     ///   refusal and after it their absence is.
+    /// - Parameter hasAttributionMemo: whether the app's attribution memo has
+    ///   been appended. Same contract as `hasPriorityFee`, and for the same
+    ///   reason: the API emits no memo, so one arriving before injection came
+    ///   from somewhere else, and one missing after injection means the tag this
+    ///   app claims to write is not in the bytes it is about to sign.
     /// - Parameter farmUnstake: whether this withdraw has to release shares from
     ///   the vault's farm first. Ignored for a deposit.
     static func expected(
@@ -145,6 +152,7 @@ enum KaminoInstructionSequence {
         isWrappedSolVault: Bool,
         hasFarm: Bool,
         hasPriorityFee: Bool,
+        hasAttributionMemo: Bool = false,
         farmUnstake: FarmUnstake = .unknown
     ) -> [Step] {
         var steps: [Step] = []
@@ -230,6 +238,14 @@ enum KaminoInstructionSequence {
             steps.append(Step(.closeTokenAccount, required: isWrappedSolVault, repeatable: true))
         }
 
+        // Last, because that is where the injector appends it: the memo records
+        // who originated the transaction and takes no part in what it does, so
+        // it sits behind every instruction that moves money rather than in
+        // front of them.
+        if hasAttributionMemo {
+            steps.append(Step(.attributionMemo, required: true, repeatable: false))
+        }
+
         return steps
     }
 
@@ -260,6 +276,13 @@ enum KaminoInstructionSequence {
             if Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultDeposit { return .kvaultDeposit }
             if Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultWithdraw { return .kvaultWithdraw }
             return nil
+        case .memo:
+            // The tag is matched WHOLE, not as a prefix. A memo is free-form
+            // bytes, so "vs" followed by anything else is a different memo —
+            // and the one thing this app is willing to sign under the Memo
+            // program is its own attribution tag, exactly.
+            return data == KaminoAttribution.memoTagBytes ? .attributionMemo : nil
+
         case .farms:
             if Array(data.prefix(8)) == KaminoInstructionDiscriminator.farmsInitializeUser {
                 return .farmsInitializeUser

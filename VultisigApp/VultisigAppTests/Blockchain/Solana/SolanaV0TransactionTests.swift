@@ -400,6 +400,88 @@ final class SolanaV0TransactionTests: XCTestCase {
         )
     }
 
+    func testMemoProgramKeyIsTheDecodedProgramId() {
+        XCTAssertEqual(SolanaV0Transaction.memoProgramKey.count, 32)
+        XCTAssertEqual(
+            Base58.encodeNoCheck(data: Data(SolanaV0Transaction.memoProgramKey)),
+            SolanaV0Transaction.memoProgramId
+        )
+    }
+
+    // MARK: - Memo injection
+
+    /// The memo goes on the END, carries its text verbatim and attests to
+    /// nobody. Position matters as much as content: everything ahead of it keeps
+    /// the index it already had, which is what lets the shared instruction
+    /// template describe the tagged transaction by appending one step.
+    func testMemoInjectionAppendsOneAccountlessInstructionCarryingTheText() throws {
+        let transaction = try SolanaV0Transaction(wireBytes: try Builder().bytes())
+
+        let tagged = try transaction.injectingMemo("vs")
+
+        XCTAssertEqual(tagged.instructions.count, transaction.instructions.count + 1)
+        let memo = try XCTUnwrap(tagged.instructions.last)
+        XCTAssertEqual(memo.data, [UInt8]("vs".utf8))
+        XCTAssertTrue(memo.accountIndexes.isEmpty)
+        XCTAssertEqual(tagged.staticAccountKeys[Int(memo.programIdIndex)], SolanaV0Transaction.memoProgramKey)
+        // Appended to the read-only unsigned block, exactly like the budget key.
+        XCTAssertEqual(tagged.staticAccountKeys.count, transaction.staticAccountKeys.count + 1)
+        XCTAssertEqual(tagged.numReadonlyUnsignedAccounts, transaction.numReadonlyUnsignedAccounts + 1)
+        // And the instruction that was already there is untouched.
+        XCTAssertEqual(tagged.instructions[0], transaction.instructions[0])
+    }
+
+    /// The whole point of the injection is that it does not disturb which
+    /// account any existing instruction addresses — the lookup-loaded ones move
+    /// one slot later, and their indexes have to move with them.
+    func testMemoInjectionPreservesResolvedAccountsAcrossMultipleLookupTables() throws {
+        let source = try SolanaV0Transaction(wireBytes: try Self.twoTableBuilder().bytes())
+        let tagged = try source.injectingMemo("vs")
+
+        let before = try source.resolvedAccountAddresses(forInstructionAt: 0, lookupTables: Self.twoTables)
+        let after = try tagged.resolvedAccountAddresses(forInstructionAt: 0, lookupTables: Self.twoTables)
+
+        XCTAssertEqual(before, after)
+    }
+
+    /// Both injections on one transaction: the budget pair in front, the memo
+    /// behind, and the original instruction between them still addressing the
+    /// same accounts after being shifted twice.
+    func testBudgetAndMemoComposeWithoutDisturbingTheOriginalInstruction() throws {
+        let source = try SolanaV0Transaction(wireBytes: try Self.twoTableBuilder().bytes())
+
+        let both = try source
+            .injectingComputeBudget(price: 20_000, limit: 200_000)
+            .injectingMemo("vs")
+
+        XCTAssertEqual(both.instructions.count, source.instructions.count + 3)
+        XCTAssertEqual(both.instructions.last?.data, [UInt8]("vs".utf8))
+        XCTAssertEqual(
+            try source.resolvedAccountAddresses(forInstructionAt: 0, lookupTables: Self.twoTables),
+            try both.resolvedAccountAddresses(forInstructionAt: 2, lookupTables: Self.twoTables)
+        )
+    }
+
+    func testASecondMemoIsRefused() throws {
+        let tagged = try SolanaV0Transaction(wireBytes: try Builder().bytes()).injectingMemo("vs")
+
+        XCTAssertThrowsError(try tagged.injectingMemo("vs")) { error in
+            XCTAssertEqual(error as? SolanaV0TransactionError, .memoAlreadyPresent)
+        }
+    }
+
+    func testAnEmptyOrOversizedMemoIsRefused() throws {
+        let transaction = try SolanaV0Transaction(wireBytes: try Builder().bytes())
+
+        XCTAssertThrowsError(try transaction.injectingMemo("")) { error in
+            XCTAssertEqual(error as? SolanaV0TransactionError, .memoOutOfRange(0))
+        }
+        let oversized = String(repeating: "x", count: SolanaV0Transaction.maxMemoByteCount + 1)
+        XCTAssertThrowsError(try transaction.injectingMemo(oversized)) { error in
+            XCTAssertEqual(error as? SolanaV0TransactionError, .memoOutOfRange(oversized.utf8.count))
+        }
+    }
+
     // MARK: - Builder
 
     private static let tableAKey = key(200)
