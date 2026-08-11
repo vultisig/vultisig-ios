@@ -25,6 +25,11 @@ import XCTest
 /// ``KeyshareAccessorTests`` covers the round trip and the locked case; what is
 /// here is the granularity that survives a refactor — partial failure, and every
 /// share rather than the first one.
+/// `@MainActor` because every test here builds a `Vault`, which is a SwiftData
+/// `@Model` and must not be touched off the main actor. The sibling Security
+/// tests that construct one — `BackupImportProtectionTests`, `KeyshareSweeperTests`
+/// — are isolated for the same reason.
+@MainActor
 final class VaultBackupExportTests: XCTestCase {
 
     private let shares = [
@@ -137,6 +142,11 @@ final class VaultBackupExportTests: XCTestCase {
 
         let proto = try vault.mapToProtobuff(protector: disabled)
 
+        // Both fields, not just the share. A mapping that dropped or reordered
+        // the public keys would still produce the right plaintext in the right
+        // order, and a share exported under the wrong key is a backup that
+        // restores into a vault that cannot sign.
         XCTAssertEqual(proto.keyShares.map(\.keyshare), shares.map(\.1))
+        XCTAssertEqual(proto.keyShares.map(\.publicKey), shares.map(\.0))
     }
 }
