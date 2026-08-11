@@ -273,6 +273,152 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
         XCTAssertEqual(lockService.mode, .deviceAuth)
     }
 
+    // MARK: - Sealed shares with no key
+
+    /// The whole matrix, because the interesting cell is the one nothing used to
+    /// look at: a confirmed-absent wrapper over a store that still holds sealed
+    /// shares. Every other cell has to keep behaving exactly as it did, or the
+    /// census has changed something it was not supposed to.
+    func testTheCensusOnlyChangesTheConfirmedAbsentSealedCell() {
+        let wrappers: [(name: String, result: KeychainReadResult<Data>)] = [
+            ("present", .present(wrappedBlob)),
+            ("absent", .absent),
+            ("unavailable", .unavailable(errSecInteractionNotAllowed))
+        ]
+        let censuses: [KeyshareInstallReconciler.SealedShareCensus] = [.sealed, .nothingSealed, .unknown]
+
+        for wrapper in wrappers {
+            for census in censuses {
+                keychain.wrappedKeyshareDataKeyResult = wrapper.result
+                // Restated per cell rather than left where the previous one put
+                // it: the alignment writes the mode, so an assertion run against
+                // whatever the last cell happened to leave behind is not the
+                // cell it claims to be.
+                lockService.mode = .passcode
+
+                let outcome = sut.reconcile(isStoreEmpty: false, census: census)
+
+                let expected: KeyshareInstallReconciler.Outcome
+                if case .absent = wrapper.result, case .sealed = census {
+                    expected = .sealedSharesWithoutTheirKey
+                } else {
+                    expected = .nothing
+                }
+
+                XCTAssertEqual(
+                    outcome,
+                    expected,
+                    "census \(census) over a \(wrapper.name) wrapper"
+                )
+            }
+        }
+    }
+
+    /// The cell above, stated as the state it actually is: the shares are
+    /// ciphertext and the key is gone, so there is no mode repair to make. The
+    /// mode is left alone deliberately — moving it would erase the only evidence
+    /// left on the device that a passcode was ever set.
+    func testSealedSharesWithNoWrappedKeyAreReportedAndTheModeIsLeftAlone() {
+        lockService.mode = .passcode
+
+        let outcome = sut.reconcile(isStoreEmpty: false, census: .sealed)
+
+        XCTAssertEqual(outcome, .sealedSharesWithoutTheirKey)
+        XCTAssertEqual(lockService.mode, .passcode, "there is nothing behind this gate to repair towards")
+    }
+
+    /// The reason the check keys on the census rather than on the lock mode.
+    /// Anyone who has already hit this bug has `.deviceAuth` persisted — this
+    /// very method wrote it on their first launch — so a condition gated on
+    /// `.passcode` would miss exactly the installs that need reporting.
+    func testSealedSharesAreReportedEvenWhenTheModeHasAlreadyBeenRepaired() {
+        lockService.mode = .deviceAuth
+
+        let outcome = sut.reconcile(isStoreEmpty: false, census: .sealed)
+
+        XCTAssertEqual(outcome, .sealedSharesWithoutTheirKey)
+    }
+
+    /// An unreadable store must not raise it. The screen it drives is not
+    /// dismissible, so raising one on a guess strands a user whose vaults are
+    /// perfectly fine — and the condition does not depend on the mode, so the
+    /// next launch that can read the store still finds it.
+    func testAnUnreadableCensusReportsNothingAndStillRepairsTheMode() {
+        lockService.mode = .passcode
+
+        let outcome = sut.reconcile(isStoreEmpty: false, census: .unknown)
+
+        XCTAssertEqual(outcome, .nothing)
+        XCTAssertEqual(
+            lockService.mode,
+            .deviceAuth,
+            "a gate no passcode can open is the lockout this branch exists to prevent; deferring is not the safe side"
+        )
+    }
+
+    /// A store with nothing sealed in it is the interrupted-disable case the
+    /// `.absent` branch has always repaired, and it must go on repairing it.
+    func testAStoreWithNothingSealedStillFallsBackToDeviceAuth() {
+        lockService.mode = .passcode
+
+        let outcome = sut.reconcile(isStoreEmpty: false, census: .nothingSealed)
+
+        XCTAssertEqual(outcome, .nothing)
+        XCTAssertEqual(lockService.mode, .deviceAuth)
+    }
+
+    /// The census is taken from the store, and a store that answers "yes" has to
+    /// reach the outcome. Asserted through `reconcile()` — the entry point the
+    /// app actually calls — rather than through the seam, so a census that is
+    /// computed but never passed down would fail here.
+    @MainActor
+    func testReconcileTakesTheCensusFromTheStore() {
+        let sut = KeyshareInstallReconciler(
+            keychain: keychain,
+            keyStore: keyStore,
+            biometrics: biometrics,
+            lockService: lockService,
+            coordinator: coordinator,
+            sweeper: StubSweeper(answer: .success(true)),
+            defaults: defaults
+        )
+
+        XCTAssertEqual(sut.reconcile(), .sealedSharesWithoutTheirKey)
+    }
+
+    @MainActor
+    func testReconcileReportsNothingWhenTheStoreHoldsNoSealedShare() {
+        let sut = KeyshareInstallReconciler(
+            keychain: keychain,
+            keyStore: keyStore,
+            biometrics: biometrics,
+            lockService: lockService,
+            coordinator: coordinator,
+            sweeper: StubSweeper(answer: .success(false)),
+            defaults: defaults
+        )
+
+        XCTAssertEqual(sut.reconcile(), .nothing)
+    }
+
+    /// A census that throws is not an answer. `hasSealedShare()` refuses a
+    /// context carrying unsaved work, and that refusal must not be read as
+    /// either "sealed" or "nothing sealed".
+    @MainActor
+    func testACensusThatThrowsReportsNothing() {
+        let sut = KeyshareInstallReconciler(
+            keychain: keychain,
+            keyStore: keyStore,
+            biometrics: biometrics,
+            lockService: lockService,
+            coordinator: coordinator,
+            sweeper: StubSweeper(answer: .failure(KeyshareSweeperError.busy)),
+            defaults: defaults
+        )
+
+        XCTAssertEqual(sut.reconcile(), .nothing)
+    }
+
     // MARK: - Serialization
 
     /// Launch reconciliation deletes and re-decides exactly the state a passcode
@@ -395,6 +541,22 @@ final class KeyshareInstallReconcilerTests: XCTestCase {
 
         XCTAssertFalse(biometrics.isEnabled)
     }
+}
+
+/// Answers the census and nothing else. Reconciliation never sweeps — it reads
+/// the store and repairs Keychain-held state — so a sweep here fails loudly
+/// rather than silently doing nothing.
+private final class StubSweeper: KeyshareSweeping {
+
+    private let answer: Result<Bool, Error>
+
+    init(answer: Result<Bool, Error>) {
+        self.answer = answer
+    }
+
+    @MainActor func sealAll() throws { XCTFail("reconciliation must not sweep") }
+    @MainActor func unsealAll() throws { XCTFail("reconciliation must not sweep") }
+    @MainActor func hasSealedShare() throws -> Bool { try answer.get() }
 }
 
 /// In-memory stand-in for the biometry-protected Keychain item — the real one

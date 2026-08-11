@@ -658,6 +658,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
 "keygenInstructionsCar7Title" = "Feature Highlight";
 "keys" = "Keys";
+"keyshareRecoveryBackupMessage" = "Your .vult backup is the way back. Import it and these vaults work again.";
+"keyshareRecoveryImportButton" = "Import .vult backup";
+"keyshareRecoveryMessage" = "Their key shares are encrypted, and the key that unlocks them did not come across with this restore. Nothing on this device can read them, so it cannot sign with these vaults.";
+"keyshareRecoveryNoBackupMessage" = "Without a .vult backup, the key shares on this device cannot be unlocked again — that part is not recoverable. The vault itself may still be: if your other devices hold their own shares and still reach its signing threshold, it keeps working without this one.";
+"keyshareRecoveryNoBackupTitle" = "I don't have a backup";
+"keyshareRecoveryTitle" = "These vaults can't be opened on this device";
 "keysharesUnreadableVaultNotSaved" = "This vault's key shares could not be read, so it was not saved. Unlock the app and try again — if this keeps happening, create the vault again.";
 "keysharesUnsealableVaultNotSaved" = "This vault's key shares could not be protected for storage, so it was not saved. Unlock the app and try again.";
 "keysign" = "Keysign";

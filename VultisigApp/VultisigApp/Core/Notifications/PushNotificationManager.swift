@@ -426,12 +426,18 @@ enum ForegroundNotificationPresentationPolicy {
     /// Center is the same disclosure a swipe later.
     static let lockedOptions: UNNotificationPresentationOptions = [.sound]
 
-    /// Read off the app's own gate flag rather than
+    /// Read off the app's own cover flag rather than
     /// ``PasscodeService/isPasscodeGateRequired``. The predicate is true for
     /// every install that *has* a passcode, gate up or not, so using it here
     /// would silence notifications for those users the entire time they are
     /// using the app.
-    static var isAppLocked: Bool { AppViewModel.shared.isPasscodeLocked }
+    ///
+    /// Either cover counts. The key-share recovery screen is hosted in the same
+    /// raised window the lock screen is, and the reasoning above applies to it
+    /// unchanged: the system banner is drawn above every window the app owns,
+    /// carrying a vault name and a transaction summary over a screen the user
+    /// cannot dismiss.
+    static var isAppLocked: Bool { AppViewModel.shared.isCoveredByAppLock }
 
     static func options(handled: Bool) -> UNNotificationPresentationOptions {
         guard !isAppLocked else { return lockedOptions }

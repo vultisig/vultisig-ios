@@ -39,6 +39,42 @@ class AppViewModel: ObservableObject {
     @Published var isAuthenticated = false
     /// Whether the passcode lock screen should be covering the app.
     @Published var isPasscodeLocked = false
+    /// Whether this device holds sealed key shares with no key left to open
+    /// them, so the recovery screen has to cover the app.
+    ///
+    /// Derived at launch from ``KeyshareInstallReconciler``'s outcome and not
+    /// from the lock mode: anyone who has already hit this has `.deviceAuth`
+    /// persisted, because reconciliation wrote it on their first launch.
+    ///
+    /// It is not re-derived while the app is running. The state cannot appear
+    /// mid-session — the key does not go missing while the app is open — and
+    /// the one way out of it, importing the `.vult`, is a screen in the app
+    /// that this would be covering.
+    @Published private(set) var isKeyshareRecoveryRequired = false
+    /// Set for exactly as long as it takes ``ContentView`` to route to the
+    /// import flow, then consumed.
+    ///
+    /// A trigger rather than a destination, and consumed rather than merely
+    /// read, because every mounted scene sees it: two scenes acting on one tap
+    /// would push the import route twice.
+    @Published private(set) var isKeyshareRecoveryImportPending = false
+
+    /// Whether anything the app raises over itself is currently up.
+    ///
+    /// The question every *other* part of the app is really asking when it looks
+    /// at ``isPasscodeLocked``: may I present, navigate, or draw a banner right
+    /// now? Both covers answer no, and for the same reason — a deeplink acted on
+    /// behind one navigates and presents where nobody can see it, a foreground
+    /// push banner is drawn by the system above every window the app owns, and a
+    /// sheet raised behind one is a sheet the user finds instead of the screen
+    /// they were sent to.
+    ///
+    /// Computed rather than stored, so it cannot go stale: both halves are
+    /// `@Published`, so anything observing this object re-reads it when either
+    /// moves.
+    var isCoveredByAppLock: Bool {
+        isPasscodeLocked || isKeyshareRecoveryRequired
+    }
     /// Bumped every time the gate goes up, and used as the lock screen's
     /// identity so each raise gets a brand new one.
     ///
@@ -73,7 +109,7 @@ class AppViewModel: ObservableObject {
     private let passcodeService: PasscodeService
     /// Injected rather than called directly so a test can prove it runs *before*
     /// the launch gate reads the lock mode, which is the whole property.
-    private let reconcileInstall: @MainActor () -> Void
+    private let reconcileInstall: @MainActor () -> KeyshareInstallReconciler.Outcome
     private var didTriggerAuthThisSession = false
     /// Whether the app has actually been to the background since the last time
     /// it came forward.
@@ -94,7 +130,9 @@ class AppViewModel: ObservableObject {
     init(
         lockService: AppLockService = .shared,
         passcodeService: PasscodeService = .shared,
-        reconcileInstall: @escaping @MainActor () -> Void = { KeyshareInstallReconciler().reconcile() }
+        reconcileInstall: @escaping @MainActor () -> KeyshareInstallReconciler.Outcome = {
+            KeyshareInstallReconciler().reconcile()
+        }
     ) {
         self.lockService = lockService
         self.passcodeService = passcodeService
@@ -177,7 +215,12 @@ class AppViewModel: ObservableObject {
         // again would be a second read that a transition on `PasscodeService`'s
         // executor could answer differently — the two disagreeing is how the app
         // ends up open behind no gate at all.
-        guard !isPasscodeLocked else {
+        //
+        // The recovery screen counts the same way. It covers the app for the
+        // same reason and is dismissed by no authentication of any kind, so a
+        // system Face ID sheet in front of it would be a prompt with nothing
+        // behind it.
+        guard !isPasscodeLocked, !isKeyshareRecoveryRequired else {
             showSplashView = false
             didUserCancelAuthentication = false
             return
@@ -353,15 +396,71 @@ class AppViewModel: ObservableObject {
     /// with a persisted `.passcode` and a confirmed-absent wrapper therefore
     /// opens the app rather than presenting a lock screen no passcode can
     /// satisfy, and one whose Keychain merely did not answer still presents it.
+    ///
+    /// Reconciliation now also answers whether this device holds sealed key
+    /// shares with no key left to open them, and that answer is taken **first**.
+    /// The two cannot both be true — the orphaned state is only reported over a
+    /// *confirmed absent* wrapper, which is exactly the reading that makes
+    /// `isPasscodeGateRequired` false — so the ordering is not a race being
+    /// resolved. It states which screen wins if that ever stops holding, and a
+    /// lock screen no passcode can open is the wrong one.
     @MainActor
     func restorePasscodeLockOnLaunch() {
-        reconcileInstall()
+        let outcome = reconcileInstall()
+
+        isKeyshareRecoveryRequired = outcome == .sealedSharesWithoutTheirKey
+        guard !isKeyshareRecoveryRequired else {
+            isPasscodeLocked = false
+            return
+        }
 
         guard passcodeService.isPasscodeGateRequired else {
             isPasscodeLocked = false
             return
         }
         raisePasscodeGate()
+    }
+
+    /// Asks to be sent from the recovery screen to the app's import flow.
+    ///
+    /// It only *asks*. The screen is hosted in a window above the app and has no
+    /// access to its navigation, so the route is pushed by whoever owns the
+    /// navigation stack — see ``handOffToKeyshareRecoveryImport(routingWith:)``.
+    func beginKeyshareRecoveryImport() {
+        guard isKeyshareRecoveryRequired else { return }
+        isKeyshareRecoveryImportPending = true
+    }
+
+    /// Pushes the import route and only then takes the recovery screen down.
+    ///
+    /// **The order is the whole method.** Lowering first uncovers the app while
+    /// the push is still on its way, so the wallet — the very thing this state
+    /// exists to stop being shown as healthy — is what the user sees between the
+    /// tap and the import screen. Routing first means the cover comes off a
+    /// stack whose top is already where they were sent.
+    ///
+    /// **The screen does not come back if the user backs out of the import**,
+    /// and that is a decision rather than an oversight. Re-raising it on the way
+    /// out of that route would need the census taken again to tell a successful
+    /// import from an abandoned one — and until the import path stops refusing
+    /// the orphaned vault as a duplicate, "still orphaned" is the only answer it
+    /// can give, which is a screen with no way out at all. This state is not a
+    /// security boundary either: nothing behind it is protected, the app renders
+    /// the same wallet with or without it and can sign in neither case. It is
+    /// derived again on the next launch from the same census, so an import that
+    /// succeeds no longer qualifies and one the user walked away from is put
+    /// back in front of them.
+    ///
+    /// - Returns: whether this caller was the one that claimed the hand-off.
+    ///   Every mounted scene sees the request, and two of them pushing the route
+    ///   is two import screens.
+    @discardableResult
+    func handOffToKeyshareRecoveryImport(routingWith route: () -> Void) -> Bool {
+        guard isKeyshareRecoveryImportPending else { return false }
+        isKeyshareRecoveryImportPending = false
+        route()
+        isKeyshareRecoveryRequired = false
+        return true
     }
 
     /// The foreground hook, and so the first place a transition that completed

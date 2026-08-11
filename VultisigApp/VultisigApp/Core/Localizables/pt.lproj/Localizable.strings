@@ -658,6 +658,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", aumentando a flexibilidade sem comprometer a segurança.";
 "keygenInstructionsCar7Title" = "Destaque de recursos";
 "keys" = "Chaves";
+"keyshareRecoveryBackupMessage" = "A sua cópia de segurança .vult é o caminho de volta. Importe-a e estes vaults voltam a funcionar.";
+"keyshareRecoveryImportButton" = "Importar cópia .vult";
+"keyshareRecoveryMessage" = "Os seus key shares estão encriptados e a chave que os desbloqueia não veio com este restauro. Nada neste dispositivo os consegue ler, por isso não pode assinar com estes vaults.";
+"keyshareRecoveryNoBackupMessage" = "Sem uma cópia .vult, os key shares deste dispositivo já não podem ser desencriptados — essa parte não é recuperável. O vault em si ainda pode ser: se os seus outros dispositivos guardarem os próprios shares e continuarem a atingir o limiar de assinatura, ele continua a funcionar sem este dispositivo.";
+"keyshareRecoveryNoBackupTitle" = "Não tenho cópia de segurança";
+"keyshareRecoveryTitle" = "Estes vaults não podem ser abertos neste dispositivo";
 "keysharesUnreadableVaultNotSaved" = "Não foi possível ler as key shares deste cofre, por isso não foi guardado. Desbloqueie a app e tente novamente; se continuar a falhar, crie o cofre de novo.";
 "keysharesUnsealableVaultNotSaved" = "Não foi possível proteger as key shares deste cofre para armazenamento, por isso não foi guardado. Desbloqueie a app e tente novamente.";
 "keysign" = "Assinatura de Chave";

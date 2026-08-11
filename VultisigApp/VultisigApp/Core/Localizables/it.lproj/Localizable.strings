@@ -658,6 +658,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", migliorando la flessibilità senza compromettere la sicurezza.";
 "keygenInstructionsCar7Title" = "In evidenza";
 "keys" = "Chiavi";
+"keyshareRecoveryBackupMessage" = "Il tuo backup .vult è la via del ritorno. Importalo e questi vault torneranno a funzionare.";
+"keyshareRecoveryImportButton" = "Importa backup .vult";
+"keyshareRecoveryMessage" = "I loro key share sono cifrati e la chiave che li sblocca non è arrivata con questo ripristino. Nulla su questo dispositivo può leggerli, quindi non può firmare con questi vault.";
+"keyshareRecoveryNoBackupMessage" = "Senza un backup .vult i key share su questo dispositivo non possono più essere decifrati: questa parte non è recuperabile. Il vault stesso potrebbe esserlo ancora: se i tuoi altri dispositivi conservano i propri share e raggiungono ancora la soglia di firma, continua a funzionare senza questo.";
+"keyshareRecoveryNoBackupTitle" = "Non ho un backup";
+"keyshareRecoveryTitle" = "Questi vault non possono essere aperti su questo dispositivo";
 "keysharesUnreadableVaultNotSaved" = "Non è stato possibile leggere le key share di questo vault, quindi non è stato salvato. Sblocca l'app e riprova; se continua a fallire, crea di nuovo il vault.";
 "keysharesUnsealableVaultNotSaved" = "Non è stato possibile proteggere le key share di questo vault per l'archiviazione, quindi non è stato salvato. Sblocca l'app e riprova.";
 "keysign" = "Firma Chiave";

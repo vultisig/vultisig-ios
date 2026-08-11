@@ -8,6 +8,8 @@
 import SwiftUI
 import SwiftData
 
+private let logger = Log.app.other
+
 enum RootRoute {
     case home(showingVaultSelector: Bool)
     case createVault
@@ -81,8 +83,12 @@ struct ContentView: View {
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
-        .onChange(of: appViewModel.isPasscodeLocked) { _, isLocked in
-            guard !isLocked else { return }
+        // Either cover, not just the gate: a deeplink acted on behind the
+        // recovery screen navigates and presents where nobody can see it, and
+        // then lands the user somewhere other than the import flow the moment
+        // that screen comes down.
+        .onChange(of: appViewModel.isCoveredByAppLock) { _, isCovered in
+            guard !isCovered else { return }
             drainPendingDeeplinks()
         }
         // The document scene's hand-off is owned here rather than by `HomeScreen`,
@@ -122,14 +128,47 @@ struct ContentView: View {
         .withForegroundNotificationBanner()
         .overlay(appViewModel.showCover ? CoverView() : nil)
         .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
-        // Additive to the two overlays above, not a replacement for them. The
+        // Above the gate's overlay, matching the order `appLockPresentation`
+        // derives: the two are mutually exclusive today, and if that ever stops
+        // being true the screen a passcode cannot dismiss must not be the one
+        // underneath.
+        .overlay(keyshareRecoveryFloor)
+        // Additive to the overlays above, not a replacement for them. The
         // overlays are what the app draws; the window is what reaches the layer
         // sheets and alerts are presented in, which no overlay can.
         .hostsAppLock(
             appLockPresentation,
             onUnlocked: { appViewModel.markPasscodeUnlocked() },
-            onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() }
+            onAttemptFailed: { appViewModel.lowerPasscodeGateIfNoLongerRequired() },
+            onRestoreFromBackup: { appViewModel.beginKeyshareRecoveryImport() }
         )
+        // The recovery screen points at the import flow, and the import flow is
+        // a screen in this navigation stack — which the recovery screen is
+        // drawn over, in a window it cannot reach. So it asks, and this routes.
+        .onChange(of: appViewModel.isKeyshareRecoveryImportPending) { _, isPending in
+            guard isPending else { return }
+            appViewModel.handOffToKeyshareRecoveryImport {
+                appViewModel.showSplashView = false
+                // A `.vult` opened from Files while the recovery screen was up
+                // is pending this very route, and its hold runs the moment the
+                // cover comes down. Claimed here so that becomes a no-op rather
+                // than a second copy of the import screen on the stack — the
+                // document itself is still on the view model, and the import
+                // screen picks it up when it appears.
+                _ = vultExtensionViewModel.consumeDocumentImport()
+                // Without animation, and that is not a style choice: the push
+                // slides for a third of a second, and the recovery screen comes
+                // off as soon as this returns. Animated, that third of a second
+                // is the wallet on screen behind a transition — which is the
+                // silent open this state exists to prevent, arriving by the one
+                // door left open.
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    navigationRouter.navigate(to: OnboardingRoute.importVaultShare)
+                }
+            }
+        }
         .onLoad {
             // The cold-start gate is not decided here. It is decided in
             // `VultisigApp.init()`, because this modifier runs *after* the
@@ -174,6 +213,9 @@ struct ContentView: View {
     /// What the app is covering itself with, as one value — see
     /// ``AppLockPresentation``.
     private var appLockPresentation: AppLockPresentation {
+        if appViewModel.isKeyshareRecoveryRequired {
+            return .recovery
+        }
         if appViewModel.isPasscodeLocked {
             return .gate(generation: appViewModel.passcodeGateGeneration)
         }
@@ -240,6 +282,30 @@ struct ContentView: View {
         }
     }
 
+    /// Covers the app when this device holds sealed key shares and the key that
+    /// opens them is confirmed gone.
+    ///
+    /// The same floor-and-window split as ``passcodeGate``, and for the same
+    /// reason: the window reaches the layer sheets are presented in and the
+    /// overlay covers the cold start, where the recovery state is decided
+    /// before any scene — and so any window — exists. Exactly one of them
+    /// mounts the live screen, and which one is the host's to say.
+    ///
+    /// No transition and no identity. It is derived once at launch rather than
+    /// raised and re-raised, so there is nothing for either to disambiguate.
+    @ViewBuilder
+    var keyshareRecoveryFloor: some View {
+        if appViewModel.isKeyshareRecoveryRequired {
+            if appLockHost.hostsLockScreen {
+                VultisigBrandScreen()
+            } else {
+                KeyshareRecoveryScreen(
+                    onRestoreFromBackup: { appViewModel.beginKeyshareRecoveryImport() }
+                )
+            }
+        }
+    }
+
     func navigateToHome() {
         appViewModel.showSplashView = false
         rootRoute = .home(showingVaultSelector: appViewModel.showingVaultSelector)
@@ -296,13 +362,25 @@ struct ContentView: View {
         appViewModel.authenticateUser()
     }
 
-    /// Deeplinks are held until the app is unlocked.
+    /// Deeplinks are held until the app is showing itself again.
     ///
-    /// Acting on one while locked would navigate, present sheets and mutate
-    /// state behind the lock screen — the gate has to apply to what the app
+    /// Acting on one behind a cover would navigate, present sheets and mutate
+    /// state where nobody can see it — a cover has to apply to what the app
     /// *does*, not only to what it shows.
+    ///
+    /// **Held behind the lock screen, dropped behind the recovery screen**, and
+    /// the difference is how long each one lasts. A gate is seconds, so a link
+    /// is worth keeping. The recovery screen stands for the rest of the session
+    /// and comes down onto the import flow, so a link kept there would arrive an
+    /// arbitrary time later, on top of the one screen the user asked for. The
+    /// queue is also `@State`, so it is per scene — dropping needs no
+    /// co-ordination between them, where draining would.
     private func handleDeeplink(_ incomingURL: URL) {
-        guard !appViewModel.isPasscodeLocked else {
+        guard !appViewModel.isKeyshareRecoveryRequired else {
+            logger.info("Ignoring a deeplink that arrived while the key-share recovery screen was up")
+            return
+        }
+        guard !appViewModel.isCoveredByAppLock else {
             // Queued rather than replaced: a single slot silently drops every
             // link but the last, and each one is a user action.
             pendingDeeplinks.append(incomingURL)
