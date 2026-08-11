@@ -30,6 +30,8 @@ enum SolanaV0TransactionError: Error, LocalizedError, Equatable {
     case oversizedTransaction(Int)
     case computeBudgetAlreadyPresent
     case computeUnitLimitOutOfRange(UInt32)
+    case memoAlreadyPresent
+    case memoOutOfRange(Int)
     case unknownLookupTable(String)
     case lookupIndexOutOfRange(table: String, index: Int, tableSize: Int)
 
@@ -75,6 +77,10 @@ enum SolanaV0TransactionError: Error, LocalizedError, Equatable {
             return "Transaction already carries a Compute Budget instruction"
         case .computeUnitLimitOutOfRange(let limit):
             return "Compute unit limit \(limit) is outside the range the network accepts"
+        case .memoAlreadyPresent:
+            return "Transaction already carries a Memo instruction"
+        case .memoOutOfRange(let count):
+            return "Memo of \(count) bytes is outside the range this app injects"
         case .unknownLookupTable(let address):
             return "No contents supplied for address lookup table \(address)"
         case .lookupIndexOutOfRange(let table, let index, let size):
@@ -111,6 +117,16 @@ struct SolanaV0Transaction: Equatable {
 
     static let computeBudgetProgramId = "ComputeBudget111111111111111111111111111111"
 
+    /// SPL Memo v3. The program writes nothing and owns nothing; it logs its
+    /// instruction data, which is what makes an on-chain attribution tag
+    /// readable by an indexer without changing what the transaction does.
+    static let memoProgramId = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+
+    /// Bound on an injected memo. Nothing here needs a long one — the tag this
+    /// app writes is two bytes — and the ceiling keeps a caller from spending
+    /// the transaction's remaining size budget on a note.
+    static let maxMemoByteCount = 64
+
     /// The 32 raw bytes of `computeBudgetProgramId`, decoded once. The input is
     /// a compile-time constant, so a decode failure would mean the base58
     /// decoder itself is broken rather than that the data is bad — hence the
@@ -119,6 +135,15 @@ struct SolanaV0Transaction: Equatable {
     static let computeBudgetProgramKey: [UInt8] = {
         guard let data = Base58.decodeNoCheck(string: computeBudgetProgramId), data.count == 32 else {
             preconditionFailure("ComputeBudget program id must decode to 32 bytes")
+        }
+        return [UInt8](data)
+    }()
+
+    /// The 32 raw bytes of `memoProgramId`, decoded once — same compile-time
+    /// constant argument as `computeBudgetProgramKey`, pinned by the same tests.
+    static let memoProgramKey: [UInt8] = {
+        guard let data = Base58.decodeNoCheck(string: memoProgramId), data.count == 32 else {
+            preconditionFailure("Memo program id must decode to 32 bytes")
         }
         return [UInt8](data)
     }()
@@ -182,6 +207,10 @@ struct SolanaV0Transaction: Equatable {
 
     var hasComputeBudgetInstruction: Bool {
         instructions.contains { staticAccountKeys[Int($0.programIdIndex)] == Self.computeBudgetProgramKey }
+    }
+
+    var hasMemoInstruction: Bool {
+        instructions.contains { staticAccountKeys[Int($0.programIdIndex)] == Self.memoProgramKey }
     }
 
     // MARK: - Parsing
@@ -368,6 +397,78 @@ struct SolanaV0Transaction: Equatable {
     /// Prepends `SetComputeUnitLimit` + `SetComputeUnitPrice`, appending the
     /// ComputeBudget program as a new **static, read-only, unsigned** account key.
     ///
+    /// See `injecting(programKey:leading:trailing:)` for the account-key and
+    /// index-drift mechanics both injections share.
+    func injectingComputeBudget(price: UInt64, limit: UInt32) throws -> SolanaV0Transaction {
+        guard limit > 0, limit <= Self.maxComputeUnitLimit else {
+            throw SolanaV0TransactionError.computeUnitLimitOutOfRange(limit)
+        }
+        // Both checks matter. A stray ComputeBudget key with no instruction would
+        // make the append a duplicate account; an instruction with no static key
+        // is impossible, but checking it keeps the guard honest if the key ever
+        // arrives through a lookup table.
+        guard !staticAccountKeys.contains(Self.computeBudgetProgramKey), !hasComputeBudgetInstruction else {
+            throw SolanaV0TransactionError.computeBudgetAlreadyPresent
+        }
+
+        return try injecting(
+            programKey: Self.computeBudgetProgramKey,
+            leading: { programIdIndex in
+                [
+                    Instruction(
+                        programIdIndex: programIdIndex,
+                        accountIndexes: [],
+                        data: [ComputeBudgetInstruction.setUnitLimit] + Self.littleEndianBytes(limit)
+                    ),
+                    Instruction(
+                        programIdIndex: programIdIndex,
+                        accountIndexes: [],
+                        data: [ComputeBudgetInstruction.setUnitPrice] + Self.littleEndianBytes(price)
+                    )
+                ]
+            },
+            trailing: { _ in [] }
+        )
+    }
+
+    /// Appends one SPL Memo instruction carrying `text`, with the Memo program as
+    /// a new **static, read-only, unsigned** account key.
+    ///
+    /// Appended rather than prepended: the memo records who originated the
+    /// transaction and takes no part in what it does, so it belongs after the
+    /// instructions that move the money — and putting it last keeps every
+    /// existing instruction at the position the template already expects, with
+    /// only the two compute-budget instructions ahead of them.
+    ///
+    /// The memo has no accounts and no signer of its own. A memo instruction
+    /// listing signer accounts is how the Memo program attests to them, and
+    /// attesting is not what this is for.
+    func injectingMemo(_ text: String) throws -> SolanaV0Transaction {
+        let data = [UInt8](Data(text.utf8))
+        guard !data.isEmpty, data.count <= Self.maxMemoByteCount else {
+            throw SolanaV0TransactionError.memoOutOfRange(data.count)
+        }
+        // Same pair of checks as the budget injection, for the same reason: the
+        // key and the instruction are two ways for a memo to already be here, and
+        // appending a second one would both duplicate the account and leave the
+        // transaction carrying two attributions.
+        guard !staticAccountKeys.contains(Self.memoProgramKey), !hasMemoInstruction else {
+            throw SolanaV0TransactionError.memoAlreadyPresent
+        }
+
+        return try injecting(
+            programKey: Self.memoProgramKey,
+            leading: { _ in [] },
+            trailing: { programIdIndex in
+                [Instruction(programIdIndex: programIdIndex, accountIndexes: [], data: data)]
+            }
+        )
+    }
+
+    /// Appends `programKey` as a new **static, read-only, unsigned** account key
+    /// and re-serializes the message with `leading` instructions in front of the
+    /// existing ones and `trailing` behind them.
+    ///
     /// Static keys are ordered by privilege — writable signers, read-only
     /// signers, writable non-signers, read-only non-signers — so the read-only
     /// unsigned block is the tail, and appending there plus incrementing
@@ -381,18 +482,14 @@ struct SolanaV0Transaction: Equatable {
     /// so every program is already a static key below the insertion point. The
     /// indexes *inside* each `AddressTableLookup` are positions in the table
     /// itself, not in this message, so they are untouched too.
-    func injectingComputeBudget(price: UInt64, limit: UInt32) throws -> SolanaV0Transaction {
-        guard limit > 0, limit <= Self.maxComputeUnitLimit else {
-            throw SolanaV0TransactionError.computeUnitLimitOutOfRange(limit)
-        }
-        // Both checks matter. A stray ComputeBudget key with no instruction would
-        // make the append a duplicate account; an instruction with no static key
-        // is impossible, but checking it keeps the guard honest if the key ever
-        // arrives through a lookup table.
-        guard !staticAccountKeys.contains(Self.computeBudgetProgramKey), !hasComputeBudgetInstruction else {
-            throw SolanaV0TransactionError.computeBudgetAlreadyPresent
-        }
-
+    ///
+    /// Both closures receive the index the new key lands at, which is the only
+    /// thing an injected instruction needs that it cannot know beforehand.
+    private func injecting(
+        programKey: [UInt8],
+        leading: (UInt8) -> [Instruction],
+        trailing: (UInt8) -> [Instruction]
+    ) throws -> SolanaV0Transaction {
         // Checked before any index arithmetic: with the new key the message must
         // still address at most 256 accounts, which bounds both the appended
         // key's own index and every shifted index below `UInt8.max`.
@@ -403,7 +500,7 @@ struct SolanaV0Transaction: Equatable {
 
         let oldStaticCount = staticAccountKeys.count
         let programIdIndex = UInt8(oldStaticCount)
-        let keys = staticAccountKeys + [Self.computeBudgetProgramKey]
+        let keys = staticAccountKeys + [programKey]
 
         let shifted = instructions.map { instruction in
             Instruction(
@@ -415,26 +512,13 @@ struct SolanaV0Transaction: Equatable {
             )
         }
 
-        let budgetInstructions = [
-            Instruction(
-                programIdIndex: programIdIndex,
-                accountIndexes: [],
-                data: [ComputeBudgetInstruction.setUnitLimit] + Self.littleEndianBytes(limit)
-            ),
-            Instruction(
-                programIdIndex: programIdIndex,
-                accountIndexes: [],
-                data: [ComputeBudgetInstruction.setUnitPrice] + Self.littleEndianBytes(price)
-            )
-        ]
-
         var message: [UInt8] = [0x80, numRequiredSignatures, numReadonlySignedAccounts]
         message.append(numReadonlyUnsignedAccounts + 1)
         message += try Self.encodeCompactLength(keys.count)
         for key in keys { message += key }
         message += wire[blockhashRange]
 
-        let allInstructions = budgetInstructions + shifted
+        let allInstructions = leading(programIdIndex) + shifted + trailing(programIdIndex)
         message += try Self.encodeCompactLength(allInstructions.count)
         for instruction in allInstructions {
             message.append(instruction.programIdIndex)

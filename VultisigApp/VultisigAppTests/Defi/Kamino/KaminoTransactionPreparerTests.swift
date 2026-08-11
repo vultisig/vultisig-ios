@@ -41,7 +41,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
             unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
         )
 
-        XCTAssertEqual(prepared.base64, KaminoTransactionFixtures.usdcDeposit.injected)
+        XCTAssertEqual(prepared.base64, try KaminoTransactionFixtures.usdcDeposit.tagged)
         XCTAssertEqual(prepared.priorityFee.limit, KaminoComputeBudget.tokenDepositUnitLimit)
         XCTAssertEqual(prepared.priorityFee.price, KaminoTransactionFixtures.unitPriceMicroLamports)
     }
@@ -59,7 +59,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
             unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
         )
 
-        XCTAssertEqual(prepared.base64, KaminoTransactionFixtures.solDeposit.injected)
+        XCTAssertEqual(prepared.base64, try KaminoTransactionFixtures.solDeposit.tagged)
         XCTAssertEqual(prepared.priorityFee.limit, KaminoComputeBudget.nativeDepositUnitLimit)
         XCTAssertGreaterThan(
             KaminoComputeBudget.nativeDepositUnitLimit,
@@ -92,7 +92,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
             unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
         )
 
-        XCTAssertEqual(prepared.base64, KaminoTransactionFixtures.usdcWithdraw.injected)
+        XCTAssertEqual(prepared.base64, try KaminoTransactionFixtures.usdcWithdraw.tagged)
         XCTAssertEqual(prepared.priorityFee.limit, KaminoComputeBudget.withdrawUnitLimit)
         XCTAssertEqual(prepared.priorityFee.price, KaminoTransactionFixtures.unitPriceMicroLamports)
     }
@@ -220,7 +220,7 @@ final class KaminoTransactionPreparerTests: XCTestCase {
 
         XCTAssertEqual(harness.solana.simulatedTransactions.count, 2)
         XCTAssertEqual(harness.solana.simulatedTransactions[0], KaminoTransactionFixtures.usdcDeposit.source)
-        XCTAssertEqual(harness.solana.simulatedTransactions[1], KaminoTransactionFixtures.usdcDeposit.injected)
+        XCTAssertEqual(harness.solana.simulatedTransactions[1], try KaminoTransactionFixtures.usdcDeposit.tagged)
     }
 
     /// Phase one's contract, exercised end to end: a response that already

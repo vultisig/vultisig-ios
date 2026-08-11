@@ -359,15 +359,23 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
         unitPrice: UInt64
     ) async throws -> KaminoPreparedTransaction {
         let fee = KaminoPriorityFee(limit: unitLimit, price: unitPrice)
-        let budgeted = try transaction.injectingComputeBudget(price: fee.price, limit: fee.limit)
+        // Both edits happen here, before the injected form is validated and
+        // simulated, so what gets proven is what gets signed. The memo goes on
+        // last and adds no accounts of its own, which is why it cannot disturb
+        // the budget instructions' indexes ahead of it.
+        let budgeted = try transaction
+            .injectingComputeBudget(price: fee.price, limit: fee.limit)
+            .injectingMemo(KaminoAttribution.memoTag)
 
         // Phase two, and the opposite contract: both ComputeBudget instructions
-        // are now required, in order, carrying exactly the values above.
+        // and the attribution memo are now required, in order, carrying exactly
+        // the values above.
         let injected = KaminoTransactionIntent(
             operation: operation,
             vault: vault,
             owner: owner,
-            priorityFee: fee
+            priorityFee: fee,
+            carriesAttributionMemo: true
         )
         try await validator.validate(transaction: budgeted, intent: injected)
 

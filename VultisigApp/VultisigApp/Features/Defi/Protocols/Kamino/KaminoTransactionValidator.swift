@@ -82,17 +82,24 @@ struct KaminoTransactionIntent {
     /// case any ComputeBudget instruction at all is a refusal, because Kamino's
     /// builder emits none and a fee we did not choose is SOL leaving the wallet.
     let priorityFee: KaminoPriorityFee?
+    /// Whether the app has appended its attribution memo. `false` before
+    /// injection, where a memo can only have come from the response — and the
+    /// Memo program logs whatever it is handed, so a memo we did not write is
+    /// text this app would be signing on somebody else's behalf.
+    let carriesAttributionMemo: Bool
 
     init(
         operation: KaminoOperation,
         vault: KaminoVaultInfo,
         owner: String,
-        priorityFee: KaminoPriorityFee? = nil
+        priorityFee: KaminoPriorityFee? = nil,
+        carriesAttributionMemo: Bool = false
     ) {
         self.operation = operation
         self.vault = vault
         self.owner = owner
         self.priorityFee = priorityFee
+        self.carriesAttributionMemo = carriesAttributionMemo
     }
 }
 
@@ -116,6 +123,7 @@ enum KaminoValidationError: Error, LocalizedError, Equatable {
     case amountMismatch(role: String, expected: String, actual: String)
     case amountOutOfRange(String)
     case unexpectedPriorityFee(index: Int)
+    case unexpectedMemo(index: Int)
     case unattributableWritableAccount(program: String, account: String)
     case unreferencedWritableAccount(String)
     case addressDerivationFailed(String)
@@ -152,6 +160,8 @@ enum KaminoValidationError: Error, LocalizedError, Equatable {
             return "Amount cannot be expressed on chain: \(detail)"
         case .unexpectedPriorityFee(let index):
             return "Instruction \(index) sets a priority fee this app did not choose"
+        case .unexpectedMemo(let index):
+            return "Instruction \(index) writes a memo this app did not choose"
         case .unattributableWritableAccount(let program, let account):
             return "Instruction from \(program) writes to \(account), which this operation does not explain"
         case .unreferencedWritableAccount(let account):
@@ -258,6 +268,7 @@ struct KaminoTransactionValidator {
         let context = try Context(intent: intent, accounts: accounts, transaction: transaction)
         try validatePrograms(context)
         try validatePriorityFeePresence(context)
+        try validateAttributionMemoPresence(context)
         try validateSequence(context)
         try validateWritableAccounts(context)
     }
@@ -303,6 +314,18 @@ struct KaminoTransactionValidator {
         }
     }
 
+    /// Before injection the app has written no memo, so one in the response came
+    /// from the builder — and a memo is arbitrary text logged on chain under the
+    /// user's signature. Named separately for the same reason as the fee: the
+    /// sequence would report it as a position error, which says nothing about
+    /// what is wrong with it.
+    private static func validateAttributionMemoPresence(_ context: Context) throws {
+        guard !context.intent.carriesAttributionMemo else { return }
+        for (position, program) in context.programs.enumerated() where program == .memo {
+            throw KaminoValidationError.unexpectedMemo(index: position)
+        }
+    }
+
     // MARK: - Instruction sequence
 
     /// Matches the transaction against the shape this operation produces, then
@@ -318,6 +341,7 @@ struct KaminoTransactionValidator {
             isWrappedSolVault: context.intent.vault.isWrappedSolVault,
             hasFarm: context.intent.vault.hasFarm,
             hasPriorityFee: context.intent.priorityFee != nil,
+            hasAttributionMemo: context.intent.carriesAttributionMemo,
             // This device read the position, so it knows which of the two
             // withdraw shapes it asked for and says so. Never `.unknown` here:
             // accepting either shape would let a transaction that unstakes
@@ -395,6 +419,9 @@ struct KaminoTransactionValidator {
                 position: position,
                 context
             )
+
+        case .attributionMemo:
+            try validateAttributionMemo(data: data, accounts: accounts, position: position)
         }
     }
 
@@ -442,6 +469,28 @@ struct KaminoTransactionValidator {
                 expected: String(fee.price),
                 actual: String(price)
             )
+        }
+    }
+
+    /// The memo must be this app's tag and nothing else.
+    ///
+    /// `KaminoInstructionSequence.kind` already refuses any other payload under
+    /// the Memo program, so reaching here with different bytes is impossible —
+    /// which is exactly why it is asserted rather than assumed: the tag is the
+    /// only reason this program is allow-listed at all, and the check that
+    /// enforces it should live beside the one that says so.
+    ///
+    /// No accounts, either. A memo listing accounts is the Memo program
+    /// attesting that they signed, and attribution is not an attestation.
+    private static func validateAttributionMemo(data: [UInt8], accounts: [String], position: Int) throws {
+        guard accounts.isEmpty else {
+            throw KaminoValidationError.malformedInstruction(
+                index: position,
+                detail: "attribution memo takes no accounts"
+            )
+        }
+        guard data == KaminoAttribution.memoTagBytes else {
+            throw KaminoValidationError.malformedInstruction(index: position, detail: "attribution memo")
         }
     }
 
