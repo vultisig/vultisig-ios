@@ -658,6 +658,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "keygenInstructionsCar7Title" = "Istaknuta značajka";
 "keys" = "Ključ";
+"keyshareRecoveryBackupMessage" = "Vaša .vult sigurnosna kopija je put natrag. Uvezite je i ovi će vaultovi ponovno raditi.";
+"keyshareRecoveryImportButton" = "Uvezi .vult kopiju";
+"keyshareRecoveryMessage" = "Njihovi su key shareovi šifrirani, a ključ koji ih otključava nije prenesen ovom obnovom. Ništa na ovom uređaju ne može ih pročitati, pa njime ne možete potpisivati ovim vaultovima.";
+"keyshareRecoveryNoBackupMessage" = "Bez .vult sigurnosne kopije key shareovi na ovom uređaju više se ne mogu dešifrirati — taj dio nije moguće obnoviti. Sam vault možda jest: ako vaši drugi uređaji čuvaju vlastite shareove i i dalje dosežu prag za potpisivanje, nastavlja raditi i bez ovoga.";
+"keyshareRecoveryNoBackupTitle" = "Nemam sigurnosnu kopiju";
+"keyshareRecoveryTitle" = "Ovi se vaultovi ne mogu otvoriti na ovom uređaju";
 "keysharesUnreadableVaultNotSaved" = "Key shareovi ovog trezora nisu se mogli pročitati pa trezor nije spremljen. Otključajte aplikaciju i pokušajte ponovno; ako se nastavi, stvorite trezor iznova.";
 "keysharesUnsealableVaultNotSaved" = "Key shareovi ovog trezora nisu se mogli zaštititi za pohranu pa trezor nije spremljen. Otključajte aplikaciju i pokušajte ponovno.";
 "keysign" = "Potpis ključa";

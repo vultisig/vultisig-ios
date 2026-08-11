@@ -658,6 +658,12 @@
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessere so die Flexibilität, ohne die Sicherheit zu vernachlässigen.";
 "keygenInstructionsCar7Title" = "Funktionshighlight";
 "keys" = "Schlüssel";
+"keyshareRecoveryBackupMessage" = "Ihr .vult-Backup ist der Weg zurück. Importieren Sie es, und diese Vaults funktionieren wieder.";
+"keyshareRecoveryImportButton" = ".vult-Backup importieren";
+"keyshareRecoveryMessage" = "Ihre Key Shares sind verschlüsselt, und der Schlüssel, der sie entsperrt, kam bei dieser Wiederherstellung nicht mit. Auf diesem Gerät kann sie nichts lesen, also kann es mit diesen Vaults nicht signieren.";
+"keyshareRecoveryNoBackupMessage" = "Ohne .vult-Backup lassen sich die Key Shares auf diesem Gerät nicht mehr entsperren — dieser Teil ist nicht wiederherstellbar. Der Vault selbst kann es sein: Wenn Ihre anderen Geräte ihre eigenen Shares halten und damit weiterhin den Signaturschwellenwert erreichen, funktioniert er ohne dieses Gerät weiter.";
+"keyshareRecoveryNoBackupTitle" = "Ich habe kein Backup";
+"keyshareRecoveryTitle" = "Diese Vaults lassen sich auf diesem Gerät nicht öffnen";
 "keysharesUnreadableVaultNotSaved" = "Die Key Shares dieses Tresors konnten nicht gelesen werden, daher wurde er nicht gespeichert. Entsperren Sie die App und versuchen Sie es erneut — bleibt das Problem bestehen, erstellen Sie den Tresor neu.";
 "keysharesUnsealableVaultNotSaved" = "Die Key Shares dieses Tresors konnten nicht für die Speicherung geschützt werden, daher wurde er nicht gespeichert. Entsperren Sie die App und versuchen Sie es erneut.";
 "keysign" = "Schlüsselsignatur";
