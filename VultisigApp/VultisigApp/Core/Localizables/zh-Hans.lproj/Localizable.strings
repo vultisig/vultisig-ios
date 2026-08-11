@@ -1552,7 +1552,6 @@
 "switchToLocalMode" = "切换到本地模式";
 "systemErrorMessage" = "系统错误。请重试";
 "targetAsset" = "目标资产: %@";
-"tcyUnstakeBelowMinimum" = "金额过小 — 请至少提取 %@ %@";
 "tcyUnstakeVerifyTitle" = "您正在提取";
 "termsOfService" = "服务条款";
 "theUnmerge" = "解绑";
@@ -1799,6 +1798,7 @@
 "withdraw" = "提取";
 "Withdraw RUJI" = "提取 RUJI";
 "withdrawAmount" = "提取 %@";
+"withdrawBelowMinimum" = "金额过小 — 请至少提取 %@ %@";
 "withdrawBelowOutboundFee" = "金额低于出站费用 — 请至少提取 %@ %@ 以支付网络费用";
 "withdrawingShareOfStakedPosition" = "已质押 %2$@ 的 %1$@";
 "withdrawPercentage" = "提取百分比";

@@ -1552,7 +1552,6 @@
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";
 "targetAsset" = "대상 자산: %@";
-"tcyUnstakeBelowMinimum" = "금액이 너무 적음 — 최소 %@ %@을(를) 출금하세요";
 "tcyUnstakeVerifyTitle" = "출금 중입니다";
 "termsOfService" = "서비스 약관";
 "theUnmerge" = "병합 해제";
@@ -1799,6 +1798,7 @@
 "withdraw" = "출금";
 "Withdraw RUJI" = "RUJI 출금";
 "withdrawAmount" = "%@ 출금";
+"withdrawBelowMinimum" = "금액이 너무 적음 — 최소 %@ %@을(를) 출금하세요";
 "withdrawBelowOutboundFee" = "출금 금액이 출금 수수료보다 낮음 — 네트워크 비용을 충당하려면 최소 %@ %@을(를) 출금하세요";
 "withdrawingShareOfStakedPosition" = "스테이킹한 %2$@ 중 %1$@";
 "withdrawPercentage" = "출금 비율";

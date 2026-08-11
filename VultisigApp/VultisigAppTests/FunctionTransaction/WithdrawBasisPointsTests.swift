@@ -1,18 +1,20 @@
 //
-//  TCYUnstakeBasisPointsTests.swift
+//  WithdrawBasisPointsTests.swift
 //  VultisigAppTests
 //
-//  The `tcy-:<bps>` memo asks for a fraction of the staked position in
+//  A fractional-withdrawal memo asks for a share of the staked position in
 //  ten-thousandths. The amount used to reach it through a whole percentage —
 //  `Int(50.0679) * 100` — which spends 100 of the memo's 10 000 steps and made a
-//  request for 1002.73 TCY pay out 1001.37.
+//  request for 1002.73 TCY pay out 1001.37. TCY is the flow that reported it and
+//  the one exercised here; the conversion itself is the memo convention's, not
+//  TCY's.
 //
 
 @testable import VultisigApp
 import XCTest
 
 @MainActor
-final class TCYUnstakeBasisPointsTests: XCTestCase {
+final class WithdrawBasisPointsTests: XCTestCase {
 
     /// The position from the bug report. 1001.37 × 2 recovers the staked balance
     /// the issue rounds to "2002".
@@ -76,8 +78,8 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
     /// one by 0.16 — and never in the direction of taking more.
     func testBasisPointPrecisionLandsWithinOneBasisPointOfTheRequest() {
         let requested = Decimal(string: "1002.73")!
-        let bps = TCYUnstakeBasisPoints.value(forAmount: requested, available: staked)
-        let delivered = (staked * Decimal(bps)) / Decimal(TCYUnstakeBasisPoints.max)
+        let bps = WithdrawBasisPoints.value(forAmount: requested, available: staked)
+        let delivered = (staked * Decimal(bps)) / Decimal(WithdrawBasisPoints.max)
 
         XCTAssertLessThanOrEqual(delivered, requested, "a withdrawal must never take more than was asked for")
         let error = NSDecimalNumber(decimal: requested - delivered).doubleValue
@@ -89,34 +91,34 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
     /// rounding to nearest would reach 10000 and take the last of it, which is a
     /// different outcome rather than a rounding difference.
     func testRoundingNeverClosesAPositionTheUserAskedToKeep() {
-        let bps = TCYUnstakeBasisPoints.value(forAmount: Decimal(string: "2002.64")!, available: staked)
-        XCTAssertLessThan(bps, TCYUnstakeBasisPoints.max)
+        let bps = WithdrawBasisPoints.value(forAmount: Decimal(string: "2002.64")!, available: staked)
+        XCTAssertLessThan(bps, WithdrawBasisPoints.max)
         XCTAssertEqual(bps, 9999)
     }
 
     // MARK: - Conversion
 
     func testHalfThePositionIsFiveThousandBasisPoints() {
-        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: staked / 2, available: staked), 5000)
+        XCTAssertEqual(WithdrawBasisPoints.value(forAmount: staked / 2, available: staked), 5000)
     }
 
     func testTheWholePositionIsTenThousandBasisPoints() {
-        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: staked, available: staked), 10_000)
+        XCTAssertEqual(WithdrawBasisPoints.value(forAmount: staked, available: staked), 10_000)
     }
 
     /// A memo can never ask for more of the position than all of it, whatever the
     /// field says.
     func testMoreThanThePositionClampsToTenThousand() {
-        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: staked * 3, available: staked), 10_000)
+        XCTAssertEqual(WithdrawBasisPoints.value(forAmount: staked * 3, available: staked), 10_000)
     }
 
     func testAnAmountTooSmallForOneBasisPointIsZero() {
         // A basis point of this position is 0.200274 TCY.
-        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: Decimal(string: "0.05")!, available: staked), 0)
+        XCTAssertEqual(WithdrawBasisPoints.value(forAmount: Decimal(string: "0.05")!, available: staked), 0)
     }
 
     func testThereAreNoBasisPointsOfAnEmptyPosition() {
-        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: 10, available: 0), 0)
+        XCTAssertEqual(WithdrawBasisPoints.value(forAmount: 10, available: 0), 0)
     }
 
     // MARK: - Closing the position
@@ -144,24 +146,24 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
     // MARK: - Validation
 
     func testAnAmountBelowOneBasisPointIsRejected() {
-        let validator = TCYUnstakeAmountValidator(available: staked, ticker: "TCY")
+        let validator = WithdrawMinimumAmountValidator(available: staked, ticker: "TCY")
         XCTAssertThrowsError(try validator.validate(value: "0.05"))
     }
 
     /// The message has to name a figure that actually passes, or it sends the
     /// user in a circle.
     func testTheQuotedMinimumIsItselfAcceptable() throws {
-        let validator = TCYUnstakeAmountValidator(available: staked, ticker: "TCY")
-        let quoted = TCYUnstakeBasisPoints.quotedMinimum(
+        let validator = WithdrawMinimumAmountValidator(available: staked, ticker: "TCY")
+        let quoted = WithdrawBasisPoints.quotedMinimum(
             forAvailable: staked,
-            digits: TCYUnstakeAmountValidator.quotedDigits
+            digits: WithdrawMinimumAmountValidator.quotedDigits
         )
         XCTAssertNoThrow(
-            try validator.validate(value: quoted.formatToDecimal(digits: TCYUnstakeAmountValidator.quotedDigits))
+            try validator.validate(value: quoted.formatToDecimal(digits: WithdrawMinimumAmountValidator.quotedDigits))
         )
         XCTAssertGreaterThanOrEqual(
-            TCYUnstakeBasisPoints.value(forAmount: quoted, available: staked),
-            TCYUnstakeBasisPoints.min
+            WithdrawBasisPoints.value(forAmount: quoted, available: staked),
+            WithdrawBasisPoints.min
         )
     }
 
@@ -179,16 +181,16 @@ final class TCYUnstakeBasisPointsTests: XCTestCase {
     /// as "0". That is pre-existing and shared by every flow using the field.
     func testADustPositionIsNotBlockedByTheBasisPointGuard() throws {
         let dust = Decimal(string: "0.00005")!
-        let validator = TCYUnstakeAmountValidator(available: dust, ticker: "TCY")
+        let validator = WithdrawMinimumAmountValidator(available: dust, ticker: "TCY")
 
         XCTAssertNoThrow(try validator.validate(value: "0.00005"))
-        XCTAssertEqual(TCYUnstakeBasisPoints.value(forAmount: dust, available: dust), TCYUnstakeBasisPoints.max)
+        XCTAssertEqual(WithdrawBasisPoints.value(forAmount: dust, available: dust), WithdrawBasisPoints.max)
     }
 
     /// Reporting a malformed or over-balance amount is `AmountBalanceValidator`'s
     /// job; two validators reporting the same field would fight over the message.
     func testItLeavesMalformedAndOverBalanceAmountsToTheBalanceValidator() {
-        let validator = TCYUnstakeAmountValidator(available: staked, ticker: "TCY")
+        let validator = WithdrawMinimumAmountValidator(available: staked, ticker: "TCY")
         XCTAssertNoThrow(try validator.validate(value: "not a number"))
         XCTAssertNoThrow(try validator.validate(value: "0"))
         XCTAssertNoThrow(try validator.validate(value: "999999"))
