@@ -54,10 +54,11 @@ struct SendDoneScreen: View {
             coin: tx.coin,
             amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
             amountFiat: tx.amountInFiat,
-            // A TrustSet's amount IS the trust-line limit, so it has to claim the
-            // hero before the amount slot renders it as a transfer.
-            hero: RippleTrustSetPresentation.hero(for: tx)
-                ?? LimitOrderCancelPresentation.hero(for: tx),
+            // A TrustSet's amount IS the trust-line limit, and a cancel's is dust
+            // or zero — both have to claim the hero before the amount slot renders
+            // them as transfers. Which presentations may claim it on THIS screen,
+            // and in what order, is `TransactionHeroResolver`'s to say.
+            hero: TransactionHeroResolver.hero(on: .sendDone, for: tx),
             hash: hash,
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash),
             memo: tx.memo,
