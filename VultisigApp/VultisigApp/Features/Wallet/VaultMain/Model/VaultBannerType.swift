@@ -9,7 +9,12 @@ import Foundation
 import SwiftUI
 
 enum VaultBannerType: String, CarouselBannerType, CaseIterable {
-    case upgradeVault, backupVault, buyVult, followVultisig, kaminoEarn
+    /// Declaration order is the carousel's order: `setupBanners` filters
+    /// `allCases` and keeps this sequence, so `kaminoEarn` leading is what puts
+    /// it on the first page. Nothing else depends on it — `rawValue` is the case
+    /// name and `dismissalID` is spelled out separately, so moving a case can
+    /// neither rename a banner nor invalidate a stored dismissal.
+    case kaminoEarn, upgradeVault, backupVault, buyVult, followVultisig
 
     var id: String {
         rawValue

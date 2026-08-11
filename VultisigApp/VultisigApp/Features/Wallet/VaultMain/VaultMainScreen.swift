@@ -109,13 +109,6 @@ struct VaultMainScreen: View {
                     )
                 }
                 .throttledOnAppear(interval: 15.0, action: refresh)
-                // Banner eligibility otherwise only moves on `refresh`, which
-                // is throttled to 15s — so tapping the Kamino promo, enabling a
-                // vault and coming straight back would leave the promo on
-                // screen advertising something the user had just done.
-                .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
-                    viewModel.setupBanners(for: vault)
-                }
                 .refreshable { refresh() }
                 .onChange(of: settingsViewModel.selectedCurrency) {
                     refresh()

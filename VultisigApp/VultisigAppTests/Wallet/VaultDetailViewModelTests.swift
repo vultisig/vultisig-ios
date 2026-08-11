@@ -452,9 +452,8 @@ final class VaultDetailViewModelTests: XCTestCase {
     // MARK: - The Kamino Earn promo
 
     /// It opens the Solana DeFi screen, so a vault that cannot reach Solana has
-    /// nowhere for it to go — and a user already earning is being advertised
-    /// something they are doing.
-    func testKaminoBanner_showsOnlyForASolanaVaultThatIsNotEarningYet() {
+    /// nowhere for it to go. That is the only condition — see the next test.
+    func testKaminoBanner_needsASolanaVault() {
         let store = makeStore()
         let logic = VaultDetailLogic()
 
@@ -463,35 +462,46 @@ final class VaultDetailViewModelTests: XCTestCase {
 
         let solana = makeVault(pubKey: "solana", chains: [.solana])
         XCTAssertTrue(logic.setupBanners(for: solana, store: store, now: fixedNow).contains(.kaminoEarn))
+    }
 
-        solana.kaminoPositions = [
+    /// Deliberately NOT gated on having a position. Someone earning in one
+    /// vault is a good audience for the other two, and the banner is a route
+    /// into the segment rather than a one-time announcement — dismissal is what
+    /// makes it go away.
+    func testKaminoBanner_staysForAVaultThatIsAlreadyEarning() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "earning", chains: [.solana])
+
+        vault.enabledKaminoVaults = [KaminoVaultRegistry.steakhouseUSDC.address]
+        vault.kaminoPositions = [
             KaminoPosition(
                 vaultAddress: KaminoVaultRegistry.steakhouseUSDC.address,
                 isEnabled: true,
-                shares: KaminoShareAmount(baseUnits: 0, decimals: 6),
-                tokenAmount: KaminoTokenAmount(baseUnits: 0, decimals: 6),
-                vault: solana
+                shares: KaminoShareAmount(baseUnits: 1_000_000, decimals: 6),
+                tokenAmount: KaminoTokenAmount(baseUnits: 1_000_000, decimals: 6),
+                vault: vault
             )
         ]
-        XCTAssertFalse(
-            logic.setupBanners(for: solana, store: store, now: fixedNow).contains(.kaminoEarn),
-            "A promo for something the user has already enabled is noise on their own screen."
-        )
+
+        XCTAssertTrue(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.kaminoEarn))
     }
 
-    /// A backup encodes `enabledKaminoVaults`, not the position rows — those are
-    /// materialised on the first visit to the DeFi screen. So a restored vault
-    /// arrives already enabled with no rows at all, and a gate that only reads
-    /// rows would advertise the feature back to the user who turned it on.
-    func testKaminoBanner_isHiddenForARestoredVaultBeforeItsRowsExist() {
+    /// The carousel renders `setupBanners` in order, so leading the list is what
+    /// puts the promo on the first page rather than behind whatever else the
+    /// vault happens to qualify for.
+    func testKaminoBanner_leadsTheCarousel() {
         let store = makeStore()
         let logic = VaultDetailLogic()
-        let restored = makeVault(pubKey: "restored", chains: [.solana])
+        // A fresh vault qualifies for several — it is un-backed-up, and the two
+        // always-on promos apply — so "first" is a real position here rather
+        // than the only one available.
+        let vault = makeVault(pubKey: "many-banners", chains: [.solana])
 
-        restored.enabledKaminoVaults = [KaminoVaultRegistry.steakhouseUSDC.address]
-        XCTAssertTrue(restored.kaminoPositions.isEmpty, "The import restores the choice, not the cache.")
+        let banners = logic.setupBanners(for: vault, store: store, now: fixedNow)
 
-        XCTAssertFalse(logic.setupBanners(for: restored, store: store, now: fixedNow).contains(.kaminoEarn))
+        XCTAssertGreaterThan(banners.count, 1, "This vault should qualify for more than the promo alone.")
+        XCTAssertEqual(banners.first, .kaminoEarn)
     }
 
     /// AC: different intents are independent — dismissing one banner does not

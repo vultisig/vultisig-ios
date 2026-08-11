@@ -289,21 +289,15 @@ struct VaultDetailLogic {
                 case .upgradeVault:
                     return vault.libType == .GG20
                 case .kaminoEarn:
-                    // Two conditions, and the second is what stops it being an
-                    // advertisement: the vault has to be able to reach Solana
-                    // at all — the banner opens the Solana DeFi screen — and
-                    // the user has to not already be earning, since a promo for
-                    // something you are doing is just noise on your own screen.
+                    // Solana only, because the banner opens the Solana DeFi
+                    // screen and there would be nowhere for it to go otherwise.
                     //
-                    // "Already earning" is read from BOTH records because they
-                    // arrive at different times. `enabledKaminoVaults` is what a
-                    // backup encodes and what an import restores; the position
-                    // rows are materialised later, on the first visit to the
-                    // DeFi screen. Reading only the rows would promote the
-                    // feature to a restored user who had already turned it on.
+                    // Deliberately NOT gated on whether the user already has a
+                    // position: someone earning in one vault is a good audience
+                    // for the other two, and the banner is a route into the
+                    // segment rather than a one-time announcement. Dismissal is
+                    // what makes it go away, for the usual fifteen days.
                     return vault.nativeCoin(for: .solana) != nil
-                        && vault.enabledKaminoVaults.isEmpty
-                        && !vault.kaminoPositions.contains(where: \.isEnabled)
                 case .buyVult, .followVultisig:
                     return true
                 }

@@ -261,7 +261,7 @@ final class DefiChainMainViewModelTests: XCTestCase {
         XCTAssertEqual(vm.positions.map(\.value), [.earn, .stake])
     }
 
-    func testEarnSectionIsAppendedLastAndNeverDisturbsTheCoinBuckets() {
+    func testEarnSectionLeadsAndNeverDisturbsTheCoinBuckets() {
         service.supportsLPs = false
         service.earnStub = KaminoVaultRegistry.allowList
         let vm = makeViewModel(chain: .solana)
@@ -270,9 +270,15 @@ final class DefiChainMainViewModelTests: XCTestCase {
 
         XCTAssertEqual(
             vm.availablePositions.map(\.type),
-            [.bond, .stake, .liquidityPool, .earn],
-            "Earn is appended after the three DefiPositions buckets, whose order the picker depends on."
+            [.earn, .bond, .stake, .liquidityPool],
+            "Earn leads the picker, matching the segment order on the chain screen."
         )
+        // The buckets keep their own indices whatever the section order is —
+        // that decoupling is what makes reordering safe, so it is asserted here
+        // rather than assumed.
+        XCTAssertEqual(DefiChainPositionType.bond.selectionIndex, 0)
+        XCTAssertEqual(DefiChainPositionType.stake.selectionIndex, 1)
+        XCTAssertEqual(DefiChainPositionType.liquidityPool.selectionIndex, 2)
         XCTAssertEqual(
             section(.earn, in: vm)?.assets,
             KaminoVaultRegistry.allowList.map { .kaminoVault($0) }
