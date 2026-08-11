@@ -76,25 +76,31 @@ struct KaminoEarnView<EmptyState: View>: View {
         .overlay(cardBorder)
     }
 
+    /// Two states, as the design draws them: a vault the user holds nothing in
+    /// is its identity, its rate and one full-width Deposit — there is no
+    /// position to describe, and rows of zeros describe nothing. A vault they
+    /// hold something in gains the deposited and earned figures, and the
+    /// separator that sets its two actions apart.
     @ViewBuilder
     private func vaultCard(for row: KaminoEarnRow) -> some View {
         VStack(spacing: 14) {
             vaultIdentityRow(for: row)
-            Separator(color: Theme.colors.borderLight, opacity: 1)
-            depositedRow(for: row)
-            // Kept on screen while the value is still being fetched, rather than
-            // appearing once it lands. A row that pops into existence reads as a
-            // layout jump; a labelled row with a shimmering value says which
-            // figure the screen is waiting on. Both are genuinely absent until
-            // the API answers — unlike the deposited amount, whose zero is a
-            // real value, so nothing there is placeheld.
+            if row.hasPosition {
+                depositedRow(for: row)
+                // Kept on screen while the value is still being fetched, rather
+                // than appearing once it lands. A row that pops into existence
+                // reads as a layout jump; a labelled row with a shimmering value
+                // says which figure the screen is waiting on.
+                if row.pnlToken != nil || viewModel.isLoading {
+                    earnedRow(for: row)
+                }
+            }
             if row.apy30d != nil || viewModel.isLoading {
                 apyRow(for: row)
             }
-            if row.pnlToken != nil || viewModel.isLoading {
-                pnlRow(for: row)
+            if row.hasPosition {
+                Separator(color: Theme.colors.borderLight, opacity: 1)
             }
-            Separator(color: Theme.colors.borderLight, opacity: 1)
             actionRow(for: row)
         }
         .padding(16)
@@ -102,20 +108,27 @@ struct KaminoEarnView<EmptyState: View>: View {
         .overlay(cardBorder)
     }
 
-    /// The withdraw button appears only once the vault holds something. Whether
-    /// that position can actually be withdrawn is the withdraw form's answer —
-    /// it depends on whether the shares are staked in the vault's farm, which
-    /// this row does not know and must not guess.
+    /// The withdraw button appears only once the vault holds something, and
+    /// deposit takes the whole width until it does — there is nothing to put
+    /// beside it, and a half-width button next to empty space reads as a missing
+    /// control rather than an absent one.
+    ///
+    /// Whether the position can actually be withdrawn is the withdraw form's
+    /// answer — it depends on whether the shares are staked in the vault's farm,
+    /// which this row does not know and must not guess.
     @ViewBuilder
     private func actionRow(for row: KaminoEarnRow) -> some View {
-        HStack(spacing: 12) {
-            PrimaryButton(title: "kaminoEarnDeposit".localized, size: .smallFixed) {
-                onDeposit(row.descriptor)
-            }
-            if row.tokenAmount > 0 {
+        // `.smallFixed` has no horizontal padding of its own, so each button
+        // takes an equal share of the row: two side by side when there is a
+        // position, one across the full width when there is not.
+        HStack(spacing: 16) {
+            if row.hasPosition {
                 PrimaryButton(title: "kaminoEarnWithdraw".localized, type: .secondary, size: .smallFixed) {
                     onWithdraw(row.descriptor)
                 }
+            }
+            PrimaryButton(title: "kaminoEarnDeposit".localized, size: .smallFixed) {
+                onDeposit(row.descriptor)
             }
         }
     }
@@ -159,22 +172,16 @@ struct KaminoEarnView<EmptyState: View>: View {
         }
     }
 
+    /// The amount rides INSIDE the label and the fiat sits opposite it, which is
+    /// how the design draws both figure rows — and it is what lets the deposited
+    /// and earned lines read as a pair rather than as two stacked columns.
     @ViewBuilder
     private func depositedRow(for row: KaminoEarnRow) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text("kaminoEarnDeposited".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                HiddenBalanceText("\(formatAmount(row.tokenAmount)) \(row.coin?.ticker ?? "")")
-                    .font(Theme.fonts.priceBodyL)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                HiddenBalanceText(fiatString(for: row))
-                    .font(Theme.fonts.priceBodyS)
-                    .foregroundStyle(Theme.colors.textTertiary)
-            }
-        }
+        figureRow(
+            label: String(format: "kaminoEarnDeposited".localized, tokenString(row.tokenAmount, in: row)),
+            fiat: fiatString(fiatValue(for: row)),
+            valueColor: Theme.colors.textPrimary
+        )
     }
 
     @ViewBuilder
@@ -206,20 +213,45 @@ struct KaminoEarnView<EmptyState: View>: View {
             .accessibilityHidden(true)
     }
 
+    /// What the position has made, in the underlying token and in fiat.
+    ///
+    /// The figure is the vault's lifetime profit and loss — on a lending vault
+    /// that is the interest it has accrued, which is what "earned" means here.
+    /// It is still SIGNED: a vault that has lost value says so in red rather
+    /// than reporting a loss as something earned.
     @ViewBuilder
-    private func pnlRow(for row: KaminoEarnRow) -> some View {
-        HStack(spacing: 4) {
-            Text("kaminoEarnPnl".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Spacer()
-            if let pnl = row.pnlToken {
-                HiddenBalanceText("\(formatAmount(pnl)) \(row.coin?.ticker ?? "")")
-                    .font(Theme.fonts.priceBodyS)
-                    .foregroundStyle(pnlColor(pnl))
-            } else {
-                valuePlaceholder(width: 72)
+    private func earnedRow(for row: KaminoEarnRow) -> some View {
+        if let pnl = row.pnlToken {
+            figureRow(
+                label: String(format: "kaminoEarnEarned".localized, tokenString(pnl, in: row)),
+                fiat: fiatString(fiatValue(pnl, in: row)),
+                valueColor: pnlColor(pnl)
+            )
+        } else {
+            HStack(alignment: .firstTextBaseline) {
+                valuePlaceholder(width: 120)
+                Spacer()
+                valuePlaceholder(width: 64)
             }
+        }
+    }
+
+    /// One labelled figure with its fiat value opposite. The label carries the
+    /// token amount, so it is hidden along with the value when balances are
+    /// hidden — a row reading "Earned: 200 USDC" beside a masked fiat figure
+    /// would defeat the point of hiding it.
+    @ViewBuilder
+    private func figureRow(label: String, fiat: String, valueColor: Color) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            HiddenBalanceText(label)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(valueColor)
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            HiddenBalanceText(fiat)
+                .font(Theme.fonts.priceBodyS)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .lineLimit(1)
         }
     }
 
@@ -236,12 +268,22 @@ struct KaminoEarnView<EmptyState: View>: View {
     }
 
     private func fiatValue(for row: KaminoEarnRow) -> Decimal {
-        guard let coin = row.coin else { return .zero }
-        return RateProvider.shared.fiatBalance(value: row.tokenAmount, coin: coin)
+        fiatValue(row.tokenAmount, in: row)
     }
 
-    private func fiatString(for row: KaminoEarnRow) -> String {
-        fiatValue(for: row).formatToFiat(includeCurrencySymbol: true)
+    /// Any token amount of this row's asset, in fiat. Used for the deposit and
+    /// for what it has earned, which are the same asset at the same rate.
+    private func fiatValue(_ amount: Decimal, in row: KaminoEarnRow) -> Decimal {
+        guard let coin = row.coin else { return .zero }
+        return RateProvider.shared.fiatBalance(value: amount, coin: coin)
+    }
+
+    private func fiatString(_ value: Decimal) -> String {
+        value.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    private func tokenString(_ amount: Decimal, in row: KaminoEarnRow) -> String {
+        "\(formatAmount(amount)) \(row.coin?.ticker ?? "")"
     }
 
     /// Green means the position made money, red means it lost some. Exactly zero

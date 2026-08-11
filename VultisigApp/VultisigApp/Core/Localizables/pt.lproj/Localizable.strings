@@ -634,8 +634,8 @@
 "kaminoEarnApy30d" = "APY (30 d)";
 "kaminoEarnCuratedBy" = "Gerido por %@";
 "kaminoEarnDeposit" = "Depositar";
-"kaminoEarnDeposited" = "Depositado";
-"kaminoEarnPnl" = "Lucros e perdas";
+"kaminoEarnDeposited" = "Depositado: %@";
+"kaminoEarnEarned" = "Ganho: %@";
 "kaminoEarnRiskConservative" = "Conservador";
 "kaminoEarnRiskPrivateCredit" = "Crédito privado";
 "kaminoEarnTitle" = "Kamino Earn";

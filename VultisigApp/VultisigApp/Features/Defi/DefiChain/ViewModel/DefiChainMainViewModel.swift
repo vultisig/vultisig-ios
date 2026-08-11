@@ -197,10 +197,15 @@ final class DefiChainMainViewModel: ObservableObject {
             // TON nominator-pool staking only — no bond / LP segments.
             [.stake]
         case .solana:
-            // Native (Stake program) staking plus the Kamino Earn yield vaults —
-            // routed to `SolanaStakeDefiView` and `KaminoEarnView` respectively
-            // (see `DefiChainMainScreen`).
-            [.stake, .earn]
+            // Kamino Earn yield vaults first, then native (Stake program)
+            // staking — routed to `KaminoEarnView` and `SolanaStakeDefiView`
+            // respectively (see `DefiChainMainScreen`).
+            //
+            // Earn leads, which also makes it the segment the screen opens on:
+            // `onLoad` selects the first type. That is what the design asks for,
+            // and the order here is presentational only — the picker files a
+            // selection by `selectionIndex`, which Earn does not have at all.
+            [.earn, .stake]
         default:
             []
         }

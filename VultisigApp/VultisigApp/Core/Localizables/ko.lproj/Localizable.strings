@@ -634,8 +634,8 @@
 "kaminoEarnApy30d" = "APY (30일)";
 "kaminoEarnCuratedBy" = "%@ 운영";
 "kaminoEarnDeposit" = "예치";
-"kaminoEarnDeposited" = "예치됨";
-"kaminoEarnPnl" = "손익";
+"kaminoEarnDeposited" = "예치됨: %@";
+"kaminoEarnEarned" = "수익: %@";
 "kaminoEarnRiskConservative" = "보수적";
 "kaminoEarnRiskPrivateCredit" = "사모 대출";
 "kaminoEarnTitle" = "Kamino Earn";

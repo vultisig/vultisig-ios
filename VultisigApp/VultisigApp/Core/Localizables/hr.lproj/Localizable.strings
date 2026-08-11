@@ -634,8 +634,8 @@
 "kaminoEarnApy30d" = "APY (30 d)";
 "kaminoEarnCuratedBy" = "Kurira %@";
 "kaminoEarnDeposit" = "Položi";
-"kaminoEarnDeposited" = "Položeno";
-"kaminoEarnPnl" = "Dobit i gubitak";
+"kaminoEarnDeposited" = "Položeno: %@";
+"kaminoEarnEarned" = "Zarađeno: %@";
 "kaminoEarnRiskConservative" = "Konzervativno";
 "kaminoEarnRiskPrivateCredit" = "Privatni kredit";
 "kaminoEarnTitle" = "Kamino Earn";

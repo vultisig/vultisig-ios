@@ -634,8 +634,8 @@
 "kaminoEarnApy30d" = "年化收益率（30天）";
 "kaminoEarnCuratedBy" = "由 %@ 管理";
 "kaminoEarnDeposit" = "存入";
-"kaminoEarnDeposited" = "已存入";
-"kaminoEarnPnl" = "盈亏";
+"kaminoEarnDeposited" = "已存入：%@";
+"kaminoEarnEarned" = "已赚取：%@";
 "kaminoEarnRiskConservative" = "保守型";
 "kaminoEarnRiskPrivateCredit" = "私募信贷";
 "kaminoEarnTitle" = "Kamino Earn";

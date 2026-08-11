@@ -340,6 +340,12 @@ struct KaminoEarnRow: Identifiable, Equatable {
     /// Lifetime profit and loss in the underlying token, or `nil` to hide the row.
     let pnlToken: Decimal?
 
+    /// Whether the user holds anything in this vault. What the card shows turns
+    /// on it: an enabled vault with no deposit has no position to describe, so
+    /// it offers the rate and a deposit and says nothing about figures it would
+    /// only be reporting as zeros.
+    var hasPosition: Bool { tokenAmount > 0 }
+
     var curator: String { descriptor.curator }
     var riskTier: KaminoRiskTier { descriptor.riskTier }
     /// The wallet coin the amount is denominated in — its ticker, logo and rate.

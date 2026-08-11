@@ -634,8 +634,8 @@
 "kaminoEarnApy30d" = "APY (30 T.)";
 "kaminoEarnCuratedBy" = "Kuratiert von %@";
 "kaminoEarnDeposit" = "Einzahlen";
-"kaminoEarnDeposited" = "Eingezahlt";
-"kaminoEarnPnl" = "Gewinn & Verlust";
+"kaminoEarnDeposited" = "Eingezahlt: %@";
+"kaminoEarnEarned" = "Verdient: %@";
 "kaminoEarnRiskConservative" = "Konservativ";
 "kaminoEarnRiskPrivateCredit" = "Private Credit";
 "kaminoEarnTitle" = "Kamino Earn";
