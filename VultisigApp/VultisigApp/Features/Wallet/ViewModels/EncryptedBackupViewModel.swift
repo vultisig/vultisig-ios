@@ -32,6 +32,16 @@ enum VaultImportDecision: Equatable {
     /// key), so it cannot be called a duplicate either. Storing it would
     /// overwrite a stored vault, so it is refused.
     case unsafeCollision
+    /// The device already holds this vault, and holds it in a form it can no
+    /// longer open: every one of its key shares is sealed and the key that
+    /// unseals them is confirmed gone. Skipping it as a duplicate is what makes
+    /// the recovery advice — "restore from your `.vult`" — a dead end, so the
+    /// stored row is replaced instead.
+    ///
+    /// `name` is the backup's own name, disambiguated against every stored
+    /// vault **except** the one being replaced: that one is on its way out, so
+    /// its name is not taken.
+    case replaceOrphaned(name: String)
 }
 
 @MainActor
@@ -69,9 +79,22 @@ class EncryptedBackupViewModel: ObservableObject {
     /// the JSON paths would otherwise write plaintext shares into a store that
     /// has a passcode set.
     private let importer: ProtectedVaultImporter
+    /// Only ``KeyshareProtecting/isSealed(_:)`` is used, which reads the stored
+    /// form and consults no state — so this cannot disagree with the importer's
+    /// own protector about what a sealed value looks like.
+    private let protector: KeyshareProtecting
+    /// Read to tell "this device is locked" from "the key is gone", which is the
+    /// difference between refusing an import and completing a recovery.
+    private let keyStore: KeyshareKeyStoring
 
-    init(importer: ProtectedVaultImporter = ProtectedVaultImporter()) {
+    init(
+        importer: ProtectedVaultImporter = ProtectedVaultImporter(),
+        protector: KeyshareProtecting = KeyshareProtector.shared,
+        keyStore: KeyshareKeyStoring = DefaultKeyshareKeyStore.shared
+    ) {
         self.importer = importer
+        self.protector = protector
+        self.keyStore = keyStore
     }
 
     func resetData() {
@@ -604,6 +627,7 @@ class EncryptedBackupViewModel: ObservableObject {
 
     private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) throws -> ImportResults {
         var imported: [Vault] = []
+        var replacing: [Vault] = []
         var duplicates = 0
         var skippedNames: [String] = []
         var unsafeNames: [String] = []
@@ -611,10 +635,30 @@ class EncryptedBackupViewModel: ObservableObject {
         for vault in vaultsToImport {
             // `imported` carries the already-resolved names, so a batch that
             // contains two vaults called "Savings" disambiguates the second
-            // against the first rather than upserting it.
-            switch insertIfSafe(vault, existing: existing + imported) {
+            // against the first rather than upserting it. It also means a second
+            // copy of the *same* vault in one ZIP now collides with the first
+            // copy as well as with the orphan, so it is skipped as a duplicate
+            // rather than asking to replace a row that is already being
+            // replaced.
+            let plan = insertIfSafe(vault, existing: existing + imported)
+            switch plan.decision {
             case .insert:
                 imported.append(vault)
+            case .replaceOrphaned where plan.replacing.contains(where: { orphan in
+                replacing.contains { $0 === orphan }
+            }):
+                // One incoming vault per orphan. An ordinary second copy of the
+                // same vault already collides with the first through
+                // `existing + imported` — but two *incomplete* backups can each
+                // match a different public key of the same orphan without
+                // matching each other, and one row replaced by two vaults is
+                // not a replacement.
+                unsafeNames.append(vault.name)
+                logger.error("Refused a vault during zip import: another vault in this zip already replaces the same stored vault")
+            case .replaceOrphaned:
+                imported.append(vault)
+                replacing.append(contentsOf: plan.replacing)
+                logger.info("A vault in this zip replaces a stored one whose key shares can no longer be opened")
             case .duplicate:
                 duplicates += 1
                 skippedNames.append(vault.name)
@@ -630,7 +674,7 @@ class EncryptedBackupViewModel: ObservableObject {
         // Default coins are added inside it, because they insert rows of their
         // own and doing that first strands them when the import is refused.
         let coinService = VaultDefaultCoinService(context: modelContext)
-        try importer.commit(imported, into: modelContext) { vault in
+        try importer.commit(imported, replacing: replacing, into: modelContext) { vault in
             coinService.setDefaultCoinsOnce(vault: vault)
         }
         // Outside the commit, because the commit is what stores the rows that
@@ -746,10 +790,11 @@ class EncryptedBackupViewModel: ObservableObject {
                 vault.libType = LibType.DKLS
             }
 
-            switch insertIfSafe(vault, existing: vaults) {
-            case .insert:
+            let plan = insertIfSafe(vault, existing: vaults)
+            switch plan.decision {
+            case .insert, .replaceOrphaned:
                 let coinService = VaultDefaultCoinService(context: modelContext)
-                try importer.commit([vault], into: modelContext) { vault in
+                try importer.commit([vault], replacing: plan.replacing, into: modelContext) { vault in
                     coinService.setDefaultCoinsOnce(vault: vault)
                 }
                 // Outside the commit, because the commit is what stores the rows
@@ -807,20 +852,21 @@ class EncryptedBackupViewModel: ObservableObject {
             }
         }
 
-        switch insertIfSafe(decoded, existing: vaults) {
+        let plan = insertIfSafe(decoded, existing: vaults)
+        switch plan.decision {
         case .duplicate:
             showError("vaultAlreadyExists")
             return
         case .unsafeCollision:
             showError("vaultImportWouldOverwriteExisting")
             return
-        case .insert:
+        case .insert, .replaceOrphaned:
             break
         }
 
         do {
             let coinService = VaultDefaultCoinService(context: modelContext)
-            try importer.commit([decoded], into: modelContext) { vault in
+            try importer.commit([decoded], replacing: plan.replacing, into: modelContext) { vault in
                 coinService.setDefaultCoinsOnce(vault: vault)
             }
             // Outside the commit, because the commit is what stores the rows
@@ -865,28 +911,158 @@ class EncryptedBackupViewModel: ObservableObject {
     /// A name collision between two genuinely different vaults is resolved, not
     /// rejected — the name is user-chosen and `Main`/`Savings`/`Test` are exactly
     /// the names people reuse across devices. Anything still colliding after that
-    /// is refused: `pubKeyECDSA`/`pubKeyEdDSA` default to `""`, and `""` is a
-    /// real value in the unique index, so two key-less backups would upsert each
-    /// other. The final check restates the raw index semantics — one clause per
-    /// `@Attribute(.unique)` field on `Vault` — rather than reusing the duplicate
-    /// rule, whose empty/`nil` tolerance is exactly what would let those through.
-    /// It is the single place to extend when a unique attribute is added.
+    /// is refused by ``collides(_:named:with:)``, which restates the raw index
+    /// semantics rather than reusing the duplicate rule.
+    ///
+    /// A vault this device can no longer open is the one exception, and it is a
+    /// narrow one: see ``orphanedVault(collidingWith:in:)``. Even then the
+    /// collision check still runs — against everything the replacement is *not*
+    /// displacing.
     func importDecision(for backupVault: Vault, existing: [Vault]) -> VaultImportDecision {
+        plan(for: backupVault, existing: existing).decision
+    }
+
+    /// The decision, plus the stored row it displaces.
+    ///
+    /// The row is resolved here rather than carried on ``VaultImportDecision``
+    /// so that decision stays a plain value the tests can compare — a live
+    /// `@Model` travelling through one would make it neither comparable nor
+    /// safe to hold.
+    private struct ImportPlan {
+        let decision: VaultImportDecision
+        /// At most one, and only ever a vault this device can no longer open.
+        /// ``ProtectedVaultImporter/commit(_:replacing:into:prepare:)`` deletes
+        /// it in the same save that stores the replacement.
+        let replacing: [Vault]
+    }
+
+    private func plan(for backupVault: Vault, existing: [Vault]) -> ImportPlan {
         guard isVaultUnique(backupVault: backupVault, vaults: existing) else {
-            return .duplicate
+            guard let orphaned = orphanedVault(collidingWith: backupVault, in: existing) else {
+                return ImportPlan(decision: .duplicate, replacing: [])
+            }
+
+            // The row being replaced is on its way out, so its name is not taken
+            // — otherwise every recovery would come back as "Main (2)". It is
+            // the *only* row a replacement excuses, though: everything else on
+            // the device still has to survive the insert.
+            let others = existing.filter { $0 !== orphaned }
+            let name = availableVaultName(basedOn: backupVault.name, taken: Set(others.map(\.name)))
+            guard !collides(backupVault, named: name, with: others) else {
+                return ImportPlan(decision: .unsafeCollision, replacing: [])
+            }
+
+            return ImportPlan(decision: .replaceOrphaned(name: name), replacing: [orphaned])
         }
 
         let name = availableVaultName(basedOn: backupVault.name, taken: Set(existing.map(\.name)))
+        guard !collides(backupVault, named: name, with: existing) else {
+            return ImportPlan(decision: .unsafeCollision, replacing: [])
+        }
 
-        let collides = existing.contains { vault in
+        return ImportPlan(decision: .insert(name: name), replacing: [])
+    }
+
+    /// The raw `@Attribute(.unique)` index semantics — one clause per unique
+    /// field on `Vault` — rather than the duplicate rule, whose empty/`nil`
+    /// tolerance is exactly what would let a collision through.
+    ///
+    /// It is asked on the replacement path too. There it is defence in depth
+    /// rather than the load-bearing guard — a replacement already has to declare
+    /// every identity the row it displaces holds, which is what keeps an
+    /// incomplete backup from matching the orphan on the one key it carries and
+    /// upserting over a **healthy** vault on an empty one. Deleting the orphan
+    /// would do nothing about that, so both checks stay.
+    ///
+    /// This is the single place to extend when a unique attribute is added.
+    private func collides(_ backupVault: Vault, named name: String, with existing: [Vault]) -> Bool {
+        existing.contains { vault in
             vault.name == name
                 || vault.pubKeyECDSA == backupVault.pubKeyECDSA
                 || vault.pubKeyEdDSA == backupVault.pubKeyEdDSA
                 || (vault.publicKeyMLDSA44 != nil && vault.publicKeyMLDSA44 == backupVault.publicKeyMLDSA44)
         }
-        guard !collides else { return .unsafeCollision }
+    }
 
-        return .insert(name: name)
+    /// The one stored vault an incoming backup is allowed to replace.
+    ///
+    /// This deliberately re-enables, in one tightly bounded path, the
+    /// replacement the import gate was hardened against — so every clause below
+    /// is the difference between a recovery and a loss, and none of them is a
+    /// convenience.
+    ///
+    /// - **Exactly one colliding vault.** A backup that matches two stored
+    ///   vaults is a question this cannot answer, and answering it by picking
+    ///   one destroys the other's key material.
+    /// - **The wrapper is *confirmed* absent.** `.unavailable` must not qualify:
+    ///   a Keychain that merely went quiet may well still hold the key, and the
+    ///   shares would open again on the next launch. Deleting a working vault
+    ///   over a momentary read failure is the one mistake available here that
+    ///   destroys something.
+    /// - **Every share sealed, and at least one.** A vault with no shares has
+    ///   nothing to be orphaned about. A partly-sealed one is not a state this
+    ///   app can produce — the sweep is all-or-nothing — so it is a state to
+    ///   refuse rather than to guess about.
+    /// - **The backup *is* the stored vault, not merely overlapping with it.**
+    ///   Matching on one public key is what makes something a duplicate; it is
+    ///   not enough to make it a replacement. Every signing identity the stored
+    ///   row carries has to be declared identically by the backup, or the
+    ///   replacement drops key material — a file naming a different EdDSA key
+    ///   would swap a vault that cannot sign for one that still cannot, and the
+    ///   ciphertext that was there would be gone. An identity the *backup* adds
+    ///   is fine; one it leaves out is not.
+    /// - **The backup carries a share for every key — its own and the stored
+    ///   row's.** `ProtectedVaultImporter` proves that whatever the backup does
+    ///   carry opens here, and it proves it before the deletion, but a file
+    ///   carrying an empty `keyshares` array normalizes perfectly well and would
+    ///   buy the deletion with nothing.
+    ///
+    /// What is deliberately *not* done: nothing here parses a share to confirm
+    /// its bytes really derive the public key it is labelled with. That is TSS
+    /// work behind a critical boundary, and the ordinary import path extends a
+    /// backup the same trust. The checks above are what keep this path from
+    /// extending it any *further* than that one does.
+    func orphanedVault(collidingWith backupVault: Vault, in existing: [Vault]) -> Vault? {
+        let colliding = existing.filter { !isVaultUnique(backupVault: backupVault, vaults: [$0]) }
+        guard colliding.count == 1, let stored = colliding.first else { return nil }
+
+        guard case .absent = keyStore.loadWrappedDataKey() else { return nil }
+
+        guard !stored.keyshares.isEmpty,
+              stored.keyshares.allSatisfy({ protector.isSealed($0.keyshare) }) else {
+            return nil
+        }
+
+        guard preserves(stored.pubKeyECDSA, in: backupVault.pubKeyECDSA),
+              preserves(stored.pubKeyEdDSA, in: backupVault.pubKeyEdDSA),
+              preserves(stored.publicKeyMLDSA44, in: backupVault.publicKeyMLDSA44) else {
+            return nil
+        }
+
+        let carried = Set(backupVault.keyshares.map(\.pubkey))
+        let declared = Set(
+            [backupVault.pubKeyECDSA, backupVault.pubKeyEdDSA, backupVault.publicKeyMLDSA44 ?? ""]
+                .compactMap(\.nilIfEmpty)
+        )
+        guard !backupVault.keyshares.isEmpty,
+              backupVault.keyshares.allSatisfy({ !$0.keyshare.isEmpty }),
+              carried.isSuperset(of: declared),
+              carried.isSuperset(of: Set(stored.keyshares.map(\.pubkey))) else {
+            return nil
+        }
+
+        return stored
+    }
+
+    /// Whether a signing identity the stored vault holds survives the
+    /// replacement unchanged.
+    ///
+    /// An identity the stored row does not have is nothing to preserve. One it
+    /// has and the backup does not — or declares differently — is key material
+    /// the replacement would take away with the row.
+    private func preserves(_ stored: String?, in backup: String?) -> Bool {
+        guard let stored = stored?.nilIfEmpty else { return true }
+        return stored == backup?.nilIfEmpty
     }
 
     /// A vault name no stored vault holds, derived from the backup's own name
@@ -906,20 +1082,27 @@ class EncryptedBackupViewModel: ObservableObject {
     }
 
     /// Runs the import gate and renames `vault` to an available name when it is
-    /// safe to store. Returns the decision so the caller can surface the
-    /// outcome. Storage itself never happens here: it must go through
-    /// ``ProtectedVaultImporter/commit(_:into:prepare:)``, which normalizes,
-    /// inserts and saves inside a single passcode-transition-safe lease — a
-    /// direct `modelContext.insert` here would land outside that lease.
-    private func insertIfSafe(_ vault: Vault, existing: [Vault]) -> VaultImportDecision {
-        let decision = importDecision(for: vault, existing: existing)
-        guard case .insert(let name) = decision else { return decision }
+    /// safe to store. Returns the plan so the caller can surface the outcome and
+    /// hand the displaced row on. Storage itself never happens here: it must go
+    /// through ``ProtectedVaultImporter/commit(_:replacing:into:prepare:)``,
+    /// which normalizes, deletes, inserts and saves inside a single
+    /// passcode-transition-safe lease — a direct `modelContext.insert` here
+    /// would land outside that lease, and a direct `delete` outside the save
+    /// that justifies it.
+    private func insertIfSafe(_ vault: Vault, existing: [Vault]) -> ImportPlan {
+        let plan = plan(for: vault, existing: existing)
 
-        if vault.name != name {
-            logger.info("Renamed an imported vault to avoid colliding with a stored vault's name")
-            vault.name = name
+        switch plan.decision {
+        case .insert(let name), .replaceOrphaned(let name):
+            if vault.name != name {
+                logger.info("Renamed an imported vault to avoid colliding with a stored vault's name")
+                vault.name = name
+            }
+        case .duplicate, .unsafeCollision:
+            break
         }
-        return decision
+
+        return plan
     }
 
     private func isValidFormat(_ url: URL) -> Bool {

@@ -10,9 +10,10 @@ import SwiftData
 private let logger = Log.app.store
 
 enum ProtectedVaultImportError: Error, Equatable {
-    /// A passcode transition is in progress. The import is refused rather than
-    /// queued: the transition is about to rewrite every stored share, and a
-    /// vault inserted underneath it would never be seen.
+    /// A passcode transition is in progress, or a *replacement* was asked for
+    /// over a store carrying somebody else's unsaved work. The import is refused
+    /// rather than queued: the transition is about to rewrite every stored
+    /// share, and a vault inserted underneath it would never be seen.
     case busy
     /// An incoming share is sealed and does not open here — the wrong key, or a
     /// value that is not a share at all.
@@ -111,9 +112,15 @@ struct ProtectedVaultImporter {
     ///   that exists, and it is aimed at rows this method can still take back —
     ///   so the caller starts it once `commit` has returned, never from inside
     ///   `prepare`.
+    ///
+    /// - Parameter orphaned: stored vaults the incoming ones replace, deleted in
+    ///   the same save that stores their replacements. See below for why this is
+    ///   an explicit delete and why it refuses a context that is carrying
+    ///   anything else.
     @MainActor
     func commit(
         _ vaults: [Vault],
+        replacing orphaned: [Vault] = [],
         into context: ModelContext,
         prepare: (Vault) -> Bool = { _ in true }
     ) throws {
@@ -127,6 +134,9 @@ struct ProtectedVaultImporter {
         }
         defer { coordinator.end(episode) }
 
+        // Ahead of the deletion, and that ordering is the whole safety of a
+        // replacement: a backup whose shares this device cannot open must be
+        // refused while the row it would have replaced is still there.
         let normalized = try statedAsAnImportFailure {
             try vaults.map { try normalizer.normalizedShares(of: $0) }
         }
@@ -134,6 +144,30 @@ struct ProtectedVaultImporter {
         // Whatever the context was already carrying decides how a failure is
         // undone below, and it has to be sampled before anything is inserted.
         let wasCarryingOtherWork = context.hasChanges
+
+        // A deletion cannot be taken back except by `rollback()`, and
+        // `rollback()` is only this method's to call when the context was clean
+        // on the way in — otherwise it would discard another flow's work. So
+        // rather than leave a failed save able to flush the deletion by the next
+        // autosave *without* the replacement that justified it, a replacement
+        // over a busy context is refused and the user retries. Nothing has moved
+        // at this point.
+        guard orphaned.isEmpty || !wasCarryingOtherWork else {
+            logger.warning("Vault replacement refused: the store is carrying unsaved work")
+            throw ProtectedVaultImportError.busy
+        }
+
+        // Explicit, and never SwiftData's `@Attribute(.unique)` upsert. An
+        // insert that collides on a unique attribute resolves by overwriting the
+        // stored row with the incoming values — no error, no log — so relying on
+        // it would make "the replacement was stored" and "the original was
+        // destroyed and nothing replaced it" the same code path. Deleting names
+        // what is being removed, and it is the same save that stores what
+        // replaces it.
+        for vault in orphaned {
+            logger.info("Replacing a stored vault whose key shares this device can no longer open")
+            context.delete(vault)
+        }
 
         for (vault, shares) in zip(vaults, normalized) {
             // Whole-array assignment, never element assignment: assigning into
@@ -224,6 +258,11 @@ struct ProtectedVaultImporter {
     /// while an import runs. So it is only used when the context was clean on
     /// the way in and the pending changes are provably ours; otherwise the
     /// imported vaults are withdrawn one by one and the rest is left alone.
+    ///
+    /// A replacement always takes the first branch, and that is why it refuses a
+    /// context carrying anything else: a pending *deletion* cannot be withdrawn
+    /// row by row, so the per-row path would leave the orphan on its way out
+    /// with nothing arriving in its place.
     @MainActor
     private func withdraw(_ vaults: [Vault], from context: ModelContext, rollingBack: Bool) {
         guard !rollingBack else {
