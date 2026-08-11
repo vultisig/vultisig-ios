@@ -41,9 +41,9 @@ final class AppLockWindowHost: ObservableObject {
 
     static let shared = AppLockWindowHost()
 
-    /// Whether the raised window is the thing carrying the lock screen, so the
-    /// root overlay knows to draw an opaque floor rather than a second copy of
-    /// it.
+    /// Whether the raised window is the thing carrying the interactive screen —
+    /// the lock screen, or the key-share recovery screen — so the root overlay
+    /// knows to draw an opaque floor rather than a second copy of it.
     ///
     /// It starts `true` — **assumed, not observed**, and that is the only
     /// ordering that works. A raise happens on the view's first appearance, one
@@ -74,6 +74,7 @@ final class AppLockWindowHost: ObservableObject {
     private struct Callbacks {
         let onUnlocked: () -> Void
         let onAttemptFailed: () -> Void
+        let onRestoreFromBackup: () -> Void
     }
 
     private final class WeakWindow {
@@ -88,21 +89,28 @@ final class AppLockWindowHost: ObservableObject {
     func update(
         to presentation: AppLockPresentation,
         onUnlocked: @escaping () -> Void,
-        onAttemptFailed: @escaping () -> Void
+        onAttemptFailed: @escaping () -> Void,
+        onRestoreFromBackup: @escaping () -> Void
     ) {
         guard presentation != .uncovered else {
             // Asymmetric, and the insertion side is the point: a lock that fades
             // in is a lock you can see through while it arrives. Going up is
             // instant; coming down fades, because by then the app is unlocked and
             // there is nothing left to hide. The privacy cover never faded and
-            // still does not, so only a gate animates away.
+            // still does not, and neither does the recovery screen — see
+            // ``AppLockPresentation/isGate``. Only a gate animates away.
             lower(animated: current.isGate)
             current = .uncovered
             callbacks = nil
             return
         }
 
-        raise(presentation, onUnlocked: onUnlocked, onAttemptFailed: onAttemptFailed)
+        raise(
+            presentation,
+            onUnlocked: onUnlocked,
+            onAttemptFailed: onAttemptFailed,
+            onRestoreFromBackup: onRestoreFromBackup
+        )
     }
 
     // MARK: - Raising
@@ -110,7 +118,8 @@ final class AppLockWindowHost: ObservableObject {
     private func raise(
         _ presentation: AppLockPresentation,
         onUnlocked: @escaping () -> Void,
-        onAttemptFailed: @escaping () -> Void
+        onAttemptFailed: @escaping () -> Void,
+        onRestoreFromBackup: @escaping () -> Void
     ) {
         let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -121,7 +130,7 @@ final class AppLockWindowHost: ObservableObject {
             // the gate is decided in `VultisigApp.init()`, before any exists. The
             // root overlay carries the lock screen itself, which is what it is
             // there for.
-            if presentation.isGate {
+            if presentation.isInteractive {
                 hostsLockScreen = false
             }
             return
@@ -131,7 +140,7 @@ final class AppLockWindowHost: ObservableObject {
         // torn down by the completion of the lowering it interrupted.
         lowerToken += 1
 
-        if presentation.isGate {
+        if presentation.isInteractive {
             // The keyboard is in a window of its own, far above `.alert`, so a
             // field that was first responder under a sheet would go on drawing
             // its keyboard over the lock screen.
@@ -167,11 +176,16 @@ final class AppLockWindowHost: ObservableObject {
                 scene === elected ? presentation : .cover,
                 in: scene,
                 onUnlocked: onUnlocked,
-                onAttemptFailed: onAttemptFailed
+                onAttemptFailed: onAttemptFailed,
+                onRestoreFromBackup: onRestoreFromBackup
             )
         }
 
-        callbacks = Callbacks(onUnlocked: onUnlocked, onAttemptFailed: onAttemptFailed)
+        callbacks = Callbacks(
+            onUnlocked: onUnlocked,
+            onAttemptFailed: onAttemptFailed,
+            onRestoreFromBackup: onRestoreFromBackup
+        )
         current = presentation
     }
 
@@ -188,13 +202,14 @@ final class AppLockWindowHost: ObservableObject {
         _ presentation: AppLockPresentation,
         in scene: UIWindowScene,
         onUnlocked: @escaping () -> Void,
-        onAttemptFailed: @escaping () -> Void
+        onAttemptFailed: @escaping () -> Void,
+        onRestoreFromBackup: @escaping () -> Void
     ) {
         let key = ObjectIdentifier(scene)
         let window = windows[key] ?? makeWindow(for: scene)
         windows[key] = window
 
-        if presentation.isGate,
+        if presentation.isInteractive,
            previousKeyWindows[key] == nil,
            let previous = scene.keyWindow,
            !(previous is AppLockWindow) {
@@ -207,7 +222,7 @@ final class AppLockWindowHost: ObservableObject {
         window.alpha = 1
         window.isUserInteractionEnabled = true
 
-        if presentation.isGate {
+        if presentation.isInteractive {
             window.makeKeyAndVisible()
         } else {
             window.isHidden = false
@@ -216,14 +231,20 @@ final class AppLockWindowHost: ObservableObject {
         window.host.rootView = AppLockHostedScreen(
             presentation: presentation,
             onUnlocked: onUnlocked,
-            onAttemptFailed: onAttemptFailed
+            onAttemptFailed: onAttemptFailed,
+            onRestoreFromBackup: onRestoreFromBackup
         )
     }
 
     private func makeWindow(for scene: UIWindowScene) -> AppLockWindow {
         let window = AppLockWindow(
             scene: scene,
-            screen: AppLockHostedScreen(presentation: .cover, onUnlocked: {}, onAttemptFailed: {})
+            screen: AppLockHostedScreen(
+                presentation: .cover,
+                onUnlocked: {},
+                onAttemptFailed: {},
+                onRestoreFromBackup: {}
+            )
         )
         window.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.alert.rawValue + 1)
         window.overrideUserInterfaceStyle = .dark
@@ -326,11 +347,12 @@ final class AppLockWindowHost: ObservableObject {
         guard scene !== interactiveScene else { return }
         interactiveScene = scene
 
-        guard current.isGate, let callbacks else { return }
+        guard current.isInteractive, let callbacks else { return }
         raise(
             current,
             onUnlocked: callbacks.onUnlocked,
-            onAttemptFailed: callbacks.onAttemptFailed
+            onAttemptFailed: callbacks.onAttemptFailed,
+            onRestoreFromBackup: callbacks.onRestoreFromBackup
         )
     }
 
@@ -351,12 +373,13 @@ final class AppLockWindowHost: ObservableObject {
             dismantle(window)
         }
 
-        guard current.isGate, heldTheKeypad, let callbacks else { return }
+        guard current.isInteractive, heldTheKeypad, let callbacks else { return }
         interactiveScene = nil
         raise(
             current,
             onUnlocked: callbacks.onUnlocked,
-            onAttemptFailed: callbacks.onAttemptFailed
+            onAttemptFailed: callbacks.onAttemptFailed,
+            onRestoreFromBackup: callbacks.onRestoreFromBackup
         )
     }
 }

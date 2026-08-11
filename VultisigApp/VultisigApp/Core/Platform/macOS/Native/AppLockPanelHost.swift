@@ -81,6 +81,7 @@ final class AppLockPanelHost: ObservableObject {
     private struct Callbacks {
         let onUnlocked: () -> Void
         let onAttemptFailed: () -> Void
+        let onRestoreFromBackup: () -> Void
     }
 
     init() {
@@ -90,7 +91,8 @@ final class AppLockPanelHost: ObservableObject {
     func update(
         to presentation: AppLockPresentation,
         onUnlocked: @escaping () -> Void,
-        onAttemptFailed: @escaping () -> Void
+        onAttemptFailed: @escaping () -> Void,
+        onRestoreFromBackup: @escaping () -> Void
     ) {
         guard presentation != .uncovered else {
             lower(animated: current.isGate)
@@ -99,7 +101,12 @@ final class AppLockPanelHost: ObservableObject {
             return
         }
 
-        raise(presentation, onUnlocked: onUnlocked, onAttemptFailed: onAttemptFailed)
+        raise(
+            presentation,
+            onUnlocked: onUnlocked,
+            onAttemptFailed: onAttemptFailed,
+            onRestoreFromBackup: onRestoreFromBackup
+        )
     }
 
     // MARK: - Raising
@@ -107,12 +114,13 @@ final class AppLockPanelHost: ObservableObject {
     private func raise(
         _ presentation: AppLockPresentation,
         onUnlocked: @escaping () -> Void,
-        onAttemptFailed: @escaping () -> Void
+        onAttemptFailed: @escaping () -> Void,
+        onRestoreFromBackup: @escaping () -> Void
     ) {
         let hosts = coverableWindows
 
         guard !hosts.isEmpty else {
-            if presentation.isGate {
+            if presentation.isInteractive {
                 hostsLockScreen = false
             }
             return
@@ -127,7 +135,7 @@ final class AppLockPanelHost: ObservableObject {
         // torn down by the completion of the lowering it interrupted.
         lowerToken += 1
 
-        if presentation.isGate {
+        if presentation.isInteractive {
             hostsLockScreen = true
         }
 
@@ -144,12 +152,17 @@ final class AppLockPanelHost: ObservableObject {
                 window === interactive ? presentation : .cover,
                 over: window,
                 onUnlocked: onUnlocked,
-                onAttemptFailed: onAttemptFailed
+                onAttemptFailed: onAttemptFailed,
+                onRestoreFromBackup: onRestoreFromBackup
             )
         }
 
         applyPanelLevel()
-        callbacks = Callbacks(onUnlocked: onUnlocked, onAttemptFailed: onAttemptFailed)
+        callbacks = Callbacks(
+            onUnlocked: onUnlocked,
+            onAttemptFailed: onAttemptFailed,
+            onRestoreFromBackup: onRestoreFromBackup
+        )
         current = presentation
     }
 
@@ -187,11 +200,17 @@ final class AppLockPanelHost: ObservableObject {
         _ presentation: AppLockPresentation,
         over window: NSWindow,
         onUnlocked: @escaping () -> Void,
-        onAttemptFailed: @escaping () -> Void
+        onAttemptFailed: @escaping () -> Void,
+        onRestoreFromBackup: @escaping () -> Void
     ) {
         let key = ObjectIdentifier(window)
         let panel = panels[key] ?? AppLockPanel(
-            screen: AppLockHostedScreen(presentation: .cover, onUnlocked: {}, onAttemptFailed: {})
+            screen: AppLockHostedScreen(
+                presentation: .cover,
+                onUnlocked: {},
+                onAttemptFailed: {},
+                onRestoreFromBackup: {}
+            )
         )
         panels[key] = panel
 
@@ -209,14 +228,15 @@ final class AppLockPanelHost: ObservableObject {
         panel.ignoresMouseEvents = false
         panel.orderFront(nil)
 
-        if presentation.isGate {
+        if presentation.isInteractive {
             panel.makeKey()
         }
 
         panel.host.rootView = AppLockHostedScreen(
             presentation: presentation,
             onUnlocked: onUnlocked,
-            onAttemptFailed: onAttemptFailed
+            onAttemptFailed: onAttemptFailed,
+            onRestoreFromBackup: onRestoreFromBackup
         )
     }
 
@@ -385,12 +405,13 @@ final class AppLockPanelHost: ObservableObject {
     /// A no-op when it is already there, which is what keeps the `makeKey` inside
     /// the re-raise from electing its way round in a circle.
     private func elect(_ window: NSWindow) {
-        guard current.isGate, let callbacks, window !== interactiveWindow else { return }
+        guard current.isInteractive, let callbacks, window !== interactiveWindow else { return }
         interactiveWindow = window
         raise(
             current,
             onUnlocked: callbacks.onUnlocked,
-            onAttemptFailed: callbacks.onAttemptFailed
+            onAttemptFailed: callbacks.onAttemptFailed,
+            onRestoreFromBackup: callbacks.onRestoreFromBackup
         )
     }
 

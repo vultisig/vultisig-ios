@@ -65,8 +65,11 @@ private struct PresentsWhenUnlockedModifier<Trigger: Equatable>: ViewModifier {
         content
             .onLoad { request() }
             .onChange(of: trigger) { _, _ in request() }
-            .onChange(of: appViewModel.isPasscodeLocked) { _, isLocked in
-                guard hold.lockChanged(isLocked: isLocked) else { return }
+            // Either cover, not just the gate: a sheet raised behind the
+            // key-share recovery screen is a sheet the user finds instead of
+            // the import flow they were sent to.
+            .onChange(of: appViewModel.isCoveredByAppLock) { _, isCovered in
+                guard hold.lockChanged(isLocked: isCovered) else { return }
                 check()
             }
     }
@@ -83,7 +86,7 @@ private struct PresentsWhenUnlockedModifier<Trigger: Equatable>: ViewModifier {
     }
 
     private func runIfUnlocked() {
-        guard hold.requested(whileLocked: appViewModel.isPasscodeLocked) else { return }
+        guard hold.requested(whileLocked: appViewModel.isCoveredByAppLock) else { return }
         check()
     }
 }
@@ -101,15 +104,15 @@ private struct HoldsPresentationWhileLockedModifier: ViewModifier {
         content
             .onLoad { holdIfLocked() }
             .onChange(of: isPresented) { _, _ in holdIfLocked() }
-            .onChange(of: appViewModel.isPasscodeLocked) { _, isLocked in
-                guard hold.lockChanged(isLocked: isLocked) else { return }
+            .onChange(of: appViewModel.isCoveredByAppLock) { _, isCovered in
+                guard hold.lockChanged(isLocked: isCovered) else { return }
                 isPresented = true
             }
     }
 
     private func holdIfLocked() {
         guard isPresented else { return }
-        guard !hold.requested(whileLocked: appViewModel.isPasscodeLocked) else { return }
+        guard !hold.requested(whileLocked: appViewModel.isCoveredByAppLock) else { return }
         isPresented = false
     }
 }
