@@ -291,16 +291,16 @@ func limitDefaultSourceCoin(
     return coin
 }
 
-/// Whether a change to a mirrored price field is a genuine USER edit rather than
+/// Whether a change to a mirrored text field is a genuine USER edit rather than
 /// the echo of a value the view just wrote PROGRAMMATICALLY (`newText ==
 /// lastSyncedText`).
 ///
-/// Two fields mirror the canonical asset-terms target price: the USD display and
-/// the percent-from-market offset. Both are rewritten by the view whenever the
-/// price moves for some other reason (a preset tap, a chart drag, a new rate, a
-/// mode switch), and in both cases the resulting field change would otherwise
-/// convert straight back through that field's coarser display precision and
-/// silently round the canonical (LIM-source) price. Pure so the
+/// The USD display mirrors the canonical asset-terms target price, and the two
+/// amount fields mirror each other through it. All three are rewritten by the
+/// view whenever the price moves for some other reason (a preset tap, a chart
+/// drag, a new rate, a mode switch), and the resulting field change would
+/// otherwise convert straight back through that field's coarser display precision
+/// and silently round the canonical (LIM-source) price. Pure so the
 /// feedback-suppression is unit-testable.
 func isUserFieldEdit(newText: String, lastSyncedText: String?) -> Bool {
     newText != lastSyncedText
@@ -369,9 +369,9 @@ func formatLimitExpiry(blocks: Int) -> String {
 
 /// Target price at `pct` percent above (or below, when negative) `marketPrice`.
 ///
-/// `pct` is a `Decimal` rather than an `Int` because the offset is user-typed —
-/// `+7.5%` is as valid an intent as the preset pills' whole numbers, and routing
-/// both through one function keeps the pills and the field from drifting apart.
+/// `pct` is a `Decimal` rather than an `Int` because the stepper moves in tenths
+/// — `+7.5%` is as valid an intent as the preset pills' whole numbers, and routing
+/// both through one function keeps the pills and the sheet from drifting apart.
 /// It is the exact inverse of `computePctFromMarket`.
 func computePresetPrice(marketPrice: Decimal, pctAboveMarket pct: Decimal) -> Decimal {
     let multiplier = (Decimal(100) + pct) / Decimal(100)
@@ -381,6 +381,66 @@ func computePresetPrice(marketPrice: Decimal, pctAboveMarket pct: Decimal) -> De
 func computePctFromMarket(targetPrice: Decimal, marketPrice: Decimal) -> Decimal {
     guard marketPrice != 0 else { return 0 }
     return (targetPrice - marketPrice) / marketPrice * Decimal(100)
+}
+
+// MARK: - Custom percent-offset stepper
+
+/// What one tap of the custom-offset sheet's − / + moves, and the grid every
+/// value it can hold sits on.
+let limitPctOffsetStep = Decimal(string: "0.1")!
+
+/// How far the custom-offset stepper may be walked.
+///
+/// THORChain imposes no bound of its own — the memo carries whatever LIM the
+/// price implies — so this exists to stop the control producing something that is
+/// not a price. At `-100%` the target is zero, and a zero LIM means "fill at ANY
+/// price", the one thing a limit order must never say (`computeLim` rejects it);
+/// the floor stays a whole percent clear of that edge. The ceiling is far past any
+/// realistic target and is there so a held `+` cannot walk the price somewhere the
+/// price field can no longer render.
+///
+/// **The floor is necessary and NOT sufficient, and no fixed percentage could be.**
+/// The resolved price is rounded to the memo LIM's 8 decimals, so against a small
+/// enough market — a sub-cent token quoted in BTC — even `-99%` rounds to zero.
+/// The sheet therefore refuses on the resolved PRICE, not on the offset; this
+/// range only keeps the control in a sane band.
+let limitPctOffsetRange: ClosedRange<Decimal> = Decimal(-99)...Decimal(999)
+
+func clampLimitPctOffset(_ pct: Decimal) -> Decimal {
+    min(max(pct, limitPctOffsetRange.lowerBound), limitPctOffsetRange.upperBound)
+}
+
+/// The value the custom-offset sheet opens on, given the order's live offset.
+///
+/// Snapped onto the stepper's own grid, because the live offset is derived from a
+/// price rounded to 8 decimals and is routinely an arbitrary number (`+7.5512%`
+/// after a chart drag). Seeding that raw would make the first `+` tap read as
+/// `+7.6512` — a control that appears not to know its own step. Nothing is applied
+/// to the draft until Set is pressed, so the snap costs the user nothing if they
+/// back out.
+func limitPctOffsetSeed(from pct: Decimal) -> Decimal {
+    var rounded = Decimal()
+    var input = clampLimitPctOffset(pct)
+    // 1 decimal place == `limitPctOffsetStep`; the two move together.
+    NSDecimalRound(&rounded, &input, 1, .plain)
+    return rounded
+}
+
+/// Step size after `seconds` of holding − or + down.
+///
+/// The *step* accelerates rather than the tick rate: at a fixed 0.1 it would take
+/// 200 ticks to reach the +20% where the far-above-market warning starts, and a
+/// tick rate fast enough to fix that would make a short hold unlandable. Starting
+/// at 0.1 keeps a hold that is only marginally longer than a tap from overshooting.
+func limitPctStep(forHeldSeconds seconds: Double) -> Decimal {
+    switch seconds {
+    case ..<1.0:
+        return limitPctOffsetStep
+    case ..<2.5:
+        return Decimal(string: "0.5")!
+    default:
+        return 1
+    }
 }
 
 func evaluateWarning(targetPrice: Decimal, marketPrice: Decimal) -> LimitSwapWarning? {
@@ -424,60 +484,15 @@ func parseLimitPrice(_ text: String, locale: Locale = .current) -> Decimal {
     parseLimitDecimal(text, locale: locale)
 }
 
-/// Locale-aware parse of the **percent-from-market** field, which — unlike every
-/// other numeric field in this form — has a meaningful sign: a negative offset is
-/// how a user asks to take the current price with an expiry attached, and the
-/// existing `priceAtOrBelowMarket` warning explains the consequence.
-///
-/// `parseLimitDecimal` is reused for the magnitude so grouping/locale handling
-/// stays identical to the price and amount fields; only the sign is handled here.
-/// A lone `"-"` or `"+"` (mid-typing) parses to 0 rather than failing, so the
-/// field doesn't fight the user on the first keystroke.
-func parseLimitPercent(_ text: String, locale: Locale = .current) -> Decimal {
-    let trimmed = text.trimmingCharacters(in: .whitespaces)
-    guard let first = trimmed.first else { return 0 }
-    guard first == "-" || first == "+" else {
-        return parseLimitDecimal(trimmed, locale: locale)
-    }
-    let magnitude = parseLimitDecimal(String(trimmed.dropFirst()), locale: locale)
-    return first == "-" ? -magnitude : magnitude
-}
-
-/// How far a typed offset may sit from the canonical one and still count as
-/// describing it — half of the field's two-decimal display step.
-let limitPercentAgreementTolerance = Decimal(string: "0.005")!
-
-/// Whether a typed percent offset still describes `canonical`.
-///
-/// The view's resync asks this to tell "the field holds its own value, leave the
-/// caret alone" from "the price moved elsewhere, re-derive the readout". Price
-/// equality alone cannot answer it: the canonical price is rounded to 8 decimals,
-/// and that mapping is **not injective** near the bottom of the range — against a
-/// market of `0.000000006`, both `+0.00%` and `+66.67%` round to a target of
-/// `0.00000001`, so an empty field would look like it agreed with a price it is
-/// nowhere near. (Such an order is separately unplaceable: `computeLim` scales the
-/// price by 1e8 and truncates, so anything under `1e-8` floors the LIM to zero and
-/// throws. The display should still not lie about it.)
-///
-/// Comparing in percent space closes that hole, because the offset is the quantity
-/// the field actually shows. The tolerance is what lets a typed `7.555` survive the
-/// round trip through an 8-decimal price without being rewritten as `+7.56`.
-func limitPercentAgrees(typed: Decimal, canonical: Decimal) -> Bool {
-    let delta = typed - canonical
-    return (delta < 0 ? -delta : delta) < limitPercentAgreementTolerance
-}
-
-/// The percent-from-market field's display form: always signed, two decimals.
+/// The percent-from-market readout's display form: always signed, two decimals.
 ///
 /// The `+` is explicit because the sign is the whole point of the readout — an
 /// unsigned `5.00%` reads as a magnitude, while `+5.00%` reads as a direction.
-/// ASCII `-` (not the typographic minus) so the formatted value round-trips
-/// through `parseLimitPercent` when it is written back into the editable field.
+/// ASCII `-` (not the typographic minus), matching every other number this form
+/// prints.
 ///
-/// `locale` is explicit rather than left to the formatter's ambient default so
-/// the decimal separator it emits is the same one `parseLimitPercent` is asked
-/// to read back — the two are a matched pair, and a test that formats under the
-/// host's locale while parsing under a fixed one passes or fails by machine.
+/// `locale` is explicit rather than left to the formatter's ambient default, so a
+/// test pins the separator instead of inheriting the host machine's.
 func formatLimitPercent(_ pct: Decimal, locale: Locale = .current) -> String {
     let formatter = NumberFormatter()
     formatter.locale = locale

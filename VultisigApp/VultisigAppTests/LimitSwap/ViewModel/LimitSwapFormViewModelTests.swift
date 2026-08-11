@@ -108,7 +108,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice, 42)
     }
 
-    // MARK: - percent-from-market field (two-way with the price)
+    // MARK: - percent-from-market offset (chip readout + custom-offset sheet)
 
     func testPctFromMarketChangedSetsPriceRelativeToMarket() {
         let vm = makeViewModel()
@@ -118,8 +118,8 @@ final class LimitSwapFormViewModelTests: XCTestCase {
     }
 
     func testPctFromMarketChangedAcceptsFractionalOffsets() {
-        // The whole point of the field over the pills: an offset the presets
-        // don't offer.
+        // The whole point of the custom sheet over the pills: an offset the
+        // presets don't offer.
         let vm = makeViewModel()
         vm.marketPriceRef = 200
         vm.pctFromMarketChanged(Decimal(string: "7.5")!)
@@ -159,8 +159,8 @@ final class LimitSwapFormViewModelTests: XCTestCase {
     }
 
     func testPctFromMarketRoundTripsThroughPctFromMarketChanged() {
-        // The field is two-way: what `pctFromMarket` reads back must be what was
-        // written, or the readout and the control disagree.
+        // The sheet writes and the chip reads back: what `pctFromMarket` reports
+        // must be what was set, or the readout and the control disagree.
         let vm = makeViewModel()
         vm.marketPriceRef = 250
         vm.pctFromMarketChanged(Decimal(string: "12.5")!)
@@ -173,12 +173,23 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNil(vm.targetPrice(forPctFromMarket: 5))
     }
 
+    func testAnOffsetInsideTheStepperRangeCanStillResolveToAZeroPrice() {
+        // Why the custom-offset sheet refuses on the resolved PRICE rather than on
+        // the offset: the stepper's floor keeps `pct` a whole percent clear of
+        // -100%, but the price it resolves to is rounded to the memo LIM's 8
+        // decimals — and against a small enough market (a sub-cent token quoted in
+        // BTC) a perfectly legal offset still lands on zero. A zero LIM tells
+        // THORChain "fill at ANY price", so no fixed percentage floor can be the
+        // guard.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.0000004")!
+        XCTAssertEqual(vm.targetPrice(forPctFromMarket: limitPctOffsetRange.lowerBound), 0)
+    }
+
     func testTargetPriceForPctMatchesWhatPctFromMarketChangedStores() {
-        // The view asks this function "does the offset field's text still describe
-        // the price we hold?" and skips the resync when it does. If it disagreed
-        // with what the setter actually stores, the field would be rewritten on
-        // every keystroke — rounding a typed 7.555 into the 2-dp display form and
-        // leaving the readout disagreeing with the price being placed.
+        // The sheet previews the price an offset resolves to through this
+        // function, then applies it through the setter. If the two disagreed, the
+        // sheet would show one price and place another.
         let vm = makeViewModel()
         vm.marketPriceRef = Decimal(string: "27.4218")!
         let pct = Decimal(string: "7.555")!
@@ -189,45 +200,44 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(mapped, vm.draft.targetPrice)
     }
 
-    func testExternalPriceChangeMakesTheOffsetTextStopMatching() {
-        // The resync's trigger condition, from the other side: after something
-        // else moves the price (a chart drag here), the offset the field is
-        // showing no longer maps to it — which is exactly what tells the view to
-        // re-derive the readout rather than leave a stale number on screen.
+    func testExternalPriceChangeRebasesTheOffsetReadout() {
+        // The chip reads `pctFromMarket` live rather than holding a value of its
+        // own, so a price moved by something else — a chart drag here — has to
+        // show up in the offset immediately.
         let vm = makeViewModel()
         vm.marketPriceRef = 100
         vm.pctFromMarketChanged(5)
-        let textPct = Decimal(5)
-        XCTAssertEqual(vm.targetPrice(forPctFromMarket: textPct), vm.draft.targetPrice)
+        XCTAssertEqual(vm.pctFromMarket, 5)
 
         vm.targetPriceChangedFromChart(140)
-        XCTAssertNotEqual(vm.targetPrice(forPctFromMarket: textPct), vm.draft.targetPrice)
+        XCTAssertEqual(vm.pctFromMarket, 40)
     }
 
-    func testMarketReferenceMovingMakesTheOffsetTextStopMatching() {
-        // Same trigger, different cause: a fresh quote re-bases the offset, so a
-        // field left reading "+5.00" would be describing the OLD market.
+    func testMarketReferenceMovingRebasesTheOffsetReadout() {
+        // Same property, different cause: a fresh quote re-bases the offset while
+        // the target price stands still. A chip left reading "+5.00%" would be
+        // describing the OLD market.
         let vm = makeViewModel()
         vm.marketPriceRef = 100
         vm.pctFromMarketChanged(5)
         XCTAssertEqual(vm.draft.targetPrice, 105)
 
-        vm.marketPriceRef = 110
-        XCTAssertNotEqual(vm.targetPrice(forPctFromMarket: 5), vm.draft.targetPrice)
+        vm.marketPriceRef = 105
+        XCTAssertEqual(vm.pctFromMarket, 0)
     }
 
-    func testPresetPillAndPctFieldProduceTheSamePrice() {
+    func testPresetPillAndCustomOffsetProduceTheSamePrice() {
         // The pills are shortcuts into the same arithmetic — if these ever
-        // diverge, tapping +5% and typing 5 would place different orders.
+        // diverge, tapping +5% and stepping to +5% would place different orders.
         let viaPill = makeViewModel()
         viaPill.marketPriceRef = Decimal(string: "27.4218")!
         viaPill.selectPresetPct(5)
 
-        let viaField = makeViewModel()
-        viaField.marketPriceRef = Decimal(string: "27.4218")!
-        viaField.pctFromMarketChanged(5)
+        let viaSheet = makeViewModel()
+        viaSheet.marketPriceRef = Decimal(string: "27.4218")!
+        viaSheet.pctFromMarketChanged(5)
 
-        XCTAssertEqual(viaPill.draft.targetPrice, viaField.draft.targetPrice)
+        XCTAssertEqual(viaPill.draft.targetPrice, viaSheet.draft.targetPrice)
     }
 
     // MARK: - two-way amounts (the driver rule)

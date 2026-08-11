@@ -819,8 +819,14 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.customResult" = "1 %1$@ = %2$@ %3$@";
+"limitSwap.price.customTitle" = "시장 대비 가격";
+"limitSwap.price.decreaseOffset" = "시장 대비 가격 낮추기";
+"limitSwap.price.increaseOffset" = "시장 대비 가격 높이기";
 "limitSwap.price.marketLoading" = "시장 가격 불러오는 중…";
 "limitSwap.price.marketReference" = "시장 %1$@ %2$@";
+"limitSwap.price.offsetPriceUnusable" = "이 격차에서는 이 페어의 가격이 0으로 반올림됩니다. 주문하려면 값을 높이세요.";
+"limitSwap.price.setPrice" = "가격 설정";
 "limitSwap.price.vsMarket" = "시장 대비";
 "limitSwap.progress.filledFormat" = "%@ 체결";
 "limitSwap.sell" = "매도";

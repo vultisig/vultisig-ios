@@ -819,8 +819,14 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.customResult" = "1 %1$@ = %2$@ %3$@";
+"limitSwap.price.customTitle" = "Cijena vs. tržište";
+"limitSwap.price.decreaseOffset" = "Smanji cijenu vs. tržište";
+"limitSwap.price.increaseOffset" = "Povećaj cijenu vs. tržište";
 "limitSwap.price.marketLoading" = "Dohvaćanje tržišne cijene…";
 "limitSwap.price.marketReference" = "Tržište %1$@ %2$@";
+"limitSwap.price.offsetPriceUnusable" = "Uz ovaj odmak cijena se za ovaj par zaokružuje na nulu. Povećaj ga kako bi postavio nalog.";
+"limitSwap.price.setPrice" = "Postavi cijenu";
 "limitSwap.price.vsMarket" = "vs. tržište";
 "limitSwap.progress.filledFormat" = "%@ izvršeno";
 "limitSwap.sell" = "Prodaj";

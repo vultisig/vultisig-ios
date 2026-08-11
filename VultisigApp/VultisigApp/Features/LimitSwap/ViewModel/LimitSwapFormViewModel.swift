@@ -408,7 +408,7 @@ final class LimitSwapFormViewModel {
     /// user asked for an output, and a different price means a different cost.
     ///
     /// Called from EVERY path that moves the price (the price field, the USD
-    /// mirror, the percent field, the preset pills, a chart drag), because a rule
+    /// mirror, the custom-offset sheet, the preset pills, a chart drag), because a rule
     /// that held for only some of them would be worse than no rule: the figure
     /// the user typed would survive one interaction and silently drift on another.
     private func reconcileAmountsAfterPriceChange() {
@@ -457,16 +457,16 @@ final class LimitSwapFormViewModel {
         ))
     }
 
-    /// Set the target price from a typed **percent offset against market** — the
-    /// exact inverse of `pctFromMarket`, and the same arithmetic the preset pills
-    /// run, so the field and the pills can never disagree.
+    /// Set the target price from a **percent offset against market** — the exact
+    /// inverse of `pctFromMarket`, and the same arithmetic the preset pills run,
+    /// so the custom-offset sheet and the pills can never disagree.
     ///
     /// No-op without a market reference: an offset has nothing to offset from,
-    /// and the field is disabled in that state anyway. Rounded to 8 decimals like
-    /// every other price-setting path so the stored price never carries more
-    /// precision than the signed memo's LIM can express.
+    /// and the chip that opens the sheet is disabled in that state anyway.
+    /// Rounded to 8 decimals like every other price-setting path so the stored
+    /// price never carries more precision than the signed memo's LIM can express.
     ///
-    /// Routed through `targetPriceChanged`, so a typed offset counts as the
+    /// Routed through `targetPriceChanged`, so a chosen offset counts as the
     /// deliberate price choice it is and a pending pair refresh's delayed Market
     /// auto-seed cannot clobber it.
     func pctFromMarketChanged(_ pct: Decimal) {
@@ -477,14 +477,11 @@ final class LimitSwapFormViewModel {
     /// The canonical target price a given percent offset maps to, or `nil` when
     /// there is no market reference to offset from.
     ///
-    /// Exposed (rather than inlined into `pctFromMarketChanged`) because the view
-    /// needs the SAME mapping to answer a different question: *does the offset
-    /// field's current text still describe the price we hold?* If it does, the
-    /// field is left alone — which preserves a typed `7.555` instead of rounding
-    /// it to the two-decimal display form, and keeps the caret still mid-edit. If
-    /// it doesn't, the price moved for some other reason (a chart drag, a preset,
-    /// a fresh market quote) and the field has to follow it. Two copies of this
-    /// arithmetic would let those two answers drift apart.
+    /// Exposed (rather than inlined into `pctFromMarketChanged`) because the
+    /// custom-offset sheet previews the price an offset resolves to *before* it is
+    /// applied — a percentage is not what gets signed, so the sheet states the
+    /// number that is. Running that preview through the same mapping the setter
+    /// uses is what stops the previewed price and the placed one from drifting.
     func targetPrice(forPctFromMarket pct: Decimal) -> Decimal? {
         guard let market = marketPriceRef else { return nil }
         var raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)

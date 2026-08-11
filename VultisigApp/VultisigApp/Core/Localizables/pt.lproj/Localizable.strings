@@ -819,8 +819,14 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.customResult" = "1 %1$@ = %2$@ %3$@";
+"limitSwap.price.customTitle" = "Preço vs. mercado";
+"limitSwap.price.decreaseOffset" = "Diminuir preço vs. mercado";
+"limitSwap.price.increaseOffset" = "Aumentar preço vs. mercado";
 "limitSwap.price.marketLoading" = "Obtendo preço de mercado…";
 "limitSwap.price.marketReference" = "Mercado %1$@ %2$@";
+"limitSwap.price.offsetPriceUnusable" = "Com esta diferença o preço arredonda para zero neste par. Aumente-a para colocar uma ordem.";
+"limitSwap.price.setPrice" = "Definir preço";
 "limitSwap.price.vsMarket" = "vs. mercado";
 "limitSwap.progress.filledFormat" = "%@ executado";
 "limitSwap.sell" = "Vender";

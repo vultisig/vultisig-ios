@@ -45,10 +45,32 @@ private enum LimitFocusField: Hashable {
     /// concept — offering them here would apply a share of what you hold to the
     /// side describing what you want.
     case buyAmount
-    /// The percent-offset-from-market field. Bound two-way to the price, and the
-    /// only field whose sign is meaningful, so it takes a keyboard with a minus
-    /// key rather than the decimal pad the others use.
-    case pctFromMarket
+}
+
+/// Scroll targets used to lift the focused field clear of the iOS keyboard.
+///
+/// Coarser than `LimitFocusField` by exactly one step: the asset-terms and USD
+/// price fields are two representations of one number occupying one row, so they
+/// share an anchor. Every anchor is attached to a compact ROW, never to the card
+/// around it — a card taller than the keyboard-reduced viewport cannot be brought
+/// into view without pushing one of its ends off the screen.
+private enum LimitScrollAnchor: Hashable {
+    case sell
+    case buy
+    case price
+
+    init?(focus: LimitFocusField?) {
+        switch focus {
+        case .sellAmount:
+            self = .sell
+        case .buyAmount:
+            self = .buy
+        case .assetPrice, .usdPrice:
+            self = .price
+        case nil:
+            return nil
+        }
+    }
 }
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the
@@ -81,7 +103,7 @@ struct LimitSwapBodyView: View {
     /// becomes the derived one (see `LimitAmountDriver`).
     @State private var buyAmountText: String = ""
     /// Absorbs the one echo of a programmatic write to `buyAmountText`, the same
-    /// guard the USD and percent mirrors use — without it, settling the field to
+    /// guard the USD mirror uses — without it, settling the field to
     /// the re-derived `expectedBuyAmount` would read as a fresh user edit and
     /// re-enter `buyAmountChanged` with a rounded figure.
     @State private var lastSyncedBuyText: String?
@@ -90,15 +112,6 @@ struct LimitSwapBodyView: View {
     /// deposit.
     @State private var lastSyncedSellText: String?
     @State private var priceText: String = ""
-    /// Percent-offset-from-market mirror of the price. Editable; two-way bound to
-    /// `draft.targetPrice` through the VM's `pctFromMarketChanged` / `pctFromMarket`.
-    @State private var pctText: String = ""
-    /// The last value written to `pctText` PROGRAMMATICALLY (by `syncPctText`),
-    /// absorbed by `onChange(pctText)` exactly as `lastSyncedUsdText` is for the
-    /// USD mirror. Without it, a resync triggered while the field is focused
-    /// (a chart drag, a preset tap, a fresh quote) would echo back through the
-    /// two-decimal display form and re-round the canonical price it just read.
-    @State private var lastSyncedPctText: String?
     /// USD-mode mirror of `priceText`. Editable in USD mode; kept in sync with
     /// `draft.targetPrice` (× the target USD rate) so switching modes shows the
     /// right value. The canonical price stays `draft.targetPrice` (asset terms).
@@ -114,6 +127,15 @@ struct LimitSwapBodyView: View {
     @State private var showAllPercentageButtons = true
     /// Drives the single keyboard accessory below — see `LimitFocusField`.
     @FocusState private var focusedField: LimitFocusField?
+    #if os(iOS)
+    /// Captured from the `ScrollViewReader` so the focus observer — which lives on
+    /// the outer stack, alongside the settle logic it shares a trigger with — can
+    /// reach the scroll view. Same capture-on-load pattern the Send form uses.
+    @State private var scrollProxy: ScrollViewProxy?
+    /// The pending scroll-to-focused-field. Held so a fast hop between fields
+    /// cancels the previous one instead of animating to both in turn.
+    @State private var keyboardScrollTask: Task<Void, Never>?
+    #endif
 
     let onPickFromAsset: () -> Void
     let onPickToAsset: () -> Void
@@ -126,58 +148,64 @@ struct LimitSwapBodyView: View {
         // would run the affordability math twice on every body pass.
         let balance = vm.balanceState(sourceCoin: fromCoin)
         VStack(spacing: 12) {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 12) {
-                    // Asset selection comes first: the user picks what they're
-                    // trading before stating the condition it executes under.
-                    // The price card still names both assets ("When 1 BTC is
-                    // worth X ETH") because that sentence IS the condition —
-                    // its chips label the price's units and double as shortcuts
-                    // to the same pickers.
-                    LimitAssetSwapForm(
-                        vm: vm,
-                        fromCoin: fromCoin,
-                        toCoin: toCoin,
-                        sourceAmountText: $sourceAmountText,
-                        buyAmountText: $buyAmountText,
-                        focusedField: $focusedField,
-                        onPickFromAsset: onPickFromAsset,
-                        onPickToAsset: onPickToAsset,
-                        onSwapAssets: onSwapAssets
-                    )
+            ScrollViewReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 12) {
+                        // Asset selection comes first: the user picks what they're
+                        // trading before stating the condition it executes under.
+                        // The price card still names both assets ("When 1 BTC is
+                        // worth X ETH") because that sentence IS the condition —
+                        // its chips label the price's units and double as shortcuts
+                        // to the same pickers.
+                        LimitAssetSwapForm(
+                            vm: vm,
+                            fromCoin: fromCoin,
+                            toCoin: toCoin,
+                            sourceAmountText: $sourceAmountText,
+                            buyAmountText: $buyAmountText,
+                            focusedField: $focusedField,
+                            onPickFromAsset: onPickFromAsset,
+                            onPickToAsset: onPickToAsset,
+                            onSwapAssets: onSwapAssets
+                        )
 
-                    LimitPriceCard(
-                        vm: vm,
-                        priceText: $priceText,
-                        usdText: $usdText,
-                        pctText: $pctText,
-                        focusedField: $focusedField,
-                        onPickFromAsset: onPickFromAsset,
-                        onPickToAsset: onPickToAsset
-                    )
+                        LimitPriceCard(
+                            vm: vm,
+                            priceText: $priceText,
+                            usdText: $usdText,
+                            focusedField: $focusedField,
+                            onPickFromAsset: onPickFromAsset,
+                            onPickToAsset: onPickToAsset
+                        )
 
-                    LimitExpiryCard(vm: vm)
+                        LimitExpiryCard(vm: vm)
 
-                    if vm.advancedSwapQueueEnabled == false {
-                        LimitUnavailableRow()
-                    }
+                        if vm.advancedSwapQueueEnabled == false {
+                            LimitUnavailableRow()
+                        }
 
-                    if let unroutable = vm.pairUnroutableReason {
-                        LimitNoticeRow(message: unroutable.message)
-                    }
+                        if let unroutable = vm.pairUnroutableReason {
+                            LimitNoticeRow(message: unroutable.message)
+                        }
 
-                    // Says which asset is short — funds or gas — instead of
-                    // letting the user find out one screen later at Verify.
-                    // Silent while the fee estimate is in flight, so a gas error
-                    // is never shown and then withdrawn.
-                    if let balanceMessage = balance.noticeMessage {
-                        LimitNoticeRow(message: balanceMessage)
-                    }
+                        // Says which asset is short — funds or gas — instead of
+                        // letting the user find out one screen later at Verify.
+                        // Silent while the fee estimate is in flight, so a gas error
+                        // is never shown and then withdrawn.
+                        if let balanceMessage = balance.noticeMessage {
+                            LimitNoticeRow(message: balanceMessage)
+                        }
 
-                    if let warning = vm.displayedWarning {
-                        LimitWarningRow(warning: warning)
+                        if let warning = vm.displayedWarning {
+                            LimitWarningRow(warning: warning)
+                        }
                     }
                 }
+                #if os(iOS)
+                .onLoad {
+                    scrollProxy = proxy
+                }
+                #endif
             }
 
             PrimaryButton(
@@ -241,23 +269,7 @@ struct LimitSwapBodyView: View {
             if sourceAmountText.isEmpty, vm.draft.sourceAmount > 0 {
                 sourceAmountText = formatPrice(fromCoin.decimal(for: vm.draft.sourceAmount))
             }
-            syncPctText()
             syncBuyText()
-        }
-        .onChange(of: pctText) { _, newText in
-            // Absorb the one echo of a programmatic sync, so a resync that lands
-            // while the field is focused can't round-trip the canonical price
-            // through this field's 2-dp display form.
-            let synced = lastSyncedPctText
-            lastSyncedPctText = nil
-            guard isUserFieldEdit(newText: newText, lastSyncedText: synced) else { return }
-            vm.pctFromMarketChanged(parseLimitPercent(newText))
-        }
-        .onChange(of: vm.marketPriceRef) { _, _ in
-            // The reference the offset is measured against moved (pair change, or
-            // the first quote landing) — the same price is now a different offset,
-            // so the readout has to be re-derived even mid-edit.
-            syncPctText()
         }
         .onChange(of: sourceAmountText) { _, newText in
             // Absorb the echo of a programmatic settle. Without this, writing the
@@ -279,13 +291,16 @@ struct LimitSwapBodyView: View {
             // deposit and the memo carries another.
             syncSellText()
         }
-        .onChange(of: focusedField) { _, _ in
+        .onChange(of: focusedField) { _, newValue in
             // Both amount fields settle to their derived values on blur. Their
             // guards are focus-based (a value comparison would fight the caret
             // mid-typing, since every keystroke re-derives the other side), so
             // losing focus is what has to trigger the settle.
             syncBuyText()
             syncSellText()
+            #if os(iOS)
+            scrollFocusedFieldIntoView(newValue)
+            #endif
         }
         .onChange(of: buyAmountText) { _, newText in
             // Absorb the one echo of a programmatic settle, so re-deriving the
@@ -325,7 +340,6 @@ struct LimitSwapBodyView: View {
                 priceText = newPrice == 0 ? "" : formatPrice(newPrice)
             }
             syncUsdText(for: newPrice)
-            syncPctText()
         }
         .onChange(of: vm.targetUsdPricePerUnit) { _, _ in
             // The target asset (and thus its USD rate) changed — re-derive the USD
@@ -349,6 +363,42 @@ struct LimitSwapBodyView: View {
     }
 
     #if os(iOS)
+    /// Lift the newly focused field clear of the keyboard.
+    ///
+    /// The form is taller than the screen once the keyboard is up, and every field
+    /// in it is reachable — the Buy row and the price row both sit low enough to
+    /// be covered outright, so without this the caret can be under the keyboard the
+    /// moment it appears.
+    ///
+    /// The delay is the load-bearing part. SwiftUI's keyboard avoidance shrinks the
+    /// scroll view's visible region as a safe-area inset, and that inset lands a
+    /// frame or two AFTER the focus change that caused it. Scrolling immediately
+    /// would resolve the anchor against the full-height viewport — i.e. against
+    /// where the keyboard is about to be — and leave the field behind it. Waiting
+    /// for the inset means the target is placed in what the user can actually see.
+    ///
+    /// `.center` rather than `.bottom`: the anchored rows are short, so centring
+    /// leaves whatever room remains for the controls just below them (the market
+    /// reference and preset pills under the price row) instead of pinning the field
+    /// flush against the keyboard's top edge.
+    ///
+    /// Blur (`nil`) deliberately does nothing: the keyboard collapsing already
+    /// gives the content its space back, and scrolling on the way out would yank
+    /// the page under a user who dismissed the keyboard to look around. With a
+    /// hardware keyboard attached there is no inset to wait for, and the scroll
+    /// simply brings the focused row into view — still the right outcome.
+    private func scrollFocusedFieldIntoView(_ field: LimitFocusField?) {
+        keyboardScrollTask?.cancel()
+        guard let anchor = LimitScrollAnchor(focus: field) else { return }
+        keyboardScrollTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut) {
+                scrollProxy?.scrollTo(anchor, anchor: .center)
+            }
+        }
+    }
+
     /// Sets the Sell amount to `pct`% of the source balance. Assigns the field
     /// text (its `onChange` funnels the value into `draft.sourceAmount`); the
     /// balance math + formatting live in the VM (market parity). Owned by the
@@ -431,7 +481,7 @@ struct LimitSwapBodyView: View {
 
     /// Re-derive the Buy field from the order's guaranteed output.
     ///
-    /// Same value-comparison guard the percent mirror uses, and for the same
+    /// Same value-comparison guard the USD mirror uses, and for the same
     /// reason: while Buy is the field being typed into, its text is the user's
     /// stated intent and rewriting it would move the caret. Once the derived
     /// output no longer matches what the text says — because Sell was edited, the
@@ -466,52 +516,6 @@ struct LimitSwapBodyView: View {
         buyAmountText = text
     }
 
-    /// Re-derive `pctText` from the canonical target price and the live market
-    /// reference — but only when the field's current text no longer describes
-    /// that price.
-    ///
-    /// The guard is a VALUE comparison, not a focus check. Gating on focus looks
-    /// equivalent and is not: it suppresses every resync while the field is being
-    /// edited, so a price moved by something else in that window — a chart drag,
-    /// a preset, a fresh market quote arriving — would leave the offset reading a
-    /// number that is no longer true of the order.
-    ///
-    /// Agreement is checked in BOTH directions, and it needs both. Mapping the
-    /// text forward through the VM's own price arithmetic asks the semantically
-    /// primary question — *does your text describe the order we would place?* —
-    /// but that mapping rounds to 8 decimals and is not injective at the bottom
-    /// of the range, where wildly different offsets collapse onto one price. So
-    /// the offset itself is compared too, which is the quantity the field
-    /// actually shows (see `limitPercentAgrees`).
-    ///
-    /// Text agrees → it is this field's own value, so leave it: the caret stays
-    /// put mid-edit, and a typed `7.555` survives instead of being rounded into
-    /// the two-decimal display form (which would leave the field disagreeing with
-    /// the price actually being placed). Text disagrees → the price moved without
-    /// this field, so follow it.
-    ///
-    /// With no market reference the offset is undefined, so the field clears
-    /// rather than showing a stale percentage against a price that no longer
-    /// exists (it is also disabled in that state).
-    private func syncPctText() {
-        guard vm.marketPriceRef != nil, vm.draft.targetPrice > 0 else {
-            guard !pctText.isEmpty else { return }
-            lastSyncedPctText = ""
-            pctText = ""
-            return
-        }
-        let typed = parseLimitPercent(pctText)
-        if let mapped = vm.targetPrice(forPctFromMarket: typed),
-           mapped == vm.draft.targetPrice,
-           limitPercentAgrees(typed: typed, canonical: vm.pctFromMarket) {
-            return
-        }
-        let text = formatLimitPercent(vm.pctFromMarket)
-        guard text != pctText else { return }
-        lastSyncedPctText = text
-        pctText = text
-    }
-
     /// Re-derive `usdText` from the canonical target price, skipping the rewrite
     /// when the current text already maps to `targetPrice` (so active USD typing
     /// isn't clobbered — the mapping is exact because both sides divide the typed
@@ -539,8 +543,9 @@ struct LimitSwapBodyView: View {
 // ticker are tappable and open the from-asset picker; the $/asset toggle sits at
 // the trailing edge of the same row. Body: the large editable price on the left,
 // the target [icon] TICKER button on the right (tappable → to-asset picker), with
-// the secondary representation beneath it. Then the market reference line, then
-// the preset pills (the Market pill is dynamic — see LimitPresetPills).
+// the secondary representation beneath it. Then the market reference line — whose
+// chip carries the live offset from market and opens the stepper sheet — then the
+// preset pills, all four of which render statically.
 //
 // The editable field is ALWAYS bound to the target price in the target asset's
 // terms (the memo's LIM source) — the $/asset toggle only swaps which
@@ -557,7 +562,6 @@ private struct LimitPriceCard: View {
     @Bindable var vm: LimitSwapFormViewModel
     @Binding var priceText: String
     @Binding var usdText: String
-    @Binding var pctText: String
     /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
     var focusedField: FocusState<LimitFocusField?>.Binding
     let onPickFromAsset: () -> Void
@@ -601,17 +605,20 @@ private struct LimitPriceCard: View {
                     action: onPickToAsset
                 )
             }
+            // The keyboard-avoidance anchor sits on this ROW rather than on the
+            // card. The card can be taller than the viewport the keyboard leaves —
+            // trivially so with the chart expanded, and reachable on a compact
+            // device at large Dynamic Type without it — and scrolling a too-tall
+            // card into view pushes its top, where this field is, off the screen:
+            // the exact failure the anchor exists to prevent.
+            .id(LimitScrollAnchor.price)
 
             // Directly under the price: the market reference and the offset from
             // it are the number the target is measured against and the measure
-            // itself, so they read as one row. The offset is an editable FIELD
-            // rather than a readout, which is what makes an arbitrary target
-            // (+7.5%) as reachable as the preset pills' whole numbers.
-            LimitMarketOffsetRow(
-                vm: vm,
-                pctText: $pctText,
-                focusedField: focusedField
-            )
+            // itself, so they read as one row. The offset chip is the way in to an
+            // arbitrary target (+7.5%), which the preset pills' whole numbers
+            // cannot express.
+            LimitMarketOffsetRow(vm: vm, focusedField: focusedField)
 
             // Between the price and the presets on purpose: the chart is what
             // gives a preset its meaning, so it reads as the thing the pills act
@@ -745,12 +752,18 @@ private struct LimitPriceCard: View {
 
 // MARK: - Market reference + percent offset
 //
-// The live market price on the left, and the target's offset from it — editable —
-// on the right. The offset used to exist only as a label inside the Market preset
-// pill, which meant the number was visible only after a manual price edit and
-// could not be typed into at all. As a field it is both a permanent readout and
-// the most direct way to express a limit price ("5% up from here"), which is how
-// traders state one.
+// The live market price on the left, and the target's offset from it on the
+// right. The offset used to exist only as a label inside the Market preset pill,
+// which meant the number was visible only after a manual price edit and could not
+// be set at all. Here it is both a permanent readout and the way in to an
+// arbitrary target — "5% up from here" is how traders state a limit price, and it
+// is the one the preset pills' whole numbers cannot express.
+//
+// The chip is a BUTTON onto the stepper sheet, not a text field. Typing an offset
+// meant a keyboard with a minus key over a form whose every other field takes the
+// decimal pad, and a two-way text mirror of the price that had to be defended
+// against its own echo on every quote, drag and preset tap. The value only ever
+// moves in tenths, so a stepper states that directly and the mirror disappears.
 //
 // Disabled with the price until a market reference resolves. That is deliberate
 // surface: before this row existed, tapping a preset pill with no reference
@@ -759,9 +772,10 @@ private struct LimitPriceCard: View {
 private struct LimitMarketOffsetRow: View {
 
     @Bindable var vm: LimitSwapFormViewModel
-    @Binding var pctText: String
     /// Owned by `LimitSwapBodyView`, which renders the single keyboard accessory.
     var focusedField: FocusState<LimitFocusField?>.Binding
+
+    @State private var isEditingOffset = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -773,7 +787,10 @@ private struct LimitMarketOffsetRow: View {
 
             Spacer(minLength: 8)
 
-            offsetField
+            offsetChip
+        }
+        .crossPlatformSheet(isPresented: $isEditingOffset) {
+            LimitCustomOffsetSheet(vm: vm, isPresented: $isEditingOffset)
         }
     }
 
@@ -788,52 +805,43 @@ private struct LimitMarketOffsetRow: View {
         )
     }
 
-    private var offsetField: some View {
-        HStack(spacing: 3) {
-            Text("limitSwap.price.vsMarket".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
+    private var offsetChip: some View {
+        Button {
+            // Native focus release rather than a `resignFirstResponder` hop, so
+            // the shared keyboard accessory — whose contents switch on this value
+            // — doesn't keep rendering a dismissed field's controls. It also keeps
+            // the keyboard from coming up over the sheet that is about to present.
+            focusedField.wrappedValue = nil
+            isEditingOffset = true
+        } label: {
+            HStack(spacing: 3) {
+                Text("limitSwap.price.vsMarket".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
 
-            // Literal placeholder, matching the price and amount fields: it is a
-            // numeral, not a phrase, and every shipping locale renders it the same.
-            TextField("0", text: $pctText.signedDecimalOnly())
-                // `.plain` strips macOS's default bordered chrome; iOS is
-                // unaffected. Matches the price and amount fields.
-                .textFieldStyle(.plain)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(offsetTint)
-                .multilineTextAlignment(.trailing)
-                // Sized to the widest realistic value ("-100.00") rather than
-                // `.fixedSize()`: an intrinsically-sized field would resize on
-                // every keystroke, sliding the "%" sideways as digits are typed.
-                .frame(width: 52)
-                .lineLimit(1)
-                .focused(focusedField, equals: .pctFromMarket)
-                #if os(iOS)
-                // No `.decimalPad` here — it has no minus key, and a negative
-                // offset is a legitimate entry (take the price now, with an
-                // expiry attached). `.numbersAndPunctuation` keeps the sign
-                // reachable; `signedDecimalOnly` rejects everything else.
-                .keyboardType(.numbersAndPunctuation)
-                #endif
+                Text(formatLimitPercent(vm.pctFromMarket))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(offsetTint)
+                    .lineLimit(1)
 
-            Text("%")
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
+                Text("%")
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Theme.colors.bgSurface1)
+            .overlay(
+                Theme.radius.pill.shape
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
+            .clipShape(Theme.radius.pill.shape)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(Theme.colors.bgSurface1)
-        .overlay(
-            Theme.radius.pill.shape
-                .stroke(
-                    focusedField.wrappedValue == .pctFromMarket
-                        ? Theme.colors.primaryAccent3
-                        : Theme.colors.borderLight,
-                    lineWidth: 1
-                )
-        )
-        .clipShape(Theme.radius.pill.shape)
+        .buttonStyle(.plain)
         .disabled(vm.marketPriceRef == nil)
         .opacity(vm.marketPriceRef == nil ? 0.5 : 1)
     }
@@ -855,6 +863,263 @@ private struct LimitMarketOffsetRow: View {
         formatter.maximumFractionDigits = 8
         return formatter.string(from: NSDecimalNumber(decimal: value))
             ?? NSDecimalNumber(decimal: value).stringValue
+    }
+}
+
+// MARK: - Custom percent-offset sheet
+//
+// The offset, alone, at the size it deserves — with the price it resolves to
+// underneath it, because a percentage is not what gets signed. Nothing is written
+// to the draft until Set: holding `+` would otherwise re-derive the amounts on
+// every tick of a control the user has not finished operating.
+
+private struct LimitCustomOffsetSheet: View {
+
+    @Bindable var vm: LimitSwapFormViewModel
+    @Binding var isPresented: Bool
+
+    /// Local until Set. Seeded from the order's live offset, snapped onto the
+    /// stepper's own grid — see `limitPctOffsetSeed`.
+    @State private var pct: Decimal = 0
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("limitSwap.price.customTitle".localized)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            HStack(spacing: 12) {
+                LimitHoldStepButton(
+                    systemImage: "minus",
+                    accessibilityLabelKey: "limitSwap.price.decreaseOffset",
+                    isEnabled: pct > limitPctOffsetRange.lowerBound
+                ) { step in
+                    apply(clampLimitPctOffset(pct - step))
+                }
+
+                Spacer(minLength: 0)
+
+                VStack(spacing: 4) {
+                    Text("\(formatLimitPercent(pct))%")
+                        .font(Theme.fonts.priceLargeTitle)
+                        .foregroundStyle(offsetTint)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        // The number is the control's whole state; announcing it
+                        // as it changes is what makes the steppers usable without
+                        // sight of it.
+                        .accessibilityAddTraits(.updatesFrequently)
+
+                    Text(resultingPriceText)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+
+                Spacer(minLength: 0)
+
+                LimitHoldStepButton(
+                    systemImage: "plus",
+                    accessibilityLabelKey: "limitSwap.price.increaseOffset",
+                    isEnabled: pct < limitPctOffsetRange.upperBound
+                ) { step in
+                    apply(clampLimitPctOffset(pct + step))
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            noticeRow
+
+            PrimaryButton(title: "limitSwap.price.setPrice".localized) {
+                vm.pctFromMarketChanged(pct)
+                isPresented = false
+            }
+            .disabled(!isPriceUsable)
+        }
+        .padding(16)
+        .onLoad {
+            pct = limitPctOffsetSeed(from: vm.pctFromMarket)
+        }
+    }
+
+    /// Set `pct`, reporting whether it moved. `false` stops a held repeat that has
+    /// walked into the clamp — see `LimitHoldStepButton.onStep`.
+    private func apply(_ newValue: Decimal) -> Bool {
+        guard newValue != pct else { return false }
+        pct = newValue
+        return true
+    }
+
+    /// The target price `pct` resolves to — the number that is actually signed.
+    private var previewPrice: Decimal? {
+        vm.targetPrice(forPctFromMarket: pct)
+    }
+
+    /// Whether the previewed offset names a price the order can actually carry.
+    ///
+    /// The `-99%` floor is NOT enough on its own, and no fixed percentage could
+    /// be: the resolved price is rounded to the memo LIM's 8 decimals, so against
+    /// a market small enough (a sub-cent token quoted in BTC) a legal offset still
+    /// rounds to zero — and a zero LIM tells THORChain "fill at ANY price". The
+    /// form would reject it a step later, but the sheet is where the number is
+    /// chosen, so the sheet is where it has to be refused.
+    private var isPriceUsable: Bool {
+        guard let price = previewPrice else { return false }
+        return price > 0
+    }
+
+    /// Below the price, the sheet states the one thing the offset alone cannot:
+    /// what it means for the order. Priority is refusal first, then the form's own
+    /// warnings — running the SAME evaluator the screen behind it does, so the two
+    /// can never contradict each other.
+    @ViewBuilder
+    private var noticeRow: some View {
+        if !isPriceUsable {
+            LimitInlineNotice(
+                systemImage: "exclamationmark.triangle.fill",
+                tint: Theme.colors.alertWarning,
+                message: "limitSwap.price.offsetPriceUnusable".localized
+            )
+        } else if let warning = previewWarning {
+            LimitWarningRow(warning: warning)
+        }
+    }
+
+    private var previewWarning: LimitSwapWarning? {
+        guard let market = vm.marketPriceRef, let price = previewPrice else { return nil }
+        return evaluateWarning(targetPrice: price, marketPrice: market)
+    }
+
+    /// "1 BTC = 0.03709 ETH" — the price card's own sentence, so the sheet states
+    /// the target in the same direction the form does.
+    private var resultingPriceText: String {
+        guard let price = previewPrice else {
+            return "limitSwap.price.marketLoading".localized
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 8
+        let value = formatter.string(from: NSDecimalNumber(decimal: price))
+            ?? NSDecimalNumber(decimal: price).stringValue
+        return String(
+            format: "limitSwap.price.customResult".localized,
+            vm.draft.fromAsset.ticker,
+            value,
+            vm.draft.toAsset.ticker
+        )
+    }
+
+    /// Same rule as the chip on the form: below market is the one case worth
+    /// colouring, because it means the order fills the moment it rests.
+    private var offsetTint: Color {
+        pct < 0 ? Theme.colors.alertWarning : Theme.colors.textPrimary
+    }
+}
+
+// MARK: - Press-and-hold stepper button
+//
+// A tap emits exactly one step; holding keeps emitting, with the STEP widening
+// the longer it is held (`limitPctStep(forHeldSeconds:)`). Accelerating the step
+// rather than the tick rate is what makes the far end of the range reachable: at
+// a flat tenth per tick, the +20% where the far-above-market warning begins is two
+// hundred ticks away, and a tick rate fast enough to fix that would make a short
+// hold impossible to land on a value.
+
+private struct LimitHoldStepButton: View {
+
+    let systemImage: String
+    let accessibilityLabelKey: String
+    let isEnabled: Bool
+    /// Applies one step of the given size, and reports whether the value actually
+    /// MOVED. The return value is what stops a held repeat at the range bound: a
+    /// press pinned against the clamp would otherwise keep waking every 80ms
+    /// applying no-ops for as long as the finger stayed down.
+    let onStep: (Decimal) -> Bool
+
+    /// Long enough that a deliberate single tap never trips the repeat, short
+    /// enough that a hold doesn't feel stuck before it starts moving.
+    private static let repeatDelaySeconds = 0.4
+    private static let repeatIntervalSeconds = 0.08
+
+    /// `@GestureState` rather than `@State`, and this is the load-bearing choice:
+    /// SwiftUI resets it to `false` when the gesture ends *or is cancelled*, so a
+    /// press interrupted by a call, a notification, or a competing recogniser
+    /// still stops the repeat. Ending on `DragGesture.onEnded` alone does not —
+    /// a cancelled gesture never delivers it, and a `+` left running would keep
+    /// walking the price with nobody touching the screen.
+    @GestureState private var isPressing = false
+    @State private var repeatTask: Task<Void, Never>?
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundStyle(isEnabled ? Theme.colors.textPrimary : Theme.colors.textTertiary)
+            .frame(width: 44, height: 44)
+            .background(Theme.colors.bgSurface2)
+            .clipShape(Circle())
+            .opacity(isPressing ? 0.6 : 1)
+            .contentShape(Circle())
+            // High priority so a press that begins on the button is the button's:
+            // inside a sheet, a plain gesture competes with the interactive
+            // dismiss, and a hold that drifts downward would pull the sheet away
+            // mid-adjustment.
+            .highPriorityGesture(pressGesture)
+            .onChange(of: isPressing) { _, pressing in
+                if pressing {
+                    beginPress()
+                } else {
+                    endPress()
+                }
+            }
+            .accessibilityLabel(accessibilityLabelKey.localized)
+            .accessibilityAddTraits(.isButton)
+            // A raw gesture carries no activation for VoiceOver, which drives
+            // controls by action and not by touch. One step per activation is the
+            // honest equivalent of a tap; press-and-hold stays for everyone else.
+            .accessibilityAction {
+                guard isEnabled else { return }
+                _ = onStep(limitPctStep(forHeldSeconds: 0))
+            }
+            // Carries the state to assistive tech, which a dimmed glyph alone does
+            // not: at a clamp this is the difference between VoiceOver offering a
+            // button that does nothing and announcing it as dimmed. It also blocks
+            // the gesture, so the guards below it are belt-and-braces rather than
+            // the only defence.
+            .disabled(!isEnabled)
+            .onDisappear(perform: endPress)
+    }
+
+    /// A zero-distance drag rather than a `Button`: the press has to be observable
+    /// at touch-DOWN, which is where the first step is emitted and where the
+    /// repeat timer starts. A `Button` only reports the completed tap, so a hold
+    /// would move nothing until the finger came up.
+    private var pressGesture: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .updating($isPressing) { _, pressing, _ in pressing = true }
+    }
+
+    private func beginPress() {
+        guard isEnabled else { return }
+        repeatTask?.cancel()
+        guard onStep(limitPctStep(forHeldSeconds: 0)) else { return }
+        repeatTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(Self.repeatDelaySeconds))
+            // Elapsed is accumulated rather than clock-read so the step schedule
+            // is a pure function of how many ticks have fired.
+            var heldSeconds = Self.repeatDelaySeconds
+            while !Task.isCancelled {
+                guard onStep(limitPctStep(forHeldSeconds: heldSeconds)) else { return }
+                try? await Task.sleep(for: .seconds(Self.repeatIntervalSeconds))
+                heldSeconds += Self.repeatIntervalSeconds
+            }
+        }
+    }
+
+    private func endPress() {
+        repeatTask?.cancel()
+        repeatTask = nil
     }
 }
 
@@ -1540,6 +1805,7 @@ private struct LimitAssetSwapForm: View {
                     usdPricePerUnit: Decimal(fromCoin.price),
                     onPickAsset: onPickFromAsset
                 )
+                .id(LimitScrollAnchor.sell)
 
                 LimitAssetRow(
                     kind: .buy,
@@ -1555,6 +1821,7 @@ private struct LimitAssetSwapForm: View {
                     usdPricePerUnit: vm.targetUsdPricePerUnit,
                     onPickAsset: onPickToAsset
                 )
+                .id(LimitScrollAnchor.buy)
             }
 
             // Shared with the market swap form: same visual + spring flip.
@@ -1572,10 +1839,6 @@ private struct LimitAssetSwapForm: View {
         return amount > 0 ? amount : nil
     }
 
-    private var formattedBuyAmount: String {
-        guard let amount = buyAmountDecimal else { return "0" }
-        return NSDecimalNumber(decimal: amount).stringValue
-    }
 }
 
 // MARK: - Single asset row (chain header + coin pill + amount field)
@@ -1657,19 +1920,18 @@ private struct LimitAssetRow: View {
 
 // MARK: - Preset pills
 //
-// Shortcuts into the offset field above, not a separate mechanism: each pill
-// calls the same `selectPresetPct` the field's arithmetic goes through, and the
-// field shows the resulting offset whether it came from a pill or a keystroke.
+// Shortcuts onto the offset chip above, not a separate mechanism: `selectPresetPct`
+// and the sheet's `pctFromMarketChanged` both resolve through `computePresetPrice`,
+// so a pill and a stepped offset of the same size place the same order — and the
+// chip reads back the result whichever of the two set it.
 //
 // All four render statically. The Market pill used to swap its label for the
 // live delta ("+12.5% ✕") after a manual price edit, which needed a wrapping
 // layout for the widened pill and a piece of view state to decide which form to
-// draw. The offset field now shows that delta permanently, so both are gone.
+// draw. The offset chip now shows that delta permanently, so both are gone.
 //
 // Tapping a pill dismisses the keyboard (by clearing focus, which keeps the
-// shared keyboard accessory's state truthful). The offset field then re-derives
-// to the pill's value — not because focus changed, but because the pill moved
-// the price, and any text that no longer describes it is resynced.
+// shared keyboard accessory's state truthful).
 
 private struct LimitPresetPills: View {
 
@@ -1829,26 +2091,6 @@ private extension Binding where Value == String {
             get: { wrappedValue },
             set: { newValue in
                 if newValue.isDecimalInput() { wrappedValue = newValue }
-            }
-        )
-    }
-
-    /// `decimalOnly`, plus a single leading `+`/`-`.
-    ///
-    /// Only the percent-from-market field needs this: it is the one input whose
-    /// sign carries meaning, and `isDecimalInput` rejects a minus outright — so
-    /// binding it through `decimalOnly` would make a below-market offset
-    /// untypeable. The sign is accepted only in first position, so `"5-"` and
-    /// `"1-2"` are still rejected, and a lone `"-"` is allowed through as a valid
-    /// in-progress entry (`parseLimitPercent` reads it as 0).
-    func signedDecimalOnly() -> Binding<String> {
-        Binding<String>(
-            get: { wrappedValue },
-            set: { newValue in
-                let magnitude = (newValue.first == "-" || newValue.first == "+")
-                    ? String(newValue.dropFirst())
-                    : newValue
-                if magnitude.isDecimalInput() { wrappedValue = newValue }
             }
         )
     }

@@ -520,7 +520,7 @@ final class LimitMathTests: XCTestCase {
     }
 
     func testPresetPriceWithFractionalPercent() {
-        // The offset field's reason for existing: 7.5% is not a preset.
+        // The custom-offset sheet's reason for existing: 7.5% is not a preset.
         XCTAssertEqual(
             computePresetPrice(marketPrice: 200, pctAboveMarket: Decimal(string: "7.5")!),
             215
@@ -532,42 +532,95 @@ final class LimitMathTests: XCTestCase {
     }
 
     func testPresetPriceInvertsPctFromMarket() {
-        // The field writes through one and reads back through the other, so the
-        // two must be exact inverses or the readout drifts from the control.
+        // The sheet writes through one and the chip reads back through the other,
+        // so the two must be exact inverses or the readout drifts from the control.
         let market = Decimal(string: "27.4218")!
         let pct = Decimal(string: "12.5")!
         let price = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
         XCTAssertEqual(computePctFromMarket(targetPrice: price, marketPrice: market), pct)
     }
 
-    // MARK: - parseLimitPercent
+    // MARK: - Custom percent-offset stepper
 
-    func testParsePercentUnsigned() {
-        XCTAssertEqual(parseLimitPercent("5", locale: Locale(identifier: "en_US")), 5)
+    func testClampOffsetHoldsTheFloorAboveMinusOneHundred() {
+        // -100% is a zero target price, and a zero LIM means "fill at ANY price".
+        // The floor has to stay clear of it however long + is held.
+        XCTAssertEqual(clampLimitPctOffset(-250), limitPctOffsetRange.lowerBound)
+        XCTAssertGreaterThan(limitPctOffsetRange.lowerBound, -100)
     }
 
-    func testParsePercentExplicitPlus() {
-        XCTAssertEqual(parseLimitPercent("+7.5", locale: Locale(identifier: "en_US")), Decimal(string: "7.5")!)
+    func testClampOffsetHoldsTheCeiling() {
+        XCTAssertEqual(clampLimitPctOffset(5_000), limitPctOffsetRange.upperBound)
     }
 
-    func testParsePercentNegative() {
-        XCTAssertEqual(parseLimitPercent("-3.25", locale: Locale(identifier: "en_US")), Decimal(string: "-3.25")!)
+    func testClampOffsetLeavesAnInRangeValueAlone() {
+        let pct = Decimal(string: "7.5")!
+        XCTAssertEqual(clampLimitPctOffset(pct), pct)
     }
 
-    func testParsePercentLoneSignIsZeroNotGarbage() {
-        // First keystroke of a negative entry — must not throw the field into a
-        // nonsense price while the user is still typing.
-        XCTAssertEqual(parseLimitPercent("-", locale: Locale(identifier: "en_US")), 0)
-        XCTAssertEqual(parseLimitPercent("+", locale: Locale(identifier: "en_US")), 0)
+    func testOffsetSeedSnapsOntoTheStepperGrid() {
+        // A chart drag leaves an arbitrary offset behind. Seeding it raw would
+        // make the first + tap read +7.6512 — a control that appears not to know
+        // its own step.
+        XCTAssertEqual(limitPctOffsetSeed(from: Decimal(string: "7.5512")!), Decimal(string: "7.6")!)
+        XCTAssertEqual(limitPctOffsetSeed(from: Decimal(string: "-2.04")!), Decimal(string: "-2.0")!)
     }
 
-    func testParsePercentEmptyIsZero() {
-        XCTAssertEqual(parseLimitPercent("", locale: Locale(identifier: "en_US")), 0)
+    func testOffsetSeedClampsBeforeSnapping() {
+        XCTAssertEqual(limitPctOffsetSeed(from: 4_000), limitPctOffsetRange.upperBound)
     }
 
-    func testParsePercentCommaDecimalLocale() {
-        // Shares the price/amount parser, so a comma-decimal locale behaves.
-        XCTAssertEqual(parseLimitPercent("-2,5", locale: Locale(identifier: "de_DE")), Decimal(string: "-2.5")!)
+    func testOffsetSeedIsStableForAValueAlreadyOnTheGrid() {
+        // Open, close, reopen must not walk the value.
+        let seeded = limitPctOffsetSeed(from: Decimal(string: "7.5512")!)
+        XCTAssertEqual(limitPctOffsetSeed(from: seeded), seeded)
+    }
+
+    func testSteppingStaysOnTheGrid() {
+        // Ten taps of the finest step land exactly on the whole number, with no
+        // binary-float dust — the display shows two decimals and would expose it.
+        var pct = Decimal(string: "7.5")!
+        for _ in 0..<10 {
+            pct = clampLimitPctOffset(pct + limitPctOffsetStep)
+        }
+        XCTAssertEqual(pct, Decimal(string: "8.5")!)
+    }
+
+    func testHoldStepStartsAtTheTapIncrement() {
+        // A hold that is only marginally longer than a tap must not overshoot.
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 0), limitPctOffsetStep)
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 0.9), limitPctOffsetStep)
+    }
+
+    func testHoldStepAcceleratesWithTheHold() {
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 1.5), Decimal(string: "0.5")!)
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 3), 1)
+    }
+
+    func testHoldStepIsMonotonic() {
+        // The step may widen as a press is held but must never narrow — a stepper
+        // that slowed down mid-hold would read as a stutter.
+        var previous = Decimal(0)
+        for tick in stride(from: 0.0, through: 5.0, by: 0.1) {
+            let step = limitPctStep(forHeldSeconds: tick)
+            XCTAssertGreaterThanOrEqual(step, previous, "step narrowed at \(tick)s")
+            previous = step
+        }
+    }
+
+    func testHoldCrossesTheFarAboveMarketThresholdInSeconds() {
+        // The reason the step accelerates at all: from Market, a held + has to
+        // reach the +20% where the far-above-market warning starts without the
+        // user giving up. Replays the button's own schedule (0.4s before the
+        // first repeat, then a tick every 0.08s).
+        var pct = clampLimitPctOffset(limitPctStep(forHeldSeconds: 0))
+        var held = 0.4
+        while pct < 20, held < 10 {
+            pct = clampLimitPctOffset(pct + limitPctStep(forHeldSeconds: held))
+            held += 0.08
+        }
+        XCTAssertGreaterThanOrEqual(pct, 20)
+        XCTAssertLessThan(held, 5, "a held + should cross +20% in a few seconds")
     }
 
     // MARK: - limitSourceAmount (Buy-driven entry)
@@ -734,72 +787,40 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(formatLimitExpiry(blocks: 5), "0m")
     }
 
-    // MARK: - limitPercentAgrees
-
-    func testPercentAgreesWithItself() {
-        XCTAssertTrue(limitPercentAgrees(typed: 5, canonical: 5))
-    }
-
-    func testPercentAgreesAcrossTheEightDecimalPriceRoundTrip() {
-        // A typed 7.555 comes back as very slightly off after the price it set is
-        // rounded to 8 dp. It must still count as agreeing, or the field would be
-        // rewritten to +7.56 and then disagree with the price being placed.
-        XCTAssertTrue(limitPercentAgrees(typed: Decimal(string: "7.555")!,
-                                         canonical: Decimal(string: "7.55500001")!))
-    }
-
-    func testPercentDisagreesOnADisplayVisibleDifference() {
-        XCTAssertFalse(limitPercentAgrees(typed: 5, canonical: Decimal(string: "5.02")!))
-    }
-
-    func testPercentDisagreesWhenPriceRoundingCollapsesDistinctOffsets() {
-        // The reason price equality alone is not enough: against a market of
-        // 6e-9, an empty field (0%) and the true +66.67% both round to the same
-        // 8-decimal target price, so only the percent-space check catches it.
-        let market = Decimal(string: "0.000000006")!
-        let target = Decimal(string: "0.00000001")!
-
-        var mapped = Decimal()
-        var raw = computePresetPrice(marketPrice: market, pctAboveMarket: 0)
-        NSDecimalRound(&mapped, &raw, 8, .plain)
-        XCTAssertEqual(mapped, target, "precondition: price equality cannot separate these")
-
-        let canonical = computePctFromMarket(targetPrice: target, marketPrice: market)
-        XCTAssertFalse(limitPercentAgrees(typed: 0, canonical: canonical))
-    }
-
-    func testPercentAgreementIsSymmetricAroundZero() {
-        XCTAssertTrue(limitPercentAgrees(typed: -2, canonical: Decimal(string: "-2.004")!))
-        XCTAssertFalse(limitPercentAgrees(typed: -2, canonical: Decimal(string: "-2.02")!))
-    }
-
     // MARK: - formatLimitPercent
 
     func testFormatPercentSignsPositiveExplicitly() {
         XCTAssertEqual(formatLimitPercent(5, locale: Locale(identifier: "en_US")), "+5.00")
     }
 
-    func testFormatPercentUsesAsciiMinusSoItRoundTrips() {
-        let text = formatLimitPercent(Decimal(string: "-2.5")!, locale: Locale(identifier: "en_US"))
-        XCTAssertEqual(text, "-2.50")
-        // The formatted value is written back into the editable field, so the
-        // parser has to accept its own formatter's output.
-        XCTAssertEqual(parseLimitPercent(text, locale: Locale(identifier: "en_US")), Decimal(string: "-2.5")!)
+    func testFormatPercentUsesAsciiMinus() {
+        XCTAssertEqual(
+            formatLimitPercent(Decimal(string: "-2.5")!, locale: Locale(identifier: "en_US")),
+            "-2.50"
+        )
     }
 
-    func testFormatPercentRoundTripsInACommaDecimalLocale() {
-        // The formatter and the parser are a matched pair: whatever separator the
-        // format emits, the parse under the same locale has to read back. Pinning
-        // only the parser (and letting the formatter take the host's locale) is
-        // what makes a suite pass on one machine and fail on another.
-        let locale = Locale(identifier: "de_DE")
-        let text = formatLimitPercent(Decimal(string: "-2.5")!, locale: locale)
-        XCTAssertEqual(text, "-2,50")
-        XCTAssertEqual(parseLimitPercent(text, locale: locale), Decimal(string: "-2.5")!)
+    func testFormatPercentUsesTheGivenLocalesSeparator() {
+        // Pinned rather than left to the host's ambient locale, which is what
+        // makes a suite pass on one machine and fail on another.
+        XCTAssertEqual(
+            formatLimitPercent(Decimal(string: "-2.5")!, locale: Locale(identifier: "de_DE")),
+            "-2,50"
+        )
     }
 
     func testFormatPercentZero() {
         XCTAssertEqual(formatLimitPercent(0, locale: Locale(identifier: "en_US")), "+0.00")
+    }
+
+    func testFormatPercentShowsEveryStepperValueDistinctly() {
+        // Two decimals against a 0.1 step: adjacent stepper values must never
+        // render the same, or holding + would look frozen.
+        let locale = Locale(identifier: "en_US")
+        XCTAssertNotEqual(
+            formatLimitPercent(Decimal(string: "7.5")!, locale: locale),
+            formatLimitPercent(Decimal(string: "7.6")!, locale: locale)
+        )
     }
 
     // MARK: - computePctFromMarket

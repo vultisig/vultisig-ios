@@ -819,8 +819,14 @@
 "limitSwap.preset.plus1" = "+1%";
 "limitSwap.preset.plus10" = "+10%";
 "limitSwap.preset.plus5" = "+5%";
+"limitSwap.price.customResult" = "1 %1$@ = %2$@ %3$@";
+"limitSwap.price.customTitle" = "价格对比市场";
+"limitSwap.price.decreaseOffset" = "降低对比市场的价格";
+"limitSwap.price.increaseOffset" = "提高对比市场的价格";
 "limitSwap.price.marketLoading" = "正在获取市场价格…";
 "limitSwap.price.marketReference" = "市场 %1$@ %2$@";
+"limitSwap.price.offsetPriceUnusable" = "在此偏移下，该交易对的价格会舍入为零。请调高后再下单。";
+"limitSwap.price.setPrice" = "设置价格";
 "limitSwap.price.vsMarket" = "对比市场";
 "limitSwap.progress.filledFormat" = "已成交 %@";
 "limitSwap.sell" = "卖出";
