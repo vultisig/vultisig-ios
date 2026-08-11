@@ -8,6 +8,8 @@
 import SwiftUI
 import SwiftData
 
+private let logger = Log.app.other
+
 enum RootRoute {
     case home(showingVaultSelector: Bool)
     case createVault
@@ -147,13 +149,13 @@ struct ContentView: View {
             guard isPending else { return }
             appViewModel.handOffToKeyshareRecoveryImport {
                 appViewModel.showSplashView = false
-                // Dropped rather than drained. The queue exists for a cover
-                // that lasts seconds; this one lasts the session, so a link
-                // held behind it would arrive an arbitrary time later — right
-                // on top of the one screen the user has just asked for. A link
-                // that arrives once the app is showing itself again is handled
-                // normally.
-                pendingDeeplinks = []
+                // A `.vult` opened from Files while the recovery screen was up
+                // is pending this very route, and its hold runs the moment the
+                // cover comes down. Claimed here so that becomes a no-op rather
+                // than a second copy of the import screen on the stack — the
+                // document itself is still on the view model, and the import
+                // screen picks it up when it appears.
+                _ = vultExtensionViewModel.consumeDocumentImport()
                 // Without animation, and that is not a style choice: the push
                 // slides for a third of a second, and the recovery screen comes
                 // off as soon as this returns. Animated, that third of a second
@@ -364,9 +366,20 @@ struct ContentView: View {
     ///
     /// Acting on one behind a cover would navigate, present sheets and mutate
     /// state where nobody can see it — a cover has to apply to what the app
-    /// *does*, not only to what it shows. Either cover: the lock screen, and
-    /// the key-share recovery screen.
+    /// *does*, not only to what it shows.
+    ///
+    /// **Held behind the lock screen, dropped behind the recovery screen**, and
+    /// the difference is how long each one lasts. A gate is seconds, so a link
+    /// is worth keeping. The recovery screen stands for the rest of the session
+    /// and comes down onto the import flow, so a link kept there would arrive an
+    /// arbitrary time later, on top of the one screen the user asked for. The
+    /// queue is also `@State`, so it is per scene — dropping needs no
+    /// co-ordination between them, where draining would.
     private func handleDeeplink(_ incomingURL: URL) {
+        guard !appViewModel.isKeyshareRecoveryRequired else {
+            logger.info("Ignoring a deeplink that arrived while the key-share recovery screen was up")
+            return
+        }
         guard !appViewModel.isCoveredByAppLock else {
             // Queued rather than replaced: a single slot silently drops every
             // link but the last, and each one is a user action.
