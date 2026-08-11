@@ -949,6 +949,10 @@
 "partOf" = "part %d of %d";
 "passcodeAlreadySet" = "A passcode is already set on this device. Go back to change or remove it.";
 "passcodeAutoLockTitle" = "Auto-lock";
+"passcodeBackupPromptBackUpNow" = "Back up now";
+"passcodeBackupPromptHasBackup" = "I already have a backup";
+"passcodeBackupPromptSubtitle" = "A passcode encrypts your key shares with a key held on this device. If that key is ever lost, your .vult backup is the only way back — the passcode itself cannot be recovered.";
+"passcodeBackupPromptTitle" = "Back up before you set a passcode";
 "passcodeBiometricDisableFailed" = "Biometric unlock could not be turned off. Try again.";
 "passcodeBiometricEnableFailed" = "Biometric unlock could not be turned on. Your passcode still works.";
 "passcodeBiometricNotAvailable" = "This device cannot use biometric unlock.";

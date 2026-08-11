@@ -27,6 +27,8 @@ enum AccessibilityID {
         static let autoLockCell = "settings.autoLockCell"
         static let biometricUnlockToggle = "settings.biometricUnlockToggle"
         static let biometricUnlockNote = "settings.biometricUnlockNote"
+        static let passcodeBackupPromptBackUpNow = "settings.passcodeBackupPromptBackUpNow"
+        static let passcodeBackupPromptHasBackup = "settings.passcodeBackupPromptHasBackup"
     }
 
     enum Passcode {

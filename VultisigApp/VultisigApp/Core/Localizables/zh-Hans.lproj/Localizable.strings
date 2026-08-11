@@ -949,6 +949,10 @@
 "partOf" = "第 %d 部分，共 %d 部分";
 "passcodeAlreadySet" = "本设备已设置密码。请返回上一页以修改或移除。";
 "passcodeAutoLockTitle" = "自动锁定";
+"passcodeBackupPromptBackUpNow" = "立即备份";
+"passcodeBackupPromptHasBackup" = "我已有备份";
+"passcodeBackupPromptSubtitle" = "密码会使用保存在本设备上的密钥加密您的 key share。如果该密钥丢失，您的 .vult 备份是唯一的恢复途径——密码本身无法找回。";
+"passcodeBackupPromptTitle" = "设置密码前请先备份";
 "passcodeBiometricDisableFailed" = "无法关闭生物识别解锁。请重试。";
 "passcodeBiometricEnableFailed" = "无法开启生物识别解锁。密码仍然可用。";
 "passcodeBiometricNotAvailable" = "本设备无法使用生物识别解锁。";

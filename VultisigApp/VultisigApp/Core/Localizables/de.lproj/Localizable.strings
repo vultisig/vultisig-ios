@@ -949,6 +949,10 @@
 "partOf" = "Teil %d von %d";
 "passcodeAlreadySet" = "Auf diesem Gerät ist bereits ein Passcode gesetzt. Gehen Sie zurück, um ihn zu ändern oder zu entfernen.";
 "passcodeAutoLockTitle" = "Automatische Sperre";
+"passcodeBackupPromptBackUpNow" = "Jetzt sichern";
+"passcodeBackupPromptHasBackup" = "Ich habe bereits ein Backup";
+"passcodeBackupPromptSubtitle" = "Ein Passcode verschlüsselt Ihre Key-Shares mit einem Schlüssel, der auf diesem Gerät liegt. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück – der Passcode selbst lässt sich nicht wiederherstellen.";
+"passcodeBackupPromptTitle" = "Erstellen Sie ein Backup, bevor Sie einen Passcode festlegen";
 "passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
 "passcodeBiometricEnableFailed" = "Die biometrische Entsperrung konnte nicht aktiviert werden. Ihr Passcode funktioniert weiterhin.";
 "passcodeBiometricNotAvailable" = "Dieses Gerät kann die biometrische Entsperrung nicht verwenden.";
