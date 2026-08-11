@@ -20,6 +20,29 @@ import VultisigCommonData
 @MainActor
 final class SendCryptoVerifyViewModelTests: XCTestCase {
 
+    /// Fixtures here go through `TestStore.makeVault`, which inserts into
+    /// `Storage.shared.modelContext`. Without a container of its own the class
+    /// wrote into whichever context the previous test class left behind — or the
+    /// app's real store — so vaults accumulated across cases and, because every
+    /// `@Attribute(.unique)` field on `Vault` matched, SwiftData upserted them
+    /// into a single shared row. One vault per test, in a store that starts
+    /// empty and is handed back on teardown.
+    private var storeToken: TestContextToken!
+    private var vault: Vault!
+
+    override func setUp() async throws {
+        try await super.setUp()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
+    }
+
+    override func tearDown() async throws {
+        vault = nil
+        TestStore.restore(storeToken)
+        storeToken = nil
+        try await super.tearDown()
+    }
+
     // MARK: - Init
 
     func testInitWithTransactionSetsTransactionField() throws {
@@ -285,7 +308,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
                             contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26")
         let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
                             rawBalance: "1000000000")
-        let vault = try TestStore.makeVault()
         vault.coins = [lunc, cw20]
         let tx = SendTransaction(
             coin: cw20, vault: vault, fromAddress: cw20.address,
@@ -316,7 +338,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
                             contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26")
         let lunc = makeCoin(.terraClassic, ticker: "LUNC", decimals: 6, isNative: true,
                             rawBalance: "1000") // not enough LUNC for the gas fee
-        let vault = try TestStore.makeVault()
         vault.coins = [lunc, cw20]
         let tx = SendTransaction(
             coin: cw20, vault: vault, fromAddress: cw20.address,
@@ -420,7 +441,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         // here would re-introduce the bug where user-pinned EVM gas got
         // dropped on the 60s refresh.
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
-        let vault = try TestStore.makeVault()
         let originalTx = SendTransaction(
             coin: eth, vault: vault, fromAddress: eth.address,
             toAddress: "0xabc", toAddressLabel: nil,
@@ -557,7 +577,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
                            isNative: true, rawBalance: "1000000000000000000")
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6,
                             isNative: false, rawBalance: "5000000")
-        let vault = try TestStore.makeVault()
         vault.coins = [eth, usdc]
         let tx = SendTransaction(
             coin: usdc, vault: vault, fromAddress: usdc.address,
@@ -590,7 +609,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         }
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18,
                            isNative: true, rawBalance: "1000000000000000000")  // 1 ETH
-        let vault = try TestStore.makeVault()
         vault.coins = [eth]
         let tx = SendTransaction(
             coin: eth, vault: vault, fromAddress: eth.address,
@@ -621,7 +639,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         }
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18,
                            isNative: true, rawBalance: "1000000000000000000")
-        let vault = try TestStore.makeVault()
         let tx = SendTransaction(
             coin: eth, vault: vault, fromAddress: eth.address,
             toAddress: "0x0000000000000000000000000000000000000001", toAddressLabel: nil,
@@ -1104,7 +1121,7 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
             memo: "0xb61d27f6",
             chainSpecific: .Ethereum(maxFeePerGasWei: BigInt(1), priorityFeeWei: BigInt(1), nonce: 0, gasLimit: BigInt(21_000)),
             wasmExecuteContractPayload: nil,
-            vault: try TestStore.makeVault()
+            vault: vault
         )
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false, rawBalance: "1000000")
         let vm = SendCryptoVerifyViewModel(
@@ -1660,7 +1677,6 @@ final class SendCryptoVerifyViewModelTests: XCTestCase {
         sendMaxAmount: Bool = false,
         amountWasAutoAdjusted: Bool = false
     ) throws -> SendTransaction {
-        let vault = try TestStore.makeVault()
         let coinToUse = coin ?? makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true,
                                          rawBalance: "1000000000000000000")
         return SendTransaction(
