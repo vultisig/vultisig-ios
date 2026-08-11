@@ -56,9 +56,14 @@ final class KaminoDepositViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.minimumDepositText.contains("0.1"))
     }
 
-    /// A below-minimum amount fails validation, so the form's continue button
-    /// never enables. Asserted through the validator the form installs rather
-    /// than through a published flag, because that is what actually gates it.
+    /// A below-minimum amount fails validation, so the field shows the vault's
+    /// own minimum. Asserted through the validator the form installs rather than
+    /// through a published flag, because that is what actually gates it.
+    ///
+    /// The button stays TAPPABLE — `FormScreen` cannot disable Continue on
+    /// validity without removing the tap that reveals field errors — so the
+    /// build path re-enforces the same bound; see
+    /// `testABelowMinimumAmountIsRefusedBeforeAnyNetworkCall`.
     func testABelowMinimumAmountFailsValidation() async throws {
         addUsdcCoin(balance: "50000000")
         let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
@@ -221,6 +226,71 @@ final class KaminoDepositViewModelTests: XCTestCase {
         XCTAssertEqual(deposit.payload.toAmount, BigInt(10_000_000))
         XCTAssertEqual(deposit.transaction.amount, "10")
         XCTAssertEqual(preparer.depositRequests.first?.amount.baseUnits, BigInt(10_000_000))
+    }
+
+    // MARK: - Bounds the build path re-enforces
+
+    /// `FormScreen` does not disable Continue on validation, so a below-minimum
+    /// amount reaches `makeDeposit`. It must be refused HERE rather than sent:
+    /// the API builds a below-minimum deposit happily and the chain rejects it
+    /// afterwards, so without this the user spends several round trips to be
+    /// told what the form already knew.
+    func testABelowMinimumAmountIsRefusedBeforeAnyNetworkCall() async {
+        addUsdcCoin(balance: "50000000")
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await viewModel.onLoad()
+        viewModel.amountField.value = "0.05"
+
+        let deposit = await viewModel.makeDeposit()
+
+        XCTAssertNil(deposit)
+        XCTAssertTrue(preparer.depositRequests.isEmpty)
+        XCTAssertEqual(
+            viewModel.error as? KaminoDepositError,
+            .belowMinimum(minimum: "0.1", ticker: "USDC")
+        )
+    }
+
+    /// And the same for an amount above what is available. The ceiling is
+    /// compared in base units against the measured maximum, not against the
+    /// `Decimal` the form renders — on the SOL vault that maximum is exact to
+    /// the lamport and rendering it rounds.
+    func testAnAmountAboveTheMeasuredMaximumIsRefusedBeforeAnyNetworkCall() async {
+        addSolCoin(balance: "3000000000")
+        preparer.maxLamports = BigInt(2_490_000_001)
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.allezSOL)
+        await viewModel.onLoad()
+
+        XCTAssertEqual(viewModel.availableBaseUnits, BigInt(2_490_000_001))
+
+        viewModel.amountField.value = "2.490000002"
+        let deposit = await viewModel.makeDeposit()
+
+        XCTAssertNil(deposit)
+        XCTAssertTrue(preparer.depositRequests.isEmpty)
+
+        // Exactly the maximum still builds — the refusal is above it, not at it.
+        viewModel.amountField.value = "2.490000001"
+        let atMaximum = await viewModel.makeDeposit()
+        XCTAssertNotNil(atMaximum)
+    }
+
+    /// Continue is hard-disabled only for the states no amount reaches: no
+    /// wallet coin, an unhydrated vault, or nothing available to spend. A
+    /// below-minimum amount is NOT one of them — the user can fix it, and
+    /// disabling the button would take away the tap that shows them why.
+    func testContinueIsDisabledOnlyWhenNoAmountCouldWork() async {
+        let missingCoin = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await missingCoin.onLoad()
+        XCTAssertTrue(missingCoin.isDepositUnavailable)
+
+        addUsdcCoin(balance: "50000000")
+        let usable = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+        await usable.onLoad()
+        XCTAssertFalse(usable.isDepositUnavailable)
+
+        usable.amountField.value = "0.05"
+        XCTAssertFalse(usable.isDepositUnavailable)
     }
 
     // MARK: - Payload
