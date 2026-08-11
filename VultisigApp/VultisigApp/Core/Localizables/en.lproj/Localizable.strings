@@ -636,6 +636,7 @@
 "kaminoEarnDeposit" = "Deposit";
 "kaminoEarnDeposited" = "Deposited: %@";
 "kaminoEarnEarned" = "Earned: %@";
+"kaminoEarnLost" = "Lost: %@";
 "kaminoEarnRiskConservative" = "Conservative";
 "kaminoEarnRiskPrivateCredit" = "Private Credit";
 "kaminoEarnTitle" = "Kamino Earn";

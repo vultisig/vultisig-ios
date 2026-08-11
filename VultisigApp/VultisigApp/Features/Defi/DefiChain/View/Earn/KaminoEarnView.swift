@@ -108,9 +108,10 @@ struct KaminoEarnView<EmptyState: View>: View {
         .overlay(cardBorder)
     }
 
-    /// The withdraw button appears only once the vault holds something, and
-    /// deposit takes the whole width until it does — there is nothing to put
-    /// beside it, and a half-width button next to empty space reads as a missing
+    /// The withdraw button appears once the vault is known to hold something —
+    /// or while that is still unknown, because a position must never be made
+    /// unreachable by a read that failed. Deposit takes the whole width when it
+    /// is alone: a half-width button beside empty space reads as a missing
     /// control rather than an absent one.
     ///
     /// Whether the position can actually be withdrawn is the withdraw form's
@@ -122,7 +123,7 @@ struct KaminoEarnView<EmptyState: View>: View {
         // takes an equal share of the row: two side by side when there is a
         // position, one across the full width when there is not.
         HStack(spacing: 16) {
-            if row.hasPosition {
+            if row.offersWithdraw {
                 PrimaryButton(title: "kaminoEarnWithdraw".localized, type: .secondary, size: .smallFixed) {
                     onWithdraw(row.descriptor)
                 }
@@ -216,15 +217,19 @@ struct KaminoEarnView<EmptyState: View>: View {
     /// What the position has made, in the underlying token and in fiat.
     ///
     /// The figure is the vault's lifetime profit and loss — on a lending vault
-    /// that is the interest it has accrued, which is what "earned" means here.
-    /// It is still SIGNED: a vault that has lost value says so in red rather
-    /// than reporting a loss as something earned.
+    /// that is the interest it has accrued, which is what "earned" means. A
+    /// NEGATIVE one is not, so it changes the label rather than only the colour:
+    /// "Earned: -3 USDC" in red still asserts the loss was earned, and the
+    /// figure is rendered unsigned beside a label that names it.
     @ViewBuilder
     private func earnedRow(for row: KaminoEarnRow) -> some View {
         if let pnl = row.pnlToken {
             figureRow(
-                label: String(format: "kaminoEarnEarned".localized, tokenString(pnl, in: row)),
-                fiat: fiatString(fiatValue(pnl, in: row)),
+                label: String(
+                    format: (pnl < 0 ? "kaminoEarnLost" : "kaminoEarnEarned").localized,
+                    tokenString(abs(pnl), in: row)
+                ),
+                fiat: fiatString(abs(fiatValue(pnl, in: row))),
                 valueColor: pnlColor(pnl)
             )
         } else {

@@ -636,6 +636,7 @@
 "kaminoEarnDeposit" = "存入";
 "kaminoEarnDeposited" = "已存入：%@";
 "kaminoEarnEarned" = "已赚取：%@";
+"kaminoEarnLost" = "已亏损：%@";
 "kaminoEarnRiskConservative" = "保守型";
 "kaminoEarnRiskPrivateCredit" = "私募信贷";
 "kaminoEarnTitle" = "Kamino Earn";

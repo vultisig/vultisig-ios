@@ -87,7 +87,11 @@ final class KaminoEarnViewModel: ObservableObject {
                 name: descriptor.fallbackName,
                 tokenAmount: position.tokenAmountDecimal,
                 apy30d: position.apy30d,
-                pnlToken: position.pnlToken
+                pnlToken: position.pnlToken,
+                // The store cannot tell a balance that was read from the zero
+                // that enabling a vault writes, so a seeded row never claims to
+                // be a confirmed one.
+                isPositionConfirmed: false
             )
         }
     }
@@ -222,7 +226,8 @@ final class KaminoEarnViewModel: ObservableObject {
                     name: info.name,
                     tokenAmount: tokenAmount.decimalValue,
                     apy30d: info.apy30d,
-                    pnlToken: pnlToken
+                    pnlToken: pnlToken,
+                    isPositionConfirmed: true
                 )
             )
             snapshots.append(
@@ -345,6 +350,19 @@ struct KaminoEarnRow: Identifiable, Equatable {
     /// it offers the rate and a deposit and says nothing about figures it would
     /// only be reporting as zeros.
     var hasPosition: Bool { tokenAmount > 0 }
+
+    /// Whether a successful read produced these figures, as opposed to the zero
+    /// placeholder enabling a vault writes.
+    ///
+    /// The two are not the same claim and only one of them is "holds nothing".
+    /// A user who deposited on another device, or whose refresh failed straight
+    /// after depositing, has a real position sitting behind an unconfirmed zero
+    /// — so the WAY OUT of it may not be hidden on the strength of that zero.
+    /// The figures stay off the card either way, because a zero is all there is
+    /// to show; the withdraw form reads the position itself and is the thing
+    /// that can say "nothing to withdraw" truthfully.
+    var isPositionConfirmed: Bool
+    var offersWithdraw: Bool { hasPosition || !isPositionConfirmed }
 
     var curator: String { descriptor.curator }
     var riskTier: KaminoRiskTier { descriptor.riskTier }

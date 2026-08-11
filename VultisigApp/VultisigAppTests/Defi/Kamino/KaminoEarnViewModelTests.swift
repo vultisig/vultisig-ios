@@ -333,6 +333,44 @@ final class KaminoEarnViewModelTests: XCTestCase {
         )
     }
 
+    // MARK: - What the card is allowed to conclude from a zero
+
+    /// Enabling a vault writes a zero placeholder, and a zero that was never
+    /// read is not the same claim as a zero that was. A user who deposited on
+    /// another device — or whose refresh failed right after depositing — has a
+    /// real position sitting behind that placeholder, and the way OUT of it may
+    /// not be hidden on the strength of it.
+    func testAnUnreadPositionStillOffersWithdraw() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        let viewModel = makeViewModel()
+
+        let seeded = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertFalse(seeded.hasPosition, "The placeholder holds nothing to show.")
+        XCTAssertFalse(seeded.isPositionConfirmed)
+        XCTAssertTrue(seeded.offersWithdraw, "An unread zero must not take away the exit.")
+
+        // A confirmed empty response is the other claim, and it is allowed to.
+        service.positions = []
+        await viewModel.refresh(owner: owner)
+
+        let confirmed = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertTrue(confirmed.isPositionConfirmed)
+        XCTAssertFalse(confirmed.offersWithdraw, "A vault read as empty offers nothing to withdraw.")
+    }
+
+    func testARefreshedPositionIsConfirmedAndOffersWithdraw() async throws {
+        try storage.setEnabled(true, descriptor: steakhouse, for: vault)
+        service.positions = [KaminoFixtures.position(vault: steakhouse.address, shares: "1000")]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh(owner: owner)
+
+        let row = try XCTUnwrap(viewModel.rows.first)
+        XCTAssertTrue(row.hasPosition)
+        XCTAssertTrue(row.isPositionConfirmed)
+        XCTAssertTrue(row.offersWithdraw)
+    }
+
     // MARK: - Rates
 
     /// Fiat is read from `RateProvider`'s cache, which is populated from the

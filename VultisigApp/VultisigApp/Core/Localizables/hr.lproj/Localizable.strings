@@ -636,6 +636,7 @@
 "kaminoEarnDeposit" = "Položi";
 "kaminoEarnDeposited" = "Položeno: %@";
 "kaminoEarnEarned" = "Zarađeno: %@";
+"kaminoEarnLost" = "Izgubljeno: %@";
 "kaminoEarnRiskConservative" = "Konzervativno";
 "kaminoEarnRiskPrivateCredit" = "Privatni kredit";
 "kaminoEarnTitle" = "Kamino Earn";
