@@ -172,8 +172,47 @@ final class StakePosition {
     /// and this method never healed the field. The upsert matches by `id` and
     /// the `id` embeds the pubkey, so the DTO's value is by construction the
     /// same suffix — a non-nil field is never rewritten.
+    ///
+    /// The equality guard is load-bearing, not an optimization. SwiftData's `@Model`
+    /// setter wraps each store in `withMutation(of:)`, which notifies observers
+    /// **without comparing** the new value to the old — so re-assigning a value that
+    /// is already there still invalidates every SwiftUI view reading this position.
+    /// A plain `@Observable` class does not behave this way, which is why the habit
+    /// of assigning blind is safe elsewhere and not here. Since a refresh re-applies
+    /// the same DTO whenever nothing moved on-chain, an unguarded `apply` re-dirties
+    /// its readers on every single call; on macOS that feeds `NSHostingView`, which
+    /// re-marks the window's constraints on each graph invalidation, and the pair can
+    /// escalate into a layout loop that never converges.
+    ///
+    /// The guard must cover **every** write below and compare **every** field that is
+    /// assigned — one write left outside it, or one assigned field left uncompared,
+    /// re-opens the same hole. Add to both lists together. The pubkey backfill is
+    /// folded in as `backfillsStakeAccountPubkey`, which is also what re-checks that
+    /// the backfill would actually change the value: writing the DTO's pubkey over an
+    /// equal one is exactly the no-op notification this guard exists to suppress.
     func apply(_ dto: StakePositionData) {
-        if stakeAccountPubkey?.isEmpty != false {
+        let backfillsStakeAccountPubkey = stakeAccountPubkey?.isEmpty != false
+            && stakeAccountPubkey != dto.stakeAccountPubkey
+
+        guard backfillsStakeAccountPubkey
+            || type != dto.type
+            || amount != dto.amount
+            || availableToUnstake != dto.availableToUnstake
+            || apr != dto.apr
+            || estimatedReward != dto.estimatedReward
+            || nextPayout != dto.nextPayout
+            || rewards != dto.rewards
+            || rewardCoin != dto.rewardCoin
+            || unstakeMetadata != dto.unstakeMetadata
+            || poolAddress != dto.poolAddress
+            || poolImplementation != dto.poolImplementation
+            || poolName != dto.poolName
+            || withdrawalUnlockTime != dto.withdrawalUnlockTime
+            || validatorVotePubkey != dto.validatorVotePubkey
+            || activationState != dto.activationState
+        else { return }
+
+        if backfillsStakeAccountPubkey {
             stakeAccountPubkey = dto.stakeAccountPubkey
         }
         type = dto.type
