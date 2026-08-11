@@ -14,6 +14,7 @@
 //
 
 import Foundation
+@testable import VultisigApp
 
 enum KaminoTransactionFixtures {
 
@@ -30,6 +31,23 @@ enum KaminoTransactionFixtures {
         let unitLimit: UInt32
         let feePayer: String
         let lookupTable: String
+
+        /// `injected`, plus the attribution memo the preparer appends last —
+        /// i.e. the exact bytes the app now hands to keysign.
+        ///
+        /// DERIVED rather than pasted, on purpose. `injected` is the artifact
+        /// that was produced by the reference implementation and simulated on
+        /// mainnet; the memo is a byte edit whose exactness is proven on its own
+        /// in `SolanaV0TransactionTests`. A second frozen base64 blob here would
+        /// have no provenance of its own — it could only be this same edit,
+        /// recorded — so it would assert the edit against itself and pin nothing.
+        var tagged: String {
+            get throws {
+                try SolanaV0Transaction(base64Transaction: injected)
+                    .injectingMemo(KaminoAttribution.memoTag)
+                    .base64EncodedTransaction
+            }
+        }
     }
 
     static let usdcDeposit = Vector(
