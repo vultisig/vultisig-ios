@@ -449,6 +449,36 @@ final class VaultDetailViewModelTests: XCTestCase {
                        "A dismissal must hold across vaults — the store has no vault key")
     }
 
+    // MARK: - The Kamino Earn promo
+
+    /// It opens the Solana DeFi screen, so a vault that cannot reach Solana has
+    /// nowhere for it to go — and a user already earning is being advertised
+    /// something they are doing.
+    func testKaminoBanner_showsOnlyForASolanaVaultThatIsNotEarningYet() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+
+        let noSolana = makeVault(pubKey: "no-solana", chains: [.bitcoin])
+        XCTAssertFalse(logic.setupBanners(for: noSolana, store: store, now: fixedNow).contains(.kaminoEarn))
+
+        let solana = makeVault(pubKey: "solana", chains: [.solana])
+        XCTAssertTrue(logic.setupBanners(for: solana, store: store, now: fixedNow).contains(.kaminoEarn))
+
+        solana.kaminoPositions = [
+            KaminoPosition(
+                vaultAddress: KaminoVaultRegistry.steakhouseUSDC.address,
+                isEnabled: true,
+                shares: KaminoShareAmount(baseUnits: 0, decimals: 6),
+                tokenAmount: KaminoTokenAmount(baseUnits: 0, decimals: 6),
+                vault: solana
+            )
+        ]
+        XCTAssertFalse(
+            logic.setupBanners(for: solana, store: store, now: fixedNow).contains(.kaminoEarn),
+            "A promo for something the user has already enabled is noise on their own screen."
+        )
+    }
+
     /// AC: different intents are independent — dismissing one banner does not
     /// suppress another.
     func testDismiss_isPerIntent_doesNotSuppressOtherBanners() {

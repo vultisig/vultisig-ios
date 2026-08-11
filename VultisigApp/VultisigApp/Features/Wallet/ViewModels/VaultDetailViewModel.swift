@@ -288,6 +288,14 @@ struct VaultDetailLogic {
                     return !vault.isBackedUp
                 case .upgradeVault:
                     return vault.libType == .GG20
+                case .kaminoEarn:
+                    // Two conditions, and the second is what stops it being an
+                    // advertisement: the vault has to be able to reach Solana
+                    // at all — the banner opens the Solana DeFi screen — and
+                    // the user has to not already be earning, since a promo for
+                    // something you are doing is just noise on your own screen.
+                    return vault.nativeCoin(for: .solana) != nil
+                        && !vault.kaminoPositions.contains(where: \.isEnabled)
                 case .buyVult, .followVultisig:
                     return true
                 }

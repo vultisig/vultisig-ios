@@ -627,6 +627,8 @@
 "joinSend" = "Unisciti a Invia";
 "joinSwap" = "Partecipa a Swap";
 "joinTransactionSigning" = "Unisciti alla firma delle transazioni";
+"kaminoBannerSubtitle" = "Inizia a guadagnare con Kamino";
+"kaminoBannerTitle" = "Novità su Solana";
 "kaminoDepositMinimum" = "Il deposito minimo è %@ %@.";
 "kaminoDepositMissingCoin" = "Aggiungi %@ su Solana al tuo vault prima di depositare.";
 "kaminoDepositTitle" = "Deposita";

@@ -85,6 +85,10 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
                 legacySources = legacyVaultBanners
             case .backupVault:
                 continue
+            case .kaminoEarn:
+                // Newer than the legacy stores, so it has nothing to carry
+                // over: a user who never saw it has never dismissed it.
+                continue
             }
             guard legacySources.contains(banner.rawValue) else { continue }
             seedDismissedIfAbsent(banner, now: now)

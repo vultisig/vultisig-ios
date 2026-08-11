@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 enum VaultBannerType: String, CarouselBannerType, CaseIterable {
-    case upgradeVault, backupVault, buyVult, followVultisig
+    case upgradeVault, backupVault, buyVult, followVultisig, kaminoEarn
 
     var id: String {
         rawValue
@@ -28,6 +28,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             return "buy_vult_swap"
         case .followVultisig:
             return "follow_x_vultisig"
+        case .kaminoEarn:
+            return "kamino_earn_solana"
         }
     }
 
@@ -41,7 +43,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             return .ttl(.days(7))
         case .backupVault:
             return .session
-        case .upgradeVault, .followVultisig:
+        case .upgradeVault, .followVultisig, .kaminoEarn:
             return .ttl(.days(15))
         }
     }
@@ -56,6 +58,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "buyVultBannerTitle".localized
         case .followVultisig:
             "followVultisigBannerTitle".localized
+        case .kaminoEarn:
+            "kaminoBannerTitle".localized
         }
     }
     var subtitle: String {
@@ -68,6 +72,8 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "buyVultBannerSubtitle".localized
         case .followVultisig:
             "followVultisigBannerSubtitle".localized
+        case .kaminoEarn:
+            "kaminoBannerSubtitle".localized
         }
     }
 
@@ -81,12 +87,14 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             .logoOutline
         case .followVultisig:
             .iconX
+        case .kaminoEarn:
+            .circleDollar
         }
     }
 
     var iconColor: Color {
         switch self {
-        case .upgradeVault:
+        case .upgradeVault, .kaminoEarn:
             Theme.colors.alertInfo
         case .backupVault, .buyVult, .followVultisig:
             Theme.colors.textPrimary
