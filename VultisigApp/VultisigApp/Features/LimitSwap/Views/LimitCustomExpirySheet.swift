@@ -36,6 +36,10 @@ struct LimitCustomExpirySheet: View {
     /// would lag the press instead of tracking it.
     private static let valueChange: Animation = .snappy(duration: 0.07)
 
+    /// The sheet's height, tuned to its content at the default text size — see
+    /// `sheetStyle` below for why it scales.
+    @ScaledMetric private var sheetHeight: CGFloat = 275
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Scrolls rather than clips, with the action pinned outside it. The
@@ -82,7 +86,10 @@ struct LimitCustomExpirySheet: View {
         }
         .padding(16)
         .padding(.top, 32)
-        .sheetStyle(detents: [.height(275)])
+        // Scaled, not pinned: the content is text and there is no scroll view
+        // under the Set button, so a fixed height would clip it out of reach as
+        // Dynamic Type grew the rows above.
+        .sheetStyle(detents: [.height(sheetHeight)])
         // macOS has no drag-to-dismiss, so without this the sheet has no exit
         // other than committing a value — the same close affordance every other
         // sheet in the app carries.

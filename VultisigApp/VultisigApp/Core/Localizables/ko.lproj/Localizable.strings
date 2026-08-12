@@ -828,6 +828,7 @@
 "limitSwap.price.marketLoading" = "시장 가격 불러오는 중…";
 "limitSwap.price.marketReference" = "시장 %1$@ %2$@";
 "limitSwap.price.offsetPriceUnusable" = "이 격차에서는 이 페어의 가격이 0으로 반올림됩니다. 주문하려면 값을 높이세요.";
+"limitSwap.price.offsetRests" = "체결되거나 만료될 때까지 이 가격으로 대기합니다";
 "limitSwap.price.setPrice" = "가격 설정";
 "limitSwap.price.vsMarket" = "시장 대비";
 "limitSwap.progress.filledFormat" = "%@ 체결";

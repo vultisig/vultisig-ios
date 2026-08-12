@@ -828,6 +828,7 @@
 "limitSwap.price.marketLoading" = "Dohvaćanje tržišne cijene…";
 "limitSwap.price.marketReference" = "Tržište %1$@ %2$@";
 "limitSwap.price.offsetPriceUnusable" = "Uz ovaj odmak cijena se za ovaj par zaokružuje na nulu. Povećaj ga kako bi postavio nalog.";
+"limitSwap.price.offsetRests" = "Miruje po ovoj cijeni dok se ne izvrši ili istekne";
 "limitSwap.price.setPrice" = "Postavi cijenu";
 "limitSwap.price.vsMarket" = "vs. tržište";
 "limitSwap.progress.filledFormat" = "%@ izvršeno";

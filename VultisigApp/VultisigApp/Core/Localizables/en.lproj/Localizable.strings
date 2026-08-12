@@ -828,6 +828,7 @@
 "limitSwap.price.marketLoading" = "Fetching market price…";
 "limitSwap.price.marketReference" = "Market %1$@ %2$@";
 "limitSwap.price.offsetPriceUnusable" = "This offset rounds the price to zero for this pair. Move it up to place an order.";
+"limitSwap.price.offsetRests" = "Rests at this price until it fills or expires";
 "limitSwap.price.setPrice" = "Set price";
 "limitSwap.price.vsMarket" = "vs market";
 "limitSwap.progress.filledFormat" = "%@ filled";

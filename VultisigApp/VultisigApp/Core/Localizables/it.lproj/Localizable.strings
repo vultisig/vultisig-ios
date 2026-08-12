@@ -828,6 +828,7 @@
 "limitSwap.price.marketLoading" = "Recupero prezzo di mercato…";
 "limitSwap.price.marketReference" = "Mercato %1$@ %2$@";
 "limitSwap.price.offsetPriceUnusable" = "Con questo scarto il prezzo si arrotonda a zero per questa coppia. Aumentalo per piazzare un ordine.";
+"limitSwap.price.offsetRests" = "Resta a questo prezzo finché non viene eseguito o scade";
 "limitSwap.price.setPrice" = "Imposta prezzo";
 "limitSwap.price.vsMarket" = "vs. mercato";
 "limitSwap.progress.filledFormat" = "%@ eseguito";

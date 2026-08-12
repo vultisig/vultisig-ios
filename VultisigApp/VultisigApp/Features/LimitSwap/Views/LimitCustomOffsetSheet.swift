@@ -21,6 +21,12 @@ struct LimitCustomOffsetSheet: View {
     /// stepper's own grid — see `limitPctOffsetSeed`.
     @State private var pct: Decimal = 0
 
+    /// The sheet's height, tuned to its content at the default text size — and
+    /// SCALED, because the content is text and the detent is not a scroll view.
+    /// A pinned 300 would clip the Set button out of reach the moment Dynamic Type
+    /// grew the rows above it.
+    @ScaledMetric private var sheetHeight: CGFloat = 300
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 16) {
@@ -80,7 +86,13 @@ struct LimitCustomOffsetSheet: View {
             .disabled(!isPriceUsable)
         }
         .padding(16)
-        .sheetStyle(detents: [.height(300)])
+        #if os(macOS)
+        // The toolbar below OVERLAYS its content rather than reserving space, and
+        // its close button lands top-leading — exactly where the title starts.
+        // iOS doesn't render that toolbar and doesn't want the gap.
+        .padding(.top, 32)
+        #endif
+        .sheetStyle(detents: [.height(sheetHeight)])
         // macOS has no drag-to-dismiss, so without this the sheet has no exit
         // other than committing a value — the same close affordance every other
         // sheet in the app carries.
@@ -131,30 +143,69 @@ struct LimitCustomOffsetSheet: View {
         return price > 0
     }
 
-    /// Below the price, the sheet states the one thing the offset alone cannot:
-    /// what it means for the order. Priority is refusal first, then the form's own
-    /// warnings — running the SAME evaluator the screen behind it does, so the two
-    /// can never contradict each other.
-    /// The slot is a fixed height so the big number above it never shifts as
-    /// notices come and go — a control whose value jumps under the finger mid-hold
-    /// is hard to land. What changes inside it fades, keyed on which notice is
-    /// showing so a swap between the two crossfades rather than cutting.
-    @ViewBuilder
+    /// What the current offset means for the order — the one thing the percentage
+    /// alone cannot say. Named as a value so the row can key its identity on it.
+    private enum Notice {
+        case unusable
+        case belowMarket
+        case farAboveMarket
+        case rests
+    }
+
+    private var notice: Notice {
+        guard isPriceUsable else { return .unusable }
+        switch previewWarning {
+        case .priceAtOrBelowMarket:
+            return .belowMarket
+        case .priceFarAboveMarket:
+            return .farAboveMarket
+        case nil:
+            return .rests
+        }
+    }
+
+    /// ALWAYS renders exactly one notice, which is what fixes both halves of the
+    /// problem this row had. Reserving a fixed slot for a sometimes-present alert
+    /// left a hole in the sheet whenever the offset was unremarkable; letting the
+    /// row come and go instead would resize the sheet under the finger mid-hold,
+    /// which on a control you hold down is worse. A row that is never empty needs
+    /// neither: the height is constant because there is always exactly one line,
+    /// and the healthy case earns its space by stating what the order will do.
+    ///
+    /// The warning cases run the SAME evaluator the form behind the sheet does, so
+    /// the two can never contradict each other. Identity is keyed on the case so a
+    /// change of meaning crossfades rather than swapping the sentence in place.
     private var noticeRow: some View {
-        VStack {
-            if !isPriceUsable {
+        Group {
+            switch notice {
+            case .unusable:
                 LimitInlineNotice(
                     systemImage: "exclamationmark.triangle.fill",
                     tint: Theme.colors.alertWarning,
                     message: "limitSwap.price.offsetPriceUnusable".localized
                 )
-                .transition(.opacity)
-            } else if let warning = previewWarning {
-                LimitWarningRow(warning: warning)
-                    .id(warning)
-                    .transition(.opacity)
+            case .belowMarket:
+                LimitInlineNotice(
+                    systemImage: "exclamationmark.triangle.fill",
+                    tint: Theme.colors.alertWarning,
+                    message: "limitSwap.warning.priceAtOrBelowMarket".localized
+                )
+            case .farAboveMarket:
+                LimitInlineNotice(
+                    systemImage: "exclamationmark.triangle.fill",
+                    tint: Theme.colors.alertWarning,
+                    message: "limitSwap.warning.priceFarAboveMarket".localized
+                )
+            case .rests:
+                LimitInlineNotice(
+                    systemImage: "clock",
+                    tint: Theme.colors.alertSuccess,
+                    message: "limitSwap.price.offsetRests".localized
+                )
             }
-        }.frame(height: 50)
+        }
+        .id(notice)
+        .transition(.opacity)
     }
 
     private var previewWarning: LimitSwapWarning? {
