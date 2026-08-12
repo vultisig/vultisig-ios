@@ -89,7 +89,7 @@ final class KaminoServiceTests: XCTestCase {
     /// The Earn list hydrates every enabled vault, and the form the user taps
     /// into then asks for exactly that. Two Kamino GETs each, on a screen the
     /// user is already waiting on — so the second ask is served from the first.
-    func test_fetchVaultInfo_servesASecondHydrationFromCache() async throws {
+    func testASecondHydrationIsServedFromCache() async throws {
         http.queueJSON(Fixtures.allezState, for: .state)
         http.queueJSON(Fixtures.allezMetrics, for: .metrics)
 
@@ -104,7 +104,7 @@ final class KaminoServiceTests: XCTestCase {
     /// The hydration carries `lookupTable`, which the validator pins the built
     /// transaction against, and `tokensPerShare`, which sizes a withdraw. Both
     /// are live, so the entry has to age out.
-    func test_fetchVaultInfo_readsAgainOnceTheEntryHasExpired() async throws {
+    func testAnExpiredHydrationIsReadAgain() async throws {
         service = KaminoService(httpClient: http, vaultInfoCache: KaminoVaultInfoCache(ttl: 0))
         http.queueJSON(Fixtures.allezState, for: .state)
         http.queueJSON(Fixtures.allezMetrics, for: .metrics)
@@ -117,7 +117,7 @@ final class KaminoServiceTests: XCTestCase {
 
     /// Keyed by vault address, so one vault's figures can never stand in for
     /// another's — they carry that vault's lookup table and share rate.
-    func test_fetchVaultInfo_cachesPerVault() async throws {
+    func testTheHydrationCacheIsKeyedByVault() async throws {
         http.queueJSON(Fixtures.allezState, for: .state)
         http.queueJSON(Fixtures.allezMetrics, for: .metrics)
         let allez = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
@@ -134,7 +134,7 @@ final class KaminoServiceTests: XCTestCase {
     /// keyed by an address, and the address is the one part of a descriptor a
     /// forged one gets right — so a cache hit must not become a way past the
     /// check that decides a vault's identity.
-    func test_fetchVaultInfo_refusesAForgedDescriptorEvenWithTheVaultCached() async throws {
+    func testAForgedDescriptorIsRefusedEvenWithTheVaultCached() async throws {
         http.queueJSON(Fixtures.allezState, for: .state)
         http.queueJSON(Fixtures.allezMetrics, for: .metrics)
         _ = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
