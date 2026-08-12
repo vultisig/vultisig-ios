@@ -68,14 +68,36 @@ struct DefiPositionsStorageService {
         )
 
         for position in positions {
-            if let existing = existingByID[position.id] {
-                existing.amount = position.amount
-                existing.apy = position.apy
-                existing.nextReward = position.nextReward
-                existing.nextChurn = position.nextChurn
-            } else {
+            guard let existing = existingByID[position.id] else {
                 Storage.shared.modelContext.insert(position)
+                continue
             }
+
+            // Equality guard, same contract as `LPPosition.apply(_:)` and
+            // `StakePosition.apply(_:)`. SwiftData's `@Model` setter wraps each
+            // store in `withMutation(of:)`, which notifies observers WITHOUT
+            // comparing new to old, so re-assigning a value that is already there
+            // still invalidates every SwiftUI view reading this row. A bond
+            // refresh re-sends the same numbers whenever nothing moved on-chain,
+            // and unguarded that re-dirties readers on every single call — on
+            // macOS that can escalate into a layout/constraint loop that never
+            // converges.
+            //
+            // The guard covers every write below and compares every field that is
+            // assigned: one write left outside it, or one assigned field left
+            // uncompared, re-opens the hole. `node` is absent from both lists
+            // because this method does not write it — it is part of the lookup
+            // key that `id` is built from.
+            guard existing.amount != position.amount
+                || existing.apy != position.apy
+                || existing.nextReward != position.nextReward
+                || existing.nextChurn != position.nextChurn
+            else { continue }
+
+            existing.amount = position.amount
+            existing.apy = position.apy
+            existing.nextReward = position.nextReward
+            existing.nextChurn = position.nextChurn
         }
 
         try saveAndNotify()
