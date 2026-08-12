@@ -1493,6 +1493,7 @@
 "swapRecipientRouteNotAvailable" = "此交易对没有可用的外部接收方路由。请移除接收方或选择其他交易对。";
 "swapRecipientVerificationFailed" = "无法确认此交换会发送至你选择的接收方，已在签名前停止。请重试。";
 "swapRouteEta" = "~%ld秒";
+"swapRouteHighFee" = "高手续费";
 "swapRouteNotAvailable" = "交换路由不可用";
 "swaps" = "兑换";
 "swapSecuredAssetBadge" = "担保";

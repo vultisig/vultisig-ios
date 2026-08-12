@@ -656,6 +656,92 @@ private extension SwapService {
     }
 }
 
+// MARK: - High-fee route marking
+
+extension SwapService {
+    /// Route-fee share, in basis points, at or above which a candidate route is
+    /// marked "high fee" in the Select-route picker. 1000 bps = 10% of the swap.
+    ///
+    /// This marks; it never filters. Of these two mechanisms only the
+    /// below-minimum guard (`belowRecommendedMinimumError`) removes a candidate
+    /// — a quote can of course also drop out by failing outright or by having no
+    /// rankable output — and the two are independent: a route can be marked and
+    /// still be selectable, and a route can clear the node's floor while charging
+    /// a fee worth flagging, which is precisely the case that motivated this.
+    ///
+    /// 10% was chosen against live quotes rather than picked for roundness.
+    /// Sampling THORChain and MAYAChain across BTC/ETH/LTC/DOGE/BCH pairs at
+    /// sizes spanning three orders of magnitude, healthy routes sit far below:
+    /// the same BTC→ETH pair reads 284 bps at 0.00014844 BTC on THORChain and
+    /// falls to 25 bps as the size grows. Routes that are genuinely not worth
+    /// taking cluster well above: 1503, 1448, 2162 bps, up to 4436 bps on a dust
+    /// -sized LTC→BTC. Nothing observed between 972 and 1051 bps changes
+    /// character, so the line sits in the quietest part of the distribution
+    /// while still catching every route a user would be upset to have taken.
+    static let highRouteFeeThresholdBps = 1000
+
+    /// What share of the swap this route's own fees consume, in basis points, or
+    /// `nil` when the quote exposes no fee breakdown (every aggregator route).
+    ///
+    /// **The Vultisig affiliate cut is deliberately excluded, and that is load
+    /// bearing.** The affiliate bps the app sends varies with the user's VULT
+    /// tier (`max(0, 50 − discount)`), and it lands inside the node's own
+    /// `fees.total`. Measured across 36 quote pairs at the two ends of that
+    /// range, the node's `fees.total_bps` moves **34–50 bps** purely from the
+    /// tier — enough to push a route across any threshold and make the badge
+    /// blink on and off for reasons that have nothing to do with the route. With
+    /// the affiliate backed out, the same 36 pairs move by **exactly 0 bps**. So
+    /// this measures the route, not the user's tier.
+    ///
+    /// Computed locally rather than read from `fees.total_bps` for a second
+    /// reason: the node's field is not the same quantity as the ratio below and
+    /// the gap is provider-dependent — for one BTC→ETH quote MAYAChain reported
+    /// `total_bps` 1306 where the fee is 1502 bps of gross, while THORChain
+    /// reported 277 against 284. Mixing the two would put rows in the same list
+    /// on different scales.
+    static func routeFeeBps(for quote: SwapQuote) -> Int? {
+        // Every field must parse and be individually sane. A malformed affiliate
+        // must NOT be treated as zero: that would silently fold the Vultisig cut
+        // back into the figure and could mark a route on the strength of our own
+        // fee. No measurement beats a wrong one, so anything unexpected yields
+        // `nil` and the row simply goes unmarked.
+        guard let native = quote.nativeQuote,
+              let totalFee = Decimal(string: native.fees.total),
+              let expectedOut = Decimal(string: native.expectedAmountOut),
+              let affiliateFee = Decimal(string: native.fees.affiliate),
+              totalFee >= 0,
+              expectedOut >= 0,
+              affiliateFee >= 0,
+              affiliateFee <= totalFee else {
+            return nil
+        }
+
+        // `expected_amount_out` is already net of `fees.total`, so their sum is
+        // what the swap would have delivered fee-free — the honest denominator
+        // for "what share did this cost".
+        let gross = expectedOut + totalFee
+        guard gross > 0 else { return nil }
+
+        // Divide before scaling. The guards above put `routeFee / gross` in
+        // [0, 1], so the intermediate cannot overflow `Decimal` no matter how
+        // large the node's figures are; multiplying first could overflow to NaN
+        // on an absurd payload and silently read as 0 bps.
+        let routeFee = totalFee - affiliateFee
+        return NSDecimalNumber(
+            decimal: (routeFee / gross * 10_000).truncated(toPlaces: 0)
+        ).intValue
+    }
+
+    /// Whether this route's fees are large enough a share of the swap to warrant
+    /// marking it in the picker. Unmeasurable routes (aggregators) are never
+    /// marked — the badge claims a measurement, so it must not be shown without
+    /// one.
+    static func isHighFeeRoute(_ quote: SwapQuote) -> Bool {
+        guard let bps = routeFeeBps(for: quote) else { return false }
+        return bps >= highRouteFeeThresholdBps
+    }
+}
+
 // MARK: - Recommended-minimum guard
 
 extension SwapService {

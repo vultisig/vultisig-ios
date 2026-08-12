@@ -80,6 +80,18 @@ enum SwapQuote: Hashable {
         }
     }
 
+    /// The native THORChain/MAYAChain payload backing this quote, or `nil` for an
+    /// aggregator route. Aggregators expose no gross-vs-net fee breakdown, so
+    /// anything derived from the node's `fees` block is only defined here.
+    var nativeQuote: ThorchainSwapQuote? {
+        switch self {
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+            return quote
+        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+            return nil
+        }
+    }
+
     var router: String? {
         switch self {
         case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):

@@ -56,6 +56,7 @@ struct SelectRouteSettingsView: View {
 
     private func routeRow(for quote: SwapQuote) -> some View {
         let selected = isSelected(quote)
+        let isHighFee = vm.isHighFeeRoute(quote)
         return Button {
             vm.selectProvider(quote)
             onBack()
@@ -69,9 +70,24 @@ struct SelectRouteSettingsView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(quote.displayName ?? "")
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
+                    // Only a badged row constrains the name. The badge holds its
+                    // intrinsic width and the name yields first, so a long name
+                    // (e.g. "THORChain-Stagenet") on a narrow row cannot squeeze
+                    // the badge into an unreadable sliver or push it off the row.
+                    // An unbadged row keeps its original free-wrapping name, so
+                    // rows without a badge render exactly as they did before.
+                    HStack(spacing: 6) {
+                        Text(quote.displayName ?? "")
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .lineLimit(isHighFee ? 1 : nil)
+                            .truncationMode(.tail)
+
+                        if isHighFee {
+                            HighFeeRouteBadge()
+                                .fixedSize()
+                        }
+                    }
 
                     feeSubtitle(for: quote, highlightFee: selected)
                 }

@@ -1493,6 +1493,7 @@
 "swapRecipientRouteNotAvailable" = "No route to an external recipient is available for this pair. Remove the recipient or choose a different pair.";
 "swapRecipientVerificationFailed" = "The swap could not be confirmed to deliver to your chosen recipient and was stopped before signing. Please try again.";
 "swapRouteEta" = "~%lds";
+"swapRouteHighFee" = "High fee";
 "swapRouteNotAvailable" = "Swap route not available";
 "swaps" = "Swaps";
 "swapSecuredAssetBadge" = "Secured";

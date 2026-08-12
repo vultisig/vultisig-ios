@@ -244,6 +244,13 @@ final class SwapDetailsViewModel {
         return String(format: "swapRouteEta".localized, seconds)
     }
 
+    /// Whether a route row should carry the "high fee" mark. Marking only; the
+    /// row stays fully selectable, and this has no bearing on which candidates
+    /// reach the picker in the first place.
+    func isHighFeeRoute(_ candidate: SwapQuote) -> Bool {
+        SwapService.isHighFeeRoute(candidate)
+    }
+
     func updateCoinLists() {
         let (resolvedToCoins, resolvedToCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: fromCoin,

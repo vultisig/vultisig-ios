@@ -1493,6 +1493,7 @@
 "swapRecipientRouteNotAvailable" = "No hay ninguna ruta hacia un destinatario externo disponible para este par. Quita el destinatario o elige otro par.";
 "swapRecipientVerificationFailed" = "No se pudo confirmar que el intercambio se entregue al destinatario elegido y se detuvo antes de firmar. Inténtalo de nuevo.";
 "swapRouteEta" = "~%lds";
+"swapRouteHighFee" = "Comisión alta";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swaps" = "Intercambios";
 "swapSecuredAssetBadge" = "Secured";
