@@ -117,12 +117,7 @@ struct LimitPriceChartSection: View {
     }
 
     private func formatPrice(_ value: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 8
-        return formatter.string(from: NSDecimalNumber(decimal: value))
-            ?? NSDecimalNumber(decimal: value).stringValue
+        formatLimitPrice(value)
     }
 }
 

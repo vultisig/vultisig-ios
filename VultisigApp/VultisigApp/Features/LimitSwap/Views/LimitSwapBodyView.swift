@@ -191,7 +191,7 @@ struct LimitSwapBodyView: View {
             // appear — otherwise they only sync via onChange and read empty
             // until the user edits them.
             if priceText.isEmpty, vm.draft.targetPrice > 0 {
-                priceText = formatPrice(vm.draft.targetPrice)
+                priceText = formatLimitPrice(vm.draft.targetPrice)
             }
             if usdText.isEmpty, vm.draft.targetPrice > 0, vm.targetUsdPricePerUnit > 0 {
                 let text = formatUsdValue(vm.draft.targetPrice * vm.targetUsdPricePerUnit)
@@ -199,7 +199,7 @@ struct LimitSwapBodyView: View {
                 usdText = text
             }
             if sourceAmountText.isEmpty, vm.draft.sourceAmount > 0 {
-                sourceAmountText = formatPrice(fromCoin.decimal(for: vm.draft.sourceAmount))
+                sourceAmountText = formatAmount(fromCoin.decimal(for: vm.draft.sourceAmount))
             }
             syncBuyText()
         }
@@ -269,7 +269,7 @@ struct LimitSwapBodyView: View {
             // same Decimal. Preserves a trailing "." while typing and reflects
             // preset-pill taps that mutate vm.
             if parseLimitPrice(priceText) != newPrice {
-                priceText = newPrice == 0 ? "" : formatPrice(newPrice)
+                priceText = newPrice == 0 ? "" : formatLimitPrice(newPrice)
             }
             syncUsdText(for: newPrice)
         }
@@ -349,7 +349,12 @@ struct LimitSwapBodyView: View {
     }
     #endif
 
-    private func formatPrice(_ value: Decimal) -> String {
+    /// AMOUNT formatting — the Sell and Buy fields, which are quantized to
+    /// `limitAmountDisplayPrecision` decimal places so the displayed deposit is
+    /// the signed one. The PRICE uses `formatLimitPrice` instead: it is rounded
+    /// to significant digits, not decimal places, and 8 decimals would truncate a
+    /// small price the moment it was written back to the field.
+    private func formatAmount(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 0
@@ -406,7 +411,7 @@ struct LimitSwapBodyView: View {
         guard parseLimitAmount(sourceAmountText, decimals: vm.draft.fromAsset.decimals) != amount else {
             return
         }
-        let text = formatPrice(fromCoin.decimal(for: amount))
+        let text = formatAmount(fromCoin.decimal(for: amount))
         lastSyncedSellText = text
         sourceAmountText = text
     }
@@ -437,13 +442,13 @@ struct LimitSwapBodyView: View {
             return
         }
         guard parseLimitDecimal(buyAmountText) != derived else { return }
-        // `formatPrice`, NOT `NSDecimalNumber.stringValue`: this field is now
+        // `formatAmount`, NOT `NSDecimalNumber.stringValue`: this field is now
         // EDITABLE and its parser is locale-aware, so writing a locale-neutral
         // "." into a comma-decimal locale would let the value be re-read with the
         // point treated as a grouping separator — the 1000x misparse
         // `parseLimitDecimal` documents. The read-only field this replaced could
         // not be re-parsed, so it never had the hazard.
-        let text = formatPrice(derived)
+        let text = formatAmount(derived)
         lastSyncedBuyText = text
         buyAmountText = text
     }

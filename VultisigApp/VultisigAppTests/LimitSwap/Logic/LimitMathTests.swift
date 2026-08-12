@@ -46,6 +46,41 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(50_000_000))
     }
 
+    // MARK: - computeLim — price precision
+
+    func testComputeLimKeepsPricePrecisionFinerThanOneSatoshi() throws {
+        // The regression that motivated deferring the truncation. `computeLim`
+        // used to scale the PRICE to 1e8 and truncate THAT first, so on a pair
+        // priced around 0.0000066 BTC every price collapsed onto the same 661/1e8
+        // step — a ~0.15% grid. Truncating once, on the LIM, keeps the difference.
+        let coarse = try computeLim(
+            sourceAmount: BigInt(25_000_000_000),      // 250 RUNE, 1e8 base units
+            sourceDecimals: 8,
+            targetPrice: Decimal(string: "0.00000661")!
+        )
+        let precise = try computeLim(
+            sourceAmount: BigInt(25_000_000_000),
+            sourceDecimals: 8,
+            targetPrice: Decimal(string: "0.0000066146")!
+        )
+        XCTAssertGreaterThan(precise, coarse, "a higher price must ask for more out")
+        XCTAssertEqual(coarse, BigInt(165_250))
+        XCTAssertEqual(precise, BigInt(165_365))
+    }
+
+    func testComputeLimStillTruncatesDownNotUp() throws {
+        // The LIM is a MINIMUM out. Rounding it up would promise more than the
+        // stated price justifies and quietly make the order unfillable at the
+        // price that was asked for, so the single remaining rounding stays `.down`.
+        let lim = try computeLim(
+            sourceAmount: BigInt(3),
+            sourceDecimals: 8,
+            targetPrice: Decimal(string: "0.99999999")!
+        )
+        // 3 × 0.99999999 = 2.99999997 → floors to 2, never 3.
+        XCTAssertEqual(lim, BigInt(2))
+    }
+
     // MARK: - computeLim — edge cases
 
     func testComputeLimForVerySmallPriceProducesOne() throws {
@@ -68,15 +103,29 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt("100000000000000"))
     }
 
-    func testComputeLimTruncatesPriceBeyondEightDecimalPlaces() throws {
-        // targetPrice = 16.123456789 (9 dp); should truncate to 16.12345678 in 1e8 fixed-point
-        // → LIM = 1_612_345_678 (not 1_612_345_678.9, not 0)
+    func testComputeLimFloorsTheLimNotThePrice() throws {
+        // 1 unit at 16.123456789 → 1_612_345_678.9 in 1e8 fixed point, floored to
+        // 1_612_345_678. The PRICE is no longer truncated on the way (that is the
+        // precision this used to throw away); the LIM is, because it is a minimum
+        // out and must never be rounded up.
         let lim = try computeLim(
             sourceAmount: BigInt(100_000_000),
             sourceDecimals: 8,
             targetPrice: Decimal(string: "16.123456789")!
         )
         XCTAssertEqual(lim, BigInt(1_612_345_678))
+    }
+
+    func testComputeLimRefusesASourceAmountItCannotHoldExactly() {
+        // `Decimal(string:)` silently drops digits past its 38-digit mantissa, so
+        // an amount beyond the exact range must be REFUSED rather than signed
+        // against a quietly altered figure. 2^128 round-trips as ...450.
+        let huge = BigInt(2).power(128)
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: huge, sourceDecimals: 18, targetPrice: 1)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .targetPriceOverflow)
+        }
     }
 
     func testComputeLimZeroSourceAmountReturnsZero() throws {
@@ -584,6 +633,83 @@ final class LimitMathTests: XCTestCase {
             pct = clampLimitPctOffset(pct + limitPctOffsetStep)
         }
         XCTAssertEqual(pct, Decimal(string: "8.5")!)
+    }
+
+    // MARK: - roundLimitPrice
+
+    func testRoundLimitPriceKeepsEightSignificantDigitsAtEveryMagnitude() {
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "0.0000066146")!), Decimal(string: "0.0000066146")!)
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "27.421812345")!), Decimal(string: "27.421812")!)
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "0.123456789")!), Decimal(string: "0.12345678")!)
+    }
+
+    func testRoundLimitPriceNeverReturnsMoreThanItWasGiven() {
+        // It FLOORS, and the asymmetry is the point: a price nudged UP is a floor
+        // above the quote, which on the Market preset turns "fill now" into an
+        // order that rests — an inbound fee, an expiry wait, and a refund fee, for
+        // nothing. Nudged down, the worst case is filling a hair early.
+        for raw in ["0.123456789", "0.0000066146789", "27.421812999", "123456789", "9.9999999999"] {
+            let input = Decimal(string: raw)!
+            XCTAssertLessThanOrEqual(roundLimitPrice(input), input, "rounded up for \(raw)")
+        }
+    }
+
+    func testRoundLimitPriceHandlesAPriceAboveEightDigits() {
+        // Needs a NEGATIVE rounding scale. Clamping the scale at 0 left the draft
+        // holding nine significant digits while the field showed eight, and the
+        // field then parsed its own display back — silently changing the price
+        // being signed.
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "123456789")!), Decimal(string: "123456780")!)
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "987654321987")!), Decimal(string: "987654320000")!)
+    }
+
+    func testTheMarketPresetNeverLandsAboveMarket() {
+        // The whole reason the rounding floors. A Market order that rests instead
+        // of filling costs two network fees and gets refunded.
+        let market = Decimal(string: "0.123456786")!
+        let atMarket = computePresetPrice(marketPrice: market, pctAboveMarket: 0)
+        XCTAssertLessThanOrEqual(roundLimitPrice(atMarket), market)
+    }
+
+    func testAFlooredMarketStillReadsAsZeroPercent() {
+        // Flooring leaves Market a relative 1e-8 below market, which must not
+        // surface as "-0.00%" with a below-market tint on an order the user asked
+        // to place AT market.
+        let market = Decimal(string: "0.123456786")!
+        let priced = roundLimitPrice(computePresetPrice(marketPrice: market, pctAboveMarket: 0))
+        let offset = computePctFromMarket(targetPrice: priced, marketPrice: market)
+
+        XCTAssertLessThan(offset, 0, "precondition: flooring really does go below market")
+        XCTAssertTrue(limitPercentIsEffectivelyZero(offset))
+        XCTAssertEqual(formatLimitPercent(offset, locale: Locale(identifier: "en_US")), "+0.00")
+    }
+
+    func testRoundLimitPriceNeverCollapsesASmallPriceToZero() {
+        // The other end of the same clamp: a scale past 38 was being truncated,
+        // and a zero price is a zero LIM — "fill at ANY price".
+        let tiny = Decimal(string: "0.000000000000000000000000123456789")!
+        let rounded = roundLimitPrice(tiny)
+        XCTAssertGreaterThan(rounded, 0)
+        XCTAssertEqual(rounded, Decimal(string: "0.00000000000000000000000012345678")!)
+    }
+
+    func testRoundLimitPriceRoundTripsThroughItsOwnFormatter() {
+        // The invariant the price field depends on: what is shown parses back to
+        // what is stored, so the sync can never walk the price on its own.
+        let locale = Locale(identifier: "en_US")
+        for raw in ["0.0000066146", "27.421812345", "123456789", "0.123456789"] {
+            let price = roundLimitPrice(Decimal(string: raw)!)
+            let text = formatLimitPrice(price, locale: locale)
+            XCTAssertEqual(parseLimitPrice(text, locale: locale), price, "round-trip failed for \(raw)")
+        }
+    }
+
+    func testRoundLimitPriceRoundTripsInACommaDecimalLocale() {
+        let locale = Locale(identifier: "de_DE")
+        let price = roundLimitPrice(Decimal(string: "0.0000066146")!)
+        let text = formatLimitPrice(price, locale: locale)
+        XCTAssertFalse(text.contains("E"), "must not emit scientific notation")
+        XCTAssertEqual(parseLimitPrice(text, locale: locale), price)
     }
 
     // MARK: - Custom-expiry allowance

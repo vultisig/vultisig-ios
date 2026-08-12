@@ -83,12 +83,13 @@ struct LimitMarketOffsetRow: View {
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
 
-                // Accent-tinted and a size up from the caption text around it.
-                // At 10pt in tertiary it read as punctuation on a label rather
-                // than as the one thing on this row you can press.
+                // A size up from the caption text around it — at 10pt it read as
+                // punctuation on a label rather than as the one thing on this row
+                // you can press. Tint stays tertiary, with the taller pill and the
+                // body-size value carrying the affordance instead.
                 Image(systemName: "slider.horizontal.3")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.colors.primaryAccent3)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .padding(.leading, 2)
             }
             .padding(.horizontal, 12)
@@ -114,17 +115,22 @@ struct LimitMarketOffsetRow: View {
     /// they are placing. The matching warning row spells it out; this is the
     /// glanceable version of the same fact.
     private var offsetTint: Color {
-        vm.pctFromMarket < 0 ? Theme.colors.alertWarning : Theme.colors.textPrimary
+        // Matches what the chip PRINTS, not the raw sign: flooring the price
+        // leaves Market a relative 1e-8 below market, and colouring that as a
+        // below-market target would warn about an order the user asked to place
+        // at market.
+        let pct = vm.pctFromMarket
+        return limitPercentIsEffectivelyZero(pct) || pct > 0
+            ? Theme.colors.textPrimary
+            : Theme.colors.alertWarning
     }
 
-    /// Market reference formatting — 8 significant decimals like the price field,
-    /// so the reference and the target are directly comparable digit for digit.
+    /// The reference is formatted by the SAME function as the target price, so
+    /// the two are comparable digit for digit — and so a pair whose price needs
+    /// more than 8 decimal places doesn't show a market that looks identical to a
+    /// target it is measurably away from, which is what made the offset chip look
+    /// wrong on RUNE→BTC.
     private func formatMarketPrice(_ value: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 8
-        return formatter.string(from: NSDecimalNumber(decimal: value))
-            ?? NSDecimalNumber(decimal: value).stringValue
+        formatLimitPrice(value)
     }
 }

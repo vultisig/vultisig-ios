@@ -132,12 +132,14 @@ struct LimitCustomOffsetSheet: View {
 
     /// Whether the previewed offset names a price the order can actually carry.
     ///
-    /// The `-99%` floor is NOT enough on its own, and no fixed percentage could
-    /// be: the resolved price is rounded to the memo LIM's 8 decimals, so against
-    /// a market small enough (a sub-cent token quoted in BTC) a legal offset still
-    /// rounds to zero — and a zero LIM tells THORChain "fill at ANY price". The
-    /// form would reject it a step later, but the sheet is where the number is
-    /// chosen, so the sheet is where it has to be refused.
+    /// Checked on the RESOLVED price rather than on the percentage, because the
+    /// percentage cannot answer it: a zero price is a zero LIM, and a zero LIM
+    /// tells THORChain "fill at ANY price" — the one thing a limit order must
+    /// never say. The `-99%` floor keeps the stepper clear of that edge and
+    /// significant-digit rounding keeps a small price from collapsing into it, so
+    /// this is now a guard rather than a routine outcome; it stays because the
+    /// sheet is where the number is chosen, and a guard on the signing input is
+    /// not something to remove once it looks unreachable.
     private var isPriceUsable: Bool {
         guard let price = previewPrice else { return false }
         return price > 0
@@ -219,12 +221,7 @@ struct LimitCustomOffsetSheet: View {
         guard let price = previewPrice else {
             return "limitSwap.price.marketLoading".localized
         }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 8
-        let value = formatter.string(from: NSDecimalNumber(decimal: price))
-        ?? NSDecimalNumber(decimal: price).stringValue
+        let value = formatLimitPrice(price)
         return String(
             format: "limitSwap.price.customResult".localized,
             vm.draft.fromAsset.ticker,
@@ -236,6 +233,8 @@ struct LimitCustomOffsetSheet: View {
     /// Same rule as the chip on the form: below market is the one case worth
     /// colouring, because it means the order fills the moment it rests.
     private var offsetTint: Color {
-        pct < 0 ? Theme.colors.alertWarning : Theme.colors.textPrimary
+        limitPercentIsEffectivelyZero(pct) || pct > 0
+            ? Theme.colors.textPrimary
+            : Theme.colors.alertWarning
     }
 }

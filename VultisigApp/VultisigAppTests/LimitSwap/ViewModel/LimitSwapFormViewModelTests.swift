@@ -88,9 +88,9 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice * vm.targetUsdPricePerUnit, 4500)
     }
 
-    func testTargetPriceChangedFromUsdRoundsToEightDecimals() {
-        // The stored price must never carry more than the memo LIM's 8-dp
-        // precision, so the asset-text mirror round-trips it exactly (no feedback
+    func testTargetPriceChangedFromUsdFloorsToEightSignificantDigits() {
+        // The stored price must never carry more precision than the asset-text
+        // mirror can show, so that mirror round-trips it exactly (no feedback
         // rounding of the canonical price). $1 at $3/unit → 0.33333333.
         let vm = makeViewModel()
         vm.targetUsdPricePerUnit = 3
@@ -145,9 +145,10 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice, 42)
     }
 
-    func testPctFromMarketChangedRoundsToEightDecimals() {
-        // Same rule as every other price-setting path: never store more precision
-        // than the signed memo's 1e8 LIM can express.
+    func testPctFromMarketChangedFloorsToEightSignificantDigits() {
+        // Same rule as every other derived price: never store more precision than
+        // the price field can show, and floor rather than round to nearest so the
+        // stored price is never above what was asked for.
         let vm = makeViewModel()
         vm.marketPriceRef = Decimal(string: "0.123456789")!
         vm.pctFromMarketChanged(1)
@@ -173,17 +174,41 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNil(vm.targetPrice(forPctFromMarket: 5))
     }
 
-    func testAnOffsetInsideTheStepperRangeCanStillResolveToAZeroPrice() {
-        // Why the custom-offset sheet refuses on the resolved PRICE rather than on
-        // the offset: the stepper's floor keeps `pct` a whole percent clear of
-        // -100%, but the price it resolves to is rounded to the memo LIM's 8
-        // decimals — and against a small enough market (a sub-cent token quoted in
-        // BTC) a perfectly legal offset still lands on zero. A zero LIM tells
-        // THORChain "fill at ANY price", so no fixed percentage floor can be the
-        // guard.
+    func testASmallMarketKeepsItsPrecisionThroughAnOffset() {
+        // The regression this pairs with: rounding the resolved price to 8 DECIMAL
+        // places collapsed a sub-cent pair to three significant digits, so an
+        // extreme offset landed on zero and Market itself landed visibly away from
+        // market. Significant digits behave the same at every magnitude.
         let vm = makeViewModel()
         vm.marketPriceRef = Decimal(string: "0.0000004")!
-        XCTAssertEqual(vm.targetPrice(forPctFromMarket: limitPctOffsetRange.lowerBound), 0)
+
+        let floored = vm.targetPrice(forPctFromMarket: limitPctOffsetRange.lowerBound)
+        XCTAssertEqual(floored, Decimal(string: "0.000000004")!)
+        XCTAssertGreaterThan(floored ?? 0, 0, "a legal offset must never resolve to a zero price")
+    }
+
+    func testTheMarketPresetLandsExactlyOnMarket() {
+        // The reported symptom: on RUNE→BTC the offset chip read -0.07% the moment
+        // Market was tapped, because the stored price had been rounded to 8 decimal
+        // places — three significant digits at that magnitude, where one step is
+        // ~0.15% of the price.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.0000066146")!
+
+        vm.selectPresetPct(0)
+
+        XCTAssertEqual(vm.draft.targetPrice, Decimal(string: "0.0000066146")!)
+        XCTAssertEqual(vm.pctFromMarket, 0)
+    }
+
+    func testAPresetLandsExactlyOnItsPercentageAtAnyMagnitude() {
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.0000066146")!
+
+        vm.selectPresetPct(1)
+
+        // +1% of a price this small used to resolve to +0.99%.
+        XCTAssertEqual(vm.pctFromMarket, 1)
     }
 
     func testTargetPriceForPctMatchesWhatPctFromMarketChangedStores() {
@@ -1019,7 +1044,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(limit, 80)
     }
 
-    func testSelectPresetPctRoundsToEightDecimalsForRoundTripStability() {
+    func testSelectPresetPctFloorsToEightSignificantDigitsForRoundTripStability() {
         let vm = makeViewModel()
         vm.marketPriceRef = Decimal(string: "0.123456789")!  // 9-dp base
         vm.selectPresetPct(1)  // ×1.01 → more than 8 dp before rounding

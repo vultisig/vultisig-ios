@@ -23,12 +23,6 @@ enum THORChainConstants {
 
     /// Convert a THORChain block count back to wall-clock hours — the inverse of
     /// `blocks(forHours:)`. Integer division floors any block count that isn't an
-    /// exact multiple, so prefer `minutes(forBlocks:)` when the value may be a
-    /// custom duration; this stays for whole-hour presets.
-    static func hours(forBlocks blocks: Int) -> Int {
-        blocks / blocksPerHour
-    }
-
     static func blocks(forMinutes minutes: Int) -> Int {
         minutes * blocksPerMinute
     }

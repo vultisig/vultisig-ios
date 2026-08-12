@@ -49,11 +49,14 @@ enum LimitOrderPlacementPresentation {
         /// fabricated zero. The hero's source → minimum-payout pair still carries
         /// the real amounts.
         let targetPriceValue: String?
-        /// The order's lifetime, e.g. `12h` — or `nil` when the memo's block
-        /// interval isn't a whole number of hours (which no order this app
-        /// builds ever is), so the screen omits the row rather than show a
-        /// floored/rounded value the order was not signed with.
-        let expiryValue: String?
+        /// The order's lifetime, e.g. `12h` or `12h 5m`. Non-optional: it used
+        /// to be `nil` for an interval that was not a whole number of hours, back
+        /// when the picker could only produce whole hours and anything else meant
+        /// a hand-built memo. Custom expiries are minute-based now and
+        /// `formatLimitExpiry` renders any duration, so there is nothing left to
+        /// omit — and an optional the screen still branches on would imply there
+        /// were.
+        let expiryValue: String
     }
 
     /// Build the placement display for a co-signer's `KeysignPayload`, or `nil`

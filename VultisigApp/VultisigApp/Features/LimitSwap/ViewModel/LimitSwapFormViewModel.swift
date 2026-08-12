@@ -463,8 +463,9 @@ final class LimitSwapFormViewModel {
     ///
     /// No-op without a market reference: an offset has nothing to offset from,
     /// and the chip that opens the sheet is disabled in that state anyway.
-    /// Rounded to 8 decimals like every other price-setting path so the stored
-    /// price never carries more precision than the signed memo's LIM can express.
+    /// Floored to 8 SIGNIFICANT digits like every other derived price, so the
+    /// stored price never carries more precision than the field can show — see
+    /// `roundLimitPrice` for why it floors rather than rounding to nearest.
     ///
     /// Routed through `targetPriceChanged`, so a chosen offset counts as the
     /// deliberate price choice it is and a pending pair refresh's delayed Market
@@ -484,10 +485,8 @@ final class LimitSwapFormViewModel {
     /// uses is what stops the previewed price and the placed one from drifting.
     func targetPrice(forPctFromMarket pct: Decimal) -> Decimal? {
         guard let market = marketPriceRef else { return nil }
-        var raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &raw, 8, .plain)
-        return rounded
+        let raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
+        return roundLimitPrice(raw)
     }
 
     /// Set the target price from a USD-denominated edit of the price display.
@@ -497,17 +496,13 @@ final class LimitSwapFormViewModel {
     /// `targetPrice × targetUsdPricePerUnit`. NEVER stores the USD number as the
     /// target price. No-op when the rate is unavailable (USD editing is disabled).
     ///
-    /// The result is rounded to 8 decimals (the memo LIM's 1e8 fixed-point
-    /// precision, matching `selectPresetPct`) so the stored price never carries
-    /// more precision than the signed order can, and the asset-text mirror
-    /// (`priceText`, capped at 8 dp) round-trips it exactly instead of rounding
-    /// it back through its own sync.
+    /// The result is floored to 8 SIGNIFICANT digits (`roundLimitPrice`, matching
+    /// `selectPresetPct`) so the stored price never carries more precision than
+    /// the asset-text mirror can show, and `priceText` round-trips it exactly
+    /// instead of rounding it back through its own sync.
     func targetPriceChangedFromUsd(_ usd: Decimal) {
         guard targetUsdPricePerUnit > 0 else { return }
-        var raw = usd / targetUsdPricePerUnit
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &raw, 8, .plain)
-        targetPriceChanged(rounded)
+        targetPriceChanged(roundLimitPrice(usd / targetUsdPricePerUnit))
     }
 
     /// Set the target price from a preset pill (`Market`/`+1%`/`+5%`/`+10%`).
@@ -521,10 +516,7 @@ final class LimitSwapFormViewModel {
     func selectPresetPct(_ pct: Int, userInitiated: Bool = true) {
         guard let market = marketPriceRef else { return }
         let raw = computePresetPrice(marketPrice: market, pctAboveMarket: Decimal(pct))
-        var rounded = Decimal()
-        var input = raw
-        NSDecimalRound(&rounded, &input, 8, .plain)
-        draft.targetPrice = rounded
+        draft.targetPrice = roundLimitPrice(raw)
         if userInitiated {
             // A user's preset selection is a price choice — a pending pair
             // refresh's delayed Market auto-seed must not clobber it.
@@ -550,9 +542,7 @@ final class LimitSwapFormViewModel {
     /// the Market preset a moment after the finger lifts.
     func targetPriceChangedFromChart(_ price: Double) {
         guard price.isFinite, price > 0 else { return }
-        var raw = Decimal(price)
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &raw, 8, .plain)
+        let rounded = roundLimitPrice(Decimal(price))
         guard rounded > 0 else { return }
         targetPriceChanged(rounded)
     }

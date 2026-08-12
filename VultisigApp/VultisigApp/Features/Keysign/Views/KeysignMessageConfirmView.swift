@@ -149,9 +149,10 @@ struct KeysignMessageConfirmView: View {
             if let targetPrice = placement.targetPriceValue {
                 rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.detail.target", value: targetPrice))
             }
-            if let expiry = placement.expiryValue {
-                rows.append(SendCryptoVerifySummaryRow(title: "limitSwap.expiry", value: expiry))
-            }
+            rows.append(SendCryptoVerifySummaryRow(
+                title: "limitSwap.expiry",
+                value: placement.expiryValue
+            ))
             return rows
         }
         if let dust = LimitOrderCancelPresentation.attachedDust(in: viewModel.keysignPayload) {

@@ -30,9 +30,49 @@ func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal)
         throw LimitSwapMemoError.limitAmountTooSmall
     }
 
+    // Crossing BigInt → Decimal has to be EXACT, and `Decimal(string:)` will not
+    // say so on its own: handed more digits than its 38-digit mantissa holds it
+    // silently drops the tail, and 2^128 comes back ending in `450`. The old path
+    // multiplied in BigInt and never had the question. Round-tripping the parse
+    // is what turns a silent wrong LIM into a refusal — an ERC-20 balance is a
+    // uint256, so an amount past the exact range is representable even if owning
+    // one is exotic.
+    guard var source = Decimal(string: sourceAmount.description),
+          BigInt(NSDecimalNumber(decimal: source).stringValue) == sourceAmount else {
+        throw LimitSwapMemoError.targetPriceOverflow
+    }
+
+    // Truncate ONCE, at the end, on the LIM itself:
+    //
+    //     lim = ⌊ sourceAmount × price × 10^(8 − sourceDecimals) ⌋
+    //
+    // This used to scale the PRICE to 1e8 and truncate THAT first, which capped
+    // the whole order at whatever a 1e-8 step in the target asset happens to be
+    // worth. On a pair like RUNE→BTC — about 0.0000066 BTC per RUNE — one such
+    // step is ~0.15% of the price, so "Market" resolved to a price 0.07% away
+    // from market and the +1% preset landed near +0.99%. Nothing in the protocol
+    // asks for that: the memo carries the LIM, which is an AMOUNT, and only that
+    // amount is 1e8 fixed-point. Truncating the price on the way there discarded
+    // precision the amount had room to keep.
+    //
+    // EVERY step rounds `.down`, not just the last one. `Decimal` holds 38
+    // significant digits, and a large deposit times a high-precision price can
+    // need more than that — at which point `.plain` rounds the INTERMEDIATE up,
+    // and the final floor then floors a number that was already too big, landing
+    // a LIM above the true value. That is the resting-order-plus-refund hazard
+    // this whole change exists to remove, reintroduced one layer down. Flooring
+    // throughout makes the result provably ≤ the exact product.
     var price = targetPrice
+    var product = Decimal()
+    NSDecimalMultiply(&product, &source, &price, .down)
+
     var scaled = Decimal()
-    NSDecimalMultiplyByPowerOf10(&scaled, &price, Int16(Coin.thorchainFixedPointExponent), .plain)
+    NSDecimalMultiplyByPowerOf10(
+        &scaled,
+        &product,
+        Int16(Coin.thorchainFixedPointExponent - sourceDecimals),
+        .down
+    )
 
     var truncated = Decimal()
     NSDecimalRound(&truncated, &scaled, 0, .down)
@@ -40,13 +80,11 @@ func computeLim(sourceAmount: BigInt, sourceDecimals: Int, targetPrice: Decimal)
     // `Decimal.isNaN` catches an overflowed multiply; the explicit BigInt parse
     // guard is belt-and-suspenders for any other unrepresentable result.
     guard !truncated.isNaN,
-          let priceBig = BigInt(NSDecimalNumber(decimal: truncated).stringValue) else {
+          let lim = BigInt(NSDecimalNumber(decimal: truncated).stringValue) else {
         throw LimitSwapMemoError.targetPriceOverflow
     }
-    let denominator = BigInt(10).power(sourceDecimals)
-    let lim = (sourceAmount * priceBig) / denominator
 
-    // Integer division truncates toward zero: a dust source amount, a very low
+    // The truncation above floors toward zero: a dust source amount, a very low
     // target price, or a zero target price against a positive source can floor
     // the LIM to 0. A `LIM=0` memo means "fill at ANY price" — the same hazard
     // the overflow guard above prevents, from the underflow side. Fail loud for
@@ -383,6 +421,97 @@ func computePctFromMarket(targetPrice: Decimal, marketPrice: Decimal) -> Decimal
     return (targetPrice - marketPrice) / marketPrice * Decimal(100)
 }
 
+// MARK: - Target-price precision
+
+/// How much of a target price the app keeps, stores and shows.
+///
+/// SIGNIFICANT digits, not decimal places, and that distinction is the whole
+/// point. Every price-setting path used to round to 8 decimal places, which is
+/// generous for an ETH price near 30 and nearly meaningless for a BTC price near
+/// 0.0000066 — three significant digits, where one step is 0.15% of the price.
+/// The visible symptom was the offset chip reading −0.07% immediately after the
+/// Market preset, because the price really had landed that far away. Eight
+/// significant digits behaves the same at every magnitude.
+let limitPriceSignificantDigits = 8
+
+/// Round a target price to `limitPriceSignificantDigits` significant digits.
+///
+/// Every DERIVED price goes through here — presets, the custom-offset sheet, USD
+/// entry, a chart drag — so a price the app computed can never carry more
+/// precision than the field is able to show. A price the user TYPES is stored as
+/// typed; it is already their own statement, and canonicalising it under the
+/// caret would rewrite digits mid-entry. It converges on the next sync, when the
+/// field re-reads its own `formatLimitPrice` output.
+///
+/// **Floors, like the LIM it feeds.** Rounding to nearest looks harmless — the
+/// error is a half-unit in the 8th significant digit — but it is not symmetric in
+/// consequence. A price nudged UP is a floor above the quote, and on the Market
+/// preset specifically that turns "fill now" into an order that RESTS: the user
+/// pays an inbound fee, waits out the expiry, and pays again to get refunded.
+///
+/// Applied uniformly, to resting prices as well as to Market, and that is a
+/// deliberate call rather than an oversight. Flooring a `+1%` target does shade
+/// it a hair below the arithmetic `+1%`, so it could fill marginally early for
+/// marginally less — but the shading is a relative 1e-8, under a thousandth of a
+/// basis point, which is nothing against a swap that pays real network fees. A
+/// single rule that always errs the same way is far harder to get wrong later
+/// than one that floors here and rounds there, and the failure it rules out
+/// (a phantom resting order) costs actual money.
+func roundLimitPrice(_ price: Decimal, significantDigits: Int = limitPriceSignificantDigits) -> Decimal {
+    guard price > 0, significantDigits > 0 else { return price }
+
+    // Where the leading digit sits, as a power of ten. Found by shifting rather
+    // than via `log10` on a `Double`: the whole reason this function exists is
+    // that these prices live at the edges of a magnitude range, which is exactly
+    // where a binary round-trip loses the digits being counted. `Decimal`'s
+    // exponent range is ±128, so both loops are bounded by construction.
+    var exponent = 0
+    var magnitude = price
+    let ten = Decimal(10)
+    if magnitude >= 1 {
+        while magnitude >= ten {
+            magnitude /= ten
+            exponent += 1
+        }
+    } else {
+        while magnitude < 1 {
+            magnitude *= ten
+            exponent -= 1
+        }
+    }
+
+    // Deliberately NOT clamped. `NSDecimalRound` takes a signed scale, and both
+    // ends of the range need one that a clamp would have thrown away: a price
+    // above 99,999,999 (selling BTC for a very cheap token) needs a NEGATIVE
+    // scale to round in the tens and above, and clamping it to 0 left the draft
+    // holding nine significant digits while the field displayed eight — the
+    // field then parsed its own display back and changed the price being signed.
+    // A very small price needs a scale past 38, and clamping THAT collapsed it
+    // to zero, which is the one value a limit price must never take.
+    var rounded = Decimal()
+    var input = price
+    NSDecimalRound(&rounded, &input, significantDigits - 1 - exponent, .down)
+    return rounded
+}
+
+/// Display form of a target price: `limitPriceSignificantDigits` significant
+/// digits, no grouping separator.
+///
+/// No grouping because the result is written back into an editable field and read
+/// by `parseLimitPrice` — a thousands separator there is the 1000x misparse that
+/// parser documents. Paired with `roundLimitPrice`, so what the field shows is
+/// exactly what the draft holds.
+func formatLimitPrice(_ price: Decimal, locale: Locale = .current) -> String {
+    let formatter = NumberFormatter()
+    formatter.locale = locale
+    formatter.numberStyle = .decimal
+    formatter.usesSignificantDigits = true
+    formatter.maximumSignificantDigits = limitPriceSignificantDigits
+    formatter.usesGroupingSeparator = false
+    return formatter.string(from: NSDecimalNumber(decimal: price))
+        ?? NSDecimalNumber(decimal: price).stringValue
+}
+
 // MARK: - Custom percent-offset stepper
 
 /// What one tap of the custom-offset sheet's − / + moves, and the grid every
@@ -399,11 +528,11 @@ let limitPctOffsetStep = Decimal(string: "0.1")!
 /// realistic target and is there so a held `+` cannot walk the price somewhere the
 /// price field can no longer render.
 ///
-/// **The floor is necessary and NOT sufficient, and no fixed percentage could be.**
-/// The resolved price is rounded to the memo LIM's 8 decimals, so against a small
-/// enough market — a sub-cent token quoted in BTC — even `-99%` rounds to zero.
-/// The sheet therefore refuses on the resolved PRICE, not on the offset; this
-/// range only keeps the control in a sane band.
+/// **The floor is necessary and not sufficient.** It bounds the OFFSET, and only
+/// the resolved price can answer whether the order is placeable, so the sheet
+/// refuses on that instead; this range just keeps the control in a sane band.
+/// (Before prices were floored to significant digits the gap was much wider — a
+/// sub-cent pair could send a legal `-99%` all the way to zero.)
 let limitPctOffsetRange: ClosedRange<Decimal> = Decimal(-99)...Decimal(999)
 
 func clampLimitPctOffset(_ pct: Decimal) -> Decimal {
@@ -554,7 +683,31 @@ func parseLimitPrice(_ text: String, locale: Locale = .current) -> Decimal {
 ///
 /// `locale` is explicit rather than left to the formatter's ambient default, so a
 /// test pins the separator instead of inheriting the host machine's.
+/// How far from zero an offset may sit and still be treated as zero.
+///
+/// Sized to the ONLY thing that is meant to slip through — the relative 1e-8 that
+/// flooring the price to eight significant digits introduces — with two orders of
+/// magnitude of headroom, and no more. Half the readout's 2-dp step (`0.005`)
+/// would have been the obvious choice and is 500× too wide: it would swallow a
+/// genuine `-0.004%` target, dropping its below-market tint. A real offset that
+/// small still prints as `-0.00` and still carries the tint, which is honest —
+/// the number is below market and the colour says so.
+let limitPercentDisplayEpsilon = Decimal(string: "0.0001")!
+
+/// Whether an offset is zero *as far as the readout can tell*.
+///
+/// `roundLimitPrice` floors, so the Market preset lands a hair BELOW market by
+/// construction — a relative 1e-8, which is nine orders of magnitude under what
+/// two decimals can print. Without this the chip would render that as `-0.00%`,
+/// complete with a minus sign and the below-market tint, for an order the user
+/// asked to place at market. Anything this small is zero to every consumer that
+/// shows or colours it; the PRICE keeps its real value regardless.
+func limitPercentIsEffectivelyZero(_ pct: Decimal) -> Bool {
+    (pct < 0 ? -pct : pct) < limitPercentDisplayEpsilon
+}
+
 func formatLimitPercent(_ pct: Decimal, locale: Locale = .current) -> String {
+    let pct = limitPercentIsEffectivelyZero(pct) ? 0 : pct
     let formatter = NumberFormatter()
     formatter.locale = locale
     formatter.numberStyle = .decimal
