@@ -69,6 +69,16 @@ enum AppLockPresentation: Equatable {
 struct AppLockHostedScreen: View {
 
     let presentation: AppLockPresentation
+    /// A picture of the app taken as it left, blurred, for the privacy cover to
+    /// show — see ``PrivacyBackdrop``.
+    ///
+    /// Carried alongside the presentation rather than inside it, because it is
+    /// not part of the decision: ``AppLockPresentation`` is what the app has
+    /// concluded about itself and is compared for equality on every change,
+    /// whereas this is one host's material for drawing one of those cases. The
+    /// root overlay has no capture to offer and passes nothing, which is exactly
+    /// the case ``CoverView`` falls back for.
+    var backdrop: Image?
     let onUnlocked: () -> Void
     let onAttemptFailed: () -> Void
     /// Hands the user to the app's import flow from the recovery screen. The
@@ -89,7 +99,7 @@ struct AppLockHostedScreen: View {
     private var content: some View {
         switch presentation {
         case .uncovered, .cover:
-            CoverView()
+            CoverView(backdrop: backdrop)
         case .gate(let generation):
             EnterPasscodeScreen(
                 onUnlocked: onUnlocked,

@@ -70,6 +70,94 @@ final class AppLockService {
         mode != .off
     }
 
+    // MARK: - The app's own system prompts
+
+    /// How many system authentication prompts the app itself currently has on
+    /// screen.
+    ///
+    /// Main-thread only, and not persisted: it describes what is on the display
+    /// right now, and a launch has none of them up by definition.
+    private var systemAuthPromptCount = 0
+    /// Bumped whenever the count is dropped wholesale, so that a completion
+    /// belonging to a prompt from before the drop cannot decrement a prompt
+    /// raised after it.
+    ///
+    /// Without it the pairing is by count alone, and a count cannot tell whose
+    /// completion it is: a prompt outstanding when the app backgrounds has its
+    /// completion delivered *later*, by which time ``forgetSystemAuthPrompts()``
+    /// has reset everything and the user may have raised a new one. The stale
+    /// completion would decrement the new prompt's count to zero and the cover
+    /// would go up over it — the exact flash this exists to prevent, arriving by
+    /// the back door.
+    private var systemAuthPromptGeneration = 0
+
+    /// A prompt's claim on the count, handed out by ``beginSystemAuthPrompt()``
+    /// and spent by ``endSystemAuthPrompt(_:)``.
+    ///
+    /// Opaque on purpose: the only correct thing a caller can do with it is give
+    /// it back exactly once, so it carries nothing else.
+    struct SystemAuthPromptTicket {
+        fileprivate let generation: Int
+    }
+
+    /// Whether an `.inactive` arriving now is one the app caused by raising a
+    /// prompt, rather than the app going anywhere.
+    ///
+    /// The privacy cover goes up on `.inactive`, which is right for a departure
+    /// and wrong for this: a `LAContext` prompt makes the app inactive without
+    /// it leaving, and covering there paints the logo over the very screen the
+    /// user is authenticating *for* — on the fast-signing path, a cover
+    /// appearing between Verify and Signing, over a Face ID sheet the app raised
+    /// itself.
+    ///
+    /// It is the same distinction `AppViewModel`'s `didBackgroundSinceForeground`
+    /// draws for the re-lock half of this family — an activation that followed
+    /// no departure is not a return — reaching the cover half, which that flag
+    /// never covered.
+    ///
+    /// This is deliberately **not** consulted for a real backgrounding. That
+    /// arrives as `.background`, where the cover goes up unconditionally.
+    var isPresentingSystemAuthPrompt: Bool {
+        systemAuthPromptCount > 0
+    }
+
+    /// Called immediately before a prompt is raised rather than after, because
+    /// the `.inactive` it causes can arrive before the call that raised it has
+    /// returned.
+    ///
+    /// A count rather than a flag because prompts can overlap, and because a
+    /// balanced pair is the most a caller can honestly promise.
+    func beginSystemAuthPrompt() -> SystemAuthPromptTicket {
+        systemAuthPromptCount += 1
+        return SystemAuthPromptTicket(generation: systemAuthPromptGeneration)
+    }
+
+    /// The other half, required on **every** path out of a prompt — success,
+    /// failure and cancellation alike. A prompt the user dismissed is still a
+    /// prompt that is gone.
+    ///
+    /// A ticket from before the last ``forgetSystemAuthPrompts()`` is spent
+    /// silently: the prompt it belonged to was already accounted for when the
+    /// app left, and the count it would decrement now belongs to somebody else.
+    func endSystemAuthPrompt(_ ticket: SystemAuthPromptTicket) {
+        guard ticket.generation == systemAuthPromptGeneration else { return }
+        systemAuthPromptCount = max(0, systemAuthPromptCount - 1)
+    }
+
+    /// Drops the count on the floor, for the one caller that knows better than
+    /// it does: a real backgrounding took the app and every prompt over it away
+    /// together.
+    ///
+    /// Balanced calls are never trusted to be balanced. A completion that never
+    /// arrives would otherwise leave the app permanently uncoverable, which is
+    /// the one failure this must not have — and every ticket outstanding at this
+    /// moment is invalidated with the count, so the completions that *do* arrive
+    /// late cannot spend themselves against whatever comes next.
+    func forgetSystemAuthPrompts() {
+        systemAuthPromptCount = 0
+        systemAuthPromptGeneration &+= 1
+    }
+
     // MARK: - Scene transitions
 
     /// Records that the app left the foreground.

@@ -127,7 +127,11 @@ struct ContentView: View {
         // keysign summary in the space it vacated. Applied before, the overlays
         // cover it like anything else.
         .withForegroundNotificationBanner()
-        .overlay(appViewModel.showCover ? CoverView() : nil)
+        // The same picture the raised window shows, not a second opinion. This
+        // overlay renders in the pass that raises the cover and the window is put
+        // up after it, so anything different here is a frame of something else
+        // on the way out — which is how a logo came to flash over the wallet.
+        .overlay(appViewModel.showCover ? CoverView(backdrop: privacyBackdrop) : nil)
         .overlay(passcodeGate.animation(.easeInOut(duration: 0.25), value: appViewModel.isPasscodeLocked))
         // Above the gate's overlay, matching the order `appLockPresentation`
         // derives: the two are mutually exclusive today, and if that ever stops
@@ -209,6 +213,24 @@ struct ContentView: View {
             // Retry action - clear error to allow user to try again
             deeplinkError = nil
         }
+    }
+
+    /// The blurred picture of the app that the privacy cover shows, where there
+    /// is one to show.
+    ///
+    /// Read rather than observed, and that is sound because of when it is
+    /// written: the picture is taken one step *ahead* of `showCover`, so by the
+    /// time this body runs in response to the flag it is already there. Nothing
+    /// changes it while the cover is up.
+    ///
+    /// The Mac has none — no app switcher zooms a stale card up there, so the
+    /// cover stays the brand screen.
+    private var privacyBackdrop: Image? {
+        #if os(iOS)
+        return PrivacyBackdrop.latest
+        #else
+        return nil
+        #endif
     }
 
     /// What the app is covering itself with, as one value — see

@@ -3,9 +3,12 @@
 //  VultisigAppTests
 //
 
+import Combine
 import CryptoKit
+import LocalAuthentication
 import Security
 import SwiftData
+import SwiftUI
 import XCTest
 @testable import VultisigApp
 
@@ -363,6 +366,185 @@ final class PasscodeGateWiringTests: XCTestCase {
         )
     }
 
+    /// The app's own Face ID sheet makes it `.inactive` without it going
+    /// anywhere, and covering there puts the logo over the screen the user is
+    /// authenticating *for* — on the fast-signing path, a cover between Verify
+    /// and Signing.
+    func testAPromptTheAppRaisedItselfDoesNotCover() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        _ = lockService.beginSystemAuthPrompt()
+        sut.coverForPrivacy()
+
+        XCTAssertFalse(sut.showCover, "nothing has left; the prompt is the app's own")
+    }
+
+    /// And the suppression lasts exactly as long as the prompt does, so the very
+    /// next departure covers normally.
+    func testCoveringResumesOnceThePromptIsGone() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        let ticket = lockService.beginSystemAuthPrompt()
+        lockService.endSystemAuthPrompt(ticket)
+        sut.coverForPrivacy()
+
+        XCTAssertTrue(sut.showCover)
+    }
+
+    /// Overlapping prompts must not have the first one to finish uncover the
+    /// app while the second is still on screen.
+    func testCoveringStaysSuppressedWhileASecondPromptIsStillUp() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        let first = lockService.beginSystemAuthPrompt()
+        _ = lockService.beginSystemAuthPrompt()
+        lockService.endSystemAuthPrompt(first)
+        sut.coverForPrivacy()
+
+        XCTAssertFalse(sut.showCover)
+    }
+
+    /// The safety property, and the one that makes the suppression affordable: a
+    /// real departure covers whatever the app believes about its own prompts.
+    /// Leaving arrives as `.background`, which does not consult them at all —
+    /// so a prompt whose completion never came cannot leave the wallet on
+    /// display in the app switcher.
+    func testARealBackgroundingCoversEvenWithAPromptOutstanding() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        _ = lockService.beginSystemAuthPrompt()
+        sut.revokeAuth()
+
+        XCTAssertTrue(sut.showCover, "leaving covers; the prompt went with the app")
+        XCTAssertFalse(
+            lockService.isPresentingSystemAuthPrompt,
+            "and the stale count is forgotten, or the next departure would not cover either"
+        )
+    }
+
+    /// A prompt outstanding when the app leaves has its completion delivered
+    /// later — by which time the count has been dropped and the user may have
+    /// raised a new prompt. Paired by count alone, that stale completion would
+    /// decrement the *new* prompt's claim and let the cover go up over it.
+    func testAStaleCompletionCannotEndAPromptRaisedAfterIt() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        let leftBehind = lockService.beginSystemAuthPrompt()
+        sut.revokeAuth()
+        sut.showCover = false
+
+        let fresh = lockService.beginSystemAuthPrompt()
+        lockService.endSystemAuthPrompt(leftBehind)
+        sut.coverForPrivacy()
+
+        XCTAssertFalse(
+            sut.showCover,
+            "the late completion belonged to a prompt that is already gone"
+        )
+
+        // The other half, and it is what stops the guard being "ignore every end
+        // after a backgrounding": that would pass the assertion above and leave
+        // the app permanently uncoverable instead, which is the worse failure of
+        // the two.
+        lockService.endSystemAuthPrompt(fresh)
+        sut.coverForPrivacy()
+
+        XCTAssertTrue(sut.showCover, "the current prompt's own ticket still ends it")
+    }
+
+    // MARK: - Bracketing the real prompt
+
+    /// The tests above drive `AppLockService` directly, so every one of them
+    /// would still pass if `BiometryService` bracketed nothing at all — and the
+    /// bracketing is the fix. These two run the service itself.
+    ///
+    /// The prompting branch is unreachable in a simulator by construction, which
+    /// is exactly why the seam exists.
+    func testRaisingAPromptMarksItBeforeTheSheetGoesUp() {
+        var reply: ((Bool, Error?) -> Void)?
+        var markedWhenTheSheetWentUp: Bool?
+        let service = BiometryService(
+            lockService: lockService,
+            makeContext: { [lockService] in
+                StubLAContext(biometry: .faceID, canEvaluate: true) { captured in
+                    // Read *inside* `evaluatePolicy`, not after `authenticate`
+                    // returns. On a device the `.inactive` the sheet causes
+                    // arrives during this call, so a claim staked afterwards is
+                    // staked too late — and asserting only at the end would let
+                    // that reordering pass.
+                    markedWhenTheSheetWentUp = lockService?.isPresentingSystemAuthPrompt
+                    reply = captured
+                }
+            },
+            isPhysicalDevice: { true }
+        )
+        let finished = expectation(description: "prompt resolved")
+
+        service.authenticate(reason: "test", onSuccess: { finished.fulfill() }, onError: nil)
+
+        XCTAssertEqual(markedWhenTheSheetWentUp, true, "claimed before the sheet, not after")
+
+        reply?(true, nil)
+        wait(for: [finished], timeout: 1)
+
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt, "and released when it resolves")
+    }
+
+    /// The release must not live in the success branch. A prompt the user
+    /// cancelled is as gone as one they satisfied, and a claim left behind by
+    /// the cancel path would leave the app uncoverable for the rest of the
+    /// session.
+    func testACancelledPromptIsReleasedToo() {
+        var reply: ((Bool, Error?) -> Void)?
+        let service = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .faceID, canEvaluate: true) { reply = $0 } },
+            isPhysicalDevice: { true }
+        )
+        let failed = expectation(description: "error delivered")
+
+        service.authenticate(reason: "test", onSuccess: {}, onError: { _ in failed.fulfill() })
+        XCTAssertTrue(lockService.isPresentingSystemAuthPrompt, "precondition: the prompt is up")
+
+        reply?(false, LAError(.userCancel))
+        wait(for: [failed], timeout: 1)
+
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+    }
+
+    /// The branches that never raise a prompt must never claim one either, or
+    /// the first one taken would leave the app uncoverable for the session.
+    func testTheBranchesThatRaiseNoPromptClaimNothing() {
+        let cannotEvaluate = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .faceID, canEvaluate: false) { _ in } },
+            isPhysicalDevice: { true }
+        )
+        cannotEvaluate.authenticate(reason: "test", onSuccess: {}, onError: { _ in })
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+
+        let noBiometry = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .none, canEvaluate: true) { _ in } },
+            isPhysicalDevice: { true }
+        )
+        noBiometry.authenticate(reason: "test", onSuccess: {}, onError: { _ in })
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+
+        let simulator = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .faceID, canEvaluate: true) { _ in } },
+            isPhysicalDevice: { false }
+        )
+        simulator.authenticate(reason: "test", onSuccess: {}, onError: { _ in })
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+    }
+
     /// The other half, so the pair is not just "cover does nothing": a real
     /// backgrounding still both covers and starts the clock.
     func testBackgroundingCoversAndStartsTheClock() {
@@ -374,6 +556,127 @@ final class PasscodeGateWiringTests: XCTestCase {
 
         XCTAssertTrue(sut.showCover)
         XCTAssertNotNil(defaults.string(forKey: "lastRecordedTime"))
+    }
+
+    /// The departure. `.inactive` reached from `.active` is the app on its way
+    /// out — a swipe to the switcher, a Control Centre pull — and the snapshot is
+    /// taken there, so it still covers.
+    func testAnInactiveOnTheWayOutCovers() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        sut.sceneBecameInactive(comingFrom: .active)
+
+        XCTAssertTrue(sut.showCover)
+    }
+
+    /// The return, and the reason the pair exists. `.inactive` reached from
+    /// `.background` is the start of the zoom back in, not a departure: covering
+    /// again there is what kept the logo on screen for the whole animation and
+    /// made the wallet arrive as a jump at the end of it.
+    func testAnInactiveOnTheWayBackUncovers() {
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        XCTAssertTrue(sut.showCover, "precondition: leaving covered the app")
+
+        sut.sceneBecameInactive(comingFrom: .background)
+
+        XCTAssertFalse(sut.showCover)
+    }
+
+    /// Uncovering early must not be *opening* early. When the interval says
+    /// relock, the return has to hand the animation a lock screen rather than the
+    /// wallet — which is the same order `enableAuth()` keeps at `.active`, moved
+    /// to the moment the user can first see through it.
+    ///
+    /// The order is what is asserted, not the end state: both flags settle the
+    /// same way whichever way round they are written, and it is the frames in
+    /// between that decide whether the home screen shows through.
+    func testAReturnThatRelocksRaisesTheGateBeforeItUncovers() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: nothing is up")
+        XCTAssertTrue(sut.showCover, "precondition: leaving covered the app")
+
+        // `@Published` publishes from `willSet`, so this runs as the gate goes up
+        // with every other property still holding the value it had — which is
+        // what makes it an ordering assertion rather than a second look at the
+        // end state.
+        var coverWhenTheGateWentUp: Bool?
+        let subscription = sut.$isPasscodeLocked
+            .filter { $0 }
+            .sink { [weak sut] _ in coverWhenTheGateWentUp = sut?.showCover }
+        defer { subscription.cancel() }
+
+        sut.sceneBecameInactive(comingFrom: .background)
+
+        XCTAssertTrue(sut.isPasscodeLocked, "the gate is what the return animation shows")
+        XCTAssertFalse(sut.showCover, "and the cover comes off it")
+        XCTAssertEqual(
+            coverWhenTheGateWentUp,
+            true,
+            "cover first, gate second is the home screen on display for the frames the lock screen takes to mount"
+        )
+    }
+
+    /// The return is two phases, and the decision belongs to the first of them.
+    ///
+    /// `.active` arriving a third of a second later must not take it again. The
+    /// first call consumed the backgrounding, so a second reading of the lock
+    /// state could act on only part of what it found: a `disablePasscode` landing
+    /// in between reads as "no gate required", lowers the gate the return raised,
+    /// and then skips the device-auth fallback meant to replace it — the app open
+    /// behind neither. The gate stays instead, and the lock screen's own
+    /// `lowerPasscodeGateIfNoLongerRequired()` is what retires it if the passcode
+    /// really is gone.
+    func testTheActivationAfterAReturnDoesNotDecideItAgain() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        sut.sceneBecameInactive(comingFrom: .background)
+        XCTAssertTrue(sut.isPasscodeLocked, "precondition: the return raised the gate")
+
+        // What a second evaluation would read differently.
+        try await service.disablePasscode(current: passcode)
+        XCTAssertFalse(service.isPasscodeGateRequired, "precondition: the answer has changed")
+
+        sut.sceneBecameActive()
+
+        XCTAssertTrue(
+            sut.isPasscodeLocked,
+            "the second phase of one return is not a second decision about it"
+        )
+    }
+
+    /// A return that began and then turned back — the app tapped and put down
+    /// again before it finished arriving — must not spend the *next* return's
+    /// decision. The marker is cleared by leaving, so the activation that
+    /// follows a second departure decides afresh.
+    func testAnAbandonedReturnDoesNotSpendTheNextOnesDecision() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        sut.sceneBecameInactive(comingFrom: .background)
+        _ = try await service.unlock(with: passcode)
+        sut.markPasscodeUnlocked()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: the return unlocked the app")
+
+        // The app turns round and leaves again without ever reaching `.active`.
+        sut.revokeAuth()
+
+        sut.sceneBecameActive()
+
+        XCTAssertTrue(
+            sut.isPasscodeLocked,
+            "the second departure is a new foreground to decide, not the first one's leftovers"
+        )
     }
 
     // MARK: - A foreground that lands mid-unlock
@@ -656,4 +959,43 @@ private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
     func delete(account _: String) throws { stored = nil }
 
     func exists(account _: String) -> Bool { stored != nil }
+}
+
+/// An `LAContext` that answers however a test needs and hands the reply block
+/// back instead of raising anything.
+///
+/// A subclass rather than a protocol, because `BiometryService` is bracketing a
+/// real system prompt and the seam has to be the smallest thing that makes that
+/// branch reachable — anything wider would be testing a different shape of code
+/// than the one that ships.
+private final class StubLAContext: LAContext {
+
+    private let biometry: LABiometryType
+    private let canEvaluate: Bool
+    private let capture: (@escaping (Bool, Error?) -> Void) -> Void
+
+    init(
+        biometry: LABiometryType,
+        canEvaluate: Bool,
+        capture: @escaping (@escaping (Bool, Error?) -> Void) -> Void
+    ) {
+        self.biometry = biometry
+        self.canEvaluate = canEvaluate
+        self.capture = capture
+        super.init()
+    }
+
+    override var biometryType: LABiometryType { biometry }
+
+    override func canEvaluatePolicy(_ policy: LAPolicy, error: NSErrorPointer) -> Bool {
+        canEvaluate
+    }
+
+    override func evaluatePolicy(
+        _ policy: LAPolicy,
+        localizedReason: String,
+        reply: @escaping (Bool, Error?) -> Void
+    ) {
+        capture(reply)
+    }
 }

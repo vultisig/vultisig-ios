@@ -102,6 +102,9 @@ final class AppLockWindowHost: ObservableObject {
             lower(animated: current.isGate)
             current = .uncovered
             callbacks = nil
+            // The photograph of the wallet outlives nothing: there is no longer
+            // anything to cover, and the next departure takes a fresh one.
+            PrivacyBackdrop.discard()
             return
         }
 
@@ -175,6 +178,7 @@ final class AppLockWindowHost: ObservableObject {
             show(
                 scene === elected ? presentation : .cover,
                 in: scene,
+                requested: presentation,
                 onUnlocked: onUnlocked,
                 onAttemptFailed: onAttemptFailed,
                 onRestoreFromBackup: onRestoreFromBackup
@@ -198,9 +202,16 @@ final class AppLockWindowHost: ObservableObject {
     /// over. A new window opens on the brand screen instead, which is exactly
     /// what the lock screen itself draws while that attempt runs, so there is no
     /// seam between the two.
+    /// `requested` is what the *app* concluded; `presentation` is what this
+    /// particular scene gets, which is not always the same thing — only one
+    /// scene may carry an interactive screen, and the rest are covered instead.
+    /// The two must not be confused when deciding what a cover may contain: a
+    /// scene covered *because a gate went up elsewhere* is part of a locked app,
+    /// and a blurred wallet is the last thing it should be showing.
     private func show(
         _ presentation: AppLockPresentation,
         in scene: UIWindowScene,
+        requested: AppLockPresentation,
         onUnlocked: @escaping () -> Void,
         onAttemptFailed: @escaping () -> Void,
         onRestoreFromBackup: @escaping () -> Void
@@ -222,6 +233,17 @@ final class AppLockWindowHost: ObservableObject {
         window.alpha = 1
         window.isUserInteractionEnabled = true
 
+        // Read rather than taken here, and shared with the app's own overlay so
+        // the two cannot draw different things — see ``PrivacyBackdrop/latest``.
+        //
+        // Gated on what the app asked for, not on what this scene got. Only a
+        // privacy cover may carry a picture of the app: the gate and the
+        // recovery screen are screens in their own right, and the scenes covered
+        // *alongside* one of them belong to an app that is locked. Reading the
+        // per-scene value here put a blurred wallet on every non-elected scene
+        // of a gated iPad.
+        let backdrop = requested == .cover ? PrivacyBackdrop.latest : nil
+
         if presentation.isInteractive {
             window.makeKeyAndVisible()
         } else {
@@ -230,6 +252,7 @@ final class AppLockWindowHost: ObservableObject {
 
         window.host.rootView = AppLockHostedScreen(
             presentation: presentation,
+            backdrop: backdrop,
             onUnlocked: onUnlocked,
             onAttemptFailed: onAttemptFailed,
             onRestoreFromBackup: onRestoreFromBackup
