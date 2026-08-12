@@ -95,7 +95,13 @@ struct LimitCustomExpirySheet: View {
             .disabled(isBelowFloor)
         }
         .padding(16)
+        #if os(macOS)
+        // The toolbar below OVERLAYS its content rather than reserving space, and
+        // its close button lands top-leading — exactly where the title starts.
+        // iOS doesn't render that toolbar and doesn't want the gap, which this
+        // fixed-height sheet can least afford to lose.
         .padding(.top, 32)
+        #endif
         // Scaled, not pinned: the content is text and there is no scroll view
         // under the Set button, so a fixed height would clip it out of reach as
         // Dynamic Type grew the rows above.

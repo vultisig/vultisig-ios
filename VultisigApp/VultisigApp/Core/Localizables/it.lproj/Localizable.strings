@@ -815,7 +815,7 @@
 "limitSwap.expiry.minutes" = "%dmin";
 "limitSwap.expiry.minutesUnit" = "Minuti";
 "limitSwap.expiry.remainingFormat" = "%@ rimanenti";
-"limitSwap.expiry.restsFor" = "Resta attivo %@ una volta confermato il deposito";
+"limitSwap.expiry.restsFor" = "Resta attivo per %@ una volta confermato il deposito";
 "limitSwap.expiry.set" = "Imposta scadenza";
 "limitSwap.expiry.underMinute" = "<1min";
 "limitSwap.placeOrder" = "Inserisci ordine limite";
