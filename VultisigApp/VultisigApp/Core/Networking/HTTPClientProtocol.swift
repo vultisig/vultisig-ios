@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Log.app.other
 
 /// Protocol defining the HTTP client interface
 protocol HTTPClientProtocol: Sendable {
@@ -46,5 +49,31 @@ extension HTTPClientProtocol {
     func requestEmpty(_ target: TargetType) async throws -> HTTPResponse<EmptyResponse> {
         let response = try await request(target)
         return HTTPResponse(data: EmptyResponse(), response: response.response)
+    }
+
+    /// Issues a request that is safe to repeat, retrying **once** on a timeout.
+    ///
+    /// For idempotent reads only. Nothing here can tell whether a target is one,
+    /// so choosing this method over `request(_:responseType:)` is the caller
+    /// asserting it — a broadcast or any other write must not use it.
+    ///
+    /// Only `HTTPError.timeout` is retried, and only once. The failure this
+    /// exists for is specific: a proxy that accepts a request and then holds it
+    /// open until something upstream gives up, at which point an immediate
+    /// resend succeeds. Every stall observed while diagnosing that behaved this
+    /// way, which is why there is no backoff — the wait is the symptom, not
+    /// congestion, and sleeping first would just add to it. A status code, a
+    /// decode failure or a cancellation propagates untouched: none of them gets
+    /// better by being repeated, and a cancellation must not be.
+    func requestRetryingTimeout<T: Decodable>(
+        _ target: TargetType,
+        responseType: T.Type
+    ) async throws -> HTTPResponse<T> {
+        do {
+            return try await request(target, responseType: responseType)
+        } catch HTTPError.timeout {
+            logger.warning("⏰ timed out after \(target.timeoutInterval)s, retrying once: \(target.path, privacy: .public)")
+            return try await request(target, responseType: responseType)
+        }
     }
 }

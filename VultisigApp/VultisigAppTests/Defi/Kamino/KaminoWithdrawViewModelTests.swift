@@ -158,11 +158,65 @@ final class KaminoWithdrawViewModelTests: XCTestCase {
 
         await viewModel.onLoad()
 
-        XCTAssertNotNil(viewModel.error)
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNotNil(viewModel.loadErrorText)
+        XCTAssertNil(viewModel.error)
         viewModel.amountField.value = "1"
         let withdraw = await viewModel.makeWithdraw()
         XCTAssertNil(withdraw)
         XCTAssertTrue(preparer.requests.isEmpty)
+    }
+
+    /// And it is recoverable, with the same shape as the deposit form's: the
+    /// retry re-runs the load, and a second pass must not stack a second
+    /// minimum and a second balance check on the first's.
+    func testRetryingAFailedLoadHydratesTheFormWithoutDoublingItsValidators() async {
+        addUsdcCoin()
+        service.positions = [Self.unstakedPosition]
+        service.infoError = StubWithdrawService.StubError.unavailable
+        let viewModel = makeViewModel()
+
+        await viewModel.onLoad()
+        XCTAssertNotNil(viewModel.loadError)
+
+        service.infoError = nil
+        await viewModel.onLoad()
+
+        XCTAssertNil(viewModel.loadError)
+        XCTAssertNil(viewModel.loadErrorText)
+        XCTAssertNotNil(viewModel.vaultInfo)
+        XCTAssertNil(viewModel.unavailableReason)
+        // Required, minimum, balance — one of each, not two.
+        XCTAssertEqual(viewModel.amountField.validators.count, 3)
+    }
+
+    /// ⚠️ A load that fails after a successful one must not leave the previous
+    /// position standing. Keeping it would show a maximum for a position that
+    /// may now be empty, and let a withdraw be built against a balance this
+    /// pass could not confirm.
+    func testALoadThatFailsAfterASuccessfulOneLeavesNoPositionBehind() async {
+        addUsdcCoin()
+        service.positions = [Self.unstakedPosition]
+        let viewModel = makeViewModel()
+
+        await viewModel.onLoad()
+        XCTAssertGreaterThan(viewModel.availableAmount, 0)
+
+        service.infoError = StubWithdrawService.StubError.unavailable
+        await viewModel.onLoad()
+
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNil(viewModel.vaultInfo)
+        XCTAssertNil(viewModel.eligibility)
+        XCTAssertEqual(viewModel.availableAmount, .zero)
+        // `unavailableReason` reads a nil eligibility as "no reason to refuse",
+        // so it is not enough on its own — Continue has to read the hydration.
+        XCTAssertNil(viewModel.unavailableReason)
+        XCTAssertTrue(viewModel.isWithdrawUnavailable)
+
+        viewModel.amountField.value = "1"
+        let withdraw = await viewModel.makeWithdraw()
+        XCTAssertNil(withdraw)
     }
 
     // MARK: - The maximum

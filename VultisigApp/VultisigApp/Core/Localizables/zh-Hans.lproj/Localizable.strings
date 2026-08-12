@@ -645,6 +645,7 @@
 "kaminoEarnWithdraw" = "提取";
 "kaminoErrorVaultMetadataMismatch" = "Kamino 报告 %1$@ 为 %2$@；此金库的值为 %3$@";
 "kaminoErrorVaultNotInRegistry" = "金库 %@ 不是此应用会进行交易的金库";
+"kaminoLoadFailed" = "无法加载此金库：%@";
 "kaminoPayerBalanceUnavailable" = "Solana 未返回该交易的成本，因此无法计算最大金额。";
 "kaminoSimulationFailed" = "该交易在 Solana 上会失败：%@";
 "kaminoVerifyAmount" = "数量";

@@ -645,6 +645,7 @@
 "kaminoEarnWithdraw" = "Sacar";
 "kaminoErrorVaultMetadataMismatch" = "A Kamino informou %1$@ como %2$@; o valor deste vault é %3$@";
 "kaminoErrorVaultNotInRegistry" = "O vault %@ não está no registro de vaults suportados por este aplicativo";
+"kaminoLoadFailed" = "Não foi possível carregar este cofre: %@";
 "kaminoPayerBalanceUnavailable" = "A Solana não informou o custo desta transação, então o máximo não pode ser calculado.";
 "kaminoSimulationFailed" = "Esta transação falharia na Solana: %@";
 "kaminoVerifyAmount" = "Valor";

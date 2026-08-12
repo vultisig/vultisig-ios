@@ -40,12 +40,25 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
 
     @Published var validForm: Bool = false
     @Published var isLoading = false
+    /// A failure of the action the user asked for — building the withdraw.
     @Published var error: Error?
+    /// A failure of the form's own hydration. Separate from `error` for the same
+    /// reason as on the deposit form: the user did nothing and there is nothing
+    /// to correct, so it is rendered where it happened and paired with a retry
+    /// instead of leaving a permanently disabled Continue and no explanation.
+    @Published private(set) var loadError: Error?
     @Published var amountField = FormField(
         label: "amount".localized,
         placeholder: "0",
-        validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
+        validators: KaminoWithdrawViewModel.baseAmountValidators
     )
+
+    /// What the amount field validates with before the vault and the position
+    /// are known. Held apart so a retry rebuilds the list rather than appending
+    /// a second minimum and a second balance check to the first pass's.
+    private static var baseAmountValidators: [FormFieldValidator] {
+        [RequiredValidator(errorMessage: "emptyAmountField".localized)]
+    }
 
     /// The wallet coin the withdraw settles into — the user's USDC, or their
     /// native SOL for the wrapped-SOL vault, whose token account the withdraw
@@ -103,6 +116,25 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
 
     var missingCoinText: String {
         String(format: "kaminoWithdrawMissingCoin".localized, ticker)
+    }
+
+    /// The hydration failure, in the user's terms, or `nil` when there is none.
+    var loadErrorText: String? {
+        guard let loadError else { return nil }
+        return String(format: "kaminoLoadFailed".localized, loadError.localizedDescription)
+    }
+
+    /// `true` when nothing the user could type produces a withdraw, so the
+    /// Continue button reads as disabled instead of refusing after the tap.
+    ///
+    /// The position's own reasons are one part of it. The other is a form that
+    /// never hydrated: `eligibility` is `nil` before it is resolved and `nil`
+    /// again after a reload clears it, and `unavailableReason` reads `nil` as
+    /// "no reason to refuse" — which, on its own, would leave Continue enabled
+    /// over a failed load, doing nothing when tapped. The mirror of
+    /// `KaminoDepositViewModel.isDepositUnavailable`.
+    var isWithdrawUnavailable: Bool {
+        vaultInfo == nil || loadError != nil || unavailableReason != nil
     }
 
     /// The reason this form cannot be used, or `nil` when it can.
@@ -174,9 +206,30 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
 
     // MARK: - Load
 
+    /// Hydrates the form. Safe to run again, which the retry needs and the
+    /// screen's `.task` can cause on its own.
+    ///
+    /// Everything a previous pass derived is torn down first, for the same
+    /// reason as on the deposit form: a pass that fails must leave the form as
+    /// if it had never run, not holding the last pass's position. Keeping
+    /// `held` and `maximumTokens` would let a withdraw be built against a
+    /// balance this pass could not confirm, and keeping `availableAmount` would
+    /// show a maximum for a position that may now be empty.
+    ///
+    /// One pass at a time, so two taps on the retry cannot race over the same
+    /// published state.
     func onLoad() async {
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
+
+        loadError = nil
+        vaultInfo = nil
+        eligibility = nil
+        held = nil
+        maximumTokens = nil
+        availableAmount = .zero
+        amountField.validators = Self.baseAmountValidators
 
         let info: KaminoVaultInfo
         do {
@@ -187,7 +240,7 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
             // amount into shares at all, so the form stays unusable rather than
             // guessing a conversion.
             logger.error("Kamino vault hydration failed: \(error.localizedDescription, privacy: .public)")
-            self.error = error
+            loadError = error
             return
         }
 
@@ -362,7 +415,10 @@ final class KaminoWithdrawViewModel: ObservableObject, Form {
         } catch {
             logger.error("Kamino position read failed: \(error.localizedDescription, privacy: .public)")
             eligibility = .unreadable
-            self.error = error
+            // Hydration, not action. `unavailableReason` already renders
+            // "position unreadable" as a fact about the position; this adds the
+            // reason it could not be read and the retry that might fix it.
+            loadError = error
             return
         }
 

@@ -89,10 +89,61 @@ final class KaminoDepositViewModelTests: XCTestCase {
         await viewModel.onLoad()
 
         XCTAssertNil(viewModel.minimumDeposit)
-        XCTAssertNotNil(viewModel.error)
+        // Surfaced as a LOAD failure, with a message and a retry — not left in
+        // the action slot where nothing rendered it.
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNotNil(viewModel.loadErrorText)
+        XCTAssertNil(viewModel.error)
         viewModel.amountField.value = "100"
         let deposit = await viewModel.makeDeposit()
         XCTAssertNil(deposit)
+    }
+
+    /// And it is recoverable. Before this the failure was silent — a Continue
+    /// button disabled forever, with nothing on screen saying why and no way to
+    /// try again. The retry re-runs the same load, and a second pass must not
+    /// stack a second minimum and a second balance check on the first's.
+    func testRetryingAFailedLoadHydratesTheFormWithoutDoublingItsValidators() async {
+        addUsdcCoin(balance: "50000000")
+        service.infoError = StubDepositService.StubError.unavailable
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        await viewModel.onLoad()
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertTrue(viewModel.isDepositUnavailable)
+
+        service.infoError = nil
+        await viewModel.onLoad()
+
+        XCTAssertNil(viewModel.loadError)
+        XCTAssertNil(viewModel.loadErrorText)
+        XCTAssertEqual(viewModel.minimumDeposit, Decimal(string: "0.1"))
+        XCTAssertFalse(viewModel.isDepositUnavailable)
+        // Required, minimum, balance — one of each, not two.
+        XCTAssertEqual(viewModel.amountField.validators.count, 3)
+    }
+
+    /// ⚠️ And it fails closed the other way round. A load that fails AFTER an
+    /// earlier one succeeded must not leave the form building against the
+    /// hydration it could not confirm — a banner over an enabled Continue is
+    /// worse than no banner at all.
+    func testALoadThatFailsAfterASuccessfulOneLeavesNothingBehind() async {
+        addUsdcCoin(balance: "50000000")
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        await viewModel.onLoad()
+        XCTAssertFalse(viewModel.isDepositUnavailable)
+        XCTAssertEqual(viewModel.availableAmount, Decimal(string: "50"))
+
+        service.infoError = StubDepositService.StubError.unavailable
+        await viewModel.onLoad()
+
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNil(viewModel.vaultInfo)
+        XCTAssertNil(viewModel.minimumDeposit)
+        XCTAssertEqual(viewModel.availableAmount, .zero)
+        XCTAssertEqual(viewModel.availableBaseUnits, .zero)
+        XCTAssertTrue(viewModel.isDepositUnavailable)
     }
 
     // MARK: - Available amount
@@ -164,7 +215,8 @@ final class KaminoDepositViewModelTests: XCTestCase {
         await viewModel.onLoad()
 
         XCTAssertEqual(viewModel.availableAmount, .zero)
-        XCTAssertNotNil(viewModel.error)
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNotNil(viewModel.loadErrorText)
     }
 
     /// Both the probe and the real deposit are priced at the same compute-unit

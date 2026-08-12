@@ -137,6 +137,12 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
 
     func sendSolanaTransaction(encodedTransaction: String) async throws -> String? {
         for attempt in 1...Self.maxBroadcastAttempts {
+            // Plain `request`, never the timeout-retrying variant. A broadcast
+            // is the one call here that is not a read, and it already owns a
+            // bespoke resend loop below that knows which failures are worth
+            // repeating. A blind retry layered under it would resend a signed
+            // transaction on a timeout, which is exactly the case where the
+            // first attempt may well have landed.
             let response = try await httpClient.request(
                 api(.sendTransaction(encodedTransaction: encodedTransaction)),
                 responseType: SolanaSendTransactionResponse.self
@@ -212,7 +218,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         replaceRecentBlockhash: Bool,
         accountAddresses: [String] = []
     ) async throws -> SolanaSimulationResult {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.simulateTransaction(
                 encodedTransaction: base64Transaction,
                 replaceRecentBlockhash: replaceRecentBlockhash,
@@ -354,7 +360,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
             return cached
         }
 
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             target,
             responseType: SolanaGetAccountInfoBase64Response.self
         )
@@ -372,7 +378,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
 
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
-            let response = try await httpClient.request(
+            let response = try await httpClient.requestRetryingTimeout(
                 api(.getBalance(address: address)),
                 responseType: SolanaGetBalanceResponse.self
             )
@@ -447,7 +453,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
             return cached.median
         }
 
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             target,
             responseType: SolanaGetRecentPrioritizationFeesResponse.self
         )
@@ -470,7 +476,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     }
 
     func fetchRecentBlockhash() async throws -> String? {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getLatestBlockhash),
             responseType: SolanaGetLatestBlockhashResponse.self
         )
@@ -482,7 +488,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// (preflight `BlockhashNotFound`); a finalized one is rooted and known to
     /// every node.
     func fetchFinalizedBlockhash() async throws -> String? {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getLatestBlockhashFinalized),
             responseType: SolanaGetLatestBlockhashResponse.self
         )
@@ -610,7 +616,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
             return (cachedValue.accountAddress, cachedValue.isToken2022)
         }
 
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getTokenAccountsByOwner(walletAddress: walletAddress, filter: .mint(mintAddress))),
             responseType: SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]>.self
         )
@@ -642,7 +648,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
 
         do {
             for program in programs {
-                let response = try await httpClient.request(
+                let response = try await httpClient.requestRetryingTimeout(
                     api(.getTokenAccountsByOwner(walletAddress: walletAddress, filter: .programId(program))),
                     responseType: SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]>.self
                 )
@@ -799,7 +805,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     }
 
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getAccountInfo(address: address)),
             responseType: SolanaGetAccountInfoResponse.self
         )
@@ -830,7 +836,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
 
     /// All validators (vote accounts), tagged with their delinquent bucket.
     func fetchSolanaValidators() async throws -> [SolanaValidator] {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getVoteAccounts),
             responseType: SolanaGetVoteAccountsResponse.self
         )
@@ -844,7 +850,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// Not cached — must reflect a just-submitted stake/unstake and freshly
     /// accrued rewards; the UI refreshes on appear.
     func fetchSolanaStakeAccounts(owner: String) async throws -> [SolanaStakeAccount] {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getStakeAccountsByOwner(staker: owner, pubkeyOnly: false)),
             responseType: SolanaGetProgramAccountsResponse.self
         )
@@ -857,7 +863,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         if let cached: SolanaEpochInfo = Utils.getCachedData(cacheKey: cacheKey, cache: epochInfoCache, timeInSeconds: Self.epochInfoTTL) {
             return cached
         }
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getEpochInfo),
             responseType: SolanaGetEpochInfoResponse.self
         )
@@ -884,7 +890,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         if let cached: UInt64 = Utils.getCachedData(cacheKey: cacheKey, cache: rentReserveCache, timeInSeconds: Self.rentReserveTTL) {
             return cached
         }
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getMinimumBalanceForRentExemption(size: size)),
             responseType: SolanaGetMinimumBalanceForRentExemptionResponse.self
         )
@@ -908,6 +914,10 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         var lastError: Error?
         for host in SolanaAPI.minDelegationPublicHosts {
             do {
+                // The one read here that is NOT retried on timeout: this loop is
+                // already its own retry, across two independent hosts, and a
+                // per-host retry would double a worst case that ends in a
+                // documented fallback either way.
                 let response = try await httpClient.request(
                     SolanaAPI(baseURL: host, usesProxyPath: false, rpcMethod: .getStakeMinimumDelegation),
                     responseType: SolanaGetStakeMinimumDelegationResponse.self
@@ -935,7 +945,7 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// Network total inflation rate for the current epoch (fraction, e.g.
     /// 0.0377). Caching is owned by `SolanaStakingService` (10 min, actor).
     func fetchSolanaInflationRate() async throws -> Double {
-        let response = try await httpClient.request(
+        let response = try await httpClient.requestRetryingTimeout(
             api(.getInflationRate),
             responseType: SolanaGetInflationRateResponse.self
         )

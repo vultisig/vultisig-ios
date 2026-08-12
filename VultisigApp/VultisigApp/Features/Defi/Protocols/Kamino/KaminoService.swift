@@ -364,7 +364,13 @@ struct KaminoService: KaminoServiceProtocol {
     /// `TRANSACTION_SIZE_ERROR`, …) instead of matching on message text.
     private func request<T: Decodable>(_ target: KaminoAPI, as type: T.Type) async throws -> T {
         do {
-            return try await httpClient.request(target, responseType: type).data
+            // A timeout on a read is retried once; a build POST is not. See
+            // `KaminoAPI.isIdempotentRead` for why the builder is excluded even
+            // though it signs nothing.
+            let response = target.isIdempotentRead
+                ? try await httpClient.requestRetryingTimeout(target, responseType: type)
+                : try await httpClient.request(target, responseType: type)
+            return response.data
         } catch let error as HTTPError {
             guard case .statusCode(let status, let data) = error,
                   let data,

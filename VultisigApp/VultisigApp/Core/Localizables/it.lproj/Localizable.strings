@@ -645,6 +645,7 @@
 "kaminoEarnWithdraw" = "Preleva";
 "kaminoErrorVaultMetadataMismatch" = "Kamino ha riportato %1$@ come %2$@; questo vault si aspetta %3$@";
 "kaminoErrorVaultNotInRegistry" = "Il vault %@ non è uno di quelli con cui questa app opera";
+"kaminoLoadFailed" = "Impossibile caricare questo vault: %@";
 "kaminoPayerBalanceUnavailable" = "Solana non ha riportato il costo di questa transazione, quindi il massimo non può essere calcolato.";
 "kaminoSimulationFailed" = "Questa transazione fallirebbe su Solana: %@";
 "kaminoVerifyAmount" = "Importo";
