@@ -26,7 +26,17 @@ struct LimitCustomExpirySheet: View {
         THORChainConstants.blocks(forMinutes: days * 1440 + hours * 60 + minutes)
     }
 
-    private var isAtCeiling: Bool { selectedBlocks >= vm.maxExpiryBlocks }
+    /// The ceiling as this sheet can actually express it. `selectedBlocks` is
+    /// always a whole number of minutes, so a mimir cap that isn't a multiple of
+    /// `blocksPerMinute` is unreachable — compared raw, the picker would never
+    /// register as capped and would keep stepping past a ceiling it can't hit.
+    private var representableMaxBlocks: Int {
+        THORChainConstants.blocks(
+            forMinutes: THORChainConstants.minutes(forBlocks: vm.maxExpiryBlocks)
+        )
+    }
+
+    private var isAtCeiling: Bool { selectedBlocks >= representableMaxBlocks }
     private var isBelowFloor: Bool { selectedBlocks < vm.minExpiryBlocks }
 
     /// One curve for every value change in the sheet, so the digits, the notice

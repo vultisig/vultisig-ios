@@ -60,5 +60,9 @@ struct LimitPresetPills: View {
         }
         .buttonStyle(.plain)
         .disabled(vm.marketPriceRef == nil)
+        // Without a market reference a preset has nothing to offset from. Dimmed
+        // to match `LimitMarketOffsetRow`, so the two controls in this card read
+        // the same way rather than one looking tappable and doing nothing.
+        .opacity(vm.marketPriceRef == nil ? 0.5 : 1)
     }
 }

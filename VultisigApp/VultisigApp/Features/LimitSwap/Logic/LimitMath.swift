@@ -380,8 +380,10 @@ func clampLimitExpiryBlocks(_ blocks: Int, maxBlocks: Int) -> Int {
 /// block count became the single representation and this is how it is spelled.
 ///
 /// Zero-valued components are omitted rather than padded, so `2d` doesn't render
-/// as `2d 0h 0m`. Sub-minute counts (only reachable from a hand-built memo, never
-/// from this app's picker) floor to `0m` rather than claiming a duration.
+/// as `2d 0h 0m`. A nonzero sub-minute count (only reachable from a hand-built
+/// memo, never from this app's picker) renders as `<1m`: flooring it to `0m` read
+/// on the signing screen as an order that expires on arrival. Only a genuinely
+/// zero count prints `0m`.
 /// Days are only split out from **two** days up. That threshold is not cosmetic:
 /// it is what makes this one function reproduce the preset row the app has always
 /// shown — `12h`, `24h`, `3d`. Splitting at one day would render the 24h preset as
@@ -400,7 +402,12 @@ func formatLimitExpiry(blocks: Int) -> String {
     if hours > 0 { parts.append(String(format: "limitSwap.expiry.hours".localized, hours)) }
     if minutes > 0 { parts.append(String(format: "limitSwap.expiry.minutes".localized, minutes)) }
     guard !parts.isEmpty else {
-        return String(format: "limitSwap.expiry.minutes".localized, 0)
+        // A nonzero interval shorter than a minute is not "0m" — on the signing
+        // screen that reads as an order that expires immediately. Only a genuinely
+        // zero interval prints zero.
+        return blocks > 0
+            ? "limitSwap.expiry.underMinute".localized
+            : String(format: "limitSwap.expiry.minutes".localized, 0)
     }
     return parts.joined(separator: " ")
 }
@@ -508,6 +515,10 @@ func formatLimitPrice(_ price: Decimal, locale: Locale = .current) -> String {
     formatter.usesSignificantDigits = true
     formatter.maximumSignificantDigits = limitPriceSignificantDigits
     formatter.usesGroupingSeparator = false
+    // Floor, matching `roundLimitPrice`. The default half-even would round a
+    // price that reached here unfloored UP, and `LimitSwapBodyView` formats an
+    // existing draft on load — so a reload could raise the stored price.
+    formatter.roundingMode = .down
     return formatter.string(from: NSDecimalNumber(decimal: price))
         ?? NSDecimalNumber(decimal: price).stringValue
 }
@@ -516,7 +527,7 @@ func formatLimitPrice(_ price: Decimal, locale: Locale = .current) -> String {
 
 /// What one tap of the custom-offset sheet's − / + moves, and the grid every
 /// value it can hold sits on.
-let limitPctOffsetStep = Decimal(string: "0.1")!
+let limitPctOffsetStep = Decimal(1) / Decimal(10)
 
 /// How far the custom-offset stepper may be walked.
 ///
@@ -627,7 +638,7 @@ func limitPctStep(forHeldSeconds seconds: Double) -> Decimal {
     case ..<1.0:
         return limitPctOffsetStep
     case ..<2.5:
-        return Decimal(string: "0.5")!
+        return Decimal(1) / Decimal(2)
     default:
         return 1
     }
@@ -692,7 +703,7 @@ func parseLimitPrice(_ text: String, locale: Locale = .current) -> Decimal {
 /// genuine `-0.004%` target, dropping its below-market tint. A real offset that
 /// small still prints as `-0.00` and still carries the tint, which is honest —
 /// the number is below market and the colour says so.
-let limitPercentDisplayEpsilon = Decimal(string: "0.0001")!
+let limitPercentDisplayEpsilon = Decimal(1) / Decimal(10_000)
 
 /// Whether an offset is zero *as far as the readout can tell*.
 ///

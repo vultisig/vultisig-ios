@@ -1005,9 +1005,15 @@ final class LimitMathTests: XCTestCase {
     }
 
     func testFormatExpirySubMinuteDoesNotClaimADuration() {
-        // Only reachable from a hand-built memo, never from the picker — floor it
-        // to 0m rather than rendering an empty string.
-        XCTAssertEqual(formatLimitExpiry(blocks: 5), "0m")
+        // Only reachable from a hand-built memo, never from the picker. "0m" on
+        // the signing screen reads as an order that expires on arrival, so a
+        // nonzero interval under a minute says so instead.
+        XCTAssertEqual(formatLimitExpiry(blocks: 5), "<1m")
+    }
+
+    func testFormatExpiryZeroBlocksIsStillZero() {
+        // Distinct from the sub-minute case: no interval at all is genuinely 0m.
+        XCTAssertEqual(formatLimitExpiry(blocks: 0), "0m")
     }
 
     // MARK: - formatLimitPercent

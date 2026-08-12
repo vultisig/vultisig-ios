@@ -786,6 +786,7 @@
 "limitSwap.done.status.restingDetail" = "지정한 가격에 도달할 때까지 대기 중";
 "limitSwap.done.status.submitted" = "주문 제출됨";
 "limitSwap.error.advancedSwapQueueDisabled" = "THORChain에서 지정가 주문을 일시적으로 사용할 수 없습니다. 나중에 다시 시도하거나 시장가 스왑을 사용하세요.";
+"limitSwap.error.expiryCeilingUnresolved" = "THORChain에서 주문이 대기할 수 있는 기간을 확인하는 중입니다. 잠시 후 다시 시도하세요.";
 "limitSwap.error.insufficientFunds" = "%@ 잔액이 부족하여 이 주문을 넣을 수 없습니다. 잔액 범위 내의 수량을 입력하세요.";
 "limitSwap.error.insufficientGas" = "이 주문의 네트워크 수수료를 지불할 %@이(가) 부족합니다.";
 "limitSwap.error.invalidInputs" = "일부 주문 정보가 잘못되었습니다. 수량, 가격, 만료를 확인한 후 다시 시도하세요.";
@@ -816,6 +817,7 @@
 "limitSwap.expiry.remainingFormat" = "%@ 남음";
 "limitSwap.expiry.restsFor" = "입금이 확인되면 %@ 동안 대기합니다";
 "limitSwap.expiry.set" = "만료 설정";
+"limitSwap.expiry.underMinute" = "<1분";
 "limitSwap.placeOrder" = "지정가 주문 넣기";
 "limitSwap.preset.market" = "시장";
 "limitSwap.preset.plus1" = "+1%";
@@ -830,6 +832,8 @@
 "limitSwap.price.offsetPriceUnusable" = "이 격차에서는 이 페어의 가격이 0으로 반올림됩니다. 주문하려면 값을 높이세요.";
 "limitSwap.price.offsetRests" = "체결되거나 만료될 때까지 이 가격으로 대기합니다";
 "limitSwap.price.setPrice" = "가격 설정";
+"limitSwap.price.unitAsset" = "자산 단위 가격";
+"limitSwap.price.unitUsd" = "USD 가격";
 "limitSwap.price.vsMarket" = "시장 대비";
 "limitSwap.progress.filledFormat" = "%@ 체결";
 "limitSwap.sell" = "매도";

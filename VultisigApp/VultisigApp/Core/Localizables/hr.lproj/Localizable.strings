@@ -786,6 +786,7 @@
 "limitSwap.done.status.restingDetail" = "Čeka dok se ne dosegne tvoja cijena";
 "limitSwap.done.status.submitted" = "Nalog poslan";
 "limitSwap.error.advancedSwapQueueDisabled" = "Limit nalozi trenutačno nisu dostupni na THORChainu. Pokušajte kasnije ili upotrijebite tržišni swap.";
+"limitSwap.error.expiryCeilingUnresolved" = "Još provjeravamo koliko dugo THORChain dopušta da nalog miruje. Pokušajte ponovno za trenutak.";
 "limitSwap.error.insufficientFunds" = "Nemaš dovoljno %@ za ovaj nalog. Unesi iznos unutar svojeg stanja.";
 "limitSwap.error.insufficientGas" = "Nemaš dovoljno %@ za pokrivanje mrežne naknade ovog naloga.";
 "limitSwap.error.invalidInputs" = "Neki podaci naloga nisu valjani. Provjerite iznos, cijenu i istek pa pokušajte ponovno.";
@@ -816,6 +817,7 @@
 "limitSwap.expiry.remainingFormat" = "još %@";
 "limitSwap.expiry.restsFor" = "Ostaje aktivan %@ nakon potvrde uplate";
 "limitSwap.expiry.set" = "Postavi trajanje";
+"limitSwap.expiry.underMinute" = "<1min";
 "limitSwap.placeOrder" = "Postavi limit nalog";
 "limitSwap.preset.market" = "Tržište";
 "limitSwap.preset.plus1" = "+1%";
@@ -830,6 +832,8 @@
 "limitSwap.price.offsetPriceUnusable" = "Uz ovaj odmak cijena se za ovaj par zaokružuje na nulu. Povećaj ga kako bi postavio nalog.";
 "limitSwap.price.offsetRests" = "Miruje po ovoj cijeni dok se ne izvrši ili istekne";
 "limitSwap.price.setPrice" = "Postavi cijenu";
+"limitSwap.price.unitAsset" = "Cijena u jedinicama imovine";
+"limitSwap.price.unitUsd" = "Cijena u USD";
 "limitSwap.price.vsMarket" = "vs. tržište";
 "limitSwap.progress.filledFormat" = "%@ izvršeno";
 "limitSwap.sell" = "Prodaj";

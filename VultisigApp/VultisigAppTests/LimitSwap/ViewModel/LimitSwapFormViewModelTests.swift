@@ -1081,6 +1081,31 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.placeOrderError, .advancedSwapQueueDisabled)
     }
 
+    func testPreparePlaceableOrderBlocksWhenExpiryCeilingUnresolved() {
+        // Fail-closed: until the StreamingLimitSwapMaxAge fetch lands,
+        // `maxExpiryBlocks` is the seed, so validation would judge the draft's
+        // expiry against a ceiling the network never confirmed.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof: isolate the TTL gate
+        vm.networkFeeEstimate = BigInt(4_200)
+        XCTAssertFalse(vm.isMaxExpiryResolved)
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .expiryCeilingUnresolved)
+    }
+
+    func testPreparePlaceableOrderSucceedsOnceExpiryCeilingResolves() async {
+        // The mirror of the above: the TTL gate must be the ONLY term that was
+        // blocking, so resolving it alone flips the same draft to placeable.
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(100_000_000))
+        XCTAssertTrue(vm.isMaxExpiryResolved)
+
+        XCTAssertNotNil(vm.preparePlaceableOrder())
+        XCTAssertNil(vm.placeOrderError)
+    }
+
     func testRefreshAdvancedSwapQueueGateStoresEnabledResult() async {
         quoteService.advancedSwapQueueEnabledResult = true
         let vm = makeViewModel()
@@ -1136,12 +1161,20 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()))
     }
 
-    func testCanPlaceOrderFalseWhenQueueDisabled() {
+    func testCanPlaceOrderFalseWhenQueueDisabled() async {
+        // Every OTHER term is satisfied first, so the `false` can only be the
+        // queue gate. Left synchronous, `isMaxExpiryResolved` is also false and
+        // the assertion would still pass with the queue term deleted entirely.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = false
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof (a resolved quote)
         vm.networkFeeEstimate = BigInt(4_200)
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()))
+
+        vm.advancedSwapQueueEnabled = true
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()), "The queue gate must be the only blocking term")
     }
 
     func testCanPlaceOrderFalseWhenAmountOrPriceMissing() async {

@@ -21,8 +21,8 @@ enum THORChainConstants {
     /// directions and a duration picker offering minutes never has to round.
     static let blocksPerMinute = 60 / blockTimeSeconds
 
-    /// Convert a THORChain block count back to wall-clock hours — the inverse of
-    /// `blocks(forHours:)`. Integer division floors any block count that isn't an
+    /// Convert wall-clock minutes to a THORChain block count. Exact, because
+    /// `blocksPerMinute` is a whole number.
     static func blocks(forMinutes minutes: Int) -> Int {
         minutes * blocksPerMinute
     }

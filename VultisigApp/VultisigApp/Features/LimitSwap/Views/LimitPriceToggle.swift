@@ -23,8 +23,16 @@ struct LimitPriceToggle: View {
             // Leading: the asset-terms view (Figma "circles" glyph — two
             // interlocking rings). Trailing: the USD toggle ($, blue-filled when
             // active).
-            toggleButton(unit: .asset, systemImage: "circlebadge.2")
-            toggleButton(unit: .usd, systemImage: "dollarsign.circle")
+            toggleButton(
+                unit: .asset,
+                systemImage: "circlebadge.2",
+                accessibilityLabelKey: "limitSwap.price.unitAsset"
+            )
+            toggleButton(
+                unit: .usd,
+                systemImage: "dollarsign.circle",
+                accessibilityLabelKey: "limitSwap.price.unitUsd"
+            )
         }
         .padding(3)
         .background(Theme.colors.bgSurface1)
@@ -35,7 +43,11 @@ struct LimitPriceToggle: View {
         .clipShape(Theme.radius.pill.shape)
     }
 
-    private func toggleButton(unit: PriceDisplayUnit, systemImage: String) -> some View {
+    private func toggleButton(
+        unit: PriceDisplayUnit,
+        systemImage: String,
+        accessibilityLabelKey: String
+    ) -> some View {
         let isActive = vm.draft.displayUnit == unit
         return Button {
             guard vm.draft.displayUnit != unit else { return }
@@ -60,5 +72,10 @@ struct LimitPriceToggle: View {
                 }
         }
         .buttonStyle(.plain)
+        // The label is an SF Symbol, so without this VoiceOver reads the symbol
+        // name ("circlebadge.2"). Selection is conveyed by fill colour alone,
+        // which VoiceOver can't see — hence the trait.
+        .accessibilityLabel(accessibilityLabelKey.localized)
+        .accessibilityAddTraits(isActive ? [.isSelected] : [])
     }
 }

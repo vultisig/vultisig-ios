@@ -786,6 +786,7 @@
 "limitSwap.done.status.restingDetail" = "挂单等待，直至达到您的价格";
 "limitSwap.done.status.submitted" = "订单已提交";
 "limitSwap.error.advancedSwapQueueDisabled" = "THORChain 暂时无法使用限价单。请稍后重试或使用市价兑换。";
+"limitSwap.error.expiryCeilingUnresolved" = "正在确认 THORChain 允许挂单存续的时长。请稍后重试。";
 "limitSwap.error.insufficientFunds" = "%@ 余额不足，无法下此订单。请输入不超过余额的数量。";
 "limitSwap.error.insufficientGas" = "%@ 不足，无法支付此订单的网络手续费。";
 "limitSwap.error.invalidInputs" = "部分订单信息无效。请检查数量、价格和有效期后重试。";
@@ -816,6 +817,7 @@
 "limitSwap.expiry.remainingFormat" = "剩余 %@";
 "limitSwap.expiry.restsFor" = "存款确认后将挂单 %@";
 "limitSwap.expiry.set" = "设置有效期";
+"limitSwap.expiry.underMinute" = "<1分钟";
 "limitSwap.placeOrder" = "下达限价单";
 "limitSwap.preset.market" = "市场";
 "limitSwap.preset.plus1" = "+1%";
@@ -830,6 +832,8 @@
 "limitSwap.price.offsetPriceUnusable" = "在此偏移下，该交易对的价格会舍入为零。请调高后再下单。";
 "limitSwap.price.offsetRests" = "以此价格挂单，直到成交或过期";
 "limitSwap.price.setPrice" = "设置价格";
+"limitSwap.price.unitAsset" = "以资产计价";
+"limitSwap.price.unitUsd" = "以美元计价";
 "limitSwap.price.vsMarket" = "对比市场";
 "limitSwap.progress.filledFormat" = "已成交 %@";
 "limitSwap.sell" = "卖出";

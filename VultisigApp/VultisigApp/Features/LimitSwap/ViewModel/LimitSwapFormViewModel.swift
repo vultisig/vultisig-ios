@@ -507,9 +507,10 @@ final class LimitSwapFormViewModel {
 
     /// Set the target price from a preset pill (`Market`/`+1%`/`+5%`/`+10%`).
     /// No-op if `marketPriceRef` is unset (preset is meaningless without a base).
-    /// Result is rounded to 8 decimals so the price text↔draft round-trip is
-    /// stable (the formatter caps at 8; without rounding, parse(format(x)) != x
-    /// for high-precision quotes).
+    /// Result is floored to 8 SIGNIFICANT digits by `roundLimitPrice` so the
+    /// price text↔draft round-trip is stable (the formatter caps at 8 significant
+    /// digits; without the floor, parse(format(x)) != x for high-precision
+    /// quotes). It floors rather than rounding to nearest — see `roundLimitPrice`.
     /// `userInitiated` is `true` for a preset PILL tap (a deliberate price
     /// selection that must not be overwritten by a pending auto-seed) and `false`
     /// for the programmatic Market auto-seed (on load / pair change).
@@ -531,10 +532,10 @@ final class LimitSwapFormViewModel {
     ///
     /// The chart plots in `Double` while the order is priced in `Decimal`, and
     /// `Decimal(someDouble)` carries the full binary expansion — 31.8255 arrives
-    /// as 31.825500000000000682. Rounded to 8 decimals, the memo LIM's
-    /// fixed-point precision, exactly as the preset and USD paths do, so a
-    /// dragged price can never be stored with more precision than the signed
-    /// order can express and the price-text round-trip stays stable.
+    /// as 31.825500000000000682. Floored to 8 SIGNIFICANT digits by
+    /// `roundLimitPrice`, exactly as the preset and USD paths do, so a dragged
+    /// price can never be stored with more precision than the signed order can
+    /// express and the price-text round-trip stays stable.
     ///
     /// Routed through `targetPriceChanged` rather than assigning the draft
     /// directly: a drag is a deliberate price choice, so it has to bump the edit
@@ -898,6 +899,18 @@ final class LimitSwapFormViewModel {
         guard advancedSwapQueueEnabled == true else {
             logger.error("Place order rejected: EnableAdvSwapQueue mimir not confirmed enabled (value: \(String(describing: self.advancedSwapQueueEnabled), privacy: .public))")
             placeOrderError = .advancedSwapQueueDisabled
+            return nil
+        }
+
+        // TTL gate (FAIL-CLOSED): `validateLimitSwapInputs` judges the draft's
+        // expiry against `maxExpiryBlocks`, which is a plausible SEED until the
+        // `StreamingLimitSwapMaxAge` fetch lands. Validating against the seed
+        // would pass an expiry the network then silently shortens, so the ceiling
+        // has to be the chain's before it can arbitrate. `canPlaceOrder` blocks
+        // this state too; this is the belt to that suspenders.
+        guard isMaxExpiryResolved else {
+            logger.error("Place order rejected: StreamingLimitSwapMaxAge not resolved")
+            placeOrderError = .expiryCeilingUnresolved
             return nil
         }
 

@@ -242,10 +242,14 @@ struct LimitPriceCard: View {
 
     private func formatUsd(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
+        // Locale-driven separators, never hardcoded: forcing the grouping
+        // separator to "," makes a comma-decimal locale print 1234.56 as the
+        // ambiguous "1,234,56". This is display-only — unlike `formatLimitPrice`,
+        // nothing parses it back, so grouping stays on.
+        formatter.locale = .current
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
-        formatter.groupingSeparator = ","
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0.00"
     }
 }

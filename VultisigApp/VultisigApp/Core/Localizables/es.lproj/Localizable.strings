@@ -786,6 +786,7 @@
 "limitSwap.done.status.restingDetail" = "En espera hasta alcanzar tu precio";
 "limitSwap.done.status.submitted" = "Orden enviada";
 "limitSwap.error.advancedSwapQueueDisabled" = "Las órdenes límite no están disponibles temporalmente en THORChain. Inténtalo más tarde o usa un swap de mercado.";
+"limitSwap.error.expiryCeilingUnresolved" = "Todavía estamos comprobando cuánto tiempo THORChain permite que una orden repose. Inténtalo de nuevo en un momento.";
 "limitSwap.error.insufficientFunds" = "No tienes suficiente %@ para colocar esta orden. Introduce un importe dentro de tu saldo.";
 "limitSwap.error.insufficientGas" = "No tienes suficiente %@ para cubrir la comisión de red de esta orden.";
 "limitSwap.error.invalidInputs" = "Algunos datos de la orden no son válidos. Revisa el importe, el precio y la caducidad e inténtalo de nuevo.";
@@ -816,6 +817,7 @@
 "limitSwap.expiry.remainingFormat" = "quedan %@";
 "limitSwap.expiry.restsFor" = "Permanece activa %@ desde que se confirme tu depósito";
 "limitSwap.expiry.set" = "Definir vencimiento";
+"limitSwap.expiry.underMinute" = "<1min";
 "limitSwap.placeOrder" = "Colocar orden límite";
 "limitSwap.preset.market" = "Mercado";
 "limitSwap.preset.plus1" = "+1%";
@@ -830,6 +832,8 @@
 "limitSwap.price.offsetPriceUnusable" = "Con este margen el precio se redondea a cero para este par. Súbelo para colocar una orden.";
 "limitSwap.price.offsetRests" = "Permanece a este precio hasta ejecutarse o vencer";
 "limitSwap.price.setPrice" = "Definir precio";
+"limitSwap.price.unitAsset" = "Precio en unidades del activo";
+"limitSwap.price.unitUsd" = "Precio en USD";
 "limitSwap.price.vsMarket" = "vs. mercado";
 "limitSwap.progress.filledFormat" = "%@ ejecutado";
 "limitSwap.sell" = "Vender";
