@@ -154,6 +154,94 @@ final class KaminoLiveAPITests: XCTestCase {
         }
     }
 
+    /// The attribution memo, against the live API and the live chain.
+    ///
+    /// Two things could only be assumed offline, and both are the kind of
+    /// assumption that ships a broken deposit:
+    ///
+    /// 1. **Size.** A Solana transaction is capped at 1,232 bytes. The memo adds
+    ///    the program key plus a small instruction, and the vectors it was
+    ///    developed against are the ones the API happened to return in August —
+    ///    a vault whose transaction grows (another account creation, a longer
+    ///    lookup) could put the tagged form over the line, and the injection
+    ///    would start throwing on a path the user cannot avoid.
+    /// 2. **Compute.** The pinned unit limits were measured on untagged
+    ///    transactions. The Memo program costs compute of its own, so the tagged
+    ///    form has to still fit under the same limit — with the margin, not by
+    ///    landing exactly on it.
+    ///
+    /// So this simulates the tagged transaction and asserts `err: null`, then
+    /// reports the two numbers with their headroom. A failure here means the
+    /// tag as shipped cannot execute, which no offline test can tell us.
+    func testTheTaggedDepositStillFitsAndStillExecutes() async throws {
+        for descriptor in KaminoVaultRegistry.allowList {
+            let vault = try await service.fetchVaultInfo(descriptor: descriptor)
+            let amount = vault.minDeposit
+
+            let built = try await service.buildDepositTransaction(
+                owner: Self.probeOwner,
+                vault: descriptor,
+                amount: amount
+            )
+            let fee = KaminoPriorityFee(
+                limit: KaminoComputeBudget.depositUnitLimit(for: vault),
+                price: KaminoComputeBudget.fallbackUnitPriceMicroLamports
+            )
+            let tagged = try SolanaV0Transaction(base64Transaction: built)
+                .injectingComputeBudget(price: fee.price, limit: fee.limit)
+                .injectingMemo(KaminoAttribution.memoTag)
+
+            try await validator.validate(
+                transaction: tagged,
+                intent: KaminoTransactionIntent(
+                    operation: .deposit(amount),
+                    vault: vault,
+                    owner: Self.probeOwner,
+                    priorityFee: fee,
+                    carriesAttributionMemo: true
+                )
+            )
+            XCTAssertLessThanOrEqual(
+                tagged.wireSize,
+                SolanaV0Transaction.maxWireSize,
+                "\(vault.name): the tagged transaction does not fit in a Solana packet"
+            )
+
+            let result = try await solana.simulateTransaction(
+                base64Transaction: tagged.base64EncodedTransaction,
+                replaceRecentBlockhash: true,
+                accountAddresses: []
+            )
+
+            if let failure = result.failure {
+                // The probe wallet holds no USDC, so a deposit it cannot fund is
+                // not this app's behaviour — same rule as the minimum test above.
+                // A refusal that names the AMOUNT is a skip; anything else is the
+                // memo breaking a transaction that would otherwise have executed.
+                let fundingProblem = result.logs.contains {
+                    $0.contains("insufficient funds") || $0.contains("InsufficientFunds")
+                }
+                XCTAssertTrue(
+                    fundingProblem,
+                    "\(vault.name): the tagged deposit failed for a reason that is not the probe's balance — \(failure)"
+                )
+                note("SKIP \(vault.name): probe wallet cannot fund the deposit — \(failure)")
+                continue
+            }
+
+            let consumed = result.unitsConsumed ?? 0
+            XCTAssertLessThanOrEqual(
+                consumed,
+                UInt64(fee.limit),
+                "\(vault.name): the tagged deposit consumes more than the limit this app pins"
+            )
+            note(
+                "\(vault.name): tagged deposit → \(tagged.wireSize)/\(SolanaV0Transaction.maxWireSize) B, "
+                + "\(consumed)/\(fee.limit) CU"
+            )
+        }
+    }
+
     /// The deposit half of the same defect, and the reason the suite's earlier
     /// claim that "no test here simulates a deposit" was a gap worth closing:
     /// the form advertised `minDepositAmount` and the program refused it with

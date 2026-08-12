@@ -91,6 +91,45 @@ final class KaminoVerifyPresentationTests: XCTestCase {
         }
     }
 
+    /// And the tagged form — the exact bytes keysign receives — describes the
+    /// same transaction as the untagged one. The attribution memo takes no part
+    /// in what the transaction does, so nothing on the screen may move because
+    /// of it; what it must not do is make the decode fail, which would show a
+    /// co-signer "unreadable" for every deposit this app originates.
+    func testTheTaggedFormDescribesTheSameTransactionAsTheInjectedOne() throws {
+        for vector in KaminoTransactionFixtures.all {
+            let injected = try decode(vector.injected)
+            let tagged = try decode(try vector.tagged)
+
+            XCTAssertEqual(injected.operation, tagged.operation, vector.name)
+            XCTAssertEqual(injected.descriptor, tagged.descriptor, vector.name)
+            XCTAssertEqual(injected.amountBaseUnits, tagged.amountBaseUnits, vector.name)
+            XCTAssertEqual(injected.signer, tagged.signer, vector.name)
+            XCTAssertEqual(injected.strandsWrappedSolRent, tagged.strandsWrappedSolRent, vector.name)
+            XCTAssertEqual(injected.priorityFee?.limit, tagged.priorityFee?.limit, vector.name)
+            XCTAssertEqual(injected.priorityFee?.price, tagged.priorityFee?.price, vector.name)
+        }
+    }
+
+    /// A memo carrying anything but this app's tag is an instruction the
+    /// template cannot name, so the whole transaction becomes unreadable rather
+    /// than being summarised with the memo quietly ignored. The Memo program
+    /// logs its data on chain, and text the user was never shown is exactly what
+    /// this screen exists to prevent them signing.
+    func testAMemoOtherThanTheAttributionTagIsUnreadable() throws {
+        var mutable = try MutableTransaction(base64: try KaminoTransactionFixtures.usdcDeposit.tagged)
+        mutable.instructions[mutable.instructions.count - 1].data = [UInt8]("drained by".utf8)
+        let base64 = try mutable.base64()
+
+        let transaction = try SolanaV0Transaction(base64Transaction: base64)
+        XCTAssertTrue(KaminoTransactionDecoder.invokesKaminoVault(transaction))
+        XCTAssertNil(KaminoTransactionDecoder.decode(transaction))
+        XCTAssertEqual(
+            KaminoVerifyPresentation.state(for: payload(transaction: base64, marker: nil)),
+            .unreadable
+        )
+    }
+
     // MARK: - What the decoder refuses to describe
 
     /// The vault is identified by deriving each curated vault's share account for

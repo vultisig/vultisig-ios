@@ -269,6 +269,12 @@ enum KaminoTransactionDecoder {
             // never leaves the preparer, but a relayed transaction is whatever
             // it is, and the template has to describe the one in hand.
             hasPriorityFee: kinds.contains(.computeUnitLimit) || kinds.contains(.computeUnitPrice),
+            // Read from the bytes for the same reason as the fee above: this
+            // device did not build the transaction, so what it holds is whatever
+            // arrived. The memo's CONTENT is not read leniently — `kind` matches
+            // the tag whole, so any other memo is already `nil` here and the
+            // template refuses it as an instruction it cannot name.
+            hasAttributionMemo: kinds.contains(.attributionMemo),
             // Which of the two withdraw shapes this is depends on how the
             // signer's position was split when the request was built, and a
             // co-signer holds no position at all. So both shapes are accepted
@@ -490,6 +496,15 @@ enum KaminoTransactionDecoder {
                       staticAddress(accounts, indexes[KaminoInstructionAccounts.CloseAccount.destination]) == signer,
                       staticAddress(accounts, indexes[KaminoInstructionAccounts.CloseAccount.authority]) == signer
                 else { return nil }
+
+            case .attributionMemo:
+                // The tag itself was matched whole by `KaminoInstructionSequence`
+                // — nothing else reaches here under the Memo program. What is
+                // left to check is that it attests to nobody: a memo carrying
+                // account indexes is the Memo program asserting those accounts
+                // signed, which is a claim this screen would be showing without
+                // saying so.
+                guard indexes.isEmpty else { return nil }
 
             case .syncNative:
                 guard !indexes.isEmpty else { return nil }
