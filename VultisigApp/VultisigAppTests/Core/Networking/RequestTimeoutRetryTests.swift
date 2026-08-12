@@ -43,18 +43,33 @@ final class RequestTimeoutRetryTests: XCTestCase {
         XCTAssertLessThan(KaminoAPI.readTimeout, KaminoAPI.defaultTimeout)
     }
 
-    /// ⚠️ The position read keeps the long timeout, because it is the only read
-    /// that gates the way *out* of a position: a failure disables the withdraw
-    /// form until a retry succeeds. It is also the one read no deposit leg
-    /// makes, so shortening it would do nothing for the path the short timeout
-    /// exists to protect — and would risk telling a user their position is
-    /// unreadable when the server was merely slow.
-    func testThePositionReadKeepsTheLongTimeout() {
+    /// ⚠️ The two calls used only to LEAVE a position keep the long timeout.
+    /// Neither is on the deposit path the short limit exists to protect, and
+    /// neither is retried into success by cutting the wait: a server slow enough
+    /// to blow 20 s will blow the next 20 s too, so a shorter limit converts
+    /// "slow" into "cannot withdraw through Vultisig" rather than into a faster
+    /// answer.
+    func testTheExitPathKeepsTheLongTimeout() {
         XCTAssertEqual(
             KaminoAPI.userPositions(owner: "o").timeoutInterval,
             KaminoAPI.defaultTimeout
         )
+        XCTAssertEqual(
+            KaminoAPI.withdraw(request: Self.actionRequest).timeoutInterval,
+            KaminoAPI.defaultTimeout
+        )
     }
+
+    /// The way *in* stays short. A refused deposit build costs an attempt on a
+    /// form that stays usable, not an exit — and it is on the measured path.
+    func testTheDepositBuildStaysOnTheShortTimeout() {
+        XCTAssertEqual(
+            KaminoAPI.deposit(request: Self.actionRequest).timeoutInterval,
+            KaminoAPI.readTimeout
+        )
+    }
+
+    private static let actionRequest = KaminoActionRequest(wallet: "o", kvault: "v", amount: "1")
 
     /// ⚠️ A broadcast keeps the long timeout. Aborting one does not undo it —
     /// a node that accepted the transaction is indistinguishable from one that

@@ -69,21 +69,33 @@ enum KaminoAPI: TargetType {
     /// wait the Solana proxy already supplies, on a form that issues several of
     /// them in sequence before the user can do anything.
     ///
-    /// ⚠️ `.userPositions` keeps the long timeout, and the reason is asymmetry
-    /// rather than response size. It is the only read here that gates the way
-    /// *out* of a position: a failure leaves `eligibility` unreadable, which
-    /// disables the withdraw form until a retry succeeds. It is also the one
-    /// read that no deposit leg makes, so shortening it does nothing for the
-    /// path the short timeout exists to protect — the stall was measured on the
-    /// Solana proxy, and this call does not touch it. That leaves a limit that
-    /// buys nothing here and, if it ever bit, would tell a user their position
-    /// is unreadable when the server was merely slow. On a host with no
-    /// observed stall, waiting is the cheaper of the two errors.
+    /// ⚠️ The two calls used *only* to leave a position keep the long timeout,
+    /// and the reason is asymmetry rather than response size.
+    ///
+    /// Getting out of a position is the operation whose failure a user cannot
+    /// route around inside this app, so it gets the benefit of the doubt. A
+    /// `.userPositions` failure leaves `eligibility` unreadable and disables the
+    /// withdraw form; a `.withdraw` build failure raises an alert on Continue.
+    /// Neither is retried into success by a shorter limit: if the server is slow
+    /// enough to blow 20 s it is slow enough to blow the next 20 s too, so
+    /// cutting the wait converts "slow" into "cannot withdraw through Vultisig"
+    /// rather than into a faster answer.
+    ///
+    /// Both are also absent from the deposit path, which is the path the short
+    /// limit exists to protect — the stall it mitigates was measured on the
+    /// Solana proxy, and neither of these calls touches it. So the shorter limit
+    /// buys nothing where it was aimed and, if it ever bit, would refuse an exit
+    /// the server was merely slow to serve.
+    ///
+    /// Everything else stays short. `.vaultState` and `.vaultMetrics` are shared
+    /// with the deposit form and run several-in-sequence there; `.deposit` is the
+    /// way *in*, where a refusal costs an attempt rather than an exit; and a
+    /// `.positionPnl` failure is swallowed to `nil` as one display line.
     var timeoutInterval: TimeInterval {
         switch self {
-        case .userPositions:
+        case .userPositions, .withdraw:
             return Self.defaultTimeout
-        case .vaultState, .vaultMetrics, .positionPnl, .deposit, .withdraw:
+        case .vaultState, .vaultMetrics, .positionPnl, .deposit:
             return Self.readTimeout
         }
     }
