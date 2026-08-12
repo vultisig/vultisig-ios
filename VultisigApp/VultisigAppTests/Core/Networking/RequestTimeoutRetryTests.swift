@@ -33,8 +33,27 @@ final class RequestTimeoutRetryTests: XCTestCase {
             )).timeoutInterval,
             20
         )
-        XCTAssertEqual(KaminoAPI.vaultState(address: "v").timeoutInterval, 20)
+        XCTAssertEqual(KaminoAPI.vaultState(address: "v").timeoutInterval, KaminoAPI.readTimeout)
+        XCTAssertEqual(KaminoAPI.vaultMetrics(address: "v").timeoutInterval, KaminoAPI.readTimeout)
+        XCTAssertEqual(
+            KaminoAPI.positionPnl(owner: "o", vault: "v").timeoutInterval,
+            KaminoAPI.readTimeout
+        )
         XCTAssertLessThan(SolanaAPI.proxyReadTimeout, SolanaAPI.defaultTimeout)
+        XCTAssertLessThan(KaminoAPI.readTimeout, KaminoAPI.defaultTimeout)
+    }
+
+    /// ⚠️ The position read keeps the long timeout, because it is the only read
+    /// that gates the way *out* of a position: a failure disables the withdraw
+    /// form until a retry succeeds. It is also the one read no deposit leg
+    /// makes, so shortening it would do nothing for the path the short timeout
+    /// exists to protect — and would risk telling a user their position is
+    /// unreadable when the server was merely slow.
+    func testThePositionReadKeepsTheLongTimeout() {
+        XCTAssertEqual(
+            KaminoAPI.userPositions(owner: "o").timeoutInterval,
+            KaminoAPI.defaultTimeout
+        )
     }
 
     /// ⚠️ A broadcast keeps the long timeout. Aborting one does not undo it —

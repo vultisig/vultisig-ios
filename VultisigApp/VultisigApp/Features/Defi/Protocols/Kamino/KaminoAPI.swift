@@ -56,7 +56,11 @@ enum KaminoAPI: TargetType {
         }
     }
 
-    /// Twenty seconds rather than the `TargetType` default of 60.
+    static let defaultTimeout: TimeInterval = 60
+    static let readTimeout: TimeInterval = 20
+
+    /// Twenty seconds rather than the `TargetType` default of 60 — except for
+    /// the position read.
     ///
     /// Measured, this host is the fast half of the feature: `/kvaults` reads
     /// come back in ~100 ms and a build POST in ~0.4 s, with no stall observed
@@ -64,7 +68,25 @@ enum KaminoAPI: TargetType {
     /// approaches — it is there so a Kamino leg cannot become the minute-long
     /// wait the Solana proxy already supplies, on a form that issues several of
     /// them in sequence before the user can do anything.
-    var timeoutInterval: TimeInterval { 20 }
+    ///
+    /// ⚠️ `.userPositions` keeps the long timeout, and the reason is asymmetry
+    /// rather than response size. It is the only read here that gates the way
+    /// *out* of a position: a failure leaves `eligibility` unreadable, which
+    /// disables the withdraw form until a retry succeeds. It is also the one
+    /// read that no deposit leg makes, so shortening it does nothing for the
+    /// path the short timeout exists to protect — the stall was measured on the
+    /// Solana proxy, and this call does not touch it. That leaves a limit that
+    /// buys nothing here and, if it ever bit, would tell a user their position
+    /// is unreadable when the server was merely slow. On a host with no
+    /// observed stall, waiting is the cheaper of the two errors.
+    var timeoutInterval: TimeInterval {
+        switch self {
+        case .userPositions:
+            return Self.defaultTimeout
+        case .vaultState, .vaultMetrics, .positionPnl, .deposit, .withdraw:
+            return Self.readTimeout
+        }
+    }
 
     /// Whether repeating this request is free of consequence, and therefore
     /// whether a timeout may be retried.
