@@ -70,16 +70,32 @@ enum PrivacyBackdrop {
     /// Answers `nil` on any failure, which is the safe direction: no picture
     /// means the brand screen, in both hosts at once.
     static func take() {
-        // `activeContentWindow` answers the key window at `.normal`, and this
-        // host's windows sit at `.alert + 1`, so one cannot be returned here
-        // today. Asserted anyway rather than relied upon: a cover that
-        // photographed *itself* would blur a blur, once per departure, until
-        // there was nothing left of the screen — and the level is a constant in
-        // another file that nothing stops anyone changing.
-        let content = UIApplication.shared.activeContentWindow
-        latest = (content is AppLockWindow ? nil : content)
-            .flatMap(picture(of:))
-            .map(Image.init(uiImage:))
+        latest = contentWindow.flatMap(picture(of:)).map(Image.init(uiImage:))
+    }
+
+    /// The window the app draws itself into, found without requiring the scene
+    /// to be *active*.
+    ///
+    /// Deliberately not `UIApplication.activeContentWindow`, and this is the
+    /// whole reason the lookup is written out here: that one keeps only scenes
+    /// at `.foregroundActive`, and by the moment the app knows it is leaving the
+    /// scene has already moved to `.foregroundInactive`. Asking it for a window
+    /// here answers `nil` on every single departure, which does not fail loudly
+    /// — it quietly leaves the cover with no picture and falls back to the brand
+    /// screen, i.e. removes the blur entirely while every test still passes.
+    ///
+    /// `AppLockWindow` is excluded by type as well as by level. It cannot match
+    /// `.normal` today, but a cover that photographed itself would blur a blur
+    /// once per departure until nothing of the screen was left, and the level
+    /// that prevents it is a constant in another file.
+    private static var contentWindow: UIWindow? {
+        let windows = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .filter { $0.activationState != .unattached }
+            .flatMap(\.windows)
+            .filter { !($0 is AppLockWindow) && $0.windowLevel == .normal }
+
+        return windows.first(where: \.isKeyWindow) ?? windows.first
     }
 
     /// Dropped as soon as the app is uncovered — this is a photograph of a
