@@ -14,6 +14,7 @@
 
 import Foundation
 import SwiftData
+import XCTest
 @testable import VultisigApp
 
 /// Token returned by `TestStore.installInMemoryContainer()`. Holds the previous
@@ -144,20 +145,92 @@ enum TestStore {
 
     /// Insert a populated Vault matching `pubKeyECDSA` so position upserts have a
     /// parent to attach via inverse relationships.
-    static func makeVault(pubKey: String = "test-pub-ecdsa") -> Vault {
+    ///
+    /// Every unique `String` attribute `Vault` declares — `name`, `pubKeyECDSA`
+    /// and `pubKeyEdDSA` — is derived from `pubKey`, so two fixtures built with
+    /// different keys are two rows. Hard-coding any one of them is not cosmetic:
+    /// SwiftData answers a duplicate unique value with an **upsert**, not an
+    /// error, so each insert silently replaces the last and the store ends up
+    /// holding one survivor. Assertions shaped `for vault in fetch() { … }`, and
+    /// any expectation about ordering or count, then pass vacuously.
+    ///
+    /// `publicKeyMLDSA44` is unique too and deliberately stays `nil`: a unique
+    /// index treats NULLs as distinct, so nil fixtures never collapse, while
+    /// giving it a value would flip every product branch that reads the field as
+    /// "this is a quantum vault" — QBTC coin creation, the MLDSA keysign key,
+    /// the advanced-settings gate — for callers that only wanted a parent row.
+    ///
+    /// Fails the calling test if the fixture would land on top of a vault
+    /// already in the store, so a future hard-coded unique field cannot regress
+    /// into a silent upsert.
+    static func makeVault(
+        pubKey: String = "test-pub-ecdsa",
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> Vault {
         let vault = Vault(
             name: "Test Vault \(pubKey)",
             signers: [],
             pubKeyECDSA: pubKey,
-            pubKeyEdDSA: "test-pub-eddsa",
+            pubKeyEdDSA: "test-pub-eddsa-\(pubKey)",
             keyshares: [],
             localPartyID: "party",
             hexChainCode: "hex",
             resharePrefix: nil,
             libType: .DKLS
         )
+        assertNoUniqueCollision(for: vault, file: file, line: line)
         Storage.shared.modelContext.insert(vault)
         return vault
+    }
+
+    /// Fails the running test when `candidate` shares a `@Attribute(.unique)`
+    /// value with a vault already in `Storage.shared`.
+    ///
+    /// Asked *before* the insert rather than by counting rows after it. The
+    /// collapse itself only lands when the context saves, so a post-insert count
+    /// reads one-more even for a duplicate and would report the collision at
+    /// whatever unrelated place happened to save next. A pre-insert lookup
+    /// answers the precise question — is there already a row this insert would
+    /// replace — and can only fire on a real collision.
+    private static func assertNoUniqueCollision(
+        for candidate: Vault,
+        file: StaticString,
+        line: UInt
+    ) {
+        let stored: [Vault]
+        do {
+            stored = try Storage.shared.modelContext.fetch(FetchDescriptor<Vault>())
+        } catch {
+            XCTFail("TestStore.makeVault could not read the vault store: \(error)", file: file, line: line)
+            return
+        }
+
+        for existing in stored {
+            var collided: [String] = []
+            if existing.name == candidate.name { collided.append("name") }
+            if existing.pubKeyECDSA == candidate.pubKeyECDSA { collided.append("pubKeyECDSA") }
+            if existing.pubKeyEdDSA == candidate.pubKeyEdDSA { collided.append("pubKeyEdDSA") }
+            // A nil MLDSA key is not a duplicate — a unique index treats NULLs
+            // as distinct, which is why the fixture is allowed to leave it nil.
+            if let mldsa = candidate.publicKeyMLDSA44, existing.publicKeyMLDSA44 == mldsa {
+                collided.append("publicKeyMLDSA44")
+            }
+            guard collided.isEmpty else {
+                XCTFail(
+                    """
+                    TestStore.makeVault(pubKey: "\(candidate.pubKeyECDSA)") duplicates a vault already \
+                    in the store on \(collided.joined(separator: ", ")). SwiftData resolves a unique \
+                    collision by upserting, so this insert would replace that row and leave the test \
+                    asserting over a single survivor. Give each fixture its own `pubKey:`, and install \
+                    a fresh in-memory container per test so nothing leaks in from the previous one.
+                    """,
+                    file: file,
+                    line: line
+                )
+                return
+            }
+        }
     }
 }
 
