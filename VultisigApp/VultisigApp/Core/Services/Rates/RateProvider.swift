@@ -97,18 +97,34 @@ final class RateProvider {
         // Defer fetch to avoid re-entrant SwiftData calls during init.
         // Must run on MainActor — ModelContext is MainActor-isolated.
         Task { @MainActor [weak self] in
-            guard let self else { return }
-            let descriptor = FetchDescriptor<DatabaseRate>()
-            do {
-                let objects = try Storage.shared.modelContext.fetch(descriptor)
-                self.replaceRates(with: objects.map { Rate(object: $0) })
-                // Persisted rates make fiat renderable immediately on a warm
-                // start; announce them so views that cached a pre-load fiat
-                // value recompute instead of waiting on a network refresh.
-                self.ratesDidChange.send()
-            } catch {
-                Log.chain.service.error("Failed to load rates: \(error.localizedDescription, privacy: .public)")
-            }
+            self?.loadPersistedRates()
+        }
+    }
+
+    /// Populates the cache from the persisted rates.
+    ///
+    /// Called once, from `init`. Not `private` because the initializer of a
+    /// process-wide singleton cannot be re-entered from a test, and the
+    /// non-finite filter below is worth verifying rather than asserting.
+    @MainActor
+    func loadPersistedRates() {
+        let descriptor = FetchDescriptor<DatabaseRate>()
+        do {
+            let objects = try Storage.shared.modelContext.fetch(descriptor)
+            // The same non-finite filter `save(rates:)` applies, on the way back
+            // in: a build predating that filter could have persisted an infinity,
+            // and this is the one path that would put it back into the cache
+            // every fiat render reads. Filtered rather than deleted — a
+            // launch-time store write is exactly the kind of gratuitous mutation
+            // these guards exist to stop making, and the row is overwritten by
+            // the next finite quote for that coin anyway.
+            replaceRates(with: objects.map { Rate(object: $0) }.filter { $0.value.isFinite })
+            // Persisted rates make fiat renderable immediately on a warm
+            // start; announce them so views that cached a pre-load fiat
+            // value recompute instead of waiting on a network refresh.
+            ratesDidChange.send()
+        } catch {
+            Log.chain.service.error("Failed to load rates: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -159,8 +175,21 @@ final class RateProvider {
     }
 
     @MainActor func save(rates newRates: [Rate]) throws {
+        // A non-finite rate is never a usable price, and admitting one poisons
+        // the cache every fiat render reads. NaN is worse still: `NaN != NaN`, so
+        // no equality guard can ever suppress it, and the attribute coerces it to
+        // `0` on save (infinities persist as they are), so the stored value never
+        // compares equal to the incoming one either — one NaN quote re-dirties
+        // its row on every refresh from then on, notifying every observer, and
+        // through the save every `@Query` in the app, about a price that never
+        // changed. Nothing upstream rejects one: the MAYAChain pool-derived price
+        // is `Double(String)` arithmetic over API-supplied balances, and
+        // `Double("nan")` parses. Dropped at the door so the last usable price
+        // survives in both the cache and the store.
+        let rates = newRates.filter { $0.value.isFinite }
+
         // if a rate is newer , we use the newer one
-        mergeRates(newRates)
+        mergeRates(rates)
 
         // The in-memory cache is what rendering reads, and it has already
         // changed — announce it even if the persistence below throws, or a
@@ -169,17 +198,14 @@ final class RateProvider {
         defer { ratesDidChange.send() }
 
         // Update existing or insert new rates
-        for rate in newRates {
+        for rate in rates {
             let rateId = rate.id // Capture the value outside the predicate
             let descriptor = FetchDescriptor<DatabaseRate>(
                 predicate: #Predicate { $0.id == rateId }
             )
 
             if let existingRate = try Storage.shared.modelContext.fetch(descriptor).first {
-                // Update existing rate
-                existingRate.fiat = rate.fiat
-                existingRate.crypto = rate.crypto
-                existingRate.value = rate.value
+                update(existingRate, from: rate)
             } else {
                 // Insert new rate
                 Storage.shared.insert(rate.mapToObject())
@@ -187,5 +213,32 @@ final class RateProvider {
         }
 
         try Storage.shared.modelContext.save()
+    }
+
+    /// Copies a refreshed rate onto its persisted row, or leaves the row entirely
+    /// alone when nothing differs.
+    ///
+    /// The equality guard is load-bearing, not an optimization. SwiftData's
+    /// `@Model` setter wraps each store in `withMutation(of:)`, which notifies
+    /// observers **without comparing** the new value to the old, and a save then
+    /// posts a store-change notification that re-evaluates every `@Query` in the
+    /// app — including queries over entirely unrelated types. So "nothing reads
+    /// `DatabaseRate`" is not a defence: a blind re-assignment here invalidates
+    /// the whole window, and this is the app's largest write burst — one row per
+    /// held coin, on every price refresh, most of them unchanged.
+    ///
+    /// The guard is all-or-nothing over every write below, and it must compare
+    /// **every** field that is assigned, or an uncompared field re-opens the same
+    /// hole. Add to both lists together.
+    @MainActor
+    private func update(_ object: DatabaseRate, from rate: Rate) {
+        guard object.fiat != rate.fiat
+            || object.crypto != rate.crypto
+            || object.value != rate.value
+        else { return }
+
+        object.fiat = rate.fiat
+        object.crypto = rate.crypto
+        object.value = rate.value
     }
 }
