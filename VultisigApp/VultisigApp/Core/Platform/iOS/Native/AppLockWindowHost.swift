@@ -222,6 +222,15 @@ final class AppLockWindowHost: ObservableObject {
         window.alpha = 1
         window.isUserInteractionEnabled = true
 
+        // Taken before this window goes up, and of the app's own window rather
+        // than this one — this one is about to be, or already is, the cover
+        // itself. Only the privacy cover carries it: the gate and the recovery
+        // screen are screens in their own right, and a blurred wallet behind
+        // either of them would be the wallet on display.
+        let backdrop = presentation == .cover
+            ? contentWindow(in: scene).flatMap(PrivacyBackdrop.picture).map(Image.init(uiImage:))
+            : nil
+
         if presentation.isInteractive {
             window.makeKeyAndVisible()
         } else {
@@ -230,10 +239,23 @@ final class AppLockWindowHost: ObservableObject {
 
         window.host.rootView = AppLockHostedScreen(
             presentation: presentation,
+            backdrop: backdrop,
             onUnlocked: onUnlocked,
             onAttemptFailed: onAttemptFailed,
             onRestoreFromBackup: onRestoreFromBackup
         )
+    }
+
+    /// The window the app itself draws into, as opposed to the raised one this
+    /// puts over it.
+    ///
+    /// Level rather than type is what tells them apart, because a sheet is
+    /// presented into the app's own window and so is exactly what a cover has to
+    /// take a picture of. `.normal` is where the app lives; everything raised
+    /// over it — this host's windows, the keyboard — sits above.
+    private func contentWindow(in scene: UIWindowScene) -> UIWindow? {
+        scene.windows.first { $0.isKeyWindow && $0.windowLevel == .normal }
+            ?? scene.windows.first { !($0 is AppLockWindow) && $0.windowLevel == .normal }
     }
 
     private func makeWindow(for scene: UIWindowScene) -> AppLockWindow {

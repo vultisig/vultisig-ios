@@ -3,9 +3,11 @@
 //  VultisigAppTests
 //
 
+import Combine
 import CryptoKit
 import Security
 import SwiftData
+import SwiftUI
 import XCTest
 @testable import VultisigApp
 
@@ -374,6 +376,101 @@ final class PasscodeGateWiringTests: XCTestCase {
 
         XCTAssertTrue(sut.showCover)
         XCTAssertNotNil(defaults.string(forKey: "lastRecordedTime"))
+    }
+
+    /// The departure. `.inactive` reached from `.active` is the app on its way
+    /// out — a swipe to the switcher, a Control Centre pull — and the snapshot is
+    /// taken there, so it still covers.
+    func testAnInactiveOnTheWayOutCovers() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        sut.sceneBecameInactive(comingFrom: .active)
+
+        XCTAssertTrue(sut.showCover)
+    }
+
+    /// The return, and the reason the pair exists. `.inactive` reached from
+    /// `.background` is the start of the zoom back in, not a departure: covering
+    /// again there is what kept the logo on screen for the whole animation and
+    /// made the wallet arrive as a jump at the end of it.
+    func testAnInactiveOnTheWayBackUncovers() {
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        XCTAssertTrue(sut.showCover, "precondition: leaving covered the app")
+
+        sut.sceneBecameInactive(comingFrom: .background)
+
+        XCTAssertFalse(sut.showCover)
+    }
+
+    /// Uncovering early must not be *opening* early. When the interval says
+    /// relock, the return has to hand the animation a lock screen rather than the
+    /// wallet — which is the same order `enableAuth()` keeps at `.active`, moved
+    /// to the moment the user can first see through it.
+    ///
+    /// The order is what is asserted, not the end state: both flags settle the
+    /// same way whichever way round they are written, and it is the frames in
+    /// between that decide whether the home screen shows through.
+    func testAReturnThatRelocksRaisesTheGateBeforeItUncovers() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: nothing is up")
+        XCTAssertTrue(sut.showCover, "precondition: leaving covered the app")
+
+        // `@Published` publishes from `willSet`, so this runs as the gate goes up
+        // with every other property still holding the value it had — which is
+        // what makes it an ordering assertion rather than a second look at the
+        // end state.
+        var coverWhenTheGateWentUp: Bool?
+        let subscription = sut.$isPasscodeLocked
+            .filter { $0 }
+            .sink { [weak sut] _ in coverWhenTheGateWentUp = sut?.showCover }
+        defer { subscription.cancel() }
+
+        sut.sceneBecameInactive(comingFrom: .background)
+
+        XCTAssertTrue(sut.isPasscodeLocked, "the gate is what the return animation shows")
+        XCTAssertFalse(sut.showCover, "and the cover comes off it")
+        XCTAssertEqual(
+            coverWhenTheGateWentUp,
+            true,
+            "cover first, gate second is the home screen on display for the frames the lock screen takes to mount"
+        )
+    }
+
+    /// The return is two phases, and the decision belongs to the first of them.
+    ///
+    /// `.active` arriving a third of a second later must not take it again. The
+    /// first call consumed the backgrounding, so a second reading of the lock
+    /// state could act on only part of what it found: a `disablePasscode` landing
+    /// in between reads as "no gate required", lowers the gate the return raised,
+    /// and then skips the device-auth fallback meant to replace it — the app open
+    /// behind neither. The gate stays instead, and the lock screen's own
+    /// `lowerPasscodeGateIfNoLongerRequired()` is what retires it if the passcode
+    /// really is gone.
+    func testTheActivationAfterAReturnDoesNotDecideItAgain() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        sut.sceneBecameInactive(comingFrom: .background)
+        XCTAssertTrue(sut.isPasscodeLocked, "precondition: the return raised the gate")
+
+        // What a second evaluation would read differently.
+        try await service.disablePasscode(current: passcode)
+        XCTAssertFalse(service.isPasscodeGateRequired, "precondition: the answer has changed")
+
+        sut.sceneBecameActive()
+
+        XCTAssertTrue(
+            sut.isPasscodeLocked,
+            "the second phase of one return is not a second decision about it"
+        )
     }
 
     // MARK: - A foreground that lands mid-unlock

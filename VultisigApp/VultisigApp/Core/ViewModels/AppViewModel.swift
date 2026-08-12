@@ -126,6 +126,22 @@ class AppViewModel: ObservableObject {
     /// rebuilt the lock screen, which raised the sheet again. Requiring a real
     /// backgrounding is the fix for the whole family, not just the one case.
     private var didBackgroundSinceForeground = false
+    /// Whether the return currently under way has already been evaluated.
+    ///
+    /// A return crosses two phases — `.inactive` as the zoom begins, `.active`
+    /// when it ends — and ``enableAuth()`` is answered at the first of them.
+    /// Letting the second run it again would not be a harmless repeat: the first
+    /// consumes ``didBackgroundSinceForeground``, so the second reads the lock
+    /// state afresh but can no longer act on most of what it finds. A
+    /// `disablePasscode` completing in the third of a second between them would
+    /// be read as "no gate required", lower the gate the first call raised, and
+    /// then skip the device-auth fallback that is supposed to replace it —
+    /// leaving the app open behind neither.
+    ///
+    /// One foreground, one decision, every branch acting on that one answer. It
+    /// is the same rule ``enableAuth()`` keeps internally, extended to the pair
+    /// of phases the decision now spans.
+    private var didEvaluateForeground = false
 
     init(
         lockService: AppLockService = .shared,
@@ -285,6 +301,10 @@ class AppViewModel: ObservableObject {
         showCover = true
         didTriggerAuthThisSession = false
         didBackgroundSinceForeground = true
+        // A return that began and then turned back — the app was tapped and put
+        // down again before it finished arriving — is a foreground that never
+        // happened. The next one is entitled to its own decision.
+        didEvaluateForeground = false
         lockService.noteBackgrounded()
     }
 
@@ -303,6 +323,55 @@ class AppViewModel: ObservableObject {
     /// the app.
     func coverForPrivacy() {
         showCover = true
+    }
+
+    /// Routes the one phase that means two opposite things.
+    ///
+    /// `.inactive` is the app leaving *and* the app coming back. It is what the
+    /// system reports as the app-switcher snapshot is taken, and it is also what
+    /// it reports the instant a return begins — a good third of a second before
+    /// `.active` arrives at the end of the zoom. Nothing in the phase itself
+    /// tells the two apart; only where it came from does.
+    ///
+    /// Both used to cover, and the return is why the app came forward oddly: the
+    /// cover stayed up for the whole of the zoom and the wallet replaced it in a
+    /// jump at the end, having been absent from the transition it was the
+    /// destination of. Handing the return to ``enableAuth()`` here instead means
+    /// the animation shows what the user is coming back to — the wallet, or the
+    /// lock screen when the interval says it is time for one, since that is the
+    /// same call that decides it and it raises the gate before it drops the
+    /// cover. Nothing about the departure changes: the picture the app switcher
+    /// keeps is still taken over the logo.
+    /// What is given up for it is a window the width of an abandoned launch: the
+    /// app is uncovered from here, so tapping the icon and putting the phone down
+    /// again before the zoom finishes renders the wallet for those frames. The
+    /// app reaches `.background` on that path like any other departure, and
+    /// `revokeAuth()` covers it there — which is before the snapshot that
+    /// actually outlives the moment is taken. What is bought with it is every
+    /// ordinary return, of which there are thousands.
+    func sceneBecameInactive(comingFrom previousPhase: ScenePhase) {
+        guard previousPhase == .background else {
+            coverForPrivacy()
+            return
+        }
+        didEvaluateForeground = true
+        enableAuth()
+    }
+
+    /// The end of the return, and by then usually nothing is left to do.
+    ///
+    /// `.active` is the only foreground signal an activation that never left
+    /// gets — a Control Centre pull, an incoming call, a biometric sheet — so it
+    /// still asks. A real return has already been answered a third of a second
+    /// ago at `.inactive`, and asking again would be a second reading of the lock
+    /// state that can only act on part of what it sees; see
+    /// ``didEvaluateForeground``.
+    func sceneBecameActive() {
+        guard !didEvaluateForeground else {
+            didEvaluateForeground = false
+            return
+        }
+        enableAuth()
     }
 
     /// Engages the passcode lock: forgets the data key, then raises the overlay.

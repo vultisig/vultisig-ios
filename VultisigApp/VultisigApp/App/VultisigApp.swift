@@ -209,21 +209,23 @@ extension VultisigApp {
             .environmentObject(coinSelectionViewModel)
             .environmentObject(deeplinkViewModel)
             .environmentObject(pushNotificationManager)
-            .onChange(of: scenePhase) {
-                switch scenePhase {
+            .onChange(of: scenePhase) { previousPhase, newPhase in
+                switch newPhase {
                 case .active:
-                    continueLogin()
+                    // Not `continueLogin()` directly: a return was decided at
+                    // `.inactive` and must not be decided again here — see
+                    // `AppViewModel.sceneBecameActive()`.
+                    appViewModel.sceneBecameActive()
                     appViewModel.refreshFastVaultEligibilityIfNeeded()
                     Task { @MainActor in
                         SwapTrackingRegistry.shared.setActiveOnAll(true)
                         await SwapTrackingRegistry.shared.resumeAllInFlight()
                     }
                 case .inactive:
-                    // Before `.background`, and that is the whole reason it is
-                    // here: the app-switcher snapshot is taken around this
-                    // phase, so a cover raised at `.background` is raised after
-                    // the picture of the wallet has been taken.
-                    appViewModel.coverForPrivacy()
+                    // Leaving and returning are the same phase, and which one
+                    // this is decides whether the cover goes up or comes down —
+                    // see `AppViewModel.sceneBecameInactive(comingFrom:)`.
+                    appViewModel.sceneBecameInactive(comingFrom: previousPhase)
                 case .background:
                     resetLogin()
                     Task { @MainActor in
