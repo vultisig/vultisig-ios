@@ -242,7 +242,7 @@ final class FetchAllVaultsTests: XCTestCase {
     // MARK: - Helpers
 
     private func makeAppViewModel() -> AppViewModel {
-        AppViewModel(reconcileInstall: {})
+        AppViewModel(reconcileInstall: { .nothing })
     }
 
     /// Inserts `count` distinct vaults and returns them in insertion order.
