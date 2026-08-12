@@ -45,6 +45,9 @@ public protocol TargetType {
 
     /// The timeout interval for the request
     var timeoutInterval: TimeInterval { get }
+
+    /// Whether the request body carries sensitive data (e.g. a password) and must never be logged
+    var isSensitive: Bool { get }
 }
 
 /// Validation type for SSL certificate validation
@@ -66,5 +69,9 @@ public extension TargetType {
 
     var headers: [String: String]? {
         return ["Content-Type": "application/json"]
+    }
+
+    var isSensitive: Bool {
+        return false
     }
 }
