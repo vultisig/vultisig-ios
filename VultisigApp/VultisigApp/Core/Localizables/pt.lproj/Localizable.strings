@@ -805,9 +805,11 @@
 "limitSwap.expiry.customTitle" = "Validade personalizada";
 "limitSwap.expiry.days" = "%dd";
 "limitSwap.expiry.daysUnit" = "Dias";
+"limitSwap.expiry.decreaseUnit" = "Diminuir %@";
 "limitSwap.expiry.floorNotice" = "Menos de %@ deixa pouca chance de execução, e encerrá-la ainda custa duas taxas de rede.";
 "limitSwap.expiry.hours" = "%dh";
 "limitSwap.expiry.hoursUnit" = "Horas";
+"limitSwap.expiry.increaseUnit" = "Aumentar %@";
 "limitSwap.expiry.maxHint" = "Máx. %@";
 "limitSwap.expiry.minutes" = "%dmin";
 "limitSwap.expiry.minutesUnit" = "Minutos";

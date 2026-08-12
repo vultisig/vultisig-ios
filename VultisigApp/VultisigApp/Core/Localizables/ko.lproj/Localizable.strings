@@ -805,9 +805,11 @@
 "limitSwap.expiry.customTitle" = "만료 직접 설정";
 "limitSwap.expiry.days" = "%d일";
 "limitSwap.expiry.daysUnit" = "일";
+"limitSwap.expiry.decreaseUnit" = "%@ 줄이기";
 "limitSwap.expiry.floorNotice" = "%@보다 짧으면 체결 가능성이 낮고, 종료 시에도 네트워크 수수료가 두 번 발생합니다.";
 "limitSwap.expiry.hours" = "%d시간";
 "limitSwap.expiry.hoursUnit" = "시간";
+"limitSwap.expiry.increaseUnit" = "%@ 늘리기";
 "limitSwap.expiry.maxHint" = "최대 %@";
 "limitSwap.expiry.minutes" = "%d분";
 "limitSwap.expiry.minutesUnit" = "분";

@@ -805,9 +805,11 @@
 "limitSwap.expiry.customTitle" = "Prilagođeno trajanje";
 "limitSwap.expiry.days" = "%dd";
 "limitSwap.expiry.daysUnit" = "Dani";
+"limitSwap.expiry.decreaseUnit" = "Smanji %@";
 "limitSwap.expiry.floorNotice" = "Kraće od %@ ostavlja nalogu malo šanse za izvršenje, a zatvaranje i dalje košta dvije mrežne naknade.";
 "limitSwap.expiry.hours" = "%dh";
 "limitSwap.expiry.hoursUnit" = "Sati";
+"limitSwap.expiry.increaseUnit" = "Povećaj %@";
 "limitSwap.expiry.maxHint" = "Maks. %@";
 "limitSwap.expiry.minutes" = "%dmin";
 "limitSwap.expiry.minutesUnit" = "Minute";

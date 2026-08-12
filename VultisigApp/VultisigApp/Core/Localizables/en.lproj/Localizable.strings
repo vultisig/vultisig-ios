@@ -805,9 +805,11 @@
 "limitSwap.expiry.customTitle" = "Custom expiry";
 "limitSwap.expiry.days" = "%dd";
 "limitSwap.expiry.daysUnit" = "Days";
+"limitSwap.expiry.decreaseUnit" = "Decrease %@";
 "limitSwap.expiry.floorNotice" = "Shorter than %@ leaves the order little chance to fill, and closing it still costs two network fees.";
 "limitSwap.expiry.hours" = "%dh";
 "limitSwap.expiry.hoursUnit" = "Hours";
+"limitSwap.expiry.increaseUnit" = "Increase %@";
 "limitSwap.expiry.maxHint" = "Max %@";
 "limitSwap.expiry.minutes" = "%dm";
 "limitSwap.expiry.minutesUnit" = "Minutes";

@@ -30,10 +30,11 @@ struct LimitCustomExpirySheet: View {
     private var isBelowFloor: Bool { selectedBlocks < vm.minExpiryBlocks }
 
     /// One curve for every value change in the sheet, so the digits, the notice
-    /// swap and the layout that follows them all move on the same clock. Short
-    /// enough that a fast run of taps reads as a counter rather than a queue of
-    /// animations.
-    private static let valueChange: Animation = .snappy(duration: 0.18)
+    /// swap and the clamped neighbours all move on the same clock. Deliberately
+    /// shorter than `LimitHoldStepButton`'s 80ms repeat: a longer curve would
+    /// still be running when the next held tick arrives, and the rolling digits
+    /// would lag the press instead of tracking it.
+    private static let valueChange: Animation = .snappy(duration: 0.07)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -57,10 +58,15 @@ struct LimitCustomExpirySheet: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                     }
 
+                    // Bounded left to right against ONE allowance, not three
+                    // independent ranges — see `limitExpiryHoursCeiling`. At the
+                    // 3-day ceiling that pins hours and minutes to 0, so the
+                    // control cannot spell a duration THORChain would silently
+                    // rewrite.
                     HStack(spacing: 10) {
                         stepper(titleKey: "limitSwap.expiry.daysUnit", value: $days, range: 0...maxDays)
-                        stepper(titleKey: "limitSwap.expiry.hoursUnit", value: $hours, range: 0...23)
-                        stepper(titleKey: "limitSwap.expiry.minutesUnit", value: $minutes, range: 0...59, step: 5)
+                        stepper(titleKey: "limitSwap.expiry.hoursUnit", value: $hours, range: 0...maxHours)
+                        stepper(titleKey: "limitSwap.expiry.minutesUnit", value: $minutes, range: 0...maxMinutes, step: 5)
                     }
 
                     noticeRow
@@ -77,6 +83,31 @@ struct LimitCustomExpirySheet: View {
         .padding(16)
         .padding(.top, 32)
         .sheetStyle(detents: [.height(275)])
+        // macOS has no drag-to-dismiss, so without this the sheet has no exit
+        // other than committing a value — the same close affordance every other
+        // sheet in the app carries.
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: .xmark) {
+                    isPresented = false
+                }
+            }
+        }
+        // Spending the allowance left to right means a change upstream can leave
+        // a downstream value over its new ceiling — setting Days to 3 against a
+        // 3-day cap has to empty Hours and Minutes rather than leave them
+        // describing a duration that no longer fits.
+        .onChange(of: days) { _, _ in
+            withAnimation(Self.valueChange) {
+                hours = min(hours, maxHours)
+                minutes = min(minutes, maxMinutes)
+            }
+        }
+        .onChange(of: hours) { _, _ in
+            withAnimation(Self.valueChange) {
+                minutes = min(minutes, maxMinutes)
+            }
+        }
         .onLoad {
             // Seed from the live draft so reopening the sheet shows what is set.
             let total = THORChainConstants.minutes(forBlocks: vm.draft.expiryBlocks)
@@ -86,8 +117,20 @@ struct LimitCustomExpirySheet: View {
         }
     }
 
-    private var maxDays: Int {
-        THORChainConstants.minutes(forBlocks: vm.maxExpiryBlocks) / 1440
+    /// The ceiling, in minutes — the single allowance the three steppers divide
+    /// between them.
+    private var maxTotalMinutes: Int {
+        THORChainConstants.minutes(forBlocks: vm.maxExpiryBlocks)
+    }
+
+    private var maxDays: Int { maxTotalMinutes / 1440 }
+
+    private var maxHours: Int {
+        limitExpiryHoursCeiling(maxTotalMinutes: maxTotalMinutes, days: days)
+    }
+
+    private var maxMinutes: Int {
+        limitExpiryMinutesCeiling(maxTotalMinutes: maxTotalMinutes, days: days, hours: hours)
     }
 
     /// Which of the three notices the current duration earns. Named as a value so
@@ -159,28 +202,50 @@ struct LimitCustomExpirySheet: View {
                 .textCase(.uppercase)
 
             HStack(spacing: 8) {
-                stepButton(systemImage: "minus", enabled: value.wrappedValue > range.lowerBound) {
-                    withAnimation(Self.valueChange) {
-                        value.wrappedValue = limitStepperDecrement(
-                            value.wrappedValue,
-                            step: step,
-                            lowerBound: range.lowerBound
-                        )
-                    }
+                // The same press-and-hold control the offset sheet uses, at this
+                // row's size. The step does NOT accelerate here, and that is the
+                // point of the button taking a schedule rather than owning one:
+                // these ranges are 4 to 24 steps end to end, so a constant repeat
+                // already crosses them in about a second and anything faster would
+                // be impossible to land on a value.
+                LimitHoldStepButton(
+                    systemImage: "minus",
+                    accessibilityLabel: String(
+                        format: "limitSwap.expiry.decreaseUnit".localized,
+                        titleKey.localized
+                    ),
+                    isEnabled: value.wrappedValue > range.lowerBound,
+                    diameter: 24,
+                    glyphPointSize: 11
+                ) { _ in
+                    set(value, to: limitStepperDecrement(
+                        value.wrappedValue,
+                        step: step,
+                        lowerBound: range.lowerBound
+                    ))
                 }
+
                 Text("\(value.wrappedValue)")
                     .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .contentTransition(.numericText())
                     .frame(minWidth: 26)
-                stepButton(systemImage: "plus", enabled: value.wrappedValue < range.upperBound) {
-                    withAnimation(Self.valueChange) {
-                        value.wrappedValue = limitStepperIncrement(
-                            value.wrappedValue,
-                            step: step,
-                            upperBound: range.upperBound
-                        )
-                    }
+
+                LimitHoldStepButton(
+                    systemImage: "plus",
+                    accessibilityLabel: String(
+                        format: "limitSwap.expiry.increaseUnit".localized,
+                        titleKey.localized
+                    ),
+                    isEnabled: value.wrappedValue < range.upperBound,
+                    diameter: 24,
+                    glyphPointSize: 11
+                ) { _ in
+                    set(value, to: limitStepperIncrement(
+                        value.wrappedValue,
+                        step: step,
+                        upperBound: range.upperBound
+                    ))
                 }
             }
         }
@@ -193,16 +258,13 @@ struct LimitCustomExpirySheet: View {
         .clipShape(Theme.radius.md.shape)
     }
 
-    private func stepButton(systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(enabled ? Theme.colors.textPrimary : Theme.colors.textTertiary)
-                .frame(width: 24, height: 24)
-                .background(Theme.colors.bgSurface2)
-                .clipShape(Circle())
+    /// Writes `newValue` and reports whether it MOVED — which is what stops a held
+    /// repeat once the stepper has walked into its bound.
+    private func set(_ binding: Binding<Int>, to newValue: Int) -> Bool {
+        guard newValue != binding.wrappedValue else { return false }
+        withAnimation(Self.valueChange) {
+            binding.wrappedValue = newValue
         }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
+        return true
     }
 }

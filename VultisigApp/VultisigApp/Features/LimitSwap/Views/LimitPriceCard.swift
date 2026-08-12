@@ -19,11 +19,12 @@ import SwiftUI
 // terms (the memo's LIM source) — the $/asset toggle only swaps which
 // representation is emphasized (large vs subtitle).
 //
-// NOTE (maintainer): Figma expresses the price as "1 <buyAsset> = $<usd>", which
-// inverts this per-unit-rate convention. Reconciling which representation is
-// canonical is a fund-safety-sensitive VM change that needs designer sign-off; it
-// is intentionally NOT guessed at here (a wrong inversion would place orders at
-// the reciprocal price).
+// The direction is SETTLED, not open: "1 <sellAsset> is worth X <buyAsset>" is
+// what the memo's LIM derives from, so that is what the card states. Figma draws
+// it the other way round ("1 <buyAsset> = $<usd>"), and the two were reconciled
+// in favour of the code — inverting the display would put a reciprocal price one
+// mistake away from the signed order, for a presentational preference. Reopening
+// this needs a reason better than the mockup.
 
 struct LimitPriceCard: View {
 

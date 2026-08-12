@@ -805,9 +805,11 @@
 "limitSwap.expiry.customTitle" = "自定义有效期";
 "limitSwap.expiry.days" = "%d天";
 "limitSwap.expiry.daysUnit" = "天";
+"limitSwap.expiry.decreaseUnit" = "减少%@";
 "limitSwap.expiry.floorNotice" = "短于 %@ 几乎没有成交机会，而结束订单仍需支付两笔网络费。";
 "limitSwap.expiry.hours" = "%d小时";
 "limitSwap.expiry.hoursUnit" = "小时";
+"limitSwap.expiry.increaseUnit" = "增加%@";
 "limitSwap.expiry.maxHint" = "最长 %@";
 "limitSwap.expiry.minutes" = "%d分钟";
 "limitSwap.expiry.minutesUnit" = "分钟";

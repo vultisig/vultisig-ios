@@ -426,6 +426,36 @@ func limitPctOffsetSeed(from pct: Decimal) -> Decimal {
     return rounded
 }
 
+// MARK: - Custom-expiry allowance
+
+/// Hours still available once `days` of the ceiling have been spent, capped at 23.
+///
+/// The days/hours/minutes steppers describe ONE duration against one ceiling, so
+/// they cannot be bounded independently: with the mainnet ceiling of exactly 3
+/// days, `3d 5h` is a duration the control can spell but the protocol cannot
+/// hold. THORChain does not reject it either — it silently rewrites the TTL to
+/// its own maximum (confirmed against dev.thorchain.org: a custom TTL "is capped
+/// to StreamingLimitSwapMaxAge"). A control that can express only what can
+/// actually be signed is the fix; a warning after the fact is not.
+///
+/// So the allowance is spent left to right: days first, and what is left bounds
+/// the hours. At the ceiling the remainder is zero and the hours stepper is
+/// pinned to 0 — which is why setting Days to 3 empties the other two.
+///
+/// Derived rather than hardcoded to 0, because the ceiling is a mimir and can
+/// move: a 2d 12h cap bounds hours to 12 at `days == 2`, not to 0.
+func limitExpiryHoursCeiling(maxTotalMinutes: Int, days: Int) -> Int {
+    let remaining = maxTotalMinutes - days * 1440
+    return min(23, max(0, remaining / 60))
+}
+
+/// Minutes still available once `days` and `hours` are spent, capped at 59.
+/// The tail of the same left-to-right allowance as `limitExpiryHoursCeiling`.
+func limitExpiryMinutesCeiling(maxTotalMinutes: Int, days: Int, hours: Int) -> Int {
+    let remaining = maxTotalMinutes - days * 1440 - hours * 60
+    return min(59, max(0, remaining))
+}
+
 // MARK: - Integer stepper (custom expiry)
 
 /// The next value below `value` on a `step`-sized grid, floored at `lowerBound`.

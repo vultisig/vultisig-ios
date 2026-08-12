@@ -805,9 +805,11 @@
 "limitSwap.expiry.customTitle" = "Eigene Laufzeit";
 "limitSwap.expiry.days" = "%dT";
 "limitSwap.expiry.daysUnit" = "Tage";
+"limitSwap.expiry.decreaseUnit" = "%@ verringern";
 "limitSwap.expiry.floorNotice" = "Kürzer als %@ lässt der Order kaum Chance auf Ausführung, und das Schließen kostet trotzdem zwei Netzwerkgebühren.";
 "limitSwap.expiry.hours" = "%dStd";
 "limitSwap.expiry.hoursUnit" = "Stunden";
+"limitSwap.expiry.increaseUnit" = "%@ erhöhen";
 "limitSwap.expiry.maxHint" = "Max. %@";
 "limitSwap.expiry.minutes" = "%dMin";
 "limitSwap.expiry.minutesUnit" = "Minuten";

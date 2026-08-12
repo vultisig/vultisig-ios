@@ -586,6 +586,54 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(pct, Decimal(string: "8.5")!)
     }
 
+    // MARK: - Custom-expiry allowance
+
+    func testAtTheDayCeilingHoursAndMinutesArePinnedToZero() {
+        // Mainnet's StreamingLimitSwapMaxAge is 43,200 blocks — exactly 3 days —
+        // and THORChain SILENTLY rewrites an over-long TTL to its own maximum
+        // rather than rejecting it. So `3d 5h` must not be spellable: at 3 days
+        // the whole allowance is spent.
+        let threeDays = 3 * 1440
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: threeDays, days: 3), 0)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: threeDays, days: 3, hours: 0), 0)
+    }
+
+    func testBelowTheDayCeilingTheFullHourAndMinuteRangesAreOffered() {
+        let threeDays = 3 * 1440
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: threeDays, days: 2), 23)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: threeDays, days: 2, hours: 23), 59)
+        // 2d 23h 59m is one minute under the cap — the largest expressible value.
+        XCTAssertLessThan(2 * 1440 + 23 * 60 + 59, threeDays)
+    }
+
+    func testAllowanceFollowsACeilingThatIsNotAWholeNumberOfDays() {
+        // The ceiling is a mimir and can move; the hours bound is derived, not
+        // hardcoded to 0. A 2d12h cap leaves 12 hours at `days == 2`.
+        let twoAndAHalfDays = 2 * 1440 + 12 * 60
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: twoAndAHalfDays, days: 2), 12)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: twoAndAHalfDays, days: 2, hours: 12), 0)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: twoAndAHalfDays, days: 2, hours: 11), 59)
+    }
+
+    func testAllowanceNeverGoesNegative() {
+        // Defensive: a stale `days` read against a ceiling that has just shrunk
+        // must clamp to zero, not produce a negative upper bound (which would
+        // make `0...max` a crashing range).
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: 60, days: 3), 0)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: 60, days: 3, hours: 5), 0)
+    }
+
+    func testTheLargestExpressibleDurationNeverExceedsTheCeiling() {
+        // The property the three bounds exist to guarantee, swept across every
+        // day value a 3-day cap allows.
+        let cap = 3 * 1440
+        for days in 0...(cap / 1440) {
+            let hours = limitExpiryHoursCeiling(maxTotalMinutes: cap, days: days)
+            let minutes = limitExpiryMinutesCeiling(maxTotalMinutes: cap, days: days, hours: hours)
+            XCTAssertLessThanOrEqual(days * 1440 + hours * 60 + minutes, cap, "overflowed at \(days)d")
+        }
+    }
+
     // MARK: - Integer stepper (custom expiry)
 
     func testStepperDecrementSnapsAnOffGridSeedOntoTheGrid() {
