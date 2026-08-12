@@ -36,6 +36,25 @@ struct SolanaAPI: TargetType {
 
     enum Method {
         case sendTransaction(encodedTransaction: String)
+        /// Dry-runs a transaction against the current bank without broadcasting.
+        /// Used to prove a third-party-built transaction actually executes — and
+        /// to measure its compute usage — before it is put in front of a signer.
+        ///
+        /// `replaceRecentBlockhash` lets the node substitute its own blockhash so
+        /// a transaction can be simulated before the pre-keysign refresh
+        /// installs a fresh one; passing `false` simulates the exact bytes,
+        /// which is what proves a spliced blockhash is live.
+        ///
+        /// `accountAddresses` asks the node to return those accounts' state
+        /// *after* the transaction ran. That is the only way to learn what a
+        /// third-party-built transaction actually costs its payer — the fee, the
+        /// rent for whatever accounts it creates, and any lamports it moves —
+        /// rather than guessing at a reserve.
+        case simulateTransaction(
+            encodedTransaction: String,
+            replaceRecentBlockhash: Bool,
+            accountAddresses: [String]
+        )
         case getBalance(address: String)
         case getRecentPrioritizationFees
         case getLatestBlockhash
@@ -49,6 +68,13 @@ struct SolanaAPI: TargetType {
         case getLatestBlockhashFinalized
         case getTokenAccountsByOwner(walletAddress: String, filter: TokenAccountFilter)
         case getAccountInfo(address: String)
+        /// Raw (`base64`) account data for an Address Lookup Table.
+        ///
+        /// Deliberately not `jsonParsed`: the addresses in a lookup table are
+        /// what a v0 transaction's account indices actually resolve to, so they
+        /// are the ground truth every pre-signing safety check compares against.
+        /// `jsonParsed` would delegate that decode to whichever node answered.
+        case getAddressLookupTable(address: String)
         /// All validators (vote accounts), `current` + `delinquent`.
         case getVoteAccounts
         /// Stake-program accounts owned by `staker`. `dataSize:200` excludes
@@ -107,6 +133,31 @@ struct SolanaAPI: TargetType {
                 ),
                 .jsonEncoding
             )
+        case .simulateTransaction(let encodedTransaction, let replaceRecentBlockhash, let accountAddresses):
+            // `sigVerify` is pinned off: the transactions this simulates still
+            // carry an all-zero placeholder signature, and the RPC rejects the
+            // combination of signature verification with blockhash replacement
+            // outright. Commitment matches the blockhash fetch so the simulation
+            // runs against the same bank the broadcast preflight will.
+            var config: [String: Any] = [
+                "encoding": "base64",
+                "commitment": "confirmed",
+                "sigVerify": false,
+                "replaceRecentBlockhash": replaceRecentBlockhash
+            ]
+            // Omitted entirely when nothing was asked for: an empty `addresses`
+            // array is a different request from no `accounts` key at all, and
+            // some nodes reject it.
+            if !accountAddresses.isEmpty {
+                config["accounts"] = [
+                    "encoding": "base64",
+                    "addresses": accountAddresses
+                ]
+            }
+            return .requestParameters(
+                rpcEnvelope(method: "simulateTransaction", params: [encodedTransaction, config]),
+                .jsonEncoding
+            )
         case .getBalance(let address):
             return .requestParameters(rpcEnvelope(method: "getBalance", params: [address]), .jsonEncoding)
         case .getRecentPrioritizationFees:
@@ -134,6 +185,11 @@ struct SolanaAPI: TargetType {
         case .getAccountInfo(let address):
             return .requestParameters(
                 rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "jsonParsed"]]),
+                .jsonEncoding
+            )
+        case .getAddressLookupTable(let address):
+            return .requestParameters(
+                rpcEnvelope(method: "getAccountInfo", params: [address, ["encoding": "base64", "commitment": "confirmed"]]),
                 .jsonEncoding
             )
         case .getVoteAccounts:
@@ -231,6 +287,99 @@ struct SolanaSendTransactionResponse: Decodable {
     }
 }
 
+/// A JSON value of unknown shape, decoded far enough to be rendered.
+///
+/// `simulateTransaction`'s `err` is polymorphic: `null` on success, a bare string
+/// (`"BlockhashNotFound"`) for transaction-level failures, and an object
+/// (`{"InstructionError":[3,{"Custom":6003}]}`) for program failures. The
+/// interesting part — which instruction failed and with what code — lives inside
+/// the object form, so it cannot be flattened to a `String?`.
+indirect enum SolanaRPCJSONValue: Decodable, Equatable {
+    case null
+    case bool(Bool)
+    case number(String)
+    case string(String)
+    case array([SolanaRPCJSONValue])
+    case object([String: SolanaRPCJSONValue])
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode(Int64.self) {
+            self = .number(String(value))
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(String(value))
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode([SolanaRPCJSONValue].self) {
+            self = .array(value)
+        } else if let value = try? container.decode([String: SolanaRPCJSONValue].self) {
+            self = .object(value)
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unsupported JSON value in Solana RPC response"
+            )
+        }
+    }
+
+    /// Stable rendering for logs and error messages. Object keys are sorted so
+    /// the same failure always reads the same way.
+    var text: String {
+        switch self {
+        case .null:
+            return "null"
+        case .bool(let value):
+            return value ? "true" : "false"
+        case .number(let value):
+            return value
+        case .string(let value):
+            return value
+        case .array(let values):
+            return "[" + values.map(\.text).joined(separator: ", ") + "]"
+        case .object(let values):
+            let body = values.sorted { $0.key < $1.key }
+                .map { "\($0.key): \($0.value.text)" }
+                .joined(separator: ", ")
+            return "{" + body + "}"
+        }
+    }
+}
+
+/// `simulateTransaction` payload. `result` and `error` are mutually exclusive:
+/// `error` is a transport-level JSON-RPC failure, while a transaction that ran
+/// and failed comes back as a successful `result` with a non-null `value.err`.
+struct SolanaSimulateTransactionResponse: Decodable {
+    let result: Result?
+    let error: RPCError?
+
+    struct Result: Decodable {
+        let value: Value
+
+        struct Value: Decodable {
+            let err: SolanaRPCJSONValue?
+            let logs: [String]?
+            let unitsConsumed: UInt64?
+            /// Post-execution state of the accounts the request named, in the
+            /// order they were named. `nil` when none were requested; an
+            /// individual entry is null when that account does not exist.
+            let accounts: [Account?]?
+
+            struct Account: Decodable {
+                let lamports: UInt64
+            }
+        }
+    }
+
+    struct RPCError: Decodable {
+        let code: Int
+        let message: String
+    }
+}
+
 struct SolanaGetBalanceResponse: Decodable {
     let result: Result
 
@@ -267,6 +416,24 @@ struct SolanaGetAccountInfoResponse: Decodable {
 
         struct Value: Decodable {
             let owner: String
+        }
+    }
+}
+
+/// `getAccountInfo` with `encoding: base64`. A missing `value` means the account
+/// does not exist, which for a lookup table is a refusal rather than an empty
+/// table — an unresolvable index cannot be checked.
+struct SolanaGetAccountInfoBase64Response: Decodable {
+    let result: Result
+
+    struct Result: Decodable {
+        let value: Value?
+
+        struct Value: Decodable {
+            let owner: String
+            /// `[payload, encoding]` — the RPC returns the encoding it used
+            /// alongside the data, and it is asserted rather than assumed.
+            let data: [String]
         }
     }
 }

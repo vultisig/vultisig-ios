@@ -78,5 +78,6 @@ struct DefiChainStakedPositionSkeletonView: View {
             }
         }
         .redacted(reason: .placeholder)
+        .shimmer()
     }
 }

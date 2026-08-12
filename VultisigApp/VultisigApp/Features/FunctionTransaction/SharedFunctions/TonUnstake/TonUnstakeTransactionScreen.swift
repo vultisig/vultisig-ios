@@ -13,8 +13,6 @@ struct TonUnstakeTransactionScreen: View {
     @StateObject private var viewModel: TonUnstakeTransactionViewModel
     let onVerify: (TransactionBuilder) -> Void
 
-    @State private var validForm: Bool = true
-
     init(
         viewModel: TonUnstakeTransactionViewModel,
         onVerify: @escaping (TransactionBuilder) -> Void
@@ -31,7 +29,6 @@ struct TonUnstakeTransactionScreen: View {
         FormScreen(
             title: String(format: "unstakeCoin".localized, viewModel.coin.ticker),
             fixedHeight: false,
-            validForm: $validForm,
             isContinueDisabled: !viewModel.hasSufficientBalance,
             onContinue: onContinue
         ) {

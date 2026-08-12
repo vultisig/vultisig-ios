@@ -302,37 +302,3 @@ struct TronDashboardView: View {
         }
     }
 }
-
-// MARK: - Shimmer Effect
-
-private struct ShimmerModifier: ViewModifier {
-    @State private var phase: CGFloat = 0
-
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.clear,
-                        Theme.colors.textPrimary.opacity(0.4),
-                        Color.clear
-                    ]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-                .offset(x: phase)
-                .mask(content)
-            )
-            .onAppear {
-                withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
-                    phase = 200
-                }
-            }
-    }
-}
-
-extension View {
-    func shimmer() -> some View {
-        modifier(ShimmerModifier())
-    }
-}

@@ -449,6 +449,61 @@ final class VaultDetailViewModelTests: XCTestCase {
                        "A dismissal must hold across vaults — the store has no vault key")
     }
 
+    // MARK: - The Kamino Earn promo
+
+    /// It opens the Solana DeFi screen, so a vault that cannot reach Solana has
+    /// nowhere for it to go. That is the only condition — see the next test.
+    func testKaminoBanner_needsASolanaVault() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+
+        let noSolana = makeVault(pubKey: "no-solana", chains: [.bitcoin])
+        XCTAssertFalse(logic.setupBanners(for: noSolana, store: store, now: fixedNow).contains(.kaminoEarn))
+
+        let solana = makeVault(pubKey: "solana", chains: [.solana])
+        XCTAssertTrue(logic.setupBanners(for: solana, store: store, now: fixedNow).contains(.kaminoEarn))
+    }
+
+    /// Deliberately NOT gated on having a position. Someone earning in one
+    /// vault is a good audience for the other two, and the banner is a route
+    /// into the segment rather than a one-time announcement — dismissal is what
+    /// makes it go away.
+    func testKaminoBanner_staysForAVaultThatIsAlreadyEarning() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "earning", chains: [.solana])
+
+        vault.enabledKaminoVaults = [KaminoVaultRegistry.steakhouseUSDC.address]
+        vault.kaminoPositions = [
+            KaminoPosition(
+                vaultAddress: KaminoVaultRegistry.steakhouseUSDC.address,
+                isEnabled: true,
+                shares: KaminoShareAmount(baseUnits: 1_000_000, decimals: 6),
+                tokenAmount: KaminoTokenAmount(baseUnits: 1_000_000, decimals: 6),
+                vault: vault
+            )
+        ]
+
+        XCTAssertTrue(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.kaminoEarn))
+    }
+
+    /// The carousel renders `setupBanners` in order, so leading the list is what
+    /// puts the promo on the first page rather than behind whatever else the
+    /// vault happens to qualify for.
+    func testKaminoBanner_leadsTheCarousel() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        // A fresh vault qualifies for several — it is un-backed-up, and the two
+        // always-on promos apply — so "first" is a real position here rather
+        // than the only one available.
+        let vault = makeVault(pubKey: "many-banners", chains: [.solana])
+
+        let banners = logic.setupBanners(for: vault, store: store, now: fixedNow)
+
+        XCTAssertGreaterThan(banners.count, 1, "This vault should qualify for more than the promo alone.")
+        XCTAssertEqual(banners.first, .kaminoEarn)
+    }
+
     /// AC: different intents are independent — dismissing one banner does not
     /// suppress another.
     func testDismiss_isPerIntent_doesNotSuppressOtherBanners() {

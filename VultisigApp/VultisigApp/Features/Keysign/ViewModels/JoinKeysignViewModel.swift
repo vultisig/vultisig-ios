@@ -129,8 +129,24 @@ class JoinKeysignViewModel: ObservableObject {
         self.isShowingScanner = true
     }
 
+    /// A relayed Kamino transaction whose bytes contradict this screen, or which
+    /// cannot be decoded at all, must not be co-signed.
+    ///
+    /// This is the whole point of decoding on a peer: the summary rows a
+    /// co-signer sees are rebuilt from fields the initiating device supplied, so
+    /// the bytes are the only independent account of what will be signed. If the
+    /// two disagree, joining would add the second signature to a transaction
+    /// nobody on this device can vouch for. Every non-Kamino payload resolves to
+    /// `.notKamino`, which blocks nothing.
+    var isKaminoDecodeRefused: Bool {
+        KaminoVerifyPresentation.state(for: keysignPayload).blocksSigning
+    }
+
     func joinKeysignCommittee() {
         guard !isJoiningCommittee else { return }
+        guard !isKaminoDecodeRefused else {
+            return logger.error("Refusing to join: the Kamino transaction's bytes do not match what is displayed.")
+        }
 
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")

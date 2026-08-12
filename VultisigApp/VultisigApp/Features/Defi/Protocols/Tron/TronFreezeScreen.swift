@@ -30,7 +30,6 @@ struct TronFreezeScreen: View {
                 percentageSelected: $viewModel.percentageSelected,
                 percentageFieldType: .button,
                 amountField: viewModel.amountField,
-                validForm: $viewModel.validForm,
                 onVerify: onVerify,
                 customView: { EmptyView() },
                 topView: { TronResourceTypeToggle(selection: $viewModel.selectedResourceType) }

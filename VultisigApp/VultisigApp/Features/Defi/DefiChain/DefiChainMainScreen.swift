@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+private let logger = Log.defi.view
+
 struct DefiChainMainScreen: View {
     @Environment(\.router) var router
     @ObservedObject var vault: Vault
@@ -18,6 +20,7 @@ struct DefiChainMainScreen: View {
     @StateObject private var stakeViewModel: DefiChainStakeViewModel
     @StateObject private var cosmosStakeViewModel: CosmosStakeDefiViewModel
     @StateObject private var solanaStakeViewModel: SolanaStakeDefiViewModel
+    @StateObject private var kaminoEarnViewModel: KaminoEarnViewModel
     @StateObject private var governanceViewModel: QBTCGovernanceViewModel
     @StateObject private var screenModel: DefiChainScreenModel
     @State private var showPositionSelection = false
@@ -39,6 +42,7 @@ struct DefiChainMainScreen: View {
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: chain))
         self._cosmosStakeViewModel = StateObject(wrappedValue: CosmosStakeDefiViewModel(chain: chain))
         self._solanaStakeViewModel = StateObject(wrappedValue: SolanaStakeDefiViewModel(vault: vault))
+        self._kaminoEarnViewModel = StateObject(wrappedValue: KaminoEarnViewModel(vault: vault))
         self._governanceViewModel = StateObject(wrappedValue: QBTCGovernanceViewModel())
         self._screenModel = StateObject(wrappedValue: DefiChainScreenModel(vault: vault, chain: chain))
     }
@@ -73,6 +77,7 @@ struct DefiChainMainScreen: View {
             if chain.isSolanaStakingChain {
                 solanaStakeViewModel.warmValidatorMetadata()
             }
+            hydrateKaminoSelectionIfNeeded()
             Task { await refresh() }
         }
         .onAppear {
@@ -81,7 +86,13 @@ struct DefiChainMainScreen: View {
                 hasAppeared = true
                 return
             }
-            Task { await invalidateSolanaStakeIfNeeded() }
+            Task {
+                await invalidateSolanaStakeIfNeeded()
+                // A returning user may have just signed a deposit. The vault is
+                // already enabled — its card is what opened the form — so this
+                // only ever updates an existing row, never creates one.
+                await refreshKaminoEarnIfNeeded()
+            }
         }
         .refreshable {
             // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
@@ -102,6 +113,15 @@ struct DefiChainMainScreen: View {
         // every time the user swipes between segments.
         .onChange(of: refreshError) { _, newValue in
             refreshErrorToast = newValue
+        }
+        // Enabling or disabling a yield vault writes `KaminoPosition.isEnabled`,
+        // not `vault.defiPositions`, so the change above never observes it.
+        // Re-seed from the persisted rows when the picker closes so a newly
+        // enabled vault appears immediately, then refresh it.
+        .onChange(of: showPositionSelection) { _, isPresented in
+            guard !isPresented, chain == KaminoVaultRegistry.chain else { return }
+            kaminoEarnViewModel.seedFromPersistedSnapshot()
+            Task { await refreshKaminoEarnIfNeeded() }
         }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
             DefiChainSelectPositionsScreen(
@@ -185,6 +205,13 @@ struct DefiChainMainScreen: View {
                     onAdd: {
                         onTransactionToPresent(.addLP(position: $0))
                     },
+                    emptyStateView: { emptyStateView }
+                )
+            case .earn:
+                KaminoEarnView(
+                    viewModel: kaminoEarnViewModel,
+                    onDeposit: { onKaminoDeposit(descriptor: $0) },
+                    onWithdraw: { onKaminoWithdraw(descriptor: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .governance:
@@ -331,6 +358,24 @@ struct DefiChainMainScreen: View {
         ))
     }
 
+    /// Opens the deposit form for one curated vault.
+    ///
+    /// Guarded on the chain the curated vaults live on: the descriptor comes
+    /// from the registry, so the address is already curated, but a Kamino screen
+    /// reached from another chain's DeFi tab would be reading the wrong vault's
+    /// coins.
+    func onKaminoDeposit(descriptor: KaminoVaultDescriptor) {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        router.navigate(to: KaminoRoute.deposit(vault: vault, descriptor: descriptor))
+    }
+
+    /// Opens the withdraw form for one curated vault. Same chain guard as the
+    /// deposit route, for the same reason.
+    func onKaminoWithdraw(descriptor: KaminoVaultDescriptor) {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        router.navigate(to: KaminoRoute.withdraw(vault: vault, descriptor: descriptor))
+    }
+
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
         guard let tx = screenModel.makeGovernanceVoteTransaction(proposal: proposal, choice: choice) else { return }
         router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
@@ -435,8 +480,12 @@ private extension DefiChainMainScreen {
         async let lpsRefresh: Void = lpsViewModel.refresh()
         async let cosmosRefresh: Void = refreshCosmosStakeIfNeeded()
         async let solanaRefresh: Void = refreshSolanaStakeIfNeeded()
+        async let kaminoRefresh: Void = refreshKaminoEarnIfNeeded()
         async let governanceRefresh: Void = refreshGovernanceIfNeeded()
-        _ = await (mainRefresh, bondRefresh, stakeRefresh, lpsRefresh, cosmosRefresh, solanaRefresh, governanceRefresh)
+        _ = await (
+            mainRefresh, bondRefresh, stakeRefresh, lpsRefresh,
+            cosmosRefresh, solanaRefresh, kaminoRefresh, governanceRefresh
+        )
     }
 
     /// Conditional refresh for the cosmos staking VM — only fires when the
@@ -472,6 +521,29 @@ private extension DefiChainMainScreen {
         _ = await (rows, balance)
     }
 
+    /// Materialises an imported selection into position rows and repaints.
+    /// A restored backup carries the enabled vaults as plain addresses, and
+    /// every read here is row-driven, so without this the user's deposits would
+    /// stay invisible until they re-enabled each vault by hand. Idempotent.
+    func hydrateKaminoSelectionIfNeeded() {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        do {
+            try KaminoPositionStorageService().hydrateEnabledVaultsIfNeeded(for: vault)
+        } catch {
+            logger.error("Failed to hydrate Kamino selection: \(error.localizedDescription, privacy: .private)")
+        }
+        kaminoEarnViewModel.seedFromPersistedSnapshot()
+    }
+
+    /// Conditional refresh for the Kamino Earn VM — only fires on the chain the
+    /// curated vaults live on, and only once the vault has the native coin
+    /// loaded (its address is the position owner). The VM itself no-ops when the
+    /// user has enabled no vaults, so an opted-out user pays no request.
+    func refreshKaminoEarnIfNeeded() async {
+        guard chain == KaminoVaultRegistry.chain, let nativeCoin else { return }
+        await kaminoEarnViewModel.refresh(owner: nativeCoin.address)
+    }
+
     /// Conditional refresh for the QBTC governance VM — only fires on QBTC,
     /// the one chain with the governance segment. Quiet no-op elsewhere.
     func refreshGovernanceIfNeeded() async {
@@ -485,6 +557,15 @@ private extension DefiChainMainScreen {
         lpsViewModel.update(vault: vault)
         stakeViewModel.update(vault: vault)
         screenModel.update(vault: vault)
+        // The Earn VM persists into the vault it was built with, so it has to
+        // be rebound before the next refresh reads the new vault's address.
+        kaminoEarnViewModel.update(vault: vault)
+        // And the new vault gets the same imported-selection hydration `onLoad`
+        // performs, because a restored backup carries its enabled vaults as
+        // plain addresses with no rows behind them. Without this a vault
+        // switched to — rather than launched into — reads as opted out until the
+        // screen is reloaded. Idempotent, so switching back costs nothing.
+        hydrateKaminoSelectionIfNeeded()
     }
 }
 

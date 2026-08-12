@@ -103,6 +103,14 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         }
         .onChange(of: internalBanners) { _, newValue in
             updateBannersCount(newValue.count)
+            // The array can shrink from outside — a promo the user has just
+            // satisfied stops being eligible — and that can drop the page they
+            // are on. Both indices are pulled back inside the new bounds; the
+            // timer cannot do it, because it declines to advance at all once
+            // one banner is left.
+            let clamped = BannersCarouselIndex.clamped(currentIndex, count: newValue.count)
+            if currentIndex != clamped { currentIndex = clamped }
+            if scrollPosition != clamped { scrollPosition = clamped }
         }
         .onAppear {
             startTimer()
@@ -249,6 +257,20 @@ enum BannersCarouselIndex {
 
         // Removing a banner after the current one leaves the index unchanged.
         return currentIndex
+    }
+
+    /// Index that stays valid when the banner array is replaced from OUTSIDE
+    /// the carousel — a promo becoming ineligible while the user is looking at
+    /// it, rather than them closing it.
+    ///
+    /// `afterRemoval` cannot answer this: it needs the position that went away,
+    /// and an external replacement only says what is left. So the index is
+    /// clamped instead. Without it, dropping the page the carousel is currently
+    /// on leaves `currentIndex` past the end — and `next(after:count:)` no-ops
+    /// at one banner, so the auto-advance never corrects it either.
+    static func clamped(_ current: Int, count: Int) -> Int {
+        guard count > 0 else { return 0 }
+        return min(max(current, 0), count - 1)
     }
 }
 

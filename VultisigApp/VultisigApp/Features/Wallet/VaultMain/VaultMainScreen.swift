@@ -333,6 +333,11 @@ struct VaultMainScreen: View {
             openSwapToVult()
         case .followVultisig:
             openURL(StaticURL.XVultisigURL)
+        case .kaminoEarn:
+            // Straight to Solana's DeFi screen, which opens on Earn — that is
+            // the first segment there, so the banner lands on the vaults it
+            // advertises rather than one tab away from them.
+            router.navigate(to: VaultRoute.defiChain(chain: .solana, vault: vault))
         }
     }
 

@@ -25,6 +25,10 @@ protocol DefiPositionsProviding: Sendable {
     /// Throws on a failed pool fetch so the caller can surface the failure and
     /// offer a retry — an empty return means "this chain genuinely has none".
     func lpCoins(for chain: Chain) async throws -> [CoinMeta]
+    /// Curated yield vaults selectable on this chain. Static and offline like
+    /// bond and stake: the vaults are an allow-list, and their live state is
+    /// hydrated per vault only once the user has enabled one.
+    func earnVaults(for chain: Chain) -> [KaminoVaultDescriptor]
 }
 
 struct DefiPositionsService: DefiPositionsProviding {
@@ -87,6 +91,10 @@ struct DefiPositionsService: DefiPositionsProviding {
     /// Solana coin, looked up by chain + native flag.
     static let nativeSolanaMeta: CoinMeta? = TokensStore.TokenSelectionAssets
         .first { $0.chain == .solana && $0.isNativeToken }
+
+    func earnVaults(for chain: Chain) -> [KaminoVaultDescriptor] {
+        chain == KaminoVaultRegistry.chain ? KaminoVaultRegistry.allowList : []
+    }
 
     /// Keep in sync with the network-backed branches of `lpCoins(for:)`.
     func supportsLiquidityPools(for chain: Chain) -> Bool {

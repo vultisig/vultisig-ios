@@ -126,7 +126,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         AppViewModel(
             lockService: lockService,
             passcodeService: service,
-            reconcileInstall: { }
+            reconcileInstall: { .nothing }
         )
     }
 

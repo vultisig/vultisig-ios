@@ -288,6 +288,16 @@ struct VaultDetailLogic {
                     return !vault.isBackedUp
                 case .upgradeVault:
                     return vault.libType == .GG20
+                case .kaminoEarn:
+                    // Solana only, because the banner opens the Solana DeFi
+                    // screen and there would be nowhere for it to go otherwise.
+                    //
+                    // Deliberately NOT gated on whether the user already has a
+                    // position: someone earning in one vault is a good audience
+                    // for the other two, and the banner is a route into the
+                    // segment rather than a one-time announcement. Dismissal is
+                    // what makes it go away, for the usual fifteen days.
+                    return vault.nativeCoin(for: .solana) != nil
                 case .buyVult, .followVultisig:
                     return true
                 }

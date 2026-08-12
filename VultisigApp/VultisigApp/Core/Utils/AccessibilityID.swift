@@ -27,6 +27,8 @@ enum AccessibilityID {
         static let autoLockCell = "settings.autoLockCell"
         static let biometricUnlockToggle = "settings.biometricUnlockToggle"
         static let biometricUnlockNote = "settings.biometricUnlockNote"
+        static let passcodeBackupPromptBackUpNow = "settings.passcodeBackupPromptBackUpNow"
+        static let passcodeBackupPromptHasBackup = "settings.passcodeBackupPromptHasBackup"
     }
 
     enum Passcode {
@@ -34,6 +36,9 @@ enum AccessibilityID {
         static let deleteKey = "passcode.deleteKey"
         static let enterScreen = "passcode.enterScreen"
         static let awaitingBiometrics = "passcode.awaitingBiometrics"
+        static let keyshareRecoveryScreen = "passcode.keyshareRecoveryScreen"
+        static let keyshareRecoveryImportButton = "passcode.keyshareRecoveryImportButton"
+        static let keyshareRecoveryNoBackupToggle = "passcode.keyshareRecoveryNoBackupToggle"
 
         static func digitKey(_ digit: String) -> String {
             "passcode.digit.\(digit)"
