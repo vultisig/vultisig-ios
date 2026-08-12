@@ -481,6 +481,20 @@ final class DefiPositionApplyGuardTests: XCTestCase {
         XCTAssertEqual(position.stakeAccountPubkey, "stake-account-A")
     }
 
+    /// The empty string is the backfill's other missing value: `?.isEmpty != false`
+    /// answers true for `""` as well as `nil`, so a row that stored a blank pubkey
+    /// has to heal on the same path. Nothing else in the DTO moves here — the
+    /// backfill alone has to carry it past the guard.
+    func testStakeApplyBackfillsEmptyStakeAccountPubkey() {
+        let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
+        let dto = stakeDto(coin: solMeta, stakeAccountPubkey: "stake-account-A")
+        let position = StakePosition(dto, vault: vault)
+        position.stakeAccountPubkey = ""
+
+        XCTAssertTrue(applyPublishesChange(position, dto))
+        XCTAssertEqual(position.stakeAccountPubkey, "stake-account-A")
+    }
+
     /// A populated pubkey is never rewritten — pre-existing behaviour the guard
     /// must preserve. The rest of the DTO still applies.
     func testStakeApplyKeepsExistingStakeAccountPubkey() {
