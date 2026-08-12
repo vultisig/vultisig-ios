@@ -5,6 +5,7 @@
 
 #if os(iOS)
 import CoreImage
+import SwiftUI
 import UIKit
 
 /// A picture of the app blurred past reading — what the privacy cover shows over
@@ -43,6 +44,41 @@ enum PrivacyBackdrop {
     private static let blurSigma: Double = 1.6
 
     private static let context = CIContext(options: [.useSoftwareRenderer: false])
+
+    /// The picture the cover is currently showing, or `nil` when there is none
+    /// and ``CoverView`` should fall back to the brand screen.
+    ///
+    /// Shared state rather than each host taking its own, because the app draws
+    /// the cover in two places — its own overlay and the raised window — and the
+    /// two must not be able to draw *different things*. They could: the overlay
+    /// renders in the same pass that raises the cover, while the window is put up
+    /// afterwards and, the first time, has a whole `UIWindow` to build and lay
+    /// out first. With a picture each, the overlay's brand-screen fallback landed
+    /// first and the window's blur replaced it a frame or two later — a logo
+    /// flashing over the wallet on the way out, which is precisely what the blur
+    /// exists to stop.
+    private(set) static var latest: Image?
+
+    /// Takes the picture, **before** the cover goes up.
+    ///
+    /// The ordering is the whole point and it is not an optimisation: the first
+    /// frame in which anything is covered must already have this to draw, or the
+    /// fallback shows for that frame and the flash is back. Called from the
+    /// scene-phase hook, one step ahead of the flag.
+    ///
+    /// Answers `nil` on any failure, which is the safe direction: no picture
+    /// means the brand screen, in both hosts at once.
+    static func take() {
+        latest = UIApplication.shared.activeContentWindow
+            .flatMap(picture(of:))
+            .map(Image.init(uiImage:))
+    }
+
+    /// Dropped as soon as the app is uncovered — this is a photograph of a
+    /// wallet, and nothing needs it once there is nothing to cover.
+    static func discard() {
+        latest = nil
+    }
 
     static func picture(of window: UIWindow) -> UIImage? {
         let bounds = window.bounds

@@ -222,6 +222,14 @@ extension VultisigApp {
                         await SwapTrackingRegistry.shared.resumeAllInFlight()
                     }
                 case .inactive:
+                    // The picture is taken one step ahead of the cover that
+                    // shows it, so that the first covered frame already has it
+                    // — see `PrivacyBackdrop.take()`. Only on the way out: a
+                    // return is about to uncover, and photographing the app
+                    // there would be work thrown away.
+                    if previousPhase == .active {
+                        PrivacyBackdrop.take()
+                    }
                     // Leaving and returning are the same phase, and which one
                     // this is decides whether the cover goes up or comes down —
                     // see `AppViewModel.sceneBecameInactive(comingFrom:)`.

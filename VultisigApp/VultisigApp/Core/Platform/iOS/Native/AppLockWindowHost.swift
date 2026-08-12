@@ -102,6 +102,9 @@ final class AppLockWindowHost: ObservableObject {
             lower(animated: current.isGate)
             current = .uncovered
             callbacks = nil
+            // The photograph of the wallet outlives nothing: there is no longer
+            // anything to cover, and the next departure takes a fresh one.
+            PrivacyBackdrop.discard()
             return
         }
 
@@ -222,22 +225,12 @@ final class AppLockWindowHost: ObservableObject {
         window.alpha = 1
         window.isUserInteractionEnabled = true
 
-        // Taken before this window goes up, and of the app's own window rather
-        // than this one — this one is about to be, or already is, the cover
-        // itself. Only the privacy cover carries it: the gate and the recovery
-        // screen are screens in their own right, and a blurred wallet behind
-        // either of them would be the wallet on display.
-        //
-        // Capturing while still hidden does not leave the app uncovered for the
-        // duration. This runs to the end of `show` without returning to the run
-        // loop, so no frame is committed between the picture being taken and the
-        // window being raised over it, and a snapshot can only ever be of a
-        // committed frame. Ordering it the other way round would buy nothing and
-        // cost a raise the picture it is being raised to show.
-
-        let backdrop = presentation == .cover
-            ? contentWindow(in: scene).flatMap(PrivacyBackdrop.picture).map(Image.init(uiImage:))
-            : nil
+        // Read rather than taken here, and shared with the app's own overlay so
+        // the two cannot draw different things — see ``PrivacyBackdrop/latest``.
+        // Only the privacy cover carries it: the gate and the recovery screen
+        // are screens in their own right, and a blurred wallet behind either of
+        // them would be the wallet on display.
+        let backdrop = presentation == .cover ? PrivacyBackdrop.latest : nil
 
         if presentation.isInteractive {
             window.makeKeyAndVisible()
@@ -252,18 +245,6 @@ final class AppLockWindowHost: ObservableObject {
             onAttemptFailed: onAttemptFailed,
             onRestoreFromBackup: onRestoreFromBackup
         )
-    }
-
-    /// The window the app itself draws into, as opposed to the raised one this
-    /// puts over it.
-    ///
-    /// Level rather than type is what tells them apart, because a sheet is
-    /// presented into the app's own window and so is exactly what a cover has to
-    /// take a picture of. `.normal` is where the app lives; everything raised
-    /// over it — this host's windows, the keyboard — sits above.
-    private func contentWindow(in scene: UIWindowScene) -> UIWindow? {
-        scene.windows.first { $0.isKeyWindow && $0.windowLevel == .normal }
-            ?? scene.windows.first { !($0 is AppLockWindow) && $0.windowLevel == .normal }
     }
 
     private func makeWindow(for scene: UIWindowScene) -> AppLockWindow {
