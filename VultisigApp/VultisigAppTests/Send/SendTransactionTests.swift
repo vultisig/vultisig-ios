@@ -14,10 +14,32 @@ import VultisigCommonData
 @MainActor
 final class SendTransactionTests: XCTestCase {
 
+    /// Fixtures here go through `TestStore.makeVault`, which inserts into
+    /// `Storage.shared.modelContext`. Without a container of its own the class
+    /// wrote into whichever context the previous test class left behind — or the
+    /// app's real store — so vaults accumulated across cases and, because every
+    /// `@Attribute(.unique)` field on `Vault` matched, SwiftData upserted them
+    /// into a single shared row. One vault per test, in a store that starts
+    /// empty and is handed back on teardown.
+    private var storeToken: TestContextToken!
+    private var vault: Vault!
+
+    override func setUp() async throws {
+        try await super.setUp()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
+    }
+
+    override func tearDown() async throws {
+        vault = nil
+        TestStore.restore(storeToken)
+        storeToken = nil
+        try await super.tearDown()
+    }
+
     // MARK: - empty seed
 
     func testEmptySeedDefaultsAreZeroOrEmpty() throws {
-        let vault = try TestStore.makeVault()
         let coin = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
         let tx = SendTransaction.empty(coin: coin, vault: vault)
 
@@ -34,7 +56,6 @@ final class SendTransactionTests: XCTestCase {
     }
 
     func testEmptySeedFromAddressMirrorsCoinAddress() throws {
-        let vault = try TestStore.makeVault()
         let coin = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         let tx = SendTransaction.empty(coin: coin, vault: vault)
         XCTAssertEqual(tx.fromAddress, coin.address)
@@ -43,7 +64,6 @@ final class SendTransactionTests: XCTestCase {
     // MARK: - Decision 1: plain [String: String] dictionary
 
     func testMemoFunctionDictionaryIsPlainDict() throws {
-        let vault = try TestStore.makeVault()
         let coin = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
         let tx = SendTransaction.empty(coin: coin, vault: vault)
         // Type assertion: not a ThreadSafeDictionary — directly subscriptable.
@@ -55,7 +75,6 @@ final class SendTransactionTests: XCTestCase {
     func testVaultIsNonOptional() throws {
         // If the type system enforces non-optional, this just compiles. Belt-and-
         // braces: read .vault and verify it isn't nil at runtime.
-        let vault = try TestStore.makeVault()
         let coin = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
         let tx = SendTransaction.empty(coin: coin, vault: vault)
         XCTAssertEqual(tx.vault.pubKeyECDSA, vault.pubKeyECDSA)
@@ -64,14 +83,12 @@ final class SendTransactionTests: XCTestCase {
     // MARK: - feeCoin resolution
 
     func testFeeCoinForNativeSourceIsSelf() throws {
-        let vault = try TestStore.makeVault()
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         let tx = SendTransaction.empty(coin: eth, vault: vault)
         XCTAssertEqual(tx.feeCoin, eth)
     }
 
     func testFeeCoinForERC20FallsBackToCoinWhenVaultHasNoNative() throws {
-        let vault = try TestStore.makeVault()
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let tx = SendTransaction.empty(coin: usdc, vault: vault)
         // Empty vault — no ETH sibling — falls back to coin.
@@ -81,7 +98,6 @@ final class SendTransactionTests: XCTestCase {
     // MARK: - Builder
 
     func testWithUpdatesGasAndFeePreservingIdentity() throws {
-        let vault = try TestStore.makeVault()
         let coin = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         let original = SendTransaction.empty(coin: coin, vault: vault)
         let updated = original.with(gas: BigInt(50_000_000_000), fee: BigInt(1_500_000_000_000_000))
@@ -94,7 +110,6 @@ final class SendTransactionTests: XCTestCase {
     // MARK: - Decision 3: with(...) preserves custom gas pin
 
     func testWithDoesNotClearCustomGasLimitOnRefresh() throws {
-        let vault = try TestStore.makeVault()
         let coin = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         let pinned = SendTransaction(
             coin: coin,
@@ -126,7 +141,6 @@ final class SendTransactionTests: XCTestCase {
     }
 
     func testERC20DefaultGasLimitUsesTokenTransferLimit() throws {
-        let vault = try TestStore.makeVault()
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let tx = SendTransaction.empty(coin: usdc, vault: vault)
 
@@ -134,7 +148,6 @@ final class SendTransactionTests: XCTestCase {
     }
 
     func testWithDoesNotClearCustomByteFeeOnRefresh() throws {
-        let vault = try TestStore.makeVault()
         let btc = makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
         let pinned = SendTransaction(
             coin: btc,
@@ -307,7 +320,6 @@ final class SendTransactionTests: XCTestCase {
         sendMaxAmount: Bool = false,
         isStakingOperation: Bool = false
     ) throws -> SendTransaction {
-        let vault = try TestStore.makeVault()
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         return SendTransaction(
             coin: eth, vault: vault, fromAddress: eth.address,

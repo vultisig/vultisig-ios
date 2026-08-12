@@ -18,6 +18,29 @@ import XCTest
 @MainActor
 final class SendPreviewOverrideTests: XCTestCase {
 
+    /// Fixtures here go through `TestStore.makeVault`, which inserts into
+    /// `Storage.shared.modelContext`. Without a container of its own the class
+    /// wrote into whichever context the previous test class left behind — or the
+    /// app's real store — so vaults accumulated across cases and, because every
+    /// `@Attribute(.unique)` field on `Vault` matched, SwiftData upserted them
+    /// into a single shared row. One vault per test, in a store that starts
+    /// empty and is handed back on teardown.
+    private var storeToken: TestContextToken!
+    private var vault: Vault!
+
+    override func setUp() async throws {
+        try await super.setUp()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
+    }
+
+    override func tearDown() async throws {
+        vault = nil
+        TestStore.restore(storeToken)
+        storeToken = nil
+        try await super.tearDown()
+    }
+
     func testOverrideSurfacesDisplayUsdcWhenSignedCoinDiffers() throws {
         let usdc = makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
         let vaultRecipient = "0x1111111111111111111111111111111111111111"
@@ -59,7 +82,6 @@ final class SendPreviewOverrideTests: XCTestCase {
     }
 
     private func makeTransaction(coin: Coin, toAddress: String, amount: String) throws -> SendTransaction {
-        let vault = try TestStore.makeVault()
         return SendTransaction(
             coin: coin, vault: vault, fromAddress: coin.address,
             toAddress: toAddress, toAddressLabel: nil,

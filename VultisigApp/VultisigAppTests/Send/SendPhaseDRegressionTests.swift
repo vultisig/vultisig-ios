@@ -23,6 +23,29 @@ import VultisigCommonData
 @MainActor
 final class SendPhaseDRegressionTests: XCTestCase {
 
+    /// Fixtures here go through `TestStore.makeVault`, which inserts into
+    /// `Storage.shared.modelContext`. Without a container of its own the class
+    /// wrote into whichever context the previous test class left behind — or the
+    /// app's real store — so vaults accumulated across cases and, because every
+    /// `@Attribute(.unique)` field on `Vault` matched, SwiftData upserted them
+    /// into a single shared row. One vault per test, in a store that starts
+    /// empty and is handed back on teardown.
+    private var storeToken: TestContextToken!
+    private var vault: Vault!
+
+    override func setUp() async throws {
+        try await super.setUp()
+        storeToken = try TestStore.installInMemoryContainer()
+        vault = TestStore.makeVault()
+    }
+
+    override func tearDown() async throws {
+        vault = nil
+        TestStore.restore(storeToken)
+        storeToken = nil
+        try await super.tearDown()
+    }
+
     // MARK: - Lesson 1 — fiat conversion reads tx.fee, not tx.gas
 
     /// Sites covered: `CryptoAmountFormatter.feesInReadable(tx:)`,
@@ -33,7 +56,6 @@ final class SendPhaseDRegressionTests: XCTestCase {
     /// except `tx.gas`, and assert the readable output is the SAME (because
     /// only `tx.fee` should influence the fiat-fee display for non-UTXO chains).
     func testFeesInReadableReflectsTxFeeNotGas() throws {
-        let vault = try TestStore.makeVault()
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true, rawBalance: "1000000000000000000")
 
         let txLowFee = try makeTx(
