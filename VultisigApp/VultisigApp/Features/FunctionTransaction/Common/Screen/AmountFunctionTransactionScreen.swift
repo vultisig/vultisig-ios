@@ -25,7 +25,6 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     /// Callers whose maximum is exact pass the asset's own scale.
     let amountDecimals: Int
     @StateObject var amountField: FormField
-    @Binding var validForm: Bool
     /// Hard-disables Continue, forwarded to `FormScreen`. For flows with a
     /// pre-flight condition no amount can satisfy — a position that cannot be
     /// withdrawn at all — so the button reads as disabled rather than silently
@@ -47,7 +46,6 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         percentageFieldType: PercentageFieldType,
         amountDecimals: Int = 4,
         amountField: FormField,
-        validForm: Binding<Bool>,
         isContinueDisabled: Bool = false,
         customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,
         onVerify: @escaping () -> Void,
@@ -61,7 +59,6 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         self.percentageFieldType = percentageFieldType
         self.amountDecimals = amountDecimals
         self._amountField = StateObject(wrappedValue: amountField)
-        self._validForm = validForm
         self.isContinueDisabled = isContinueDisabled
         self.onVerify = onVerify
         self.customViewPosition = customViewPosition
@@ -72,7 +69,6 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     var body: some View {
         FormScreen(
             title: title,
-            validForm: $validForm,
             isContinueDisabled: isContinueDisabled,
             onContinue: onContinue
         ) {

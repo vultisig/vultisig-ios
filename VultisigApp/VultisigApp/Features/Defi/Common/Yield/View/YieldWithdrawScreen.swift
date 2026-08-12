@@ -35,7 +35,6 @@ struct YieldWithdrawScreen: View {
                     percentageSelected: $viewModel.percentageSelected,
                     percentageFieldType: .slider,
                     amountField: viewModel.amountField,
-                    validForm: $viewModel.validForm,
                     customViewPosition: .bottom
                 ) {
                     Task { await handleWithdraw() }

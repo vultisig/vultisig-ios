@@ -56,15 +56,18 @@ protocol KaminoDepositPreparing: KaminoPriorityPricing {
 
 /// What a withdraw form needs from the pipeline.
 ///
-/// The amount is a `KaminoShareAmount` and cannot be anything else: the API takes
-/// the same `amount` field for both actions with inverted units, and the type is
-/// what makes handing it a token amount a compile error rather than a withdraw
-/// mis-sized by the share rate.
+/// The amount is a `KaminoWithdrawRequest`, whose `shares` is a
+/// `KaminoShareAmount` and cannot be anything else: the API takes the same
+/// `amount` field for both actions with inverted units, and the type is what
+/// makes handing it a token amount a compile error rather than a withdraw
+/// mis-sized by the share rate. The request also carries the unstaked half of
+/// the position, because that is what decides which of the two withdraw shapes
+/// the API will build and therefore which one the validator must require.
 protocol KaminoWithdrawPreparing: KaminoPriorityPricing {
     func prepareWithdraw(
         vault: KaminoVaultInfo,
         owner: String,
-        shares: KaminoShareAmount,
+        request: KaminoWithdrawRequest,
         unitPrice: UInt64
     ) async throws -> KaminoPreparedTransaction
 }
@@ -271,24 +274,27 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
     /// over-sized request.
     ///
     /// The validator's second pass pins the withdraw instruction's `u64` to
-    /// exactly `shares`, so a response that came back carrying the sentinel — or
-    /// any other amount — is refused before simulation and before signing. That
-    /// is what makes a stale balance read cost a refusal rather than a full exit.
+    /// exactly `request.shares`, so a response that came back carrying the
+    /// sentinel — or any other amount — is refused before simulation and before
+    /// signing. That is what makes a stale balance read cost a refusal rather
+    /// than a full exit. When the request exceeds the shares already unstaked it
+    /// also pins the farm release to exactly the shortfall, and requires it to
+    /// be there.
     func prepareWithdraw(
         vault: KaminoVaultInfo,
         owner: String,
-        shares: KaminoShareAmount,
+        request: KaminoWithdrawRequest,
         unitPrice: UInt64
     ) async throws -> KaminoPreparedTransaction {
         let built = try await service.buildWithdrawTransaction(
             owner: owner,
             vault: vault.descriptor,
-            shares: shares
+            shares: request.shares
         )
 
         return try await finish(
             base64: built,
-            operation: .withdraw(shares),
+            operation: .withdraw(request),
             vault: vault,
             owner: owner,
             unitLimit: KaminoComputeBudget.withdrawUnitLimit,

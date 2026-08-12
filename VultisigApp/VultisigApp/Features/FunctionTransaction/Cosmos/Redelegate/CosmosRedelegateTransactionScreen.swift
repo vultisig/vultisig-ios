@@ -34,7 +34,6 @@ struct CosmosRedelegateTransactionScreen: View {
     var body: some View {
         FormScreen(
             title: String(format: "cosmosStakingRedelegateTitle".localized, viewModel.coin.ticker),
-            validForm: $viewModel.validForm,
             isContinueDisabled: !viewModel.hasSufficientBalanceForFee,
             onContinue: onContinue
         ) {

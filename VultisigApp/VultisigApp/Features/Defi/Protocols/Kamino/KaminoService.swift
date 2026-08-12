@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import BigInt
 import Foundation
 import OSLog
 
@@ -81,7 +82,7 @@ struct KaminoService: KaminoServiceProtocol {
 
         try Self.assertMatchesRegistry(state: state, descriptor: descriptor)
 
-        guard let minDeposit = KaminoTokenAmount(
+        guard let publishedMinDeposit = KaminoTokenAmount(
             baseUnitString: state.minDepositAmount,
             decimals: descriptor.tokenDecimals
         ) else {
@@ -90,12 +91,23 @@ struct KaminoService: KaminoServiceProtocol {
                 value: state.minDepositAmount
             )
         }
+        // The published figures are numbers a remote service hands us, and they
+        // end up bounding what a user may spend. A non-positive or absurd one is
+        // refused rather than propagated into a minimum nothing can satisfy.
+        let minDeposit = Self.effectiveMinimumDeposit(published: publishedMinDeposit)
+        guard publishedMinDeposit.isValidRequestAmount, minDeposit.isValidRequestAmount else {
+            throw KaminoServiceError.malformedNumber(
+                field: "minDepositAmount",
+                value: state.minDepositAmount
+            )
+        }
 
-        // Share base units, not token base units — the two decimal scales differ
-        // on the SOL vault (9 vs 6).
-        guard let minWithdraw = KaminoShareAmount(
+        // TOKEN base units. The field's name suggests a share count and the two
+        // scales differ on the SOL vault (9 vs 6), so reading it wrong is silent
+        // — see `effectiveMinimumWithdraw` for how that was established.
+        guard let publishedMinWithdraw = KaminoTokenAmount(
             baseUnitString: state.minWithdrawAmount,
-            decimals: descriptor.sharesDecimals
+            decimals: descriptor.tokenDecimals
         ) else {
             throw KaminoServiceError.malformedNumber(
                 field: "minWithdrawAmount",
@@ -117,6 +129,17 @@ struct KaminoService: KaminoServiceProtocol {
             )
         }
 
+        guard let minWithdraw = Self.effectiveMinimumWithdraw(
+            published: publishedMinWithdraw,
+            tokensPerShare: tokensPerShare,
+            shareDecimals: descriptor.sharesDecimals
+        ), publishedMinWithdraw.isValidRequestAmount, minWithdraw.isValidRequestAmount else {
+            throw KaminoServiceError.malformedNumber(
+                field: "minWithdrawAmount",
+                value: state.minWithdrawAmount
+            )
+        }
+
         return KaminoVaultInfo(
             descriptor: descriptor,
             name: state.name,
@@ -132,6 +155,97 @@ struct KaminoService: KaminoServiceProtocol {
                 decimalString: metrics.tokensAvailable,
                 decimals: descriptor.tokenDecimals
             )
+        )
+    }
+
+    /// The smallest deposit the form may offer.
+    ///
+    /// The published `minDepositAmount` is in the right unit — unlike its
+    /// withdraw counterpart — but the program still refuses a deposit *at* it,
+    /// with `DepositAmountBelowMinimum` (custom 7026,
+    /// `vault_operations.rs:113`). Measured at one base unit of resolution:
+    /// Steakhouse USDC refuses 100,007 and accepts 100,008 against a published
+    /// 100,000; Allez SOL refuses 10,000,009 and accepts 10,000,010 against
+    /// 10,000,000. So the shortfall is a handful of base units rather than the
+    /// withdraw side's factor of two, and it moves with the share rate — the
+    /// gap is a rounding loss in the share the deposit mints, not a second
+    /// threshold.
+    ///
+    /// The margin is therefore proportional, with an absolute floor for a vault
+    /// whose minimum is small enough that a tenth of a percent rounds away. Both
+    /// bounds are generous against what was measured — 100 base units where 8
+    /// were needed, 10,000 where 10 were — and both are invisible in money: a
+    /// tenth of a percent of a ten-cent minimum.
+    ///
+    /// This also repairs the SOL vault's maximum. `maxNativeDepositLamports`
+    /// probes with exactly this amount and the preparer requires the probe to
+    /// simulate cleanly, so a probe below the program's floor made the whole
+    /// measurement throw.
+    private static func effectiveMinimumDeposit(published: KaminoTokenAmount) -> KaminoTokenAmount {
+        let proportional = (published.baseUnits + minimumDepositMarginDivisor - 1) / minimumDepositMarginDivisor
+        let margin = max(proportional, minimumDepositMarginFloor)
+        return KaminoTokenAmount(
+            baseUnits: published.baseUnits + margin,
+            decimals: published.decimals
+        )
+    }
+
+    /// A margin of one part in this many — a tenth of a percent.
+    private static let minimumDepositMarginDivisor = BigInt(1_000)
+
+    /// Smallest margin in base units, for a minimum too small for the
+    /// proportional one to clear a rounding loss. Larger than either measured
+    /// shortfall.
+    private static let minimumDepositMarginFloor = BigInt(16)
+
+    /// Multiple of the published minimum a withdraw's token value must reach.
+    ///
+    /// The measured floor sits just above two; the third is margin, because the
+    /// rule below is a reading of observed behaviour rather than a documented
+    /// contract.
+    static let minimumWithdrawMultiple = BigInt(3)
+
+    /// The smallest withdraw the form may offer, in SHARE base units.
+    ///
+    /// Deliberately **not** `state.minWithdrawAmount` converted, and that is the
+    /// whole point of this function. Two things about that field were
+    /// established by simulating the transactions the API builds, at one base
+    /// unit of resolution:
+    ///
+    /// 1. **It is denominated in the underlying TOKEN, not in shares.** The
+    ///    withdraw endpoint itself takes shares, which is what made the opposite
+    ///    reading look right, and on the dollar vaults the rate is near 1 so the
+    ///    two readings are within rounding of each other. On the SOL vault they
+    ///    differ by a factor of about 930.
+    /// 2. **The program's floor is higher than the published figure.** A
+    ///    withdraw whose token value does not exceed twice the published amount
+    ///    is refused on chain with `WithdrawAmountBelowMinimum`. Steakhouse USDC
+    ///    refuses 1898 share base units (worth 2000.2 tokens) and accepts 1899
+    ///    (2001.3); Allez SOL refuses 1861 (2000.9 lamports) and accepts 1862
+    ///    (2002.0). Both withdraw shapes — the farm-staked one and the short one
+    ///    — share the boundary, so it belongs to the vault withdraw and not to
+    ///    the farm release.
+    ///
+    /// Read as shares, the published figure is roughly half of what the chain
+    /// will accept, so the form advertised a minimum, accepted it, and then
+    /// failed at the simulation gate with an error about an amount the user had
+    /// been told was allowed. Nothing was ever at risk — that gate is what
+    /// caught it — but the number on screen was wrong.
+    ///
+    /// Rounded up, because a share count worth fractionally less than the
+    /// minimum is exactly the failure being fixed.
+    private static func effectiveMinimumWithdraw(
+        published: KaminoTokenAmount,
+        tokensPerShare: KaminoRate,
+        shareDecimals: Int
+    ) -> KaminoShareAmount? {
+        let required = KaminoTokenAmount(
+            baseUnits: published.baseUnits * minimumWithdrawMultiple,
+            decimals: published.decimals
+        )
+        return required.shareAmountRoundedUp(
+            tokensPerShare: tokensPerShare,
+            shareDecimals: shareDecimals
         )
     }
 
@@ -191,10 +305,16 @@ struct KaminoService: KaminoServiceProtocol {
         try Self.assertCurated(vault)
         try Self.validate(shares, label: "withdraw")
         // `u64::MAX` is the API's own "withdraw everything" sentinel: it is what
-        // an over-sized request is silently rewritten to. No legitimate share
-        // balance is 18.4 quintillion base units, so refusing the value outright
-        // means a full exit can never be requested by arithmetic — only by a
-        // balance this app read and then sent verbatim.
+        // a request AT OR ABOVE the user's balance is silently rewritten to. No
+        // legitimate share balance is 18.4 quintillion base units, so refusing
+        // the value outright costs nothing and closes the one way this app could
+        // name it directly.
+        //
+        // It is not the only way to end up with one, though, and the other way
+        // is upstream of here: asking for the whole balance produces the
+        // sentinel in the RESPONSE. `KaminoSharePosition.spendable` is what
+        // keeps every request this app makes strictly below the balance, and the
+        // validator is what refuses the response if one arrives anyway.
         guard shares.baseUnits < KaminoBaseUnits.maxBaseUnits else {
             throw KaminoServiceError.invalidAmount(
                 "withdraw amount \(shares.baseUnits) is the withdraw-everything sentinel"

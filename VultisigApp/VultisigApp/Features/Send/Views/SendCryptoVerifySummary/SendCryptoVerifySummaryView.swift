@@ -106,6 +106,17 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .showIf(input.toAddress.isNotEmpty)
             }
 
+            // Which vault the address above actually is, and who curates it —
+            // read out of the bytes, not out of the request. In the normal row
+            // list rather than a section of their own: they identify the
+            // destination, which is what the rows around them are for.
+            if let kamino = kaminoState.display {
+                getValueCell(for: "kaminoVerifyVault", with: kamino.vaultName)
+                Separator()
+                getValueCell(for: "kaminoVerifyCurator", with: kamino.curatorWithRiskTier)
+                Separator()
+            }
+
             if shouldShowAmountRow, let tokenDisplay = input.tokenDisplay, !tokenDisplay.isEmpty {
                 getValueCell(
                     for: "amount",
@@ -153,6 +164,28 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             ForEach(input.additionalRows) { row in
                 Separator()
                 getValueCell(for: row.title, with: row.value)
+            }
+
+            // What the decode has left to say once the vault, curator and action
+            // are already rows above: a withdraw's share figure, and anything
+            // this transaction needs to warn about. Placed ahead of the
+            // raw-transaction disclosure and outside it, because a co-signer must
+            // not have to expand anything to learn that a decode disagreed with
+            // the summary — that is a refusal, not a detail.
+            //
+            // Gated on `hasVisibleDetail` rather than on "is this Kamino": a
+            // verified deposit has nothing further to report, and rendering it
+            // anyway leaves a separator and an empty band under the fee row.
+            //
+            // Bound once: the decode parses the wire message and derives the
+            // signer's share account for each curated vault, so reading the
+            // property twice per render would do that work twice.
+            let kamino = kaminoState
+            Group {
+                if kamino.hasVisibleDetail {
+                    Separator()
+                    KaminoVerifyDetailView(state: kamino)
+                }
             }
 
             Group {
@@ -311,16 +344,26 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .padding(.bottom, 8)
         } else {
             VStack(spacing: 8) {
-                Text(NSLocalizedString("youreSending", comment: ""))
+                // A Kamino transaction says what it is here rather than "you're
+                // sending", which describes a transfer and is the one thing a
+                // vault deposit is not.
+                Text(kaminoState.display?.headerTitle ?? NSLocalizedString("youreSending", comment: ""))
                     .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.bodyMMedium)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 8) {
-                    Image(input.coinImage)
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .cornerRadius(Theme.radius.pill)
+                    // `Image(_:)` resolves a bundled asset by name and renders
+                    // nothing when there is no such asset. Native coins ship one;
+                    // a token's `logo` is a remote URL, so every SPL/ERC-20 send
+                    // drew a blank square here. `AsyncImageView` handles both and
+                    // falls back to the ticker rather than to empty space.
+                    AsyncImageView(
+                        logo: input.coinImage,
+                        size: CGSize(width: 24, height: 24),
+                        ticker: input.coinTicker,
+                        tokenChainLogo: nil
+                    )
 
                     CoinAmountFiatLabel(
                         amount: input.amount,
@@ -394,6 +437,20 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .background(Theme.radius.lg.shape.fill(Theme.colors.bgSurface2))
             }
         }
+    }
+
+    /// Render state for a Kamino Earn transaction, derived from the KEYSIGN
+    /// PAYLOAD on whichever device is rendering.
+    ///
+    /// Always from the payload, never from `input`: this is the one view both
+    /// the initiator's Verify screen and a co-signer's Join screen render, and
+    /// the whole value of the decode is that each device derives the claim from
+    /// the bytes it is about to sign rather than from anything it was told.
+    ///
+    /// Cheap for everything else — the guard inside is `signSolana == nil`,
+    /// which every non-raw-Solana payload fails immediately.
+    var kaminoState: KaminoVerifyPresentation.State {
+        KaminoVerifyPresentation.state(for: input.keysignPayload)
     }
 
     /// Render state for an XRPL TrustSet.

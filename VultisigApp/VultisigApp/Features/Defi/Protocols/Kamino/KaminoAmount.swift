@@ -97,6 +97,40 @@ struct KaminoRate: Hashable {
     private var apiStringValue: String {
         KaminoBaseUnits.render(baseUnits: numerator, decimals: scale)
     }
+
+    /// This value's numerator at `target` decimal places, or `nil` when `target`
+    /// is too coarse to hold it without loss.
+    func numerator(atScale target: Int) -> BigInt? {
+        guard target >= scale else { return nil }
+        return numerator * BigInt(10).power(target - scale)
+    }
+
+    /// The exact sum of two API decimal strings, or `nil` when either is not one.
+    ///
+    /// Exists so two reported figures can be added at the precision they were
+    /// reported at, rather than after each has been truncated to a mint's scale.
+    /// See `KaminoSharePosition.accountsForItsTotal` for why that distinction is
+    /// the difference between a guard and a false refusal.
+    static func sum(_ lhs: String, _ rhs: String) -> KaminoRate? {
+        guard let left = KaminoRate(apiString: lhs), let right = KaminoRate(apiString: rhs) else { return nil }
+        let scale = max(left.scale, right.scale)
+        guard let a = left.numerator(atScale: scale), let b = right.numerator(atScale: scale) else { return nil }
+        return KaminoRate(numerator: a + b, scale: scale)
+    }
+
+    /// Whether `value` names exactly this number. `false` when it is not a plain
+    /// decimal at all — an unreadable figure is never equal to a readable one.
+    static func isEqual(_ lhs: KaminoRate, _ rhs: String) -> Bool {
+        guard let right = KaminoRate(apiString: rhs) else { return false }
+        let scale = max(lhs.scale, right.scale)
+        guard let a = lhs.numerator(atScale: scale), let b = right.numerator(atScale: scale) else { return false }
+        return a == b
+    }
+
+    private init(numerator: BigInt, scale: Int) {
+        self.numerator = numerator
+        self.scale = scale
+    }
 }
 
 /// Rendering and scaling helpers shared by the amount types.
@@ -206,7 +240,10 @@ struct KaminoShareAmount: KaminoBaseUnitAmount {
     }
 
     /// Parses a base-unit string as it appears in `VaultState` (e.g.
-    /// `minWithdrawAmount = "1000"`, which is in SHARE base units, not token ones).
+    /// `minDepositAmount = "100000"`). The caller supplies the scale, because
+    /// the response never says which of the two mints a figure belongs to —
+    /// `minWithdrawAmount` is a token amount despite naming the unit the
+    /// withdraw endpoint takes.
     init?(baseUnitString: String, decimals: Int) {
         guard let baseUnits = BigInt(baseUnitString) else { return nil }
         self.init(baseUnits: baseUnits, decimals: decimals)
@@ -361,15 +398,32 @@ enum KaminoAmountMath {
 
     /// Rescales an exact rate to base units at `decimals`, truncating toward zero.
     static func scale(rate: KaminoRate, toDecimals decimals: Int) -> BigInt? {
+        scaleReportingExactness(rate: rate, toDecimals: decimals)?.baseUnits
+    }
+
+    /// The same rescale, plus whether anything was truncated away.
+    ///
+    /// The flag exists for one caller and one reason. `/positions` reports share
+    /// balances at up to 14 decimal places while a share mint has 6, so the
+    /// truncated figure is *strictly below* the real balance whenever there were
+    /// extra digits — and exactly equal to it when there were not. The withdraw
+    /// maximum has to be strictly below, so it needs to know which of the two
+    /// happened. See `KaminoSharePosition.spendable`.
+    static func scaleReportingExactness(
+        rate: KaminoRate,
+        toDecimals decimals: Int
+    ) -> (baseUnits: BigInt, isExact: Bool)? {
         guard (0...KaminoBaseUnits.maxDecimals).contains(decimals),
               (0...KaminoBaseUnits.maxDecimals * 4).contains(rate.scale),
               rate.numerator >= 0
         else { return nil }
 
         if decimals >= rate.scale {
-            return rate.numerator * BigInt(10).power(decimals - rate.scale)
+            return (rate.numerator * BigInt(10).power(decimals - rate.scale), true)
         }
-        return rate.numerator / BigInt(10).power(rate.scale - decimals)
+        let divisor = BigInt(10).power(rate.scale - decimals)
+        let (quotient, remainder) = rate.numerator.quotientAndRemainder(dividingBy: divisor)
+        return (quotient, remainder.isZero)
     }
 }
 
@@ -388,7 +442,7 @@ extension KaminoShareAmount {
     /// The same conversion rounded **up**.
     ///
     /// Used for one thing only: rendering a share-denominated *minimum* as an
-    /// asset amount. `minWithdrawAmount` is in share base units, and a form
+    /// asset amount. `KaminoVaultInfo.minWithdraw` is a share count, and a form
     /// denominated in the asset has to name a figure that, converted back, still
     /// clears it — so the displayed minimum rounds away from the user rather
     /// than toward them. Never use this to size a transaction: rounding up is
@@ -434,6 +488,29 @@ extension KaminoTokenAmount {
     /// withdraw into a full exit. For the same reason a 100% withdraw must send
     /// the held share balance directly and never a number derived from here.
     func shareAmount(tokensPerShare rate: KaminoRate, shareDecimals: Int) -> KaminoShareAmount? {
+        shareAmount(tokensPerShare: rate, shareDecimals: shareDecimals, roundingUp: false)
+    }
+
+    /// The same conversion rounded **up**.
+    ///
+    /// Used for one thing only: turning a token-denominated *minimum* into the
+    /// share count a withdraw has to name to clear it. Rounding down there would
+    /// produce a share figure worth fractionally less than the minimum, which is
+    /// the whole bug this exists to avoid.
+    ///
+    /// Never use it to size a transaction. Rounding up is precisely the
+    /// direction that turns a partial withdraw into an over-request, and an
+    /// over-request is rewritten by the API to `u64::MAX` — *withdraw
+    /// everything*.
+    func shareAmountRoundedUp(tokensPerShare rate: KaminoRate, shareDecimals: Int) -> KaminoShareAmount? {
+        shareAmount(tokensPerShare: rate, shareDecimals: shareDecimals, roundingUp: true)
+    }
+
+    private func shareAmount(
+        tokensPerShare rate: KaminoRate,
+        shareDecimals: Int,
+        roundingUp: Bool
+    ) -> KaminoShareAmount? {
         guard rate.isPositive,
               baseUnits >= 0,
               (0...KaminoBaseUnits.maxDecimals).contains(shareDecimals),
@@ -446,6 +523,9 @@ extension KaminoTokenAmount {
         //                ÷ (10^tokenDecimals × numerator)
         let numerator = baseUnits * BigInt(10).power(rate.scale + shareDecimals)
         let denominator = BigInt(10).power(decimals) * rate.numerator
-        return KaminoShareAmount(baseUnits: numerator / denominator, decimals: shareDecimals)
+        let quotient = roundingUp
+            ? (numerator + denominator - 1) / denominator
+            : numerator / denominator
+        return KaminoShareAmount(baseUnits: quotient, decimals: shareDecimals)
     }
 }
