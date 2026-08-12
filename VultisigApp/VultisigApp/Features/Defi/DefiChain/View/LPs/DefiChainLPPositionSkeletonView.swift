@@ -74,5 +74,6 @@ struct DefiChainLPPositionSkeletonView: View {
             }
         }
         .redacted(reason: .placeholder)
+        .shimmer()
     }
 }

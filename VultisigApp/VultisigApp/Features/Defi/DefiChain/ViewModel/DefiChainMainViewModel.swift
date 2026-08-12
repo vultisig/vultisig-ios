@@ -16,10 +16,10 @@ final class DefiChainMainViewModel: ObservableObject {
     @Published var selectedPosition: DefiChainPositionType = .bond
     @Published var positions: [SegmentedControlItem<DefiChainPositionType>] = []
 
-    @Published private(set) var availablePositions: [AssetSection<DefiChainPositionType, CoinMeta>] = []
+    @Published private(set) var availablePositions: [AssetSection<DefiChainPositionType, DefiSelectableAsset>] = []
     @Published var positionsSearchText = ""
 
-    var filteredAvailablePositions: [AssetSection<DefiChainPositionType, CoinMeta>] {
+    var filteredAvailablePositions: [AssetSection<DefiChainPositionType, DefiSelectableAsset>] {
         guard positionsSearchText.isNotEmpty else { return availablePositions }
         return availablePositions.compactMap { section in
             // An unresolved section has nothing to match yet. Keep it so a search
@@ -27,7 +27,9 @@ final class DefiChainMainViewModel: ObservableObject {
             // positions found", and so a failed section keeps its retry action.
             guard section.state == .loaded else { return section }
             let newPositions = section.assets
-                .filter { $0.ticker.localizedCaseInsensitiveContains(positionsSearchText) || $0.chain.ticker.localizedCaseInsensitiveContains(positionsSearchText) }
+                .filter { asset in
+                    asset.searchTerms.contains { $0.localizedCaseInsensitiveContains(positionsSearchText) }
+                }
             guard !newPositions.isEmpty else { return nil }
             return AssetSection(title: section.title, type: section.type, assets: newPositions, state: section.state)
         }
@@ -88,26 +90,29 @@ final class DefiChainMainViewModel: ObservableObject {
         await BalanceService.shared.updateBalance(for: nativeCoin)
     }
 
-    /// Publishes the whole catalog synchronously. Bond and stake come from
+    /// Publishes the whole catalog synchronously. Bond, stake and earn come from
     /// static in-app lists and must never wait on the network — gating them on
     /// the pool fetch left the picker rendering its "no positions" empty state
     /// for the duration of the request, with nothing to enable.
     ///
-    /// All three sections are always present and always in this order: the
+    /// The first three sections are always present and always in this order: the
     /// picker maps a tapped cell back to a selection bucket by section type, and
-    /// the persisted `DefiPositions` record has one field per type.
+    /// the persisted `DefiPositions` record has one field per type. Earn is
+    /// appended only on the chain that has yield vaults, and is deliberately
+    /// last — it has no `DefiPositions` bucket at all (its enablement lives on
+    /// `KaminoPosition`), so it can neither shift nor claim one of the three.
     func setupSelectablePositions() {
         let supportsLiquidityPools = positionsService.supportsLiquidityPools(for: chain)
-        availablePositions = [
+        var sections: [AssetSection<DefiChainPositionType, DefiSelectableAsset>] = [
             AssetSection(
                 title: DefiChainPositionType.bond.sectionTitle,
                 type: .bond,
-                assets: positionsService.bondCoins(for: chain)
+                assets: positionsService.bondCoins(for: chain).map { .coin($0) }
             ),
             AssetSection(
                 title: DefiChainPositionType.stake.sectionTitle,
                 type: .stake,
-                assets: positionsService.stakeCoins(for: chain)
+                assets: positionsService.stakeCoins(for: chain).map { .coin($0) }
             ),
             AssetSection(
                 title: DefiChainPositionType.liquidityPool.sectionTitle,
@@ -118,6 +123,18 @@ final class DefiChainMainViewModel: ObservableObject {
                 state: supportsLiquidityPools ? .loading : .loaded
             )
         ]
+
+        let earnVaults = positionsService.earnVaults(for: chain)
+        if !earnVaults.isEmpty {
+            sections.append(
+                AssetSection(
+                    title: DefiChainPositionType.earn.sectionTitle,
+                    type: .earn,
+                    assets: earnVaults.map { .kaminoVault($0) }
+                )
+            )
+        }
+        availablePositions = sections
 
         guard supportsLiquidityPools else { return }
         loadLiquidityPools()
@@ -154,7 +171,7 @@ final class DefiChainMainViewModel: ObservableObject {
         availablePositions[index] = AssetSection(
             title: section.title,
             type: section.type,
-            assets: assets,
+            assets: assets.map { .coin($0) },
             state: state
         )
     }
@@ -180,9 +197,10 @@ final class DefiChainMainViewModel: ObservableObject {
             // TON nominator-pool staking only — no bond / LP segments.
             [.stake]
         case .solana:
-            // Solana native (Stake program) staking only — routes to
-            // `SolanaStakeDefiView` (see `DefiChainMainScreen.solanaStakeView`).
-            [.stake]
+            // Native (Stake program) staking plus the Kamino Earn yield vaults —
+            // routed to `SolanaStakeDefiView` and `KaminoEarnView` respectively
+            // (see `DefiChainMainScreen`).
+            [.stake, .earn]
         default:
             []
         }

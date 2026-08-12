@@ -374,6 +374,7 @@
 "dontRemind" = "No volver a recordármelo";
 "downloadViaGitHub" = "Descargar vía GitHub";
 "dropFileHere" = "Suelta el archivo aquí...";
+"earn" = "Earn";
 "ECDSA" = "ECDSA";
 "ECDSAKey" = "Clave ECDSA";
 "EdDSA" = "EdDSA";
@@ -626,6 +627,13 @@
 "joinSend" = "Unirse a Enviar";
 "joinSwap" = "Unirse al intercambio";
 "joinTransactionSigning" = "Unir firma de transacciones";
+"kaminoEarnApy30d" = "APY (30 d)";
+"kaminoEarnCuratedBy" = "Gestionado por %@";
+"kaminoEarnDeposited" = "Depositado";
+"kaminoEarnPnl" = "Ganancias y pérdidas";
+"kaminoEarnRiskConservative" = "Conservador";
+"kaminoEarnRiskPrivateCredit" = "Crédito privado";
+"kaminoEarnTitle" = "Kamino Earn";
 "kaminoErrorVaultMetadataMismatch" = "Kamino informó %1$@ como %2$@; este vault espera %3$@";
 "kaminoErrorVaultNotInRegistry" = "El vault %@ no es uno con el que esta app opera";
 "keyCopied" = "Clave copiada";

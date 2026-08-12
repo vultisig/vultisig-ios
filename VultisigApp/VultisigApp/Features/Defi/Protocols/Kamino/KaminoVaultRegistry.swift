@@ -56,6 +56,11 @@ struct KaminoVaultDescriptor: Hashable, Identifiable {
 /// three entries are hydrated with three ~2.8 KB per-vault requests instead.
 enum KaminoVaultRegistry {
 
+    /// The chain the curated vaults live on. kVaults are Solana-only, and
+    /// callers gate on this rather than on `.solana` literals so a Kamino read
+    /// or write can never fire while the user is on another chain's DeFi tab.
+    static let chain: Chain = .solana
+
     /// The kVaults program every deposit and withdraw invokes.
     static let programId = "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd"
 
@@ -119,5 +124,34 @@ enum KaminoVaultRegistry {
     /// reject any vault a response mentions that we did not ask about.
     static func isAllowed(_ address: String) -> Bool {
         descriptor(for: address) != nil
+    }
+}
+
+extension KaminoRiskTier {
+    var title: String {
+        switch self {
+        case .conservative:
+            "kaminoEarnRiskConservative".localized
+        case .privateCredit:
+            "kaminoEarnRiskPrivateCredit".localized
+        }
+    }
+}
+
+extension KaminoVaultDescriptor {
+    /// The wallet coin the vault's underlying token corresponds to — the logo,
+    /// ticker and price feed a position is displayed and valued with.
+    ///
+    /// The SOL vault's underlying token is *wrapped* SOL, which the token store
+    /// does not carry: wrapping is a 1:1 escrow of the native coin and the two
+    /// share a price, so it resolves to native SOL. Everything else is looked up
+    /// by mint, and a mint with no entry yields `nil` — a position with no
+    /// resolvable coin is left out of the fiat roll-up rather than valued at an
+    /// arbitrary rate.
+    var underlyingCoinMeta: CoinMeta? {
+        guard tokenMint != KaminoVaultRegistry.wrappedSolMint else {
+            return DefiPositionsService.nativeSolanaMeta
+        }
+        return TokensStore.findTokenMeta(chain: .solana, contractAddress: tokenMint)
     }
 }
