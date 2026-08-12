@@ -26,6 +26,15 @@ import SwiftUI
 // mistake away from the signed order, for a presentational preference. Reopening
 // this needs a reason better than the mockup.
 
+/// Unscaled line box reserved for the price row — the full line box of
+/// `Theme.fonts.priceTitle1` (Satoshi-Medium 28).
+///
+/// Derived exactly as `SwapAssetCard` derives its 22pt one: ascent 22.22 +
+/// descent 5.28 + leading 2.20 = 29.70 at 22pt, so 29.70 / 22 × 28 = 37.8,
+/// rounded up. Scaled through `@ScaledMetric` at the point of use so it tracks
+/// Dynamic Type the way the font does.
+private let limitPriceLineHeight: CGFloat = 38
+
 struct LimitPriceCard: View {
 
     @Bindable var vm: LimitSwapFormViewModel
@@ -39,6 +48,19 @@ struct LimitPriceCard: View {
     /// USD-mode editing is only offered when a USD rate for the target is known;
     /// otherwise the USD value stays a read-only reflection.
     private var usdEditable: Bool { vm.targetUsdPricePerUnit > 0 }
+
+    /// Height the primary price value reserves, so the row is one deterministic
+    /// size instead of whatever its current content happens to measure.
+    ///
+    /// The three branches otherwise report different intrinsic heights for the
+    /// same font — `SwapAssetCard` documents the measurements: on iOS a
+    /// `TextField` is 28.00pt while it shows its placeholder and 29.33pt once it
+    /// holds text, and a plain `Text` is different again. So the row grew the
+    /// instant the first character was typed, and the header above it and the
+    /// market row below it both shifted: the "label moves when you tap the field"
+    /// effect. Reserving the font's own line box collapses all three to one
+    /// height. Same fix, same reasoning, as the Sell/Buy cards.
+    @ScaledMetric private var priceLineHeight: CGFloat = limitPriceLineHeight
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -89,9 +111,16 @@ struct LimitPriceCard: View {
             // cannot express.
             LimitMarketOffsetRow(vm: vm, focusedField: focusedField)
 
-            // Between the price and the presets on purpose: the chart is what
-            // gives a preset its meaning, so it reads as the thing the pills act
-            // on rather than as an illustration tacked on below them.
+            // The pills sit directly under the offset chip they share a setter
+            // with: both state the target as a distance from market, so they read
+            // as one control with a row of shortcuts under it rather than as two
+            // separated by a chart.
+            LimitPresetPills(vm: vm, focusedField: focusedField)
+
+            // The chart comes last, below every control it feeds. It is the one
+            // OPTIONAL way to choose a price — collapsed by default and not even
+            // fetched until expanded — so it belongs after the ways that are
+            // always there, not wedged between them.
             //
             // The DISCLOSURE renders unconditionally, unlike the chart inside
             // it: whether a pair has a drawable series is only known after a
@@ -99,8 +128,6 @@ struct LimitPriceCard: View {
             // on `pairChart` would leave nothing to tap and the chart would be
             // unreachable for every pair.
             LimitPriceChartDisclosure(vm: vm)
-
-            LimitPresetPills(vm: vm, focusedField: focusedField)
         }
         .padding(16)
         .overlay(
@@ -116,20 +143,24 @@ struct LimitPriceCard: View {
             if vm.draft.displayUnit == .usd {
                 // USD mode: the emphasized value is the editable USD field (when a
                 // rate is known); the secondary is a read-only asset reflection.
-                if usdEditable {
-                    usdPriceField(font: Theme.fonts.priceTitle1, color: Theme.colors.textPrimary)
-                } else {
-                    Text(usdString)
-                        .font(Theme.fonts.priceTitle1)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                Group {
+                    if usdEditable {
+                        usdPriceField(font: Theme.fonts.priceTitle1, color: Theme.colors.textPrimary)
+                    } else {
+                        Text(usdString)
+                            .font(Theme.fonts.priceTitle1)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                    }
                 }
+                .frame(height: priceLineHeight, alignment: .leading)
                 assetReflection(font: Theme.fonts.bodySMedium, color: Theme.colors.textTertiary)
             } else {
                 // Asset mode: the emphasized value is the editable asset field; the
                 // secondary is the read-only USD reflection.
                 assetPriceField(font: Theme.fonts.priceTitle1, color: Theme.colors.textPrimary)
+                    .frame(height: priceLineHeight, alignment: .leading)
                 Text(usdString)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)

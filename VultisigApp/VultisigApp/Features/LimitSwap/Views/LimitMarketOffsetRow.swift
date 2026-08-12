@@ -69,13 +69,13 @@ struct LimitMarketOffsetRow: View {
             focusedField.wrappedValue = nil
             isEditingOffset = true
         } label: {
-            HStack(spacing: 3) {
+            HStack(spacing: 4) {
                 Text("limitSwap.price.vsMarket".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
 
                 Text(formatLimitPercent(vm.pctFromMarket))
-                    .font(Theme.fonts.caption12)
+                    .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(offsetTint)
                     .lineLimit(1)
 
@@ -83,18 +83,26 @@ struct LimitMarketOffsetRow: View {
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
 
+                // Accent-tinted and a size up from the caption text around it.
+                // At 10pt in tertiary it read as punctuation on a label rather
+                // than as the one thing on this row you can press.
                 Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Theme.colors.textTertiary)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.colors.primaryAccent3)
+                    .padding(.leading, 2)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
             .background(Theme.colors.bgSurface1)
             .overlay(
                 Theme.radius.pill.shape
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
             .clipShape(Theme.radius.pill.shape)
+            // The pill is the whole tap target, and it was ~24pt tall — under any
+            // reasonable minimum and, from the outside, indistinguishable from the
+            // read-only market text beside it.
+            .contentShape(Theme.radius.pill.shape)
         }
         .buttonStyle(.plain)
         .disabled(vm.marketPriceRef == nil)
