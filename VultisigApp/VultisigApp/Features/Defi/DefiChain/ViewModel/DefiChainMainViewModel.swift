@@ -95,12 +95,12 @@ final class DefiChainMainViewModel: ObservableObject {
     /// the pool fetch left the picker rendering its "no positions" empty state
     /// for the duration of the request, with nothing to enable.
     ///
-    /// The first three sections are always present and always in this order: the
-    /// picker maps a tapped cell back to a selection bucket by section type, and
-    /// the persisted `DefiPositions` record has one field per type. Earn is
-    /// appended only on the chain that has yield vaults, and is deliberately
-    /// last — it has no `DefiPositions` bucket at all (its enablement lives on
-    /// `KaminoPosition`), so it can neither shift nor claim one of the three.
+    /// Section ORDER here is presentational, and only that. The picker maps a
+    /// tapped cell back to a selection bucket through `selectionIndex`, which
+    /// each position type carries itself, so a section can move without filing a
+    /// selection under the wrong type — the reason that index exists rather than
+    /// being derived from this array. Earn appears only on a chain with yield
+    /// vaults, and leads there to match the segment order on the chain screen.
     func setupSelectablePositions() {
         let supportsLiquidityPools = positionsService.supportsLiquidityPools(for: chain)
         var sections: [AssetSection<DefiChainPositionType, DefiSelectableAsset>] = [
@@ -126,12 +126,21 @@ final class DefiChainMainViewModel: ObservableObject {
 
         let earnVaults = positionsService.earnVaults(for: chain)
         if !earnVaults.isEmpty {
-            sections.append(
+            // FIRST, matching the segment order on the chain screen — the two
+            // lists describe the same thing and disagreeing about which comes
+            // first is how a user hunts for a section they were just looking at.
+            //
+            // Safe to put anywhere: the picker maps a tapped cell to a bucket
+            // through `selectionIndex`, which each type carries itself, and Earn
+            // has none — its selection is a set of vault addresses kept beside
+            // the coin buckets. Nothing here is addressed by array position.
+            sections.insert(
                 AssetSection(
                     title: DefiChainPositionType.earn.sectionTitle,
                     type: .earn,
                     assets: earnVaults.map { .kaminoVault($0) }
-                )
+                ),
+                at: 0
             )
         }
         availablePositions = sections
@@ -197,10 +206,15 @@ final class DefiChainMainViewModel: ObservableObject {
             // TON nominator-pool staking only — no bond / LP segments.
             [.stake]
         case .solana:
-            // Native (Stake program) staking plus the Kamino Earn yield vaults —
-            // routed to `SolanaStakeDefiView` and `KaminoEarnView` respectively
-            // (see `DefiChainMainScreen`).
-            [.stake, .earn]
+            // Kamino Earn yield vaults first, then native (Stake program)
+            // staking — routed to `KaminoEarnView` and `SolanaStakeDefiView`
+            // respectively (see `DefiChainMainScreen`).
+            //
+            // Earn leads, which also makes it the segment the screen opens on:
+            // `onLoad` selects the first type. That is what the design asks for,
+            // and the order here is presentational only — the picker files a
+            // selection by `selectionIndex`, which Earn does not have at all.
+            [.earn, .stake]
         default:
             []
         }

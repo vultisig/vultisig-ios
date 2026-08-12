@@ -627,6 +627,8 @@
 "joinSend" = "Unirse a Enviar";
 "joinSwap" = "Unirse al intercambio";
 "joinTransactionSigning" = "Unir firma de transacciones";
+"kaminoBannerSubtitle" = "Empieza a ganar con Kamino";
+"kaminoBannerTitle" = "Nuevo en Solana";
 "kaminoDepositMinimum" = "El depósito mínimo es %@ %@.";
 "kaminoDepositMissingCoin" = "Añade %@ en Solana a tu vault antes de depositar.";
 "kaminoDepositTitle" = "Depositar";
@@ -634,8 +636,9 @@
 "kaminoEarnApy30d" = "APY (30 d)";
 "kaminoEarnCuratedBy" = "Gestionado por %@";
 "kaminoEarnDeposit" = "Depositar";
-"kaminoEarnDeposited" = "Depositado";
-"kaminoEarnPnl" = "Ganancias y pérdidas";
+"kaminoEarnDeposited" = "Depositado: %@";
+"kaminoEarnEarned" = "Ganado: %@";
+"kaminoEarnLost" = "Perdido: %@";
 "kaminoEarnRiskConservative" = "Conservador";
 "kaminoEarnRiskPrivateCredit" = "Crédito privado";
 "kaminoEarnTitle" = "Kamino Earn";

@@ -627,6 +627,8 @@
 "joinSend" = "Pridruži se Slanju";
 "joinSwap" = "Pridruži se Zamjeni";
 "joinTransactionSigning" = "Pridružite se potpisivanju transakcija";
+"kaminoBannerSubtitle" = "Počnite zarađivati uz Kamino";
+"kaminoBannerTitle" = "Novo na Solani";
 "kaminoDepositMinimum" = "Minimalni polog je %@ %@.";
 "kaminoDepositMissingCoin" = "Dodaj %@ na Solani u svoj vault prije polaganja.";
 "kaminoDepositTitle" = "Položi";
@@ -634,8 +636,9 @@
 "kaminoEarnApy30d" = "APY (30 d)";
 "kaminoEarnCuratedBy" = "Kurira %@";
 "kaminoEarnDeposit" = "Položi";
-"kaminoEarnDeposited" = "Položeno";
-"kaminoEarnPnl" = "Dobit i gubitak";
+"kaminoEarnDeposited" = "Položeno: %@";
+"kaminoEarnEarned" = "Zarađeno: %@";
+"kaminoEarnLost" = "Izgubljeno: %@";
 "kaminoEarnRiskConservative" = "Konzervativno";
 "kaminoEarnRiskPrivateCredit" = "Privatni kredit";
 "kaminoEarnTitle" = "Kamino Earn";

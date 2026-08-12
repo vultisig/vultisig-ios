@@ -436,6 +436,20 @@ final class KaminoTransactionValidatorTests: XCTestCase {
 
     // MARK: - Attribution memo
 
+    /// The tag and the program are an INTERFACE, not an implementation detail:
+    /// Kamino's own attribution and the public Dune queries filter on these
+    /// exact bytes, and iOS, Android and Windows all have to write the same
+    /// ones. Pinned as literals because everything else in the suite — the
+    /// fixtures, the injector, the validator, the decoder — derives from the
+    /// constants. If `memoTag` drifted to another valid two-byte string, every
+    /// one of those would still agree with itself, the live simulation would
+    /// still pass, and the attribution would silently stop matching anything.
+    func testTheAttributionTagAndProgramArePinnedToTheirLiterals() {
+        XCTAssertEqual(KaminoAttribution.memoTag, "vs")
+        XCTAssertEqual(KaminoAttribution.memoTagBytes, [0x76, 0x73])
+        XCTAssertEqual(SolanaV0Transaction.memoProgramId, "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
+    }
+
     /// The validator runs again on its own output, so the tagged form — budget
     /// pair in front, attribution memo behind — has to pass. If it did not, the
     /// memo could never be injected before the final gate.

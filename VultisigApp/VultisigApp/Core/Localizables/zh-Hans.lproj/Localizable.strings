@@ -627,6 +627,8 @@
 "joinSend" = "加入发送";
 "joinSwap" = "加入交换";
 "joinTransactionSigning" = "加入交易签名";
+"kaminoBannerSubtitle" = "通过 Kamino 开始赚取收益";
+"kaminoBannerTitle" = "Solana 新功能";
 "kaminoDepositMinimum" = "最低存入金额为 %@ %@。";
 "kaminoDepositMissingCoin" = "存入前请先将 Solana 上的 %@ 添加到你的保险库。";
 "kaminoDepositTitle" = "存入";
@@ -634,8 +636,9 @@
 "kaminoEarnApy30d" = "年化收益率（30天）";
 "kaminoEarnCuratedBy" = "由 %@ 管理";
 "kaminoEarnDeposit" = "存入";
-"kaminoEarnDeposited" = "已存入";
-"kaminoEarnPnl" = "盈亏";
+"kaminoEarnDeposited" = "已存入：%@";
+"kaminoEarnEarned" = "已赚取：%@";
+"kaminoEarnLost" = "已亏损：%@";
 "kaminoEarnRiskConservative" = "保守型";
 "kaminoEarnRiskPrivateCredit" = "私募信贷";
 "kaminoEarnTitle" = "Kamino Earn";
