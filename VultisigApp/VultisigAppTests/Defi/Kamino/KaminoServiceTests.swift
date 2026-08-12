@@ -21,7 +21,10 @@ final class KaminoServiceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         http = StubKaminoHTTPClient()
-        service = KaminoService(httpClient: http)
+        // A store of its own, never `.shared`: the hydration cache is shared
+        // across `KaminoService` values by design, so a test that took the real
+        // one would be answering with another test's fixtures.
+        service = KaminoService(httpClient: http, vaultInfoCache: KaminoVaultInfoCache())
     }
 
     override func tearDown() {
@@ -79,6 +82,82 @@ final class KaminoServiceTests: XCTestCase {
         XCTAssertEqual(steakhouse.minWithdraw.baseUnits, 2_847)
         XCTAssertGreaterThan(steakhouse.minWithdraw.baseUnits, 1_899, "below the measured Steakhouse floor")
         XCTAssertLessThan(steakhouse.minWithdraw.baseUnits, 1_899 * 2, "more margin than the measurement justifies")
+    }
+
+    // MARK: - Hydration cache
+
+    /// The Earn list hydrates every enabled vault, and the form the user taps
+    /// into then asks for exactly that. Two Kamino GETs each, on a screen the
+    /// user is already waiting on — so the second ask is served from the first.
+    func test_fetchVaultInfo_servesASecondHydrationFromCache() async throws {
+        http.queueJSON(Fixtures.allezState, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+
+        let first = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+        let second = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+
+        XCTAssertEqual(first, second)
+        XCTAssertEqual(http.callCount(for: .state), 1)
+        XCTAssertEqual(http.callCount(for: .metrics), 1)
+    }
+
+    /// The hydration carries `lookupTable`, which the validator pins the built
+    /// transaction against, and `tokensPerShare`, which sizes a withdraw. Both
+    /// are live, so the entry has to age out.
+    func test_fetchVaultInfo_readsAgainOnceTheEntryHasExpired() async throws {
+        service = KaminoService(httpClient: http, vaultInfoCache: KaminoVaultInfoCache(ttl: 0))
+        http.queueJSON(Fixtures.allezState, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+
+        _ = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+        _ = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+
+        XCTAssertEqual(http.callCount(for: .state), 2)
+    }
+
+    /// Keyed by vault address, so one vault's figures can never stand in for
+    /// another's — they carry that vault's lookup table and share rate.
+    func test_fetchVaultInfo_cachesPerVault() async throws {
+        http.queueJSON(Fixtures.allezState, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+        let allez = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+
+        http.queueJSON(Fixtures.steakhouseState, for: .state)
+        http.queueJSON(Fixtures.steakhouseMetrics, for: .metrics)
+        let steakhouse = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        XCTAssertNotEqual(allez.descriptor.address, steakhouse.descriptor.address)
+        XCTAssertEqual(http.callCount(for: .state), 2)
+    }
+
+    /// ⚠️ The registry check runs BEFORE the cache is consulted. An entry is
+    /// keyed by an address, and the address is the one part of a descriptor a
+    /// forged one gets right — so a cache hit must not become a way past the
+    /// check that decides a vault's identity.
+    func test_fetchVaultInfo_refusesAForgedDescriptorEvenWithTheVaultCached() async throws {
+        http.queueJSON(Fixtures.allezState, for: .state)
+        http.queueJSON(Fixtures.allezMetrics, for: .metrics)
+        _ = try await service.fetchVaultInfo(descriptor: KaminoVaultRegistry.allezSOL)
+
+        let real = KaminoVaultRegistry.allezSOL
+        let forged = KaminoVaultDescriptor(
+            address: real.address,
+            tokenMint: KaminoVaultRegistry.usdcMint,
+            tokenDecimals: real.tokenDecimals,
+            sharesMint: real.sharesMint,
+            sharesDecimals: real.sharesDecimals,
+            farm: real.farm,
+            fallbackName: real.fallbackName,
+            curator: real.curator,
+            riskTier: real.riskTier
+        )
+
+        do {
+            _ = try await service.fetchVaultInfo(descriptor: forged)
+            XCTFail("a descriptor that is not the registry's own entry must be refused")
+        } catch let error as KaminoServiceError {
+            XCTAssertEqual(error, .vaultNotInRegistry(real.address))
+        }
     }
 
     /// The deposit side has the same symptom for a different reason: the
@@ -594,6 +673,12 @@ private final class StubKaminoHTTPClient: HTTPClientProtocol, @unchecked Sendabl
 
     func queueError(_ error: HTTPError, for route: Route) {
         lock.withLock { routes[route] = .error(error) }
+    }
+
+    /// How many requests reached this route. The hydration cache is asserted on
+    /// this: a cache hit is a request that never happened.
+    func callCount(for route: Route) -> Int {
+        lock.withLock { targets.filter { Self.route(for: $0) == route }.count }
     }
 
     /// The body of the most recent action request, read back off the target.
