@@ -237,37 +237,150 @@ struct MayaChainTokenPriceSource: TokenPriceSource {
 /// Prices THORChain assets from THORChain pools, with special-casing for the
 /// yield tokens (yRUNE / yTCY / ybRUNE) and sanitisation of `x/` and `STAKING-`
 /// prefixes before the pool lookup.
+///
+/// A pool lookup only answers for an asset that actually has an L1 pool.
+/// THORChain *derived* assets have none — `/thorchain/pool/THOR.BRUNE` replies
+/// `"asset: THOR.BRUNE is a derived asset"` and `getAssetPriceInUSD` reports
+/// `0.0` — so when the pool has no price this falls back to the CoinGecko feed
+/// the token's curated `TokensStore` entry declares via `priceProviderId`.
+/// bRUNE names RUNE's own feed, which is what prices it at RUNE parity, the
+/// same result vultisig-android reaches by pricing every `priceProviderID`
+/// -bearing token from CoinGecko and never asking the pool. The pool stays
+/// first so every asset that does have one (TCY, RUJI and their staking
+/// receipts) keeps pricing exactly as it does today.
+///
+/// This path is only reached for a coin whose stored `priceProviderId` is
+/// empty: `RateProvider.cryptoId(for:)` routes a coin that carries one to the
+/// provider-id price fetch instead. A coin auto-discovered before its curated
+/// entry existed was persisted without one and is never re-synced, which is how
+/// a held bRUNE ends up priced from a pool that cannot exist.
 struct ThorChainTokenPriceSource: TokenPriceSource {
+    /// NAV-derived USD price for a yield token's contract denom.
+    typealias YieldPrice = (Chain, String) async -> Double?
+    /// USD price for a fully qualified THORChain pool asset (e.g. `THOR.TCY`).
+    typealias PoolPrice = (Chain, String) async -> Double
+    /// Cached USD rate for a curated token's declared CoinGecko feed.
+    typealias ProviderRate = (CoinMeta) -> Double?
+    /// Fetches and persists one CoinGecko provider id's rates.
+    typealias ProviderFeedFetch = (String) async -> Void
+
     let chain: Chain
+    private let yieldPrice: YieldPrice
+    private let poolPrice: PoolPrice
+    private let providerRate: ProviderRate
+    private let fetchProviderFeed: ProviderFeedFetch
+    private let logger = Log.chain.service
+
+    init(
+        chain: Chain,
+        yieldPrice: @escaping YieldPrice = { chain, contract in
+            await ThorchainServiceFactory.getService(for: chain).fetchYieldTokenPrice(for: contract)
+        },
+        poolPrice: @escaping PoolPrice = { chain, assetName in
+            await ThorchainServiceFactory.getService(for: chain).getAssetPriceInUSD(assetName: assetName)
+        },
+        providerRate: @escaping ProviderRate = { coin in
+            RateProvider.shared.rate(for: coin, currency: .USD)?.value
+        },
+        fetchProviderFeed: @escaping ProviderFeedFetch = { providerId in
+            _ = try? await CoinGeckoRates.fetchAndSaveByIds(
+                [providerId],
+                httpClient: HTTPClient(),
+                logger: Log.chain.service
+            )
+        }
+    ) {
+        self.chain = chain
+        self.yieldPrice = yieldPrice
+        self.poolPrice = poolPrice
+        self.providerRate = providerRate
+        self.fetchProviderFeed = fetchProviderFeed
+    }
 
     func prices(contracts: [String], coins _: [CoinMeta]) async throws -> [Rate] {
-        let thorService = ThorchainServiceFactory.getService(for: chain)
+        let yieldTokens = TokensStore.TokenSelectionAssets
+            .filter { $0.chain == chain && ($0.ticker == "yRUNE" || $0.ticker == "yTCY" || $0.ticker == "ybRUNE") }
+            .map { $0.contractAddress }
+
+        // Two contracts can name the same declared feed (a stale TCY and sTCY both
+        // name `tcy`), so remember which feeds this batch already tried to fetch
+        // and don't issue the same request twice. A later refresh retries.
+        var attemptedFeeds: Set<String> = []
         var rates: [Rate] = []
         for contract in contracts {
-
-            let yieldTokens = TokensStore.TokenSelectionAssets.filter({ $0.chain == chain && ( $0.ticker == "yRUNE" || $0.ticker == "yTCY" || $0.ticker == "ybRUNE") }).map({$0.contractAddress})
-
             if yieldTokens.contains(contract) {
-                let price = await thorService.fetchYieldTokenPrice(for: contract)
-                let rate: Rate = .init(fiat: "usd", crypto: contract, value: price ?? 0.0)
-                rates.append(rate)
+                let price = await yieldPrice(chain, contract)
+                rates.append(Rate(fiat: "usd", crypto: contract, value: price ?? 0.0))
+                continue
+            }
+
+            let poolPriceUSD = await poolPrice(chain, Self.poolAssetName(for: contract))
+            if poolPriceUSD.isFinite, poolPriceUSD > 0 {
+                rates.append(Rate(fiat: "usd", crypto: contract, value: poolPriceUSD))
+                continue
+            }
+
+            if let declaredRate = await declaredFeedRate(for: contract, attemptedFeeds: &attemptedFeeds) {
+                rates.append(declaredRate)
             } else {
-                var sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
-
-                // Handle staking assets mappings to their underlying asset for price
-                if sanitisedContract.starts(with: "STAKING-") {
-                    sanitisedContract = sanitisedContract.replacingOccurrences(of: "STAKING-", with: "")
-                }
-
-                // Ensure we have the THOR. prefix for the pool lookup
-                let assetName = sanitisedContract.contains(".") ? sanitisedContract : "THOR.\(sanitisedContract)"
-
-                let poolPrice = await thorService.getAssetPriceInUSD(assetName: assetName)
-                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
-                rates.append(poolRate)
+                // No pool and no declared feed to fall back on: keep reporting the
+                // pool's zero so the caller's behaviour is unchanged for assets
+                // that have never had a price (e.g. LQDY, whose pool doesn't exist).
+                rates.append(Rate(fiat: "usd", crypto: contract, value: poolPriceUSD))
             }
         }
         return rates
+    }
+
+    /// The pool asset a THORChain token denom is priced from: `x/` and a leading
+    /// `STAKING-` are stripped (a staking receipt prices off its underlying
+    /// asset's pool) and a bare symbol is qualified with the `THOR.` prefix.
+    static func poolAssetName(for contract: String) -> String {
+        var sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
+
+        // Handle staking assets mappings to their underlying asset for price
+        if sanitisedContract.starts(with: "STAKING-") {
+            sanitisedContract = sanitisedContract.replacingOccurrences(of: "STAKING-", with: "")
+        }
+
+        // Ensure we have the THOR. prefix for the pool lookup
+        return sanitisedContract.contains(".") ? sanitisedContract : "THOR.\(sanitisedContract)"
+    }
+
+    /// The USD rate for `contract` read off the CoinGecko feed its curated
+    /// `TokensStore` entry declares. `nil` when the token isn't curated, declares
+    /// no feed, or that feed can't be resolved at all.
+    ///
+    /// The feed is usually already cached: `CryptoPriceService` resolves
+    /// provider-id prices before contract prices, and any vault holding bRUNE also
+    /// holds native RUNE, which names the same feed. A *single-coin* refresh
+    /// (`BalanceService.updateBalance(for:)`, behind a coin-detail screen) carries
+    /// no such coin, so on a cold cache the feed is fetched here first — the same
+    /// pre-fetch `MayaChainTokenPriceSource` performs for CACAO.
+    ///
+    /// USD only, matching the pool price it stands in for. Emitting the feed's
+    /// other currencies would leave them stranded the moment an asset went back to
+    /// pool pricing, since the pool path has no per-currency rates to refresh them
+    /// with — the wider non-USD gap in every contract-keyed price source is its own
+    /// problem, not this one's.
+    private func declaredFeedRate(for contract: String, attemptedFeeds: inout Set<String>) async -> Rate? {
+        guard let curated = TokensStore.findTokenMeta(chain: chain, contractAddress: contract),
+              !curated.priceProviderId.isEmpty else {
+            return nil
+        }
+
+        var feedRate = providerRate(curated)
+        if feedRate == nil, attemptedFeeds.insert(curated.priceProviderId).inserted {
+            await fetchProviderFeed(curated.priceProviderId)
+            feedRate = providerRate(curated)
+        }
+
+        guard let value = feedRate, value.isFinite, value > 0 else {
+            logger.warning("No \(curated.priceProviderId, privacy: .public) rate to price \(curated.ticker, privacy: .public) from")
+            return nil
+        }
+
+        return Rate(fiat: "usd", crypto: contract, value: value)
     }
 }
 
