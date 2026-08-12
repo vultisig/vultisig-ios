@@ -5,6 +5,7 @@
 
 import Combine
 import CryptoKit
+import LocalAuthentication
 import Security
 import SwiftData
 import SwiftUI
@@ -363,6 +364,185 @@ final class PasscodeGateWiringTests: XCTestCase {
             defaults.string(forKey: "lastRecordedTime"),
             "covering is not leaving; the interval must not start here"
         )
+    }
+
+    /// The app's own Face ID sheet makes it `.inactive` without it going
+    /// anywhere, and covering there puts the logo over the screen the user is
+    /// authenticating *for* — on the fast-signing path, a cover between Verify
+    /// and Signing.
+    func testAPromptTheAppRaisedItselfDoesNotCover() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        _ = lockService.beginSystemAuthPrompt()
+        sut.coverForPrivacy()
+
+        XCTAssertFalse(sut.showCover, "nothing has left; the prompt is the app's own")
+    }
+
+    /// And the suppression lasts exactly as long as the prompt does, so the very
+    /// next departure covers normally.
+    func testCoveringResumesOnceThePromptIsGone() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        let ticket = lockService.beginSystemAuthPrompt()
+        lockService.endSystemAuthPrompt(ticket)
+        sut.coverForPrivacy()
+
+        XCTAssertTrue(sut.showCover)
+    }
+
+    /// Overlapping prompts must not have the first one to finish uncover the
+    /// app while the second is still on screen.
+    func testCoveringStaysSuppressedWhileASecondPromptIsStillUp() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        let first = lockService.beginSystemAuthPrompt()
+        _ = lockService.beginSystemAuthPrompt()
+        lockService.endSystemAuthPrompt(first)
+        sut.coverForPrivacy()
+
+        XCTAssertFalse(sut.showCover)
+    }
+
+    /// The safety property, and the one that makes the suppression affordable: a
+    /// real departure covers whatever the app believes about its own prompts.
+    /// Leaving arrives as `.background`, which does not consult them at all —
+    /// so a prompt whose completion never came cannot leave the wallet on
+    /// display in the app switcher.
+    func testARealBackgroundingCoversEvenWithAPromptOutstanding() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        _ = lockService.beginSystemAuthPrompt()
+        sut.revokeAuth()
+
+        XCTAssertTrue(sut.showCover, "leaving covers; the prompt went with the app")
+        XCTAssertFalse(
+            lockService.isPresentingSystemAuthPrompt,
+            "and the stale count is forgotten, or the next departure would not cover either"
+        )
+    }
+
+    /// A prompt outstanding when the app leaves has its completion delivered
+    /// later — by which time the count has been dropped and the user may have
+    /// raised a new prompt. Paired by count alone, that stale completion would
+    /// decrement the *new* prompt's claim and let the cover go up over it.
+    func testAStaleCompletionCannotEndAPromptRaisedAfterIt() {
+        let sut = makeViewModel()
+        sut.showCover = false
+
+        let leftBehind = lockService.beginSystemAuthPrompt()
+        sut.revokeAuth()
+        sut.showCover = false
+
+        let fresh = lockService.beginSystemAuthPrompt()
+        lockService.endSystemAuthPrompt(leftBehind)
+        sut.coverForPrivacy()
+
+        XCTAssertFalse(
+            sut.showCover,
+            "the late completion belonged to a prompt that is already gone"
+        )
+
+        // The other half, and it is what stops the guard being "ignore every end
+        // after a backgrounding": that would pass the assertion above and leave
+        // the app permanently uncoverable instead, which is the worse failure of
+        // the two.
+        lockService.endSystemAuthPrompt(fresh)
+        sut.coverForPrivacy()
+
+        XCTAssertTrue(sut.showCover, "the current prompt's own ticket still ends it")
+    }
+
+    // MARK: - Bracketing the real prompt
+
+    /// The tests above drive `AppLockService` directly, so every one of them
+    /// would still pass if `BiometryService` bracketed nothing at all — and the
+    /// bracketing is the fix. These two run the service itself.
+    ///
+    /// The prompting branch is unreachable in a simulator by construction, which
+    /// is exactly why the seam exists.
+    func testRaisingAPromptMarksItBeforeTheSheetGoesUp() {
+        var reply: ((Bool, Error?) -> Void)?
+        var markedWhenTheSheetWentUp: Bool?
+        let service = BiometryService(
+            lockService: lockService,
+            makeContext: { [lockService] in
+                StubLAContext(biometry: .faceID, canEvaluate: true) { captured in
+                    // Read *inside* `evaluatePolicy`, not after `authenticate`
+                    // returns. On a device the `.inactive` the sheet causes
+                    // arrives during this call, so a claim staked afterwards is
+                    // staked too late — and asserting only at the end would let
+                    // that reordering pass.
+                    markedWhenTheSheetWentUp = lockService?.isPresentingSystemAuthPrompt
+                    reply = captured
+                }
+            },
+            isPhysicalDevice: { true }
+        )
+        let finished = expectation(description: "prompt resolved")
+
+        service.authenticate(reason: "test", onSuccess: { finished.fulfill() }, onError: nil)
+
+        XCTAssertEqual(markedWhenTheSheetWentUp, true, "claimed before the sheet, not after")
+
+        reply?(true, nil)
+        wait(for: [finished], timeout: 1)
+
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt, "and released when it resolves")
+    }
+
+    /// The release must not live in the success branch. A prompt the user
+    /// cancelled is as gone as one they satisfied, and a claim left behind by
+    /// the cancel path would leave the app uncoverable for the rest of the
+    /// session.
+    func testACancelledPromptIsReleasedToo() {
+        var reply: ((Bool, Error?) -> Void)?
+        let service = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .faceID, canEvaluate: true) { reply = $0 } },
+            isPhysicalDevice: { true }
+        )
+        let failed = expectation(description: "error delivered")
+
+        service.authenticate(reason: "test", onSuccess: {}, onError: { _ in failed.fulfill() })
+        XCTAssertTrue(lockService.isPresentingSystemAuthPrompt, "precondition: the prompt is up")
+
+        reply?(false, LAError(.userCancel))
+        wait(for: [failed], timeout: 1)
+
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+    }
+
+    /// The branches that never raise a prompt must never claim one either, or
+    /// the first one taken would leave the app uncoverable for the session.
+    func testTheBranchesThatRaiseNoPromptClaimNothing() {
+        let cannotEvaluate = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .faceID, canEvaluate: false) { _ in } },
+            isPhysicalDevice: { true }
+        )
+        cannotEvaluate.authenticate(reason: "test", onSuccess: {}, onError: { _ in })
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+
+        let noBiometry = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .none, canEvaluate: true) { _ in } },
+            isPhysicalDevice: { true }
+        )
+        noBiometry.authenticate(reason: "test", onSuccess: {}, onError: { _ in })
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
+
+        let simulator = BiometryService(
+            lockService: lockService,
+            makeContext: { StubLAContext(biometry: .faceID, canEvaluate: true) { _ in } },
+            isPhysicalDevice: { false }
+        )
+        simulator.authenticate(reason: "test", onSuccess: {}, onError: { _ in })
+        XCTAssertFalse(lockService.isPresentingSystemAuthPrompt)
     }
 
     /// The other half, so the pair is not just "cover does nothing": a real
@@ -779,4 +959,43 @@ private final class InMemoryBiometricKeychain: BiometricKeychainProtecting {
     func delete(account _: String) throws { stored = nil }
 
     func exists(account _: String) -> Bool { stored != nil }
+}
+
+/// An `LAContext` that answers however a test needs and hands the reply block
+/// back instead of raising anything.
+///
+/// A subclass rather than a protocol, because `BiometryService` is bracketing a
+/// real system prompt and the seam has to be the smallest thing that makes that
+/// branch reachable — anything wider would be testing a different shape of code
+/// than the one that ships.
+private final class StubLAContext: LAContext {
+
+    private let biometry: LABiometryType
+    private let canEvaluate: Bool
+    private let capture: (@escaping (Bool, Error?) -> Void) -> Void
+
+    init(
+        biometry: LABiometryType,
+        canEvaluate: Bool,
+        capture: @escaping (@escaping (Bool, Error?) -> Void) -> Void
+    ) {
+        self.biometry = biometry
+        self.canEvaluate = canEvaluate
+        self.capture = capture
+        super.init()
+    }
+
+    override var biometryType: LABiometryType { biometry }
+
+    override func canEvaluatePolicy(_ policy: LAPolicy, error: NSErrorPointer) -> Bool {
+        canEvaluate
+    }
+
+    override func evaluatePolicy(
+        _ policy: LAPolicy,
+        localizedReason: String,
+        reply: @escaping (Bool, Error?) -> Void
+    ) {
+        capture(reply)
+    }
 }
