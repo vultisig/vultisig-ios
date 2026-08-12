@@ -473,9 +473,12 @@ private extension SwapService {
                 throw SwapError.swapAmountTooSmall
             }
 
-            if let minSwapAmountDecimal = Decimal(string: rapidQuote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
-                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
+            if let belowMinimum = Self.belowRecommendedMinimumError(
+                normalizedAmount: normalizedAmount,
+                recommendedMinAmountIn: rapidQuote.recommendedMinAmountIn,
+                fromCoin: fromCoin
+            ) {
+                throw belowMinimum
             }
 
             let quote = await maybeUpgradeToStreaming(
@@ -650,6 +653,49 @@ private extension SwapService {
             slippageBps: slippageBps
         )
         return .jupiter(quote, fee: fee, platformFee: platformFee, feeOnInput: feeOnInput)
+    }
+}
+
+// MARK: - Recommended-minimum guard
+
+extension SwapService {
+    /// The per-candidate "below the node's own recommended floor" verdict for a
+    /// native THORChain/MAYAChain quote, or `nil` when the amount clears it.
+    ///
+    /// Two contracts this encodes, both easy to break silently:
+    ///
+    /// 1. **The comparison is in node scale, not human scale.** Both sides are
+    ///    the node's fixed-point integer units: `normalizedAmount` is
+    ///    `amount × fromCoin.thorswapMultiplier`, and `recommended_min_amount_in`
+    ///    is quoted in the same units. Comparing the human-decimal amount
+    ///    against the node's integer would make the guard fire on essentially
+    ///    every swap; comparing the other way would never fire.
+    /// 2. **The multiplier is the from-coin's, so it is not always 1e8.** THORChain
+    ///    fixed-point is 1e8 for every off-chain asset, but a MAYAChain-native
+    ///    input (CACAO, 10 decimals) is quoted at 1e10 — `thorswapMultiplier`
+    ///    already switches on the coin's chain, and the user-facing recommended
+    ///    amount must be scaled back down by that same multiplier.
+    ///
+    /// Fails **open**: a minimum that does not parse as a `Decimal` yields `nil`
+    /// (quote allowed), so a malformed value cannot block an otherwise fine swap.
+    /// Note this covers only a *present* value — `recommendedMinAmountIn` is a
+    /// required property on `ThorchainSwapQuote`, so a response omitting the field
+    /// fails decoding upstream and that provider is dropped before reaching here.
+    ///
+    /// Because each provider is fetched independently and a throwing provider is
+    /// dropped from the candidate pool, a verdict here removes only that one
+    /// route from the ranked set — it never fails the whole fan-out.
+    static func belowRecommendedMinimumError(
+        normalizedAmount: Decimal,
+        recommendedMinAmountIn: String,
+        fromCoin: Coin
+    ) -> SwapError? {
+        guard let minimum = Decimal(string: recommendedMinAmountIn),
+              normalizedAmount < minimum else {
+            return nil
+        }
+        let recommendedAmount = "\(minimum / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
+        return .lessThenMinSwapAmount(amount: recommendedAmount)
     }
 }
 
