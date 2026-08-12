@@ -24,6 +24,7 @@ final class KaminoDepositViewModelTests: XCTestCase {
     private var vault: Vault!
     private var service: StubDepositService!
     private var preparer: SpyPreparer!
+    private var balanceService: CountingBalanceService!
 
     private let owner = KaminoTransactionFixtures.usdcDeposit.feePayer
 
@@ -33,9 +34,11 @@ final class KaminoDepositViewModelTests: XCTestCase {
         vault = TestStore.makeVault()
         service = StubDepositService()
         preparer = SpyPreparer()
+        balanceService = CountingBalanceService()
     }
 
     override func tearDown() async throws {
+        balanceService = nil
         preparer = nil
         service = nil
         vault = nil
@@ -86,10 +89,61 @@ final class KaminoDepositViewModelTests: XCTestCase {
         await viewModel.onLoad()
 
         XCTAssertNil(viewModel.minimumDeposit)
-        XCTAssertNotNil(viewModel.error)
+        // Surfaced as a LOAD failure, with a message and a retry — not left in
+        // the action slot where nothing rendered it.
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNotNil(viewModel.loadErrorText)
+        XCTAssertNil(viewModel.error)
         viewModel.amountField.value = "100"
         let deposit = await viewModel.makeDeposit()
         XCTAssertNil(deposit)
+    }
+
+    /// And it is recoverable. Before this the failure was silent — a Continue
+    /// button disabled forever, with nothing on screen saying why and no way to
+    /// try again. The retry re-runs the same load, and a second pass must not
+    /// stack a second minimum and a second balance check on the first's.
+    func testRetryingAFailedLoadHydratesTheFormWithoutDoublingItsValidators() async {
+        addUsdcCoin(balance: "50000000")
+        service.infoError = StubDepositService.StubError.unavailable
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        await viewModel.onLoad()
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertTrue(viewModel.isDepositUnavailable)
+
+        service.infoError = nil
+        await viewModel.onLoad()
+
+        XCTAssertNil(viewModel.loadError)
+        XCTAssertNil(viewModel.loadErrorText)
+        XCTAssertEqual(viewModel.minimumDeposit, Decimal(string: "0.1"))
+        XCTAssertFalse(viewModel.isDepositUnavailable)
+        // Required, minimum, balance — one of each, not two.
+        XCTAssertEqual(viewModel.amountField.validators.count, 3)
+    }
+
+    /// ⚠️ And it fails closed the other way round. A load that fails AFTER an
+    /// earlier one succeeded must not leave the form building against the
+    /// hydration it could not confirm — a banner over an enabled Continue is
+    /// worse than no banner at all.
+    func testALoadThatFailsAfterASuccessfulOneLeavesNothingBehind() async {
+        addUsdcCoin(balance: "50000000")
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        await viewModel.onLoad()
+        XCTAssertFalse(viewModel.isDepositUnavailable)
+        XCTAssertEqual(viewModel.availableAmount, Decimal(string: "50"))
+
+        service.infoError = StubDepositService.StubError.unavailable
+        await viewModel.onLoad()
+
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNil(viewModel.vaultInfo)
+        XCTAssertNil(viewModel.minimumDeposit)
+        XCTAssertEqual(viewModel.availableAmount, .zero)
+        XCTAssertEqual(viewModel.availableBaseUnits, .zero)
+        XCTAssertTrue(viewModel.isDepositUnavailable)
     }
 
     // MARK: - Available amount
@@ -103,6 +157,34 @@ final class KaminoDepositViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.availableAmount, Decimal(string: "50"))
         XCTAssertTrue(preparer.maxRequests.isEmpty)
+    }
+
+    /// The wrapped-SOL form never reads the coin's stored balance — its ceiling
+    /// comes from the reserve probe, and the amount field renders
+    /// `availableAmount` — so refreshing it would be two proxy round trips for a
+    /// number nothing on the screen shows. On the slowest path the feature has,
+    /// each one is another chance to draw the proxy's ~60 s stall.
+    func testTheWrappedSolFormDoesNotRefreshABalanceItNeverReads() async {
+        addSolCoin(balance: "3000000000")
+        preparer.maxLamports = BigInt(2_490_000_000)
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.allezSOL)
+
+        await viewModel.onLoad()
+
+        XCTAssertTrue(balanceService.refreshedTickers.isEmpty)
+        XCTAssertEqual(viewModel.availableAmount, Decimal(string: "2.49"))
+    }
+
+    /// A token vault's ceiling IS `coin.rawBalance`, so that one still waits for
+    /// the refresh. Dropping it there would offer a maximum out of a stale
+    /// balance.
+    func testATokenVaultStillRefreshesTheBalanceItsCeilingComesFrom() async {
+        addUsdcCoin(balance: "50000000")
+        let viewModel = makeViewModel(descriptor: KaminoVaultRegistry.steakhouseUSDC)
+
+        await viewModel.onLoad()
+
+        XCTAssertEqual(balanceService.refreshedTickers, ["USDC"])
     }
 
     /// The SOL vault's maximum is the measured one, not the balance. The wallet
@@ -133,7 +215,8 @@ final class KaminoDepositViewModelTests: XCTestCase {
         await viewModel.onLoad()
 
         XCTAssertEqual(viewModel.availableAmount, .zero)
-        XCTAssertNotNil(viewModel.error)
+        XCTAssertNotNil(viewModel.loadError)
+        XCTAssertNotNil(viewModel.loadErrorText)
     }
 
     /// Both the probe and the real deposit are priced at the same compute-unit
@@ -467,7 +550,7 @@ final class KaminoDepositViewModelTests: XCTestCase {
             descriptor: descriptor,
             service: service,
             preparer: preparer,
-            balanceService: NoopBalanceService()
+            balanceService: balanceService
         )
     }
 
@@ -508,9 +591,24 @@ final class KaminoDepositViewModelTests: XCTestCase {
 // `async` without `await` are unavoidable here.
 // swiftlint:disable async_without_await unused_parameter
 
-private struct NoopBalanceService: BalanceServiceProtocol {
-    func updateBalance(for coin: Coin) async {}
-    func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {}
+/// Records which coins were refreshed. The count is the assertion: a refresh is
+/// two proxy round trips, and the wrapped-SOL form reads none of what they
+/// produce.
+private final class CountingBalanceService: BalanceServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _refreshed: [String] = []
+
+    var refreshedTickers: [String] { lock.withLock { _refreshed } }
+
+    func updateBalance(for coin: Coin) async {
+        await Task.yield()
+        let ticker = coin.ticker
+        lock.withLock { _refreshed.append(ticker) }
+    }
+
+    func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {
+        await updateBalance(for: coin)
+    }
 }
 
 private final class StubDepositService: KaminoServiceProtocol, @unchecked Sendable {

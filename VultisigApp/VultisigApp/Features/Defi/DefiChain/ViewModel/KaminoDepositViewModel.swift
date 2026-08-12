@@ -27,12 +27,28 @@ final class KaminoDepositViewModel: ObservableObject, Form {
 
     @Published var validForm: Bool = false
     @Published var isLoading = false
+    /// A failure of the action the user asked for — building the deposit. Read
+    /// by the screen when `makeDeposit` comes back empty.
     @Published var error: Error?
+    /// A failure of the form's own hydration, which is a different thing: the
+    /// user did nothing, and there is nothing to correct, so it is rendered
+    /// where it happened and paired with a retry rather than thrown as an alert
+    /// over an action that was never attempted. Without this the form simply sat
+    /// there with a permanently disabled Continue and no explanation.
+    @Published private(set) var loadError: Error?
     @Published var amountField = FormField(
         label: "amount".localized,
         placeholder: "0",
-        validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
+        validators: KaminoDepositViewModel.baseAmountValidators
     )
+
+    /// What the amount field validates with before the vault is known. Held
+    /// apart so a retry can rebuild the list from it — `onLoad` appends, and
+    /// running it twice would otherwise install a second minimum and a second
+    /// balance check on top of the first.
+    private static var baseAmountValidators: [FormFieldValidator] {
+        [RequiredValidator(errorMessage: "emptyAmountField".localized)]
+    }
 
     /// The wallet coin the deposit is denominated in — the user's USDC, or their
     /// native SOL for the wrapped-SOL vault. `nil` when the vault has not added
@@ -97,6 +113,12 @@ final class KaminoDepositViewModel: ObservableObject, Form {
         String(format: "kaminoDepositMissingCoin".localized, ticker)
     }
 
+    /// The hydration failure, in the user's terms, or `nil` when there is none.
+    var loadErrorText: String? {
+        guard let loadError else { return nil }
+        return String(format: "kaminoLoadFailed".localized, loadError.localizedDescription)
+    }
+
     /// Vault minimum in human units. `nil` until the vault is hydrated — an
     /// unknown minimum must not read as "no minimum", because the API accepts a
     /// below-minimum deposit and lets it fail on chain.
@@ -148,9 +170,29 @@ final class KaminoDepositViewModel: ObservableObject, Form {
 
     // MARK: - Load
 
+    /// Hydrates the form. Safe to run again, which the retry needs and the
+    /// screen's `.task` can cause on its own.
+    ///
+    /// Everything a previous pass derived is torn down first, so a pass that
+    /// fails leaves the form in the same state as one that never ran rather than
+    /// in a mixture of the two. That matters most for `vaultInfo` and the
+    /// ceiling: keeping them would leave Continue enabled, building against a
+    /// hydration this pass could not confirm, underneath a banner saying the
+    /// load had failed. `isDepositUnavailable` reads `vaultInfo == nil` as
+    /// unavailable, so clearing it is what makes the failure fail closed.
+    ///
+    /// One pass at a time. The retry lives next to a banner a user can tap
+    /// repeatedly, and two passes interleaving would race over the same
+    /// published state and clear each other's spinner.
     func onLoad() async {
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
+
+        loadError = nil
+        vaultInfo = nil
+        publishAvailable(KaminoTokenAmount(baseUnits: .zero, decimals: descriptor.tokenDecimals))
+        amountField.validators = Self.baseAmountValidators
 
         do {
             let info = try await service.fetchVaultInfo(descriptor: descriptor)
@@ -167,7 +209,7 @@ final class KaminoDepositViewModel: ObservableObject, Form {
             // ceremony — so the form stays unusable rather than guessing. The
             // validation pipeline is deliberately never started.
             logger.error("Kamino vault hydration failed: \(error.localizedDescription, privacy: .public)")
-            self.error = error
+            loadError = error
             return
         }
 
@@ -175,7 +217,27 @@ final class KaminoDepositViewModel: ObservableObject, Form {
         unitPrice = await preparer.resolveUnitPrice()
 
         if let depositCoin {
-            await balanceService.updateBalance(for: depositCoin)
+            // Skipped for the wrapped-SOL vault, where nothing reads the result.
+            // `updateBalance` is two round trips — a price and a `getBalance` —
+            // through the same proxy the rest of this load already queues on,
+            // and `resolveAvailableAmount` derives that vault's ceiling entirely
+            // from the reserve probe rather than from `coin.rawBalance`. The
+            // amount field renders `availableAmount` and the ticker; it never
+            // reads the coin's stored balance. So on the slowest path the
+            // feature has, this was a minute of exposure for a number nothing
+            // on the screen shows.
+            //
+            // Nor does skipping it leave a stale figure anywhere that acts on
+            // one: the verify screen refreshes this coin itself before it will
+            // sign, and a pre-built payload's balance checks are skipped there
+            // anyway because the bytes were already proven by simulation.
+            //
+            // The token vaults DO read `coin.rawBalance` — it is their entire
+            // ceiling — so they still wait for it, and it cannot move off the
+            // blocking path without offering a maximum out of a stale balance.
+            if !isWrappedSolVault {
+                await balanceService.updateBalance(for: depositCoin)
+            }
             await resolveAvailableAmount(coin: depositCoin)
         }
 
@@ -320,7 +382,10 @@ final class KaminoDepositViewModel: ObservableObject, Form {
         } catch {
             logger.error("Kamino SOL reserve measurement failed: \(error.localizedDescription, privacy: .public)")
             publishAvailable(KaminoTokenAmount(baseUnits: .zero, decimals: descriptor.tokenDecimals))
-            self.error = error
+            // A load failure, not an action failure: it leaves the form with a
+            // zero maximum and a disabled Continue, which is precisely the state
+            // that used to be silent.
+            loadError = error
         }
     }
 

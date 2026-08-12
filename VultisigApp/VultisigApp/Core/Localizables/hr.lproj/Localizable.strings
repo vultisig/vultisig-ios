@@ -645,6 +645,7 @@
 "kaminoEarnWithdraw" = "Podigni";
 "kaminoErrorVaultMetadataMismatch" = "Kamino je prijavio %1$@ kao %2$@; ovaj vault ima %3$@";
 "kaminoErrorVaultNotInRegistry" = "Vault %@ nije onaj s kojim ova aplikacija posluje";
+"kaminoLoadFailed" = "Ovaj trezor nije moguće učitati: %@";
 "kaminoPayerBalanceUnavailable" = "Solana nije prijavila trošak ove transakcije pa se maksimum ne može izračunati.";
 "kaminoSimulationFailed" = "Ova transakcija bi na Solani propala: %@";
 "kaminoVerifyAmount" = "Iznos";

@@ -46,10 +46,11 @@ struct KaminoWithdrawScreen: View {
                     // screen has to match it.
                     amountDecimals: viewModel.descriptor.tokenDecimals,
                     amountField: viewModel.amountField,
-                    // A position that cannot be withdrawn at all — empty, or
-                    // unreadable — is a state no amount satisfies, so the button
-                    // reads as disabled rather than refusing after the tap.
-                    isContinueDisabled: viewModel.unavailableReason != nil,
+                    // A position that cannot be withdrawn at all — empty,
+                    // unreadable, or belonging to a form that never hydrated —
+                    // is a state no amount satisfies, so the button reads as
+                    // disabled rather than refusing after the tap.
+                    isContinueDisabled: viewModel.isWithdrawUnavailable,
                     customViewPosition: .bottom
                 ) {
                     Task { await handleVerify() }
@@ -74,9 +75,30 @@ struct KaminoWithdrawScreen: View {
     private var customView: some View {
         VStack(spacing: 12) {
             missingCoinBanner
+            loadFailureBanner
             unavailableBanner
             minimumWithdrawBanner
             liquidityBanner
+        }
+    }
+
+    /// The form failed to hydrate — the vault's figures or the user's position
+    /// could not be read. Same shape and same reason as the deposit form's: the
+    /// failure used to leave a permanently disabled Continue with nothing on
+    /// screen explaining it and no way to try again.
+    @ViewBuilder
+    private var loadFailureBanner: some View {
+        if let text = viewModel.loadErrorText {
+            VStack(spacing: 12) {
+                InfoBannerView(
+                    description: text,
+                    type: .error,
+                    leadingIcon: .circleInfo
+                )
+                PrimaryButton(title: "retry".localized, type: .secondary, size: .small) {
+                    Task { await viewModel.onLoad() }
+                }
+            }
         }
     }
 

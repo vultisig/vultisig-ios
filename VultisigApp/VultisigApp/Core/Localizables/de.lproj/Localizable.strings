@@ -645,6 +645,7 @@
 "kaminoEarnWithdraw" = "Auszahlen";
 "kaminoErrorVaultMetadataMismatch" = "Kamino meldet für %1$@ den Wert %2$@; dieser Vault erwartet %3$@";
 "kaminoErrorVaultNotInRegistry" = "Vault %@ ist keiner, mit dem diese App Transaktionen durchführt";
+"kaminoLoadFailed" = "Dieser Vault konnte nicht geladen werden: %@";
 "kaminoPayerBalanceUnavailable" = "Solana hat die Kosten dieser Transaktion nicht gemeldet, daher kann das Maximum nicht berechnet werden.";
 "kaminoSimulationFailed" = "Diese Transaktion würde auf Solana fehlschlagen: %@";
 "kaminoVerifyAmount" = "Betrag";

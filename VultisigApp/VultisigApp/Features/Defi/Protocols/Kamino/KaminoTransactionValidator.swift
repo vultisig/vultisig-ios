@@ -220,15 +220,40 @@ struct KaminoTransactionValidator {
     /// Resolves the transaction's address lookup tables from the RPC, then
     /// validates it against `intent`.
     func validate(transaction: SolanaV0Transaction, intent: KaminoTransactionIntent) async throws {
-        let tables = try await lookupTableSource.fetchAddressLookupTables(
-            addresses: transaction.addressTableLookups.map(\.tableAddress)
-        )
+        let tables = try await resolveLookupTables(for: transaction)
+        try validate(transaction: transaction, intent: intent, lookupTables: tables)
+    }
+
+    /// Validates against lookup tables that have already been read.
+    ///
+    /// Split from the fetching entry point because a prepare validates the same
+    /// transaction twice — as built, then after injection — and injection
+    /// provably leaves `addressTableLookups` alone: `injectingComputeBudget` and
+    /// `injectingMemo` append a static account key and instructions, and
+    /// re-serialize the lookup section verbatim. So a second read would return
+    /// byte-for-byte what the first one did, at the cost of another round trip
+    /// through the RPC proxy on the path the user is waiting on.
+    func validate(
+        transaction: SolanaV0Transaction,
+        intent: KaminoTransactionIntent,
+        lookupTables: [String: [String]]
+    ) throws {
         do {
-            try Self.validate(transaction: transaction, intent: intent, lookupTables: tables)
+            // Qualified: the pure core below shares this signature, and an
+            // unqualified call here would resolve to this method itself.
+            try Self.validate(transaction: transaction, intent: intent, lookupTables: lookupTables)
         } catch {
             logger.error("[kamino-validate] refused: \(error.localizedDescription, privacy: .public)")
             throw error
         }
+    }
+
+    /// The contents of every address lookup table the transaction reads from,
+    /// keyed by table address.
+    func resolveLookupTables(for transaction: SolanaV0Transaction) async throws -> [String: [String]] {
+        try await lookupTableSource.fetchAddressLookupTables(
+            addresses: transaction.addressTableLookups.map(\.tableAddress)
+        )
     }
 
     /// Pure core, exposed so it can be driven against pinned lookup-table

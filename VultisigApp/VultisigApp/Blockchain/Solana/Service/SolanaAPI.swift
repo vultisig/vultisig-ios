@@ -109,6 +109,56 @@ struct SolanaAPI: TargetType {
 
     var method: HTTPMethod { .post }
 
+    /// The `TargetType` default, kept for everything the shorter one would not
+    /// be an improvement for.
+    static let defaultTimeout: TimeInterval = 60
+    /// Short enough to sit clear of the proxy's stall boundary. Forty times the
+    /// measured p99 of a healthy request through it. Repo precedent: `CetusAPI`
+    /// 10 s, `StakewizValidatorMetadataProvider` 15 s, `CosmosStakingAPI` 30 s.
+    static let proxyReadTimeout: TimeInterval = 20
+
+    /// Deliberately not one number for everything.
+    ///
+    /// The Vultisig RPC proxy intermittently accepts a request and then parks it
+    /// for a shade over 60 seconds before answering `200` — measured at
+    /// 60.47–60.56 s across two dozen occurrences, a constant rather than a
+    /// distribution, which is the signature of a fixed upstream timeout and a
+    /// retry. The 60 s default sits exactly on that boundary, so the app spent
+    /// the whole minute waiting and then usually got its answer.
+    ///
+    /// Three carve-outs, because the measurement is narrower than "Solana".
+    ///
+    /// **A custom endpoint** is not the proxy and was never measured. A user
+    /// running their own node may reasonably be slower, and shortening their
+    /// timeout would fix nothing they have.
+    ///
+    /// **A broadcast** is the one request whose outcome matters more than its
+    /// latency. Aborting it does not undo it: a node that accepted the
+    /// transaction is indistinguishable from one that never saw it, and the
+    /// recovery path is a fresh ceremony over a fresh blockhash — different
+    /// bytes, which is the one thing that could execute twice. Left long so the
+    /// answer arrives rather than the question being abandoned.
+    ///
+    /// **The bulk reads** legitimately take a long time, and the rule for them
+    /// is whether the response is bounded. `getVoteAccounts` returns the whole
+    /// validator set, `getProgramAccounts` walks the stake program, and
+    /// `getTokenAccountsByOwner` filtered by *program* returns every token
+    /// account a wallet holds — so a slow answer there is the work, not a stall.
+    /// The same call filtered by *mint* returns at most a couple of accounts and
+    /// stays on the short timeout.
+    var timeoutInterval: TimeInterval {
+        guard usesProxyPath else { return Self.defaultTimeout }
+        switch rpcMethod {
+        case .sendTransaction,
+             .getVoteAccounts,
+             .getStakeAccountsByOwner,
+             .getTokenAccountsByOwner(_, .programId):
+            return Self.defaultTimeout
+        default:
+            return Self.proxyReadTimeout
+        }
+    }
+
     var task: HTTPTask {
         // All Solana RPC methods share a JSON-RPC envelope. Params arrays are
         // heterogeneous (String, dict) which Swift's type system can't model

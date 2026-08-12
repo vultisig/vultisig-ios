@@ -70,8 +70,30 @@ struct KaminoDepositScreen: View {
     private var customView: some View {
         VStack(spacing: 12) {
             missingCoinBanner
+            loadFailureBanner
             minimumDepositBanner
             wrappedSolBanner
+        }
+    }
+
+    /// The form failed to hydrate. Until this existed the failure was silent:
+    /// `onLoad` set an error nothing rendered, leaving a Continue button that
+    /// was permanently disabled with nothing on screen saying why and no way to
+    /// try again. Shown here rather than as an alert because the user did not
+    /// do anything — it is the state of the form, and it needs an action.
+    @ViewBuilder
+    private var loadFailureBanner: some View {
+        if let text = viewModel.loadErrorText {
+            VStack(spacing: 12) {
+                InfoBannerView(
+                    description: text,
+                    type: .error,
+                    leadingIcon: .circleInfo
+                )
+                PrimaryButton(title: "retry".localized, type: .secondary, size: .small) {
+                    Task { await viewModel.onLoad() }
+                }
+            }
         }
     }
 

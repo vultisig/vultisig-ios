@@ -43,10 +43,17 @@ protocol KaminoServiceProtocol: Sendable {
 struct KaminoService: KaminoServiceProtocol {
 
     private let httpClient: HTTPClientProtocol
+    /// Shared, because the value that makes it worth having is one another
+    /// `KaminoService` fetched. See `KaminoVaultInfoCache`.
+    private let vaultInfoCache: KaminoVaultInfoCache
     private let logger = Log.defi.service
 
-    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+    init(
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        vaultInfoCache: KaminoVaultInfoCache = .shared
+    ) {
         self.httpClient = httpClient
+        self.vaultInfoCache = vaultInfoCache
     }
 
     // MARK: - Reads
@@ -73,6 +80,14 @@ struct KaminoService: KaminoServiceProtocol {
         // one of its addresses.
         guard KaminoVaultRegistry.descriptor(for: descriptor.address) == descriptor else {
             throw KaminoServiceError.vaultNotInRegistry(descriptor.address)
+        }
+
+        // Read AFTER that guard, never before it. Identity is decided by the
+        // registry, and a cache hit must not become a way past the check that
+        // decides it — the entry is keyed by an address, and an address is the
+        // one part of a descriptor an attacker-supplied one would get right.
+        if let cached = vaultInfoCache.value(for: descriptor.address) {
+            return cached
         }
 
         async let stateTask = fetchVaultState(address: descriptor.address)
@@ -140,7 +155,7 @@ struct KaminoService: KaminoServiceProtocol {
             )
         }
 
-        return KaminoVaultInfo(
+        let info = KaminoVaultInfo(
             descriptor: descriptor,
             name: state.name,
             minDeposit: minDeposit,
@@ -156,6 +171,10 @@ struct KaminoService: KaminoServiceProtocol {
                 decimals: descriptor.tokenDecimals
             )
         )
+        // Only a hydration that cleared every check above is stored. A response
+        // that failed one throws, so nothing this refused can be served later.
+        vaultInfoCache.store(info, for: descriptor.address)
+        return info
     }
 
     /// The smallest deposit the form may offer.
@@ -345,7 +364,13 @@ struct KaminoService: KaminoServiceProtocol {
     /// `TRANSACTION_SIZE_ERROR`, …) instead of matching on message text.
     private func request<T: Decodable>(_ target: KaminoAPI, as type: T.Type) async throws -> T {
         do {
-            return try await httpClient.request(target, responseType: type).data
+            // A timeout on a read is retried once; a build POST is not. See
+            // `KaminoAPI.isIdempotentRead` for why the builder is excluded even
+            // though it signs nothing.
+            let response = target.isIdempotentRead
+                ? try await httpClient.requestRetryingTimeout(target, responseType: type)
+                : try await httpClient.request(target, responseType: type)
+            return response.data
         } catch let error as HTTPError {
             guard case .statusCode(let status, let data) = error,
                   let data,

@@ -717,6 +717,30 @@ final class KaminoTransactionValidatorTests: XCTestCase {
         }
     }
 
+    /// A stale table is a real input now that `SolanaService` serves a table
+    /// read for a minute, and the stale shape that matters is one SHORT of the
+    /// indexes a newer transaction names. It resolves to nothing at all rather
+    /// than to something plausible — which is what makes the cache fail-closed.
+    func testRefusesATableTooShortForTheIndexesTheTransactionUses() throws {
+        var tables = KaminoTransactionFixtures.lookupTables
+        let table = KaminoTransactionFixtures.usdcDeposit.lookupTable
+        let contents = try XCTUnwrap(tables[table])
+        tables[table] = Array(contents.prefix(1))
+
+        XCTAssertThrowsError(
+            try KaminoTransactionValidator.validate(
+                transaction: try SolanaV0Transaction(base64Transaction: KaminoTransactionFixtures.usdcDeposit.source),
+                intent: Self.usdcDepositIntent,
+                lookupTables: tables
+            )
+        ) { error in
+            guard let solana = error as? SolanaV0TransactionError,
+                  case .lookupIndexOutOfRange = solana else {
+                return XCTFail("expected a lookup index refusal, got \(error)")
+            }
+        }
+    }
+
     func testRefusesWhenALookupTableCannotBeResolved() throws {
         XCTAssertThrowsError(
             try KaminoTransactionValidator.validate(
