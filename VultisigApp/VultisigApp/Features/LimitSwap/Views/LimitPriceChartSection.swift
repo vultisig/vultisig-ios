@@ -126,7 +126,7 @@ struct LimitPriceChartSection: View {
     }
 }
 
-struct LimitChartRangePills: View {
+private struct LimitChartRangePills: View {
 
     @Bindable var vm: LimitSwapFormViewModel
     let ranges: [MarketChartRange]

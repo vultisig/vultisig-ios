@@ -426,6 +426,37 @@ func limitPctOffsetSeed(from pct: Decimal) -> Decimal {
     return rounded
 }
 
+// MARK: - Integer stepper (custom expiry)
+
+/// The next value below `value` on a `step`-sized grid, floored at `lowerBound`.
+///
+/// Snapped, not subtracted. The minutes stepper moves in fives but its value is
+/// SEEDED from whatever the draft holds — a 2h59m expiry opens the sheet on 59 —
+/// and plain subtraction then walks 59 → 54 → 49, carrying that arbitrary offset
+/// through every subsequent press so the grid is never reached. Snapping lands on
+/// 55 → 50 → 45: the first press absorbs the offset, and the readout only ever
+/// shows values the control can actually produce.
+func limitStepperDecrement(_ value: Int, step: Int, lowerBound: Int) -> Int {
+    guard step > 1, value > lowerBound else { return max(lowerBound, value - step) }
+    // Largest multiple of `step` strictly below `value`. Offsetting by one before
+    // the divide is what makes an on-grid value move a full step instead of
+    // snapping to itself.
+    let snapped = ((value - 1) / step) * step
+    return max(lowerBound, snapped)
+}
+
+/// The next value above `value` on a `step`-sized grid, capped at `upperBound`.
+///
+/// The mirror of `limitStepperDecrement`. The cap is deliberately NOT snapped: at
+/// the top of the range the bound is a real reachable value (59 minutes), and
+/// refusing to offer it because it is off-grid would leave the last step of the
+/// range unreachable.
+func limitStepperIncrement(_ value: Int, step: Int, upperBound: Int) -> Int {
+    guard step > 1, value < upperBound else { return min(upperBound, value + step) }
+    let snapped = ((value / step) + 1) * step
+    return min(upperBound, snapped)
+}
+
 /// Step size after `seconds` of holding − or + down.
 ///
 /// The *step* accelerates rather than the tick rate: at a fixed 0.1 it would take

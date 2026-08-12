@@ -23,54 +23,63 @@ struct LimitCustomOffsetSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("limitSwap.price.customTitle".localized)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
+            // Scrolls rather than clips, with the action pinned outside it. The
+            // detent is a fixed height, so at large Dynamic Type — or in a locale
+            // whose notice wraps to three lines — the content would otherwise grow
+            // straight past the Set button and put it out of reach. `.basedOnSize`
+            // means it does not feel scrollable until it actually is.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("limitSwap.price.customTitle".localized)
+                        .font(Theme.fonts.bodyLMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
 
-            HStack(spacing: 12) {
-                LimitHoldStepButton(
-                    systemImage: "minus",
-                    accessibilityLabelKey: "limitSwap.price.decreaseOffset",
-                    isEnabled: pct > limitPctOffsetRange.lowerBound
-                ) { step in
-                    apply(clampLimitPctOffset(pct - step))
-                }
+                    HStack(spacing: 12) {
+                        LimitHoldStepButton(
+                            systemImage: "minus",
+                            accessibilityLabelKey: "limitSwap.price.decreaseOffset",
+                            isEnabled: pct > limitPctOffsetRange.lowerBound
+                        ) { step in
+                            apply(clampLimitPctOffset(pct - step))
+                        }
 
-                Spacer(minLength: 0)
+                        Spacer(minLength: 0)
 
-                VStack(spacing: 4) {
-                    Text("\(formatLimitPercent(pct))%")
-                        .font(Theme.fonts.priceLargeTitle)
-                        .foregroundStyle(offsetTint)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                        // The number is the control's whole state; announcing it
-                        // as it changes is what makes the steppers usable without
-                        // sight of it.
-                        .accessibilityAddTraits(.updatesFrequently)
+                        VStack(spacing: 4) {
+                            Text("\(formatLimitPercent(pct))%")
+                                .font(Theme.fonts.priceLargeTitle)
+                                .foregroundStyle(offsetTint)
+                                .lineLimit(1)
+                                // Rolls digit by digit instead of hard-cutting,
+                                // which is what makes a held press read as one
+                                // continuous movement rather than a flicker.
+                                .contentTransition(.numericText())
+                                .accessibilityAddTraits(.updatesFrequently)
 
-                    Text(resultingPriceText)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                }
+                            Text(resultingPriceText)
+                                .font(Theme.fonts.caption12)
+                                .foregroundStyle(Theme.colors.textTertiary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                                .contentTransition(.numericText())
+                        }
 
-                Spacer(minLength: 0)
+                        Spacer(minLength: 0)
 
-                LimitHoldStepButton(
-                    systemImage: "plus",
-                    accessibilityLabelKey: "limitSwap.price.increaseOffset",
-                    isEnabled: pct < limitPctOffsetRange.upperBound
-                ) { step in
-                    apply(clampLimitPctOffset(pct + step))
+                        LimitHoldStepButton(
+                            systemImage: "plus",
+                            accessibilityLabelKey: "limitSwap.price.increaseOffset",
+                            isEnabled: pct < limitPctOffsetRange.upperBound
+                        ) { step in
+                            apply(clampLimitPctOffset(pct + step))
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    noticeRow
                 }
             }
-            .frame(maxWidth: .infinity)
-
-            noticeRow
-
-            Spacer(minLength: 0)
+            .scrollBounceBehavior(.basedOnSize)
 
             PrimaryButton(title: "limitSwap.price.setPrice".localized) {
                 vm.pctFromMarketChanged(pct)
@@ -79,23 +88,25 @@ struct LimitCustomOffsetSheet: View {
             .disabled(!isPriceUsable)
         }
         .padding(16)
-        // Presented content, not a screen: without this the sheet comes up at
-        // full height over a transparent background, showing the form behind it.
-        // `sheetStyle` is where the app's sheets get their `bgPrimary` backing and
-        // drag indicator. `.medium` rather than a pinned `.height` because the
-        // notice row wraps — it is a sentence, and it is a longer one in de/pt —
-        // and it grows again with Dynamic Type.
-        .sheetStyle(detents: [.medium])
+        .sheetStyle(detents: [.height(300)])
         .onLoad {
             pct = limitPctOffsetSeed(from: vm.pctFromMarket)
         }
     }
 
+    /// One curve for every value change in the sheet, so the digits, the resolved
+    /// price and the notice under them all move on the same clock. Deliberately
+    /// shorter than the hold's 80ms repeat: a longer curve would still be running
+    /// when the next tick arrives, and the rolling digits would lag the press.
+    private static let valueChange: Animation = .snappy(duration: 0.12)
+
     /// Set `pct`, reporting whether it moved. `false` stops a held repeat that has
     /// walked into the clamp — see `LimitHoldStepButton.onStep`.
     private func apply(_ newValue: Decimal) -> Bool {
         guard newValue != pct else { return false }
-        pct = newValue
+        withAnimation(Self.valueChange) {
+            pct = newValue
+        }
         return true
     }
 
@@ -121,17 +132,26 @@ struct LimitCustomOffsetSheet: View {
     /// what it means for the order. Priority is refusal first, then the form's own
     /// warnings — running the SAME evaluator the screen behind it does, so the two
     /// can never contradict each other.
+    /// The slot is a fixed height so the big number above it never shifts as
+    /// notices come and go — a control whose value jumps under the finger mid-hold
+    /// is hard to land. What changes inside it fades, keyed on which notice is
+    /// showing so a swap between the two crossfades rather than cutting.
     @ViewBuilder
     private var noticeRow: some View {
-        if !isPriceUsable {
-            LimitInlineNotice(
-                systemImage: "exclamationmark.triangle.fill",
-                tint: Theme.colors.alertWarning,
-                message: "limitSwap.price.offsetPriceUnusable".localized
-            )
-        } else if let warning = previewWarning {
-            LimitWarningRow(warning: warning)
-        }
+        VStack {
+            if !isPriceUsable {
+                LimitInlineNotice(
+                    systemImage: "exclamationmark.triangle.fill",
+                    tint: Theme.colors.alertWarning,
+                    message: "limitSwap.price.offsetPriceUnusable".localized
+                )
+                .transition(.opacity)
+            } else if let warning = previewWarning {
+                LimitWarningRow(warning: warning)
+                    .id(warning)
+                    .transition(.opacity)
+            }
+        }.frame(height: 50)
     }
 
     private var previewWarning: LimitSwapWarning? {

@@ -3,7 +3,6 @@
 //  VultisigApp
 //
 
-import BigInt
 import SwiftUI
 
 /// Limit-swap body content — renders inside `SwapCryptoView` when the

@@ -586,6 +586,55 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(pct, Decimal(string: "8.5")!)
     }
 
+    // MARK: - Integer stepper (custom expiry)
+
+    func testStepperDecrementSnapsAnOffGridSeedOntoTheGrid() {
+        // The reported bug: the minutes stepper opens on whatever the draft holds
+        // (a 2h59m expiry seeds 59), and plain subtraction then walked
+        // 59 → 54 → 49, carrying the offset forever.
+        XCTAssertEqual(limitStepperDecrement(59, step: 5, lowerBound: 0), 55)
+        XCTAssertEqual(limitStepperDecrement(55, step: 5, lowerBound: 0), 50)
+        XCTAssertEqual(limitStepperDecrement(50, step: 5, lowerBound: 0), 45)
+    }
+
+    func testStepperDecrementMovesAFullStepFromAnOnGridValue() {
+        // The off-by-one in the snap: without it, an on-grid value snaps to
+        // itself and the button appears dead.
+        XCTAssertEqual(limitStepperDecrement(20, step: 5, lowerBound: 0), 15)
+    }
+
+    func testStepperDecrementFloorsAtTheLowerBound() {
+        XCTAssertEqual(limitStepperDecrement(3, step: 5, lowerBound: 0), 0)
+        XCTAssertEqual(limitStepperDecrement(0, step: 5, lowerBound: 0), 0)
+    }
+
+    func testStepperIncrementSnapsUpOntoTheGrid() {
+        XCTAssertEqual(limitStepperIncrement(1, step: 5, upperBound: 59), 5)
+        XCTAssertEqual(limitStepperIncrement(54, step: 5, upperBound: 59), 55)
+        XCTAssertEqual(limitStepperIncrement(20, step: 5, upperBound: 59), 25)
+    }
+
+    func testStepperIncrementCapsAtTheBoundEvenWhenTheBoundIsOffGrid() {
+        // 59 is a real, reachable minute; refusing it because it is not a
+        // multiple of five would strand the top of the range.
+        XCTAssertEqual(limitStepperIncrement(57, step: 5, upperBound: 59), 59)
+        XCTAssertEqual(limitStepperIncrement(59, step: 5, upperBound: 59), 59)
+    }
+
+    func testStepperOfOneIsPlainAddition() {
+        // The days and hours steppers, which have no grid to snap to.
+        XCTAssertEqual(limitStepperDecrement(7, step: 1, lowerBound: 0), 6)
+        XCTAssertEqual(limitStepperIncrement(7, step: 1, upperBound: 23), 8)
+    }
+
+    func testSteppingDownThenUpReturnsToTheGridNotTheSeed() {
+        // Round-tripping off an off-grid seed lands on the grid, not back on 59 —
+        // the value the control can actually produce.
+        let down = limitStepperDecrement(59, step: 5, lowerBound: 0)
+        XCTAssertEqual(limitStepperIncrement(down, step: 5, upperBound: 59), 59)
+        XCTAssertEqual(down, 55)
+    }
+
     func testHoldStepStartsAtTheTapIncrement() {
         // A hold that is only marginally longer than a tap must not overshoot.
         XCTAssertEqual(limitPctStep(forHeldSeconds: 0), limitPctOffsetStep)
