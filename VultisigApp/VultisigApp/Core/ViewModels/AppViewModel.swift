@@ -305,6 +305,12 @@ class AppViewModel: ObservableObject {
         // down again before it finished arriving — is a foreground that never
         // happened. The next one is entitled to its own decision.
         didEvaluateForeground = false
+        // Whatever the app believed about its own prompts, it has now actually
+        // left, and anything the system was showing over it went with it. This
+        // is what keeps an unbalanced count from outliving the moment it
+        // described — the cover above is raised first and unconditionally, so
+        // forgetting them can never uncover anything.
+        lockService.forgetSystemAuthPrompts()
         lockService.noteBackgrounded()
     }
 
@@ -321,7 +327,18 @@ class AppViewModel: ObservableObject {
     /// `noteBackgrounded()` starts the auto-lock clock, and starting it because
     /// somebody glanced at Control Centre would re-lock people who never left
     /// the app.
+    ///
+    /// The exception is an `.inactive` the app *caused*, by putting a system
+    /// authentication prompt up itself. Covering there hides the screen the user
+    /// is authenticating for behind the logo, which on the fast-signing path is
+    /// a cover appearing between Verify and Signing. Nothing has gone anywhere
+    /// and nobody else can see the screen: the person the cover would be hiding
+    /// it from is the one looking at the prompt. See
+    /// ``AppLockService/isPresentingSystemAuthPrompt`` — and note that a genuine
+    /// departure during a prompt still covers, because that arrives as
+    /// `.background` and ``revokeAuth()`` does not consult it at all.
     func coverForPrivacy() {
+        guard !lockService.isPresentingSystemAuthPrompt else { return }
         showCover = true
     }
 
