@@ -37,6 +37,11 @@ struct CoverView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .ignoresSafeArea()
+                // A photograph of the screen, not content. VoiceOver reading its
+                // way into a blurred picture of the wallet would be announcing
+                // the very thing this is hiding, and there is nothing here to
+                // act on in any case.
+                .accessibilityHidden(true)
         } else {
             VultisigBrandScreen()
         }

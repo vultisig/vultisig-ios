@@ -473,6 +473,32 @@ final class PasscodeGateWiringTests: XCTestCase {
         )
     }
 
+    /// A return that began and then turned back — the app tapped and put down
+    /// again before it finished arriving — must not spend the *next* return's
+    /// decision. The marker is cleared by leaving, so the activation that
+    /// follows a second departure decides afresh.
+    func testAnAbandonedReturnDoesNotSpendTheNextOnesDecision() async throws {
+        try await service.setPasscode(passcode)
+        lockService.autoLockInterval = .immediate
+
+        let sut = makeViewModel()
+        sut.revokeAuth()
+        sut.sceneBecameInactive(comingFrom: .background)
+        _ = try await service.unlock(with: passcode)
+        sut.markPasscodeUnlocked()
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: the return unlocked the app")
+
+        // The app turns round and leaves again without ever reaching `.active`.
+        sut.revokeAuth()
+
+        sut.sceneBecameActive()
+
+        XCTAssertTrue(
+            sut.isPasscodeLocked,
+            "the second departure is a new foreground to decide, not the first one's leftovers"
+        )
+    }
+
     // MARK: - A foreground that lands mid-unlock
 
     /// The Face ID loop. A biometric prompt drives the app `.inactive` and then

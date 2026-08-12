@@ -26,6 +26,7 @@ import UIKit
 /// paints its material over an empty backdrop and comes out a flat slab, with the
 /// layout — the whole reason for blurring the screen rather than replacing it —
 /// gone. That was measured, not assumed.
+@MainActor
 enum PrivacyBackdrop {
 
     /// How much of the screen's resolution survives the capture.
@@ -69,7 +70,14 @@ enum PrivacyBackdrop {
     /// Answers `nil` on any failure, which is the safe direction: no picture
     /// means the brand screen, in both hosts at once.
     static func take() {
-        latest = UIApplication.shared.activeContentWindow
+        // `activeContentWindow` answers the key window at `.normal`, and this
+        // host's windows sit at `.alert + 1`, so one cannot be returned here
+        // today. Asserted anyway rather than relied upon: a cover that
+        // photographed *itself* would blur a blur, once per departure, until
+        // there was nothing left of the screen — and the level is a constant in
+        // another file that nothing stops anyone changing.
+        let content = UIApplication.shared.activeContentWindow
+        latest = (content is AppLockWindow ? nil : content)
             .flatMap(picture(of:))
             .map(Image.init(uiImage:))
     }
