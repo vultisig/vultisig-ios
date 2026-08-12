@@ -175,7 +175,27 @@ final class KaminoDepositViewModel: ObservableObject, Form {
         unitPrice = await preparer.resolveUnitPrice()
 
         if let depositCoin {
-            await balanceService.updateBalance(for: depositCoin)
+            // Skipped for the wrapped-SOL vault, where nothing reads the result.
+            // `updateBalance` is two round trips — a price and a `getBalance` —
+            // through the same proxy the rest of this load already queues on,
+            // and `resolveAvailableAmount` derives that vault's ceiling entirely
+            // from the reserve probe rather than from `coin.rawBalance`. The
+            // amount field renders `availableAmount` and the ticker; it never
+            // reads the coin's stored balance. So on the slowest path the
+            // feature has, this was a minute of exposure for a number nothing
+            // on the screen shows.
+            //
+            // Nor does skipping it leave a stale figure anywhere that acts on
+            // one: the verify screen refreshes this coin itself before it will
+            // sign, and a pre-built payload's balance checks are skipped there
+            // anyway because the bytes were already proven by simulation.
+            //
+            // The token vaults DO read `coin.rawBalance` — it is their entire
+            // ceiling — so they still wait for it, and it cannot move off the
+            // blocking path without offering a maximum out of a stale balance.
+            if !isWrappedSolVault {
+                await balanceService.updateBalance(for: depositCoin)
+            }
             await resolveAvailableAmount(coin: depositCoin)
         }
 

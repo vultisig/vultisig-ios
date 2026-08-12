@@ -103,18 +103,71 @@ final class SolanaServiceCacheTests: XCTestCase {
         XCTAssertEqual(http.callCount(for: "getAddressLookupTable"), 2)
     }
 
+    // MARK: - Prioritization fees
+
+    /// A network-wide sample, not anything about this wallet, and both Kamino
+    /// forms pin one price for a whole session. One read serves them.
+    func testTheSecondPrioritizationFeeSampleIsServedFromCache() async throws {
+        let http = CountingSolanaHTTPClient(json: Self.prioritizationFeesJSON)
+        let service = makeService(http: http)
+
+        let first = try await service.fetchPrioritizationFeeSample()
+        let second = try await service.fetchPrioritizationFeeSample()
+
+        // Median of the non-zero samples 20,000 / 30,000 / 50,000.
+        XCTAssertEqual(first, 30_000)
+        XCTAssertEqual(second, 30_000)
+        XCTAssertEqual(http.callCount(for: "getRecentPrioritizationFees"), 1)
+    }
+
+    /// The fee market really does move, and a stale-low price is a transaction
+    /// that lands slowly, so the entry has to expire.
+    func testAnExpiredPrioritizationFeeSampleIsReadAgain() async throws {
+        let http = CountingSolanaHTTPClient(json: Self.prioritizationFeesJSON)
+        let service = makeService(http: http, prioritizationFeeTTL: 0)
+
+        _ = try await service.fetchPrioritizationFeeSample()
+        _ = try await service.fetchPrioritizationFeeSample()
+
+        XCTAssertEqual(http.callCount(for: "getRecentPrioritizationFees"), 2)
+    }
+
+    /// "Nobody is paying a priority fee" is an answer, not a missing one — a
+    /// caller applies its own floor to it — so it has to cache like any other.
+    func testAnEmptySampleIsCachedRatherThanRetried() async throws {
+        let http = CountingSolanaHTTPClient(json: #"{"jsonrpc":"2.0","id":1,"result":[{"slot":1,"prioritizationFee":0}]}"#)
+        let service = makeService(http: http)
+
+        let first = try await service.fetchPrioritizationFeeSample()
+        let second = try await service.fetchPrioritizationFeeSample()
+
+        XCTAssertNil(first)
+        XCTAssertNil(second)
+        XCTAssertEqual(http.callCount(for: "getRecentPrioritizationFees"), 1)
+    }
+
     // MARK: - Helpers
 
     private func makeService(
         http: CountingSolanaHTTPClient,
-        addressLookupTableTTL: TimeInterval = SolanaService.defaultAddressLookupTableTTL
+        addressLookupTableTTL: TimeInterval = SolanaService.defaultAddressLookupTableTTL,
+        prioritizationFeeTTL: TimeInterval = SolanaService.defaultPrioritizationFeeTTL
     ) -> SolanaService {
         SolanaService(
             resolver: NoOverrideResolver(),
             httpClient: http,
-            addressLookupTableTTL: addressLookupTableTTL
+            addressLookupTableTTL: addressLookupTableTTL,
+            prioritizationFeeTTL: prioritizationFeeTTL
         )
     }
+
+    private static let prioritizationFeesJSON = """
+    {"jsonrpc":"2.0","id":1,"result":[
+    {"slot":1,"prioritizationFee":0},
+    {"slot":2,"prioritizationFee":20000},
+    {"slot":3,"prioritizationFee":50000},
+    {"slot":4,"prioritizationFee":30000}]}
+    """
 
     /// A `getAccountInfo` result for a `ProgramState::LookupTable` account: the
     /// 4-byte bincode discriminant, 52 further bytes of `LookupTableMeta`, then

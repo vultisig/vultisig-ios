@@ -93,14 +93,20 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// without waiting out the real interval.
     private let addressLookupTableTTL: TimeInterval
 
+    /// How long a prioritization-fee sample stays usable. Injectable for the
+    /// same reason.
+    private let prioritizationFeeTTL: TimeInterval
+
     init(resolver: RPCEndpointResolving = CustomRPCStore.shared,
          httpClient: HTTPClientProtocol = HTTPClient(),
          broadcastRetryBackoff: Duration = .seconds(2),
-         addressLookupTableTTL: TimeInterval = SolanaService.defaultAddressLookupTableTTL) {
+         addressLookupTableTTL: TimeInterval = SolanaService.defaultAddressLookupTableTTL,
+         prioritizationFeeTTL: TimeInterval = SolanaService.defaultPrioritizationFeeTTL) {
         self.resolver = resolver
         self.httpClient = httpClient
         self.broadcastRetryBackoff = broadcastRetryBackoff
         self.addressLookupTableTTL = addressLookupTableTTL
+        self.prioritizationFeeTTL = prioritizationFeeTTL
     }
 
     /// Builds a pure `SolanaAPI` value with the resolved host and proxy-path
@@ -387,6 +393,23 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         try await fetchPrioritizationFeeSample() ?? SolanaHelper.defaultPriorityFeePrice
     }
 
+    /// A prioritization-fee median that may legitimately be absent. Boxed so
+    /// that "the network reported no non-zero fee" is a cacheable answer rather
+    /// than indistinguishable from a cache miss.
+    private struct PrioritizationFeeSample: Sendable {
+        let median: UInt64?
+    }
+
+    /// The recent-prioritization-fee sample, cached briefly. See
+    /// `fetchPrioritizationFeeSample`.
+    private var prioritizationFeeCache = ThreadSafeDictionary<String, (data: PrioritizationFeeSample, timestamp: Date)>()
+
+    /// One minute of fee market. Long enough that the Kamino deposit and
+    /// withdraw forms — which each pin one price for a whole session — stop
+    /// paying a round trip apiece for it; short enough to track a market that
+    /// really does move.
+    static let defaultPrioritizationFeeTTL: TimeInterval = 60
+
     /// Median of the recent non-zero prioritization fees, or `nil` when the
     /// network reported none.
     ///
@@ -395,9 +418,37 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// to apply that floor rather than inherit this file's generic default —
     /// which is 1,000,000 µlamports and would be a fifty-fold over-tip for a
     /// caller whose own fallback is 20,000.
+    ///
+    /// Cached briefly, and keyed by endpoint like the lookup tables. Three
+    /// things make that safe. It is a network-wide sample rather than anything
+    /// about this wallet. It is a MEDIAN of the non-zero per-slot fees, so a
+    /// transient outlier cannot move it — only sustained congestion can, and
+    /// then the higher price is the correct one. And the RPC's own window is the
+    /// last ~150 slots, about a minute, so a re-read inside this TTL returns a
+    /// heavily overlapping sample: the cache sits at roughly the resolution of
+    /// the data it caches.
+    ///
+    /// A stale reading can only price a transaction a little high or a little
+    /// low, never send it somewhere else, and the TTL stays short because "a
+    /// little low" is what makes a transaction land slowly on a congesting
+    /// network. The Kamino callers bound it further with
+    /// `KaminoComputeBudget.clampedUnitPrice`. `fetchRecentPrioritizationFees`,
+    /// which the ordinary send path uses, applies a floor and no ceiling — that
+    /// is pre-existing and deliberately left alone here, because capping it
+    /// would change what an ordinary send costs.
     func fetchPrioritizationFeeSample() async throws -> UInt64? {
+        let target = api(.getRecentPrioritizationFees)
+        let cacheKey = "solana-prioritization-fee-\(HTTPClient.url(for: target).absoluteString)"
+        if let cached: PrioritizationFeeSample = Utils.getCachedData(
+            cacheKey: cacheKey,
+            cache: prioritizationFeeCache,
+            timeInSeconds: prioritizationFeeTTL
+        ) {
+            return cached.median
+        }
+
         let response = try await httpClient.request(
-            api(.getRecentPrioritizationFees),
+            target,
             responseType: SolanaGetRecentPrioritizationFeesResponse.self
         )
 
@@ -406,16 +457,16 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
             .filter { $0 > 0 }
             .sorted()
 
-        guard !nonZeroFees.isEmpty else {
-            return nil
-        }
+        let median = Self.median(of: nonZeroFees)
+        prioritizationFeeCache.set(cacheKey, (data: PrioritizationFeeSample(median: median), timestamp: Date()))
+        return median
+    }
 
-        let mid = nonZeroFees.count / 2
-        if nonZeroFees.count % 2 == 0 {
-            return (nonZeroFees[mid - 1] + nonZeroFees[mid]) / 2
-        } else {
-            return nonZeroFees[mid]
-        }
+    private static func median(of sorted: [UInt64]) -> UInt64? {
+        guard !sorted.isEmpty else { return nil }
+        let mid = sorted.count / 2
+        guard sorted.count % 2 == 0 else { return sorted[mid] }
+        return (sorted[mid - 1] + sorted[mid]) / 2
     }
 
     func fetchRecentBlockhash() async throws -> String? {
