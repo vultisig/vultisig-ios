@@ -314,6 +314,13 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
     ) async throws -> KaminoPreparedTransaction {
         let transaction = try SolanaV0Transaction(base64Transaction: base64)
 
+        // Read once for the whole prepare, and handed to both passes. The
+        // injection between them appends static account keys and instructions
+        // and re-serializes `addressTableLookups` verbatim, so the second pass
+        // would re-read exactly these bytes — one more round trip through the
+        // RPC proxy while the user waits, for a value that cannot have changed.
+        let lookupTables = try await validator.resolveLookupTables(for: transaction)
+
         // Phase one. No fee has been chosen yet, so a ComputeBudget instruction
         // can only have come from the response — and the response is the thing
         // being checked.
@@ -323,7 +330,7 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
             owner: owner,
             priorityFee: nil
         )
-        try await validator.validate(transaction: transaction, intent: asBuilt)
+        try validator.validate(transaction: transaction, intent: asBuilt, lookupTables: lookupTables)
 
         // `replaceRecentBlockhash` because the response's blockhash is already
         // ageing and the live one is spliced in later anyway; what is being
@@ -346,7 +353,8 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
             vault: vault,
             owner: owner,
             unitLimit: unitLimit,
-            unitPrice: unitPrice
+            unitPrice: unitPrice,
+            lookupTables: lookupTables
         )
     }
 
@@ -356,7 +364,8 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
         vault: KaminoVaultInfo,
         owner: String,
         unitLimit: UInt32,
-        unitPrice: UInt64
+        unitPrice: UInt64,
+        lookupTables: [String: [String]]
     ) async throws -> KaminoPreparedTransaction {
         let fee = KaminoPriorityFee(limit: unitLimit, price: unitPrice)
         // Both edits happen here, before the injected form is validated and
@@ -377,7 +386,7 @@ struct KaminoTransactionPreparer: KaminoDepositPreparing, KaminoWithdrawPreparin
             priorityFee: fee,
             carriesAttributionMemo: true
         )
-        try await validator.validate(transaction: budgeted, intent: injected)
+        try validator.validate(transaction: budgeted, intent: injected, lookupTables: lookupTables)
 
         let base64 = budgeted.base64EncodedTransaction
         let verdict = try await solana.simulateTransaction(

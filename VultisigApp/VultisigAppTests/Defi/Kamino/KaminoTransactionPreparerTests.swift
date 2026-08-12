@@ -463,6 +463,66 @@ final class KaminoTransactionPreparerTests: XCTestCase {
         XCTAssertEqual(harness.solana.requestedAccounts, [[], [owner]])
     }
 
+    // MARK: - Round trips
+
+    /// The address lookup table is read ONCE per prepare, and both validation
+    /// passes are measured against that one reading.
+    ///
+    /// Not a micro-optimisation: every read goes through the Solana RPC proxy,
+    /// which intermittently parks a request for a minute, and a deposit form
+    /// already runs this pipeline twice. The two passes are still two passes —
+    /// they check opposite contracts — but the table between them cannot have
+    /// changed, because injection re-serializes `addressTableLookups` verbatim.
+    func testTheLookupTableIsReadOncePerPrepare() async throws {
+        let harness = Harness(vector: KaminoTransactionFixtures.usdcDeposit)
+
+        _ = try await harness.preparer.prepareDeposit(
+            vault: Self.steakhouseVault,
+            owner: owner,
+            amount: Self.usdcAmount,
+            unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+        )
+
+        XCTAssertEqual(harness.lookupTables.fetchCount, 1)
+        XCTAssertEqual(
+            harness.lookupTables.requests,
+            [[KaminoTransactionFixtures.usdcDeposit.lookupTable]]
+        )
+        // Both passes ran — the second one is what pins the injected fee.
+        XCTAssertEqual(harness.solana.simulatedTransactions.count, 2)
+    }
+
+    /// The same for a withdraw, whose second pass additionally requires the farm
+    /// release: sharing one reading must not weaken either contract.
+    func testTheWithdrawLookupTableIsReadOncePerPrepare() async throws {
+        let harness = Harness(vector: KaminoTransactionFixtures.usdcWithdraw)
+
+        _ = try await harness.preparer.prepareWithdraw(
+            vault: Self.steakhouseWithdrawVault,
+            owner: withdrawOwner,
+            request: Self.usdcRequest,
+            unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+        )
+
+        XCTAssertEqual(harness.lookupTables.fetchCount, 1)
+    }
+
+    /// The SOL maximum runs a whole probe prepare, so it pays for exactly one
+    /// table read too — the measurement that makes the SOL form the slow one.
+    func testTheReserveProbeReadsTheLookupTableOnce() async throws {
+        let harness = Harness(vector: KaminoTransactionFixtures.solDeposit)
+        harness.solana.results = [.ok(payer: nil), .ok(payer: 2_500_000_000)]
+
+        _ = try await harness.preparer.maxNativeDepositLamports(
+            vault: Self.allezVault,
+            owner: solOwner,
+            probe: Self.solAmount,
+            unitPrice: KaminoTransactionFixtures.unitPriceMicroLamports
+        )
+
+        XCTAssertEqual(harness.lookupTables.fetchCount, 1)
+    }
+
     // MARK: - Helpers
 
     private func assertPreparationFails(
@@ -550,17 +610,17 @@ private extension KaminoTransactionPreparerTests {
     final class Harness {
         let service: StubKaminoService
         let solana: StubSolanaMeasuring
+        let lookupTables: StubLookupTables
         let preparer: KaminoTransactionPreparer
 
         init(vector: KaminoTransactionFixtures.Vector, served: String? = nil) {
             service = StubKaminoService(transaction: served ?? vector.source)
             solana = StubSolanaMeasuring()
+            lookupTables = StubLookupTables(tables: KaminoTransactionFixtures.lookupTables)
             preparer = KaminoTransactionPreparer(
                 service: service,
                 solana: solana,
-                validator: KaminoTransactionValidator(
-                    lookupTableSource: StubLookupTables(tables: KaminoTransactionFixtures.lookupTables)
-                )
+                validator: KaminoTransactionValidator(lookupTableSource: lookupTables)
             )
         }
     }
@@ -572,11 +632,28 @@ private extension KaminoTransactionPreparerTests {
 // `async` without `await` are unavoidable here.
 // swiftlint:disable async_without_await unused_parameter
 
-private struct StubLookupTables: SolanaAddressLookupTableFetching {
+/// Serves pinned table contents and counts how often they were asked for.
+///
+/// The count is the assertion: a prepare validates the same transaction twice
+/// and both passes need the tables, so an implementation that fetched per pass
+/// would read the same account twice over the RPC proxy.
+private final class StubLookupTables: SolanaAddressLookupTableFetching, @unchecked Sendable {
     let tables: [String: [String]]
+
+    private let lock = NSLock()
+    private var _requests: [[String]] = []
+
+    /// The address list each call asked for, in call order.
+    var requests: [[String]] { lock.withLock { _requests } }
+    var fetchCount: Int { requests.count }
+
+    init(tables: [String: [String]]) {
+        self.tables = tables
+    }
 
     func fetchAddressLookupTables(addresses: [String]) async throws -> [String: [String]] {
         await Task.yield()
+        lock.withLock { _requests.append(addresses) }
         return tables
     }
 }
