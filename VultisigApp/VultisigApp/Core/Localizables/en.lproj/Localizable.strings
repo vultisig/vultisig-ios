@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
 "keygenInstructionsCar7Title" = "Feature Highlight";
 "keys" = "Keys";
+"keyshareRecoveryBackupMessage" = "Your .vult backup is the way back. Import it and these vaults work again.";
+"keyshareRecoveryImportButton" = "Import .vult backup";
+"keyshareRecoveryMessage" = "Their key shares are encrypted, and the key that unlocks them did not come across with this restore. Nothing on this device can read them, so it cannot sign with these vaults.";
+"keyshareRecoveryNoBackupMessage" = "Without a .vult backup, the key shares on this device cannot be unlocked again — that part is not recoverable. The vault itself may still be: if your other devices hold their own shares and still reach its signing threshold, it keeps working without this one.";
+"keyshareRecoveryNoBackupTitle" = "I don't have a backup";
+"keyshareRecoveryTitle" = "These vaults can't be opened on this device";
 "keysharesUnreadableVaultNotSaved" = "This vault's key shares could not be read, so it was not saved. Unlock the app and try again — if this keeps happening, create the vault again.";
 "keysharesUnsealableVaultNotSaved" = "This vault's key shares could not be protected for storage, so it was not saved. Unlock the app and try again.";
 "keysign" = "Keysign";
@@ -986,6 +992,10 @@
 "partOf" = "part %d of %d";
 "passcodeAlreadySet" = "A passcode is already set on this device. Go back to change or remove it.";
 "passcodeAutoLockTitle" = "Auto-lock";
+"passcodeBackupPromptBackUpNow" = "Back up now";
+"passcodeBackupPromptHasBackup" = "I already have a backup";
+"passcodeBackupPromptSubtitle" = "A passcode encrypts your key shares with a key held on this device. If that key is ever lost, your .vult backup is the only way back — the passcode itself cannot be recovered.";
+"passcodeBackupPromptTitle" = "Back up before you set a passcode";
 "passcodeBiometricDisableFailed" = "Biometric unlock could not be turned off. Try again.";
 "passcodeBiometricEnableFailed" = "Biometric unlock could not be turned on. Your passcode still works.";
 "passcodeBiometricNotAvailable" = "This device cannot use biometric unlock.";
@@ -1116,6 +1126,7 @@
 "receive" = "Receive";
 "recipient" = "Recipient";
 "recipientNameNotFound" = "Name not found. Check the name and try again.";
+"redactedEndpoint" = "[endpoint hidden]";
 "redeem" = "Redeem";
 "redeemCoin" = "Redeem %@";
 "reEnterPassword" = "Re-enter password";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destination";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Issuer";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "Cannot review";
 "rippleTrustLineUnreviewableValue" = "This trust line's currency, issuer or limit could not be read, so its terms cannot be shown. Do not sign it.";
 "rippleUndecodedNotice" = "This transaction couldn't be decoded. Review the raw JSON carefully before signing.";
+"rippleWarningCustomPaths" = "The site supplied its own candidate routes for this payment. The ledger picks among them.";
+"rippleWarningPartialPayment" = "This is a partial payment: the Amount is the most the recipient can receive, not a guaranteed delivery. They can receive less while you are still charged up to the Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "The to address must be different from the from address";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "Result of cmd";
 "suiSplitFrom" = "Split from";
 "suiTransaction" = "Sui Transaction";
+"suiTransactionFailed" = "Transaction failed";
 "suiTransactionSummary" = "Transaction summary";
 "support" = "Support";
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";

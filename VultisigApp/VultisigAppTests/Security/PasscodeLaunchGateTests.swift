@@ -81,11 +81,23 @@ final class PasscodeLaunchGateTests: XCTestCase {
         super.tearDown()
     }
 
-    private func makeViewModel(reconcile: @escaping @MainActor () -> Void) -> AppViewModel {
+    /// - Parameters:
+    ///   - outcome: what reconciliation reports back. Separate from the closure
+    ///     below so a test can state the outcome without also having to model a
+    ///     side effect, and vice versa.
+    ///   - reconcile: reconciliation's side effect on the lock mode, run at the
+    ///     moment the real one would run it.
+    private func makeViewModel(
+        outcome: KeyshareInstallReconciler.Outcome = .nothing,
+        reconcile: @escaping @MainActor () -> Void = {}
+    ) -> AppViewModel {
         AppViewModel(
             lockService: lockService,
             passcodeService: passcodeService,
-            reconcileInstall: reconcile
+            reconcileInstall: {
+                reconcile()
+                return outcome
+            }
         )
     }
 
@@ -156,6 +168,147 @@ final class PasscodeLaunchGateTests: XCTestCase {
         sut.restorePasscodeLockOnLaunch()
 
         XCTAssertTrue(sut.isPasscodeLocked)
+    }
+
+    // MARK: - Sealed shares with no key
+
+    /// The launch this whole change exists for: the store came across in a
+    /// restore and the Keychain wrapper did not, so the shares are ciphertext
+    /// nothing on this device can read. The app must say so instead of opening.
+    func testTheRecoveryScreenIsRaisedOverAnOrphanedInstall() {
+        lockService.mode = .deviceAuth
+        keychain.wrappedKeyshareDataKey = nil
+
+        let sut = makeViewModel(outcome: .sealedSharesWithoutTheirKey)
+        sut.restorePasscodeLockOnLaunch()
+
+        XCTAssertTrue(sut.isKeyshareRecoveryRequired)
+        XCTAssertFalse(sut.isPasscodeLocked, "there is no passcode behind this, and nothing to type")
+    }
+
+    /// A healthy install raises nothing, whichever gate it has. Without this the
+    /// pair above would pass against a flag that is simply always true.
+    func testTheRecoveryScreenIsNotRaisedOverAHealthyInstall() {
+        lockService.mode = .passcode
+
+        let sut = makeViewModel()
+        sut.restorePasscodeLockOnLaunch()
+
+        XCTAssertFalse(sut.isKeyshareRecoveryRequired)
+        XCTAssertTrue(sut.isPasscodeLocked, "the ordinary passcode gate still goes up")
+    }
+
+    /// Reconciliation reports the orphaned state without touching the mode, so a
+    /// stale `.passcode` can still be sitting there. The recovery screen wins:
+    /// a lock screen whose only exit is an unlock that can answer nothing but
+    /// `notSet` is the worse of the two to present.
+    func testTheRecoveryScreenWinsOverAStalePasscodeMode() {
+        lockService.mode = .passcode
+        keychain.wrappedKeyshareDataKeyResult = .unavailable(errSecInteractionNotAllowed)
+
+        let sut = makeViewModel(outcome: .sealedSharesWithoutTheirKey)
+        sut.restorePasscodeLockOnLaunch()
+
+        XCTAssertTrue(sut.isKeyshareRecoveryRequired)
+        XCTAssertFalse(sut.isPasscodeLocked)
+    }
+
+    /// The screen points at the import flow, and the import flow is a screen in
+    /// the app — which this is drawn over. So the route goes in **first** and
+    /// the screen comes down after: lowering first uncovers the wallet while the
+    /// push is still on its way, which is the silent open this state exists to
+    /// prevent arriving by the one door left open.
+    func testTheImportRouteIsPushedBeforeTheRecoveryScreenComesDown() {
+        keychain.wrappedKeyshareDataKey = nil
+
+        let sut = makeViewModel(outcome: .sealedSharesWithoutTheirKey)
+        sut.restorePasscodeLockOnLaunch()
+
+        sut.beginKeyshareRecoveryImport()
+        XCTAssertTrue(sut.isKeyshareRecoveryRequired, "asking must not be enough to uncover the app")
+        XCTAssertTrue(sut.isKeyshareRecoveryImportPending)
+
+        var wasStillCoveredWhileRouting = false
+        let claimed = sut.handOffToKeyshareRecoveryImport {
+            wasStillCoveredWhileRouting = sut.isKeyshareRecoveryRequired
+        }
+
+        XCTAssertTrue(claimed)
+        XCTAssertTrue(wasStillCoveredWhileRouting, "the push happens under the cover, not after it")
+        XCTAssertFalse(sut.isKeyshareRecoveryRequired)
+        XCTAssertFalse(sut.isKeyshareRecoveryImportPending)
+    }
+
+    /// Every mounted scene sees the request, and two of them routing is two
+    /// import screens.
+    func testOnlyOneSceneClaimsTheImportHandOff() {
+        keychain.wrappedKeyshareDataKey = nil
+
+        let sut = makeViewModel(outcome: .sealedSharesWithoutTheirKey)
+        sut.restorePasscodeLockOnLaunch()
+        sut.beginKeyshareRecoveryImport()
+
+        var routes = 0
+        XCTAssertTrue(sut.handOffToKeyshareRecoveryImport { routes += 1 })
+        XCTAssertFalse(sut.handOffToKeyshareRecoveryImport { routes += 1 })
+
+        XCTAssertEqual(routes, 1)
+    }
+
+    /// The cover predicate the rest of the app reads. A deeplink, a held sheet
+    /// and a foreground push banner all have to treat this screen the way they
+    /// treat the lock screen — otherwise they act, and are seen, behind it.
+    func testTheRecoveryScreenCountsAsAnAppLockCover() {
+        keychain.wrappedKeyshareDataKey = nil
+
+        let sut = makeViewModel(outcome: .sealedSharesWithoutTheirKey)
+        sut.restorePasscodeLockOnLaunch()
+
+        XCTAssertFalse(sut.isPasscodeLocked, "precondition: it is not the gate that is up")
+        XCTAssertTrue(sut.isCoveredByAppLock)
+
+        sut.beginKeyshareRecoveryImport()
+        sut.handOffToKeyshareRecoveryImport { }
+
+        XCTAssertFalse(sut.isCoveredByAppLock)
+    }
+
+    /// And nothing else may start it. The hand-off lowers a screen the user is
+    /// meant to be looking at, so a stray call would open the app over key
+    /// shares it cannot read.
+    func testTheImportHandOffDoesNothingWithoutARecoveryScreenUp() {
+        let sut = makeViewModel()
+        sut.restorePasscodeLockOnLaunch()
+
+        sut.beginKeyshareRecoveryImport()
+
+        XCTAssertFalse(sut.isKeyshareRecoveryImportPending)
+
+        var routed = false
+        XCTAssertFalse(sut.handOffToKeyshareRecoveryImport { routed = true })
+        XCTAssertFalse(routed)
+    }
+
+    /// The same rule the passcode gate has: with the recovery screen up, the
+    /// legacy device-auth path must not run. It is dismissed by no
+    /// authentication of any kind, so a system biometric sheet in front of it
+    /// is a prompt with nothing behind it.
+    func testTheLegacyDeviceAuthIsNotRunWhileTheRecoveryScreenIsUp() {
+        keychain.wrappedKeyshareDataKey = nil
+
+        let sut = makeViewModel(outcome: .sealedSharesWithoutTheirKey)
+        sut.didAskForAuthentication = false
+        sut.restorePasscodeLockOnLaunch()
+        XCTAssertTrue(sut.isKeyshareRecoveryRequired, "precondition: the recovery screen is up")
+
+        sut.authenticateUser()
+
+        XCTAssertTrue(sut.isKeyshareRecoveryRequired, "the recovery screen survives the splash's authentication")
+        XCTAssertFalse(sut.showSplashView, "the splash comes down; the recovery screen is what covers the app")
+        XCTAssertFalse(
+            sut.didAskForAuthentication,
+            "reaching the device-auth branch is what sets this, and it must not be reached"
+        )
     }
 
     // MARK: - The splash, and the legacy gate behind it

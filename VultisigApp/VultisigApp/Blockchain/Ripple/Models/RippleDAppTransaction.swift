@@ -11,6 +11,12 @@ import Foundation
 /// destination, amounts, issuer — instead of an opaque blob. Port of the
 /// Windows `parseRippleTx`.
 ///
+/// Alongside the rows it reports the caveats that redefine what those rows
+/// mean: a `tfPartialPayment` `Payment` whose `Amount` is a ceiling rather than
+/// a delivery, and a dApp-supplied `Paths` proposing the routes the payment may
+/// take. Both are signed either way, so omitting them would show terms strictly
+/// better than the ones being approved.
+///
 /// This is NOT a security boundary: the signing fail-closed checks live in
 /// `RippleHelper.dappSigningInput`. This parser only decides what to render.
 /// It NEVER throws — `parse` returns `nil` when the JSON can't be decoded into
@@ -18,8 +24,27 @@ import Foundation
 /// a caution notice (a signing screen must never go blank). It also fails
 /// closed on a *present-but-undecodable value field*: an `Amount` / `SendMax` /
 /// etc. that exists but can't be decoded returns `nil` rather than a
-/// seemingly-complete screen that silently hides value.
+/// seemingly-complete screen that silently hides value. An undecodable `Flags`
+/// joins that rule: reading it as "nothing set" would render a partial payment
+/// as an exact one, which is the precise mistake this decode exists to prevent.
 struct RippleDAppTransaction: Equatable {
+
+    /// A caveat that changes what the decoded rows mean. Rendered as a leading
+    /// warning rather than as one more value row to skim past.
+    enum Warning: Equatable {
+        /// `tfPartialPayment` is set: `Amount` is a ceiling, not a delivery.
+        case partialPayment
+        /// The transaction carries its own `Paths`: routes the dApp proposed
+        /// for the ledger to choose among.
+        case customPaths
+
+        var labelKey: String {
+            switch self {
+            case .partialPayment: return "rippleWarningPartialPayment"
+            case .customPaths: return "rippleWarningCustomPaths"
+            }
+        }
+    }
 
     /// A decoded XRPL amount: native XRP (drops → XRP) or an issued currency.
     enum Amount: Equatable {
@@ -42,6 +67,7 @@ struct RippleDAppTransaction: Equatable {
     }
 
     let transactionType: String
+    let warnings: [Warning]
     let fields: [Field]
 
     // MARK: - Parsing
@@ -55,6 +81,13 @@ struct RippleDAppTransaction: Equatable {
         ("TakerGets", "rippleFieldTakerGets"),
         ("TakerPays", "rippleFieldTakerPays"),
         ("LimitAmount", "rippleFieldTrustLimit")
+    ]
+
+    /// The `TrustSet` quality fields, in render order. Integers, not amounts —
+    /// each is a rate in billionths applied to balances on the trust line.
+    private static let qualityFields: [(field: String, labelKey: String)] = [
+        ("QualityIn", "rippleFieldQualityIn"),
+        ("QualityOut", "rippleFieldQualityOut")
     ]
 
     private static let dropsPerXrp = BigInt(1_000_000)
@@ -75,6 +108,24 @@ struct RippleDAppTransaction: Equatable {
               let transactionType = tx["TransactionType"] as? String,
               supportedTransactionTypes.contains(transactionType) else {
             return nil
+        }
+
+        // Flags decides what the value rows MEAN, so it is read before any of
+        // them — and a present-but-undecodable one fails the whole decode
+        // rather than being read as zero.
+        guard let flags = parseFlags(tx["Flags"]) else {
+            return nil
+        }
+
+        var warnings: [Warning] = []
+        // `tfPartialPayment` is scoped to Payment on purpose: the same bit is
+        // `tfImmediateOrCancel` on an OfferCreate and `tfSetNoRipple` on a
+        // TrustSet, neither of which touches delivery.
+        if transactionType == "Payment", flags & tfPartialPayment != 0 {
+            warnings.append(.partialPayment)
+        }
+        if tx["Paths"] != nil {
+            warnings.append(.customPaths)
         }
 
         var fields: [Field] = []
@@ -104,7 +155,136 @@ struct RippleDAppTransaction: Equatable {
             fields.append(Field(labelKey: "rippleFieldOfferSequence", value: .text(offerSequence)))
         }
 
-        return RippleDAppTransaction(transactionType: transactionType, fields: fields)
+        // 5. QualityIn / QualityOut — the exchange rate a TrustSet applies to
+        //    balances on that line. Value-relevant and dApp-controllable, so a
+        //    card that showed only `LimitAmount` would look complete while
+        //    hiding what the line is actually worth. A present-but-undecodable
+        //    one fails the decode, like the amount fields above: this pair
+        //    changes value, so omitting a malformed one would hide it.
+        for key in qualityFields where tx[key.field] != nil {
+            guard let quality = integerValue(tx[key.field]) else {
+                return nil
+            }
+            fields.append(Field(labelKey: key.labelKey, value: .text(quality)))
+        }
+
+        // 6. Flags, named where this reviewer recognises the bit. Omitted when
+        //    nothing is set — an absent field and a zero bitmask say the same
+        //    thing, and an empty row is noise on a screen meant to be read.
+        if flags != 0 {
+            let described = describeFlags(flags, transactionType: transactionType)
+            fields.append(Field(labelKey: "rippleFieldFlags", value: .text(described)))
+        }
+
+        return RippleDAppTransaction(
+            transactionType: transactionType,
+            warnings: warnings,
+            fields: fields
+        )
+    }
+
+    // MARK: - Flags
+
+    /// `tfPartialPayment` on an XRPL `Payment`. With it set, `Amount` stops
+    /// being a guaranteed delivery and becomes a ceiling: the ledger hands over
+    /// whatever the chosen path can source and records the real figure only in
+    /// the executed transaction's metadata (`delivered_amount`). Absent a
+    /// `DeliverMin` floor, such a payment can settle for dust while the sender
+    /// still spends up to `SendMax`.
+    static let tfPartialPayment: UInt32 = 0x0002_0000
+
+    /// The flag bits shared by every transaction type.
+    private static let universalFlagNames: [(bit: UInt32, name: String)] = [
+        (0x8000_0000, "tfFullyCanonicalSig")
+    ]
+
+    /// Flag names per transaction type. XRPL flag bits are namespace-scoped —
+    /// `0x00020000` is `tfPartialPayment` on a `Payment`, `tfImmediateOrCancel`
+    /// on an `OfferCreate` and `tfSetNoRipple` on a `TrustSet` — so one flat
+    /// table would mislabel two of the three.
+    ///
+    /// Only long-stable, unambiguously documented bits are named. A bit this
+    /// table does not know is rendered as its hex residue instead of a guessed
+    /// name: an unnamed bit the reviewer can still see beats a confident wrong
+    /// label, and the residue is what keeps the row from claiming it showed
+    /// everything when it did not.
+    private static let flagNamesByTransactionType: [String: [(bit: UInt32, name: String)]] = [
+        "Payment": [
+            (0x0001_0000, "tfNoRippleDirect"),
+            (tfPartialPayment, "tfPartialPayment"),
+            (0x0004_0000, "tfLimitQuality")
+        ],
+        "OfferCreate": [
+            (0x0001_0000, "tfPassive"),
+            (0x0002_0000, "tfImmediateOrCancel"),
+            (0x0004_0000, "tfFillOrKill"),
+            (0x0008_0000, "tfSell")
+        ],
+        "TrustSet": [
+            (0x0001_0000, "tfSetfAuth"),
+            (0x0002_0000, "tfSetNoRipple"),
+            (0x0004_0000, "tfClearNoRipple"),
+            (0x0010_0000, "tfSetFreeze"),
+            (0x0020_0000, "tfClearFreeze")
+        ]
+    ]
+
+    /// Decodes an XRPL `Flags` field into its uint32 bitmask, reading an absent
+    /// field as "no flags set".
+    ///
+    /// Returns `nil` for any value present that the XRPL binary codec could not
+    /// encode as a uint32 — notably the `{"tfPartialPayment": true}` object
+    /// sugar some client libraries accept — so callers fail closed rather than
+    /// mistaking an undecodable value for zero.
+    ///
+    /// **Shared with the signing gate on purpose.** Unlike the rest of this
+    /// display-only type, `RippleHelper` calls this too. The row the reviewer
+    /// reads and the bit the gate refuses have to come from one decoder: two
+    /// decoders that disagree about a `Flags` value would recreate the exact
+    /// reviewer-versus-signer mismatch the signing path exists to close.
+    ///
+    /// `UInt32.max` is exactly representable as a `Double`, so the integral /
+    /// range checks below lose nothing inside the valid window, and every value
+    /// wide enough for `Double` to round is already past the upper bound.
+    ///
+    /// This grammar is deliberately NOT the signer's, and both directions of
+    /// the difference fail safe. It is stricter on `Flags: null`, which the
+    /// signer would take as zero — a refusal no real payload runs into, and the
+    /// SDK and extension refuse it identically. It is looser on spellings like
+    /// `131072.0`, which it reads as the bitmask while the signer's u32 decoder
+    /// rejects the field outright: reading a flag the signer will not accept
+    /// costs a transaction that was never going to be signed, never a signature
+    /// over terms nobody reviewed.
+    static func parseFlags(_ value: Any?) -> UInt32? {
+        guard let value else { return 0 }
+        guard let number = value as? NSNumber,
+              CFGetTypeID(number) != CFBooleanGetTypeID() else {
+            return nil
+        }
+        let doubleValue = number.doubleValue
+        guard doubleValue == doubleValue.rounded(),
+              doubleValue >= 0,
+              doubleValue <= Double(UInt32.max) else {
+            return nil
+        }
+        return UInt32(doubleValue)
+    }
+
+    /// Renders a bitmask as the names this reviewer recognises for the given
+    /// transaction type, with any remaining bits appended as a hex residue.
+    private static func describeFlags(_ flags: UInt32, transactionType: String) -> String {
+        let known = (flagNamesByTransactionType[transactionType] ?? []) + universalFlagNames
+        var names: [String] = []
+        var remaining = flags
+
+        for entry in known where flags & entry.bit != 0 {
+            names.append(entry.name)
+            remaining &= ~entry.bit
+        }
+        if remaining != 0 {
+            names.append(String(format: "0x%08X", remaining))
+        }
+        return names.joined(separator: ", ")
     }
 
     // MARK: - Helpers

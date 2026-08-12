@@ -7,11 +7,15 @@
 
 import Foundation
 
-class SuiCoin: Codable {
-    var coinType: String
-    var coinObjectId: String
-    var version: String
-    var digest: String
-    var balance: String
-    var previousTransaction: String
+/// One Sui coin object, as the app needs it.
+///
+/// Not `Codable`: nothing decodes this any more. It is mapped by hand from the
+/// GraphQL coin-object connection, and the keysign payload is built from the
+/// five fields below rather than from an encoding of this type.
+struct SuiCoin {
+    let coinType: String
+    let coinObjectId: String
+    let version: String
+    let digest: String
+    let balance: String
 }

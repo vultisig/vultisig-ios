@@ -305,8 +305,9 @@ final class CustomRPCResolutionTests: XCTestCase {
         // Ripple
         XCTAssertEqual(RippleAPI.defaultHost.absoluteString, "https://xrplcluster.com")
         // Sui
-        XCTAssertEqual(SuiService.defaultRPCURL.absoluteString, "https://sui-rpc.publicnode.com")
-        XCTAssertEqual(Endpoint.suiServiceRpc, "https://sui-rpc.publicnode.com")
+        XCTAssertEqual(SuiService.defaultRPCURL.absoluteString, "https://graphql.mainnet.sui.io/graphql")
+        XCTAssertEqual(SuiGraphQLAPI.defaultHost.absoluteString, "https://graphql.mainnet.sui.io/graphql")
+        XCTAssertEqual(SuiGraphQLAPI.defaultHosts, [SuiGraphQLAPI.defaultHost])
         // Bittensor (proxy/onfinality default baked at init)
         XCTAssertEqual(BittensorService.rpcEndpoint, "https://bittensor-finney.api.onfinality.io/public")
         XCTAssertEqual(Endpoint.bittensorServiceRpc, "https://bittensor-finney.api.onfinality.io/public")

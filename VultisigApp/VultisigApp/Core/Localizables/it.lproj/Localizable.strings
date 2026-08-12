@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", migliorando la flessibilità senza compromettere la sicurezza.";
 "keygenInstructionsCar7Title" = "In evidenza";
 "keys" = "Chiavi";
+"keyshareRecoveryBackupMessage" = "Il tuo backup .vult è la via del ritorno. Importalo e questi vault torneranno a funzionare.";
+"keyshareRecoveryImportButton" = "Importa backup .vult";
+"keyshareRecoveryMessage" = "I loro key share sono cifrati e la chiave che li sblocca non è arrivata con questo ripristino. Nulla su questo dispositivo può leggerli, quindi non può firmare con questi vault.";
+"keyshareRecoveryNoBackupMessage" = "Senza un backup .vult i key share su questo dispositivo non possono più essere decifrati: questa parte non è recuperabile. Il vault stesso potrebbe esserlo ancora: se i tuoi altri dispositivi conservano i propri share e raggiungono ancora la soglia di firma, continua a funzionare senza questo.";
+"keyshareRecoveryNoBackupTitle" = "Non ho un backup";
+"keyshareRecoveryTitle" = "Questi vault non possono essere aperti su questo dispositivo";
 "keysharesUnreadableVaultNotSaved" = "Non è stato possibile leggere le key share di questo vault, quindi non è stato salvato. Sblocca l'app e riprova; se continua a fallire, crea di nuovo il vault.";
 "keysharesUnsealableVaultNotSaved" = "Non è stato possibile proteggere le key share di questo vault per l'archiviazione, quindi non è stato salvato. Sblocca l'app e riprova.";
 "keysign" = "Firma Chiave";
@@ -986,6 +992,10 @@
 "partOf" = "parte %d di %d";
 "passcodeAlreadySet" = "Su questo dispositivo è già impostato un codice. Torna indietro per cambiarlo o rimuoverlo.";
 "passcodeAutoLockTitle" = "Blocco automatico";
+"passcodeBackupPromptBackUpNow" = "Fai il backup ora";
+"passcodeBackupPromptHasBackup" = "Ho già un backup";
+"passcodeBackupPromptSubtitle" = "Un codice cifra i tuoi key share con una chiave conservata su questo dispositivo. Se quella chiave va persa, il tuo backup .vult è l'unico modo per recuperarli: il codice stesso non può essere recuperato.";
+"passcodeBackupPromptTitle" = "Fai un backup prima di impostare un codice";
 "passcodeBiometricDisableFailed" = "Non è stato possibile disattivare lo sblocco con la biometria. Riprova.";
 "passcodeBiometricEnableFailed" = "Non è stato possibile attivare lo sblocco con la biometria. Il codice continua a funzionare.";
 "passcodeBiometricNotAvailable" = "Questo dispositivo non può usare lo sblocco con la biometria.";
@@ -1116,6 +1126,7 @@
 "receive" = "Ricevi";
 "recipient" = "Destinatario";
 "recipientNameNotFound" = "Nome non trovato. Controlla il nome e riprova.";
+"redactedEndpoint" = "[endpoint nascosto]";
 "redeem" = "Riscatta";
 "redeemCoin" = "Riscatta %@";
 "reEnterPassword" = "Reinserisci la password";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destinazione";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Emittente";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "Impossibile verificare";
 "rippleTrustLineUnreviewableValue" = "Non è stato possibile leggere valuta, emittente o limite di questa linea di fiducia, quindi le sue condizioni non possono essere mostrate. Non firmarla.";
 "rippleUndecodedNotice" = "Impossibile decodificare questa transazione. Controlla attentamente il JSON grezzo prima di firmare.";
+"rippleWarningCustomPaths" = "Il sito ha proposto percorsi propri per questo pagamento. È il ledger a sceglierne uno.";
+"rippleWarningPartialPayment" = "Questo è un pagamento parziale: l'importo è il massimo che il destinatario può ricevere, non una consegna garantita. Può ricevere meno mentre a te viene addebitato fino a Send Max.";
 "routerNotAvailable" = "Router non disponibile per approvazioni su %@. Riprova più tardi.";
 "rune" = "RUNE";
 "sameAddressError" = "L'indirizzo del destinatario deve essere diverso dall'indirizzo del mittente";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "Risultato del cmd";
 "suiSplitFrom" = "Dividi da";
 "suiTransaction" = "Transazione Sui";
+"suiTransactionFailed" = "Transazione non riuscita";
 "suiTransactionSummary" = "Riepilogo transazione";
 "support" = "Supporto";
 "supportedFileTypesUpload" = "Tipi di file supportati: .bak, .vult & .zip";

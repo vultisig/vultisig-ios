@@ -3,12 +3,16 @@
 //  VultisigApp
 //
 //  Pins the fail-loud pagination contract of `SuiService.getAllCoins`: when a
-//  page of `suix_getAllCoins` cannot be decoded mid-pagination, the call must
-//  THROW rather than return the coins decoded so far. A truncated coin set is
-//  worse than no set — downstream coin-object selection in `SuiHelper` would
+//  page of the coin-object connection cannot be decoded mid-pagination, the call
+//  must THROW rather than return the coins decoded so far. A truncated coin set
+//  is worse than no set — downstream coin-object selection in `SuiHelper` would
 //  silently miss the SUI gas object or the token's objects and build an invalid
-//  transaction (the silent-failure class this PR exists to close). The happy
-//  path must still follow `nextCursor`/`hasNextPage` to completion.
+//  transaction. The happy path must still follow `hasNextPage`/`endCursor` to
+//  completion.
+//
+//  These assertions are deliberately unchanged from the JSON-RPC era: only the
+//  fixture shapes moved to GraphQL, so a passing run says the transport swap
+//  preserved the contract rather than that the contract was rewritten to fit.
 //
 
 @testable import VultisigApp
@@ -54,7 +58,7 @@ final class SuiServiceGetAllCoinsTests: XCTestCase {
         // (no `result.data`). A truncated set must never be returned.
         StubRPCProtocol.pages = [
             Self.page(coins: [Self.coinJSON(id: "0x1")], nextCursor: "cursor-1", hasNextPage: true),
-            Data(#"{"jsonrpc":"2.0","id":1,"result":{"unexpected":true}}"#.utf8)
+            Data(#"{"data":{"address":null}}"#.utf8)
         ]
 
         let service = SuiService(resolver: StubResolver(host: Self.stubHost))
@@ -118,22 +122,95 @@ final class SuiServiceGetAllCoinsTests: XCTestCase {
         }
     }
 
+    // MARK: - Objects the coin filter should never return
+
+    func testANonCoinObjectIsSkippedRatherThanAbortingThePage() async throws {
+        // Defence in depth. Verified against mainnet that the server-side
+        // `type: "0x2::coin::Coin"` filter matches the exact struct — an address
+        // holding 37 `TreasuryCap`s returns none of them — so this cannot happen
+        // today. If it ever did, losing every Sui balance and every send over an
+        // object the wallet does not even spend would be the wrong trade.
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        let treasuryCap = """
+        {"address":"0xcap","version":1,"digest":"digest-cap",\
+        "contents":{"type":{"repr":"\(padded)::coin::TreasuryCap<\(padded)::sui::SUI>"},\
+        "json":{}}}
+        """
+        StubRPCProtocol.pages = [
+            Self.page(coins: [treasuryCap, Self.coinJSON(id: "0x1")], nextCursor: nil, hasNextPage: false)
+        ]
+
+        let coins = try await SuiService(resolver: StubResolver(host: Self.stubHost))
+            .getAllCoins(coin: Self.makeCoin())
+
+        XCTAssertEqual(coins.map { $0["objectID"] }, ["0x1"], "the TreasuryCap is skipped, the coin is kept")
+    }
+
+    func testAnUnreadableTypeStillAbortsThePage() async {
+        // The other half of the split: a type string we cannot parse means we do
+        // not know what we are dropping from a set that funds a transaction.
+        let unreadable = """
+        {"address":"0xbad","version":1,"digest":"digest-bad",\
+        "contents":{"type":{"repr":"not-a-move-type"},"json":{"balance":"1"}}}
+        """
+        StubRPCProtocol.pages = [
+            Self.page(coins: [unreadable, Self.coinJSON(id: "0x1")], nextCursor: nil, hasNextPage: false)
+        ]
+
+        do {
+            _ = try await SuiService(resolver: StubResolver(host: Self.stubHost))
+                .getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected an unreadable object type to abort the page")
+        } catch {
+            // Expected: a truncated coin set is worse than no coin set.
+        }
+    }
+
+    func testACoinWithAMalformedBalanceStillAbortsThePage() async {
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        let badBalance = """
+        {"address":"0xbad","version":1,"digest":"digest-bad",\
+        "contents":{"type":{"repr":"\(padded)::coin::Coin<\(padded)::sui::SUI>"},\
+        "json":{"balance":"not-a-number"}}}
+        """
+        StubRPCProtocol.pages = [
+            Self.page(coins: [badBalance], nextCursor: nil, hasNextPage: false)
+        ]
+
+        do {
+            _ = try await SuiService(resolver: StubResolver(host: Self.stubHost))
+                .getAllCoins(coin: Self.makeCoin())
+            XCTFail("Expected a malformed coin balance to abort the page")
+        } catch {
+            // Expected.
+        }
+    }
+
     // MARK: - Fixtures
 
     private static func makeCoin() -> Coin {
         Coin(asset: TokensStore.Token.suiSUI, address: "0xowner", hexPublicKey: "pub")
     }
 
+    /// One node of the coin-object connection, carrying the WRAPPER type the
+    /// node actually returns — `0x2::coin::Coin<T>`, zero-padded — so the
+    /// fixtures exercise the unwrap rather than assuming it away.
     private static func coinJSON(id: String) -> String {
-        """
-        {"coinType":"0x2::sui::SUI","coinObjectId":"\(id)","version":"1","digest":"digest-\(id)","balance":"100","previousTransaction":"prev"}
+        let padded = "0x" + String(repeating: "0", count: 63) + "2"
+        return """
+        {"address":"\(id)","version":1,"digest":"digest-\(id)",\
+        "previousTransaction":{"digest":"prev"},\
+        "contents":{"type":{"repr":"\(padded)::coin::Coin<\(padded)::sui::SUI>"},\
+        "json":{"balance":"100"}}}
         """
     }
 
     private static func page(coins: [String], nextCursor: String?, hasNextPage: Bool) -> Data {
         let cursorJSON = nextCursor.map { "\"\($0)\"" } ?? "null"
         let body = """
-        {"jsonrpc":"2.0","id":1,"result":{"data":[\(coins.joined(separator: ","))],"nextCursor":\(cursorJSON),"hasNextPage":\(hasNextPage)}}
+        {"data":{"address":{"objects":{\
+        "pageInfo":{"hasNextPage":\(hasNextPage),"endCursor":\(cursorJSON)},\
+        "nodes":[\(coins.joined(separator: ","))]}}}}
         """
         return Data(body.utf8)
     }
@@ -146,7 +223,7 @@ private struct StubResolver: RPCEndpointResolving {
     func url(for _: Chain) -> String? { "https://\(host)/rpc" }
 }
 
-/// Serves canned JSON-RPC responses in order. Each call to `getAllCoins` issues
+/// Serves canned GraphQL responses in order. Each call to `getAllCoins` issues
 /// one POST per page; we pop the next queued page off `pages`.
 private final class StubRPCProtocol: URLProtocol {
     static var pages: [Data] = []

@@ -29,8 +29,11 @@ struct SetupPushNotificationsModifier: ViewModifier {
                     handleDismiss()
                 }
             }
-            .onLoad { checkIfNeeded() }
-            .onChange(of: vault) { _, _ in
+            // Held while the passcode gate is up. `checkIfNeeded` marks the
+            // prompt as seen before it raises anything, so running it behind the
+            // lock screen would spend the one chance this sheet gets on a screen
+            // nobody can see.
+            .presentsWhenUnlocked(on: vault) {
                 checkIfNeeded()
             }
     }

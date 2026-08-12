@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "keygenInstructionsCar7Title" = "Istaknuta značajka";
 "keys" = "Ključ";
+"keyshareRecoveryBackupMessage" = "Vaša .vult sigurnosna kopija je put natrag. Uvezite je i ovi će vaultovi ponovno raditi.";
+"keyshareRecoveryImportButton" = "Uvezi .vult kopiju";
+"keyshareRecoveryMessage" = "Njihovi su key shareovi šifrirani, a ključ koji ih otključava nije prenesen ovom obnovom. Ništa na ovom uređaju ne može ih pročitati, pa njime ne možete potpisivati ovim vaultovima.";
+"keyshareRecoveryNoBackupMessage" = "Bez .vult sigurnosne kopije key shareovi na ovom uređaju više se ne mogu dešifrirati — taj dio nije moguće obnoviti. Sam vault možda jest: ako vaši drugi uređaji čuvaju vlastite shareove i i dalje dosežu prag za potpisivanje, nastavlja raditi i bez ovoga.";
+"keyshareRecoveryNoBackupTitle" = "Nemam sigurnosnu kopiju";
+"keyshareRecoveryTitle" = "Ovi se vaultovi ne mogu otvoriti na ovom uređaju";
 "keysharesUnreadableVaultNotSaved" = "Key shareovi ovog trezora nisu se mogli pročitati pa trezor nije spremljen. Otključajte aplikaciju i pokušajte ponovno; ako se nastavi, stvorite trezor iznova.";
 "keysharesUnsealableVaultNotSaved" = "Key shareovi ovog trezora nisu se mogli zaštititi za pohranu pa trezor nije spremljen. Otključajte aplikaciju i pokušajte ponovno.";
 "keysign" = "Potpis ključa";
@@ -986,6 +992,10 @@
 "partOf" = "dio %d od %d";
 "passcodeAlreadySet" = "Na ovom uređaju već je postavljena zaporka. Vratite se natrag da biste je promijenili ili uklonili.";
 "passcodeAutoLockTitle" = "Automatsko zaključavanje";
+"passcodeBackupPromptBackUpNow" = "Napravi kopiju sada";
+"passcodeBackupPromptHasBackup" = "Već imam sigurnosnu kopiju";
+"passcodeBackupPromptSubtitle" = "Zaporka šifrira vaše key shareove ključem koji se nalazi na ovom uređaju. Ako se taj ključ izgubi, vaša .vult sigurnosna kopija jedini je način povratka — sama zaporka ne može se vratiti.";
+"passcodeBackupPromptTitle" = "Napravite sigurnosnu kopiju prije postavljanja zaporke";
 "passcodeBiometricDisableFailed" = "Otključavanje biometrijom nije se moglo isključiti. Pokušajte ponovno.";
 "passcodeBiometricEnableFailed" = "Otključavanje biometrijom nije se moglo uključiti. Vaša zaporka i dalje radi.";
 "passcodeBiometricNotAvailable" = "Ovaj uređaj ne može koristiti otključavanje biometrijom.";
@@ -1116,6 +1126,7 @@
 "receive" = "Primi";
 "recipient" = "Primatelj";
 "recipientNameNotFound" = "Naziv nije pronađen. Provjerite naziv i pokušajte ponovno.";
+"redactedEndpoint" = "[krajnja točka skrivena]";
 "redeem" = "Otkupi";
 "redeemCoin" = "Otkupi %@";
 "reEnterPassword" = "Ponovno unesite lozinku";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Odredište";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Izdavatelj";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "Pregled nije moguć";
 "rippleTrustLineUnreviewableValue" = "Valuta, izdavatelj ili ograničenje ove linije povjerenja nisu se mogli pročitati, pa se njezini uvjeti ne mogu prikazati. Nemojte je potpisati.";
 "rippleUndecodedNotice" = "Ovu transakciju nije bilo moguće dekodirati. Pažljivo pregledajte neobrađeni JSON prije potpisivanja.";
+"rippleWarningCustomPaths" = "Stranica je predložila vlastite moguće rute za ovo plaćanje. Ledger bira među njima.";
+"rippleWarningPartialPayment" = "Ovo je djelomično plaćanje: iznos je najviše što primatelj može primiti, a ne zajamčena isporuka. Može primiti manje, dok se vama i dalje naplaćuje do iznosa Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "Adresa primatelja mora se razlikovati od adrese pošiljatelja";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "Rezultat naredbe";
 "suiSplitFrom" = "Podijeli od";
 "suiTransaction" = "Sui transakcija";
+"suiTransactionFailed" = "Transakcija nije uspjela";
 "suiTransactionSummary" = "Sažetak transakcije";
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";

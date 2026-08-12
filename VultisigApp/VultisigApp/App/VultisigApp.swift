@@ -93,8 +93,13 @@ struct VultisigApp: App {
 
         DocumentGroup(newDocument: VULTFileDocument()) { file in
             content
-                .onAppear {
-                    vultExtensionViewModel.documentData = file
+                // The one file-entry route that does not go through
+                // `ContentView.handleDeeplink`, and so the one that was not
+                // queued behind the lock. A password-protected `.vult` opened
+                // from Files while the app is locked ends in a UIKit password
+                // alert on the key window — over the lock screen, taking input.
+                .presentsWhenUnlocked {
+                    vultExtensionViewModel.handOff(documentData: file)
                 }
         }
         .modelContainer(sharedModelContainer)

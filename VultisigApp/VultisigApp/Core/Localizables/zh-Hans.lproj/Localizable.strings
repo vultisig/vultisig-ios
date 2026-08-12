@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = "访问您的 Vultisig 保险库，在不影响安全性的情况下增强灵活性";
 "keygenInstructionsCar7Title" = "功能亮点";
 "keys" = "密钥";
+"keyshareRecoveryBackupMessage" = "您的 .vult 备份就是找回的途径。导入备份后，这些 vault 即可恢复使用。";
+"keyshareRecoveryImportButton" = "导入 .vult 备份";
+"keyshareRecoveryMessage" = "它们的 key share 已加密，而解锁所需的密钥并没有随本次恢复一起带过来。本设备上没有任何东西能读取它们，因此无法用这些 vault 签名。";
+"keyshareRecoveryNoBackupMessage" = "没有 .vult 备份，本设备上的 key share 将无法再解密——这部分无法恢复。但 vault 本身可能仍然可用：如果您的其他设备仍持有各自的 share 并且达到签名门限，即使没有本设备，vault 也能继续工作。";
+"keyshareRecoveryNoBackupTitle" = "我没有备份";
+"keyshareRecoveryTitle" = "本设备无法打开这些 vault";
 "keysharesUnreadableVaultNotSaved" = "无法读取此保险库的密钥分片，因此未保存。请解锁应用后重试；若仍然失败，请重新创建保险库。";
 "keysharesUnsealableVaultNotSaved" = "无法为存储保护此保险库的密钥分片，因此未保存。请解锁应用后重试。";
 "keysign" = "密钥签名";
@@ -986,6 +992,10 @@
 "partOf" = "第 %d 部分，共 %d 部分";
 "passcodeAlreadySet" = "本设备已设置密码。请返回上一页以修改或移除。";
 "passcodeAutoLockTitle" = "自动锁定";
+"passcodeBackupPromptBackUpNow" = "立即备份";
+"passcodeBackupPromptHasBackup" = "我已有备份";
+"passcodeBackupPromptSubtitle" = "密码会使用保存在本设备上的密钥加密您的 key share。如果该密钥丢失，您的 .vult 备份是唯一的恢复途径——密码本身无法找回。";
+"passcodeBackupPromptTitle" = "设置密码前请先备份";
 "passcodeBiometricDisableFailed" = "无法关闭生物识别解锁。请重试。";
 "passcodeBiometricEnableFailed" = "无法开启生物识别解锁。密码仍然可用。";
 "passcodeBiometricNotAvailable" = "本设备无法使用生物识别解锁。";
@@ -1116,6 +1126,7 @@
 "receive" = "接收";
 "recipient" = "接收方";
 "recipientNameNotFound" = "未找到名称。请检查名称后重试。";
+"redactedEndpoint" = "[已隐藏端点]";
 "redeem" = "赎回";
 "redeemCoin" = "赎回 %@";
 "reEnterPassword" = "重新输入密码";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "最小交付额";
 "rippleFieldDestination" = "目标地址";
 "rippleFieldDestinationTag" = "目标标签";
+"rippleFieldFlags" = "标志";
 "rippleFieldIssuer" = "发行方";
 "rippleFieldOfferSequence" = "挂单序号";
+"rippleFieldQualityIn" = "接收质量";
+"rippleFieldQualityOut" = "发送质量";
 "rippleFieldSendMax" = "最大发送额";
 "rippleFieldTakerGets" = "Taker 获得";
 "rippleFieldTakerPays" = "Taker 支付";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "无法审核";
 "rippleTrustLineUnreviewableValue" = "无法读取此信任线的货币、发行方或上限，因此无法显示其条款。请勿签名。";
 "rippleUndecodedNotice" = "无法解码此交易。签名前请仔细核对原始 JSON。";
+"rippleWarningCustomPaths" = "该网站为这笔付款提供了自己的候选路径，由账本从中选择。";
+"rippleWarningPartialPayment" = "这是一笔部分付款：金额是收款方最多可能收到的数额，而非保证到账的数额。收款方可能收到更少，而你仍会被扣除至多「最大发送额」。";
 "routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
 "rune" = "RUNE";
 "sameAddressError" = "收件人地址必须与发件人地址不同";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "命令结果";
 "suiSplitFrom" = "拆分来源";
 "suiTransaction" = "Sui 交易";
+"suiTransactionFailed" = "交易失败";
 "suiTransactionSummary" = "交易摘要";
 "support" = "支持";
 "supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";

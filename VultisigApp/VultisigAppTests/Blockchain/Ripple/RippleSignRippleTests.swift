@@ -581,6 +581,250 @@ final class RippleSignRippleTests: XCTestCase {
         XCTAssertThrowsError(try RippleHelper.getPreSignedInputData(keysignPayload: payload))
     }
 
+    // MARK: - tfPartialPayment: the bound Amount must still bound delivery
+
+    //  `bindPaymentToReviewedValues` only means anything while `Amount` is a
+    //  delivery. `tfPartialPayment` (0x00020000) makes it a ceiling instead, so
+    //  every fixture here binds CLEANLY — reviewed destination and amount equal
+    //  to the JSON's — and the new gate is the only thing that can reject.
+
+    /// Builds a native `Payment` for `destination` / 1 XRP with an arbitrary
+    /// tail of extra fields, so a fixture differs from the accepted control in
+    /// exactly the terms under test.
+    private static func boundPaymentJson(extraFields: String = "") -> String {
+        """
+        {"TransactionType":"Payment","Account":"\(account)","Destination":"\(destination)","Amount":"1000000","SendMax":"999999999"\(extraFields),"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+    }
+
+    /// The acceptance case. Every pre-existing gate passes — `Account` is the
+    /// vault, `Destination` is the reviewed address, `Amount` is the reviewed
+    /// amount byte for byte — and the transaction can still settle for dust
+    /// while spending the whole `SendMax`.
+    func testPartialPaymentWithoutDeliverMinIsRefused() {
+        assertBoundPaymentRefused(
+            Self.boundPaymentJson(extraFields: ",\"Flags\":131072"),
+            "a tfPartialPayment Payment with no DeliverMin floor must be refused before signing"
+        )
+    }
+
+    /// A floor restores something for the reviewed amount to mean, so a partial
+    /// payment carrying one is forwarded unchanged. Partial payments are
+    /// legitimate; only unfloored ones are not.
+    func testPartialPaymentWithDeliverMinIsForwarded() throws {
+        let rawJson = Self.boundPaymentJson(extraFields: ",\"DeliverMin\":\"900000\",\"Flags\":131072")
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
+        XCTAssertEqual(input.rawJson, rawJson, "a floored partial payment must still be signed verbatim")
+    }
+
+    /// A `DeliverMin` that is present but floors nothing must not be mistaken
+    /// for one that does. Each of these satisfies "the field is there".
+    func testPartialPaymentWithAHollowDeliverMinIsRefused() {
+        let hollowFloors = [
+            "null",
+            "{}",
+            "[]",
+            "\"0\"",
+            "\"-1\"",
+            "\"not-a-number\"",
+            "123456"
+        ]
+        for floor in hollowFloors {
+            assertBoundPaymentRefused(
+                Self.boundPaymentJson(extraFields: ",\"DeliverMin\":\(floor),\"Flags\":131072"),
+                "a DeliverMin of \(floor) bounds nothing and must not license a partial payment"
+            )
+        }
+    }
+
+    /// The same, for an issued-currency delivery: a floor missing its value, or
+    /// carrying a zero one, floors nothing.
+    func testIssuedPartialPaymentWithAHollowDeliverMinIsRefused() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "USD.\(issuer)", decimals: 15)
+        let hollowFloors = [
+            "{\"currency\":\"USD\",\"issuer\":\"\(issuer)\"}",
+            "{\"currency\":\"USD\",\"issuer\":\"\(issuer)\",\"value\":\"0\"}",
+            "{\"currency\":\"USD\",\"issuer\":\"\(issuer)\",\"value\":\"-1\"}",
+            "\"900000\""
+        ]
+        for floor in hollowFloors {
+            let rawJson = """
+            {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":\(floor),"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+            """
+            let payload = Self.makePayload(
+                rawJson: rawJson,
+                coin: coin,
+                toAddress: Self.destination,
+                toAmount: BigInt("1500000000000000")
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "a DeliverMin of \(floor) bounds nothing on an issued-currency delivery"
+            )
+        }
+    }
+
+    /// An issued-currency `DeliverMin` is a real floor and must be accepted in
+    /// the same way a drops one is.
+    func testPartialPaymentWithAnIssuedDeliverMinFloorIsForwarded() throws {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "USD.\(issuer)", decimals: 15)
+        let rawJson = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":{"currency":"USD","issuer":"\(issuer)","value":"1.4"},"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: coin,
+            toAddress: Self.destination,
+            toAmount: BigInt("1500000000000000")
+        )
+
+        let input = try RippleSigningInput(serializedBytes: RippleHelper.getPreSignedInputData(keysignPayload: payload))
+        XCTAssertEqual(input.rawJson, rawJson)
+    }
+
+    /// A `Flags` value the XRPL codec could not have encoded as a uint32 is
+    /// refused rather than read as "nothing set" — it may carry the very bit
+    /// being checked. `{"tfPartialPayment": true}` is the object sugar some
+    /// client libraries accept.
+    func testFlagsThatAreNotAUint32AreRefused() {
+        let undecodable = [
+            "{\"tfPartialPayment\":true}",
+            "\"131072\"",
+            "true",
+            "-1",
+            "131072.5",
+            "4294967296",
+            "null",
+            "[131072]"
+        ]
+        for flags in undecodable {
+            assertBoundPaymentRefused(
+                Self.boundPaymentJson(extraFields: ",\"Flags\":\(flags)"),
+                "an undecodable Flags value must be refused, not read as zero: \(flags)"
+            )
+        }
+    }
+
+    /// `tfFullyCanonicalSig` (0x80000000) sits above `INT32_MAX`. The uint32
+    /// bound must not clip it into a rejection.
+    func testFullyCanonicalSigFlagIsForwarded() {
+        assertBoundPaymentAccepted(
+            Self.boundPaymentJson(extraFields: ",\"Flags\":2147483648"),
+            "a flag above INT32_MAX must survive the uint32 bound"
+        )
+    }
+
+    /// The zero control: the same fixture without any `Flags` binds cleanly, so
+    /// the rejections above are attributable to the flag and nothing else.
+    func testBoundPaymentWithNoFlagsIsAccepted() {
+        assertBoundPaymentAccepted(
+            Self.boundPaymentJson(),
+            "the fixture must bind cleanly once the flag is removed"
+        )
+    }
+
+    /// 0x00020000 is namespace-sensitive: on an `OfferCreate` it is
+    /// `tfImmediateOrCancel`, which has nothing to do with delivery. Reading it
+    /// as partial payment there would false-reject a legitimate offer.
+    func testPartialPaymentBitOnAnOfferCreateIsNotRefused() {
+        let rawJson = """
+        {"TransactionType":"OfferCreate","Account":"\(Self.account)","TakerGets":"5000000","TakerPays":{"currency":"USD","issuer":"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh","value":"10"},"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: "",
+            toAmount: 0
+        )
+        XCTAssertNoThrow(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "tfImmediateOrCancel on an offer must not be read as a partial payment"
+        )
+    }
+
+    /// XRPL's codec also accepts a transaction's NUMERIC type code — `0` is
+    /// `Payment` — so a numeric spelling would reach the signer as a payment
+    /// while every `as? String == "Payment"` comparison read false, routing it
+    /// down the branch meant for offers, which binds neither destination nor
+    /// amount. The fixture is the full attack: wrong destination, wrong amount,
+    /// tfPartialPayment, no floor.
+    func testNumericTransactionTypeIsRefused() {
+        let rawJson = """
+        {"TransactionType":0,"Account":"\(Self.account)","Destination":"rAttackerAAAAAAAAAAAAAAAAAAAAAAAAA","Amount":"999999999","Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        let payload = Self.makePayload(
+            rawJson: rawJson,
+            coin: Self.makeNativeCoin(),
+            toAddress: Self.destination,
+            toAmount: BigInt(1_000_000)
+        )
+        XCTAssertThrowsError(
+            try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+            "a numeric TransactionType must not slip past the Payment bindings"
+        )
+    }
+
+    /// XRPL reads an `Amount` whose issuer is the `Destination` as "any issuer
+    /// the destination will take". A `DeliverMin` carrying that wildcard floors
+    /// *some* issuer's version of the currency — possibly a worthless one —
+    /// while the card names a definite issuer. The floor must be pinned to the
+    /// same asset `Amount` names.
+    func testPartialPaymentWithAMismatchedDeliverMinIssuerIsRefused() {
+        let issuer = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+        let coin = Self.makeIssuedCoin(contractAddress: "USD.\(issuer)", decimals: 15)
+
+        // The wildcard spelling: DeliverMin.issuer = Destination.
+        let wildcard = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":{"currency":"USD","issuer":"\(Self.destination)","value":"1.4"},"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        // A floor in an entirely different currency floors nothing that Amount
+        // describes, and the ledger would refuse it too.
+        let otherCurrency = """
+        {"TransactionType":"Payment","Account":"\(Self.account)","Destination":"\(Self.destination)","Amount":{"currency":"USD","issuer":"\(issuer)","value":"1.5"},"DeliverMin":{"currency":"EUR","issuer":"\(issuer)","value":"1.4"},"Flags":131072,"Fee":"10","Sequence":99,"LastLedgerSequence":12345678}
+        """
+        for rawJson in [wildcard, otherCurrency] {
+            let payload = Self.makePayload(
+                rawJson: rawJson,
+                coin: coin,
+                toAddress: Self.destination,
+                toAmount: BigInt("1500000000000000")
+            )
+            XCTAssertThrowsError(
+                try RippleHelper.getPreSignedInputData(keysignPayload: payload),
+                "a DeliverMin that does not floor the asset Amount names must be refused"
+            )
+        }
+    }
+
+    /// The floor has to match the shape of the delivery too: an issued-currency
+    /// floor bounds nothing about a native XRP `Amount`.
+    func testNativePartialPaymentWithAnIssuedDeliverMinIsRefused() {
+        let iou = "{\"currency\":\"USD\",\"issuer\":\"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\",\"value\":\"1\"}"
+        assertBoundPaymentRefused(
+            Self.boundPaymentJson(extraFields: ",\"DeliverMin\":\(iou),\"Flags\":131072"),
+            "an issued-currency floor cannot bound a native XRP delivery"
+        )
+    }
+
+    /// `Paths` is legitimate on a cross-currency payment — refusing it would
+    /// break real DEX flows. It is surfaced on the review screen instead.
+    func testPaymentCarryingPathsIsNotRefused() {
+        let paths = "[[{\"currency\":\"USD\",\"issuer\":\"rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh\"}]]"
+        assertBoundPaymentAccepted(
+            Self.boundPaymentJson(extraFields: ",\"Paths\":\(paths)"),
+            "dApp-supplied Paths must be surfaced, not refused"
+        )
+    }
+
     // MARK: - Native path unchanged
 
     /// With no signRipple, RippleHelper still builds the native opPayment from

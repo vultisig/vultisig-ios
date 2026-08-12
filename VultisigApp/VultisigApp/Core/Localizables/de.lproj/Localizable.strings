@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessere so die Flexibilität, ohne die Sicherheit zu vernachlässigen.";
 "keygenInstructionsCar7Title" = "Funktionshighlight";
 "keys" = "Schlüssel";
+"keyshareRecoveryBackupMessage" = "Ihr .vult-Backup ist der Weg zurück. Importieren Sie es, und diese Vaults funktionieren wieder.";
+"keyshareRecoveryImportButton" = ".vult-Backup importieren";
+"keyshareRecoveryMessage" = "Ihre Key Shares sind verschlüsselt, und der Schlüssel, der sie entsperrt, kam bei dieser Wiederherstellung nicht mit. Auf diesem Gerät kann sie nichts lesen, also kann es mit diesen Vaults nicht signieren.";
+"keyshareRecoveryNoBackupMessage" = "Ohne .vult-Backup lassen sich die Key Shares auf diesem Gerät nicht mehr entsperren — dieser Teil ist nicht wiederherstellbar. Der Vault selbst kann es sein: Wenn Ihre anderen Geräte ihre eigenen Shares halten und damit weiterhin den Signaturschwellenwert erreichen, funktioniert er ohne dieses Gerät weiter.";
+"keyshareRecoveryNoBackupTitle" = "Ich habe kein Backup";
+"keyshareRecoveryTitle" = "Diese Vaults lassen sich auf diesem Gerät nicht öffnen";
 "keysharesUnreadableVaultNotSaved" = "Die Key Shares dieses Tresors konnten nicht gelesen werden, daher wurde er nicht gespeichert. Entsperren Sie die App und versuchen Sie es erneut — bleibt das Problem bestehen, erstellen Sie den Tresor neu.";
 "keysharesUnsealableVaultNotSaved" = "Die Key Shares dieses Tresors konnten nicht für die Speicherung geschützt werden, daher wurde er nicht gespeichert. Entsperren Sie die App und versuchen Sie es erneut.";
 "keysign" = "Schlüsselsignatur";
@@ -986,6 +992,10 @@
 "partOf" = "Teil %d von %d";
 "passcodeAlreadySet" = "Auf diesem Gerät ist bereits ein Passcode gesetzt. Gehen Sie zurück, um ihn zu ändern oder zu entfernen.";
 "passcodeAutoLockTitle" = "Automatische Sperre";
+"passcodeBackupPromptBackUpNow" = "Jetzt sichern";
+"passcodeBackupPromptHasBackup" = "Ich habe bereits ein Backup";
+"passcodeBackupPromptSubtitle" = "Ein Passcode verschlüsselt Ihre Key-Shares mit einem Schlüssel, der auf diesem Gerät liegt. Geht dieser Schlüssel verloren, ist Ihr .vult-Backup der einzige Weg zurück – der Passcode selbst lässt sich nicht wiederherstellen.";
+"passcodeBackupPromptTitle" = "Erstellen Sie ein Backup, bevor Sie einen Passcode festlegen";
 "passcodeBiometricDisableFailed" = "Die biometrische Entsperrung konnte nicht deaktiviert werden. Versuchen Sie es erneut.";
 "passcodeBiometricEnableFailed" = "Die biometrische Entsperrung konnte nicht aktiviert werden. Ihr Passcode funktioniert weiterhin.";
 "passcodeBiometricNotAvailable" = "Dieses Gerät kann die biometrische Entsperrung nicht verwenden.";
@@ -1116,6 +1126,7 @@
 "receive" = "Empfangen";
 "recipient" = "Empfänger";
 "recipientNameNotFound" = "Name nicht gefunden. Überprüfen Sie den Namen und versuchen Sie es erneut.";
+"redactedEndpoint" = "[Endpunkt ausgeblendet]";
 "redeem" = "Einlösen";
 "redeemCoin" = "%@ einlösen";
 "reEnterPassword" = "Passwort erneut eingeben";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Ziel";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Emittent";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "Prüfung nicht möglich";
 "rippleTrustLineUnreviewableValue" = "Währung, Emittent oder Limit dieser Trust Line konnten nicht gelesen werden, daher lassen sich ihre Bedingungen nicht anzeigen. Nicht signieren.";
 "rippleUndecodedNotice" = "Diese Transaktion konnte nicht dekodiert werden. Überprüfe das rohe JSON sorgfältig, bevor du signierst.";
+"rippleWarningCustomPaths" = "Die Website hat eigene mögliche Routen für diese Zahlung angegeben. Das Ledger wählt daraus aus.";
+"rippleWarningPartialPayment" = "Dies ist eine Teilzahlung: Der Betrag ist das Maximum, das der Empfänger erhalten kann, keine garantierte Zustellung. Er kann weniger erhalten, während dir weiterhin bis zu Send Max berechnet wird.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "Die Empfängeradresse muss sich von der Absenderadresse unterscheiden.";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "Ergebnis von Befehl";
 "suiSplitFrom" = "Aufteilen von";
 "suiTransaction" = "Sui-Transaktion";
+"suiTransactionFailed" = "Transaktion fehlgeschlagen";
 "suiTransactionSummary" = "Transaktionsübersicht";
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";

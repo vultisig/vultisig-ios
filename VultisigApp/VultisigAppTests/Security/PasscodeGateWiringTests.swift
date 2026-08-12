@@ -126,7 +126,7 @@ final class PasscodeGateWiringTests: XCTestCase {
         AppViewModel(
             lockService: lockService,
             passcodeService: service,
-            reconcileInstall: { }
+            reconcileInstall: { .nothing }
         )
     }
 
@@ -524,6 +524,88 @@ final class PasscodeGateWiringTests: XCTestCase {
 
         XCTAssertFalse(viewModel.didFinish, "precondition: the shortcut did not open the app")
         XCTAssertTrue(viewModel.shouldPresentEntry, "the passcode must still be reachable")
+    }
+
+    // MARK: - What the app is allowed to raise while the gate is up
+
+    /// The gate has to apply to what the app *does*, not only to what it shows —
+    /// the same rule `handleDeeplink` already follows. These pin the half of it
+    /// that no lock screen can cover for itself: a sheet is presented in a layer
+    /// an overlay does not reach, so a screen that raises one from its own load
+    /// puts it *above* the lock. Three do, with no user action at all: the
+    /// fast-vault password reminder, the monthly backup warning and the
+    /// notifications intro.
+    func testACheckThatComesDueWhileLockedDoesNotRun() {
+        var sut = AppLockPresentationHold()
+
+        XCTAssertFalse(sut.requested(whileLocked: true))
+        XCTAssertTrue(sut.isHolding)
+    }
+
+    /// Held, not dropped. The reminder is owed either way; what the gate decides
+    /// is when it may be asked for.
+    func testAHeldCheckRunsWhenTheGateComesDown() {
+        var sut = AppLockPresentationHold()
+        _ = sut.requested(whileLocked: true)
+
+        XCTAssertTrue(sut.lockChanged(isLocked: false))
+        XCTAssertFalse(sut.isHolding)
+    }
+
+    /// A hold, not a queue. Every caller asks an idempotent "do I still owe this
+    /// sheet?" question, so three asks behind the gate are one answer once it
+    /// comes down — not three sheets.
+    func testRepeatedRequestsBehindTheGateProduceOneRun() {
+        var sut = AppLockPresentationHold()
+        _ = sut.requested(whileLocked: true)
+        _ = sut.requested(whileLocked: true)
+        _ = sut.requested(whileLocked: true)
+
+        XCTAssertTrue(sut.lockChanged(isLocked: false))
+        XCTAssertFalse(sut.lockChanged(isLocked: false), "the hold was already spent")
+    }
+
+    /// The gate going *up* releases nothing. Without this the sequence
+    /// lock → check → unlock → lock would raise the sheet on the second lock,
+    /// which is the bug being fixed rather than the fix.
+    func testTheGateGoingUpReleasesNothing() {
+        var sut = AppLockPresentationHold()
+        _ = sut.requested(whileLocked: true)
+
+        XCTAssertFalse(sut.lockChanged(isLocked: true))
+        XCTAssertTrue(sut.isHolding, "still owed, still held")
+    }
+
+    /// And an unlock with nothing held raises nothing, so the rule is not simply
+    /// "present something whenever the gate comes down".
+    func testAnUnlockWithNothingHeldRunsNothing() {
+        var sut = AppLockPresentationHold()
+
+        XCTAssertFalse(sut.lockChanged(isLocked: false))
+    }
+
+    /// The half that must keep working: with no gate up, a check runs where it
+    /// always did and is never held.
+    func testACheckThatComesDueWithNoGateUpRunsImmediately() {
+        var sut = AppLockPresentationHold()
+
+        XCTAssertTrue(sut.requested(whileLocked: false))
+        XCTAssertFalse(sut.isHolding)
+        XCTAssertFalse(sut.lockChanged(isLocked: false), "nothing was held, so nothing replays")
+    }
+
+    /// The race the hold has to survive. SwiftUI delivers the lock's `onChange`
+    /// *after* the flag has already changed, so a request landing in that window
+    /// sees an unlocked app and runs — and the drain still on its way would then
+    /// run the same check a second time. Accepting a request has to discharge the
+    /// hold, not only the drain.
+    func testARequestThatOvertakesTheDrainRunsOnce() {
+        var sut = AppLockPresentationHold()
+        _ = sut.requested(whileLocked: true)
+
+        XCTAssertTrue(sut.requested(whileLocked: false), "the flag is already down")
+
+        XCTAssertFalse(sut.lockChanged(isLocked: false), "the drain has nothing left to run")
     }
 }
 

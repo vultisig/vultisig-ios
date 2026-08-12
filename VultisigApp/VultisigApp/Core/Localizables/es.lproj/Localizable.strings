@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = ", mejorando la flexibilidad sin comprometer la seguridad.";
 "keygenInstructionsCar7Title" = "Destacado de funciones";
 "keys" = "Llaves";
+"keyshareRecoveryBackupMessage" = "Tu copia de seguridad .vult es el camino de vuelta. Impórtala y estos vaults volverán a funcionar.";
+"keyshareRecoveryImportButton" = "Importar copia .vult";
+"keyshareRecoveryMessage" = "Sus key shares están cifrados y la clave que los descifra no llegó con esta restauración. Nada en este dispositivo puede leerlos, así que no puede firmar con estos vaults.";
+"keyshareRecoveryNoBackupMessage" = "Sin una copia .vult, los key shares de este dispositivo ya no se pueden descifrar: esa parte no es recuperable. El vault en sí puede seguir siéndolo: si tus otros dispositivos conservan sus propios shares y siguen alcanzando el umbral de firma, seguirá funcionando sin este.";
+"keyshareRecoveryNoBackupTitle" = "No tengo copia de seguridad";
+"keyshareRecoveryTitle" = "Estos vaults no se pueden abrir en este dispositivo";
 "keysharesUnreadableVaultNotSaved" = "No se pudieron leer las key shares de esta bóveda, por lo que no se guardó. Desbloquea la app e inténtalo de nuevo; si sigue fallando, crea la bóveda otra vez.";
 "keysharesUnsealableVaultNotSaved" = "No se pudieron proteger las key shares de esta bóveda para su almacenamiento, por lo que no se guardó. Desbloquea la app e inténtalo de nuevo.";
 "keysign" = "Firma de Clave";
@@ -986,6 +992,10 @@
 "partOf" = "Parte %d de %d";
 "passcodeAlreadySet" = "Ya hay un código establecido en este dispositivo. Vuelve atrás para cambiarlo o quitarlo.";
 "passcodeAutoLockTitle" = "Bloqueo automático";
+"passcodeBackupPromptBackUpNow" = "Crear copia ahora";
+"passcodeBackupPromptHasBackup" = "Ya tengo una copia de seguridad";
+"passcodeBackupPromptSubtitle" = "Un código cifra tus key shares con una clave guardada en este dispositivo. Si esa clave se pierde, tu copia .vult es la única forma de recuperarlos: el código en sí no se puede recuperar.";
+"passcodeBackupPromptTitle" = "Haz una copia de seguridad antes de establecer un código";
 "passcodeBiometricDisableFailed" = "No se pudo desactivar el desbloqueo biométrico. Inténtalo de nuevo.";
 "passcodeBiometricEnableFailed" = "No se pudo activar el desbloqueo biométrico. Tu código sigue funcionando.";
 "passcodeBiometricNotAvailable" = "Este dispositivo no puede usar el desbloqueo biométrico.";
@@ -1116,6 +1126,7 @@
 "receive" = "Recibir";
 "recipient" = "Destinatario";
 "recipientNameNotFound" = "Nombre no encontrado. Verifica el nombre e inténtalo de nuevo.";
+"redactedEndpoint" = "[endpoint oculto]";
 "redeem" = "Canjear";
 "redeemCoin" = "Canjear %@";
 "reEnterPassword" = "Vuelve a introducir la contraseña";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "Destino";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "Emisor";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "No se puede revisar";
 "rippleTrustLineUnreviewableValue" = "No se pudo leer la moneda, el emisor o el límite de esta línea de confianza, así que no se pueden mostrar sus condiciones. No la firmes.";
 "rippleUndecodedNotice" = "No se pudo decodificar esta transacción. Revisa cuidadosamente el JSON sin procesar antes de firmar.";
+"rippleWarningCustomPaths" = "El sitio propuso sus propias rutas para este pago. El ledger elige entre ellas.";
+"rippleWarningPartialPayment" = "Este es un pago parcial: el importe es lo máximo que puede recibir el destinatario, no una entrega garantizada. Puede recibir menos mientras a ti se te cobra hasta el Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
 "rune" = "RUNE";
 "sameAddressError" = "La dirección de destino debe ser diferente de la dirección de origen.";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "Resultado del cmd";
 "suiSplitFrom" = "Dividir de";
 "suiTransaction" = "Transacción Sui";
+"suiTransactionFailed" = "La transacción falló";
 "suiTransactionSummary" = "Resumen de transacción";
 "support" = "Apoyo";
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";

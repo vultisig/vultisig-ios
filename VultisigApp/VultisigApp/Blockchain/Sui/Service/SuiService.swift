@@ -21,13 +21,15 @@ protocol SuiCoinMetadataProviding {
     func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata?
 }
 
-enum SuiCoinMetadataError: Error {
-    case rpc(String)
-}
+enum SuiBalanceError: Error, LocalizedError {
+    case unparseableBalance(String)
 
-enum SuiBalanceError: Error {
-    case rpc(String)
-    case missingResult
+    var errorDescription: String? {
+        switch self {
+        case .unparseableBalance(let raw):
+            return "Sui returned an unparseable balance: \(raw)"
+        }
+    }
 }
 
 class SuiService: SuiCoinMetadataProviding {
@@ -36,34 +38,23 @@ class SuiService: SuiCoinMetadataProviding {
 
     private let logger = Log.chain.service
 
-    /// Default Sui JSON-RPC host.
-    static let defaultRPCURL: URL = {
-        guard let url = URL(string: Endpoint.suiServiceRpc) else {
-            preconditionFailure("Invalid Sui default RPC URL: \(Endpoint.suiServiceRpc)")
-        }
-        return url
-    }()
+    /// Default Sui GraphQL RPC host.
+    static let defaultRPCURL: URL = SuiGraphQLAPI.defaultHost
 
-    /// Resolves the Sui custom RPC override. Injected so the request URL is
-    /// derived from a dependency rather than a global reach-in; resolution is
-    /// computed per access so a runtime override change is picked up live (the
-    /// shared mirror updates without a relaunch).
-    private let resolver: RPCEndpointResolving
-    private let httpClient: HTTPClientProtocol
+    /// Walks the resolved host list, failing over on transport faults only. The
+    /// custom-RPC override is resolved per request, so a runtime override change
+    /// is picked up live (the shared mirror updates without a relaunch).
+    private let client: SuiFailoverClient
 
     init(
         resolver: RPCEndpointResolving = CustomRPCStore.shared,
-        httpClient: HTTPClientProtocol = HTTPClient()
+        httpClient: HTTPClientProtocol = HTTPClient(),
+        hosts: [URL] = SuiGraphQLAPI.defaultHosts
     ) {
-        self.resolver = resolver
-        self.httpClient = httpClient
-    }
-
-    /// The override-aware Sui JSON-RPC URL. Falls back to the default host when
-    /// no override is set. Sui exposes a single JSON-RPC endpoint that the
-    /// request methods post to directly, so the override is the complete URL.
-    private var rpcURL: URL {
-        resolver.resolvedURL(for: .sui, default: Self.defaultRPCURL)
+        self.client = SuiFailoverClient(
+            httpClient: httpClient,
+            endpoints: SuiEndpointResolver(resolver: resolver, defaultHosts: hosts)
+        )
     }
 
     func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]]) {
@@ -76,27 +67,50 @@ class SuiService: SuiCoinMetadataProviding {
         return try await getAllBalances(coin: coin, address: address)
     }
 
+    /// The balance of one coin type.
+    ///
+    /// `suix_getAllBalances` returned every coin type at once and the caller
+    /// filtered; GraphQL exposes the balance of a named type directly, so it is
+    /// asked for by name instead of paginating the whole `balances` connection
+    /// and discarding all but one row.
     func getAllBalances(coin: CoinMeta, address: String) async throws -> String {
-        let response = try await httpClient.request(
-            SuiAPI(baseURL: rpcURL, endpoint: .allBalances(address: address)),
-            responseType: SuiBalancesResponse.self
-        )
-
-        if let error = response.data.error {
-            throw SuiBalanceError.rpc(error.message)
-        }
-
-        guard let balances = response.data.result else {
-            throw SuiBalanceError.missingResult
-        }
-
         let expectedCoinType = SuiCoinType.expectedType(
             isNativeToken: coin.isNativeToken,
             contractAddress: coin.contractAddress
         )
-        return balances.first(where: {
-            SuiCoinType.matches($0.coinType, expectedCoinType)
-        })?.totalBalance ?? "0"
+
+        let data = try await client.query(
+            SuiGraphQLDocument.balance,
+            variables: ["owner": address, "coinType": expectedCoinType],
+            responseType: SuiBalanceData.self
+        )
+
+        // Exactly one of these levels being absent is a legitimate zero; the
+        // others are partial responses. Collapsing all three into "0" would show
+        // a funded wallet as empty, which is the worst thing a balance call can
+        // do — so only the one that genuinely means "never held this coin"
+        // returns zero.
+        guard let owner = data.address else {
+            throw SuiRPCError.incompleteResponse("balance query returned no address")
+        }
+
+        // An address that has never held the coin type resolves `balance` to
+        // null — a genuine zero, not an upstream fault. A refusal (malformed
+        // address, indexer outage) arrives as a populated `errors` array and has
+        // already been raised by the transport.
+        guard let balance = owner.balance else { return "0" }
+
+        guard let totalBalance = balance.totalBalance else {
+            throw SuiRPCError.incompleteResponse("balance object without a totalBalance")
+        }
+
+        // A present-but-unparseable amount is a node contract violation, not an
+        // empty wallet, so it is raised rather than shown to someone as a zero.
+        guard BigInt(totalBalance) != nil else {
+            throw SuiBalanceError.unparseableBalance(totalBalance)
+        }
+
+        return totalBalance
     }
 
     /// Get token USD value with proper decimal handling
@@ -159,21 +173,34 @@ class SuiService: SuiCoinMetadataProviding {
         }
     }
 
+    /// The network's reference gas price.
+    ///
+    /// A missing or unparseable result throws rather than returning zero: a zero
+    /// reference gas price silently under-prices the transaction that is built
+    /// from it, which fails on chain instead of failing here.
     func getReferenceGasPrice() async throws -> BigInt {
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params: [])
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
-               let resultString = result as? String {
-                let intResult = resultString.toBigInt()
-                return intResult
-            } else {
-                logger.error("JSON decoding error")
+            let data = try await client.query(
+                SuiGraphQLDocument.referenceGasPrice,
+                responseType: SuiEpochData.self
+            )
+
+            // `String.toBigInt()` answers zero for anything it cannot parse, so
+            // it must not be used here: a zero price is indistinguishable from a
+            // node returning garbage, and both under-price the transaction.
+            // Sui's reference gas price is a positive protocol parameter, so
+            // zero is never a legitimate answer either.
+            guard let raw = data.epoch?.referenceGasPrice,
+                  let price = BigInt(raw),
+                  price > .zero else {
+                throw Errors.missingReferenceGasPrice
             }
+
+            return price
         } catch {
-            logger.error("Error fetching balance: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error fetching reference gas price: \(error.localizedDescription, privacy: .private)")
             throw error
         }
-        return BigInt.zero
     }
 
     /// Fetches every coin object owned by the address.
@@ -209,33 +236,107 @@ class SuiService: SuiCoinMetadataProviding {
                 }
                 pageCount += 1
 
-                let response = try await httpClient.request(
-                    SuiAPI(baseURL: rpcURL, endpoint: .allCoins(address: address, cursor: cursor)),
-                    responseType: SuiCoinPageResponse.self
-                ).data
+                let data = try await client.query(
+                    SuiGraphQLDocument.allCoins,
+                    variables: ["owner": address, "cursor": cursor ?? NSNull()],
+                    responseType: SuiCoinObjectsData.self
+                )
 
-                if let error = response.error {
-                    throw Errors.coinPageRPC(error.message)
-                }
-
-                guard let page = response.result else {
+                // Every part of the page is required. A missing connection, a
+                // missing `pageInfo` or a missing `nodes` list are all node
+                // contract violations, and reading any of them as "an empty but
+                // valid page" would end the walk early and hand back a truncated
+                // coin set — which `SuiHelper` then turns into a transaction
+                // missing its gas object or its token objects. Fail loudly
+                // instead; that is what this whole function is shaped around.
+                guard let page = data.address?.objects,
+                      let pageInfo = page.pageInfo,
+                      let hasNextPage = pageInfo.hasNextPage,
+                      let nodes = page.nodes else {
                     throw Errors.coinPageDecodeFailed(cursor: cursor)
                 }
-                coins.append(contentsOf: page.data)
+                coins.append(contentsOf: try Self.coins(from: nodes, cursor: cursor))
 
-                guard page.hasNextPage else { break }
-                guard let nextCursor = page.nextCursor,
+                guard hasNextPage else { break }
+                guard let nextCursor = pageInfo.endCursor,
                       !nextCursor.isEmpty,
                       seenCursors.insert(nextCursor).inserted else {
-                    throw Errors.invalidCoinPageCursor(cursor: page.nextCursor)
+                    throw Errors.invalidCoinPageCursor(cursor: pageInfo.endCursor)
                 }
                 cursor = nextCursor
             } while true
 
             return coins
         } catch {
-            logger.error("Error fetching coins: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error fetching coins: \(error.localizedDescription, privacy: .private)")
             throw error
+        }
+    }
+
+    /// Maps one page of the coin-object connection onto the model the rest of the
+    /// app already speaks.
+    ///
+    /// The connection reports the wrapper struct `0x2::coin::Coin<T>`, so the
+    /// type is unwrapped and address-normalized here — at the boundary, before
+    /// anything downstream compares or persists it.
+    ///
+    /// Every field is required and a node that cannot be fully represented
+    /// aborts the whole fetch. Dropping it instead would silently shrink the
+    /// coin set, which is the same truncation the pagination guards exist to
+    /// prevent — except harder to notice, because the page count would look
+    /// right. `SuiHelper` needs the object id, version and digest to build an
+    /// object reference and the balance to select inputs; an empty string for
+    /// any of them produces an invalid transaction rather than a smaller one.
+    private static func coins(
+        from nodes: [SuiCoinObjectsData.Node],
+        cursor: String?
+    ) throws -> [SuiCoin] {
+        try nodes.compactMap { node in
+            guard let repr = node.contents?.type?.repr else {
+                throw Errors.coinPageDecodeFailed(cursor: cursor)
+            }
+
+            guard let coinType = SuiCoinType.unwrap(repr) else {
+                // Not a `Coin<T>`. Verified against mainnet: the server-side
+                // `type: "0x2::coin::Coin"` filter matches the exact struct, so
+                // an address holding 37 `TreasuryCap`s returns none of them
+                // here. This branch is therefore defence in depth against the
+                // filter's semantics changing — and it splits the two cases
+                // rather than collapsing them, because they are not the same
+                // risk. A well-formed Move type that simply is not a coin is
+                // out of scope and costs nothing to skip; a type string we
+                // cannot parse at all means we do not know what we are dropping
+                // from a set that funds a transaction, and that must still
+                // abort.
+                guard SuiCoinType.classifyNonCoin(repr) == .differentStruct else {
+                    throw Errors.coinPageDecodeFailed(cursor: cursor)
+                }
+                return nil
+            }
+
+            guard let coinObjectId = node.address, !coinObjectId.isEmpty,
+                  // `UInt53` arrives as a JSON number where JSON-RPC sent a
+                  // decimal string; `SuiHelper` parses it back with `UInt64(_:)`,
+                  // so the round trip is exact.
+                  let version = node.version,
+                  let digest = node.digest, !digest.isEmpty,
+                  let balance = node.contents?.json?.balance,
+                  // Not merely non-empty: `SuiCoinType`'s selection parses this
+                  // with `toBigInt()`, which answers zero for anything it cannot
+                  // read. A malformed balance would therefore survive the page
+                  // guards and then quietly drop out of coin selection, leaving
+                  // an under-funded input set rather than a loud failure.
+                  UInt64(balance) != nil else {
+                throw Errors.coinPageDecodeFailed(cursor: cursor)
+            }
+
+            return SuiCoin(
+                coinType: coinType,
+                coinObjectId: coinObjectId,
+                version: String(version),
+                digest: digest,
+                balance: balance
+            )
         }
     }
 
@@ -257,16 +358,29 @@ class SuiService: SuiCoinMetadataProviding {
     }
 
     func getCoinMetadata(coinType: String) async throws -> SuiCoinMetadata? {
-        let response = try await httpClient.request(
-            SuiAPI(baseURL: rpcURL, endpoint: .coinMetadata(coinType: coinType)),
-            responseType: SuiCoinMetadataResponse.self
+        let data = try await client.query(
+            SuiGraphQLDocument.coinMetadata,
+            variables: ["coinType": coinType],
+            responseType: SuiCoinMetadataData.self
         )
 
-        if let error = response.data.error {
-            throw SuiCoinMetadataError.rpc(error.message)
+        // A null result is the node's answer for a coin that publishes no
+        // metadata object, and is distinct from a node failure — only the latter
+        // may abort, and the transport has already raised it, so a transient
+        // outage is never read as "this coin has no metadata".
+        guard let metadata = data.coinMetadata else { return nil }
+
+        // `decimals` and `symbol` are required, and their absence is NOT the
+        // same answer as a null metadata object. `nil` means "this coin
+        // publishes no metadata", which `CustomTokenResolver` reports as
+        // definitively not a token; a metadata object that exists but cannot be
+        // read is a node contract violation, and saying "not a token" would be a
+        // claim we cannot support.
+        guard let decimals = metadata.decimals, let symbol = metadata.symbol else {
+            throw SuiRPCError.incompleteResponse("coin metadata for \(coinType) is missing decimals or symbol")
         }
 
-        return response.data.result
+        return SuiCoinMetadata(decimals: decimals, symbol: symbol, iconUrl: metadata.iconUrl)
     }
 
     func getAllTokensWithMetadata(address: String) async throws -> [CoinMeta] {
@@ -306,7 +420,7 @@ class SuiService: SuiCoinMetadataProviding {
                 } catch is CancellationError {
                     throw CancellationError()
                 } catch {
-                    logger.error("Error fetching metadata for \(String(describing: objType), privacy: .public): \(error.localizedDescription, privacy: .public)")
+                    logger.error("Error fetching metadata for \(String(describing: objType), privacy: .public): \(error.localizedDescription, privacy: .private)")
                 }
             }
         }
@@ -314,17 +428,38 @@ class SuiService: SuiCoinMetadataProviding {
         return tokensWithMetadata
     }
 
+    /// Broadcasts an already-signed transaction. `unsignedTransaction` is the
+    /// base64 BCS `TransactionData` and `signature` the base64 submit-format
+    /// envelope; both are forwarded verbatim — nothing here re-encodes signed
+    /// material.
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String {
-        let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
+        let data = try await client.query(
+            SuiGraphQLDocument.executeTransaction,
+            variables: ["txBytes": unsignedTransaction, "signatures": [signature]],
+            responseType: SuiExecuteTransactionData.self
+        )
 
-        // A non-success execution returns an `error.message`; throw it instead
-        // of returning the text as a digest so a failed broadcast is never shown
-        // as success or persisted/polled as a fake txid.
-        if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String, !error.isEmpty {
-            throw Errors.broadcastFailed(error)
+        guard let effects = data.executeTransaction?.effects else {
+            throw Errors.missingTransactionDigest
         }
 
-        guard let digest = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String, !digest.isEmpty else {
+        // A rejected broadcast surfaces as a populated `errors` array, already
+        // raised by the transport. An *executed* transaction that aborted on
+        // chain reports it here instead. Fail closed on both — and on a status
+        // we do not recognise, because returning a digest for a transaction we
+        // cannot confirm executed would persist it and poll it as real.
+        switch effects.outcome {
+        case .succeeded:
+            break
+        case .failed:
+            throw Errors.broadcastFailed(effects.failureReason ?? "transaction failed")
+        case .undetermined:
+            throw Errors.broadcastFailed(
+                "unrecognized execution status: \(effects.status ?? "<absent>")"
+            )
+        }
+
+        guard let digest = effects.digest, !digest.isEmpty else {
             throw Errors.missingTransactionDigest
         }
 
@@ -336,85 +471,74 @@ class SuiService: SuiCoinMetadataProviding {
     /// - Returns: Tuple of (computationCost, storageCost)
     func dryRunTransaction(transactionBytes: String) async throws -> (computationCost: BigInt, storageCost: BigInt) {
         do {
-            let data = try await Utils.PostRequestRpc(
-                rpcURL: rpcURL,
-                method: "sui_dryRunTransactionBlock",
-                params: [transactionBytes]
+            // The BCS bytes travel inside a JSON-encoded `sui.rpc.v2.Transaction`
+            // rather than as a bare base64 argument, but they are the SAME bytes
+            // the JSON-RPC dry run took — passed through verbatim, so the
+            // simulated transaction stays byte-identical to the signed one.
+            let data = try await client.query(
+                SuiGraphQLDocument.simulateTransaction,
+                variables: ["tx": SuiGraphQLDocument.bcsTransaction(transactionBytes)],
+                responseType: SuiSimulateTransactionData.self
             )
 
-            // Check for error first
-            if let error = Utils.extractResultFromJson(fromData: data, path: "result.effects.status.error") as? String, !error.isEmpty {
-                throw Errors.simulationFailed(error)
+            guard let effects = data.simulateTransaction?.effects else {
+                throw Errors.failedToParseGasEstimate
             }
 
-            // Extract gas costs
-            if let computationCostStr = Utils.extractResultFromJson(fromData: data, path: "result.effects.gasUsed.computationCost") as? String,
-               let storageCostStr = Utils.extractResultFromJson(fromData: data, path: "result.effects.gasUsed.storageCost") as? String {
-
-                let computationCost = computationCostStr.toBigInt()
-                let storageCost = storageCostStr.toBigInt()
-
-                return (computationCost, storageCost)
+            // A refused simulation arrives as a populated `errors` array, already
+            // raised by the transport. A simulation that ran and aborted reports
+            // it here instead — the node's verdict either way, not a parse
+            // failure.
+            //
+            // The gas summary is only trustworthy for a simulation that actually
+            // succeeded. A `FAILURE` can still carry costs, and an absent or
+            // unrecognised status says nothing at all; consuming either would
+            // price a transaction the node just told us will not execute, and
+            // that estimate goes on to be signed.
+            switch effects.outcome {
+            case .succeeded:
+                break
+            case .failed:
+                throw Errors.simulationFailed(effects.failureReason ?? "transaction failed")
+            case .undetermined:
+                throw Errors.simulationFailed(
+                    "unrecognized execution status: \(effects.status ?? "<absent>")"
+                )
             }
 
-            throw Errors.failedToParseGasEstimate
+            guard let gasSummary = effects.gasEffects?.gasSummary,
+                  let computation = gasSummary.computationCost,
+                  let storage = gasSummary.storageCost else {
+                throw Errors.failedToParseGasEstimate
+            }
+
+            return (BigInt(computation), BigInt(storage))
         } catch let error as Errors {
             throw error
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
-            logger.error("Error in dry run transaction: \(error.localizedDescription, privacy: .public)")
+            logger.error("Error in dry run transaction: \(error.localizedDescription, privacy: .private)")
             throw Errors.dryRunFailed(error.localizedDescription)
         }
     }
 }
 
-private struct SuiCoinMetadataResponse: Decodable {
-    let result: SuiCoinMetadata?
-    let error: SuiRPCError?
-}
-
-private struct SuiCoinPageResponse: Decodable {
-    let result: SuiCoinPage?
-    let error: SuiRPCError?
-}
-
-private struct SuiCoinPage: Decodable {
-    let data: [SuiCoin]
-    let nextCursor: String?
-    let hasNextPage: Bool
-}
-
-private struct SuiBalancesResponse: Decodable {
-    let result: [SuiBalance]?
-    let error: SuiRPCError?
-}
-
-private struct SuiBalance: Decodable {
-    let coinType: String
-    let totalBalance: String
-}
-
-private struct SuiRPCError: Decodable {
-    let message: String
-}
-
 private extension SuiService {
 
     enum Errors: Error, LocalizedError {
-        case getBalanceFailed
         case simulationFailed(String)
         case failedToParseGasEstimate
         case dryRunFailed(String)
         case coinPageDecodeFailed(cursor: String?)
-        case coinPageRPC(String)
         case invalidCoinPageCursor(cursor: String?)
         case coinPageLimitExceeded(maximum: Int)
         case broadcastFailed(String)
         case missingTransactionDigest
+        case missingReferenceGasPrice
 
         var errorDescription: String? {
             switch self {
-            case .getBalanceFailed:
-                return "Failed to get balance"
             case .simulationFailed(let error):
                 return "Simulation Error: \(error)"
             case .failedToParseGasEstimate:
@@ -422,9 +546,7 @@ private extension SuiService {
             case .dryRunFailed(let error):
                 return "Dry run failed: \(error)"
             case .coinPageDecodeFailed(let cursor):
-                return "Failed to decode coin page from suix_getAllCoins at cursor \(cursor ?? "<start>"). Aborting to avoid a truncated coin set."
-            case .coinPageRPC(let message):
-                return "Sui coin page RPC failed: \(message)"
+                return "Failed to decode the Sui coin-object page at cursor \(cursor ?? "<start>"). Aborting to avoid a truncated coin set."
             case .invalidCoinPageCursor(let cursor):
                 return "Sui coin page returned an invalid cursor: \(cursor ?? "<nil>")"
             case .coinPageLimitExceeded(let maximum):
@@ -433,6 +555,8 @@ private extension SuiService {
                 return "Sui broadcast failed: \(error)"
             case .missingTransactionDigest:
                 return "Sui broadcast did not return a transaction digest"
+            case .missingReferenceGasPrice:
+                return "Sui did not return a reference gas price"
             }
         }
     }

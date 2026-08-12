@@ -33,6 +33,22 @@ enum KeygenCommitError: Error, Equatable, LocalizedError {
     /// pointing both at the first would make the second one false.
     case unsealableKeyshare(pubkey: String)
 
+    /// The store is carrying uncommitted work from somewhere else, and this
+    /// commit would have to insert a vault it could only take back by
+    /// discarding that work with it.
+    ///
+    /// Refused rather than resolved, and the three ways of resolving it were
+    /// each tried and rejected: flushing the other work commits a half-finished
+    /// flow because the user tapped a button on this one; rolling it back
+    /// discards it; and deleting only this vault's own row strips the caller's
+    /// object of its coins and chain public keys through the cascade, so the
+    /// retry stores a vault that no longer knows which chains it can derive.
+    ///
+    /// Transient: any `save()` from anywhere settles the context — the main
+    /// context autosaves — and the same button then works. It is the same
+    /// answer `KeyshareSweeper` gives to a dirty context, for the same reason.
+    case busy
+
     init(_ failure: KeyshareNormalizationFailure) {
         switch failure {
         case .unreadable(let pubkey):
@@ -56,6 +72,8 @@ enum KeygenCommitError: Error, Equatable, LocalizedError {
             return "keysharesUnreadableVaultNotSaved".localized
         case .unsealableKeyshare:
             return "keysharesUnsealableVaultNotSaved".localized
+        case .busy:
+            return "somethingWentWrongTryAgain".localized
         }
     }
 }
@@ -265,22 +283,95 @@ class KeygenViewModel: ObservableObject {
     /// keygen finishes, so that aborting the review screen discards the vault and
     /// leaves its name reusable. Inserting on the unique `pubKeyECDSA` upserts, so
     /// re-running keygen that reproduces an existing vault replaces it as before.
+    ///
+    /// Not every vault reaching here is new. A secure reshare on a device that
+    /// was already a signer has already had its reshared vault saved by
+    /// `finalizeDKLSKeygen`'s `needsInsert == false` branch and still comes
+    /// through the review screen, so this also runs over vaults that are already
+    /// stored. The insert is then the upsert described above, and the undo below
+    /// must not treat that row as its own.
+    ///
+    /// **All of it or none of it.** A throwing `save()` writes nothing to the
+    /// store, but it leaves the vault and its coins registered in a context the
+    /// whole app shares — and a fetch resolves a pending insert, so the app would
+    /// go on believing in a wallet the user was just told could not be saved,
+    /// until something unrelated flushed it for real. Whatever this put in the
+    /// context is taken back, the vault is handed back in the form it arrived in,
+    /// and the failure is surfaced. Retrying is the caller's to decide: "Looks
+    /// Good" runs the whole thing again under a fresh lease, which is the right
+    /// granularity for the failures a save actually produces here — the container
+    /// unreachable, data protection unavailable, the disk full — none of which a
+    /// second attempt one line later would fix.
+    ///
+    /// - Parameter save: the store write. A seam, and only a seam: SwiftData
+    ///   offers no way to make an in-memory `save()` fail on demand, and the
+    ///   path that matters most here is the one a save failure opens.
     @MainActor
     static func commitVault(
         _ vault: Vault,
         context: ModelContext,
-        protector: KeyshareProtecting = KeyshareProtector.shared
+        protector: KeyshareProtecting = KeyshareProtector.shared,
+        save: @MainActor (ModelContext) throws -> Void = { try $0.save() }
     ) throws {
         let coinService = VaultDefaultCoinService(context: context)
 
         // The insert and the save are one write span. The episode lease already
         // keeps a transition out of the whole review interval, but this is the
         // moment the shares actually reach the store, so it carries its own
-        // guarantee rather than relying on a lease held elsewhere.
+        // guarantee rather than relying on a lease held elsewhere. The undo
+        // below is inside the span for the same reason: a transition must not
+        // land between a failed save and the withdrawal that takes it back.
         try KeyshareWriteCoordinator.shared.withWriteLease {
             // Ahead of everything else, so a refusal leaves the context exactly
             // as it found it — `setDefaultCoinsOnce` builds coins onto the vault.
             let shares = try normalizedKeyshares(of: vault, protector: protector)
+
+            // Whatever the context was already carrying decides how a failure
+            // can be undone, and it has to be sampled before the first mutation.
+            let wasCarryingOtherWork = context.hasChanges
+
+            // Nothing may be committed over a vault the context is on its way to
+            // deleting: the save would remove it and this would report success.
+            // Nothing before the review screen marks one that way, so this is
+            // insurance rather than a live case, and it costs one read.
+            guard !vault.isDeleted else {
+                commitLogger.error("Refusing to persist a vault the context is holding as deleted")
+                throw KeygenCommitError.busy
+            }
+
+            // Whether this call is the one bringing the vault into the store.
+            // Not every vault reaching here is new: a secure reshare on a device
+            // that was already a signer arrives with one that is already stored,
+            // and the two cases have different undos.
+            //
+            // Asked of the *store* and not of `vault.modelContext`, which only
+            // says the object is registered — a pending insert is registered and
+            // is not stored, and reading it as stored would leave that insert
+            // behind on the branch below, which is this whole bug over again. A
+            // context of its own reads durable rows only, so a hit is proof.
+            let isNewToTheStore = !isStored(vault, in: context)
+
+            // A vault this call has to *insert* can only be taken back by a
+            // `rollback()`, and a rollback is only this commit's to run when the
+            // context was clean on the way in. So a context carrying somebody
+            // else's uncommitted work is refused here, before anything is
+            // touched. The alternatives were each tried: flushing that work
+            // commits a half-finished flow because the user tapped a button on
+            // this one, rolling back discards it, and deleting just this
+            // vault's row strips the caller's object through the cascade — see
+            // ``KeygenCommitError.busy``.
+            guard !(isNewToTheStore && wasCarryingOtherWork) else {
+                commitLogger.error("Refusing to persist a vault: the store is carrying work this commit could not take back")
+                throw KeygenCommitError.busy
+            }
+
+            // The shares as they were handed over. A failed save has to give
+            // them back in that form and not in the one this commit computed —
+            // see ``restore(_:to:)``. The coins the vault already held are what
+            // tells the undo which rows are this call's to take back.
+            let previousShares = vault.keyshares
+            let previousCoins = vault.coins
+            let previousDefiChains = vault.defiChains
 
             // Whole-array assignment, never element assignment: assigning into
             // an element is not a dependable way to mark a `@Model` dirty.
@@ -288,12 +379,122 @@ class KeygenViewModel: ObservableObject {
 
             coinService.setDefaultCoinsOnce(vault: vault)
             context.insert(vault)
-            try context.save()
+
+            do {
+                try save(context)
+            } catch {
+                // A throwing save writes nothing, so the *store* is intact — but
+                // the vault and its coins stay pending in a context the whole app
+                // shares, and SwiftData resolves pending inserts in every fetch.
+                // Left alone they would show up as a wallet the user was just
+                // told could not be saved, and the next autosave or any
+                // unrelated `save()` would make that durable *outside* this
+                // lease, where a passcode transition can land between the
+                // normalization and the write.
+                withdraw(
+                    vault,
+                    from: context,
+                    rollingBack: !wasCarryingOtherWork,
+                    coinsItAlreadyHeld: previousCoins,
+                    defiChainsItAlreadyHad: previousDefiChains
+                )
+                restore(vault, to: previousShares)
+                commitLogger.error("Vault commit failed to save: \(error.localizedDescription, privacy: .public)")
+                throw error
+            }
         }
 
         // Past every way this can refuse, so the network work it starts is
         // aimed at a vault that is provably stored and cannot be withdrawn.
         coinService.startTokenDiscovery()
+    }
+
+    /// Takes back what this commit put in the context, without taking anybody
+    /// else's work with it.
+    ///
+    /// Over a context that was clean on the way in, everything pending is
+    /// provably this commit's and `rollback()` is the right primitive: it
+    /// discards the insert and leaves the caller's vault whole and
+    /// re-insertable, which is what makes the next "Looks Good" a real retry.
+    ///
+    /// Over a context that was not clean, the vault is one the store already
+    /// holds — the guard above refuses the other case — so the row is not this
+    /// call's to remove and only the coins it attached come back out. Detached
+    /// from the coin's side before the delete, for the same reason
+    /// `VaultDefaultCoinService` detaches before taking a coin back: on a vault
+    /// that has been through a `save()` the to-one write is the one that takes.
+    ///
+    /// **Do not "simplify" this to `context.delete(vault)` on both branches.**
+    /// The row does go back, and then the `.cascade` on `Vault.coins` and
+    /// `Vault.chainPublicKeys` strips the caller's *object* — so the retry,
+    /// which is the whole point of surfacing rather than swallowing, rebuilds a
+    /// key-import vault that no longer knows which chains it can derive and
+    /// stores it with none. Measured, and not even deterministic run to run.
+    @MainActor
+    private static func withdraw(
+        _ vault: Vault,
+        from context: ModelContext,
+        rollingBack: Bool,
+        coinsItAlreadyHeld previousCoins: [Coin],
+        defiChainsItAlreadyHad previousDefiChains: [Chain]
+    ) {
+        guard !rollingBack else {
+            context.rollback()
+            return
+        }
+
+        for coin in vault.coins where !previousCoins.contains(where: { $0 === coin }) {
+            coin.vault = nil
+            context.delete(coin)
+        }
+
+        // The DeFi chains go back with the coins they were derived from, and
+        // only on this branch. `setDefaultCoins` writes both together, so
+        // taking the coins away and leaving the chains would persist a vault
+        // offering DeFi on chains it holds no coin for. The rollback branch
+        // must *not* do this: it leaves the coin objects attached, and a
+        // preparation that finds coins already there does not recompute the
+        // chains, so reverting them there would drop them for good.
+        vault.defiChains = previousDefiChains
+    }
+
+    /// Whether the store already holds this vault, asked through a context of
+    /// its own so that only durable rows can answer.
+    ///
+    /// `vault.modelContext != nil` is the cheap version and it is wrong: it is
+    /// also true of a pending insert, which is registered and not stored.
+    @MainActor
+    private static func isStored(_ vault: Vault, in context: ModelContext) -> Bool {
+        let pubKeyECDSA = vault.pubKeyECDSA
+        guard !pubKeyECDSA.isEmpty else { return false }
+
+        var descriptor = FetchDescriptor<Vault>(
+            predicate: #Predicate<Vault> { $0.pubKeyECDSA == pubKeyECDSA }
+        )
+        descriptor.fetchLimit = 1
+        return ((try? ModelContext(context.container).fetch(descriptor).first) ?? nil) != nil
+    }
+
+    /// Puts the vault's shares back in the form they were handed over in.
+    ///
+    /// Not tidiness, and not something the rollback does — a rolled-back object
+    /// keeps the property values it was given. Normalizing rewrites the caller's
+    /// vault in place, so a commit that sealed plaintext shares and then failed
+    /// to save leaves the review screen holding sealed ones. Disable the passcode
+    /// before retrying and those shares no longer open under any state: the
+    /// retry refuses, permanently, over a vault that would have committed fine.
+    /// The undo is only total if it reaches the object as well as the context.
+    ///
+    /// The shares and nothing else. `coins` and `defiChains` are the coin
+    /// preparation's own output, it is idempotent over them, and a rollback
+    /// leaves the coin objects attached to the vault — so reverting `defiChains`
+    /// while the coins stay would make the retry store a vault whose DeFi chains
+    /// were silently dropped, because a preparation that finds coins already
+    /// there does not recompute them. They carry no key material; the shares do,
+    /// and the shares are the mismatch nothing can recover from.
+    @MainActor
+    private static func restore(_ vault: Vault, to shares: [KeyShare]) {
+        vault.keyshares = shares
     }
 
     /// The vault's shares in the form the current protection state requires,

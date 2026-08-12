@@ -9,6 +9,11 @@
 //  can't be decoded: a signing screen must never go blank. Mirrors the Windows
 //  `SignRippleDisplay`.
 //
+//  Caveats that redefine those rows lead the card: a `tfPartialPayment` payment
+//  whose amount is only a ceiling, and site-supplied candidate routes. Both are
+//  signed verbatim, so a screen showing the rows without them would state
+//  better terms than the ones being approved.
+//
 
 import SwiftUI
 
@@ -35,6 +40,9 @@ struct SignRippleDisplayView: View {
     private func decodedCard(_ transaction: RippleDAppTransaction) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             header
+            ForEach(transaction.warnings, id: \.labelKey) { warning in
+                warningRow(warning.labelKey.localized)
+            }
             row(label: "rippleFieldType".localized, value: transaction.transactionType)
             ForEach(Array(transaction.fields.enumerated()), id: \.offset) { _, field in
                 fieldRows(field)
@@ -66,13 +74,7 @@ struct SignRippleDisplayView: View {
     private var fallbackCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
-            HStack(alignment: .top, spacing: 8) {
-                Icon(.triangleWarning, color: Theme.colors.alertWarning, size: 16)
-                Text("rippleUndecodedNotice".localized)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.alertWarning)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            warningRow("rippleUndecodedNotice".localized)
             Text(signRipple.rawJson)
                 .font(Theme.fonts.caption12)
                 .monospaced()
@@ -94,6 +96,21 @@ struct SignRippleDisplayView: View {
         Text("rippleTransactionSummary".localized)
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textPrimary)
+    }
+
+    /// A full-width caution line. Unlike `row`, the text is not squeezed against
+    /// a trailing edge — a warning is prose, and it has to stay readable when it
+    /// wraps to two or three lines.
+    private func warningRow(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Icon(.triangleWarning, color: Theme.colors.alertWarning, size: 16)
+            Text(text)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.alertWarning)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     private func row(

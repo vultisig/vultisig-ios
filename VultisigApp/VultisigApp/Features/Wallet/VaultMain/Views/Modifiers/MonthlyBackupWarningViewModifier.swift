@@ -28,10 +28,11 @@ struct MonthlyBackupWarningViewModifier: ViewModifier {
                     }
                 ).presentationDetents([.height(224)])
             }
-            .onLoad {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    checkIfNeeded()
-                }
+            // Held while the passcode gate is up: this raises itself from the
+            // view's own load, so a cold start behind the lock screen would put
+            // the sheet above it.
+            .presentsWhenUnlocked(after: .milliseconds(500)) {
+                checkIfNeeded()
             }
     }
 

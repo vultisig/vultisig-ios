@@ -122,11 +122,11 @@ final class RPCHealthProbeTests: XCTestCase {
         XCTAssertEqual(result, .invalidResponse)
     }
 
-    // MARK: - Sui (liveness-only)
+    // MARK: - Sui (liveness-only, over GraphQL)
 
     func test_sui_okButLivenessOnly() async {
         let http = ProbeStubHTTPClient()
-        http.queueDecoded(["result": "123456"])
+        http.queueDecoded(["data": ["checkpoint": ["sequenceNumber": 123_456]]])
         let probe = RPCHealthProbe(httpClient: http)
         let result = await probe.probe(urlString: "https://sui.example", chain: .sui)
         guard case .ok(_, let verified) = result else { return XCTFail("expected .ok, got \(result)") }
@@ -135,7 +135,32 @@ final class RPCHealthProbeTests: XCTestCase {
 
     func test_sui_invalidWhenResultMissing() async {
         let http = ProbeStubHTTPClient()
-        http.queueDecoded([String: String]())
+        http.queueDecoded(["data": ["checkpoint": NSNull()]])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://sui.example", chain: .sui)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
+    func test_sui_invalidWhenEndpointStillSpeaksJSONRPC() async {
+        // A custom Sui RPC saved before the GraphQL migration answers the probe
+        // with a JSON-RPC envelope. Reporting `.invalidResponse` rather than
+        // `.unreachable` tells the user their endpoint replied but is no longer
+        // usable — which is the truth, and the difference between "my node is
+        // down" and "I need to change this setting".
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded([
+            "jsonrpc": "2.0",
+            "error": ["code": -32600, "message": "Invalid Request"],
+            "id": NSNull()
+        ])
+        let probe = RPCHealthProbe(httpClient: http)
+        let result = await probe.probe(urlString: "https://legacy-sui.example", chain: .sui)
+        XCTAssertEqual(result, .invalidResponse)
+    }
+
+    func test_sui_invalidWhenNodeReturnsErrors() async {
+        let http = ProbeStubHTTPClient()
+        http.queueDecoded(["data": NSNull(), "errors": [["message": "nope"]]])
         let probe = RPCHealthProbe(httpClient: http)
         let result = await probe.probe(urlString: "https://sui.example", chain: .sui)
         XCTAssertEqual(result, .invalidResponse)

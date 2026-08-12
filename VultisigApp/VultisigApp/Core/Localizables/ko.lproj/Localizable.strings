@@ -701,6 +701,12 @@
 "keygenInstructionsCar7DescriptionPart3" = " Vultisig 볼트에 액세스하여 보안을 유지하면서 유연성을 높입니다.";
 "keygenInstructionsCar7Title" = "기능 하이라이트";
 "keys" = "키";
+"keyshareRecoveryBackupMessage" = ".vult 백업이 돌아가는 길입니다. 백업을 가져오면 이 볼트를 다시 사용할 수 있습니다.";
+"keyshareRecoveryImportButton" = ".vult 백업 가져오기";
+"keyshareRecoveryMessage" = "이 볼트의 키 셰어는 암호화되어 있는데, 이를 여는 키가 이번 복원에 함께 오지 않았습니다. 이 기기에서는 아무것도 키 셰어를 읽을 수 없으므로 이 볼트로 서명할 수 없습니다.";
+"keyshareRecoveryNoBackupMessage" = ".vult 백업이 없으면 이 기기의 키 셰어는 다시 복호화할 수 없으며, 그 부분은 복구되지 않습니다. 볼트 자체는 아직 살아 있을 수 있습니다. 다른 기기들이 각자의 셰어를 가지고 있고 서명 임계값을 여전히 충족한다면, 이 기기 없이도 볼트는 계속 동작합니다.";
+"keyshareRecoveryNoBackupTitle" = "백업이 없습니다";
+"keyshareRecoveryTitle" = "이 기기에서는 이 볼트를 열 수 없습니다";
 "keysharesUnreadableVaultNotSaved" = "이 볼트의 키 셰어를 읽을 수 없어 저장되지 않았습니다. 앱을 잠금 해제한 후 다시 시도하세요. 계속 실패하면 볼트를 다시 생성하세요.";
 "keysharesUnsealableVaultNotSaved" = "이 볼트의 키 셰어를 저장용으로 보호할 수 없어 저장되지 않았습니다. 앱을 잠금 해제한 후 다시 시도하세요.";
 "keysign" = "키사인";
@@ -986,6 +992,10 @@
 "partOf" = "%d/%d 공유";
 "passcodeAlreadySet" = "이 기기에는 이미 패스코드가 설정되어 있습니다. 뒤로 돌아가 변경하거나 삭제하세요.";
 "passcodeAutoLockTitle" = "자동 잠금";
+"passcodeBackupPromptBackUpNow" = "지금 백업";
+"passcodeBackupPromptHasBackup" = "이미 백업이 있습니다";
+"passcodeBackupPromptSubtitle" = "패스코드는 이 기기에 보관된 키로 키 셰어를 암호화합니다. 그 키를 잃어버리면 .vult 백업이 유일한 복구 방법이며, 패스코드 자체는 복구할 수 없습니다.";
+"passcodeBackupPromptTitle" = "패스코드를 설정하기 전에 백업하세요";
 "passcodeBiometricDisableFailed" = "생체 인식 잠금 해제를 끄지 못했습니다. 다시 시도하세요.";
 "passcodeBiometricEnableFailed" = "생체 인식 잠금 해제를 켜지 못했습니다. 패스코드는 계속 사용할 수 있습니다.";
 "passcodeBiometricNotAvailable" = "이 기기에서는 생체 인식 잠금 해제를 사용할 수 없습니다.";
@@ -1116,6 +1126,7 @@
 "receive" = "수신";
 "recipient" = "수신자";
 "recipientNameNotFound" = "이름을 찾을 수 없습니다. 이름을 확인하고 다시 시도해 주세요.";
+"redactedEndpoint" = "[엔드포인트 숨김]";
 "redeem" = "상환";
 "redeemCoin" = "%@ 상환";
 "reEnterPassword" = "비밀번호 재입력";
@@ -1176,8 +1187,11 @@
 "rippleFieldDeliverMin" = "Deliver Min";
 "rippleFieldDestination" = "수신처";
 "rippleFieldDestinationTag" = "Destination Tag";
+"rippleFieldFlags" = "Flags";
 "rippleFieldIssuer" = "발행자";
 "rippleFieldOfferSequence" = "Offer Sequence";
+"rippleFieldQualityIn" = "Quality In";
+"rippleFieldQualityOut" = "Quality Out";
 "rippleFieldSendMax" = "Send Max";
 "rippleFieldTakerGets" = "Taker Gets";
 "rippleFieldTakerPays" = "Taker Pays";
@@ -1203,6 +1217,8 @@
 "rippleTrustLineUnreviewable" = "검토할 수 없음";
 "rippleTrustLineUnreviewableValue" = "이 신뢰선의 통화, 발행자 또는 한도를 읽을 수 없어 조건을 표시할 수 없습니다. 서명하지 마세요.";
 "rippleUndecodedNotice" = "이 트랜잭션을 디코딩할 수 없습니다. 서명하기 전에 원시 JSON을 주의 깊게 확인하세요.";
+"rippleWarningCustomPaths" = "이 결제의 경로 후보를 사이트가 직접 제시했습니다. 그중에서 원장이 선택합니다.";
+"rippleWarningPartialPayment" = "부분 결제입니다. 표시된 금액은 수령인이 받을 수 있는 최대치이며 전달이 보장된 금액이 아닙니다. 수령인은 더 적게 받을 수 있고 보내는 사람에게는 Send Max까지 청구됩니다.";
 "routerNotAvailable" = "%@에서 승인을 위한 라우터를 사용할 수 없습니다. 나중에 다시 시도하세요.";
 "rune" = "RUNE";
 "sameAddressError" = "받는 주소는 보내는 주소와 달라야 합니다";
@@ -1403,6 +1419,7 @@
 "suiResultOfCmd" = "명령 결과";
 "suiSplitFrom" = "분할 원본";
 "suiTransaction" = "Sui 트랜잭션";
+"suiTransactionFailed" = "거래 실패";
 "suiTransactionSummary" = "거래 요약";
 "support" = "지원";
 "supportedFileTypesUpload" = "지원되는 파일 형식: .bak, .vult & .zip";

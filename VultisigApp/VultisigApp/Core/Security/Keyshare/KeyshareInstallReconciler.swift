@@ -61,6 +61,7 @@ struct KeyshareInstallReconciler {
     private let biometrics: BiometricUnlockStore
     private let lockService: AppLockService
     private let coordinator: KeyshareWriteCoordinator
+    private let sweeper: KeyshareSweeping
     private let defaults: UserDefaults
 
     init(
@@ -69,6 +70,7 @@ struct KeyshareInstallReconciler {
         biometrics: BiometricUnlockStore = .shared,
         lockService: AppLockService = .shared,
         coordinator: KeyshareWriteCoordinator = .shared,
+        sweeper: KeyshareSweeping = KeyshareSweeper.shared,
         defaults: UserDefaults = .standard
     ) {
         self.keychain = keychain
@@ -76,6 +78,7 @@ struct KeyshareInstallReconciler {
         self.biometrics = biometrics
         self.lockService = lockService
         self.coordinator = coordinator
+        self.sweeper = sweeper
         self.defaults = defaults
     }
 
@@ -92,9 +95,45 @@ struct KeyshareInstallReconciler {
         case unknown
     }
 
+    /// Whether the store holds a key share that is sealed.
+    ///
+    /// Three cases for the same reason ``StoreOccupancy`` has three: the answer
+    /// licenses a *state*, and "the store could not be read" is neither of the
+    /// other two. Read as `.sealed` it would raise a recovery screen over a
+    /// perfectly healthy install; read as `.nothingSealed` it would let the
+    /// orphaned state carry on opening silently.
+    ///
+    /// Named `nothingSealed` rather than `none` so it cannot be read as
+    /// `Optional`'s case at a call site — the same reason
+    /// ``InheritedKeyMaterial`` avoids `none`/`some`.
+    enum SealedShareCensus {
+        case sealed
+        case nothingSealed
+        case unknown
+    }
+
+    /// What reconciliation found that somebody above it has to act on.
+    ///
+    /// Only one thing so far, and it is deliberately not expressed as a `Bool`:
+    /// the compiler points at every call site when another is added, which is
+    /// the forcing function this feature prefers.
+    enum Outcome: Equatable {
+        /// Nothing for the app to raise.
+        case nothing
+        /// The store holds at least one sealed key share and the key that opens
+        /// it is **confirmed** gone. Nothing on this device can read those
+        /// shares again, so the app must say so rather than open over them.
+        case sealedSharesWithoutTheirKey
+    }
+
     @MainActor
-    func reconcile() {
-        reconcile(occupancy: storeOccupancy())
+    @discardableResult
+    func reconcile() -> Outcome {
+        // Both are computed here, on the main actor, and handed down as values.
+        // `Vault` is a main-actor-only `@Model` and the work below is not
+        // isolated, so the alternative would be isolating the whole type — see
+        // `storeOccupancy()`, which has solved this once already.
+        reconcile(occupancy: storeOccupancy(), census: sealedShareCensus())
     }
 
     @MainActor
@@ -106,11 +145,35 @@ struct KeyshareInstallReconciler {
         return count == 0 ? .empty : .occupied
     }
 
-    func reconcile(isStoreEmpty: Bool) {
-        reconcile(occupancy: isStoreEmpty ? .empty : .occupied)
+    /// Safe to ask here: it takes no lease of its own, needs no data key —
+    /// `isSealed` is a prefix check — and the model context is installed before
+    /// `VultisigApp.init()` runs this.
+    ///
+    /// It refuses a context carrying unsaved work, which at launch it never is.
+    /// That refusal is `.unknown`, not an error to report: a census that cannot
+    /// be taken decides nothing, and the condition does not depend on the lock
+    /// mode, so the next launch that can read the store still finds it.
+    @MainActor
+    private func sealedShareCensus() -> SealedShareCensus {
+        do {
+            return try sweeper.hasSealedShare() ? .sealed : .nothingSealed
+        } catch {
+            logger.info("The sealed-share census could not be taken: \(String(describing: error), privacy: .public)")
+            return .unknown
+        }
     }
 
-    func reconcile(occupancy: StoreOccupancy) {
+    /// - Parameter census: defaults to `.unknown`, which is the answer that
+    ///   changes nothing — a caller that cannot take the census must not be
+    ///   able to assert either of the other two by omission.
+    @discardableResult
+    func reconcile(isStoreEmpty: Bool, census: SealedShareCensus = .unknown) -> Outcome {
+        reconcile(occupancy: isStoreEmpty ? .empty : .occupied, census: census)
+    }
+
+    /// - Parameter census: see ``reconcile(isStoreEmpty:census:)``.
+    @discardableResult
+    func reconcile(occupancy: StoreOccupancy, census: SealedShareCensus = .unknown) -> Outcome {
         // Both halves read the wrapped key and act on what they read, so both
         // have to be indivisible against a passcode transition. Without this a
         // launch could clear a wrapper `setPasscode` had just made durable, or
@@ -118,12 +181,12 @@ struct KeyshareInstallReconciler {
         // invalidated.
         guard let lease = try? coordinator.beginTransition() else {
             logger.info("Reconciliation skipped: a passcode transition or key-share write is in progress")
-            return
+            return .nothing
         }
         defer { coordinator.end(lease) }
 
         clearInheritedKeyMaterialIfContainerIsNew(occupancy: occupancy)
-        alignLockModeWithTheWrappedKey()
+        return alignLockModeWithTheWrappedKey(census: census)
     }
 
     // MARK: - Inherited key material
@@ -282,18 +345,42 @@ struct KeyshareInstallReconciler {
     ///   persisted `.passcode` — a reinstall clear, or the crash order the
     ///   disable deliberately avoids. `unlock` has nothing to verify a passcode
     ///   against, so that gate could never be opened.
-    private func alignLockModeWithTheWrappedKey() {
+    ///
+    /// A confirmed-absent wrapper over a store that still holds a **sealed**
+    /// share is a third thing, and it is not a lock-mode problem at all: the
+    /// shares are ciphertext whose key is gone, so no mode repair makes them
+    /// readable. It is reported instead, and the mode is left exactly as it is —
+    /// there is nothing to repair, and moving it would erase the only remaining
+    /// evidence that a passcode was ever set here.
+    ///
+    /// The condition deliberately does **not** consult the lock mode. Anyone who
+    /// already hit this has `.deviceAuth` persisted, because this method wrote
+    /// it on their first launch; a check gated on `.passcode` would miss exactly
+    /// the installs that need reporting.
+    private func alignLockModeWithTheWrappedKey(census: SealedShareCensus) -> Outcome {
         switch keyStore.loadWrappedDataKey() {
         case .present:
-            guard lockService.mode != .passcode else { return }
+            guard lockService.mode != .passcode else { return .nothing }
             logger.warning("A wrapped data key exists but the lock mode was \(lockService.mode.rawValue, privacy: .public); restoring passcode mode")
             lockService.mode = .passcode
+            return .nothing
         case .absent:
-            guard lockService.mode == .passcode else { return }
+            if case .sealed = census {
+                logger.error("Sealed key shares with no wrapped data key to open them; this device cannot sign with them")
+                return .sealedSharesWithoutTheirKey
+            }
+            // `.unknown` keeps the repair rather than deferring it, and that is
+            // the safe side here: a persisted `.passcode` over an absent wrapper
+            // is a gate no passcode can open, which is the lockout this branch
+            // exists to prevent. Nothing is lost by repairing — the report above
+            // does not depend on the mode, so the next launch that can read the
+            // store still makes it.
+            guard lockService.mode == .passcode else { return .nothing }
             logger.warning("The lock mode was passcode with no wrapped data key behind it; falling back to device auth")
             lockService.mode = .deviceAuth
+            return .nothing
         case .unavailable:
-            return
+            return .nothing
         }
     }
 }

@@ -64,7 +64,7 @@ enum CustomTokenResolverFactory {
 // MARK: - Sui
 
 /// Sui tokens are identified by a Move struct tag rather than a wallet address.
-/// Metadata is resolved on-chain through `suix_getCoinMetadata`.
+/// Metadata is resolved on-chain through the GraphQL `coinMetadata` query.
 private struct SuiCustomTokenResolverStrategy: CustomTokenResolver {
     let metadataProvider: SuiCoinMetadataProviding
 
