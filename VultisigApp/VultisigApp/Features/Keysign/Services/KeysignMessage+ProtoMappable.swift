@@ -133,6 +133,11 @@ extension KeysignPayload: ProtoMappable {
         // change is needed for the delegate flow.
         self.solanaStakingPayload = nil
 
+        // Same for the Kamino marker. It only authorises the initiator's
+        // pre-keysign blockhash splice, which has already happened by the time
+        // the bytes are relayed — a peer signs the transaction it received.
+        self.kaminoPayload = nil
+
         // `isQbtcClaim` round-trips: the peer needs to know this is a claim
         // so it can derive the claimer's QBTC address from its own vault
         // (same SecureVault → same QBTC coin) and compute the BTC ECDSA hash

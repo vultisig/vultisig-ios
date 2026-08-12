@@ -125,7 +125,13 @@ struct KaminoService: KaminoServiceProtocol {
             lookupTable: state.vaultLookupTable,
             apy30d: apy30d,
             tokensPerShare: tokensPerShare,
-            tokenPriceUsd: tokenPriceUsd
+            tokenPriceUsd: tokenPriceUsd,
+            // Advisory, so an unreadable value drops the liquidity notice rather
+            // than failing the whole hydration and blocking deposits too.
+            tokensAvailable: KaminoTokenAmount(
+                decimalString: metrics.tokensAvailable,
+                decimals: descriptor.tokenDecimals
+            )
         )
     }
 
@@ -184,6 +190,16 @@ struct KaminoService: KaminoServiceProtocol {
     ) async throws -> String {
         try Self.assertCurated(vault)
         try Self.validate(shares, label: "withdraw")
+        // `u64::MAX` is the API's own "withdraw everything" sentinel: it is what
+        // an over-sized request is silently rewritten to. No legitimate share
+        // balance is 18.4 quintillion base units, so refusing the value outright
+        // means a full exit can never be requested by arithmetic — only by a
+        // balance this app read and then sent verbatim.
+        guard shares.baseUnits < KaminoBaseUnits.maxBaseUnits else {
+            throw KaminoServiceError.invalidAmount(
+                "withdraw amount \(shares.baseUnits) is the withdraw-everything sentinel"
+            )
+        }
         let request = KaminoActionRequest(wallet: owner, kvault: vault.address, amount: shares.apiString)
         let response = try await self.request(.withdraw(request: request), as: KaminoActionResponse.self)
         return response.transaction

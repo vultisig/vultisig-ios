@@ -86,7 +86,13 @@ struct DefiChainMainScreen: View {
                 hasAppeared = true
                 return
             }
-            Task { await invalidateSolanaStakeIfNeeded() }
+            Task {
+                await invalidateSolanaStakeIfNeeded()
+                // A returning user may have just signed a deposit. The vault is
+                // already enabled — its card is what opened the form — so this
+                // only ever updates an existing row, never creates one.
+                await refreshKaminoEarnIfNeeded()
+            }
         }
         .refreshable {
             // SwiftUI binds the `.refreshable` task to the refresh-control's spinner.
@@ -202,10 +208,10 @@ struct DefiChainMainScreen: View {
                     emptyStateView: { emptyStateView }
                 )
             case .earn:
-                // Read-only yield-vault positions. No deposit or withdraw entry
-                // point exists yet, so the segment takes no action closures.
                 KaminoEarnView(
                     viewModel: kaminoEarnViewModel,
+                    onDeposit: { onKaminoDeposit(descriptor: $0) },
+                    onWithdraw: { onKaminoWithdraw(descriptor: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .governance:
@@ -350,6 +356,24 @@ struct DefiChainMainScreen: View {
             action: .send(coin: coin, hasPreselectedCoin: true),
             vault: vault
         ))
+    }
+
+    /// Opens the deposit form for one curated vault.
+    ///
+    /// Guarded on the chain the curated vaults live on: the descriptor comes
+    /// from the registry, so the address is already curated, but a Kamino screen
+    /// reached from another chain's DeFi tab would be reading the wrong vault's
+    /// coins.
+    func onKaminoDeposit(descriptor: KaminoVaultDescriptor) {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        router.navigate(to: KaminoRoute.deposit(vault: vault, descriptor: descriptor))
+    }
+
+    /// Opens the withdraw form for one curated vault. Same chain guard as the
+    /// deposit route, for the same reason.
+    func onKaminoWithdraw(descriptor: KaminoVaultDescriptor) {
+        guard chain == KaminoVaultRegistry.chain else { return }
+        router.navigate(to: KaminoRoute.withdraw(vault: vault, descriptor: descriptor))
     }
 
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {

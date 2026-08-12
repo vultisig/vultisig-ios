@@ -63,6 +63,9 @@ final class KaminoServiceTests: XCTestCase {
         XCTAssertTrue(info.hasFarm, "all three launch vaults auto-stake shares into a farm")
         XCTAssertEqual(info.apy30d, KaminoDecimal.parse("0.066908831669281033201"))
         XCTAssertEqual(info.tokensPerShare, KaminoRate(apiString: "0.0010749299151180878396"))
+        // The liquid buffer a withdraw settles out of, at the token's own scale.
+        XCTAssertEqual(info.tokensAvailable?.apiString, "34.19551574")
+        XCTAssertEqual(info.tokensAvailable?.decimals, 9)
     }
 
     func test_fetchPositions_decodesSharesOnly() async throws {
@@ -184,6 +187,22 @@ final class KaminoServiceTests: XCTestCase {
                 owner: Fixtures.owner,
                 vault: KaminoVaultRegistry.steakhouseUSDC,
                 shares: KaminoShareAmount(baseUnits: -1, decimals: 6)
+            )
+        }
+        XCTAssertNil(http.lastRequestBody(), "no request should have been issued")
+    }
+
+    /// `u64::MAX` is the API's own "withdraw everything" sentinel — the value an
+    /// over-sized request is silently rewritten to. It is inside the `u64` range
+    /// every other amount is bounded by, so it needs its own refusal: no real
+    /// share balance is 18.4 quintillion base units, and refusing the value
+    /// means a full exit can never be produced by arithmetic.
+    func test_theWithdrawEverythingSentinelIsRefusedOutright() async {
+        await assertInvalidAmount {
+            try await self.service.buildWithdrawTransaction(
+                owner: Fixtures.owner,
+                vault: KaminoVaultRegistry.steakhouseUSDC,
+                shares: KaminoShareAmount(baseUnits: BigInt(UInt64.max), decimals: 6)
             )
         }
         XCTAssertNil(http.lastRequestBody(), "no request should have been issued")
