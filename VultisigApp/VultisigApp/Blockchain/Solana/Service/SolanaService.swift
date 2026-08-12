@@ -88,12 +88,19 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
     /// the blockhash as not yet seen (propagation lag, not true expiry).
     private static let maxBroadcastAttempts = 3
 
+    /// How long a read of an Address Lookup Table stays usable. Injectable for
+    /// the same reason `broadcastRetryBackoff` is: a test has to drive expiry
+    /// without waiting out the real interval.
+    private let addressLookupTableTTL: TimeInterval
+
     init(resolver: RPCEndpointResolving = CustomRPCStore.shared,
          httpClient: HTTPClientProtocol = HTTPClient(),
-         broadcastRetryBackoff: Duration = .seconds(2)) {
+         broadcastRetryBackoff: Duration = .seconds(2),
+         addressLookupTableTTL: TimeInterval = SolanaService.defaultAddressLookupTableTTL) {
         self.resolver = resolver
         self.httpClient = httpClient
         self.broadcastRetryBackoff = broadcastRetryBackoff
+        self.addressLookupTableTTL = addressLookupTableTTL
     }
 
     /// Builds a pure `SolanaAPI` value with the resolved host and proxy-path
@@ -250,6 +257,16 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         return lamports
     }
 
+    /// Address Lookup Table contents, keyed by table address. See
+    /// `fetchAddressLookupTable(address:)` for why this is safe to cache and why
+    /// the TTL is deliberately short.
+    private var addressLookupTableCache = ThreadSafeDictionary<String, (data: [String], timestamp: Date)>()
+
+    /// One minute. Long enough to serve a whole deposit — which prepares twice —
+    /// off one read, short enough that a repointed table costs one bad attempt
+    /// rather than a minute of them.
+    static let defaultAddressLookupTableTTL: TimeInterval = 60
+
     /// Reads the contents of the given Address Lookup Tables, keyed by table
     /// address.
     ///
@@ -273,19 +290,78 @@ class SolanaService: SolanaAddressLookupTableFetching, SolanaFinalizedBlockhashP
         }
     }
 
+    /// One table's contents, cached briefly.
+    ///
+    /// **Why caching is safe**, in three parts.
+    ///
+    /// *An entry never changes meaning.* The Address Lookup Table program can
+    /// create, extend, freeze, deactivate and close a table — there is no
+    /// instruction that overwrites an existing slot, and a closed table cannot
+    /// come back at the same address, because the address is derived from the
+    /// authority and a *recent* slot that cannot be reused. So on the canonical
+    /// chain an index that resolved to some account keeps resolving to it, and
+    /// the only way a cached copy differs is by being SHORT of entries appended
+    /// since it was read.
+    ///
+    /// *A short copy is a refusal.* A v0 transaction naming an index the cached
+    /// copy does not have refuses as `lookupIndexOutOfRange`, before any
+    /// per-instruction check runs.
+    ///
+    /// *And nothing downstream trusts a table to say what an account IS.* A
+    /// table only decides which pubkey an index NAMES; every account that
+    /// decides where money goes is compared by `KaminoTransactionValidator`
+    /// against a value the app derived locally — the fee payer, the registry's
+    /// vault and its two mints, the derived associated-token accounts, the
+    /// derived farm user state — and any writable account a builder-composed
+    /// instruction touches must additionally be one of those. Contents that
+    /// disagree with the chain therefore rename an account into a mismatch
+    /// (`accountMismatch`, `unattributableWritableAccount`), not out of one.
+    ///
+    /// What that leaves is the case where the app resolves a table one way and
+    /// the runtime later resolves it another — which needs an optimistically
+    /// confirmed extension to be rolled back. That window is not created here:
+    /// it already spans every read-to-execution gap, including the whole
+    /// keysign ceremony, and the final `simulateTransaction` on the exact
+    /// signed bytes resolves the lookups again on the node's own state. This
+    /// TTL adds at most a minute to it.
+    ///
+    /// **Why the TTL is short.** Because the failure mode is a refusal, and a
+    /// refusal lasts as long as the entry does. If Kamino ever repoints a vault
+    /// at a table with new entries, a long TTL would keep deposits failing for
+    /// the whole TTL after the chain had already moved on. A minute bounds that
+    /// to something a user reads as one bad attempt, while still collapsing the
+    /// two prepares a single deposit runs — the reserve probe and the real build
+    /// — into one read.
     func fetchAddressLookupTable(address: String) async throws -> [String] {
+        let target = api(.getAddressLookupTable(address: address))
+        // Namespaced by the endpoint the read would have gone to, not by the
+        // table address alone. A table address means whatever the cluster
+        // answering for it says it means, the custom-RPC override is resolved
+        // per request, and `SolanaService.shared` outlives a change to it — so
+        // an entry read from one endpoint must never answer for another.
+        let cacheKey = "solana-address-lookup-table-\(HTTPClient.url(for: target).absoluteString)|\(address)"
+        if let cached: [String] = Utils.getCachedData(
+            cacheKey: cacheKey,
+            cache: addressLookupTableCache,
+            timeInSeconds: addressLookupTableTTL
+        ) {
+            return cached
+        }
+
         let response = try await httpClient.request(
-            api(.getAddressLookupTable(address: address)),
+            target,
             responseType: SolanaGetAccountInfoBase64Response.self
         )
         guard let value = response.data.result.value else {
             throw SolanaAddressLookupTableError.accountNotFound(address)
         }
-        return try SolanaAddressLookupTable.addresses(
+        let addresses = try SolanaAddressLookupTable.addresses(
             table: address,
             owner: value.owner,
             data: value.data
         )
+        addressLookupTableCache.set(cacheKey, (data: addresses, timestamp: Date()))
+        return addresses
     }
 
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
