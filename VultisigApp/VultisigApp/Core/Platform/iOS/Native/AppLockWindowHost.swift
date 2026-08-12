@@ -227,6 +227,14 @@ final class AppLockWindowHost: ObservableObject {
         // itself. Only the privacy cover carries it: the gate and the recovery
         // screen are screens in their own right, and a blurred wallet behind
         // either of them would be the wallet on display.
+        //
+        // Capturing while still hidden does not leave the app uncovered for the
+        // duration. This runs to the end of `show` without returning to the run
+        // loop, so no frame is committed between the picture being taken and the
+        // window being raised over it, and a snapshot can only ever be of a
+        // committed frame. Ordering it the other way round would buy nothing and
+        // cost a raise the picture it is being raised to show.
+
         let backdrop = presentation == .cover
             ? contentWindow(in: scene).flatMap(PrivacyBackdrop.picture).map(Image.init(uiImage:))
             : nil

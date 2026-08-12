@@ -30,11 +30,10 @@ enum PrivacyBackdrop {
     /// How much of the screen's resolution survives the capture.
     ///
     /// Low enough that a balance is a smudge before a blur is applied at all,
-    /// which is what makes this cheap enough to run on the way out: the render is
-    /// a small fraction of the screen's pixels. The gaussian pass afterwards is
-    /// for smoothness — it takes the stair-stepping off the upscale — and not for
-    /// the hiding, so that no part of the privacy rests on a filter that might
-    /// fail.
+    /// which is also what makes this cheap enough to run on the way out: the
+    /// render is a small fraction of the screen's pixels. The two steps are
+    /// belt and braces rather than a division of labour — neither is trusted
+    /// alone, and if either fails there is no picture at all.
     private static let captureScale: CGFloat = 0.12
     /// Applied to the *downscaled* picture, so it goes a long way: at an eighth
     /// of the resolution this is worth eight times as much as it would be at
@@ -64,7 +63,18 @@ enum PrivacyBackdrop {
             window.drawHierarchy(in: bounds, afterScreenUpdates: false)
         }
 
-        guard let source = CIImage(image: small) else { return small }
+        // Nothing partial is ever returned. A failure here answers `nil` and
+        // ``CoverView`` shows the brand screen instead, which conceals more than
+        // this ever does.
+        //
+        // The downscaled picture on its own is *not* the fallback, tempting as it
+        // is to treat "too small to read" as good enough. It is not a
+        // confidentiality boundary: a balance set in a display face, and a
+        // receive-address QR at iPad size, both survive an eighth-scale
+        // reduction better than intuition suggests, and this picture is what
+        // becomes the app-switcher card — the one artefact here that outlives
+        // the moment.
+        guard let source = CIImage(image: small) else { return nil }
         // Clamped first, or the blur samples transparent black from beyond the
         // edges and leaves a dark vignette all the way round.
         let blurred = source
@@ -72,11 +82,7 @@ enum PrivacyBackdrop {
             .applyingGaussianBlur(sigma: blurSigma)
             .cropped(to: source.extent)
 
-        guard let rendered = context.createCGImage(blurred, from: blurred.extent) else {
-            // The downscale alone already hid everything; a failed filter is a
-            // rougher cover, not a leaking one.
-            return small
-        }
+        guard let rendered = context.createCGImage(blurred, from: blurred.extent) else { return nil }
         return UIImage(cgImage: rendered)
     }
 }
