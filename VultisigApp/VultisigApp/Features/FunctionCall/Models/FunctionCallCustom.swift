@@ -27,11 +27,15 @@ final class FunctionCallCustom {
 
     @ObservationIgnored private let placeholder: String
     @ObservationIgnored private let vault: Vault
+    /// The chain this form runs on. Token lookup is scoped to it so a ticker
+    /// can only ever resolve to a coin on the chain the memo is deposited to.
+    @ObservationIgnored private let chain: Chain
 
     init(coin: Coin, vault: Vault) {
         let initialPlaceholder = "selectToken".localized
         self.placeholder = initialPlaceholder
         self.vault = vault
+        self.chain = coin.chain
         self.selectedToken = .init(value: initialPlaceholder)
         self.balanceLabel = "amountSelectToken".localized
 
@@ -41,30 +45,28 @@ final class FunctionCallCustom {
 
     private func loadTokens(for chain: Chain) {
         switch chain {
-        case .thorChain:
-            let chainCoins = vault.coins.filter { $0.chain == .thorChain }
-            for coin in chainCoins {
-                let ticker = coin.ticker.uppercased()
-                if ticker == "RUNE" || ticker == "RUJI" || ticker == "TCY" {
-                    tokens.append(.init(value: ticker))
-                }
-            }
-            if tokens.isEmpty {
-                tokens.append(.init(value: "RUNE"))
-            }
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
+            // The test networks are listed with mainnet: they run the same
+            // `MsgDeposit`, and leaving them out left the token list empty,
+            // which made `isTokenSelected` false and the form permanently
+            // unsubmittable — an operation the app offered but could not send.
+            appendTokens(on: chain, tickers: ["RUNE", "RUJI", "TCY"], fallback: "RUNE")
         case .mayaChain:
-            let chainCoins = vault.coins.filter { $0.chain == .mayaChain }
-            for coin in chainCoins {
-                let ticker = coin.ticker.uppercased()
-                if ticker == "CACAO" || ticker == "MAYA" || ticker == "AZTEC" {
-                    tokens.append(.init(value: ticker))
-                }
-            }
-            if tokens.isEmpty {
-                tokens.append(.init(value: "CACAO"))
-            }
+            appendTokens(on: chain, tickers: ["CACAO", "MAYA", "AZTEC"], fallback: "CACAO")
         default:
             break
+        }
+    }
+
+    private func appendTokens(on chain: Chain, tickers: [String], fallback: String) {
+        for coin in vault.coins where coin.chain == chain {
+            let ticker = coin.ticker.uppercased()
+            if tickers.contains(ticker) {
+                tokens.append(.init(value: ticker))
+            }
+        }
+        if tokens.isEmpty {
+            tokens.append(.init(value: fallback))
         }
     }
 
@@ -82,15 +84,11 @@ final class FunctionCallCustom {
 
     func selectedVaultCoin() -> Coin? {
         let ticker = selectedToken.value.lowercased()
-        for coin in vault.coins {
-            if coin.chain == .thorChain && coin.ticker.lowercased() == ticker {
-                return coin
-            }
-            if coin.chain == .mayaChain && coin.ticker.lowercased() == ticker {
-                return coin
-            }
-        }
-        return nil
+        // Scoped to this form's own chain rather than to the THOR/Maya pair:
+        // the picked ticker becomes the screen's active coin, so resolving it
+        // on any chain but this one would deposit the memo against the wrong
+        // asset. It also lets the test networks resolve their own coins.
+        return vault.coins.first { $0.chain == chain && $0.ticker.lowercased() == ticker }
     }
 
     func updateBalanceLabel() {

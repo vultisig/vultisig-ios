@@ -28,6 +28,43 @@ final class FunctionCallCustomTests: XCTestCase {
         XCTAssertEqual(model.tokens.first?.value, "RUNE")
     }
 
+    /// The test networks run the same `MsgDeposit` but were not listed, so
+    /// their token list came back empty — `isTokenSelected` stayed false and
+    /// the form could never be submitted. Custom is the only operation those
+    /// chains offer, so an unusable form meant an entry point that led nowhere.
+    func testInitLoadsTokensOnTheThorchainTestNetworks() {
+        for chain in [Chain.thorChainChainnet, Chain.thorChainStagenet] {
+            let rune = FunctionCallFixture.makeCoin(chain, ticker: "RUNE", decimals: 8, isNative: true)
+            let vault = FunctionCallFixture.makeVault(coins: [rune])
+            let model = FunctionCallCustom(coin: rune, vault: vault)
+
+            XCTAssertEqual(model.tokens.map { $0.value }, ["RUNE"], "\(chain.rawValue) offered no token to pick")
+            XCTAssertTrue(model.isTokenSelected, "\(chain.rawValue) could never satisfy the validity gate")
+
+            model.custom = "TEST"
+            XCTAssertTrue(model.isFormValid(for: rune))
+        }
+    }
+
+    /// The picked ticker becomes the screen's active coin, so it has to resolve
+    /// on the chain the memo is deposited to and on no other.
+    func testSelectedVaultCoinResolvesOnTheFormsOwnChainOnly() {
+        let mainnetRune = FunctionCallFixture.makeRUNE()
+        let testnetRune = FunctionCallFixture.makeCoin(
+            .thorChainStagenet,
+            ticker: "RUNE",
+            decimals: 8,
+            isNative: true
+        )
+        let vault = FunctionCallFixture.makeVault(coins: [mainnetRune, testnetRune])
+
+        let model = FunctionCallCustom(coin: testnetRune, vault: vault)
+        XCTAssertEqual(model.selectedVaultCoin()?.chain, .thorChainStagenet)
+
+        let mainnetModel = FunctionCallCustom(coin: mainnetRune, vault: vault)
+        XCTAssertEqual(mainnetModel.selectedVaultCoin()?.chain, .thorChain)
+    }
+
     /// Pin: legacy `toString()` returned the free-form custom memo as-is.
     func testToStringMatchesLegacyMemo() {
         let coin = FunctionCallFixture.makeRUNE()
