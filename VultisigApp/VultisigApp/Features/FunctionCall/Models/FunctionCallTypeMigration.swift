@@ -51,6 +51,25 @@ extension FunctionCallType {
                 $0.chain == coin.chain && $0.isNativeToken
             }
             return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+        case .merge:
+            // MERGE deposits a catalog token into that token's own Rujira
+            // contract, so the coin it spends is chosen inside the form from
+            // the vault's holdings. What the intent names is the chain anchor
+            // — THORChain's native asset, which is also the fee asset — for
+            // the same reason `.leave` does: the legacy screen pinned RUNE
+            // here (`ensureRuneCoin()`), and a vault that cannot resolve it
+            // belongs on the shared "not in vault" error rather than in a form
+            // whose deposit it could not pay for.
+            let nativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == coin.chain && $0.isNativeToken
+            }
+            // Pre-select the token the user was already looking at. The legacy
+            // sub-model tried the same thing in `preSelectToken()`, but the
+            // RUNE pin above it meant the match never fired.
+            return .merge(
+                coin: nativeAsset ?? coin.toCoinMeta(),
+                denom: ThorchainMergeAsset.catalogDenom(forTicker: coin.ticker)
+            )
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

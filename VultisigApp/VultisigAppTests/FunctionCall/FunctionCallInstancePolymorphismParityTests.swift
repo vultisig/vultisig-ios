@@ -166,23 +166,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: kuji, vault: vault, gas: 0)
     }
 
-    func testMergeParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let model = FunctionCallCosmosMerge(coin: rune, vault: vault)
-        model.selectedToken = IdentifiableString(value: "THOR.KUJI")
-        model.destinationAddress = "thor1mergeaddress"
-        let instance = FunctionCallInstance.merge(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "merge:THOR.KUJI")
-        XCTAssertEqual(tx.transactionType, .thorMerge)
-        XCTAssertEqual(tx.toAddress, "thor1mergeaddress")
-        XCTAssertEqual(instance.toAddress, "thor1mergeaddress")
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
-
     func testUnmergeParity() {
         let ruji = FunctionCallFixture.makeRUJI()
         let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE(), ruji])

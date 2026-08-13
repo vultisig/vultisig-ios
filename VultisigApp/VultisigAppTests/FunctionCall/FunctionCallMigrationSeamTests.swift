@@ -119,12 +119,74 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    // MARK: - The mapping (merge)
+
+    /// MERGE spends a catalog token, but the intent names the chain anchor —
+    /// the form resolves the spend coin from the vault's holdings. Selecting
+    /// Merge from RUNE therefore carries RUNE and no pre-selection.
+    func testMergeMapsToTheMergeIntentOnTheNativeAsset() {
+        guard case .merge(let mappedCoin, let denom)? = FunctionCallType.merge.migratedTransactionType(
+            coin: Self.makeRune(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Merge must map to the merge intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertNil(denom, "RUNE is not a mergeable token, so there is nothing to pre-select")
+    }
+
+    /// The legacy sub-model's `preSelectToken()` matched `thor.<ticker>` of the
+    /// coin the screen was on. It never fired because `ensureRuneCoin()` ran
+    /// first; carrying the denom on the intent makes it real.
+    func testMergePreselectsTheDenomWhenTheSelectedCoinIsMergeable() {
+        let kuji = FunctionCallFixture.makeCoin(
+            .thorChain,
+            ticker: "KUJI",
+            decimals: 8,
+            isNative: false,
+            address: FunctionCallFixture.thorAddress
+        )
+
+        guard case .merge(let mappedCoin, let denom)? = FunctionCallType.merge.migratedTransactionType(
+            coin: kuji,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Merge must map to the merge intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertEqual(denom, "thor.kuji")
+    }
+
+    /// A node address belongs to the node functions; MERGE must ignore it
+    /// rather than smuggle it into the form.
+    func testMergeIgnoresACarriedNodeAddress() {
+        guard case .merge(_, let denom)? = FunctionCallType.merge.migratedTransactionType(
+            coin: Self.makeRune(),
+            nodeAddress: Self.thorNode
+        ) else {
+            return XCTFail("Merge must map to the merge intent")
+        }
+
+        XCTAssertNil(denom)
+    }
+
+    /// The intent's `coins` is what `needsCoinAddition` / `addCoins` read. The
+    /// pickable merge tokens are vault holdings by construction, so the anchor
+    /// is the only coin to resolve.
+    func testMergeIntentResolvesTheCoinItNeeds() {
+        let coin = Self.makeRune()
+        let intent = FunctionTransactionType.merge(coin: coin.toCoinMeta(), denom: "thor.kuji")
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
     /// The mapping is an allowlist: everything not yet migrated keeps building
     /// its legacy sub-model.
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
+            .rebond, .custom, .vote, .cosmosIBC, .unmerge,
             .theSwitch, .addThorLP, .securedAsset, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
@@ -143,6 +205,10 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testLeaveStaysSelectableOnBothChainsThatOfferIt() {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.leave))
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
+    }
+
+    func testMergeStaysSelectableOnThorchain() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.merge))
     }
 
     /// The route-out fires on a *change* of selection. A chain whose default is
