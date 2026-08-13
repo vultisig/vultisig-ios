@@ -43,8 +43,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     let assetsDataSource: MayaUserLPAssetsDataSource
     private let mayaAPIService = MayaChainAPIService()
 
-    // Cache user's LP positions for quick lookup
-    private var userLPPositions: [String: String] = [:] // poolName -> lpUnits
+    /// Available (unbonded) LP units per pool, keyed by the pool's THORChain
+    /// asset. Fetched once on load; ``onAssetSelected(_:)`` reads it to install
+    /// the ceiling the typed LP units are judged against.
+    var userLPPositions: [String: String] = [:]
 
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
@@ -188,7 +190,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
 
     // MARK: - Validation Methods
 
-    private func onAssetSelected(_ asset: THORChainAsset) {
+    /// Installs the balance-aware LP-units validator for the picked pool. The
+    /// asset is routinely picked *after* the units are typed, so the swap has to
+    /// be enough on its own to make an over-available amount invalid.
+    func onAssetSelected(_ asset: THORChainAsset) {
         // Look up LP units from cached positions (fetched from Maya API)
         guard let units = userLPPositions[asset.thorchainAsset] else {
             availableLPUnits = nil
