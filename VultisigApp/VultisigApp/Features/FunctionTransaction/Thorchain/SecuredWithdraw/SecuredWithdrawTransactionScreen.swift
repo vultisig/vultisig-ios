@@ -193,12 +193,32 @@ struct SecuredWithdrawTransactionScreen: View {
         // Nothing downstream can be judged before the asset is named, so the
         // first tap opens the picker rather than surfacing three errors that
         // all say the same thing.
-        guard viewModel.selectedAsset != nil else {
+        guard viewModel.selectedAsset != nil, !viewModel.availableAssets.isEmpty else {
             showAssetSelection = true
             return
         }
-        guard let transactionBuilder = viewModel.transactionBuilder else { return }
+        guard let transactionBuilder = viewModel.transactionBuilder else {
+            revealRefusal()
+            return
+        }
         onVerify(transactionBuilder)
+    }
+
+    /// Opens the section the refusal came from.
+    ///
+    /// `transactionBuilder` has just re-run every validator, so the errors are
+    /// populated — but they render inside the expandable content, and a
+    /// collapsed section shows none of it. Without this the tap is a dead
+    /// button, which on the only route out of a secured position reads as
+    /// "the app will not let me exit" with nothing saying why.
+    func revealRefusal() {
+        if viewModel.selectedAssetCoin == nil {
+            showAssetSelection = true
+        } else if !viewModel.destinationField.valid {
+            focusedFieldBinding = .address
+        } else {
+            focusedFieldBinding = .amount
+        }
     }
 }
 

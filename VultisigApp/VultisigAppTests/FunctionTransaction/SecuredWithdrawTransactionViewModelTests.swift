@@ -159,18 +159,25 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         cancellable?.cancel()
     }
 
-    private func awaitMinimum(
+    private func awaitThreshold(
         _ viewModel: SecuredWithdrawTransactionViewModel,
-        is expected: Decimal
+        is expected: OutboundFeeThreshold
     ) async {
-        guard viewModel.minimumWithdrawAmount != expected else { return }
-        let settled = XCTestExpectation(description: "minimum becomes \(expected)")
+        guard viewModel.outboundFeeThreshold != expected else { return }
+        let settled = XCTestExpectation(description: "threshold becomes \(expected)")
         var cancellable: AnyCancellable?
-        cancellable = viewModel.$minimumWithdrawAmount
+        cancellable = viewModel.$outboundFeeThreshold
             .first(where: { $0 == expected })
             .sink { _ in settled.fulfill() }
         await fulfillment(of: [settled], timeout: 2)
         cancellable?.cancel()
+    }
+
+    private func awaitMinimum(
+        _ viewModel: SecuredWithdrawTransactionViewModel,
+        is expected: Decimal
+    ) async {
+        await awaitThreshold(viewModel, is: .known(expected))
     }
 
     /// Gives the form's validity pipeline a run-loop turn without asserting a
@@ -430,6 +437,31 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         XCTAssertNotNil(fixture.viewModel.transactionBuilder)
     }
 
+    /// An outstanding request must HOLD the gate shut, not leave it open.
+    /// "Still asking" and "there is no floor" were both a zero minimum, so a
+    /// fast Continue could advance below a floor that had not landed yet —
+    /// and nothing re-checks the threshold at sign time.
+    func testSubmissionIsBlockedWhileTheThresholdIsOutstanding() async {
+        let fixture = makeFixture()
+        fixture.stub.hold(chain: "BTC")
+        fixture.viewModel.onLoad()
+        await awaitAssets(fixture.viewModel)
+        select(Self.btcDenom, on: fixture.viewModel)
+
+        fixture.viewModel.amountField.value = "0.5"
+        await settle()
+
+        XCTAssertEqual(fixture.viewModel.outboundFeeThreshold, .pending)
+        XCTAssertNil(fixture.viewModel.transactionBuilder, "An unanswered fee floor must not be treated as no floor")
+        XCTAssertEqual(fixture.viewModel.amountField.error, "pleaseWait".localized, "Blocked, but never silent")
+
+        fixture.stub.release(chain: "BTC")
+        await awaitMinimum(fixture.viewModel, is: Self.btcMinimum)
+        await awaitValidForm(fixture.viewModel, is: true)
+
+        XCTAssertNotNil(fixture.viewModel.transactionBuilder, "0.5 clears the floor once it is known")
+    }
+
     /// The threshold lands from a network reply, which the shared `Form`
     /// pipeline never observes — it only watches `$value`. An amount typed
     /// before the reply must still be re-judged against it.
@@ -441,14 +473,17 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         select(Self.btcDenom, on: fixture.viewModel)
 
         fixture.viewModel.amountField.value = "0.0001"
-        await awaitValidForm(fixture.viewModel, is: true)
-        XCTAssertNotNil(fixture.viewModel.transactionBuilder, "Precondition: no threshold known yet")
+        await settle()
 
         fixture.stub.release(chain: "BTC")
         await awaitMinimum(fixture.viewModel, is: Self.btcMinimum)
 
         XCTAssertFalse(fixture.viewModel.validForm)
         XCTAssertNil(fixture.viewModel.transactionBuilder)
+        XCTAssertEqual(
+            fixture.viewModel.amountField.error,
+            String(format: "withdrawBelowOutboundFee".localized, Self.btcMinimum.formatForDisplay(), "BTC")
+        )
     }
 
     /// Fails OPEN, deliberately. This is the only route out of a secured
@@ -461,6 +496,7 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         await awaitAssets(fixture.viewModel)
         select(Self.btcDenom, on: fixture.viewModel)
 
+        await awaitThreshold(fixture.viewModel, is: .unavailable)
         fixture.viewModel.amountField.value = "0.0000001"
         await awaitValidForm(fixture.viewModel, is: true)
 
@@ -477,10 +513,26 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         await awaitAssets(fixture.viewModel)
         select(Self.btcDenom, on: fixture.viewModel)
 
+        await awaitThreshold(fixture.viewModel, is: .unavailable)
         fixture.viewModel.amountField.value = "0.0000001"
         await awaitValidForm(fixture.viewModel, is: true)
 
         XCTAssertEqual(fixture.viewModel.minimumWithdrawAmount, 0)
+        XCTAssertNotNil(fixture.viewModel.transactionBuilder)
+    }
+
+    /// A selection that cannot be priced at all — the vault holds no coin on
+    /// the payout chain — is `.notApplicable`, not `.pending`. It must not
+    /// hold the gate shut waiting for a request that was never made.
+    func testAnUnpriceableSelectionDoesNotHoldTheGateShut() async {
+        let fixture = await loadedFixture(minimum: nil, includeNativeBTC: false)
+
+        XCTAssertEqual(fixture.viewModel.outboundFeeThreshold, .notApplicable)
+        XCTAssertTrue(fixture.stub.outboundFeeRequests.isEmpty)
+
+        fixture.viewModel.destinationField.value = Self.otherBtcAddress
+        fixture.viewModel.amountField.value = "0.5"
+        await awaitValidForm(fixture.viewModel, is: true)
         XCTAssertNotNil(fixture.viewModel.transactionBuilder)
     }
 
@@ -503,8 +555,8 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         let staleThresholdLanded = XCTestExpectation(description: "the BTC threshold must never land")
         staleThresholdLanded.isInverted = true
         var cancellable: AnyCancellable?
-        cancellable = fixture.viewModel.$minimumWithdrawAmount
-            .sink { if $0 == Self.btcMinimum { staleThresholdLanded.fulfill() } }
+        cancellable = fixture.viewModel.$outboundFeeThreshold
+            .sink { if $0 == .known(Self.btcMinimum) { staleThresholdLanded.fulfill() } }
 
         fixture.stub.release(chain: "BTC")
         await fulfillment(of: [staleThresholdLanded], timeout: 1)
@@ -521,6 +573,70 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         await awaitMinimum(fixture.viewModel, is: Self.ethMinimum)
 
         XCTAssertEqual(fixture.stub.outboundFeeRequests, ["BTC", "ETH"])
+    }
+
+    // MARK: - Reload lifecycle
+
+    /// A reload can retire the position the user had picked. The form must not
+    /// keep pointing at an asset the account no longer holds — and the stale
+    /// threshold must go with it.
+    func testReloadDroppingTheSelectedAssetResetsTheForm() async {
+        let fixture = await loadedFixture()
+        fixture.viewModel.destinationField.value = Self.otherBtcAddress
+        fixture.viewModel.amountField.value = "0.5"
+        await awaitValidForm(fixture.viewModel, is: true)
+
+        fixture.stub.balances = [CosmosBalance(denom: Self.ethDenom, amount: "1000000000")]
+        fixture.viewModel.loadAvailableSecuredAssets()
+        await awaitAssets(fixture.viewModel)
+
+        XCTAssertNil(fixture.viewModel.selectedAsset)
+        XCTAssertNil(fixture.viewModel.selectedAssetCoin)
+        XCTAssertEqual(fixture.viewModel.destinationField.value, "")
+        XCTAssertEqual(fixture.viewModel.outboundFeeThreshold, .notApplicable)
+        XCTAssertNil(fixture.viewModel.transactionBuilder, "The picked position is gone")
+    }
+
+    /// A selection the reload still offers survives it, re-resolved against the
+    /// fresh map so the coin, the destination chain and the floor keep
+    /// describing the same asset.
+    func testReloadKeepingTheSelectedAssetReResolvesIt() async {
+        let fixture = await loadedFixture()
+
+        fixture.viewModel.loadAvailableSecuredAssets()
+        await awaitAssets(fixture.viewModel)
+        await awaitMinimum(fixture.viewModel, is: Self.btcMinimum)
+
+        XCTAssertEqual(fixture.viewModel.selectedAsset?.thorchainAsset, Self.btcDenom)
+        XCTAssertNotNil(fixture.viewModel.selectedAssetCoin)
+        XCTAssertEqual(fixture.viewModel.destinationField.value, Self.btcAddress)
+    }
+
+    // MARK: - Malformed denoms
+
+    /// `isSecuredDenom` only checks the dash shape, and `securedAssetChain`
+    /// falls back to "THOR" when it cannot split a prefix. A denom that
+    /// resolves back to THORChain must not be handed a THORChain address
+    /// validator and a THORChain pre-fill — a payout never settles there, so
+    /// that would look valid all the way to a signature.
+    func testADenomResolvingBackToThorchainIsRejectedAsADestination() async {
+        let fixture = makeFixture()
+        fixture.stub.balances = [CosmosBalance(denom: "thor-rune", amount: "100000000")]
+        let malformed = Self.makeSecuredCoin(denom: "thor-rune", rawBalance: "100000000")
+        fixture.vault.coins.append(malformed)
+
+        fixture.viewModel.onLoad()
+        await awaitAssets(fixture.viewModel)
+        select("thor-rune", on: fixture.viewModel)
+
+        XCTAssertEqual(fixture.viewModel.destinationField.value, "")
+        XCTAssertNotNil(fixture.viewModel.destinationNotice)
+        XCTAssertNil(fixture.viewModel.transactionBuilder)
+
+        fixture.viewModel.destinationField.value = Self.thorAddress
+        fixture.viewModel.amountField.value = "0.5"
+        await settle()
+        XCTAssertNil(fixture.viewModel.transactionBuilder, "A THORChain address can never be a SECURE- payout")
     }
 
     // MARK: - The submission gate
