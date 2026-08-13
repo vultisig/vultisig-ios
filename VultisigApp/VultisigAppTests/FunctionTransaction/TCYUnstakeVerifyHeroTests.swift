@@ -67,7 +67,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
             accuracy: 0.00001
         )
 
-        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        let hero = try XCTUnwrap(FunctionTransactionPresentation.hero(for: tx))
         guard case .send(let title, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
@@ -79,9 +79,15 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         // what the chain will actually pay out.
         XCTAssertTrue(coin.amount.contains("002.571644"), "rendered \(coin.amount)")
         XCTAssertFalse(coin.amount.contains("002.73"), "the typed figure is not the delivered one")
+        // ⚠️ The verb changed with the refactor, deliberately: the withdrawal's
+        // own "You are withdrawing" became the shared `.unstake` verb, so the TCY
+        // sheet and every other unstake say the same thing. The FIGURE — the part
+        // that is about money — is unchanged, which is what the assertions above
+        // pin.
+        XCTAssertEqual(title, FunctionTransactionKind.unstake.verifyTitle)
         // A missing localization would leave the raw key here.
-        XCTAssertNotEqual(title, "tcyUnstakeVerifyTitle")
-        XCTAssertEqual(title, "tcyUnstakeVerifyTitle".localized)
+        XCTAssertNotEqual(title, "youreUnstaking")
+        XCTAssertEqual(title, "youreUnstaking".localized)
     }
 
     /// The function-call flow calls `copy(gas:)` after fetching chain-specific gas
@@ -96,7 +102,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         let copied = tx.copy(gas: 2_000_000)
 
         XCTAssertEqual(copied.withdrawDisplayAmount, tx.withdrawDisplayAmount)
-        XCTAssertNotNil(TCYUnstakePresentation.hero(for: copied))
+        XCTAssertNotNil(FunctionTransactionPresentation.hero(for: copied))
     }
 
     /// ⚠️ The screen has to render at the ASSET'S precision, not the amount
@@ -136,7 +142,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         XCTAssertEqual(builder.memo, "tcy-:5002")
 
         let tx = builder.buildSendTransaction(vault: vault)
-        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        let hero = try XCTUnwrap(FunctionTransactionPresentation.hero(for: tx))
         guard case .send(_, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
@@ -200,7 +206,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         let tx = builder.buildSendTransaction(vault: vault)
         XCTAssertEqual(tx.withdrawDisplayAmount, dust)
 
-        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        let hero = try XCTUnwrap(FunctionTransactionPresentation.hero(for: tx))
         guard case .send(_, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
@@ -215,6 +221,12 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
     /// drifting further as revenue compounds. Quoting a fraction of that count as
     /// "X TCY" would understate the payout on the screen where it is approved, so
     /// this position names no figure until the redemption ratio is resolved.
+    ///
+    /// ⚠️ It names a KIND, though — the builder is still an unstake. What keeps
+    /// the hero off this screen is the presentation's zero guard, because the
+    /// transaction's own `amount` is the literal "0" a memo-only deposit carries.
+    /// Without that guard, naming the operation would have turned "You're sending
+    /// 0 TCY" into "You're unstaking 0 TCY", which is not a fix.
     func testTheAutoCompoundPositionNamesNoFigureRatherThanAShareCount() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
@@ -236,7 +248,9 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         let builder = try XCTUnwrap(viewModel.transactionBuilder)
         XCTAssertNotNil(builder.wasmContractPayload, "the compounding position still redeems its shares")
         XCTAssertNil(builder.withdrawDisplayAmount)
-        XCTAssertNil(TCYUnstakePresentation.hero(for: builder.buildSendTransaction(vault: vault)))
+        XCTAssertEqual(builder.functionKind, .unstake)
+        XCTAssertEqual(builder.amount, "0")
+        XCTAssertNil(FunctionTransactionPresentation.hero(for: builder.buildSendTransaction(vault: vault)))
     }
 
     /// Every other function call keeps the presentation it has.
@@ -270,6 +284,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         )
 
         XCTAssertNil(tx.withdrawDisplayAmount)
-        XCTAssertNil(TCYUnstakePresentation.hero(for: tx))
+        XCTAssertNil(tx.functionKind)
+        XCTAssertNil(FunctionTransactionPresentation.hero(for: tx))
     }
 }

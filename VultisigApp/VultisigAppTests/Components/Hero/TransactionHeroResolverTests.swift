@@ -32,7 +32,7 @@ final class TransactionHeroResolverTests: XCTestCase {
     func testProvidersAreAskedInTheDeclaredOrder() {
         XCTAssertEqual(
             TransactionHeroResolver.providers.map(\.id),
-            [.rippleTrustSet, .tcyUnstake, .limitOrderCancel, .limitOrderPlacement]
+            [.rippleTrustSet, .limitOrderCancel, .limitOrderPlacement, .functionTransaction]
         )
     }
 
@@ -47,16 +47,16 @@ final class TransactionHeroResolverTests: XCTestCase {
     /// ⚠️ The surface grid, as it was before the resolver existed.
     ///
     /// The differences between rows are real and were preserved deliberately, not
-    /// tidied away. `tcyUnstake` speaks only on the initiator's function-call
-    /// Verify even though the same transaction reaches `SendDoneScreen` with its
-    /// `withdrawDisplayAmount` intact; `rippleTrustSet` is absent from the
-    /// co-signer's Verify, which renders the trust line's terms as its own rows;
-    /// `limitOrderPlacement` is co-signer-only because the initiator's placement is
-    /// verified on a different screen entirely. Widening any row is a product
-    /// change, and this test is what makes it look like one.
+    /// tidied away. `functionTransaction` speaks only on the initiator's
+    /// function-call Verify even though the same transaction reaches
+    /// `SendDoneScreen` with its `functionKind` intact; `rippleTrustSet` is absent
+    /// from the co-signer's Verify, which renders the trust line's terms as its own
+    /// rows; `limitOrderPlacement` is co-signer-only because the initiator's
+    /// placement is verified on a different screen entirely. Widening any row is a
+    /// product change, and this test is what makes it look like one.
     func testEachSurfaceAsksExactlyTheProvidersItAskedBefore() {
         let expected: [TransactionHeroSurface: [TransactionHeroProvider.ID]] = [
-            .functionCallVerify: [.tcyUnstake, .limitOrderCancel],
+            .functionCallVerify: [.limitOrderCancel, .functionTransaction],
             .sendDone: [.rippleTrustSet, .limitOrderCancel],
             .keysignConfirm: [.limitOrderCancel, .limitOrderPlacement],
             .keysignDone: [.rippleTrustSet, .limitOrderCancel]
@@ -96,13 +96,11 @@ final class TransactionHeroResolverTests: XCTestCase {
     }
 
     /// ⚠️ **The order is real precedence, and these are the overlaps the types
-    /// permit.** `SendTransaction` will carry a `withdrawDisplayAmount` and a
+    /// permit.** `SendTransaction` will carry a `functionKind` and a
     /// `limitCancelContext` at the same time if someone constructs one, and an
     /// XRPL TrustSet payload can carry any memo, `m=<` included. No builder emits
     /// either combination today — but "no builder does" is not an invariant, and
-    /// when one starts to, the hero must not change under the screens. Each case
-    /// below pins the winner the screen's own `??` chain gave before the resolver
-    /// existed.
+    /// when one starts to, the hero must not change under the screens.
     ///
     /// The one pair genuinely excluded by construction is cancel vs placement:
     /// `m=<` and `=<` are different prefixes and `m=<…` does not start with `=<`,
@@ -111,14 +109,26 @@ final class TransactionHeroResolverTests: XCTestCase {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
 
-        // `TCYUnstakePresentation.hero ?? LimitOrderCancelPresentation.hero` —
-        // the withdrawal won on the initiator's Verify.
+        // ⚠️ The CANCEL wins, and that is a deliberate reversal of the order the
+        // withdrawal-only provider had.
+        //
+        // That provider fired on a `withdrawDisplayAmount`, which only a staked
+        // withdrawal ever carried, so putting it first cost nothing. Its successor
+        // answers for EVERY named DeFi operation, which makes it the broadest
+        // claim on the list — and a transaction that is a limit-order cancel is a
+        // cancel first, whatever else it also managed to say about itself. A
+        // cancel moves nothing (or donated dust); letting the generic hero quote
+        // that dust as the operation's amount is exactly the failure the cancel
+        // hero was written to prevent.
         let withdrawalAndCancel = try makeTCYWithdrawalAlsoCarryingACancel()
         XCTAssertEqual(
             TransactionHeroResolver.hero(on: .functionCallVerify, for: withdrawalAndCancel),
-            TCYUnstakePresentation.hero(for: withdrawalAndCancel)
+            LimitOrderCancelPresentation.hero(for: withdrawalAndCancel)
         )
         XCTAssertNotNil(TransactionHeroResolver.hero(on: .functionCallVerify, for: withdrawalAndCancel))
+        // Both really do claim it — otherwise the assertion above would pass for
+        // the wrong reason.
+        XCTAssertNotNil(FunctionTransactionPresentation.hero(for: withdrawalAndCancel))
 
         // `RippleTrustSetPresentation.hero ?? LimitOrderCancelPresentation.hero` —
         // the trust line won on the initiator's Done.
@@ -154,7 +164,7 @@ final class TransactionHeroResolverTests: XCTestCase {
 
         let transaction = try makeTCYWithdrawal()
         let hero = try XCTUnwrap(TransactionHeroResolver.hero(on: .functionCallVerify, for: transaction))
-        XCTAssertEqual(hero, TCYUnstakePresentation.hero(for: transaction))
+        XCTAssertEqual(hero, FunctionTransactionPresentation.hero(for: transaction))
     }
 
     func testTheFunctionCallVerifyResolvesTheCancelHero() {
@@ -167,15 +177,17 @@ final class TransactionHeroResolverTests: XCTestCase {
     /// ⚠️ The initiator's Done screen still names no withdrawal.
     ///
     /// The function-call flow's done screen IS `SendDoneScreen`, and the same
-    /// transaction arrives there carrying `withdrawDisplayAmount`. Admitting the
-    /// TCY provider would therefore put a hero on a receipt that has none today —
-    /// a change worth making on its own terms, and not what a refactor may do.
+    /// transaction arrives there carrying both `functionKind` and
+    /// `withdrawDisplayAmount`. Admitting the function-transaction provider would
+    /// therefore put a hero on a receipt that has none today — a change worth
+    /// making on its own terms, and not what a refactor may do.
     func testTheDoneScreenStillNamesNoWithdrawal() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
 
         let transaction = try makeTCYWithdrawal()
         XCTAssertNotNil(transaction.withdrawDisplayAmount)
+        XCTAssertNotNil(transaction.functionKind)
         XCTAssertNil(TransactionHeroResolver.hero(on: .sendDone, for: transaction))
     }
 
@@ -295,7 +307,8 @@ final class TransactionHeroResolverTests: XCTestCase {
             amount: withdrawal.amount,
             transactionType: withdrawal.transactionType,
             limitCancelContext: makeCancelContext(),
-            withdrawDisplayAmount: withdrawal.withdrawDisplayAmount
+            withdrawDisplayAmount: withdrawal.withdrawDisplayAmount,
+            functionKind: withdrawal.functionKind
         )
     }
 
@@ -307,7 +320,8 @@ final class TransactionHeroResolverTests: XCTestCase {
             amount: "1.5",
             transactionType: .rippleTrustSet,
             limitCancelContext: makeCancelContext(),
-            withdrawDisplayAmount: nil
+            withdrawDisplayAmount: nil,
+            functionKind: nil
         )
     }
 
@@ -328,7 +342,8 @@ final class TransactionHeroResolverTests: XCTestCase {
         amount: String,
         transactionType: VSTransactionType,
         limitCancelContext: LimitOrderCancelRequest?,
-        withdrawDisplayAmount: Decimal?
+        withdrawDisplayAmount: Decimal?,
+        functionKind: FunctionTransactionKind?
     ) -> SendTransaction {
         SendTransaction(
             coin: coin,
@@ -352,7 +367,8 @@ final class TransactionHeroResolverTests: XCTestCase {
             wasmContractPayload: nil,
             feeCoin: coin,
             limitCancelContext: limitCancelContext,
-            withdrawDisplayAmount: withdrawDisplayAmount
+            withdrawDisplayAmount: withdrawDisplayAmount,
+            functionKind: functionKind
         )
     }
 

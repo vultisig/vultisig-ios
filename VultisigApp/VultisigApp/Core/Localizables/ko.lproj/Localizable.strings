@@ -1538,7 +1538,6 @@
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";
 "targetAsset" = "대상 자산: %@";
-"tcyUnstakeVerifyTitle" = "출금 중입니다";
 "termsOfService" = "서비스 약관";
 "theUnmerge" = "병합 해제";
 "thisDevice" = "이 기기";

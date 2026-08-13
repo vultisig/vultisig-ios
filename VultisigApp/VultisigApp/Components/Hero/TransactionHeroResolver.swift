@@ -27,12 +27,12 @@ import Foundation
 /// ⚠️ **Load-bearing, not decoration.** The four screens consult three different
 /// sets of presentations between them — the two Done screens happen to share one —
 /// and collapsing all of them into a single list would change what people see
-/// rather than preserve it. A staked-TCY withdrawal,
-/// for one, reaches `SendDoneScreen` carrying its `withdrawDisplayAmount` intact
-/// (the function-call flow's done screen IS the send one), so admitting the TCY
-/// provider there would put a hero on a receipt that has none today. Making the
-/// grid explicit is the point; erasing it would be a behaviour change wearing a
-/// refactor's clothes.
+/// rather than preserve it. Every DeFi function transaction reaches
+/// `SendDoneScreen` still carrying its `functionKind` and `withdrawDisplayAmount`
+/// (the function-call flow's done screen IS the send one), so admitting the
+/// function-transaction provider there would put a hero on every receipt that has
+/// none today. Making the grid explicit is the point; erasing it would be a
+/// behaviour change wearing a refactor's clothes.
 enum TransactionHeroSurface: Hashable, CaseIterable {
     /// The initiator's Verify for a function call — `FunctionCallVerifyScreen`.
     case functionCallVerify
@@ -73,9 +73,9 @@ struct TransactionHeroProvider {
     /// guard changed.
     enum ID: String, CaseIterable {
         case rippleTrustSet
-        case tcyUnstake
         case limitOrderCancel
         case limitOrderPlacement
+        case functionTransaction
     }
 
     let id: ID
@@ -98,30 +98,31 @@ enum TransactionHeroResolver {
     /// 1. `rippleTrustSet` — the wire-level `VSTransactionType`, which is on the
     ///    signed payload precisely because an XRPL issued-currency coin is
     ///    otherwise ambiguous about whether it opens a trust line or pays one.
-    /// 2. `tcyUnstake` — a field the builder put on the transaction. Exact, but it
-    ///    exists only on the initiator's side.
-    /// 3. `limitOrderCancel` — the `m=<` memo prefix, which is what THORChain
+    /// 2. `limitOrderCancel` — the `m=<` memo prefix, which is what THORChain
     ///    itself keys on.
-    /// 4. `limitOrderPlacement` — the `=<` prefix, the same family one level less
+    /// 3. `limitOrderPlacement` — the `=<` prefix, the same family one level less
     ///    specific. Listed after the cancel because a cancel is the narrower
     ///    reading of the two (`m=<` does not start with `=<`, so this is a
     ///    statement of intent rather than a live tie).
+    /// 4. `functionTransaction` — LAST, because it is the broadest: it answers for
+    ///    any DeFi operation whose builder named a kind, and a kind is the least
+    ///    specific thing on this list. A cancel that somehow also named itself is
+    ///    still a cancel, and the cancel's hero is the one that says so.
     ///
     /// ⚠️ **This is real precedence, not a formality.** Nothing in the types
     /// stops two guards firing at once: `SendTransaction` will happily carry a
-    /// `withdrawDisplayAmount` AND a `limitCancelContext`, and a TrustSet payload
-    /// can carry any memo at all, `m=<` included. That no builder currently emits
-    /// such a transaction is a property of the builders, not an invariant — so the
-    /// order has to be the answer, and the answer has to be the one the four `??`
-    /// chains gave before this existed. `testTheOrderDecidesWhenTwoProvidersBothClaim`
-    /// pins the winner for each overlap the type system permits;
+    /// `functionKind` AND a `limitCancelContext`, and a TrustSet payload can carry
+    /// any memo at all, `m=<` included. That no builder currently emits such a
+    /// transaction is a property of the builders, not an invariant — so the order
+    /// has to be the answer. `testTheOrderDecidesWhenTwoProvidersBothClaim` pins
+    /// the winner for each overlap the type system permits;
     /// `testNothingTheBuildersEmitIsClaimedTwice` pins the weaker, live property
     /// that the question does not currently arise.
     static let providers: [TransactionHeroProvider] = [
         .rippleTrustSet,
-        .tcyUnstake,
         .limitOrderCancel,
-        .limitOrderPlacement
+        .limitOrderPlacement,
+        .functionTransaction
     ]
 
     /// The hero for `subject` on `surface`, or `nil` when no provider entitled to
@@ -174,26 +175,29 @@ private extension TransactionHeroProvider {
         }
     )
 
-    /// A staked-TCY withdrawal, whose transaction amount is the literal `"0"`
-    /// because the whole instruction is the `tcy-:<bps>` memo.
-    static let tcyUnstake = TransactionHeroProvider(
-        id: .tcyUnstake,
+    /// Any DeFi operation whose builder named itself — a stake, a bond, a
+    /// delegate, a withdrawal — none of which is a send, and one of which (the
+    /// memo-only staked withdrawal) does not even carry its own amount.
+    static let functionTransaction = TransactionHeroProvider(
+        id: .functionTransaction,
         surfaces: [.functionCallVerify],
         hero: { subject in
             switch subject {
             case .initiating(let transaction):
-                return TCYUnstakePresentation.hero(for: transaction)
+                return FunctionTransactionPresentation.hero(for: transaction)
             case .cosigning:
                 // ⚠️ A co-signer's screens are the known follow-up, and they are
                 // deliberately still `nil` here.
                 //
-                // The figure the initiator quotes is the memo's fraction applied
-                // to the staked position its form was showing; a payload carries
-                // the fraction and nothing else. Naming an amount on a co-signer's
-                // screen therefore means reading the position off-chain first —
-                // real work with a real-funds surface, not a registration. Adding
-                // `.keysignConfirm` / `.keysignDone` above is what turns it on
-                // once that figure can be trusted.
+                // A co-signer could recover the VERB from the memo — that is what
+                // the cancel provider does — but not the amount: a memo-only
+                // withdrawal carries a fraction, and the figure the initiator
+                // quotes is that fraction applied to the position its form was
+                // showing. Naming an amount here therefore means reading the
+                // position off-chain first, which is real work with a real-funds
+                // surface rather than a registration. Adding `.keysignConfirm` /
+                // `.keysignDone` above is what turns it on once that figure can be
+                // trusted.
                 return nil
             }
         }
