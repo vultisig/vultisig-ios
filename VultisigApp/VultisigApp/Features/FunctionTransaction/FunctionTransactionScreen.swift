@@ -117,15 +117,23 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
-            case .addLP(let position):
+            case .addLP(let position, let side):
                 resolvingCoins(coin: position.coin1, coin2: position.coin2) { coin1, coin2 in
                     AddLPTransactionScreen(
-                        viewModel: AddLPTransactionViewModel(
-                            coin: coin1,
+                        viewModel: AddLPTransactionViewModel.position(
+                            coin1: coin1,
                             coin2: coin2,
-                            vault: vault,
-                            position: position
+                            side: side,
+                            position: position,
+                            vault: vault
                         ),
+                        onVerify: onVerify
+                    )
+                }
+            case .addThorchainLP(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    AddLPTransactionScreen(
+                        viewModel: AddLPTransactionViewModel.chain(coin: coin, vault: vault),
                         onVerify: onVerify
                     )
                 }

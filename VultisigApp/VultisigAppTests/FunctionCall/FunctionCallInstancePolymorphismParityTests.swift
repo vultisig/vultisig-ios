@@ -220,25 +220,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: atom, vault: vault, gas: 0)
     }
 
-    func testAddThorLPParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        // No initialize() — keeps the inbound fetch offline; toAddress stays "".
-        let model = FunctionCallAddThorLP(coin: rune, vault: vault)
-        model.selectedPool = IdentifiableString(value: "BTC.BTC")
-        model.pairedAddress = "thor1paired"
-        let instance = FunctionCallInstance.addThorLP(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, model.toString())
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(tx.wasmContractPayload)
-        XCTAssertNil(instance.toAddress)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
-
     func testSecuredAssetParity() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])

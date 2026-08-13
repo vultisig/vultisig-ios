@@ -16,6 +16,10 @@
 "addFriendsReferral" = "添加好友推荐";
 "addingToken" = "正在添加代币...";
 "addLiquidityTransaction" = "2. 添加流动性交易";
+"addLpDestinationUnavailable" = "无法确定存入地址，请重试。";
+"addLpNoDepositablePools" = "该链的资金池中没有本保险库持有的资产。";
+"addLpPoolTitle" = "资金池";
+"addLpSelectPool" = "选择资金池";
 "addMemo" = "添加备忘录";
 "addNewChainToVault1" = "您想添加 ";
 "addNewChainToVault2" = " 到保险库吗？";

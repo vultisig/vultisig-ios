@@ -18,7 +18,6 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
-    case addThorLP(FunctionCallAddThorLP)
     case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
 
@@ -37,7 +36,6 @@ enum FunctionCallInstance {
         case .merge(let memo): return memo
         case .unmerge(let memo): return memo
         case .theSwitch(let memo): return memo
-        case .addThorLP(let memo): return memo
         case .securedAsset(let memo): return memo
         case .withdrawSecuredAsset(let memo): return memo
         }
@@ -91,7 +89,7 @@ enum FunctionCallInstance {
         case .kujira:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))
+            return .securedAsset(FunctionCallSecuredAsset(coin: coin, vault: vault))
         default:
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
         }

@@ -51,6 +51,14 @@ extension FunctionCallType {
                 $0.chain == coin.chain && $0.isNativeToken
             }
             return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+        case .addThorLP:
+            // The entry asset only. Which asset is actually deposited is not
+            // known until a pool is picked, and the picker resolves it against
+            // the vault's own coins — so the intent names where the user came
+            // in, and the form owns the rest. Deliberately NOT pinned to the
+            // chain's native asset: an LP add from a token screen is a deposit
+            // of that token, and pinning would silently retarget it.
+            return .addThorchainLP(coin: coin.toCoinMeta())
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

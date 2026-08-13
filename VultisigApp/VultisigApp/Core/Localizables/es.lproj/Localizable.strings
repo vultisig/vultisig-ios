@@ -16,6 +16,10 @@
 "addFriendsReferral" = "Agregar una referencia de amigos";
 "addingToken" = "Agregando token";
 "addLiquidityTransaction" = "2. Add liquidity transaction";
+"addLpDestinationUnavailable" = "No se pudo determinar el destino del depósito. Inténtalo de nuevo.";
+"addLpNoDepositablePools" = "Ningún pool de esta cadena contiene un activo de esta bóveda.";
+"addLpPoolTitle" = "Pool";
+"addLpSelectPool" = "Selecciona un pool";
 "addMemo" = "Agregar MEMO";
 "addNewChainToVault1" = "Quieres agregar";
 "addNewChainToVault2" = "a la bóveda?";

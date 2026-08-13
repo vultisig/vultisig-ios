@@ -127,7 +127,12 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .kujira:
             return .cosmosIBC
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return .addThorLP
+            // Was `.addThorLP`, which now has its own screen and builds no
+            // legacy form. A migrated type must never be a chain's default:
+            // the default is applied without publishing a change, so the
+            // route-out never fires and the user lands on a selection with
+            // nothing behind it.
+            return .securedAsset
         default:
             return .custom
         }

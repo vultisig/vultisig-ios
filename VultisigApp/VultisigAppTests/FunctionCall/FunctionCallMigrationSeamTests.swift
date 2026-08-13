@@ -128,12 +128,60 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
             .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
-            .theSwitch, .addThorLP, .securedAsset, .withdrawSecuredAsset
+            .theSwitch, .securedAsset, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
             XCTAssertNil(
                 type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
                 "\(type.rawValue) has not been migrated and must keep its legacy sub-model"
+            )
+        }
+    }
+
+    /// Add-LP maps to the intent the user came in on. Deliberately NOT pinned
+    /// to the chain's native asset the way LEAVE is: an LP add opened from a
+    /// token screen is a deposit of that token, and pinning would silently
+    /// retarget it.
+    func testAddThorLPMapsToTheEntryAsset() {
+        let usdc = AddLPFixture.usdc()
+
+        guard case .addThorchainLP(let mappedCoin)? = FunctionCallType.addThorLP.migratedTransactionType(
+            coin: usdc,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Add THORChain LP must map to its own intent")
+        }
+
+        XCTAssertEqual(mappedCoin, usdc.toCoinMeta())
+    }
+
+    /// The intent's `coins` is what `needsCoinAddition` / `addCoins` read, and a
+    /// THORChain pool credits a RUNE account the memo has to name — so RUNE is
+    /// part of what the operation needs, not an afterthought.
+    func testAddThorLPIntentResolvesTheAssetAndRune() {
+        let bitcoin = AddLPFixture.bitcoin()
+        let coins = FunctionTransactionType.addThorchainLP(coin: bitcoin.toCoinMeta()).coins
+
+        XCTAssertEqual(coins.first, bitcoin.toCoinMeta())
+        XCTAssertTrue(
+            coins.contains { $0.chain == .thorChain && $0.isNativeToken },
+            "an LP deposit without a RUNE account signs a different memo entirely"
+        )
+    }
+
+    /// Every chain that offers Add-LP must keep offering it: the action list is
+    /// built from `getCases`, so dropping it there would make the operation
+    /// migrated *and* unreachable.
+    func testAddThorLPStaysSelectableOnEveryChainThatOffersIt() {
+        let lpChains: [Chain] = [
+            .bitcoin, .bitcoinCash, .litecoin, .dogecoin,
+            .ethereum, .avalanche, .bscChain, .base, .ripple
+        ]
+        for chain in lpChains {
+            let coin = FunctionCallFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            XCTAssertTrue(
+                FunctionCallType.getCases(for: coin).contains(.addThorLP),
+                "\(chain.rawValue) no longer offers Add-LP"
             )
         }
     }

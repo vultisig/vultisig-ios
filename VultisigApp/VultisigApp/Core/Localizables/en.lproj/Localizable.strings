@@ -16,6 +16,10 @@
 "addFriendsReferral" = "Add a Friends Referral";
 "addingToken" = "Adding Token...";
 "addLiquidityTransaction" = "2. Add liquidity transaction";
+"addLpDestinationUnavailable" = "Could not work out where to deposit. Please try again.";
+"addLpNoDepositablePools" = "None of this chain's pools hold an asset in this vault.";
+"addLpPoolTitle" = "Pool";
+"addLpSelectPool" = "Select a pool";
 "addMemo" = "Add MEMO";
 "addNewChainToVault1" = "Do you want to add ";
 "addNewChainToVault2" = " to the vault?";

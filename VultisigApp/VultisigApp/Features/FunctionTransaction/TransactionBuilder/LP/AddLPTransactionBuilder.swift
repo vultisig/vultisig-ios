@@ -15,12 +15,27 @@ struct AddLPTransactionBuilder: TransactionBuilder {
     let pairedAddress: String?
     let sendMaxAmount: Bool
 
-    var amountMicro: UInt64 {
-        let decimals = coin.decimals
-        let multiplier = pow(10.0, Double(decimals))
-        let micro = (amount.toDecimal() * Decimal(multiplier)) as NSDecimalNumber
-        return micro.uint64Value
-    }
+    /// Where the deposit is sent, resolved for **this** asset at the moment the
+    /// transaction was made — the L1 inbound vault for a native deposit, the
+    /// router contract for an ERC-20 one, and the empty string for a
+    /// protocol-native deposit, which rides a `MsgDeposit` and names no
+    /// recipient.
+    ///
+    /// It is stored rather than computed, and that is the fix. This property
+    /// used to return `.empty` under a comment claiming it returned the inbound
+    /// address, so every L1 deposit built here named no recipient; and the form
+    /// it replaced resolved one address on load and then let its pool picker
+    /// reassign the asset underneath it, so an ERC-20 deposit could approve the
+    /// inbound vault as its spender and a native one could be signed straight
+    /// at the router contract.
+    ///
+    /// The ERC-20 approval is **not** built here on purpose. The signing
+    /// boundary derives it from the transaction's own recipient
+    /// (`ThorchainRouterDepositBuilder.synthesizeRouterDeposit`), so the
+    /// approved spender and the deposit target are the same address by
+    /// construction. A second, independently-built spender is exactly how the
+    /// two came apart before.
+    let toAddress: String
 
     var memo: String {
         let address = pairedAddress?.nilIfEmpty
@@ -30,6 +45,8 @@ struct AddLPTransactionBuilder: TransactionBuilder {
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
+        // `pool` is what marks this transaction an LP add at the signing
+        // boundary, which is where an ERC-20 deposit picks up its router shim.
         dict.set("pool", poolName)
         if let pairedAddress {
             dict.set("pairedAddress", pairedAddress)
@@ -44,11 +61,5 @@ struct AddLPTransactionBuilder: TransactionBuilder {
 
     var wasmContractPayload: WasmExecuteContractPayload? {
         nil
-    }
-
-    var toAddress: String {
-        // For addThorLP, return the inbound address that was set by fetchInboundAddress()
-        // This is essential for Bitcoin and other chains to know where to send funds
-        return .empty
     }
 }
