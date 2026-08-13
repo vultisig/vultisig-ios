@@ -92,7 +92,15 @@ final class RebondTransactionViewModel: ObservableObject, Form {
 
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm else { return nil }
+        // `validForm` is republished a run-loop turn late — the shared `Form`
+        // pipeline hops through `RunLoop.main` — so it can still answer "valid"
+        // for an edit made in this same turn. `validateErrors()` just refreshed
+        // every field synchronously, so read those too: an amount edited to `0`
+        // and submitted before the aggregate settles would otherwise build the
+        // whole-bond memo. Both conditions, never one: this only ever tightens
+        // the gate, and it becomes redundant once the shared stack recomputes
+        // the aggregate synchronously.
+        guard validForm, form.allSatisfy({ $0.valid }) else { return nil }
 
         return RebondTransactionBuilder(
             coin: coin,

@@ -191,6 +191,35 @@ final class RebondTransactionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.transactionBuilder)
     }
 
+    /// The aggregate `validForm` is republished a run-loop turn late, so a
+    /// submit in the same turn as the edit would otherwise read the *previous*
+    /// answer — here, building the whole-bond memo from an amount the user just
+    /// set to `0`. The builder has to reject it without waiting.
+    func testInvalidatingTheAmountBlocksTheBuilderInTheSameRunLoopTurn() async {
+        let viewModel = makeViewModel()
+        viewModel.onLoad()
+        fillValidAddresses(viewModel)
+        viewModel.amountField.value = "100"
+        await awaitValidForm(viewModel, is: true)
+
+        viewModel.amountField.value = "0"
+        XCTAssertTrue(viewModel.validForm, "Precondition: the aggregate has not settled yet")
+        XCTAssertNil(viewModel.transactionBuilder, "A same-turn edit must not submit on a stale aggregate")
+    }
+
+    /// The same window on an address: a validator address cleared and submitted
+    /// in one turn must not ride the previous "valid".
+    func testClearingAnAddressBlocksTheBuilderInTheSameRunLoopTurn() async {
+        let viewModel = makeViewModel()
+        viewModel.onLoad()
+        fillValidAddresses(viewModel)
+        await awaitValidForm(viewModel, is: true)
+
+        viewModel.newNodeViewModel.field.value = ""
+        XCTAssertTrue(viewModel.validForm, "Precondition: the aggregate has not settled yet")
+        XCTAssertNil(viewModel.transactionBuilder)
+    }
+
     /// One base unit is the smallest amount that survives the conversion.
     func testSmallestRepresentableAmountIsAccepted() async {
         let viewModel = makeViewModel()

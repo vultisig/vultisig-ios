@@ -82,10 +82,12 @@ struct FunctionCallDetailsScreen: View {
             // navigation, no per-operation branch.
             if let transactionType = selectedFunctionMemoType.migratedTransactionType(
                 coin: selectedCoin,
-                // Rebond was the last legacy form holding a node address, so
-                // there is nothing left on this screen to carry over. The
-                // parameter stays as the pre-fill hook for the callers that
-                // replace this dropdown.
+                // Rebond was the last sub-model this screen read a node
+                // address out of, so there is nothing left here to carry over.
+                // The Maya bond/unbond forms do hold one, but the carry-over
+                // never covered them; wiring that up is a behaviour change, not
+                // a migration. The parameter stays as the pre-fill hook for the
+                // callers that replace this dropdown.
                 nodeAddress: nil
             ) {
                 selectedFunctionMemoType = lastLegacyFunctionMemoType
