@@ -147,6 +147,36 @@ final class MergeTransactionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.transactionBuilder)
     }
 
+    /// The validator's ceiling is a copy taken when the token was picked;
+    /// legacy compared against the balance read at submit. A balance that drops
+    /// while the form is open has to fail closed.
+    func testABalanceThatDroppedBelowTheEnteredAmountBlocksTheBuilder() {
+        let kuji = Self.makeThorToken("KUJI", rawBalance: Self.tenTokens)
+        let viewModel = makeViewModel(holdings: [kuji])
+        viewModel.onLoad()
+        viewModel.select(asset: viewModel.mergeableAssets[0])
+        XCTAssertNotNil(viewModel.transactionBuilder)
+
+        kuji.rawBalance = Self.oneToken
+
+        XCTAssertNil(viewModel.transactionBuilder, "10 KUJI can no longer be merged from a 1 KUJI balance")
+    }
+
+    /// A catalog entry with no contract has nowhere to deposit — legacy's gate
+    /// required a non-empty destination for the same reason.
+    func testADescriptorWithoutAContractBlocksTheBuilder() {
+        let kuji = Self.makeThorToken("KUJI")
+        let viewModel = makeViewModel(holdings: [kuji])
+        viewModel.onLoad()
+
+        viewModel.select(asset: ThorchainMergeAsset(
+            token: TokenMergeInfo(denom: "thor.kuji", wasmContractAddress: ""),
+            coin: kuji
+        ))
+
+        XCTAssertNil(viewModel.transactionBuilder)
+    }
+
     // MARK: - Selection
 
     func testSelectingATokenPrefillsTheBalanceAndResolvesTheContract() {

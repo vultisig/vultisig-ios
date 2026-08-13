@@ -96,7 +96,24 @@ final class MergeTransactionViewModel: ObservableObject, Form {
 
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, let selectedAsset else { return nil }
+
+        // Read the flags `validateErrors()` has just written rather than the
+        // published `validForm`: that aggregate lands a run-loop turn late, so
+        // a form invalidated in this turn would still answer "valid" to a tap.
+        guard form.allSatisfy({ $0.valid }), let selectedAsset else { return nil }
+
+        // The legacy gate also required a non-empty destination and compared
+        // the amount against the coin's balance read at submit — the amount
+        // validator's ceiling is a copy taken when the token was picked. Both
+        // are re-checked here so a catalog entry with no contract, or a balance
+        // that dropped while the form was open, fails closed rather than
+        // signing a deposit that goes nowhere or overdraws the token.
+        guard
+            !selectedAsset.contractAddress.isEmpty,
+            let amount = amountField.value.parseInput(),
+            amount > 0,
+            amount <= selectedAsset.coin.balanceDecimal
+        else { return nil }
 
         return MergeTransactionBuilder(
             coin: selectedAsset.coin,

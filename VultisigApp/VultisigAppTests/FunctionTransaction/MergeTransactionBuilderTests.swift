@@ -12,6 +12,7 @@
 @testable import VultisigApp
 import XCTest
 
+@MainActor
 final class MergeTransactionBuilderTests: XCTestCase {
 
     /// The catalog's own contract for `thor.kuji`, spelled out rather than
