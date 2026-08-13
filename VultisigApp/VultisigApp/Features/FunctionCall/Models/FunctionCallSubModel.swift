@@ -31,8 +31,8 @@ protocol FunctionCallSubModel {
     /// Defaults to `nil`; only the sub-models whose error the instance
     /// forwarded before this collapse override it. Kept distinct from the
     /// sub-models' own `customErrorMessage` slot so a sub-model that tracks
-    /// an internal error (e.g. unmerge) does not leak it through the
-    /// instance accessor, preserving the pre-refactor behaviour.
+    /// an internal error of its own does not leak it through the instance
+    /// accessor, preserving the pre-refactor behaviour.
     var submitErrorMessage: String? { get }
 
     /// Submit-time validity gate, threaded the active coin.
@@ -75,11 +75,6 @@ extension FunctionCallCosmosIBC: FunctionCallSubModel {
 }
 
 extension FunctionCallCosmosMerge: FunctionCallSubModel {
-    var resolvedToAddress: String? { destinationAddress }
-}
-
-extension FunctionCallCosmosUnmerge: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
     var resolvedToAddress: String? { destinationAddress }
 }
 

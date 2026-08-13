@@ -51,6 +51,23 @@ extension FunctionCallType {
                 $0.chain == coin.chain && $0.isNativeToken
             }
             return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+        case .unmerge:
+            // The merged tokens sit inside the merge contract, not the wallet,
+            // and the wasm execute is addressed by contract — so the only coin
+            // the form needs the vault to resolve is the one that pays the
+            // THORChain fee. Naming RUNE here means a vault that cannot pay
+            // lands on the shared "not in vault" error instead of opening a
+            // form whose Continue could never produce a signable transaction.
+            let nativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == .thorChain && $0.isNativeToken
+            }
+            return .unmerge(
+                coin: nativeAsset ?? coin.toCoinMeta(),
+                // The legacy form pre-selected the merge token matching the
+                // coin the user opened Functions from; nil when that coin is
+                // RUNE or is not a merge token at all.
+                denom: MergeTokenCatalog.denom(matching: coin)
+            )
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer
