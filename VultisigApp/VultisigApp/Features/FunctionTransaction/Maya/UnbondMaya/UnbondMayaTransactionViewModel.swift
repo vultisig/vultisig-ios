@@ -24,9 +24,25 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     @Published var selectedAsset: THORChainAsset?
     @Published var isLoading: Bool = false
 
+    /// An unbond ceiling, carrying the position it was measured for.
+    ///
+    /// The scope travels with the number deliberately. The node address
+    /// reaches the fetch through a debounce, so between a paste and the
+    /// refetch the address field already reads the new node while the figure
+    /// still describes the old one — and the memo is built from the field. A
+    /// bare `String?` cannot tell those apart; this can.
+    struct BondedUnitsCeiling: Equatable {
+        let nodeAddress: String
+        let asset: THORChainAsset
+        let units: String
+    }
+
     // Validation state
-    @Published var bondedLPUnits: String?
+    @Published var bondedUnitsCeiling: BondedUnitsCeiling?
     @Published var estimatedCacaoValue: Decimal?
+
+    /// The ceiling as the screen shows it, or nil while none is known.
+    var bondedLPUnits: String? { bondedUnitsCeiling?.units }
 
     // Available bonded assets for the current node
     @Published var availableBondedAssets: [THORChainAsset] = []
@@ -84,6 +100,19 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
         }
+
+        // The ceiling belongs to one node. Replacing it is debounced below;
+        // dropping it is not, because for the length of that debounce the
+        // address field already reads the newly typed node while the figure
+        // and its validator still describe the previous one.
+        addressViewModel.field.$value
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                bondedUnitsTask?.cancel()
+                clearBondedUnitsCeiling()
+            }
+            .store(in: &cancellables)
 
         // Watch for address changes - fetch bonded assets when address is valid
         addressViewModel.field.$valid
@@ -214,15 +243,18 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         // validators here is what the button press is for anyway: it is also
         // what reveals the field errors.
         //
-        // `bondedLPUnits` is required as well, and not for display: it is the
-        // ceiling itself. While it is nil the only validators on the field are
-        // the generic ones, so `revalidate()` waves through any integer at all
-        // — including a figure the pool cannot cover. Refusing to build is the
-        // conservative end of that: the memo carries the units, so signing one
-        // the ceiling never vouched for spends against a limit nobody checked.
+        // A ceiling is required as well, and it has to be the ceiling for the
+        // position this memo names. Without one the only validators left are
+        // the generic ones, which wave through any integer at all; with the
+        // wrong one, the figure was measured somewhere else. Both are asked
+        // for here rather than assumed from the fetch having run, because the
+        // memo is assembled from the live field and the fetch that refreshes
+        // the ceiling is debounced behind it.
         guard revalidate(),
-              bondedLPUnits != nil,
               let selectedAsset,
+              let ceiling = bondedUnitsCeiling,
+              ceiling.nodeAddress == addressViewModel.field.value,
+              ceiling.asset == selectedAsset,
               let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
@@ -244,7 +276,7 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     /// typed units against a pool the user is no longer unbonding from — a
     /// limit that belongs to a position they may not hold.
     private func clearBondedUnitsCeiling() {
-        bondedLPUnits = nil
+        bondedUnitsCeiling = nil
         lpUnitsField.validators = Self.baseLPUnitsValidators
     }
 
@@ -291,7 +323,11 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
                     // node or asset the user has since left would raise the
                     // limit on a position that does not have it.
                     guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
-                    bondedLPUnits = String(units)
+                    bondedUnitsCeiling = BondedUnitsCeiling(
+                        nodeAddress: nodeAddress,
+                        asset: asset,
+                        units: String(units)
+                    )
 
                     // Update validator with bonded units
                     lpUnitsField.validators = Self.baseLPUnitsValidators + [
