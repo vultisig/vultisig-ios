@@ -31,24 +31,26 @@ extension FunctionCallType {
     /// fire and the user would land on a selection with no form.
     ///
     /// - Parameters:
-    ///   - coin: the coin currently selected on the legacy screen. The vault
-    ///     already holds it, so `FunctionTransactionScreen` resolves it
-    ///     without a coin-addition step.
-    ///   - vault: resolves the coin an operation is pinned to when it is not
-    ///     the selected one.
+    ///   - coin: the coin currently selected on the legacy screen, which
+    ///     supplies the chain the operation runs on.
     ///   - nodeAddress: a node address already typed into the previous
     ///     function's form, carried over as a pre-fill.
-    func migratedTransactionType(coin: Coin, vault: Vault, nodeAddress: String?) -> FunctionTransactionType? {
+    func migratedTransactionType(coin: Coin, nodeAddress: String?) -> FunctionTransactionType? {
         switch self {
         case .leave:
-            // LEAVE is a `MsgDeposit` against the chain's native asset — the
-            // legacy screen pinned RUNE here for the same reason, though it
-            // pinned RUNE on MayaChain too. Resolving the chain's own native
-            // coin keeps THORChain's behaviour and fixes Maya's. Falling back
-            // to the selected coin preserves the legacy no-op when the vault
-            // holds no native coin for the chain.
-            let leaveCoin = vault.nativeCoin(for: coin.chain) ?? coin
-            return .leave(coin: leaveCoin.toCoinMeta(), node: nodeAddress)
+            // LEAVE is a `MsgDeposit` against the chain's own native asset —
+            // RUNE on THORChain, CACAO on MayaChain. Resolving it from the
+            // token store rather than from the vault is deliberate: a vault
+            // that does not hold the native coin then lands on
+            // `FunctionTransactionScreen`'s shared "not in vault" error
+            // instead of signing the memo against whichever token happened to
+            // be selected. The legacy screen's `ensureRuneCoin()` pinned RUNE
+            // on every chain, MayaChain included, and silently left a
+            // non-native selection in place when RUNE was absent.
+            let nativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == coin.chain && $0.isNativeToken
+            }
+            return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

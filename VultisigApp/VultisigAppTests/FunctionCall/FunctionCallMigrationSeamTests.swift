@@ -34,80 +34,82 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     private static func isMigrated(_ type: FunctionCallType) -> Bool {
-        let coin = makeRune()
-        return type.migratedTransactionType(
-            coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin]),
-            nodeAddress: nil
-        ) != nil
+        type.migratedTransactionType(coin: makeRune(), nodeAddress: nil) != nil
+    }
+
+    private func assertIsNativeAsset(
+        _ meta: CoinMeta?,
+        chain: Chain,
+        ticker: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(meta?.chain, chain, file: file, line: line)
+        XCTAssertEqual(meta?.ticker, ticker, file: file, line: line)
+        XCTAssertEqual(meta?.isNativeToken, true, file: file, line: line)
     }
 
     // MARK: - The mapping
 
     func testLeaveMapsToTheLeaveIntentOnThorchain() {
-        let coin = Self.makeRune()
-
         guard case .leave(let mappedCoin, let node)? = FunctionCallType.leave.migratedTransactionType(
-            coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin]),
+            coin: Self.makeRune(),
             nodeAddress: Self.thorNode
         ) else {
             return XCTFail("Leave must map to the leave intent")
         }
 
-        XCTAssertEqual(mappedCoin, coin.toCoinMeta())
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
         XCTAssertEqual(node, Self.thorNode)
     }
 
     func testLeaveMapsToTheLeaveIntentOnMayachain() {
-        let coin = Self.makeCacao()
-
         guard case .leave(let mappedCoin, let node)? = FunctionCallType.leave.migratedTransactionType(
-            coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin]),
+            coin: Self.makeCacao(),
             nodeAddress: nil
         ) else {
             return XCTFail("Leave must map to the leave intent")
         }
 
-        XCTAssertEqual(mappedCoin, coin.toCoinMeta())
+        assertIsNativeAsset(mappedCoin, chain: .mayaChain, ticker: "CACAO")
         XCTAssertNil(node, "A caller with no node address must leave the field for the user to fill")
     }
 
     /// The legacy screen forced RUNE before opening the LEAVE form. Selecting
     /// Leave from a TCY wallet must still deposit against RUNE, or the memo
     /// rides a token `MsgDeposit` the node never sees.
-    func testLeaveIsPinnedToTheChainsNativeCoinNotTheSelectedOne() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let tcy = FunctionCallFixture.makeTCY()
-        let vault = FunctionCallFixture.makeVault(coins: [rune, tcy])
-
+    func testLeaveIsPinnedToTheChainsNativeAssetNotTheSelectedCoin() {
         guard case .leave(let mappedCoin, _)? = FunctionCallType.leave.migratedTransactionType(
-            coin: tcy,
-            vault: vault,
+            coin: FunctionCallFixture.makeTCY(),
             nodeAddress: Self.thorNode
         ) else {
             return XCTFail("Leave must map to the leave intent")
         }
 
-        XCTAssertEqual(mappedCoin, rune.toCoinMeta())
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
     }
 
-    /// Legacy parity: `ensureRuneCoin()` was a no-op when the vault held no
-    /// RUNE, leaving the selected coin in place.
-    func testLeaveFallsBackToTheSelectedCoinWhenNoNativeCoinIsHeld() {
+    /// The intent names the native asset whether or not the vault holds it, so
+    /// a vault without RUNE hits `FunctionTransactionScreen`'s shared "not in
+    /// vault" error rather than signing LEAVE against TCY. The legacy
+    /// `ensureRuneCoin()` silently left the non-native selection in place.
+    func testLeaveTargetsTheNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
         let tcy = FunctionCallFixture.makeTCY()
         let vault = FunctionCallFixture.makeVault(coins: [tcy])
+        XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
 
         guard case .leave(let mappedCoin, _)? = FunctionCallType.leave.migratedTransactionType(
             coin: tcy,
-            vault: vault,
             nodeAddress: Self.thorNode
         ) else {
             return XCTFail("Leave must map to the leave intent")
         }
 
-        XCTAssertEqual(mappedCoin, tcy.toCoinMeta())
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
     }
 
     /// The intent's `coins` is what `needsCoinAddition` / `addCoins` read.
@@ -121,14 +123,13 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// its legacy sub-model.
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
         let stillLegacy: [FunctionCallType] = [
             .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
             .theSwitch, .addThorLP, .securedAsset, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
             XCTAssertNil(
-                type.migratedTransactionType(coin: coin, vault: vault, nodeAddress: Self.thorNode),
+                type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
                 "\(type.rawValue) has not been migrated and must keep its legacy sub-model"
             )
         }

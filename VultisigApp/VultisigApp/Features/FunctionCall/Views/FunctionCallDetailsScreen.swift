@@ -84,7 +84,6 @@ struct FunctionCallDetailsScreen: View {
             // navigation, no per-operation branch.
             if let transactionType = selectedFunctionMemoType.migratedTransactionType(
                 coin: selectedCoin,
-                vault: vault,
                 nodeAddress: currentNodeAddress
             ) {
                 selectedFunctionMemoType = lastLegacyFunctionMemoType

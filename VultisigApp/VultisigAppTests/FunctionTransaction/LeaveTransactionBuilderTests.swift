@@ -86,6 +86,10 @@ final class LeaveTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(tx.transactionType, .unspecified)
         XCTAssertFalse(tx.isStakingOperation)
         XCTAssertNil(tx.wasmContractPayload)
+        // The legacy sub-model took `gas` as a parameter; builders never do —
+        // `FunctionTransactionScreen.onVerify` fetches the chain-specific gas
+        // and copies it on before navigating, and Verify re-fetches it.
+        XCTAssertEqual(tx.gas, .zero)
         XCTAssertEqual(tx.memoFunctionDictionary["memo"], "LEAVE:\(Self.thorNode)")
         XCTAssertEqual(tx.memoFunctionDictionary["nodeAddress"], Self.thorNode)
         XCTAssertEqual(tx.memoFunctionDictionary.count, 2)
