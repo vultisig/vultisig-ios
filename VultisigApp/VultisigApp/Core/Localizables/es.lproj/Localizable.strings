@@ -430,7 +430,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "enterYourVaultsPassword" = "Ingrese la contraseña de su bóveda";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
-"erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Error";
 "errorCopy" = "Copiar";
 "errorLoadingBalance" = "Error loading balance";
@@ -520,7 +519,6 @@
 "gasOwner" = "Propietario del gas";
 "gasPrice" = "Precio del gas";
 "general" = "General";
-"generatedMemo" = "Generated Memo:";
 "German" = "Alemán";
 "getStarted" = "Comenzar";
 "github" = "GitHub";
@@ -867,8 +865,6 @@
 "minPayout" = "pago mín.";
 "mint" = "Acuñar";
 "mintCoin" = "Acuñar %@";
-"mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
-"mintTransaction" = "2. Mint secured asset transaction";
 "missingEncryptionKey" = "Falta la clave de cifrado. Inténtalo de nuevo.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
@@ -1259,7 +1255,6 @@
 "searchAsset" = "Buscar activo";
 "second" = "Segundo";
 "secure" = "Seguro";
-"Secured Assets" = "Activos asegurados";
 "secureLoaderTitle" = "Buscando dispositivos...";
 "secureModeTitle" = "SEGURO";
 "secureVault" = "Bóveda Segura";
@@ -1509,13 +1504,11 @@
 "switchBackToInternetMode" = "¿No quieres usar el modo local? Volver.";
 "switchToLocalMode" = "Cambiar a modo local";
 "systemErrorMessage" = "Error del sistema. Inténtalo de nuevo.";
-"targetAsset" = "Target Asset: %@";
 "termsOfService" = "Términos de Servicio";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Este Dispositivo";
 "ThisDeviceIs" = "Este dispositivo es el";
 "thisVaultOnly" = "Solo esta bóveda";
-"thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "Dirección de THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token de THORChain no válido. Usa THOR.{SYMBOL}, p. ej. THOR.LQDY.";

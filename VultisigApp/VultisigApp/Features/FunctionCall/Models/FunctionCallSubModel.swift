@@ -105,12 +105,6 @@ extension FunctionCallAddThorLP: FunctionCallSubModel {
     var submitErrorMessage: String? { customErrorMessage }
 }
 
-extension FunctionCallSecuredAsset: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-    var resolvedToAddress: String? { toAddress.isEmpty ? nil : toAddress }
-    var submitErrorMessage: String? { customErrorMessage }
-}
-
 extension FunctionCallWithdrawSecuredAsset: FunctionCallSubModel {
     func isFormValid(for _: Coin) -> Bool { isTheFormValid }
     var submitErrorMessage: String? { customErrorMessage }

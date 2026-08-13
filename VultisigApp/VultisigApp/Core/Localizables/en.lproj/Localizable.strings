@@ -430,7 +430,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 or 24";
 "enterYourVaultsPassword" = "Enter your vault's password";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
-"erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Error";
 "errorCopy" = "Copy";
 "errorLoadingBalance" = "Error loading balance";
@@ -520,7 +519,6 @@
 "gasOwner" = "Gas Owner";
 "gasPrice" = "Gas Price";
 "general" = "General";
-"generatedMemo" = "Generated Memo:";
 "German" = "German";
 "getStarted" = "Get started";
 "github" = "GitHub";
@@ -867,8 +865,6 @@
 "minPayout" = "min. payout";
 "mint" = "Mint";
 "mintCoin" = "Mint %@";
-"mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
-"mintTransaction" = "2. Mint secured asset transaction";
 "missingEncryptionKey" = "Encryption key is missing. Please try again.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
@@ -1259,7 +1255,6 @@
 "searchAsset" = "Search asset";
 "second" = "Second";
 "secure" = "Secure";
-"Secured Assets" = "Secured Assets";
 "secureLoaderTitle" = "Join with multiple devices,\nproceed if all are added";
 "secureModeTitle" = "SECURE";
 "secureVault" = "Secure Vault";
@@ -1509,13 +1504,11 @@
 "switchBackToInternetMode" = "Not want to use local? Switch back.";
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
-"targetAsset" = "Target Asset: %@";
 "termsOfService" = "Terms of Service";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "This Device";
 "ThisDeviceIs" = "This device is the";
 "thisVaultOnly" = "This Vault Only";
-"thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "THORChain Address";
 "thorchainCustomTokenInvalidFormat" = "Invalid THORChain token format. Use THOR.{SYMBOL}, e.g. THOR.LQDY.";
