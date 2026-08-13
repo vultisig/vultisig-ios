@@ -71,6 +71,13 @@ final class FunctionCallReachabilityTests: XCTestCase {
     /// `FunctionCallType.getDefault` drives the dropdown label and
     /// `FunctionCallInstance.getDefault` builds the form body. They are separate
     /// switches over the same chain, so nothing but a test keeps them in step.
+    ///
+    /// Coverage gap, deliberate: the sweep uses each chain's *native* ticker,
+    /// so THORChain is represented by RUNE. THORChain is also the only chain
+    /// whose default is ticker-dependent, and the two factories spell that
+    /// condition differently — a substring match on one side, an equality on
+    /// the other — so the TCY-family tickers are not covered here. Extending
+    /// the sweep to them is a follow-up, not this change.
     func testBothDefaultFactoriesAgreeForEveryMemoChain() {
         for chain in CoinAction.memoChains {
             assertDefaultFactoriesAgree(for: nativeCoin(for: chain))

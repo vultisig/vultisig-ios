@@ -14,9 +14,10 @@ extension CoinAction {
     /// list may offer cases — otherwise the button either opens an empty
     /// selector or the cases are unreachable. Pinned by tests.
     ///
-    /// The THORChain chainnet/stagenet forks are deliberately absent: every
-    /// function sub-model matches `.thorChain` exactly, so those forks reached
-    /// only the Custom form with an empty token list, which can never validate.
+    /// The THORChain chainnet/stagenet forks are deliberately absent: they had
+    /// no selectable functions at all, and the Custom form they fell back to
+    /// builds its token list from `.thorChain` / `.mayaChain` only — so the
+    /// fork's form came up empty and could never validate.
     static var memoChains: [Chain] = [
         .thorChain, .mayaChain, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains
