@@ -23,6 +23,12 @@ final class ReceiptShareRedemptionTests: XCTestCase {
     /// The same position in receipt base units, at the 8 decimals bRUNE, ybRUNE,
     /// RUJI and sRUJI all share.
     private let stakedUnits = Decimal(string: "200274000000")!
+    /// A real RUJI compounded position: the card's RUJI-denominated value and the
+    /// sRUJI share balance behind it. They differ because a share is worth more
+    /// than 1 RUJI — which is exactly what makes this arm a different conversion
+    /// from bRUNE's.
+    private let rujiStaked = Decimal(string: "140.64866515")!
+    private let rujiShares = Decimal(string: "138.55943656")!
 
     // MARK: - The conversion
 
@@ -204,6 +210,136 @@ final class ReceiptShareRedemptionTests: XCTestCase {
         XCTAssertNil(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
     }
 
+    // MARK: - RUJI auto-compound / sRUJI
+    //
+    // The other arm, and not the same shape: this card renders what the receipt
+    // is WORTH in RUJI, so the typed amount is priced in RUJI and the share count
+    // follows from the ratio between the two balances the sheet was opened with.
+    // The bRUNE arm's amount is already a share count.
+
+    /// ⚠️ The regression test for the RUJI arm. Verified to FAIL on the parent
+    /// commit, where the same inputs redeem **6789412391** shares —
+    /// `Int(49.99997) = 49`, so 49% of the share balance instead of the shares
+    /// 70.3243 RUJI is worth. That is ~1.4 RUJI missing from a 140 RUJI position.
+    func testTheCompoundedRujiRedemptionSpendsTheSharesTheTypedAmountIsWorth() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = makeRujiViewModel()
+        type("70.3243", into: viewModel)
+
+        XCTAssertEqual(try fundedUnits(of: viewModel), "6927968618")
+    }
+
+    /// ⚠️ Also FAILS on the parent commit, where `withdrawDisplayAmount` is `nil`
+    /// for this builder and the verify screen names no figure at all.
+    ///
+    /// The figure is a projection at the ratio the sheet was showing, quantised
+    /// to whole shares — so it tracks the typed amount to within one share's
+    /// worth and never exceeds it.
+    func testTheCompoundedRujiRedemptionQuotesTheRujiThatWillBePaidOut() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = TestStore.makeVault()
+
+        let viewModel = makeRujiViewModel(vault: vault)
+        type("70.3243", into: viewModel)
+        let builder = try XCTUnwrap(viewModel.transactionBuilder)
+
+        let typed = Decimal(string: "70.3243")!
+        let quoted = try XCTUnwrap(builder.withdrawDisplayAmount)
+        XCTAssertLessThanOrEqual(quoted, typed, "a redemption must never quote more than was asked for")
+        XCTAssertEqual(
+            NSDecimalNumber(decimal: quoted).doubleValue,
+            NSDecimalNumber(decimal: typed).doubleValue,
+            accuracy: 0.0000001
+        )
+
+        // And it reaches the screen that approves it. The withdrawal provider
+        // keys on the builder-supplied figure rather than on TCY specifically,
+        // so a redemption that carries one is described by it too.
+        let hero = try XCTUnwrap(TransactionHeroResolver.hero(
+            on: .functionCallVerify,
+            for: .initiating(builder.buildSendTransaction(vault: vault))
+        ))
+        guard case .send(let title, let coin) = hero else {
+            return XCTFail("a redemption should render as a resolved single-sided amount")
+        }
+        XCTAssertEqual(coin.ticker, "RUJI")
+        XCTAssertNotEqual(coin.amount, "0")
+        XCTAssertTrue(coin.amount.contains("70.32429999"), "rendered \(coin.amount)")
+        XCTAssertEqual(title, "quotedWithdrawalVerifyTitle".localized)
+    }
+
+    /// The wire truth is untouched: the redemption still carries no amount of its
+    /// own, because the funds are the instruction.
+    func testTheCompoundedRujiRedemptionStillCarriesNoAmountOnTheWire() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = makeRujiViewModel()
+        type("70.3243", into: viewModel)
+        let builder = try XCTUnwrap(viewModel.transactionBuilder)
+
+        XCTAssertEqual(builder.amount, "0")
+        XCTAssertEqual(builder.memo, "")
+    }
+
+    /// ⚠️ Asking for all but a sliver must leave that sliver staked. On the
+    /// parent this redeemed 13717384219 shares — `Int(99.99)` — which also left
+    /// the position open, but 138556 shares further from what was asked for.
+    func testACompoundedRujiPartialRedemptionLeavesThePositionOpen() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = makeRujiViewModel()
+        type("140.6486", into: viewModel)
+        let builder = try XCTUnwrap(viewModel.transactionBuilder as? RUJILiquidUnbondTransactionBuilder)
+
+        XCTAssertEqual(try fundedUnits(of: viewModel), "13855937237")
+        XCTAssertLessThan(builder.redeemedUnits, builder.heldUnits)
+    }
+
+    /// A full exit redeems every share, pinned rather than derived — the property
+    /// the old `percentage == 100` path had for free.
+    func testACompoundedRujiFullExitRedeemsEveryShare() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = makeRujiViewModel()
+        viewModel.setupAmountField()          // MAX — what the sheet opens on
+        viewModel.amountField.value = "140.64866515"
+        viewModel.validForm = true
+
+        XCTAssertEqual(try fundedUnits(of: viewModel), "13855943656")
+    }
+
+    /// The bonded RUJI position is exact already and must stay untouched: its
+    /// `withdraw:<asset>:<raw>` memo carries an ABSOLUTE amount, so none of this
+    /// applies to it. `isAutocompound` is the only thing separating the two, and
+    /// both arrive on the RUJI coin.
+    func testTheBondedRujiWithdrawalStillTakesTheAbsoluteAmountPath() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = UnstakeTransactionViewModel(
+            coin: makeCoin(TokensStore.ruji),
+            vault: TestStore.makeVault(),
+            isAutocompound: false,
+            availableToUnstake: rujiStaked
+        )
+        viewModel.availableAmount = rujiStaked
+        // The share balance is set too, so a builder that reached for it instead
+        // of the bonded path would be caught rather than merely failing to build.
+        viewModel.autocompoundBalance = rujiShares
+        type("70.3243", into: viewModel)
+
+        let builder = try XCTUnwrap(viewModel.transactionBuilder)
+        XCTAssertTrue(builder is RUJIUnstakeTransactionBuilder)
+        XCTAssertTrue(builder.memo.hasPrefix("withdraw:x/ruji:"), "built \(builder.memo)")
+        XCTAssertTrue(try XCTUnwrap(builder.wasmContractPayload).coins.isEmpty)
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ asset: CoinMeta) -> Coin {
@@ -248,6 +384,21 @@ final class ReceiptShareRedemptionTests: XCTestCase {
     private func fundedUnits(of viewModel: UnstakeTransactionViewModel) throws -> String {
         let payload = try XCTUnwrap(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
         return try XCTUnwrap(payload.coins.first).amount
+    }
+
+    /// The RUJI compounded sheet as the DeFi card opens it: the ceiling is the
+    /// RUJI the position is worth, and the thing being spent is the sRUJI share
+    /// balance. A share is worth more than 1 RUJI, so the two differ.
+    private func makeRujiViewModel(vault: Vault? = nil) -> UnstakeTransactionViewModel {
+        let viewModel = UnstakeTransactionViewModel(
+            coin: makeCoin(TokensStore.ruji),
+            vault: vault ?? TestStore.makeVault(),
+            isAutocompound: true,
+            availableToUnstake: rujiStaked
+        )
+        viewModel.availableAmount = rujiStaked
+        viewModel.autocompoundBalance = rujiShares
+        return viewModel
     }
 
     private func redeemedBRuneUnits(typing amount: String) throws -> String {

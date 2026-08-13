@@ -233,45 +233,6 @@ final class WithdrawBasisPointsTests: XCTestCase {
         XCTAssertNil(viewModel.transactionBuilder)
     }
 
-    /// ⚠️ RUJI-compound is still on the whole-percentage expression, and is the
-    /// last arm that is. If someone converts it, this is the test that should be
-    /// updated rather than silently passing.
-    ///
-    /// It is NOT a case for basis points: a `liquid.unbond` is funded with an
-    /// absolute count of receipt shares, so it can express the typed amount
-    /// exactly and has no ten-thousandth to round to. `ReceiptShareRedemption` is
-    /// the conversion it wants, and its bRUNE sibling already uses it — which is
-    /// why bRUNE has left this test.
-    ///
-    /// The redeemed units are the assertion because the unbond carries no memo —
-    /// the fraction rides in the wasm execute's funds.
-    func testTheRujiCompoundSiblingStillBuildsFromAWholePercentage() throws {
-        let token = try TestStore.installInMemoryContainer()
-        defer { TestStore.restore(token) }
-
-        // RUJI alone now: this commit moves bRUNE off the whole-percentage path,
-        // so the sibling it used to share this assertion with no longer belongs
-        // here. One fixture, so one vault key is enough.
-        let viewModel = UnstakeTransactionViewModel(
-            coin: Coin(
-                asset: TokensStore.ruji,
-                address: "thor1fixturereceiptvaultaddress0000000000",
-                hexPublicKey: "02" + String(repeating: "00", count: 32)
-            ),
-            vault: TestStore.makeVault(pubKey: "test-pub-ruji-compound"),
-            isAutocompound: true,
-            availableToUnstake: staked
-        )
-        viewModel.availableAmount = staked
-        viewModel.autocompoundBalance = staked
-        type("1002.73", into: viewModel)
-
-        let payload = try XCTUnwrap(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
-        // Int(50.0679) = 50 — the flooring still in place here. Converting the
-        // typed amount straight to shares would redeem 100273000000 instead.
-        XCTAssertEqual(payload.coins.first?.amount, "100137000000")
-    }
-
     /// The bonded RUJI position is exact already and must stay untouched: its
     /// `withdraw:<asset>:<raw>` memo carries an ABSOLUTE amount, so there is no
     /// fraction to quantise and nothing here applies to it.

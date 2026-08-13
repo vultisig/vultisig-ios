@@ -209,9 +209,22 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             // `account.withdraw`. Both arrive here on the RUJI coin because the
             // compounded card maps sRUJI back to its bond coin.
             if isAutocompound {
+                // The redemption spends receipt shares, and unlike TCY/bRUNE the
+                // share balance is not what bounds the amount field — so nothing
+                // else stops a zero here. A zero means the read is still in flight,
+                // failed, or the position is empty; all three would build a wasm
+                // execute carrying no funds.
+                guard autocompoundBalance > 0 else { return nil }
+                // Carries the typed amount rather than a whole percentage of the
+                // position, for the reason its bRUNE sibling does — the
+                // redemption is FUNDED with an absolute share count. Here the
+                // amount is priced in RUJI and the funds are sRUJI shares, so
+                // `availableAmount` is what converts between them: it is the RUJI
+                // the shares are worth, read at the same moment as the shares.
                 return RUJILiquidUnbondTransactionBuilder(
                     coin: coin,
-                    percentage: Int(resolvedPercentage),
+                    withdrawAmount: amountField.value.toDecimal(),
+                    stakedAmount: availableAmount,
                     receiptShares: autocompoundBalance,
                     sendMaxAmount: isMaxAmount
                 )
@@ -301,7 +314,6 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     /// them — so there is no ten-thousandth to address and no cliff at one basis
     /// point. Their floor is one receipt base unit, enforced by the builder
     /// refusing to fund a redemption with nothing (`ReceiptShareRedemption`).
-    /// RUJI-compound is still on the whole-percentage expression.
     private var withdrawsInBasisPoints: Bool {
         ["TCY", "CACAO"].contains(coin.ticker.uppercased())
     }
