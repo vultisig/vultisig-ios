@@ -31,6 +31,14 @@ final class FunctionTransactionKindTests: XCTestCase {
     /// fixed 1-CACAO placeholder — or whose figure is denominated in a coin the
     /// single-coin hero cannot name. Naming those operations would put a false
     /// number under a true verb, which is worse than the generic header they keep.
+    ///
+    /// ⚠️ **What this table cannot assert is the half that mattered most.** A
+    /// builder's kind being right is only half of "does the screen tell the truth";
+    /// the other half is whether the builder's own `coin` and `amount` name the
+    /// thing that verb acts on, and no assertion can read that. It was decided per
+    /// builder, and each decision is written at the `functionKind` it produced —
+    /// mint versus redeem is the clearest case of the two answers differing on
+    /// builders that otherwise look identical.
     func testEveryBuilderNamesTheOperationItPerforms() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
@@ -102,8 +110,10 @@ final class FunctionTransactionKindTests: XCTestCase {
             ("RUJIWithdrawRewards", RUJIWithdrawRewardsTransactionBuilder(
                 coin: coin, withdrawAmount: "1", sendMaxAmount: false), .claimRewards),
 
-            // yVault
-            ("Mint", MintTransactionBuilder(coin: coin, amount: "1", sendMaxAmount: false), .mint),
+            // yVault. ⚠️ The asymmetry is the point: redeem's `coin` is the
+            // receipt being burned, so verb and figure agree, while mint's is the
+            // coin being SPENT to mint a receipt whose quantity the transaction
+            // never learns.
             ("Redeem", RedeemTransactionBuilder(
                 coin: coin, amount: "1", sendMaxAmount: false, slippage: 0.01), .redeem),
 
@@ -133,6 +143,7 @@ final class FunctionTransactionKindTests: XCTestCase {
                 coin: coin, amount: "0.2", poolAddress: "pool", memo: "w"), nil),
             ("SolanaWithdraw", SolanaWithdrawTransactionBuilder(
                 coin: coin, stakeAccount: "stake", amount: "1"), nil),
+            ("Mint", MintTransactionBuilder(coin: coin, amount: "1", sendMaxAmount: false), nil),
             ("CancelLimitOrder", CancelLimitOrderTransactionBuilder(
                 coin: coin, request: cancelRequest, l1Destination: nil), nil)
         ]

@@ -21,8 +21,16 @@ struct MintTransactionBuilder: TransactionBuilder {
         return micro.uint64Value
     }
 
-    var functionKind: FunctionTransactionKind? { .mint }
-
+    /// ⚠️ **Deliberately unnamed**, and asymmetric with the redeem side on
+    /// purpose. `coin` here is what is SPENT — the RUNE or TCY going into the
+    /// vault — while what is minted is the yCoin receipt, in a quantity this
+    /// transaction does not know. The hero names one coin and one figure, so
+    /// `.mint` would read "You're minting 10 RUNE" over a deposit of 10 RUNE that
+    /// mints an unstated amount of yRUNE. "You're sending 10 RUNE" is at least
+    /// true about the money leaving.
+    ///
+    /// Redeem is the mirror image and IS named: there `coin` is the yCoin being
+    /// burned, so the verb and the figure agree.
     var memo: String {
         "yVault-\(coin.ticker.uppercased())-deposit"
     }

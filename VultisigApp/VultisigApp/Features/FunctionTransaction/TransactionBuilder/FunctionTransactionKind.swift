@@ -26,6 +26,25 @@ import Foundation
 /// One verb per operation, not per asset: a TCY stake, a RUJI stake and a TON
 /// pool deposit are all "staking", and giving each its own copy would be twelve
 /// more strings saying the same thing in eight locales apiece.
+///
+/// ⚠️ **Not every verb has a live producer today, and that is a recorded state
+/// rather than an oversight.** The vocabulary is the specification; what is
+/// missing is a figure or a route, not the word:
+///
+/// - `.claimRewards` — both claim builders name it, and both are suppressed: a
+///   Cosmos `MsgWithdrawDelegatorReward` carries no Coin, and RUJI pays its
+///   revenue in a different asset from the one the builder holds.
+/// - `.undelegate` / `.redelegate` — only Cosmos builders carry them, and Cosmos
+///   staking is verified on `CosmosStakingVerifySummaryView`, which renders its
+///   own headline and never asks the resolver.
+/// - `.removeLiquidity` — an LP withdrawal's `amount` is the attach dust, and the
+///   liquidity itself is a share of a two-sided position that one coin cannot
+///   state.
+/// - `.mint` — the yVault deposit spends one coin and mints another; the hero
+///   names one.
+///
+/// Each of those is a note on the builder that would use it. Deleting the cases
+/// would only mean re-adding them the day the figure arrives.
 enum FunctionTransactionKind: String, CaseIterable {
     case stake
     case unstake
