@@ -22,8 +22,6 @@ struct FunctionCallContentView: View {
             BondMayaFormView(model: model, coin: selectedCoin)
         case .unbondMaya(let model):
             UnbondMayaFormView(model: model, coin: selectedCoin)
-        case .leave(let model):
-            LeaveFormView(model: model, selectedCoin: $selectedCoin)
         case .custom(let model):
             CustomFormView(model: model, selectedCoin: $selectedCoin)
         case .vote(let model):

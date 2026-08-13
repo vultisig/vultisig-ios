@@ -11,6 +11,12 @@ struct FunctionCallDetailsScreen: View {
     @ObservedObject var vault: Vault
 
     @State private var selectedFunctionMemoType: FunctionCallType = .custom
+    /// The last selection that produced a form on this screen. A migrated
+    /// function has its own screen, so the selector is restored to this after
+    /// routing out — otherwise the dropdown would name one function over
+    /// another function's form, and re-picking the migrated one would publish
+    /// no change at all.
+    @State private var lastLegacyFunctionMemoType: FunctionCallType = .custom
     @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
@@ -72,6 +78,23 @@ struct FunctionCallDetailsScreen: View {
             guard hasCompletedInitialSetup else { return }
             guard let fnInstance = fnCallInstance else { return }
             let currentNodeAddress = extractNodeAddress(from: fnInstance)
+
+            // Operations already on the `FunctionTransaction` architecture have
+            // no sub-model to build here — they own a screen. One mapping, one
+            // navigation, no per-operation branch.
+            if let transactionType = selectedFunctionMemoType.migratedTransactionType(
+                coin: selectedCoin,
+                vault: vault,
+                nodeAddress: currentNodeAddress
+            ) {
+                selectedFunctionMemoType = lastLegacyFunctionMemoType
+                router.navigate(
+                    to: FunctionCallRoute.functionTransaction(vault: vault, transactionType: transactionType)
+                )
+                return
+            }
+
+            lastLegacyFunctionMemoType = selectedFunctionMemoType
             switch selectedFunctionMemoType {
             case .rebond:
                 // Ensure RUNE token is selected for REBOND operations on THORChain.
@@ -111,15 +134,10 @@ struct FunctionCallDetailsScreen: View {
                 }
 
             case .leave:
-                // Ensure RUNE token is selected for LEAVE operations on THORChain
-                ensureRuneCoin()
-                let leaveInstance = FunctionCallLeave()
-
-                if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
-                    leaveInstance.nodeAddress = nodeAddress
-                }
-
-                fnCallInstance = .leave(leaveInstance)
+                // Migrated to `Features/FunctionTransaction/` — the route-out
+                // above already handled it. Listed only to keep this switch
+                // exhaustive; each migration adds its case name here.
+                break
             case .custom:
                 fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
             case .vote:
@@ -187,8 +205,6 @@ struct FunctionCallDetailsScreen: View {
         switch instance {
         case .rebond(let rebond):
             return rebond.nodeAddress
-        case .leave(let leave):
-            return leave.nodeAddress
         default:
             return nil
         }
@@ -234,6 +250,7 @@ private extension FunctionCallDetailsScreen {
 
     func setupForm() {
         self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
+        self.lastLegacyFunctionMemoType = self.selectedFunctionMemoType
         self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
         self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
         DispatchQueue.main.async {

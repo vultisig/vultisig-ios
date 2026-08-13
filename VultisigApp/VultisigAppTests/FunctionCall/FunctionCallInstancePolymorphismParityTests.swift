@@ -114,24 +114,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
     }
 
-    func testLeaveParity() {
-        let model = FunctionCallLeave()
-        model.nodeAddress = "thor1abc"
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let instance = FunctionCallInstance.leave(model)
-
-        let tx = instance.toSendTransaction(coin: coin, vault: vault, gas: 100)
-        XCTAssertEqual(tx.memo, "LEAVE:thor1abc")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.amount, "0")
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(instance.toAddress)
-        XCTAssertEqual(instance.amount, .zero)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 100)
-    }
-
     func testCustomParity() {
         let coin = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [coin])

@@ -240,6 +240,17 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .leave(let coin, let node):
+                resolvingCoin(coinMeta: coin) { coin in
+                    LeaveTransactionScreen(
+                        viewModel: LeaveTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialNodeAddress: node
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)

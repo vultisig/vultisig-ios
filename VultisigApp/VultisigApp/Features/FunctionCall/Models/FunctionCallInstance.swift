@@ -12,7 +12,6 @@ enum FunctionCallInstance {
     case rebond(FunctionCallReBond)
     case bondMaya(FunctionCallBondMayaChain)
     case unbondMaya(FunctionCallUnbondMayaChain)
-    case leave(FunctionCallLeave)
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
@@ -32,7 +31,6 @@ enum FunctionCallInstance {
         case .rebond(let memo): return memo
         case .bondMaya(let memo): return memo
         case .unbondMaya(let memo): return memo
-        case .leave(let memo): return memo
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo

@@ -72,10 +72,6 @@ extension FunctionCallUnbondMayaChain: FunctionCallSubModel {
     func isFormValid(for _: Coin) -> Bool { isTheFormValid }
 }
 
-extension FunctionCallLeave: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-}
-
 extension FunctionCallCustom: FunctionCallSubModel {}
 
 extension FunctionCallVote: FunctionCallSubModel {
