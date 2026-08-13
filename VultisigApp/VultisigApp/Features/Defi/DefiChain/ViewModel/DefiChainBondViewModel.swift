@@ -51,10 +51,10 @@ final class DefiChainBondViewModel: ObservableObject {
     private let interactor: BondInteractor?
     private let chain: Chain
 
-    init(vault: Vault, chain: Chain) {
+    init(vault: Vault, chain: Chain, interactor: BondInteractor? = nil) {
         self.vault = vault
         self.chain = chain
-        self.interactor = DefiInteractorResolver.bondInteractor(for: chain)
+        self.interactor = interactor ?? DefiInteractorResolver.bondInteractor(for: chain)
     }
 
     func update(vault: Vault) {
