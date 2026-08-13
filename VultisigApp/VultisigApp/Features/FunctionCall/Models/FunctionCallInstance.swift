@@ -12,7 +12,6 @@ enum FunctionCallInstance {
     case rebond(FunctionCallReBond)
     case bondMaya(FunctionCallBondMayaChain)
     case unbondMaya(FunctionCallUnbondMayaChain)
-    case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
     case merge(FunctionCallCosmosMerge)
@@ -31,7 +30,6 @@ enum FunctionCallInstance {
         case .rebond(let memo): return memo
         case .bondMaya(let memo): return memo
         case .unbondMaya(let memo): return memo
-        case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
         case .merge(let memo): return memo
@@ -74,26 +72,46 @@ enum FunctionCallInstance {
         model.submitErrorMessage
     }
 
+    /// The sub-model the legacy screen opens on when no operation was
+    /// preselected, or `nil` when that chain's default has been migrated and
+    /// has no legacy form left to build.
+    ///
+    /// Optional because the answer genuinely can be "none": `FunctionCallType
+    /// .getDefault` falls back to the raw-memo operation for every chain
+    /// without an arm of its own, and that operation now lives on
+    /// `FunctionTransactionScreen`. Returning some other sub-model to keep the
+    /// signature total would open a form for an operation the chain does not
+    /// offer — the defect class the action list was built to end.
+    ///
+    /// No caller reaches this path: every route into the legacy screen carries
+    /// a preselected operation. It is kept in step with `FunctionCallType
+    /// .getDefault` so the two cannot silently diverge before the legacy shell
+    /// is deleted.
     @MainActor
-    static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance {
-        switch coin.chain {
-        case .thorChain:
-            if coin.ticker.uppercased() == "TCY" {
-                return .custom(FunctionCallCustom(coin: coin, vault: vault))
-            }
+    static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance? {
+        let type = FunctionCallType.getDefault(for: coin)
+        // Derived from the type factory rather than re-deriving the chain
+        // mapping. The two used to answer the same question with different
+        // relations — one matched any THORChain ticker *containing* "TCY",
+        // the other matched it exactly — so a holder of a TCY wrapper was sent
+        // to one operation and handed another's form.
+        guard type.migratedTransactionType(coin: coin, nodeAddress: nil) == nil else { return nil }
+
+        switch type {
+        case .rebond:
             return .rebond(FunctionCallReBond())
-        case .mayaChain:
+        case .bondMaya:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
-        case .dydx:
+        case .vote:
             return .vote(FunctionCallVote())
-        case .gaiaChain:
+        case .theSwitch:
             return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
-        case .kujira:
+        case .cosmosIBC:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+        case .addThorLP:
             return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))
         default:
-            return .custom(FunctionCallCustom(coin: coin, vault: vault))
+            return nil
         }
     }
 

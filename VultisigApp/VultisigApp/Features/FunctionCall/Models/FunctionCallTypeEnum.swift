@@ -102,8 +102,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             // so the selector opened empty over whatever form the default
             // happened to build. Custom is the operation they support — the
             // same `MsgDeposit` mainnet takes — so naming it here makes the
-            // button lead somewhere. `FunctionCallCustom` had to learn these
-            // chains too, or the form it opens could never be submitted.
+            // button lead somewhere. The form's asset predicate has to know
+            // these chains too, or the form it opens could never be submitted.
             return [.custom]
 
         default:
@@ -114,7 +114,12 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
-            if coin.ticker.contains("TCY") {
+            // The same predicate the raw-memo form's own asset picker uses, so
+            // the operation this routes a holder to can always offer the coin
+            // it routed them for. Open-coded here as a case-sensitive
+            // `contains("TCY")`, it disagreed with the form on both the
+            // wrappers and their casing.
+            if CustomMemoAssets.isTcyFamily(ticker: coin.ticker) {
                 return .custom
             }
             return .rebond
