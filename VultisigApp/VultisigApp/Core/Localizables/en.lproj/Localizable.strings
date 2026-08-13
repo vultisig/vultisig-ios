@@ -65,9 +65,9 @@
 "apy" = "APY";
 "arguments" = "Arguments";
 "asset" = "Asset";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ not found in vault )";
 "assets" = "Assets";
+"assetsLoadFailed" = "Couldn't load assets. Check your connection and try again.";
 "asymmetricDeposit" = "Asymmetric Deposit";
 "asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
 "atLeastOneDevice" = "At least one device";
@@ -134,7 +134,9 @@
 "biometricsFastSigning" = "Biometrics Fast Signing";
 "bond" = "Bond";
 "Bond" = "Bond";
+"bondableAssetsLoadFailed" = "Couldn't load your bondable LP positions. Check your connection and try again.";
 "bonded" = "Bonded";
+"bondedAssetsLoadFailed" = "Couldn't load the assets bonded to this node. Check your connection and try again.";
 "bondedCoin" = "Total Bonded %@";
 "bondedLPUnits" = "Bonded LP Units";
 "bondedXCoin" = "Bonded: %@";
@@ -863,7 +865,6 @@
 "lpUnits" = "LP Units";
 "lpUnitsCannotBeZero" = "LP units cannot be zero";
 "lpUnitsExceeded" = "Exceeds available LP units (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "I have made a vault backup to restore later";
 "makeMoveVec" = "Make Move Vec";
 "makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
@@ -930,6 +931,7 @@
 "noActiveChainsFound" = "No active chains found";
 "noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\n\nEach extra chain increases the time to generate your vault and possibility of a timeout.";
 "noBarcodesFound" = "No barcodes found";
+"noBondableLPPositions" = "You have no unbonded LP units in a bondable pool.";
 "noBondedAssetsOnNode" = "No bonded assets found on this node";
 "noCameraFound" = "No linked camera found.";
 "noCameraPermissionError" = "Camera permission denied.\n\nPlease enable it in the Settings.";
@@ -1622,6 +1624,7 @@
 "unableToVerifyGasTokenError" = "Unable to verify gas token balance. Please try again.";
 "unbond" = "Unbond";
 "Unbond" = "Unbond";
+"unbondFromAnotherNode" = "Unbond from Another Node";
 "unbondRune" = "Unbond RUNE";
 "unknown" = "";
 "unlimited" = "Unlimited";

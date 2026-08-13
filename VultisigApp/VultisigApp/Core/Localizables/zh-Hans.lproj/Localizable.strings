@@ -65,9 +65,9 @@
 "apy" = "年化收益率";
 "arguments" = "参数";
 "asset" = "资产";
-"assetLabel" = "资产";
 "assetNotFoundInVault" = "( %@ 在保险库中未找到 )";
 "assets" = "资产";
+"assetsLoadFailed" = "无法加载资产。请检查网络连接后重试。";
 "asymmetricDeposit" = "非对称存款";
 "asymmetricDepositInfo" = "您可以只存入 CACAO 或仅存入该资产。Maya 将自动平衡您的仓位。";
 "atLeastOneDevice" = "至少一台 Vultisig 设备";
@@ -134,7 +134,9 @@
 "biometricsFastSigning" = "生物识别快速签名";
 "bond" = "绑定";
 "Bond" = "绑定";
+"bondableAssetsLoadFailed" = "无法加载您可绑定的 LP 仓位。请检查网络连接后重试。";
 "bonded" = "已绑定";
+"bondedAssetsLoadFailed" = "无法加载绑定到此节点的资产。请检查网络连接后重试。";
 "bondedCoin" = "总绑定 %@";
 "bondedLPUnits" = "已绑定 LP 单位";
 "bondedXCoin" = "已绑定：%@";
@@ -863,7 +865,6 @@
 "lpUnits" = "LP 单位";
 "lpUnitsCannotBeZero" = "LP 单位不能为零";
 "lpUnitsExceeded" = "超过可用 LP 单位 (%@)";
-"lpUnitsLabel" = "LP单位";
 "madeVaultBackupPrompt" = "我已进行保险库备份以便日后恢复";
 "makeMoveVec" = "创建 Move 向量";
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
@@ -930,6 +931,7 @@
 "noActiveChainsFound" = "未找到活跃链";
 "noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
 "noBarcodesFound" = "未找到条形码";
+"noBondableLPPositions" = "您在可绑定的资金池中没有未绑定的 LP 单位。";
 "noBondedAssetsOnNode" = "此节点上未找到已绑定资产";
 "noCameraFound" = "未找到关联的相机";
 "noCameraPermissionError" = "相机权限被拒绝。\n\n请在设置中启用它";
@@ -1622,6 +1624,7 @@
 "unableToVerifyGasTokenError" = "无法验证燃料代币余额。请重试";
 "unbond" = "解除绑定";
 "Unbond" = "解绑";
+"unbondFromAnotherNode" = "从其他节点解除绑定";
 "unbondRune" = "解除绑定 RUNE";
 "unknown" = "未知";
 "unlimited" = "无限制";

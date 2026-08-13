@@ -25,6 +25,13 @@ struct BondMayaTransactionScreen: View {
             title: "bond".localized,
             onContinue: onContinue
         ) {
+            if let reason = viewModel.assetsUnavailableReason {
+                FormLoadFailureNote(
+                    messageKey: reason,
+                    onRetry: viewModel.canRetryLoadingAssets ? { viewModel.loadAssets() } : nil
+                )
+            }
+
             FormExpandableSection(
                 title: "address".localized,
                 isValid: viewModel.addressViewModel.field.valid,

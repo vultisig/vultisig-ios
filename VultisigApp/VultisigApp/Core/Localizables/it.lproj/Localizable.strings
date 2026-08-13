@@ -65,9 +65,9 @@
 "apy" = "APY";
 "arguments" = "Argomenti";
 "asset" = "Risorsa";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ non trovato nel vault )";
 "assets" = "Asset";
+"assetsLoadFailed" = "Impossibile caricare gli asset. Controlla la connessione e riprova.";
 "asymmetricDeposit" = "Deposito asimmetrico";
 "asymmetricDepositInfo" = "Puoi depositare solo CACAO o solo l'asset. Maya bilancerà automaticamente la tua posizione.";
 "atLeastOneDevice" = "Almeno un dispositivo";
@@ -134,7 +134,9 @@
 "biometricsFastSigning" = "Biometria Firma rapida";
 "bond" = "Vincola";
 "Bond" = "Bond";
+"bondableAssetsLoadFailed" = "Impossibile caricare le tue posizioni LP vincolabili. Controlla la connessione e riprova.";
 "bonded" = "Vincolato";
+"bondedAssetsLoadFailed" = "Impossibile caricare gli asset vincolati a questo nodo. Controlla la connessione e riprova.";
 "bondedCoin" = "Totale Vincolato %@";
 "bondedLPUnits" = "Unità LP in Bond";
 "bondedXCoin" = "Vincolato: %@";
@@ -863,7 +865,6 @@
 "lpUnits" = "Unità LP";
 "lpUnitsCannotBeZero" = "Le unità LP non possono essere zero";
 "lpUnitsExceeded" = "Supera le unità LP disponibili (%@)";
-"lpUnitsLabel" = "Unità LP";
 "madeVaultBackupPrompt" = "Ho fatto un backup del caveau da ripristinare in seguito";
 "makeMoveVec" = "Crea Move Vec";
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
@@ -930,6 +931,7 @@
 "noActiveChainsFound" = "Nessuna chain attiva trovata";
 "noActiveChainsFoundSubtitle" = "Non abbiamo rilevato alcun asset su questa seed phrase.\n\nOgni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di timeout.";
 "noBarcodesFound" = "Nessun codice a barre trovato";
+"noBondableLPPositions" = "Non hai unità LP svincolate in un pool vincolabile.";
 "noBondedAssetsOnNode" = "Nessun asset in bond trovato su questo nodo";
 "noCameraFound" = "Nessuna fotocamera collegata trovata.";
 "noCameraPermissionError" = "Autorizzazione della fotocamera negata.\n\nPer favore, abilitala nelle Impostazioni.";
@@ -1622,6 +1624,7 @@
 "unableToVerifyGasTokenError" = "Impossibile verificare il saldo del token gas. Riprova.";
 "unbond" = "Svincola";
 "Unbond" = "Unbond";
+"unbondFromAnotherNode" = "Svincola da un Altro Nodo";
 "unbondRune" = "Scollega RUNE";
 "unknown" = "Sconosciuto";
 "unlimited" = "Illimitato";

@@ -65,9 +65,9 @@
 "apy" = "APY";
 "arguments" = "Argumenti";
 "asset" = "Imovina";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ nije pronađen u vaultu )";
 "assets" = "Imovine";
+"assetsLoadFailed" = "Nije moguće učitati sredstva. Provjerite vezu i pokušajte ponovo.";
 "asymmetricDeposit" = "Asimetrični polog";
 "asymmetricDepositInfo" = "Možete položiti samo CACAO ili samo imovinu. Maya će automatski uravnotežiti vašu poziciju.";
 "atLeastOneDevice" = "Barem jedan uređaj";
@@ -134,7 +134,9 @@
 "biometricsFastSigning" = "Biometrija brzo potpisivanje";
 "bond" = "Veži";
 "Bond" = "Bond";
+"bondableAssetsLoadFailed" = "Nije moguće učitati vaše LP pozicije koje se mogu bondati. Provjerite vezu i pokušajte ponovo.";
 "bonded" = "Vezano";
+"bondedAssetsLoadFailed" = "Nije moguće učitati sredstva bondana na ovaj čvor. Provjerite vezu i pokušajte ponovo.";
 "bondedCoin" = "Ukupno Vezani %@";
 "bondedLPUnits" = "LP Jedinice u Bondu";
 "bondedXCoin" = "Vezano: %@";
@@ -863,7 +865,6 @@
 "lpUnits" = "LP jedinice";
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
 "lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta za kasniju obnovu";
 "makeMoveVec" = "Stvori Move Vec";
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
@@ -930,6 +931,7 @@
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
 "noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme potrebno za generiranje vašeg vaulta i mogućnost timeouta.";
 "noBarcodesFound" = "Nisu pronađeni barkodovi";
+"noBondableLPPositions" = "Nemate nebondanih LP jedinica u pool-u koji se može bondati.";
 "noBondedAssetsOnNode" = "Nisu pronađena bondana sredstva na ovom čvoru";
 "noCameraFound" = "Nije pronađena povezana kamera.";
 "noCameraPermissionError" = "Dopuštenje za kameru je odbijeno.\n\nMolimo omogućite ga u Postavkama.";
@@ -1622,6 +1624,7 @@
 "unableToVerifyGasTokenError" = "Nije moguće verificirati saldo tokena za plin. Molimo pokušajte ponovno.";
 "unbond" = "Odvežite";
 "Unbond" = "Unbond";
+"unbondFromAnotherNode" = "Odveži s drugog čvora";
 "unbondRune" = "Odveži RUNE";
 "unknown" = "Nepoznato";
 "unlimited" = "Neograničeno";

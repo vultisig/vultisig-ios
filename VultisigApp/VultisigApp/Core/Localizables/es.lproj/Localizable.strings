@@ -65,9 +65,9 @@
 "apy" = "APY";
 "arguments" = "Argumentos";
 "asset" = "Activo";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ no encontrado en el vault )";
 "assets" = "Activos";
+"assetsLoadFailed" = "No se pudieron cargar los activos. Comprueba tu conexión e inténtalo de nuevo.";
 "asymmetricDeposit" = "Depósito asimétrico";
 "asymmetricDepositInfo" = "Puedes depositar solo CACAO o solo el activo. Maya equilibrará automáticamente tu posición.";
 "atLeastOneDevice" = "Al menos un dispositivo";
@@ -134,7 +134,9 @@
 "biometricsFastSigning" = "Biometría Firma rápida";
 "bond" = "Vincular";
 "Bond" = "Bond";
+"bondableAssetsLoadFailed" = "No se pudieron cargar tus posiciones LP vinculables. Comprueba tu conexión e inténtalo de nuevo.";
 "bonded" = "Vinculado";
+"bondedAssetsLoadFailed" = "No se pudieron cargar los activos vinculados a este nodo. Comprueba tu conexión e inténtalo de nuevo.";
 "bondedCoin" = "Total Vinculado %@";
 "bondedLPUnits" = "Unidades LP en Bond";
 "bondedXCoin" = "Vinculado: %@";
@@ -863,7 +865,6 @@
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "Las unidades LP no pueden ser cero";
 "lpUnitsExceeded" = "Excede las unidades LP disponibles (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén para restaurarla más tarde";
 "makeMoveVec" = "Crear Move Vec";
 "makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";
@@ -930,6 +931,7 @@
 "noActiveChainsFound" = "No se encontraron chains activas";
 "noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\n\nCada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de timeout.";
 "noBarcodesFound" = "No se encontraron códigos de barras";
+"noBondableLPPositions" = "No tienes unidades LP sin vincular en un pool vinculable.";
 "noBondedAssetsOnNode" = "No se encontraron activos en bond en este nodo";
 "noCameraFound" = "No se encontró ninguna cámara vinculada.";
 "noCameraPermissionError" = "Permiso para la cámara denegado.\n\nPor favor, actívalo en la Configuración.";
@@ -1622,6 +1624,7 @@
 "unableToVerifyGasTokenError" = "No se pudo verificar el saldo del token de gas. Por favor intenta de nuevo.";
 "unbond" = "Desvincular";
 "Unbond" = "Unbond";
+"unbondFromAnotherNode" = "Desvincular de Otro Nodo";
 "unbondRune" = "Desvincular RUNE";
 "unknown" = "Desconocido";
 "unlimited" = "Ilimitado";

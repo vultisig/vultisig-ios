@@ -183,24 +183,6 @@ class MayachainService: ThorchainSwapProvider {
         }
     }
 
-    func getDepositAssets() async -> [String] {
-        struct DepositAsset: Codable {
-            let asset: String
-            let bondable: Bool
-        }
-
-        do {
-            let response = try await httpClient.request(
-                api(.pools),
-                responseType: [DepositAsset].self
-            )
-            return response.data.filter { $0.bondable }.map { $0.asset }
-        } catch {
-            logger.error("Error fetching MayaChain deposit assets: \(error.localizedDescription, privacy: .public)")
-            return []
-        }
-    }
-
     /// Throwing variant of `fetchInboundAddress` for the sign-time fund-safety
     /// gate, which must fail CLOSED: a transport/decode failure has to propagate
     /// so a halt re-check can't be silently misread as "not halted". The fail-soft
@@ -224,15 +206,6 @@ class MayachainService: ThorchainSwapProvider {
             cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
         }
         return inboundAddresses
-    }
-
-    /// Legacy callback shim. Existing call sites in FunctionCall views still use this
-    /// signature; migrate them to the async variant above in a follow-up.
-    func getDepositAssets(completion: @escaping ([String]) -> Void) {
-        Task {
-            let assets = await getDepositAssets()
-            completion(assets)
-        }
     }
 }
 

@@ -65,9 +65,9 @@
 "apy" = "APY";
 "arguments" = "Argumente";
 "asset" = "Vermögenswert";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ nicht im Vault gefunden )";
 "assets" = "Vermögenswerte";
+"assetsLoadFailed" = "Assets konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "asymmetricDeposit" = "Asymmetrische Einzahlung";
 "asymmetricDepositInfo" = "Du kannst nur CACAO oder nur den Vermögenswert einzahlen. Maya gleicht deine Position automatisch aus.";
 "atLeastOneDevice" = "Mindestens ein Gerät";
@@ -134,7 +134,9 @@
 "biometricsFastSigning" = "Biometrie schnell unterschreiben";
 "bond" = "Binden";
 "Bond" = "Bond";
+"bondableAssetsLoadFailed" = "Ihre bondfähigen LP-Positionen konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "bonded" = "Gebunden";
+"bondedAssetsLoadFailed" = "Die an diesen Knoten gebondeten Assets konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "bondedCoin" = "Gesamt Gebundene %@";
 "bondedLPUnits" = "Gebondete LP-Einheiten";
 "bondedXCoin" = "Gebunden: %@";
@@ -863,7 +865,6 @@
 "lpUnits" = "LP-Einheiten";
 "lpUnitsCannotBeZero" = "LP-Einheiten dürfen nicht null sein";
 "lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt, um ihn später wiederherzustellen";
 "makeMoveVec" = "Move-Vektor erstellen";
 "makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";
@@ -930,6 +931,7 @@
 "noActiveChainsFound" = "Keine aktiven Chains gefunden";
 "noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\n\nJede zusätzliche Chain erhöht die Zeit zur Generierung deines Vaults und die Wahrscheinlichkeit eines Timeouts.";
 "noBarcodesFound" = "Keine Barcodes gefunden";
+"noBondableLPPositions" = "Sie haben keine ungebundenen LP-Einheiten in einem bondfähigen Pool.";
 "noBondedAssetsOnNode" = "Keine gebondeten Assets auf diesem Knoten gefunden";
 "noCameraFound" = "Keine Kamera gefunden.";
 "noCameraPermissionError" = "Kameraberechtigung verweigert.\n\nBitte aktiviere sie in den Einstellungen.";
@@ -1622,6 +1624,7 @@
 "unableToVerifyGasTokenError" = "Gas-Token-Guthaben konnte nicht überprüft werden. Bitte versuche es erneut.";
 "unbond" = "Bindung aufheben";
 "Unbond" = "Unbond";
+"unbondFromAnotherNode" = "Bindung an anderen Knoten aufheben";
 "unbondRune" = "RUNE entbinden";
 "unknown" = "Unbekannt";
 "unlimited" = "Unbegrenzt";
