@@ -220,7 +220,14 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 // redemption is FUNDED with an absolute share count. Here the
                 // amount is priced in RUJI and the funds are sRUJI shares, so
                 // `availableAmount` is what converts between them: it is the RUJI
-                // the shares are worth, read at the same moment as the shares.
+                // the shares are worth.
+                //
+                // ⚠️ The two come from different reads — `availableAmount` from
+                // the persisted card, `autocompoundBalance` from this sheet's own
+                // fetch — so the implied share price is only as coherent as those
+                // two are. The coupling is not new: the whole-percentage path this
+                // replaces divided by `availableAmount` and scaled
+                // `autocompoundBalance` in exactly the same way.
                 return RUJILiquidUnbondTransactionBuilder(
                     coin: coin,
                     withdrawAmount: amountField.value.toDecimal(),

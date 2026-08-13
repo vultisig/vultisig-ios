@@ -52,16 +52,29 @@ struct RUJILiquidUnbondTransactionBuilder: TransactionBuilder {
     /// and ybRUNE are quoted to the user as receipt COUNTS: their cards render the
     /// share balance directly, so nothing on those sheets says what a share is
     /// worth and any figure derived from one would understate the payout. This
-    /// card renders the position's RUJI value instead, so the ratio between
-    /// `stakedAmount` and `receiptShares` is a live redemption price, read at the
-    /// same moment as the balances themselves.
+    /// card renders the position's RUJI value instead, so `stakedAmount` and
+    /// `receiptShares` between them imply what a share is worth.
     ///
     /// Deliberately NOT the amount that was typed: the redemption spends whole
-    /// shares, so the two differ by up to one share's worth. And it is a
-    /// projection, not a commitment — the share price moves as the pool
-    /// compounds, so what the redemption is worth on execution moves with it.
-    /// Applying the ratio the sheet was showing is the closest an absolute figure
-    /// can get. See `TCYUnstakeTransactionBuilder.withdrawDisplayAmount`.
+    /// shares, so the two differ by up to one share's worth.
+    ///
+    /// ⚠️ **A projection, not a commitment, and from TWO reads rather than one.**
+    /// `stakedAmount` reaches here from the persisted DeFi card (THORChain's
+    /// GraphQL `liquidSize`); `receiptShares` is a separate THORNode bank-balance
+    /// read the sheet makes itself. They are close together in practice, not
+    /// simultaneous. If they disagree — a stale card, or another device unbonding
+    /// in between — this figure is wrong by that same proportion, because the
+    /// redemption it describes is sized from exactly the same pair.
+    ///
+    /// That is the accepted shape of a fractional withdrawal on this screen, not
+    /// a new hazard: `TCYUnstakeTransactionBuilder.withdrawDisplayAmount` carries
+    /// the identical caveat for a position that moves between the read and the
+    /// execution. What it never does is claim MORE than was asked for — the share
+    /// count is truncated, so the quote is bounded above by the typed amount, and
+    /// `ReceiptShareRedemptionTests` pins that under a deliberately incoherent
+    /// pair. Making the two reads one coherent snapshot is the fix that would
+    /// retire the caveat, and it belongs to the sheet's balance loading rather
+    /// than here.
     var withdrawDisplayAmount: Decimal? {
         let held = heldUnits
         let redeemed = redeemedUnits
@@ -104,7 +117,11 @@ struct RUJILiquidUnbondTransactionBuilder: TransactionBuilder {
     var wasmContractPayload: WasmExecuteContractPayload? {
         // A redemption funded with nothing pays a fee to unbond nothing. The
         // amount field's own validators normally stop it reaching here.
-        let units = redeemedUnits.toInt()
+        //
+        // ⚠️ Kept in `Decimal` rather than routed through `Decimal.toInt()` —
+        // see the bRUNE sibling for why a 64-bit round trip can make a large
+        // position unwithdrawable.
+        let units = redeemedUnits
         guard units >= 1 else { return nil }
 
         return WasmExecuteContractPayload(
@@ -114,7 +131,7 @@ struct RUJILiquidUnbondTransactionBuilder: TransactionBuilder {
             { "liquid": { "unbond": {} } }
             """,
             coins: [CosmosCoin(
-                amount: String(units),
+                amount: units.description,
                 denom: TokensStore.sruji.contractAddress
             )]
         )

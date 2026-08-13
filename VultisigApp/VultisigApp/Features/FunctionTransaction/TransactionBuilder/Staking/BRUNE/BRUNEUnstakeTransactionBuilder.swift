@@ -64,7 +64,14 @@ struct BRUNEUnstakeTransactionBuilder: TransactionBuilder {
     var wasmContractPayload: WasmExecuteContractPayload? {
         // A redemption funded with nothing pays a fee to unbond nothing. The
         // amount field's own validators normally stop it reaching here.
-        let units = redeemedUnits.toInt()
+        //
+        // ⚠️ Kept in `Decimal` rather than routed through `Decimal.toInt()`. That
+        // wraps outside signed 64-bit range, and the receipt balance is parsed as
+        // `UInt64` — so a position above `Int.max` base units would render as a
+        // negative count, fail this guard, and become unwithdrawable at MAX.
+        // `wholeUnits` has already made this an integer, so its description is
+        // the digits and nothing else.
+        let units = redeemedUnits
         guard units >= 1 else { return nil }
 
         return WasmExecuteContractPayload(
@@ -74,7 +81,7 @@ struct BRUNEUnstakeTransactionBuilder: TransactionBuilder {
             { "liquid": { "unbond": {} } }
             """,
             coins: [CosmosCoin(
-                amount: String(units),
+                amount: units.description,
                 denom: TokensStore.ybrune.contractAddress
             )]
         )

@@ -340,6 +340,86 @@ final class ReceiptShareRedemptionTests: XCTestCase {
         XCTAssertTrue(try XCTUnwrap(builder.wasmContractPayload).coins.isEmpty)
     }
 
+    /// ⚠️ The two balances behind this arm come from different reads — the RUJI
+    /// valuation from the persisted card, the share count from the sheet's own
+    /// fetch — so they can disagree. What must hold anyway: the quote never
+    /// exceeds what was asked for, and a partial redemption still leaves the
+    /// position open. Here the card is stale at twice the current share balance,
+    /// which is the worst case that path can produce.
+    func testAnIncoherentPairStillCannotOverQuoteOrCloseThePosition() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let typed = Decimal(string: "70")!
+        let builder = RUJILiquidUnbondTransactionBuilder(
+            coin: makeCoin(TokensStore.ruji),
+            withdrawAmount: typed,
+            stakedAmount: Decimal(string: "140")!,   // what the card was showing
+            receiptShares: Decimal(string: "70")!,   // what is actually held now
+            sendMaxAmount: false
+        )
+
+        XCTAssertLessThanOrEqual(try XCTUnwrap(builder.withdrawDisplayAmount), typed)
+        XCTAssertLessThan(builder.redeemedUnits, builder.heldUnits)
+        XCTAssertEqual(
+            try XCTUnwrap(try XCTUnwrap(builder.wasmContractPayload).coins.first).amount,
+            "3500000000"
+        )
+    }
+
+    // MARK: - Beyond 64 bits
+
+    /// ⚠️ A receipt balance is read as `UInt64` base units, so it can exceed
+    /// `Int.max` — and routing the redeemed count through `Decimal.toInt()` wraps
+    /// there. A wrapped count reads as negative, fails the `>= 1` guard, and
+    /// makes the position unwithdrawable at MAX rather than merely mis-sized.
+    /// 1e11 tokens at 8 decimals is 1e19 base units, comfortably past 9.22e18.
+    func testAReceiptBalanceBeyondSixtyFourBitsStillCloses() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let huge = Decimal(string: "100000000000")!
+
+        let brune = BRUNEUnstakeTransactionBuilder(
+            coin: makeCoin(TokensStore.brune),
+            withdrawAmount: huge,
+            stakedAmount: huge,
+            autoCompoundAmount: huge,
+            sendMaxAmount: true
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(try XCTUnwrap(brune.wasmContractPayload).coins.first).amount,
+            "10000000000000000000"
+        )
+
+        let ruji = RUJILiquidUnbondTransactionBuilder(
+            coin: makeCoin(TokensStore.ruji),
+            withdrawAmount: huge,
+            stakedAmount: huge,
+            receiptShares: huge,
+            sendMaxAmount: true
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(try XCTUnwrap(ruji.wasmContractPayload).coins.first).amount,
+            "10000000000000000000"
+        )
+    }
+
+    /// The funded count is an integer string on the wire — a fractional
+    /// `CosmosCoin.amount` is malformed, and dropping the 64-bit round trip means
+    /// nothing else is truncating it.
+    func testTheFundedCountIsAlwaysWholeDigits() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = makeRujiViewModel()
+        type("70.3243", into: viewModel)
+        let units = try fundedUnits(of: viewModel)
+
+        XCTAssertFalse(units.contains("."), "rendered \(units)")
+        XCTAssertFalse(units.contains("e"), "rendered \(units)")
+        XCTAssertTrue(units.allSatisfy { $0.isASCII && $0.isNumber }, "rendered \(units)")
+    }
+
     // MARK: - Fixtures
 
     private func makeCoin(_ asset: CoinMeta) -> Coin {
