@@ -73,6 +73,7 @@ struct FunctionCallDetailsScreen: View {
             }
         }
         .screenTitle(preselected?.display() ?? "function".localized)
+        .withLoading(isLoading: $functionCallViewModel.isLoading)
         .alert(isPresented: $functionCallViewModel.showAlert) {
             alert
         }
@@ -260,7 +261,11 @@ struct FunctionCallDetailsScreen: View {
                     vault: vault,
                     gas: gas
                 )
-                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                // Priced from the built transaction, not from the probe: this
+                // is the figure the user approves, and nothing downstream of
+                // Verify re-resolves it for display.
+                let pricedTx = await functionCallViewModel.pricedForVerify(immutableTx)
+                router.navigate(to: FunctionCallRoute.verify(tx: pricedTx, vault: vault))
             }
         }
     }
@@ -297,6 +302,15 @@ private extension FunctionCallDetailsScreen {
         }
     }
 
+    /// A per-unit gas figure for the coin, fetched as the form is filled.
+    ///
+    /// This is a PROBE — an empty transaction with no memo, amount or recipient
+    /// — so on EVM it prices a bare transfer, not the call being built. It is
+    /// carried into the built transaction only as the value a chain that quotes
+    /// a flat gas already has; the figure Verify discloses is resolved from the
+    /// real transaction on Continue, by `FunctionCallViewModel.pricedForVerify`.
+    /// Keeping it means a failed pricing call falls back to what the screen
+    /// showed before rather than to zero.
     func loadGasInfo() async {
         let probeTx = SendTransaction.empty(coin: selectedCoin, vault: vault)
         do {
