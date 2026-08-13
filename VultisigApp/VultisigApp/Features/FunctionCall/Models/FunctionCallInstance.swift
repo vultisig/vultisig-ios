@@ -68,6 +68,11 @@ enum FunctionCallInstance {
         model.submitErrorMessage
     }
 
+    /// Builds the sub-model for the function the details screen opens on.
+    /// Must stay case-for-case in step with `FunctionCallType.getDefault`:
+    /// the screen sets the dropdown selection from that enum and the form
+    /// from this factory, so a disagreement renders one function's form
+    /// under another function's label.
     @MainActor
     static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
@@ -85,7 +90,7 @@ enum FunctionCallInstance {
             return .vote(FunctionCallVote())
         case .gaiaChain:
             return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
-        case .kujira:
+        case .kujira, .osmosis:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .securedAsset(FunctionCallSecuredAsset(coin: coin, vault: vault))
