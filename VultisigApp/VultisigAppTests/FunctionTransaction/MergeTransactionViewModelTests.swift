@@ -162,6 +162,22 @@ final class MergeTransactionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.transactionBuilder, "10 KUJI can no longer be merged from a 1 KUJI balance")
     }
 
+    /// The mirror image: legacy read the balance at submit in both directions,
+    /// so a balance that grew must stop rejecting an affordable amount.
+    func testABalanceThatGrewAboveTheEnteredAmountUnblocksTheBuilder() {
+        let kuji = Self.makeThorToken("KUJI", rawBalance: Self.oneToken)
+        let viewModel = makeViewModel(holdings: [kuji])
+        viewModel.onLoad()
+        viewModel.select(asset: viewModel.mergeableAssets[0])
+
+        viewModel.amountField.value = "5"
+        XCTAssertNil(viewModel.transactionBuilder, "5 exceeds the 1 KUJI balance the form opened with")
+
+        kuji.rawBalance = Self.tenTokens
+
+        XCTAssertEqual((viewModel.transactionBuilder as? MergeTransactionBuilder)?.amount, "5")
+    }
+
     /// A catalog entry with no contract has nowhere to deposit — legacy's gate
     /// required a non-empty destination for the same reason.
     func testADescriptorWithoutAContractBlocksTheBuilder() {

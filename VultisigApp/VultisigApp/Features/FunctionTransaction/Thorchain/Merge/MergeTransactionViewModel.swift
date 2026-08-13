@@ -95,6 +95,12 @@ final class MergeTransactionViewModel: ObservableObject, Form {
     }
 
     var transactionBuilder: TransactionBuilder? {
+        // `AmountBalanceValidator`'s ceiling is a copy taken when the token was
+        // picked, while the legacy gate compared against the balance read at
+        // submit. Rebuilding the validators here restores that in both
+        // directions: a balance that dropped no longer passes, and one that
+        // grew no longer rejects an amount the user can now afford.
+        amountField.validators = Self.validators(for: selectedAsset)
         validateErrors()
 
         // Read the flags `validateErrors()` has just written rather than the
@@ -102,18 +108,10 @@ final class MergeTransactionViewModel: ObservableObject, Form {
         // a form invalidated in this turn would still answer "valid" to a tap.
         guard form.allSatisfy({ $0.valid }), let selectedAsset else { return nil }
 
-        // The legacy gate also required a non-empty destination and compared
-        // the amount against the coin's balance read at submit — the amount
-        // validator's ceiling is a copy taken when the token was picked. Both
-        // are re-checked here so a catalog entry with no contract, or a balance
-        // that dropped while the form was open, fails closed rather than
-        // signing a deposit that goes nowhere or overdraws the token.
-        guard
-            !selectedAsset.contractAddress.isEmpty,
-            let amount = amountField.value.parseInput(),
-            amount > 0,
-            amount <= selectedAsset.coin.balanceDecimal
-        else { return nil }
+        // Legacy also required a non-empty destination. It costs one guard to
+        // keep, and an empty `toAddress` on a `.thorMerge` is a deposit signed
+        // to nowhere.
+        guard !selectedAsset.contractAddress.isEmpty else { return nil }
 
         return MergeTransactionBuilder(
             coin: selectedAsset.coin,
