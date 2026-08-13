@@ -69,12 +69,13 @@ final class UnstakeAsyncBalanceLoadTests: XCTestCase {
         vault: Vault,
         availableToUnstake: Decimal,
         gate: BalanceReadGate,
-        outcome: ReadOutcome
+        outcome: ReadOutcome,
+        isAutocompound: Bool = true
     ) -> UnstakeTransactionViewModel {
         UnstakeTransactionViewModel(
             coin: makeCoin(coin),
             vault: vault,
-            isAutocompound: true,
+            isAutocompound: isAutocompound,
             availableToUnstake: availableToUnstake,
             readAutocompoundBalance: { _, _ in
                 await gate.wait()
@@ -387,23 +388,47 @@ final class UnstakeAsyncBalanceLoadTests: XCTestCase {
         XCTAssertFalse(viewModel.isContinueDisabled)
     }
 
-    /// A bonded position withdraws by memo against the staked balance and reads no
-    /// receipt at all, so none of this may touch it.
-    func testABondedPositionNeverWaitsOnAReceiptBalance() throws {
+    /// A bonded position must never be left waiting on a balance the sheet never
+    /// asked for — that combination is a Continue button that can never enable and
+    /// a transaction that can never be built. Looped over every asset because it is
+    /// invisible on the one that reads nothing: TCY and RUJI bond by memo against
+    /// the staked balance, while bRUNE is only ever held as the ybRUNE receipt and
+    /// so spends receipt units whichever card opened the sheet.
+    func testABondedPositionNeverWaitsOnAReceiptBalance() async throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
-        let viewModel = UnstakeTransactionViewModel(
-            coin: makeCoin(TokensStore.tcy),
-            vault: TestStore.makeVault(),
-            isAutocompound: false,
-            availableToUnstake: 100
-        )
+        let vault = TestStore.makeVault()
 
-        viewModel.onLoad()
+        for meta in Self.autocompoundCoins {
+            let gate = BalanceReadGate()
+            let viewModel = makeViewModel(
+                coin: meta,
+                vault: vault,
+                availableToUnstake: 100,
+                gate: gate,
+                outcome: .succeeds(baseUnits: 25_000_000_000),
+                isAutocompound: false
+            )
 
-        XCTAssertNil(viewModel.autocompoundLoadTask, "a bonded position has no receipt to read")
-        XCTAssertFalse(viewModel.isContinueDisabled)
-        XCTAssertEqual(viewModel.availableAmount, 100)
-        XCTAssertEqual(viewModel.percentageSelected, 100)
+            viewModel.onLoad()
+
+            let spendsReceiptUnits = meta.ticker.uppercased() == "BRUNE"
+            XCTAssertEqual(
+                viewModel.autocompoundLoadTask != nil,
+                spendsReceiptUnits,
+                "\(meta.ticker) reads a receipt it does not spend, or spends one it never reads"
+            )
+
+            await completeLoad(viewModel, gate: gate)
+            // Isolate the receipt guard from form validity, as elsewhere here.
+            viewModel.validForm = true
+
+            XCTAssertFalse(viewModel.isContinueDisabled, "\(meta.ticker) left Continue disabled for good")
+            XCTAssertNotNil(viewModel.transactionBuilder, "\(meta.ticker) can never build its withdrawal")
+            XCTAssertEqual(viewModel.percentageSelected, 100, "\(meta.ticker) percentage")
+            // Only the receipt-funded one takes its ceiling from the read.
+            let expectedCeiling: Decimal = spendsReceiptUnits ? 250 : 100
+            XCTAssertEqual(viewModel.availableAmount, expectedCeiling, "\(meta.ticker) ceiling")
+        }
     }
 }

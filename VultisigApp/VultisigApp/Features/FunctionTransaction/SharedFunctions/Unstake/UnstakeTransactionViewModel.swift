@@ -90,7 +90,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         availableAmount = availableToUnstake ?? coin.stakedBalanceDecimal
         setupAmountField()
 
-        guard isAutocompound else { return }
+        // Started for exactly the positions the receipt balance funds — the same
+        // predicate that disables Continue and blocks the builder — so a sheet can
+        // never be left waiting on a balance it never asked for. bRUNE is what
+        // separates that from `isAutocompound`: it spends receipt units whichever
+        // card opened the sheet, so keying the read on the compound flag alone
+        // would leave a bonded one permanently unable to build.
+        guard isFundedFromReceiptBalance else { return }
         autocompoundLoadTask = Task { @MainActor [weak self] in
             await self?.fetchAutocompoundBalance()
             self?.applyLoadedAutocompoundBalance()
