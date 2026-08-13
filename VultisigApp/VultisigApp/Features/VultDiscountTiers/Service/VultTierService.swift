@@ -31,6 +31,12 @@ struct VultTierService {
     /// swap for the rest of the session.
     private static let thorguardCache = ThorguardOwnershipCache()
 
+    /// One in-flight VULT balance refresh per vault. The swap screen warms the
+    /// tier on load while the first debounced quote resolves it again moments
+    /// later; without this they'd each pay for their own round trip.
+    @MainActor
+    private static var refreshesInFlight: [String: Task<Bool, Never>] = [:]
+
     // MARK: - Tier resolution
 
     /// Resolves the tier with a live Thorguard check. `cached` selects the VULT
@@ -185,19 +191,38 @@ private extension VultTierService {
     func fetchVultBalance(for vault: Vault) async -> Decimal {
         // Check if we need to fetch fresh balance
         if shouldFetchBalance(for: vault) {
-            // Fetch fresh balance
-            await addEthChainIfNeeded(for: vault)
-            let vultToken = await getOrAddVultTokenIfNeeded(to: vault)
-            if let vultToken {
-                await BalanceService.shared.updateBalance(for: vultToken)
+            let vaultId = vault.pubKeyEdDSA
+            let didLand: Bool
+            if let inFlight = Self.refreshesInFlight[vaultId] {
+                didLand = await inFlight.value
+            } else {
+                let refresh = Task { @MainActor in await refreshVultBalance(for: vault) }
+                Self.refreshesInFlight[vaultId] = refresh
+                didLand = await refresh.value
+                Self.refreshesInFlight[vaultId] = nil
             }
 
-            // Update the cache entry
-            cacheEntries.removeAll { $0.vaultId == vault.pubKeyEdDSA }
-            cacheEntries.append(CacheEntry(vaultId: vault.pubKeyEdDSA, lastFetchDate: Date()))
+            // Stamp the freshness cache only when a live balance actually
+            // landed. Stamping after a failed fetch would suppress every retry
+            // for the next three minutes, leaving the tier resolved from a
+            // balance that was never read.
+            if didLand {
+                cacheEntries.removeAll { $0.vaultId == vaultId }
+                cacheEntries.append(CacheEntry(vaultId: vaultId, lastFetchDate: Date()))
+            }
         }
 
         return storedVultBalance(for: vault)
+    }
+
+    /// Refreshes the vault's VULT balance from the network, adding the Ethereum
+    /// chain and the VULT token first if the vault doesn't carry them yet.
+    /// Returns whether a live balance landed.
+    @MainActor
+    func refreshVultBalance(for vault: Vault) async -> Bool {
+        await addEthChainIfNeeded(for: vault)
+        guard let vultToken = await getOrAddVultTokenIfNeeded(to: vault) else { return false }
+        return await BalanceService.shared.updateBalance(for: vultToken)
     }
 
     @MainActor
