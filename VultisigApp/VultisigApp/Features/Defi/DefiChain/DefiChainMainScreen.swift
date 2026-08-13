@@ -517,7 +517,7 @@ private extension DefiChainMainScreen {
             owner: nativeCoin.address,
             decimals: nativeCoin.decimals
         )
-        async let balance: Void = BalanceService.shared.updateBalance(for: nativeCoin)
+        async let balance: Bool = BalanceService.shared.updateBalance(for: nativeCoin)
         _ = await (rows, balance)
     }
 

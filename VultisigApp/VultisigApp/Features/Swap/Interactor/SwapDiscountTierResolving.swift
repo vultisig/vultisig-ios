@@ -3,16 +3,19 @@
 //  VultisigApp
 //
 //  Test seam over the VULT discount-tier resolution used by the swap quote
-//  path. Lets the interactor read a per-session cached tier instead of
-//  resolving it (VULT balance + Thorguard NFT eth_call) on every quote fetch.
+//  path. Lets the interactor resolve the tier without the Thorguard NFT
+//  eth_call on every quote fetch.
 //
 
 import Foundation
 
 protocol SwapDiscountTierResolving {
-    /// Resolves the discount tier for the vault once and caches it for the
-    /// session. Subsequent calls return the cached value without touching the
-    /// network (no Thorguard eth_call). Safe to call repeatedly.
+    /// Resolves the discount tier for the vault. The VULT balance half is
+    /// re-read every call, so a balance that lands late is honoured by the next
+    /// quote; only the Thorguard NFT ownership behind it is session-cached, so
+    /// the eth_call stays off the per-quote critical path. Safe to call
+    /// repeatedly.
+    @MainActor
     func resolveTierForSession(for vault: Vault) async -> VultDiscountTier?
 }
 
