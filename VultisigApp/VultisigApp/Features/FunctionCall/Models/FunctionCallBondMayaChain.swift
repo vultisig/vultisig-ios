@@ -12,11 +12,6 @@ import BigInt
 import Foundation
 import SwiftUI
 
-struct IdentifiableString: Identifiable, Equatable {
-    let id = UUID()
-    let value: String
-}
-
 @Observable
 @MainActor
 final class FunctionCallBondMayaChain {
