@@ -131,7 +131,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         // because then the position really is that small.
         guard receiptBalanceIsAvailableAmount, autocompoundBalanceDidLoad else { return }
         availableAmount = autocompoundBalance
-        amountField.validators = [AmountBalanceValidator(balance: availableAmount)]
+        amountField.validators = amountValidators()
 
         // The form pipeline only re-validates when a field's *value* changes.
         // With a percentage selected the view is about to rewrite the field from
@@ -309,7 +309,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         guard availableAmount > 0 else { return 0 }
         // Pinned rather than derived: the amount field renders 4 decimals, so on
         // a small position MAX can round to 9999 and leave a sliver staked.
-        guard !isMaxAmount else { return WithdrawBasisPoints.max }
+        //
+        // Only while the percentage still owns the value. Typing clears
+        // `percentageSelected` without ever reaching `onPercentage`, so the flag
+        // raised when the form opened at 100% outlives the selection it
+        // describes — and pinning on it alone would withdraw the whole position
+        // for an amount the user typed to be smaller.
+        guard !isMaxAmount || percentageSelected == nil else { return WithdrawBasisPoints.max }
         return WithdrawBasisPoints.value(
             forAmount: amountField.value.toDecimal(),
             available: availableAmount
@@ -320,7 +326,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         isMaxAmount = percentage == 100
     }
 
-    func setupAmountField() {
+    /// The validators the amount field carries for the ceiling in force now.
+    ///
+    /// Built in one place because a ceiling that arrives late has to reinstall
+    /// the same chain against the new balance: rebuilding only the balance rule
+    /// there would drop the basis-point minimum and let an amount too small to
+    /// express pass validation.
+    private func amountValidators() -> [FormFieldValidator] {
         var validators: [FormFieldValidator] = [
             AmountBalanceValidator(balance: self.availableAmount)
         ]
@@ -332,7 +344,11 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 WithdrawMinimumAmountValidator(available: self.availableAmount, ticker: coin.ticker)
             )
         }
-        self.amountField.validators = validators
+        return validators
+    }
+
+    func setupAmountField() {
+        self.amountField.validators = amountValidators()
         self.percentageSelected = 100
         self.isMaxAmount = true
     }
