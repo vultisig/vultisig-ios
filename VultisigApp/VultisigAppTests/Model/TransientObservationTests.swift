@@ -157,4 +157,94 @@ final class TransientObservationTests: XCTestCase {
 
         XCTAssertFalse(vault.isFastVault)
     }
+
+    // MARK: - Coin.hasPendingBalance
+
+    /// `CoinDetailHeaderView` branches on `hasPendingBalance` to decide whether
+    /// the pending line exists at all, so an inbound payment landing in the
+    /// mempool has to invalidate that read on its own — `BalanceService` writing
+    /// `pendingRawBalance` is the only event involved.
+    func testInboundBalanceArrivingPublishesHasPendingBalance() {
+        let coin = SendFormFixture.makeBTC()
+
+        let published = publishesChange {
+            _ = coin.hasPendingBalance
+        } writing: {
+            coin.pendingRawBalance = "250000"
+        }
+
+        XCTAssertTrue(published)
+        XCTAssertTrue(coin.hasPendingBalance)
+        XCTAssertEqual(coin.pendingBalanceDecimal, Decimal(string: "0.0025"))
+    }
+
+    /// The line has to disappear again once the transaction confirms and the
+    /// pending amount folds into the balance.
+    func testPendingBalanceClearingPublishesHasPendingBalance() {
+        let coin = SendFormFixture.makeBTC()
+        coin.pendingRawBalance = "250000"
+
+        let published = publishesChange {
+            _ = coin.hasPendingBalance
+        } writing: {
+            coin.pendingRawBalance = "0"
+        }
+
+        XCTAssertTrue(published)
+        XCTAssertFalse(coin.hasPendingBalance)
+    }
+
+    /// A second inbound payment while one is already pending does not flip the
+    /// boolean, but it does change the amount the view prints. Observing only
+    /// `hasPendingBalance` would miss it, so the formatted string the view
+    /// actually renders gets its own probe.
+    func testPendingAmountChangePublishesFormattedString() {
+        let coin = SendFormFixture.makeBTC()
+        coin.pendingRawBalance = "250000"
+
+        let published = publishesChange {
+            _ = coin.pendingBalanceStringWithTicker
+        } writing: {
+            coin.pendingRawBalance = "300000"
+        }
+
+        XCTAssertTrue(published)
+        XCTAssertTrue(coin.hasPendingBalance)
+    }
+
+    /// A balance refresh that reports the same mempool state must not invalidate
+    /// the view. Balances refresh on a timer, so an unguarded box would re-render
+    /// every coin detail screen on every poll for no reason.
+    func testRedundantPendingBalanceWriteDoesNotPublish() {
+        let coin = SendFormFixture.makeBTC()
+        coin.pendingRawBalance = "250000"
+
+        let published = publishesChange {
+            _ = coin.hasPendingBalance
+            _ = coin.pendingBalanceStringWithTicker
+        } writing: {
+            coin.pendingRawBalance = "250000"
+        }
+
+        XCTAssertFalse(published)
+    }
+
+    /// Coins must not share pending-balance storage. These two fixtures have the
+    /// same `id`, which is what a keyed cache would collide on — one coin's
+    /// mempool would then show up on another's screen.
+    func testPendingBalanceIsPerCoin() {
+        let coinA = SendFormFixture.makeBTC()
+        let coinB = SendFormFixture.makeBTC()
+
+        let published = publishesChange {
+            _ = coinB.hasPendingBalance
+        } writing: {
+            coinA.pendingRawBalance = "250000"
+        }
+
+        XCTAssertFalse(published, "coinB must not be invalidated by a write to coinA")
+        XCTAssertTrue(coinA.hasPendingBalance)
+        XCTAssertFalse(coinB.hasPendingBalance)
+        XCTAssertEqual(coinB.pendingRawBalance, "0")
+    }
 }
