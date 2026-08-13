@@ -128,6 +128,55 @@ final class VultTierResolutionTests: XCTestCase {
         )
     }
 
+    // MARK: - Which token counts as VULT
+
+    /// Any address can deploy an ERC-20 under the "VULT" symbol and a user can
+    /// add it to their vault. Matching on the ticker let that buy a real
+    /// trading-fee discount; the contract address is what actually identifies it.
+    @MainActor
+    func testImpostorTokenTickeredVultGrantsNoTier() {
+        let service = VultTierService()
+        let vault = makeVault()
+        vault.coins = [makeEthereumToken(ticker: "VULT", contract: "0xdeadbeef00000000000000000000000000000000", balance: 100_000)]
+
+        XCTAssertNil(service.getVultToken(for: vault), "A different contract is a different token, whatever it calls itself")
+        let balance = service.getVultToken(for: vault)?.balanceDecimal ?? 0
+        XCTAssertNil(
+            VultTierService.tier(forBalance: balance, hasThorguard: false),
+            "An impostor balance must not unlock any tier"
+        )
+    }
+
+    @MainActor
+    func testRealVultIsMatchedRegardlessOfAddressCasing() {
+        let service = VultTierService()
+        let vault = makeVault()
+        vault.coins = [
+            makeEthereumToken(
+                ticker: "VULT",
+                contract: VultTierService.vultContractAddress.lowercased(),
+                balance: 7_500
+            )
+        ]
+
+        // EIP-55 checksums an address by letter case, so the same token
+        // legitimately arrives in different casings.
+        let vult = service.getVultToken(for: vault)
+        XCTAssertNotNil(vult)
+        XCTAssertEqual(VultTierService.tier(forBalance: vult?.balanceDecimal ?? 0, hasThorguard: false), .gold)
+    }
+
+    @MainActor
+    func testRealVultIsMatchedEvenUnderADifferentTicker() {
+        let service = VultTierService()
+        let vault = makeVault()
+        vault.coins = [
+            makeEthereumToken(ticker: "vult", contract: VultTierService.vultContractAddress, balance: 3_000)
+        ]
+
+        XCTAssertNotNil(service.getVultToken(for: vault), "The contract is the identity, not the displayed symbol")
+    }
+
     // MARK: - Session-scoped composition
 
     /// The regression this whole change exists for: the balance half must be
@@ -201,6 +250,40 @@ final class VultTierResolutionTests: XCTestCase {
         XCTAssertEqual(tier, .platinum)
         let checks = await ownership.callCount
         XCTAssertEqual(checks, 0, "Platinum and above can't be boosted, so no eth_call should be made")
+    }
+
+    // MARK: - Fixtures
+
+    @MainActor
+    private func makeVault() -> Vault {
+        Vault(
+            name: "Test Vault",
+            signers: [],
+            pubKeyECDSA: "test-pub-ecdsa",
+            pubKeyEdDSA: "test-pub-eddsa",
+            keyshares: [],
+            localPartyID: "iPhone-12345",
+            hexChainCode: "hex",
+            resharePrefix: nil,
+            libType: .DKLS
+        )
+    }
+
+    @MainActor
+    private func makeEthereumToken(ticker: String, contract: String, balance: Int) -> Coin {
+        let meta = CoinMeta(
+            chain: .ethereum,
+            ticker: ticker,
+            logo: "logo",
+            decimals: 18,
+            priceProviderId: ticker.lowercased(),
+            contractAddress: contract,
+            isNativeToken: false
+        )
+        let coin = Coin(asset: meta, address: "0xwallet", hexPublicKey: "")
+        // 18 decimals, so the whole-token balance is the value followed by 18 zeros.
+        coin.rawBalance = "\(balance)" + String(repeating: "0", count: 18)
+        return coin
     }
 }
 

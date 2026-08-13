@@ -13,7 +13,11 @@ import SwiftUI
 private let logger = Log.app.service
 
 struct VultTierService {
-    let vultTicker = "VULT"
+    /// VULT's ERC-20 contract on Ethereum. The tier is matched on this rather
+    /// than on the "VULT" ticker: any address can deploy a token under any
+    /// symbol and a user can add it to their vault, and a look-alike must not
+    /// buy a real trading-fee discount.
+    static let vultContractAddress = "0xb788144DF611029C60b859DF47e79B7726C4DEBa"
     let thorguardContractAddress = "0xa98b29a8f5a247802149c268ecf860b8308b7291"
 
     @AppStorage("vult_balance_cache") private var cacheEntries: [CacheEntry] = []
@@ -99,7 +103,21 @@ struct VultTierService {
     }
 
     func getVultToken(for vault: Vault) -> Coin? {
-        vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
+        vault.coins.first { Self.isVult($0) }
+    }
+
+    /// Whether `coin` is the real VULT, matched on chain + contract address.
+    /// Contract addresses are compared case-insensitively: EIP-55 checksums a
+    /// hex address by letter case, so the same token legitimately arrives in
+    /// different casings depending on where its metadata came from.
+    private static func isVult(_ coin: Coin) -> Bool {
+        coin.chain == .ethereum
+            && coin.contractAddress.caseInsensitiveCompare(vultContractAddress) == .orderedSame
+    }
+
+    private static func isVult(_ meta: CoinMeta) -> Bool {
+        meta.chain == .ethereum
+            && meta.contractAddress.caseInsensitiveCompare(vultContractAddress) == .orderedSame
     }
 
     /// Checks if we recently fetched the balance (within cache validity duration)
@@ -238,7 +256,7 @@ private extension VultTierService {
 
     @MainActor
     func addVultToken(to vault: Vault) async {
-        let vultTokenMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
+        let vultTokenMeta = TokensStore.TokenSelectionAssets.first { Self.isVult($0) }
         guard let vultTokenMeta else { return }
         try? await CoinService.addToChain(assets: [vultTokenMeta], to: vault)
     }
