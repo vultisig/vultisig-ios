@@ -12,7 +12,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
 
     let coin: Coin
     var onBond: (BondNode?) -> Void
-    var onUnbond: (BondNode) -> Void
+    var onUnbond: (BondNode?) -> Void
     var emptyStateView: () -> EmptyStateView
 
     var body: some View {
@@ -62,6 +62,12 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                 }
                 .disabled(!viewModel.canAddBond)
                 .opacity(viewModel.canAddBond ? 1 : 0.5)
+
+                if viewModel.canUnbondFromUnlistedNode {
+                    PrimaryButton(title: "unbondFromAnotherNode", type: .secondary) {
+                        onUnbond(nil)
+                    }
+                }
             }
         }
     }

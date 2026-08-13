@@ -68,6 +68,7 @@
 "assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ não encontrado no vault )";
 "assets" = "Ativos";
+"assetsLoadFailed" = "Não foi possível carregar os ativos. Verifique sua conexão e tente novamente.";
 "asymmetricDeposit" = "Depósito Assimétrico";
 "asymmetricDepositInfo" = "Você pode depositar apenas CACAO ou apenas o ativo. A Maya equilibrará automaticamente sua posição.";
 "atLeastOneDevice" = "Pelo menos um dispositivo";
@@ -134,7 +135,9 @@
 "biometricsFastSigning" = "Biometria assinatura rápida";
 "bond" = "Vincular";
 "Bond" = "Bond";
+"bondableAssetsLoadFailed" = "Não foi possível carregar suas posições de LP vinculáveis. Verifique sua conexão e tente novamente.";
 "bonded" = "Vinculado";
+"bondedAssetsLoadFailed" = "Não foi possível carregar os ativos vinculados a este nó. Verifique sua conexão e tente novamente.";
 "bondedCoin" = "Total Vinculado %@";
 "bondedLPUnits" = "Unidades LP em Bond";
 "bondedXCoin" = "Vinculado: %@";
@@ -904,6 +907,7 @@
 "noActiveChainsFound" = "Nenhuma chain ativa encontrada";
 "noActiveChainsFoundSubtitle" = "Não detectamos nenhum ativo nesta frase semente.\n\nCada chain adicional aumenta o tempo para gerar seu vault e a possibilidade de timeout.";
 "noBarcodesFound" = "Nenhum código de barras encontrado";
+"noBondableLPPositions" = "Você não tem unidades de LP não vinculadas em um pool vinculável.";
 "noBondedAssetsOnNode" = "Nenhum ativo em bond encontrado neste nó";
 "noCameraFound" = "Nenhuma câmera conectada encontrada.";
 "noCameraPermissionError" = "Permissão para a câmera negada.\n\nPor favor, ative-a nas Configurações.";
@@ -1596,6 +1600,7 @@
 "unableToVerifyGasTokenError" = "Não foi possível verificar o saldo do token de gas. Por favor, tente novamente.";
 "unbond" = "Desvincular";
 "Unbond" = "Unbond";
+"unbondFromAnotherNode" = "Desvincular de Outro Nó";
 "unbondRune" = "Desvincular RUNE";
 "unknown" = "Desconhecido";
 "unlimited" = "Ilimitado";

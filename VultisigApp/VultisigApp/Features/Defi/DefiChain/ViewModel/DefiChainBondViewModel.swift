@@ -36,6 +36,18 @@ final class DefiChainBondViewModel: ObservableObject {
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.bonds.contains(where: { $0.chain == chain }) }
     }
+
+    /// Whether to offer unbonding from a node the user has no card for.
+    ///
+    /// Active nodes are discovered by querying the bond address, so a node that
+    /// stopped reporting the user as a provider leaves them with no route out at
+    /// all. On MayaChain the unbond form re-fetches everything it needs from a
+    /// typed address, so a blank entry point is a complete flow. THORChain's
+    /// unbond validates the amount against the bond the card carries, so it stays
+    /// card-driven.
+    var canUnbondFromUnlistedNode: Bool {
+        chain == .mayaChain && canUnbond
+    }
     private let interactor: BondInteractor?
     private let chain: Chain
 

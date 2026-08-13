@@ -28,6 +28,20 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     @Published var availableLPUnits: String?
     @Published var estimatedCacaoValue: Decimal?
 
+    /// Localization key explaining why there is nothing to bond, or nil when the
+    /// form is usable. Distinguishes a failed fetch — which a retry can fix —
+    /// from genuinely holding no unbonded LP units, which it cannot.
+    @Published private(set) var assetsUnavailableReason: String?
+
+    /// Whether `assetsUnavailableReason` describes something a retry could
+    /// change.
+    var canRetryLoadingAssets: Bool {
+        assetsUnavailableReason == Self.loadFailedKey
+    }
+
+    private static let loadFailedKey = "bondableAssetsLoadFailed"
+    private static let noPositionsKey = "noBondableLPPositions"
+
     // Track if user can bond (whitelist check result)
     private var canBondToNode: Bool = true
 
@@ -58,7 +72,6 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     }
 
     func onLoad() {
-        isLoading = true
         setupForm()
         lpUnitsField.validators = [
             RequiredValidator(errorMessage: "emptyLPsField".localized),
@@ -69,19 +82,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
             addressViewModel.field.value = initialBondAddress
         }
 
-        Task {
-            // Fetch user's LP positions and cache them
-            await fetchAndCacheUserLPPositions()
-
-            let assets = await assetsDataSource.fetchAssets()
-            await MainActor.run {
-                isLoading = false
-
-                if let firstAsset = assets.first {
-                    selectedAsset = firstAsset
-                }
-            }
-        }
+        loadAssets()
 
         // Watch for node address changes - check whitelist eligibility
         addressViewModel.field.$valid
@@ -141,32 +142,59 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         }
     }
 
-    /// Fetch user's LP positions from Maya API and cache for quick lookup
-    private func fetchAndCacheUserLPPositions() async {
-        do {
-            async let memberDetailsTask = mayaAPIService.getMemberDetails(address: coin.address)
-            async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: coin.address)
+    /// Loads the user's LP positions and the bondable assets derived from them.
+    ///
+    /// Both are required before the form can produce a transaction, so a failure
+    /// in either is reported as one — and it is reported rather than swallowed,
+    /// because the DeFi tab is the only Maya bond route there is.
+    func loadAssets() {
+        isLoading = true
+        assetsUnavailableReason = nil
 
-            let memberDetails = try await memberDetailsTask
-            let allBondedUnits = try await allBondedUnitsTask
+        Task {
+            do {
+                let positions = try await fetchUserLPPositions()
+                let assets = try await assetsDataSource.fetchAssets()
 
-            var positions: [String: String] = [:]
-            for pool in memberDetails.pools {
-                let totalUnits = UInt64(pool.liquidityUnits) ?? 0
-                let bondedUnits = allBondedUnits[pool.pool] ?? 0
-                let availableUnits = totalUnits > bondedUnits ? totalUnits - bondedUnits : 0
+                await MainActor.run {
+                    isLoading = false
+                    userLPPositions = positions
 
-                if availableUnits > 0 {
-                    positions[pool.pool] = String(availableUnits)
+                    if let firstAsset = assets.first {
+                        selectedAsset = firstAsset
+                    } else {
+                        assetsUnavailableReason = Self.noPositionsKey
+                    }
+                }
+            } catch {
+                Log.send.viewModel.error("Error loading bondable Maya assets: \(error.localizedDescription, privacy: .public)")
+                await MainActor.run {
+                    isLoading = false
+                    assetsUnavailableReason = Self.loadFailedKey
                 }
             }
-            let p = positions
-            await MainActor.run {
-                userLPPositions = p
-            }
-        } catch {
-            Log.send.viewModel.error("Error fetching user LP positions: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// The user's unbonded LP units per pool, keyed by pool name.
+    private func fetchUserLPPositions() async throws -> [String: String] {
+        async let memberDetailsTask = mayaAPIService.getMemberDetails(address: coin.address)
+        async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: coin.address)
+
+        let memberDetails = try await memberDetailsTask
+        let allBondedUnits = try await allBondedUnitsTask
+
+        var positions: [String: String] = [:]
+        for pool in memberDetails.pools {
+            let totalUnits = UInt64(pool.liquidityUnits) ?? 0
+            let bondedUnits = allBondedUnits[pool.pool] ?? 0
+            let availableUnits = totalUnits > bondedUnits ? totalUnits - bondedUnits : 0
+
+            if availableUnits > 0 {
+                positions[pool.pool] = String(availableUnits)
+            }
+        }
+        return positions
     }
 
     var transactionBuilder: TransactionBuilder? {

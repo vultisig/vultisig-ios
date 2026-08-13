@@ -34,6 +34,8 @@ struct AssetSelectionListScreen: View {
                         loadingView
                     } else if !viewModel.filteredAssets.isEmpty {
                         list
+                    } else if viewModel.didFailToLoad {
+                        failureMessage
                     } else {
                         emptyMessage
                     }
@@ -86,6 +88,13 @@ struct AssetSelectionListScreen: View {
 
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
+            .padding(.top, 48)
+    }
+
+    /// A failed fetch used to render as "no result found", which reads as a
+    /// statement about the user's holdings rather than about the network.
+    var failureMessage: some View {
+        ErrorMessage(text: "assetsLoadFailed", width: 260)
             .padding(.top, 48)
     }
 }

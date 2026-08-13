@@ -167,7 +167,7 @@ struct DefiChainMainScreen: View {
                         viewModel: bondViewModel,
                         coin: nativeCoin,
                         onBond: { onTransactionToPresent(.bond(coin: nativeCoin.toCoinMeta(), node: $0?.address)) },
-                        onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
+                        onUnbond: { onTransactionToPresent(.unbond(coin: nativeCoin.toCoinMeta(), node: $0)) },
                         emptyStateView: { emptyStateView }
                     )
                 }

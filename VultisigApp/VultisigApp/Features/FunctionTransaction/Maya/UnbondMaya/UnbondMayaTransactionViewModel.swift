@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     let coin: Coin
@@ -29,6 +30,12 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
 
     // Available bonded assets for the current node
     @Published var availableBondedAssets: [THORChainAsset] = []
+
+    /// Localization key set when the bonded-asset fetch failed, as opposed to
+    /// returning nothing. The empty case already reports itself on the address
+    /// field ("no bonded assets found on this node") — saying that after a
+    /// network failure would be a claim about the node the app never verified.
+    @Published private(set) var assetsUnavailableReason: String?
 
     private(set) lazy var form: [FormField] = [
         addressViewModel.field,
@@ -76,6 +83,7 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
                     self.availableBondedAssets = []
                     self.selectedAsset = nil
                     self.bondedLPUnits = nil
+                    self.assetsUnavailableReason = nil
                 }
             }
             .store(in: &cancellables)
@@ -97,26 +105,46 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
             .store(in: &cancellables)
     }
 
+    /// Re-runs the bonded-asset fetch for the address currently in the form.
+    /// Exposed so a transient failure is recoverable without backing out of the
+    /// screen — this is the get-my-money-out direction.
+    func retryLoadingAssets() {
+        let address = addressViewModel.field.value
+        guard !address.isEmpty else { return }
+        fetchBondedAssetsForNode(address)
+    }
+
     /// Fetch bonded assets for the specified node address
     private func fetchBondedAssetsForNode(_ nodeAddress: String) {
         isLoading = true
+        assetsUnavailableReason = nil
         assetsDataSource.nodeAddress = nodeAddress
 
         Task {
-            let assets = await assetsDataSource.fetchAssets()
+            do {
+                let assets = try await assetsDataSource.fetchAssets()
 
-            await MainActor.run {
-                isLoading = false
-                availableBondedAssets = assets
+                await MainActor.run {
+                    isLoading = false
+                    availableBondedAssets = assets
 
-                if assets.isEmpty {
-                    addressViewModel.field.error = "noBondedAssetsOnNode".localized
-                    selectedAsset = nil
-                } else {
-                    // Auto-select first asset if none selected
-                    if selectedAsset == nil {
-                        selectedAsset = assets.first
+                    if assets.isEmpty {
+                        addressViewModel.field.error = "noBondedAssetsOnNode".localized
+                        selectedAsset = nil
+                    } else {
+                        // Auto-select first asset if none selected
+                        if selectedAsset == nil {
+                            selectedAsset = assets.first
+                        }
                     }
+                }
+            } catch {
+                Log.send.viewModel.error("Error fetching bonded LP positions: \(error.localizedDescription, privacy: .public)")
+                await MainActor.run {
+                    isLoading = false
+                    availableBondedAssets = []
+                    selectedAsset = nil
+                    assetsUnavailableReason = "bondedAssetsLoadFailed"
                 }
             }
         }
