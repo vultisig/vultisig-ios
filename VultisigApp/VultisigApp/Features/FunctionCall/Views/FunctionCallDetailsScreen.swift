@@ -176,7 +176,7 @@ struct FunctionCallDetailsScreen: View {
             }
 
             fnCallInstance = .rebond(rebondInstance)
-        case .leave:
+        case .leave, .theSwitch:
             // Migrated to `Features/FunctionTransaction/` — the action list
             // routes it to its own screen and never lands here. Listed only to
             // keep this switch exhaustive; each migration adds its case name.
@@ -193,8 +193,6 @@ struct FunctionCallDetailsScreen: View {
             fnCallInstance = .merge(FunctionCallCosmosMerge(coin: selectedCoin, vault: vault))
         case .unmerge:
             fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
-        case .theSwitch:
-            fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
         case .addThorLP:
             fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
         case .withdrawSecuredAsset:

@@ -48,6 +48,15 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
+    /// Cosmos Hub → THORChain SWITCH. `coin` is the source chain's native
+    /// asset: the transfer goes to THORChain's inbound vault for that chain,
+    /// and that vault only credits the native asset — a Gaia IBC token sent
+    /// there is simply lost. The destination is deliberately absent from the
+    /// intent; it is the live inbound vault address, resolved when the
+    /// transaction is built rather than carried from wherever the caller came
+    /// from. The THORChain address the memo names comes from the vault, so it
+    /// is not on the intent either.
+    case theSwitch(coin: CoinMeta)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -83,6 +92,8 @@ enum FunctionTransactionType: Hashable {
         case .tonUnstake(let coin, _, _, _):
             return [coin]
         case .leave(let coin, _):
+            return [coin]
+        case .theSwitch(let coin):
             return [coin]
         }
     }
