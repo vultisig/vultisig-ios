@@ -1507,6 +1507,7 @@
 "swapVerifyCheckbox3Description" = "정확한 스왑 금액에 대한 ERC20 허용량 제공에 동의합니다";
 "Switch" = "전환";
 "switchBackToInternetMode" = "로컬을 사용하지 않으시겠습니까? 다시 전환하세요.";
+"switchRouteUnavailable" = "THORChain에 연결하여 입금 주소를 확인할 수 없습니다. 연결을 확인하고 다시 시도해 주세요.";
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";
 "targetAsset" = "대상 자산: %@";

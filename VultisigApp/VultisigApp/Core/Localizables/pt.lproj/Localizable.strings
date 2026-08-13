@@ -1507,6 +1507,7 @@
 "swapVerifyCheckbox3Description" = "Concordo em fornecer permissão ERC20 para o valor exato da troca";
 "Switch" = "Trocar";
 "switchBackToInternetMode" = "Não quer usar o modo local? Voltar.";
+"switchRouteUnavailable" = "Não foi possível conectar à THORChain para confirmar o endereço de depósito. Verifique a sua conexão e tente novamente.";
 "switchToLocalMode" = "Mudar para modo local";
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";
 "targetAsset" = "Target Asset: %@";

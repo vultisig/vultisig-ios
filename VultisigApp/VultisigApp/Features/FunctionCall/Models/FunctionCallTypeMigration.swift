@@ -51,6 +51,20 @@ extension FunctionCallType {
                 $0.chain == coin.chain && $0.isNativeToken
             }
             return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+        case .theSwitch:
+            // SWITCH is a plain transfer to THORChain's inbound vault for the
+            // source chain, and that vault credits the chain's native asset
+            // only. The legacy screen used whatever coin happened to be
+            // selected, so opening Functions from one of Gaia's IBC tokens
+            // (FUZN, KUJI, LVN, …) and picking Switch would have sent that
+            // token to the vault, where nothing credits it back. Naming the
+            // native asset means a vault that cannot resolve it lands on
+            // `FunctionTransactionScreen`'s shared "not in vault" error
+            // instead.
+            let nativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == coin.chain && $0.isNativeToken
+            }
+            return .theSwitch(coin: nativeAsset ?? coin.toCoinMeta())
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

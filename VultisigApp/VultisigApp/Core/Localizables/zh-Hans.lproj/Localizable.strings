@@ -1507,6 +1507,7 @@
 "swapVerifyCheckbox3Description" = "我同意为确切的交换金额提供 ERC20 授权";
 "Switch" = "切换";
 "switchBackToInternetMode" = "不想使用本地模式？切换回去。";
+"switchRouteUnavailable" = "无法连接到 THORChain 以确认存款地址。请检查您的连接并重试。";
 "switchToLocalMode" = "切换到本地模式";
 "systemErrorMessage" = "系统错误。请重试";
 "targetAsset" = "目标资产: %@";
