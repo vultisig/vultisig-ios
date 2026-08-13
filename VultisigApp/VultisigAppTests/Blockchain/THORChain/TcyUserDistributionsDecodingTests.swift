@@ -38,6 +38,29 @@ final class TcyUserDistributionsDecodingTests: XCTestCase {
         XCTAssertEqual(distributions.first?.amount, "12345")
     }
 
+    /// Midgard omitting the key entirely, rather than sending `null`, must decode
+    /// the same way — `decodeIfPresent` treats both as absent.
+    func testAnOmittedDistributionsKeyDecodesToNil() throws {
+        let response = try decode(Self.responseWithOmittedKey)
+        XCTAssertNil(response.distributions)
+    }
+
+    /// A genuinely empty list is a third shape for the same "no history" case.
+    func testAnEmptyDistributionsListDecodes() throws {
+        let response = try decode(Self.responseWithEmptyList)
+        XCTAssertEqual(response.distributions, [])
+    }
+
+    /// All three "no history" shapes normalize to the same `[]` the call site
+    /// (`calculateTcyAPY`'s `guard !distributions.isEmpty else { return 0 }`)
+    /// keys its zero-rate branch on.
+    func testAllNoHistoryShapesNormalizeToAnEmptyArray() throws {
+        for json in [Self.responseWithNoHistory, Self.responseWithOmittedKey, Self.responseWithEmptyList] {
+            let normalized = try decode(json).distributions ?? []
+            XCTAssertEqual(normalized, [])
+        }
+    }
+
     // MARK: - Fixtures
 
     /// Verbatim from `https://.../thorchain_midgard/v2/tcy/distribution/{address}`
@@ -57,6 +80,23 @@ final class TcyUserDistributionsDecodingTests: XCTestCase {
         "apr": "1.5",
         "distributions": [{"date": "1700000000", "amount": "12345"}],
         "total": "12345"
+    }
+    """
+
+    private static let responseWithOmittedKey = """
+    {
+        "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+        "apr": "0",
+        "total": "0"
+    }
+    """
+
+    private static let responseWithEmptyList = """
+    {
+        "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+        "apr": "0",
+        "distributions": [],
+        "total": "0"
     }
     """
 }
