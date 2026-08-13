@@ -32,6 +32,15 @@ struct BondMayaTransactionBuilder: TransactionBuilder {
     /// unit" for one particular `decimals` value, and silently becomes a
     /// multiple of it for any other — a `1e-8` literal was 100 base units on
     /// CACAO's 10 decimals, not one.
+    ///
+    /// Exact for `decimals` in 0...18, measured. Above 18 the round trip is
+    /// erratic — 24, 36 and 40 collapse to zero while 30 and 38 survive —
+    /// because `NumberFormatter` loses the value re-parsing that many fraction
+    /// digits, not because `Decimal` underflows. 18 is the ceiling for every
+    /// coin this app carries (EVM's maximum; CACAO is 10), and this builder
+    /// only ever sees MayaChain CACAO, so the erratic range is unreachable. No
+    /// clamp: silently signing a *different* amount would be worse than the
+    /// range being impossible to reach.
     private var unbondDust: Decimal {
         1 / pow(10, coin.decimals)
     }

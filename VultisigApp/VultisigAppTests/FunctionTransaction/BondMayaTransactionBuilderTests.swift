@@ -71,8 +71,15 @@ final class BondMayaTransactionBuilderTests: XCTestCase {
     /// The dust must be *derived* from the coin's decimals. A literal exponent
     /// is one base unit for exactly one `decimals` value and a multiple of it
     /// for every other, which is how the 100x came about in the first place.
+    ///
+    /// The range is every value a coin in this app can have: 18 is EVM's
+    /// maximum and the largest anything here carries, CACAO is 10, and 0 is a
+    /// whole-unit coin. Above 18 the format/parse round trip stops being exact
+    /// (`NumberFormatter` loses that many fraction digits — 24, 36 and 40
+    /// collapse to zero while 30 and 38 survive), which is why this stops at
+    /// 18 rather than sweeping upward.
     func testUnbondDustTracksTheCoinsDecimals() {
-        for decimals in [6, 8, 10, 18] {
+        for decimals in [0, 1, 2, 6, 8, 10, 18] {
             let tx = makeBuilder(isBond: false, coin: Self.cacao(decimals: decimals))
                 .buildSendTransaction(vault: .example)
 
