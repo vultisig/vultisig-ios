@@ -24,7 +24,7 @@ struct FunctionCallDetailsScreen: View {
     // Screen owns active coin / gas. After PR4 every sub-model accepts
     // the current coin at construction and mutates it through
     // `coinSelectionHandler` for the cross-mutators (AddThorLP pool
-    // dropdown, WithdrawSecuredAsset asset picker).
+    // dropdown).
     @State private var selectedCoin: Coin = .example
     @State private var gas: BigInt = .zero
 
@@ -132,9 +132,9 @@ struct FunctionCallDetailsScreen: View {
                     }
                 }
 
-            case .leave:
+            case .leave, .withdrawSecuredAsset:
                 // Migrated to `Features/FunctionTransaction/` — the route-out
-                // above already handled it. Listed only to keep this switch
+                // above already handled them. Listed only to keep this switch
                 // exhaustive; each migration adds its case name here.
                 break
             case .custom:
@@ -155,8 +155,6 @@ struct FunctionCallDetailsScreen: View {
                 fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
             case .securedAsset:
                 fnCallInstance = .securedAsset(FunctionCallSecuredAsset(coin: selectedCoin, vault: vault))
-            case .withdrawSecuredAsset:
-                fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
             }
         }
 #if os(iOS)

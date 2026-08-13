@@ -38,8 +38,6 @@ struct FunctionCallContentView: View {
             AddThorLPFormView(model: model, selectedCoin: $selectedCoin)
         case .securedAsset(let model):
             SecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
-        case .withdrawSecuredAsset(let model):
-            WithdrawSecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         }
     }
 }

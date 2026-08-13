@@ -119,13 +119,59 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    func testWithdrawSecuredAssetMapsToItsIntent() {
+        guard case .withdrawSecuredAsset(let mappedCoin)? = FunctionCallType.withdrawSecuredAsset
+            .migratedTransactionType(coin: Self.makeRune(), nodeAddress: nil) else {
+            return XCTFail("Withdraw secured asset must map to its intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+    }
+
+    /// The intent names the account the picker queries, never the coin the
+    /// legacy screen happened to have selected: opening Functions from TCY and
+    /// picking the withdrawal must still read RUNE's bank balances.
+    func testWithdrawSecuredAssetIsPinnedToTheNativeAccountNotTheSelectedToken() {
+        guard case .withdrawSecuredAsset(let mappedCoin)? = FunctionCallType.withdrawSecuredAsset
+            .migratedTransactionType(coin: FunctionCallFixture.makeTCY(), nodeAddress: nil) else {
+            return XCTFail("Withdraw secured asset must map to its intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+    }
+
+    /// A vault with no RUNE cannot ask THORChain what it holds, so it lands on
+    /// the shared "not in vault" error. The legacy form answered "No Secured
+    /// Assets found in vault", which says the opposite of what happened.
+    func testWithdrawSecuredAssetFailsClosedWhenTheVaultHoldsNoNativeCoin() {
+        let tcy = FunctionCallFixture.makeTCY()
+        let vault = FunctionCallFixture.makeVault(coins: [tcy])
+        XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
+
+        guard case .withdrawSecuredAsset(let mappedCoin)? = FunctionCallType.withdrawSecuredAsset
+            .migratedTransactionType(coin: tcy, nodeAddress: nil) else {
+            return XCTFail("Withdraw secured asset must map to its intent")
+        }
+
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
+    }
+
+    func testWithdrawSecuredAssetIntentResolvesTheCoinItNeeds() {
+        let coin = Self.makeRune()
+        let intent = FunctionTransactionType.withdrawSecuredAsset(coin: coin.toCoinMeta())
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
     /// The mapping is an allowlist: everything not yet migrated keeps building
     /// its legacy sub-model.
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
             .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
-            .theSwitch, .addThorLP, .securedAsset, .withdrawSecuredAsset
+            .theSwitch, .addThorLP, .securedAsset
         ]
         for type in stillLegacy {
             XCTAssertNil(
@@ -143,6 +189,12 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testLeaveStaysSelectableOnBothChainsThatOfferIt() {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.leave))
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
+    }
+
+    /// `SECURE-` is the only route out of a secured position, so losing it from
+    /// the dropdown is not a cosmetic regression.
+    func testWithdrawSecuredAssetStaysSelectableOnThorchain() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.withdrawSecuredAsset))
     }
 
     /// The route-out fires on a *change* of selection. A chain whose default is
