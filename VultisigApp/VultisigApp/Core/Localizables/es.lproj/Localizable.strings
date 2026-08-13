@@ -65,7 +65,6 @@
 "apy" = "APY";
 "arguments" = "Argumentos";
 "asset" = "Activo";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ no encontrado en el vault )";
 "assets" = "Activos";
 "assetsLoadFailed" = "No se pudieron cargar los activos. Comprueba tu conexión e inténtalo de nuevo.";
@@ -840,7 +839,6 @@
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "Las unidades LP no pueden ser cero";
 "lpUnitsExceeded" = "Excede las unidades LP disponibles (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén para restaurarla más tarde";
 "makeMoveVec" = "Crear Move Vec";
 "makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";

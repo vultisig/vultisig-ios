@@ -65,7 +65,6 @@
 "apy" = "APY";
 "arguments" = "Argumenti";
 "asset" = "Imovina";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ nije pronađen u vaultu )";
 "assets" = "Imovine";
 "assetsLoadFailed" = "Nije moguće učitati sredstva. Provjerite vezu i pokušajte ponovo.";
@@ -840,7 +839,6 @@
 "lpUnits" = "LP jedinice";
 "lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
 "lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta za kasniju obnovu";
 "makeMoveVec" = "Stvori Move Vec";
 "makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";

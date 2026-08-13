@@ -44,4 +44,27 @@ extension Form {
         }
     }
 
+    /// Re-runs every validator now, refreshes `validForm` from the result, and
+    /// reports it — surfacing field errors exactly as `validateErrors()` does.
+    ///
+    /// `setupForm()` only recomputes `validForm` when a field's *value*
+    /// publishes. A form that installs a validator **later**, once a balance or
+    /// a limit arrives from the network, therefore keeps whatever `validForm`
+    /// was decided before that validator existed: type the amount first, let
+    /// the limit land second, and `validForm` is still the stale `true`.
+    /// Submit paths gated on an asynchronously-installed validator must ask
+    /// this rather than read the cached value.
+    @discardableResult
+    func revalidate() -> Bool {
+        var isValid = true
+        for field in form {
+            do {
+                try field.validateErrors(showing: true)
+            } catch {
+                isValid = false
+            }
+        }
+        validForm = isValid
+        return isValid
+    }
 }

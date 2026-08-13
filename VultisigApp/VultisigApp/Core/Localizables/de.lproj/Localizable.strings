@@ -65,7 +65,6 @@
 "apy" = "APY";
 "arguments" = "Argumente";
 "asset" = "Vermögenswert";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ nicht im Vault gefunden )";
 "assets" = "Vermögenswerte";
 "assetsLoadFailed" = "Assets konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
@@ -840,7 +839,6 @@
 "lpUnits" = "LP-Einheiten";
 "lpUnitsCannotBeZero" = "LP-Einheiten dürfen nicht null sein";
 "lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt, um ihn später wiederherzustellen";
 "makeMoveVec" = "Move-Vektor erstellen";
 "makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";

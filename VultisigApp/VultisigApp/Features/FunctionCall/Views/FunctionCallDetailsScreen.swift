@@ -154,9 +154,13 @@ struct FunctionCallDetailsScreen: View {
 
     private func ensureRuneCoin() {
         // Ensure RUNE token is selected for operations on THORChain.
-        if let runeCoin = vault.runeCoin {
-            selectedCoin = runeCoin
-        }
+        //
+        // Only on THORChain. LEAVE is offered on MayaChain too, and swapping the
+        // coin there would move the transaction onto a different chain behind
+        // the user — rewriting the function selector's own case list along with
+        // it, and signing LEAVE against RUNE for a node the user named on Maya.
+        guard selectedCoin.chain == .thorChain, let runeCoin = vault.runeCoin else { return }
+        selectedCoin = runeCoin
     }
 
     private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {

@@ -65,7 +65,6 @@
 "apy" = "APY";
 "arguments" = "Argomenti";
 "asset" = "Risorsa";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ non trovato nel vault )";
 "assets" = "Asset";
 "assetsLoadFailed" = "Impossibile caricare gli asset. Controlla la connessione e riprova.";
@@ -840,7 +839,6 @@
 "lpUnits" = "Unità LP";
 "lpUnitsCannotBeZero" = "Le unità LP non possono essere zero";
 "lpUnitsExceeded" = "Supera le unità LP disponibili (%@)";
-"lpUnitsLabel" = "Unità LP";
 "madeVaultBackupPrompt" = "Ho fatto un backup del caveau da ripristinare in seguito";
 "makeMoveVec" = "Crea Move Vec";
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";

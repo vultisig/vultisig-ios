@@ -65,7 +65,6 @@
 "apy" = "APY";
 "arguments" = "Argumentos";
 "asset" = "Ativo";
-"assetLabel" = "Asset";
 "assetNotFoundInVault" = "( %@ não encontrado no vault )";
 "assets" = "Ativos";
 "assetsLoadFailed" = "Não foi possível carregar os ativos. Verifique sua conexão e tente novamente.";
@@ -840,7 +839,6 @@
 "lpUnits" = "Unidades LP";
 "lpUnitsCannotBeZero" = "As unidades LP não podem ser zero";
 "lpUnitsExceeded" = "Excede as unidades LP disponíveis (%@)";
-"lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "Fiz um backup do cofre para restaurar mais tarde";
 "makeMoveVec" = "Criar Move Vec";
 "makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";

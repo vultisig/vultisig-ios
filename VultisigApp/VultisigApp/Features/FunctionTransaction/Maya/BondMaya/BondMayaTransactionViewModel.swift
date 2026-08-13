@@ -75,12 +75,19 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         )
     }
 
-    func onLoad() {
-        setupForm()
-        lpUnitsField.validators = [
+    /// Validators that hold whichever pool is selected. The availability
+    /// validator is layered on top once that pool's units are known, and has to
+    /// come back off when the selection changes.
+    private static var baseLPUnitsValidators: [FormFieldValidator] {
+        [
             RequiredValidator(errorMessage: "emptyLPsField".localized),
             IntValidator()
         ]
+    }
+
+    func onLoad() {
+        setupForm()
+        lpUnitsField.validators = Self.baseLPUnitsValidators
 
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
@@ -206,12 +213,17 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     }
 
     var transactionBuilder: TransactionBuilder? {
-        validateErrors()
-
         // Block if not whitelisted on node
-        guard canBondToNode else { return nil }
+        guard canBondToNode else {
+            revalidate()
+            return nil
+        }
 
-        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
+        // Deliberately NOT `validForm`. `Form` recomputes that only when a
+        // field's value publishes, and `LPUnitsValidator` is installed later,
+        // once the user's LP positions arrive — so units typed before the
+        // available figure landed leave `validForm` stale at true.
+        guard revalidate(), let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
             coin: coin,
@@ -228,15 +240,16 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         // Look up LP units from cached positions (fetched from Maya API)
         guard let units = userLPPositions[asset.thorchainAsset] else {
             availableLPUnits = nil
+            // The previous asset's ceiling does not apply to this one, and
+            // leaving it installed would validate against the wrong pool.
+            lpUnitsField.validators = Self.baseLPUnitsValidators
             return
         }
 
         availableLPUnits = units
 
         // Update validator with available units
-        lpUnitsField.validators = [
-            RequiredValidator(errorMessage: "emptyLPsField".localized),
-            IntValidator(),
+        lpUnitsField.validators = Self.baseLPUnitsValidators + [
             LPUnitsValidator(availableUnits: units)
         ]
     }

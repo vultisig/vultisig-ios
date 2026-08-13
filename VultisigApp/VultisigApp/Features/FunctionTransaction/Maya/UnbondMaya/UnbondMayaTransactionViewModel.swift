@@ -53,6 +53,9 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     /// previous one instead of racing it.
     private var bondedAssetsTask: Task<Void, Never>?
 
+    /// Same, for the per-asset bonded-unit lookup that sets the unbond ceiling.
+    private var bondedUnitsTask: Task<Void, Never>?
+
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
         self.vault = vault
@@ -64,12 +67,19 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         )
     }
 
-    func onLoad() {
-        setupForm()
-        lpUnitsField.validators = [
+    /// Validators that hold no matter which node is loaded. The availability
+    /// validator is layered on top once the node answers, and has to come back
+    /// off when the node changes.
+    private static var baseLPUnitsValidators: [FormFieldValidator] {
+        [
             RequiredValidator(errorMessage: "emptyLPsField".localized),
             IntValidator()
         ]
+    }
+
+    func onLoad() {
+        setupForm()
+        lpUnitsField.validators = Self.baseLPUnitsValidators
 
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
@@ -133,6 +143,11 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         bondedAssetsTask?.cancel()
         isLoading = true
         assetsUnavailableReason = nil
+        // The bonded-unit figure and the availability validator describe the
+        // node that was loaded before this one. They have to go before the new
+        // node answers, or the form briefly offers the previous node's limit.
+        bondedLPUnits = nil
+        lpUnitsField.validators = Self.baseLPUnitsValidators
         assetsDataSource.nodeAddress = nodeAddress
 
         bondedAssetsTask = Task { [weak self] in
@@ -148,11 +163,17 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
                     if assets.isEmpty {
                         addressViewModel.field.error = "noBondedAssetsOnNode".localized
                         selectedAsset = nil
+                    } else if let selectedAsset, assets.contains(selectedAsset) {
+                        // Same asset, different node: `$selectedAsset` will not
+                        // fire, so nothing else would re-read the bonded units
+                        // for the node now in the address field.
+                        fetchBondedLPUnits()
                     } else {
-                        // Auto-select first asset if none selected
-                        if selectedAsset == nil {
-                            selectedAsset = assets.first
-                        }
+                        // An asset only bonded on the PREVIOUS node must not
+                        // survive the switch — unbonding it here would build a
+                        // memo for a pool the user has no position in on this
+                        // node.
+                        selectedAsset = assets.first
                     }
                 }
             } catch {
@@ -174,10 +195,20 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         !Task.isCancelled && addressViewModel.field.value == nodeAddress
     }
 
-    var transactionBuilder: TransactionBuilder? {
-        validateErrors()
+    /// As above, for results that are also scoped to one pool.
+    @MainActor
+    private func isCurrentRequest(for nodeAddress: String, asset: THORChainAsset) -> Bool {
+        isCurrentRequest(for: nodeAddress) && selectedAsset == asset
+    }
 
-        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
+    var transactionBuilder: TransactionBuilder? {
+        // Deliberately NOT `validForm`. `Form` recomputes that only when a
+        // field's value publishes, and the availability validator is installed
+        // later, when the node answers — so a units figure typed before the
+        // ceiling arrived leaves `validForm` stale at true. Re-running the
+        // validators here is what the button press is for anyway: it is also
+        // what reveals the field errors.
+        guard revalidate(), let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
             coin: coin,
@@ -197,33 +228,42 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
             return
         }
 
-        Task {
+        bondedUnitsTask?.cancel()
+        let nodeAddress = addressViewModel.field.value
+
+        bondedUnitsTask = Task { [weak self] in
+            guard let self else { return }
             do {
                 let bondedUnits = try await mayaAPIService.getBondedLPUnits(
-                    nodeAddress: addressViewModel.field.value,
+                    nodeAddress: nodeAddress,
                     bondAddress: coin.address,
                     poolAsset: selectedAsset.thorchainAsset
                 )
 
                 guard let units = bondedUnits, units > 0 else {
                     await MainActor.run {
+                        guard isCurrentRequest(for: nodeAddress, asset: selectedAsset) else { return }
                         bondedLPUnits = nil
                     }
                     return
                 }
 
                 await MainActor.run {
+                    // This figure is the unbond ceiling; publishing it for a
+                    // node or asset the user has since left would raise the
+                    // limit on a position that does not have it.
+                    guard isCurrentRequest(for: nodeAddress, asset: selectedAsset) else { return }
                     bondedLPUnits = String(units)
 
                     // Update validator with bonded units
-                    lpUnitsField.validators = [
-                        RequiredValidator(errorMessage: "emptyLPsField".localized),
-                        IntValidator(),
+                    lpUnitsField.validators = Self.baseLPUnitsValidators + [
                         LPUnitsValidator(availableUnits: String(units))
                     ]
                 }
             } catch {
+                Log.send.viewModel.error("Error fetching bonded LP units: \(error.localizedDescription, privacy: .public)")
                 await MainActor.run {
+                    guard isCurrentRequest(for: nodeAddress, asset: selectedAsset) else { return }
                     bondedLPUnits = nil
                 }
             }
