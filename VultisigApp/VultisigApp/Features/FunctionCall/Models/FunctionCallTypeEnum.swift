@@ -20,7 +20,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          unmerge,
          theSwitch,
          addThorLP,
-         securedAsset,
          withdrawSecuredAsset
 
     var id: String { self.rawValue }
@@ -45,8 +44,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Switch", comment: "")
         case .addThorLP:
             return NSLocalizedString("Add THORChain LP", comment: "")
-        case .securedAsset:
-            return NSLocalizedString("Secured Assets", comment: "")
         case .withdrawSecuredAsset:
             return NSLocalizedString("Withdraw Secured Asset", comment: "")
         }
@@ -61,15 +58,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .merge,
                 .unmerge,
                 .custom,
-                .securedAsset,
                 .withdrawSecuredAsset
             ]
 
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return [
-                .addThorLP,
-                .securedAsset
-            ]
+            return [.addThorLP]
         case .mayaChain:
             return [.leave,
                     .custom]
@@ -121,12 +114,14 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .kujira, .osmosis:
             return .cosmosIBC
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            // Was `.addThorLP`, which now has its own screen and builds no
-            // legacy form. A migrated type must never be a chain's default:
-            // the default is applied without publishing a change, so the
-            // route-out never fires and the user lands on a selection with
-            // nothing behind it.
-            return .securedAsset
+            // Add-LP is migrated and has no legacy form, but it is also the
+            // only operation these chains still offer once SECURE+ mint retires
+            // to Swap. Naming anything else here would name an operation the
+            // chain does not have, so the honest answer is the migrated one —
+            // and it costs nothing, because the action list passes a
+            // single-operation chain straight through to that operation's own
+            // screen without ever consulting a default.
+            return .addThorLP
         default:
             return .custom
         }

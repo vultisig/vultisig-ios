@@ -128,7 +128,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
             .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
-            .theSwitch, .securedAsset, .withdrawSecuredAsset
+            .theSwitch, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
             XCTAssertNil(
@@ -197,21 +197,36 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
     }
 
-    /// Kept, with a narrower job than it was written for.
+    /// Rewritten from `testNoChainDefaultsToAMigratedFunction`, which the epic
+    /// makes unsatisfiable rather than merely inconvenient.
     ///
-    /// It was the guard on the only entry point there was: the dropdown
-    /// applied `getDefault` without publishing a change, so a chain defaulting
-    /// to a migrated type opened on a selection that built nothing. Rows carry
-    /// their own destination, so no default decides where a user lands any
-    /// more, and the invariant that now protects them is
+    /// That assertion — no chain's `getDefault` names a migrated operation —
+    /// existed because the dropdown applied the default *without publishing a
+    /// change*, so a chain defaulting to a migrated type opened on a selection
+    /// that built nothing. Integrating the ten migrations leaves several chains
+    /// with no honest way to satisfy it: MayaChain offers LEAVE and the raw
+    /// memo, Gaia offers IBC and SWITCH, the nine Add-LP L1s offer Add-LP
+    /// alone, dYdX offers the vote alone — and after the migrations every one
+    /// of those operations has its own screen. Re-pointing those defaults would
+    /// mean naming an operation the chain does not offer, which is a value
+    /// chosen to satisfy a test rather than to describe the app.
+    ///
+    /// It is also no longer the invariant that matters. Rows carry their own
+    /// destination and no entry point opens the legacy screen without a
+    /// preselection, so no default decides where any user lands;
     /// `FunctionActionCatalogTests
-    /// .testEveryOfferedActionRoutesToAScreenThatCanBuildIt`, which is
-    /// strictly stronger — it covers every operation a chain offers, not just
-    /// the one it used to open on.
+    /// .testEveryOfferedActionRoutesToAScreenThatCanBuildIt` carries the
+    /// reachability half, over every operation a chain offers rather than the
+    /// one it used to open on.
     ///
-    /// This still fails loudly if the dropdown path is re-entered before the
-    /// legacy shell is deleted, and it costs one `Chain.allCases` walk.
-    func testNoChainDefaultsToAMigratedFunction() {
+    /// What is left worth pinning is that the two default factories *agree*.
+    /// They did not: one matched any THORChain ticker containing "TCY" and the
+    /// other matched it exactly, so a holder of a TCY wrapper was routed to one
+    /// operation and handed another's form. `FunctionCallInstance.getDefault`
+    /// now answers nil for exactly the chains whose type default is migrated,
+    /// which is the same statement made once.
+    @MainActor
+    func testTheTwoDefaultFactoriesAgreeOnWhichChainsHaveNoLegacyForm() {
         for chain in Chain.allCases {
             let coin = FunctionCallFixture.makeCoin(
                 chain,
@@ -219,11 +234,36 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
                 decimals: 8,
                 isNative: true
             )
+            let vault = FunctionCallFixture.makeVault(coins: [coin])
             let defaultType = FunctionCallType.getDefault(for: coin)
-            XCTAssertFalse(
-                Self.isMigrated(defaultType),
-                "\(chain.rawValue) defaults to \(defaultType.rawValue), which no longer builds a form"
+
+            XCTAssertEqual(
+                FunctionCallInstance.getDefault(for: coin, vault: vault) == nil,
+                defaultType.migratedTransactionType(coin: coin, nodeAddress: nil) != nil,
+                "\(chain.rawValue) defaults to \(defaultType.rawValue), "
+                    + "and the two default factories disagree about whether it still has a legacy form"
             )
+        }
+    }
+
+    /// The exemption the action list made legal, stated positively.
+    ///
+    /// A chain whose entry resolves to `.action` never renders the dropdown at
+    /// all — the passthrough builds the destination in place — and its lone
+    /// case *is* its default, so "the default is migrated" is the state the
+    /// action list deliberately allows rather than a defect. The nine Add-LP
+    /// L1s are the first chains in it.
+    func testASingleActionChainMayDefaultToItsOnlyMigratedOperation() {
+        let coin = FunctionCallFixture.makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
+        XCTAssertEqual(FunctionCallType.getCases(for: coin), [.addThorLP])
+        XCTAssertEqual(FunctionCallType.getDefault(for: coin), .addThorLP)
+        XCTAssertTrue(Self.isMigrated(.addThorLP))
+
+        guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("Bitcoin must pass through to its only operation")
+        }
+        guard case .transaction(.addThorchainLP) = descriptor.destination else {
+            return XCTFail("Bitcoin's only operation is migrated and must not route through the legacy screen")
         }
     }
 }

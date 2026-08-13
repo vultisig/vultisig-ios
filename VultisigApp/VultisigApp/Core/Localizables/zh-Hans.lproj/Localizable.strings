@@ -436,7 +436,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12或24";
 "enterYourVaultsPassword" = "输入您的金库密码";
 "erc20ApprovalRequired" = "需要 ERC20 批准";
-"erc20ApprovalRequiredMessage" = "铸造前需要批准此 ERC20 代币。将签署两笔交易：";
 "error" = "错误";
 "errorCopy" = "复制";
 "errorLoadingBalance" = "加载余额出错";
@@ -522,7 +521,6 @@
 "functionActionLeaveSubtitle" = "请求节点退出并释放您的绑定";
 "functionActionMergeSubtitle" = "将代币合并为 RUJI";
 "functionActionRebondSubtitle" = "将您的绑定转移到其他节点";
-"functionActionSecuredAssetSubtitle" = "铸造 THORChain 安全资产";
 "functionActionsEmptyDescription" = "该链暂无可用操作。";
 "functionActionsTitle" = "操作";
 "functionActionSwitchSubtitle" = "将您的代币兑换为原生 RUNE";
@@ -539,7 +537,6 @@
 "gasOwner" = "Gas 所有者";
 "gasPrice" = "Gas 价格";
 "general" = "通用";
-"generatedMemo" = "生成的备注:";
 "German" = "德语";
 "getStarted" = "开始";
 "github" = "GitHub";
@@ -909,8 +906,6 @@
 "minPayout" = "最小支付";
 "mint" = "铸造";
 "mintCoin" = "铸造 %@";
-"mintSecuredAsset" = "铸造担保资产 (SECURE+)";
-"mintTransaction" = "2. 铸造担保资产交易";
 "missingEncryptionKey" = "缺少加密密钥。请重试。";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
@@ -1302,7 +1297,6 @@
 "searchAsset" = "搜索资产";
 "second" = "第二个";
 "secure" = "安全";
-"Secured Assets" = "担保资产";
 "secureLoaderTitle" = "使用多个设备加入，\n如果全部添加则继续";
 "secureModeTitle" = "安全";
 "secureVault" = "安全保险库";
@@ -1552,13 +1546,11 @@
 "switchBackToInternetMode" = "不想使用本地模式？切换回去。";
 "switchToLocalMode" = "切换到本地模式";
 "systemErrorMessage" = "系统错误。请重试";
-"targetAsset" = "目标资产: %@";
 "termsOfService" = "服务条款";
 "theUnmerge" = "解绑";
 "thisDevice" = "此设备";
 "ThisDeviceIs" = "此设备是";
 "thisVaultOnly" = "仅此保险库";
-"thorAddressAutoFilled" = "THORChain 地址 (自动填充)";
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
 "thorchainAddress" = "THORChain 地址";
 "thorchainCustomTokenInvalidFormat" = "THORChain 代币格式无效。请使用 THOR.{SYMBOL}，例如 THOR.LQDY。";

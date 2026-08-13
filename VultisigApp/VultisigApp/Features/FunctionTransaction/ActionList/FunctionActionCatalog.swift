@@ -112,8 +112,6 @@ extension FunctionCallType {
             return "functionActionSwitchSubtitle".localized
         case .addThorLP:
             return "functionActionAddThorLpSubtitle".localized
-        case .securedAsset:
-            return "functionActionSecuredAssetSubtitle".localized
         case .withdrawSecuredAsset:
             return "functionActionWithdrawSecuredAssetSubtitle".localized
         }
@@ -139,8 +137,6 @@ extension FunctionCallType {
             return .arrowsRotateCenter
         case .addThorLP:
             return .gridPlus
-        case .securedAsset:
-            return .shield
         case .withdrawSecuredAsset:
             return .circleOpenArrowDown
         }

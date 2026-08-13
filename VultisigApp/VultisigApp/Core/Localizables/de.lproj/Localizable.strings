@@ -436,7 +436,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
 "enterYourVaultsPassword" = "Geben Sie das Passwort Ihres Tresors ein";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
-"erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Fehler";
 "errorCopy" = "Kopieren";
 "errorLoadingBalance" = "Error loading balance";
@@ -522,7 +521,6 @@
 "functionActionLeaveSubtitle" = "Fordere einen Node auf, auszutreten und deinen Bond freizugeben";
 "functionActionMergeSubtitle" = "Führe ein Token in RUJI zusammen";
 "functionActionRebondSubtitle" = "Verschiebe deinen Bond zu einem anderen Node";
-"functionActionSecuredAssetSubtitle" = "Präge ein THORChain Secured Asset";
 "functionActionsEmptyDescription" = "Für diese Chain sind keine Aktionen verfügbar.";
 "functionActionsTitle" = "Aktionen";
 "functionActionSwitchSubtitle" = "Wechsle deine Token zu nativem RUNE";
@@ -539,7 +537,6 @@
 "gasOwner" = "Gas-Eigentümer";
 "gasPrice" = "Gas-Preis";
 "general" = "Allgemein";
-"generatedMemo" = "Generated Memo:";
 "German" = "Deutsch";
 "getStarted" = "Loslegen";
 "github" = "Github";
@@ -909,8 +906,6 @@
 "minPayout" = "Min. Auszahlung";
 "mint" = "Prägen";
 "mintCoin" = "%@ prägen";
-"mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
-"mintTransaction" = "2. Mint secured asset transaction";
 "missingEncryptionKey" = "Verschlüsselungsschlüssel fehlt. Bitte versuche es erneut.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
@@ -1302,7 +1297,6 @@
 "searchAsset" = "Asset suchen";
 "second" = "zweiten";
 "secure" = "Sicher";
-"Secured Assets" = "Gesicherte Vermögenswerte";
 "secureLoaderTitle" = "Suche nach Geräten...";
 "secureModeTitle" = "SICHER";
 "secureVault" = "Sicherer Tresor";
@@ -1552,13 +1546,11 @@
 "switchBackToInternetMode" = "Kein lokaler Modus gewünscht? Zurückwechseln.";
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
-"targetAsset" = "Target Asset: %@";
 "termsOfService" = "Nutzungsbedingungen";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Dieses Gerät";
 "ThisDeviceIs" = "Dieses Gerät ist das";
 "thisVaultOnly" = "Nur dieses Gewölbe";
-"thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "THORChain-Adresse";
 "thorchainCustomTokenInvalidFormat" = "Ungültiges THORChain-Token-Format. Verwende THOR.{SYMBOL}, z. B. THOR.LQDY.";

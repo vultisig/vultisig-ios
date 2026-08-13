@@ -29,7 +29,6 @@ final class FunctionCallContentViewTests: XCTestCase {
             .merge(FunctionCallCosmosMerge(coin: rune, vault: vault)),
             .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),
             .theSwitch(FunctionCallCosmosSwitch(coin: FunctionCallFixture.makeATOM(), vault: vault)),
-            .securedAsset(FunctionCallSecuredAsset(coin: rune, vault: vault)),
             .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault))
         ]
 

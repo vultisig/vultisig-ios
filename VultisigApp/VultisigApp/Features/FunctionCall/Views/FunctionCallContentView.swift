@@ -30,8 +30,6 @@ struct FunctionCallContentView: View {
             CosmosUnmergeFormView(model: model, selectedCoin: $selectedCoin)
         case .theSwitch(let model):
             CosmosSwitchFormView(model: model, coin: selectedCoin)
-        case .securedAsset(let model):
-            SecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         case .withdrawSecuredAsset(let model):
             WithdrawSecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         }

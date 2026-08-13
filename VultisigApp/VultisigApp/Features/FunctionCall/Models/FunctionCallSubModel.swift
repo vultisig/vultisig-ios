@@ -2,7 +2,7 @@
 //  FunctionCallSubModel.swift
 //  VultisigApp
 //
-//  Shared surface for the 13 FunctionCall sub-models. Reintroduced so
+//  Shared surface for the FunctionCall sub-models. Reintroduced so
 //  `FunctionCallInstance` can dispatch through a single `model` accessor
 //  instead of re-`switch`ing the same closed set in every accessor.
 //  Each sub-model already implements the memo / amount / validity /
@@ -85,12 +85,6 @@ extension FunctionCallCosmosUnmerge: FunctionCallSubModel {
 
 extension FunctionCallCosmosSwitch: FunctionCallSubModel {
     var resolvedToAddress: String? { destinationAddress }
-}
-
-extension FunctionCallSecuredAsset: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-    var resolvedToAddress: String? { toAddress.isEmpty ? nil : toAddress }
-    var submitErrorMessage: String? { customErrorMessage }
 }
 
 extension FunctionCallWithdrawSecuredAsset: FunctionCallSubModel {
