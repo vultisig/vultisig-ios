@@ -592,6 +592,8 @@
 "holdForPairedSign" = "按住以配对签名";
 "howItWorks" = "工作原理";
 "IBC Transfer" = "IBC 转账";
+"ibcNoDestinationChains" = "该资产在此链上没有可用的 IBC 通道";
+"ibcTransferTitle" = "IBC 转账";
 "import" = "导入";
 "importSeedphrase" = "导入助记词";
 "importSeedphraseSubtitle" = "输入它，创建保险库，永不回头。";

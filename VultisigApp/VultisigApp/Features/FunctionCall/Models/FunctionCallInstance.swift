@@ -14,7 +14,6 @@ enum FunctionCallInstance {
     case unbondMaya(FunctionCallUnbondMayaChain)
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
-    case cosmosIBC(FunctionCallCosmosIBC)
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
@@ -33,7 +32,6 @@ enum FunctionCallInstance {
         case .unbondMaya(let memo): return memo
         case .custom(let memo): return memo
         case .vote(let memo): return memo
-        case .cosmosIBC(let memo): return memo
         case .merge(let memo): return memo
         case .unmerge(let memo): return memo
         case .theSwitch(let memo): return memo
@@ -88,8 +86,11 @@ enum FunctionCallInstance {
             return .vote(FunctionCallVote())
         case .gaiaChain:
             return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
-        case .kujira:
-            return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
+        // Kujira had an arm here building the IBC sub-model. IBC moved to
+        // `Features/FunctionTransaction/`, and Kujira's only operation is IBC,
+        // so the chain falls through to `.custom` — a default this factory can
+        // still build. Nothing reaches it: the action list passes Kujira
+        // straight through to the migrated screen.
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))
         default:

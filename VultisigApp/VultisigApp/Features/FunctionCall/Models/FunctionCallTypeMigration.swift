@@ -51,6 +51,13 @@ extension FunctionCallType {
                 $0.chain == coin.chain && $0.isNativeToken
             }
             return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+        case .cosmosIBC:
+            // The transfer moves whichever coin the user opened Functions from,
+            // native or not — an `ibc/…` token is as transferable as the chain's
+            // own asset — so unlike LEAVE this must NOT be pinned to the
+            // chain's native coin. The selected coin already resolves against
+            // the vault, which is what the form needs to read a balance.
+            return .ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

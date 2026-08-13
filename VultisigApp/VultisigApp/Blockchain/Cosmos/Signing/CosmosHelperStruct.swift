@@ -76,22 +76,25 @@ struct CosmosHelperStruct {
 
         switch transactionType {
         case .ibcTransfer:
-            var memo = ""
-            let splitedMemo = keysignPayload.memo?.split(separator: ":")
-            if splitedMemo?.isEmpty ?? true {
+            // The routing data rides the memo because `CosmosSpecific` has
+            // nowhere to carry a source channel; `CosmosIBCTransferMemo` is the
+            // only thing that reads it. Reading it here by splitting on every
+            // colon dropped any user memo that contained one, and indexing the
+            // split result trapped on a memo too short to be routing data at
+            // all — reachable from a peer-supplied payload, so it fails closed.
+            guard let packedMemo = keysignPayload.memo,
+                  let ibcMemo = CosmosIBCTransferMemo(packed: packedMemo) else {
                 throw HelperError.runtimeError("To send IBC transaction, memo should be specified")
             }
 
-            let sourceChannel = splitedMemo?[1] ?? ""
-            if splitedMemo?.count == 4 {
-                memo = String(splitedMemo?[3] ?? "")
-            }
+            let sourceChannel = ibcMemo.sourceChannel
+            let memo = ibcMemo.userMemo
 
             let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []
             let timeout = UInt64(timeouts.last ?? "0") ?? 0
             let transferMessage = WalletCore.CosmosMessage.Transfer.with {
                 $0.sourcePort = "transfer"
-                $0.sourceChannel = String(sourceChannel)
+                $0.sourceChannel = sourceChannel
                 $0.sender = keysignPayload.coin.address
                 $0.receiver = String(keysignPayload.toAddress)
                 $0.token = CosmosAmount.with {

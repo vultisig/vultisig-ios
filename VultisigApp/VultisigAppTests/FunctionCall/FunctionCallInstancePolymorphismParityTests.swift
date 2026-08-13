@@ -149,23 +149,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
     }
 
-    func testCosmosIBCParity() {
-        let kuji = FunctionCallFixture.makeKUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [kuji])
-        let model = FunctionCallCosmosIBC(coin: kuji, vault: vault)
-        model.selectedChainObject = .gaiaChain
-        model.destinationAddress = "cosmos1abc"
-        let instance = FunctionCallInstance.cosmosIBC(model)
-
-        let tx = instance.toSendTransaction(coin: kuji, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, model.toString())
-        XCTAssertEqual(tx.transactionType, .ibcTransfer)
-        XCTAssertEqual(tx.toAddress, "cosmos1abc")
-        XCTAssertEqual(instance.toAddress, "cosmos1abc")
-
-        assertForwardingParity(instance, forwardsTo: model, coin: kuji, vault: vault, gas: 0)
-    }
-
     func testMergeParity() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])

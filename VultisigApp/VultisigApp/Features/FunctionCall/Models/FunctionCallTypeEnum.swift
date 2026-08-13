@@ -124,8 +124,12 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .vote
         case .gaiaChain:
             return .theSwitch
-        case .kujira:
-            return .cosmosIBC
+        // Kujira defaulted to `.cosmosIBC`, which has moved to
+        // `Features/FunctionTransaction/` and no longer builds a legacy form.
+        // It falls through to `.custom` instead — unreachable in practice,
+        // since Kujira offers one operation and the action list passes straight
+        // through to it, but a default that names a migrated type is what
+        // `testNoChainDefaultsToAMigratedFunction` exists to catch.
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP
         default:
