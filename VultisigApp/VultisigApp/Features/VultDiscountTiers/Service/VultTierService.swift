@@ -19,42 +19,77 @@ struct VultTierService {
     @AppStorage("vult_balance_cache") private var cacheEntries: [CacheEntry] = []
     private static let cacheValidityDuration: TimeInterval = 3 * 60 // 3 minutes
 
-    /// Per-wallet cache of the fully-resolved discount tier (VULT balance result
-    /// + Thorguard boost), keyed by vault id and held for the process lifetime.
-    /// The tier doesn't change during a swap session, so once resolved it's read
-    /// back without re-running the Thorguard NFT `eth_call` on every quote fetch.
-    /// Switching vaults resolves fresh because the cache is keyed per vault; a
-    /// VULT/Thorguard balance change for the *same* vault isn't reflected until
-    /// the next app launch, which is acceptable for a discount-tier hint.
-    private static let sessionCache = SessionTierCache()
+    /// Per-vault session cache of Thorguard NFT ownership — and *only* that.
+    ///
+    /// Ownership is the expensive half of a tier resolution (an Ethereum
+    /// `eth_call` that would otherwise fire on every debounced keystroke) and
+    /// the half that cannot change without the user leaving the app, so it is
+    /// the only half worth pinning for the process lifetime. The VULT balance
+    /// half is deliberately *not* cached: it arrives late, can fail, and is
+    /// refreshed by unrelated screens, so caching a fully-resolved tier meant a
+    /// single balance read of zero cost the user their fee discount on every
+    /// swap for the rest of the session.
+    private static let thorguardCache = ThorguardOwnershipCache()
 
+    // MARK: - Tier resolution
+
+    /// Resolves the tier with a live Thorguard check. `cached` selects the VULT
+    /// balance source: `true` reads the balance already stored on the vault,
+    /// `false` refreshes it from the network first (throttled to once per
+    /// `cacheValidityDuration`).
+    ///
+    /// `@MainActor` because it reads and writes the `@Model` vault and its coins.
+    @MainActor
     func fetchDiscountTier(for vault: Vault, cached: Bool = false) async -> VultDiscountTier? {
-        let balance = cached ? (getVultToken(for: vault)?.balanceDecimal ?? 0) : await fetchVultBalance(for: vault)
-        var tier = VultDiscountTier.allCases
-            .sorted { $0.balanceToUnlock > $1.balanceToUnlock }
-            .first { balance >= $0.balanceToUnlock }
-
-        // Check for Thorguard boost (upgrade tier by one level if eligible)
-        if canUpgrade(tier) {
-            let hasThorguard = await checkThorguardBalance(for: vault)
-            if hasThorguard {
-                tier = upgradeTier(tier)
-                logger.info("Upgraded VULT Tier to \(tier?.name ?? "", privacy: .public)")
-            }
-        }
-
-        return tier
+        let balance = cached ? storedVultBalance(for: vault) : await fetchVultBalance(for: vault)
+        let base = Self.baseTier(forBalance: balance)
+        // Skip the eth_call entirely when the boost couldn't lift the tier anyway.
+        guard Self.canUpgrade(base) else { return base }
+        return Self.applyThorguardBoost(to: base, hasThorguard: await checkThorguardBalance(for: vault))
     }
 
-    /// Resolves the discount tier once per wallet for the session and caches the
-    /// fully-resolved value (post-Thorguard). Subsequent calls return the cached
-    /// tier without any network access, keeping the Thorguard `eth_call` off the
-    /// per-quote critical path.
+    /// Quote-path resolution. The VULT balance is re-read on every call, so a
+    /// balance that lands late — or a first read that failed — is picked up by
+    /// the very next quote instead of being pinned for the session. Only the
+    /// Thorguard `eth_call` behind it is session-cached, which is what keeps it
+    /// off the per-quote critical path.
+    @MainActor
     func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
-        let vaultId = vault.pubKeyEdDSA
-        return await Self.sessionCache.resolve(for: vaultId) {
-            await fetchDiscountTier(for: vault)
-        }
+        await Self.resolveSessionTier(
+            cache: Self.thorguardCache,
+            vaultId: vault.pubKeyEdDSA,
+            balance: { await fetchVultBalance(for: vault) },
+            ownership: { await checkThorguardBalance(for: vault) }
+        )
+    }
+
+    /// The session-scoped composition, kept free of vault plumbing so it can be
+    /// exercised without a network: `balance` is asked on every call, while
+    /// ownership goes through `cache`, which remembers only a determined answer.
+    @MainActor
+    static func resolveSessionTier(
+        cache: ThorguardOwnershipCache,
+        vaultId: String,
+        balance: @MainActor () async -> Decimal,
+        ownership: @MainActor @escaping () async -> Bool?
+    ) async -> VultDiscountTier? {
+        let base = baseTier(forBalance: await balance())
+        guard canUpgrade(base) else { return base }
+        let hasThorguard = await cache.ownsThorguard(for: vaultId, ownership)
+        return applyThorguardBoost(to: base, hasThorguard: hasThorguard)
+    }
+
+    /// Highest tier unlocked by `balance` alone, before any Thorguard boost.
+    static func baseTier(forBalance balance: Decimal) -> VultDiscountTier? {
+        VultDiscountTier.allCases
+            .sorted { $0.balanceToUnlock > $1.balanceToUnlock }
+            .first { balance >= $0.balanceToUnlock }
+    }
+
+    /// Tier for a VULT balance combined with Thorguard ownership. Pass `nil` for
+    /// `hasThorguard` when ownership could not be determined.
+    static func tier(forBalance balance: Decimal, hasThorguard: Bool?) -> VultDiscountTier? {
+        applyThorguardBoost(to: baseTier(forBalance: balance), hasThorguard: hasThorguard)
     }
 
     func getVultToken(for vault: Vault) -> Coin? {
@@ -72,8 +107,22 @@ struct VultTierService {
         return shouldFetch
     }
 
+    /// Applies the one-level Thorguard boost. `hasThorguard == nil` means
+    /// ownership couldn't be determined; it is treated as "no boost" for this
+    /// resolution only and deliberately never remembered, so the next
+    /// resolution retries instead of locking the user out of the upgrade.
+    private static func applyThorguardBoost(
+        to base: VultDiscountTier?,
+        hasThorguard: Bool?
+    ) -> VultDiscountTier? {
+        guard hasThorguard == true, canUpgrade(base) else { return base }
+        let upgraded = upgradeTier(base)
+        logger.info("Upgraded VULT Tier to \(upgraded.name, privacy: .public)")
+        return upgraded
+    }
+
     /// Upgrades a tier to the next level (capped at Platinum for Thorguard boost)
-    private func upgradeTier(_ tier: VultDiscountTier?) -> VultDiscountTier {
+    private static func upgradeTier(_ tier: VultDiscountTier?) -> VultDiscountTier {
         guard let tier else { return .bronze }
         let tiers = VultDiscountTier.allCases
         let index = tiers.firstIndex(of: tier)
@@ -84,7 +133,7 @@ struct VultTierService {
         }
     }
 
-    private func canUpgrade(_ tier: VultDiscountTier?) -> Bool {
+    private static func canUpgrade(_ tier: VultDiscountTier?) -> Bool {
         switch tier {
         case .bronze, .silver, .gold, .none:
             logger.debug("Can upgrade VULT Tier, currently \(tier?.name ?? "", privacy: .public)")
@@ -95,11 +144,15 @@ struct VultTierService {
         }
     }
 
-    /// Checks if the vault holds at least one Thorguard NFT
-    private func checkThorguardBalance(for vault: Vault) async -> Bool {
+    /// Whether the vault holds at least one Thorguard NFT. Returns `nil` when
+    /// ownership could not be determined — no Ethereum address on the vault yet,
+    /// or a failed `eth_call`. Callers must not remember `nil` as "no NFT".
+    @MainActor
+    private func checkThorguardBalance(for vault: Vault) async -> Bool? {
         // Find Ethereum address in the vault
         guard let ethCoin = vault.coins.first(where: { $0.chain == .ethereum }) else {
-            return false
+            logger.debug("No Ethereum address on the vault, THORGuard ownership unknown")
+            return nil
         }
 
         do {
@@ -112,7 +165,7 @@ struct VultTierService {
             return balance > 0
         } catch {
             logger.error("Error fetching Thorguard balance: \(error.localizedDescription, privacy: .public)")
-            return false
+            return nil
         }
     }
 }
@@ -123,6 +176,12 @@ private extension VultTierService {
         let lastFetchDate: Date
     }
 
+    /// VULT balance already stored on the vault — an in-memory read, no network.
+    func storedVultBalance(for vault: Vault) -> Decimal {
+        getVultToken(for: vault)?.balanceDecimal ?? 0
+    }
+
+    @MainActor
     func fetchVultBalance(for vault: Vault) async -> Decimal {
         // Check if we need to fetch fresh balance
         if shouldFetchBalance(for: vault) {
@@ -138,11 +197,10 @@ private extension VultTierService {
             cacheEntries.append(CacheEntry(vaultId: vault.pubKeyEdDSA, lastFetchDate: Date()))
         }
 
-        // Return the balance from the coin (fresh or cached)
-        guard let vultToken = getVultToken(for: vault) else { return .zero }
-        return vultToken.balanceDecimal
+        return storedVultBalance(for: vault)
     }
 
+    @MainActor
     func getOrAddVultTokenIfNeeded(to vault: Vault) async -> Coin? {
         var vultToken = getVultToken(for: vault)
         if vultToken == nil {
@@ -153,12 +211,14 @@ private extension VultTierService {
         return vultToken
     }
 
+    @MainActor
     func addVultToken(to vault: Vault) async {
         let vultTokenMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
         guard let vultTokenMeta else { return }
         try? await CoinService.addToChain(assets: [vultTokenMeta], to: vault)
     }
 
+    @MainActor
     func addEthChainIfNeeded(for vault: Vault) async {
         guard !vault.coins.contains(where: { $0.chain == .ethereum && $0.isNativeToken }) else {
             return
@@ -170,43 +230,44 @@ private extension VultTierService {
     }
 }
 
-/// Thread-safe, in-memory cache of resolved discount tiers keyed by vault id.
-/// `Box` lets us distinguish "not yet resolved" (no entry) from "resolved to
-/// nil" (entry holding nil) so a genuinely tier-less wallet isn't re-resolved.
+/// Thread-safe, in-memory record of whether a vault holds a Thorguard NFT,
+/// keyed by vault id and held for the process lifetime.
 ///
-/// Resolution is single-flight: concurrent callers for the same vault (e.g. the
-/// fire-and-forget warm-up on screen load racing the first debounced quote
-/// fetch) await one shared `Task` instead of each launching their own
-/// `fetchDiscountTier` — so the underlying Thorguard `eth_call` runs at most
-/// once per vault per session.
-actor SessionTierCache {
-    struct Box {
-        let value: VultDiscountTier?
-    }
+/// Only a *determined* answer is stored. "Couldn't check" — a failed `eth_call`,
+/// or a vault with no Ethereum address yet — is returned to the caller as `nil`
+/// but never cached, so the next resolution retries instead of pinning a wrong
+/// "no NFT" for the rest of the session.
+///
+/// Lookups are single-flight: concurrent callers for the same vault (e.g. the
+/// fire-and-forget warm-up on swap-screen load racing the first debounced quote
+/// fetch) await one shared `Task` instead of each firing their own `eth_call` —
+/// so the call runs at most once per vault per session.
+actor ThorguardOwnershipCache {
+    private var owned: [String: Bool] = [:]
+    private var inFlight: [String: Task<Bool?, Never>] = [:]
 
-    private var tiers: [String: Box] = [:]
-    private var inFlight: [String: Task<VultDiscountTier?, Never>] = [:]
-
-    /// Returns the cached tier if resolved; otherwise runs `work` once, sharing
-    /// the in-flight `Task` with any concurrent caller for the same vault.
-    /// `work` is `@MainActor`-isolated so it can safely read the `@Model` vault
-    /// it resolves the tier from — nothing non-Sendable crosses the actor's
+    /// Returns the cached ownership flag, or runs `check` once and shares its
+    /// in-flight `Task` with any concurrent caller for the same vault.
+    /// `check` is `@MainActor`-isolated so it can safely read the `@Model` vault
+    /// it resolves ownership from — nothing non-Sendable crosses the actor's
     /// executor boundary.
-    func resolve(
+    func ownsThorguard(
         for vaultId: String,
-        _ work: @MainActor @escaping () async -> VultDiscountTier?
-    ) async -> VultDiscountTier? {
-        if let box = tiers[vaultId] {
-            return box.value
+        _ check: @MainActor @escaping () async -> Bool?
+    ) async -> Bool? {
+        if let owned = owned[vaultId] {
+            return owned
         }
         if let task = inFlight[vaultId] {
             return await task.value
         }
-        let task = Task { @MainActor in await work() }
+        let task = Task { @MainActor in await check() }
         inFlight[vaultId] = task
         let value = await task.value
-        tiers[vaultId] = Box(value: value)
         inFlight[vaultId] = nil
+        if let value {
+            owned[vaultId] = value
+        }
         return value
     }
 }
