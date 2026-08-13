@@ -88,13 +88,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .cosmosIBC,
                 .theSwitch
             ]
-        case .kujira:
-            return [.cosmosIBC]
-        case .osmosis:
-            return [.cosmosIBC]
-        case .noble:
-            return [.cosmosIBC]
-        case .akash:
+        case .kujira, .osmosis:
             return [.cosmosIBC]
 
         default:
@@ -102,6 +96,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The function the details screen opens on. Must always be a member of
+    /// `getCases(for:)` — a default the dropdown does not list strands the
+    /// user on a form they cannot get back to. `FunctionCallInstance.getDefault`
+    /// builds the matching sub-model and has to agree case-for-case; neither
+    /// factory derives from the other, so the pairing is pinned by tests.
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
@@ -115,7 +114,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .vote
         case .gaiaChain:
             return .theSwitch
-        case .kujira:
+        case .kujira, .osmosis:
             return .cosmosIBC
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP

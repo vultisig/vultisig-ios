@@ -9,8 +9,16 @@ import Foundation
 
 extension CoinAction {
 
+    /// Chains that surface the Function (memo) action. Every entry must have a
+    /// non-empty `FunctionCallType.getCases(for:)`, and no chain outside this
+    /// list may offer cases — otherwise the button either opens an empty
+    /// selector or the cases are unreachable. Pinned by tests.
+    ///
+    /// The THORChain chainnet/stagenet forks are deliberately absent: every
+    /// function sub-model matches `.thorChain` exactly, so those forks reached
+    /// only the Custom form with an empty token list, which can never validate.
     static var memoChains: [Chain] = [
-        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .dydx, .kujira, .gaiaChain, .osmosis,
+        .thorChain, .mayaChain, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
