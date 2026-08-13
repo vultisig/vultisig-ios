@@ -166,9 +166,11 @@ struct DefaultSwapInteractor: SwapInteractor {
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
-        // Same-underlying secured selection: mint via a SECURE+ deposit instead of
-        // a pool swap. The synthetic quote never feeds signing — build the real
-        // SECURE+ deposit payload (shared with the Function-Call verify path).
+        // Same-underlying secured selection: mint via a SECURE+ deposit instead
+        // of a pool swap. The synthetic quote never feeds signing — build the
+        // real SECURE+ deposit payload. This is the only route to a mint; the
+        // builder still shares its router-deposit shim with the Function-Call
+        // verify path, which uses it for LP adds.
         if transaction.mode == .securedMint {
             return try await ThorchainRouterDepositBuilder.buildSecuredMintPayload(
                 fromCoin: transaction.fromCoin,

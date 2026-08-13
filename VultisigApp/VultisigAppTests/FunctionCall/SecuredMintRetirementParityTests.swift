@@ -25,6 +25,13 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     /// The nine L1 chains whose Function screen used to offer the SECURE+ mint
     /// next to `addThorLP`, with the native coin a user holds and the secured
     /// denom that coin mints into.
+    ///
+    /// THORChain is deliberately absent even though it also lost the arm: a
+    /// SECURE+ deposit mints only when an L1 asset lands on a THORChain
+    /// inbound, so with a THORChain source the deleted form could only build a
+    /// self-addressed deposit that mints nothing. Swap correspondingly never
+    /// classifies a THORChain source as a same-underlying mint. Nothing to hold
+    /// parity with, so nothing to assert here.
     private static let retiredChains: [(chain: Chain, ticker: String, denom: String)] = [
         (.bitcoin, "BTC", "btc-btc"),
         (.bitcoinCash, "BCH", "bch-bch"),
@@ -40,8 +47,16 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     // MARK: - Swap covers every chain the deleted form covered
 
     /// Selecting the secured twin of a held L1 asset must be detected as a
-    /// same-underlying mint, on every chain the legacy form served.
-    func testSwapRoutesTheSecuredMintForEveryRetiredChain() {
+    /// same-underlying mint, on every chain the legacy form served. This is the
+    /// decision the whole route hangs off — it flips the synthetic quote, the
+    /// `.securedMint` transaction mode, and the interactor's payload branch.
+    ///
+    /// Scope, deliberately narrow: this covers the *detection* only, against a
+    /// destination built through the production mapper. The provider
+    /// registration, picker merge, quote and payload legs are covered by
+    /// `SecuredAssetTokenProviderTests` / `SecuredMintRoutingTests` and by the
+    /// on-device path; nothing here would catch those being unwired.
+    func testSwapDetectsTheSecuredMintForEveryRetiredChain() {
         for entry in Self.retiredChains {
             let fromCoin = nativeCoin(chain: entry.chain, ticker: entry.ticker)
             let securedCoin = securedTwin(denom: entry.denom)
@@ -53,6 +68,11 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     }
 
     /// The mint is only reachable where the Swap action is offered at all.
+    ///
+    /// `isSwapAvailable` is the chain-level half of that. It is not the whole
+    /// answer: `Chain.defaultActions` also drops `.swap` for the regions
+    /// `SwapFeatureGate` excludes, and the remote action config can disable it
+    /// per chain — neither of which is expressible here.
     func testSwapIsAvailableOnEveryRetiredChain() {
         for entry in Self.retiredChains {
             XCTAssertTrue(
