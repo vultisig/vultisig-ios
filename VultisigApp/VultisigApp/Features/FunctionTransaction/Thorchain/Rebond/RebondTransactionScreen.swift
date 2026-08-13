@@ -2,9 +2,9 @@
 //  RebondTransactionScreen.swift
 //  VultisigApp
 //
-//  THORChain node REBOND confirmation: the two validator addresses in one
-//  section, the optional partial amount in another. Continue is deliberately
-//  not gated on `validForm` — see the doc comment on `FormScreen`;
+//  THORChain node REBOND confirmation: the node address and the address the
+//  protocol rebonds to in one section, the optional partial amount in another.
+//  Continue is deliberately not gated on `validForm` — see `FormScreen`;
 //  `viewModel.transactionBuilder` returning nil is the enforcement, and the
 //  tap is what reveals the field errors on a form the user has not touched.
 //
@@ -13,7 +13,7 @@ import SwiftUI
 
 struct RebondTransactionScreen: View {
     enum FocusedField {
-        case currentNode, newNode, amount
+        case node, newAddress, amount
     }
 
     @StateObject var viewModel: RebondTransactionViewModel
@@ -29,19 +29,19 @@ struct RebondTransactionScreen: View {
         ) {
             FormExpandableSection(
                 title: "address".localized,
-                isValid: viewModel.currentNodeViewModel.field.valid && viewModel.newNodeViewModel.field.valid,
-                value: viewModel.currentNodeViewModel.field.value,
+                isValid: viewModel.nodeViewModel.field.valid && viewModel.newAddressViewModel.field.valid,
+                value: viewModel.nodeViewModel.field.value,
                 showValue: true,
                 focusedField: $focusedFieldBinding,
-                focusedFieldEquals: [FocusedField.currentNode, .newNode]
+                focusedFieldEquals: [FocusedField.node, .newAddress]
             ) {
-                focusedFieldBinding = $0 ? .currentNode : nil
+                focusedFieldBinding = $0 ? .node : nil
             } content: {
                 VStack(spacing: 12) {
-                    FunctionAddressField(viewModel: viewModel.currentNodeViewModel)
-                        .focused($focusedField, equals: .currentNode)
-                    FunctionAddressField(viewModel: viewModel.newNodeViewModel)
-                        .focused($focusedField, equals: .newNode)
+                    FunctionAddressField(viewModel: viewModel.nodeViewModel)
+                        .focused($focusedField, equals: .node)
+                    FunctionAddressField(viewModel: viewModel.newAddressViewModel)
+                        .focused($focusedField, equals: .newAddress)
                 }
             }
 
@@ -74,7 +74,7 @@ struct RebondTransactionScreen: View {
         }
         .onLoad {
             viewModel.onLoad()
-            focusedFieldBinding = .currentNode
+            focusedFieldBinding = .node
         }
         .delayedFocus(from: focusedFieldBinding, to: $focusedField)
     }

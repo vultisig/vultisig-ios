@@ -2,9 +2,13 @@
 //  RebondTransactionBuilder.swift
 //  VultisigApp
 //
-//  THORChain node REBOND: move a bond from the validator that holds it to
-//  another one. Two addresses, an optional partial amount that travels in the
-//  memo, and nothing attached to the transaction itself.
+//  THORChain node REBOND. The memo names the node holding the bond and the
+//  address the protocol rebonds to, with an optional partial amount that
+//  travels in the memo and nothing attached to the transaction itself.
+//
+//  Field names mirror the legacy sub-model's — `nodeAddress` / `newAddress`,
+//  the same keys the memo dictionary carries — rather than asserting what
+//  `NEWADDR` names on the protocol side.
 //
 
 import Foundation
@@ -12,17 +16,16 @@ import VultisigCommonData
 
 struct RebondTransactionBuilder: TransactionBuilder {
     let coin: Coin
-    let currentNodeAddress: String
-    let newNodeAddress: String
+    let nodeAddress: String
+    let newAddress: String
     /// Zero means "the whole bond": the memo then carries no amount segment
-    /// and the protocol moves everything bonded to `currentNodeAddress`.
+    /// and the protocol rebonds everything bonded under `nodeAddress`.
     let rebondAmount: Decimal
 
-    /// REBOND moves no value through this transaction — the bond never leaves
-    /// the protocol, only the validator holding it changes, and the amount
-    /// rides the memo. Pinned to the legacy sub-model's zero: RUNE attached to
-    /// this `MsgDeposit` has no return path, so it is a fund-safety constant,
-    /// not a default.
+    /// REBOND moves no value through this transaction — the bond stays inside
+    /// the protocol and the amount rides the memo. Pinned to the legacy
+    /// sub-model's zero: RUNE attached to this `MsgDeposit` has no return
+    /// path, so it is a fund-safety constant, not a default.
     let amount: String = "0"
     let sendMaxAmount: Bool = false
 
@@ -38,7 +41,7 @@ struct RebondTransactionBuilder: TransactionBuilder {
     }
 
     var memo: String {
-        var memo = "REBOND:\(currentNodeAddress):\(newNodeAddress)"
+        var memo = "REBOND:\(nodeAddress):\(newAddress)"
         // Gated on the decimal, not on the scaled integer, exactly as the
         // legacy sub-model was. An amount that truncates to zero therefore
         // still emits `:0` — a rebond of nothing — rather than falling through
@@ -51,8 +54,8 @@ struct RebondTransactionBuilder: TransactionBuilder {
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("nodeAddress", currentNodeAddress)
-        dict.set("newAddress", newNodeAddress)
+        dict.set("nodeAddress", nodeAddress)
+        dict.set("newAddress", newAddress)
         if rebondAmount > 0 {
             dict.set("rebondAmount", "\(rebondAmount)")
         }

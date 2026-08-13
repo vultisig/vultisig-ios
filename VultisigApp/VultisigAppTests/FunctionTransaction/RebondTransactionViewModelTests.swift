@@ -55,16 +55,16 @@ final class RebondTransactionViewModelTests: XCTestCase {
     }
 
     private func fillValidAddresses(_ viewModel: RebondTransactionViewModel) {
-        viewModel.currentNodeViewModel.field.value = Self.currentNode
-        viewModel.newNodeViewModel.field.value = Self.newNode
+        viewModel.nodeViewModel.field.value = Self.currentNode
+        viewModel.newAddressViewModel.field.value = Self.newNode
     }
 
     // MARK: - Empty
 
     func testPristineFormStartsEmptyAndBlocked() {
         let viewModel = makeViewModel()
-        XCTAssertEqual(viewModel.currentNodeViewModel.field.value, "")
-        XCTAssertEqual(viewModel.newNodeViewModel.field.value, "")
+        XCTAssertEqual(viewModel.nodeViewModel.field.value, "")
+        XCTAssertEqual(viewModel.newAddressViewModel.field.value, "")
         XCTAssertEqual(viewModel.amountField.value, "")
         XCTAssertFalse(viewModel.validForm)
         XCTAssertNil(viewModel.transactionBuilder)
@@ -76,18 +76,18 @@ final class RebondTransactionViewModelTests: XCTestCase {
         await awaitValidForm(viewModel, is: false)
 
         XCTAssertNil(viewModel.transactionBuilder, "An empty form must not produce a REBOND memo")
-        XCTAssertNotNil(viewModel.currentNodeViewModel.field.error)
-        XCTAssertNotNil(viewModel.newNodeViewModel.field.error)
+        XCTAssertNotNil(viewModel.nodeViewModel.field.error)
+        XCTAssertNotNil(viewModel.newAddressViewModel.field.error)
     }
 
     func testMissingNewNodeAddressBlocksTheBuilder() async {
         let viewModel = makeViewModel()
         viewModel.onLoad()
-        viewModel.currentNodeViewModel.field.value = Self.currentNode
+        viewModel.nodeViewModel.field.value = Self.currentNode
         await settle()
 
         XCTAssertFalse(viewModel.validForm)
-        XCTAssertNil(viewModel.transactionBuilder, "REBOND needs a destination validator")
+        XCTAssertNil(viewModel.transactionBuilder, "REBOND needs the memo's second address")
     }
 
     // MARK: - Invalid addresses
@@ -98,7 +98,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
         fillValidAddresses(viewModel)
         await awaitValidForm(viewModel, is: true)
 
-        viewModel.currentNodeViewModel.field.value = "not-an-address"
+        viewModel.nodeViewModel.field.value = "not-an-address"
         await awaitValidForm(viewModel, is: false)
 
         XCTAssertNil(viewModel.transactionBuilder)
@@ -106,14 +106,14 @@ final class RebondTransactionViewModelTests: XCTestCase {
 
     /// Tighter than the legacy sub-model, which accepted any THOR / Maya / TON
     /// address on either field. A Maya address in a THORChain REBOND memo names
-    /// a validator that chain has never heard of.
+    /// an account that chain has never heard of.
     func testMayaNodeAddressIsRejectedOnThorchain() async {
         let viewModel = makeViewModel()
         viewModel.onLoad()
         fillValidAddresses(viewModel)
         await awaitValidForm(viewModel, is: true)
 
-        viewModel.newNodeViewModel.field.value = Self.mayaNode
+        viewModel.newAddressViewModel.field.value = Self.mayaNode
         await awaitValidForm(viewModel, is: false)
 
         XCTAssertNil(viewModel.transactionBuilder)
@@ -128,8 +128,8 @@ final class RebondTransactionViewModelTests: XCTestCase {
         await awaitValidForm(viewModel, is: true)
 
         let builder = viewModel.transactionBuilder as? RebondTransactionBuilder
-        XCTAssertEqual(builder?.currentNodeAddress, Self.currentNode)
-        XCTAssertEqual(builder?.newNodeAddress, Self.newNode)
+        XCTAssertEqual(builder?.nodeAddress, Self.currentNode)
+        XCTAssertEqual(builder?.newAddress, Self.newNode)
         XCTAssertEqual(builder?.rebondAmount, 0)
         XCTAssertEqual(builder?.memo, "REBOND:\(Self.currentNode):\(Self.newNode)")
         XCTAssertEqual(builder?.amount, "0")
@@ -207,7 +207,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.transactionBuilder, "A same-turn edit must not submit on a stale aggregate")
     }
 
-    /// The same window on an address: a validator address cleared and submitted
+    /// The same window on an address: an address cleared and submitted
     /// in one turn must not ride the previous "valid".
     func testClearingAnAddressBlocksTheBuilderInTheSameRunLoopTurn() async {
         let viewModel = makeViewModel()
@@ -215,9 +215,24 @@ final class RebondTransactionViewModelTests: XCTestCase {
         fillValidAddresses(viewModel)
         await awaitValidForm(viewModel, is: true)
 
-        viewModel.newNodeViewModel.field.value = ""
+        viewModel.newAddressViewModel.field.value = ""
         XCTAssertTrue(viewModel.validForm, "Precondition: the aggregate has not settled yet")
         XCTAssertNil(viewModel.transactionBuilder)
+    }
+
+    /// The mirror window, which reading the stale aggregate would get wrong in
+    /// the other direction: a form completed and submitted in one turn must not
+    /// have its first Continue tap silently swallowed.
+    func testCompletingTheFormBuildsInTheSameRunLoopTurn() async {
+        let viewModel = makeViewModel()
+        viewModel.onLoad()
+        await awaitValidForm(viewModel, is: false)
+
+        fillValidAddresses(viewModel)
+        XCTAssertFalse(viewModel.validForm, "Precondition: the aggregate has not settled yet")
+
+        let builder = viewModel.transactionBuilder as? RebondTransactionBuilder
+        XCTAssertEqual(builder?.memo, "REBOND:\(Self.currentNode):\(Self.newNode)")
     }
 
     /// One base unit is the smallest amount that survives the conversion.
@@ -246,7 +261,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
 
         XCTAssertFalse(viewModel.validForm)
         XCTAssertNil(viewModel.transactionBuilder, "REBOND on a non-RUNE asset must not build")
-        XCTAssertEqual(viewModel.currentNodeViewModel.field.error, "rebondRequiresRune".localized)
+        XCTAssertEqual(viewModel.nodeViewModel.field.error, "rebondRequiresRune".localized)
     }
 
     /// The control for the test above: the identical inputs on RUNE do build.
@@ -257,7 +272,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
         await awaitValidForm(viewModel, is: true)
 
         XCTAssertNotNil(viewModel.transactionBuilder)
-        XCTAssertNil(viewModel.currentNodeViewModel.field.error)
+        XCTAssertNil(viewModel.nodeViewModel.field.error)
     }
 
     // MARK: - Gate re-closes
@@ -268,7 +283,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
         fillValidAddresses(viewModel)
         await awaitValidForm(viewModel, is: true)
 
-        viewModel.currentNodeViewModel.field.value = ""
+        viewModel.nodeViewModel.field.value = ""
         await awaitValidForm(viewModel, is: false)
 
         XCTAssertNil(viewModel.transactionBuilder)
@@ -281,9 +296,9 @@ final class RebondTransactionViewModelTests: XCTestCase {
         viewModel.onLoad()
         await settle()
 
-        XCTAssertEqual(viewModel.currentNodeViewModel.field.value, Self.currentNode)
-        XCTAssertEqual(viewModel.newNodeViewModel.field.value, "", "Only the current node is ever known upfront")
-        XCTAssertNil(viewModel.transactionBuilder, "The destination validator is still missing")
+        XCTAssertEqual(viewModel.nodeViewModel.field.value, Self.currentNode)
+        XCTAssertEqual(viewModel.newAddressViewModel.field.value, "", "Only the current node is ever known upfront")
+        XCTAssertNil(viewModel.transactionBuilder, "The memo's second address is still missing")
     }
 
     func testEmptyInitialNodeAddressLeavesTheFieldPristine() async {
@@ -291,7 +306,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
         viewModel.onLoad()
         await awaitValidForm(viewModel, is: false)
 
-        XCTAssertEqual(viewModel.currentNodeViewModel.field.value, "")
+        XCTAssertEqual(viewModel.nodeViewModel.field.value, "")
         XCTAssertNil(viewModel.transactionBuilder)
     }
 
@@ -299,16 +314,16 @@ final class RebondTransactionViewModelTests: XCTestCase {
 
     func testAddressResultWritesEachNodeAddress() {
         let viewModel = makeViewModel()
-        viewModel.currentNodeViewModel.handle(addressResult: AddressResult(address: Self.currentNode))
-        viewModel.newNodeViewModel.handle(addressResult: AddressResult(address: Self.newNode))
-        XCTAssertEqual(viewModel.currentNodeViewModel.field.value, Self.currentNode)
-        XCTAssertEqual(viewModel.newNodeViewModel.field.value, Self.newNode)
+        viewModel.nodeViewModel.handle(addressResult: AddressResult(address: Self.currentNode))
+        viewModel.newAddressViewModel.handle(addressResult: AddressResult(address: Self.newNode))
+        XCTAssertEqual(viewModel.nodeViewModel.field.value, Self.currentNode)
+        XCTAssertEqual(viewModel.newAddressViewModel.field.value, Self.newNode)
     }
 
     func testNilAddressResultLeavesTheNodeAddressUnchanged() {
         let viewModel = makeViewModel()
-        viewModel.currentNodeViewModel.field.value = Self.currentNode
-        viewModel.currentNodeViewModel.handle(addressResult: nil)
-        XCTAssertEqual(viewModel.currentNodeViewModel.field.value, Self.currentNode)
+        viewModel.nodeViewModel.field.value = Self.currentNode
+        viewModel.nodeViewModel.handle(addressResult: nil)
+        XCTAssertEqual(viewModel.nodeViewModel.field.value, Self.currentNode)
     }
 }

@@ -2,8 +2,8 @@
 //  RebondTransactionViewModel.swift
 //  VultisigApp
 //
-//  THORChain node REBOND form view-model: the validator currently holding the
-//  bond, the validator it moves to, and an optional partial amount. The
+//  THORChain node REBOND form view-model: the node holding the bond, the
+//  address the protocol rebonds to, and an optional partial amount. The
 //  "REBOND requires RUNE" rule is a form validator here rather than a label —
 //  the legacy sub-model wrote that message to a slot its validity gate never
 //  read, so an unsupported asset only looked blocked.
@@ -16,19 +16,19 @@ import Foundation
 final class RebondTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
-    /// Pre-fills the validator that currently holds the bond when the caller
-    /// already knows it — a bond position card tomorrow. Mirrors
+    /// Pre-fills the node holding the bond when the caller already knows it —
+    /// a bond position card tomorrow. Mirrors
     /// `LeaveTransactionViewModel.initialNodeAddress`.
     let initialNodeAddress: String?
 
     @Published var validForm: Bool = false
-    @Published var currentNodeViewModel: AddressViewModel
-    @Published var newNodeViewModel: AddressViewModel
+    @Published var nodeViewModel: AddressViewModel
+    @Published var newAddressViewModel: AddressViewModel
     @Published var amountField: FormField
 
     private(set) lazy var form: [FormField] = [
-        currentNodeViewModel.field,
-        newNodeViewModel.field,
+        nodeViewModel.field,
+        newAddressViewModel.field,
         amountField
     ]
 
@@ -50,7 +50,7 @@ final class RebondTransactionViewModel: ObservableObject, Form {
             }
         }
 
-        self.currentNodeViewModel = AddressViewModel(
+        self.nodeViewModel = AddressViewModel(
             label: "nodeAddress".localized,
             coin: coin,
             additionalValidators: [
@@ -58,7 +58,7 @@ final class RebondTransactionViewModel: ObservableObject, Form {
                 RequiredValidator(errorMessage: "emptyAddressField".localized)
             ]
         )
-        self.newNodeViewModel = AddressViewModel(
+        self.newAddressViewModel = AddressViewModel(
             label: "newAddress".localized,
             coin: coin,
             additionalValidators: [RequiredValidator(errorMessage: "emptyAddressField".localized)]
@@ -86,26 +86,27 @@ final class RebondTransactionViewModel: ObservableObject, Form {
         setupForm()
 
         if let initialNodeAddress, initialNodeAddress.isNotEmpty {
-            currentNodeViewModel.field.value = initialNodeAddress
+            nodeViewModel.field.value = initialNodeAddress
         }
     }
 
     var transactionBuilder: TransactionBuilder? {
+        // `validateErrors()` re-runs every field's validators synchronously and
+        // writes the answer to `field.valid`, so the fields — not the published
+        // `validForm` — are what this turn's submission is judged on. The
+        // aggregate is republished a run-loop turn late (the shared `Form`
+        // pipeline hops through `RunLoop.main`), and reading it here would be
+        // wrong in both directions: an amount edited to `0` and submitted
+        // before it settles would build the whole-bond memo, and a form that
+        // just became valid would refuse the first tap. Once the shared stack
+        // recomputes the aggregate synchronously the two are the same read.
         validateErrors()
-        // `validForm` is republished a run-loop turn late — the shared `Form`
-        // pipeline hops through `RunLoop.main` — so it can still answer "valid"
-        // for an edit made in this same turn. `validateErrors()` just refreshed
-        // every field synchronously, so read those too: an amount edited to `0`
-        // and submitted before the aggregate settles would otherwise build the
-        // whole-bond memo. Both conditions, never one: this only ever tightens
-        // the gate, and it becomes redundant once the shared stack recomputes
-        // the aggregate synchronously.
-        guard validForm, form.allSatisfy({ $0.valid }) else { return nil }
+        guard form.allSatisfy({ $0.valid }) else { return nil }
 
         return RebondTransactionBuilder(
             coin: coin,
-            currentNodeAddress: currentNodeViewModel.field.value,
-            newNodeAddress: newNodeViewModel.field.value,
+            nodeAddress: nodeViewModel.field.value,
+            newAddress: newAddressViewModel.field.value,
             rebondAmount: amountField.value.toDecimal()
         )
     }

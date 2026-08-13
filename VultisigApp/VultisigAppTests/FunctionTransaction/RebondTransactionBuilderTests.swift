@@ -17,8 +17,8 @@ final class RebondTransactionBuilderTests: XCTestCase {
     private static func makeBuilder(amount: Decimal = 0) -> RebondTransactionBuilder {
         RebondTransactionBuilder(
             coin: FunctionCallFixture.makeRUNE(),
-            currentNodeAddress: "thor1node",
-            newNodeAddress: "thor1new",
+            nodeAddress: "thor1node",
+            newAddress: "thor1new",
             rebondAmount: amount
         )
     }
@@ -108,8 +108,8 @@ final class RebondTransactionBuilderTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [coin])
         let builder = RebondTransactionBuilder(
             coin: coin,
-            currentNodeAddress: "thor1node",
-            newNodeAddress: "thor1new",
+            nodeAddress: "thor1node",
+            newAddress: "thor1new",
             rebondAmount: 100
         )
 

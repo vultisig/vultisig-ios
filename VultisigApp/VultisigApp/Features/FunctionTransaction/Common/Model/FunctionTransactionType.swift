@@ -44,11 +44,10 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
-    /// THORChain node REBOND — moves a bond from one validator to another.
-    /// `node` pre-fills the validator that currently holds the bond when the
-    /// caller already knows it, mirroring `.leave(coin:node:)`; the
-    /// destination validator and the optional partial amount are always typed
-    /// on the form, so neither belongs on the intent.
+    /// THORChain node REBOND. `node` pre-fills the node currently holding the
+    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
+    /// the memo's second address and the optional partial amount are always
+    /// typed on the form, so neither belongs on the intent.
     case rebond(coin: CoinMeta, node: String?)
     var coins: [CoinMeta] {
         switch self {
