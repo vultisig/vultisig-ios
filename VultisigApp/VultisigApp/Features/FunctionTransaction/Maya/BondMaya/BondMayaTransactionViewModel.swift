@@ -28,6 +28,20 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     @Published var availableLPUnits: String?
     @Published var estimatedCacaoValue: Decimal?
 
+    /// Localization key explaining why there is nothing to bond, or nil when the
+    /// form is usable. Distinguishes a failed fetch — which a retry can fix —
+    /// from genuinely holding no unbonded LP units, which it cannot.
+    @Published private(set) var assetsUnavailableReason: String?
+
+    /// Whether `assetsUnavailableReason` describes something a retry could
+    /// change.
+    var canRetryLoadingAssets: Bool {
+        assetsUnavailableReason == Self.loadFailedKey
+    }
+
+    private static let loadFailedKey = "bondableAssetsLoadFailed"
+    private static let noPositionsKey = "noBondableLPPositions"
+
     // Track if user can bond (whitelist check result)
     private var canBondToNode: Bool = true
 
@@ -46,6 +60,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     // Cache user's LP positions for quick lookup
     private var userLPPositions: [String: String] = [:] // poolName -> lpUnits
 
+    /// The in-flight asset load, so a retry supersedes the attempt it retries
+    /// instead of racing it.
+    private var assetsTask: Task<Void, Never>?
+
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
         self.vault = vault
@@ -57,31 +75,25 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         )
     }
 
-    func onLoad() {
-        isLoading = true
-        setupForm()
-        lpUnitsField.validators = [
+    /// Validators that hold whichever pool is selected. The availability
+    /// validator is layered on top once that pool's units are known, and has to
+    /// come back off when the selection changes.
+    private static var baseLPUnitsValidators: [FormFieldValidator] {
+        [
             RequiredValidator(errorMessage: "emptyLPsField".localized),
             IntValidator()
         ]
+    }
+
+    func onLoad() {
+        setupForm()
+        lpUnitsField.validators = Self.baseLPUnitsValidators
 
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
         }
 
-        Task {
-            // Fetch user's LP positions and cache them
-            await fetchAndCacheUserLPPositions()
-
-            let assets = await assetsDataSource.fetchAssets()
-            await MainActor.run {
-                isLoading = false
-
-                if let firstAsset = assets.first {
-                    selectedAsset = firstAsset
-                }
-            }
-        }
+        loadAssets()
 
         // Watch for node address changes - check whitelist eligibility
         addressViewModel.field.$valid
@@ -141,41 +153,77 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         }
     }
 
-    /// Fetch user's LP positions from Maya API and cache for quick lookup
-    private func fetchAndCacheUserLPPositions() async {
-        do {
-            async let memberDetailsTask = mayaAPIService.getMemberDetails(address: coin.address)
-            async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: coin.address)
+    /// Loads the user's LP positions and the bondable assets derived from them.
+    ///
+    /// Both are required before the form can produce a transaction, so a failure
+    /// in either is reported as one — and it is reported rather than swallowed,
+    /// because the DeFi tab is the only Maya bond route there is.
+    func loadAssets() {
+        assetsTask?.cancel()
+        isLoading = true
+        assetsUnavailableReason = nil
 
-            let memberDetails = try await memberDetailsTask
-            let allBondedUnits = try await allBondedUnitsTask
+        assetsTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let positions = try await fetchUserLPPositions()
+                let assets = try await assetsDataSource.fetchAssets()
 
-            var positions: [String: String] = [:]
-            for pool in memberDetails.pools {
-                let totalUnits = UInt64(pool.liquidityUnits) ?? 0
-                let bondedUnits = allBondedUnits[pool.pool] ?? 0
-                let availableUnits = totalUnits > bondedUnits ? totalUnits - bondedUnits : 0
+                await MainActor.run {
+                    guard !Task.isCancelled else { return }
+                    isLoading = false
+                    userLPPositions = positions
 
-                if availableUnits > 0 {
-                    positions[pool.pool] = String(availableUnits)
+                    if let firstAsset = assets.first {
+                        selectedAsset = firstAsset
+                    } else {
+                        assetsUnavailableReason = Self.noPositionsKey
+                    }
+                }
+            } catch {
+                Log.send.viewModel.error("Error loading bondable Maya assets: \(error.localizedDescription, privacy: .public)")
+                await MainActor.run {
+                    guard !Task.isCancelled else { return }
+                    isLoading = false
+                    assetsUnavailableReason = Self.loadFailedKey
                 }
             }
-            let p = positions
-            await MainActor.run {
-                userLPPositions = p
-            }
-        } catch {
-            Log.send.viewModel.error("Error fetching user LP positions: \(error.localizedDescription, privacy: .public)")
         }
     }
 
+    /// The user's unbonded LP units per pool, keyed by pool name.
+    private func fetchUserLPPositions() async throws -> [String: String] {
+        async let memberDetailsTask = mayaAPIService.getMemberDetails(address: coin.address)
+        async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: coin.address)
+
+        let memberDetails = try await memberDetailsTask
+        let allBondedUnits = try await allBondedUnitsTask
+
+        var positions: [String: String] = [:]
+        for pool in memberDetails.pools {
+            let totalUnits = UInt64(pool.liquidityUnits) ?? 0
+            let bondedUnits = allBondedUnits[pool.pool] ?? 0
+            let availableUnits = totalUnits > bondedUnits ? totalUnits - bondedUnits : 0
+
+            if availableUnits > 0 {
+                positions[pool.pool] = String(availableUnits)
+            }
+        }
+        return positions
+    }
+
     var transactionBuilder: TransactionBuilder? {
-        validateErrors()
-
         // Block if not whitelisted on node
-        guard canBondToNode else { return nil }
+        guard canBondToNode else {
+            revalidate()
+            return nil
+        }
 
-        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
+        // Deliberately NOT `validForm`. `Form` recomputes that only when a
+        // field's value publishes, and `LPUnitsValidator` is installed later,
+        // once the user's LP positions arrive — so units typed before the
+        // available figure landed leave `validForm` stale at true.
+        guard revalidate(), let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
             coin: coin,
@@ -192,15 +240,16 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         // Look up LP units from cached positions (fetched from Maya API)
         guard let units = userLPPositions[asset.thorchainAsset] else {
             availableLPUnits = nil
+            // The previous asset's ceiling does not apply to this one, and
+            // leaving it installed would validate against the wrong pool.
+            lpUnitsField.validators = Self.baseLPUnitsValidators
             return
         }
 
         availableLPUnits = units
 
         // Update validator with available units
-        lpUnitsField.validators = [
-            RequiredValidator(errorMessage: "emptyLPsField".localized),
-            IntValidator(),
+        lpUnitsField.validators = Self.baseLPUnitsValidators + [
             LPUnitsValidator(availableUnits: units)
         ]
     }

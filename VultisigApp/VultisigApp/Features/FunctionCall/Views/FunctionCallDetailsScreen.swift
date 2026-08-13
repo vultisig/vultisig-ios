@@ -147,9 +147,13 @@ struct FunctionCallDetailsScreen: View {
 
     private func ensureRuneCoin() {
         // Ensure RUNE token is selected for operations on THORChain.
-        if let runeCoin = vault.runeCoin {
-            selectedCoin = runeCoin
-        }
+        //
+        // Only on THORChain. LEAVE is offered on MayaChain too, and swapping the
+        // coin there would move the transaction onto a different chain behind
+        // the user — rewriting the function selector's own case list along with
+        // it, and signing LEAVE against RUNE for a node the user named on Maya.
+        guard selectedCoin.chain == .thorChain, let runeCoin = vault.runeCoin else { return }
+        selectedCoin = runeCoin
     }
 
     /// Builds the sub-model an operation's form reads from.
@@ -172,30 +176,6 @@ struct FunctionCallDetailsScreen: View {
             }
 
             fnCallInstance = .rebond(rebondInstance)
-        case .bondMaya:
-            DispatchQueue.main.async {
-                MayachainService.shared.getDepositAssets { assetsResponse in
-                    let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                    DispatchQueue.main.async {
-                        self.fnCallInstance = .bondMaya(
-                            FunctionCallBondMayaChain(assets: assets)
-                        )
-                    }
-                }
-            }
-
-        case .unbondMaya:
-            DispatchQueue.main.async {
-                MayachainService.shared.getDepositAssets { assetsResponse in
-                    let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                    DispatchQueue.main.async {
-                        self.fnCallInstance = .unbondMaya(
-                            FunctionCallUnbondMayaChain(assets: assets)
-                        )
-                    }
-                }
-            }
-
         case .leave, .addThorLP:
             // Migrated to `Features/FunctionTransaction/` — the action list
             // routes it to its own screen and never lands here. Listed only to

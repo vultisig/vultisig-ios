@@ -23,6 +23,20 @@ final class MockStakeInteractor: StakeInteractor, @unchecked Sendable {
     }
 }
 
+final class MockBondInteractor: BondInteractor, @unchecked Sendable {
+    var stub: (active: [BondPosition], available: [BondNode]) = ([], [])
+    var canUnbondStub = true
+    var canAddBondStub = true
+
+    func fetchBondPositions(vault: Vault) async throws -> (active: [BondPosition], available: [BondNode]) {
+        stub
+    }
+
+    func canUnbond() async -> Bool { canUnbondStub }
+
+    func canAddBond() async -> Bool { canAddBondStub }
+}
+
 final class MockLPsInteractor: LPsInteractor, @unchecked Sendable {
     var stub: [LPPositionData] = []
     private(set) var callCount = 0

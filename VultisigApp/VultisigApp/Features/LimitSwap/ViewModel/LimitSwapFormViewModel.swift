@@ -28,12 +28,6 @@ final class LimitSwapFormViewModel {
     /// Current market price reference, used for % from market and preset pills.
     var marketPriceRef: Decimal?
 
-    /// Tracks the preset that last set `draft.targetPrice`. `nil` after a
-    /// manual edit (typed input). Used by the dynamic Market pill to render
-    /// statically ("Market") whenever a preset is the live source — and only
-    /// flip into the rounded-pct + reset affordance after a manual edit.
-    var lastPresetPct: Int?
-
     /// Set of chains currently routable through THORChain (intersection of
     /// our static prefix table and THORChain's live `inbound_addresses`,
     /// minus halted/paused chains, plus `.thorChain` since RUNE deposits
@@ -79,6 +73,33 @@ final class LimitSwapFormViewModel {
     /// Convenience for the view: `true` only when the queue is confirmed live.
     var isAdvancedSwapQueueEnabled: Bool { advancedSwapQueueEnabled == true }
 
+    /// Longest lifetime THORChain will honour for a resting order, in blocks —
+    /// the `StreamingLimitSwapMaxAge` mimir, refreshed by `refreshMaxExpiry()`.
+    ///
+    /// Seeded with the documented default so the duration picker has a usable
+    /// bound on first paint rather than a disabled or unbounded one, and so a
+    /// failed fetch degrades to today's behaviour. Read from the mimir rather
+    /// than hard-coded because the cap can be changed on-chain: if it is raised,
+    /// the picker widens on its own.
+    var maxExpiryBlocks: Int = THORChainConstants.defaultLimitSwapMaxAgeBlocks
+
+    /// Whether `maxExpiryBlocks` reflects a COMPLETED fetch rather than the seed.
+    ///
+    /// The seed is a plausible value, not a resolved one — mainnet happens to run
+    /// the default today, but a lower live cap would mean advertising (and
+    /// signing) a window THORChain then silently shortens. Placement therefore
+    /// waits for the fetch, exactly as it waits for the queue gate.
+    ///
+    /// This is a *resolution* flag, not a success flag: the fetch fails soft to
+    /// the default, so this turns true either way. That keeps a network blip from
+    /// blocking placement forever while still closing the pre-fetch window.
+    private(set) var isMaxExpiryResolved = false
+
+    /// Floor is the app's own, not the protocol's, and collapses to the ceiling
+    /// if a mimir ever reports a cap below it — shared with the clamp and the
+    /// validator so all three agree.
+    var minExpiryBlocks: Int { effectiveMinExpiryBlocks(maxBlocks: maxExpiryBlocks) }
+
     /// Whether the current draft can be placed — gates the entry screen's Place
     /// Order button. Requires a positive amount + target price, the Advanced Swap
     /// Queue confirmed live, AND a RESOLVED network-fee estimate
@@ -97,7 +118,18 @@ final class LimitSwapFormViewModel {
     func canPlaceOrder(sourceCoin: Coin) -> Bool {
         draft.targetPrice > 0
             && draft.sourceAmount > 0
+            // A positive deposit is not sufficient: `computeLim` truncates a
+            // second time into 1e8 fixed point, so a dust amount at a low price
+            // still floors the LIM to zero and throws at memo build. Requiring a
+            // derivable output means the CTA can't enable for an order that can
+            // only fail — reachable from either entry direction, and easier to
+            // reach now that a deposit can be derived from a small stated output.
+            && expectedBuyAmount > 0
             && isAdvancedSwapQueueEnabled
+            // The TTL ceiling has to be a resolved value, not the seeded default:
+            // a lower live cap would mean signing a window the chain shortens.
+            // Resolution (not success) is the bar — the fetch fails soft.
+            && isMaxExpiryResolved
             && networkFeeEstimate > 0
             // Affordability: the vault must hold the sell amount, and the fee on
             // top of it. Same rule as the market tab's Continue gate.
@@ -295,6 +327,10 @@ final class LimitSwapFormViewModel {
     // MARK: - User input mutations
 
     func amountChanged(_ amount: BigInt) {
+        // Typing the Sell side makes it the stated one; Buy goes back to being
+        // derived (`expectedBuyAmount` already reads from the signed-LIM path).
+        draft.amountDriver = .sell
+        draft.desiredTargetOutput = 0
         draft.sourceAmount = amount
         // The network fee (UTXO especially) is amount-dependent; drop the stale
         // estimate so a fee from a previous amount can never be snapshotted into
@@ -358,10 +394,99 @@ final class LimitSwapFormViewModel {
 
     func targetPriceChanged(_ price: Decimal) {
         draft.targetPrice = price
-        lastPresetPct = nil
         // A manual edit: a pending pair refresh must not overwrite it with the
         // delayed Market preset.
         targetPriceEditSeq += 1
+        reconcileAmountsAfterPriceChange()
+    }
+
+    /// Hold the amount the user stated and move the other one.
+    ///
+    /// Only the Buy-driven case needs work: when Sell is driving, the Buy display
+    /// is `expectedBuyAmount`, already derived from the live price, so it follows
+    /// on its own. When Buy is driving, the deposit is what has to change — the
+    /// user asked for an output, and a different price means a different cost.
+    ///
+    /// Called from EVERY path that moves the price (the price field, the USD
+    /// mirror, the custom-offset sheet, the preset pills, a chart drag), because a rule
+    /// that held for only some of them would be worse than no rule: the figure
+    /// the user typed would survive one interaction and silently drift on another.
+    private func reconcileAmountsAfterPriceChange() {
+        guard draft.amountDriver == .buy, draft.desiredTargetOutput > 0 else { return }
+        setDerivedSourceAmount(limitSourceAmount(
+            forTargetOutput: draft.desiredTargetOutput,
+            targetPrice: draft.targetPrice,
+            sourceDecimals: draft.fromAsset.decimals
+        ))
+    }
+
+    /// Write a DERIVED deposit, invalidating the fee estimate only if it actually
+    /// moved.
+    ///
+    /// The fee refresh is driven by an observer on `draft.sourceAmount`, so an
+    /// unconditional invalidation is a deadlock when truncation leaves the
+    /// deposit unchanged: the estimate is zeroed, nothing observes a change, no
+    /// replacement is scheduled, and `canPlaceOrder` — which requires a resolved
+    /// fee — stays false indefinitely. Small price nudges under a Buy-driven
+    /// entry hit this readily, since the derived deposit often lands on the same
+    /// smallest unit.
+    private func setDerivedSourceAmount(_ amount: BigInt) {
+        guard amount != draft.sourceAmount else { return }
+        draft.sourceAmount = amount
+        invalidateNetworkFeeEstimate()
+    }
+
+    /// Set the output the user wants to receive, deriving the deposit that buys it.
+    ///
+    /// The stated output is retained (`desiredTargetOutput`) rather than being
+    /// re-read from the display later: the displayed buy is itself derived from
+    /// the current price, so recomputing from it on each price change would walk
+    /// the typed figure away from what was asked for.
+    ///
+    /// The Buy field then settles to `expectedBuyAmount` — re-derived from the
+    /// truncated deposit through the same path the signed memo's LIM uses — so a
+    /// typed `10` may read back as `9.99999998`. That is the order's real
+    /// guaranteed minimum, and it keeps display == memo.
+    func buyAmountChanged(_ output: Decimal) {
+        draft.amountDriver = .buy
+        draft.desiredTargetOutput = output
+        setDerivedSourceAmount(limitSourceAmount(
+            forTargetOutput: output,
+            targetPrice: draft.targetPrice,
+            sourceDecimals: draft.fromAsset.decimals
+        ))
+    }
+
+    /// Set the target price from a **percent offset against market** — the exact
+    /// inverse of `pctFromMarket`, and the same arithmetic the preset pills run,
+    /// so the custom-offset sheet and the pills can never disagree.
+    ///
+    /// No-op without a market reference: an offset has nothing to offset from,
+    /// and the chip that opens the sheet is disabled in that state anyway.
+    /// Floored to 8 SIGNIFICANT digits like every other derived price, so the
+    /// stored price never carries more precision than the field can show — see
+    /// `roundLimitPrice` for why it floors rather than rounding to nearest.
+    ///
+    /// Routed through `targetPriceChanged`, so a chosen offset counts as the
+    /// deliberate price choice it is and a pending pair refresh's delayed Market
+    /// auto-seed cannot clobber it.
+    func pctFromMarketChanged(_ pct: Decimal) {
+        guard let price = targetPrice(forPctFromMarket: pct) else { return }
+        targetPriceChanged(price)
+    }
+
+    /// The canonical target price a given percent offset maps to, or `nil` when
+    /// there is no market reference to offset from.
+    ///
+    /// Exposed (rather than inlined into `pctFromMarketChanged`) because the
+    /// custom-offset sheet previews the price an offset resolves to *before* it is
+    /// applied — a percentage is not what gets signed, so the sheet states the
+    /// number that is. Running that preview through the same mapping the setter
+    /// uses is what stops the previewed price and the placed one from drifting.
+    func targetPrice(forPctFromMarket pct: Decimal) -> Decimal? {
+        guard let market = marketPriceRef else { return nil }
+        let raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
+        return roundLimitPrice(raw)
     }
 
     /// Set the target price from a USD-denominated edit of the price display.
@@ -371,50 +496,46 @@ final class LimitSwapFormViewModel {
     /// `targetPrice × targetUsdPricePerUnit`. NEVER stores the USD number as the
     /// target price. No-op when the rate is unavailable (USD editing is disabled).
     ///
-    /// The result is rounded to 8 decimals (the memo LIM's 1e8 fixed-point
-    /// precision, matching `selectPresetPct`) so the stored price never carries
-    /// more precision than the signed order can, and the asset-text mirror
-    /// (`priceText`, capped at 8 dp) round-trips it exactly instead of rounding
-    /// it back through its own sync.
+    /// The result is floored to 8 SIGNIFICANT digits (`roundLimitPrice`, matching
+    /// `selectPresetPct`) so the stored price never carries more precision than
+    /// the asset-text mirror can show, and `priceText` round-trips it exactly
+    /// instead of rounding it back through its own sync.
     func targetPriceChangedFromUsd(_ usd: Decimal) {
         guard targetUsdPricePerUnit > 0 else { return }
-        var raw = usd / targetUsdPricePerUnit
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &raw, 8, .plain)
-        targetPriceChanged(rounded)
+        targetPriceChanged(roundLimitPrice(usd / targetUsdPricePerUnit))
     }
 
     /// Set the target price from a preset pill (`Market`/`+1%`/`+5%`/`+10%`).
     /// No-op if `marketPriceRef` is unset (preset is meaningless without a base).
-    /// Result is rounded to 8 decimals so the price text↔draft round-trip is
-    /// stable (formatter caps at 8; without rounding, parse(format(x)) != x
-    /// for high-precision quotes and the sync would clobber `lastPresetPct`).
+    /// Result is floored to 8 SIGNIFICANT digits by `roundLimitPrice` so the
+    /// price text↔draft round-trip is stable (the formatter caps at 8 significant
+    /// digits; without the floor, parse(format(x)) != x for high-precision
+    /// quotes). It floors rather than rounding to nearest — see `roundLimitPrice`.
     /// `userInitiated` is `true` for a preset PILL tap (a deliberate price
     /// selection that must not be overwritten by a pending auto-seed) and `false`
     /// for the programmatic Market auto-seed (on load / pair change).
     func selectPresetPct(_ pct: Int, userInitiated: Bool = true) {
         guard let market = marketPriceRef else { return }
-        let raw = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
-        var rounded = Decimal()
-        var input = raw
-        NSDecimalRound(&rounded, &input, 8, .plain)
-        draft.targetPrice = rounded
-        lastPresetPct = pct
+        let raw = computePresetPrice(marketPrice: market, pctAboveMarket: Decimal(pct))
+        draft.targetPrice = roundLimitPrice(raw)
         if userInitiated {
             // A user's preset selection is a price choice — a pending pair
             // refresh's delayed Market auto-seed must not clobber it.
             targetPriceEditSeq += 1
         }
+        // Assigns the price directly rather than going through
+        // `targetPriceChanged`, so the driver rule has to be applied here too.
+        reconcileAmountsAfterPriceChange()
     }
 
     /// Set the target price from a drag on the chart.
     ///
     /// The chart plots in `Double` while the order is priced in `Decimal`, and
     /// `Decimal(someDouble)` carries the full binary expansion — 31.8255 arrives
-    /// as 31.825500000000000682. Rounded to 8 decimals, the memo LIM's
-    /// fixed-point precision, exactly as the preset and USD paths do, so a
-    /// dragged price can never be stored with more precision than the signed
-    /// order can express and the price-text round-trip stays stable.
+    /// as 31.825500000000000682. Floored to 8 SIGNIFICANT digits by
+    /// `roundLimitPrice`, exactly as the preset and USD paths do, so a dragged
+    /// price can never be stored with more precision than the signed order can
+    /// express and the price-text round-trip stays stable.
     ///
     /// Routed through `targetPriceChanged` rather than assigning the draft
     /// directly: a drag is a deliberate price choice, so it has to bump the edit
@@ -422,9 +543,7 @@ final class LimitSwapFormViewModel {
     /// the Market preset a moment after the finger lifts.
     func targetPriceChangedFromChart(_ price: Double) {
         guard price.isFinite, price > 0 else { return }
-        var raw = Decimal(price)
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &raw, 8, .plain)
+        let rounded = roundLimitPrice(Decimal(price))
         guard rounded > 0 else { return }
         targetPriceChanged(rounded)
     }
@@ -489,8 +608,14 @@ final class LimitSwapFormViewModel {
         pairChart = chart
     }
 
-    func selectExpiryHours(_ hours: Int) {
-        draft.expiryHours = hours
+    /// Set the order's lifetime, clamped to what THORChain will honour.
+    ///
+    /// Clamping on the way IN (rather than only at validation) keeps the form
+    /// self-consistent: the pill row, the memo and the queue then all agree on
+    /// one number, instead of the UI showing a duration the chain quietly
+    /// shortened.
+    func selectExpiryBlocks(_ blocks: Int) {
+        draft.expiryBlocks = clampLimitExpiryBlocks(blocks, maxBlocks: maxExpiryBlocks)
     }
 
     func toggleDisplayUnit() {
@@ -499,12 +624,17 @@ final class LimitSwapFormViewModel {
 
     func selectFromAsset(_ asset: LimitSwapAsset) {
         draft.fromAsset = asset
+        // The stated amount referred to the previous pair — a desired output in
+        // the old target asset means nothing in the new one, and a source amount
+        // derived from it was scaled to the old source's decimals. Hand control
+        // back to the Sell side rather than silently reinterpreting either.
+        draft.amountDriver = .sell
+        draft.desiredTargetOutput = 0
         // Pair changed; the cached market price is stale and any prior
         // preset/manual selection no longer applies. The network-fee estimate is
         // per-source too — drop it so a fee for the previous source can't be
         // snapshotted into the order.
         marketPriceRef = nil
-        lastPresetPct = nil
         // Pair changed — the prior pair's routability verdict no longer applies;
         // clear it so the CTA isn't stale-blocked until the new probe resolves.
         pairUnroutableReason = nil
@@ -518,8 +648,13 @@ final class LimitSwapFormViewModel {
 
     func selectToAsset(_ asset: LimitSwapAsset) {
         draft.toAsset = asset
+        // The stated amount referred to the previous pair — a desired output in
+        // the old target asset means nothing in the new one, and a source amount
+        // derived from it was scaled to the old source's decimals. Hand control
+        // back to the Sell side rather than silently reinterpreting either.
+        draft.amountDriver = .sell
+        draft.desiredTargetOutput = 0
         marketPriceRef = nil
-        lastPresetPct = nil
         // Pair changed — clear the prior routability verdict (see selectFromAsset).
         pairUnroutableReason = nil
         marketPriceRequestID = UUID()
@@ -560,6 +695,20 @@ final class LimitSwapFormViewModel {
     func refreshAdvancedSwapQueueGate() async {
         advancedSwapQueueEnabled = await interactor.isAdvancedSwapQueueEnabled()
         logger.info("EnableAdvSwapQueue gate resolved: \(self.advancedSwapQueueEnabled == true, privacy: .public)")
+    }
+
+    /// Resolve the live TTL ceiling and re-clamp the current draft against it.
+    ///
+    /// Re-clamping matters when the fetched cap is LOWER than the default the
+    /// draft was seeded with: the draft may already hold an expiry the chain
+    /// would now silently shorten, and leaving it would show a duration the
+    /// order never gets. Raising the cap never invalidates an existing choice,
+    /// so the clamp is a no-op in that direction.
+    func refreshMaxExpiry() async {
+        maxExpiryBlocks = await interactor.fetchLimitSwapMaxAgeBlocks()
+        isMaxExpiryResolved = true
+        draft.expiryBlocks = clampLimitExpiryBlocks(draft.expiryBlocks, maxBlocks: maxExpiryBlocks)
+        logger.info("StreamingLimitSwapMaxAge resolved: \(self.maxExpiryBlocks, privacy: .public) blocks")
     }
 
     func refreshMarketPrice() async {
@@ -753,6 +902,18 @@ final class LimitSwapFormViewModel {
             return nil
         }
 
+        // TTL gate (FAIL-CLOSED): `validateLimitSwapInputs` judges the draft's
+        // expiry against `maxExpiryBlocks`, which is a plausible SEED until the
+        // `StreamingLimitSwapMaxAge` fetch lands. Validating against the seed
+        // would pass an expiry the network then silently shortens, so the ceiling
+        // has to be the chain's before it can arbitrate. `canPlaceOrder` blocks
+        // this state too; this is the belt to that suspenders.
+        guard isMaxExpiryResolved else {
+            logger.error("Place order rejected: StreamingLimitSwapMaxAge not resolved")
+            placeOrderError = .expiryCeilingUnresolved
+            return nil
+        }
+
         // Real affiliate config: read the vault's referral code (if any) and
         // compute the affiliate fragment via the same helper the market path
         // uses. Vault-tier discount defaults to 0 for Phase 1.
@@ -769,14 +930,14 @@ final class LimitSwapFormViewModel {
             targetAsset: targetAsset,
             destAddress: destAddress,
             targetPrice: draft.targetPrice,
-            expiryHours: draft.expiryHours,
+            expiryBlocks: draft.expiryBlocks,
             affiliate: affiliate ?? THORChainSwaps.affiliateFeeAddress,
             affiliateBps: affiliateBps ?? String(THORChainSwaps.affiliateFeeRateBp)
         )
 
         // Run the shared input validation in production. Previously the live
         // path built the memo directly and skipped this gate entirely.
-        let validationErrors = validateLimitSwapInputs(inputs)
+        let validationErrors = validateLimitSwapInputs(inputs, maxExpiryBlocks: maxExpiryBlocks)
         guard validationErrors.isEmpty else {
             logger.error("Place order rejected: validation failed \(String(describing: validationErrors), privacy: .public)")
             placeOrderError = .invalidInputs(validationErrors)
@@ -832,11 +993,10 @@ final class LimitSwapFormViewModel {
             targetAsset: targetAsset,
             destAddress: destAddress,
             targetPrice: draft.targetPrice,
-            expiryBlocks: computeExpiryBlocks(hours: draft.expiryHours),
+            expiryBlocks: draft.expiryBlocks,
             createdAt: Date(),
             status: .pending,
             memo: memo,
-            expiryHours: draft.expiryHours,
             minOutputOverride: effectiveMinOutput,
             // Captured here because this is the only moment all three are known
             // exactly. `sourceAmount` on the record is in the coin's NATIVE

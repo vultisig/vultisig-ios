@@ -31,6 +31,11 @@ protocol LimitSwapQuoteServiceProtocol {
     /// the `EnableAdvSwapQueue` mimir. Fails CLOSED (`false`) on any failure.
     func isAdvancedSwapQueueEnabled() async -> Bool
 
+    /// The ceiling THORChain enforces on a resting order's TTL, in blocks
+    /// (`StreamingLimitSwapMaxAge`). Fails SOFT: returns the documented default
+    /// on any failure rather than blocking placement.
+    func fetchLimitSwapMaxAgeBlocks() async -> Int
+
     /// The live THORChain `inbound_addresses` list, used to compute the picker's
     /// routable-chain set. Fail-soft: returns `[]` on failure (the caller falls
     /// back to the static routable set).

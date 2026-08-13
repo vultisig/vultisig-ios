@@ -96,10 +96,6 @@ extension FunctionCallType {
         switch self {
         case .rebond:
             return "functionActionRebondSubtitle".localized
-        case .bondMaya:
-            return "functionActionBondMayaSubtitle".localized
-        case .unbondMaya:
-            return "functionActionUnbondMayaSubtitle".localized
         case .leave:
             return "functionActionLeaveSubtitle".localized
         case .custom:
@@ -127,10 +123,6 @@ extension FunctionCallType {
         switch self {
         case .rebond:
             return .repeat3
-        case .bondMaya:
-            return .layersPlus
-        case .unbondMaya:
-            return .layersMinus
         case .leave:
             return .arrowToCornerTopRight
         case .custom:
