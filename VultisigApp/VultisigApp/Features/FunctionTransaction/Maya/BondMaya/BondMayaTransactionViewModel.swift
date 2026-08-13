@@ -60,6 +60,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     // Cache user's LP positions for quick lookup
     private var userLPPositions: [String: String] = [:] // poolName -> lpUnits
 
+    /// The in-flight asset load, so a retry supersedes the attempt it retries
+    /// instead of racing it.
+    private var assetsTask: Task<Void, Never>?
+
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
         self.vault = vault
@@ -148,15 +152,18 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     /// in either is reported as one — and it is reported rather than swallowed,
     /// because the DeFi tab is the only Maya bond route there is.
     func loadAssets() {
+        assetsTask?.cancel()
         isLoading = true
         assetsUnavailableReason = nil
 
-        Task {
+        assetsTask = Task { [weak self] in
+            guard let self else { return }
             do {
                 let positions = try await fetchUserLPPositions()
                 let assets = try await assetsDataSource.fetchAssets()
 
                 await MainActor.run {
+                    guard !Task.isCancelled else { return }
                     isLoading = false
                     userLPPositions = positions
 
@@ -169,6 +176,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
             } catch {
                 Log.send.viewModel.error("Error loading bondable Maya assets: \(error.localizedDescription, privacy: .public)")
                 await MainActor.run {
+                    guard !Task.isCancelled else { return }
                     isLoading = false
                     assetsUnavailableReason = Self.loadFailedKey
                 }

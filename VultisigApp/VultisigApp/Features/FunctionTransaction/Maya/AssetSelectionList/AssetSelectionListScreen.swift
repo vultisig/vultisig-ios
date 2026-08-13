@@ -93,7 +93,7 @@ struct AssetSelectionListScreen: View {
 
     /// A failed fetch used to render as "no result found", which reads as a
     /// statement about the user's holdings rather than about the network.
-    var failureMessage: some View {
+    private var failureMessage: some View {
         ErrorMessage(text: "assetsLoadFailed", width: 260)
             .padding(.top, 48)
     }

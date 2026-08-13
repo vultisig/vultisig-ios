@@ -49,6 +49,10 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     let assetsDataSource: MayaBondedAssetsDataSource
     private let mayaAPIService = MayaChainAPIService()
 
+    /// The in-flight bonded-asset fetch, so a new address supersedes the
+    /// previous one instead of racing it.
+    private var bondedAssetsTask: Task<Void, Never>?
+
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
         self.vault = vault
@@ -80,6 +84,10 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
                 if isValid && !address.isEmpty {
                     self.fetchBondedAssetsForNode(address)
                 } else {
+                    // Drop whatever is in flight too, or its completion
+                    // repopulates the fields that were just cleared.
+                    self.bondedAssetsTask?.cancel()
+                    self.isLoading = false
                     self.availableBondedAssets = []
                     self.selectedAsset = nil
                     self.bondedLPUnits = nil
@@ -114,17 +122,26 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         fetchBondedAssetsForNode(address)
     }
 
-    /// Fetch bonded assets for the specified node address
+    /// Fetch bonded assets for the specified node address.
+    ///
+    /// The address is debounced, not serialised, so two fetches can overlap.
+    /// Every publish is therefore guarded on the address still being the one
+    /// asked for — otherwise a slow request for a previous node could overwrite
+    /// the current node's assets, or leave its own failure on screen after the
+    /// user has moved on.
     private func fetchBondedAssetsForNode(_ nodeAddress: String) {
+        bondedAssetsTask?.cancel()
         isLoading = true
         assetsUnavailableReason = nil
         assetsDataSource.nodeAddress = nodeAddress
 
-        Task {
+        bondedAssetsTask = Task { [weak self] in
+            guard let self else { return }
             do {
                 let assets = try await assetsDataSource.fetchAssets()
 
                 await MainActor.run {
+                    guard isCurrentRequest(for: nodeAddress) else { return }
                     isLoading = false
                     availableBondedAssets = assets
 
@@ -141,6 +158,7 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
             } catch {
                 Log.send.viewModel.error("Error fetching bonded LP positions: \(error.localizedDescription, privacy: .public)")
                 await MainActor.run {
+                    guard isCurrentRequest(for: nodeAddress) else { return }
                     isLoading = false
                     availableBondedAssets = []
                     selectedAsset = nil
@@ -148,6 +166,12 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
                 }
             }
         }
+    }
+
+    /// Whether a completed fetch still describes the address on screen.
+    @MainActor
+    private func isCurrentRequest(for nodeAddress: String) -> Bool {
+        !Task.isCancelled && addressViewModel.field.value == nodeAddress
     }
 
     var transactionBuilder: TransactionBuilder? {
