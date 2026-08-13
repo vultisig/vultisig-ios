@@ -40,7 +40,7 @@ final class HTTPClient: HTTPClientProtocol {
         try Task.checkCancellation()
 
         let urlRequest = try buildURLRequest(from: target)
-        let shouldSuppressBodyLogging = containsSensitiveHeaders(in: urlRequest.allHTTPHeaderFields)
+        let shouldSuppressBodyLogging = target.isSensitive || containsSensitiveHeaders(in: urlRequest.allHTTPHeaderFields)
 
         // Log the request
         logRequest(urlRequest, target: target, suppressBodyLogging: shouldSuppressBodyLogging)
@@ -358,14 +358,14 @@ private extension HTTPClient {
 
     func containsSensitiveHeaders(in headers: [String: String]?) -> Bool {
         guard let headers else { return false }
-        let sensitiveHeaders = ["authorization", "cookie", "set-cookie", "x-api-key"]
+        let sensitiveHeaders = ["authorization", "cookie", "set-cookie", "x-api-key", "x-password"]
         return headers.keys.contains { key in
             sensitiveHeaders.contains(key.lowercased())
         }
     }
 
     func formatHeaders(_ headers: [String: String]) -> String {
-        let sensitiveHeaders = ["authorization", "cookie", "set-cookie", "x-api-key"]
+        let sensitiveHeaders = ["authorization", "cookie", "set-cookie", "x-api-key", "x-password"]
         return headers
             .sorted { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }
             .map { key, value in

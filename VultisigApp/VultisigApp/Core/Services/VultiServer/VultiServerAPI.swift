@@ -34,4 +34,11 @@ enum VultiServerAPI: TargetType {
             return .requestCodable(request, .jsonEncoding)
         }
     }
+
+    var isSensitive: Bool {
+        switch self {
+        case .resendVaultShare:
+            return true
+        }
+    }
 }

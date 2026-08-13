@@ -110,4 +110,14 @@ enum FastVaultAPI: TargetType {
             return .successCodes
         }
     }
+
+    var isSensitive: Bool {
+        switch self {
+        case .create, .batchCreate, .keyImport, .batchKeyImport,
+             .reshare, .batchReshare, .sign, .migrate, .singleKeygen:
+            return true
+        case .validateAccess, .exists, .verifyBackupOTP:
+            return false
+        }
+    }
 }
