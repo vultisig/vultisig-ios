@@ -39,6 +39,23 @@ import Foundation
 /// Passing both figures makes the conversion correct either way, and it stays
 /// bounded by the shares actually held rather than by an invariant asserted
 /// somewhere else.
+///
+/// ⚠️ **What bounds the precision here is the INPUT, not this arithmetic.** The
+/// typed figure reaches these builders through `String.toDecimal()`, which parses
+/// with `NumberFormatter` and therefore round-trips through a `Double` — so the
+/// `Decimal` that arrives can already differ from what was typed in the 16th
+/// significant digit. `Decimal`'s own 38-digit multiply and divide below can
+/// likewise land one base unit off an exact quotient on a position large enough
+/// to need twenty digits.
+///
+/// Both are real and neither is worth exact integer arithmetic here: the second
+/// is a base unit, the first is thousands of times larger on the same position,
+/// and no amount of care downstream recovers a figure that was already perturbed
+/// upstream. Whichever way that error falls, the result is still truncated and
+/// still clamped to the shares held, so the outcome stays within one base unit of
+/// the request and can never exceed the position. Tightening the conversion while
+/// the amount arrives via `Double` would be precision theatre; the input is where
+/// it would have to start.
 enum ReceiptShareRedemption {
 
     /// `value` truncated to whole base units.
@@ -113,6 +130,15 @@ enum ReceiptShareRedemption {
     /// sliver staked. Nothing BETWEEN the two counts, which is what makes this a
     /// real check rather than a tolerance: a figure the user typed with more
     /// precision than MAX would have written is a figure MAX did not write.
+    ///
+    /// ⚠️ **The one case it cannot separate** is a user typing, by hand, exactly
+    /// what MAX would have prefilled on a position carrying more decimals than
+    /// the field shows. That closes the position, taking up to one display step
+    /// more than was asked — bounded, invisible at the precision the screen
+    /// renders, and unavoidable from the amount alone. Separating them needs the
+    /// field to report that the amount was typed rather than derived, which
+    /// `AmountPercentageSync.amountIsUserTyped` already knows and does not
+    /// currently surface to the view model.
     static func isWholePosition(amount: Decimal, positionValue: Decimal) -> Bool {
         guard positionValue > 0 else { return false }
         if amount >= positionValue { return true }
