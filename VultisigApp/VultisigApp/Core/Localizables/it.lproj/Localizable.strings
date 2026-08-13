@@ -854,11 +854,9 @@
 "Merge" = "Unisci";
 "mergeCoins" = "Unisci monete";
 "message" = "Messaggio";
-"messageDeposit" = "%@ deposito messaggio";
 "messageSigned" = "Messaggio firmato";
 "messageSignFailed" = "Firma del messaggio non riuscita";
 "messageToSign" = "Messaggio da firmare";
-"messageVote" = "%@ voto messaggio";
 "method" = "Metodo";
 "migrate" = "Migrare";
 "migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
