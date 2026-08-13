@@ -132,9 +132,9 @@ struct FunctionCallDetailsScreen: View {
                     }
                 }
 
-            case .leave:
+            case .leave, .unmerge:
                 // Migrated to `Features/FunctionTransaction/` — the route-out
-                // above already handled it. Listed only to keep this switch
+                // above already handled them. Listed only to keep this switch
                 // exhaustive; each migration adds its case name here.
                 break
             case .custom:
@@ -147,8 +147,6 @@ struct FunctionCallDetailsScreen: View {
                 // Ensure RUNE token is selected for MERGE operations on THORChain
                 ensureRuneCoin()
                 fnCallInstance = .merge(FunctionCallCosmosMerge(coin: selectedCoin, vault: vault))
-            case .unmerge:
-                fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
             case .theSwitch:
                 fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
             case .addThorLP:

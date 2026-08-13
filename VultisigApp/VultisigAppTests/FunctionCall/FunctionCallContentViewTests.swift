@@ -29,7 +29,6 @@ final class FunctionCallContentViewTests: XCTestCase {
             .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
             .merge(FunctionCallCosmosMerge(coin: rune, vault: vault)),
-            .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),
             .theSwitch(FunctionCallCosmosSwitch(coin: FunctionCallFixture.makeATOM(), vault: vault)),
             .addThorLP(FunctionCallAddThorLP(coin: rune, vault: vault)),
             .securedAsset(FunctionCallSecuredAsset(coin: rune, vault: vault)),

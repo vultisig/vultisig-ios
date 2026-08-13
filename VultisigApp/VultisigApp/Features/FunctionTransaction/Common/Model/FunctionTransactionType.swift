@@ -44,6 +44,13 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
+    /// THORChain RUJI UNMERGE — withdrawing merge shares back into the merged
+    /// token. `coin` is THORChain's native asset: the merged tokens live inside
+    /// the merge contract rather than the wallet, so the only coin this form
+    /// needs the vault to resolve is the one that pays the fee. `denom` opens
+    /// the picker on a token the caller already knows (`thor.kuji`, …); nil
+    /// leaves it on the first offered one.
+    case unmerge(coin: CoinMeta, denom: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -79,6 +86,8 @@ enum FunctionTransactionType: Hashable {
         case .tonUnstake(let coin, _, _, _):
             return [coin]
         case .leave(let coin, _):
+            return [coin]
+        case .unmerge(let coin, _):
             return [coin]
         }
     }
