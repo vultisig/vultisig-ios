@@ -16,8 +16,6 @@ struct FunctionCallContentView: View {
 
     var body: some View {
         switch instance {
-        case .rebond(let model):
-            ReBondFormView(model: model, coin: selectedCoin)
         case .bondMaya(let model):
             BondMayaFormView(model: model, coin: selectedCoin)
         case .unbondMaya(let model):

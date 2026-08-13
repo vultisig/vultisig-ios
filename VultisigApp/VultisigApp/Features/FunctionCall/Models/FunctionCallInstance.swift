@@ -9,7 +9,6 @@ import BigInt
 import Foundation
 
 enum FunctionCallInstance {
-    case rebond(FunctionCallReBond)
     case bondMaya(FunctionCallBondMayaChain)
     case unbondMaya(FunctionCallUnbondMayaChain)
     case custom(FunctionCallCustom)
@@ -28,7 +27,6 @@ enum FunctionCallInstance {
     @MainActor
     var model: any FunctionCallSubModel {
         switch self {
-        case .rebond(let memo): return memo
         case .bondMaya(let memo): return memo
         case .unbondMaya(let memo): return memo
         case .custom(let memo): return memo
@@ -78,10 +76,10 @@ enum FunctionCallInstance {
     static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
-            if coin.ticker.uppercased() == "TCY" {
-                return .custom(FunctionCallCustom(coin: coin, vault: vault))
-            }
-            return .rebond(FunctionCallReBond())
+            // Kept in step with `FunctionCallType.getDefault(for:)`: the two
+            // factories run one after the other in `setupForm()`, so a
+            // disagreement would show one function's name over another's form.
+            return .custom(FunctionCallCustom(coin: coin, vault: vault))
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
         case .dydx:

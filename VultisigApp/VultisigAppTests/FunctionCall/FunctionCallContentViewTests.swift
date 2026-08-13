@@ -22,7 +22,6 @@ final class FunctionCallContentViewTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [rune, FunctionCallFixture.makeRUJI(), FunctionCallFixture.makeATOM(), FunctionCallFixture.makeKUJI()])
 
         let migrated: [FunctionCallInstance] = [
-            .rebond(FunctionCallReBond()),
             .bondMaya(FunctionCallBondMayaChain(assets: [])),
             .unbondMaya(FunctionCallUnbondMayaChain(assets: [])),
             .custom(FunctionCallCustom(coin: rune, vault: vault)),

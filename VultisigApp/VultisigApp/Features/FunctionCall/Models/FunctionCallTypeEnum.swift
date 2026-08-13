@@ -105,10 +105,13 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
-            if coin.ticker.contains("TCY") {
-                return .custom
-            }
-            return .rebond
+            // Rebond and Leave have both moved to
+            // `Features/FunctionTransaction/`, and the route-out that reaches
+            // them fires on a *change* of selection — a migrated default would
+            // open this screen on a function that builds no form at all.
+            // Custom is the remaining THORChain entry that always builds one,
+            // and was already the default for TCY.
+            return .custom
         case .mayaChain:
             return .bondMaya
         case .dydx:

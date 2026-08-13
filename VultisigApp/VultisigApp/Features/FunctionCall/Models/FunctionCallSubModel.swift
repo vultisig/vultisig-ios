@@ -59,11 +59,6 @@ extension FunctionCallSubModel {
 //     mapping the old `FunctionCallInstance.toAddress` /
 //     `.customErrorMessage` switches encoded.
 
-extension FunctionCallReBond: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-    var submitErrorMessage: String? { customErrorMessage }
-}
-
 extension FunctionCallBondMayaChain: FunctionCallSubModel {
     func isFormValid(for _: Coin) -> Bool { isTheFormValid }
 }

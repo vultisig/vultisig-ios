@@ -76,15 +76,17 @@ struct FunctionCallDetailsScreen: View {
         }
         .onChange(of: selectedFunctionMemoType) {
             guard hasCompletedInitialSetup else { return }
-            guard let fnInstance = fnCallInstance else { return }
-            let currentNodeAddress = extractNodeAddress(from: fnInstance)
 
             // Operations already on the `FunctionTransaction` architecture have
             // no sub-model to build here — they own a screen. One mapping, one
             // navigation, no per-operation branch.
             if let transactionType = selectedFunctionMemoType.migratedTransactionType(
                 coin: selectedCoin,
-                nodeAddress: currentNodeAddress
+                // Rebond was the last legacy form holding a node address, so
+                // there is nothing left on this screen to carry over. The
+                // parameter stays as the pre-fill hook for the callers that
+                // replace this dropdown.
+                nodeAddress: nil
             ) {
                 selectedFunctionMemoType = lastLegacyFunctionMemoType
                 router.navigate(
@@ -95,19 +97,6 @@ struct FunctionCallDetailsScreen: View {
 
             lastLegacyFunctionMemoType = selectedFunctionMemoType
             switch selectedFunctionMemoType {
-            case .rebond:
-                // Ensure RUNE token is selected for REBOND operations on THORChain.
-                // Hoisted here per the FunctionCall sub-model rewrite —
-                // ReBond is a pure value-reader, the screen owns the
-                // RUNE-pin so the sub-model can drop its init-time write.
-                ensureRuneCoin()
-                let rebondInstance = FunctionCallReBond()
-
-                if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
-                    rebondInstance.nodeAddress = nodeAddress
-                }
-
-                fnCallInstance = .rebond(rebondInstance)
             case .bondMaya:
                 DispatchQueue.main.async {
                     MayachainService.shared.getDepositAssets { assetsResponse in
@@ -132,9 +121,9 @@ struct FunctionCallDetailsScreen: View {
                     }
                 }
 
-            case .leave:
+            case .leave, .rebond:
                 // Migrated to `Features/FunctionTransaction/` — the route-out
-                // above already handled it. Listed only to keep this switch
+                // above already handled them. Listed only to keep this switch
                 // exhaustive; each migration adds its case name here.
                 break
             case .custom:
@@ -197,15 +186,6 @@ struct FunctionCallDetailsScreen: View {
         // Ensure RUNE token is selected for operations on THORChain.
         if let runeCoin = vault.runeCoin {
             selectedCoin = runeCoin
-        }
-    }
-
-    private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
-        switch instance {
-        case .rebond(let rebond):
-            return rebond.nodeAddress
-        default:
-            return nil
         }
     }
 

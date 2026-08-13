@@ -58,25 +58,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
 
     // MARK: - Per-case parity
 
-    func testRebondParity() {
-        let model = FunctionCallReBond()
-        model.nodeAddress = "thor1node"
-        model.newAddress = "thor1new"
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let instance = FunctionCallInstance.rebond(model)
-
-        let tx = instance.toSendTransaction(coin: coin, vault: vault, gas: 100)
-        XCTAssertEqual(tx.memo, "REBOND:thor1node:thor1new")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.amount, "0")           // REBOND burns zero RUNE
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(instance.toAddress)
-        XCTAssertEqual(instance.amount, .zero)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 100)
-    }
-
     func testBondMayaParity() {
         let model = FunctionCallBondMayaChain(assets: [])
         model.selectedAsset = IdentifiableString(value: "BTC.BTC")
