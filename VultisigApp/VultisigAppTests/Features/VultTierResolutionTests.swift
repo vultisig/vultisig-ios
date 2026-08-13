@@ -62,20 +62,28 @@ final class VultTierResolutionTests: XCTestCase {
 
     /// The warm-up on swap-screen load races the first debounced quote fetch;
     /// they must share one `eth_call` rather than each firing their own.
+    ///
+    /// The gate parks the first lookup *inside* the cache's in-flight window
+    /// rather than racing a fixed sleep, so the later lookups can only be served
+    /// by joining it — a broken single-flight would run the probe again and be
+    /// counted.
     func testConcurrentLookupsShareOneCheck() async {
         let cache = ThorguardOwnershipCache()
-        let probe = ThorguardProbe(answers: [true], delayNanoseconds: 50_000_000)
+        let gate = ProbeGate()
+        let probe = ThorguardProbe(answers: [true], gate: gate)
 
-        await withTaskGroup(of: Bool?.self) { group in
-            for _ in 0..<5 {
-                group.addTask {
-                    await cache.ownsThorguard(for: "vault-a") { await probe.check() }
-                }
-            }
-            for await owned in group {
-                XCTAssertEqual(owned, true)
-            }
-        }
+        async let first = cache.ownsThorguard(for: "vault-a") { await probe.check() }
+        await gate.waitUntilEntered()
+        async let second = cache.ownsThorguard(for: "vault-a") { await probe.check() }
+        async let third = cache.ownsThorguard(for: "vault-a") { await probe.check() }
+        await gate.open()
+
+        let firstAnswer = await first
+        let secondAnswer = await second
+        let thirdAnswer = await third
+        XCTAssertEqual(firstAnswer, true)
+        XCTAssertEqual(secondAnswer, true, "Joining callers must get the shared answer")
+        XCTAssertEqual(thirdAnswer, true)
 
         let callCount = await probe.callCount
         XCTAssertEqual(callCount, 1, "Concurrent callers for the same vault must share one in-flight check")
@@ -309,21 +317,55 @@ private actor BalanceScript {
 /// counting how many times it was actually run.
 private actor ThorguardProbe {
     private let answers: [Bool?]
-    private let delayNanoseconds: UInt64
+    private let gate: ProbeGate?
     private(set) var callCount = 0
 
-    init(answers: [Bool?], delayNanoseconds: UInt64 = 0) {
+    init(answers: [Bool?], gate: ProbeGate? = nil) {
         self.answers = answers
-        self.delayNanoseconds = delayNanoseconds
+        self.gate = gate
     }
 
     func check() async -> Bool? {
         guard !answers.isEmpty else { return nil }
         let index = min(callCount, answers.count - 1)
         callCount += 1
-        if delayNanoseconds > 0 {
-            try? await Task.sleep(nanoseconds: delayNanoseconds)
+        if let gate {
+            await gate.markEntered()
+            await gate.waitUntilOpen()
         }
         return answers[index]
+    }
+}
+
+/// Holds a probe open inside the cache's in-flight window until the test lets go,
+/// so concurrency is expressed as a happens-before rather than as a sleep.
+private actor ProbeGate {
+    private var isEntered = false
+    private var enteredWaiters: [CheckedContinuation<Void, Never>] = []
+    private var isOpen = false
+    private var openWaiters: [CheckedContinuation<Void, Never>] = []
+
+    func markEntered() {
+        isEntered = true
+        let waiters = enteredWaiters
+        enteredWaiters.removeAll()
+        waiters.forEach { $0.resume() }
+    }
+
+    func waitUntilEntered() async {
+        guard !isEntered else { return }
+        await withCheckedContinuation { enteredWaiters.append($0) }
+    }
+
+    func open() {
+        isOpen = true
+        let waiters = openWaiters
+        openWaiters.removeAll()
+        waiters.forEach { $0.resume() }
+    }
+
+    func waitUntilOpen() async {
+        guard !isOpen else { return }
+        await withCheckedContinuation { openWaiters.append($0) }
     }
 }

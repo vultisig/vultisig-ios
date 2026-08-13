@@ -60,15 +60,16 @@ struct VultTierService {
 
     /// Quote-path resolution. The VULT balance is re-read on every call, so a
     /// balance that lands late — or a first read that failed — is picked up by
-    /// the very next quote instead of being pinned for the session. Only the
-    /// Thorguard `eth_call` behind it is session-cached, which is what keeps it
-    /// off the per-quote critical path.
+    /// the very next quote instead of being pinned for the session. Neither half
+    /// puts a network round trip on the quote's critical path once it has an
+    /// answer: the Thorguard `eth_call` is session-cached, and a stale balance is
+    /// refreshed in the background rather than waited on.
     @MainActor
     func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
         await Self.resolveSessionTier(
             cache: Self.thorguardCache,
             vaultId: vault.pubKeyEdDSA,
-            balance: { await fetchVultBalance(for: vault) },
+            balance: { await sessionVultBalance(for: vault) },
             ownership: { await checkThorguardBalance(for: vault) }
         )
     }
@@ -207,30 +208,61 @@ private extension VultTierService {
 
     @MainActor
     func fetchVultBalance(for vault: Vault) async -> Decimal {
-        // Check if we need to fetch fresh balance
         if shouldFetchBalance(for: vault) {
-            let vaultId = vault.pubKeyEdDSA
-            let didLand: Bool
-            if let inFlight = Self.refreshesInFlight[vaultId] {
-                didLand = await inFlight.value
-            } else {
-                let refresh = Task { @MainActor in await refreshVultBalance(for: vault) }
-                Self.refreshesInFlight[vaultId] = refresh
-                didLand = await refresh.value
-                Self.refreshesInFlight[vaultId] = nil
-            }
+            await refreshVultBalanceIfNeeded(for: vault)
+        }
+        return storedVultBalance(for: vault)
+    }
 
-            // Stamp the freshness cache only when a live balance actually
-            // landed. Stamping after a failed fetch would suppress every retry
-            // for the next three minutes, leaving the tier resolved from a
-            // balance that was never read.
-            if didLand {
-                cacheEntries.removeAll { $0.vaultId == vaultId }
-                cacheEntries.append(CacheEntry(vaultId: vaultId, lastFetchDate: Date()))
-            }
+    /// VULT balance for the quote path, which must not pay for a network round
+    /// trip it can avoid: quotes are debounced per keystroke and auto-refresh on
+    /// a timer, and the caller holds the loading spinner while this runs.
+    ///
+    /// A balance that has already landed is answered from memory and any
+    /// staleness is refreshed in the background, so the *next* quote sees the new
+    /// number. Only a vault with no landed balance at all — a cold start, or one
+    /// where every attempt so far failed — waits, because there is nothing to
+    /// answer with otherwise and a wrong zero costs the user their fee discount.
+    @MainActor
+    func sessionVultBalance(for vault: Vault) async -> Decimal {
+        guard shouldFetchBalance(for: vault) else {
+            return storedVultBalance(for: vault)
+        }
+        guard hasLandedBalance(for: vault) else {
+            return await fetchVultBalance(for: vault)
+        }
+        Task { @MainActor in await refreshVultBalanceIfNeeded(for: vault) }
+        return storedVultBalance(for: vault)
+    }
+
+    /// Whether a VULT balance has ever landed for this vault. The freshness stamp
+    /// is written only after a refresh that actually returned one, so its
+    /// presence is exactly that question.
+    func hasLandedBalance(for vault: Vault) -> Bool {
+        cacheEntries.contains { $0.vaultId == vault.pubKeyEdDSA }
+    }
+
+    /// Runs — or joins — the single in-flight VULT balance refresh for this
+    /// vault, stamping the freshness cache only when a live balance landed.
+    /// Stamping after a failed fetch would suppress every retry for the next
+    /// three minutes, leaving the tier resolved from a balance never read.
+    @MainActor
+    func refreshVultBalanceIfNeeded(for vault: Vault) async {
+        let vaultId = vault.pubKeyEdDSA
+        let didLand: Bool
+        if let inFlight = Self.refreshesInFlight[vaultId] {
+            didLand = await inFlight.value
+        } else {
+            let refresh = Task { @MainActor in await refreshVultBalance(for: vault) }
+            Self.refreshesInFlight[vaultId] = refresh
+            didLand = await refresh.value
+            Self.refreshesInFlight[vaultId] = nil
         }
 
-        return storedVultBalance(for: vault)
+        if didLand {
+            cacheEntries.removeAll { $0.vaultId == vaultId }
+            cacheEntries.append(CacheEntry(vaultId: vaultId, lastFetchDate: Date()))
+        }
     }
 
     /// Refreshes the vault's VULT balance from the network, adding the Ethereum
