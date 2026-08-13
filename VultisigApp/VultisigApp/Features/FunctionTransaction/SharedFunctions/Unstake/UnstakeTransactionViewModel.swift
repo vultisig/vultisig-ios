@@ -40,6 +40,15 @@ enum THORChainAutocompoundBalance {
     }
 }
 
+/// The main actor is already inferred here — `Form` is `@MainActor` and the
+/// conformance is stated on the declaration — but it is spelled out because the
+/// invariant is load-bearing and arrives from another file: every stored property
+/// is either a `@Published` the sheet renders from or the `Coin` SwiftData
+/// `@Model` the builders read. Moving that conformance into an extension would
+/// silently drop the isolation and leave a `@Model` on whatever thread the
+/// balance read resumed on. Costs the network read nothing: the reader is a
+/// non-isolated async function, so it runs off the main actor either way.
+@MainActor
 final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
@@ -267,9 +276,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     }
 
     func fetchAutocompoundBalance() async {
+        // Both `Coin` reads are taken here, before the suspension: the reader is
+        // strings-in/`Decimal`-out precisely so the network hop never carries a
+        // `@Model` across it.
         let ticker = coin.ticker
+        let address = coin.address
         do {
-            guard let amount = try await readAutocompoundBalance(ticker, coin.address) else { return }
+            guard let amount = try await readAutocompoundBalance(ticker, address) else { return }
             autocompoundBalance = coin.valueWithDecimals(value: amount)
             autocompoundBalanceDidLoad = true
         } catch {
