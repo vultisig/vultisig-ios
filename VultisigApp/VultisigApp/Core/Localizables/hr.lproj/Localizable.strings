@@ -625,6 +625,7 @@
 "invalidIntegerError" = "Nevažeći cijeli broj";
 "invalidLPUnits" = "Nevažeće LP jedinice";
 "invalidOperatorFee" = "Nevažeća naknada operatora";
+"invalidProposalIDError" = "Unesite ispravan Proposal ID";
 "invalidRecipientAddressError" = "Taj primatelj nije važeća adresa za ovaj lanac.";
 "invalidVaultData" = "Nevažeći podaci spremišta";
 "Italian" = "Talijanski";
@@ -1320,6 +1321,7 @@
 "selectVaults" = "Odaberite trezore";
 "selectVaultsToBackUpSubtitle" = "Odaberite hoćete li sigurnosno kopirati samo ovaj trezor ili sve trezore u vašoj aplikaciji.";
 "selectVaultsToBackUpTitle" = "Odaberite trezori za sigurnosnu kopiju";
+"selectVoteOptionError" = "Odaberite opciju glasovanja";
 "self" = "Sam";
 "sell" = "Prodaj";
 "send" = "Pošalji";

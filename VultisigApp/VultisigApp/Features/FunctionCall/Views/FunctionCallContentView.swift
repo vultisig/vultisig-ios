@@ -24,8 +24,6 @@ struct FunctionCallContentView: View {
             UnbondMayaFormView(model: model, coin: selectedCoin)
         case .custom(let model):
             CustomFormView(model: model, selectedCoin: $selectedCoin)
-        case .vote(let model):
-            VoteFormView(model: model)
         case .cosmosIBC(let model):
             CosmosIBCFormView(model: model, selectedCoin: $selectedCoin)
         case .merge(let model):

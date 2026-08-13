@@ -625,6 +625,7 @@
 "invalidIntegerError" = "无效的整数数量";
 "invalidLPUnits" = "无效的 LP 单位";
 "invalidOperatorFee" = "无效的运营商费用";
+"invalidProposalIDError" = "请输入有效的提案 ID";
 "invalidRecipientAddressError" = "该收款人不是此链的有效地址";
 "invalidVaultData" = "无效的保险库数据";
 "Italian" = "意大利语";
@@ -1320,6 +1321,7 @@
 "selectVaults" = "选择保险库";
 "selectVaultsToBackUpSubtitle" = "选择是仅备份此保险库还是备份应用中的所有保险库";
 "selectVaultsToBackUpTitle" = "选择要备份的保险库";
+"selectVoteOptionError" = "请选择投票选项";
 "self" = "自己";
 "sell" = "出售";
 "send" = "发送";

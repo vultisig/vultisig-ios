@@ -122,12 +122,77 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    // MARK: - dYdX vote
+
+    private static func makeDydx() -> Coin {
+        FunctionCallFixture.makeCoin(
+            .dydx,
+            ticker: "DYDX",
+            decimals: 18,
+            isNative: true,
+            address: "dydx1xyzfixturedydxchainvaultaddress000000"
+        )
+    }
+
+    func testVoteMapsToTheDydxVoteIntent() {
+        guard case .dydxVote(let mappedCoin)? = FunctionCallType.vote.migratedTransactionType(
+            coin: Self.makeDydx(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Vote must map to the dYdX vote intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .dydx, ticker: "DYDX")
+    }
+
+    /// A node address carried over from a previous form means nothing to a
+    /// ballot; the intent has nowhere to put one and must not grow a field for
+    /// it by accident.
+    func testVoteIgnoresACarriedOverNodeAddress() {
+        XCTAssertEqual(
+            FunctionCallType.vote.migratedTransactionType(coin: Self.makeDydx(), nodeAddress: Self.thorNode),
+            FunctionCallType.vote.migratedTransactionType(coin: Self.makeDydx(), nodeAddress: nil)
+        )
+    }
+
+    /// Same fail-closed property LEAVE has: the intent names dYdX's native
+    /// asset whether or not the vault holds it, so a vault that cannot pay the
+    /// fee lands on the shared "not in vault" error instead of opening a ballot
+    /// that could never be signed.
+    func testVoteTargetsDydxsNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
+        let rune = Self.makeRune()
+        let vault = FunctionCallFixture.makeVault(coins: [rune])
+
+        guard case .dydxVote(let mappedCoin)? = FunctionCallType.vote.migratedTransactionType(
+            coin: rune,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Vote must map to the dYdX vote intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .dydx, ticker: "DYDX")
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
+    }
+
+    func testVoteIntentResolvesTheCoinItNeeds() {
+        let coin = Self.makeDydx()
+        let intent = FunctionTransactionType.dydxVote(coin: coin.toCoinMeta())
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
+    func testVoteStaysSelectableOnDydx() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeDydx()).contains(.vote))
+    }
+
     /// The mapping is an allowlist: everything not yet migrated keeps building
     /// its legacy sub-model.
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
+            .rebond, .custom, .cosmosIBC, .merge, .unmerge,
             .theSwitch, .addThorLP, .securedAsset, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
@@ -149,21 +214,25 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
     }
 
-    /// Kept, with a narrower job than it was written for.
+    /// Kept, narrowed a second time.
     ///
     /// It was the guard on the only entry point there was: the dropdown
     /// applied `getDefault` without publishing a change, so a chain defaulting
     /// to a migrated type opened on a selection that built nothing. Rows carry
-    /// their own destination, so no default decides where a user lands any
-    /// more, and the invariant that now protects them is
-    /// `FunctionActionCatalogTests
-    /// .testEveryOfferedActionRoutesToAScreenThatCanBuildIt`, which is
-    /// strictly stronger — it covers every operation a chain offers, not just
+    /// their own destination now, so no default decides where a user lands, and
+    /// the invariant that protects them is
+    /// `FunctionActionCatalogTests.testEveryOfferedActionRoutesToAScreenThatCanBuildIt`
+    /// — strictly stronger, covering every operation a chain offers rather than
     /// the one it used to open on.
     ///
-    /// This still fails loudly if the dropdown path is re-entered before the
-    /// legacy shell is deleted, and it costs one `Chain.allCases` walk.
-    func testNoChainDefaultsToAMigratedFunction() {
+    /// The narrowing: a chain whose entry resolves to `.action` never renders
+    /// the dropdown at all — the passthrough builds the destination in place —
+    /// and its lone case *is* its default, so "the default is migrated" is the
+    /// state the action list deliberately made legal rather than a defect. dYdX
+    /// is the first chain in it (see
+    /// `testASingleActionChainMayDefaultToItsOnlyMigratedOperation`). What
+    /// remains guarded is the dropdown that still compiles behind a `.list`.
+    func testNoMultiActionChainDefaultsToAMigratedFunction() {
         for chain in Chain.allCases {
             let coin = FunctionCallFixture.makeCoin(
                 chain,
@@ -171,11 +240,32 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
                 decimals: 8,
                 isNative: true
             )
+            guard case .list = FunctionActionCatalog.entry(for: coin) else { continue }
+
             let defaultType = FunctionCallType.getDefault(for: coin)
             XCTAssertFalse(
                 Self.isMigrated(defaultType),
                 "\(chain.rawValue) defaults to \(defaultType.rawValue), which no longer builds a form"
             )
+        }
+    }
+
+    /// The exemption, stated positively rather than left as a hole in the rule
+    /// above: dYdX offers exactly one operation, that operation is migrated, and
+    /// the entry point therefore opens the migrated screen directly. Its
+    /// `getDefault` stays `.vote` because that is honestly the only thing the
+    /// chain does — there is nothing unmigrated left to point it at.
+    func testASingleActionChainMayDefaultToItsOnlyMigratedOperation() {
+        let coin = Self.makeDydx()
+        XCTAssertEqual(FunctionCallType.getCases(for: coin), [.vote])
+        XCTAssertEqual(FunctionCallType.getDefault(for: coin), .vote)
+        XCTAssertTrue(Self.isMigrated(.vote))
+
+        guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("dYdX must pass through to its only operation")
+        }
+        guard case .transaction(.dydxVote) = descriptor.destination else {
+            return XCTFail("dYdX's only operation is migrated and must not route through the legacy screen")
         }
     }
 }

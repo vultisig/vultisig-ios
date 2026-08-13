@@ -13,7 +13,6 @@ enum FunctionCallInstance {
     case bondMaya(FunctionCallBondMayaChain)
     case unbondMaya(FunctionCallUnbondMayaChain)
     case custom(FunctionCallCustom)
-    case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
@@ -32,7 +31,6 @@ enum FunctionCallInstance {
         case .bondMaya(let memo): return memo
         case .unbondMaya(let memo): return memo
         case .custom(let memo): return memo
-        case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
         case .merge(let memo): return memo
         case .unmerge(let memo): return memo
@@ -84,8 +82,6 @@ enum FunctionCallInstance {
             return .rebond(FunctionCallReBond())
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
-        case .dydx:
-            return .vote(FunctionCallVote())
         case .gaiaChain:
             return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
         case .kujira:

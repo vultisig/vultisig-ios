@@ -26,7 +26,6 @@ final class FunctionCallContentViewTests: XCTestCase {
             .bondMaya(FunctionCallBondMayaChain(assets: [])),
             .unbondMaya(FunctionCallUnbondMayaChain(assets: [])),
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
-            .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
             .merge(FunctionCallCosmosMerge(coin: rune, vault: vault)),
             .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),

@@ -625,6 +625,7 @@
 "invalidIntegerError" = "Importo intero non valido";
 "invalidLPUnits" = "Unità LP non valide";
 "invalidOperatorFee" = "Commissione operatore non valida";
+"invalidProposalIDError" = "Inserisci un ID Proposta valido";
 "invalidRecipientAddressError" = "Quel destinatario non è un indirizzo valido per questa catena.";
 "invalidVaultData" = "Dati del caveau non validi";
 "Italian" = "Italiano";
@@ -1320,6 +1321,7 @@
 "selectVaults" = "Seleziona cassaforti";
 "selectVaultsToBackUpSubtitle" = "Scegli se eseguire il backup di questo Vault o tutti i Vault nella tua app.";
 "selectVaultsToBackUpTitle" = "Seleziona Vaults per eseguire il backup";
+"selectVoteOptionError" = "Seleziona un'opzione di voto";
 "self" = "Proprio";
 "sell" = "Vendi";
 "send" = "Invia";

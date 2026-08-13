@@ -197,15 +197,14 @@ struct FunctionCallDetailsScreen: View {
                 }
             }
 
-        case .leave:
+        case .leave, .vote:
             // Migrated to `Features/FunctionTransaction/` — the action list
-            // routes it to its own screen and never lands here. Listed only to
-            // keep this switch exhaustive; each migration adds its case name.
+            // routes them to their own screens and never lands here. Listed
+            // only to keep this switch exhaustive; each migration adds its
+            // case name.
             break
         case .custom:
             fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
-        case .vote:
-            fnCallInstance = .vote(FunctionCallVote())
         case .cosmosIBC:
             fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
         case .merge:
