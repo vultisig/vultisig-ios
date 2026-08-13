@@ -13,7 +13,7 @@ import XCTest
 /// The builder's `amount` is a human decimal string: the send pipeline runs it
 /// through `SendCryptoLogic.amountInRaw`, which multiplies by `10^decimals`
 /// before it reaches the keysign payload. So `"1"` on an UNBOND signs a whole
-/// CACAO where a 1e-8 dust transfer is intended — 10^8 times too much, on the
+/// CACAO where one base unit is intended — 10^10 times too much, on the
 /// direction the user takes to get their money out.
 final class BondMayaTransactionBuilderTests: XCTestCase {
 
@@ -23,9 +23,9 @@ final class BondMayaTransactionBuilderTests: XCTestCase {
         hexPublicKey: "HexPublicKeyExample"
     )
 
-    private func makeBuilder(isBond: Bool) -> BondMayaTransactionBuilder {
+    private func makeBuilder(isBond: Bool, coin: Coin = BondMayaTransactionBuilderTests.cacao) -> BondMayaTransactionBuilder {
         BondMayaTransactionBuilder(
-            coin: Self.cacao,
+            coin: coin,
             isBond: isBond,
             nodeAddress: "maya1node",
             selectedAsset: "MAYA.CACAO",
@@ -33,24 +33,54 @@ final class BondMayaTransactionBuilderTests: XCTestCase {
         )
     }
 
+    /// A CACAO-shaped coin with a different `decimals`, to prove the dust is
+    /// derived rather than written down.
+    private static func cacao(decimals: Int) -> Coin {
+        let asset = CoinMeta(
+            chain: .mayaChain,
+            ticker: "CACAO",
+            logo: "cacao",
+            decimals: decimals,
+            priceProviderId: "cacao",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        return Coin(asset: asset, address: "maya1sender", hexPublicKey: "HexPublicKeyExample")
+    }
+
     // MARK: - Attached amount
 
-    /// Legacy pinned the unbond dust at `1 / pow(10, 8)` CACAO
-    /// (`FunctionCallUnbondMayaChain.amount`, covered by its own
-    /// `testAmountIsFixedDust`). CACAO carries **10** decimals, so that is 100
-    /// base units — asserted in base units because that is what is signed, and
-    /// because the string form is locale-formatted.
-    func testUnbondAttachesTheFixedDustNotAWholeCacao() {
+    /// ⚠️ The whole point: exactly ONE base unit.
+    ///
+    /// Asserted in base units, not on the string, because base units are what
+    /// gets signed and the string form is locale-formatted. Android
+    /// (`UnbondStrategy`, `BigInteger.ONE`) and Windows
+    /// (`getDustDepositAmountString`) send the same. iOS's own legacy screen
+    /// sent `1e-8` CACAO — 100 base units — and was the outlier; that parity
+    /// was dropped deliberately in favour of the other clients.
+    func testUnbondAttachesExactlyOneBaseUnit() {
         let tx = makeBuilder(isBond: false).buildSendTransaction(vault: .example)
 
         XCTAssertEqual(
-            tx.amountDecimal, 1 / pow(Decimal(10), 8),
-            "unbond must attach 1e-8 CACAO, matching what this app has always signed"
+            tx.amountInRaw, BigInt(1),
+            "unbond must attach one base unit — not 100 (legacy iOS), and not 10^10 (a whole CACAO)"
         )
-        XCTAssertEqual(
-            tx.amountInRaw, BigInt(100),
-            "1e-8 CACAO at 10 decimals is 100 base units"
-        )
+        XCTAssertEqual(tx.amountDecimal, 1 / pow(Decimal(10), TokensStore.cacao.decimals))
+    }
+
+    /// The dust must be *derived* from the coin's decimals. A literal exponent
+    /// is one base unit for exactly one `decimals` value and a multiple of it
+    /// for every other, which is how the 100x came about in the first place.
+    func testUnbondDustTracksTheCoinsDecimals() {
+        for decimals in [6, 8, 10, 18] {
+            let tx = makeBuilder(isBond: false, coin: Self.cacao(decimals: decimals))
+                .buildSendTransaction(vault: .example)
+
+            XCTAssertEqual(
+                tx.amountInRaw, BigInt(1),
+                "one base unit at \(decimals) decimals must still be one base unit"
+            )
+        }
     }
 
     /// A zero-amount unbond would broadcast without carrying the memo the node
@@ -76,7 +106,11 @@ final class BondMayaTransactionBuilderTests: XCTestCase {
         let unbond = makeBuilder(isBond: false).buildSendTransaction(vault: .example)
 
         XCTAssertGreaterThan(bond.amountInRaw, unbond.amountInRaw)
-        XCTAssertEqual(bond.amountInRaw, unbond.amountInRaw * BigInt(100_000_000))
+        XCTAssertEqual(
+            bond.amountInRaw,
+            unbond.amountInRaw * BigInt(10).power(TokensStore.cacao.decimals),
+            "a whole CACAO is 10^decimals base units; the dust is one"
+        )
     }
 
     // MARK: - Memo

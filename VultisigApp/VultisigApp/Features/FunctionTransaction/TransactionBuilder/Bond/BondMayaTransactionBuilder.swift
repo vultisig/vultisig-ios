@@ -9,11 +9,6 @@ import Foundation
 import VultisigCommonData
 
 struct BondMayaTransactionBuilder: TransactionBuilder {
-    /// Fixed dust attached to an UNBOND, in CACAO. The bonded amount travels in
-    /// the memo's LPUNITS field, so the transfer itself only has to be non-zero
-    /// for the node to pick the memo up.
-    private static let unbondDustCacao: Decimal = 1 / pow(10, 8)
-
     /// CACAO attached to a BOND.
     private static let bondCacao: Decimal = 1
 
@@ -24,13 +19,28 @@ struct BondMayaTransactionBuilder: TransactionBuilder {
     let selectedAsset: String
     let lpUnits: UInt64
 
-    /// The two directions attach different amounts, and this string is a HUMAN
-    /// decimal — `SendCryptoLogic.amountInRaw` multiplies it by `10^decimals`
-    /// to get what is signed. Emitting the bond's `1` for an unbond too signs a
-    /// whole CACAO where 1e-8 is meant, which for CACAO's 10 decimals is 10^8
-    /// times the intended dust.
+    /// Dust attached to an UNBOND: exactly one base unit.
+    ///
+    /// The amount being unbonded travels in the memo's LPUNITS field, so the
+    /// transfer itself only has to be non-zero for the node to pick the memo
+    /// up — the smallest value the coin can express is enough. Matches what
+    /// Android and Windows send.
+    ///
+    /// Derived from the coin's own decimals rather than written as a literal,
+    /// because this is a HUMAN decimal that `SendCryptoLogic.amountInRaw`
+    /// multiplies back by `10^decimals`. A hardcoded exponent is only "one base
+    /// unit" for one particular `decimals` value, and silently becomes a
+    /// multiple of it for any other — a `1e-8` literal was 100 base units on
+    /// CACAO's 10 decimals, not one.
+    private var unbondDust: Decimal {
+        1 / pow(10, coin.decimals)
+    }
+
+    /// The two directions attach different amounts. Emitting the bond's `1` for
+    /// an unbond signs a whole CACAO where one base unit is meant — on CACAO's
+    /// 10 decimals, 10^10 times the intended dust.
     var amount: String {
-        (isBond ? Self.bondCacao : Self.unbondDustCacao)
+        (isBond ? Self.bondCacao : unbondDust)
             .formatToDecimal(digits: coin.decimals)
     }
 
