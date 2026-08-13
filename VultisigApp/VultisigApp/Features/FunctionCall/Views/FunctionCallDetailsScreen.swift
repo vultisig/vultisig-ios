@@ -17,7 +17,6 @@ struct FunctionCallDetailsScreen: View {
     /// another function's form, and re-picking the migrated one would publish
     /// no change at all.
     @State private var lastLegacyFunctionMemoType: FunctionCallType = .custom
-    @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
@@ -61,7 +60,6 @@ struct FunctionCallDetailsScreen: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         if showsSelectors {
-                            contractSelector
                             functionSelector
                         }
                         if let instance = fnCallInstance {
@@ -239,13 +237,6 @@ struct FunctionCallDetailsScreen: View {
             selected: $selectedFunctionMemoType, coin: $selectedCoin)
     }
 
-    var contractSelector: some View {
-        FunctionCallContractSelectorDropDown(
-            items: .constant(
-                FunctionCallContractType.getCases(for: selectedCoin)),
-            selected: $selectedContractMemoType, coin: selectedCoin)
-    }
-
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
@@ -279,8 +270,6 @@ private extension FunctionCallDetailsScreen {
     }
 
     func setupForm() {
-        self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
-
         if let preselected {
             // Built through the same path a selection change takes, so a
             // preselected operation gets exactly the form the dropdown built —
