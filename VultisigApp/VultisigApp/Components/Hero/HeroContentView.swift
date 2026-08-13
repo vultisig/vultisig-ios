@@ -38,27 +38,38 @@ struct HeroContentView: View {
                     .foregroundStyle(Theme.colors.textTertiary)
             }
         }
+        // ⚠️ Stays CENTRED, unlike `send` / `swap`. This is a standalone caption
+        // block — a function name over a sub-line — with no amount row beneath it
+        // to agree with, so leading would only make it hug an edge for no reason.
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
+    /// ⚠️ Leading, to agree with the `coinRow` under it.
+    ///
+    /// The title used to be centred over a left-aligned amount, so the two read
+    /// as separate blocks rather than one sentence — and the generic header this
+    /// replaces (`SendCryptoVerifySummaryView.heroHeader`) has always been
+    /// left-aligned, so a transaction that grew a hero visibly shifted its own
+    /// title sideways.
     @ViewBuilder
     private func send(title: String?, coin: HeroCoinAmount) -> some View {
         if let title {
             Text(title)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         coinRow(coin, iconSize: 36)
     }
 
+    /// Leading for the same reason as `send` — the two `coinRow`s below it are.
     @ViewBuilder
     private func swap(title: String?, from: HeroCoinAmount, to: HeroCoinAmount) -> some View {
         if let title {
             Text(title)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         VStack(spacing: 12) {
             coinRow(from, iconSize: 28)
