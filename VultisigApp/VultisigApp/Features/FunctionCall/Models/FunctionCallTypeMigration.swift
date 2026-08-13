@@ -39,23 +39,37 @@ extension FunctionCallType {
         switch self {
         case .leave:
             // LEAVE is a `MsgDeposit` against the chain's own native asset —
-            // RUNE on THORChain, CACAO on MayaChain. Resolving it from the
-            // token store rather than from the vault is deliberate: a vault
-            // that does not hold the native coin then lands on
-            // `FunctionTransactionScreen`'s shared "not in vault" error
-            // instead of signing the memo against whichever token happened to
-            // be selected. The legacy screen's `ensureRuneCoin()` pinned RUNE
-            // on every chain, MayaChain included, and silently left a
-            // non-native selection in place when RUNE was absent.
-            let nativeAsset = TokensStore.TokenSelectionAssets.first {
-                $0.chain == coin.chain && $0.isNativeToken
-            }
-            return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+            // RUNE on THORChain, CACAO on MayaChain. The legacy screen's
+            // `ensureRuneCoin()` pinned RUNE on every chain, MayaChain
+            // included, and silently left a non-native selection in place when
+            // RUNE was absent.
+            return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .withdrawSecuredAsset:
+            // A `SECURE-` redemption is signed against the secured asset the
+            // user picks inside the form, but the picker itself reads the
+            // *native* account's bank balances to find out which secured
+            // denoms exist — so that is what the intent names, and what
+            // `resolvingCoin` fails closed on. The legacy form answered a
+            // RUNE-less vault with "No Secured Assets found", which reads as
+            // "you hold nothing" rather than "this vault cannot ask".
+            return .withdrawSecuredAsset(coin: nativeAsset(for: coin))
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer
             // for everything else is "still legacy".
             return nil
         }
+    }
+
+    /// The chain's own native asset, read from the token store rather than
+    /// from the vault so the intent names the asset the operation has to ride
+    /// even when the vault does not hold it — `FunctionTransactionScreen`'s
+    /// `resolvingCoin` then fails closed on it. Falls back to the selected
+    /// coin only when the store knows no native asset for the chain.
+    private func nativeAsset(for coin: Coin) -> CoinMeta {
+        let nativeAsset = TokensStore.TokenSelectionAssets.first {
+            $0.chain == coin.chain && $0.isNativeToken
+        }
+        return nativeAsset ?? coin.toCoinMeta()
     }
 }
