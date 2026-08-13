@@ -45,6 +45,15 @@ protocol TransactionBuilder {
     /// the TCY unstake builder; every other builder uses the default `nil` and
     /// keeps its existing presentation.
     var withdrawDisplayAmount: Decimal? { get }
+    /// What this transaction *is*, when "a send" is the wrong word for it.
+    ///
+    /// Deliberately separate from `withdrawDisplayAmount`: that field answers
+    /// "what figure", this one answers "what verb", and most builders need only
+    /// the second. Optional and defaulted, so a builder opts in — which also
+    /// means a NEW builder silently keeps the generic send header until someone
+    /// names its kind. `FunctionTransactionKindTests` pins the mapping for the
+    /// builders that exist; nothing can pin the ones that do not yet.
+    var functionKind: FunctionTransactionKind? { get }
 }
 
 extension TransactionBuilder {
@@ -59,8 +68,13 @@ extension TransactionBuilder {
     /// Default — only the limit-order cancel builder overrides this.
     var limitCancelContext: LimitOrderCancelRequest? { nil }
 
-    /// Default — only the TCY unstake builder overrides this.
+    /// Default — only the builders whose amount cannot state the operation's
+    /// figure override this.
     var withdrawDisplayAmount: Decimal? { nil }
+
+    /// Default — a builder that has not named its kind keeps the generic send
+    /// header it has today.
+    var functionKind: FunctionTransactionKind? { nil }
 
     /// Builds the immutable `SendTransaction` struct directly. `gas` /
     /// `fee` and runtime-only fields default to the construction-time
@@ -91,7 +105,8 @@ extension TransactionBuilder {
             cosmosStakingPayload: cosmosStakingPayload,
             solanaStakingPayload: solanaStakingPayload,
             limitCancelContext: limitCancelContext,
-            withdrawDisplayAmount: withdrawDisplayAmount
+            withdrawDisplayAmount: withdrawDisplayAmount,
+            functionKind: functionKind
         )
     }
 }

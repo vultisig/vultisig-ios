@@ -198,6 +198,15 @@ struct SendTransaction: Hashable {
     /// screens around signing, not part of what gets signed.
     let withdrawDisplayAmount: Decimal?
 
+    /// What this transaction is, when "a send" is the wrong word for it — see
+    /// `TransactionBuilder.functionKind`.
+    ///
+    /// Local-only, like `withdrawDisplayAmount`: it is display context for the
+    /// screens around signing, not part of what gets signed. A co-signer can
+    /// recover the verb from the memo but not the amount, which is why this stays
+    /// on the initiator's side rather than riding the payload.
+    let functionKind: FunctionTransactionKind?
+
     /// Native coin that pays for gas — `coin` itself for native sends, the
     /// chain's native sibling (e.g. ETH for a USDC source) otherwise.
     /// Precomputed at construction so Verify/Done don't need the vault's
@@ -248,7 +257,8 @@ extension SendTransaction {
             lhs.cosmosStakingPayload == rhs.cosmosStakingPayload &&
             lhs.solanaStakingPayload == rhs.solanaStakingPayload &&
             lhs.limitCancelContext == rhs.limitCancelContext &&
-            lhs.withdrawDisplayAmount == rhs.withdrawDisplayAmount
+            lhs.withdrawDisplayAmount == rhs.withdrawDisplayAmount &&
+            lhs.functionKind == rhs.functionKind
     }
 
     func hash(into hasher: inout Hasher) {
@@ -278,6 +288,7 @@ extension SendTransaction {
         hasher.combine(solanaStakingPayload)
         hasher.combine(limitCancelContext)
         hasher.combine(withdrawDisplayAmount)
+        hasher.combine(functionKind)
     }
 }
 
@@ -308,6 +319,7 @@ extension SendTransaction {
         solanaStakingPayload: SolanaStakingPayload? = nil,
         limitCancelContext: LimitOrderCancelRequest? = nil,
         withdrawDisplayAmount: Decimal? = nil,
+        functionKind: FunctionTransactionKind? = nil,
         amountWasAutoAdjusted: Bool = false
     ) {
         self.coin = coin
@@ -339,6 +351,7 @@ extension SendTransaction {
         self.solanaStakingPayload = solanaStakingPayload
         self.limitCancelContext = limitCancelContext
         self.withdrawDisplayAmount = withdrawDisplayAmount
+        self.functionKind = functionKind
     }
 }
 
@@ -484,6 +497,11 @@ extension SendTransaction {
             // `copy(gas:)` on the function-call path that would drop it — the one
             // this field exists to survive.
             withdrawDisplayAmount: withdrawDisplayAmount,
+            // Carried through unconditionally for the same reason: the
+            // function-call flow's `copy(gas:)` is exactly the hop this field has
+            // to survive, and dropping it would put the generic "You're sending"
+            // back over every operation that named itself.
+            functionKind: functionKind,
             amountWasAutoAdjusted: amountWasAutoAdjusted ?? self.amountWasAutoAdjusted
         )
     }
