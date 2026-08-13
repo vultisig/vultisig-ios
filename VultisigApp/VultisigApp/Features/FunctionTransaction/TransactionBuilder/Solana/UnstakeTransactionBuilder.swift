@@ -20,10 +20,29 @@ struct SolanaUnstakeTransactionBuilder: TransactionBuilder {
     let coin: Coin
     /// Source stake account being deactivated (its own pubkey, not the owner's).
     let stakeAccount: String
+    /// Delegated SOL in the account being cooled down — the figure the row was
+    /// showing, in human decimals.
+    let delegatedAmount: Decimal
 
     /// Deactivate carries no amount — the whole account cools down.
     var amount: String { "0" }
     var sendMaxAmount: Bool { false }
+
+    var functionKind: FunctionTransactionKind? { .unstake }
+
+    /// ⚠️ **Required, not decorative.** A deactivate instruction carries no
+    /// lamports, so `amount` is the literal `"0"` and naming the operation
+    /// without carrying the figure would announce "You're unstaking 0 SOL" over
+    /// a whole delegation.
+    ///
+    /// The DELEGATED stake, not the account's total lamports: the rent-exempt
+    /// reserve sits in the same account but was never staked and is not what
+    /// cools down. (The withdraw builder quotes the total precisely because a
+    /// withdraw takes the reserve too, and closes the account.)
+    var withdrawDisplayAmount: Decimal? {
+        guard delegatedAmount > 0 else { return nil }
+        return delegatedAmount
+    }
 
     var memo: String { "" }
 

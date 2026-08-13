@@ -36,6 +36,8 @@ struct TonStakeTransactionBuilder: TransactionBuilder {
         return dict
     }
 
+    var functionKind: FunctionTransactionKind? { .stake }
+
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { bounceablePoolAddress }

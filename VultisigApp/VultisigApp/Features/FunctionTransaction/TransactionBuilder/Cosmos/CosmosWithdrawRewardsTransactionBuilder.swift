@@ -27,6 +27,11 @@ struct CosmosWithdrawRewardsTransactionBuilder: TransactionBuilder {
     var amount: String { "" }
     var sendMaxAmount: Bool { false }
 
+    /// ⚠️ **Names no figure**, and cannot: `MsgWithdrawDelegatorReward` carries
+    /// no Coin, so `amount` is the empty string. The expected reward total lives
+    /// in the view-model, which is where the verify summary already surfaces it.
+    var functionKind: FunctionTransactionKind? { .claimRewards }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

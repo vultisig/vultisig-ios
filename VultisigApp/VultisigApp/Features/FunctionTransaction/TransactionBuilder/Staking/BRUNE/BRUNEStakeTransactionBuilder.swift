@@ -30,6 +30,8 @@ struct BRUNEStakeTransactionBuilder: TransactionBuilder {
         String(coin.decimalToCrypto(value: amount.toDecimal()).toInt())
     }
 
+    var functionKind: FunctionTransactionKind? { .stake }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

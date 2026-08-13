@@ -224,7 +224,11 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             // between two steps is floored away.
             let basisPoints = withdrawBasisPoints
             guard basisPoints >= WithdrawBasisPoints.min else { return nil }
-            return CacaoUnstakeTransactionBuilder(coin: coin, bps: basisPoints)
+            return CacaoUnstakeTransactionBuilder(
+                coin: coin,
+                bps: basisPoints,
+                stakedAmount: availableAmount
+            )
         default:
             return nil
         }

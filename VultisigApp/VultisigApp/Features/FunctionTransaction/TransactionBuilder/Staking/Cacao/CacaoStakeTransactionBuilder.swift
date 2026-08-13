@@ -12,6 +12,8 @@ struct CacaoStakeTransactionBuilder: TransactionBuilder {
     let amount: String
     let sendMaxAmount: Bool = false
 
+    var functionKind: FunctionTransactionKind? { .stake }
+
     let memo: String = "pool+"
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

@@ -35,6 +35,12 @@ struct SolanaWithdrawTransactionBuilder: TransactionBuilder {
         ThreadSafeDictionary<String, String>()
     }
 
+    /// ⚠️ **Deliberately unnamed.** A Solana withdraw is not a rewards claim:
+    /// it moves the cooled-down account's ENTIRE balance — delegated stake,
+    /// compounded rewards and the refundable rent reserve — back to the wallet
+    /// and closes the account. Solana rewards auto-compound and there is no
+    /// claim operation at all, so `.claimRewards` would name something the user
+    /// is not doing, and no other verb in the vocabulary fits.
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
 

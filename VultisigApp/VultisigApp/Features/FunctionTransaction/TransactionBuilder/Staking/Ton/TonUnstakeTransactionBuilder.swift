@@ -38,6 +38,14 @@ struct TonUnstakeTransactionBuilder: TransactionBuilder {
         return dict
     }
 
+    /// ⚠️ **Deliberately unnamed.** `amount` is the 0.2 TON withdrawal signal
+    /// the pool contract requires, not the position being withdrawn — the pool
+    /// returns the staked balance separately, and nominator pools only do full
+    /// withdrawals. "You're unstaking 0.2 TON" would misname the fee as the
+    /// position, and a hero quoting the staked balance instead would remove the
+    /// only place that 0.2 TON is shown to the user at all. Naming this needs the
+    /// staked figure AND a disclosure row for the signal, like the limit-order
+    /// cancel's donated dust.
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { bounceablePoolAddress }

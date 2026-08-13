@@ -72,6 +72,12 @@ struct BondMayaTransactionBuilder: TransactionBuilder {
         return dict
     }
 
+    /// ⚠️ **Deliberately unnamed.** `amount` here is a fixed 1 CACAO carrier,
+    /// not the size of the bond — what is actually bonded (or unbonded) is
+    /// `lpUnits` of `selectedAsset`, and it rides in the memo. "You're sending 1
+    /// CACAO" is at least true; "You're bonding 1 CACAO" would not be. Naming
+    /// this operation needs a figure the hero can state in the coin's own
+    /// denomination, which an LP-unit bond does not have.
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { "" }

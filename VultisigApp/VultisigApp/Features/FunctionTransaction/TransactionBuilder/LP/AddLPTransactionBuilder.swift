@@ -22,6 +22,8 @@ struct AddLPTransactionBuilder: TransactionBuilder {
         return micro.uint64Value
     }
 
+    var functionKind: FunctionTransactionKind? { .addLiquidity }
+
     var memo: String {
         let address = pairedAddress?.nilIfEmpty
         let lpData = AddLPMemoData(pool: poolName, pairedAddress: address)

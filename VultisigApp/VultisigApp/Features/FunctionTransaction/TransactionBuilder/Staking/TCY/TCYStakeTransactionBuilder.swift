@@ -18,6 +18,8 @@ struct TCYStakeTransactionBuilder: TransactionBuilder {
         coin.decimalToCrypto(value: amount.toDecimal()).description
     }
 
+    var functionKind: FunctionTransactionKind? { .stake }
+
     var memo: String {
         "tcy+"
     }

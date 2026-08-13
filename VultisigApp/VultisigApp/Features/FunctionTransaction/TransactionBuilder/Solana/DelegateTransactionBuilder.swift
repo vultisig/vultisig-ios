@@ -22,6 +22,8 @@ struct SolanaDelegateTransactionBuilder: TransactionBuilder {
     let sendMaxAmount: Bool
     let votePubkey: String
 
+    var functionKind: FunctionTransactionKind? { .delegate }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

@@ -17,6 +17,19 @@ struct UnbondTransactionBuilder: TransactionBuilder {
 
     var amount: String { "0" }
 
+    var functionKind: FunctionTransactionKind? { .unbond }
+
+    /// ⚠️ **Required, not decorative.** An UNBOND is a memo-only `MsgDeposit`:
+    /// `amount` is the literal `"0"` and the figure being unbonded rides in the
+    /// memo as base units. Naming the operation without carrying the figure
+    /// would turn "You're sending 0 RUNE" into "You're unbonding 0 RUNE" — a
+    /// better verb over the same wrong number.
+    var withdrawDisplayAmount: Decimal? {
+        let unbonded = unbondAmount.toDecimal()
+        guard unbonded > 0 else { return nil }
+        return unbonded
+    }
+
     var amountInUnits: String {
         let amountInSats = coin.decimalToCrypto(value: unbondAmount.toDecimal())
         return amountInSats.description

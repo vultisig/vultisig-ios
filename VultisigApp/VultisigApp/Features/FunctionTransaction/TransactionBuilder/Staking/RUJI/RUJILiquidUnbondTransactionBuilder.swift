@@ -31,6 +31,18 @@ struct RUJILiquidUnbondTransactionBuilder: TransactionBuilder {
 
     var amount: String { "0" }
 
+    /// `.unstake`, matching the sheet this is reached from rather than the
+    /// `liquid.unbond` message name — see the bond side for why `.bond` would
+    /// name a different operation.
+    ///
+    /// ⚠️ **Names no figure**, because it has none to name: the redemption is a
+    /// share of `x/staking-x/ruji` receipts, and a share is worth more than 1
+    /// RUJI and drifts further as the pool compounds. Until the live redemption
+    /// ratio is resolved, the verify hero stays suppressed rather than quoting a
+    /// share count as RUJI — the same call `TCYUnstakeTransactionBuilder` makes
+    /// for the auto-compounding position.
+    var functionKind: FunctionTransactionKind? { .unstake }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

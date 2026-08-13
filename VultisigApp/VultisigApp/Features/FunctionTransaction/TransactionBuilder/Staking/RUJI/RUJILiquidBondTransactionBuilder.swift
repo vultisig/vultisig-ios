@@ -20,6 +20,15 @@ struct RUJILiquidBondTransactionBuilder: TransactionBuilder {
     let amount: String
     let sendMaxAmount: Bool
 
+    /// `.stake`, not `.bond`, even though the message is `liquid.bond`.
+    ///
+    /// The verb has to match the affordance that was tapped: both RUJI positions
+    /// are reached from the same Stake sheet, and `.bond` in this app means
+    /// putting up a THORChain node bond — a different operation with different
+    /// money at stake. Announcing "You're bonding" over a RUJI stake would name
+    /// the wrong one.
+    var functionKind: FunctionTransactionKind? { .stake }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

@@ -27,6 +27,8 @@ struct CosmosRedelegateTransactionBuilder: TransactionBuilder {
     let validatorSrcAddress: String
     let validatorDstAddress: String
 
+    var functionKind: FunctionTransactionKind? { .redelegate }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

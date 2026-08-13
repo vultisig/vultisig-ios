@@ -24,6 +24,13 @@ struct BRUNEUnstakeTransactionBuilder: TransactionBuilder {
 
     var amount: String { "0" }
 
+    /// ⚠️ **Names no figure.** The redemption spends `x/staking-x/brune`
+    /// receipt units, which are worth more than 1 bRUNE each and drift as the
+    /// pool compounds, so a fraction of the share count is not the payout. The
+    /// hero stays suppressed rather than quoting one — same call as the TCY and
+    /// RUJI auto-compounding positions.
+    var functionKind: FunctionTransactionKind? { .unstake }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

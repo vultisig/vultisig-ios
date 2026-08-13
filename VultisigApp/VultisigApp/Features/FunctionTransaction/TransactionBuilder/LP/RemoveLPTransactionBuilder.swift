@@ -34,6 +34,12 @@ struct RemoveLPTransactionBuilder: TransactionBuilder {
         return dict
     }
 
+    /// ⚠️ **Deliberately unnamed.** `amount` is the 0.02 RUNE dust a THORChain
+    /// withdrawal has to attach (zero on MAYAChain), not the liquidity being
+    /// removed — that is `percentage` of a two-sided pool position, which no
+    /// single-coin hero can state. "You're removing liquidity 0.02 RUNE" would
+    /// misname the dust as the withdrawal, and the hero would also drop the
+    /// "→ <pool> LP" the generic header currently carries.
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { .empty }

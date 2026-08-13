@@ -15,6 +15,17 @@ struct RUJIWithdrawRewardsTransactionBuilder: TransactionBuilder {
     let sendMaxAmount: Bool
     let amount: String = "0"
 
+    /// ⚠️ **Names no figure, and `withdrawAmount` is not the one to name.** RUJI
+    /// staking pays its revenue in USDC (`THORChainStakingService` builds the
+    /// rewards coin as USDC), while this builder's `coin` — and therefore the
+    /// ticker any hero would render beside the amount — is RUJI. Quoting
+    /// `withdrawAmount` here would read "claiming 12.34 RUJI" over a claim of
+    /// 12.34 USDC, which is a worse sentence than the generic one it replaces.
+    ///
+    /// Naming it properly needs the hero to carry the reward COIN as well as the
+    /// figure, which the single-coin shape does not do today.
+    var functionKind: FunctionTransactionKind? { .claimRewards }
+
     var rawAmount: String {
         coin.decimalToCrypto(value: withdrawAmount.toDecimal()).description
     }

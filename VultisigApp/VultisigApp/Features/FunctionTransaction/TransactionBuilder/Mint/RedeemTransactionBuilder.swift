@@ -22,6 +22,8 @@ struct RedeemTransactionBuilder: TransactionBuilder {
         return micro.uint64Value
     }
 
+    var functionKind: FunctionTransactionKind? { .redeem }
+
     var memo: String {
         "yVault-\(coin.ticker.uppercased())-withdraw"
     }

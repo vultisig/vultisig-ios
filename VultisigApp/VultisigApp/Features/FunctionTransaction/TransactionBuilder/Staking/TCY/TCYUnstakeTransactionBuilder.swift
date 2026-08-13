@@ -26,6 +26,8 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
 
     var amount: String { "0" }
 
+    var functionKind: FunctionTransactionKind? { .unstake }
+
     /// The figure the verify screen announces, quantised to `basisPoints`.
     ///
     /// Deliberately NOT the amount that was typed. The withdrawal can only ask

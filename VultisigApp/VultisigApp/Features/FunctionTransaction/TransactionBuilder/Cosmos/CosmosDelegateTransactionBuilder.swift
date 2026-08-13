@@ -22,6 +22,8 @@ struct CosmosDelegateTransactionBuilder: TransactionBuilder {
     let sendMaxAmount: Bool
     let validatorAddress: String
 
+    var functionKind: FunctionTransactionKind? { .delegate }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

@@ -319,7 +319,8 @@ struct DefiChainMainScreen: View {
                 guard let stakeAccount = row.stakeAccount, row.canUnstake else { return }
                 presentVerify(for: SolanaUnstakeTransactionBuilder(
                     coin: coin,
-                    stakeAccount: stakeAccount.pubkey
+                    stakeAccount: stakeAccount.pubkey,
+                    delegatedAmount: row.delegatedAmount
                 ))
             },
             onWithdraw: { row in

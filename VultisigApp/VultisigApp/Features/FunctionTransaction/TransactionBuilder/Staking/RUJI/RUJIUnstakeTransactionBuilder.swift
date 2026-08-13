@@ -18,6 +18,8 @@ struct RUJIUnstakeTransactionBuilder: TransactionBuilder {
         coin.decimalToCrypto(value: amount.toDecimal()).description
     }
 
+    var functionKind: FunctionTransactionKind? { .unstake }
+
     var memo: String {
         "withdraw:\(coin.contractAddress):\(rawAmount)"
     }

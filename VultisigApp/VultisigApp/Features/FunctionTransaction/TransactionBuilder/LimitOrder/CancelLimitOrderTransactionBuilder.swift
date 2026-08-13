@@ -48,6 +48,12 @@ struct CancelLimitOrderTransactionBuilder: TransactionBuilder {
     var memo: String { request.memo }
     var limitCancelContext: LimitOrderCancelRequest? { request }
 
+    /// ⚠️ **Deliberately unnamed**, and it must stay that way. A cancel already
+    /// has its own hero, and that provider is asked FIRST — but the generic one
+    /// would answer for it the moment the order changed, and it would answer with
+    /// an amount: `"0"` on the THORChain route, and on the L1 route the dust that
+    /// gets donated to the pool. Neither is a figure the user is choosing to move.
+
     /// Zero for THORChain (see the donation note above). For L1 the dust is
     /// mandatory: Bifrost drops a zero-value transaction before it ever becomes
     /// a `MsgObservedTxIn`, so a cancel carrying nothing is simply never seen.

@@ -21,6 +21,8 @@ struct MintTransactionBuilder: TransactionBuilder {
         return micro.uint64Value
     }
 
+    var functionKind: FunctionTransactionKind? { .mint }
+
     var memo: String {
         "yVault-\(coin.ticker.uppercased())-deposit"
     }
