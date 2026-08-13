@@ -115,9 +115,10 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
             let lamports = try await stakingService.fetchMinDelegation()
             minimumDelegationLamports = lamports
             refreshAmountValidators()
+            // The rebuild republishes `validForm` on its own; this only reveals
+            // the error on an amount the user has already entered.
             if amountField.touched {
                 validateErrors()
-                validForm = form.allSatisfy { $0.valid }
             }
         } catch {
             logger.error("Min delegation fetch failed: \(error.localizedDescription, privacy: .public)")
@@ -135,7 +136,6 @@ final class SolanaDelegateTransactionViewModel: ObservableObject, Form {
             refreshAmountValidators()
             if amountField.touched {
                 validateErrors()
-                validForm = form.allSatisfy { $0.valid }
             }
         } catch {
             logger.error("Rent reserve fetch failed: \(error.localizedDescription, privacy: .public)")
