@@ -254,7 +254,10 @@ final class WithdrawBasisPointsTests: XCTestCase {
                     address: "thor1fixturereceiptvaultaddress0000000000",
                     hexPublicKey: "02" + String(repeating: "00", count: 32)
                 ),
-                vault: TestStore.makeVault(),
+                // One vault per asset: both share the container, and `Vault`'s
+                // unique attributes make a second identical fixture upsert over
+                // the first rather than sit beside it.
+                vault: TestStore.makeVault(pubKey: "test-pub-\(asset.ticker.lowercased())"),
                 isAutocompound: true,
                 availableToUnstake: staked
             )
