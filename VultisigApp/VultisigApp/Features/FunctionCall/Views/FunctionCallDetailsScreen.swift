@@ -86,30 +86,6 @@ struct FunctionCallDetailsScreen: View {
                 }
 
                 fnCallInstance = .rebond(rebondInstance)
-            case .bondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .bondMaya(
-                                FunctionCallBondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
-            case .unbondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .unbondMaya(
-                                FunctionCallUnbondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
             case .leave:
                 // Ensure RUNE token is selected for LEAVE operations on THORChain
                 ensureRuneCoin()
