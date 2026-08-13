@@ -68,6 +68,14 @@ enum ReceiptShareRedemption {
     /// asked to close. Same reason `UnstakeTransactionViewModel.withdrawBasisPoints`
     /// pins 10000 for MAX.
     ///
+    /// ⚠️ **But the flag alone is not evidence of a full exit**, which is why the
+    /// amount has to agree with it. The flag is set from a `Double` percentage
+    /// (`AmountPercentageBinding.percentage`), and on a large position a typed
+    /// amount a hair under the balance derives exactly `100` — the same value the
+    /// field already held, so SwiftUI emits no change, `onPercentage` never runs,
+    /// and the flag stays true over an amount that was meant to leave something
+    /// staked. Trusting it by itself would close that position.
+    ///
     /// ⚠️ **A partial withdrawal can never close the position.** Truncation only
     /// moves the result down, and the result only reaches the held balance when
     /// `amount` reaches `positionValue` — which is a full exit however it was
@@ -81,9 +89,10 @@ enum ReceiptShareRedemption {
         closingPosition: Bool
     ) -> Decimal {
         let held = wholeUnits(receiptBaseUnits)
-        guard held >= 1 else { return 0 }
-        guard !closingPosition else { return held }
-        guard positionValue > 0, amount > 0 else { return 0 }
+        guard held >= 1, positionValue > 0, amount > 0 else { return 0 }
+        if closingPosition, isWholePosition(amount: amount, positionValue: positionValue) {
+            return held
+        }
 
         // Multiplied BEFORE it is divided. Taking the fraction first
         // (`amount / positionValue`) rounds it to the mantissa's 38 digits and
@@ -93,5 +102,24 @@ enum ReceiptShareRedemption {
         // exactly.
         let redeemed = wholeUnits((held * amount) / positionValue)
         return min(redeemed, held)
+    }
+
+    /// Whether `amount` is the whole position **as the amount field is able to
+    /// state it** — the balance itself, or the figure a MAX selection prefills,
+    /// which is that balance truncated to `AmountPercentageBinding.displayedDecimals`.
+    ///
+    /// The truncated form has to count, or a MAX exit on a position with more
+    /// decimals than the field renders would be read as a partial and leave a
+    /// sliver staked. Nothing BETWEEN the two counts, which is what makes this a
+    /// real check rather than a tolerance: a figure the user typed with more
+    /// precision than MAX would have written is a figure MAX did not write.
+    static func isWholePosition(amount: Decimal, positionValue: Decimal) -> Bool {
+        guard positionValue > 0 else { return false }
+        if amount >= positionValue { return true }
+
+        var raw = positionValue
+        var prefilled = Decimal()
+        NSDecimalRound(&prefilled, &raw, AmountPercentageBinding.displayedDecimals, .down)
+        return amount == prefilled
     }
 }

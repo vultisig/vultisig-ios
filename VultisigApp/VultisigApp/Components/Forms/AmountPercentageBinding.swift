@@ -25,8 +25,27 @@ import Foundation
 /// figure the user typed.
 enum AmountPercentageBinding {
 
+    /// How many decimals the function-transaction amount field renders, and
+    /// therefore the precision `AmountTextField.setupAmount()` writes when the
+    /// percentage control fills the field.
+    ///
+    /// Named rather than repeated because it is not only a display choice: a MAX
+    /// selection puts the balance TRUNCATED to this precision into the field, so
+    /// anything deciding "is this the whole position" has to know the figure it
+    /// is comparing against was rounded here. See
+    /// `ReceiptShareRedemption.isWholePosition`.
+    static let displayedDecimals = 4
+
     /// The percentage of `available` that `amount` comes to, clamped to 0…100,
     /// or `nil` when there is no balance to take a percentage of.
+    ///
+    /// ⚠️ **Lossy, and load-bearingly so.** The result is a `Double`, so a
+    /// fraction within about 1e-15 of the whole position comes back as exactly
+    /// `100`. When the field already held 100 that is not a change, SwiftUI emits
+    /// no `onChange`, and `UnstakeTransactionViewModel.onPercentage` never runs to
+    /// clear the MAX flag — leaving it stale-true over an amount the user meant to
+    /// be short of the balance. Nothing downstream may treat that flag as the sole
+    /// evidence of a full exit; see `ReceiptShareRedemption.baseUnits`.
     ///
     /// The clamp is load-bearing: the amount field accepts whatever is being
     /// typed, including a figure above the balance (rejecting that is the

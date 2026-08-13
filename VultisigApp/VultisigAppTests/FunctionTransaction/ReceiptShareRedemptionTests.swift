@@ -61,18 +61,59 @@ final class ReceiptShareRedemptionTests: XCTestCase {
     }
 
     /// ⚠️ A full exit pins the whole held balance instead of deriving it. The
-    /// amount field renders a rounded figure, so a derived MAX could leave a
-    /// sliver of shares behind and keep open a position the user asked to close.
-    func testClosingThePositionSpendsEveryHeldShare() {
+    /// amount field renders 4 decimals, so a MAX on a position with more of them
+    /// arrives here already short — deriving from it would leave a sliver of
+    /// shares behind and keep open a position the user asked to close.
+    func testClosingThePositionSpendsEveryHeldShareEvenFromTheRoundedField() {
+        // What MAX prefills for a 140.64866515 position.
         XCTAssertEqual(
             ReceiptShareRedemption.baseUnits(
-                forAmount: Decimal(string: "1.5")!,
-                positionValue: staked,
-                receiptBaseUnits: stakedUnits,
+                forAmount: Decimal(string: "140.6486")!,
+                positionValue: rujiStaked,
+                receiptBaseUnits: Decimal(string: "13855943656")!,
                 closingPosition: true
             ),
-            stakedUnits
+            Decimal(string: "13855943656")!
         )
+    }
+
+    /// ⚠️ **The MAX flag alone must not close a position.** It is set from a
+    /// `Double` percentage, so an amount a hair under the balance derives exactly
+    /// 100 — the value the field already held, which means SwiftUI emits no
+    /// change and the flag is never cleared. Trusting it by itself would take a
+    /// remainder the user asked to keep.
+    func testAFlagLeftStaleByADoubleRoundedPercentageDoesNotCloseThePosition() {
+        let position = Decimal(string: "100000000000")!
+        let held = Decimal(string: "10000000000000000000")!
+        let typed = Decimal(string: "99999999999.999999")!
+
+        // The collision this guards against is real, not hypothetical: the
+        // percentage the field would derive for that amount IS exactly 100.
+        XCTAssertEqual(AmountPercentageBinding.percentage(ofAmount: typed, available: position), 100)
+
+        let units = ReceiptShareRedemption.baseUnits(
+            forAmount: typed,
+            positionValue: position,
+            receiptBaseUnits: held,
+            closingPosition: true
+        )
+        XCTAssertLessThan(units, held, "an amount short of the balance must not close the position")
+        XCTAssertGreaterThan(units, 0)
+    }
+
+    /// The other side of that guard: a figure MAX itself would never have written
+    /// is not MAX, however close to the balance it sits.
+    func testOnlyTheBalanceOrTheFigureMaxPrefillsCountsAsTheWholePosition() {
+        XCTAssertTrue(ReceiptShareRedemption.isWholePosition(amount: rujiStaked, positionValue: rujiStaked))
+        XCTAssertTrue(ReceiptShareRedemption.isWholePosition(
+            amount: Decimal(string: "140.6486")!, positionValue: rujiStaked
+        ))
+        XCTAssertFalse(ReceiptShareRedemption.isWholePosition(
+            amount: Decimal(string: "140.64865")!, positionValue: rujiStaked
+        ))
+        XCTAssertFalse(ReceiptShareRedemption.isWholePosition(
+            amount: Decimal(string: "140.6485")!, positionValue: rujiStaked
+        ))
     }
 
     /// ⚠️ The other half of the same invariant: a PARTIAL withdrawal must never
@@ -308,7 +349,9 @@ final class ReceiptShareRedemptionTests: XCTestCase {
 
         let viewModel = makeRujiViewModel()
         viewModel.setupAmountField()          // MAX — what the sheet opens on
-        viewModel.amountField.value = "140.64866515"
+        // What `AmountTextField.setupAmount()` writes: the balance truncated to
+        // the field's 4 decimals, which is already short of the position.
+        viewModel.amountField.value = "140.6486"
         viewModel.validForm = true
 
         XCTAssertEqual(try fundedUnits(of: viewModel), "13855943656")
