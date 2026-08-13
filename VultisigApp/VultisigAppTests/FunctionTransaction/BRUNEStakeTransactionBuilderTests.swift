@@ -89,7 +89,8 @@ final class BRUNEStakeTransactionBuilderTests: XCTestCase {
     func testUnstakeBuilderEmitsLiquidUnbondMessage() throws {
         let builder = BRUNEUnstakeTransactionBuilder(
             coin: Self.makeBRuneCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "5")!,
+            stakedAmount: Decimal(string: "5")!,
             autoCompoundAmount: Decimal(string: "5")!,
             sendMaxAmount: true
         )
@@ -100,7 +101,8 @@ final class BRUNEStakeTransactionBuilderTests: XCTestCase {
     func testUnstakeBuilderUsesLiquidBondContract() throws {
         let builder = BRUNEUnstakeTransactionBuilder(
             coin: Self.makeBRuneCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "5")!,
+            stakedAmount: Decimal(string: "5")!,
             autoCompoundAmount: Decimal(string: "5")!,
             sendMaxAmount: true
         )
@@ -111,7 +113,8 @@ final class BRUNEStakeTransactionBuilderTests: XCTestCase {
     func testUnstakeBuilderFundsWithReceiptDenomFull() throws {
         let builder = BRUNEUnstakeTransactionBuilder(
             coin: Self.makeBRuneCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "5")!,
+            stakedAmount: Decimal(string: "5")!,
             autoCompoundAmount: Decimal(string: "5")!,
             sendMaxAmount: true
         )
@@ -124,24 +127,29 @@ final class BRUNEStakeTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(funds.amount, "500000000")
     }
 
-    func testUnstakeBuilderScalesByPercentage() throws {
+    /// ⚠️ FAILS on the parent commit, which funded this with 250000000 —
+    /// `Int(50.0346) = 50`, i.e. half the position rather than the 2.50173 that
+    /// was asked for.
+    func testUnstakeBuilderRedeemsTheAmountAskedForRatherThanAWholePercentage() throws {
         let builder = BRUNEUnstakeTransactionBuilder(
             coin: Self.makeBRuneCoin(),
-            percentage: 50,
+            withdrawAmount: Decimal(string: "2.50173")!,
+            stakedAmount: Decimal(string: "5")!,
             autoCompoundAmount: Decimal(string: "5")!,
             sendMaxAmount: false
         )
         let payload = try XCTUnwrap(builder.wasmContractPayload)
         let funds = try XCTUnwrap(payload.coins.first)
-        // 50% of 5 ybRUNE at 8 decimals → 250_000_000 receipt units.
-        XCTAssertEqual(funds.amount, "250000000")
+        // 2.50173 ybRUNE at 8 decimals → 250_173_000 receipt units.
+        XCTAssertEqual(funds.amount, "250173000")
     }
 
     func testUnstakeBuilderReturnsNilForSubUnitWithdrawal() {
         // 100% of an amount that scales below one base unit must not emit a payload.
         let builder = BRUNEUnstakeTransactionBuilder(
             coin: Self.makeBRuneCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "0.000000001")!,
+            stakedAmount: Decimal(string: "0.000000001")!,
             autoCompoundAmount: Decimal(string: "0.000000001")!, // < 1e-8
             sendMaxAmount: true
         )

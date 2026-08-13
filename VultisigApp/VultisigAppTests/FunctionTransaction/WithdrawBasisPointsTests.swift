@@ -233,44 +233,43 @@ final class WithdrawBasisPointsTests: XCTestCase {
         XCTAssertNil(viewModel.transactionBuilder)
     }
 
-    /// ⚠️ bRUNE/ybRUNE and RUJI-compound are still on the whole-percentage
-    /// expression, deliberately: they scale receipt base units by
-    /// `percentage / 100` rather than addressing the position in ten-thousandths,
-    /// which is a different mechanism and a different change. If someone converts
-    /// them later, this is the test that should be updated rather than silently
-    /// passing.
+    /// ⚠️ RUJI-compound is still on the whole-percentage expression, and is the
+    /// last arm that is. If someone converts it, this is the test that should be
+    /// updated rather than silently passing.
     ///
-    /// The withdrawn units are the assertion because neither unbond carries a memo
-    /// — the fraction rides in the wasm execute's funds. Both share 8 decimals with
-    /// their receipt token, so both land on the same figure for the same position.
-    func testTheReceiptScalingSiblingsStillBuildFromAWholePercentage() throws {
+    /// It is NOT a case for basis points: a `liquid.unbond` is funded with an
+    /// absolute count of receipt shares, so it can express the typed amount
+    /// exactly and has no ten-thousandth to round to. `ReceiptShareRedemption` is
+    /// the conversion it wants, and its bRUNE sibling already uses it — which is
+    /// why bRUNE has left this test.
+    ///
+    /// The redeemed units are the assertion because the unbond carries no memo —
+    /// the fraction rides in the wasm execute's funds.
+    func testTheRujiCompoundSiblingStillBuildsFromAWholePercentage() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
 
-        for asset in [TokensStore.brune, TokensStore.ruji] {
-            let viewModel = UnstakeTransactionViewModel(
-                coin: Coin(
-                    asset: asset,
-                    address: "thor1fixturereceiptvaultaddress0000000000",
-                    hexPublicKey: "02" + String(repeating: "00", count: 32)
-                ),
-                // One vault per asset: both share the container, and `Vault`'s
-                // unique attributes make a second identical fixture upsert over
-                // the first rather than sit beside it.
-                vault: TestStore.makeVault(pubKey: "test-pub-\(asset.ticker.lowercased())"),
-                isAutocompound: true,
-                availableToUnstake: staked
-            )
-            viewModel.availableAmount = staked
-            viewModel.autocompoundBalance = staked
-            type("1002.73", into: viewModel)
+        // RUJI alone now: this commit moves bRUNE off the whole-percentage path,
+        // so the sibling it used to share this assertion with no longer belongs
+        // here. One fixture, so one vault key is enough.
+        let viewModel = UnstakeTransactionViewModel(
+            coin: Coin(
+                asset: TokensStore.ruji,
+                address: "thor1fixturereceiptvaultaddress0000000000",
+                hexPublicKey: "02" + String(repeating: "00", count: 32)
+            ),
+            vault: TestStore.makeVault(pubKey: "test-pub-ruji-compound"),
+            isAutocompound: true,
+            availableToUnstake: staked
+        )
+        viewModel.availableAmount = staked
+        viewModel.autocompoundBalance = staked
+        type("1002.73", into: viewModel)
 
-            let payload = try XCTUnwrap(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
-            // Int(50.0679) = 50 — the flooring this issue fences off. Addressing
-            // the same position in ten-thousandths would redeem 5006 bps of
-            // 200274000000 = 100257164400 units instead.
-            XCTAssertEqual(payload.coins.first?.amount, "100137000000", "\(asset.ticker)")
-        }
+        let payload = try XCTUnwrap(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
+        // Int(50.0679) = 50 — the flooring still in place here. Converting the
+        // typed amount straight to shares would redeem 100273000000 instead.
+        XCTAssertEqual(payload.coins.first?.amount, "100137000000")
     }
 
     /// The bonded RUJI position is exact already and must stay untouched: its

@@ -190,9 +190,15 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 stakedAmount: availableAmount
             )
         case "BRUNE":
+            // Carries the typed amount rather than a whole percentage of the
+            // position: the unbond is FUNDED with an absolute count of
+            // `x/staking-x/brune` receipt units, so it can express the figure
+            // exactly and `Int(percentage)` was throwing that away — see
+            // `ReceiptShareRedemption`.
             return BRUNEUnstakeTransactionBuilder(
                 coin: coin,
-                percentage: Int(resolvedPercentage),
+                withdrawAmount: amountField.value.toDecimal(),
+                stakedAmount: availableAmount,
                 autoCompoundAmount: autocompoundBalance,
                 sendMaxAmount: isMaxAmount
             )
@@ -289,9 +295,13 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     /// here gets the finer conversion with no floor under it, which is the
     /// round-to-zero hazard the validator exists to close.
     ///
-    /// bRUNE/ybRUNE and RUJI-compound are deliberately absent: they scale receipt
-    /// base units by `percentage / 100` instead of addressing the position in
-    /// ten-thousandths, which is a different mechanism and a different change.
+    /// bRUNE/ybRUNE and RUJI-compound are deliberately absent, and stay absent
+    /// now that they no longer floor to a whole percent either. They redeem
+    /// receipt shares, and a `liquid.unbond`'s FUNDS carry an absolute count of
+    /// them — so there is no ten-thousandth to address and no cliff at one basis
+    /// point. Their floor is one receipt base unit, enforced by the builder
+    /// refusing to fund a redemption with nothing (`ReceiptShareRedemption`).
+    /// RUJI-compound is still on the whole-percentage expression.
     private var withdrawsInBasisPoints: Bool {
         ["TCY", "CACAO"].contains(coin.ticker.uppercased())
     }
