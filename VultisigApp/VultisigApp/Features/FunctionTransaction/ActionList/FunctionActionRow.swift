@@ -62,7 +62,7 @@ struct FunctionActionRow: View {
                 title: "Leave",
                 subtitle: "Ask a node to leave and release your bond",
                 icon: .arrowToCornerTopRight,
-                destination: .legacyFunctionCall(.leave)
+                destination: .leave(coin: .example, node: nil)
             ),
             onSelect: {}
         )
@@ -73,7 +73,7 @@ struct FunctionActionRow: View {
                 subtitle: "Send a transaction with a custom memo",
                 icon: .filePen,
                 availability: .unavailable(reason: "Not available on this chain"),
-                destination: .legacyFunctionCall(.custom)
+                destination: .customMemo(coin: .example)
             ),
             onSelect: {}
         )

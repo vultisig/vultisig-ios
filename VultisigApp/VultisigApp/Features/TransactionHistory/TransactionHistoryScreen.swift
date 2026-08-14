@@ -351,7 +351,7 @@ struct TransactionHistoryScreen: View {
                     vault: pending.vault,
                     request: pending.request
                 )
-                router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: pending.vault))
+                router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: pending.vault))
             } catch {
                 // Surfaced rather than swallowed: without an inbound vault, a
                 // verified dust floor and a priced fee there is no safe cancel to

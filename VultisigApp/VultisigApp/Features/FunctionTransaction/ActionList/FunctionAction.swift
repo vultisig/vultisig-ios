@@ -1,50 +1,125 @@
 //
-//  FunctionCallTypeMigration.swift
+//  FunctionAction.swift
 //  VultisigApp
 //
-//  The one place that says which legacy function types have already moved to
-//  `Features/FunctionTransaction/`, and what intent each of them produces.
+//  The operations the Functions entry point offers on a chain, and the intent
+//  each one opens.
 //
-//  Why this exists: the legacy details screen is still the only entry point
-//  for these operations, but a migrated operation no longer has a legacy
-//  sub-model for that screen to build. Rather than special-casing each
-//  migration inside the screen, the screen asks this mapping once — a non-nil
-//  answer means "route out to `FunctionTransactionScreen`", nil means "build
-//  the legacy sub-model as before".
+//  Was `FunctionAction` plus `FunctionActionMigration`, the enum that drove
+//  a dropdown over a screen of per-operation forms and the temporary table that
+//  said which of those had moved. Both are gone: every operation is a
+//  `FunctionTransactionType` now, so the mapping is total and the two files had
+//  nothing left to say separately.
 //
-//  Migrating the next operation is one entry here, plus its case name on the
-//  screen's already-migrated arm. Nothing else in the legacy screen changes.
-//
-//  This whole file is scaffolding for the interim: the action-list screen
-//  takes over producing these intents, and the last migration deletes the
-//  legacy shell along with this mapping.
+//  What survives is the part that was never about the legacy screen — which
+//  operations a chain offers, in what order, and what each is called — read by
+//  `FunctionActionCatalog` to build the action list.
 //
 
-import Foundation
+import SwiftUI
 
-extension FunctionCallType {
-    /// The `FunctionTransactionType` this function selection routes to, or
-    /// `nil` when the operation still lives on the legacy screen.
+enum FunctionAction: String, CaseIterable, Identifiable {
+    case
+         rebond,
+         leave,
+         custom,
+         vote,
+         cosmosIBC,
+         merge,
+         unmerge,
+         theSwitch,
+         addThorLP,
+         withdrawSecuredAsset
+
+    var id: String { self.rawValue }
+
+    func display() -> String {
+        switch self {
+        case .rebond:
+            return NSLocalizedString("Rebond", comment: "")
+        case .leave:
+            return NSLocalizedString("Leave", comment: "")
+        case .custom:
+            return NSLocalizedString("Custom", comment: "")
+        case .vote:
+            return NSLocalizedString("Vote", comment: "")
+        case .cosmosIBC:
+            return NSLocalizedString("IBC Transfer", comment: "")
+        case .merge:
+            return NSLocalizedString("Merge", comment: "")
+        case .unmerge:
+            return NSLocalizedString("Withdraw RUJI", comment: "")
+        case .theSwitch:
+            return NSLocalizedString("Switch", comment: "")
+        case .addThorLP:
+            return NSLocalizedString("Add THORChain LP", comment: "")
+        case .withdrawSecuredAsset:
+            return NSLocalizedString("Withdraw Secured Asset", comment: "")
+        }
+    }
+
+    /// Every operation `coin.chain` offers, in the order the chain lists them.
     ///
-    /// A migrated type must not be the `getDefault(for:)` of a chain that
-    /// renders the action *list*: behind the list the dropdown still applies
-    /// its default without publishing a change, so the route-out would never
-    /// fire and the user would land on a selection with no form.
+    /// The single source of truth for what the Functions entry point shows.
+    /// `CoinAction.memoChains` decides whether the entry point appears at all,
+    /// and the two have to agree in both directions — pinned by
+    /// `FunctionActionReachabilityTests`.
+    static func offered(on coin: Coin) -> [FunctionAction] {
+        switch coin.chain {
+        case .thorChain:
+            return [
+                .rebond,
+                .leave,
+                .merge,
+                .unmerge,
+                .custom,
+                .withdrawSecuredAsset
+            ]
+
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+            return [.addThorLP]
+        case .mayaChain:
+            return [.leave,
+                    .custom]
+        case .dydx:
+            return [.vote]
+        case .gaiaChain:
+            return [
+                .cosmosIBC,
+                .theSwitch
+            ]
+        case .kujira, .osmosis:
+            return [.cosmosIBC]
+
+        case .thorChainChainnet, .thorChainStagenet:
+            // The test networks offer the entry button but had no case list,
+            // so the selector opened empty over whatever form the default
+            // happened to build. Custom is the operation they support — the
+            // same `MsgDeposit` mainnet takes — so naming it here makes the
+            // button lead somewhere. The form's asset predicate has to know
+            // these chains too, or the form it opens could never be submitted.
+            return [.custom]
+
+        default:
+            return []
+        }
+    }
+
+    /// The transaction this operation opens.
     ///
-    /// A chain offering exactly one operation is exempt, and dYdX is the first
-    /// one to use the exemption. Its lone case is necessarily also its default,
-    /// and the entry point passes straight through to that operation's
-    /// destination without consulting `getDefault` at all — which is precisely
-    /// the constraint the action list was built to remove. Pinned by
-    /// `FunctionCallMigrationSeamTests.testNoMultiActionChainDefaultsToAMigratedFunction`
-    /// and its companion.
+    /// Total: every operation has its own screen, so there is no "still on the
+    /// legacy form" answer left to give. Several arms read `coin` — `.leave`
+    /// and `.rebond` resolve the chain's native asset rather than whatever the
+    /// user was looking at, `.custom` and `.cosmosIBC` deliberately carry the
+    /// selected one — so this is asked per coin, not once per operation.
     ///
     /// - Parameters:
-    ///   - coin: the coin currently selected on the legacy screen, which
-    ///     supplies the chain the operation runs on.
-    ///   - nodeAddress: a node address already typed into the previous
-    ///     function's form, carried over as a pre-fill.
-    func migratedTransactionType(coin: Coin, nodeAddress: String?) -> FunctionTransactionType? {
+    ///   - coin: the coin the entry point was opened on, which supplies both
+    ///     the chain and, for the operations that spend what you are holding,
+    ///     the asset.
+    ///   - nodeAddress: a node address a caller already knows, carried into the
+    ///     form as a pre-fill. The action list passes nil: it is entered cold.
+    func transactionType(coin: Coin, nodeAddress: String? = nil) -> FunctionTransactionType {
         switch self {
         case .leave:
             // LEAVE is a `MsgDeposit` against the chain's own native asset —
@@ -139,11 +214,6 @@ extension FunctionCallType {
             // the vault's coins on the same chain, and every one of those is
             // already held, so nothing beyond the entry coin needs resolving.
             return .customMemo(coin: coin.toCoinMeta())
-        default:
-            // Deliberately an allowlist rather than an exhaustive switch: a
-            // type is migrated only once someone has moved it, so the answer
-            // for everything else is "still legacy".
-            return nil
         }
     }
 

@@ -17,16 +17,16 @@ final class LeaveTransactionBuilderTests: XCTestCase {
     private static let mayaNode = "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c"
 
     private static func makeRune() -> Coin {
-        FunctionCallFixture.makeRUNE()
+        FunctionActionFixture.makeRUNE()
     }
 
     private static func makeCacao() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: "CACAO",
             decimals: 10,
             isNative: true,
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
     }
 
@@ -74,7 +74,7 @@ final class LeaveTransactionBuilderTests: XCTestCase {
     /// + an empty `toAddress`, with a two-entry memo dictionary.
     func testSendTransactionMatchesLegacyBoundaryOnThorchain() {
         let coin = Self.makeRune()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
         let builder = LeaveTransactionBuilder(coin: coin, nodeAddress: Self.thorNode)
 
         let tx = builder.buildSendTransaction(vault: vault)
@@ -97,7 +97,7 @@ final class LeaveTransactionBuilderTests: XCTestCase {
 
     func testSendTransactionMatchesLegacyBoundaryOnMayachain() {
         let coin = Self.makeCacao()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
         let builder = LeaveTransactionBuilder(coin: coin, nodeAddress: Self.mayaNode)
 
         let tx = builder.buildSendTransaction(vault: vault)

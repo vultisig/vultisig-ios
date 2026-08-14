@@ -1,43 +1,43 @@
 //
-//  FunctionCallMigrationSeamTests.swift
+//  FunctionActionIntentTests.swift
 //  VultisigAppTests
 //
-//  `FunctionCallType.migratedTransactionType(coin:nodeAddress:)` is the one
-//  statement of which operations have moved to
-//  `Features/FunctionTransaction/`. Both producers read it: the action list
-//  asks it to decide a row's destination, and the legacy details screen still
-//  asks it on selection change behind the dropdown that no entry point opens
-//  any more.
+//  `FunctionAction.transactionType(coin:nodeAddress:)` is the one statement of
+//  what each operation opens, read by every producer: the action list asks it
+//  for a row's destination, and the DeFi tab's position cards build the same
+//  intents by hand.
 //
-//  These pin the mapping itself, the coin it pins an operation to, and the
-//  reachability rule that outlived the dropdown: a migrated operation dropped
-//  from the chain's case list disappears from the list too, because the
-//  catalog is built from `getCases`.
+//  These pin the mapping itself and — for the operations that do not simply
+//  carry the selected coin — which asset it resolves the intent against. Three
+//  of them are pinned to the chain's native asset on purpose (LEAVE, REBOND,
+//  SWITCH) because the memo rides that asset and nothing else credits; three
+//  deliberately are not (Add-LP, IBC, the raw memo) because the point of those
+//  is to move what you are holding.
+//
+//  Also pinned: an operation dropped from a chain's `offered(on:)` list loses
+//  its row, because the catalog is built from that list — so a migration that
+//  forgot to keep it there would make the operation unreachable.
 //
 
 @testable import VultisigApp
 import XCTest
 
-final class FunctionCallMigrationSeamTests: XCTestCase {
+final class FunctionActionIntentTests: XCTestCase {
 
     private static let thorNode = "thor1prxy0sufdqfve6ygkwu9gswe60cle8gy02ex2w"
 
     private static func makeRune() -> Coin {
-        FunctionCallFixture.makeRUNE()
+        FunctionActionFixture.makeRUNE()
     }
 
     private static func makeCacao() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: "CACAO",
             decimals: 10,
             isNative: true,
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
-    }
-
-    private static func isMigrated(_ type: FunctionCallType, coin: Coin = makeRune()) -> Bool {
-        type.migratedTransactionType(coin: coin, nodeAddress: nil) != nil
     }
 
     private func assertIsNativeAsset(
@@ -55,7 +55,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     // MARK: - The mapping
 
     func testLeaveMapsToTheLeaveIntentOnThorchain() {
-        guard case .leave(let mappedCoin, let node)? = FunctionCallType.leave.migratedTransactionType(
+        guard case .leave(let mappedCoin, let node) = FunctionAction.leave.transactionType(
             coin: Self.makeRune(),
             nodeAddress: Self.thorNode
         ) else {
@@ -67,7 +67,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testLeaveMapsToTheLeaveIntentOnMayachain() {
-        guard case .leave(let mappedCoin, let node)? = FunctionCallType.leave.migratedTransactionType(
+        guard case .leave(let mappedCoin, let node) = FunctionAction.leave.transactionType(
             coin: Self.makeCacao(),
             nodeAddress: nil
         ) else {
@@ -82,8 +82,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// Leave from a TCY wallet must still deposit against RUNE, or the memo
     /// rides a token `MsgDeposit` the node never sees.
     func testLeaveIsPinnedToTheChainsNativeAssetNotTheSelectedCoin() {
-        guard case .leave(let mappedCoin, _)? = FunctionCallType.leave.migratedTransactionType(
-            coin: FunctionCallFixture.makeTCY(),
+        guard case .leave(let mappedCoin, _) = FunctionAction.leave.transactionType(
+            coin: FunctionActionFixture.makeTCY(),
             nodeAddress: Self.thorNode
         ) else {
             return XCTFail("Leave must map to the leave intent")
@@ -97,11 +97,11 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// vault" error rather than signing LEAVE against TCY. The legacy
     /// `ensureRuneCoin()` silently left the non-native selection in place.
     func testLeaveTargetsTheNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
-        let tcy = FunctionCallFixture.makeTCY()
-        let vault = FunctionCallFixture.makeVault(coins: [tcy])
+        let tcy = FunctionActionFixture.makeTCY()
+        let vault = FunctionActionFixture.makeVault(coins: [tcy])
         XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
 
-        guard case .leave(let mappedCoin, _)? = FunctionCallType.leave.migratedTransactionType(
+        guard case .leave(let mappedCoin, _) = FunctionAction.leave.transactionType(
             coin: tcy,
             nodeAddress: Self.thorNode
         ) else {
@@ -123,7 +123,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testRebondMapsToTheRebondIntent() {
-        guard case .rebond(let mappedCoin, let node)? = FunctionCallType.rebond.migratedTransactionType(
+        guard case .rebond(let mappedCoin, let node) = FunctionAction.rebond.transactionType(
             coin: Self.makeRune(),
             nodeAddress: Self.thorNode
         ) else {
@@ -135,7 +135,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testRebondLeavesTheNodeFieldEmptyWhenTheCallerKnowsNoNode() {
-        guard case .rebond(_, let node)? = FunctionCallType.rebond.migratedTransactionType(
+        guard case .rebond(_, let node) = FunctionAction.rebond.transactionType(
             coin: Self.makeRune(),
             nodeAddress: nil
         ) else {
@@ -149,8 +149,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// form. Selecting Rebond from a TCY wallet must still deposit against
     /// RUNE, or the memo rides a token `MsgDeposit` the node never sees.
     func testRebondIsPinnedToRuneNotTheSelectedToken() {
-        guard case .rebond(let mappedCoin, _)? = FunctionCallType.rebond.migratedTransactionType(
-            coin: FunctionCallFixture.makeTCY(),
+        guard case .rebond(let mappedCoin, _) = FunctionAction.rebond.transactionType(
+            coin: FunctionActionFixture.makeTCY(),
             nodeAddress: Self.thorNode
         ) else {
             return XCTFail("Rebond must map to the rebond intent")
@@ -163,11 +163,11 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// not the vault holds it, so a RUNE-less vault hits the shared "not in
     /// vault" error instead of signing REBOND against TCY.
     func testRebondTargetsRuneEvenWhenTheVaultDoesNotHoldIt() {
-        let tcy = FunctionCallFixture.makeTCY()
-        let vault = FunctionCallFixture.makeVault(coins: [tcy])
+        let tcy = FunctionActionFixture.makeTCY()
+        let vault = FunctionActionFixture.makeVault(coins: [tcy])
         XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
 
-        guard case .rebond(let mappedCoin, _)? = FunctionCallType.rebond.migratedTransactionType(
+        guard case .rebond(let mappedCoin, _) = FunctionAction.rebond.transactionType(
             coin: tcy,
             nodeAddress: Self.thorNode
         ) else {
@@ -193,7 +193,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// the form resolves the spend coin from the vault's holdings. Selecting
     /// Merge from RUNE therefore carries RUNE and no pre-selection.
     func testMergeMapsToTheMergeIntentOnTheNativeAsset() {
-        guard case .merge(let mappedCoin, let denom)? = FunctionCallType.merge.migratedTransactionType(
+        guard case .merge(let mappedCoin, let denom) = FunctionAction.merge.transactionType(
             coin: Self.makeRune(),
             nodeAddress: nil
         ) else {
@@ -208,15 +208,15 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// coin the screen was on. It never fired because `ensureRuneCoin()` ran
     /// first; carrying the denom on the intent makes it real.
     func testMergePreselectsTheDenomWhenTheSelectedCoinIsMergeable() {
-        let kuji = FunctionCallFixture.makeCoin(
+        let kuji = FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: "KUJI",
             decimals: 8,
             isNative: false,
-            address: FunctionCallFixture.thorAddress
+            address: FunctionActionFixture.thorAddress
         )
 
-        guard case .merge(let mappedCoin, let denom)? = FunctionCallType.merge.migratedTransactionType(
+        guard case .merge(let mappedCoin, let denom) = FunctionAction.merge.transactionType(
             coin: kuji,
             nodeAddress: nil
         ) else {
@@ -230,7 +230,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// A node address belongs to the node functions; MERGE must ignore it
     /// rather than smuggle it into the form.
     func testMergeIgnoresACarriedNodeAddress() {
-        guard case .merge(_, let denom)? = FunctionCallType.merge.migratedTransactionType(
+        guard case .merge(_, let denom) = FunctionAction.merge.transactionType(
             coin: Self.makeRune(),
             nodeAddress: Self.thorNode
         ) else {
@@ -260,15 +260,15 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// on a mapping that answers nil for the coin a user actually holds.
     func testEveryOperationMapsToAnIntentOnEveryChainThatOffersIt() {
         for chain in CoinAction.memoChains {
-            let coin = FunctionCallFixture.makeCoin(
+            let coin = FunctionActionFixture.makeCoin(
                 chain,
                 ticker: chain.ticker,
                 decimals: 8,
                 isNative: true
             )
-            for type in FunctionCallType.getCases(for: coin) {
+            for type in FunctionAction.offered(on: coin) {
                 XCTAssertNotNil(
-                    type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
+                    type.transactionType(coin: coin, nodeAddress: Self.thorNode),
                     "\(chain.rawValue) offers \(type.rawValue), which has no intent to route to"
                 )
             }
@@ -276,13 +276,13 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     /// The same statement over the enum rather than over the chain table: no
-    /// `FunctionCallType` case is left without a destination, so nothing is
+    /// `FunctionAction` case is left without a destination, so nothing is
     /// stranded by being dropped from a chain's list rather than migrated.
     func testNoOperationIsLeftWithoutAnIntent() {
         let rune = Self.makeRune()
-        for type in FunctionCallType.allCases {
+        for type in FunctionAction.allCases {
             XCTAssertNotNil(
-                type.migratedTransactionType(coin: rune, nodeAddress: Self.thorNode),
+                type.transactionType(coin: rune, nodeAddress: Self.thorNode),
                 "\(type.rawValue) still has no migrated destination"
             )
         }
@@ -295,7 +295,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testAddThorLPMapsToTheEntryAsset() {
         let usdc = AddLPFixture.usdc()
 
-        guard case .addThorchainLP(let mappedCoin)? = FunctionCallType.addThorLP.migratedTransactionType(
+        guard case .addThorchainLP(let mappedCoin) = FunctionAction.addThorLP.transactionType(
             coin: usdc,
             nodeAddress: nil
         ) else {
@@ -320,7 +320,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     /// Every chain that offers Add-LP must keep offering it: the action list is
-    /// built from `getCases`, so dropping it there would make the operation
+    /// built from `offered(on:)`, so dropping it there would make the operation
     /// migrated *and* unreachable.
     func testAddThorLPStaysSelectableOnEveryChainThatOffersIt() {
         let lpChains: [Chain] = [
@@ -328,26 +328,26 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
             .ethereum, .avalanche, .bscChain, .base, .ripple
         ]
         for chain in lpChains {
-            let coin = FunctionCallFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            let coin = FunctionActionFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
             XCTAssertTrue(
-                FunctionCallType.getCases(for: coin).contains(.addThorLP),
+                FunctionAction.offered(on: coin).contains(.addThorLP),
                 "\(chain.rawValue) no longer offers Add-LP"
             )
         }
     }
 
     private static func makeMergeToken(_ ticker: String = "KUJI") -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: ticker,
             decimals: 8,
             isNative: false,
-            address: FunctionCallFixture.thorAddress
+            address: FunctionActionFixture.thorAddress
         )
     }
 
     func testUnmergeMapsToTheUnmergeIntent() {
-        guard case .unmerge(let mappedCoin, let denom)? = FunctionCallType.unmerge.migratedTransactionType(
+        guard case .unmerge(let mappedCoin, let denom) = FunctionAction.unmerge.transactionType(
             coin: Self.makeRune(),
             nodeAddress: nil
         ) else {
@@ -361,7 +361,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// The legacy form pre-selected the merge token matching the coin the user
     /// opened Functions from.
     func testUnmergePreSelectsTheMergeTokenTheUserCameFrom() {
-        guard case .unmerge(_, let denom)? = FunctionCallType.unmerge.migratedTransactionType(
+        guard case .unmerge(_, let denom) = FunctionAction.unmerge.transactionType(
             coin: Self.makeMergeToken(),
             nodeAddress: nil
         ) else {
@@ -372,8 +372,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testUnmergeLeavesTheDenomUnsetForATokenThatCannotBeMerged() {
-        guard case .unmerge(_, let denom)? = FunctionCallType.unmerge.migratedTransactionType(
-            coin: FunctionCallFixture.makeTCY(),
+        guard case .unmerge(_, let denom) = FunctionAction.unmerge.transactionType(
+            coin: FunctionActionFixture.makeTCY(),
             nodeAddress: nil
         ) else {
             return XCTFail("Unmerge must map to the unmerge intent")
@@ -385,7 +385,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// The unmerge wasm execute is addressed by contract and attaches no coins,
     /// so the only coin the vault has to resolve is the one paying the fee.
     func testUnmergeIsPinnedToRuneNotTheSelectedToken() {
-        guard case .unmerge(let mappedCoin, _)? = FunctionCallType.unmerge.migratedTransactionType(
+        guard case .unmerge(let mappedCoin, _) = FunctionAction.unmerge.transactionType(
             coin: Self.makeMergeToken(),
             nodeAddress: nil
         ) else {
@@ -400,10 +400,10 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// a form whose Continue could never produce a signable transaction.
     func testUnmergeTargetsRuneEvenWhenTheVaultDoesNotHoldIt() {
         let kuji = Self.makeMergeToken()
-        let vault = FunctionCallFixture.makeVault(coins: [kuji])
+        let vault = FunctionActionFixture.makeVault(coins: [kuji])
         XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
 
-        guard case .unmerge(let mappedCoin, _)? = FunctionCallType.unmerge.migratedTransactionType(
+        guard case .unmerge(let mappedCoin, _) = FunctionAction.unmerge.transactionType(
             coin: kuji,
             nodeAddress: nil
         ) else {
@@ -424,7 +424,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testUnmergeStaysSelectableOnThorchain() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.unmerge))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeRune()).contains(.unmerge))
     }
 
     /// Every token the picker offers has to be one the builder can address, or
@@ -442,8 +442,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testWithdrawSecuredAssetMapsToItsIntent() {
-        guard case .withdrawSecuredAsset(let mappedCoin)? = FunctionCallType.withdrawSecuredAsset
-            .migratedTransactionType(coin: Self.makeRune(), nodeAddress: nil) else {
+        guard case .withdrawSecuredAsset(let mappedCoin) = FunctionAction.withdrawSecuredAsset
+            .transactionType(coin: Self.makeRune(), nodeAddress: nil) else {
             return XCTFail("Withdraw secured asset must map to its intent")
         }
 
@@ -454,8 +454,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// legacy screen happened to have selected: opening Functions from TCY and
     /// picking the withdrawal must still read RUNE's bank balances.
     func testWithdrawSecuredAssetIsPinnedToTheNativeAccountNotTheSelectedToken() {
-        guard case .withdrawSecuredAsset(let mappedCoin)? = FunctionCallType.withdrawSecuredAsset
-            .migratedTransactionType(coin: FunctionCallFixture.makeTCY(), nodeAddress: nil) else {
+        guard case .withdrawSecuredAsset(let mappedCoin) = FunctionAction.withdrawSecuredAsset
+            .transactionType(coin: FunctionActionFixture.makeTCY(), nodeAddress: nil) else {
             return XCTFail("Withdraw secured asset must map to its intent")
         }
 
@@ -466,12 +466,12 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// the shared "not in vault" error. The legacy form answered "No Secured
     /// Assets found in vault", which says the opposite of what happened.
     func testWithdrawSecuredAssetFailsClosedWhenTheVaultHoldsNoNativeCoin() {
-        let tcy = FunctionCallFixture.makeTCY()
-        let vault = FunctionCallFixture.makeVault(coins: [tcy])
+        let tcy = FunctionActionFixture.makeTCY()
+        let vault = FunctionActionFixture.makeVault(coins: [tcy])
         XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
 
-        guard case .withdrawSecuredAsset(let mappedCoin)? = FunctionCallType.withdrawSecuredAsset
-            .migratedTransactionType(coin: tcy, nodeAddress: nil) else {
+        guard case .withdrawSecuredAsset(let mappedCoin) = FunctionAction.withdrawSecuredAsset
+            .transactionType(coin: tcy, nodeAddress: nil) else {
             return XCTFail("Withdraw secured asset must map to its intent")
         }
 
@@ -490,22 +490,22 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// `SECURE-` is the only route out of a secured position, so losing it from
     /// the dropdown is not a cosmetic regression.
     func testWithdrawSecuredAssetStaysSelectableOnThorchain() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.withdrawSecuredAsset))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeRune()).contains(.withdrawSecuredAsset))
     }
 
     private static func makeGaiaToken(_ ticker: String = "FUZN") -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .gaiaChain,
             ticker: ticker,
             decimals: 6,
             isNative: false,
-            address: FunctionCallFixture.cosmosAddress
+            address: FunctionActionFixture.cosmosAddress
         )
     }
 
     func testSwitchMapsToTheSwitchIntent() {
-        guard case .theSwitch(let mappedCoin)? = FunctionCallType.theSwitch.migratedTransactionType(
-            coin: FunctionCallFixture.makeATOM(),
+        guard case .theSwitch(let mappedCoin) = FunctionAction.theSwitch.transactionType(
+            coin: FunctionActionFixture.makeATOM(),
             nodeAddress: nil
         ) else {
             return XCTFail("Switch must map to the switch intent")
@@ -519,7 +519,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// Gaia's IBC tokens and picking Switch would have sent that token to the
     /// vault with no way back.
     func testSwitchIsPinnedToTheChainsNativeAssetNotTheSelectedCoin() {
-        guard case .theSwitch(let mappedCoin)? = FunctionCallType.theSwitch.migratedTransactionType(
+        guard case .theSwitch(let mappedCoin) = FunctionAction.theSwitch.transactionType(
             coin: Self.makeGaiaToken(),
             nodeAddress: nil
         ) else {
@@ -534,10 +534,10 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// switching whatever token happened to be selected.
     func testSwitchTargetsTheNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
         let token = Self.makeGaiaToken()
-        let vault = FunctionCallFixture.makeVault(coins: [token])
+        let vault = FunctionActionFixture.makeVault(coins: [token])
         XCTAssertNil(vault.nativeCoin(for: .gaiaChain), "Fixture must not hold ATOM")
 
-        guard case .theSwitch(let mappedCoin)? = FunctionCallType.theSwitch.migratedTransactionType(
+        guard case .theSwitch(let mappedCoin) = FunctionAction.theSwitch.transactionType(
             coin: token,
             nodeAddress: nil
         ) else {
@@ -552,45 +552,17 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testSwitchIntentResolvesTheCoinItNeeds() {
-        let coin = FunctionCallFixture.makeATOM()
+        let coin = FunctionActionFixture.makeATOM()
         let intent = FunctionTransactionType.theSwitch(coin: coin.toCoinMeta())
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
     func testSwitchStaysSelectableOnGaia() {
-        XCTAssertTrue(FunctionCallType.getCases(for: FunctionCallFixture.makeATOM()).contains(.theSwitch))
-    }
-
-    /// Gaia's default moved off `.theSwitch` when SWITCH was migrated, and it
-    /// moved in BOTH factories — a one-sided change opens the screen naming one
-    /// function over another function's form.
-    ///
-    /// Asserted as "the two agree about whether a legacy form exists" rather
-    /// than "both build `.cosmosIBC`", because IBC is migrated later in the same
-    /// epic and at that point Gaia has no unmigrated operation left to name.
-    /// The type default stays `.cosmosIBC` throughout: it is what the chain
-    /// does, and the action list never consults a default anyway.
-    @MainActor
-    func testGaiaDefaultsToIBCInBothFactories() {
-        let atom = FunctionCallFixture.makeATOM()
-        let vault = FunctionCallFixture.makeVault(coins: [atom])
-
-        XCTAssertEqual(FunctionCallType.getDefault(for: atom), .cosmosIBC)
-        XCTAssertEqual(
-            FunctionCallInstance.getDefault(for: atom, vault: vault) == nil,
-            Self.isMigrated(.cosmosIBC, coin: atom),
-            "Gaia's two default factories disagree about whether a legacy form exists"
-        )
-    }
-
-    /// The default has to remain something the dropdown actually offers.
-    func testGaiaDefaultIsOfferedOnGaia() {
-        let atom = FunctionCallFixture.makeATOM()
-        XCTAssertTrue(FunctionCallType.getCases(for: atom).contains(FunctionCallType.getDefault(for: atom)))
+        XCTAssertTrue(FunctionAction.offered(on: FunctionActionFixture.makeATOM()).contains(.theSwitch))
     }
 
     private static func makeDydx() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .dydx,
             ticker: "DYDX",
             decimals: 18,
@@ -600,7 +572,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testVoteMapsToTheDydxVoteIntent() {
-        guard case .dydxVote(let mappedCoin)? = FunctionCallType.vote.migratedTransactionType(
+        guard case .dydxVote(let mappedCoin) = FunctionAction.vote.transactionType(
             coin: Self.makeDydx(),
             nodeAddress: nil
         ) else {
@@ -615,8 +587,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// it by accident.
     func testVoteIgnoresACarriedOverNodeAddress() {
         XCTAssertEqual(
-            FunctionCallType.vote.migratedTransactionType(coin: Self.makeDydx(), nodeAddress: Self.thorNode),
-            FunctionCallType.vote.migratedTransactionType(coin: Self.makeDydx(), nodeAddress: nil)
+            FunctionAction.vote.transactionType(coin: Self.makeDydx(), nodeAddress: Self.thorNode),
+            FunctionAction.vote.transactionType(coin: Self.makeDydx(), nodeAddress: nil)
         )
     }
 
@@ -626,9 +598,9 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// that could never be signed.
     func testVoteTargetsDydxsNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
         let rune = Self.makeRune()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
-        guard case .dydxVote(let mappedCoin)? = FunctionCallType.vote.migratedTransactionType(
+        guard case .dydxVote(let mappedCoin) = FunctionAction.vote.transactionType(
             coin: rune,
             nodeAddress: nil
         ) else {
@@ -649,7 +621,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testVoteStaysSelectableOnDydx() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeDydx()).contains(.vote))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeDydx()).contains(.vote))
     }
 
     // MARK: - IBC
@@ -658,9 +630,9 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// asset: an `ibc/…` or `factory/…` token is as transferable as the chain's
     /// own coin, and pinning would silently transfer the wrong asset.
     func testIbcMapsToTheTransferIntentOnTheSelectedCoin() {
-        for coin in [FunctionCallFixture.makeKUJI(), FunctionCallFixture.makeATOM()] {
-            guard case .ibcTransfer(let mappedCoin, let destination)? =
-                    FunctionCallType.cosmosIBC.migratedTransactionType(coin: coin, nodeAddress: nil) else {
+        for coin in [FunctionActionFixture.makeKUJI(), FunctionActionFixture.makeATOM()] {
+            guard case .ibcTransfer(let mappedCoin, let destination) =
+                    FunctionAction.cosmosIBC.transactionType(coin: coin, nodeAddress: nil) else {
                 return XCTFail("IBC must map to the transfer intent on \(coin.chain.rawValue)")
             }
 
@@ -673,16 +645,16 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// legacy screen had no pinning here either; this pins that it stays that
     /// way as the other migrations add `ensureRuneCoin`-style pins.
     func testIbcDoesNotPinToTheChainsNativeAsset() {
-        let ibcToken = FunctionCallFixture.makeCoin(
+        let ibcToken = FunctionActionFixture.makeCoin(
             .kujira,
             ticker: "USK",
             decimals: 6,
             isNative: false,
-            address: FunctionCallFixture.kujiAddress
+            address: FunctionActionFixture.kujiAddress
         )
 
-        guard case .ibcTransfer(let mappedCoin, _)? =
-                FunctionCallType.cosmosIBC.migratedTransactionType(coin: ibcToken, nodeAddress: nil) else {
+        guard case .ibcTransfer(let mappedCoin, _) =
+                FunctionAction.cosmosIBC.transactionType(coin: ibcToken, nodeAddress: nil) else {
             return XCTFail("IBC must map to the transfer intent")
         }
 
@@ -691,7 +663,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     }
 
     func testIbcIntentResolvesTheCoinItNeeds() {
-        let coin = FunctionCallFixture.makeKUJI()
+        let coin = FunctionActionFixture.makeKUJI()
         let intent = FunctionTransactionType.ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
@@ -703,13 +675,13 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testCustomMapsToTheCustomMemoIntentCarryingTheSelectedCoin() {
         let coins: [Coin] = [
             Self.makeRune(),
-            FunctionCallFixture.makeTCY(),
+            FunctionActionFixture.makeTCY(),
             Self.makeCacao(),
-            FunctionCallFixture.makeCoin(.thorChainStagenet, ticker: "RUNE", decimals: 8, isNative: true)
+            FunctionActionFixture.makeCoin(.thorChainStagenet, ticker: "RUNE", decimals: 8, isNative: true)
         ]
 
         for coin in coins {
-            guard case .customMemo(let mappedCoin)? = FunctionCallType.custom.migratedTransactionType(
+            guard case .customMemo(let mappedCoin) = FunctionAction.custom.transactionType(
                 coin: coin,
                 nodeAddress: Self.thorNode
             ) else {
@@ -721,7 +693,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
 
     /// The intent's `coins` is what `needsCoinAddition` / `addCoins` read.
     func testCustomMemoIntentResolvesTheCoinItNeeds() {
-        let coin = FunctionCallFixture.makeTCY()
+        let coin = FunctionActionFixture.makeTCY()
         let intent = FunctionTransactionType.customMemo(coin: coin.toCoinMeta())
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
@@ -730,39 +702,32 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
 
     func testIbcStaysSelectableOnEveryChainThatOffersIt() {
         for coin in [
-            FunctionCallFixture.makeKUJI(),
-            FunctionCallFixture.makeATOM(),
-            FunctionCallFixture.makeCoin(.osmosis, ticker: "OSMO", decimals: 6, isNative: true)
+            FunctionActionFixture.makeKUJI(),
+            FunctionActionFixture.makeATOM(),
+            FunctionActionFixture.makeCoin(.osmosis, ticker: "OSMO", decimals: 6, isNative: true)
         ] {
             XCTAssertTrue(
-                FunctionCallType.getCases(for: coin).contains(.cosmosIBC),
-                "\(coin.chain.rawValue) must keep offering IBC — the catalog builds its rows from getCases"
+                FunctionAction.offered(on: coin).contains(.cosmosIBC),
+                "\(coin.chain.rawValue) must keep offering IBC — the catalog builds its rows from offered(on:)"
             )
         }
     }
 
     /// `FunctionActionCatalog` builds a chain's rows from its case list, so a
-    /// migrated operation dropped from `getCases` loses its row — the
+    /// migrated operation dropped from `offered(on:)` loses its row — the
     /// operation would be migrated *and* unreachable. The rule survived the
     /// dropdown it was written for.
     func testLeaveStaysSelectableOnBothChainsThatOfferIt() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.leave))
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeRune()).contains(.leave))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeCacao()).contains(.leave))
     }
 
     func testMergeStaysSelectableOnThorchain() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.merge))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeRune()).contains(.merge))
     }
 
     func testRebondStaysSelectableOnThorchain() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.rebond))
-    }
-
-    /// Whatever a chain defaults to has to be something the dropdown offers,
-    /// or the selector opens on an entry it cannot show.
-    func testThorchainDefaultIsOfferedByTheDropdown() {
-        let rune = Self.makeRune()
-        XCTAssertTrue(FunctionCallType.getCases(for: rune).contains(FunctionCallType.getDefault(for: rune)))
+        XCTAssertTrue(FunctionAction.offered(on: Self.makeRune()).contains(.rebond))
     }
 
     /// Same rule for the raw-memo form, on all four chains that offer it — and
@@ -771,81 +736,12 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testCustomStaysSelectableOnEveryChainThatOffersIt() {
         let chains: [Chain] = [.thorChain, .mayaChain, .thorChainChainnet, .thorChainStagenet]
         for chain in chains {
-            let coin = FunctionCallFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            let coin = FunctionActionFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
             XCTAssertTrue(
-                FunctionCallType.getCases(for: coin).contains(.custom),
+                FunctionAction.offered(on: coin).contains(.custom),
                 "\(chain.rawValue) no longer offers the raw-memo operation"
             )
         }
     }
 
-    /// Rewritten from `testNoChainDefaultsToAMigratedFunction`, which the epic
-    /// makes unsatisfiable rather than merely inconvenient.
-    ///
-    /// That assertion — no chain's `getDefault` names a migrated operation —
-    /// existed because the dropdown applied the default *without publishing a
-    /// change*, so a chain defaulting to a migrated type opened on a selection
-    /// that built nothing. Integrating the ten migrations leaves several chains
-    /// with no honest way to satisfy it: MayaChain offers LEAVE and the raw
-    /// memo, Gaia offers IBC and SWITCH, the nine Add-LP L1s offer Add-LP
-    /// alone, dYdX offers the vote alone — and after the migrations every one
-    /// of those operations has its own screen. Re-pointing those defaults would
-    /// mean naming an operation the chain does not offer, which is a value
-    /// chosen to satisfy a test rather than to describe the app.
-    ///
-    /// It is also no longer the invariant that matters. Rows carry their own
-    /// destination and no entry point opens the legacy screen without a
-    /// preselection, so no default decides where any user lands;
-    /// `FunctionActionCatalogTests
-    /// .testEveryOfferedActionRoutesToAScreenThatCanBuildIt` carries the
-    /// reachability half, over every operation a chain offers rather than the
-    /// one it used to open on.
-    ///
-    /// What is left worth pinning is that the two default factories *agree*.
-    /// They did not: one matched any THORChain ticker containing "TCY" and the
-    /// other matched it exactly, so a holder of a TCY wrapper was routed to one
-    /// operation and handed another's form. `FunctionCallInstance.getDefault`
-    /// now answers nil for exactly the chains whose type default is migrated,
-    /// which is the same statement made once.
-    @MainActor
-    func testTheTwoDefaultFactoriesAgreeOnWhichChainsHaveNoLegacyForm() {
-        for chain in Chain.allCases {
-            let coin = FunctionCallFixture.makeCoin(
-                chain,
-                ticker: chain.ticker,
-                decimals: 8,
-                isNative: true
-            )
-            let vault = FunctionCallFixture.makeVault(coins: [coin])
-            let defaultType = FunctionCallType.getDefault(for: coin)
-
-            XCTAssertEqual(
-                FunctionCallInstance.getDefault(for: coin, vault: vault) == nil,
-                defaultType.migratedTransactionType(coin: coin, nodeAddress: nil) != nil,
-                "\(chain.rawValue) defaults to \(defaultType.rawValue), "
-                    + "and the two default factories disagree about whether it still has a legacy form"
-            )
-        }
-    }
-
-    /// The exemption the action list made legal, stated positively.
-    ///
-    /// A chain whose entry resolves to `.action` never renders the dropdown at
-    /// all — the passthrough builds the destination in place — and its lone
-    /// case *is* its default, so "the default is migrated" is the state the
-    /// action list deliberately allows rather than a defect. The nine Add-LP
-    /// L1s are the first chains in it.
-    func testASingleActionChainMayDefaultToItsOnlyMigratedOperation() {
-        let coin = FunctionCallFixture.makeCoin(.bitcoin, ticker: "BTC", decimals: 8, isNative: true)
-        XCTAssertEqual(FunctionCallType.getCases(for: coin), [.addThorLP])
-        XCTAssertEqual(FunctionCallType.getDefault(for: coin), .addThorLP)
-        XCTAssertTrue(Self.isMigrated(.addThorLP))
-
-        guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
-            return XCTFail("Bitcoin must pass through to its only operation")
-        }
-        guard case .transaction(.addThorchainLP) = descriptor.destination else {
-            return XCTFail("Bitcoin's only operation is migrated and must not route through the legacy screen")
-        }
-    }
 }

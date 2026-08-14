@@ -8,7 +8,7 @@
 //  set; deactivate/withdraw operate on an existing account and need neither).
 //
 //  Lives once here so both entry points — `SendCryptoVerifyLogic` and
-//  `FunctionCallVerifyViewModel` — share identical resolution rather than each
+//  `FunctionTransactionVerifyViewModel` — share identical resolution rather than each
 //  re-implementing the op switch.
 //
 

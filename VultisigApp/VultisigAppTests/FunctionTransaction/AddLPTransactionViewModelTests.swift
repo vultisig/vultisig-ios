@@ -49,7 +49,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         fetch: @escaping ThorchainLPDestinationResolver.InboundAddressFetch = AddLPFixture.healthyFetch,
         locale: Locale = Locale(identifier: "en_US")
     ) -> AddLPTransactionViewModel {
-        let vault = FunctionCallFixture.makeVault(coins: holdings)
+        let vault = FunctionActionFixture.makeVault(coins: holdings)
         return AddLPTransactionViewModel(
             coin: coin,
             pairedCoin: vault.nativeCoin(for: .thorChain),
@@ -387,7 +387,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     /// operation from the one the user asked for.
     func testAVaultWithoutRuneCannotDeposit() async throws {
         let ether = AddLPFixture.ether()
-        let vault = FunctionCallFixture.makeVault(coins: [ether])
+        let vault = FunctionActionFixture.makeVault(coins: [ether])
         let viewModel = AddLPTransactionViewModel(
             coin: ether,
             pairedCoin: nil,
@@ -426,7 +426,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     /// A chain offering exactly one depositable pool has nothing to ask.
     func testASinglePoolIsSelectedAutomatically() async throws {
         let bitcoin = AddLPFixture.bitcoin()
-        let vault = FunctionCallFixture.makeVault(coins: [bitcoin, AddLPFixture.rune()])
+        let vault = FunctionActionFixture.makeVault(coins: [bitcoin, AddLPFixture.rune()])
         let viewModel = AddLPTransactionViewModel(
             coin: bitcoin,
             pairedCoin: vault.nativeCoin(for: .thorChain),
@@ -453,7 +453,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     func testAPositionDepositsTheProtocolSideByDefault() async throws {
         let rune = AddLPFixture.rune()
         let bitcoin = AddLPFixture.bitcoin()
-        let vault = FunctionCallFixture.makeVault(coins: [rune, bitcoin])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, bitcoin])
         let position = LPPosition(
             coin1: rune.toCoinMeta(),
             coin1Amount: 10,
@@ -479,7 +479,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.coin.ticker, "RUNE")
         XCTAssertFalse(viewModel.showsPoolPicker, "the card the user tapped already decided the pool")
-        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(FunctionCallFixture.btcAddress)")
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(FunctionActionFixture.btcAddress)")
         XCTAssertEqual(builder.toAddress, .empty, "a RUNE-side deposit rides a MsgDeposit")
         XCTAssertFalse(
             builder.buildSendTransaction(vault: vault).sendMaxAmount,
@@ -492,7 +492,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     func testTappingOneHundredPercentIsASendMax() async throws {
         let rune = AddLPFixture.rune()
         let bitcoin = AddLPFixture.bitcoin()
-        let vault = FunctionCallFixture.makeVault(coins: [rune, bitcoin])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, bitcoin])
         let position = LPPosition(
             coin1: rune.toCoinMeta(),
             coin1Amount: 10,
@@ -526,7 +526,7 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     func testAPositionCanDepositTheL1Side() async throws {
         let rune = AddLPFixture.rune()
         let bitcoin = AddLPFixture.bitcoin()
-        let vault = FunctionCallFixture.makeVault(coins: [rune, bitcoin])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, bitcoin])
         let position = LPPosition(
             coin1: rune.toCoinMeta(),
             coin1Amount: 10,
@@ -555,22 +555,22 @@ final class AddLPTransactionViewModelTests: XCTestCase {
         let builder = try XCTUnwrap(built)
 
         XCTAssertEqual(builder.toAddress, AddLPFixture.btcVault)
-        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(FunctionCallFixture.thorAddress)")
+        XCTAssertEqual(builder.memo, "+:\(AddLPFixture.btcPool):\(FunctionActionFixture.thorAddress)")
     }
 
     /// ⚠️ Fail closed. Only THORChain's inbound vaults are read here, so an
     /// L1-side deposit into a MayaChain pool must refuse rather than send funds
     /// to a vault that has never heard of the memo.
     func testAnL1SideMayachainDepositFailsClosed() async throws {
-        let cacao = FunctionCallFixture.makeCoin(
+        let cacao = FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: "CACAO",
             decimals: 10,
             isNative: true,
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
         let bitcoin = AddLPFixture.bitcoin()
-        let vault = FunctionCallFixture.makeVault(coins: [cacao, bitcoin])
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
 
         let viewModel = AddLPTransactionViewModel(
             coin: bitcoin,
@@ -594,16 +594,16 @@ final class AddLPTransactionViewModelTests: XCTestCase {
     /// A MayaChain deposit credits the depositing address itself, so the memo
     /// carries no paired address.
     func testAMayachainPositionDepositTakesNoPairedAddress() async throws {
-        let cacao = FunctionCallFixture.makeCoin(
+        let cacao = FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: "CACAO",
             decimals: 10,
             isNative: true,
             rawBalance: "100000000000",
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
         let bitcoin = AddLPFixture.bitcoin()
-        let vault = FunctionCallFixture.makeVault(coins: [cacao, bitcoin])
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, bitcoin])
 
         let viewModel = AddLPTransactionViewModel(
             coin: cacao,

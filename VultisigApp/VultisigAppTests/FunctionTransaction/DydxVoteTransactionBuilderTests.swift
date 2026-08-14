@@ -18,7 +18,7 @@ import XCTest
 final class DydxVoteTransactionBuilderTests: XCTestCase {
 
     private static func makeDydxCoin() -> Coin {
-        FunctionCallFixture.makeCoin(.dydx, ticker: "DYDX", decimals: 18, isNative: true)
+        FunctionActionFixture.makeCoin(.dydx, ticker: "DYDX", decimals: 18, isNative: true)
     }
 
     private static func makeBuilder(
@@ -121,7 +121,7 @@ final class DydxVoteTransactionBuilderTests: XCTestCase {
     /// type, the empty recipient and the zero amount.
     func testSendTransactionMatchesTheLegacyBoundary() {
         let coin = Self.makeDydxCoin()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
         let builder = Self.makeBuilder(option: .yes, proposalID: 42, coin: coin)
 
         let tx = builder.buildSendTransaction(vault: vault)

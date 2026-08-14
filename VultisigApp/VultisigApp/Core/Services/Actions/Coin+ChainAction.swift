@@ -10,7 +10,7 @@ import Foundation
 extension CoinAction {
 
     /// Chains that surface the Function (memo) action. Every entry must have a
-    /// non-empty `FunctionCallType.getCases(for:)`, and no chain outside this
+    /// non-empty `FunctionAction.getCases(for:)`, and no chain outside this
     /// list may offer cases — otherwise the button either opens an empty
     /// selector or the cases are unreachable. Pinned by tests.
     ///

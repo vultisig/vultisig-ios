@@ -25,13 +25,13 @@ final class MergeTransactionViewModelTests: XCTestCase {
     private static let oneToken = "100000000"
 
     private static func makeThorToken(_ ticker: String, rawBalance: String = tenTokens) -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: ticker,
             decimals: 8,
             isNative: false,
             rawBalance: rawBalance,
-            address: FunctionCallFixture.thorAddress
+            address: FunctionActionFixture.thorAddress
         )
     }
 
@@ -39,10 +39,10 @@ final class MergeTransactionViewModelTests: XCTestCase {
         holdings: [Coin],
         initialDenom: String? = nil
     ) -> MergeTransactionViewModel {
-        let rune = FunctionCallFixture.makeRUNE()
+        let rune = FunctionActionFixture.makeRUNE()
         return MergeTransactionViewModel(
             coin: rune,
-            vault: FunctionCallFixture.makeVault(coins: [rune] + holdings),
+            vault: FunctionActionFixture.makeVault(coins: [rune] + holdings),
             initialDenom: initialDenom
         )
     }
@@ -76,8 +76,8 @@ final class MergeTransactionViewModelTests: XCTestCase {
 
     func testHoldingsOutsideTheCatalogAreNotOffered() {
         let viewModel = makeViewModel(holdings: [
-            FunctionCallFixture.makeTCY(),
-            FunctionCallFixture.makeRUJI(),
+            FunctionActionFixture.makeTCY(),
+            FunctionActionFixture.makeRUJI(),
             Self.makeThorToken("KUJI")
         ])
 
@@ -88,7 +88,7 @@ final class MergeTransactionViewModelTests: XCTestCase {
     /// merge token, and merging it would address a contract that chain has
     /// never heard of.
     func testACatalogTickerOnAnotherChainIsNotOffered() {
-        let viewModel = makeViewModel(holdings: [FunctionCallFixture.makeKUJI()])
+        let viewModel = makeViewModel(holdings: [FunctionActionFixture.makeKUJI()])
         XCTAssertTrue(viewModel.mergeableAssets.isEmpty)
     }
 
@@ -217,8 +217,8 @@ final class MergeTransactionViewModelTests: XCTestCase {
     /// anchor coin — and it carries the legacy memo dictionary.
     func testBuiltTransactionSpendsThePickedTokenNotTheAnchorCoin() {
         let kuji = Self.makeThorToken("KUJI")
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune, kuji])
+        let rune = FunctionActionFixture.makeRUNE()
+        let vault = FunctionActionFixture.makeVault(coins: [rune, kuji])
         let viewModel = MergeTransactionViewModel(coin: rune, vault: vault, initialDenom: nil)
         viewModel.onLoad()
         viewModel.select(asset: viewModel.mergeableAssets[0])

@@ -20,23 +20,23 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     // MARK: - Fixtures
 
     private func thorCoin(_ ticker: String, rawBalance: String = "100000000000") -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: ticker,
             decimals: 8,
             isNative: ticker == "RUNE",
             rawBalance: rawBalance,
-            address: FunctionCallFixture.thorAddress
+            address: FunctionActionFixture.thorAddress
         )
     }
 
     private func mayaCoin(_ ticker: String) -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: ticker,
             decimals: 10,
             isNative: ticker == "CACAO",
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
     }
 
@@ -61,7 +61,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
         let rune = thorCoin("RUNE")
         let ruji = thorCoin("RUJI")
         let tcy = thorCoin("TCY")
-        let vault = FunctionCallFixture.makeVault(coins: [rune, ruji, tcy])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, ruji, tcy])
 
         XCTAssertEqual(tickers(loadedViewModel(coin: rune, vault: vault)), ["RUNE", "RUJI", "TCY"])
     }
@@ -75,7 +75,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
         let tcy = thorCoin("TCY")
         let sTCY = thorCoin("sTCY")
         let yTCY = thorCoin("yTCY")
-        let vault = FunctionCallFixture.makeVault(coins: [rune, tcy, sTCY, yTCY])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, tcy, sTCY, yTCY])
 
         XCTAssertEqual(tickers(loadedViewModel(coin: rune, vault: vault)), ["RUNE", "TCY", "sTCY", "yTCY"])
     }
@@ -84,7 +84,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// "Select Token" placeholder.
     func testAWrappedTcyPreSelectsItself() {
         let sTCY = thorCoin("sTCY")
-        let vault = FunctionCallFixture.makeVault(coins: [thorCoin("RUNE"), sTCY])
+        let vault = FunctionActionFixture.makeVault(coins: [thorCoin("RUNE"), sTCY])
 
         let viewModel = loadedViewModel(coin: sTCY, vault: vault)
         XCTAssertEqual(viewModel.selectedCoin?.ticker, "sTCY")
@@ -95,7 +95,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
         let cacao = mayaCoin("CACAO")
         let maya = mayaCoin("MAYA")
         let aztec = mayaCoin("AZTEC")
-        let vault = FunctionCallFixture.makeVault(coins: [cacao, maya, aztec])
+        let vault = FunctionActionFixture.makeVault(coins: [cacao, maya, aztec])
 
         XCTAssertEqual(tickers(loadedViewModel(coin: cacao, vault: vault)), ["CACAO", "MAYA", "AZTEC"])
     }
@@ -105,8 +105,8 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// family whose only operation this is.
     func testTheThorchainTestNetworksOfferTheirOwnCoins() {
         for chain in [Chain.thorChainChainnet, Chain.thorChainStagenet] {
-            let rune = FunctionCallFixture.makeCoin(chain, ticker: "RUNE", decimals: 8, isNative: true)
-            let vault = FunctionCallFixture.makeVault(coins: [rune])
+            let rune = FunctionActionFixture.makeCoin(chain, ticker: "RUNE", decimals: 8, isNative: true)
+            let vault = FunctionActionFixture.makeVault(coins: [rune])
 
             let viewModel = loadedViewModel(coin: rune, vault: vault)
             XCTAssertEqual(tickers(viewModel), ["RUNE"], "\(chain.rawValue) offered no asset to pick")
@@ -119,13 +119,13 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// stagenet RUNE are different coins.
     func testTheAssetListIsScopedToTheFormsOwnChain() {
         let mainnetRune = thorCoin("RUNE")
-        let stagenetRune = FunctionCallFixture.makeCoin(
+        let stagenetRune = FunctionActionFixture.makeCoin(
             .thorChainStagenet,
             ticker: "RUNE",
             decimals: 8,
             isNative: true
         )
-        let vault = FunctionCallFixture.makeVault(coins: [mainnetRune, stagenetRune])
+        let vault = FunctionActionFixture.makeVault(coins: [mainnetRune, stagenetRune])
 
         XCTAssertEqual(loadedViewModel(coin: stagenetRune, vault: vault).selectedCoin?.chain, .thorChainStagenet)
         XCTAssertEqual(loadedViewModel(coin: mainnetRune, vault: vault).selectedCoin?.chain, .thorChain)
@@ -137,7 +137,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     func testAnUnsupportedEntryCoinSelectsNothing() {
         let rune = thorCoin("RUNE")
         let secured = thorCoin("BTC-BTC")
-        let vault = FunctionCallFixture.makeVault(coins: [rune, secured])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, secured])
 
         let viewModel = loadedViewModel(coin: secured, vault: vault)
         XCTAssertNil(viewModel.selectedCoin)
@@ -150,7 +150,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// while the dropdown named another. An empty list now means no builder.
     func testAVaultWithNoDepositableCoinBuildsNothing() {
         let secured = thorCoin("BTC-BTC")
-        let vault = FunctionCallFixture.makeVault(coins: [secured])
+        let vault = FunctionActionFixture.makeVault(coins: [secured])
 
         let viewModel = loadedViewModel(coin: secured, vault: vault)
         XCTAssertTrue(viewModel.depositableCoins.isEmpty)
@@ -164,7 +164,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// view-model rather than through the builder alone.
     func testTheMemoReachesTheBuilderVerbatim() {
         let rune = thorCoin("RUNE")
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
         let awkward = [
             "arbitrary-memo-string",
             "SWAP:BTC.BTC:bc1qexample:12345/3/0",
@@ -184,7 +184,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
 
     func testAnEmptyMemoCannotReachTheBuilder() {
         let rune = thorCoin("RUNE")
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
         let viewModel = loadedViewModel(coin: rune, vault: vault)
         XCTAssertNil(viewModel.transactionBuilder, "A pristine form must not build")
@@ -202,7 +202,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// still never trimmed — see `testTheMemoReachesTheBuilderVerbatim`.
     func testAWhitespaceOnlyMemoCannotReachTheBuilder() {
         let rune = thorCoin("RUNE")
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
         for blank in ["   ", "\t", "\n", " \t\n "] {
             let viewModel = loadedViewModel(coin: rune, vault: vault)
@@ -215,7 +215,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     func testAMemoWithNoSelectedAssetCannotReachTheBuilder() {
         let rune = thorCoin("RUNE")
         let secured = thorCoin("BTC-BTC")
-        let vault = FunctionCallFixture.makeVault(coins: [rune, secured])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, secured])
 
         let viewModel = loadedViewModel(coin: secured, vault: vault)
         viewModel.memoField.value = "memo"
@@ -230,7 +230,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// The amount is optional — a memo-only `MsgDeposit` attaches nothing.
     func testAnEmptyAmountAttachesZero() {
         let rune = thorCoin("RUNE")
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
         let viewModel = loadedViewModel(coin: rune, vault: vault)
         viewModel.memoField.value = "memo"
@@ -239,7 +239,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
 
     func testAnAmountWithinBalanceIsAttached() {
         let rune = thorCoin("RUNE", rawBalance: "100000000")   // 1 RUNE
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
         let viewModel = loadedViewModel(coin: rune, vault: vault)
         viewModel.memoField.value = "memo"
@@ -252,7 +252,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// gate. Its no-arg predicate let one navigate past Continue.
     func testAnAmountOverBalanceCannotReachTheBuilder() {
         let rune = thorCoin("RUNE", rawBalance: "100000000")   // 1 RUNE
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
         let viewModel = loadedViewModel(coin: rune, vault: vault)
         viewModel.memoField.value = "memo"
@@ -263,7 +263,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
 
     func testAnUnparseableAmountCannotReachTheBuilder() {
         let rune = thorCoin("RUNE")
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
 
         for garbage in ["abc", "1.2.3", "-1", "1e5"] {
             let viewModel = loadedViewModel(coin: rune, vault: vault)
@@ -279,7 +279,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     func testSwitchingToASmallerBalanceInvalidatesAnAlreadyTypedAmount() {
         let rune = thorCoin("RUNE", rawBalance: "100000000")   // 1 RUNE
         let tcy = thorCoin("TCY", rawBalance: "10000000")      // 0.1 TCY
-        let vault = FunctionCallFixture.makeVault(coins: [rune, tcy])
+        let vault = FunctionActionFixture.makeVault(coins: [rune, tcy])
 
         let viewModel = loadedViewModel(coin: rune, vault: vault)
         viewModel.memoField.value = "memo"
@@ -303,7 +303,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// assertion would say nothing about German at all.
     func testTheAmountIsReadInTheFormsLocale() {
         let rune = thorCoin("RUNE")
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
         let german = Locale(identifier: "de_DE")
 
         let commaDecimal = loadedViewModel(coin: rune, vault: vault, locale: german)
@@ -322,7 +322,7 @@ final class CustomMemoTransactionViewModelTests: XCTestCase {
     /// write into the field — is read, not refused.
     func testAGroupedAmountInTheFormsLocaleIsAccepted() {
         let rune = thorCoin("RUNE", rawBalance: "10000000000000")   // 100000 RUNE
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
+        let vault = FunctionActionFixture.makeVault(coins: [rune])
         let german = Locale(identifier: "de_DE")
 
         let viewModel = loadedViewModel(coin: rune, vault: vault, locale: german)

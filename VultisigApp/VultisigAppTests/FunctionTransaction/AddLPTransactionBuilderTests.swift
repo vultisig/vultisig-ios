@@ -263,7 +263,7 @@ final class AddLPTransactionBuilderTests: XCTestCase {
             nonce: 0,
             gasLimit: BigInt(120_000)
         )
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: MockSendInteractor(),
             fetchSigningChainSpecific: { _ in evmChainSpecific }
         )
@@ -300,7 +300,7 @@ final class AddLPTransactionBuilderTests: XCTestCase {
             pool: AddLPFixture.btcPool,
             pairedAddress: AddLPFixture.thorAddress,
             toAddress: AddLPFixture.btcVault
-        ).buildPricedSendTransaction(vault: .example, pricer: FunctionCallFeePricer(interactor: mock))
+        ).buildPricedSendTransaction(vault: .example, pricer: FunctionTransactionFeePricer(interactor: mock))
 
         XCTAssertEqual(
             SendCryptoLogic.displayFee(coin: priced.coin, gas: priced.gas, fee: priced.fee),
@@ -315,7 +315,7 @@ final class AddLPTransactionBuilderTests: XCTestCase {
     /// router `depositWithExpiry` is nothing like a plain transfer's.
     func testTheFeeIsPricedAgainstTheDepositItself() async {
         var fetched: [SendTransaction] = []
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: MockSendInteractor(),
             fetchSigningChainSpecific: { tx in
                 fetched.append(tx)

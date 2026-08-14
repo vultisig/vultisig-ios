@@ -13,7 +13,7 @@ import WalletCore
 import Mediator
 
 @MainActor
-class FunctionCallViewModel: ObservableObject {
+class FunctionTransactionPricingViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
@@ -28,7 +28,7 @@ class FunctionCallViewModel: ObservableObject {
     private let fastVaultService = FastVaultService.shared
 
     private let mediator = Mediator.shared
-    private let feePricer = FunctionCallFeePricer()
+    private let feePricer = FunctionTransactionFeePricer()
 
     let logger = Log.send.other
 
@@ -43,7 +43,7 @@ class FunctionCallViewModel: ObservableObject {
     /// transaction, on the way to the screen that discloses them.
     ///
     /// Drives `isLoading` because it is a network round-trip on the Continue
-    /// tap. Returns the transaction unpriced (see `FunctionCallFeePricer`) when
+    /// tap. Returns the transaction unpriced (see `FunctionTransactionFeePricer`) when
     /// the fee cannot be resolved, rather than blocking the flow.
     func pricedForVerify(_ tx: SendTransaction) async -> SendTransaction {
         isLoading = true

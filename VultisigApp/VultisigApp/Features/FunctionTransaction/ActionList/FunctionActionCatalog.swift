@@ -41,7 +41,7 @@ enum FunctionActionCatalog {
 
     /// Every operation `coin.chain` offers, in the order the chain lists them.
     static func descriptors(for coin: Coin) -> [FunctionActionDescriptor] {
-        descriptors(for: coin, types: FunctionCallType.getCases(for: coin))
+        descriptors(for: coin, types: FunctionAction.offered(on: coin))
     }
 
     /// Descriptors for an explicit set of operations.
@@ -50,7 +50,7 @@ enum FunctionActionCatalog {
     /// that no chain has *yet* — the interesting one being a chain whose only
     /// operation has already been migrated, which the previous
     /// selection-change seam could not express at all.
-    static func descriptors(for coin: Coin, types: [FunctionCallType]) -> [FunctionActionDescriptor] {
+    static func descriptors(for coin: Coin, types: [FunctionAction]) -> [FunctionActionDescriptor] {
         types.map { $0.actionDescriptor(for: coin) }
     }
 
@@ -66,27 +66,20 @@ enum FunctionActionCatalog {
     }
 }
 
-extension FunctionCallType {
+extension FunctionAction {
     /// The row this operation renders as.
     ///
-    /// The destination asks `migratedTransactionType(coin:nodeAddress:)` — the
-    /// same mapping the legacy screen's route-out consults — so "migrated" is
-    /// stated once for the whole app. No node address is carried: the list is
-    /// entered cold, with no previous form to inherit a pre-fill from.
+    /// The destination is `transactionType(coin:)` — the same mapping the whole
+    /// app reads — so a row cannot name a screen the router does not build. No
+    /// node address is carried: the list is entered cold, with no previous form
+    /// to inherit a pre-fill from.
     func actionDescriptor(for coin: Coin) -> FunctionActionDescriptor {
-        let destination: FunctionActionDescriptor.Destination
-        if let transactionType = migratedTransactionType(coin: coin, nodeAddress: nil) {
-            destination = .transaction(transactionType)
-        } else {
-            destination = .legacyFunctionCall(self)
-        }
-
-        return FunctionActionDescriptor(
+        FunctionActionDescriptor(
             id: rawValue,
             title: display(),
             subtitle: actionSubtitle,
             icon: actionIcon,
-            destination: destination
+            destination: transactionType(coin: coin)
         )
     }
 

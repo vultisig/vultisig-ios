@@ -21,7 +21,7 @@ import XCTest
 final class FunctionActionCatalogTests: XCTestCase {
 
     private static func makeCoin(_ chain: Chain) -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             chain,
             ticker: chain.ticker,
             decimals: 8,
@@ -37,7 +37,7 @@ final class FunctionActionCatalogTests: XCTestCase {
     func testDescriptorsMirrorTheChainsCaseListInOrder() {
         for chain in entryChains {
             let coin = Self.makeCoin(chain)
-            let types = FunctionCallType.getCases(for: coin)
+            let types = FunctionAction.offered(on: coin)
             let descriptors = FunctionActionCatalog.descriptors(for: coin)
 
             XCTAssertEqual(
@@ -60,49 +60,34 @@ final class FunctionActionCatalogTests: XCTestCase {
         }
     }
 
-    /// The invariant the list exists to guarantee, and the one that supersedes
+    /// The invariant the list exists to guarantee, and the one that superseded
     /// "no chain defaults to a migrated function": whatever a row names, the
-    /// screen it opens can build it. A migrated operation goes to its own
-    /// screen; an unmigrated one opens the legacy form *pre-selected to that
-    /// same operation*, never to a default.
+    /// router can build it.
     ///
-    /// "Can build it" reduces to `migratedTransactionType == nil` because the
-    /// legacy screen's form factory has exactly one non-building arm — the
-    /// migrated set, which each migration adds its case name to. A row that is
-    /// unmigrated therefore has a form waiting for it.
-    func testEveryOfferedActionRoutesToAScreenThatCanBuildIt() {
+    /// It used to have to allow for two kinds of destination, one of which was
+    /// a form on the legacy screen. Every operation has its own screen now, so
+    /// what is left to pin is that a row's destination is *the mapping's own
+    /// answer for that operation and that coin* — not a stale copy taken when
+    /// the descriptor was built, and not another operation's intent.
+    func testEveryOfferedActionRoutesToTheIntentItsOperationNames() {
         for chain in entryChains {
             let coin = Self.makeCoin(chain)
 
             for descriptor in FunctionActionCatalog.descriptors(for: coin) {
-                guard let type = FunctionCallType(rawValue: descriptor.id) else {
-                    return XCTFail("\(descriptor.id) is not a function type")
+                guard let action = FunctionAction(rawValue: descriptor.id) else {
+                    return XCTFail("\(descriptor.id) is not an operation")
                 }
-                let migrated = type.migratedTransactionType(coin: coin, nodeAddress: nil)
-
-                switch descriptor.destination {
-                case .transaction:
-                    XCTAssertNotNil(
-                        migrated,
-                        "\(chain.rawValue)/\(type.rawValue) routes to a transaction screen it has not been migrated to"
-                    )
-                case .legacyFunctionCall(let preselected):
-                    XCTAssertEqual(
-                        preselected,
-                        type,
-                        "\(chain.rawValue) opens the legacy form on \(preselected.rawValue) from the \(type.rawValue) row"
-                    )
-                    XCTAssertNil(
-                        migrated,
-                        "\(type.rawValue) is migrated and no longer builds a legacy form"
-                    )
-                }
+                XCTAssertEqual(
+                    descriptor.destination,
+                    action.transactionType(coin: coin),
+                    "\(chain.rawValue)/\(action.rawValue) routes somewhere its own mapping does not name"
+                )
             }
         }
     }
 
     func testDescriptorsCarryCopyForEveryOperation() {
-        for type in FunctionCallType.allCases {
+        for type in FunctionAction.allCases {
             let descriptor = type.actionDescriptor(for: Self.makeCoin(.thorChain))
             XCTAssertFalse(descriptor.title.isEmpty, "\(type.rawValue) has no title")
             XCTAssertFalse(
@@ -125,14 +110,12 @@ final class FunctionActionCatalogTests: XCTestCase {
     /// legacy screen would open a form that no longer exists.
     func testDydxPassesThroughToTheMigratedVoteScreen() {
         let coin = Self.makeCoin(.dydx)
-        XCTAssertEqual(FunctionCallType.getCases(for: coin), [.vote], "dYdX must offer exactly the vote")
+        XCTAssertEqual(FunctionAction.offered(on: coin), [.vote], "dYdX must offer exactly the vote")
 
         guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
             return XCTFail("A chain with one action must open that action directly")
         }
-        guard case .transaction(let transactionType) = descriptor.destination else {
-            return XCTFail("dYdX's vote is migrated and must not be routed through the legacy screen")
-        }
+        let transactionType = descriptor.destination
         guard case .dydxVote(let voteCoin) = transactionType else {
             return XCTFail("Expected the dYdX vote intent")
         }
@@ -143,10 +126,9 @@ final class FunctionActionCatalogTests: XCTestCase {
         // And the route the descriptor names really is the transaction screen —
         // no default, no legacy screen, nothing between the entry button and the
         // ballot.
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        guard case .functionTransaction(_, let routed) = FunctionCallRoute.route(
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
+        guard case .functionTransaction(_, let routed) = FunctionTransactionRoute.route(
             for: descriptor.destination,
-            coin: coin,
             vault: vault
         ) else {
             return XCTFail("dYdX's single action must route to FunctionTransactionScreen")
@@ -167,16 +149,13 @@ final class FunctionActionCatalogTests: XCTestCase {
     /// point is the shape — one action, already migrated — not which chain
     /// happens to have it while the sibling migrations land.
     func testASingleMigratedActionRoutesStraightToItsOwnScreen() {
-        let coin = FunctionCallFixture.makeRUNE()
+        let coin = FunctionActionFixture.makeRUNE()
         let descriptors = FunctionActionCatalog.descriptors(for: coin, types: [.leave])
 
         guard case .action(let descriptor) = FunctionActionCatalog.entry(descriptors: descriptors) else {
             return XCTFail("A chain whose only action is migrated must open that action directly")
         }
-        guard case .transaction(let transactionType) = descriptor.destination else {
-            return XCTFail("A migrated action must not be routed through the legacy screen")
-        }
-        guard case .leave(let leaveCoin, let node) = transactionType else {
+        guard case .leave(let leaveCoin, let node) = descriptor.destination else {
             return XCTFail("Expected the leave intent")
         }
 
@@ -195,7 +174,7 @@ final class FunctionActionCatalogTests: XCTestCase {
         for chain in [Chain.kujira, Chain.osmosis] {
             let coin = Self.makeCoin(chain)
             XCTAssertEqual(
-                FunctionCallType.getCases(for: coin),
+                FunctionAction.offered(on: coin),
                 [.cosmosIBC],
                 "\(chain.rawValue) must offer IBC and nothing else for this to be the passthrough case"
             )
@@ -203,10 +182,7 @@ final class FunctionActionCatalogTests: XCTestCase {
             guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
                 return XCTFail("\(chain.rawValue) must open its single action directly, not via the list")
             }
-            guard case .transaction(let transactionType) = descriptor.destination else {
-                return XCTFail("\(chain.rawValue)'s IBC row must not be routed through the legacy screen")
-            }
-            guard case .ibcTransfer(let intentCoin, let destination) = transactionType else {
+            guard case .ibcTransfer(let intentCoin, let destination) = descriptor.destination else {
                 return XCTFail("Expected the IBC transfer intent on \(chain.rawValue)")
             }
 
@@ -215,32 +191,30 @@ final class FunctionActionCatalogTests: XCTestCase {
         }
     }
 
-    /// Gaia offers two operations, so it renders the list — one migrated row
-    /// going to its own screen, one legacy row opening the old form preselected.
-    /// The mixed case is the one that would break if a migration forgot either
-    /// half of the mapping.
-    func testGaiaRendersAListWithTheIbcRowMigratedAndSwitchStillLegacy() {
+    /// Gaia offers two operations, so it renders the list, and each row names
+    /// the intent its own screen is built from. Gaia is the chain the epic's
+    /// two Cosmos migrations met on — SWITCH re-pointed its default, IBC then
+    /// took the operation that default named — so it is the one worth pinning
+    /// row-by-row.
+    func testGaiaRendersAListOfBothItsOperations() {
         let coin = Self.makeCoin(.gaiaChain)
 
         guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
             return XCTFail("Gaia offers two operations and must show the list")
         }
-        XCTAssertEqual(descriptors.map { $0.id }, [FunctionCallType.cosmosIBC.rawValue, FunctionCallType.theSwitch.rawValue])
+        XCTAssertEqual(descriptors.map { $0.id }, [FunctionAction.cosmosIBC.rawValue, FunctionAction.theSwitch.rawValue])
 
-        guard case .transaction(let transactionType) = descriptors[0].destination else {
-            return XCTFail("Gaia's IBC row must route to the migrated screen")
-        }
-        guard case .ibcTransfer(let intentCoin, _) = transactionType else {
+        guard case .ibcTransfer(let intentCoin, _) = descriptors[0].destination else {
             return XCTFail("Expected the IBC transfer intent")
         }
         XCTAssertEqual(intentCoin.chain, .gaiaChain)
 
-        XCTAssertEqual(descriptors[1].destination, .legacyFunctionCall(.theSwitch))
+        XCTAssertEqual(descriptors[1].destination, .theSwitch(coin: coin.toCoinMeta()))
     }
 
     func testMoreThanOneActionRendersTheList() {
-        let coin = FunctionCallFixture.makeRUNE()
-        let expected = FunctionCallType.getCases(for: coin)
+        let coin = FunctionActionFixture.makeRUNE()
+        let expected = FunctionAction.offered(on: coin)
         XCTAssertGreaterThan(expected.count, 1, "Fixture chain must offer several actions")
 
         guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
@@ -269,20 +243,19 @@ final class FunctionActionCatalogTests: XCTestCase {
             guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
                 return XCTFail("\(chain.rawValue) must open its single action directly")
             }
-            XCTAssertEqual(descriptor.destination, .transaction(.customMemo(coin: coin.toCoinMeta())))
+            XCTAssertEqual(descriptor.destination, .customMemo(coin: coin.toCoinMeta()))
         }
     }
 
     // MARK: - Destination → route
 
     func testAMigratedDestinationRoutesToItsTransactionScreen() {
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let coin = FunctionActionFixture.makeRUNE()
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
         let intent = FunctionTransactionType.leave(coin: coin.toCoinMeta(), node: nil)
 
-        guard case .functionTransaction(_, let transactionType) = FunctionCallRoute.route(
-            for: .transaction(intent),
-            coin: coin,
+        guard case .functionTransaction(_, let transactionType) = FunctionTransactionRoute.route(
+            for: intent,
             vault: vault
         ) else {
             return XCTFail("A migrated destination must open FunctionTransactionScreen")
@@ -290,29 +263,12 @@ final class FunctionActionCatalogTests: XCTestCase {
         XCTAssertEqual(transactionType, intent)
     }
 
-    /// The legacy screen is reached *pre-selected*, which is what lets it hide
-    /// both selectors: the row already made the choice the dropdown asked for.
-    func testALegacyDestinationRoutesToTheFormPreselectedToThatFunction() {
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-
-        guard case .details(let defaultCoin, _, let preselected) = FunctionCallRoute.route(
-            for: .legacyFunctionCall(.merge),
-            coin: coin,
-            vault: vault
-        ) else {
-            return XCTFail("An unmigrated destination must open the legacy form")
-        }
-        XCTAssertEqual(preselected, .merge)
-        XCTAssertEqual(defaultCoin, coin)
-    }
-
     // MARK: - Coin resolution
 
     func testTheEntryCoinFallsBackToTheVaultsNativeCoin() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let tcy = FunctionCallFixture.makeTCY()
-        let vault = FunctionCallFixture.makeVault(coins: [tcy, rune])
+        let rune = FunctionActionFixture.makeRUNE()
+        let tcy = FunctionActionFixture.makeTCY()
+        let vault = FunctionActionFixture.makeVault(coins: [tcy, rune])
 
         XCTAssertEqual(FunctionActionCatalog.resolveCoin(defaultCoin: tcy, vault: vault), tcy)
         XCTAssertEqual(FunctionActionCatalog.resolveCoin(defaultCoin: nil, vault: vault), rune)

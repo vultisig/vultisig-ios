@@ -27,12 +27,12 @@ final class UnmergeTransactionViewModelTests: XCTestCase {
     // MARK: - Fixtures
 
     private static func makeThorchainToken(_ ticker: String) -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: ticker,
             decimals: 8,
             isNative: false,
-            address: FunctionCallFixture.thorAddress
+            address: FunctionActionFixture.thorAddress
         )
     }
 
@@ -51,8 +51,8 @@ final class UnmergeTransactionViewModelTests: XCTestCase {
     ) -> (UnmergeTransactionViewModel, StubMergeBalanceSource) {
         let source = stub ?? StubMergeBalanceSource()
         source.sharesByDenom.merge(shares) { _, new in new }
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: vaultCoins ?? [rune])
+        let rune = FunctionActionFixture.makeRUNE()
+        let vault = FunctionActionFixture.makeVault(coins: vaultCoins ?? [rune])
         let viewModel = UnmergeTransactionViewModel(
             coin: rune,
             vault: vault,
@@ -181,7 +181,7 @@ final class UnmergeTransactionViewModelTests: XCTestCase {
     func testAShareCountThatWouldRoundThroughDoubleReachesTheMemoIntact() async {
         let (viewModel, _) = makeViewModel(
             shares: [Self.kujiDenom: "99999999999999999999"],
-            vaultCoins: [FunctionCallFixture.makeRUNE(), Self.makeThorchainToken("KUJI")]
+            vaultCoins: [FunctionActionFixture.makeRUNE(), Self.makeThorchainToken("KUJI")]
         )
         viewModel.onLoad()
         await waitFor("the balance to land") { viewModel.availableShares > 0 }
@@ -235,7 +235,7 @@ final class UnmergeTransactionViewModelTests: XCTestCase {
     func testTheBuilderSignsOnTheVaultsMergedTokenWhenItIsHeld() async {
         let (viewModel, _) = makeViewModel(
             shares: [Self.kujiDenom: "500000000"],
-            vaultCoins: [FunctionCallFixture.makeRUNE(), Self.makeThorchainToken("KUJI")]
+            vaultCoins: [FunctionActionFixture.makeRUNE(), Self.makeThorchainToken("KUJI")]
         )
         viewModel.onLoad()
         await waitFor("the balance to land") { viewModel.availableShares > 0 }

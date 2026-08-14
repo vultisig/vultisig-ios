@@ -377,7 +377,7 @@ struct FunctionTransactionScreen: View {
                     )
                 }
                 isLoading = false
-                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                router.navigate(to: FunctionTransactionRoute.verify(tx: immutableTx, vault: vault))
                 return
             }
 
@@ -387,7 +387,7 @@ struct FunctionTransactionScreen: View {
             // Priced before it is disclosed. Nothing downstream re-resolves the
             // fee for display, so this figure is the one the user approves.
             let sendTx = await transactionBuilder.buildPricedSendTransaction(vault: vault)
-            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
+            router.navigate(to: FunctionTransactionRoute.verify(tx: sendTx, vault: vault))
         }
     }
 

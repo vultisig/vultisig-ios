@@ -103,64 +103,26 @@ final class SecuredMintRetirementParityTests: XCTestCase {
         for entry in Self.retiredChains {
             let coin = nativeCoin(chain: entry.chain, ticker: entry.ticker)
             XCTAssertEqual(
-                FunctionCallType.getCases(for: coin), [.addThorLP],
+                FunctionAction.offered(on: coin), [.addThorLP],
                 "\(entry.chain) should offer exactly one function"
             )
-            assertDefaultsAgree(for: coin)
         }
     }
 
     /// THORChain keeps the redemption side (SECURE−) and its other functions;
     /// only the mint arm went away.
     func testThorchainKeepsItsRemainingFunctions() {
-        let rune = FunctionCallFixture.makeRUNE()
+        let rune = FunctionActionFixture.makeRUNE()
         XCTAssertEqual(
-            FunctionCallType.getCases(for: rune),
+            FunctionAction.offered(on: rune),
             [.rebond, .leave, .merge, .unmerge, .custom, .withdrawSecuredAsset]
         )
-        assertDefaultsAgree(for: rune)
     }
 
     // MARK: - Helpers
 
-    /// Asserts the chain's opening selection is one it actually offers, and
-    /// that no legacy form is built for it.
-    ///
-    /// Both halves used to be about the dropdown: it opened on `getDefault` and
-    /// listed `getCases`, and a second factory built the form underneath. Every
-    /// operation has since moved to `Features/FunctionTransaction/`, so the form
-    /// half is now always "none" — which is what is asserted rather than
-    /// dropped, because a sub-model reappearing here would mean an operation had
-    /// been un-migrated without anyone noticing.
-    private func assertDefaultsAgree(
-        for coin: Coin,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let selected = FunctionCallType.getDefault(for: coin)
-        XCTAssertTrue(
-            FunctionCallType.getCases(for: coin).contains(selected),
-            "\(coin.chain) opens on \(selected), which it does not offer",
-            file: file,
-            line: line
-        )
-        XCTAssertNotNil(
-            selected.migratedTransactionType(coin: coin, nodeAddress: nil),
-            "\(coin.chain) opens on \(selected), which has no screen to route to",
-            file: file,
-            line: line
-        )
-        XCTAssertNil(
-            FunctionCallInstance.getDefault(for: coin, vault: vault),
-            "\(coin.chain) opens on \(selected), which is migrated, yet a legacy form was built",
-            file: file,
-            line: line
-        )
-    }
-
     private func nativeCoin(chain: Chain, ticker: String) -> Coin {
-        FunctionCallFixture.makeCoin(chain, ticker: ticker, decimals: 8, isNative: true)
+        FunctionActionFixture.makeCoin(chain, ticker: ticker, decimals: 8, isNative: true)
     }
 
     /// The secured destination exactly as the picker builds it — through the
@@ -169,7 +131,7 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     private func securedTwin(denom: String) -> Coin {
         Coin(
             asset: SecuredAssetMapper.coinMeta(forDenom: denom),
-            address: FunctionCallFixture.thorAddress,
+            address: FunctionActionFixture.thorAddress,
             hexPublicKey: ""
         )
     }
