@@ -1544,6 +1544,7 @@
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact swap amount";
 "Switch" = "Switch";
 "switchBackToInternetMode" = "Not want to use local? Switch back.";
+"switchRouteUnavailable" = "Couldn't reach THORChain to confirm the deposit address. Please check your connection and try again.";
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
 "termsOfService" = "Terms of Service";

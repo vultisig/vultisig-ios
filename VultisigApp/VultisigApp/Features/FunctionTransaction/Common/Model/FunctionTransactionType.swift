@@ -85,6 +85,15 @@ enum FunctionTransactionType: Hashable {
     /// can name one upfront, and the native coin is the account those balances
     /// hang off. The form's picker resolves the redeemed coin from it.
     case withdrawSecuredAsset(coin: CoinMeta)
+    /// Cosmos Hub → THORChain SWITCH. `coin` is the source chain's native
+    /// asset: the transfer goes to THORChain's inbound vault for that chain,
+    /// and that vault only credits the native asset — a Gaia IBC token sent
+    /// there is simply lost. The destination is deliberately absent from the
+    /// intent; it is the live inbound vault address, resolved when the
+    /// transaction is built rather than carried from wherever the caller came
+    /// from. The THORChain address the memo names comes from the vault, so it
+    /// is not on the intent either.
+    case theSwitch(coin: CoinMeta)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -143,6 +152,8 @@ enum FunctionTransactionType: Hashable {
             // Only the native coin: the secured assets themselves are added to
             // the vault by the form as it discovers which ones the account
             // actually holds, so they cannot be pre-resolved here.
+            return [coin]
+        case .theSwitch(let coin):
             return [coin]
         }
     }

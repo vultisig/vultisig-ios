@@ -112,21 +112,4 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
     }
 
 
-    func testTheSwitchParity() {
-        let atom = FunctionCallFixture.makeATOM()
-        let vault = FunctionCallFixture.makeVault(coins: [atom, FunctionCallFixture.makeRUNE()])
-        let model = FunctionCallCosmosSwitch(coin: atom, vault: vault)
-        model.thorAddress = "thor1switchtarget"
-        model.destinationAddress = "cosmos1inbound"
-        let instance = FunctionCallInstance.theSwitch(model)
-
-        let tx = instance.toSendTransaction(coin: atom, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "SWITCH:thor1switchtarget")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "cosmos1inbound")
-        XCTAssertEqual(instance.toAddress, "cosmos1inbound")
-
-        assertForwardingParity(instance, forwardsTo: model, coin: atom, vault: vault, gas: 0)
-    }
-
 }

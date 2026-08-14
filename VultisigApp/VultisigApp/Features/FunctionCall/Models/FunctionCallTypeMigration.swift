@@ -100,6 +100,17 @@ extension FunctionCallType {
             // RUNE-less vault with "No Secured Assets found", which reads as
             // "you hold nothing" rather than "this vault cannot ask".
             return .withdrawSecuredAsset(coin: nativeAsset(for: coin))
+        case .theSwitch:
+            // SWITCH is a plain transfer to THORChain's inbound vault for the
+            // source chain, and that vault credits the chain's native asset
+            // only. The legacy screen used whatever coin happened to be
+            // selected, so opening Functions from one of Gaia's IBC tokens
+            // (FUZN, KUJI, LVN, …) and picking Switch would have sent that
+            // token to the vault, where nothing credits it back. Naming the
+            // native asset means a vault that cannot resolve it lands on
+            // `FunctionTransactionScreen`'s shared "not in vault" error
+            // instead.
+            return .theSwitch(coin: nativeAsset(for: coin))
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

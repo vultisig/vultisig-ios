@@ -12,7 +12,6 @@ enum FunctionCallInstance {
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
-    case theSwitch(FunctionCallCosmosSwitch)
 
     /// The active sub-model, type-erased to the shared surface. Every
     /// accessor below forwards through here so the closed set is switched
@@ -23,7 +22,6 @@ enum FunctionCallInstance {
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
-        case .theSwitch(let memo): return memo
         }
     }
 
@@ -90,8 +88,6 @@ enum FunctionCallInstance {
             return .vote(FunctionCallVote())
         case .cosmosIBC:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
-        case .theSwitch:
-            return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
         default:
             // No chain opens on these, and an operation that is never a default
             // has no business being built by a default factory.

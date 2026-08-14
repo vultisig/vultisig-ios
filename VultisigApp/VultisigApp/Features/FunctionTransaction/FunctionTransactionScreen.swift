@@ -297,6 +297,13 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .theSwitch(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SwitchTransactionScreen(
+                        viewModel: SwitchTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)

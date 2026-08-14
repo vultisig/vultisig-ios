@@ -254,7 +254,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .custom, .vote, .cosmosIBC, .theSwitch
+            .custom, .vote, .cosmosIBC
         ]
         for type in stillLegacy {
             XCTAssertNil(
@@ -467,6 +467,102 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     /// the dropdown is not a cosmetic regression.
     func testWithdrawSecuredAssetStaysSelectableOnThorchain() {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.withdrawSecuredAsset))
+    }
+
+    private static func makeGaiaToken(_ ticker: String = "FUZN") -> Coin {
+        FunctionCallFixture.makeCoin(
+            .gaiaChain,
+            ticker: ticker,
+            decimals: 6,
+            isNative: false,
+            address: FunctionCallFixture.cosmosAddress
+        )
+    }
+
+    func testSwitchMapsToTheSwitchIntent() {
+        guard case .theSwitch(let mappedCoin)? = FunctionCallType.theSwitch.migratedTransactionType(
+            coin: FunctionCallFixture.makeATOM(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Switch must map to the switch intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .gaiaChain, ticker: "ATOM")
+    }
+
+    /// THORChain's GAIA inbound vault credits ATOM and nothing else. The legacy
+    /// screen used whatever coin was selected, so opening Functions from one of
+    /// Gaia's IBC tokens and picking Switch would have sent that token to the
+    /// vault with no way back.
+    func testSwitchIsPinnedToTheChainsNativeAssetNotTheSelectedCoin() {
+        guard case .theSwitch(let mappedCoin)? = FunctionCallType.theSwitch.migratedTransactionType(
+            coin: Self.makeGaiaToken(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Switch must map to the switch intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .gaiaChain, ticker: "ATOM")
+    }
+
+    /// Same fail-closed property LEAVE has: a vault that cannot resolve the
+    /// native asset lands on the shared "not in vault" error rather than
+    /// switching whatever token happened to be selected.
+    func testSwitchTargetsTheNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
+        let token = Self.makeGaiaToken()
+        let vault = FunctionCallFixture.makeVault(coins: [token])
+        XCTAssertNil(vault.nativeCoin(for: .gaiaChain), "Fixture must not hold ATOM")
+
+        guard case .theSwitch(let mappedCoin)? = FunctionCallType.theSwitch.migratedTransactionType(
+            coin: token,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Switch must map to the switch intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .gaiaChain, ticker: "ATOM")
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
+    }
+
+    func testSwitchIntentResolvesTheCoinItNeeds() {
+        let coin = FunctionCallFixture.makeATOM()
+        let intent = FunctionTransactionType.theSwitch(coin: coin.toCoinMeta())
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
+    func testSwitchStaysSelectableOnGaia() {
+        XCTAssertTrue(FunctionCallType.getCases(for: FunctionCallFixture.makeATOM()).contains(.theSwitch))
+    }
+
+    /// Gaia's default moved off `.theSwitch` when SWITCH was migrated, and it
+    /// moved in BOTH factories — a one-sided change opens the screen naming one
+    /// function over another function's form.
+    ///
+    /// Asserted as "the two agree about whether a legacy form exists" rather
+    /// than "both build `.cosmosIBC`", because IBC is migrated later in the same
+    /// epic and at that point Gaia has no unmigrated operation left to name.
+    /// The type default stays `.cosmosIBC` throughout: it is what the chain
+    /// does, and the action list never consults a default anyway.
+    @MainActor
+    func testGaiaDefaultsToIBCInBothFactories() {
+        let atom = FunctionCallFixture.makeATOM()
+        let vault = FunctionCallFixture.makeVault(coins: [atom])
+
+        XCTAssertEqual(FunctionCallType.getDefault(for: atom), .cosmosIBC)
+        XCTAssertEqual(
+            FunctionCallInstance.getDefault(for: atom, vault: vault) == nil,
+            Self.isMigrated(.cosmosIBC, coin: atom),
+            "Gaia's two default factories disagree about whether a legacy form exists"
+        )
+    }
+
+    /// The default has to remain something the dropdown actually offers.
+    func testGaiaDefaultIsOfferedOnGaia() {
+        let atom = FunctionCallFixture.makeATOM()
+        XCTAssertTrue(FunctionCallType.getCases(for: atom).contains(FunctionCallType.getDefault(for: atom)))
     }
 
     // MARK: - Reachability
