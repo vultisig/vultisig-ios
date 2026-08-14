@@ -322,9 +322,11 @@ final class MergeTransactionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.selectedAsset)
     }
 
-    func testPickerAssetsMirrorTheMergeableList() async {
+    func testPickerAssetsMirrorTheMergeableList() async throws {
         let viewModel = makeViewModel(holdings: [Self.makeThorToken("KUJI"), Self.makeThorToken("LVN")])
-        let assets = await viewModel.assetsDataSource.fetchAssets()
+        // `fetchAssets()` is throwing so the Maya forms can tell a failed fetch
+        // from an empty one; the merge catalog is local and cannot fail.
+        let assets = try await viewModel.assetsDataSource.fetchAssets()
 
         XCTAssertEqual(assets.map { $0.thorchainAsset }, ["THOR.KUJI", "THOR.LVN"])
         XCTAssertEqual(assets.map { $0.asset.ticker }, ["KUJI", "LVN"])

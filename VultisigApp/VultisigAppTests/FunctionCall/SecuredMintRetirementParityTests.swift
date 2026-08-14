@@ -177,12 +177,9 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     /// is mapped. Migrated operations have no sub-model, so they have no arm.
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
-        case .rebond: return .rebond
         case .custom: return .custom
         case .vote: return .vote
         case .cosmosIBC: return .cosmosIBC
-        case .merge: return .merge
-        case .unmerge: return .unmerge
         case .theSwitch: return .theSwitch
         case .withdrawSecuredAsset: return .withdrawSecuredAsset
         }
