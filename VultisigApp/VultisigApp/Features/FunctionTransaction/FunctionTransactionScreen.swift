@@ -268,6 +268,16 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .dydxVote(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    DydxVoteTransactionScreen(
+                        viewModel: DydxVoteTransactionViewModel(
+                            coin: coin,
+                            vault: vault
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .merge(let coin, let denom):
                 resolvingCoin(coinMeta: coin) { coin in
                     MergeTransactionScreen(

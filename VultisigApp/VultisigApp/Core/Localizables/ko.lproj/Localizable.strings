@@ -626,6 +626,7 @@
 "invalidIntegerError" = "유효하지 않은 정수 금액";
 "invalidLPUnits" = "유효하지 않은 LP 단위";
 "invalidOperatorFee" = "유효하지 않은 운영자 수수료";
+"invalidProposalIDError" = "유효한 제안 ID를 입력하세요";
 "invalidRecipientAddressError" = "이 수신자는 이 체인에 유효한 주소가 아닙니다.";
 "invalidVaultData" = "유효하지 않은 볼트 데이터";
 "Italian" = "이탈리아어";
@@ -1342,6 +1343,7 @@
 "selectVaults" = "볼트 선택";
 "selectVaultsToBackUpSubtitle" = "이 볼트만 백업할지 앱의 모든 볼트를 백업할지 선택하세요.";
 "selectVaultsToBackUpTitle" = "백업할 볼트 선택";
+"selectVoteOptionError" = "투표 옵션을 선택하세요";
 "self" = "자신";
 "sell" = "판매";
 "send" = "전송";

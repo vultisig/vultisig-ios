@@ -23,7 +23,6 @@ final class FunctionCallContentViewTests: XCTestCase {
 
         let migrated: [FunctionCallInstance] = [
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
-            .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
         ]
 

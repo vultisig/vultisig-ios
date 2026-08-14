@@ -10,7 +10,6 @@ import Foundation
 
 enum FunctionCallInstance {
     case custom(FunctionCallCustom)
-    case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
 
     /// The active sub-model, type-erased to the shared surface. Every
@@ -20,7 +19,6 @@ enum FunctionCallInstance {
     var model: any FunctionCallSubModel {
         switch self {
         case .custom(let memo): return memo
-        case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
         }
     }
@@ -84,8 +82,6 @@ enum FunctionCallInstance {
         switch type {
         case .custom:
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
-        case .vote:
-            return .vote(FunctionCallVote())
         case .cosmosIBC:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         default:

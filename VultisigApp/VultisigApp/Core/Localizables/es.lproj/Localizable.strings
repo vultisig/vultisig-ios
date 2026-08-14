@@ -626,6 +626,7 @@
 "invalidIntegerError" = "Cantidad entera inválida";
 "invalidLPUnits" = "Unidades LP inválidas";
 "invalidOperatorFee" = "Tarifa de operador inválida";
+"invalidProposalIDError" = "Introduce un Proposal ID válido";
 "invalidRecipientAddressError" = "Ese destinatario no es una dirección válida para esta cadena.";
 "invalidVaultData" = "Datos del almacén no válidos";
 "Italian" = "Italiano";
@@ -1342,6 +1343,7 @@
 "selectVaults" = "Seleccionar bóvedas";
 "selectVaultsToBackUpSubtitle" = "Elija si respalda solo esta bóveda o todas las bóvedas en su aplicación.";
 "selectVaultsToBackUpTitle" = "Seleccione las bóvedas para hacer una copia de seguridad";
+"selectVoteOptionError" = "Selecciona una opción de voto";
 "self" = "Propio";
 "sell" = "Vender";
 "send" = "Enviar";

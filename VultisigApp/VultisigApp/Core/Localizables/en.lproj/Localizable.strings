@@ -626,6 +626,7 @@
 "invalidIntegerError" = "Invalid integer amount";
 "invalidLPUnits" = "Invalid LP units";
 "invalidOperatorFee" = "Invalid operator fee";
+"invalidProposalIDError" = "Enter a valid proposal ID";
 "invalidRecipientAddressError" = "That recipient is not a valid address for this chain.";
 "invalidVaultData" = "Invalid vault data";
 "Italian" = "Italian";
@@ -1342,6 +1343,7 @@
 "selectVaults" = "Select Vaults";
 "selectVaultsToBackUpSubtitle" = "Choose whether to back up just this vault or all vaults in your app.";
 "selectVaultsToBackUpTitle" = "Select Vaults to Back Up";
+"selectVoteOptionError" = "Select a vote option";
 "self" = "Self";
 "sell" = "Sell";
 "send" = "Send";

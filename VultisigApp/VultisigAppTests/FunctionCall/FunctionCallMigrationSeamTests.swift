@@ -254,7 +254,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .custom, .vote, .cosmosIBC
+            .custom, .cosmosIBC
         ]
         for type in stillLegacy {
             XCTAssertNil(
@@ -563,6 +563,69 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testGaiaDefaultIsOfferedOnGaia() {
         let atom = FunctionCallFixture.makeATOM()
         XCTAssertTrue(FunctionCallType.getCases(for: atom).contains(FunctionCallType.getDefault(for: atom)))
+    }
+
+    private static func makeDydx() -> Coin {
+        FunctionCallFixture.makeCoin(
+            .dydx,
+            ticker: "DYDX",
+            decimals: 18,
+            isNative: true,
+            address: "dydx1xyzfixturedydxchainvaultaddress000000"
+        )
+    }
+
+    func testVoteMapsToTheDydxVoteIntent() {
+        guard case .dydxVote(let mappedCoin)? = FunctionCallType.vote.migratedTransactionType(
+            coin: Self.makeDydx(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Vote must map to the dYdX vote intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .dydx, ticker: "DYDX")
+    }
+
+    /// A node address carried over from a previous form means nothing to a
+    /// ballot; the intent has nowhere to put one and must not grow a field for
+    /// it by accident.
+    func testVoteIgnoresACarriedOverNodeAddress() {
+        XCTAssertEqual(
+            FunctionCallType.vote.migratedTransactionType(coin: Self.makeDydx(), nodeAddress: Self.thorNode),
+            FunctionCallType.vote.migratedTransactionType(coin: Self.makeDydx(), nodeAddress: nil)
+        )
+    }
+
+    /// Same fail-closed property LEAVE has: the intent names dYdX's native
+    /// asset whether or not the vault holds it, so a vault that cannot pay the
+    /// fee lands on the shared "not in vault" error instead of opening a ballot
+    /// that could never be signed.
+    func testVoteTargetsDydxsNativeAssetEvenWhenTheVaultDoesNotHoldIt() {
+        let rune = Self.makeRune()
+        let vault = FunctionCallFixture.makeVault(coins: [rune])
+
+        guard case .dydxVote(let mappedCoin)? = FunctionCallType.vote.migratedTransactionType(
+            coin: rune,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Vote must map to the dYdX vote intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .dydx, ticker: "DYDX")
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
+    }
+
+    func testVoteIntentResolvesTheCoinItNeeds() {
+        let coin = Self.makeDydx()
+        let intent = FunctionTransactionType.dydxVote(coin: coin.toCoinMeta())
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
+    func testVoteStaysSelectableOnDydx() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeDydx()).contains(.vote))
     }
 
     // MARK: - Reachability

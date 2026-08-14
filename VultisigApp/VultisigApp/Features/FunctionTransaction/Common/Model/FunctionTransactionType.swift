@@ -94,6 +94,15 @@ enum FunctionTransactionType: Hashable {
     /// from. The THORChain address the memo names comes from the vault, so it
     /// is not on the intent either.
     case theSwitch(coin: CoinMeta)
+    /// dYdX governance vote. `coin` is dYdX's native asset: the ballot rides a
+    /// memo with nothing attached, so the only coin the vault has to resolve is
+    /// the one that pays the fee.
+    ///
+    /// Named for the chain rather than for the operation because the memo is:
+    /// `DYDX_VOTE:…` is not the `QBTC_VOTE:…` the DeFi tab's governance segment
+    /// builds, and a bare `.vote` intent would invite a caller to route one
+    /// through the other.
+    case dydxVote(coin: CoinMeta)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -154,6 +163,8 @@ enum FunctionTransactionType: Hashable {
             // actually holds, so they cannot be pre-resolved here.
             return [coin]
         case .theSwitch(let coin):
+            return [coin]
+        case .dydxVote(let coin):
             return [coin]
         }
     }

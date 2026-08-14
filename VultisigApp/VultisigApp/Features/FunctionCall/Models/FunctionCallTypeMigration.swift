@@ -26,9 +26,18 @@ extension FunctionCallType {
     /// The `FunctionTransactionType` this function selection routes to, or
     /// `nil` when the operation still lives on the legacy screen.
     ///
-    /// A migrated type must never be a chain's `getDefault(for:)`: the default
-    /// is applied without publishing a change, so the route-out would never
+    /// A migrated type must not be the `getDefault(for:)` of a chain that
+    /// renders the action *list*: behind the list the dropdown still applies
+    /// its default without publishing a change, so the route-out would never
     /// fire and the user would land on a selection with no form.
+    ///
+    /// A chain offering exactly one operation is exempt, and dYdX is the first
+    /// one to use the exemption. Its lone case is necessarily also its default,
+    /// and the entry point passes straight through to that operation's
+    /// destination without consulting `getDefault` at all — which is precisely
+    /// the constraint the action list was built to remove. Pinned by
+    /// `FunctionCallMigrationSeamTests.testNoMultiActionChainDefaultsToAMigratedFunction`
+    /// and its companion.
     ///
     /// - Parameters:
     ///   - coin: the coin currently selected on the legacy screen, which
@@ -111,6 +120,13 @@ extension FunctionCallType {
             // `FunctionTransactionScreen`'s shared "not in vault" error
             // instead.
             return .theSwitch(coin: nativeAsset(for: coin))
+        case .vote:
+            // The ballot rides the memo and the deposit is empty, so the only
+            // coin the vault has to resolve is the one that pays the dYdX fee —
+            // its native asset. A vault that cannot resolve it lands on
+            // `FunctionTransactionScreen`'s shared "not in vault" error rather
+            // than on a form whose Continue could never be paid for.
+            return .dydxVote(coin: nativeAsset(for: coin))
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer
