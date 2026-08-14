@@ -593,6 +593,8 @@
 "holdForPairedSign" = "Halte für gekoppeltes Signieren";
 "howItWorks" = "So funktioniert's";
 "IBC Transfer" = "IBC Überweisung";
+"ibcNoDestinationChains" = "Dieser Vermögenswert hat keine IBC-Routen von dieser Chain";
+"ibcTransferTitle" = "IBC-Transfer";
 "import" = "Importieren";
 "importSeedphrase" = "Seed-Phrase importieren";
 "importSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück.";

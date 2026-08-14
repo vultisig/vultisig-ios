@@ -61,7 +61,3 @@ extension FunctionCallSubModel {
 
 extension FunctionCallCustom: FunctionCallSubModel {}
 
-extension FunctionCallCosmosIBC: FunctionCallSubModel {
-    var resolvedToAddress: String? { destinationAddress }
-}
-

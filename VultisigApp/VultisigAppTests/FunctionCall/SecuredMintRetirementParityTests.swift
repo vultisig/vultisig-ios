@@ -178,7 +178,6 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
         case .custom: return .custom
-        case .cosmosIBC: return .cosmosIBC
         }
     }
 

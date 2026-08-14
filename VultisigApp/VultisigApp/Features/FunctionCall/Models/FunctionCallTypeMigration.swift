@@ -127,6 +127,13 @@ extension FunctionCallType {
             // `FunctionTransactionScreen`'s shared "not in vault" error rather
             // than on a form whose Continue could never be paid for.
             return .dydxVote(coin: nativeAsset(for: coin))
+        case .cosmosIBC:
+            // The asset leaving the source chain, as selected — an IBC transfer
+            // moves whatever the user is holding, so this is deliberately NOT
+            // pinned to the chain's native asset the way LEAVE and SWITCH are.
+            // The destination side of the hop is an address, not a holding, so
+            // it is nothing the vault has to resolve.
+            return .ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

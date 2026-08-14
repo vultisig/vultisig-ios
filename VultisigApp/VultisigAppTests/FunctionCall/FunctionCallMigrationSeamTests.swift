@@ -254,7 +254,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .custom, .cosmosIBC
+            .custom
         ]
         for type in stillLegacy {
             XCTAssertNil(
@@ -628,7 +628,64 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeDydx()).contains(.vote))
     }
 
+    // MARK: - IBC
+
+    /// Unlike LEAVE, the IBC intent must NOT be pinned to the chain's native
+    /// asset: an `ibc/…` or `factory/…` token is as transferable as the chain's
+    /// own coin, and pinning would silently transfer the wrong asset.
+    func testIbcMapsToTheTransferIntentOnTheSelectedCoin() {
+        for coin in [FunctionCallFixture.makeKUJI(), FunctionCallFixture.makeATOM()] {
+            guard case .ibcTransfer(let mappedCoin, let destination)? =
+                    FunctionCallType.cosmosIBC.migratedTransactionType(coin: coin, nodeAddress: nil) else {
+                return XCTFail("IBC must map to the transfer intent on \(coin.chain.rawValue)")
+            }
+
+            XCTAssertEqual(mappedCoin, coin.toCoinMeta())
+            XCTAssertNil(destination, "The list is entered cold — no route is pre-selected")
+        }
+    }
+
+    /// A non-native asset keeps its own identity through the mapping. The
+    /// legacy screen had no pinning here either; this pins that it stays that
+    /// way as the other migrations add `ensureRuneCoin`-style pins.
+    func testIbcDoesNotPinToTheChainsNativeAsset() {
+        let ibcToken = FunctionCallFixture.makeCoin(
+            .kujira,
+            ticker: "USK",
+            decimals: 6,
+            isNative: false,
+            address: FunctionCallFixture.kujiAddress
+        )
+
+        guard case .ibcTransfer(let mappedCoin, _)? =
+                FunctionCallType.cosmosIBC.migratedTransactionType(coin: ibcToken, nodeAddress: nil) else {
+            return XCTFail("IBC must map to the transfer intent")
+        }
+
+        XCTAssertEqual(mappedCoin.ticker, "USK")
+        XCTAssertEqual(mappedCoin.isNativeToken, false)
+    }
+
+    func testIbcIntentResolvesTheCoinItNeeds() {
+        let coin = FunctionCallFixture.makeKUJI()
+        let intent = FunctionTransactionType.ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
     // MARK: - Reachability
+
+    func testIbcStaysSelectableOnEveryChainThatOffersIt() {
+        for coin in [
+            FunctionCallFixture.makeKUJI(),
+            FunctionCallFixture.makeATOM(),
+            FunctionCallFixture.makeCoin(.osmosis, ticker: "OSMO", decimals: 6, isNative: true)
+        ] {
+            XCTAssertTrue(
+                FunctionCallType.getCases(for: coin).contains(.cosmosIBC),
+                "\(coin.chain.rawValue) must keep offering IBC — the catalog builds its rows from getCases"
+            )
+        }
+    }
 
     /// `FunctionActionCatalog` builds a chain's rows from its case list, so a
     /// migrated operation dropped from `getCases` loses its row — the

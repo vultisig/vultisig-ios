@@ -10,7 +10,6 @@ import Foundation
 
 enum FunctionCallInstance {
     case custom(FunctionCallCustom)
-    case cosmosIBC(FunctionCallCosmosIBC)
 
     /// The active sub-model, type-erased to the shared surface. Every
     /// accessor below forwards through here so the closed set is switched
@@ -19,7 +18,6 @@ enum FunctionCallInstance {
     var model: any FunctionCallSubModel {
         switch self {
         case .custom(let memo): return memo
-        case .cosmosIBC(let memo): return memo
         }
     }
 
@@ -82,8 +80,6 @@ enum FunctionCallInstance {
         switch type {
         case .custom:
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
-        case .cosmosIBC:
-            return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         default:
             // No chain opens on these, and an operation that is never a default
             // has no business being built by a default factory.

@@ -185,6 +185,59 @@ final class FunctionActionCatalogTests: XCTestCase {
         XCTAssertNil(node, "The list is entered cold — there is no previous form to inherit a node address from")
     }
 
+    /// The constraint made concrete. Kujira and Osmosis each offer exactly one
+    /// operation and that operation is now migrated — the shape
+    /// `testASingleMigratedActionRoutesStraightToItsOwnScreen` describes with a
+    /// synthetic case list, here on the real chains that have it. Under the
+    /// selection-change seam these two were unmigratable: a lone case is also
+    /// the chain's default, and a default never publishes a change.
+    func testTheSingleActionChainsPassThroughToTheIbcScreen() {
+        for chain in [Chain.kujira, Chain.osmosis] {
+            let coin = Self.makeCoin(chain)
+            XCTAssertEqual(
+                FunctionCallType.getCases(for: coin),
+                [.cosmosIBC],
+                "\(chain.rawValue) must offer IBC and nothing else for this to be the passthrough case"
+            )
+
+            guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+                return XCTFail("\(chain.rawValue) must open its single action directly, not via the list")
+            }
+            guard case .transaction(let transactionType) = descriptor.destination else {
+                return XCTFail("\(chain.rawValue)'s IBC row must not be routed through the legacy screen")
+            }
+            guard case .ibcTransfer(let intentCoin, let destination) = transactionType else {
+                return XCTFail("Expected the IBC transfer intent on \(chain.rawValue)")
+            }
+
+            XCTAssertEqual(intentCoin.chain, chain)
+            XCTAssertNil(destination, "The list is entered cold — there is no route to inherit")
+        }
+    }
+
+    /// Gaia offers two operations, so it renders the list — one migrated row
+    /// going to its own screen, one legacy row opening the old form preselected.
+    /// The mixed case is the one that would break if a migration forgot either
+    /// half of the mapping.
+    func testGaiaRendersAListWithTheIbcRowMigratedAndSwitchStillLegacy() {
+        let coin = Self.makeCoin(.gaiaChain)
+
+        guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("Gaia offers two operations and must show the list")
+        }
+        XCTAssertEqual(descriptors.map { $0.id }, [FunctionCallType.cosmosIBC.rawValue, FunctionCallType.theSwitch.rawValue])
+
+        guard case .transaction(let transactionType) = descriptors[0].destination else {
+            return XCTFail("Gaia's IBC row must route to the migrated screen")
+        }
+        guard case .ibcTransfer(let intentCoin, _) = transactionType else {
+            return XCTFail("Expected the IBC transfer intent")
+        }
+        XCTAssertEqual(intentCoin.chain, .gaiaChain)
+
+        XCTAssertEqual(descriptors[1].destination, .legacyFunctionCall(.theSwitch))
+    }
+
     func testMoreThanOneActionRendersTheList() {
         let coin = FunctionCallFixture.makeRUNE()
         let expected = FunctionCallType.getCases(for: coin)

@@ -593,6 +593,8 @@
 "holdForPairedSign" = "Drži za upareno potpisivanje";
 "howItWorks" = "Kako to radi";
 "IBC Transfer" = "IBC prijenos";
+"ibcNoDestinationChains" = "Ova imovina nema IBC rute s ovog lanca";
+"ibcTransferTitle" = "IBC prijenos";
 "import" = "Uvoz";
 "importSeedphrase" = "Uvezi seed frazu";
 "importSeedphraseSubtitle" = "Unesite je, stvorite trezor, nikad ne gledajte natrag.";

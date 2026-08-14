@@ -112,11 +112,13 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .dydx:
             return .vote
         case .gaiaChain:
-            // Switch has moved to `Features/FunctionTransaction/` and is
-            // reached by selecting it, which is why it stays in `getCases`.
-            // It cannot stay the default: the default is applied without
-            // publishing a change, so the route-out would never fire.
-            // `FunctionCallInstance.getDefault(for:vault:)` mirrors this.
+            // Every Cosmos operation the Functions screen offers is now on
+            // `Features/FunctionTransaction/`, so these defaults all name a
+            // migrated type. That is the honest answer — it is what the chain
+            // does — and it costs nothing: the action list carries each row's
+            // own destination and never consults a default. What still has to
+            // hold is that the default is something the chain offers, which
+            // `FunctionCallReachabilityTests` pins.
             return .cosmosIBC
         case .kujira, .osmosis:
             return .cosmosIBC

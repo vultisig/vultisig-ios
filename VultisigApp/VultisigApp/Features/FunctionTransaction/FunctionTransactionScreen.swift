@@ -268,6 +268,17 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .ibcTransfer(let coin, let destinationChain):
+                resolvingCoin(coinMeta: coin) { coin in
+                    IBCTransferTransactionScreen(
+                        viewModel: IBCTransferTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            destinationChain: destinationChain
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .dydxVote(let coin):
                 resolvingCoin(coinMeta: coin) { coin in
                     DydxVoteTransactionScreen(

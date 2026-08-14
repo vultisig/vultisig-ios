@@ -593,6 +593,8 @@
 "holdForPairedSign" = "쌍 서명을 위해 유지";
 "howItWorks" = "작동 방식";
 "IBC Transfer" = "IBC 전송";
+"ibcNoDestinationChains" = "이 자산은 이 체인에서 사용할 수 있는 IBC 경로가 없습니다";
+"ibcTransferTitle" = "IBC 전송";
 "import" = "가져오기";
 "importSeedphrase" = "시드 문구 가져오기";
 "importSeedphraseSubtitle" = "입력하고 볼트를 만들고 더 이상 돌아보지 마세요.";

@@ -103,6 +103,17 @@ enum FunctionTransactionType: Hashable {
     /// builds, and a bare `.vote` intent would invite a caller to route one
     /// through the other.
     case dydxVote(coin: CoinMeta)
+    /// Cosmos IBC transfer. `coin` is the asset leaving the source chain — the
+    /// only coin the vault has to resolve, since the destination side of the
+    /// hop is an address, not a holding. `destinationChain` optionally
+    /// pre-selects the route for a caller that already knows it (a future
+    /// bridge card); nil opens the picker unselected, which is what the action
+    /// list does — it is entered cold.
+    ///
+    /// The destination address and the user's memo are deliberately *not* here:
+    /// they are typed on the form, so they belong to the builder this intent
+    /// eventually produces, not to the intent that opens the form.
+    case ibcTransfer(coin: CoinMeta, destinationChain: Chain?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -165,6 +176,8 @@ enum FunctionTransactionType: Hashable {
         case .theSwitch(let coin):
             return [coin]
         case .dydxVote(let coin):
+            return [coin]
+        case .ibcTransfer(let coin, _):
             return [coin]
         }
     }

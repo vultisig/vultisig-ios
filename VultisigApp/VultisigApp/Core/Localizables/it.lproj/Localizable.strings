@@ -593,6 +593,8 @@
 "holdForPairedSign" = "Tieni premuto per la firma abbinata";
 "howItWorks" = "Come funziona";
 "IBC Transfer" = "Trasferimento IBC";
+"ibcNoDestinationChains" = "Questo asset non ha rotte IBC da questa chain";
+"ibcTransferTitle" = "Trasferimento IBC";
 "import" = "Importa";
 "importSeedphrase" = "Importa seed phrase";
 "importSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro.";

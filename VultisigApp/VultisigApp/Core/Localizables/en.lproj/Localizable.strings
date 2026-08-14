@@ -593,6 +593,8 @@
 "holdForPairedSign" = "Hold for paired sign";
 "howItWorks" = "How it works";
 "IBC Transfer" = "IBC Transfer";
+"ibcNoDestinationChains" = "This asset has no IBC routes from this chain";
+"ibcTransferTitle" = "IBC Transfer";
 "import" = "Import";
 "importSeedphrase" = "Import Seedphrase";
 "importSeedphraseSubtitle" = "Enter it, create a vault, never look back.";

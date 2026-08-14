@@ -593,6 +593,8 @@
 "holdForPairedSign" = "Segure para assinatura emparelhada";
 "howItWorks" = "Como funciona";
 "IBC Transfer" = "Transferência IBC";
+"ibcNoDestinationChains" = "Este ativo não tem rotas IBC a partir desta chain";
+"ibcTransferTitle" = "Transferência IBC";
 "import" = "Importar";
 "importSeedphrase" = "Importar frase semente";
 "importSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás.";
