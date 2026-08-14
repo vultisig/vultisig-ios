@@ -81,8 +81,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             // so the selector opened empty over whatever form the default
             // happened to build. Custom is the operation they support — the
             // same `MsgDeposit` mainnet takes — so naming it here makes the
-            // button lead somewhere. `FunctionCallCustom` had to learn these
-            // chains too, or the form it opens could never be submitted.
+            // button lead somewhere. The form's asset predicate has to know
+            // these chains too, or the form it opens could never be submitted.
             return [.custom]
 
         default:
@@ -93,22 +93,24 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     /// The function the details screen opens on. Must always be a member of
     /// `getCases(for:)` — a default the dropdown does not list strands the
     /// user on a form they cannot get back to. `FunctionCallInstance.getDefault`
-    /// builds the matching sub-model and has to agree case-for-case; neither
-    /// factory derives from the other, so the pairing is pinned by tests.
+    /// builds the matching sub-model and is derived from this answer, so the two
+    /// can no longer name different operations; what a test still pins is that
+    /// every value here is one `getCases(for:)` offers.
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
-            // Rebond and Leave have both moved to
-            // `Features/FunctionTransaction/`, so the raw memo is the remaining
-            // THORChain entry that still builds a form here — and it was
-            // already the default for the TCY family.
-            return .custom
-        // Must stay inside `getCases(for:)` above — the screen opens on this
-        // selection, and a default the dropdown does not offer strands the user
-        // on a form they cannot get back to. MayaChain falls through to the
-        // raw-memo operation for the same reason: LEAVE, the arm that used to
-        // be here, has its own screen and builds no form for this one to open
-        // on.
+            // The same predicate the raw-memo form's own asset picker uses, so
+            // the operation this routes a holder to can always offer the coin
+            // it routed them for. Open-coded here as a case-sensitive
+            // `contains("TCY")`, it disagreed with the form on both the
+            // wrappers and their casing.
+            if CustomMemoAssets.isTcyFamily(ticker: coin.ticker) {
+                return .custom
+            }
+            return .rebond
+        // MayaChain has no arm: its bond/unbond forms are gone and LEAVE has
+        // its own screen, so the raw-memo fallthrough is the only operation it
+        // could open on.
         case .dydx:
             return .vote
         case .gaiaChain:

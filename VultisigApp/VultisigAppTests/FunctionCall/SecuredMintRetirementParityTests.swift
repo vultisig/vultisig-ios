@@ -123,15 +123,15 @@ final class SecuredMintRetirementParityTests: XCTestCase {
 
     // MARK: - Helpers
 
-    /// Asserts the dropdown's opening selection is one the dropdown lists, and
-    /// that the sub-model the screen builds describes the same function — or
-    /// that there is no sub-model at all, which is the honest answer once that
-    /// operation has moved to `Features/FunctionTransaction/`.
+    /// Asserts the chain's opening selection is one it actually offers, and
+    /// that no legacy form is built for it.
     ///
-    /// `FunctionCallInstance.getDefault` derives its nil from the same mapping
-    /// the type factory is read through, so the pair cannot disagree about
-    /// *which* operation; what is asserted here is that they agree about
-    /// whether a legacy form exists for it at all.
+    /// Both halves used to be about the dropdown: it opened on `getDefault` and
+    /// listed `getCases`, and a second factory built the form underneath. Every
+    /// operation has since moved to `Features/FunctionTransaction/`, so the form
+    /// half is now always "none" — which is what is asserted rather than
+    /// dropped, because a sub-model reappearing here would mean an operation had
+    /// been un-migrated without anyone noticing.
     private func assertDefaultsAgree(
         for coin: Coin,
         file: StaticString = #filePath,
@@ -141,44 +141,22 @@ final class SecuredMintRetirementParityTests: XCTestCase {
         let selected = FunctionCallType.getDefault(for: coin)
         XCTAssertTrue(
             FunctionCallType.getCases(for: coin).contains(selected),
-            "\(coin.chain) opens on \(selected), which the dropdown does not list",
+            "\(coin.chain) opens on \(selected), which it does not offer",
             file: file,
             line: line
         )
-
-        let built = FunctionCallInstance.getDefault(for: coin, vault: vault)
-        let isMigrated = selected.migratedTransactionType(coin: coin, nodeAddress: nil) != nil
-        guard let built else {
-            XCTAssertTrue(
-                isMigrated,
-                "\(coin.chain) opens on \(selected), which still has a legacy form, but none was built",
-                file: file,
-                line: line
-            )
-            return
-        }
-        XCTAssertFalse(
-            isMigrated,
-            "\(coin.chain) opens on \(selected), which has its own screen, yet a legacy form was built",
+        XCTAssertNotNil(
+            selected.migratedTransactionType(coin: coin, nodeAddress: nil),
+            "\(coin.chain) opens on \(selected), which has no screen to route to",
             file: file,
             line: line
         )
-        XCTAssertEqual(
-            functionCallType(of: built),
-            selected,
-            "\(coin.chain): dropdown opens on \(selected) but the form built is \(built)",
+        XCTAssertNil(
+            FunctionCallInstance.getDefault(for: coin, vault: vault),
+            "\(coin.chain) opens on \(selected), which is migrated, yet a legacy form was built",
             file: file,
             line: line
         )
-    }
-
-    /// The function each surviving sub-model case represents. Exhaustive by
-    /// construction: a new `FunctionCallInstance` case fails to compile until it
-    /// is mapped. Migrated operations have no sub-model, so they have no arm.
-    private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
-        switch instance {
-        case .custom: return .custom
-        }
     }
 
     private func nativeCoin(chain: Chain, ticker: String) -> Coin {

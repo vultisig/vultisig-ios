@@ -15,9 +15,9 @@ struct FunctionCallContentView: View {
     @Binding var selectedCoin: Coin
 
     var body: some View {
-        switch instance {
-        case .custom(let model):
-            CustomFormView(model: model, selectedCoin: $selectedCoin)
-        }
+        // `FunctionCallInstance` has no cases left: every operation is on
+        // `Features/FunctionTransaction/`. Nothing constructs this view any
+        // more; it goes with the rest of the legacy shell.
+        EmptyView()
     }
 }

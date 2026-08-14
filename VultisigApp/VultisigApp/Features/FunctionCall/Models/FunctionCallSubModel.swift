@@ -59,5 +59,3 @@ extension FunctionCallSubModel {
 //     mapping the old `FunctionCallInstance.toAddress` /
 //     `.customErrorMessage` switches encoded.
 
-extension FunctionCallCustom: FunctionCallSubModel {}
-

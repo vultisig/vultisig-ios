@@ -134,6 +134,11 @@ extension FunctionCallType {
             // The destination side of the hop is an address, not a holding, so
             // it is nothing the vault has to resolve.
             return .ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
+        case .custom:
+            // The coin the user opened on. The form can swap it for another of
+            // the vault's coins on the same chain, and every one of those is
+            // already held, so nothing beyond the entry coin needs resolving.
+            return .customMemo(coin: coin.toCoinMeta())
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

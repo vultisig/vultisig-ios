@@ -249,17 +249,41 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
-    /// The mapping is an allowlist: everything not yet migrated keeps building
-    /// its legacy sub-model.
-    func testUnmigratedTypesMapToNil() {
-        let coin = Self.makeRune()
-        let stillLegacy: [FunctionCallType] = [
-            .custom
-        ]
-        for type in stillLegacy {
-            XCTAssertNil(
-                type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
-                "\(type.rawValue) has not been migrated and must keep its legacy sub-model"
+    /// Was `testUnmigratedTypesMapToNil`, an allowlist of the operations still
+    /// building a legacy sub-model. Integrating the epic empties that list, so
+    /// the assertion is inverted: the mapping is now total, and the legacy shell
+    /// has nothing left to build.
+    ///
+    /// Asked per chain rather than once, because two arms read the coin —
+    /// `.leave` and `.rebond` resolve the chain's native asset, `.custom` and
+    /// `.cosmosIBC` carry the selected one — so a chain-blind sweep could pass
+    /// on a mapping that answers nil for the coin a user actually holds.
+    func testEveryOperationMapsToAnIntentOnEveryChainThatOffersIt() {
+        for chain in CoinAction.memoChains {
+            let coin = FunctionCallFixture.makeCoin(
+                chain,
+                ticker: chain.ticker,
+                decimals: 8,
+                isNative: true
+            )
+            for type in FunctionCallType.getCases(for: coin) {
+                XCTAssertNotNil(
+                    type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
+                    "\(chain.rawValue) offers \(type.rawValue), which has no intent to route to"
+                )
+            }
+        }
+    }
+
+    /// The same statement over the enum rather than over the chain table: no
+    /// `FunctionCallType` case is left without a destination, so nothing is
+    /// stranded by being dropped from a chain's list rather than migrated.
+    func testNoOperationIsLeftWithoutAnIntent() {
+        let rune = Self.makeRune()
+        for type in FunctionCallType.allCases {
+            XCTAssertNotNil(
+                type.migratedTransactionType(coin: rune, nodeAddress: Self.thorNode),
+                "\(type.rawValue) still has no migrated destination"
             )
         }
     }
@@ -672,6 +696,36 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    /// Unlike LEAVE, the raw-memo form is not pinned to the chain's native
+    /// asset: it deposits against one of the vault's own coins, and the form
+    /// lets the user change which. Pinning RUNE here would silently attach a
+    /// memo written for one asset to another.
+    func testCustomMapsToTheCustomMemoIntentCarryingTheSelectedCoin() {
+        let coins: [Coin] = [
+            Self.makeRune(),
+            FunctionCallFixture.makeTCY(),
+            Self.makeCacao(),
+            FunctionCallFixture.makeCoin(.thorChainStagenet, ticker: "RUNE", decimals: 8, isNative: true)
+        ]
+
+        for coin in coins {
+            guard case .customMemo(let mappedCoin)? = FunctionCallType.custom.migratedTransactionType(
+                coin: coin,
+                nodeAddress: Self.thorNode
+            ) else {
+                return XCTFail("Custom must map to the custom-memo intent on \(coin.chain.rawValue)")
+            }
+            XCTAssertEqual(mappedCoin, coin.toCoinMeta(), "\(coin.ticker) was replaced by another asset")
+        }
+    }
+
+    /// The intent's `coins` is what `needsCoinAddition` / `addCoins` read.
+    func testCustomMemoIntentResolvesTheCoinItNeeds() {
+        let coin = FunctionCallFixture.makeTCY()
+        let intent = FunctionTransactionType.customMemo(coin: coin.toCoinMeta())
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
     // MARK: - Reachability
 
     func testIbcStaysSelectableOnEveryChainThatOffersIt() {
@@ -711,21 +765,16 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: rune).contains(FunctionCallType.getDefault(for: rune)))
     }
 
-    /// THORChain used to default by ticker — rebond for RUNE, the raw memo for
-    /// TCY — and the two factories spelled that condition differently, so a
-    /// holder of a TCY wrapper was routed to one operation and handed another's
-    /// form. Rebond leaving the legacy screen collapses both tickers onto the
-    /// raw memo, which is what removes the disagreement rather than papering
-    /// over it.
-    @MainActor
-    func testThorchainDefaultsToTheRawMemoForEveryTicker() {
-        for coin in [FunctionCallFixture.makeRUNE(), FunctionCallFixture.makeTCY()] {
-            let vault = FunctionCallFixture.makeVault(coins: [coin])
-            XCTAssertEqual(FunctionCallType.getDefault(for: coin), .custom, "\(coin.ticker)")
-            XCTAssertEqual(
-                FunctionCallInstance.getDefault(for: coin, vault: vault) == nil,
-                Self.isMigrated(.custom, coin: coin),
-                "\(coin.ticker): the two default factories disagree about whether a legacy form exists"
+    /// Same rule for the raw-memo form, on all four chains that offer it — and
+    /// it is the *only* operation the two test networks have, so dropping it
+    /// from their case list would empty their action list entirely.
+    func testCustomStaysSelectableOnEveryChainThatOffersIt() {
+        let chains: [Chain] = [.thorChain, .mayaChain, .thorChainChainnet, .thorChainStagenet]
+        for chain in chains {
+            let coin = FunctionCallFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            XCTAssertTrue(
+                FunctionCallType.getCases(for: coin).contains(.custom),
+                "\(chain.rawValue) no longer offers the raw-memo operation"
             )
         }
     }

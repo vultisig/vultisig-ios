@@ -166,17 +166,9 @@ struct FunctionCallDetailsScreen: View {
     /// operation a row navigated to. Sharing one path is what keeps a row's
     /// form identical to the one the dropdown produced.
     private func buildInstance(for type: FunctionCallType) {
-        switch type {
-        case .rebond, .leave, .merge, .unmerge, .theSwitch, .vote, .cosmosIBC,
-             .withdrawSecuredAsset, .addThorLP:
-            // Migrated to `Features/FunctionTransaction/` — the action list
-            // routes them to their own screens and they never land here. Listed
-            // only to keep this switch exhaustive; each migration adds its case
-            // name.
-            break
-        case .custom:
-            fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
-        }
+        // Every operation now has its own screen, so there is no sub-model left
+        // to build and no route that reaches this screen at all. Kept as a
+        // no-op only until the legacy shell is deleted.
     }
 
     var functionSelector: some View {

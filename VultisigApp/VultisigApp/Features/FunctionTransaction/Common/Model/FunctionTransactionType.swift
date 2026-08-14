@@ -114,6 +114,13 @@ enum FunctionTransactionType: Hashable {
     /// they are typed on the form, so they belong to the builder this intent
     /// eventually produces, not to the intent that opens the form.
     case ibcTransfer(coin: CoinMeta, destinationChain: Chain?)
+    /// THORChain / MayaChain raw-memo `MsgDeposit` — the escape hatch for an
+    /// operation the app has no form for. `coin` is the asset the deposit rides
+    /// on, and the form lets the user swap it for another of the vault's coins
+    /// on the same chain; every one of those is already held, so the intent
+    /// names only the coin the caller opened on.
+    case customMemo(coin: CoinMeta)
+
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -178,6 +185,8 @@ enum FunctionTransactionType: Hashable {
         case .dydxVote(let coin):
             return [coin]
         case .ibcTransfer(let coin, _):
+            return [coin]
+        case .customMemo(let coin):
             return [coin]
         }
     }
