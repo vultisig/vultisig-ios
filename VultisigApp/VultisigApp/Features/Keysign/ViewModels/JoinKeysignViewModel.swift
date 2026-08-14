@@ -687,9 +687,22 @@ class JoinKeysignViewModel: ObservableObject {
     /// The hero displayed above the transaction summary. Promotes a resolved
     /// Blockaid balance change when available, falls back to a title-only
     /// display with an "unverified function" caption for 4byte-only decodes.
+    /// What the payload turns out to be, when its signed content says.
+    ///
+    /// Used as a TITLE rather than as a whole hero, so a Blockaid simulation
+    /// keeps the figures it is better at while this supplies the word it is
+    /// better at. The two are independent readings and must not displace each
+    /// other.
+    private var decodedOperationTitle: String? {
+        keysignPayload.flatMap(DecodedTransactionPresentation.operationTitle(for:))
+    }
+
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
-            return sim.heroContent(title: decodedFunctionName, vaultCoins: vault.coins)
+            return sim.heroContent(
+                title: decodedOperationTitle ?? decodedFunctionName,
+                vaultCoins: vault.coins
+            )
         }
 
         // TON-side fallback: when the BOC decoder resolved a jetton hero we
@@ -702,6 +715,15 @@ class JoinKeysignViewModel: ObservableObject {
                 title: decodedFunctionName,
                 coin: HeroCoinAmount(amount: amount, ticker: ticker, logo: logo, fiat: decodedTokenFiat)
             )
+        }
+
+        // Nothing simulated this and nothing above described it, so the
+        // payload's own signed content is the last thing left to read. This is
+        // where a memo-only withdrawal stops saying "0 TCY" and starts saying
+        // the share its memo actually commits to.
+        if let payload = keysignPayload,
+           let decoded = DecodedTransactionPresentation.hero(for: payload) {
+            return decoded
         }
 
         if didLoadSimulation,
