@@ -60,12 +60,19 @@ extension Form {
 
     /// The Continue-tap path: reveals every field's error, including on fields
     /// the user never touched, and republishes `validForm`.
-    func validateErrors() {
+    ///
+    /// Returns the recomputed validity so a submit gate can ask and reveal in
+    /// one step. A gate that only wants the answer, without lighting up fields
+    /// the user has not reached yet, should call `revalidate()` instead —
+    /// refusing without saying why is how a Continue button becomes silently
+    /// dead.
+    @discardableResult
+    func validateErrors() -> Bool {
         form.forEach { field in
             try? field.validateErrors(showing: true)
         }
 
-        revalidate()
+        return revalidate()
     }
 
     /// Recomputes `validForm` from the validators installed on every field

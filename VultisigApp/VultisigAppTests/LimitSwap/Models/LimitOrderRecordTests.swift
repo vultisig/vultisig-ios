@@ -26,7 +26,6 @@ final class LimitOrderRecordTests: XCTestCase {
             // copy that dropped `status` would still pass.
             status: .filled,
             memo: "=<:BTC.BTC:bc1qexampledestaddress:1.5e6",
-            expiryHours: 72,
             minOutputOverride: Decimal(string: "0.00512345")!,
             // Populated so `testWithInboundTxHashPreservesEveryOtherField`
             // actually covers them — left at their `nil` default they would
