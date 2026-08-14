@@ -36,8 +36,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         )
     }
 
-    private static func isMigrated(_ type: FunctionCallType) -> Bool {
-        type.migratedTransactionType(coin: makeRune(), nodeAddress: nil) != nil
+    private static func isMigrated(_ type: FunctionCallType, coin: Coin = makeRune()) -> Bool {
+        type.migratedTransactionType(coin: coin, nodeAddress: nil) != nil
     }
 
     private func assertIsNativeAsset(
@@ -122,12 +122,77 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    func testRebondMapsToTheRebondIntent() {
+        guard case .rebond(let mappedCoin, let node)? = FunctionCallType.rebond.migratedTransactionType(
+            coin: Self.makeRune(),
+            nodeAddress: Self.thorNode
+        ) else {
+            return XCTFail("Rebond must map to the rebond intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertEqual(node, Self.thorNode)
+    }
+
+    func testRebondLeavesTheNodeFieldEmptyWhenTheCallerKnowsNoNode() {
+        guard case .rebond(_, let node)? = FunctionCallType.rebond.migratedTransactionType(
+            coin: Self.makeRune(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Rebond must map to the rebond intent")
+        }
+
+        XCTAssertNil(node, "A caller with no node address must leave the field for the user to fill")
+    }
+
+    /// The legacy screen called `ensureRuneCoin()` before opening the REBOND
+    /// form. Selecting Rebond from a TCY wallet must still deposit against
+    /// RUNE, or the memo rides a token `MsgDeposit` the node never sees.
+    func testRebondIsPinnedToRuneNotTheSelectedToken() {
+        guard case .rebond(let mappedCoin, _)? = FunctionCallType.rebond.migratedTransactionType(
+            coin: FunctionCallFixture.makeTCY(),
+            nodeAddress: Self.thorNode
+        ) else {
+            return XCTFail("Rebond must map to the rebond intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+    }
+
+    /// Same fail-closed property LEAVE has: the intent names RUNE whether or
+    /// not the vault holds it, so a RUNE-less vault hits the shared "not in
+    /// vault" error instead of signing REBOND against TCY.
+    func testRebondTargetsRuneEvenWhenTheVaultDoesNotHoldIt() {
+        let tcy = FunctionCallFixture.makeTCY()
+        let vault = FunctionCallFixture.makeVault(coins: [tcy])
+        XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
+
+        guard case .rebond(let mappedCoin, _)? = FunctionCallType.rebond.migratedTransactionType(
+            coin: tcy,
+            nodeAddress: Self.thorNode
+        ) else {
+            return XCTFail("Rebond must map to the rebond intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
+    }
+
+    func testRebondIntentResolvesTheCoinItNeeds() {
+        let coin = Self.makeRune()
+        let intent = FunctionTransactionType.rebond(coin: coin.toCoinMeta(), node: nil)
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
     /// The mapping is an allowlist: everything not yet migrated keeps building
     /// its legacy sub-model.
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
+            .custom, .vote, .cosmosIBC, .merge, .unmerge,
             .theSwitch, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
@@ -195,6 +260,36 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testLeaveStaysSelectableOnBothChainsThatOfferIt() {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.leave))
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
+    }
+
+    func testRebondStaysSelectableOnThorchain() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.rebond))
+    }
+
+    /// Whatever a chain defaults to has to be something the dropdown offers,
+    /// or the selector opens on an entry it cannot show.
+    func testThorchainDefaultIsOfferedByTheDropdown() {
+        let rune = Self.makeRune()
+        XCTAssertTrue(FunctionCallType.getCases(for: rune).contains(FunctionCallType.getDefault(for: rune)))
+    }
+
+    /// THORChain used to default by ticker — rebond for RUNE, the raw memo for
+    /// TCY — and the two factories spelled that condition differently, so a
+    /// holder of a TCY wrapper was routed to one operation and handed another's
+    /// form. Rebond leaving the legacy screen collapses both tickers onto the
+    /// raw memo, which is what removes the disagreement rather than papering
+    /// over it.
+    @MainActor
+    func testThorchainDefaultsToTheRawMemoForEveryTicker() {
+        for coin in [FunctionCallFixture.makeRUNE(), FunctionCallFixture.makeTCY()] {
+            let vault = FunctionCallFixture.makeVault(coins: [coin])
+            XCTAssertEqual(FunctionCallType.getDefault(for: coin), .custom, "\(coin.ticker)")
+            XCTAssertEqual(
+                FunctionCallInstance.getDefault(for: coin, vault: vault) == nil,
+                Self.isMigrated(.custom, coin: coin),
+                "\(coin.ticker): the two default factories disagree about whether a legacy form exists"
+            )
+        }
     }
 
     /// Rewritten from `testNoChainDefaultsToAMigratedFunction`, which the epic

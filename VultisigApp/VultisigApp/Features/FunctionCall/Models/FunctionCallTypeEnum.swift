@@ -98,15 +98,17 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
-            if coin.ticker.contains("TCY") {
-                return .custom
-            }
-            return .rebond
+            // Rebond and Leave have both moved to
+            // `Features/FunctionTransaction/`, so the raw memo is the remaining
+            // THORChain entry that still builds a form here — and it was
+            // already the default for the TCY family.
+            return .custom
         // Must stay inside `getCases(for:)` above — the screen opens on this
         // selection, and a default the dropdown does not offer strands the user
         // on a form they cannot get back to. MayaChain falls through to the
-        // raw-memo operation: LEAVE, the arm that used to be here, has moved to
-        // its own screen and builds no form for this one to open on.
+        // raw-memo operation for the same reason: LEAVE, the arm that used to
+        // be here, has its own screen and builds no form for this one to open
+        // on.
         case .dydx:
             return .vote
         case .gaiaChain:

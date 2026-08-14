@@ -9,7 +9,6 @@ import BigInt
 import Foundation
 
 enum FunctionCallInstance {
-    case rebond(FunctionCallReBond)
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
@@ -24,7 +23,6 @@ enum FunctionCallInstance {
     @MainActor
     var model: any FunctionCallSubModel {
         switch self {
-        case .rebond(let memo): return memo
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
@@ -92,8 +90,6 @@ enum FunctionCallInstance {
         guard type.migratedTransactionType(coin: coin, nodeAddress: nil) == nil else { return nil }
 
         switch type {
-        case .rebond:
-            return .rebond(FunctionCallReBond())
         case .custom:
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
         case .vote:
