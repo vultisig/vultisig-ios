@@ -15,8 +15,6 @@ struct BondTransactionBuilder: TransactionBuilder {
     let providerAddress: String
     let operatorFee: Int64?
 
-    var functionKind: FunctionTransactionKind? { .bond }
-
     var memo: String {
         var memo = "BOND:\(nodeAddress)"
         if !providerAddress.isEmpty {

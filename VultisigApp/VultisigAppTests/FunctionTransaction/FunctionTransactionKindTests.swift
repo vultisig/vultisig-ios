@@ -43,17 +43,27 @@ final class FunctionTransactionKindTests: XCTestCase {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
 
+        // ⚠️ A `nil` here means one of two different things, and the difference
+        // matters if you are tempted to fill one in.
+        //
+        // Some builders cannot name an operation honestly — their `amount` is a
+        // carrier rather than the figure, and each says so at its own
+        // `functionKind`. Others simply no longer NEED to: the transaction's own
+        // memo already states what it is, so the screen derives the verb instead
+        // of being told. `DeclaredKindRedundancyTests` is the evidence for which
+        // ones, and re-adding a declaration there would put a second, divergent
+        // source of truth beside the memo.
         let expected: [(String, TransactionBuilder, FunctionTransactionKind?)] = [
-            // Staking
+            // Staking — TCYStake and CacaoStake derive from `tcy+` and `pool+`.
             ("TCYStake", TCYStakeTransactionBuilder(
-                coin: coin, amount: "1", sendMaxAmount: false, isAutoCompound: false), .stake),
+                coin: coin, amount: "1", sendMaxAmount: false, isAutoCompound: false), nil),
             ("RUJIStake", RUJIStakeTransactionBuilder(
                 coin: coin, amount: "1", sendMaxAmount: false), .stake),
             ("RUJILiquidBond", RUJILiquidBondTransactionBuilder(
                 coin: coin, amount: "1", sendMaxAmount: false), .stake),
             ("BRUNEStake", BRUNEStakeTransactionBuilder(
                 coin: coin, amount: "1", sendMaxAmount: false), .stake),
-            ("CacaoStake", CacaoStakeTransactionBuilder(coin: coin, amount: "1"), .stake),
+            ("CacaoStake", CacaoStakeTransactionBuilder(coin: coin, amount: "1"), nil),
             ("TonStake", TonStakeTransactionBuilder(
                 coin: coin, amount: "1", poolAddress: "pool", memo: "d"), .stake),
 
@@ -82,13 +92,13 @@ final class FunctionTransactionKindTests: XCTestCase {
                 sendMaxAmount: false,
                 nodeAddress: "thor1node",
                 providerAddress: "",
-                operatorFee: nil), .bond),
+                operatorFee: nil), nil),
             ("Unbond", UnbondTransactionBuilder(
                 coin: coin,
                 unbondAmount: "1",
                 sendMaxAmount: false,
                 nodeAddress: "thor1node",
-                providerAddress: ""), .unbond),
+                providerAddress: ""), nil),
 
             // Cosmos / Solana staking
             ("CosmosDelegate", CosmosDelegateTransactionBuilder(

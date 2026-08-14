@@ -17,8 +17,6 @@ struct UnbondTransactionBuilder: TransactionBuilder {
 
     var amount: String { "0" }
 
-    var functionKind: FunctionTransactionKind? { .unbond }
-
     /// ⚠️ **Required, not decorative.** An UNBOND is a memo-only `MsgDeposit`:
     /// `amount` is the literal `"0"` and the figure being unbonded rides in the
     /// memo as base units. Naming the operation without carrying the figure

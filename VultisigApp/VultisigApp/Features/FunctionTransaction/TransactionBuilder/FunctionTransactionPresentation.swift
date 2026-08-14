@@ -43,7 +43,23 @@ enum FunctionTransactionPresentation {
     /// RUNE an LP withdrawal attaches — is not saved by this guard and must not
     /// name a kind at all. Each such builder says so at its `functionKind`.
     static func hero(for transaction: SendTransaction) -> HeroContent? {
-        guard let kind = transaction.functionKind else { return nil }
+        // ⚠️ The declaration is asked FIRST, and that order is not an accident.
+        //
+        // An initiator knows things the transaction does not carry — chiefly
+        // `withdrawDisplayAmount`, the quantised figure a fractional withdrawal
+        // resolves to against the position its form was showing. Decoding can
+        // only ever say "50.06% of your staked TCY" there, because the memo
+        // commits to a fraction and nothing in it names the position. Preferring
+        // the declaration keeps the better figure on the screen that has it.
+        guard let kind = transaction.functionKind else {
+            // Nothing declared, so read the transaction the way a co-signer
+            // reads its payload. This is what lets a builder stop declaring a
+            // kind its own memo already states.
+            return DecodedTransactionPresentation.hero(
+                for: SignedTransactionDecoder.decode(InitiatingTransactionContent(transaction)),
+                coin: transaction.coin
+            )
+        }
 
         // The builder's out-of-band figure when it has one, the transaction's own
         // amount otherwise. Most operations need only the second — the first
