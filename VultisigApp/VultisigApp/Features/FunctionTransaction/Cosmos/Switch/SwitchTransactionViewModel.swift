@@ -122,7 +122,7 @@ final class SwitchTransactionViewModel: ObservableObject, Form {
         amountField.validators = [
             ClosureValidator { [weak self] value in
                 guard let self else { return }
-                guard let amount = SwitchAmount.parse(
+                guard let amount = HumanDecimalAmount.parse(
                     value,
                     decimals: self.coin.decimals,
                     locale: self.locale
@@ -212,7 +212,7 @@ final class SwitchTransactionViewModel: ObservableObject, Form {
 
         guard case .available(let inboundAddress) = routeState, inboundAddress.isNotEmpty else { return nil }
 
-        guard let switchAmount = SwitchAmount.parse(
+        guard let switchAmount = HumanDecimalAmount.parse(
             amountField.rawValue,
             decimals: coin.decimals,
             locale: locale

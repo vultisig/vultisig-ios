@@ -180,7 +180,6 @@ final class SecuredMintRetirementParityTests: XCTestCase {
         case .custom: return .custom
         case .vote: return .vote
         case .cosmosIBC: return .cosmosIBC
-        case .theSwitch: return .theSwitch
         }
     }
 

@@ -5,6 +5,15 @@
 //  Four locale defects that a `NumberFormatter`-based parse ships, each of
 //  which multiplies an amount rather than refusing it.
 //
+//  This is the union of two suites. The parser was written twice under two
+//  names — `HumanDecimalAmount` for the LP and raw-memo forms, `SwitchAmount`
+//  for the Cosmos SWITCH form — deliberately kept apart so the two migrations
+//  would not conflict. They were the same algorithm, so the copies were
+//  collapsed onto this one and both suites kept: each had found cases the other
+//  had not. Four assertions from the SWITCH suite that were exact restatements
+//  of a case already here (the keypad states, a lone comma-decimal, the
+//  numeric-lookalike set) were not carried over twice.
+//
 
 import XCTest
 @testable import VultisigApp
@@ -14,6 +23,9 @@ final class HumanDecimalAmountTests: XCTestCase {
     private let usa = Locale(identifier: "en_US")
     private let germany = Locale(identifier: "de_DE")
     private let india = Locale(identifier: "en_IN")
+    /// ATOM's scale — what the SWITCH form parses against, and small enough
+    /// that a truncation case is visible in a short literal.
+    private static let atomDecimals = 6
 
     private func parse(_ text: String, decimals: Int = 8, locale: Locale) -> Decimal? {
         HumanDecimalAmount.parse(text, decimals: decimals, locale: locale)
@@ -54,9 +66,14 @@ final class HumanDecimalAmountTests: XCTestCase {
     /// ⚠️ `0,500` has the group widths a grouped `en_US` number would have, so
     /// a width check alone lets it through as five hundred. Nobody writes five
     /// hundred that way — it is half, in a comma-decimal convention.
+    ///
+    /// The last two come from the SWITCH suite: a leading zero group is refused
+    /// wherever it appears, including ahead of a legitimate decimal part.
     func testALeadingZeroGroupIsRefused() {
         XCTAssertNil(parse("0,500", locale: usa))
         XCTAssertNil(parse("0.500", locale: germany))
+        XCTAssertNil(parse("0,500.25", locale: usa))
+        XCTAssertNil(parse("01,234", locale: usa))
     }
 
     /// ⚠️ In the Indian system `123,456` is not how 123456 is written —
@@ -105,5 +122,119 @@ final class HumanDecimalAmountTests: XCTestCase {
             parse("1.234567890123456789", decimals: 18, locale: usa),
             Decimal(string: "1.234567890123456789")
         )
+    }
+
+    // MARK: - Carried over from the SWITCH suite
+
+    func testWholeAndFractionalAmounts() {
+        XCTAssertEqual(parse("1", locale: usa), Decimal(string: "1"))
+        XCTAssertEqual(parse("0.000001", decimals: Self.atomDecimals, locale: usa), Decimal(string: "0.000001"))
+        XCTAssertEqual(parse("0", locale: usa), .zero)
+    }
+
+    /// Precision past the asset's own scale is dropped, not rounded. Rounding up
+    /// at the balance ceiling would build a transfer of more than the wallet
+    /// holds; rounding down can only leave dust behind.
+    func testPrecisionPastTheAssetsScaleIsTruncated() {
+        XCTAssertEqual(parse("1.0000009", decimals: Self.atomDecimals, locale: usa), Decimal(string: "1"))
+        XCTAssertEqual(parse("1.1234569", decimals: Self.atomDecimals, locale: usa), Decimal(string: "1.123456"))
+        XCTAssertEqual(parse("0.0000009", decimals: Self.atomDecimals, locale: usa), .zero)
+    }
+
+    /// `Decimal.formatToDecimal(digits:)` — what the percentage buttons write
+    /// into the field — emits grouping separators, including several groups.
+    func testGroupedInputIsAccepted() {
+        XCTAssertEqual(parse("12,345.5", locale: usa), Decimal(string: "12345.5"))
+        XCTAssertEqual(parse("12.345,5", locale: germany), Decimal(string: "12345.5"))
+        XCTAssertEqual(parse("1,234,567", locale: usa), Decimal(string: "1234567"))
+    }
+
+    /// The hazard the strict grouping check exists for, in the shapes a width
+    /// check alone would let through.
+    func testAnAmountWrittenInTheOtherLocalesConventionIsRefusedNotReinterpreted() {
+        XCTAssertNil(parse("1,5", locale: usa))
+        XCTAssertNil(parse("1.5", locale: germany))
+        XCTAssertNil(parse("12,34", locale: usa))
+        XCTAssertNil(parse("1,23456", locale: usa))
+    }
+
+    /// Grouping is only grouping where the digits are actually grouped: a first
+    /// group of one to three digits, every later group of exactly three.
+    func testMalformedGroupingIsRefused() {
+        XCTAssertNil(parse("1,2345", locale: usa))
+        XCTAssertNil(parse("1234,56.5", locale: usa))
+        XCTAssertNil(parse(",5", locale: usa))
+        XCTAssertNil(parse("1,", locale: usa))
+        XCTAssertNil(parse("1 5", locale: usa))
+        XCTAssertNil(parse("1'5", locale: usa))
+        XCTAssertNil(parse("1,50", locale: usa))
+        XCTAssertNil(parse("1.50", locale: germany))
+    }
+
+    /// The grouping widths come from the locale, not from a hard-coded three:
+    /// the field is filled by a formatter reading the same locale, so a rule
+    /// that only knew about thousands separators would refuse an Indian-region
+    /// user their own "max" amount.
+    func testIndianGroupingIsAcceptedWhereTheLocaleUsesIt() throws {
+        let hindi = Locale(identifier: "hi_IN")
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = hindi
+        try XCTSkipUnless(
+            formatter.secondaryGroupingSize == 2,
+            "Foundation on this OS does not report hi_IN's secondary grouping size"
+        )
+
+        XCTAssertEqual(parse("12,34,567", locale: hindi), Decimal(string: "1234567"))
+        XCTAssertEqual(parse("12,345", locale: hindi), Decimal(string: "12345"))
+        XCTAssertNil(parse("12,345,67", locale: hindi))
+        // Not how 123456 is written there — far more likely a comma-decimal
+        // `123.456` pasted in, which stripping the separator would turn into a
+        // thousand-times send.
+        XCTAssertNil(parse("123,456", locale: hindi))
+    }
+
+    /// The round trip the single-character non-Latin case cannot cover: a real
+    /// amount formatted by the locale's own formatter has to read back.
+    func testAnAmountInTheLocalesOwnDigitsIsAccepted() throws {
+        let egypt = Locale(identifier: "ar_EG")
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = egypt
+        formatter.maximumFractionDigits = Self.atomDecimals
+
+        let original = try XCTUnwrap(Decimal(string: "1234.5"))
+        let text = try XCTUnwrap(formatter.string(from: NSDecimalNumber(decimal: original)))
+        try XCTSkipUnless(
+            text.contains { !$0.isASCII },
+            "Foundation on this OS formats ar_EG with ASCII digits"
+        )
+
+        XCTAssertEqual(parse(text, decimals: Self.atomDecimals, locale: egypt), original)
+    }
+
+    func testJunkIsRejected() {
+        XCTAssertNil(parse("   ", locale: usa))
+        XCTAssertNil(parse("1e6", locale: usa))
+        XCTAssertNil(parse("+1", locale: usa))
+    }
+
+    /// The percentage buttons write `Decimal.formatToDecimal(digits:)` into the
+    /// field, and the builder writes the same formatter's output into the
+    /// transaction. Parser and formatter have to agree about the machine's own
+    /// locale or "max" silently means something else — so this one runs in
+    /// `.current` on purpose.
+    func testTheFormattersOutputParsesBackToTheSameValue() {
+        for value in ["1", "1.5", "12345.678901", "0.000001"] {
+            guard let original = Decimal(string: value) else {
+                return XCTFail("Bad fixture \(value)")
+            }
+            let formatted = original.formatToDecimal(digits: Self.atomDecimals)
+            XCTAssertEqual(
+                parse(formatted, decimals: Self.atomDecimals, locale: .current),
+                original,
+                "\(formatted) must read back as \(original)"
+            )
+        }
     }
 }
