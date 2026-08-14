@@ -10,9 +10,10 @@
 //  for the Cosmos SWITCH form — deliberately kept apart so the two migrations
 //  would not conflict. They were the same algorithm, so the copies were
 //  collapsed onto this one and both suites kept: each had found cases the other
-//  had not. Four assertions from the SWITCH suite that were exact restatements
-//  of a case already here (the keypad states, a lone comma-decimal, the
-//  numeric-lookalike set) were not carried over twice.
+//  had not. Three assertions from the SWITCH suite that restated a case already
+//  here (the keypad states, a lone comma-decimal, and its junk set's overlap
+//  with this one) were not carried over twice; its numeric-lookalike inputs
+//  were, since they spell the rule differently.
 //
 
 import XCTest
@@ -97,6 +98,10 @@ final class HumanDecimalAmountTests: XCTestCase {
         XCTAssertNil(parse("²", locale: usa))
         XCTAssertNil(parse("½", locale: usa))
         XCTAssertNil(parse("Ⅻ", locale: usa))
+        // The SWITCH suite's own spellings: a lookalike appended to a real
+        // digit, and a vulgar fraction alone.
+        XCTAssertNil(parse("1\u{00B2}", locale: usa))
+        XCTAssertNil(parse("\u{215B}", locale: usa))
         XCTAssertNil(parse("1e3", locale: usa))
         XCTAssertNil(parse("-1", locale: usa))
         XCTAssertNil(parse("abc", locale: usa))

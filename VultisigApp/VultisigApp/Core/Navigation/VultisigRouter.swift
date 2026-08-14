@@ -15,7 +15,7 @@ final class VultisigRouter: ObservableObject {
     let vaultRouter: VaultRouter
     let onboardingRouter: OnboardingRouter
     let referralRouter: ReferralRouter
-    let functionCallRouter: FunctionTransactionRouter
+    let functionTransactionRouter: FunctionTransactionRouter
     let settingsRouter: SettingsRouter
     let homeRouter: HomeRouter
     let yieldRouter: YieldRouter
@@ -33,7 +33,7 @@ final class VultisigRouter: ObservableObject {
         self.vaultRouter = VaultRouter()
         self.onboardingRouter = OnboardingRouter()
         self.referralRouter = ReferralRouter()
-        self.functionCallRouter = FunctionTransactionRouter()
+        self.functionTransactionRouter = FunctionTransactionRouter()
         self.settingsRouter = SettingsRouter()
         self.homeRouter = HomeRouter()
         self.yieldRouter = YieldRouter()

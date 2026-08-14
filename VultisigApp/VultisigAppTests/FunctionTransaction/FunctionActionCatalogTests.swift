@@ -209,7 +209,13 @@ final class FunctionActionCatalogTests: XCTestCase {
         }
         XCTAssertEqual(intentCoin.chain, .gaiaChain)
 
-        XCTAssertEqual(descriptors[1].destination, .theSwitch(coin: coin.toCoinMeta()))
+        guard case .theSwitch(let switchCoin) = descriptors[1].destination else {
+            return XCTFail("Gaia's Switch row must route to the migrated screen")
+        }
+        // The chain's own asset as the token store knows it, not the fixture
+        // coin: SWITCH credits only the native asset on the inbound vault.
+        XCTAssertEqual(switchCoin.chain, .gaiaChain)
+        XCTAssertTrue(switchCoin.isNativeToken)
     }
 
     func testMoreThanOneActionRendersTheList() {
@@ -243,7 +249,11 @@ final class FunctionActionCatalogTests: XCTestCase {
             guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
                 return XCTFail("\(chain.rawValue) must open its single action directly")
             }
-            XCTAssertEqual(descriptor.destination, .customMemo(coin: coin.toCoinMeta()))
+            XCTAssertEqual(
+                descriptor.destination,
+                .customMemo(coin: coin.toCoinMeta()),
+                "\(chain.rawValue) must open the raw-memo form on the coin it was entered from"
+            )
         }
     }
 

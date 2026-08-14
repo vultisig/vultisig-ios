@@ -168,11 +168,14 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             // lands on the shared "not in vault" error instead of opening a
             // form whose Continue could never produce a signable transaction.
             //
+            // THORChain by name for the same reason the vote names dYdX: the
+            // merge contracts live there regardless of where the user came in.
+            //
             // The denom pre-selects the merge token matching the coin the user
             // opened Functions from; nil when that coin is RUNE or is not a
             // merge token at all.
             return .unmerge(
-                coin: nativeAsset(for: coin),
+                coin: nativeAsset(on: .thorChain, fallback: coin),
                 denom: MergeTokenCatalog.denom(matching: coin)
             )
         case .withdrawSecuredAsset:
@@ -201,7 +204,12 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             // its native asset. A vault that cannot resolve it lands on
             // `FunctionTransactionScreen`'s shared "not in vault" error rather
             // than on a form whose Continue could never be paid for.
-            return .dydxVote(coin: nativeAsset(for: coin))
+            //
+            // dYdX by name, not `coin.chain`. The operation is only offered
+            // there, so the two agree today — but the memo is a dYdX governance
+            // vote whatever the entry coin was, and a chain-relative answer
+            // would quietly follow a caller that opened it from somewhere else.
+            return .dydxVote(coin: nativeAsset(on: .dydx, fallback: coin))
         case .cosmosIBC:
             // The asset leaving the source chain, as selected — an IBC transfer
             // moves whatever the user is holding, so this is deliberately NOT
@@ -223,8 +231,14 @@ enum FunctionAction: String, CaseIterable, Identifiable {
     /// `resolvingCoin` then fails closed on it. Falls back to the selected
     /// coin only when the store knows no native asset for the chain.
     private func nativeAsset(for coin: Coin) -> CoinMeta {
+        nativeAsset(on: coin.chain, fallback: coin)
+    }
+
+    /// The native asset of a named chain, for the operations that run on one
+    /// chain whatever coin the user entered on.
+    private func nativeAsset(on chain: Chain, fallback coin: Coin) -> CoinMeta {
         let nativeAsset = TokensStore.TokenSelectionAssets.first {
-            $0.chain == coin.chain && $0.isNativeToken
+            $0.chain == chain && $0.isNativeToken
         }
         return nativeAsset ?? coin.toCoinMeta()
     }

@@ -22,7 +22,7 @@ struct FunctionTransactionRouteBuilder {
         case .action(let descriptor):
             buildFunctionTransactionScreen(vault: vault, transactionType: descriptor.destination)
         case .list(let descriptors):
-            FunctionActionsScreen(vault: vault, coin: coin, descriptors: descriptors)
+            FunctionActionsScreen(vault: vault, descriptors: descriptors)
         }
     }
 

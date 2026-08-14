@@ -4,7 +4,7 @@
 //
 //  Created by Gaston Mazzeo on 15/12/2025.
 //
-//  Renamed from `FunctionTransactionRoute`. It was never the legacy screen's route —
+//  Renamed from `FunctionCallRoute`. It was never the legacy screen's route —
 //  it is the shared seam every operation reaches Verify through, and the DeFi
 //  tab, Referral and the limit-order cancel all navigate it without ever
 //  touching a `FunctionCall*` type. The old name only ever described the one
@@ -12,9 +12,6 @@
 //
 
 enum FunctionTransactionRoute: Hashable {
-    /// Entry point. Resolves to the chain's action list, or straight to its
-    /// only operation when the chain offers exactly one.
-    case actions(defaultCoin: Coin?, vault: Vault)
     case verify(tx: SendTransaction, vault: Vault)
     // pair → keysign → done live on the shared `SigningRoute`; verify
     // navigates into it (reusing the Send-family keysign/done screens).
