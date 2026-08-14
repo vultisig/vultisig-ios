@@ -26,7 +26,6 @@ final class FunctionCallContentViewTests: XCTestCase {
             .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
             .theSwitch(FunctionCallCosmosSwitch(coin: FunctionCallFixture.makeATOM(), vault: vault)),
-            .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault))
         ]
 
         for instance in migrated {

@@ -79,6 +79,12 @@ enum FunctionTransactionType: Hashable {
     /// the picker on a token the caller already knows (`thor.kuji`, …); nil
     /// leaves it on the first offered one.
     case unmerge(coin: CoinMeta, denom: String?)
+    /// THORChain secured-asset redemption (`SECURE-`). `coin` is THORChain's
+    /// own native asset, deliberately *not* the asset being redeemed: which
+    /// secured denoms a vault holds is a live bank-balance query, so no caller
+    /// can name one upfront, and the native coin is the account those balances
+    /// hang off. The form's picker resolves the redeemed coin from it.
+    case withdrawSecuredAsset(coin: CoinMeta)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -132,6 +138,11 @@ enum FunctionTransactionType: Hashable {
         case .merge(let coin, _):
             return [coin]
         case .unmerge(let coin, _):
+            return [coin]
+        case .withdrawSecuredAsset(let coin):
+            // Only the native coin: the secured assets themselves are added to
+            // the vault by the form as it discovers which ones the account
+            // actually holds, so they cannot be pre-resolved here.
             return [coin]
         }
     }

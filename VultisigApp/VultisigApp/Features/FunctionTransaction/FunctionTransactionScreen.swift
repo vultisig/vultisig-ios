@@ -290,6 +290,13 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .withdrawSecuredAsset(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SecuredWithdrawTransactionScreen(
+                        viewModel: SecuredWithdrawTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)

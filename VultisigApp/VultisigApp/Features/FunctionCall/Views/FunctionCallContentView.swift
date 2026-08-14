@@ -24,8 +24,6 @@ struct FunctionCallContentView: View {
             CosmosIBCFormView(model: model, selectedCoin: $selectedCoin)
         case .theSwitch(let model):
             CosmosSwitchFormView(model: model, coin: selectedCoin)
-        case .withdrawSecuredAsset(let model):
-            WithdrawSecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         }
     }
 }

@@ -23,7 +23,7 @@ struct FunctionCallDetailsScreen: View {
     // Screen owns active coin / gas. After PR4 every sub-model accepts
     // the current coin at construction and mutates it through
     // `coinSelectionHandler` for the cross-mutators (AddThorLP pool
-    // dropdown, WithdrawSecuredAsset asset picker).
+    // dropdown).
     @State private var selectedCoin: Coin = .example
     @State private var gas: BigInt = .zero
 
@@ -167,7 +167,7 @@ struct FunctionCallDetailsScreen: View {
     /// form identical to the one the dropdown produced.
     private func buildInstance(for type: FunctionCallType) {
         switch type {
-        case .rebond, .leave, .merge, .unmerge, .addThorLP:
+        case .rebond, .leave, .merge, .unmerge, .withdrawSecuredAsset, .addThorLP:
             // Migrated to `Features/FunctionTransaction/` — the action list
             // routes them to their own screens and they never land here. Listed
             // only to keep this switch exhaustive; each migration adds its case
@@ -181,8 +181,6 @@ struct FunctionCallDetailsScreen: View {
             fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
         case .theSwitch:
             fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
-        case .withdrawSecuredAsset:
-            fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
         }
     }
 

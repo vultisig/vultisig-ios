@@ -13,7 +13,6 @@ enum FunctionCallInstance {
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
     case theSwitch(FunctionCallCosmosSwitch)
-    case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
 
     /// The active sub-model, type-erased to the shared surface. Every
     /// accessor below forwards through here so the closed set is switched
@@ -25,7 +24,6 @@ enum FunctionCallInstance {
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
         case .theSwitch(let memo): return memo
-        case .withdrawSecuredAsset(let memo): return memo
         }
     }
 

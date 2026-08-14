@@ -91,6 +91,15 @@ extension FunctionCallType {
                 coin: nativeAsset(for: coin),
                 denom: MergeTokenCatalog.denom(matching: coin)
             )
+        case .withdrawSecuredAsset:
+            // A `SECURE-` redemption is signed against the secured asset the
+            // user picks inside the form, but the picker itself reads the
+            // *native* account's bank balances to find out which secured
+            // denoms exist — so that is what the intent names, and what
+            // `resolvingCoin` fails closed on. The legacy form answered a
+            // RUNE-less vault with "No Secured Assets found", which reads as
+            // "you hold nothing" rather than "this vault cannot ask".
+            return .withdrawSecuredAsset(coin: nativeAsset(for: coin))
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer
@@ -100,8 +109,8 @@ extension FunctionCallType {
     }
 
     /// The chain's own native asset, read from the token store rather than
-    /// from the vault so the intent names the asset the memo has to ride even
-    /// when the vault does not hold it — `FunctionTransactionScreen`'s
+    /// from the vault so the intent names the asset the operation has to ride
+    /// even when the vault does not hold it — `FunctionTransactionScreen`'s
     /// `resolvingCoin` then fails closed on it. Falls back to the selected
     /// coin only when the store knows no native asset for the chain.
     private func nativeAsset(for coin: Coin) -> CoinMeta {

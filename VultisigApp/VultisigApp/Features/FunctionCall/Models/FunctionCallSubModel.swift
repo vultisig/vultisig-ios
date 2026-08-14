@@ -72,8 +72,3 @@ extension FunctionCallCosmosIBC: FunctionCallSubModel {
 extension FunctionCallCosmosSwitch: FunctionCallSubModel {
     var resolvedToAddress: String? { destinationAddress }
 }
-
-extension FunctionCallWithdrawSecuredAsset: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-    var submitErrorMessage: String? { customErrorMessage }
-}
