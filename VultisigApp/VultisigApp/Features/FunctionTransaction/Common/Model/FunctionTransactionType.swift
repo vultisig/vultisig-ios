@@ -64,6 +64,14 @@ enum FunctionTransactionType: Hashable {
     /// the memo's second address and the optional partial amount are always
     /// typed on the form, so neither belongs on the intent.
     case rebond(coin: CoinMeta, node: String?)
+    /// Rujira MERGE on THORChain. `coin` is the chain's native asset — the
+    /// anchor and the fee asset — not the coin the transaction is built
+    /// against: the form picks that from the merge catalog intersected with
+    /// the vault's holdings, so every coin it can reach is already held.
+    /// `denom` optionally names the catalog entry to open on, so a caller that
+    /// already knows which token the user means (a position card) can
+    /// pre-select it, exactly as `.leave(coin:node:)` pre-fills its address.
+    case merge(coin: CoinMeta, denom: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -113,6 +121,8 @@ enum FunctionTransactionType: Hashable {
         case .leave(let coin, _):
             return [coin]
         case .rebond(let coin, _):
+            return [coin]
+        case .merge(let coin, _):
             return [coin]
         }
     }
