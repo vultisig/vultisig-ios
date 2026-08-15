@@ -10,7 +10,11 @@
 import Foundation
 
 protocol BalanceServiceProtocol {
-    func updateBalance(for coin: Coin) async
+    /// Best-effort refresh. Returns whether a live balance actually landed, so a
+    /// caller stamping its own freshness cache can tell a failed fetch from a
+    /// genuine zero. Discardable — most callers only want the side effect.
+    @discardableResult
+    func updateBalance(for coin: Coin) async -> Bool
     /// Fail-closed refresh — throws if the live balance fetch fails. See
     /// `BalanceService.refreshSpendableBalanceOrThrow`.
     func refreshSpendableBalanceOrThrow(for coin: Coin) async throws

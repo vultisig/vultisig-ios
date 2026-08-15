@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 31/10/2025.
 //
 
+import Combine
 import Foundation
 
 public class FormField: ObservableObject {
@@ -29,7 +30,26 @@ public class FormField: ObservableObject {
     @Published public var rawValue: String
 
     public var formatter: FormFieldFormatter?
-    public var validators: [FormFieldValidator]
+
+    /// The rules this field is currently judged by. Replacing or appending to
+    /// them announces itself through ``validatorsPublisher``, because most of
+    /// these arrive late — a balance, a bonded amount, a pool's minimum — long
+    /// after the user typed the value they now have to judge.
+    public var validators: [FormFieldValidator] {
+        didSet { validatorsSubject.send(()) }
+    }
+
+    /// Fires once the field's validator set has changed.
+    ///
+    /// Deliberately not `@Published`: `@Published` publishes from `willSet`, so
+    /// a subscriber reading `validators` back would still see the outgoing set
+    /// and validate against the rules that were just replaced. This fires from
+    /// `didSet`, so the set a subscriber reads is the set it was told about.
+    public var validatorsPublisher: AnyPublisher<Void, Never> {
+        validatorsSubject.eraseToAnyPublisher()
+    }
+
+    private let validatorsSubject = PassthroughSubject<Void, Never>()
 
     public init(
         initialValue: String = "",

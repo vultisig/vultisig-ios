@@ -135,10 +135,10 @@ struct TcyStakerResponse: Codable {
 
 /// Response model for TCY user distributions from Midgard
 struct TcyUserDistributionsResponse: Codable {
-    let distributions: [TcyUserDistribution]
+    let distributions: [TcyUserDistribution]?
     let total: String?
 
-    struct TcyUserDistribution: Codable {
+    struct TcyUserDistribution: Codable, Equatable {
         let date: String      // Timestamp
         let amount: String    // RUNE amount in satoshis
     }

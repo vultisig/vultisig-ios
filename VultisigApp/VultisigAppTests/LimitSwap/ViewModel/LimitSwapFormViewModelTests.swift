@@ -88,9 +88,9 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice * vm.targetUsdPricePerUnit, 4500)
     }
 
-    func testTargetPriceChangedFromUsdRoundsToEightDecimals() {
-        // The stored price must never carry more than the memo LIM's 8-dp
-        // precision, so the asset-text mirror round-trips it exactly (no feedback
+    func testTargetPriceChangedFromUsdFloorsToEightSignificantDigits() {
+        // The stored price must never carry more precision than the asset-text
+        // mirror can show, so that mirror round-trips it exactly (no feedback
         // rounding of the canonical price). $1 at $3/unit → 0.33333333.
         let vm = makeViewModel()
         vm.targetUsdPricePerUnit = 3
@@ -108,19 +108,357 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.draft.targetPrice, 42)
     }
 
-    func testTargetPriceChangedFromUsdClearsPresetSelection() {
-        // A USD edit is a manual edit — the active preset highlight must clear.
+    // MARK: - percent-from-market offset (chip readout + custom-offset sheet)
+
+    func testPctFromMarketChangedSetsPriceRelativeToMarket() {
         let vm = makeViewModel()
-        vm.targetUsdPricePerUnit = 2
-        vm.lastPresetPct = 5
-        vm.targetPriceChangedFromUsd(6000)
-        XCTAssertNil(vm.lastPresetPct)
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.draft.targetPrice, 105)
     }
 
-    func testSelectExpiryHoursUpdatesDraft() {
+    func testPctFromMarketChangedAcceptsFractionalOffsets() {
+        // The whole point of the custom sheet over the pills: an offset the
+        // presets don't offer.
         let vm = makeViewModel()
-        vm.selectExpiryHours(72)
-        XCTAssertEqual(vm.draft.expiryHours, 72)
+        vm.marketPriceRef = 200
+        vm.pctFromMarketChanged(Decimal(string: "7.5")!)
+        XCTAssertEqual(vm.draft.targetPrice, 215)
+    }
+
+    func testPctFromMarketChangedAcceptsNegativeOffsets() {
+        // A below-market target is legitimate — it fills as soon as it rests —
+        // and is explained by the `priceAtOrBelowMarket` warning, not blocked.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(-3)
+        XCTAssertEqual(vm.draft.targetPrice, 97)
+        XCTAssertEqual(vm.displayedWarning, .priceAtOrBelowMarket)
+    }
+
+    func testPctFromMarketChangedIsNoOpWithoutMarketReference() {
+        // An offset has nothing to offset from; the price must not move.
+        let vm = makeViewModel()
+        vm.marketPriceRef = nil
+        vm.draft.targetPrice = 42
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.draft.targetPrice, 42)
+    }
+
+    func testPctFromMarketChangedFloorsToEightSignificantDigits() {
+        // Same rule as every other derived price: never store more precision than
+        // the price field can show, and floor rather than round to nearest so the
+        // stored price is never above what was asked for.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.123456789")!
+        vm.pctFromMarketChanged(1)
+
+        var rounded = Decimal()
+        var value = vm.draft.targetPrice
+        NSDecimalRound(&rounded, &value, 8, .plain)
+        XCTAssertEqual(vm.draft.targetPrice, rounded)
+    }
+
+    func testPctFromMarketRoundTripsThroughPctFromMarketChanged() {
+        // The sheet writes and the chip reads back: what `pctFromMarket` reports
+        // must be what was set, or the readout and the control disagree.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 250
+        vm.pctFromMarketChanged(Decimal(string: "12.5")!)
+        XCTAssertEqual(vm.pctFromMarket, Decimal(string: "12.5")!)
+    }
+
+    func testTargetPriceForPctIsNilWithoutMarketReference() {
+        let vm = makeViewModel()
+        vm.marketPriceRef = nil
+        XCTAssertNil(vm.targetPrice(forPctFromMarket: 5))
+    }
+
+    func testASmallMarketKeepsItsPrecisionThroughAnOffset() {
+        // The regression this pairs with: rounding the resolved price to 8 DECIMAL
+        // places collapsed a sub-cent pair to three significant digits, so an
+        // extreme offset landed on zero and Market itself landed visibly away from
+        // market. Significant digits behave the same at every magnitude.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.0000004")!
+
+        let floored = vm.targetPrice(forPctFromMarket: limitPctOffsetRange.lowerBound)
+        XCTAssertEqual(floored, Decimal(string: "0.000000004")!)
+        XCTAssertGreaterThan(floored ?? 0, 0, "a legal offset must never resolve to a zero price")
+    }
+
+    func testTheMarketPresetLandsExactlyOnMarket() {
+        // The reported symptom: on RUNE→BTC the offset chip read -0.07% the moment
+        // Market was tapped, because the stored price had been rounded to 8 decimal
+        // places — three significant digits at that magnitude, where one step is
+        // ~0.15% of the price.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.0000066146")!
+
+        vm.selectPresetPct(0)
+
+        XCTAssertEqual(vm.draft.targetPrice, Decimal(string: "0.0000066146")!)
+        XCTAssertEqual(vm.pctFromMarket, 0)
+    }
+
+    func testAPresetLandsExactlyOnItsPercentageAtAnyMagnitude() {
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "0.0000066146")!
+
+        vm.selectPresetPct(1)
+
+        // +1% of a price this small used to resolve to +0.99%.
+        XCTAssertEqual(vm.pctFromMarket, 1)
+    }
+
+    func testTargetPriceForPctMatchesWhatPctFromMarketChangedStores() {
+        // The sheet previews the price an offset resolves to through this
+        // function, then applies it through the setter. If the two disagreed, the
+        // sheet would show one price and place another.
+        let vm = makeViewModel()
+        vm.marketPriceRef = Decimal(string: "27.4218")!
+        let pct = Decimal(string: "7.555")!
+
+        let mapped = vm.targetPrice(forPctFromMarket: pct)
+        vm.pctFromMarketChanged(pct)
+
+        XCTAssertEqual(mapped, vm.draft.targetPrice)
+    }
+
+    func testExternalPriceChangeRebasesTheOffsetReadout() {
+        // The chip reads `pctFromMarket` live rather than holding a value of its
+        // own, so a price moved by something else — a chart drag here — has to
+        // show up in the offset immediately.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.pctFromMarket, 5)
+
+        vm.targetPriceChangedFromChart(140)
+        XCTAssertEqual(vm.pctFromMarket, 40)
+    }
+
+    func testMarketReferenceMovingRebasesTheOffsetReadout() {
+        // Same property, different cause: a fresh quote re-bases the offset while
+        // the target price stands still. A chip left reading "+5.00%" would be
+        // describing the OLD market.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 100
+        vm.pctFromMarketChanged(5)
+        XCTAssertEqual(vm.draft.targetPrice, 105)
+
+        vm.marketPriceRef = 105
+        XCTAssertEqual(vm.pctFromMarket, 0)
+    }
+
+    func testPresetPillAndCustomOffsetProduceTheSamePrice() {
+        // The pills are shortcuts into the same arithmetic — if these ever
+        // diverge, tapping +5% and stepping to +5% would place different orders.
+        let viaPill = makeViewModel()
+        viaPill.marketPriceRef = Decimal(string: "27.4218")!
+        viaPill.selectPresetPct(5)
+
+        let viaSheet = makeViewModel()
+        viaSheet.marketPriceRef = Decimal(string: "27.4218")!
+        viaSheet.pctFromMarketChanged(5)
+
+        XCTAssertEqual(viaPill.draft.targetPrice, viaSheet.draft.targetPrice)
+    }
+
+    // MARK: - two-way amounts (the driver rule)
+
+    func testTypingSellMakesSellTheDriver() {
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.amountChanged(BigInt(100_000_000))
+        XCTAssertEqual(vm.draft.amountDriver, .sell)
+    }
+
+    func testTypingBuyDerivesTheSellAmount() {
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)  // want 16 ETH at 16 ETH/BTC → 1 BTC
+        XCTAssertEqual(vm.draft.amountDriver, .buy)
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(100_000_000))
+    }
+
+    func testPriceChangeMovesTheSellSideWhenBuyIsDriving() {
+        // The rule's whole point: "I want 16 ETH" survives a price change, and
+        // what it COSTS is what moves.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(100_000_000))
+
+        vm.targetPriceChanged(8)  // half the price → twice the deposit
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(200_000_000))
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 16, "the stated output must not drift")
+    }
+
+    func testPriceChangeMovesTheBuySideWhenSellIsDriving() {
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.amountChanged(BigInt(100_000_000))
+        XCTAssertEqual(vm.expectedBuyAmount, 16)
+
+        vm.targetPriceChanged(8)
+        XCTAssertEqual(vm.draft.sourceAmount, BigInt(100_000_000), "the stated deposit must not drift")
+        XCTAssertEqual(vm.expectedBuyAmount, 8)
+    }
+
+    func testPresetPillAlsoHonoursTheDriver() {
+        // Presets assign the price directly instead of going through
+        // `targetPriceChanged`, so without an explicit call there the rule would
+        // hold for typing and silently break for tapping.
+        let vm = makeViewModel()
+        vm.marketPriceRef = 16
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        let before = vm.draft.sourceAmount
+
+        vm.selectPresetPct(100)  // price doubles → the same output costs half
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 16)
+        XCTAssertLessThan(vm.draft.sourceAmount, before)
+    }
+
+    func testBuyDrivenEntryNeverOverstatesTheGuaranteedOutput() {
+        // A typed output may settle slightly lower after the deposit truncates —
+        // that is the order's real minimum. It must never settle HIGHER.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = Decimal(string: "3.7")!
+        vm.buyAmountChanged(10)
+        XCTAssertLessThanOrEqual(vm.expectedBuyAmount, 10)
+    }
+
+    func testChangingTheTargetAssetHandsControlBackToSell() {
+        // The stated output referred to the OLD target asset.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        XCTAssertEqual(vm.draft.amountDriver, .buy)
+
+        vm.selectToAsset(ethAsset())
+        XCTAssertEqual(vm.draft.amountDriver, .sell)
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 0)
+    }
+
+    func testChangingTheSourceAssetHandsControlBackToSell() {
+        // A derived deposit was scaled to the OLD source's decimals.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+
+        vm.selectFromAsset(btcAsset())
+        XCTAssertEqual(vm.draft.amountDriver, .sell)
+        XCTAssertEqual(vm.draft.desiredTargetOutput, 0)
+    }
+
+    func testBuyDrivenAmountInvalidatesTheNetworkFee() {
+        // The deposit changed, so a fee estimated against the previous one must
+        // not be snapshotted into the order.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.networkFeeEstimate = BigInt(4_200)
+        vm.buyAmountChanged(16)
+        XCTAssertEqual(vm.networkFeeEstimate, .zero)
+    }
+
+    func testAnUnchangedDerivedDepositKeepsTheFeeEstimate() {
+        // The fee refresh is driven by an observer on `draft.sourceAmount`. If a
+        // derived write zeroed the estimate WITHOUT moving the deposit, nothing
+        // would observe a change, no replacement would be scheduled, and the CTA
+        // — which requires a resolved fee — would stay disabled forever.
+        let vm = makeViewModel()
+        vm.draft.targetPrice = 16
+        vm.buyAmountChanged(16)
+        let deposit = vm.draft.sourceAmount
+        vm.networkFeeEstimate = BigInt(4_200)
+
+        // Re-stating the same output derives the same deposit.
+        vm.buyAmountChanged(16)
+
+        XCTAssertEqual(vm.draft.sourceAmount, deposit)
+        XCTAssertEqual(vm.networkFeeEstimate, BigInt(4_200), "an unchanged deposit must not strand the fee at zero")
+    }
+
+    func testCanPlaceOrderRejectsADepositThatFloorsTheLimToZero() async {
+        // A positive deposit isn't enough: computeLim truncates again into 1e8
+        // fixed point, so dust at a low price yields LIM = 0 and throws at memo
+        // build. The CTA must not enable for an order that can only fail.
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(1))
+        vm.draft.targetPrice = Decimal(string: "0.00000001")!
+
+        XCTAssertEqual(vm.expectedBuyAmount, 0, "precondition: this amount/price yields no derivable output")
+        XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()))
+    }
+
+    // MARK: - expiry
+
+    func testSelectExpiryBlocksUpdatesDraft() {
+        let vm = makeViewModel()
+        vm.selectExpiryBlocks(THORChainConstants.blocks(forHours: 72))
+        XCTAssertEqual(vm.draft.expiryBlocks, THORChainConstants.blocks(forHours: 72))
+    }
+
+    func testSelectExpiryBlocksAcceptsAnArbitraryDuration() {
+        // 90 minutes was unreachable before: the old setter took whole hours and
+        // validation whitelisted {12, 24, 72}.
+        let vm = makeViewModel()
+        vm.selectExpiryBlocks(THORChainConstants.blocks(forMinutes: 90))
+        XCTAssertEqual(vm.draft.expiryBlocks, THORChainConstants.blocks(forMinutes: 90))
+    }
+
+    func testSelectExpiryBlocksClampsToTheCeiling() {
+        // THORChain clamps an over-long TTL silently, so the form has to clamp on
+        // the way in — otherwise the pill row would advertise a window the queue
+        // never grants.
+        let vm = makeViewModel()
+        vm.maxExpiryBlocks = THORChainConstants.defaultLimitSwapMaxAgeBlocks
+        vm.selectExpiryBlocks(THORChainConstants.blocks(forHours: 24 * 7))
+        XCTAssertEqual(vm.draft.expiryBlocks, THORChainConstants.defaultLimitSwapMaxAgeBlocks)
+    }
+
+    func testSelectExpiryBlocksClampsToTheFloor() {
+        let vm = makeViewModel()
+        vm.selectExpiryBlocks(1)
+        XCTAssertEqual(vm.draft.expiryBlocks, THORChainConstants.minLimitSwapAgeBlocks)
+    }
+
+    func testRefreshMaxExpiryAdoptsTheMimirValue() async {
+        let interactor = MockLimitSwapInteractor()
+        interactor.limitSwapMaxAgeResult = 21_600
+        let vm = makeViewModel(interactor: interactor)
+
+        await vm.refreshMaxExpiry()
+
+        XCTAssertEqual(vm.maxExpiryBlocks, 21_600)
+    }
+
+    func testRefreshMaxExpiryReClampsADraftTheNewCeilingInvalidates() async {
+        // The case that matters: the draft was seeded against the DEFAULT ceiling,
+        // then the live mimir turns out to be lower. Without the re-clamp the form
+        // would keep showing 3d while the chain would shorten it to 1.5d.
+        let interactor = MockLimitSwapInteractor()
+        interactor.limitSwapMaxAgeResult = 21_600
+        let vm = makeViewModel(interactor: interactor)
+        vm.draft.expiryBlocks = THORChainConstants.defaultLimitSwapMaxAgeBlocks
+
+        await vm.refreshMaxExpiry()
+
+        XCTAssertEqual(vm.draft.expiryBlocks, 21_600)
+    }
+
+    func testRefreshMaxExpiryLeavesAStillValidDraftAlone() async {
+        // A RAISED ceiling never invalidates an existing choice.
+        let interactor = MockLimitSwapInteractor()
+        interactor.limitSwapMaxAgeResult = THORChainConstants.defaultLimitSwapMaxAgeBlocks * 2
+        let vm = makeViewModel(interactor: interactor)
+        let chosen = THORChainConstants.blocks(forHours: 24)
+        vm.draft.expiryBlocks = chosen
+
+        await vm.refreshMaxExpiry()
+
+        XCTAssertEqual(vm.draft.expiryBlocks, chosen)
     }
 
     func testToggleDisplayUnitFlipsBetweenAssetAndUsd() {
@@ -407,11 +745,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     // MARK: - preparePlaceableOrder (the live place-order gate)
 
-    func testPreparePlaceableOrderBuildsRecordAndMemoForValidDraft() {
+    func testPreparePlaceableOrderBuildsRecordAndMemoForValidDraft() async {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
-        vm.draft.expiryHours = 24
+        vm.draft.expiryBlocks = THORChainConstants.blocks(forHours: 24)
         vm.marketPriceRef = 16  // positive routability proof (resolved quote)
 
         guard let prepared = vm.preparePlaceableOrder() else {
@@ -428,7 +767,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(record.targetAsset, "ETH.ETH")
         XCTAssertEqual(record.destAddress, "0xethdestaddress00000000000000000000000000")
         XCTAssertEqual(record.targetPrice, 16)
-        XCTAssertEqual(record.expiryHours, 24)
+        XCTAssertEqual(record.expiryBlocks, THORChainConstants.blocks(forHours: 24))
         XCTAssertEqual(record.expiryBlocks, 14_400)
         XCTAssertEqual(record.sourceAmount, "100000000")
         XCTAssertEqual(record.status, .pending)
@@ -436,12 +775,13 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(record.memo, prepared.memo)
     }
 
-    func testPreparePlaceableOrderAcceptsNonNativeErc20Source() {
+    func testPreparePlaceableOrderAcceptsNonNativeErc20Source() async {
         // ERC20 sources are supported: the order assembles (memo + record) and
         // the keysign path builds approve(router) + router depositWithExpiry.
         // (The old native-only gate has been removed.)
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.fromAsset = LimitSwapAsset(
             chain: .ethereum, ticker: "USDC", decimals: 6,
             contractAddress: "0x1234567890abcdefEC7", isNativeToken: false
@@ -489,8 +829,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             destAddress: "thor1destination",
             targetPrice: Decimal(string: "2.5")!,
             expiryBlocks: 14_400,
-            memo: "=<:THOR.RUNE:thor1destination:1/14400/0:vi:50",
-            expiryHours: 24
+            memo: "=<:THOR.RUNE:thor1destination:1/14400/0:vi:50"
         )
         return SwapTransaction(
             fromCoin: fromCoin,
@@ -539,18 +878,24 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(vm.isValidForm(shouldApprove: tx.isApproveRequired))
     }
 
-    func testPreparePlaceableOrderRejectsUnsupportedExpiryViaValidation() {
+    func testPreparePlaceableOrderRejectsUnsupportedExpiryViaValidation() async {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.marketPriceRef = 16  // positive routability proof
-        vm.draft.expiryHours = 99  // not in {12, 24, 72}
+        // Two minutes: well under the 10-minute floor the app imposes.
+        vm.draft.expiryBlocks = THORChainConstants.blocks(forMinutes: 2)
 
         XCTAssertNil(vm.preparePlaceableOrder())
         guard case .invalidInputs(let errors)? = vm.placeOrderError else {
             return XCTFail("Expected .invalidInputs, got \(String(describing: vm.placeOrderError))")
         }
-        XCTAssertTrue(errors.contains(.expiryHoursUnsupported(99)))
+        XCTAssertTrue(errors.contains(.expiryOutOfRange(
+            blocks: THORChainConstants.blocks(forMinutes: 2),
+            minBlocks: THORChainConstants.minLimitSwapAgeBlocks,
+            maxBlocks: vm.maxExpiryBlocks
+        )))
     }
 
     func testPreparePlaceableOrderReturnsNilSilentlyWhenAmountIsZero() {
@@ -563,11 +908,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     // MARK: - never a dead tap (memo/dest prerequisites)
 
-    func testPreparePlaceableOrderRaisesPairNotPlaceableWhenTargetUnencodable() {
+    func testPreparePlaceableOrderRaisesPairNotPlaceableWhenTargetUnencodable() async {
         // A target asset with no THORChain memo encoding must surface an alert,
         // not silently return nil (the dead-tap bug).
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.draft.toAsset = LimitSwapAsset(
             chain: .solana, ticker: "SOL", decimals: 9,
@@ -578,20 +924,22 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.placeOrderError, .pairNotPlaceable)
     }
 
-    func testPreparePlaceableOrderRaisesPairNotPlaceableWhenNoDestinationAddress() {
+    func testPreparePlaceableOrderRaisesPairNotPlaceableWhenNoDestinationAddress() async {
         // The vault holds no coin on the target chain → destinationAddress() nil.
         vault.coins.removeAll(where: { $0.chain == .ethereum })
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
 
         XCTAssertNil(vm.preparePlaceableOrder())
         XCTAssertEqual(vm.placeOrderError, .pairNotPlaceable)
     }
 
-    func testCanPlaceOrderBlockedWhenTargetAssetUnencodable() {
+    func testCanPlaceOrderBlockedWhenTargetAssetUnencodable() async {
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = 16  // isolate the memoSymbol cause from the probe gate
@@ -602,17 +950,18 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "An unencodable target must disable the CTA")
     }
 
-    func testCanPlaceOrderBlockedWhenNoDestinationAddress() {
+    func testCanPlaceOrderBlockedWhenNoDestinationAddress() async {
         vault.coins.removeAll(where: { $0.chain == .ethereum })
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = 16  // isolate the destination cause from the probe gate
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "No destination address must disable the CTA")
     }
 
-    func testRuneToTcyIsPlaceable() {
+    func testRuneToTcyIsPlaceable() async {
         // Regression for the RUNE→TCY dead tap: TCY now encodes to THOR.TCY, so a
         // RUNE→TCY draft assembles a placeable order instead of a silent no-op.
         vault.coins.append(Coin(
@@ -622,6 +971,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         ))
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.fromAsset = LimitSwapAsset(
             chain: .thorChain, ticker: "RUNE", decimals: 8,
             contractAddress: "", isNativeToken: true
@@ -642,7 +992,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(prepared.memo.hasPrefix("=<:THOR.TCY:"))
     }
 
-    func testPreparePlaceableOrderWiresReferredAffiliateFragment() {
+    func testPreparePlaceableOrderWiresReferredAffiliateFragment() async {
         // A vault with a referral code produces the referred affiliate fragment
         // `<code>/vi` — verified via the same helper the market path uses.
         // Use an ETH (non-UTXO, 250B cap) source so the referred memo isn't
@@ -650,6 +1000,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         vault.referralCode = ReferralCode(code: "myref", vault: vault)
         let vm = makeViewModel(sourceAmount: BigInt("1000000000000000000"))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.fromAsset = LimitSwapAsset(
             chain: .ethereum, ticker: "ETH", decimals: 18,
             contractAddress: "ETH-contract", isNativeToken: true
@@ -670,13 +1021,14 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         )
     }
 
-    func testPreparePlaceableOrderMapsByteCapOverflowToMemoTooLong() {
+    func testPreparePlaceableOrderMapsByteCapOverflowToMemoTooLong() async {
         // BTC (UTXO, 80B cap) source + a token target with a referred affiliate
         // overflows the 80-byte cap → user-facing .memoTooLong.
         vault.referralCode = ReferralCode(code: "myref", vault: vault)
         // Target the vault's ETH address via a token asset with a long contract.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.toAsset = LimitSwapAsset(
             chain: .ethereum, ticker: "USDC", decimals: 6,
             contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", isNativeToken: false
@@ -692,7 +1044,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(limit, 80)
     }
 
-    func testSelectPresetPctRoundsToEightDecimalsForRoundTripStability() {
+    func testSelectPresetPctFloorsToEightSignificantDigitsForRoundTripStability() {
         let vm = makeViewModel()
         vm.marketPriceRef = Decimal(string: "0.123456789")!  // 9-dp base
         vm.selectPresetPct(1)  // ×1.01 → more than 8 dp before rounding
@@ -703,7 +1055,6 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         var value = vm.draft.targetPrice
         NSDecimalRound(&rounded, &value, 8, .plain)
         XCTAssertEqual(vm.draft.targetPrice, rounded, "Preset price must be pre-rounded to 8 dp")
-        XCTAssertEqual(vm.lastPresetPct, 1)
     }
 
     // MARK: - Advanced Swap Queue mimir gate (fail-closed)
@@ -730,6 +1081,31 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.placeOrderError, .advancedSwapQueueDisabled)
     }
 
+    func testPreparePlaceableOrderBlocksWhenExpiryCeilingUnresolved() {
+        // Fail-closed: until the StreamingLimitSwapMaxAge fetch lands,
+        // `maxExpiryBlocks` is the seed, so validation would judge the draft's
+        // expiry against a ceiling the network never confirmed.
+        let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
+        vm.advancedSwapQueueEnabled = true
+        vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof: isolate the TTL gate
+        vm.networkFeeEstimate = BigInt(4_200)
+        XCTAssertFalse(vm.isMaxExpiryResolved)
+
+        XCTAssertNil(vm.preparePlaceableOrder())
+        XCTAssertEqual(vm.placeOrderError, .expiryCeilingUnresolved)
+    }
+
+    func testPreparePlaceableOrderSucceedsOnceExpiryCeilingResolves() async {
+        // The mirror of the above: the TTL gate must be the ONLY term that was
+        // blocking, so resolving it alone flips the same draft to placeable.
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(100_000_000))
+        XCTAssertTrue(vm.isMaxExpiryResolved)
+
+        XCTAssertNotNil(vm.preparePlaceableOrder())
+        XCTAssertNil(vm.placeOrderError)
+    }
+
     func testRefreshAdvancedSwapQueueGateStoresEnabledResult() async {
         quoteService.advancedSwapQueueEnabledResult = true
         let vm = makeViewModel()
@@ -753,12 +1129,13 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     // MARK: - canPlaceOrder (Place-Order gate incl. resolved network fee)
 
-    func testCanPlaceOrderRequiresResolvedNetworkFee() {
+    func testCanPlaceOrderRequiresResolvedNetworkFee() async {
         // Fee-disclosure race: a fully valid draft must NOT be placeable until the
         // network-fee estimate resolves — otherwise the order is signed with a
         // blank fee the user never saw.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.marketPriceRef = 16  // positive routability proof (a resolved quote)
         vm.networkFeeEstimate = .zero
@@ -768,12 +1145,13 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()), "Placeable once amount, price, queue gate, fee and market ref are all resolved")
     }
 
-    func testCanPlaceOrderRequiresSuccessfulMarketProbe() {
+    func testCanPlaceOrderRequiresSuccessfulMarketProbe() async {
         // Positive routability proof: without a resolved market reference (the
         // probe hasn't succeeded → the pair isn't proven routable) the CTA stays
         // disabled, closing the pre-probe window for a poolless pair.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = nil
@@ -783,17 +1161,26 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()))
     }
 
-    func testCanPlaceOrderFalseWhenQueueDisabled() {
+    func testCanPlaceOrderFalseWhenQueueDisabled() async {
+        // Every OTHER term is satisfied first, so the `false` can only be the
+        // queue gate. Left synchronous, `isMaxExpiryResolved` is also false and
+        // the assertion would still pass with the queue term deleted entirely.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = false
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
+        vm.marketPriceRef = 16  // positive routability proof (a resolved quote)
         vm.networkFeeEstimate = BigInt(4_200)
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()))
+
+        vm.advancedSwapQueueEnabled = true
+        XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btcCoin()), "The queue gate must be the only blocking term")
     }
 
-    func testCanPlaceOrderFalseWhenAmountOrPriceMissing() {
+    func testCanPlaceOrderFalseWhenAmountOrPriceMissing() async {
         let vm = makeViewModel(sourceAmount: 0)
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btcCoin()), "Zero amount is not placeable")
@@ -806,12 +1193,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     // MARK: - balance gate (the sell amount must be affordable, on THIS screen)
 
-    func testCanPlaceOrderBlockedWhenAmountExceedsBalance() {
+    func testCanPlaceOrderBlockedWhenAmountExceedsBalance() async {
         // The whole point of the gate: an order for more than the vault holds
         // must be refused on the FORM, not one screen later at Verify.
         let btc = btcCoin()
         btc.rawBalance = "100000000"  // 1 BTC
-        let vm = makeReadyToPlace(sourceAmount: BigInt(200_000_000))  // 2 BTC
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(200_000_000))  // 2 BTC
 
         XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientFunds(sourceTicker: "BTC"))
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc), "An over-balance amount must disable Place Order")
@@ -823,26 +1210,26 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(vm.canPlaceOrder(sourceCoin: btc), "An affordable amount must re-enable Place Order")
     }
 
-    func testAmountThatFitsButLeavesNothingForGasIsReportedAsGasNotFunds() {
+    func testAmountThatFitsButLeavesNothingForGasIsReportedAsGasNotFunds() async {
         // Market parity: the source coin pays its own gas, the amount alone fits,
         // so this is a GAS problem. Collapsing the two into one message — or
         // calling it insufficient funds — is the failure this pins.
         let btc = btcCoin()
         btc.rawBalance = "100000000"  // exactly 1 BTC
-        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000))  // exactly 1 BTC
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(100_000_000))  // exactly 1 BTC
         vm.networkFeeEstimate = BigInt(10_000)
 
         XCTAssertEqual(vm.balanceState(sourceCoin: btc), .insufficientGas(feeTicker: "BTC"))
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc))
     }
 
-    func testNoGasErrorIsShownWhileTheFeeEstimateIsInFlight() {
+    func testNoGasErrorIsShownWhileTheFeeEstimateIsInFlight() async {
         // `networkFeeEstimate` is dropped to 0 on every input change. A gas
         // verdict is not knowable in that window, so none is shown — the form
         // must never display a gas error it would have to withdraw a frame later.
         let btc = btcCoin()
         btc.rawBalance = "100000000"
-        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000))
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(100_000_000))
         vm.networkFeeEstimate = .zero
 
         let inFlight = vm.balanceState(sourceCoin: btc)
@@ -857,12 +1244,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc))
     }
 
-    func testInsufficientFundsIsStillReportedWhileTheFeeEstimateIsInFlight() {
+    func testInsufficientFundsIsStillReportedWhileTheFeeEstimateIsInFlight() async {
         // The funds question is fee-independent, so suppressing it during the
         // in-flight window would withhold an answer that cannot change.
         let btc = btcCoin()
         btc.rawBalance = "100000000"  // 1 BTC
-        let vm = makeReadyToPlace(sourceAmount: BigInt(200_000_000))  // 2 BTC
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(200_000_000))  // 2 BTC
         vm.networkFeeEstimate = .zero
 
         let state = vm.balanceState(sourceCoin: btc)
@@ -870,7 +1257,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertNotNil(state.noticeMessage)
     }
 
-    func testErc20SourceJudgesGasAgainstTheNativeSiblingNotTheToken() {
+    func testErc20SourceJudgesGasAgainstTheNativeSiblingNotTheToken() async {
         // Gas is paid in the chain's NATIVE coin: an ERC20 source pays ETH. The
         // fee is in wei, so reading it against the token's 6 decimals would make
         // it look like ~1e9 tokens and report a false `insufficientGas` even with
@@ -886,7 +1273,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         let eth = ethCoin()
         eth.rawBalance = "0"  // no gas at all
 
-        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000), fromAsset: LimitSwapAsset(coin: usdc))
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(100_000_000), fromAsset: LimitSwapAsset(coin: usdc))
         vm.networkFeeEstimate = BigInt(1_050_000_000_000_000)  // 0.00105 ETH in wei
 
         XCTAssertEqual(vm.balanceState(sourceCoin: usdc), .insufficientGas(feeTicker: "ETH"))
@@ -904,12 +1291,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertTrue(vm.canPlaceOrder(sourceCoin: usdc))
     }
 
-    func testBalanceStateAgreesWithTheMarketSwapRuleForTheSameInput() {
+    func testBalanceStateAgreesWithTheMarketSwapRuleForTheSameInput() async {
         // Anti-drift: the limit form must not grow a second affordability rule.
         // Same coins, same amount, same fee ⇒ same verdict as the market tab.
         let btc = btcCoin()
         btc.rawBalance = "100000000"  // 1 BTC
-        let vm = makeReadyToPlace(sourceAmount: BigInt(99_999_000))  // 0.99999 BTC
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(99_999_000))  // 0.99999 BTC
         vm.networkFeeEstimate = BigInt(10_000)
 
         let marketVerdict = SwapCryptoLogic.balanceError(
@@ -925,12 +1312,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: btc))
     }
 
-    func testBalanceStateIsIndeterminateWhenTheCoinIsNotTheDraftSource() {
+    func testBalanceStateIsIndeterminateWhenTheCoinIsNotTheDraftSource() async {
         // SwiftUI can render one frame with a newly-picked coin and the previous
         // draft asset. Judging a BTC amount against an ETH balance for that frame
         // would flash a bogus row, so the verdict is withheld and placement fails
         // closed.
-        let vm = makeReadyToPlace(sourceAmount: BigInt(100_000_000))  // draft source is BTC
+        let vm = await makeReadyToPlace(sourceAmount: BigInt(100_000_000))  // draft source is BTC
 
         XCTAssertEqual(vm.balanceState(sourceCoin: ethCoin()), .indeterminate)
         XCTAssertFalse(vm.canPlaceOrder(sourceCoin: ethCoin()))
@@ -1020,11 +1407,12 @@ final class LimitSwapFormViewModelTests: XCTestCase {
         XCTAssertEqual(vm.pairUnroutableReason, .unsupportedAsset)
     }
 
-    func testCanPlaceOrderBlockedWhenPairUnroutable() {
+    func testCanPlaceOrderBlockedWhenPairUnroutable() async {
         // Defence-in-depth: even with a (stale) market reference present, a pair
         // the probe flagged unroutable must not be placeable.
         let vm = makeViewModel(sourceAmount: BigInt(100_000_000))
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.networkFeeEstimate = BigInt(4_200)
         vm.marketPriceRef = 16
@@ -1109,10 +1497,14 @@ final class LimitSwapFormViewModelTests: XCTestCase {
 
     /// A draft with every NON-balance `canPlaceOrder` term already satisfied, so
     /// a `false` verdict in the balance tests can only come from the balance gate.
+    ///
+    /// That includes the resolved TTL ceiling: `canPlaceOrder` requires it so an
+    /// order can never be signed against the seeded default while the live
+    /// `StreamingLimitSwapMaxAge` is still in flight.
     private func makeReadyToPlace(
         sourceAmount: BigInt,
         fromAsset: LimitSwapAsset? = nil
-    ) -> LimitSwapFormViewModel {
+    ) async -> LimitSwapFormViewModel {
         let draft = LimitSwapDraft(
             fromAsset: fromAsset ?? btcAsset(),
             toAsset: ethAsset(),
@@ -1124,6 +1516,7 @@ final class LimitSwapFormViewModelTests: XCTestCase {
             interactor: interactor
         )
         vm.advancedSwapQueueEnabled = true
+        await vm.refreshMaxExpiry()  // same screen task resolves the TTL ceiling
         vm.draft.targetPrice = 16
         vm.marketPriceRef = 16
         vm.networkFeeEstimate = BigInt(4_200)
