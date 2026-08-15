@@ -249,6 +249,17 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .merge(let coin, let denom):
+                resolvingCoin(coinMeta: coin) { coin in
+                    MergeTransactionScreen(
+                        viewModel: MergeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialDenom: denom
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .rebond(let coin, let node):
                 resolvingCoin(coinMeta: coin) { coin in
                     RebondTransactionScreen(

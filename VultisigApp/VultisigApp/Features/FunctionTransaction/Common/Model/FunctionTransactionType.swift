@@ -48,6 +48,14 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
+    /// Rujira MERGE on THORChain. `coin` is the chain's native asset — the
+    /// anchor and the fee asset — not the coin the transaction is built
+    /// against: the form picks that from the merge catalog intersected with
+    /// the vault's holdings, so every coin it can reach is already held.
+    /// `denom` optionally names the catalog entry to open on, so a caller that
+    /// already knows which token the user means (a position card) can
+    /// pre-select it, exactly as `.leave(coin:node:)` pre-fills its address.
+    case merge(coin: CoinMeta, denom: String?)
     /// THORChain node REBOND. `node` pre-fills the node currently holding the
     /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
     /// the memo's second address and the optional partial amount are always
@@ -88,6 +96,8 @@ enum FunctionTransactionType: Hashable {
         case .tonUnstake(let coin, _, _, _):
             return [coin]
         case .leave(let coin, _):
+            return [coin]
+        case .merge(let coin, _):
             return [coin]
         case .rebond(let coin, _):
             return [coin]

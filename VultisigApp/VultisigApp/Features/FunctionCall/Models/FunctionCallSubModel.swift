@@ -69,10 +69,6 @@ extension FunctionCallCosmosIBC: FunctionCallSubModel {
     var resolvedToAddress: String? { destinationAddress }
 }
 
-extension FunctionCallCosmosMerge: FunctionCallSubModel {
-    var resolvedToAddress: String? { destinationAddress }
-}
-
 extension FunctionCallCosmosUnmerge: FunctionCallSubModel {
     func isFormValid(for _: Coin) -> Bool { isTheFormValid }
     var resolvedToAddress: String? { destinationAddress }
