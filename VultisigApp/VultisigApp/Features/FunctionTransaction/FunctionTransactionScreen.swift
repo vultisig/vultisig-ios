@@ -45,15 +45,15 @@ struct FunctionTransactionScreen: View {
                         )
                     }
                 }
-            case .unbond(let node):
-                resolvingCoin(coinMeta: node.coin) { coin in
+            case .unbond(let coinMeta, let node):
+                resolvingCoin(coinMeta: coinMeta) { coin in
                     switch coin.chain {
                     case .mayaChain:
                         UnbondMayaTransactionScreen(
                             viewModel: UnbondMayaTransactionViewModel(
                                 coin: coin,
                                 vault: vault,
-                                initialBondAddress: node.address
+                                initialBondAddress: node?.address
                             ),
                             onVerify: onVerify
                         )
@@ -62,7 +62,7 @@ struct FunctionTransactionScreen: View {
                             viewModel: UnbondTransactionViewModel(
                                 coin: coin,
                                 vault: vault,
-                                bondAddress: node.address
+                                bondAddress: node?.address ?? .empty
                             ),
                             onVerify: onVerify
                         )
@@ -250,6 +250,81 @@ struct FunctionTransactionScreen: View {
                 resolvingCoin(coinMeta: coin) { coin in
                     LeaveTransactionScreen(
                         viewModel: LeaveTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialNodeAddress: node
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .customMemo(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    CustomMemoTransactionScreen(
+                        viewModel: CustomMemoTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .ibcTransfer(let coin, let destinationChain):
+                resolvingCoin(coinMeta: coin) { coin in
+                    IBCTransferTransactionScreen(
+                        viewModel: IBCTransferTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            destinationChain: destinationChain
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .dydxVote(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    DydxVoteTransactionScreen(
+                        viewModel: DydxVoteTransactionViewModel(
+                            coin: coin,
+                            vault: vault
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .theSwitch(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SwitchTransactionScreen(
+                        viewModel: SwitchTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .withdrawSecuredAsset(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SecuredWithdrawTransactionScreen(
+                        viewModel: SecuredWithdrawTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .merge(let coin, let denom):
+                resolvingCoin(coinMeta: coin) { coin in
+                    MergeTransactionScreen(
+                        viewModel: MergeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialDenom: denom
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .unmerge(let coin, let denom):
+                resolvingCoin(coinMeta: coin) { coin in
+                    UnmergeTransactionScreen(
+                        viewModel: UnmergeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialDenom: denom
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .rebond(let coin, let node):
+                resolvingCoin(coinMeta: coin) { coin in
+                    RebondTransactionScreen(
+                        viewModel: RebondTransactionViewModel(
                             coin: coin,
                             vault: vault,
                             initialNodeAddress: node

@@ -347,11 +347,6 @@ struct LimitOrderRecord: Hashable, Sendable {
     /// records (`LimitOrder` table doesn't persist this — it's already
     /// implied by `sourceAsset/targetAsset/destAddress/targetPrice`).
     let memo: String
-    /// Expiry duration the user originally picked (12 / 24 / 72 hours).
-    /// `expiryBlocks` is the THORChain-block expression used in the memo;
-    /// `expiryHours` is the human-readable display value the verify and
-    /// done screens render alongside the target price.
-    let expiryHours: Int
     /// Effective guaranteed-minimum output (target natural units) when the memo's
     /// LIM was rounded UP to fit the source-chain byte budget
     /// (`buildFittedLimitSwapMemo`). `nil` means the LIM equals the exact
@@ -386,7 +381,6 @@ struct LimitOrderRecord: Hashable, Sendable {
         createdAt: Date = Date(),
         status: LimitOrderStatus = .pending,
         memo: String = "",
-        expiryHours: Int = 0,
         minOutputOverride: Decimal? = nil,
         sourceAmount1e8: String? = nil,
         tradeTarget: String? = nil,
@@ -405,7 +399,6 @@ struct LimitOrderRecord: Hashable, Sendable {
         self.createdAt = createdAt
         self.status = status
         self.memo = memo
-        self.expiryHours = expiryHours
         self.minOutputOverride = minOutputOverride
         self.sourceAmount1e8 = sourceAmount1e8
         self.tradeTarget = tradeTarget
@@ -434,7 +427,6 @@ struct LimitOrderRecord: Hashable, Sendable {
             createdAt: createdAt,
             status: status,
             memo: memo,
-            expiryHours: expiryHours,
             minOutputOverride: minOutputOverride,
             sourceAmount1e8: sourceAmount1e8,
             tradeTarget: tradeTarget,

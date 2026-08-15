@@ -9,6 +9,14 @@ import Foundation
 
 extension CoinAction {
 
+    /// Chains that surface the Function (memo) action. Every entry must have a
+    /// non-empty `FunctionCallType.getCases(for:)`, and no chain outside this
+    /// list may offer cases — otherwise the button either opens an empty
+    /// selector or the cases are unreachable. Pinned by tests.
+    ///
+    /// The THORChain chainnet/stagenet forks carry the button: `CustomMemoAssets`
+    /// now lists them alongside mainnet (`RUNE`/`RUJI`/`TCY`), so the Custom form
+    /// they offer can actually validate instead of coming up empty.
     static var memoChains: [Chain] = [
         .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains

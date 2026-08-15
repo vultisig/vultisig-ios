@@ -18,12 +18,6 @@ struct FunctionCallRouter {
                 defaultCoin: defaultCoin,
                 vault: vault
             )
-        case .details(let defaultCoin, let vault, let preselected):
-            viewBuilder.buildDetailsScreen(
-                defaultCoin: defaultCoin,
-                vault: vault,
-                preselected: preselected
-            )
         case .verify(let tx, let vault):
             viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
         case .functionTransaction(let vault, let transactionType):

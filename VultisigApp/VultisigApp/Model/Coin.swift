@@ -32,8 +32,30 @@ class Coin: ObservableObject, Codable, Hashable {
     /// Transient because it describes the mempool, which is not a thing worth
     /// persisting: it is refreshed by the same fetch that sets `rawBalance`
     /// and is meaningless a launch later.
-    @Transient var pendingRawBalance: String = "0"
+    ///
+    /// Held on an `ObservedTransient` box rather than in a `@Transient` stored
+    /// property. SwiftData does not observation-track `@Transient`, and
+    /// `CoinDetailHeaderView` reads `hasPendingBalance` to decide whether to draw
+    /// the pending line at all — so an inbound payment landing published nothing
+    /// and the line stayed absent until an unrelated save re-rendered the tree.
+    /// The value is still per-instance, still session scoped, and still absent
+    /// from the schema; only the publication changes.
+    var pendingRawBalance: String {
+        get { pendingRawBalanceBox.value }
+        set { pendingRawBalanceBox.value = newValue }
+    }
 
+    @Transient private var pendingRawBalanceBox = ObservedTransient("0")
+
+    /// Bonded THORChain / Maya nodes for this address, refreshed by the same
+    /// balance fetch.
+    ///
+    /// Deliberately still a plain `@Transient`, unlike `pendingRawBalance`: no
+    /// view reads it during a body pass, so the missing observation cannot show.
+    /// Its only readers are `UnbondTransactionViewModel.selectBondNode()`, which
+    /// pulls it once from `onLoad()` and republishes through its own `@Published`
+    /// property, and `hasBondedNodes`, which has no callers. Move it onto an
+    /// `ObservedTransient` the moment a view body reads either one.
     @Transient var bondedNodes: [RuneBondNode] = []
     @Relationship(inverse: \Vault.coins) var vault: Vault?
 

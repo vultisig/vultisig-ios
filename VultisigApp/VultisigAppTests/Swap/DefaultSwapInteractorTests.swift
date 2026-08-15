@@ -158,6 +158,65 @@ final class DefaultSwapInteractorTests: XCTestCase {
         XCTAssertEqual(quoteService.lastVultTierDiscount, VultDiscountTier.gold.bpsDiscount)
     }
 
+    /// The first resolution saw a VULT balance of zero — a failed or
+    /// not-yet-landed fetch — and produced no tier. The tier must be re-resolved
+    /// for the next quote, not pinned: a pinned nil silently overcharged the user
+    /// on every later swap of the session.
+    func testFetchQuoteHonoursATierThatOnlyResolvesOnTheSecondCall() async throws {
+        let tierResolver = SequencedDiscountTierResolver(tiers: [nil, .gold])
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService, tierResolver: tierResolver)
+        let vault = makeVault()
+        let from = makeCoin(.ethereum, ticker: "ETH")
+        let to = makeCoin(.bitcoin, ticker: "BTC")
+
+        let first = try await interactor.fetchQuote(
+            amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: "", slippageBps: nil, recipientAddress: nil
+        )
+        XCTAssertEqual(first?.vultDiscountBps, 0, "Precondition: the first quote resolved no tier")
+
+        let second = try await interactor.fetchQuote(
+            amount: 1, fromCoin: from, toCoin: to, vault: vault, referredCode: "", slippageBps: nil, recipientAddress: nil
+        )
+
+        XCTAssertEqual(tierResolver.resolveCallCount, 2, "Every quote must re-resolve the tier")
+        XCTAssertEqual(
+            second?.vultDiscountBps, VultDiscountTier.gold.bpsDiscount,
+            "A tier that resolves late must be honoured by the next quote"
+        )
+        XCTAssertEqual(quoteService.lastVultTierDiscount, VultDiscountTier.gold.bpsDiscount)
+    }
+
+    /// Ties the fix to the observable symptom: a Gold vault must send
+    /// `affiliate_bps = 30`, not the undiscounted 50. Mayanode's
+    /// `recommended_min_amount_in` is inversely proportional to the affiliate
+    /// bps, so sending 50 raised the minimum the reporter's route was measured
+    /// against and changed which routes were offered.
+    func testGoldTierYieldsThirtyAffiliateBps() async throws {
+        let tierResolver = MockDiscountTierResolver(tier: .gold)
+        let quoteService = MockQuoteService(stubbedResult: .success(.thorchain(makeThorQuote())))
+        let interactor = makeInteractor(quote: quoteService, tierResolver: tierResolver)
+
+        let result = try await interactor.fetchQuote(
+            amount: 1,
+            fromCoin: makeCoin(.ethereum, ticker: "ETH"),
+            toCoin: makeCoin(.bitcoin, ticker: "BTC"),
+            vault: makeVault(),
+            referredCode: "",
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+
+        // The release affiliate rate is 50 bps; DEBUG builds force
+        // `affiliateFeeRateBp` to 0, so the shipping base is spelled out here.
+        let releaseAffiliateBps = 50
+        let discount = try XCTUnwrap(result?.vultDiscountBps)
+        XCTAssertEqual(
+            THORChainSwaps.discountedAffiliateBps(baseBps: releaseAffiliateBps, discountBps: discount), 30,
+            "A Gold vault must send affiliate_bps=30"
+        )
+    }
+
     // MARK: - Slippage + recipient threading
 
     func testFetchQuoteThreadsCustomSlippageToQuoteService() async throws {
@@ -280,8 +339,8 @@ private enum StubError: Error, Equatable {
 // swiftlint:disable async_without_await unused_parameter
 
 /// Instrumented tier resolver mirroring `VultTierService`'s session-cache
-/// behaviour: the underlying (network) resolve runs once and is cached, while
-/// `resolveTierForSession` may be *called* many times.
+/// behaviour: the expensive half (the Thorguard eth_call) runs once and is
+/// cached, while `resolveTierForSession` may be *called* many times.
 private final class MockDiscountTierResolver: SwapDiscountTierResolving, @unchecked Sendable {
     private let tier: VultDiscountTier?
     private(set) var resolveCallCount = 0
@@ -292,15 +351,34 @@ private final class MockDiscountTierResolver: SwapDiscountTierResolving, @unchec
         self.tier = tier
     }
 
+    @MainActor
     func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
         resolveCallCount += 1
         if let cached {
             return cached
         }
-        // Stand-in for the uncached VULT balance + Thorguard eth_call.
+        // Stand-in for the session-cached Thorguard eth_call.
         networkResolveCount += 1
         cached = tier
         return tier
+    }
+}
+
+/// Tier resolver that answers a different tier each call, standing in for a
+/// vault whose VULT balance lands after the first quote has already gone out.
+private final class SequencedDiscountTierResolver: SwapDiscountTierResolving, @unchecked Sendable {
+    private var tiers: [VultDiscountTier?]
+    private(set) var resolveCallCount = 0
+
+    init(tiers: [VultDiscountTier?]) {
+        self.tiers = tiers
+    }
+
+    @MainActor
+    func resolveTierForSession(for vault: Vault) async -> VultDiscountTier? {
+        resolveCallCount += 1
+        guard !tiers.isEmpty else { return nil }
+        return tiers.removeFirst()
     }
 }
 

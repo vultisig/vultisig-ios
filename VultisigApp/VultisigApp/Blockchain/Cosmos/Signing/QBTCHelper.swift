@@ -175,13 +175,12 @@ struct QBTCHelper {
         switch transactionType {
         case .ibcTransfer:
             anyMsg = try buildIBCTransferAny(keysignPayload: keysignPayload, ibcDenomTrace: ibcDenomTrace)
-            // IBC memo is embedded in the message; strip the routing prefix from the tx memo
-            let splitMemo = memo?.split(separator: ":")
-            if let splitMemo, splitMemo.count == 4 {
-                memo = String(splitMemo[3])
-            } else {
-                memo = nil
-            }
+            // IBC memo is embedded in the message; strip the routing prefix from
+            // the tx memo. Decoded rather than split on every colon: taking the
+            // user memo only at a component count of exactly four dropped any
+            // memo that contained a colon, the same defect the Cosmos helper had.
+            let userMemo = memo.flatMap { CosmosIBCTransferMemo(packed: $0) }?.userMemo
+            memo = (userMemo?.isNotEmpty ?? false) ? userMemo : nil
 
         case .vote:
             // A weighted vote and a single-option vote share the `.vote`
@@ -243,12 +242,15 @@ struct QBTCHelper {
     }
 
     private func buildMsgTransfer(keysignPayload: KeysignPayload, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?) throws -> Data {
-        // Parse memo: format is "ibc:sourceChannel:...:optionalMemo"
-        let splitMemo = keysignPayload.memo?.split(separator: ":")
-        guard let splitMemo, splitMemo.count >= 2 else {
+        // The routing data rides the memo; `CosmosIBCTransferMemo` is the only
+        // thing that reads it. Splitting here separately let an empty component
+        // shift the channel onto the destination address, which signs a transfer
+        // over a channel nobody chose.
+        guard let packedMemo = keysignPayload.memo,
+              let ibcMemo = CosmosIBCTransferMemo(packed: packedMemo) else {
             throw HelperError.runtimeError("QBTC: IBC transfer requires memo with source channel (ibc:channel-N:...)")
         }
-        let sourceChannel = String(splitMemo[1])
+        let sourceChannel = ibcMemo.sourceChannel
 
         // Parse timeout from ibcDenomTrace
         let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []

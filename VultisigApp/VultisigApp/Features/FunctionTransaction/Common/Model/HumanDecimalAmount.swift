@@ -8,11 +8,16 @@
 //  locale's `NumberFormatter` and then falls back to `en_US`, and a
 //  `NumberFormatter` reinterprets an amount written in the other convention
 //  rather than refusing it: `1,5` reads as fifteen in `en_US`, and `1.5` reads
-//  as fifteen in `de_DE`. On a form that attaches a real transfer, a
-//  reinterpreted separator is a ten-times send from a paste.
+//  as fifteen in `de_DE`. An amount attached to a transaction is real funds, so
+//  a reinterpreted separator is a ten-times send from a paste.
 //
 //  This parser reads the locale's own separators and nothing else, and returns
 //  nil for anything ambiguous so the form can say the amount is invalid.
+//
+//  The algorithm is the Cosmos SWITCH form's, ported verbatim rather than
+//  re-derived — four locale defects were found writing it the first time. It is
+//  named for what it does rather than for one caller so the two forms share a
+//  single copy once both are on this architecture.
 //
 //  **The residual, stated plainly.** Grouping that is well formed *in the locale
 //  in force* is accepted, so an `en_US` field reads `1,000` as one thousand —
