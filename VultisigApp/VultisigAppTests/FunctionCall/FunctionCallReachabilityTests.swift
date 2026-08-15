@@ -117,7 +117,6 @@ final class FunctionCallReachabilityTests: XCTestCase {
         case .unmerge: return .unmerge
         case .theSwitch: return .theSwitch
         case .addThorLP: return .addThorLP
-        case .securedAsset: return .securedAsset
         case .withdrawSecuredAsset: return .withdrawSecuredAsset
         }
     }

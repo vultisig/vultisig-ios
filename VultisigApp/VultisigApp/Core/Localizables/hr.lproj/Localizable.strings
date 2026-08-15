@@ -432,7 +432,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
 "enterYourVaultsPassword" = "Unesite lozinku svog trezora";
 "erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
-"erc20ApprovalRequiredMessage" = "Ovaj ERC20 token zahtijeva odobrenje prije kreiranja. Potpisat će se dvije transakcije:";
 "error" = "Greška";
 "errorCopy" = "Kopiraj";
 "errorLoadingBalance" = "Error loading balance";
@@ -522,7 +521,6 @@
 "gasOwner" = "Vlasnik plina";
 "gasPrice" = "Cijena plina";
 "general" = "Općenito";
-"generatedMemo" = "Generated Memo:";
 "German" = "Njemački";
 "getStarted" = "Započni";
 "github" = "GitHub";
@@ -892,8 +890,6 @@
 "minPayout" = "min. isplata";
 "mint" = "Kuj";
 "mintCoin" = "Kovaj %@";
-"mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
-"mintTransaction" = "2. Mint secured asset transaction";
 "missingEncryptionKey" = "Nedostaje ključ za šifriranje. Pokušajte ponovno.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
@@ -1285,7 +1281,6 @@
 "searchAsset" = "Pretraži imovinu";
 "second" = "Drugi";
 "secure" = "Sigurno";
-"Secured Assets" = "Osigurana imovina";
 "secureLoaderTitle" = "Tražim uređaje...";
 "secureModeTitle" = "SIGURNO";
 "secureVault" = "Siguran trezor";
@@ -1535,13 +1530,11 @@
 "switchBackToInternetMode" = "Ne želite koristiti lokalni način? Vratite se.";
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
-"targetAsset" = "Ciljna imovina: %@";
 "termsOfService" = "Uvjeti korištenja";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";
 "ThisDeviceIs" = "Ovaj uređaj je";
 "thisVaultOnly" = "Samo ovaj trezor";
-"thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "THORChain adresa";
 "thorchainCustomTokenInvalidFormat" = "Neispravan format THORChain tokena. Koristite THOR.{SYMBOL}, npr. THOR.LQDY.";

@@ -432,7 +432,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "enterYourVaultsPassword" = "Inserisci la password del tuo vault";
 "erc20ApprovalRequired" = "Richiesta Approvazione ERC20";
-"erc20ApprovalRequiredMessage" = "Questo token ERC20 richiede approvazione prima del conio. Verranno firmate due transazioni:";
 "error" = "Errore";
 "errorCopy" = "Copia";
 "errorLoadingBalance" = "Errore nel caricamento del saldo";
@@ -522,7 +521,6 @@
 "gasOwner" = "Proprietario del gas";
 "gasPrice" = "Prezzo del gas";
 "general" = "Generale";
-"generatedMemo" = "Memo Generato:";
 "German" = "Tedesco";
 "getStarted" = "Inizia ora";
 "github" = "GitHub";
@@ -892,8 +890,6 @@
 "minPayout" = "pagamento min.";
 "mint" = "Conia";
 "mintCoin" = "Conia %@";
-"mintSecuredAsset" = "Conia Asset Garantito (SECURE+)";
-"mintTransaction" = "2. Transazione di conio asset garantito";
 "missingEncryptionKey" = "Chiave di crittografia mancante. Riprova.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
@@ -1285,7 +1281,6 @@
 "searchAsset" = "Cerca asset";
 "second" = "Secondo";
 "secure" = "Sicuro";
-"Secured Assets" = "Asset garantiti";
 "secureLoaderTitle" = "Ricerca di dispositivi...";
 "secureModeTitle" = "SICURO";
 "secureVault" = "Vault Sicuro";
@@ -1535,13 +1530,11 @@
 "switchBackToInternetMode" = "Non vuoi usare la modalità locale? Torna indietro.";
 "switchToLocalMode" = "Passa alla modalità locale";
 "systemErrorMessage" = "Errore di sistema. Riprova.";
-"targetAsset" = "Asset Target: %@";
 "termsOfService" = "Termini di servizio";
 "theUnmerge" = "La Separazione";
 "thisDevice" = "Questo Dispositivo";
 "ThisDeviceIs" = "Questo dispositivo è il";
 "thisVaultOnly" = "Solo questo Vault";
-"thorAddressAutoFilled" = "Indirizzo THORChain (compilato automaticamente)";
 "thorAddressNotFound" = "Indirizzo THORChain non trovato nel vault. Assicurati di avere RUNE nel tuo vault.";
 "thorchainAddress" = "Indirizzo THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato del token THORChain non valido. Usa THOR.{SYMBOL}, ad es. THOR.LQDY.";

@@ -17,7 +17,6 @@ enum FunctionCallInstance {
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
     case addThorLP(FunctionCallAddThorLP)
-    case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
 
     /// The active sub-model, type-erased to the shared surface. Every
@@ -34,7 +33,6 @@ enum FunctionCallInstance {
         case .unmerge(let memo): return memo
         case .theSwitch(let memo): return memo
         case .addThorLP(let memo): return memo
-        case .securedAsset(let memo): return memo
         case .withdrawSecuredAsset(let memo): return memo
         }
     }
