@@ -22,8 +22,6 @@ final class FunctionCallContentViewTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [rune, FunctionCallFixture.makeRUJI(), FunctionCallFixture.makeATOM(), FunctionCallFixture.makeKUJI()])
 
         let migrated: [FunctionCallInstance] = [
-            .bondMaya(FunctionCallBondMayaChain(assets: [])),
-            .unbondMaya(FunctionCallUnbondMayaChain(assets: [])),
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
             .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
@@ -31,7 +29,6 @@ final class FunctionCallContentViewTests: XCTestCase {
             .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),
             .theSwitch(FunctionCallCosmosSwitch(coin: FunctionCallFixture.makeATOM(), vault: vault)),
             .addThorLP(FunctionCallAddThorLP(coin: rune, vault: vault)),
-            .securedAsset(FunctionCallSecuredAsset(coin: rune, vault: vault)),
             .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault))
         ]
 

@@ -45,11 +45,12 @@ struct DefaultSwapInteractor: SwapInteractor {
             throw SwapCryptoLogic.Errors.sameAsset
         }
 
-        // Read the per-session cached tier. The first call resolves it once
-        // (VULT balance + Thorguard NFT eth_call) and caches it for the wallet;
-        // every later quote reads the cached value, keeping the Thorguard
-        // eth_call off the per-quote critical path. The screen warms this cache
-        // on load, so by the time quotes run it's usually already populated.
+        // Resolve the tier fresh for this quote. The VULT balance is re-read
+        // every time, so a balance that arrives late — or a first read that
+        // failed — is reflected in the very next quote instead of costing the
+        // user their discount for the whole session. Only the Thorguard NFT
+        // eth_call behind it is session-cached, keeping it off the per-quote
+        // critical path; the screen warms that cache on load.
         let vultTier = await tierResolver.resolveTierForSession(for: vault)
         let vultDiscountBps = vultTier?.bpsDiscount ?? 0
         let referralDiscountBps = referredCode.isEmpty
@@ -166,9 +167,11 @@ struct DefaultSwapInteractor: SwapInteractor {
     }
 
     func buildSwapKeysignPayload(transaction: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
-        // Same-underlying secured selection: mint via a SECURE+ deposit instead of
-        // a pool swap. The synthetic quote never feeds signing — build the real
-        // SECURE+ deposit payload (shared with the Function-Call verify path).
+        // Same-underlying secured selection: mint via a SECURE+ deposit instead
+        // of a pool swap. The synthetic quote never feeds signing — build the
+        // real SECURE+ deposit payload. This is the only route to a mint; the
+        // builder still shares its router-deposit shim with the Function-Call
+        // verify path, which uses it for LP adds.
         if transaction.mode == .securedMint {
             return try await ThorchainRouterDepositBuilder.buildSecuredMintPayload(
                 fromCoin: transaction.fromCoin,

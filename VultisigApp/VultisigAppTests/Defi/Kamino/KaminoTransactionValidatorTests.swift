@@ -441,12 +441,15 @@ final class KaminoTransactionValidatorTests: XCTestCase {
     /// exact bytes, and iOS, Android and Windows all have to write the same
     /// ones. Pinned as literals because everything else in the suite — the
     /// fixtures, the injector, the validator, the decoder — derives from the
-    /// constants. If `memoTag` drifted to another valid two-byte string, every
-    /// one of those would still agree with itself, the live simulation would
-    /// still pass, and the attribution would silently stop matching anything.
+    /// constants. If `memoTag` drifted to another valid string, every one of
+    /// those would still agree with itself, the live simulation would still
+    /// pass, and the attribution would silently stop matching anything.
+    ///
+    /// The tag is case-sensitive: it is compared as bytes, so `8K2MZ` is a
+    /// different memo that no downstream filter would count.
     func testTheAttributionTagAndProgramArePinnedToTheirLiterals() {
-        XCTAssertEqual(KaminoAttribution.memoTag, "vs")
-        XCTAssertEqual(KaminoAttribution.memoTagBytes, [0x76, 0x73])
+        XCTAssertEqual(KaminoAttribution.memoTag, "8k2mz")
+        XCTAssertEqual(KaminoAttribution.memoTagBytes, [0x38, 0x6b, 0x32, 0x6d, 0x7a])
         XCTAssertEqual(SolanaV0Transaction.memoProgramId, "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
     }
 
@@ -487,7 +490,7 @@ final class KaminoTransactionValidatorTests: XCTestCase {
     /// matched whole. A memo that merely STARTS with the tag is a different
     /// memo — and the attribution filter downstream keys on the exact bytes.
     func testRejectsAMemoCarryingAnythingButTheTag() throws {
-        for text in ["v", "vsx", "VS", "vs "] {
+        for text in ["8k2m", "8k2mz1", "8K2MZ", "8k2mz "] {
             var mutable = try MutableTransaction(base64: try KaminoTransactionFixtures.usdcDeposit.tagged)
             mutable.instructions[mutable.instructions.count - 1].data = [UInt8](Data(text.utf8))
 

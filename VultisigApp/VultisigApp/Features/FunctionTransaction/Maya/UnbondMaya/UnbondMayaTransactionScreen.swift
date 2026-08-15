@@ -25,6 +25,12 @@ struct UnbondMayaTransactionScreen: View {
             title: "unbond".localized,
             onContinue: onContinue
         ) {
+            if let reason = viewModel.assetsUnavailableReason {
+                FormLoadFailureNote(messageKey: reason) {
+                    viewModel.retryLoadingAssets()
+                }
+            }
+
             FormExpandableSection(
                 title: "address".localized,
                 isValid: viewModel.addressViewModel.field.valid,

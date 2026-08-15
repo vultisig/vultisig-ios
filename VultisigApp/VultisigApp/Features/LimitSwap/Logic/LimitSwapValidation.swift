@@ -5,7 +5,14 @@
 
 import Foundation
 
-func validateLimitSwapInputs(_ inputs: LimitSwapInputs) -> [LimitSwapValidationError] {
+/// - Parameter maxExpiryBlocks: the ceiling THORChain currently enforces, read
+///   from the `StreamingLimitSwapMaxAge` mimir by the caller. Injected rather
+///   than read here so this stays pure — and so a raised cap widens the accepted
+///   range on its own instead of being rejected by a stale constant.
+func validateLimitSwapInputs(
+    _ inputs: LimitSwapInputs,
+    maxExpiryBlocks: Int = THORChainConstants.defaultLimitSwapMaxAgeBlocks
+) -> [LimitSwapValidationError] {
     var errors: [LimitSwapValidationError] = []
 
     if inputs.sourceAmount <= 0 {
@@ -14,8 +21,22 @@ func validateLimitSwapInputs(_ inputs: LimitSwapInputs) -> [LimitSwapValidationE
     if inputs.targetPrice <= 0 {
         errors.append(.targetPriceNotPositive)
     }
-    if ![12, 24, 72].contains(inputs.expiryHours) {
-        errors.append(.expiryHoursUnsupported(inputs.expiryHours))
+    // A RANGE, not the old three-value whitelist: the expiry is now a duration
+    // the user picks, so anything the protocol will honour is valid. The ceiling
+    // is THORChain's (silently clamped on-chain, so rejecting here is what keeps
+    // the memo honest); the floor is ours (see `minLimitSwapAgeBlocks`).
+    //
+    // The floor comes from the SAME helper the clamp uses. Spelled out separately
+    // the two disagreed when a ceiling landed below the app floor: the clamp
+    // produced the ceiling and this then rejected it, making every expiry
+    // unplaceable.
+    let minBlocks = effectiveMinExpiryBlocks(maxBlocks: maxExpiryBlocks)
+    if inputs.expiryBlocks < minBlocks || inputs.expiryBlocks > maxExpiryBlocks {
+        errors.append(.expiryOutOfRange(
+            blocks: inputs.expiryBlocks,
+            minBlocks: minBlocks,
+            maxBlocks: maxExpiryBlocks
+        ))
     }
     if inputs.destAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
         errors.append(.destAddressEmpty)

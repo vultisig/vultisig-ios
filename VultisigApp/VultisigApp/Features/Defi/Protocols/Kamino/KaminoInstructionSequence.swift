@@ -278,7 +278,7 @@ enum KaminoInstructionSequence {
             return nil
         case .memo:
             // The tag is matched WHOLE, not as a prefix. A memo is free-form
-            // bytes, so "vs" followed by anything else is a different memo —
+            // bytes, so the tag followed by anything else is a different memo —
             // and the one thing this app is willing to sign under the Memo
             // program is its own attribution tag, exactly.
             return data == KaminoAttribution.memoTagBytes ? .attributionMemo : nil
