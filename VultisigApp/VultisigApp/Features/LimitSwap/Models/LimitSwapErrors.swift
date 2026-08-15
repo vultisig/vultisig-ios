@@ -8,7 +8,10 @@ import Foundation
 enum LimitSwapValidationError: Error, Equatable {
     case sourceAmountNotPositive
     case targetPriceNotPositive
-    case expiryHoursUnsupported(Int)
+    /// The chosen lifetime falls outside what THORChain will honour. Carries the
+    /// bounds because the ceiling is read from a mimir and can move, so a message
+    /// that hard-codes "3 days" would eventually be wrong.
+    case expiryOutOfRange(blocks: Int, minBlocks: Int, maxBlocks: Int)
     case destAddressEmpty
     case sourceAssetMalformed(String)
     case targetAssetMalformed(String)
@@ -148,6 +151,11 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
     /// `canPlaceOrder`, so this is the belt-and-suspenders that guarantees a tap
     /// can never silently no-op (previously these guards `return nil`ed silently).
     case pairNotPlaceable
+    /// The `StreamingLimitSwapMaxAge` mimir hasn't resolved yet, so the TTL the
+    /// draft would be validated against is still the seed rather than the
+    /// network's. Fail CLOSED — the seed is a plausible value, not a true one,
+    /// and a chain that caps lower would silently shorten the order.
+    case expiryCeilingUnresolved
 
     var id: String {
         switch self {
@@ -163,6 +171,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             return "advancedSwapQueueDisabled"
         case .pairNotPlaceable:
             return "pairNotPlaceable"
+        case .expiryCeilingUnresolved:
+            return "expiryCeilingUnresolved"
         }
     }
 
@@ -187,6 +197,8 @@ enum LimitSwapPlaceOrderError: Error, Equatable, Identifiable {
             // Reuses the routability-gate copy: the actionable ask is identical —
             // pick a different asset THORChain can route.
             return "limitSwap.error.pairNotRoutable".localized
+        case .expiryCeilingUnresolved:
+            return "limitSwap.error.expiryCeilingUnresolved".localized
         }
     }
 }

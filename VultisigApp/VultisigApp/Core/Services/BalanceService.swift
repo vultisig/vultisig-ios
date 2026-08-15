@@ -481,8 +481,18 @@ class BalanceService {
         try Storage.shared.save()
     }
 
+    /// Best-effort balance refresh. Returns whether a live **raw balance**
+    /// actually landed, so a caller that stamps its own freshness cache can tell
+    /// a failed fetch from a genuine zero — the two are otherwise
+    /// indistinguishable here, because a failure leaves the last known balance in
+    /// place rather than zeroing it. Only the raw balance counts: a price fetch,
+    /// a persistence error, or a failed auxiliary read that happens *after* the
+    /// balance (RUNE's bonded nodes, staked balances) leaves a live number on the
+    /// coin, and reporting those as a failure would make the caller refetch a
+    /// balance it already has.
     @MainActor
-    func updateBalance(for coin: Coin) async {
+    @discardableResult
+    func updateBalance(for coin: Coin) async -> Bool {
         // Fetch price
         do {
             try await cryptoPriceService.fetchPrice(coin: coin)
@@ -522,6 +532,8 @@ class BalanceService {
                 logger.warning("Update Balance error: \(error.localizedDescription)")
             }
         }
+
+        return update.rawBalance != nil
     }
 
     /// Fail-closed spendable-balance refresh: fetches the live raw balance and

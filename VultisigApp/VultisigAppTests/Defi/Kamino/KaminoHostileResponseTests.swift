@@ -436,7 +436,7 @@ private struct FixtureLookupTables: SolanaAddressLookupTableFetching {
 }
 
 private struct HostileBalanceService: BalanceServiceProtocol {
-    func updateBalance(for coin: Coin) async {}
+    func updateBalance(for coin: Coin) async -> Bool { true }
     func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {}
 }
 

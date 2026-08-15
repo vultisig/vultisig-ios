@@ -11,7 +11,6 @@ struct FunctionCallDetailsScreen: View {
     @ObservedObject var vault: Vault
 
     @State private var selectedFunctionMemoType: FunctionCallType = .custom
-    @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
@@ -40,7 +39,6 @@ struct FunctionCallDetailsScreen: View {
             VStack {
                 ScrollView {
                     VStack(spacing: 16) {
-                        contractSelector
                         functionSelector
                         if let instance = fnCallInstance {
                             FunctionCallContentView(instance: instance, selectedCoin: $selectedCoin)
@@ -51,6 +49,7 @@ struct FunctionCallDetailsScreen: View {
             }
         }
         .screenTitle("function".localized)
+        .withLoading(isLoading: $functionCallViewModel.isLoading)
         .alert(isPresented: $functionCallViewModel.showAlert) {
             alert
         }
@@ -86,30 +85,6 @@ struct FunctionCallDetailsScreen: View {
                 }
 
                 fnCallInstance = .rebond(rebondInstance)
-            case .bondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .bondMaya(
-                                FunctionCallBondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
-            case .unbondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .unbondMaya(
-                                FunctionCallUnbondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
             case .leave:
                 // Ensure RUNE token is selected for LEAVE operations on THORChain
                 ensureRuneCoin()
@@ -178,9 +153,13 @@ struct FunctionCallDetailsScreen: View {
 
     private func ensureRuneCoin() {
         // Ensure RUNE token is selected for operations on THORChain.
-        if let runeCoin = vault.runeCoin {
-            selectedCoin = runeCoin
-        }
+        //
+        // Only on THORChain. LEAVE is offered on MayaChain too, and swapping the
+        // coin there would move the transaction onto a different chain behind
+        // the user — rewriting the function selector's own case list along with
+        // it, and signing LEAVE against RUNE for a node the user named on Maya.
+        guard selectedCoin.chain == .thorChain, let runeCoin = vault.runeCoin else { return }
+        selectedCoin = runeCoin
     }
 
     private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
@@ -200,13 +179,6 @@ struct FunctionCallDetailsScreen: View {
             selected: $selectedFunctionMemoType, coin: $selectedCoin)
     }
 
-    var contractSelector: some View {
-        FunctionCallContractSelectorDropDown(
-            items: .constant(
-                FunctionCallContractType.getCases(for: selectedCoin)),
-            selected: $selectedContractMemoType, coin: selectedCoin)
-    }
-
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
@@ -220,7 +192,11 @@ struct FunctionCallDetailsScreen: View {
                     vault: vault,
                     gas: gas
                 )
-                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                // Priced from the built transaction, not from the probe: this
+                // is the figure the user approves, and nothing downstream of
+                // Verify re-resolves it for display.
+                let pricedTx = await functionCallViewModel.pricedForVerify(immutableTx)
+                router.navigate(to: FunctionCallRoute.verify(tx: pricedTx, vault: vault))
             }
         }
     }
@@ -234,13 +210,21 @@ private extension FunctionCallDetailsScreen {
 
     func setupForm() {
         self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
-        self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
         self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
         DispatchQueue.main.async {
             self.hasCompletedInitialSetup = true
         }
     }
 
+    /// A per-unit gas figure for the coin, fetched as the form is filled.
+    ///
+    /// This is a PROBE — an empty transaction with no memo, amount or recipient
+    /// — so on EVM it prices a bare transfer, not the call being built. It is
+    /// carried into the built transaction only as the value a chain that quotes
+    /// a flat gas already has; the figure Verify discloses is resolved from the
+    /// real transaction on Continue, by `FunctionCallViewModel.pricedForVerify`.
+    /// Keeping it means a failed pricing call falls back to what the screen
+    /// showed before rather than to zero.
     func loadGasInfo() async {
         let probeTx = SendTransaction.empty(coin: selectedCoin, vault: vault)
         do {

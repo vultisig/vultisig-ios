@@ -13,7 +13,7 @@ struct LimitSwapInputs: Equatable {
     let targetAsset: String
     let destAddress: String
     let targetPrice: Decimal
-    let expiryHours: Int
+    let expiryBlocks: Int
     let affiliate: String
     let affiliateBps: String
 }
