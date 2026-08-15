@@ -1787,11 +1787,11 @@
 "whitespaceNotAllowed" = "Karakter bijelog prostora nije dopušten";
 "withdraw" = "Povuci";
 "Withdraw RUJI" = "Povuci RUJI";
-"Withdraw Secured Asset" = "Povuci osiguranu imovinu";
 "withdrawAmount" = "Podignite %@";
 "withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
 "withdrawPercentage" = "Postotak povlačenja";
 "withdrawRewards" = "Povuci nagrade za %@";
+"withdrawSecuredAsset" = "Povuci osiguranu imovinu";
 "withdrawSecuredAssetError" = "Za povlačenje %@, prvo morate dodati %@ kovanicu u svoj trezor. Idite u postavke trezora i dodajte %@ za nastavak.";
 "wrongPassword" = "Pogrešna lozinka";
 "wrongVaultPassword" = "Pogrešna lozinka trezora. Molim vas, pokušajte ponovo.";

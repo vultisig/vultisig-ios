@@ -25,10 +25,7 @@ final class FunctionCallContentViewTests: XCTestCase {
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
             .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
-            .merge(FunctionCallCosmosMerge(coin: rune, vault: vault)),
-            .unmerge(FunctionCallCosmosUnmerge(coin: FunctionCallFixture.makeRUJI(), vault: vault)),
-            .addThorLP(FunctionCallAddThorLP(coin: rune, vault: vault)),
-            .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault))
+            .addThorLP(FunctionCallAddThorLP(coin: rune, vault: vault))
         ]
 
         for instance in migrated {

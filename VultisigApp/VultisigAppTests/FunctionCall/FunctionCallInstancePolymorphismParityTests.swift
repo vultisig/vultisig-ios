@@ -110,43 +110,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: kuji, vault: vault, gas: 0)
     }
 
-    func testMergeParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let model = FunctionCallCosmosMerge(coin: rune, vault: vault)
-        model.selectedToken = IdentifiableString(value: "THOR.KUJI")
-        model.destinationAddress = "thor1mergeaddress"
-        let instance = FunctionCallInstance.merge(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "merge:THOR.KUJI")
-        XCTAssertEqual(tx.transactionType, .thorMerge)
-        XCTAssertEqual(tx.toAddress, "thor1mergeaddress")
-        XCTAssertEqual(instance.toAddress, "thor1mergeaddress")
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
-
-    func testUnmergeParity() {
-        let ruji = FunctionCallFixture.makeRUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE(), ruji])
-        let model = FunctionCallCosmosUnmerge(coin: ruji, vault: vault)
-        model.selectedToken = IdentifiableString(value: "THOR.RUJI")
-        model.destinationAddress = "thor1mergecontract"
-        model.amount = 1
-        let instance = FunctionCallInstance.unmerge(model)
-
-        let tx = instance.toSendTransaction(coin: ruji, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "unmerge:thor.ruji:100000000")
-        XCTAssertEqual(tx.transactionType, .thorUnmerge)
-        XCTAssertEqual(tx.toAddress, "thor1mergecontract")
-        XCTAssertEqual(instance.toAddress, "thor1mergecontract")
-        // Preserved: the instance never surfaces unmerge's own error slot.
-        XCTAssertNil(instance.customErrorMessage)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: ruji, vault: vault, gas: 0)
-    }
-
     func testAddThorLPParity() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])
@@ -159,26 +122,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
         XCTAssertEqual(tx.memo, model.toString())
         XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(tx.wasmContractPayload)
-        XCTAssertNil(instance.toAddress)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
-
-    func testWithdrawSecuredAssetParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        // No initialize() — offline.
-        let model = FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault)
-        model.destinationAddress = "0xL1DestAddr"
-        let instance = FunctionCallInstance.withdrawSecuredAsset(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "SECURE-:0xL1DestAddr")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        // Withdraw signs via MsgDeposit — toAddress is intentionally empty
-        // even though `destinationAddress` is set.
         XCTAssertEqual(tx.toAddress, "")
         XCTAssertNil(tx.wasmContractPayload)
         XCTAssertNil(instance.toAddress)

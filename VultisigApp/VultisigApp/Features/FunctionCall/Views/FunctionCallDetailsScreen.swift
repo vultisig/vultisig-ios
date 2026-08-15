@@ -23,7 +23,7 @@ struct FunctionCallDetailsScreen: View {
     // Screen owns active coin / gas. After PR4 every sub-model accepts
     // the current coin at construction and mutates it through
     // `coinSelectionHandler` for the cross-mutators (AddThorLP pool
-    // dropdown, WithdrawSecuredAsset asset picker).
+    // dropdown).
     @State private var selectedCoin: Coin = .example
     @State private var gas: BigInt = .zero
 
@@ -147,17 +147,6 @@ struct FunctionCallDetailsScreen: View {
         )
     }
 
-    private func ensureRuneCoin() {
-        // Ensure RUNE token is selected for operations on THORChain.
-        //
-        // Only on THORChain. LEAVE is offered on MayaChain too, and swapping the
-        // coin there would move the transaction onto a different chain behind
-        // the user — rewriting the function selector's own case list along with
-        // it, and signing LEAVE against RUNE for a node the user named on Maya.
-        guard selectedCoin.chain == .thorChain, let runeCoin = vault.runeCoin else { return }
-        selectedCoin = runeCoin
-    }
-
     /// Builds the sub-model an operation's form reads from.
     ///
     /// Two callers: a selection change on the dropdown, and the preselected
@@ -165,7 +154,7 @@ struct FunctionCallDetailsScreen: View {
     /// form identical to the one the dropdown produced.
     private func buildInstance(for type: FunctionCallType) {
         switch type {
-        case .leave, .theSwitch, .rebond:
+        case .leave, .theSwitch, .merge, .rebond, .unmerge, .withdrawSecuredAsset:
             // Migrated to `Features/FunctionTransaction/` — the action list
             // routes it to its own screen and never lands here. Listed only to
             // keep this switch exhaustive; each migration adds its case name.
@@ -176,16 +165,8 @@ struct FunctionCallDetailsScreen: View {
             fnCallInstance = .vote(FunctionCallVote())
         case .cosmosIBC:
             fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
-        case .merge:
-            // Ensure RUNE token is selected for MERGE operations on THORChain
-            ensureRuneCoin()
-            fnCallInstance = .merge(FunctionCallCosmosMerge(coin: selectedCoin, vault: vault))
-        case .unmerge:
-            fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
         case .addThorLP:
             fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
-        case .withdrawSecuredAsset:
-            fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
         }
     }
 

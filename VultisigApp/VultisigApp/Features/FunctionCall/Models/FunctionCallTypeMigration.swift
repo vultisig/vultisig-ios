@@ -55,6 +55,48 @@ extension FunctionCallType {
             // `FunctionTransactionScreen`'s shared "not in vault" error
             // instead.
             return .theSwitch(coin: nativeAsset(for: coin))
+        case .withdrawSecuredAsset:
+            // A `SECURE-` redemption is signed against the secured asset the
+            // user picks inside the form, but the picker itself reads the
+            // *native* account's bank balances to find out which secured
+            // denoms exist — so that is what the intent names, and what
+            // `resolvingCoin` fails closed on. The legacy form answered a
+            // RUNE-less vault with "No Secured Assets found", which reads as
+            // "you hold nothing" rather than "this vault cannot ask".
+            return .withdrawSecuredAsset(coin: nativeAsset(for: coin))
+        case .unmerge:
+            // The merged tokens sit inside the merge contract, not the wallet,
+            // and the wasm execute is addressed by contract — so the only coin
+            // the form needs the vault to resolve is the one that pays the
+            // THORChain fee. Naming RUNE here means a vault that cannot pay
+            // lands on the shared "not in vault" error instead of opening a
+            // form whose Continue could never produce a signable transaction.
+            let thorNativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == .thorChain && $0.isNativeToken
+            }
+            return .unmerge(
+                coin: thorNativeAsset ?? coin.toCoinMeta(),
+                // The legacy form pre-selected the merge token matching the
+                // coin the user opened Functions from; nil when that coin is
+                // RUNE or is not a merge token at all.
+                denom: MergeTokenCatalog.denom(matching: coin)
+            )
+        case .merge:
+            // MERGE deposits a catalog token into that token's own Rujira
+            // contract, so the coin it spends is chosen inside the form from
+            // the vault's holdings. What the intent names is the chain anchor
+            // — THORChain's native asset, which is also the fee asset — for
+            // the same reason `.leave` does: the legacy screen pinned RUNE
+            // here (`ensureRuneCoin()`), and a vault that cannot resolve it
+            // belongs on the shared "not in vault" error rather than in a form
+            // whose deposit it could not pay for.
+            // Pre-select the token the user was already looking at. The legacy
+            // sub-model tried the same thing in `preSelectToken()`, but the
+            // RUNE pin above it meant the match never fired.
+            return .merge(
+                coin: nativeAsset(for: coin),
+                denom: ThorchainMergeAsset.catalogDenom(forTicker: coin.ticker)
+            )
         case .rebond:
             // REBOND is a RUNE `MsgDeposit` on THORChain, and the legacy screen
             // pinned RUNE before opening the form for exactly that reason. Same
@@ -71,8 +113,8 @@ extension FunctionCallType {
     }
 
     /// The chain's own native asset, read from the token store rather than
-    /// from the vault so the intent names the asset the memo has to ride even
-    /// when the vault does not hold it — `FunctionTransactionScreen`'s
+    /// from the vault so the intent names the asset the operation has to ride
+    /// even when the vault does not hold it — `FunctionTransactionScreen`'s
     /// `resolvingCoin` then fails closed on it. Falls back to the selected
     /// coin only when the store knows no native asset for the chain.
     private func nativeAsset(for coin: Coin) -> CoinMeta {

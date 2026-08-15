@@ -256,6 +256,35 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .withdrawSecuredAsset(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SecuredWithdrawTransactionScreen(
+                        viewModel: SecuredWithdrawTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .merge(let coin, let denom):
+                resolvingCoin(coinMeta: coin) { coin in
+                    MergeTransactionScreen(
+                        viewModel: MergeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialDenom: denom
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .unmerge(let coin, let denom):
+                resolvingCoin(coinMeta: coin) { coin in
+                    UnmergeTransactionScreen(
+                        viewModel: UnmergeTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialDenom: denom
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .rebond(let coin, let node):
                 resolvingCoin(coinMeta: coin) { coin in
                     RebondTransactionScreen(
