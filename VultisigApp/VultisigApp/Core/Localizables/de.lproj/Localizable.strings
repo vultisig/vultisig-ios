@@ -16,6 +16,10 @@
 "addFriendsReferral" = "Freunde-Empfehlung hinzufügen";
 "addingToken" = "Token wird hinzugefügt...";
 "addLiquidityTransaction" = "2. Add liquidity transaction";
+"addLpDestinationUnavailable" = "Das Einzahlungsziel konnte nicht ermittelt werden. Bitte erneut versuchen.";
+"addLpNoDepositablePools" = "Kein Pool dieser Chain enthält ein Asset aus diesem Vault.";
+"addLpPoolTitle" = "Pool";
+"addLpSelectPool" = "Pool auswählen";
 "addMemo" = "MEMO hinzufügen";
 "addNewChainToVault1" = "Möchten Sie hinzufügen?";
 "addNewChainToVault2" = "zum Gewölbe?";

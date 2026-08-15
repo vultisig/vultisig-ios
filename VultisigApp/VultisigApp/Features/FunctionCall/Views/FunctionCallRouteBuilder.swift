@@ -20,7 +20,7 @@ struct FunctionCallRouteBuilder {
         let coin = FunctionActionCatalog.resolveCoin(defaultCoin: defaultCoin, vault: vault)
         switch FunctionActionCatalog.entry(for: coin) {
         case .action(let descriptor):
-            buildDestinationScreen(descriptor.destination, coin: coin, vault: vault)
+            buildDestinationScreen(descriptor.destination, vault: vault)
         case .list(let descriptors):
             FunctionActionsScreen(vault: vault, coin: coin, descriptors: descriptors)
         }
@@ -32,28 +32,12 @@ struct FunctionCallRouteBuilder {
     @ViewBuilder
     func buildDestinationScreen(
         _ destination: FunctionActionDescriptor.Destination,
-        coin: Coin,
         vault: Vault
     ) -> some View {
         switch destination {
         case .transaction(let transactionType):
             buildFunctionTransactionScreen(vault: vault, transactionType: transactionType)
-        case .legacyFunctionCall(let functionCallType):
-            buildDetailsScreen(defaultCoin: coin, vault: vault, preselected: functionCallType)
         }
-    }
-
-    @ViewBuilder
-    func buildDetailsScreen(
-        defaultCoin: Coin?,
-        vault: Vault,
-        preselected: FunctionCallType?
-    ) -> some View {
-        FunctionCallDetailsScreen(
-            vault: vault,
-            defaultCoin: defaultCoin,
-            preselected: preselected
-        )
     }
 
     @ViewBuilder

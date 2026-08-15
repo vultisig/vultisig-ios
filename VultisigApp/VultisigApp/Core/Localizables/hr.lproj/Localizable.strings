@@ -16,6 +16,10 @@
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
 "addingToken" = "Dodavanje tokena";
 "addLiquidityTransaction" = "2. Transakcija dodavanja likvidnosti";
+"addLpDestinationUnavailable" = "Nije moguće utvrditi odredište uplate. Pokušajte ponovno.";
+"addLpNoDepositablePools" = "Nijedan pool ovog lanca ne sadrži imovinu iz ovog trezora.";
+"addLpPoolTitle" = "Pool";
+"addLpSelectPool" = "Odaberi pool";
 "addMemo" = "Dodaj MEMO";
 "addNewChainToVault1" = "Želite li dodati";
 "addNewChainToVault2" = "do trezora?";

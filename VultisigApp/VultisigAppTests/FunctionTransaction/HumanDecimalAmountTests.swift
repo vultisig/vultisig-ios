@@ -53,6 +53,15 @@ final class HumanDecimalAmountTests: XCTestCase {
         XCTAssertEqual(parse("0.0000009", locale: Self.us), .zero)
     }
 
+    /// An 18-decimal asset is where a `Double`-backed parse would start losing
+    /// significant digits; `Decimal` must keep every one of them.
+    func testAnEighteenDecimalAmountKeepsEveryDigit() {
+        XCTAssertEqual(
+            parse("1.234567890123456789", decimals: 18, locale: Self.us),
+            Decimal(string: "1.234567890123456789")
+        )
+    }
+
     // MARK: - Locale shapes
 
     /// `Decimal.formatToDecimal(digits:)` — what the percentage buttons write

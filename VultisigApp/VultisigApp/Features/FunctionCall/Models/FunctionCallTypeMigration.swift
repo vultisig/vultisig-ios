@@ -53,6 +53,14 @@ extension FunctionCallType {
             // included, and silently left a non-native selection in place when
             // RUNE was absent.
             return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .addThorLP:
+            // The entry asset only. Which asset is actually deposited is not
+            // known until a pool is picked, and the picker resolves it against
+            // the vault's own coins — so the intent names where the user came
+            // in, and the form owns the rest. Deliberately NOT pinned to the
+            // chain's native asset: an LP add from a token screen is a deposit
+            // of that token, and pinning would silently retarget it.
+            return .addThorchainLP(coin: coin.toCoinMeta())
         case .custom:
             // The raw-memo form deposits against one of the vault's own coins
             // on this chain, so the coin the entry point resolved travels

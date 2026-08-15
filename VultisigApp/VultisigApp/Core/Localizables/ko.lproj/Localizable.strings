@@ -16,6 +16,10 @@
 "addFriendsReferral" = "친구 추천 코드 추가";
 "addingToken" = "토큰 추가 중...";
 "addLiquidityTransaction" = "2. 유동성 추가 트랜잭션";
+"addLpDestinationUnavailable" = "입금 대상을 확인할 수 없습니다. 다시 시도해 주세요.";
+"addLpNoDepositablePools" = "이 체인의 풀 중 이 볼트가 보유한 자산이 있는 풀이 없습니다.";
+"addLpPoolTitle" = "풀";
+"addLpSelectPool" = "풀 선택";
 "addMemo" = "메모 추가";
 "addNewChainToVault1" = "볼트에 ";
 "addNewChainToVault2" = "을(를) 추가하시겠습니까?";

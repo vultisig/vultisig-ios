@@ -19,6 +19,19 @@
 //  named for what it does rather than for one caller so the two forms share a
 //  single copy once both are on this architecture.
 //
+//  **The residual, stated plainly.** Grouping that is well formed *in the locale
+//  in force* is accepted, so an `en_US` field reads `1,000` as one thousand —
+//  which is what it means in `en_US`, and also what a `de_DE` user's `1.000`
+//  means in theirs. A cross-locale PASTE of the other convention's `1,000`
+//  (meaning one) therefore still reads as a thousand. That case is not fixable
+//  here: the percentage and max buttons fill this field from
+//  `Decimal.formatToDecimal(digits:)`, which emits grouped digits, so refusing
+//  grouping outright would leave any user with a balance over a thousand unable
+//  to submit their own maximum. Closing it means making that shared formatter
+//  emit ungrouped digits app-wide, which is a change to every amount field, not
+//  to this parser. The shapes that are ambiguous *within* one convention —
+//  `1,5`, `0,500`, an Indian two-group `123,456` — are all refused below.
+//
 
 import Foundation
 
@@ -56,7 +69,7 @@ enum HumanDecimalAmount {
         let fraction: String
         if rawFraction.isEmpty {
             fraction = ""
-        } else if let digits = asciiDigits(rawFraction) {
+        } else if let digits = decimalDigits(rawFraction) {
             fraction = digits
         } else {
             return nil
@@ -104,11 +117,11 @@ enum HumanDecimalAmount {
         // An empty integer side is the ".5" keypad state.
         guard side.isNotEmpty else { return "0" }
         guard separator.isNotEmpty, side.contains(separator) else {
-            return asciiDigits(side)
+            return decimalDigits(side)
         }
 
         let rawGroups = side.components(separatedBy: separator)
-        let groups = rawGroups.compactMap { asciiDigits($0) }
+        let groups = rawGroups.compactMap { decimalDigits($0) }
         guard groups.count == rawGroups.count,
               groups.count >= 2,
               let first = groups.first,
@@ -141,7 +154,7 @@ enum HumanDecimalAmount {
     /// numbering system uses positionally. It admits `٥` and `५` and rejects
     /// `²`, `½` and `Ⅻ`, each of which carries a numeric value that would
     /// otherwise fold into a digit and change the amount.
-    private static func asciiDigits(_ string: String) -> String? {
+    private static func decimalDigits(_ string: String) -> String? {
         guard !string.isEmpty else { return nil }
         var result = ""
         result.reserveCapacity(string.count)

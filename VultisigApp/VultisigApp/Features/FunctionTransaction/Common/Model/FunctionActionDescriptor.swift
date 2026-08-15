@@ -20,20 +20,12 @@ import SwiftUI
 
 struct FunctionActionDescriptor: Identifiable, Hashable {
 
-    /// Where the row goes. Two arms only because the migration is mid-flight:
-    /// an operation either has its own screen already or is still a form on
-    /// the legacy details screen.
+    /// Where the row goes. Every operation now has its own screen under
+    /// `Features/FunctionTransaction/` — the legacy details screen and its
+    /// pre-selected arm were removed with the last migration.
     enum Destination: Hashable {
-        /// Already on `Features/FunctionTransaction/` — the intent is enough.
-        /// A DeFi-tab producer only ever builds this arm.
+        /// The intent is enough. A DeFi-tab producer only ever builds this arm.
         case transaction(FunctionTransactionType)
-        /// Still a legacy sub-model. The legacy screen is opened *pre-selected*
-        /// to this function with its selectors hidden, so the row behaves like
-        /// a real destination rather than a dropdown the user has to re-drive.
-        ///
-        /// Scaffolding: the last migration removes both this arm and the
-        /// screen it names.
-        case legacyFunctionCall(FunctionCallType)
     }
 
     /// Whether the operation can be started right now.

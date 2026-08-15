@@ -65,7 +65,7 @@ final class SecuredAssetDepositHaltGateTests: XCTestCase {
 
     // MARK: - The LP predicate must stay strict
 
-    /// The LP-add path (`FunctionCallAddThorLP`) gates on `isLPActionsHalted`,
+    /// The LP-add path (`ThorchainLPDestinationResolver`) gates on `isLPActionsHalted`,
     /// which — unlike the deposit gate — MUST keep honouring
     /// `chain_lp_actions_paused`. THORChain rejects an LP add while LP actions
     /// are paused, so relaxing this the way the deposit gate was relaxed would

@@ -19,7 +19,18 @@ enum FunctionTransactionType: Hashable {
     case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
     case mint(coin: CoinMeta, yCoin: CoinMeta)
     case redeem(coin: CoinMeta, yCoin: CoinMeta)
-    case addLP(position: LPPosition)
+    /// A deposit into an existing liquidity position.
+    ///
+    /// `side` names which of the position's two assets is deposited. It
+    /// defaults to `.coin1` — the protocol's own asset, which is the only
+    /// deposit the DeFi tab has ever made — so the existing callers are
+    /// unchanged, while the L1 side is now expressible rather than assumed
+    /// away.
+    case addLP(position: LPPosition, side: LPDepositSide = .coin1)
+    /// A THORChain liquidity deposit opened from a chain's action list, where
+    /// no position exists yet: the user picks the pool, and the asset deposited
+    /// follows that choice.
+    case addThorchainLP(coin: CoinMeta)
     case removeLP(position: LPPosition)
     case cosmosDelegate(coin: CoinMeta)
     case cosmosUndelegate(coin: CoinMeta, validatorAddress: String, validatorMoniker: String, stakedAmount: Decimal)
@@ -125,8 +136,20 @@ enum FunctionTransactionType: Hashable {
             return [coin, yCoin]
         case .redeem(let coin, let yCoin):
             return [coin, yCoin]
-        case .addLP(let position):
+        case .addLP(let position, _):
             return [position.coin1, position.coin2]
+        case .addThorchainLP(let coin):
+            // The entry asset plus RUNE: a THORChain pool credits liquidity to
+            // a RUNE account the memo has to name, so a vault without one
+            // cannot make this deposit at all. Naming both here is what lets
+            // the caller's `needsCoinAddition` / `addCoins` resolve them.
+            //
+            // The pool picker can reassign the deposited asset to another token
+            // on the same chain, but only to one the vault already holds — the
+            // list is built from its own coins — so nothing the picker reaches
+            // needs adding.
+            let rune = TokensStore.TokenSelectionAssets.first { $0.chain == .thorChain && $0.isNativeToken }
+            return [coin] + (rune.map { [$0] } ?? [])
         case .removeLP(let position):
             return [position.coin1, position.coin2]
         case .cosmosDelegate(let coin):

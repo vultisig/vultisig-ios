@@ -30,9 +30,8 @@ enum FunctionActionCatalog {
         case list([FunctionActionDescriptor])
     }
 
-    /// The coin the actions are resolved against. Mirrors
-    /// `FunctionCallDetailsScreen`'s own fallback chain so the entry point
-    /// picks the same coin the legacy screen would have.
+    /// The coin the actions are resolved against, falling back to the vault's
+    /// native coin when none is passed in.
     static func resolveCoin(defaultCoin: Coin?, vault: Vault) -> Coin {
         defaultCoin
             ?? vault.coins.first(where: { $0.isNativeToken })
@@ -69,16 +68,18 @@ enum FunctionActionCatalog {
 extension FunctionCallType {
     /// The row this operation renders as.
     ///
-    /// The destination asks `migratedTransactionType(coin:nodeAddress:)` — the
-    /// same mapping the legacy screen's route-out consults — so "migrated" is
-    /// stated once for the whole app. No node address is carried: the list is
-    /// entered cold, with no previous form to inherit a pre-fill from.
+    /// The destination asks `migratedTransactionType(coin:nodeAddress:)` for
+    /// the intent, so "what this operation builds" is stated once for the
+    /// whole app. No node address is carried: the list is entered cold, with
+    /// no previous form to inherit a pre-fill from.
+    ///
+    /// Every `FunctionCallType` case is migrated as of the last migration —
+    /// there is no legacy screen left to fall back to, so a nil mapping here
+    /// is a case that was added without also being wired into
+    /// `migratedTransactionType`.
     func actionDescriptor(for coin: Coin) -> FunctionActionDescriptor {
-        let destination: FunctionActionDescriptor.Destination
-        if let transactionType = migratedTransactionType(coin: coin, nodeAddress: nil) {
-            destination = .transaction(transactionType)
-        } else {
-            destination = .legacyFunctionCall(self)
+        guard let transactionType = migratedTransactionType(coin: coin, nodeAddress: nil) else {
+            preconditionFailure("\(rawValue) has no migrated transaction type and no legacy screen to fall back to")
         }
 
         return FunctionActionDescriptor(
@@ -86,7 +87,7 @@ extension FunctionCallType {
             title: display(),
             subtitle: actionSubtitle,
             icon: actionIcon,
-            destination: destination
+            destination: .transaction(transactionType)
         )
     }
 

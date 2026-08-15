@@ -2,20 +2,18 @@
 //  FunctionCallReachabilityTests.swift
 //  VultisigAppTests
 //
-//  Pins the reachability contract between the three tables that decide what
-//  the Function (memo) screen shows:
+//  Pins the reachability contract between the tables that decide what the
+//  Function entry point shows:
 //
 //    * `CoinAction.memoChains`          — which chains show the button at all
-//    * `FunctionCallType.getCases`      — what the dropdown lists
-//    * `FunctionCallType.getDefault`    — which entry the dropdown opens on
-//    * `FunctionCallInstance.getDefault`— which form the screen actually builds
+//    * `FunctionCallType.getCases`      — what the action list lists
+//    * `FunctionCallType.getDefault`    — which entry a single-action chain opens on
 //
-//  None of the four is derived from the others, so every mismatch is a silent
-//  runtime defect rather than a compile error: cases offered on a chain with no
+//  None is derived from the others, so every mismatch is a silent runtime
+//  defect rather than a compile error: cases offered on a chain with no
 //  button are dead code, a chain with a button and no cases opens an empty
-//  selector, and a default the dropdown does not list (or a form that disagrees
-//  with the selected label) strands the user on a screen they cannot navigate
-//  back to.
+//  list, and a default the chain does not list strands the user on a
+//  selection it cannot navigate back to.
 //
 
 import XCTest

@@ -44,13 +44,28 @@ enum ThorchainRouterDepositBuilder {
             throw HelperError.runtimeError(String(format: "inboundAddressNotFound".localized, chainName))
         }
 
+        // ONE address for the deposit and the approval.
+        //
+        // `tx.toAddress` is the router this transaction was built against, and
+        // it is the spender the approval below names. The router the deposit is
+        // built against must be that same address, because the read above is a
+        // SECOND, independent one: it is served from a five-minute cache, while
+        // the destination on `tx` was resolved for this transaction, so the two
+        // can disagree across a router migration. Splitting them approves one
+        // contract and calls another, which is an allowance the deposit cannot
+        // spend.
+        //
+        // Every caller resolves an approve-source destination to the router
+        // (LP add and SECURE+ mint alike), and the guard above has already
+        // established `tx.coin.shouldApprove` and a non-empty destination, so
+        // this is that router by construction.
         let expirationTime = Date().addingTimeInterval(60 * 15)
         let thorchainSwapPayload = THORChainSwapPayload(
             fromAddress: tx.fromAddress,
             fromCoin: tx.coin,
             toCoin: tx.coin,
             vaultAddress: inbound.address,
-            routerAddress: inbound.router,
+            routerAddress: tx.toAddress,
             fromAmount: tx.amountInRaw,
             toAmountDecimal: tx.coin.decimal(for: tx.amountInRaw),
             toAmountLimit: "",

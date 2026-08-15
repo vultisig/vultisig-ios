@@ -56,7 +56,7 @@ struct FunctionActionsScreen: View {
 
     func select(_ descriptor: FunctionActionDescriptor) {
         router.navigate(
-            to: FunctionCallRoute.route(for: descriptor.destination, coin: coin, vault: vault)
+            to: FunctionCallRoute.route(for: descriptor.destination, vault: vault)
         )
     }
 }

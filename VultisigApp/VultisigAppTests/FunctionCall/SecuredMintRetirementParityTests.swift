@@ -123,16 +123,14 @@ final class SecuredMintRetirementParityTests: XCTestCase {
 
     // MARK: - Helpers
 
-    /// Asserts the dropdown's opening selection is one the dropdown lists, and
-    /// that the sub-model the screen builds is the same function. The two
-    /// default factories are separate switches over the same chain, so nothing
-    /// but an assertion keeps them in step.
+    /// Asserts the chain's default selection is one its own case list offers
+    /// — every operation is migrated now, so there is no longer a second,
+    /// legacy factory to keep in step with.
     private func assertDefaultsAgree(
         for coin: Coin,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
         let selected = FunctionCallType.getDefault(for: coin)
         XCTAssertTrue(
             FunctionCallType.getCases(for: coin).contains(selected),
@@ -140,29 +138,6 @@ final class SecuredMintRetirementParityTests: XCTestCase {
             file: file,
             line: line
         )
-        let built = FunctionCallInstance.getDefault(for: coin, vault: vault)
-        if selected.migratedTransactionType(coin: coin, nodeAddress: nil) != nil {
-            XCTAssertNil(
-                built,
-                "\(coin.chain): \(selected) is migrated and must not build a legacy form",
-                file: file,
-                line: line
-            )
-        } else {
-            XCTAssertEqual(
-                built.map(functionCallType),
-                selected,
-                "\(coin.chain): dropdown opens on \(selected) but the form built is \(String(describing: built))",
-                file: file,
-                line: line
-            )
-        }
-    }
-
-    private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
-        switch instance {
-        case .addThorLP: return .addThorLP
-        }
     }
 
     private func nativeCoin(chain: Chain, ticker: String) -> Coin {

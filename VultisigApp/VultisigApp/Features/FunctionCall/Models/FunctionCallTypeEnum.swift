@@ -90,14 +90,12 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         }
     }
 
-    /// The function the details screen opens on. Must be a member of
-    /// `getCases(for:)` whenever the dropdown can still be entered — a
-    /// default the dropdown does not list strands the user on a form they
-    /// cannot get back to — except a chain whose every operation has been
-    /// migrated, where the dropdown is unreachable and the default is
-    /// vestigial (Gaia). `FunctionCallInstance.getDefault` builds the
-    /// matching sub-model and has to agree case-for-case; neither factory
-    /// derives from the other, so the pairing is pinned by tests.
+    /// The operation a single-action chain's entry point opens on directly.
+    /// Should be a member of `getCases(for:)` for a chain the action list can
+    /// still be entered on — a default that chain does not list strands the
+    /// user on a selection with nothing behind it — except a chain whose
+    /// every operation has been migrated, where the list is unreachable and
+    /// the default is vestigial (Gaia).
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
@@ -130,6 +128,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         // screen, but a default that names a migrated type is what
         // `testNoMultiActionChainDefaultsToAMigratedFunction` exists to
         // catch for chains the dropdown can still be entered on.
+        // These L1 chains offer exactly one operation, `.addThorLP`, and it is
+        // migrated to `Features/FunctionTransaction/` — the same single-
+        // operation exemption as Kujira/Osmosis above: the entry point passes
+        // straight through the action list to the migrated screen without
+        // ever consulting this default.
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP
         default:

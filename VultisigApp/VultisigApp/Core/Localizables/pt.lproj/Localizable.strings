@@ -16,6 +16,10 @@
 "addFriendsReferral" = "Adicione uma referência de amigos";
 "addingToken" = "Adicionando token";
 "addLiquidityTransaction" = "2. Add liquidity transaction";
+"addLpDestinationUnavailable" = "Não foi possível determinar o destino do depósito. Tente novamente.";
+"addLpNoDepositablePools" = "Nenhum pool desta chain contém um ativo deste cofre.";
+"addLpPoolTitle" = "Pool";
+"addLpSelectPool" = "Selecione um pool";
 "addMemo" = "Adicionar MEMO";
 "addNewChainToVault1" = "Você quer adicionar";
 "addNewChainToVault2" = "para o cofre?";

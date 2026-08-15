@@ -60,16 +60,10 @@ final class FunctionActionCatalogTests: XCTestCase {
         }
     }
 
-    /// The invariant the list exists to guarantee, and the one that supersedes
-    /// "no chain defaults to a migrated function": whatever a row names, the
-    /// screen it opens can build it. A migrated operation goes to its own
-    /// screen; an unmigrated one opens the legacy form *pre-selected to that
-    /// same operation*, never to a default.
-    ///
-    /// "Can build it" reduces to `migratedTransactionType == nil` because the
-    /// legacy screen's form factory has exactly one non-building arm — the
-    /// migrated set, which each migration adds its case name to. A row that is
-    /// unmigrated therefore has a form waiting for it.
+    /// The invariant the list exists to guarantee: whatever a row names, the
+    /// screen it opens can build it. Every operation is migrated as of the
+    /// last migration, so every row routes to its own transaction screen —
+    /// there is no legacy fallback left to fall into.
     func testEveryOfferedActionRoutesToAScreenThatCanBuildIt() {
         for chain in entryChains {
             let coin = Self.makeCoin(chain)
@@ -85,16 +79,6 @@ final class FunctionActionCatalogTests: XCTestCase {
                     XCTAssertNotNil(
                         migrated,
                         "\(chain.rawValue)/\(type.rawValue) routes to a transaction screen it has not been migrated to"
-                    )
-                case .legacyFunctionCall(let preselected):
-                    XCTAssertEqual(
-                        preselected,
-                        type,
-                        "\(chain.rawValue) opens the legacy form on \(preselected.rawValue) from the \(type.rawValue) row"
-                    )
-                    XCTAssertNil(
-                        migrated,
-                        "\(type.rawValue) is migrated and no longer builds a legacy form"
                     )
                 }
             }
@@ -146,7 +130,6 @@ final class FunctionActionCatalogTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [coin])
         guard case .functionTransaction(_, let routed) = FunctionCallRoute.route(
             for: descriptor.destination,
-            coin: coin,
             vault: vault
         ) else {
             return XCTFail("dYdX's single action must route to FunctionTransactionScreen")
@@ -288,29 +271,11 @@ final class FunctionActionCatalogTests: XCTestCase {
 
         guard case .functionTransaction(_, let transactionType) = FunctionCallRoute.route(
             for: .transaction(intent),
-            coin: coin,
             vault: vault
         ) else {
             return XCTFail("A migrated destination must open FunctionTransactionScreen")
         }
         XCTAssertEqual(transactionType, intent)
-    }
-
-    /// The legacy screen is reached *pre-selected*, which is what lets it hide
-    /// both selectors: the row already made the choice the dropdown asked for.
-    func testALegacyDestinationRoutesToTheFormPreselectedToThatFunction() {
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-
-        guard case .details(let defaultCoin, _, let preselected) = FunctionCallRoute.route(
-            for: .legacyFunctionCall(.merge),
-            coin: coin,
-            vault: vault
-        ) else {
-            return XCTFail("An unmigrated destination must open the legacy form")
-        }
-        XCTAssertEqual(preselected, .merge)
-        XCTAssertEqual(defaultCoin, coin)
     }
 
     // MARK: - Coin resolution
