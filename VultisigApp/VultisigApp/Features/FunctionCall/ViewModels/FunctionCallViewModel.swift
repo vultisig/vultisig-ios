@@ -28,8 +28,28 @@ class FunctionCallViewModel: ObservableObject {
     private let fastVaultService = FastVaultService.shared
 
     private let mediator = Mediator.shared
+    private let feePricer = FunctionCallFeePricer()
 
     let logger = Log.send.other
+
+    /// The transaction to hand to Verify: the one the form built, with both of
+    /// its fee figures resolved.
+    ///
+    /// ⚠️ The legacy Functions screen used to navigate with only `gas`, copied
+    /// off a chain-specific fetch made against an EMPTY probe transaction. On
+    /// EVM, UTXO and Cardano the fee row reads `fee`, so Verify disclosed `0`;
+    /// and even the `gas` it did carry was priced for a bare transfer rather
+    /// than for the call being signed. Both are resolved here, from the real
+    /// transaction, on the way to the screen that discloses them.
+    ///
+    /// Drives `isLoading` because it is a network round-trip on the Continue
+    /// tap. Returns the transaction unpriced (see `FunctionCallFeePricer`) when
+    /// the fee cannot be resolved, rather than blocking the flow.
+    func pricedForVerify(_ tx: SendTransaction) async -> SendTransaction {
+        isLoading = true
+        defer { isLoading = false }
+        return await feePricer.priced(tx)
+    }
 
     /// The fiat figure printed beside the crypto fee row.
     ///
