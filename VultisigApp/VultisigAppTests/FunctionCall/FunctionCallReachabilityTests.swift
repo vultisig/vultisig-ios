@@ -109,7 +109,6 @@ final class FunctionCallReachabilityTests: XCTestCase {
     /// a new `FunctionCallInstance` case fails to compile until it is mapped.
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
-        case .rebond: return .rebond
         case .custom: return .custom
         case .vote: return .vote
         case .cosmosIBC: return .cosmosIBC

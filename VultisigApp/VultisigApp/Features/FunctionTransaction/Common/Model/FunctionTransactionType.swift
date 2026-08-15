@@ -56,6 +56,11 @@ enum FunctionTransactionType: Hashable {
     /// already knows which token the user means (a position card) can
     /// pre-select it, exactly as `.leave(coin:node:)` pre-fills its address.
     case merge(coin: CoinMeta, denom: String?)
+    /// THORChain node REBOND. `node` pre-fills the node currently holding the
+    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
+    /// the memo's second address and the optional partial amount are always
+    /// typed on the form, so neither belongs on the intent.
+    case rebond(coin: CoinMeta, node: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -93,6 +98,8 @@ enum FunctionTransactionType: Hashable {
         case .leave(let coin, _):
             return [coin]
         case .merge(let coin, _):
+            return [coin]
+        case .rebond(let coin, _):
             return [coin]
         }
     }
