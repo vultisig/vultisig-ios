@@ -64,10 +64,6 @@ extension FunctionCallReBond: FunctionCallSubModel {
     var submitErrorMessage: String? { customErrorMessage }
 }
 
-extension FunctionCallLeave: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-}
-
 extension FunctionCallCustom: FunctionCallSubModel {}
 
 extension FunctionCallVote: FunctionCallSubModel {

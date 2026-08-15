@@ -43,6 +43,11 @@ enum FunctionTransactionType: Hashable {
     /// existing pool the position is staked into; `poolImplementation` resolves
     /// the withdraw comment; `stakedAmount` is shown for confirmation.
     case tonUnstake(coin: CoinMeta, poolAddress: String, poolImplementation: String?, stakedAmount: Decimal)
+    /// THORChain / MayaChain node LEAVE. `node` is the validator address the
+    /// memo names; it is optional so a caller that already knows it (a bond
+    /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
+    /// does, while a caller that does not leaves the user to type it.
+    case leave(coin: CoinMeta, node: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -76,6 +81,8 @@ enum FunctionTransactionType: Hashable {
         case .tonStake(let coin, _, _):
             return [coin]
         case .tonUnstake(let coin, _, _, _):
+            return [coin]
+        case .leave(let coin, _):
             return [coin]
         }
     }

@@ -18,8 +18,6 @@ struct FunctionCallContentView: View {
         switch instance {
         case .rebond(let model):
             ReBondFormView(model: model, coin: selectedCoin)
-        case .leave(let model):
-            LeaveFormView(model: model, selectedCoin: $selectedCoin)
         case .custom(let model):
             CustomFormView(model: model, selectedCoin: $selectedCoin)
         case .vote(let model):
