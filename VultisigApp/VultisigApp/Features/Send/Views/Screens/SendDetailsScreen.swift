@@ -355,7 +355,7 @@ struct SendDetailsScreen: View {
     }
 
     private func onRefresh() async {
-        async let bal: Void = BalanceService.shared.updateBalance(for: viewModel.coin)
+        async let bal: Bool = BalanceService.shared.updateBalance(for: viewModel.coin)
         async let pendingCheck: Void = viewModel.forceCheckPendingTransactions()
         _ = await (bal, pendingCheck)
     }

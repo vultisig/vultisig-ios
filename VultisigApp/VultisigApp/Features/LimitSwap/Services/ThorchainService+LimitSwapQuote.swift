@@ -112,6 +112,51 @@ extension ThorchainService: LimitSwapQuoteServiceProtocol {
         }
     }
 
+    /// The mimir key capping how long a resting limit order may live.
+    static let limitSwapMaxAgeMimirKey = "StreamingLimitSwapMaxAge"
+
+    /// The ceiling THORChain currently enforces on a `=<` order's TTL, in blocks.
+    ///
+    /// **Fails SOFT**, unlike the availability gate above: a failed fetch returns
+    /// the documented default (43,200 ≈ 3 days), which is also what mainnet runs.
+    /// The asymmetry is deliberate — failing closed here would mean refusing to
+    /// place *any* order because we couldn't read a bound, whereas the worst case
+    /// of the default is that a raised cap isn't offered until the fetch succeeds.
+    /// A LOWERED cap is the case that matters, and it is handled: the chain
+    /// clamps silently, so an order built against a stale-high ceiling still
+    /// rests — just for less time than the UI claimed. Rare, and self-correcting
+    /// on the next successful fetch.
+    func fetchLimitSwapMaxAgeBlocks() async -> Int {
+        do {
+            let response = try await httpClient.request(mainnet(.mimir(key: Self.limitSwapMaxAgeMimirKey)))
+            guard let blocks = Self.parseMimirBlockCount(response.data) else {
+                logger.warning("StreamingLimitSwapMaxAge mimir unparseable; using default ceiling")
+                return THORChainConstants.defaultLimitSwapMaxAgeBlocks
+            }
+            return blocks
+        } catch {
+            logger.warning("StreamingLimitSwapMaxAge mimir fetch failed; using default ceiling: \(error.localizedDescription)")
+            return THORChainConstants.defaultLimitSwapMaxAgeBlocks
+        }
+    }
+
+    /// Parse a mimir value that is a block COUNT rather than a flag.
+    ///
+    /// Deliberately more permissive than `parseMimirEnabled`: that one guards
+    /// availability, where an over-broad accept set risks placing an order the
+    /// chain won't treat as a limit order. This one only sizes a picker, so
+    /// `Int`-parsing the trimmed body is right. Non-positive values are rejected
+    /// (`nil`) rather than accepted — a `0` or `-1` ceiling would collapse the
+    /// range and make every expiry invalid, so the caller falls back instead.
+    static func parseMimirBlockCount(_ data: Data) -> Int? {
+        guard let raw = String(data: data, encoding: .utf8),
+              let value = Int(raw.trimmingCharacters(in: .whitespacesAndNewlines)),
+              value > 0 else {
+            return nil
+        }
+        return value
+    }
+
     /// Interpret a `/thorchain/mimir/key/<KEY>` response body. THORChain returns
     /// the value as a **bare integer** (verified: the endpoint responds `1`, not
     /// `"1"`). Only an exact `1` — after trimming surrounding whitespace/newlines

@@ -401,7 +401,7 @@ private extension THORChainStakingService {
 
         // 2. Get user-specific distributions from Midgard
         let distributionData = try await fetchTcyUserDistributions(address: address)
-        let distributions = distributionData.distributions
+        let distributions = distributionData.distributions ?? []
 
         guard !distributions.isEmpty else {
             return 0

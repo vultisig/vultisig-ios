@@ -54,7 +54,9 @@ final class BondTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         setupForm()
         operatorFeeField.validators = [
-            ClosureValidator { value in
+            ClosureValidator { [weak self] value in
+                guard let self else { return }
+
                 if value.isEmpty && self.providerViewModel.field.value.isNotEmpty {
                     throw HelperError.runtimeError("operatorFeesError".localized)
                 }

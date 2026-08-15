@@ -16,28 +16,12 @@ struct FunctionCallContentView: View {
 
     var body: some View {
         switch instance {
-        case .rebond(let model):
-            ReBondFormView(model: model, coin: selectedCoin)
-        case .bondMaya(let model):
-            BondMayaFormView(model: model, coin: selectedCoin)
-        case .unbondMaya(let model):
-            UnbondMayaFormView(model: model, coin: selectedCoin)
         case .custom(let model):
             CustomFormView(model: model, selectedCoin: $selectedCoin)
         case .cosmosIBC(let model):
             CosmosIBCFormView(model: model, selectedCoin: $selectedCoin)
-        case .merge(let model):
-            CosmosMergeFormView(model: model, selectedCoin: $selectedCoin)
-        case .unmerge(let model):
-            CosmosUnmergeFormView(model: model, selectedCoin: $selectedCoin)
-        case .theSwitch(let model):
-            CosmosSwitchFormView(model: model, coin: selectedCoin)
         case .addThorLP(let model):
             AddThorLPFormView(model: model, selectedCoin: $selectedCoin)
-        case .securedAsset(let model):
-            SecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
-        case .withdrawSecuredAsset(let model):
-            WithdrawSecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         }
     }
 }

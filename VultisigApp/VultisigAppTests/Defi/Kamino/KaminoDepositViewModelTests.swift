@@ -600,10 +600,12 @@ private final class CountingBalanceService: BalanceServiceProtocol, @unchecked S
 
     var refreshedTickers: [String] { lock.withLock { _refreshed } }
 
-    func updateBalance(for coin: Coin) async {
+    @discardableResult
+    func updateBalance(for coin: Coin) async -> Bool {
         await Task.yield()
         let ticker = coin.ticker
         lock.withLock { _refreshed.append(ticker) }
+        return true
     }
 
     func refreshSpendableBalanceOrThrow(for coin: Coin) async throws {
