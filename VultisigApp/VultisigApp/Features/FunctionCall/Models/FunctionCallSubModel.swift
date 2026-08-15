@@ -69,10 +69,6 @@ extension FunctionCallCosmosIBC: FunctionCallSubModel {
     var resolvedToAddress: String? { destinationAddress }
 }
 
-extension FunctionCallCosmosMerge: FunctionCallSubModel {
-    var resolvedToAddress: String? { destinationAddress }
-}
-
 extension FunctionCallCosmosSwitch: FunctionCallSubModel {
     var resolvedToAddress: String? { destinationAddress }
 }

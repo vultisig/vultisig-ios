@@ -61,6 +61,22 @@ extension FunctionCallType {
                 // RUNE or is not a merge token at all.
                 denom: MergeTokenCatalog.denom(matching: coin)
             )
+        case .merge:
+            // MERGE deposits a catalog token into that token's own Rujira
+            // contract, so the coin it spends is chosen inside the form from
+            // the vault's holdings. What the intent names is the chain anchor
+            // — THORChain's native asset, which is also the fee asset — for
+            // the same reason `.leave` does: the legacy screen pinned RUNE
+            // here (`ensureRuneCoin()`), and a vault that cannot resolve it
+            // belongs on the shared "not in vault" error rather than in a form
+            // whose deposit it could not pay for.
+            // Pre-select the token the user was already looking at. The legacy
+            // sub-model tried the same thing in `preSelectToken()`, but the
+            // RUNE pin above it meant the match never fired.
+            return .merge(
+                coin: nativeAsset(for: coin),
+                denom: ThorchainMergeAsset.catalogDenom(forTicker: coin.ticker)
+            )
         case .rebond:
             // REBOND is a RUNE `MsgDeposit` on THORChain, and the legacy screen
             // pinned RUNE before opening the form for exactly that reason. Same

@@ -12,7 +12,6 @@ enum FunctionCallInstance {
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
-    case merge(FunctionCallCosmosMerge)
     case theSwitch(FunctionCallCosmosSwitch)
     case addThorLP(FunctionCallAddThorLP)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
@@ -26,7 +25,6 @@ enum FunctionCallInstance {
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
-        case .merge(let memo): return memo
         case .theSwitch(let memo): return memo
         case .addThorLP(let memo): return memo
         case .withdrawSecuredAsset(let memo): return memo
