@@ -209,18 +209,11 @@ final class DefiChainScreenModel: ObservableObject {
         try await CoinService.addToChain(assets: type.coins, to: vault)
     }
 
-    /// Builds the unsigned tx and pre-fetches the chain-specific gas so Verify
-    /// shows the fee immediately. Mirrors `FunctionTransactionScreen.onVerify`:
-    /// the gas is re-fetched during Verify anyway, so a fetch failure here is
-    /// non-fatal and the un-gassed tx is returned unchanged.
+    /// Builds the unsigned tx and prices it, so Verify discloses the fee the
+    /// user is agreeing to pay. Mirrors `FunctionTransactionScreen.onVerify` —
+    /// both go through the one shared pricing step, because nothing downstream
+    /// of Verify re-resolves these figures for display.
     func buildVerifyTransaction(for builder: TransactionBuilder) async -> SendTransaction {
-        var sendTx = builder.buildSendTransaction(vault: vault)
-        do {
-            let chainSpecific = try await BlockChainService.shared.fetchSpecific(tx: sendTx)
-            sendTx = sendTx.copy(gas: chainSpecific.gas)
-        } catch {
-            // Non-fatal: gas is re-fetched during Verify.
-        }
-        return sendTx
+        await builder.buildPricedSendTransaction(vault: vault)
     }
 }

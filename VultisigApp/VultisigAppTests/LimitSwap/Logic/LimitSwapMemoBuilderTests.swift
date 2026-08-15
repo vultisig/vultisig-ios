@@ -26,7 +26,7 @@ final class LimitSwapMemoBuilderTests: XCTestCase {
                 targetAsset: "BTC.BTC",
                 destAddress: "bc1qexample",
                 targetPrice: Decimal(string: "0.015")!,
-                expiryHours: 24,
+                expiryBlocks: THORChainConstants.blocks(forHours: 24),
                 affiliate: "va",
                 affiliateBps: "50"
             )
@@ -87,7 +87,7 @@ final class LimitSwapMemoBuilderTests: XCTestCase {
                 targetAsset: vector.inputs.target_asset,
                 destAddress: vector.inputs.dest_addr,
                 targetPrice: targetPrice,
-                expiryHours: vector.inputs.expiry_hours,
+                expiryBlocks: THORChainConstants.blocks(forHours: vector.inputs.expiry_hours),
                 affiliate: vector.inputs.affiliate,
                 affiliateBps: vector.inputs.affiliate_bps
             )
@@ -159,7 +159,7 @@ final class LimitSwapMemoBuilderTests: XCTestCase {
             targetAsset: "ETH.ETH",
             destAddress: "0x" + String(repeating: "a", count: 40),
             targetPrice: Decimal(string: "1.23456789")!,
-            expiryHours: 24,
+            expiryBlocks: THORChainConstants.blocks(forHours: 24),
             affiliate: affiliate,
             affiliateBps: "10/35"
         )

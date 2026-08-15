@@ -322,9 +322,9 @@ final class MergeTransactionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.selectedAsset)
     }
 
-    func testPickerAssetsMirrorTheMergeableList() async {
+    func testPickerAssetsMirrorTheMergeableList() async throws {
         let viewModel = makeViewModel(holdings: [Self.makeThorToken("KUJI"), Self.makeThorToken("LVN")])
-        let assets = await viewModel.assetsDataSource.fetchAssets()
+        let assets = try await viewModel.assetsDataSource.fetchAssets()
 
         XCTAssertEqual(assets.map { $0.thorchainAsset }, ["THOR.KUJI", "THOR.LVN"])
         XCTAssertEqual(assets.map { $0.asset.ticker }, ["KUJI", "LVN"])

@@ -434,8 +434,7 @@ final class SwapMinPayoutTests: XCTestCase {
             targetPrice: Decimal(string: "0.00016") ?? 0,
             expiryBlocks: 14_400,
             createdAt: fixedNow,
-            memo: "=<:ETH.ETH:0x15E9eBd862E8d7cd571062D0fBd41D695A9575AF:32000",
-            expiryHours: 24
+            memo: "=<:ETH.ETH:0x15E9eBd862E8d7cd571062D0fBd41D695A9575AF:32000"
         )
         return SwapTransaction(
             fromCoin: rune,

@@ -61,9 +61,10 @@ protocol SwapInteractor {
     /// non-throwing `updateBalance` for test seams; production overrides it.
     func refreshBalanceOrThrow(for coin: Coin) async throws
 
-    /// Resolve and cache the VULT discount tier (VULT balance + Thorguard NFT) for the
-    /// wallet once per session. Called on screen load to warm the cache so the per-quote
-    /// path reads the cached tier instead of re-running the Thorguard eth_call each time.
+    /// Resolve the VULT discount tier once on screen load. Its purpose is to warm
+    /// the session cache of Thorguard NFT ownership so the per-quote path doesn't
+    /// re-run the eth_call; the VULT balance half is re-read on every quote, so a
+    /// balance that lands after this warm-up is still honoured.
     func warmDiscountTier(for vault: Vault) async
 }
 

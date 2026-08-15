@@ -13,10 +13,16 @@ struct FunctionCallRouter {
     @ViewBuilder
     func build(_ route: FunctionCallRoute) -> some View {
         switch route {
-        case .details(let defaultCoin, let vault):
-            viewBuilder.buildDetailsScreen(
+        case .actions(let defaultCoin, let vault):
+            viewBuilder.buildActionsScreen(
                 defaultCoin: defaultCoin,
                 vault: vault
+            )
+        case .details(let defaultCoin, let vault, let preselected):
+            viewBuilder.buildDetailsScreen(
+                defaultCoin: defaultCoin,
+                vault: vault,
+                preselected: preselected
             )
         case .verify(let tx, let vault):
             viewBuilder.buildVerifyScreen(tx: tx, vault: vault)

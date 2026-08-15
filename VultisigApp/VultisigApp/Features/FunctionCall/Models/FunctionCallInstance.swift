@@ -10,15 +10,12 @@ import Foundation
 
 enum FunctionCallInstance {
     case rebond(FunctionCallReBond)
-    case bondMaya(FunctionCallBondMayaChain)
-    case unbondMaya(FunctionCallUnbondMayaChain)
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
     case addThorLP(FunctionCallAddThorLP)
-    case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
 
     /// The active sub-model, type-erased to the shared surface. Every
@@ -28,15 +25,12 @@ enum FunctionCallInstance {
     var model: any FunctionCallSubModel {
         switch self {
         case .rebond(let memo): return memo
-        case .bondMaya(let memo): return memo
-        case .unbondMaya(let memo): return memo
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
         case .unmerge(let memo): return memo
         case .theSwitch(let memo): return memo
         case .addThorLP(let memo): return memo
-        case .securedAsset(let memo): return memo
         case .withdrawSecuredAsset(let memo): return memo
         }
     }
@@ -72,6 +66,11 @@ enum FunctionCallInstance {
         model.submitErrorMessage
     }
 
+    /// Builds the sub-model for the function the details screen opens on.
+    /// Must stay case-for-case in step with `FunctionCallType.getDefault`:
+    /// the screen sets the dropdown selection from that enum and the form
+    /// from this factory, so a disagreement renders one function's form
+    /// under another function's label.
     @MainActor
     static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
@@ -80,13 +79,18 @@ enum FunctionCallInstance {
                 return .custom(FunctionCallCustom(coin: coin, vault: vault))
             }
             return .rebond(FunctionCallReBond())
+        // Keep in step with `FunctionCallType.getDefault(for:)` — the screen
+        // renders this instance under that selection, so the two disagreeing
+        // shows one function's name over another function's form. `.leave` is
+        // migrated to `Features/FunctionTransaction/` and no longer builds a
+        // sub-model here, so the default falls through to `.custom`.
         case .mayaChain:
-            return .bondMaya(FunctionCallBondMayaChain(assets: nil))
+            return .custom(FunctionCallCustom(coin: coin, vault: vault))
         case .dydx:
             return .vote(FunctionCallVote())
         case .gaiaChain:
             return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
-        case .kujira:
+        case .kujira, .osmosis:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))

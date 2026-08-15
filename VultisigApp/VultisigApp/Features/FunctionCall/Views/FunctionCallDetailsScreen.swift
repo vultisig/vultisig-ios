@@ -17,7 +17,6 @@ struct FunctionCallDetailsScreen: View {
     /// another function's form, and re-picking the migrated one would publish
     /// no change at all.
     @State private var lastLegacyFunctionMemoType: FunctionCallType = .custom
-    @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
@@ -30,15 +29,29 @@ struct FunctionCallDetailsScreen: View {
 
     @State var fnCallInstance: FunctionCallInstance?
     let defaultCoin: Coin
+    /// The operation this screen opens on, chosen by the action list rather
+    /// than by a default. When set, the screen is *that operation's* form:
+    /// both selectors are hidden and the title names it, because the choice
+    /// was already made on the row the user tapped.
+    let preselected: FunctionCallType?
 
     init(
         vault: Vault,
-        defaultCoin: Coin?
+        defaultCoin: Coin?,
+        preselected: FunctionCallType?
     ) {
         self.vault = vault
         self.defaultCoin = defaultCoin
             ?? vault.coins.first(where: { $0.isNativeToken })
             ?? Coin.example
+        self.preselected = preselected
+    }
+
+    /// Hidden for a preselected operation: a dropdown that can only re-pick
+    /// what the user already picked is a way back into the default-selection
+    /// bugs the action list exists to delete.
+    var showsSelectors: Bool {
+        preselected == nil
     }
 
     var body: some View {
@@ -46,8 +59,9 @@ struct FunctionCallDetailsScreen: View {
             VStack {
                 ScrollView {
                     VStack(spacing: 16) {
-                        contractSelector
-                        functionSelector
+                        if showsSelectors {
+                            functionSelector
+                        }
                         if let instance = fnCallInstance {
                             FunctionCallContentView(instance: instance, selectedCoin: $selectedCoin)
                         }
@@ -56,7 +70,8 @@ struct FunctionCallDetailsScreen: View {
                 button
             }
         }
-        .screenTitle("function".localized)
+        .screenTitle(preselected?.display() ?? "function".localized)
+        .withLoading(isLoading: $functionCallViewModel.isLoading)
         .alert(isPresented: $functionCallViewModel.showAlert) {
             alert
         }
@@ -94,66 +109,7 @@ struct FunctionCallDetailsScreen: View {
             }
 
             lastLegacyFunctionMemoType = selectedFunctionMemoType
-            switch selectedFunctionMemoType {
-            case .rebond:
-                // Ensure RUNE token is selected for REBOND operations on THORChain.
-                // Hoisted here per the FunctionCall sub-model rewrite —
-                // ReBond is a pure value-reader, the screen owns the
-                // RUNE-pin so the sub-model can drop its init-time write.
-                ensureRuneCoin()
-                let rebondInstance = FunctionCallReBond()
-
-                if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
-                    rebondInstance.nodeAddress = nodeAddress
-                }
-
-                fnCallInstance = .rebond(rebondInstance)
-            case .bondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .bondMaya(
-                                FunctionCallBondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
-            case .unbondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .unbondMaya(
-                                FunctionCallUnbondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
-            case .leave, .merge:
-                // Migrated to `Features/FunctionTransaction/` — the route-out
-                // above already handled it. Listed only to keep this switch
-                // exhaustive; each migration adds its case name here.
-                break
-            case .custom:
-                fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
-            case .vote:
-                fnCallInstance = .vote(FunctionCallVote())
-            case .cosmosIBC:
-                fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
-            case .unmerge:
-                fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
-            case .theSwitch:
-                fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
-            case .addThorLP:
-                fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
-            case .securedAsset:
-                fnCallInstance = .securedAsset(FunctionCallSecuredAsset(coin: selectedCoin, vault: vault))
-            case .withdrawSecuredAsset:
-                fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
-            }
+            buildInstance(for: selectedFunctionMemoType, nodeAddress: currentNodeAddress)
         }
 #if os(iOS)
         .toolbar {
@@ -191,8 +147,54 @@ struct FunctionCallDetailsScreen: View {
 
     private func ensureRuneCoin() {
         // Ensure RUNE token is selected for operations on THORChain.
-        if let runeCoin = vault.runeCoin {
-            selectedCoin = runeCoin
+        //
+        // Only on THORChain. LEAVE is offered on MayaChain too, and swapping the
+        // coin there would move the transaction onto a different chain behind
+        // the user — rewriting the function selector's own case list along with
+        // it, and signing LEAVE against RUNE for a node the user named on Maya.
+        guard selectedCoin.chain == .thorChain, let runeCoin = vault.runeCoin else { return }
+        selectedCoin = runeCoin
+    }
+
+    /// Builds the sub-model an operation's form reads from.
+    ///
+    /// Two callers: a selection change on the dropdown, and the preselected
+    /// operation a row navigated to. Sharing one path is what keeps a row's
+    /// form identical to the one the dropdown produced.
+    private func buildInstance(for type: FunctionCallType, nodeAddress: String?) {
+        switch type {
+        case .rebond:
+            // Ensure RUNE token is selected for REBOND operations on THORChain.
+            // Hoisted here per the FunctionCall sub-model rewrite —
+            // ReBond is a pure value-reader, the screen owns the
+            // RUNE-pin so the sub-model can drop its init-time write.
+            ensureRuneCoin()
+            let rebondInstance = FunctionCallReBond()
+
+            if let nodeAddress, !nodeAddress.isEmpty {
+                rebondInstance.nodeAddress = nodeAddress
+            }
+
+            fnCallInstance = .rebond(rebondInstance)
+        case .leave, .merge:
+            // Migrated to `Features/FunctionTransaction/` — the action list
+            // routes it to its own screen and never lands here. Listed only to
+            // keep this switch exhaustive; each migration adds its case name.
+            break
+        case .custom:
+            fnCallInstance = .custom(FunctionCallCustom(coin: selectedCoin, vault: vault))
+        case .vote:
+            fnCallInstance = .vote(FunctionCallVote())
+        case .cosmosIBC:
+            fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
+        case .unmerge:
+            fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
+        case .theSwitch:
+            fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
+        case .addThorLP:
+            fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
+        case .withdrawSecuredAsset:
+            fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
         }
     }
 
@@ -211,13 +213,6 @@ struct FunctionCallDetailsScreen: View {
             selected: $selectedFunctionMemoType, coin: $selectedCoin)
     }
 
-    var contractSelector: some View {
-        FunctionCallContractSelectorDropDown(
-            items: .constant(
-                FunctionCallContractType.getCases(for: selectedCoin)),
-            selected: $selectedContractMemoType, coin: selectedCoin)
-    }
-
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
@@ -231,28 +226,52 @@ struct FunctionCallDetailsScreen: View {
                     vault: vault,
                     gas: gas
                 )
-                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                // Priced from the built transaction, not from the probe: this
+                // is the figure the user approves, and nothing downstream of
+                // Verify re-resolves it for display.
+                let pricedTx = await functionCallViewModel.pricedForVerify(immutableTx)
+                router.navigate(to: FunctionCallRoute.verify(tx: pricedTx, vault: vault))
             }
         }
     }
 }
 
 private extension FunctionCallDetailsScreen {
+    /// The active coin is set first: `buildInstance(for:nodeAddress:)` pins
+    /// RUNE for the operations that need it, and a later blanket assignment
+    /// would undo that pin.
     func setData() {
-        setupForm()
         selectedCoin = defaultCoin
+        setupForm()
     }
 
     func setupForm() {
-        self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
-        self.lastLegacyFunctionMemoType = self.selectedFunctionMemoType
-        self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
-        self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
+        if let preselected {
+            // Built through the same path a selection change takes, so a
+            // preselected operation gets exactly the form the dropdown built.
+            self.selectedFunctionMemoType = preselected
+            self.lastLegacyFunctionMemoType = preselected
+            buildInstance(for: preselected, nodeAddress: nil)
+        } else {
+            self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
+            self.lastLegacyFunctionMemoType = self.selectedFunctionMemoType
+            self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
+        }
+
         DispatchQueue.main.async {
             self.hasCompletedInitialSetup = true
         }
     }
 
+    /// A per-unit gas figure for the coin, fetched as the form is filled.
+    ///
+    /// This is a PROBE — an empty transaction with no memo, amount or recipient
+    /// — so on EVM it prices a bare transfer, not the call being built. It is
+    /// carried into the built transaction only as the value a chain that quotes
+    /// a flat gas already has; the figure Verify discloses is resolved from the
+    /// real transaction on Continue, by `FunctionCallViewModel.pricedForVerify`.
+    /// Keeping it means a failed pricing call falls back to what the screen
+    /// showed before rather than to zero.
     func loadGasInfo() async {
         let probeTx = SendTransaction.empty(coin: selectedCoin, vault: vault)
         do {

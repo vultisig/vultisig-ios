@@ -33,6 +33,10 @@ protocol LimitSwapInteractor {
     /// Live THORChain inbound addresses, for the picker's routable-chain set.
     func fetchInboundAddresses() async -> [InboundAddress]
 
+    /// Ceiling on a resting order's TTL in blocks (`StreamingLimitSwapMaxAge`).
+    /// Fails soft to the documented default.
+    func fetchLimitSwapMaxAgeBlocks() async -> Int
+
     /// Estimated source-chain broadcast fee for the limit deposit, in the fee
     /// coin's smallest units. Reuses the EXACT sign-path chain-specific fetch
     /// (`fetchSwapBlockChainSpecific` + `limitDepositChainSpecific`) so the
@@ -80,6 +84,10 @@ struct DefaultLimitSwapInteractor: LimitSwapInteractor {
 
     func fetchInboundAddresses() async -> [InboundAddress] {
         await quoteService.fetchInboundAddresses()
+    }
+
+    func fetchLimitSwapMaxAgeBlocks() async -> Int {
+        await quoteService.fetchLimitSwapMaxAgeBlocks()
     }
 
     func estimateNetworkFee(

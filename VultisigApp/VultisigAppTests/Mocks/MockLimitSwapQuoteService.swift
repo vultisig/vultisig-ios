@@ -33,6 +33,9 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
     var inboundAddressesResult: [InboundAddress] = []
     private(set) var inboundAddressesCallCount = 0
 
+    var limitSwapMaxAgeResult = THORChainConstants.defaultLimitSwapMaxAgeBlocks
+    private(set) var limitSwapMaxAgeCallCount = 0
+
     func fetchCurrentMarketPrice(
         sourceAsset: String,
         sourceAmount: BigInt,
@@ -52,6 +55,11 @@ final class MockLimitSwapQuoteService: LimitSwapQuoteServiceProtocol {
         return advancedSwapQueueEnabledResult
     }
 
+    func fetchLimitSwapMaxAgeBlocks() async -> Int {
+        limitSwapMaxAgeCallCount += 1
+        return limitSwapMaxAgeResult
+    }
+
     func fetchInboundAddresses() async -> [InboundAddress] {
         inboundAddressesCallCount += 1
         return inboundAddressesResult
@@ -67,6 +75,7 @@ final class MockLimitSwapInteractor: LimitSwapInteractor {
     var marketPriceResult: Result<Decimal, Error> = .success(0)
     var advancedSwapQueueEnabledResult = false
     var inboundAddressesResult: [InboundAddress] = []
+    var limitSwapMaxAgeResult = THORChainConstants.defaultLimitSwapMaxAgeBlocks
 
     var networkFeeResult: Result<BigInt, Error> = .success(.zero)
     private(set) var estimateNetworkFeeCallCount = 0
@@ -86,6 +95,8 @@ final class MockLimitSwapInteractor: LimitSwapInteractor {
     func isAdvancedSwapQueueEnabled() async -> Bool { advancedSwapQueueEnabledResult }
 
     func fetchInboundAddresses() async -> [InboundAddress] { inboundAddressesResult }
+
+    func fetchLimitSwapMaxAgeBlocks() async -> Int { limitSwapMaxAgeResult }
 
     func estimateNetworkFee(
         sourceCoin: Coin,

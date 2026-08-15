@@ -12,9 +12,12 @@ final class MockBalanceService: BalanceServiceProtocol {
     private(set) var updateBalanceCallCount = 0
     private(set) var lastUpdatedCoin: Coin?
 
-    func updateBalance(for coin: Coin) async {
+    /// Reports that a live balance landed — the stub always "succeeds".
+    @discardableResult
+    func updateBalance(for coin: Coin) async -> Bool {
         updateBalanceCallCount += 1
         lastUpdatedCoin = coin
+        return true
     }
 }
 

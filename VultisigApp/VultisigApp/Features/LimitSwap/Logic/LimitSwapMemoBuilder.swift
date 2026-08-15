@@ -15,7 +15,7 @@ func buildLimitSwapMemo(_ inputs: LimitSwapInputs) throws -> String {
         sourceDecimals: inputs.sourceDecimals,
         targetPrice: inputs.targetPrice
     )
-    let interval = computeExpiryBlocks(hours: inputs.expiryHours)
+    let interval = inputs.expiryBlocks
     return composeLimitSwapMemo(limString: compressLim(lim), inputs: inputs, interval: interval)
 }
 
@@ -83,7 +83,7 @@ func buildFittedLimitSwapMemo(
         sourceDecimals: inputs.sourceDecimals,
         targetPrice: inputs.targetPrice
     )
-    let interval = computeExpiryBlocks(hours: inputs.expiryHours)
+    let interval = inputs.expiryBlocks
     let limit = limitMemoByteLimit(for: sourceChainKind)
 
     // Common case: the exact (lossless) memo already fits — no rounding.
