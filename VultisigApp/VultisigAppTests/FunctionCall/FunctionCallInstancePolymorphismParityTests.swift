@@ -60,23 +60,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
 
     // MARK: - Per-case parity
 
-    func testCustomParity() {
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let model = FunctionCallCustom(coin: coin, vault: vault)
-        model.custom = "arbitrary-memo-string"
-        let instance = FunctionCallInstance.custom(model)
-
-        let tx = instance.toSendTransaction(coin: coin, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "arbitrary-memo-string")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(instance.toAddress)
-        XCTAssertNil(instance.customErrorMessage)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
-    }
-
     func testAddThorLPParity() {
         let rune = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [rune])

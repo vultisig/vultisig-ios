@@ -9,7 +9,6 @@ import BigInt
 import Foundation
 
 enum FunctionCallInstance {
-    case custom(FunctionCallCustom)
     case addThorLP(FunctionCallAddThorLP)
 
     /// The active sub-model, type-erased to the shared surface. Every
@@ -18,7 +17,6 @@ enum FunctionCallInstance {
     @MainActor
     var model: any FunctionCallSubModel {
         switch self {
-        case .custom(let memo): return memo
         case .addThorLP(let memo): return memo
         }
     }
@@ -54,38 +52,36 @@ enum FunctionCallInstance {
         model.submitErrorMessage
     }
 
-    /// Builds the sub-model for the function the details screen opens on.
-    /// Must stay case-for-case in step with `FunctionCallType.getDefault`:
-    /// the screen sets the dropdown selection from that enum and the form
-    /// from this factory, so a disagreement renders one function's form
-    /// under another function's label.
+    /// The sub-model the legacy screen opens on when no operation was
+    /// preselected, or `nil` when that chain's default has been migrated and
+    /// has no legacy form left to build.
+    ///
+    /// Optional because the answer genuinely can be "none": `FunctionCallType
+    /// .getDefault` falls back to the raw-memo operation for every chain
+    /// without an arm of its own, and that operation now lives on
+    /// `FunctionTransactionScreen`. Returning some other sub-model to keep the
+    /// signature total would open a form for an operation the chain does not
+    /// offer — the defect class the action list was built to end.
+    ///
+    /// No caller reaches this path: every route into the legacy screen carries
+    /// a preselected operation. It is kept in step with `FunctionCallType
+    /// .getDefault` so the two cannot silently diverge before the legacy shell
+    /// is deleted.
     @MainActor
-    static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance {
-        switch coin.chain {
-        case .thorChain:
-            // Kept in step with `FunctionCallType.getDefault(for:)`: the two
-            // factories run one after the other in `setupForm()`, so a
-            // disagreement would show one function's name over another's form.
-            // `.leave` and `.rebond` are migrated to `Features/FunctionTransaction/`
-            // and no longer build a sub-model here, so the default falls
-            // through to `.custom`.
-            return .custom(FunctionCallCustom(coin: coin, vault: vault))
-        case .mayaChain:
-            return .custom(FunctionCallCustom(coin: coin, vault: vault))
-        // dYdX, Gaia, Kujira and Osmosis had arms here building the vote,
-        // switch and IBC sub-models. All three have since moved to
-        // `Features/FunctionTransaction/`, and this factory has no
-        // replacement to build for any of them, so every one of those chains
-        // falls through to `.custom` — a default this factory can still
-        // build. Nothing reaches it in practice: a single-operation chain
-        // (dYdX, Kujira, Osmosis) passes straight through the action list to
-        // the migrated screen, and Gaia's two operations are both migrated,
-        // so the legacy dropdown that would apply this default is never
-        // entered either.
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+    static func getDefault(for coin: Coin, vault: Vault) -> FunctionCallInstance? {
+        let type = FunctionCallType.getDefault(for: coin)
+        // Derived from the type factory rather than re-deriving the chain
+        // mapping. The two used to answer the same question with different
+        // relations — one matched any THORChain ticker *containing* "TCY",
+        // the other matched it exactly — so a holder of a TCY wrapper was sent
+        // to one operation and handed another's form.
+        guard type.migratedTransactionType(coin: coin, nodeAddress: nil) == nil else { return nil }
+
+        switch type {
+        case .addThorLP:
             return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))
         default:
-            return .custom(FunctionCallCustom(coin: coin, vault: vault))
+            return nil
         }
     }
 

@@ -48,6 +48,12 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
+    /// THORChain / MayaChain raw-memo `MsgDeposit` — the escape hatch for an
+    /// operation the app has no form for. `coin` is the asset the deposit rides
+    /// on, and the form lets the user swap it for another of the vault's coins
+    /// on the same chain; every one of those is already held, so the intent
+    /// names only the coin the caller opened on.
+    case customMemo(coin: CoinMeta)
     /// Cosmos IBC transfer. `coin` is the asset leaving the source chain — the
     /// only coin the vault has to resolve, since the destination side of the
     /// hop is an address, not a holding. `destinationChain` optionally
@@ -138,6 +144,8 @@ enum FunctionTransactionType: Hashable {
         case .tonUnstake(let coin, _, _, _):
             return [coin]
         case .leave(let coin, _):
+            return [coin]
+        case .customMemo(let coin):
             return [coin]
         case .ibcTransfer(let coin, _):
             return [coin]

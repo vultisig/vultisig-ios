@@ -59,8 +59,6 @@ extension FunctionCallSubModel {
 //     mapping the old `FunctionCallInstance.toAddress` /
 //     `.customErrorMessage` switches encoded.
 
-extension FunctionCallCustom: FunctionCallSubModel {}
-
 extension FunctionCallAddThorLP: FunctionCallSubModel {
     func isFormValid(for _: Coin) -> Bool { isTheFormValid }
     var resolvedToAddress: String? { toAddress.isEmpty ? nil : toAddress }

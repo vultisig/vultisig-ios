@@ -36,20 +36,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         )
     }
 
-    private static func isMigrated(_ type: FunctionCallType) -> Bool {
-        type.migratedTransactionType(coin: makeRune(), nodeAddress: nil) != nil
-    }
-
-    /// The function a legacy sub-model instance stands for. Exhaustive on
-    /// purpose: `FunctionCallInstance.getDefault` and
-    /// `FunctionCallType.getDefault` are two switches that have to agree, and
-    /// adding a case to the enum should not compile until this mapping names
-    /// it too.
-    private static func functionType(of instance: FunctionCallInstance) -> FunctionCallType {
-        switch instance {
-        case .custom: return .custom
-        case .addThorLP: return .addThorLP
-        }
+    private static func isMigrated(_ type: FunctionCallType, coin: Coin) -> Bool {
+        type.migratedTransactionType(coin: coin, nodeAddress: nil) != nil
     }
 
     private func assertIsNativeAsset(
@@ -131,6 +119,36 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testLeaveIntentResolvesTheCoinItNeeds() {
         let coin = Self.makeRune()
         let intent = FunctionTransactionType.leave(coin: coin.toCoinMeta(), node: nil)
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
+    /// Unlike LEAVE, the raw-memo form is not pinned to the chain's native
+    /// asset: it deposits against one of the vault's own coins, and the form
+    /// lets the user change which. Pinning RUNE here would silently attach a
+    /// memo written for one asset to another.
+    func testCustomMapsToTheCustomMemoIntentCarryingTheSelectedCoin() {
+        let coins: [Coin] = [
+            Self.makeRune(),
+            FunctionCallFixture.makeTCY(),
+            Self.makeCacao(),
+            FunctionCallFixture.makeCoin(.thorChainStagenet, ticker: "RUNE", decimals: 8, isNative: true)
+        ]
+
+        for coin in coins {
+            guard case .customMemo(let mappedCoin)? = FunctionCallType.custom.migratedTransactionType(
+                coin: coin,
+                nodeAddress: Self.thorNode
+            ) else {
+                return XCTFail("Custom must map to the custom-memo intent on \(coin.chain.rawValue)")
+            }
+            XCTAssertEqual(mappedCoin, coin.toCoinMeta(), "\(coin.ticker) was replaced by another asset")
+        }
+    }
+
+    /// The intent's `coins` is what `needsCoinAddition` / `addCoins` read.
+    func testCustomMemoIntentResolvesTheCoinItNeeds() {
+        let coin = FunctionCallFixture.makeTCY()
+        let intent = FunctionTransactionType.customMemo(coin: coin.toCoinMeta())
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
@@ -311,28 +329,10 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: FunctionCallFixture.makeATOM()).contains(.theSwitch))
     }
 
-    /// Gaia's default moved off `.theSwitch` when Switch was migrated, and
-    /// then IBC migrated too — leaving no unmigrated operation to name.
-    /// Both factories fall back to `.custom` in step, which is unreachable in
-    /// practice: every row Gaia offers now routes through the action list to
-    /// a migrated screen, and `.custom` is not itself one of Gaia's
-    /// operations (see `testGaiaDefaultIsVestigialAndUnreachable` below).
-    @MainActor
-    func testGaiaDefaultFallsBackToCustomInBothFactories() {
-        let atom = FunctionCallFixture.makeATOM()
-        let vault = FunctionCallFixture.makeVault(coins: [atom])
-
-        XCTAssertEqual(FunctionCallType.getDefault(for: atom), .custom)
-        guard case .custom = FunctionCallInstance.getDefault(for: atom, vault: vault) else {
-            return XCTFail("FunctionCallInstance.getDefault must agree with FunctionCallType.getDefault for Gaia")
-        }
-    }
-
-    /// The "default is offered" invariant holds for every chain the dropdown
-    /// can still be entered on — but Gaia's cannot: `FunctionCallRoute` never
-    /// constructs `.details` with `preselected: nil`, and `.custom` is not in
-    /// Gaia's own case list, which is exactly why it was picked as the
-    /// unreachable fallback rather than one of Gaia's real operations.
+    /// Gaia's default falls back to `.custom`, which is unreachable in
+    /// practice: every row Gaia offers now routes through the action list to a
+    /// migrated screen, and `.custom` is not itself one of Gaia's operations
+    /// (see `testGaiaDefaultIsVestigialAndUnreachable` below).
     func testGaiaDefaultIsVestigialAndUnreachable() {
         let atom = FunctionCallFixture.makeATOM()
         XCTAssertFalse(FunctionCallType.getCases(for: atom).contains(FunctionCallType.getDefault(for: atom)))
@@ -580,19 +580,8 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
-    /// The mapping is an allowlist: everything not yet migrated keeps building
-    /// its legacy sub-model.
-    func testUnmigratedTypesMapToNil() {
-        let coin = Self.makeRune()
-        let stillLegacy: [FunctionCallType] = [
-            .custom, .addThorLP
-        ]
-        for type in stillLegacy {
-            XCTAssertNil(
-                type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
-                "\(type.rawValue) has not been migrated and must keep its legacy sub-model"
-            )
-        }
+    func testRebondStaysSelectableOnThorchain() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.rebond))
     }
 
     // MARK: - IBC
@@ -639,6 +628,19 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    /// The mapping is an allowlist: everything not yet migrated keeps building
+    /// its legacy sub-model. `addThorLP` is the only operation left.
+    func testUnmigratedTypesMapToNil() {
+        let coin = Self.makeRune()
+        let stillLegacy: [FunctionCallType] = [.addThorLP]
+        for type in stillLegacy {
+            XCTAssertNil(
+                type.migratedTransactionType(coin: coin, nodeAddress: Self.thorNode),
+                "\(type.rawValue) has not been migrated and must keep its legacy sub-model"
+            )
+        }
+    }
+
     // MARK: - Reachability
 
     func testIbcStaysSelectableOnEveryChainThatOffersIt() {
@@ -663,6 +665,20 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
     }
 
+    /// Same rule for the raw-memo form, on all four chains that offer it — and
+    /// it is the *only* operation the two test networks have, so dropping it
+    /// from their case list would empty their action list entirely.
+    func testCustomStaysSelectableOnEveryChainThatOffersIt() {
+        let chains: [Chain] = [.thorChain, .mayaChain, .thorChainChainnet, .thorChainStagenet]
+        for chain in chains {
+            let coin = FunctionCallFixture.makeCoin(chain, ticker: chain.ticker, decimals: 8, isNative: true)
+            XCTAssertTrue(
+                FunctionCallType.getCases(for: coin).contains(.custom),
+                "\(chain.rawValue) no longer offers the raw-memo operation"
+            )
+        }
+    }
+
     /// `SECURE-` is the only route out of a secured position, so losing it from
     /// the dropdown is not a cosmetic regression.
     func testWithdrawSecuredAssetStaysSelectableOnThorchain() {
@@ -673,10 +689,6 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.merge))
     }
 
-    func testRebondStaysSelectableOnThorchain() {
-        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.rebond))
-    }
-
     /// Whatever a chain defaults to has to be something the dropdown offers,
     /// or the selector opens on an entry it cannot show.
     func testThorchainDefaultIsOfferedByTheDropdown() {
@@ -684,43 +696,35 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: rune).contains(FunctionCallType.getDefault(for: rune)))
     }
 
-    /// `setupForm()` runs both default factories back to back — the type picks
-    /// the selector's label and the instance builds the form under it. THORChain
-    /// used to disagree by ticker (rebond for RUNE, custom for TCY); rebond
-    /// leaving the legacy screen collapses both to custom, and they must stay
-    /// in step or the dropdown names one function over another's form.
+    /// Rewritten from `testNoChainDefaultsToAMigratedFunction`, which this
+    /// migration makes unsatisfiable rather than merely inconvenient.
+    ///
+    /// That assertion — no chain's `getDefault` names a migrated operation —
+    /// existed because the dropdown applied the default *without publishing a
+    /// change*, so a chain defaulting to a migrated type opened on a selection
+    /// that built nothing. It cannot survive the raw-memo migration:
+    /// `FunctionCallType.getDefault` answers `.custom` for every chain without
+    /// an arm of its own, including the two THORChain test networks whose only
+    /// operation it is and roughly thirty chains that offer nothing at all.
+    /// Re-pointing them would mean inventing a default for chains with no case
+    /// list — a value chosen to satisfy a test rather than to describe the app.
+    ///
+    /// It is also no longer the invariant that matters. Rows carry their own
+    /// destination and no entry point opens the legacy screen without a
+    /// preselection, so no default decides where any user lands;
+    /// `FunctionActionCatalogTests
+    /// .testEveryOfferedActionRoutesToAScreenThatCanBuildIt` carries the
+    /// reachability half, over every operation a chain offers rather than the
+    /// one it used to open on.
+    ///
+    /// What is left worth pinning is that the two default factories *agree*.
+    /// They did not: one matched any THORChain ticker containing "TCY" and the
+    /// other matched it exactly, so a holder of a TCY wrapper was routed to one
+    /// operation and handed another's form. `FunctionCallInstance.getDefault`
+    /// now answers nil for exactly the chains whose type default is migrated,
+    /// which is the same statement made once.
     @MainActor
-    func testThorchainDefaultsAgreeAcrossBothFactories() {
-        for coin in [FunctionCallFixture.makeRUNE(), FunctionCallFixture.makeTCY()] {
-            let vault = FunctionCallFixture.makeVault(coins: [coin])
-            XCTAssertEqual(FunctionCallType.getDefault(for: coin), .custom, "\(coin.ticker)")
-            XCTAssertEqual(
-                Self.functionType(of: FunctionCallInstance.getDefault(for: coin, vault: vault)),
-                FunctionCallType.getDefault(for: coin),
-                "\(coin.ticker): the two default factories must name the same function"
-            )
-        }
-    }
-
-    /// Kept, narrowed a second time.
-    ///
-    /// It was the guard on the only entry point there was: the dropdown
-    /// applied `getDefault` without publishing a change, so a chain defaulting
-    /// to a migrated type opened on a selection that built nothing. Rows carry
-    /// their own destination now, so no default decides where a user lands, and
-    /// the invariant that protects them is
-    /// `FunctionActionCatalogTests.testEveryOfferedActionRoutesToAScreenThatCanBuildIt`
-    /// — strictly stronger, covering every operation a chain offers rather than
-    /// the one it used to open on.
-    ///
-    /// The narrowing: a chain whose entry resolves to `.action` never renders
-    /// the dropdown at all — the passthrough builds the destination in place —
-    /// and its lone case *is* its default, so "the default is migrated" is the
-    /// state the action list deliberately made legal rather than a defect. dYdX
-    /// is the first chain in it (see
-    /// `testASingleActionChainMayDefaultToItsOnlyMigratedOperation`). What
-    /// remains guarded is the dropdown that still compiles behind a `.list`.
-    func testNoMultiActionChainDefaultsToAMigratedFunction() {
+    func testTheTwoDefaultFactoriesAgreeOnWhichChainsHaveNoLegacyForm() {
         for chain in Chain.allCases {
             let coin = FunctionCallFixture.makeCoin(
                 chain,
@@ -728,12 +732,14 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
                 decimals: 8,
                 isNative: true
             )
-            guard case .list = FunctionActionCatalog.entry(for: coin) else { continue }
-
+            let vault = FunctionCallFixture.makeVault(coins: [coin])
             let defaultType = FunctionCallType.getDefault(for: coin)
-            XCTAssertFalse(
-                Self.isMigrated(defaultType),
-                "\(chain.rawValue) defaults to \(defaultType.rawValue), which no longer builds a form"
+
+            XCTAssertEqual(
+                FunctionCallInstance.getDefault(for: coin, vault: vault) == nil,
+                Self.isMigrated(defaultType, coin: coin),
+                "\(chain.rawValue) defaults to \(defaultType.rawValue), "
+                    + "and the two default factories disagree about whether it still has a legacy form"
             )
         }
     }
@@ -747,7 +753,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         let coin = Self.makeDydx()
         XCTAssertEqual(FunctionCallType.getCases(for: coin), [.vote])
         XCTAssertEqual(FunctionCallType.getDefault(for: coin), .vote)
-        XCTAssertTrue(Self.isMigrated(.vote))
+        XCTAssertTrue(Self.isMigrated(.vote, coin: coin))
 
         guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
             return XCTFail("dYdX must pass through to its only operation")

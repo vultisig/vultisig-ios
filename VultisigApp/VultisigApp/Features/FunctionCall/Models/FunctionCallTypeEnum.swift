@@ -81,8 +81,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             // so the selector opened empty over whatever form the default
             // happened to build. Custom is the operation they support — the
             // same `MsgDeposit` mainnet takes — so naming it here makes the
-            // button lead somewhere. `FunctionCallCustom` had to learn these
-            // chains too, or the form it opens could never be submitted.
+            // button lead somewhere. The form's asset predicate has to know
+            // these chains too, or the form it opens could never be submitted.
             return [.custom]
 
         default:

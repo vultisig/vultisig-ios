@@ -22,7 +22,6 @@ final class FunctionCallContentViewTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [rune, FunctionCallFixture.makeRUJI(), FunctionCallFixture.makeATOM(), FunctionCallFixture.makeKUJI()])
 
         let migrated: [FunctionCallInstance] = [
-            .custom(FunctionCallCustom(coin: rune, vault: vault)),
             .addThorLP(FunctionCallAddThorLP(coin: rune, vault: vault))
         ]
 

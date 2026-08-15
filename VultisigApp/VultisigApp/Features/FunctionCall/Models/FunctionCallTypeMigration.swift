@@ -53,6 +53,15 @@ extension FunctionCallType {
             // included, and silently left a non-native selection in place when
             // RUNE was absent.
             return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .custom:
+            // The raw-memo form deposits against one of the vault's own coins
+            // on this chain, so the coin the entry point resolved travels
+            // unchanged — no native-asset pin. The form pre-selects it when it
+            // can deposit with it and opens on an empty picker when it cannot,
+            // which is what the legacy dropdown's "Select Token" placeholder
+            // did. Pinning the native asset here instead would silently attach
+            // a memo written for one asset to another.
+            return .customMemo(coin: coin.toCoinMeta())
         case .cosmosIBC:
             // The transfer moves whichever coin the user opened Functions from,
             // native or not — an `ibc/…` token is as transferable as the chain's

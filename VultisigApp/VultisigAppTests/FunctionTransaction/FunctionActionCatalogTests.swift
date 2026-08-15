@@ -265,13 +265,17 @@ final class FunctionActionCatalogTests: XCTestCase {
     }
 
     /// The test networks offered the entry button over an empty selector.
-    /// They now pass through to the one operation they support.
+    /// They now pass through to the one operation they support — which is also
+    /// the case the previous selection-change seam could not express at all,
+    /// since a lone case is its chain's default and a default publishes no
+    /// change.
     func testThorchainTestNetworksPassThroughToCustom() {
         for chain in [Chain.thorChainChainnet, Chain.thorChainStagenet] {
-            guard case .action(let descriptor) = FunctionActionCatalog.entry(for: Self.makeCoin(chain)) else {
+            let coin = Self.makeCoin(chain)
+            guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
                 return XCTFail("\(chain.rawValue) must open its single action directly")
             }
-            XCTAssertEqual(descriptor.destination, .legacyFunctionCall(.custom))
+            XCTAssertEqual(descriptor.destination, .transaction(.customMemo(coin: coin.toCoinMeta())))
         }
     }
 

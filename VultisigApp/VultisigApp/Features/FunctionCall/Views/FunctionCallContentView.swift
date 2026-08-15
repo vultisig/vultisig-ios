@@ -16,8 +16,6 @@ struct FunctionCallContentView: View {
 
     var body: some View {
         switch instance {
-        case .custom(let model):
-            CustomFormView(model: model, selectedCoin: $selectedCoin)
         case .addThorLP(let model):
             AddThorLPFormView(model: model, selectedCoin: $selectedCoin)
         }

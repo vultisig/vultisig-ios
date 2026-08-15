@@ -141,18 +141,26 @@ final class SecuredMintRetirementParityTests: XCTestCase {
             line: line
         )
         let built = FunctionCallInstance.getDefault(for: coin, vault: vault)
-        XCTAssertEqual(
-            functionCallType(of: built),
-            selected,
-            "\(coin.chain): dropdown opens on \(selected) but the form built is \(built)",
-            file: file,
-            line: line
-        )
+        if selected.migratedTransactionType(coin: coin, nodeAddress: nil) != nil {
+            XCTAssertNil(
+                built,
+                "\(coin.chain): \(selected) is migrated and must not build a legacy form",
+                file: file,
+                line: line
+            )
+        } else {
+            XCTAssertEqual(
+                built.map(functionCallType),
+                selected,
+                "\(coin.chain): dropdown opens on \(selected) but the form built is \(String(describing: built))",
+                file: file,
+                line: line
+            )
+        }
     }
 
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
-        case .custom: return .custom
         case .addThorLP: return .addThorLP
         }
     }
