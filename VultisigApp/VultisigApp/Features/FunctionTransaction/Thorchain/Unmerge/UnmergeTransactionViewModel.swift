@@ -166,7 +166,12 @@ final class UnmergeTransactionViewModel: ObservableObject, Form {
                     thorAddr: thorAddress,
                     tokenSymbol: token.thorchainAsset
                 )
-                self?.apply(shares: BigInt(balance.shares) ?? .zero, generation: generation)
+                guard let shares = BigInt(balance.shares) else {
+                    logger.error("Unparsable merge share count returned for \(token.thorchainAsset, privacy: .public)")
+                    self?.apply(failureLabel: "errorLoadingBalance".localized, generation: generation)
+                    return
+                }
+                self?.apply(shares: shares, generation: generation)
             } catch {
                 logger.error("Error fetching merged balance: \(error.localizedDescription, privacy: .public)")
                 self?.apply(failureLabel: "errorLoadingBalance".localized, generation: generation)
