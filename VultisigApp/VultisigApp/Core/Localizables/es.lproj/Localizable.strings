@@ -1817,7 +1817,7 @@
 "youAreInLocalMode" = "Estás en modo local";
 "youArePermanentlyDeletingVault" = "Estás eliminando permanentemente tu parte del almacén de esta aplicación";
 "youreAddingLiquidity" = "Estás añadiendo liquidez";
-"youreBonding" = "Estás haciendo bond";
+"youreBonding" = "Estás vinculando";
 "youreClaiming" = "Estás reclamando";
 "youreClaimingRewards" = "Estás reclamando recompensas";
 "youreDelegating" = "Estás delegando";
@@ -1829,7 +1829,7 @@
 "youreSending" = "Estás enviando";
 "youreStaking" = "Estás haciendo staking";
 "youreSwapping" = "Estás intercambiando";
-"youreUnbonding" = "Estás deshaciendo el bond";
+"youreUnbonding" = "Estás desvinculando";
 "youreUndelegating" = "Estás cancelando la delegación";
 "youreUnstaking" = "Estás retirando";
 "yourFriendsReferralCode" = "El código de referencia de tu amigo";

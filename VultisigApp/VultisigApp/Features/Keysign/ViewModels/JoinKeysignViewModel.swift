@@ -684,9 +684,6 @@ class JoinKeysignViewModel: ObservableObject {
         didLoadSimulation = true
     }
 
-    /// The hero displayed above the transaction summary. Promotes a resolved
-    /// Blockaid balance change when available, falls back to a title-only
-    /// display with an "unverified function" caption for 4byte-only decodes.
     /// What the payload turns out to be, when its signed content says.
     ///
     /// Used as a TITLE rather than as a whole hero, so a Blockaid simulation
@@ -697,6 +694,9 @@ class JoinKeysignViewModel: ObservableObject {
         keysignPayload.flatMap(DecodedTransactionPresentation.operationTitle(for:))
     }
 
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
             return sim.heroContent(

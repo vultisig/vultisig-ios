@@ -37,7 +37,10 @@ struct CosmosTransactionDecoder: TransactionContentDecoder {
         let fields = memo.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
         guard let head = fields.first else { return nil }
 
-        switch head {
+        // Case-folded, as the sibling decoders are. Neither of these heads
+        // collides with anything, and a client that spells one differently is
+        // sending the same instruction — the chain lowercases before parsing.
+        switch head.uppercased() {
         // `SWITCH:<thorAddress>` moves a token to THORChain from the chain it
         // lives on now. It is not a send: the destination is the sender's own
         // THORChain address, and announcing it as a transfer to a stranger is
