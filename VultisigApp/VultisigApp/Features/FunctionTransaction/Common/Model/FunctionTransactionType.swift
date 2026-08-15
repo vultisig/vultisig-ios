@@ -57,6 +57,11 @@ enum FunctionTransactionType: Hashable {
     /// from. The THORChain address the memo names comes from the vault, so it
     /// is not on the intent either.
     case theSwitch(coin: CoinMeta)
+    /// THORChain node REBOND. `node` pre-fills the node currently holding the
+    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
+    /// the memo's second address and the optional partial amount are always
+    /// typed on the form, so neither belongs on the intent.
+    case rebond(coin: CoinMeta, node: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -94,6 +99,8 @@ enum FunctionTransactionType: Hashable {
         case .leave(let coin, _):
             return [coin]
         case .theSwitch(let coin):
+            return [coin]
+        case .rebond(let coin, _):
             return [coin]
         }
     }

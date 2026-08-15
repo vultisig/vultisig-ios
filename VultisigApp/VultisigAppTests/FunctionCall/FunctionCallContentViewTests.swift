@@ -22,7 +22,6 @@ final class FunctionCallContentViewTests: XCTestCase {
         let vault = FunctionCallFixture.makeVault(coins: [rune, FunctionCallFixture.makeRUJI(), FunctionCallFixture.makeATOM(), FunctionCallFixture.makeKUJI()])
 
         let migrated: [FunctionCallInstance] = [
-            .rebond(FunctionCallReBond()),
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
             .vote(FunctionCallVote()),
             .cosmosIBC(FunctionCallCosmosIBC(coin: FunctionCallFixture.makeKUJI(), vault: vault)),
