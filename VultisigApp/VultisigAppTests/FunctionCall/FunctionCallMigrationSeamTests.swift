@@ -48,7 +48,6 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     private static func functionType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
         case .custom: return .custom
-        case .cosmosIBC: return .cosmosIBC
         case .addThorLP: return .addThorLP
         }
     }
@@ -312,24 +311,31 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertTrue(FunctionCallType.getCases(for: FunctionCallFixture.makeATOM()).contains(.theSwitch))
     }
 
-    /// Gaia's default moved off `.theSwitch` when it was migrated, and it moved
-    /// in BOTH factories. A one-sided change opens the screen naming one
-    /// function over another function's form.
+    /// Gaia's default moved off `.theSwitch` when Switch was migrated, and
+    /// then IBC migrated too — leaving no unmigrated operation to name.
+    /// Both factories fall back to `.custom` in step, which is unreachable in
+    /// practice: every row Gaia offers now routes through the action list to
+    /// a migrated screen, and `.custom` is not itself one of Gaia's
+    /// operations (see `testGaiaDefaultIsVestigialAndUnreachable` below).
     @MainActor
-    func testGaiaDefaultsToIBCInBothFactories() {
+    func testGaiaDefaultFallsBackToCustomInBothFactories() {
         let atom = FunctionCallFixture.makeATOM()
         let vault = FunctionCallFixture.makeVault(coins: [atom])
 
-        XCTAssertEqual(FunctionCallType.getDefault(for: atom), .cosmosIBC)
-        guard case .cosmosIBC = FunctionCallInstance.getDefault(for: atom, vault: vault) else {
+        XCTAssertEqual(FunctionCallType.getDefault(for: atom), .custom)
+        guard case .custom = FunctionCallInstance.getDefault(for: atom, vault: vault) else {
             return XCTFail("FunctionCallInstance.getDefault must agree with FunctionCallType.getDefault for Gaia")
         }
     }
 
-    /// The default has to remain something the dropdown actually offers.
-    func testGaiaDefaultIsOfferedOnGaia() {
+    /// The "default is offered" invariant holds for every chain the dropdown
+    /// can still be entered on — but Gaia's cannot: `FunctionCallRoute` never
+    /// constructs `.details` with `preselected: nil`, and `.custom` is not in
+    /// Gaia's own case list, which is exactly why it was picked as the
+    /// unreachable fallback rather than one of Gaia's real operations.
+    func testGaiaDefaultIsVestigialAndUnreachable() {
         let atom = FunctionCallFixture.makeATOM()
-        XCTAssertTrue(FunctionCallType.getCases(for: atom).contains(FunctionCallType.getDefault(for: atom)))
+        XCTAssertFalse(FunctionCallType.getCases(for: atom).contains(FunctionCallType.getDefault(for: atom)))
     }
 
     func testWithdrawSecuredAssetIntentResolvesTheCoinItNeeds() {
@@ -579,7 +585,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .custom, .cosmosIBC, .addThorLP
+            .custom, .addThorLP
         ]
         for type in stillLegacy {
             XCTAssertNil(
@@ -589,7 +595,64 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         }
     }
 
+    // MARK: - IBC
+
+    /// Unlike LEAVE, the IBC intent must NOT be pinned to the chain's native
+    /// asset: an `ibc/…` or `factory/…` token is as transferable as the chain's
+    /// own coin, and pinning would silently transfer the wrong asset.
+    func testIbcMapsToTheTransferIntentOnTheSelectedCoin() {
+        for coin in [FunctionCallFixture.makeKUJI(), FunctionCallFixture.makeATOM()] {
+            guard case .ibcTransfer(let mappedCoin, let destination)? =
+                    FunctionCallType.cosmosIBC.migratedTransactionType(coin: coin, nodeAddress: nil) else {
+                return XCTFail("IBC must map to the transfer intent on \(coin.chain.rawValue)")
+            }
+
+            XCTAssertEqual(mappedCoin, coin.toCoinMeta())
+            XCTAssertNil(destination, "The list is entered cold — no route is pre-selected")
+        }
+    }
+
+    /// A non-native asset keeps its own identity through the mapping. The
+    /// legacy screen had no pinning here either; this pins that it stays that
+    /// way as the other migrations add `ensureRuneCoin`-style pins.
+    func testIbcDoesNotPinToTheChainsNativeAsset() {
+        let ibcToken = FunctionCallFixture.makeCoin(
+            .kujira,
+            ticker: "USK",
+            decimals: 6,
+            isNative: false,
+            address: FunctionCallFixture.kujiAddress
+        )
+
+        guard case .ibcTransfer(let mappedCoin, _)? =
+                FunctionCallType.cosmosIBC.migratedTransactionType(coin: ibcToken, nodeAddress: nil) else {
+            return XCTFail("IBC must map to the transfer intent")
+        }
+
+        XCTAssertEqual(mappedCoin.ticker, "USK")
+        XCTAssertEqual(mappedCoin.isNativeToken, false)
+    }
+
+    func testIbcIntentResolvesTheCoinItNeeds() {
+        let coin = FunctionCallFixture.makeKUJI()
+        let intent = FunctionTransactionType.ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
     // MARK: - Reachability
+
+    func testIbcStaysSelectableOnEveryChainThatOffersIt() {
+        for coin in [
+            FunctionCallFixture.makeKUJI(),
+            FunctionCallFixture.makeATOM(),
+            FunctionCallFixture.makeCoin(.osmosis, ticker: "OSMO", decimals: 6, isNative: true)
+        ] {
+            XCTAssertTrue(
+                FunctionCallType.getCases(for: coin).contains(.cosmosIBC),
+                "\(coin.chain.rawValue) must keep offering IBC — the catalog builds its rows from getCases"
+            )
+        }
+    }
 
     /// `FunctionActionCatalog` builds a chain's rows from its case list, so a
     /// migrated operation dropped from `getCases` loses its row — the

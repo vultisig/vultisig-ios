@@ -53,6 +53,13 @@ extension FunctionCallType {
             // included, and silently left a non-native selection in place when
             // RUNE was absent.
             return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .cosmosIBC:
+            // The transfer moves whichever coin the user opened Functions from,
+            // native or not — an `ibc/…` token is as transferable as the chain's
+            // own asset — so unlike LEAVE this must NOT be pinned to the
+            // chain's native coin. The selected coin already resolves against
+            // the vault, which is what the form needs to read a balance.
+            return .ibcTransfer(coin: coin.toCoinMeta(), destinationChain: nil)
         case .vote:
             // The ballot rides the memo and the deposit is empty, so the only
             // coin the vault has to resolve is the one that pays the dYdX fee.

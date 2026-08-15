@@ -54,8 +54,15 @@ final class FunctionCallReachabilityTests: XCTestCase {
 
     /// The screen opens on `getDefault` and lists `getCases`; a default outside
     /// that list is a form the dropdown cannot return the user to.
+    ///
+    /// Gaia is exempt: it offers two operations and both are migrated, so
+    /// there is no unmigrated case left to point the default at. It falls
+    /// back to `.custom`, which is not one of Gaia's own cases — harmless,
+    /// because every row Gaia offers routes through the action list to a
+    /// migrated screen and never consults this default at all. See
+    /// `FunctionCallMigrationSeamTests.testGaiaDefaultIsVestigialAndUnreachable`.
     func testEveryMemoChainDefaultIsOffered() {
-        for chain in CoinAction.memoChains {
+        for chain in CoinAction.memoChains where chain != .gaiaChain {
             let coin = nativeCoin(for: chain)
             let cases = FunctionCallType.getCases(for: coin)
             let selected = FunctionCallType.getDefault(for: coin)
@@ -120,7 +127,6 @@ final class FunctionCallReachabilityTests: XCTestCase {
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
         case .custom: return .custom
-        case .cosmosIBC: return .cosmosIBC
         case .addThorLP: return .addThorLP
         }
     }

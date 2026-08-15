@@ -4,7 +4,9 @@
 //
 //  Guards the "Replace Conditional with Polymorphism" collapse of
 //  `FunctionCallInstance`: every accessor now forwards through the single
-//  `model` sub-model instead of re-`switch`ing the 13-case enum.
+//  `model` sub-model instead of re-`switch`ing the enum. The case count keeps
+//  shrinking as operations migrate to `Features/FunctionTransaction/`; only
+//  the still-legacy cases are pinned here.
 //
 //  The critical invariant is that `toSendTransaction` — which feeds
 //  signing — stays byte-identical per case. Each test builds a case with
@@ -73,23 +75,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         XCTAssertNil(instance.customErrorMessage)
 
         assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
-    }
-
-    func testCosmosIBCParity() {
-        let kuji = FunctionCallFixture.makeKUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [kuji])
-        let model = FunctionCallCosmosIBC(coin: kuji, vault: vault)
-        model.selectedChainObject = .gaiaChain
-        model.destinationAddress = "cosmos1abc"
-        let instance = FunctionCallInstance.cosmosIBC(model)
-
-        let tx = instance.toSendTransaction(coin: kuji, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, model.toString())
-        XCTAssertEqual(tx.transactionType, .ibcTransfer)
-        XCTAssertEqual(tx.toAddress, "cosmos1abc")
-        XCTAssertEqual(instance.toAddress, "cosmos1abc")
-
-        assertForwardingParity(instance, forwardsTo: model, coin: kuji, vault: vault, gas: 0)
     }
 
     func testAddThorLPParity() {

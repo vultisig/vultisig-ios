@@ -185,6 +185,65 @@ final class FunctionActionCatalogTests: XCTestCase {
         XCTAssertNil(node, "The list is entered cold — there is no previous form to inherit a node address from")
     }
 
+    /// The constraint made concrete. Kujira and Osmosis each offer exactly one
+    /// operation and that operation is now migrated — the shape
+    /// `testASingleMigratedActionRoutesStraightToItsOwnScreen` describes with a
+    /// synthetic case list, here on the real chains that have it. Under the
+    /// selection-change seam these two were unmigratable: a lone case is also
+    /// the chain's default, and a default never publishes a change.
+    func testTheSingleActionChainsPassThroughToTheIbcScreen() {
+        for chain in [Chain.kujira, Chain.osmosis] {
+            let coin = Self.makeCoin(chain)
+            XCTAssertEqual(
+                FunctionCallType.getCases(for: coin),
+                [.cosmosIBC],
+                "\(chain.rawValue) must offer IBC and nothing else for this to be the passthrough case"
+            )
+
+            guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+                return XCTFail("\(chain.rawValue) must open its single action directly, not via the list")
+            }
+            guard case .transaction(let transactionType) = descriptor.destination else {
+                return XCTFail("\(chain.rawValue)'s IBC row must not be routed through the legacy screen")
+            }
+            guard case .ibcTransfer(let intentCoin, let destination) = transactionType else {
+                return XCTFail("Expected the IBC transfer intent on \(chain.rawValue)")
+            }
+
+            XCTAssertEqual(intentCoin.chain, chain)
+            XCTAssertNil(destination, "The list is entered cold — there is no route to inherit")
+        }
+    }
+
+    /// Gaia offers two operations and both are migrated, so the list renders
+    /// two rows that each route straight to their own screen — no row falls
+    /// back to the legacy form any more. The mixed case this used to pin
+    /// (IBC migrated, Switch still legacy) no longer exists once both land.
+    func testGaiaRendersAListWithBothRowsMigrated() {
+        let coin = Self.makeCoin(.gaiaChain)
+
+        guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("Gaia offers two operations and must show the list")
+        }
+        XCTAssertEqual(descriptors.map { $0.id }, [FunctionCallType.cosmosIBC.rawValue, FunctionCallType.theSwitch.rawValue])
+
+        guard case .transaction(let ibcType) = descriptors[0].destination else {
+            return XCTFail("Gaia's IBC row must route to the migrated screen")
+        }
+        guard case .ibcTransfer(let ibcCoin, _) = ibcType else {
+            return XCTFail("Expected the IBC transfer intent")
+        }
+        XCTAssertEqual(ibcCoin.chain, .gaiaChain)
+
+        guard case .transaction(let switchType) = descriptors[1].destination else {
+            return XCTFail("Gaia's Switch row must route to the migrated screen")
+        }
+        guard case .theSwitch(let switchCoin) = switchType else {
+            return XCTFail("Expected the switch intent")
+        }
+        XCTAssertEqual(switchCoin.chain, .gaiaChain)
+    }
+
     func testMoreThanOneActionRendersTheList() {
         let coin = FunctionCallFixture.makeRUNE()
         let expected = FunctionCallType.getCases(for: coin)

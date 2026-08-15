@@ -48,6 +48,17 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
+    /// Cosmos IBC transfer. `coin` is the asset leaving the source chain — the
+    /// only coin the vault has to resolve, since the destination side of the
+    /// hop is an address, not a holding. `destinationChain` optionally
+    /// pre-selects the route for a caller that already knows it (a future
+    /// bridge card); nil opens the picker unselected, which is what the action
+    /// list does — it is entered cold.
+    ///
+    /// The destination address and the user's memo are deliberately *not* here:
+    /// they are typed on the form, so they belong to the builder this intent
+    /// eventually produces, not to the intent that opens the form.
+    case ibcTransfer(coin: CoinMeta, destinationChain: Chain?)
     /// dYdX governance vote. `coin` is dYdX's native asset: the ballot rides a
     /// memo with nothing attached, so the only coin the vault has to resolve is
     /// the one that pays the fee.
@@ -127,6 +138,8 @@ enum FunctionTransactionType: Hashable {
         case .tonUnstake(let coin, _, _, _):
             return [coin]
         case .leave(let coin, _):
+            return [coin]
+        case .ibcTransfer(let coin, _):
             return [coin]
         case .dydxVote(let coin):
             return [coin]

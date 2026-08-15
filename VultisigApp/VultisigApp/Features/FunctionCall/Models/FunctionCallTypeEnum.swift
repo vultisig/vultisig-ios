@@ -90,11 +90,14 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         }
     }
 
-    /// The function the details screen opens on. Must always be a member of
-    /// `getCases(for:)` — a default the dropdown does not list strands the
-    /// user on a form they cannot get back to. `FunctionCallInstance.getDefault`
-    /// builds the matching sub-model and has to agree case-for-case; neither
-    /// factory derives from the other, so the pairing is pinned by tests.
+    /// The function the details screen opens on. Must be a member of
+    /// `getCases(for:)` whenever the dropdown can still be entered — a
+    /// default the dropdown does not list strands the user on a form they
+    /// cannot get back to — except a chain whose every operation has been
+    /// migrated, where the dropdown is unreachable and the default is
+    /// vestigial (Gaia). `FunctionCallInstance.getDefault` builds the
+    /// matching sub-model and has to agree case-for-case; neither factory
+    /// derives from the other, so the pairing is pinned by tests.
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
@@ -109,13 +112,24 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .custom
         case .dydx:
             return .vote
-        // Switch has moved to `Features/FunctionTransaction/` and is
-        // reached by selecting it, which is why it stays in `getCases`.
-        // It cannot stay the default: the default is applied without
-        // publishing a change, so the route-out would never fire.
-        // `FunctionCallInstance.getDefault(for:vault:)` mirrors this.
-        case .gaiaChain, .kujira, .osmosis:
+        // Kujira and Osmosis offer exactly one operation, `.cosmosIBC`, and
+        // it is migrated to `Features/FunctionTransaction/`. That is the
+        // same shape as dYdX's `.vote` above: a single-operation chain's
+        // entry point passes straight through the action list to the
+        // migrated screen without ever consulting this default, so naming
+        // the migrated type here is honest rather than a defect —
+        // `testASingleActionChainMayDefaultToItsOnlyMigratedOperation` is
+        // what pins that exemption.
+        case .kujira, .osmosis:
             return .cosmosIBC
+        // Gaia offers two operations, `.cosmosIBC` and `.theSwitch`, and both
+        // are migrated — unlike Kujira/Osmosis there is no unmigrated
+        // operation left to point the legacy dropdown default at. It falls
+        // through to `.custom` instead: unreachable in practice, since every
+        // row Gaia offers routes through the action list to a migrated
+        // screen, but a default that names a migrated type is what
+        // `testNoMultiActionChainDefaultsToAMigratedFunction` exists to
+        // catch for chains the dropdown can still be entered on.
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP
         default:

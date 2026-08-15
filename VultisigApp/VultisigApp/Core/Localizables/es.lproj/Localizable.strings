@@ -589,6 +589,8 @@
 "holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
 "howItWorks" = "Cómo funciona";
 "IBC Transfer" = "Transferencia IBC";
+"ibcNoDestinationChains" = "Este activo no tiene rutas IBC desde esta cadena";
+"ibcTransferTitle" = "Transferencia IBC";
 "import" = "Importar";
 "importSeedphrase" = "Importar frase semilla";
 "importSeedphraseSubtitle" = "Ingrésala, crea una bóveda, nunca mires atrás.";
