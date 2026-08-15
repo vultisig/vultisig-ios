@@ -61,10 +61,6 @@ extension FunctionCallSubModel {
 
 extension FunctionCallCustom: FunctionCallSubModel {}
 
-extension FunctionCallVote: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-}
-
 extension FunctionCallCosmosIBC: FunctionCallSubModel {
     var resolvedToAddress: String? { destinationAddress }
 }

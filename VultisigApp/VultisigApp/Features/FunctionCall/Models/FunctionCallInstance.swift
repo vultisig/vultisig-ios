@@ -10,7 +10,6 @@ import Foundation
 
 enum FunctionCallInstance {
     case custom(FunctionCallCustom)
-    case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
     case addThorLP(FunctionCallAddThorLP)
 
@@ -21,7 +20,6 @@ enum FunctionCallInstance {
     var model: any FunctionCallSubModel {
         switch self {
         case .custom(let memo): return memo
-        case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
         case .addThorLP(let memo): return memo
         }
@@ -76,8 +74,6 @@ enum FunctionCallInstance {
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
         case .mayaChain:
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
-        case .dydx:
-            return .vote(FunctionCallVote())
         // Switch has moved to `Features/FunctionTransaction/`. A migrated
         // type must never be a chain's default — the default is applied
         // without publishing a selection change, so the route-out never

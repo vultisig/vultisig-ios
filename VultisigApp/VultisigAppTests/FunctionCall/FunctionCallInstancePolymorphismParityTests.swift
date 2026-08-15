@@ -75,24 +75,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
     }
 
-    func testVoteParity() {
-        let model = FunctionCallVote()
-        model.selectedMemo = .yes
-        model.proposalID = 42
-        let coin = FunctionCallFixture.makeCoin(.dydx, ticker: "DYDX", decimals: 18, isNative: true)
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let instance = FunctionCallInstance.vote(model)
-
-        let tx = instance.toSendTransaction(coin: coin, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "DYDX_VOTE:Yes:42")
-        XCTAssertEqual(tx.transactionType, .vote)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(instance.toAddress)
-        XCTAssertEqual(instance.amount, .zero)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
-    }
-
     func testCosmosIBCParity() {
         let kuji = FunctionCallFixture.makeKUJI()
         let vault = FunctionCallFixture.makeVault(coins: [kuji])

@@ -26,9 +26,18 @@ extension FunctionCallType {
     /// The `FunctionTransactionType` this function selection routes to, or
     /// `nil` when the operation still lives on the legacy screen.
     ///
-    /// A migrated type must never be a chain's `getDefault(for:)`: the default
-    /// is applied without publishing a change, so the route-out would never
+    /// A migrated type must not be the `getDefault(for:)` of a chain that
+    /// renders the action *list*: behind the list the dropdown still applies
+    /// its default without publishing a change, so the route-out would never
     /// fire and the user would land on a selection with no form.
+    ///
+    /// A chain offering exactly one operation is exempt, and dYdX is the first
+    /// one to use the exemption. Its lone case is necessarily also its default,
+    /// and the entry point passes straight through to that operation's
+    /// destination without consulting `getDefault` at all — which is precisely
+    /// the constraint the action list was built to remove. Pinned by
+    /// `FunctionCallMigrationSeamTests.testNoMultiActionChainDefaultsToAMigratedFunction`
+    /// and its companion.
     ///
     /// - Parameters:
     ///   - coin: the coin currently selected on the legacy screen, which
@@ -44,6 +53,18 @@ extension FunctionCallType {
             // included, and silently left a non-native selection in place when
             // RUNE was absent.
             return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .vote:
+            // The ballot rides the memo and the deposit is empty, so the only
+            // coin the vault has to resolve is the one that pays the dYdX fee.
+            // Naming the native asset from the token store rather than the
+            // selected coin gives the same fail-closed property LEAVE has: a
+            // vault that cannot pay lands on the shared "not in vault" error
+            // instead of opening a form whose Continue could never produce a
+            // signable transaction.
+            let nativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == .dydx && $0.isNativeToken
+            }
+            return .dydxVote(coin: nativeAsset ?? coin.toCoinMeta())
         case .theSwitch:
             // SWITCH is a plain transfer to THORChain's inbound vault for the
             // source chain, and that vault credits the chain's native asset

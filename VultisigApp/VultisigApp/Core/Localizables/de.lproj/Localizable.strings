@@ -622,6 +622,7 @@
 "invalidIntegerError" = "Ungültige Ganzzahl";
 "invalidLPUnits" = "Ungültige LP-Einheiten";
 "invalidOperatorFee" = "Ungültige Betreibergebühr";
+"invalidProposalIDError" = "Gib eine gültige Proposal ID ein";
 "invalidRecipientAddressError" = "Dieser Empfänger ist keine gültige Adresse für diese Kette.";
 "invalidVaultData" = "Ungültige Tresordaten";
 "Italian" = "Italienisch";
@@ -1338,6 +1339,7 @@
 "selectVaults" = "Gewölbe auswählen";
 "selectVaultsToBackUpSubtitle" = "Wählen Sie, ob Sie nur diesen Gewölbe oder alle Gewölbe in Ihrer App sichern möchten.";
 "selectVaultsToBackUpTitle" = "Wählen Sie Gewölbe, um sich zu sichern";
+"selectVoteOptionError" = "Wähle eine Abstimmungsoption";
 "self" = "Selbst";
 "sell" = "Verkaufen";
 "send" = "Senden";

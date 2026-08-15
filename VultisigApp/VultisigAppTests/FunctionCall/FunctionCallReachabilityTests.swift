@@ -78,9 +78,19 @@ final class FunctionCallReachabilityTests: XCTestCase {
     /// condition differently — a substring match on one side, an equality on
     /// the other — so the TCY-family tickers are not covered here. Extending
     /// the sweep to them is a follow-up, not this change.
+    ///
+    /// A chain whose entry resolves to `.action` (exactly one operation,
+    /// already migrated) never renders the dropdown `FunctionCallInstance
+    /// .getDefault` builds a form for — the passthrough opens the migrated
+    /// screen directly, bypassing both factories. dYdX is the first such
+    /// chain (see `FunctionCallMigrationSeamTests
+    /// .testASingleActionChainMayDefaultToItsOnlyMigratedOperation`), so it is
+    /// exempt from the agreement this test otherwise requires.
     func testBothDefaultFactoriesAgreeForEveryMemoChain() {
         for chain in CoinAction.memoChains {
-            assertDefaultFactoriesAgree(for: nativeCoin(for: chain))
+            let coin = nativeCoin(for: chain)
+            guard case .list = FunctionActionCatalog.entry(for: coin) else { continue }
+            assertDefaultFactoriesAgree(for: coin)
         }
     }
 
@@ -110,7 +120,6 @@ final class FunctionCallReachabilityTests: XCTestCase {
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
         case .custom: return .custom
-        case .vote: return .vote
         case .cosmosIBC: return .cosmosIBC
         case .addThorLP: return .addThorLP
         }

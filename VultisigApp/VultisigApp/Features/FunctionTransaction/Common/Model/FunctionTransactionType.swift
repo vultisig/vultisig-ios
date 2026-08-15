@@ -48,6 +48,15 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
+    /// dYdX governance vote. `coin` is dYdX's native asset: the ballot rides a
+    /// memo with nothing attached, so the only coin the vault has to resolve is
+    /// the one that pays the fee.
+    ///
+    /// Named for the chain rather than for the operation because the memo is:
+    /// `DYDX_VOTE:…` is not the `QBTC_VOTE:…` the DeFi tab's governance segment
+    /// builds, and a bare `.vote` intent would invite a caller to route one
+    /// through the other.
+    case dydxVote(coin: CoinMeta)
     /// Cosmos Hub → THORChain SWITCH. `coin` is the source chain's native
     /// asset: the transfer goes to THORChain's inbound vault for that chain,
     /// and that vault only credits the native asset — a Gaia IBC token sent
@@ -118,6 +127,8 @@ enum FunctionTransactionType: Hashable {
         case .tonUnstake(let coin, _, _, _):
             return [coin]
         case .leave(let coin, _):
+            return [coin]
+        case .dydxVote(let coin):
             return [coin]
         case .theSwitch(let coin):
             return [coin]

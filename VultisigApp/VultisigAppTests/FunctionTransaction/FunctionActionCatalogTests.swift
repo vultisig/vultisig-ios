@@ -115,14 +115,43 @@ final class FunctionActionCatalogTests: XCTestCase {
 
     // MARK: - Single-action passthrough
 
-    func testASingleActionSkipsTheList() {
+    /// Replaces `testASingleActionSkipsTheList`, which used dYdX as its
+    /// one-action chain back when the vote was still legacy: dYdX is now the
+    /// first *real* instance of the shape the synthetic test below describes —
+    /// one action, already migrated. The unmigrated single-action case is still
+    /// covered, by `testThorchainTestNetworksPassThroughToCustom`.
+    ///
+    /// This is the only way into the governance vote, so a fall-back to the
+    /// legacy screen would open a form that no longer exists.
+    func testDydxPassesThroughToTheMigratedVoteScreen() {
         let coin = Self.makeCoin(.dydx)
-        XCTAssertEqual(FunctionCallType.getCases(for: coin).count, 1, "Fixture chain must offer one action")
+        XCTAssertEqual(FunctionCallType.getCases(for: coin), [.vote], "dYdX must offer exactly the vote")
 
         guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
             return XCTFail("A chain with one action must open that action directly")
         }
-        XCTAssertEqual(descriptor.destination, .legacyFunctionCall(.vote))
+        guard case .transaction(let transactionType) = descriptor.destination else {
+            return XCTFail("dYdX's vote is migrated and must not be routed through the legacy screen")
+        }
+        guard case .dydxVote(let voteCoin) = transactionType else {
+            return XCTFail("Expected the dYdX vote intent")
+        }
+        XCTAssertEqual(voteCoin.chain, .dydx)
+        XCTAssertEqual(voteCoin.ticker, "DYDX")
+        XCTAssertTrue(voteCoin.isNativeToken)
+
+        // And the route the descriptor names really is the transaction screen —
+        // no default, no legacy screen, nothing between the entry button and the
+        // ballot.
+        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        guard case .functionTransaction(_, let routed) = FunctionCallRoute.route(
+            for: descriptor.destination,
+            coin: coin,
+            vault: vault
+        ) else {
+            return XCTFail("dYdX's single action must route to FunctionTransactionScreen")
+        }
+        XCTAssertEqual(routed, transactionType)
     }
 
     /// The constraint this screen removes.
