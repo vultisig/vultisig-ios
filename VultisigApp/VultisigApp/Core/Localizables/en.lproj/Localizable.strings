@@ -881,11 +881,9 @@
 "Merge" = "Merge";
 "mergeCoins" = "Merge Coins";
 "message" = "Message";
-"messageDeposit" = "%@ message deposit";
 "messageSigned" = "Message signed";
 "messageSignFailed" = "Message sign failed";
 "messageToSign" = "Message to sign";
-"messageVote" = "%@ message vote";
 "method" = "Method";
 "migrate" = "Migrate";
 "migratePasswordDescription" = "Enter your password to unlock your Server Share and start the upgrade";

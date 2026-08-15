@@ -11,7 +11,6 @@ struct FunctionCallDetailsScreen: View {
     @ObservedObject var vault: Vault
 
     @State private var selectedFunctionMemoType: FunctionCallType = .custom
-    @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
@@ -40,7 +39,6 @@ struct FunctionCallDetailsScreen: View {
             VStack {
                 ScrollView {
                     VStack(spacing: 16) {
-                        contractSelector
                         functionSelector
                         if let instance = fnCallInstance {
                             FunctionCallContentView(instance: instance, selectedCoin: $selectedCoin)
@@ -180,13 +178,6 @@ struct FunctionCallDetailsScreen: View {
             selected: $selectedFunctionMemoType, coin: $selectedCoin)
     }
 
-    var contractSelector: some View {
-        FunctionCallContractSelectorDropDown(
-            items: .constant(
-                FunctionCallContractType.getCases(for: selectedCoin)),
-            selected: $selectedContractMemoType, coin: selectedCoin)
-    }
-
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
@@ -214,7 +205,6 @@ private extension FunctionCallDetailsScreen {
 
     func setupForm() {
         self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
-        self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
         self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
         DispatchQueue.main.async {
             self.hasCompletedInitialSetup = true
