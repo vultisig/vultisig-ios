@@ -2,14 +2,17 @@
 //  FunctionCallMigrationSeamTests.swift
 //  VultisigAppTests
 //
-//  The legacy details screen is still the only entry point for the operations
-//  that have moved to `Features/FunctionTransaction/`, so it routes out
-//  through `FunctionCallType.migratedTransactionType(coin:nodeAddress:)`
-//  instead of building a sub-model. These pin the two ways that seam breaks:
-//  a migrated operation dropped from the chain's case list (unreachable), and
-//  a migrated operation left as a chain's default (the default is applied
-//  without publishing a change, so the route-out never fires and the user
-//  lands on a selection with no form).
+//  `FunctionCallType.migratedTransactionType(coin:nodeAddress:)` is the one
+//  statement of which operations have moved to
+//  `Features/FunctionTransaction/`. Both producers read it: the action list
+//  asks it to decide a row's destination, and the legacy details screen still
+//  asks it on selection change behind the dropdown that no entry point opens
+//  any more.
+//
+//  These pin the mapping itself, the coin it pins an operation to, and the
+//  reachability rule that outlived the dropdown: a migrated operation dropped
+//  from the chain's case list disappears from the list too, because the
+//  catalog is built from `getCases`.
 //
 
 @testable import VultisigApp
@@ -137,16 +140,29 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
 
     // MARK: - Reachability
 
-    /// A migrated operation is reached by *selecting* it, so it has to stay in
-    /// the chain's case list until the action-list screen replaces the
-    /// dropdown. Dropping it here removes the feature.
+    /// `FunctionActionCatalog` builds a chain's rows from its case list, so a
+    /// migrated operation dropped from `getCases` loses its row — the
+    /// operation would be migrated *and* unreachable. The rule survived the
+    /// dropdown it was written for.
     func testLeaveStaysSelectableOnBothChainsThatOfferIt() {
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.leave))
         XCTAssertTrue(FunctionCallType.getCases(for: Self.makeCacao()).contains(.leave))
     }
 
-    /// The route-out fires on a *change* of selection. A chain whose default is
-    /// a migrated type would open on a selection that builds nothing.
+    /// Kept, with a narrower job than it was written for.
+    ///
+    /// It was the guard on the only entry point there was: the dropdown
+    /// applied `getDefault` without publishing a change, so a chain defaulting
+    /// to a migrated type opened on a selection that built nothing. Rows carry
+    /// their own destination, so no default decides where a user lands any
+    /// more, and the invariant that now protects them is
+    /// `FunctionActionCatalogTests
+    /// .testEveryOfferedActionRoutesToAScreenThatCanBuildIt`, which is
+    /// strictly stronger — it covers every operation a chain offers, not just
+    /// the one it used to open on.
+    ///
+    /// This still fails loudly if the dropdown path is re-entered before the
+    /// legacy shell is deleted, and it costs one `Chain.allCases` walk.
     func testNoChainDefaultsToAMigratedFunction() {
         for chain in Chain.allCases {
             let coin = FunctionCallFixture.makeCoin(
