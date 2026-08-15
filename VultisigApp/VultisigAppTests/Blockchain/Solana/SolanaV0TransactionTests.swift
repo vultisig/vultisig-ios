@@ -417,11 +417,11 @@ final class SolanaV0TransactionTests: XCTestCase {
     func testMemoInjectionAppendsOneAccountlessInstructionCarryingTheText() throws {
         let transaction = try SolanaV0Transaction(wireBytes: try Builder().bytes())
 
-        let tagged = try transaction.injectingMemo("vs")
+        let tagged = try transaction.injectingMemo("8k2mz")
 
         XCTAssertEqual(tagged.instructions.count, transaction.instructions.count + 1)
         let memo = try XCTUnwrap(tagged.instructions.last)
-        XCTAssertEqual(memo.data, [UInt8]("vs".utf8))
+        XCTAssertEqual(memo.data, [UInt8]("8k2mz".utf8))
         XCTAssertTrue(memo.accountIndexes.isEmpty)
         XCTAssertEqual(tagged.staticAccountKeys[Int(memo.programIdIndex)], SolanaV0Transaction.memoProgramKey)
         // Appended to the read-only unsigned block, exactly like the budget key.
@@ -436,7 +436,7 @@ final class SolanaV0TransactionTests: XCTestCase {
     /// one slot later, and their indexes have to move with them.
     func testMemoInjectionPreservesResolvedAccountsAcrossMultipleLookupTables() throws {
         let source = try SolanaV0Transaction(wireBytes: try Self.twoTableBuilder().bytes())
-        let tagged = try source.injectingMemo("vs")
+        let tagged = try source.injectingMemo("8k2mz")
 
         let before = try source.resolvedAccountAddresses(forInstructionAt: 0, lookupTables: Self.twoTables)
         let after = try tagged.resolvedAccountAddresses(forInstructionAt: 0, lookupTables: Self.twoTables)
@@ -452,10 +452,10 @@ final class SolanaV0TransactionTests: XCTestCase {
 
         let both = try source
             .injectingComputeBudget(price: 20_000, limit: 200_000)
-            .injectingMemo("vs")
+            .injectingMemo("8k2mz")
 
         XCTAssertEqual(both.instructions.count, source.instructions.count + 3)
-        XCTAssertEqual(both.instructions.last?.data, [UInt8]("vs".utf8))
+        XCTAssertEqual(both.instructions.last?.data, [UInt8]("8k2mz".utf8))
         XCTAssertEqual(
             try source.resolvedAccountAddresses(forInstructionAt: 0, lookupTables: Self.twoTables),
             try both.resolvedAccountAddresses(forInstructionAt: 2, lookupTables: Self.twoTables)
@@ -463,9 +463,9 @@ final class SolanaV0TransactionTests: XCTestCase {
     }
 
     func testASecondMemoIsRefused() throws {
-        let tagged = try SolanaV0Transaction(wireBytes: try Builder().bytes()).injectingMemo("vs")
+        let tagged = try SolanaV0Transaction(wireBytes: try Builder().bytes()).injectingMemo("8k2mz")
 
-        XCTAssertThrowsError(try tagged.injectingMemo("vs")) { error in
+        XCTAssertThrowsError(try tagged.injectingMemo("8k2mz")) { error in
             XCTAssertEqual(error as? SolanaV0TransactionError, .memoAlreadyPresent)
         }
     }

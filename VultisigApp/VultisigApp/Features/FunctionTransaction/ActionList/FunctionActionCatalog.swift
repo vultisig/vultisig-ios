@@ -96,10 +96,6 @@ extension FunctionCallType {
         switch self {
         case .rebond:
             return "functionActionRebondSubtitle".localized
-        case .bondMaya:
-            return "functionActionBondMayaSubtitle".localized
-        case .unbondMaya:
-            return "functionActionUnbondMayaSubtitle".localized
         case .leave:
             return "functionActionLeaveSubtitle".localized
         case .custom:
@@ -116,8 +112,6 @@ extension FunctionCallType {
             return "functionActionSwitchSubtitle".localized
         case .addThorLP:
             return "functionActionAddThorLpSubtitle".localized
-        case .securedAsset:
-            return "functionActionSecuredAssetSubtitle".localized
         case .withdrawSecuredAsset:
             return "functionActionWithdrawSecuredAssetSubtitle".localized
         }
@@ -127,10 +121,6 @@ extension FunctionCallType {
         switch self {
         case .rebond:
             return .repeat3
-        case .bondMaya:
-            return .layersPlus
-        case .unbondMaya:
-            return .layersMinus
         case .leave:
             return .arrowToCornerTopRight
         case .custom:
@@ -147,8 +137,6 @@ extension FunctionCallType {
             return .arrowsRotateCenter
         case .addThorLP:
             return .gridPlus
-        case .securedAsset:
-            return .shield
         case .withdrawSecuredAsset:
             return .circleOpenArrowDown
         }

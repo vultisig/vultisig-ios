@@ -117,8 +117,7 @@ enum ThorchainRouterDepositBuilder {
     /// Resolves the L1 deposit destination for a SECURE+ mint: the THORChain
     /// inbound vault (native sources) or the ERC20 router (approve sources).
     /// Throws on a trading-halted or missing inbound so a mint never signs to an
-    /// empty/stranded destination. Mirrors
-    /// `FunctionCallSecuredAsset.fetchInboundAddressAndSetupApproval`.
+    /// empty/stranded destination.
     @MainActor
     static func resolveInboundDestination(
         coin: Coin,

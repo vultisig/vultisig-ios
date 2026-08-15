@@ -245,7 +245,7 @@ struct SwapVerifyScreen: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Theme.colors.textSecondary)
 
-                Text("\(limit.expiryHours)h")
+                Text(formatLimitExpiry(blocks: limit.expiryBlocks))
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
             }

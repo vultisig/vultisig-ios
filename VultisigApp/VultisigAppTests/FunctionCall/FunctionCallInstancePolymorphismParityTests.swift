@@ -77,43 +77,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 100)
     }
 
-    func testBondMayaParity() {
-        let model = FunctionCallBondMayaChain(assets: [])
-        model.selectedAsset = IdentifiableString(value: "BTC.BTC")
-        model.fee = 5000
-        model.nodeAddress = "maya1bondnode"
-        let coin = FunctionCallFixture.makeCoin(.mayaChain, ticker: "CACAO", decimals: 8, isNative: true)
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let instance = FunctionCallInstance.bondMaya(model)
-
-        let tx = instance.toSendTransaction(coin: coin, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "BOND:BTC.BTC:5000:maya1bondnode")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(instance.toAddress)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
-    }
-
-    func testUnbondMayaParity() {
-        let model = FunctionCallUnbondMayaChain(assets: [])
-        model.selectedAsset = IdentifiableString(value: "BTC.BTC")
-        model.fee = 1234
-        model.nodeAddress = "maya1abc"
-        let coin = FunctionCallFixture.makeCoin(.mayaChain, ticker: "CACAO", decimals: 8, isNative: true)
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
-        let instance = FunctionCallInstance.unbondMaya(model)
-
-        let tx = instance.toSendTransaction(coin: coin, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "UNBOND:BTC.BTC:1234:maya1abc")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(instance.toAddress)
-        XCTAssertEqual(instance.amount, 1 / pow(Decimal(10), 8))
-
-        assertForwardingParity(instance, forwardsTo: model, coin: coin, vault: vault, gas: 0)
-    }
-
     func testCustomParity() {
         let coin = FunctionCallFixture.makeRUNE()
         let vault = FunctionCallFixture.makeVault(coins: [coin])
@@ -231,24 +194,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
 
         let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
         XCTAssertEqual(tx.memo, model.toString())
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(tx.wasmContractPayload)
-        XCTAssertNil(instance.toAddress)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
-
-    func testSecuredAssetParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        // No initialize() — offline; toAddress stays "".
-        let model = FunctionCallSecuredAsset(coin: rune, vault: vault)
-        model.thorAddress = "thor1secureplus"
-        let instance = FunctionCallInstance.securedAsset(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "SECURE+:thor1secureplus")
         XCTAssertEqual(tx.transactionType, .unspecified)
         XCTAssertEqual(tx.toAddress, "")
         XCTAssertNil(tx.wasmContractPayload)

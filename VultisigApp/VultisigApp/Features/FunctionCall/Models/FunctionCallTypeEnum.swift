@@ -12,8 +12,6 @@ import Combine
 enum FunctionCallType: String, CaseIterable, Identifiable {
     case
          rebond,
-         bondMaya,
-         unbondMaya,
          leave,
          custom,
          vote,
@@ -22,7 +20,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          unmerge,
          theSwitch,
          addThorLP,
-         securedAsset,
          withdrawSecuredAsset
 
     var id: String { self.rawValue }
@@ -31,10 +28,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         switch self {
         case .rebond:
             return NSLocalizedString("Rebond", comment: "")
-        case .bondMaya:
-            return NSLocalizedString("Bond", comment: "")
-        case .unbondMaya:
-            return NSLocalizedString("Unbond", comment: "")
         case .leave:
             return NSLocalizedString("Leave", comment: "")
         case .custom:
@@ -51,8 +44,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Switch", comment: "")
         case .addThorLP:
             return NSLocalizedString("Add THORChain LP", comment: "")
-        case .securedAsset:
-            return NSLocalizedString("Secured Assets", comment: "")
         case .withdrawSecuredAsset:
             return NSLocalizedString("Withdraw Secured Asset", comment: "")
         }
@@ -67,19 +58,13 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .merge,
                 .unmerge,
                 .custom,
-                .securedAsset,
                 .withdrawSecuredAsset
             ]
 
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return [
-                .addThorLP,
-                .securedAsset
-            ]
+            return [.addThorLP]
         case .mayaChain:
-            return [.bondMaya,
-                    .unbondMaya,
-                    .leave,
+            return [.leave,
                     .custom]
         case .dydx:
             return [.vote]
@@ -88,13 +73,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .cosmosIBC,
                 .theSwitch
             ]
-        case .kujira:
-            return [.cosmosIBC]
-        case .osmosis:
-            return [.cosmosIBC]
-        case .noble:
-            return [.cosmosIBC]
-        case .akash:
+        case .kujira, .osmosis:
             return [.cosmosIBC]
 
         case .thorChainChainnet, .thorChainStagenet:
@@ -111,6 +90,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The function the details screen opens on. Must always be a member of
+    /// `getCases(for:)` — a default the dropdown does not list strands the
+    /// user on a form they cannot get back to. `FunctionCallInstance.getDefault`
+    /// builds the matching sub-model and has to agree case-for-case; neither
+    /// factory derives from the other, so the pairing is pinned by tests.
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
@@ -118,13 +102,19 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 return .custom
             }
             return .rebond
+        // Must stay inside `getCases(for:)` above — the screen opens on this
+        // selection, and a default the dropdown does not offer strands the user
+        // on a form they cannot get back to. `.leave` is migrated to
+        // `Features/FunctionTransaction/`, and a migrated type must never be a
+        // chain's default (the route-out fires on selection, not on the
+        // default applied here) — see `FunctionCallMigrationSeamTests`.
         case .mayaChain:
-            return .bondMaya
+            return .custom
         case .dydx:
             return .vote
         case .gaiaChain:
             return .theSwitch
-        case .kujira:
+        case .kujira, .osmosis:
             return .cosmosIBC
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP

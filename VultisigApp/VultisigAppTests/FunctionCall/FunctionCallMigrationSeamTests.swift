@@ -128,7 +128,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
             .rebond, .custom, .vote, .cosmosIBC, .merge, .unmerge,
-            .theSwitch, .addThorLP, .securedAsset, .withdrawSecuredAsset
+            .theSwitch, .addThorLP, .withdrawSecuredAsset
         ]
         for type in stillLegacy {
             XCTAssertNil(
