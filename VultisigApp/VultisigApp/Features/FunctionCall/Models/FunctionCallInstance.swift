@@ -10,8 +10,6 @@ import Foundation
 
 enum FunctionCallInstance {
     case rebond(FunctionCallReBond)
-    case bondMaya(FunctionCallBondMayaChain)
-    case unbondMaya(FunctionCallUnbondMayaChain)
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
@@ -29,8 +27,6 @@ enum FunctionCallInstance {
     var model: any FunctionCallSubModel {
         switch self {
         case .rebond(let memo): return memo
-        case .bondMaya(let memo): return memo
-        case .unbondMaya(let memo): return memo
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
@@ -82,8 +78,13 @@ enum FunctionCallInstance {
                 return .custom(FunctionCallCustom(coin: coin, vault: vault))
             }
             return .rebond(FunctionCallReBond())
+        // Keep in step with `FunctionCallType.getDefault(for:)` — the screen
+        // renders this instance under that selection, so the two disagreeing
+        // shows one function's name over another function's form. `.leave` is
+        // migrated to `Features/FunctionTransaction/` and no longer builds a
+        // sub-model here, so the default falls through to `.custom`.
         case .mayaChain:
-            return .bondMaya(FunctionCallBondMayaChain(assets: nil))
+            return .custom(FunctionCallCustom(coin: coin, vault: vault))
         case .dydx:
             return .vote(FunctionCallVote())
         case .gaiaChain:

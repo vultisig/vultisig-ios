@@ -46,6 +46,41 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt(50_000_000))
     }
 
+    // MARK: - computeLim — price precision
+
+    func testComputeLimKeepsPricePrecisionFinerThanOneSatoshi() throws {
+        // The regression that motivated deferring the truncation. `computeLim`
+        // used to scale the PRICE to 1e8 and truncate THAT first, so on a pair
+        // priced around 0.0000066 BTC every price collapsed onto the same 661/1e8
+        // step — a ~0.15% grid. Truncating once, on the LIM, keeps the difference.
+        let coarse = try computeLim(
+            sourceAmount: BigInt(25_000_000_000),      // 250 RUNE, 1e8 base units
+            sourceDecimals: 8,
+            targetPrice: Decimal(string: "0.00000661")!
+        )
+        let precise = try computeLim(
+            sourceAmount: BigInt(25_000_000_000),
+            sourceDecimals: 8,
+            targetPrice: Decimal(string: "0.0000066146")!
+        )
+        XCTAssertGreaterThan(precise, coarse, "a higher price must ask for more out")
+        XCTAssertEqual(coarse, BigInt(165_250))
+        XCTAssertEqual(precise, BigInt(165_365))
+    }
+
+    func testComputeLimStillTruncatesDownNotUp() throws {
+        // The LIM is a MINIMUM out. Rounding it up would promise more than the
+        // stated price justifies and quietly make the order unfillable at the
+        // price that was asked for, so the single remaining rounding stays `.down`.
+        let lim = try computeLim(
+            sourceAmount: BigInt(3),
+            sourceDecimals: 8,
+            targetPrice: Decimal(string: "0.99999999")!
+        )
+        // 3 × 0.99999999 = 2.99999997 → floors to 2, never 3.
+        XCTAssertEqual(lim, BigInt(2))
+    }
+
     // MARK: - computeLim — edge cases
 
     func testComputeLimForVerySmallPriceProducesOne() throws {
@@ -68,15 +103,29 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(lim, BigInt("100000000000000"))
     }
 
-    func testComputeLimTruncatesPriceBeyondEightDecimalPlaces() throws {
-        // targetPrice = 16.123456789 (9 dp); should truncate to 16.12345678 in 1e8 fixed-point
-        // → LIM = 1_612_345_678 (not 1_612_345_678.9, not 0)
+    func testComputeLimFloorsTheLimNotThePrice() throws {
+        // 1 unit at 16.123456789 → 1_612_345_678.9 in 1e8 fixed point, floored to
+        // 1_612_345_678. The PRICE is no longer truncated on the way (that is the
+        // precision this used to throw away); the LIM is, because it is a minimum
+        // out and must never be rounded up.
         let lim = try computeLim(
             sourceAmount: BigInt(100_000_000),
             sourceDecimals: 8,
             targetPrice: Decimal(string: "16.123456789")!
         )
         XCTAssertEqual(lim, BigInt(1_612_345_678))
+    }
+
+    func testComputeLimRefusesASourceAmountItCannotHoldExactly() {
+        // `Decimal(string:)` silently drops digits past its 38-digit mantissa, so
+        // an amount beyond the exact range must be REFUSED rather than signed
+        // against a quietly altered figure. 2^128 round-trips as ...450.
+        let huge = BigInt(2).power(128)
+        XCTAssertThrowsError(
+            try computeLim(sourceAmount: huge, sourceDecimals: 18, targetPrice: 1)
+        ) { error in
+            XCTAssertEqual(error as? LimitSwapMemoError, .targetPriceOverflow)
+        }
     }
 
     func testComputeLimZeroSourceAmountReturnsZero() throws {
@@ -479,40 +528,21 @@ final class LimitMathTests: XCTestCase {
         XCTAssertEqual(chain, .ethereum)
     }
 
-    // MARK: - isUserUsdPriceEdit (USD field feedback suppression)
+    // MARK: - isUserFieldEdit (mirrored-field feedback suppression)
 
     func testIsUserUsdPriceEditTreatsProgrammaticEchoAsNonEdit() {
         // The value the view just wrote programmatically must NOT be treated as a
         // user edit — otherwise a preset/rate/mode redraw would round the
         // canonical price through the 2-dp USD display.
-        XCTAssertFalse(isUserUsdPriceEdit(newText: "2870", lastSyncedText: "2870"))
+        XCTAssertFalse(isUserFieldEdit(newText: "2870", lastSyncedText: "2870"))
     }
 
     func testIsUserUsdPriceEditTreatsDifferentTextAsUserEdit() {
-        XCTAssertTrue(isUserUsdPriceEdit(newText: "3000", lastSyncedText: "2870"))
+        XCTAssertTrue(isUserFieldEdit(newText: "3000", lastSyncedText: "2870"))
     }
 
     func testIsUserUsdPriceEditTreatsChangeWithNoPriorSyncAsUserEdit() {
-        XCTAssertTrue(isUserUsdPriceEdit(newText: "3000", lastSyncedText: nil))
-    }
-
-    // MARK: - computeExpiryBlocks
-
-    func testComputeExpiryBlocksFor12Hours() {
-        XCTAssertEqual(computeExpiryBlocks(hours: 12), 7200)
-    }
-
-    func testComputeExpiryBlocksFor24Hours() {
-        XCTAssertEqual(computeExpiryBlocks(hours: 24), 14400)
-    }
-
-    func testComputeExpiryBlocksFor72Hours() {
-        XCTAssertEqual(computeExpiryBlocks(hours: 72), 43200)
-    }
-
-    func testComputeExpiryBlocksScalesByThorchainBlockRate() {
-        // Sanity: any hour count × 600 (THORChain blocks per hour at 6s blocks)
-        XCTAssertEqual(computeExpiryBlocks(hours: 1), 600)
+        XCTAssertTrue(isUserFieldEdit(newText: "3000", lastSyncedText: nil))
     }
 
     // MARK: - computePresetPrice
@@ -536,6 +566,490 @@ final class LimitMathTests: XCTestCase {
     func testPresetPriceWithFractionalMarket() {
         // 0.0625 × 1.05 = 0.065625
         XCTAssertEqual(computePresetPrice(marketPrice: Decimal(string: "0.0625")!, pctAboveMarket: 5), Decimal(string: "0.065625")!)
+    }
+
+    func testPresetPriceWithFractionalPercent() {
+        // The custom-offset sheet's reason for existing: 7.5% is not a preset.
+        XCTAssertEqual(
+            computePresetPrice(marketPrice: 200, pctAboveMarket: Decimal(string: "7.5")!),
+            215
+        )
+    }
+
+    func testPresetPriceWithNegativePercent() {
+        XCTAssertEqual(computePresetPrice(marketPrice: 100, pctAboveMarket: -3), 97)
+    }
+
+    func testPresetPriceInvertsPctFromMarket() {
+        // The sheet writes through one and the chip reads back through the other,
+        // so the two must be exact inverses or the readout drifts from the control.
+        let market = Decimal(string: "27.4218")!
+        let pct = Decimal(string: "12.5")!
+        let price = computePresetPrice(marketPrice: market, pctAboveMarket: pct)
+        XCTAssertEqual(computePctFromMarket(targetPrice: price, marketPrice: market), pct)
+    }
+
+    // MARK: - Custom percent-offset stepper
+
+    func testClampOffsetHoldsTheFloorAboveMinusOneHundred() {
+        // -100% is a zero target price, and a zero LIM means "fill at ANY price".
+        // The floor has to stay clear of it however long + is held.
+        XCTAssertEqual(clampLimitPctOffset(-250), limitPctOffsetRange.lowerBound)
+        XCTAssertGreaterThan(limitPctOffsetRange.lowerBound, -100)
+    }
+
+    func testClampOffsetHoldsTheCeiling() {
+        XCTAssertEqual(clampLimitPctOffset(5_000), limitPctOffsetRange.upperBound)
+    }
+
+    func testClampOffsetLeavesAnInRangeValueAlone() {
+        let pct = Decimal(string: "7.5")!
+        XCTAssertEqual(clampLimitPctOffset(pct), pct)
+    }
+
+    func testOffsetSeedSnapsOntoTheStepperGrid() {
+        // A chart drag leaves an arbitrary offset behind. Seeding it raw would
+        // make the first + tap read +7.6512 — a control that appears not to know
+        // its own step.
+        XCTAssertEqual(limitPctOffsetSeed(from: Decimal(string: "7.5512")!), Decimal(string: "7.6")!)
+        XCTAssertEqual(limitPctOffsetSeed(from: Decimal(string: "-2.04")!), Decimal(string: "-2.0")!)
+    }
+
+    func testOffsetSeedClampsBeforeSnapping() {
+        XCTAssertEqual(limitPctOffsetSeed(from: 4_000), limitPctOffsetRange.upperBound)
+    }
+
+    func testOffsetSeedIsStableForAValueAlreadyOnTheGrid() {
+        // Open, close, reopen must not walk the value.
+        let seeded = limitPctOffsetSeed(from: Decimal(string: "7.5512")!)
+        XCTAssertEqual(limitPctOffsetSeed(from: seeded), seeded)
+    }
+
+    func testSteppingStaysOnTheGrid() {
+        // Ten taps of the finest step land exactly on the whole number, with no
+        // binary-float dust — the display shows two decimals and would expose it.
+        var pct = Decimal(string: "7.5")!
+        for _ in 0..<10 {
+            pct = clampLimitPctOffset(pct + limitPctOffsetStep)
+        }
+        XCTAssertEqual(pct, Decimal(string: "8.5")!)
+    }
+
+    // MARK: - roundLimitPrice
+
+    func testRoundLimitPriceKeepsEightSignificantDigitsAtEveryMagnitude() {
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "0.0000066146")!), Decimal(string: "0.0000066146")!)
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "27.421812345")!), Decimal(string: "27.421812")!)
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "0.123456789")!), Decimal(string: "0.12345678")!)
+    }
+
+    func testRoundLimitPriceNeverReturnsMoreThanItWasGiven() {
+        // It FLOORS, and the asymmetry is the point: a price nudged UP is a floor
+        // above the quote, which on the Market preset turns "fill now" into an
+        // order that rests — an inbound fee, an expiry wait, and a refund fee, for
+        // nothing. Nudged down, the worst case is filling a hair early.
+        for raw in ["0.123456789", "0.0000066146789", "27.421812999", "123456789", "9.9999999999"] {
+            let input = Decimal(string: raw)!
+            XCTAssertLessThanOrEqual(roundLimitPrice(input), input, "rounded up for \(raw)")
+        }
+    }
+
+    func testRoundLimitPriceHandlesAPriceAboveEightDigits() {
+        // Needs a NEGATIVE rounding scale. Clamping the scale at 0 left the draft
+        // holding nine significant digits while the field showed eight, and the
+        // field then parsed its own display back — silently changing the price
+        // being signed.
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "123456789")!), Decimal(string: "123456780")!)
+        XCTAssertEqual(roundLimitPrice(Decimal(string: "987654321987")!), Decimal(string: "987654320000")!)
+    }
+
+    func testTheMarketPresetNeverLandsAboveMarket() {
+        // The whole reason the rounding floors. A Market order that rests instead
+        // of filling costs two network fees and gets refunded.
+        let market = Decimal(string: "0.123456786")!
+        let atMarket = computePresetPrice(marketPrice: market, pctAboveMarket: 0)
+        XCTAssertLessThanOrEqual(roundLimitPrice(atMarket), market)
+    }
+
+    func testAFlooredMarketStillReadsAsZeroPercent() {
+        // Flooring leaves Market a relative 1e-8 below market, which must not
+        // surface as "-0.00%" with a below-market tint on an order the user asked
+        // to place AT market.
+        let market = Decimal(string: "0.123456786")!
+        let priced = roundLimitPrice(computePresetPrice(marketPrice: market, pctAboveMarket: 0))
+        let offset = computePctFromMarket(targetPrice: priced, marketPrice: market)
+
+        XCTAssertLessThan(offset, 0, "precondition: flooring really does go below market")
+        XCTAssertTrue(limitPercentIsEffectivelyZero(offset))
+        XCTAssertEqual(formatLimitPercent(offset, locale: Locale(identifier: "en_US")), "+0.00")
+    }
+
+    func testRoundLimitPriceNeverCollapsesASmallPriceToZero() {
+        // The other end of the same clamp: a scale past 38 was being truncated,
+        // and a zero price is a zero LIM — "fill at ANY price".
+        let tiny = Decimal(string: "0.000000000000000000000000123456789")!
+        let rounded = roundLimitPrice(tiny)
+        XCTAssertGreaterThan(rounded, 0)
+        XCTAssertEqual(rounded, Decimal(string: "0.00000000000000000000000012345678")!)
+    }
+
+    func testRoundLimitPriceRoundTripsThroughItsOwnFormatter() {
+        // The invariant the price field depends on: what is shown parses back to
+        // what is stored, so the sync can never walk the price on its own.
+        let locale = Locale(identifier: "en_US")
+        for raw in ["0.0000066146", "27.421812345", "123456789", "0.123456789"] {
+            let price = roundLimitPrice(Decimal(string: raw)!)
+            let text = formatLimitPrice(price, locale: locale)
+            XCTAssertEqual(parseLimitPrice(text, locale: locale), price, "round-trip failed for \(raw)")
+        }
+    }
+
+    func testRoundLimitPriceRoundTripsInACommaDecimalLocale() {
+        let locale = Locale(identifier: "de_DE")
+        let price = roundLimitPrice(Decimal(string: "0.0000066146")!)
+        let text = formatLimitPrice(price, locale: locale)
+        XCTAssertFalse(text.contains("E"), "must not emit scientific notation")
+        XCTAssertEqual(parseLimitPrice(text, locale: locale), price)
+    }
+
+    // MARK: - Custom-expiry allowance
+
+    func testAtTheDayCeilingHoursAndMinutesArePinnedToZero() {
+        // Mainnet's StreamingLimitSwapMaxAge is 43,200 blocks — exactly 3 days —
+        // and THORChain SILENTLY rewrites an over-long TTL to its own maximum
+        // rather than rejecting it. So `3d 5h` must not be spellable: at 3 days
+        // the whole allowance is spent.
+        let threeDays = 3 * 1440
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: threeDays, days: 3), 0)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: threeDays, days: 3, hours: 0), 0)
+    }
+
+    func testBelowTheDayCeilingTheFullHourAndMinuteRangesAreOffered() {
+        let threeDays = 3 * 1440
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: threeDays, days: 2), 23)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: threeDays, days: 2, hours: 23), 59)
+        // 2d 23h 59m is one minute under the cap — the largest expressible value.
+        XCTAssertLessThan(2 * 1440 + 23 * 60 + 59, threeDays)
+    }
+
+    func testAllowanceFollowsACeilingThatIsNotAWholeNumberOfDays() {
+        // The ceiling is a mimir and can move; the hours bound is derived, not
+        // hardcoded to 0. A 2d12h cap leaves 12 hours at `days == 2`.
+        let twoAndAHalfDays = 2 * 1440 + 12 * 60
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: twoAndAHalfDays, days: 2), 12)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: twoAndAHalfDays, days: 2, hours: 12), 0)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: twoAndAHalfDays, days: 2, hours: 11), 59)
+    }
+
+    func testAllowanceNeverGoesNegative() {
+        // Defensive: a stale `days` read against a ceiling that has just shrunk
+        // must clamp to zero, not produce a negative upper bound (which would
+        // make `0...max` a crashing range).
+        XCTAssertEqual(limitExpiryHoursCeiling(maxTotalMinutes: 60, days: 3), 0)
+        XCTAssertEqual(limitExpiryMinutesCeiling(maxTotalMinutes: 60, days: 3, hours: 5), 0)
+    }
+
+    func testTheLargestExpressibleDurationNeverExceedsTheCeiling() {
+        // The property the three bounds exist to guarantee, swept across every
+        // day value a 3-day cap allows.
+        let cap = 3 * 1440
+        for days in 0...(cap / 1440) {
+            let hours = limitExpiryHoursCeiling(maxTotalMinutes: cap, days: days)
+            let minutes = limitExpiryMinutesCeiling(maxTotalMinutes: cap, days: days, hours: hours)
+            XCTAssertLessThanOrEqual(days * 1440 + hours * 60 + minutes, cap, "overflowed at \(days)d")
+        }
+    }
+
+    // MARK: - Integer stepper (custom expiry)
+
+    func testStepperDecrementSnapsAnOffGridSeedOntoTheGrid() {
+        // The reported bug: the minutes stepper opens on whatever the draft holds
+        // (a 2h59m expiry seeds 59), and plain subtraction then walked
+        // 59 → 54 → 49, carrying the offset forever.
+        XCTAssertEqual(limitStepperDecrement(59, step: 5, lowerBound: 0), 55)
+        XCTAssertEqual(limitStepperDecrement(55, step: 5, lowerBound: 0), 50)
+        XCTAssertEqual(limitStepperDecrement(50, step: 5, lowerBound: 0), 45)
+    }
+
+    func testStepperDecrementMovesAFullStepFromAnOnGridValue() {
+        // The off-by-one in the snap: without it, an on-grid value snaps to
+        // itself and the button appears dead.
+        XCTAssertEqual(limitStepperDecrement(20, step: 5, lowerBound: 0), 15)
+    }
+
+    func testStepperDecrementFloorsAtTheLowerBound() {
+        XCTAssertEqual(limitStepperDecrement(3, step: 5, lowerBound: 0), 0)
+        XCTAssertEqual(limitStepperDecrement(0, step: 5, lowerBound: 0), 0)
+    }
+
+    func testStepperIncrementSnapsUpOntoTheGrid() {
+        XCTAssertEqual(limitStepperIncrement(1, step: 5, upperBound: 59), 5)
+        XCTAssertEqual(limitStepperIncrement(54, step: 5, upperBound: 59), 55)
+        XCTAssertEqual(limitStepperIncrement(20, step: 5, upperBound: 59), 25)
+    }
+
+    func testStepperIncrementCapsAtTheBoundEvenWhenTheBoundIsOffGrid() {
+        // 59 is a real, reachable minute; refusing it because it is not a
+        // multiple of five would strand the top of the range.
+        XCTAssertEqual(limitStepperIncrement(57, step: 5, upperBound: 59), 59)
+        XCTAssertEqual(limitStepperIncrement(59, step: 5, upperBound: 59), 59)
+    }
+
+    func testStepperOfOneIsPlainAddition() {
+        // The days and hours steppers, which have no grid to snap to.
+        XCTAssertEqual(limitStepperDecrement(7, step: 1, lowerBound: 0), 6)
+        XCTAssertEqual(limitStepperIncrement(7, step: 1, upperBound: 23), 8)
+    }
+
+    func testSteppingDownThenUpReturnsToTheGridNotTheSeed() {
+        // Round-tripping off an off-grid seed lands on the grid, not back on 59 —
+        // the value the control can actually produce.
+        let down = limitStepperDecrement(59, step: 5, lowerBound: 0)
+        XCTAssertEqual(limitStepperIncrement(down, step: 5, upperBound: 59), 59)
+        XCTAssertEqual(down, 55)
+    }
+
+    func testHoldStepStartsAtTheTapIncrement() {
+        // A hold that is only marginally longer than a tap must not overshoot.
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 0), limitPctOffsetStep)
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 0.9), limitPctOffsetStep)
+    }
+
+    func testHoldStepAcceleratesWithTheHold() {
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 1.5), Decimal(string: "0.5")!)
+        XCTAssertEqual(limitPctStep(forHeldSeconds: 3), 1)
+    }
+
+    func testHoldStepIsMonotonic() {
+        // The step may widen as a press is held but must never narrow — a stepper
+        // that slowed down mid-hold would read as a stutter.
+        var previous = Decimal(0)
+        for tick in stride(from: 0.0, through: 5.0, by: 0.1) {
+            let step = limitPctStep(forHeldSeconds: tick)
+            XCTAssertGreaterThanOrEqual(step, previous, "step narrowed at \(tick)s")
+            previous = step
+        }
+    }
+
+    func testHoldCrossesTheFarAboveMarketThresholdInSeconds() {
+        // The reason the step accelerates at all: from Market, a held + has to
+        // reach the +20% where the far-above-market warning starts without the
+        // user giving up. Replays the button's own schedule (0.4s before the
+        // first repeat, then a tick every 0.08s).
+        var pct = clampLimitPctOffset(limitPctStep(forHeldSeconds: 0))
+        var held = 0.4
+        while pct < 20, held < 10 {
+            pct = clampLimitPctOffset(pct + limitPctStep(forHeldSeconds: held))
+            held += 0.08
+        }
+        XCTAssertGreaterThanOrEqual(pct, 20)
+        XCTAssertLessThan(held, 5, "a held + should cross +20% in a few seconds")
+    }
+
+    // MARK: - limitSourceAmount (Buy-driven entry)
+
+    func testSourceAmountForTargetOutputIsTheInverseOfExpectedOutput() {
+        // 0.25 BTC at 28.79289 ETH/BTC buys ~7.198 ETH; asking for that output
+        // must come back to the same deposit.
+        let price = Decimal(string: "28.79289")!
+        let output = limitOrderExpectedOutput(
+            sourceAmount: BigInt(25_000_000),
+            sourceDecimals: 8,
+            targetPrice: price
+        )
+        let source = limitSourceAmount(forTargetOutput: output, targetPrice: price, sourceDecimals: 8)
+        XCTAssertEqual(source, BigInt(25_000_000))
+    }
+
+    func testSourceAmountTruncatesRatherThanRoundingUp() {
+        // Rounding up would spend more of the balance than asked, purely to make
+        // a screen figure come out exact. One smallest-unit short is the safe
+        // direction: the re-derived output is what the order guarantees.
+        let source = limitSourceAmount(
+            forTargetOutput: Decimal(string: "0.000000015")!,
+            targetPrice: 1,
+            sourceDecimals: 8
+        )
+        XCTAssertEqual(source, BigInt(1), "1.5 smallest units must truncate to 1, not round to 2")
+    }
+
+    func testSourceAmountNeverOverstatesTheGuaranteedOutput() {
+        // The invariant that makes truncation safe: re-deriving the output from
+        // the truncated deposit must never exceed what was asked for.
+        let price = Decimal(string: "3.7")!
+        for requested in ["1", "10", "0.5", "123.456789"] {
+            let output = Decimal(string: requested)!
+            let source = limitSourceAmount(forTargetOutput: output, targetPrice: price, sourceDecimals: 18)
+            let derived = limitOrderExpectedOutput(sourceAmount: source, sourceDecimals: 18, targetPrice: price)
+            XCTAssertLessThanOrEqual(derived, output, "asked for \(requested)")
+        }
+    }
+
+    func testSourceAmountIsZeroForNonPositiveInputs() {
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: 0, targetPrice: 16, sourceDecimals: 8), 0)
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: 10, targetPrice: 0, sourceDecimals: 8), 0)
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: -1, targetPrice: 16, sourceDecimals: 8), 0)
+        XCTAssertEqual(limitSourceAmount(forTargetOutput: 10, targetPrice: -1, sourceDecimals: 8), 0)
+    }
+
+    func testSourceAmountBelowOneSmallestUnitIsZeroNotOne() {
+        // Dust: an output too small to cost even one smallest unit must not
+        // fabricate a deposit.
+        let source = limitSourceAmount(
+            forTargetOutput: Decimal(string: "0.000000001")!,
+            targetPrice: 1_000,
+            sourceDecimals: 8
+        )
+        XCTAssertEqual(source, 0)
+    }
+
+    func testSourceAmountIsQuantizedToDisplayPrecision() {
+        // An 18-decimal source would otherwise derive a deposit carrying more
+        // decimals than the Sell field renders, so the amount on screen would not
+        // be the amount signed. The derived value must survive a round trip
+        // through the field's own precision.
+        let price = Decimal(string: "3.7")!
+        let source = limitSourceAmount(forTargetOutput: 10, targetPrice: price, sourceDecimals: 18)
+
+        let natural = Decimal(string: source.description)! / pow(Decimal(10), 18)
+        var rounded = Decimal()
+        var value = natural
+        NSDecimalRound(&rounded, &value, limitAmountDisplayPrecision, .down)
+        XCTAssertEqual(natural, rounded, "a derived deposit must not carry more decimals than the field shows")
+    }
+
+    // MARK: - clampLimitExpiryBlocks
+
+    func testExpiryInsideTheRangeIsUnchanged() {
+        let blocks = THORChainConstants.blocks(forHours: 24)
+        XCTAssertEqual(clampLimitExpiryBlocks(blocks, maxBlocks: 43_200), blocks)
+    }
+
+    func testExpiryAboveTheCeilingClampsDown() {
+        XCTAssertEqual(
+            clampLimitExpiryBlocks(THORChainConstants.blocks(forHours: 24 * 7), maxBlocks: 43_200),
+            43_200
+        )
+    }
+
+    func testExpiryBelowTheFloorClampsUp() {
+        XCTAssertEqual(
+            clampLimitExpiryBlocks(1, maxBlocks: 43_200),
+            THORChainConstants.minLimitSwapAgeBlocks
+        )
+    }
+
+    func testExpiryClampHonoursACeilingBelowTheAppFloor() {
+        // The floor is ours, the ceiling is the protocol's — so if a mimir ever
+        // reported a cap under 10 minutes, the protocol has to win rather than
+        // the clamp producing an out-of-range value from an empty range.
+        XCTAssertEqual(clampLimitExpiryBlocks(600, maxBlocks: 60), 60)
+        XCTAssertEqual(clampLimitExpiryBlocks(1, maxBlocks: 60), 60)
+    }
+
+    func testClampAndValidationAgreeOnTheFloorWhenTheCeilingIsLower() {
+        // The regression this helper exists for: with a ceiling under the app
+        // floor, the clamp produced the ceiling and validation then rejected that
+        // very value, leaving no placeable expiry at all.
+        let lowCeiling = 60
+        let clamped = clampLimitExpiryBlocks(1, maxBlocks: lowCeiling)
+        XCTAssertEqual(clamped, lowCeiling)
+        XCTAssertGreaterThanOrEqual(clamped, effectiveMinExpiryBlocks(maxBlocks: lowCeiling))
+    }
+
+    func testEffectiveFloorIsTheAppFloorWhenTheCeilingIsHigher() {
+        XCTAssertEqual(
+            effectiveMinExpiryBlocks(maxBlocks: THORChainConstants.defaultLimitSwapMaxAgeBlocks),
+            THORChainConstants.minLimitSwapAgeBlocks
+        )
+    }
+
+    // MARK: - formatLimitExpiry
+
+    func testFormatExpiryWholeHours() {
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 12)), "12h")
+    }
+
+    func testFormatExpiryWholeDays() {
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 72)), "3d")
+    }
+
+    func testFormatExpiryReproducesTheHistoricalPresetLabels() {
+        // The preset pills render through this formatter, so it has to spell the
+        // shipped set exactly. Splitting days from one day up would relabel the
+        // 24h pill as "1d" — a change to a row that was meant to stay untouched.
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 12)), "12h")
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 24)), "24h")
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 72)), "3d")
+    }
+
+    func testFormatExpiryKeepsHoursBelowTwoDays() {
+        // 36h reads better than "1d 12h" at this scale, and keeps the threshold
+        // consistent with the 24h preset.
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 36)), "36h")
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 47)), "47h")
+    }
+
+    func testFormatExpiryOmitsZeroComponents() {
+        // `2d`, not `2d 0h 0m` — and 48h is the first duration that splits days.
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forHours: 48)), "2d")
+    }
+
+    func testFormatExpiryMixedComponents() {
+        let blocks = THORChainConstants.blocks(forMinutes: 2 * 1440 + 6 * 60 + 30)
+        XCTAssertEqual(formatLimitExpiry(blocks: blocks), "2d 6h 30m")
+    }
+
+    func testFormatExpiryMinutesOnly() {
+        XCTAssertEqual(formatLimitExpiry(blocks: THORChainConstants.blocks(forMinutes: 90)), "1h 30m")
+    }
+
+    func testFormatExpirySubMinuteDoesNotClaimADuration() {
+        // Only reachable from a hand-built memo, never from the picker. "0m" on
+        // the signing screen reads as an order that expires on arrival, so a
+        // nonzero interval under a minute says so instead.
+        XCTAssertEqual(formatLimitExpiry(blocks: 5), "<1m")
+    }
+
+    func testFormatExpiryZeroBlocksIsStillZero() {
+        // Distinct from the sub-minute case: no interval at all is genuinely 0m.
+        XCTAssertEqual(formatLimitExpiry(blocks: 0), "0m")
+    }
+
+    // MARK: - formatLimitPercent
+
+    func testFormatPercentSignsPositiveExplicitly() {
+        XCTAssertEqual(formatLimitPercent(5, locale: Locale(identifier: "en_US")), "+5.00")
+    }
+
+    func testFormatPercentUsesAsciiMinus() {
+        XCTAssertEqual(
+            formatLimitPercent(Decimal(string: "-2.5")!, locale: Locale(identifier: "en_US")),
+            "-2.50"
+        )
+    }
+
+    func testFormatPercentUsesTheGivenLocalesSeparator() {
+        // Pinned rather than left to the host's ambient locale, which is what
+        // makes a suite pass on one machine and fail on another.
+        XCTAssertEqual(
+            formatLimitPercent(Decimal(string: "-2.5")!, locale: Locale(identifier: "de_DE")),
+            "-2,50"
+        )
+    }
+
+    func testFormatPercentZero() {
+        XCTAssertEqual(formatLimitPercent(0, locale: Locale(identifier: "en_US")), "+0.00")
+    }
+
+    func testFormatPercentShowsEveryStepperValueDistinctly() {
+        // Two decimals against a 0.1 step: adjacent stepper values must never
+        // render the same, or holding + would look frozen.
+        let locale = Locale(identifier: "en_US")
+        XCTAssertNotEqual(
+            formatLimitPercent(Decimal(string: "7.5")!, locale: locale),
+            formatLimitPercent(Decimal(string: "7.6")!, locale: locale)
+        )
     }
 
     // MARK: - computePctFromMarket

@@ -7,7 +7,6 @@
 
 import Foundation
 import Combine
-import OSLog
 
 /// Data source for Unbond screen - fetches user's bonded LP positions on a specific node
 class MayaBondedAssetsDataSource: AssetSelectionDataSource {
@@ -20,33 +19,28 @@ class MayaBondedAssetsDataSource: AssetSelectionDataSource {
         self.bondAddress = bondAddress
     }
 
-    func fetchAssets() async -> [THORChainAsset] {
+    func fetchAssets() async throws -> [THORChainAsset] {
         guard !nodeAddress.isEmpty else {
             return []
         }
 
-        do {
-            // Fetch bonded LP units for this node and bond address
-            guard let bondedPools = try await mayaChainAPIService.getAllBondedLPUnits(
-                nodeAddress: nodeAddress,
-                bondAddress: bondAddress
-            ) else {
-                return []
-            }
-
-            // Convert bonded pools to THORChainAsset
-            let assets = bondedPools.compactMap { (poolAsset, lpUnits) -> THORChainAsset? in
-                guard lpUnits > 0,
-                      let coin = THORChainAssetFactory.createCoin(from: poolAsset) else {
-                    return nil
-                }
-                return THORChainAsset(thorchainAsset: poolAsset, asset: coin)
-            }
-
-            return assets
-        } catch {
-            Log.send.service.error("Error fetching bonded LP positions: \(error.localizedDescription, privacy: .public)")
+        // Fetch bonded LP units for this node and bond address. A nil result
+        // means the bond address is not a provider on this node — an answer,
+        // not a failure.
+        guard let bondedPools = try await mayaChainAPIService.getAllBondedLPUnits(
+            nodeAddress: nodeAddress,
+            bondAddress: bondAddress
+        ) else {
             return []
+        }
+
+        // Convert bonded pools to THORChainAsset
+        return bondedPools.compactMap { (poolAsset, lpUnits) -> THORChainAsset? in
+            guard lpUnits > 0,
+                  let coin = THORChainAssetFactory.createCoin(from: poolAsset) else {
+                return nil
+            }
+            return THORChainAsset(thorchainAsset: poolAsset, asset: coin)
         }
     }
 }

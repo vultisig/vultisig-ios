@@ -9,7 +9,11 @@ import Foundation
 
 enum FunctionTransactionType: Hashable {
     case bond(coin: CoinMeta, node: String?)
-    case unbond(node: BondNode)
+    /// `node` is nil when the user is unbonding from a node the app never
+    /// discovered a position for — the bond address is queried for active nodes,
+    /// so a node that stopped reporting one would otherwise have no way out. The
+    /// coin is carried separately because a nil node cannot supply it.
+    case unbond(coin: CoinMeta, node: BondNode?)
     case stake(coin: CoinMeta, isAutocompound: Bool)
     case unstake(coin: CoinMeta, isAutocompound: Bool, availableToUnstake: Decimal? = nil)
     case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
@@ -48,8 +52,8 @@ enum FunctionTransactionType: Hashable {
         switch self {
         case .bond(let coin, _):
             return [coin]
-        case .unbond(let node):
-            return [node.coin]
+        case .unbond(let coin, _):
+            return [coin]
         case .stake(let coin, _):
             return [coin]
         case .unstake(let coin, _, _):

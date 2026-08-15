@@ -12,8 +12,6 @@ import Combine
 enum FunctionCallType: String, CaseIterable, Identifiable {
     case
          rebond,
-         bondMaya,
-         unbondMaya,
          leave,
          custom,
          vote,
@@ -31,10 +29,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         switch self {
         case .rebond:
             return NSLocalizedString("Rebond", comment: "")
-        case .bondMaya:
-            return NSLocalizedString("Bond", comment: "")
-        case .unbondMaya:
-            return NSLocalizedString("Unbond", comment: "")
         case .leave:
             return NSLocalizedString("Leave", comment: "")
         case .custom:
@@ -77,9 +71,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .securedAsset
             ]
         case .mayaChain:
-            return [.bondMaya,
-                    .unbondMaya,
-                    .leave,
+            return [.leave,
                     .custom]
         case .dydx:
             return [.vote]
@@ -109,8 +101,14 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 return .custom
             }
             return .rebond
+        // Must stay inside `getCases(for:)` above — the screen opens on this
+        // selection, and a default the dropdown does not offer strands the user
+        // on a form they cannot get back to. `.leave` is migrated to
+        // `Features/FunctionTransaction/`, and a migrated type must never be a
+        // chain's default (the route-out fires on selection, not on the
+        // default applied here) — see `FunctionCallMigrationSeamTests`.
         case .mayaChain:
-            return .bondMaya
+            return .custom
         case .dydx:
             return .vote
         case .gaiaChain:

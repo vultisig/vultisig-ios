@@ -39,31 +39,73 @@ final class LimitSwapValidationTests: XCTestCase {
         XCTAssertTrue(errors.contains(.targetPriceNotPositive))
     }
 
-    // MARK: - expiry_hours
+    // MARK: - expiry range
+    //
+    // Was a three-value whitelist ({12, 24, 72} hours). Now a RANGE, because the
+    // expiry is a duration the user picks: the ceiling is THORChain's (clamped
+    // silently on-chain, so rejecting here is what keeps the memo honest) and the
+    // floor is the app's own.
 
-    func testExpiryHours12IsAccepted() {
-        let errors = validateLimitSwapInputs(.valid(expiryHours: 12))
-        XCTAssertFalse(errors.contains(where: { if case .expiryHoursUnsupported = $0 { return true } else { return false } }))
+    func testPresetExpiriesAreAccepted() {
+        for hours in [12, 24, 72] {
+            let errors = validateLimitSwapInputs(.valid(expiryBlocks: THORChainConstants.blocks(forHours: hours)))
+            XCTAssertFalse(errors.contains(where: isExpiryError), "\(hours)h should be accepted")
+        }
     }
 
-    func testExpiryHours24IsAccepted() {
-        let errors = validateLimitSwapInputs(.valid(expiryHours: 24))
-        XCTAssertFalse(errors.contains(where: { if case .expiryHoursUnsupported = $0 { return true } else { return false } }))
+    func testArbitraryDurationInsideTheRangeIsAccepted() {
+        // The point of the feature: 6h and 90m used to be rejected outright.
+        for minutes in [90, 6 * 60, 37 * 60, 71 * 60 + 59] {
+            let errors = validateLimitSwapInputs(.valid(expiryBlocks: THORChainConstants.blocks(forMinutes: minutes)))
+            XCTAssertFalse(errors.contains(where: isExpiryError), "\(minutes)m should be accepted")
+        }
     }
 
-    func testExpiryHours72IsAccepted() {
-        let errors = validateLimitSwapInputs(.valid(expiryHours: 72))
-        XCTAssertFalse(errors.contains(where: { if case .expiryHoursUnsupported = $0 { return true } else { return false } }))
+    func testExpiryAtExactlyTheBoundsIsAccepted() {
+        let atFloor = validateLimitSwapInputs(.valid(expiryBlocks: THORChainConstants.minLimitSwapAgeBlocks))
+        XCTAssertFalse(atFloor.contains(where: isExpiryError))
+
+        let atCeiling = validateLimitSwapInputs(.valid(expiryBlocks: THORChainConstants.defaultLimitSwapMaxAgeBlocks))
+        XCTAssertFalse(atCeiling.contains(where: isExpiryError))
     }
 
-    func testExpiryHours6IsRejected() {
-        let errors = validateLimitSwapInputs(.valid(expiryHours: 6))
-        XCTAssertTrue(errors.contains(.expiryHoursUnsupported(6)))
+    func testExpiryBelowTheFloorIsRejected() {
+        let blocks = THORChainConstants.minLimitSwapAgeBlocks - 1
+        let errors = validateLimitSwapInputs(.valid(expiryBlocks: blocks))
+        XCTAssertTrue(errors.contains(.expiryOutOfRange(
+            blocks: blocks,
+            minBlocks: THORChainConstants.minLimitSwapAgeBlocks,
+            maxBlocks: THORChainConstants.defaultLimitSwapMaxAgeBlocks
+        )))
     }
 
-    func testExpiryHours100IsRejected() {
-        let errors = validateLimitSwapInputs(.valid(expiryHours: 100))
-        XCTAssertTrue(errors.contains(.expiryHoursUnsupported(100)))
+    func testExpiryAboveTheCeilingIsRejected() {
+        // THORChain would clamp this silently rather than error, which is exactly
+        // why the app has to reject it: otherwise the memo says one thing and the
+        // queue enforces another.
+        let blocks = THORChainConstants.defaultLimitSwapMaxAgeBlocks + 1
+        let errors = validateLimitSwapInputs(.valid(expiryBlocks: blocks))
+        XCTAssertTrue(errors.contains(.expiryOutOfRange(
+            blocks: blocks,
+            minBlocks: THORChainConstants.minLimitSwapAgeBlocks,
+            maxBlocks: THORChainConstants.defaultLimitSwapMaxAgeBlocks
+        )))
+    }
+
+    func testCeilingFollowsTheInjectedMimirValue() {
+        // A raised on-chain cap must widen the accepted range on its own, rather
+        // than being rejected by a constant baked in at build time.
+        let raised = THORChainConstants.defaultLimitSwapMaxAgeBlocks * 2
+        let errors = validateLimitSwapInputs(
+            .valid(expiryBlocks: raised),
+            maxExpiryBlocks: raised
+        )
+        XCTAssertFalse(errors.contains(where: isExpiryError))
+    }
+
+    private func isExpiryError(_ error: LimitSwapValidationError) -> Bool {
+        if case .expiryOutOfRange = error { return true }
+        return false
     }
 
     // MARK: - dest_address
@@ -127,14 +169,18 @@ final class LimitSwapValidationTests: XCTestCase {
             targetAsset: "ETH",
             destAddress: "",
             targetPrice: 0,
-            expiryHours: 7,
+            expiryBlocks: THORChainConstants.blocks(forMinutes: 7),
             affiliate: "vi",
             affiliateBps: "50"
         )
         let errors = validateLimitSwapInputs(inputs)
         XCTAssertTrue(errors.contains(.sourceAmountNotPositive))
         XCTAssertTrue(errors.contains(.targetPriceNotPositive))
-        XCTAssertTrue(errors.contains(.expiryHoursUnsupported(7)))
+        XCTAssertTrue(errors.contains(.expiryOutOfRange(
+            blocks: THORChainConstants.blocks(forMinutes: 7),
+            minBlocks: THORChainConstants.minLimitSwapAgeBlocks,
+            maxBlocks: THORChainConstants.defaultLimitSwapMaxAgeBlocks
+        )))
         XCTAssertTrue(errors.contains(.destAddressEmpty))
         XCTAssertTrue(errors.contains(.sourceAssetMalformed("BTC")))
         XCTAssertTrue(errors.contains(.targetAssetMalformed("ETH")))
@@ -152,7 +198,7 @@ private extension LimitSwapInputs {
         targetAsset: String = "ETH.ETH",
         destAddress: String = "0x1234567890abcdef1234567890abcdef12345678",
         targetPrice: Decimal = 16,
-        expiryHours: Int = 24,
+        expiryBlocks: Int = THORChainConstants.blocks(forHours: 24),
         affiliate: String = "vi",
         affiliateBps: String = "50"
     ) -> LimitSwapInputs {
@@ -163,7 +209,7 @@ private extension LimitSwapInputs {
             targetAsset: targetAsset,
             destAddress: destAddress,
             targetPrice: targetPrice,
-            expiryHours: expiryHours,
+            expiryBlocks: expiryBlocks,
             affiliate: affiliate,
             affiliateBps: affiliateBps
         )

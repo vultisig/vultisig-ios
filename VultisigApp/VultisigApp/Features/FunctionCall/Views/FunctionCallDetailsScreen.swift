@@ -17,7 +17,6 @@ struct FunctionCallDetailsScreen: View {
     /// another function's form, and re-picking the migrated one would publish
     /// no change at all.
     @State private var lastLegacyFunctionMemoType: FunctionCallType = .custom
-    @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var hasCompletedInitialSetup = false
 
@@ -46,7 +45,6 @@ struct FunctionCallDetailsScreen: View {
             VStack {
                 ScrollView {
                     VStack(spacing: 16) {
-                        contractSelector
                         functionSelector
                         if let instance = fnCallInstance {
                             FunctionCallContentView(instance: instance, selectedCoin: $selectedCoin)
@@ -108,30 +106,6 @@ struct FunctionCallDetailsScreen: View {
                 }
 
                 fnCallInstance = .rebond(rebondInstance)
-            case .bondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .bondMaya(
-                                FunctionCallBondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
-            case .unbondMaya:
-                DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets { assetsResponse in
-                        let assets = assetsResponse.map { IdentifiableString(value: $0) }
-                        DispatchQueue.main.async {
-                            fnCallInstance = .unbondMaya(
-                                FunctionCallUnbondMayaChain(assets: assets)
-                            )
-                        }
-                    }
-                }
-
             case .leave:
                 // Migrated to `Features/FunctionTransaction/` — the route-out
                 // above already handled it. Listed only to keep this switch
@@ -195,9 +169,13 @@ struct FunctionCallDetailsScreen: View {
 
     private func ensureRuneCoin() {
         // Ensure RUNE token is selected for operations on THORChain.
-        if let runeCoin = vault.runeCoin {
-            selectedCoin = runeCoin
-        }
+        //
+        // Only on THORChain. LEAVE is offered on MayaChain too, and swapping the
+        // coin there would move the transaction onto a different chain behind
+        // the user — rewriting the function selector's own case list along with
+        // it, and signing LEAVE against RUNE for a node the user named on Maya.
+        guard selectedCoin.chain == .thorChain, let runeCoin = vault.runeCoin else { return }
+        selectedCoin = runeCoin
     }
 
     private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
@@ -213,13 +191,6 @@ struct FunctionCallDetailsScreen: View {
         FunctionCallSelectorDropdown(
             items: .constant(FunctionCallType.getCases(for: selectedCoin)),
             selected: $selectedFunctionMemoType, coin: $selectedCoin)
-    }
-
-    var contractSelector: some View {
-        FunctionCallContractSelectorDropDown(
-            items: .constant(
-                FunctionCallContractType.getCases(for: selectedCoin)),
-            selected: $selectedContractMemoType, coin: selectedCoin)
     }
 
     var button: some View {
@@ -250,7 +221,6 @@ private extension FunctionCallDetailsScreen {
     func setupForm() {
         self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
         self.lastLegacyFunctionMemoType = self.selectedFunctionMemoType
-        self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
         self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, vault: vault)
         DispatchQueue.main.async {
             self.hasCompletedInitialSetup = true

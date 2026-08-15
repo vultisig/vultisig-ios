@@ -79,7 +79,7 @@ final class LimitOrderPlacementPresentationTests: XCTestCase {
         XCTAssertEqual(from.amount, "50,000")
         XCTAssertEqual(to.amount, "0.5")
         XCTAssertEqual(display?.targetPriceValue, "1 USDT = 0.00001 BTC")
-        XCTAssertEqual(display?.expiryValue, "72h")
+        XCTAssertEqual(display?.expiryValue, "3d")
     }
 
     /// A token TARGET keeps its ticker without the memo's contract suffix.
@@ -150,10 +150,13 @@ final class LimitOrderPlacementPresentationTests: XCTestCase {
 
     // MARK: - Hardening (memo is attacker-influenced over the wire)
 
-    /// An interval that isn't a whole number of hours (no order this app builds)
-    /// omits the expiry rather than floor it — but the faithful title, pair and
-    /// price still show.
-    func testANonHourIntervalOmitsExpiryButKeepsPriceAndHero() {
+    /// An interval that isn't a whole number of hours is stated EXACTLY.
+    ///
+    /// It used to be omitted: the expiry was carried as whole hours and went nil
+    /// for any remainder, so a co-signer saw no expiry at all. Custom durations
+    /// make that the common case rather than the exotic one, so the block count
+    /// is now formatted directly.
+    func testANonHourIntervalIsStatedExactly() {
         let display = LimitOrderPlacementPresentation.display(
             for: makePlacementPayload(
                 // 7250 blocks is not a multiple of 600.
@@ -163,10 +166,11 @@ final class LimitOrderPlacementPresentationTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(display?.expiryValue)
+        // 7250 blocks = 725 minutes = 12h 5m.
+        XCTAssertEqual(display?.expiryValue, "12h 5m")
         XCTAssertEqual(display?.targetPriceValue, "1 BTC = 16 ETH")
         guard case .swap? = display?.hero else {
-            return XCTFail("the hero and price must survive an unstatable expiry")
+            return XCTFail("the hero and price must survive an unusual expiry")
         }
     }
 

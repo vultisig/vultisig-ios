@@ -66,7 +66,7 @@ enum KaminoSolanaProgram: String, CaseIterable {
 /// the injector, the validator and the verify-screen decoder all read it from
 /// here rather than each spelling it out.
 enum KaminoAttribution {
-    static let memoTag = "vs"
+    static let memoTag = "8k2mz"
     static let memoTagBytes = [UInt8](Data(memoTag.utf8))
 }
 

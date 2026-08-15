@@ -49,11 +49,14 @@ enum LimitOrderPlacementPresentation {
         /// fabricated zero. The hero's source → minimum-payout pair still carries
         /// the real amounts.
         let targetPriceValue: String?
-        /// The order's lifetime, e.g. `12h` — or `nil` when the memo's block
-        /// interval isn't a whole number of hours (which no order this app
-        /// builds ever is), so the screen omits the row rather than show a
-        /// floored/rounded value the order was not signed with.
-        let expiryValue: String?
+        /// The order's lifetime, e.g. `12h` or `12h 5m`. Non-optional: it used
+        /// to be `nil` for an interval that was not a whole number of hours, back
+        /// when the picker could only produce whole hours and anything else meant
+        /// a hand-built memo. Custom expiries are minute-based now and
+        /// `formatLimitExpiry` renders any duration, so there is nothing left to
+        /// omit — and an optional the screen still branches on would imply there
+        /// were.
+        let expiryValue: String
     }
 
     /// Build the placement display for a co-signer's `KeysignPayload`, or `nil`
@@ -112,7 +115,7 @@ enum LimitOrderPlacementPresentation {
                 sourceTicker: sourceTicker,
                 targetTicker: parsed.targetTicker
             ),
-            expiryValue: parsed.expiryHours.map { "\($0)h" }
+            expiryValue: formatLimitExpiry(blocks: parsed.expiryBlocks)
         )
     }
 
@@ -164,12 +167,14 @@ enum LimitOrderPlacementPresentation {
     struct ParsedPlacement: Equatable {
         let targetTicker: String
         let lim: BigInt
-        /// `nil` when the memo's block interval isn't a whole number of hours —
-        /// see `Display.expiryValue`.
-        let expiryHours: Int?
+        /// The memo's raw block interval. Kept as blocks rather than converted to
+        /// whole hours: a custom expiry need not land on an hour boundary, and
+        /// the previous `Int?` went nil for exactly those orders — dropping the
+        /// expiry row from a co-signer's screen precisely when it was unusual.
+        let expiryBlocks: Int
     }
 
-    /// Parse a placement memo into the target ticker, LIM and expiry hours.
+    /// Parse a placement memo into the target ticker, LIM and expiry blocks.
     ///
     /// Wire layout (see `composeLimitSwapMemo`):
     ///
@@ -199,19 +204,10 @@ enum LimitOrderPlacementPresentation {
             return nil
         }
 
-        // Only surface an expiry when the interval is an exact whole-hour count.
-        // Every order this app builds is (`computeExpiryBlocks(hours:)` =
-        // hours × `blocksPerHour`); a stray remainder means a memo we can't state
-        // in whole hours, so we omit the field rather than floor it to a wrong —
-        // possibly `0h` — value.
-        let expiryHours = intervalBlocks.isMultiple(of: THORChainConstants.blocksPerHour)
-            ? THORChainConstants.hours(forBlocks: intervalBlocks)
-            : nil
-
         return ParsedPlacement(
             targetTicker: targetTicker,
             lim: lim,
-            expiryHours: expiryHours
+            expiryBlocks: intervalBlocks
         )
     }
 }
