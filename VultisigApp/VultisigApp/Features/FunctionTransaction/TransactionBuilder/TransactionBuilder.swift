@@ -45,10 +45,16 @@ extension TransactionBuilder {
     /// Default — only the limit-order cancel builder overrides this.
     var limitCancelContext: LimitOrderCancelRequest? { nil }
 
-    /// Builds the immutable `SendTransaction` struct directly. `gas` /
-    /// `fee` and runtime-only fields default to the construction-time
-    /// zero state and are filled in downstream by `SendCryptoVerifyViewModel`
-    /// (via the interactor).
+    /// Builds the immutable `SendTransaction` struct directly, with `gas` /
+    /// `fee` and runtime-only fields left at the construction-time zero state.
+    ///
+    /// ⚠️ **Unpriced.** Nothing downstream of `FunctionCallRoute.verify`
+    /// re-resolves the two fee figures for display — `FunctionCallVerifyScreen`
+    /// renders whatever the hand-off carried — so a transaction navigated
+    /// straight from here discloses a zero fee. Use
+    /// `buildPricedSendTransaction(vault:)` at any seam that hands the result to
+    /// Verify; this stays for the flows that stamp their own fee (the Cosmos
+    /// staking constant, a THORChain deposit's fixed gas) and for tests.
     func buildSendTransaction(vault: Vault) -> SendTransaction {
         SendTransaction(
             coin: coin,
@@ -75,5 +81,26 @@ extension TransactionBuilder {
             solanaStakingPayload: solanaStakingPayload,
             limitCancelContext: limitCancelContext
         )
+    }
+
+    /// The transaction Verify is handed: built, then priced.
+    ///
+    /// One step for every builder, present and future, so a DeFi operation
+    /// migrated onto this pipeline discloses a real fee the day it lands rather
+    /// than inheriting a `chainSpecific.gas` copy that reads zero on EVM, UTXO
+    /// and Cardano. See `FunctionCallFeePricer` for why the two figures must
+    /// travel together.
+    @MainActor
+    func buildPricedSendTransaction(
+        vault: Vault,
+        pricer: FunctionCallFeePricer
+    ) async -> SendTransaction {
+        await pricer.priced(buildSendTransaction(vault: vault))
+    }
+
+    /// `buildPricedSendTransaction(vault:pricer:)` against the live interactor.
+    @MainActor
+    func buildPricedSendTransaction(vault: Vault) async -> SendTransaction {
+        await buildPricedSendTransaction(vault: vault, pricer: FunctionCallFeePricer())
     }
 }

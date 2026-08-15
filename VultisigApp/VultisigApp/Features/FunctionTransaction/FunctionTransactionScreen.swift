@@ -17,8 +17,6 @@ struct FunctionTransactionScreen: View {
 
     @State private var isLoading: Bool = false
 
-    private let blockchainService = BlockChainService.shared
-
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -47,15 +45,15 @@ struct FunctionTransactionScreen: View {
                         )
                     }
                 }
-            case .unbond(let node):
-                resolvingCoin(coinMeta: node.coin) { coin in
+            case .unbond(let coinMeta, let node):
+                resolvingCoin(coinMeta: coinMeta) { coin in
                     switch coin.chain {
                     case .mayaChain:
                         UnbondMayaTransactionScreen(
                             viewModel: UnbondMayaTransactionViewModel(
                                 coin: coin,
                                 vault: vault,
-                                initialBondAddress: node.address
+                                initialBondAddress: node?.address
                             ),
                             onVerify: onVerify
                         )
@@ -64,7 +62,7 @@ struct FunctionTransactionScreen: View {
                             viewModel: UnbondTransactionViewModel(
                                 coin: coin,
                                 vault: vault,
-                                bondAddress: node.address
+                                bondAddress: node?.address ?? .empty
                             ),
                             onVerify: onVerify
                         )
@@ -269,7 +267,12 @@ struct FunctionTransactionScreen: View {
                         for: transactionBuilder.coin.chain,
                         msgCount: stakingPayload.msgCount
                     )
-                    immutableTx = immutableTx.copy(gas: scaledGas)
+                    // Both figures: `displayFee` reads `gas` on Cosmos, every
+                    // fiat fee string reads `fee`, and for a Cosmos SignDoc the
+                    // per-unit gas IS the whole cost — so they are the same
+                    // number and disagreeing about it only prints `$0.00` under
+                    // a real crypto amount.
+                    immutableTx = immutableTx.copy(gas: scaledGas, fee: scaledGas)
                 } catch {
                     // Unreachable for the staking-supported chains that ever
                     // populate `cosmosStakingPayload`; log rather than swallow
@@ -287,15 +290,9 @@ struct FunctionTransactionScreen: View {
             isLoading = true
             defer { isLoading = false }
 
-            var sendTx = transactionBuilder.buildSendTransaction(vault: vault)
-            do {
-                let chainSpecific = try await blockchainService.fetchSpecific(tx: sendTx)
-                sendTx = sendTx.copy(gas: chainSpecific.gas)
-            } catch {
-                // Non-fatal: gas will be re-fetched during Verify. Keep
-                // navigating so the user sees the verify screen even when
-                // the upstream chain-specific endpoint is briefly down.
-            }
+            // Priced before it is disclosed. Nothing downstream re-resolves the
+            // fee for display, so this figure is the one the user approves.
+            let sendTx = await transactionBuilder.buildPricedSendTransaction(vault: vault)
             router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
         }
     }

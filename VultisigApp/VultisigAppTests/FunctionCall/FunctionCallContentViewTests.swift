@@ -23,8 +23,6 @@ final class FunctionCallContentViewTests: XCTestCase {
 
         let migrated: [FunctionCallInstance] = [
             .rebond(FunctionCallReBond()),
-            .bondMaya(FunctionCallBondMayaChain(assets: [])),
-            .unbondMaya(FunctionCallUnbondMayaChain(assets: [])),
             .leave(FunctionCallLeave()),
             .custom(FunctionCallCustom(coin: rune, vault: vault)),
             .vote(FunctionCallVote()),

@@ -64,14 +64,6 @@ extension FunctionCallReBond: FunctionCallSubModel {
     var submitErrorMessage: String? { customErrorMessage }
 }
 
-extension FunctionCallBondMayaChain: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-}
-
-extension FunctionCallUnbondMayaChain: FunctionCallSubModel {
-    func isFormValid(for _: Coin) -> Bool { isTheFormValid }
-}
-
 extension FunctionCallLeave: FunctionCallSubModel {
     func isFormValid(for _: Coin) -> Bool { isTheFormValid }
 }

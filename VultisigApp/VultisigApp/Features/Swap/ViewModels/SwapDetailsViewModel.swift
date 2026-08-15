@@ -181,10 +181,10 @@ final class SwapDetailsViewModel {
         }
     }
 
-    /// Warm the per-session VULT discount-tier cache once on screen load so the
-    /// quote path reads the cached tier (VULT balance + Thorguard NFT) instead of
-    /// re-resolving it — and re-running the Thorguard eth_call — on every fetch.
-    /// This feeds the VULT fee-discount applied on the quote path.
+    /// Resolve the VULT discount tier once on screen load, warming the session
+    /// cache of Thorguard NFT ownership so the quote path doesn't re-run the
+    /// eth_call on every fetch. Each quote still re-reads the VULT balance, so a
+    /// balance arriving after this warm-up still reaches the fee discount.
     func warmDiscountTier(vault: Vault) {
         Task { [weak self] in
             guard let self else { return }
