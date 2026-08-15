@@ -45,7 +45,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .addThorLP:
             return NSLocalizedString("Add THORChain LP", comment: "")
         case .withdrawSecuredAsset:
-            return NSLocalizedString("Withdraw Secured Asset", comment: "")
+            return NSLocalizedString("withdrawSecuredAsset", comment: "")
         }
     }
 

@@ -114,7 +114,6 @@ final class FunctionCallReachabilityTests: XCTestCase {
         case .cosmosIBC: return .cosmosIBC
         case .theSwitch: return .theSwitch
         case .addThorLP: return .addThorLP
-        case .withdrawSecuredAsset: return .withdrawSecuredAsset
         }
     }
 

@@ -249,6 +249,13 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .withdrawSecuredAsset(let coin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    SecuredWithdrawTransactionScreen(
+                        viewModel: SecuredWithdrawTransactionViewModel(coin: coin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
             case .merge(let coin, let denom):
                 resolvingCoin(coinMeta: coin) { coin in
                     MergeTransactionScreen(

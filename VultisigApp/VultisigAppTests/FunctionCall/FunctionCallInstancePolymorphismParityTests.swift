@@ -145,24 +145,4 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
 
         assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
     }
-
-    func testWithdrawSecuredAssetParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        // No initialize() — offline.
-        let model = FunctionCallWithdrawSecuredAsset(coin: rune, vault: vault)
-        model.destinationAddress = "0xL1DestAddr"
-        let instance = FunctionCallInstance.withdrawSecuredAsset(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "SECURE-:0xL1DestAddr")
-        XCTAssertEqual(tx.transactionType, .unspecified)
-        // Withdraw signs via MsgDeposit — toAddress is intentionally empty
-        // even though `destinationAddress` is set.
-        XCTAssertEqual(tx.toAddress, "")
-        XCTAssertNil(tx.wasmContractPayload)
-        XCTAssertNil(instance.toAddress)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
 }
