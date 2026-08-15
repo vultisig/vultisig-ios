@@ -238,6 +238,13 @@ final class ReceiptShareRedemptionTests: XCTestCase {
 
     /// The share balance not having loaded (or having failed to load) leaves
     /// nothing to unbond, MAX included.
+    ///
+    /// ⚠️ Asserts no BUILDER, not merely an empty payload. The refusal moved
+    /// upstream: `transactionBuilder` now declines outright for any position
+    /// funded from a receipt balance that reads zero, rather than handing back a
+    /// builder whose wasm execute happens to carry no funds. Refusing earlier is
+    /// the stronger guarantee — there is no longer an object a caller could sign
+    /// something from.
     func testABRuneUnbondBuildsNothingBeforeTheReceiptBalanceLoads() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
@@ -248,7 +255,7 @@ final class ReceiptShareRedemptionTests: XCTestCase {
         viewModel.amountField.value = "2002.7400"
         viewModel.validForm = true
 
-        XCTAssertNil(try XCTUnwrap(viewModel.transactionBuilder).wasmContractPayload)
+        XCTAssertNil(viewModel.transactionBuilder)
     }
 
     // MARK: - RUJI auto-compound / sRUJI
