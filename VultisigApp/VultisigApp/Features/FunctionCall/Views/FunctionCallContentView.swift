@@ -34,8 +34,6 @@ struct FunctionCallContentView: View {
             CosmosSwitchFormView(model: model, coin: selectedCoin)
         case .addThorLP(let model):
             AddThorLPFormView(model: model, selectedCoin: $selectedCoin)
-        case .securedAsset(let model):
-            SecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         case .withdrawSecuredAsset(let model):
             WithdrawSecuredAssetFormView(model: model, selectedCoin: $selectedCoin)
         }

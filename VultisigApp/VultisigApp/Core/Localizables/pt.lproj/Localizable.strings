@@ -432,7 +432,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ou 24";
 "enterYourVaultsPassword" = "Digite a senha do seu cofre";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
-"erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Erro";
 "errorCopy" = "Copiar";
 "errorLoadingBalance" = "Error loading balance";
@@ -522,7 +521,6 @@
 "gasOwner" = "Proprietário do gás";
 "gasPrice" = "Preço do gás";
 "general" = "Em geral";
-"generatedMemo" = "Generated Memo:";
 "German" = "Alemão";
 "getStarted" = "Começar";
 "github" = "GitHub";
@@ -892,8 +890,6 @@
 "minPayout" = "pagamento mín.";
 "mint" = "Cunhar";
 "mintCoin" = "Cunhar %@";
-"mintSecuredAsset" = "Mint Secured Asset (SECURE+)";
-"mintTransaction" = "2. Mint secured asset transaction";
 "missingEncryptionKey" = "Chave de criptografia ausente. Tente novamente.";
 "MLDSA" = "MLDSA";
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
@@ -1285,7 +1281,6 @@
 "searchAsset" = "Pesquisar ativo";
 "second" = "Segundo";
 "secure" = "Seguro";
-"Secured Assets" = "Ativos Segurados";
 "secureLoaderTitle" = "Procurando dispositivos...";
 "secureModeTitle" = "SEGURO";
 "secureVault" = "Cofre Seguro";
@@ -1535,13 +1530,11 @@
 "switchBackToInternetMode" = "Não quer usar o modo local? Voltar.";
 "switchToLocalMode" = "Mudar para modo local";
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";
-"targetAsset" = "Target Asset: %@";
 "termsOfService" = "Termos de Serviço";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Este Dispositivo";
 "ThisDeviceIs" = "Este dispositivo é o";
 "thisVaultOnly" = "Apenas este cofre";
-"thorAddressAutoFilled" = "THORChain Address (auto-filled)";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainAddress" = "Endereço THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token THORChain inválido. Use THOR.{SYMBOL}, ex.: THOR.LQDY.";

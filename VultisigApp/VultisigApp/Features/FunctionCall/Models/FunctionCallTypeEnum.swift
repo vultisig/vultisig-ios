@@ -20,7 +20,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          unmerge,
          theSwitch,
          addThorLP,
-         securedAsset,
          withdrawSecuredAsset
 
     var id: String { self.rawValue }
@@ -45,8 +44,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Switch", comment: "")
         case .addThorLP:
             return NSLocalizedString("Add THORChain LP", comment: "")
-        case .securedAsset:
-            return NSLocalizedString("Secured Assets", comment: "")
         case .withdrawSecuredAsset:
             return NSLocalizedString("Withdraw Secured Asset", comment: "")
         }
@@ -61,15 +58,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .merge,
                 .unmerge,
                 .custom,
-                .securedAsset,
                 .withdrawSecuredAsset
             ]
 
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return [
-                .addThorLP,
-                .securedAsset
-            ]
+            return [.addThorLP]
         case .mayaChain:
             return [.leave,
                     .custom]
