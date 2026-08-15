@@ -49,8 +49,7 @@ final class LimitSwapRecipientVerifierTests: XCTestCase {
             destAddress: "0xdestaddress000000000000000000000000000000",
             targetPrice: 16,
             expiryBlocks: 14_400,
-            memo: "=<:ETH.ETH:0xdestaddress000000000000000000000000000000:16e8/14400/0:vi:0",
-            expiryHours: 24
+            memo: "=<:ETH.ETH:0xdestaddress000000000000000000000000000000:16e8/14400/0:vi:0"
         )
         var settings = SwapAdvancedSettings.default
         settings.externalRecipient = externalRecipient

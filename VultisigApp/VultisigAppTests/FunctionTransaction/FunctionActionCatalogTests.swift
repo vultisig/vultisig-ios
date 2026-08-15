@@ -115,14 +115,43 @@ final class FunctionActionCatalogTests: XCTestCase {
 
     // MARK: - Single-action passthrough
 
-    func testASingleActionSkipsTheList() {
+    /// Replaces `testASingleActionSkipsTheList`, which used dYdX as its
+    /// one-action chain back when the vote was still legacy: dYdX is now the
+    /// first *real* instance of the shape the synthetic test below describes —
+    /// one action, already migrated. The unmigrated single-action case is still
+    /// covered, by `testThorchainTestNetworksPassThroughToCustom`.
+    ///
+    /// This is the only way into the governance vote, so a fall-back to the
+    /// legacy screen would open a form that no longer exists.
+    func testDydxPassesThroughToTheMigratedVoteScreen() {
         let coin = Self.makeCoin(.dydx)
-        XCTAssertEqual(FunctionCallType.getCases(for: coin).count, 1, "Fixture chain must offer one action")
+        XCTAssertEqual(FunctionCallType.getCases(for: coin), [.vote], "dYdX must offer exactly the vote")
 
         guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
             return XCTFail("A chain with one action must open that action directly")
         }
-        XCTAssertEqual(descriptor.destination, .legacyFunctionCall(.vote))
+        guard case .transaction(let transactionType) = descriptor.destination else {
+            return XCTFail("dYdX's vote is migrated and must not be routed through the legacy screen")
+        }
+        guard case .dydxVote(let voteCoin) = transactionType else {
+            return XCTFail("Expected the dYdX vote intent")
+        }
+        XCTAssertEqual(voteCoin.chain, .dydx)
+        XCTAssertEqual(voteCoin.ticker, "DYDX")
+        XCTAssertTrue(voteCoin.isNativeToken)
+
+        // And the route the descriptor names really is the transaction screen —
+        // no default, no legacy screen, nothing between the entry button and the
+        // ballot.
+        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        guard case .functionTransaction(_, let routed) = FunctionCallRoute.route(
+            for: descriptor.destination,
+            coin: coin,
+            vault: vault
+        ) else {
+            return XCTFail("dYdX's single action must route to FunctionTransactionScreen")
+        }
+        XCTAssertEqual(routed, transactionType)
     }
 
     /// The constraint this screen removes.
@@ -154,6 +183,65 @@ final class FunctionActionCatalogTests: XCTestCase {
         XCTAssertEqual(leaveCoin.chain, .thorChain)
         XCTAssertEqual(leaveCoin.ticker, "RUNE")
         XCTAssertNil(node, "The list is entered cold — there is no previous form to inherit a node address from")
+    }
+
+    /// The constraint made concrete. Kujira and Osmosis each offer exactly one
+    /// operation and that operation is now migrated — the shape
+    /// `testASingleMigratedActionRoutesStraightToItsOwnScreen` describes with a
+    /// synthetic case list, here on the real chains that have it. Under the
+    /// selection-change seam these two were unmigratable: a lone case is also
+    /// the chain's default, and a default never publishes a change.
+    func testTheSingleActionChainsPassThroughToTheIbcScreen() {
+        for chain in [Chain.kujira, Chain.osmosis] {
+            let coin = Self.makeCoin(chain)
+            XCTAssertEqual(
+                FunctionCallType.getCases(for: coin),
+                [.cosmosIBC],
+                "\(chain.rawValue) must offer IBC and nothing else for this to be the passthrough case"
+            )
+
+            guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+                return XCTFail("\(chain.rawValue) must open its single action directly, not via the list")
+            }
+            guard case .transaction(let transactionType) = descriptor.destination else {
+                return XCTFail("\(chain.rawValue)'s IBC row must not be routed through the legacy screen")
+            }
+            guard case .ibcTransfer(let intentCoin, let destination) = transactionType else {
+                return XCTFail("Expected the IBC transfer intent on \(chain.rawValue)")
+            }
+
+            XCTAssertEqual(intentCoin.chain, chain)
+            XCTAssertNil(destination, "The list is entered cold — there is no route to inherit")
+        }
+    }
+
+    /// Gaia offers two operations and both are migrated, so the list renders
+    /// two rows that each route straight to their own screen — no row falls
+    /// back to the legacy form any more. The mixed case this used to pin
+    /// (IBC migrated, Switch still legacy) no longer exists once both land.
+    func testGaiaRendersAListWithBothRowsMigrated() {
+        let coin = Self.makeCoin(.gaiaChain)
+
+        guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("Gaia offers two operations and must show the list")
+        }
+        XCTAssertEqual(descriptors.map { $0.id }, [FunctionCallType.cosmosIBC.rawValue, FunctionCallType.theSwitch.rawValue])
+
+        guard case .transaction(let ibcType) = descriptors[0].destination else {
+            return XCTFail("Gaia's IBC row must route to the migrated screen")
+        }
+        guard case .ibcTransfer(let ibcCoin, _) = ibcType else {
+            return XCTFail("Expected the IBC transfer intent")
+        }
+        XCTAssertEqual(ibcCoin.chain, .gaiaChain)
+
+        guard case .transaction(let switchType) = descriptors[1].destination else {
+            return XCTFail("Gaia's Switch row must route to the migrated screen")
+        }
+        guard case .theSwitch(let switchCoin) = switchType else {
+            return XCTFail("Expected the switch intent")
+        }
+        XCTAssertEqual(switchCoin.chain, .gaiaChain)
     }
 
     func testMoreThanOneActionRendersTheList() {

@@ -12,17 +12,35 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
 
     let coin: Coin
     var onBond: (BondNode?) -> Void
-    var onUnbond: (BondNode) -> Void
+    var onUnbond: (BondNode?) -> Void
     var emptyStateView: () -> EmptyStateView
 
     var body: some View {
         LazyVStack(spacing: 14) {
             if !viewModel.hasBondPositions {
                 emptyStateView()
+                unbondFromUnlistedNodeButton
             } else {
                 bondedSection
                 activeNodesSection
                 availableNodesSection
+            }
+        }
+    }
+
+    /// The way out of a node the user holds no card for.
+    ///
+    /// Offered by both branches above — which are mutually exclusive, so it is
+    /// rendered at most once. The empty state is not an exception to this
+    /// entry point but the case it exists for: a node that stopped reporting
+    /// the user as a provider leaves no card to start from, and every other
+    /// route into unbond is card-driven. Gating it on having a card would
+    /// close the door on precisely the people who need it.
+    @ViewBuilder
+    var unbondFromUnlistedNodeButton: some View {
+        if viewModel.canUnbondFromUnlistedNode {
+            PrimaryButton(title: "unbondFromAnotherNode", type: .secondary) {
+                onUnbond(nil)
             }
         }
     }
@@ -62,6 +80,8 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                 }
                 .disabled(!viewModel.canAddBond)
                 .opacity(viewModel.canAddBond ? 1 : 0.5)
+
+                unbondFromUnlistedNodeButton
             }
         }
     }

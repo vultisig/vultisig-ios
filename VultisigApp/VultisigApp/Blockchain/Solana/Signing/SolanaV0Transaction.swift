@@ -123,8 +123,8 @@ struct SolanaV0Transaction: Equatable {
     static let memoProgramId = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 
     /// Bound on an injected memo. Nothing here needs a long one — the tag this
-    /// app writes is two bytes — and the ceiling keeps a caller from spending
-    /// the transaction's remaining size budget on a note.
+    /// app writes is a handful of bytes — and the ceiling keeps a caller from
+    /// spending the transaction's remaining size budget on a note.
     static let maxMemoByteCount = 64
 
     /// The 32 raw bytes of `computeBudgetProgramId`, decoded once. The input is

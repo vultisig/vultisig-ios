@@ -83,8 +83,9 @@ struct LimitSwapEntryView: View {
             async let supportedChains: () = vm.refreshSupportedChains()
             async let marketPrice: () = vm.refreshMarketPrice()
             async let queueGate: () = vm.refreshAdvancedSwapQueueGate()
+            async let maxExpiry: () = vm.refreshMaxExpiry()
             async let pairChart: () = vm.refreshPairChart(currency: SettingsCurrency.current)
-            _ = await (supportedChains, marketPrice, queueGate, pairChart)
+            _ = await (supportedChains, marketPrice, queueGate, maxExpiry, pairChart)
             vm.selectPresetPct(0, userInitiated: false)
         }
         .onChange(of: limitFromCoin) { _, newCoin in

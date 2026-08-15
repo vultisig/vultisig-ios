@@ -167,7 +167,7 @@ struct DefiChainMainScreen: View {
                         viewModel: bondViewModel,
                         coin: nativeCoin,
                         onBond: { onTransactionToPresent(.bond(coin: nativeCoin.toCoinMeta(), node: $0?.address)) },
-                        onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
+                        onUnbond: { onTransactionToPresent(.unbond(coin: nativeCoin.toCoinMeta(), node: $0)) },
                         emptyStateView: { emptyStateView }
                     )
                 }
@@ -517,7 +517,7 @@ private extension DefiChainMainScreen {
             owner: nativeCoin.address,
             decimals: nativeCoin.decimals
         )
-        async let balance: Void = BalanceService.shared.updateBalance(for: nativeCoin)
+        async let balance: Bool = BalanceService.shared.updateBalance(for: nativeCoin)
         _ = await (rows, balance)
     }
 

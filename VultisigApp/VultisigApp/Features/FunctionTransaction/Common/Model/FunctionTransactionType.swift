@@ -9,7 +9,11 @@ import Foundation
 
 enum FunctionTransactionType: Hashable {
     case bond(coin: CoinMeta, node: String?)
-    case unbond(node: BondNode)
+    /// `node` is nil when the user is unbonding from a node the app never
+    /// discovered a position for — the bond address is queried for active nodes,
+    /// so a node that stopped reporting one would otherwise have no way out. The
+    /// coin is carried separately because a nil node cannot supply it.
+    case unbond(coin: CoinMeta, node: BondNode?)
     case stake(coin: CoinMeta, isAutocompound: Bool)
     case unstake(coin: CoinMeta, isAutocompound: Bool, availableToUnstake: Decimal? = nil)
     case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
@@ -50,13 +54,67 @@ enum FunctionTransactionType: Hashable {
     /// on the same chain; every one of those is already held, so the intent
     /// names only the coin the caller opened on.
     case customMemo(coin: CoinMeta)
-
+    /// Cosmos IBC transfer. `coin` is the asset leaving the source chain — the
+    /// only coin the vault has to resolve, since the destination side of the
+    /// hop is an address, not a holding. `destinationChain` optionally
+    /// pre-selects the route for a caller that already knows it (a future
+    /// bridge card); nil opens the picker unselected, which is what the action
+    /// list does — it is entered cold.
+    ///
+    /// The destination address and the user's memo are deliberately *not* here:
+    /// they are typed on the form, so they belong to the builder this intent
+    /// eventually produces, not to the intent that opens the form.
+    case ibcTransfer(coin: CoinMeta, destinationChain: Chain?)
+    /// dYdX governance vote. `coin` is dYdX's native asset: the ballot rides a
+    /// memo with nothing attached, so the only coin the vault has to resolve is
+    /// the one that pays the fee.
+    ///
+    /// Named for the chain rather than for the operation because the memo is:
+    /// `DYDX_VOTE:…` is not the `QBTC_VOTE:…` the DeFi tab's governance segment
+    /// builds, and a bare `.vote` intent would invite a caller to route one
+    /// through the other.
+    case dydxVote(coin: CoinMeta)
+    /// Cosmos Hub → THORChain SWITCH. `coin` is the source chain's native
+    /// asset: the transfer goes to THORChain's inbound vault for that chain,
+    /// and that vault only credits the native asset — a Gaia IBC token sent
+    /// there is simply lost. The destination is deliberately absent from the
+    /// intent; it is the live inbound vault address, resolved when the
+    /// transaction is built rather than carried from wherever the caller came
+    /// from. The THORChain address the memo names comes from the vault, so it
+    /// is not on the intent either.
+    case theSwitch(coin: CoinMeta)
+    /// THORChain secured-asset redemption (`SECURE-`). `coin` is THORChain's
+    /// own native asset, deliberately *not* the asset being redeemed: which
+    /// secured denoms a vault holds is a live bank-balance query, so no caller
+    /// can name one upfront, and the native coin is the account those balances
+    /// hang off. The form's picker resolves the redeemed coin from it.
+    case withdrawSecuredAsset(coin: CoinMeta)
+    /// Rujira MERGE on THORChain. `coin` is the chain's native asset — the
+    /// anchor and the fee asset — not the coin the transaction is built
+    /// against: the form picks that from the merge catalog intersected with
+    /// the vault's holdings, so every coin it can reach is already held.
+    /// `denom` optionally names the catalog entry to open on, so a caller that
+    /// already knows which token the user means (a position card) can
+    /// pre-select it, exactly as `.leave(coin:node:)` pre-fills its address.
+    case merge(coin: CoinMeta, denom: String?)
+    /// THORChain RUJI UNMERGE — withdrawing merge shares back into the merged
+    /// token. `coin` is THORChain's native asset: the merged tokens live inside
+    /// the merge contract rather than the wallet, so the only coin this form
+    /// needs the vault to resolve is the one that pays the fee. `denom` opens
+    /// the picker on a token the caller already knows (`thor.kuji`, …); nil
+    /// leaves it on the first offered one.
+    case unmerge(coin: CoinMeta, denom: String?)
+    /// THORChain node REBOND. `node` pre-fills the node currently holding the
+    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
+    /// the memo's second address and the optional partial amount are always
+    /// typed on the form, so neither belongs on the intent.
+    case rebond(coin: CoinMeta, node: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
             return [coin]
-        case .unbond(let node):
-            return [node.coin]
+        case .unbond(let coin, _):
+            return [coin]
         case .stake(let coin, _):
             return [coin]
         case .unstake(let coin, _, _):
@@ -88,6 +146,23 @@ enum FunctionTransactionType: Hashable {
         case .leave(let coin, _):
             return [coin]
         case .customMemo(let coin):
+            return [coin]
+        case .ibcTransfer(let coin, _):
+            return [coin]
+        case .dydxVote(let coin):
+            return [coin]
+        case .theSwitch(let coin):
+            return [coin]
+        case .withdrawSecuredAsset(let coin):
+            // Only the native coin: the secured assets themselves are added to
+            // the vault by the form as it discovers which ones the account
+            // actually holds, so they cannot be pre-resolved here.
+            return [coin]
+        case .merge(let coin, _):
+            return [coin]
+        case .unmerge(let coin, _):
+            return [coin]
+        case .rebond(let coin, _):
             return [coin]
         }
     }
