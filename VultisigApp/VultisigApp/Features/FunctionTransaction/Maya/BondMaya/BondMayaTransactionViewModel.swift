@@ -57,8 +57,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     let assetsDataSource: MayaUserLPAssetsDataSource
     private let mayaAPIService = MayaChainAPIService()
 
-    // Cache user's LP positions for quick lookup
-    private var userLPPositions: [String: String] = [:] // poolName -> lpUnits
+    /// Available (unbonded) LP units per pool, keyed by the pool's THORChain
+    /// asset. Fetched once on load; ``onAssetSelected(_:)`` reads it to install
+    /// the ceiling the typed LP units are judged against.
+    var userLPPositions: [String: String] = [:]
 
     /// The in-flight asset load, so a retry supersedes the attempt it retries
     /// instead of racing it.
@@ -215,15 +217,16 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     var transactionBuilder: TransactionBuilder? {
         // Block if not whitelisted on node
         guard canBondToNode else {
-            revalidate()
+            validateErrors()
             return nil
         }
 
-        // Deliberately NOT `validForm`. `Form` recomputes that only when a
-        // field's value publishes, and `LPUnitsValidator` is installed later,
-        // once the user's LP positions arrive — so units typed before the
-        // available figure landed leave `validForm` stale at true.
-        guard revalidate(), let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
+        // Asks rather than reading `validForm`, and reveals what it found. The
+        // flag itself is no longer the hazard it was — `Form` now recomputes on
+        // validator installation too, not only on a value publish — but a gate
+        // that refuses has to say why, and `LPUnitsValidator` arriving late with
+        // the user's LP positions is exactly the case where it must.
+        guard validateErrors(), let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
             coin: coin,
@@ -236,7 +239,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
 
     // MARK: - Validation Methods
 
-    private func onAssetSelected(_ asset: THORChainAsset) {
+    /// Installs the balance-aware LP-units validator for the picked pool. The
+    /// asset is routinely picked *after* the units are typed, so the swap has to
+    /// be enough on its own to make an over-available amount invalid.
+    func onAssetSelected(_ asset: THORChainAsset) {
         // Look up LP units from cached positions (fetched from Maya API)
         guard let units = userLPPositions[asset.thorchainAsset] else {
             availableLPUnits = nil

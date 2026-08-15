@@ -250,7 +250,7 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
         // for here rather than assumed from the fetch having run, because the
         // memo is assembled from the live field and the fetch that refreshes
         // the ceiling is debounced behind it.
-        guard revalidate(),
+        guard validateErrors(),
               let selectedAsset,
               let ceiling = bondedUnitsCeiling,
               ceiling.nodeAddress == addressViewModel.field.value,
