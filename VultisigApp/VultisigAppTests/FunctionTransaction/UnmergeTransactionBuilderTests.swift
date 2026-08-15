@@ -93,8 +93,8 @@ final class UnmergeTransactionBuilderTests: XCTestCase {
 
     /// Well past any `Double`: a share count with 25 significant digits still
     /// reaches the memo digit for digit.
-    func testMemoCarriesAnArbitraryPrecisionShareCount() {
-        let shares = BigInt("1234567890123456789012345")
+    func testMemoCarriesAnArbitraryPrecisionShareCount() throws {
+        let shares = try XCTUnwrap(BigInt("1234567890123456789012345"))
         XCTAssertEqual(
             Self.makeBuilder(denom: "thor.kuji", shares: shares).memo,
             "unmerge:thor.kuji:1234567890123456789012345"
@@ -111,9 +111,10 @@ final class UnmergeTransactionBuilderTests: XCTestCase {
     /// but the app's own pre-flight read it: shares live in the contract, not
     /// the wallet, so comparing them to the merged token's wallet balance
     /// rejected a transaction the chain would have accepted.
-    func testAttachedAmountIsZeroRegardlessOfTheShareCount() {
+    func testAttachedAmountIsZeroRegardlessOfTheShareCount() throws {
+        let largeShares = try XCTUnwrap(BigInt("999999999999999999"))
         XCTAssertEqual(Self.makeBuilder(shares: BigInt(1)).amount, "0")
-        XCTAssertEqual(Self.makeBuilder(shares: BigInt("999999999999999999")).amount, "0")
+        XCTAssertEqual(Self.makeBuilder(shares: largeShares).amount, "0")
         XCTAssertFalse(Self.makeBuilder(shares: BigInt(1)).sendMaxAmount)
     }
 

@@ -18,10 +18,10 @@ struct MergeTransactionScreen: View {
     @StateObject var viewModel: MergeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
 
-    @State var focusedFieldBinding: FocusedField?
+    @State private var focusedFieldBinding: FocusedField?
     @FocusState private var focusedField: FocusedField?
 
-    @State var showAssetSelection: Bool = false
+    @State private var showAssetSelection: Bool = false
 
     var body: some View {
         FormScreen(

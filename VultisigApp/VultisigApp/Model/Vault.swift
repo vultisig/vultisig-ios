@@ -63,8 +63,25 @@ final class Vault: ObservableObject, Codable {
     // app foreground + vault switch. Reads are sync; refresh happens at planned
     // trigger points rather than per-screen-mount. Local-only state, not part of
     // the schema — repopulated on every cold start by the refresher.
-    @Transient var fastVaultEligibility: Bool = false
-    @Transient var fastVaultEligibilityCheckedAt: Date? = nil
+    //
+    // The pair lives on `ObservedTransient` boxes rather than in `@Transient`
+    // stored properties. SwiftData does not observation-track `@Transient`, so
+    // the refresher's write published nothing at all and every view branching on
+    // `isFastVault` stayed stale until an unrelated save happened to re-render
+    // the tree. The boxes are still per-instance, still session scoped, and
+    // still absent from the schema — only the publication changes.
+    @Transient private var fastVaultEligibilityBox = ObservedTransient(false)
+    @Transient private var fastVaultEligibilityCheckedAtBox = ObservedTransient<Date?>(nil)
+
+    var fastVaultEligibility: Bool {
+        get { fastVaultEligibilityBox.value }
+        set { fastVaultEligibilityBox.value = newValue }
+    }
+
+    var fastVaultEligibilityCheckedAt: Date? {
+        get { fastVaultEligibilityCheckedAtBox.value }
+        set { fastVaultEligibilityCheckedAtBox.value = newValue }
+    }
 
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()

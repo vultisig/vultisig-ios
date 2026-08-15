@@ -22,11 +22,19 @@ struct SwitchTransactionScreen: View {
         case address, amount
     }
 
-    @StateObject var viewModel: SwitchTransactionViewModel
+    @StateObject private var viewModel: SwitchTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
 
     @State private var focusedFieldBinding: FocusedField?
     @FocusState private var focusedField: FocusedField?
+
+    init(
+        viewModel: SwitchTransactionViewModel,
+        onVerify: @escaping (TransactionBuilder) -> Void
+    ) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.onVerify = onVerify
+    }
 
     var body: some View {
         FormScreen(

@@ -221,13 +221,12 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
             return nil
         }
 
-        // `validateErrors()` first, not a bare `validForm` read: the tap is
-        // what reveals the field errors on a form the user has not touched, and
-        // it recomputes `validForm` from the validators installed *now* —
-        // `LPUnitsValidator` arrives with the user's LP positions, after the
-        // units may already have been typed.
-        validateErrors()
-        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
+        // Asks rather than reading `validForm`, and reveals what it found. The
+        // flag itself is no longer the hazard it was — `Form` now recomputes on
+        // validator installation too, not only on a value publish — but a gate
+        // that refuses has to say why, and `LPUnitsValidator` arriving late with
+        // the user's LP positions is exactly the case where it must.
+        guard validateErrors(), let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
             coin: coin,

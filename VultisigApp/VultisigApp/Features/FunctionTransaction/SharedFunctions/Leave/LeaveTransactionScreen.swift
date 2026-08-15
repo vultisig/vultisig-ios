@@ -15,10 +15,18 @@ struct LeaveTransactionScreen: View {
         case address
     }
 
-    @StateObject var viewModel: LeaveTransactionViewModel
-    var onVerify: (TransactionBuilder) -> Void
+    @StateObject private var viewModel: LeaveTransactionViewModel
+    let onVerify: (TransactionBuilder) -> Void
 
-    @State var focusedFieldBinding: FocusedField?
+    init(
+        viewModel: LeaveTransactionViewModel,
+        onVerify: @escaping (TransactionBuilder) -> Void
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onVerify = onVerify
+    }
+
+    @State private var focusedFieldBinding: FocusedField?
     @FocusState private var focusedField: FocusedField?
 
     var body: some View {

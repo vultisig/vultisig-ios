@@ -18,16 +18,24 @@ struct SecuredWithdrawTransactionScreen: View {
         case asset, address, amount
     }
 
-    @StateObject var viewModel: SecuredWithdrawTransactionViewModel
+    @StateObject private var viewModel: SecuredWithdrawTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
 
-    @State var focusedFieldBinding: FocusedField?
+    @State private var focusedFieldBinding: FocusedField?
     @FocusState private var focusedField: FocusedField?
     @State private var showAssetSelection: Bool = false
 
+    init(
+        viewModel: SecuredWithdrawTransactionViewModel,
+        onVerify: @escaping (TransactionBuilder) -> Void
+    ) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.onVerify = onVerify
+    }
+
     var body: some View {
         FormScreen(
-            title: "Withdraw Secured Asset".localized,
+            title: "withdrawSecuredAsset".localized,
             fixedHeight: false,
             isContinueDisabled: viewModel.availableAssets.isEmpty,
             onContinue: onContinue

@@ -16,11 +16,19 @@ struct RebondTransactionScreen: View {
         case node, newAddress, amount
     }
 
-    @StateObject var viewModel: RebondTransactionViewModel
+    @StateObject private var viewModel: RebondTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
 
-    @State var focusedFieldBinding: FocusedField?
+    @State private var focusedFieldBinding: FocusedField?
     @FocusState private var focusedField: FocusedField?
+
+    init(
+        viewModel: RebondTransactionViewModel,
+        onVerify: @escaping (TransactionBuilder) -> Void
+    ) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.onVerify = onVerify
+    }
 
     var body: some View {
         FormScreen(

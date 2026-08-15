@@ -1795,11 +1795,11 @@
 "whitespaceNotAllowed" = "No se permiten espacios en blanco.";
 "withdraw" = "Retirar";
 "Withdraw RUJI" = "Retirar RUJI";
-"Withdraw Secured Asset" = "Retirar activo asegurado";
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowOutboundFee" = "Monto por debajo de la tarifa de salida — retira al menos %@ %@ para cubrir los costos de red";
 "withdrawPercentage" = "Porcentaje de retiro";
 "withdrawRewards" = "Retirar recompensas de %@";
+"withdrawSecuredAsset" = "Retirar activo asegurado";
 "withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
 "wrongPassword" = "Contraseña incorrecta";
 "wrongVaultPassword" = "Contraseña de bóveda incorrecta. Por favor, intente de nuevo.";

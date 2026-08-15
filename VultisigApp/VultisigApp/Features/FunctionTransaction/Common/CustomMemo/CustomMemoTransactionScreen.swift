@@ -31,30 +31,38 @@ struct CustomMemoTransactionScreen: View {
             title: "custom".localized,
             onContinue: onContinue
         ) {
-            FormExpandableSection(
+            // The asset is staged through a sheet, so it is a picker row rather
+            // than an expandable one — and it holds only the asset. Amount used
+            // to live in here too, which meant collapsing a section labelled
+            // "Asset" took the amount field with it, where nobody would think
+            // to look for it.
+            FormPickerSection(
                 title: "asset".localized,
+                isValid: viewModel.selectedAsset != nil,
+                onTap: { showAssetSelection = true },
+                valueView: { AssetSelectionFormCell(coin: viewModel.selectedAsset?.asset) }
+            )
+
+            FormExpandableSection(
+                title: "amount".localized,
                 isValid: viewModel.amountField.valid,
-                value: viewModel.selectedCoin?.ticker ?? .empty,
+                value: viewModel.amountField.value,
                 showValue: true,
                 focusedField: $focusedFieldBinding,
                 focusedFieldEquals: .amount
             ) {
                 focusedFieldBinding = $0 ? .amount : .memo
             } content: {
-                VStack(alignment: .leading, spacing: 12) {
-                    assetSelector
-
-                    AmountTextField(
-                        amount: $viewModel.amountField.value,
-                        error: $viewModel.amountField.error,
-                        ticker: viewModel.selectedCoin?.ticker ?? .empty,
-                        type: .button,
-                        availableAmount: viewModel.selectedCoin?.balanceDecimal ?? .zero,
-                        decimals: viewModel.selectedCoin?.decimals ?? 0,
-                        percentage: $viewModel.percentageSelected
-                    )
-                    .focused($focusedField, equals: .amount)
-                }
+                AmountTextField(
+                    amount: $viewModel.amountField.value,
+                    error: $viewModel.amountField.error,
+                    ticker: viewModel.selectedCoin?.ticker ?? .empty,
+                    type: .button,
+                    availableAmount: viewModel.selectedCoin?.balanceDecimal ?? .zero,
+                    decimals: viewModel.selectedCoin?.decimals ?? 0,
+                    percentage: $viewModel.percentageSelected
+                )
+                .focused($focusedField, equals: .amount)
             }
 
             FormExpandableSection(
@@ -100,45 +108,6 @@ struct CustomMemoTransactionScreen: View {
                 dataSource: viewModel.assetsDataSource
             ) { showAssetSelection = false }
         }
-    }
-
-    /// The picked asset, or an invitation to pick one. `AssetSelectionFormCell`
-    /// renders nothing for a nil coin, and this form can legitimately open with
-    /// nothing selected — a tappable placeholder is what keeps that state from
-    /// looking like a broken screen.
-    @ViewBuilder
-    var assetSelector: some View {
-        Button {
-            showAssetSelection = true
-        } label: {
-            Group {
-                if let asset = viewModel.selectedAsset?.asset {
-                    AssetSelectionFormCell(coin: asset)
-                } else {
-                    assetPlaceholder
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    var assetPlaceholder: some View {
-        HStack(spacing: 4) {
-            Text("selectToken".localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textTertiary)
-
-            Icon(
-                .chevronRight,
-                color: Theme.colors.textPrimary,
-                size: 20
-            )
-        }
-        .padding(.vertical, 12)
-        .padding(.leading, 12)
-        .padding(.trailing, 8)
-        .background(Theme.radius.pill.shape.fill(Theme.colors.bgSurface1))
     }
 
     func onContinue() {
