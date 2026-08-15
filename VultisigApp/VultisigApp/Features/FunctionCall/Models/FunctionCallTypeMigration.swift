@@ -53,6 +53,13 @@ extension FunctionCallType {
             // RUNE-less vault with "No Secured Assets found", which reads as
             // "you hold nothing" rather than "this vault cannot ask".
             return .withdrawSecuredAsset(coin: nativeAsset(for: coin))
+        case .rebond:
+            // REBOND is a RUNE `MsgDeposit` on THORChain, and the legacy screen
+            // pinned RUNE before opening the form for exactly that reason. Same
+            // resolution as LEAVE, same failure mode closed: a vault holding
+            // only TCY now lands on the shared "not in vault" error instead of
+            // signing a REBOND memo against a token the node never reads.
+            return .rebond(coin: nativeAsset(for: coin), node: nodeAddress)
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer

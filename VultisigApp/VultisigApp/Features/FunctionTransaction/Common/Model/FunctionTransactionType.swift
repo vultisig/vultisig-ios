@@ -54,6 +54,11 @@ enum FunctionTransactionType: Hashable {
     /// can name one upfront, and the native coin is the account those balances
     /// hang off. The form's picker resolves the redeemed coin from it.
     case withdrawSecuredAsset(coin: CoinMeta)
+    /// THORChain node REBOND. `node` pre-fills the node currently holding the
+    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
+    /// the memo's second address and the optional partial amount are always
+    /// typed on the form, so neither belongs on the intent.
+    case rebond(coin: CoinMeta, node: String?)
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -94,6 +99,8 @@ enum FunctionTransactionType: Hashable {
             // Only the native coin: the secured assets themselves are added to
             // the vault by the form as it discovers which ones the account
             // actually holds, so they cannot be pre-resolved here.
+            return [coin]
+        case .rebond(let coin, _):
             return [coin]
         }
     }
