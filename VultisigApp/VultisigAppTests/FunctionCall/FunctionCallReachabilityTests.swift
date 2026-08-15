@@ -110,8 +110,6 @@ final class FunctionCallReachabilityTests: XCTestCase {
     private func functionCallType(of instance: FunctionCallInstance) -> FunctionCallType {
         switch instance {
         case .rebond: return .rebond
-        case .bondMaya: return .bondMaya
-        case .unbondMaya: return .unbondMaya
         case .leave: return .leave
         case .custom: return .custom
         case .vote: return .vote
