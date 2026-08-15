@@ -249,6 +249,17 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .rebond(let coin, let node):
+                resolvingCoin(coinMeta: coin) { coin in
+                    RebondTransactionScreen(
+                        viewModel: RebondTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialNodeAddress: node
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
