@@ -1812,7 +1812,7 @@
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";
 "youArePermanentlyDeletingVault" = "Trajno brišete svoj dio trezora iz ove aplikacije";
 "youreAddingLiquidity" = "Dodajete likvidnost";
-"youreBonding" = "Bondate";
+"youreBonding" = "Vežete";
 "youreClaiming" = "Preuzimate";
 "youreClaimingRewards" = "Preuzimate nagrade";
 "youreDelegating" = "Delegirate";
@@ -1824,7 +1824,7 @@
 "youreSending" = "Šalješ";
 "youreStaking" = "Stakate";
 "youreSwapping" = "Zamjenjuješ";
-"youreUnbonding" = "Poništavate bond";
+"youreUnbonding" = "Odvezujete";
 "youreUndelegating" = "Poništavate delegiranje";
 "youreUnstaking" = "Povlačite ulog";
 "yourFriendsReferralCode" = "Kod vašeg prijatelja za upućivanje prijatelja";

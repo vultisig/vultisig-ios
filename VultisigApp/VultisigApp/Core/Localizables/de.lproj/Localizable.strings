@@ -1812,7 +1812,7 @@
 "youAreInLocalMode" = "Du bist im lokalen Modus";
 "youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresoranteil dauerhaft aus dieser App";
 "youreAddingLiquidity" = "Du fügst Liquidität hinzu";
-"youreBonding" = "Du bondest";
+"youreBonding" = "Du bindest";
 "youreClaiming" = "Du beanspruchst";
 "youreClaimingRewards" = "Du beanspruchst Belohnungen";
 "youreDelegating" = "Du delegierst";
@@ -1824,7 +1824,7 @@
 "youreSending" = "Du sendest";
 "youreStaking" = "Du stakst";
 "youreSwapping" = "Du tauschst";
-"youreUnbonding" = "Du unbondest";
+"youreUnbonding" = "Du hebst die Bindung auf";
 "youreUndelegating" = "Du hebst die Delegation auf";
 "youreUnstaking" = "Du unstakst";
 "yourFriendsReferralCode" = "Empfehlungscode deines Freundes";

@@ -345,6 +345,38 @@ final class TransactionDecoderTests: XCTestCase {
         XCTAssertEqual(decoded.amount, .units(BigInt(300_000_000), of: .denom("x/staking-tcy")))
     }
 
+    /// ⚠️ `funds` is a repeated field, so a message can attach several denoms.
+    /// Reading only the first would announce one of them as though it were the
+    /// whole quantity — a partial figure presented as a complete one, which is
+    /// the same class of wrong number as the zero this exists to remove.
+    func testAMultiCoinFundSetStatesNoQuantity() throws {
+        let wasm = WasmExecuteContractPayload(
+            senderAddress: "thor1sender",
+            contractAddress: "thor1contract",
+            executeMsg: #"{ "liquid": { "unbond": {} } }"#,
+            coins: [
+                CosmosCoin(amount: "300000000", denom: "x/staking-tcy"),
+                CosmosCoin(amount: "100000000", denom: "x/staking-ruji")
+            ]
+        )
+        let decoded = decode(makePayload(memo: nil, amount: .zero, wasm: wasm))
+
+        XCTAssertEqual(decoded.operation, .unstake, "the action is still known")
+        XCTAssertEqual(decoded.amount, .unstated, "but no single coin is the quantity")
+    }
+
+    /// A memo naming a zero or negative amount is not a confident reading of a
+    /// quantity, any more than an out-of-range fraction is.
+    func testAnUnbondWithNoRealAmountIsNotClaimed() {
+        for units in ["0", "-5", "notanumber"] {
+            XCTAssertEqual(
+                decode(makePayload(memo: "UNBOND:thor1node:\(units)", amount: .zero)).operation,
+                .unknown,
+                "UNBOND with \(units) should not be claimed"
+            )
+        }
+    }
+
     /// ⚠️ Swift dictionary order is undefined, so a message naming two actions
     /// had no defined winner and two devices could read the same bytes
     /// differently. Ambiguity is refused rather than resolved.
