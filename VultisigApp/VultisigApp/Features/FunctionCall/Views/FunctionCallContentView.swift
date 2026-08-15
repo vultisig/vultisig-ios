@@ -16,8 +16,6 @@ struct FunctionCallContentView: View {
 
     var body: some View {
         switch instance {
-        case .rebond(let model):
-            ReBondFormView(model: model, coin: selectedCoin)
         case .custom(let model):
             CustomFormView(model: model, selectedCoin: $selectedCoin)
         case .vote(let model):

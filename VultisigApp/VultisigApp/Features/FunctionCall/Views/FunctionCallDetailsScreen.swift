@@ -91,15 +91,17 @@ struct FunctionCallDetailsScreen: View {
         }
         .onChange(of: selectedFunctionMemoType) {
             guard hasCompletedInitialSetup else { return }
-            guard let fnInstance = fnCallInstance else { return }
-            let currentNodeAddress = extractNodeAddress(from: fnInstance)
 
             // Operations already on the `FunctionTransaction` architecture have
             // no sub-model to build here — they own a screen. One mapping, one
             // navigation, no per-operation branch.
             if let transactionType = selectedFunctionMemoType.migratedTransactionType(
                 coin: selectedCoin,
-                nodeAddress: currentNodeAddress
+                // Rebond was the last sub-model this screen read a node
+                // address out of, so there is nothing left here to carry over.
+                // The parameter stays as the pre-fill hook for the callers
+                // that replace this dropdown.
+                nodeAddress: nil
             ) {
                 selectedFunctionMemoType = lastLegacyFunctionMemoType
                 router.navigate(
@@ -109,7 +111,7 @@ struct FunctionCallDetailsScreen: View {
             }
 
             lastLegacyFunctionMemoType = selectedFunctionMemoType
-            buildInstance(for: selectedFunctionMemoType, nodeAddress: currentNodeAddress)
+            buildInstance(for: selectedFunctionMemoType)
         }
 #if os(iOS)
         .toolbar {
@@ -161,22 +163,9 @@ struct FunctionCallDetailsScreen: View {
     /// Two callers: a selection change on the dropdown, and the preselected
     /// operation a row navigated to. Sharing one path is what keeps a row's
     /// form identical to the one the dropdown produced.
-    private func buildInstance(for type: FunctionCallType, nodeAddress: String?) {
+    private func buildInstance(for type: FunctionCallType) {
         switch type {
-        case .rebond:
-            // Ensure RUNE token is selected for REBOND operations on THORChain.
-            // Hoisted here per the FunctionCall sub-model rewrite —
-            // ReBond is a pure value-reader, the screen owns the
-            // RUNE-pin so the sub-model can drop its init-time write.
-            ensureRuneCoin()
-            let rebondInstance = FunctionCallReBond()
-
-            if let nodeAddress, !nodeAddress.isEmpty {
-                rebondInstance.nodeAddress = nodeAddress
-            }
-
-            fnCallInstance = .rebond(rebondInstance)
-        case .leave, .unmerge:
+        case .leave, .rebond, .unmerge:
             // Migrated to `Features/FunctionTransaction/` — the action list
             // routes it to its own screen and never lands here. Listed only to
             // keep this switch exhaustive; each migration adds its case name.
@@ -197,15 +186,6 @@ struct FunctionCallDetailsScreen: View {
             fnCallInstance = .addThorLP(FunctionCallAddThorLP(coin: selectedCoin, vault: vault))
         case .withdrawSecuredAsset:
             fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(coin: selectedCoin, vault: vault))
-        }
-    }
-
-    private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
-        switch instance {
-        case .rebond(let rebond):
-            return rebond.nodeAddress
-        default:
-            return nil
         }
     }
 
@@ -239,9 +219,9 @@ struct FunctionCallDetailsScreen: View {
 }
 
 private extension FunctionCallDetailsScreen {
-    /// The active coin is set first: `buildInstance(for:nodeAddress:)` pins
-    /// RUNE for the operations that need it, and a later blanket assignment
-    /// would undo that pin.
+    /// The active coin is set first: `buildInstance(for:)` pins RUNE for the
+    /// operations that need it, and a later blanket assignment would undo
+    /// that pin.
     func setData() {
         selectedCoin = defaultCoin
         setupForm()
@@ -253,7 +233,7 @@ private extension FunctionCallDetailsScreen {
             // preselected operation gets exactly the form the dropdown built.
             self.selectedFunctionMemoType = preselected
             self.lastLegacyFunctionMemoType = preselected
-            buildInstance(for: preselected, nodeAddress: nil)
+            buildInstance(for: preselected)
         } else {
             self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
             self.lastLegacyFunctionMemoType = self.selectedFunctionMemoType

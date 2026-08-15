@@ -39,18 +39,11 @@ extension FunctionCallType {
         switch self {
         case .leave:
             // LEAVE is a `MsgDeposit` against the chain's own native asset —
-            // RUNE on THORChain, CACAO on MayaChain. Resolving it from the
-            // token store rather than from the vault is deliberate: a vault
-            // that does not hold the native coin then lands on
-            // `FunctionTransactionScreen`'s shared "not in vault" error
-            // instead of signing the memo against whichever token happened to
-            // be selected. The legacy screen's `ensureRuneCoin()` pinned RUNE
-            // on every chain, MayaChain included, and silently left a
-            // non-native selection in place when RUNE was absent.
-            let nativeAsset = TokensStore.TokenSelectionAssets.first {
-                $0.chain == coin.chain && $0.isNativeToken
-            }
-            return .leave(coin: nativeAsset ?? coin.toCoinMeta(), node: nodeAddress)
+            // RUNE on THORChain, CACAO on MayaChain. The legacy screen's
+            // `ensureRuneCoin()` pinned RUNE on every chain, MayaChain
+            // included, and silently left a non-native selection in place when
+            // RUNE was absent.
+            return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
         case .unmerge:
             // The merged tokens sit inside the merge contract, not the wallet,
             // and the wasm execute is addressed by contract — so the only coin
@@ -58,21 +51,40 @@ extension FunctionCallType {
             // THORChain fee. Naming RUNE here means a vault that cannot pay
             // lands on the shared "not in vault" error instead of opening a
             // form whose Continue could never produce a signable transaction.
-            let nativeAsset = TokensStore.TokenSelectionAssets.first {
+            let thorNativeAsset = TokensStore.TokenSelectionAssets.first {
                 $0.chain == .thorChain && $0.isNativeToken
             }
             return .unmerge(
-                coin: nativeAsset ?? coin.toCoinMeta(),
+                coin: thorNativeAsset ?? coin.toCoinMeta(),
                 // The legacy form pre-selected the merge token matching the
                 // coin the user opened Functions from; nil when that coin is
                 // RUNE or is not a merge token at all.
                 denom: MergeTokenCatalog.denom(matching: coin)
             )
+        case .rebond:
+            // REBOND is a RUNE `MsgDeposit` on THORChain, and the legacy screen
+            // pinned RUNE before opening the form for exactly that reason. Same
+            // resolution as LEAVE, same failure mode closed: a vault holding
+            // only TCY now lands on the shared "not in vault" error instead of
+            // signing a REBOND memo against a token the node never reads.
+            return .rebond(coin: nativeAsset(for: coin), node: nodeAddress)
         default:
             // Deliberately an allowlist rather than an exhaustive switch: a
             // type is migrated only once someone has moved it, so the answer
             // for everything else is "still legacy".
             return nil
         }
+    }
+
+    /// The chain's own native asset, read from the token store rather than
+    /// from the vault so the intent names the asset the memo has to ride even
+    /// when the vault does not hold it — `FunctionTransactionScreen`'s
+    /// `resolvingCoin` then fails closed on it. Falls back to the selected
+    /// coin only when the store knows no native asset for the chain.
+    private func nativeAsset(for coin: Coin) -> CoinMeta {
+        let nativeAsset = TokensStore.TokenSelectionAssets.first {
+            $0.chain == coin.chain && $0.isNativeToken
+        }
+        return nativeAsset ?? coin.toCoinMeta()
     }
 }
