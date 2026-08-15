@@ -56,6 +56,13 @@ enum FunctionTransactionType: Hashable {
     /// already knows which token the user means (a position card) can
     /// pre-select it, exactly as `.leave(coin:node:)` pre-fills its address.
     case merge(coin: CoinMeta, denom: String?)
+    /// THORChain RUJI UNMERGE — withdrawing merge shares back into the merged
+    /// token. `coin` is THORChain's native asset: the merged tokens live inside
+    /// the merge contract rather than the wallet, so the only coin this form
+    /// needs the vault to resolve is the one that pays the fee. `denom` opens
+    /// the picker on a token the caller already knows (`thor.kuji`, …); nil
+    /// leaves it on the first offered one.
+    case unmerge(coin: CoinMeta, denom: String?)
     /// THORChain node REBOND. `node` pre-fills the node currently holding the
     /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
     /// the memo's second address and the optional partial amount are always
@@ -98,6 +105,8 @@ enum FunctionTransactionType: Hashable {
         case .leave(let coin, _):
             return [coin]
         case .merge(let coin, _):
+            return [coin]
+        case .unmerge(let coin, _):
             return [coin]
         case .rebond(let coin, _):
             return [coin]

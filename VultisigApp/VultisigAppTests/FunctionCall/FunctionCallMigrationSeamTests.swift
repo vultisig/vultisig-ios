@@ -50,7 +50,6 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         case .custom: return .custom
         case .vote: return .vote
         case .cosmosIBC: return .cosmosIBC
-        case .unmerge: return .unmerge
         case .theSwitch: return .theSwitch
         case .addThorLP: return .addThorLP
         case .withdrawSecuredAsset: return .withdrawSecuredAsset
@@ -201,6 +200,113 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
         XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
     }
 
+    // MARK: - The mapping (unmerge)
+
+    private static func makeMergeToken(_ ticker: String = "KUJI") -> Coin {
+        FunctionCallFixture.makeCoin(
+            .thorChain,
+            ticker: ticker,
+            decimals: 8,
+            isNative: false,
+            address: FunctionCallFixture.thorAddress
+        )
+    }
+
+    func testUnmergeMapsToTheUnmergeIntent() {
+        guard case .unmerge(let mappedCoin, let denom)? = FunctionCallType.unmerge.migratedTransactionType(
+            coin: Self.makeRune(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Unmerge must map to the unmerge intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertNil(denom, "RUNE is not a merge token, so the picker opens on its own first entry")
+    }
+
+    /// The legacy form pre-selected the merge token matching the coin the user
+    /// opened Functions from.
+    func testUnmergePreSelectsTheMergeTokenTheUserCameFrom() {
+        guard case .unmerge(_, let denom)? = FunctionCallType.unmerge.migratedTransactionType(
+            coin: Self.makeMergeToken(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Unmerge must map to the unmerge intent")
+        }
+
+        XCTAssertEqual(denom, "thor.kuji")
+    }
+
+    func testUnmergeLeavesTheDenomUnsetForATokenThatCannotBeMerged() {
+        guard case .unmerge(_, let denom)? = FunctionCallType.unmerge.migratedTransactionType(
+            coin: FunctionCallFixture.makeTCY(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Unmerge must map to the unmerge intent")
+        }
+
+        XCTAssertNil(denom, "TCY has no merge contract, so there is nothing to pre-select")
+    }
+
+    /// The unmerge wasm execute is addressed by contract and attaches no coins,
+    /// so the only coin the vault has to resolve is the one paying the fee.
+    func testUnmergeIsPinnedToRuneNotTheSelectedToken() {
+        guard case .unmerge(let mappedCoin, _)? = FunctionCallType.unmerge.migratedTransactionType(
+            coin: Self.makeMergeToken(),
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Unmerge must map to the unmerge intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+    }
+
+    /// Same fail-closed property LEAVE has: a vault that cannot pay the
+    /// THORChain fee lands on the shared "not in vault" error instead of opening
+    /// a form whose Continue could never produce a signable transaction.
+    func testUnmergeTargetsRuneEvenWhenTheVaultDoesNotHoldIt() {
+        let kuji = Self.makeMergeToken()
+        let vault = FunctionCallFixture.makeVault(coins: [kuji])
+        XCTAssertNil(vault.nativeCoin(for: .thorChain), "Fixture must not hold RUNE")
+
+        guard case .unmerge(let mappedCoin, _)? = FunctionCallType.unmerge.migratedTransactionType(
+            coin: kuji,
+            nodeAddress: nil
+        ) else {
+            return XCTFail("Unmerge must map to the unmerge intent")
+        }
+
+        assertIsNativeAsset(mappedCoin, chain: .thorChain, ticker: "RUNE")
+        XCTAssertFalse(
+            vault.coins.map { $0.toCoinMeta() }.contains(mappedCoin),
+            "The vault cannot resolve the intent's coin, so the shared error view is what the user sees"
+        )
+    }
+
+    func testUnmergeIntentResolvesTheCoinItNeeds() {
+        let coin = Self.makeRune()
+        let intent = FunctionTransactionType.unmerge(coin: coin.toCoinMeta(), denom: nil)
+        XCTAssertEqual(intent.coins, [coin.toCoinMeta()])
+    }
+
+    func testUnmergeStaysSelectableOnThorchain() {
+        XCTAssertTrue(FunctionCallType.getCases(for: Self.makeRune()).contains(.unmerge))
+    }
+
+    /// Every token the picker offers has to be one the builder can address, or
+    /// the wasm execute would be sent to an empty contract address.
+    func testEveryOfferedMergeTokenHasAContractAndAnAsset() {
+        XCTAssertFalse(MergeTokenCatalog.tokens.isEmpty)
+        for token in MergeTokenCatalog.tokens {
+            XCTAssertNotNil(
+                MergeTokenCatalog.contractAddress(for: token.thorchainAsset),
+                "\(token.thorchainAsset) is offered but has no merge contract"
+            )
+            XCTAssertEqual(token.asset.chain, .thorChain)
+            XCTAssertEqual(token.asset.contractAddress.lowercased(), token.thorchainAsset.lowercased())
+        }
+    }
+
     // MARK: - The mapping (rebond)
 
     func testRebondMapsToTheRebondIntent() {
@@ -273,7 +379,7 @@ final class FunctionCallMigrationSeamTests: XCTestCase {
     func testUnmigratedTypesMapToNil() {
         let coin = Self.makeRune()
         let stillLegacy: [FunctionCallType] = [
-            .custom, .vote, .cosmosIBC, .unmerge,
+            .custom, .vote, .cosmosIBC,
             .theSwitch, .addThorLP, .withdrawSecuredAsset
         ]
         for type in stillLegacy {

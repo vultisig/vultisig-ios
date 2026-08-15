@@ -154,7 +154,7 @@ struct FunctionCallDetailsScreen: View {
     /// form identical to the one the dropdown produced.
     private func buildInstance(for type: FunctionCallType) {
         switch type {
-        case .leave, .merge, .rebond:
+        case .leave, .merge, .rebond, .unmerge:
             // Migrated to `Features/FunctionTransaction/` — the action list
             // routes it to its own screen and never lands here. Listed only to
             // keep this switch exhaustive; each migration adds its case name.
@@ -165,8 +165,6 @@ struct FunctionCallDetailsScreen: View {
             fnCallInstance = .vote(FunctionCallVote())
         case .cosmosIBC:
             fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(coin: selectedCoin, vault: vault))
-        case .unmerge:
-            fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(coin: selectedCoin, vault: vault))
         case .theSwitch:
             fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(coin: selectedCoin, vault: vault))
         case .addThorLP:

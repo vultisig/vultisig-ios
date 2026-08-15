@@ -44,6 +44,23 @@ extension FunctionCallType {
             // included, and silently left a non-native selection in place when
             // RUNE was absent.
             return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .unmerge:
+            // The merged tokens sit inside the merge contract, not the wallet,
+            // and the wasm execute is addressed by contract — so the only coin
+            // the form needs the vault to resolve is the one that pays the
+            // THORChain fee. Naming RUNE here means a vault that cannot pay
+            // lands on the shared "not in vault" error instead of opening a
+            // form whose Continue could never produce a signable transaction.
+            let thorNativeAsset = TokensStore.TokenSelectionAssets.first {
+                $0.chain == .thorChain && $0.isNativeToken
+            }
+            return .unmerge(
+                coin: thorNativeAsset ?? coin.toCoinMeta(),
+                // The legacy form pre-selected the merge token matching the
+                // coin the user opened Functions from; nil when that coin is
+                // RUNE or is not a merge token at all.
+                denom: MergeTokenCatalog.denom(matching: coin)
+            )
         case .merge:
             // MERGE deposits a catalog token into that token's own Rujira
             // contract, so the coin it spends is chosen inside the form from
