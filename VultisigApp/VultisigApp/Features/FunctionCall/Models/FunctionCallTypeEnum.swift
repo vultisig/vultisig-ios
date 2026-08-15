@@ -109,9 +109,12 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .custom
         case .dydx:
             return .vote
-        case .gaiaChain:
-            return .theSwitch
-        case .kujira, .osmosis:
+        // Switch has moved to `Features/FunctionTransaction/` and is
+        // reached by selecting it, which is why it stays in `getCases`.
+        // It cannot stay the default: the default is applied without
+        // publishing a change, so the route-out would never fire.
+        // `FunctionCallInstance.getDefault(for:vault:)` mirrors this.
+        case .gaiaChain, .kujira, .osmosis:
             return .cosmosIBC
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP

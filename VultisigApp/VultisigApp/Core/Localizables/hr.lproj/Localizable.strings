@@ -1540,6 +1540,7 @@
 "swapVerifyCheckbox3Description" = "Slažem se dati ERC20 dopuštenje za točan iznos zamjene";
 "Switch" = "Prebaci";
 "switchBackToInternetMode" = "Ne želite koristiti lokalni način? Vratite se.";
+"switchRouteUnavailable" = "THORChain nije dosegnut radi potvrde adrese za uplatu. Provjerite svoju vezu i pokušajte ponovno.";
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "termsOfService" = "Uvjeti korištenja";

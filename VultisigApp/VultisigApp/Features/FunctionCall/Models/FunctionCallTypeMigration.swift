@@ -44,6 +44,17 @@ extension FunctionCallType {
             // included, and silently left a non-native selection in place when
             // RUNE was absent.
             return .leave(coin: nativeAsset(for: coin), node: nodeAddress)
+        case .theSwitch:
+            // SWITCH is a plain transfer to THORChain's inbound vault for the
+            // source chain, and that vault credits the chain's native asset
+            // only. The legacy screen used whatever coin happened to be
+            // selected, so opening Functions from one of Gaia's IBC tokens
+            // (FUZN, KUJI, LVN, …) and picking Switch would have sent that
+            // token to the vault, where nothing credits it back. Naming the
+            // native asset means a vault that cannot resolve it lands on
+            // `FunctionTransactionScreen`'s shared "not in vault" error
+            // instead.
+            return .theSwitch(coin: nativeAsset(for: coin))
         case .withdrawSecuredAsset:
             // A `SECURE-` redemption is signed against the secured asset the
             // user picks inside the form, but the picker itself reads the

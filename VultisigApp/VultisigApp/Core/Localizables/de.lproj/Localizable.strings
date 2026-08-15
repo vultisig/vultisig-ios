@@ -1540,6 +1540,7 @@
 "swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Genehmigung für den genauen Tauschbetrag zu erteilen";
 "Switch" = "Wechseln";
 "switchBackToInternetMode" = "Kein lokaler Modus gewünscht? Zurückwechseln.";
+"switchRouteUnavailable" = "THORChain konnte nicht erreicht werden, um die Einzahlungsadresse zu bestätigen. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "termsOfService" = "Nutzungsbedingungen";

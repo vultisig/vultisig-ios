@@ -12,7 +12,6 @@ enum FunctionCallInstance {
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case cosmosIBC(FunctionCallCosmosIBC)
-    case theSwitch(FunctionCallCosmosSwitch)
     case addThorLP(FunctionCallAddThorLP)
 
     /// The active sub-model, type-erased to the shared surface. Every
@@ -24,7 +23,6 @@ enum FunctionCallInstance {
         case .custom(let memo): return memo
         case .vote(let memo): return memo
         case .cosmosIBC(let memo): return memo
-        case .theSwitch(let memo): return memo
         case .addThorLP(let memo): return memo
         }
     }
@@ -80,9 +78,13 @@ enum FunctionCallInstance {
             return .custom(FunctionCallCustom(coin: coin, vault: vault))
         case .dydx:
             return .vote(FunctionCallVote())
-        case .gaiaChain:
-            return .theSwitch(FunctionCallCosmosSwitch(coin: coin, vault: vault))
-        case .kujira, .osmosis:
+        // Switch has moved to `Features/FunctionTransaction/`. A migrated
+        // type must never be a chain's default — the default is applied
+        // without publishing a selection change, so the route-out never
+        // fires — and this factory has to agree with
+        // `FunctionCallType.getDefault(for:)` case for case, or the screen
+        // opens on one function's name over another's form.
+        case .gaiaChain, .kujira, .osmosis:
             return .cosmosIBC(FunctionCallCosmosIBC(coin: coin, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP(FunctionCallAddThorLP(coin: coin, vault: vault))
