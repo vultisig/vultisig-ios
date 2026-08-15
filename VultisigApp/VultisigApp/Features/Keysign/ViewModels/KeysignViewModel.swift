@@ -232,9 +232,6 @@ class KeysignViewModel: ObservableObject {
         didLoadSimulation = true
     }
 
-    /// The hero displayed above the transaction summary. Promotes a resolved
-    /// Blockaid balance change when available, falls back to a title-only
-    /// display with an "unverified function" caption for 4byte-only decodes.
     /// What the payload turns out to be, when its signed content says. Used as
     /// a TITLE so a Blockaid simulation keeps its figures — the two are
     /// independent readings and must not displace each other.
@@ -242,6 +239,9 @@ class KeysignViewModel: ObservableObject {
         keysignPayload.flatMap(DecodedTransactionPresentation.operationTitle(for:))
     }
 
+    /// The hero displayed above the transaction summary. Promotes a resolved
+    /// Blockaid balance change when available, falls back to a title-only
+    /// display with an "unverified function" caption for 4byte-only decodes.
     var heroContent: HeroContent? {
         if let sim = blockaidSimulation {
             return sim.heroContent(

@@ -1829,7 +1829,7 @@
 "youAreInLocalMode" = "Sei in modalità locale";
 "youArePermanentlyDeletingVault" = "Stai eliminando definitivamente la tua parte del caveau da questa app";
 "youreAddingLiquidity" = "Stai aggiungendo liquidità";
-"youreBonding" = "Stai facendo bond";
+"youreBonding" = "Stai vincolando";
 "youreClaiming" = "Stai reclamando";
 "youreClaimingRewards" = "Stai reclamando le ricompense";
 "youreDelegating" = "Stai delegando";
@@ -1841,7 +1841,7 @@
 "youreSending" = "Stai inviando";
 "youreStaking" = "Stai mettendo in stake";
 "youreSwapping" = "Stai scambiando";
-"youreUnbonding" = "Stai annullando il bond";
+"youreUnbonding" = "Stai svincolando";
 "youreUndelegating" = "Stai annullando la delega";
 "youreUnstaking" = "Stai annullando lo stake";
 "yourFriendsReferralCode" = "Il tuo codice di riferimento";

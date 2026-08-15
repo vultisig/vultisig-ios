@@ -1829,7 +1829,7 @@
 "youAreInLocalMode" = "Você está no modo local";
 "youArePermanentlyDeletingVault" = "Você está excluindo permanentemente sua parte do cofre deste aplicativo";
 "youreAddingLiquidity" = "Você está adicionando liquidez";
-"youreBonding" = "Você está fazendo bond";
+"youreBonding" = "Você está vinculando";
 "youreClaiming" = "Você está reivindicando";
 "youreClaimingRewards" = "Você está reivindicando recompensas";
 "youreDelegating" = "Você está delegando";
@@ -1841,7 +1841,7 @@
 "youreSending" = "Você está enviando";
 "youreStaking" = "Você está fazendo stake";
 "youreSwapping" = "Você está trocando";
-"youreUnbonding" = "Você está cancelando o bond";
+"youreUnbonding" = "Você está desvinculando";
 "youreUndelegating" = "Você está cancelando a delegação";
 "youreUnstaking" = "Você está cancelando o stake";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";

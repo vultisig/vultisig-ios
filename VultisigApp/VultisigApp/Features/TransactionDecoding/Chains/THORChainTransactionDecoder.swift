@@ -116,7 +116,16 @@ struct THORChainTransactionDecoder: TransactionContentDecoder {
         // figure for a quantity nobody knows.
         if operation == .mint { return .unstated }
 
-        if let funds = wasm.coins.first, let units = BigInt(funds.amount), units > 0 {
+        // ⚠️ Exactly one attached coin, or none is stated.
+        //
+        // `funds` is a repeated field, so a message can attach several denoms.
+        // Reading `.first` would announce one of them as though it were the
+        // whole quantity — a partial figure presented as a complete one, which
+        // is the same class of wrong number as the zero this exists to remove.
+        // Refusing matches how ambiguity is handled in the action lookup above.
+        if wasm.coins.count == 1,
+           let funds = wasm.coins.first,
+           let units = BigInt(funds.amount), units > 0 {
             return .units(units, of: .denom(funds.denom))
         }
 
@@ -249,8 +258,12 @@ struct THORChainTransactionDecoder: TransactionContentDecoder {
 
         case "unbond":
             // ⚠️ The amount is in the memo, in base units, over a zero-amount
-            // deposit. Reading it is the only way to state a quantity here.
-            guard fields.count > 2, !fields[1].isEmpty, let units = BigInt(fields[2]) else { return nil }
+            // deposit. Reading it is the only way to state a quantity here —
+            // and it is checked like every other numeric field, so
+            // `UNBOND:node:0` and a negative do not become a confident reading
+            // of a quantity that unbonds nothing.
+            guard fields.count > 2, !fields[1].isEmpty,
+                  let units = BigInt(fields[2]), units > 0 else { return nil }
             return DecodedTransaction(
                 operation: .unbond,
                 amount: .units(units, of: .transactionCoin),
