@@ -110,43 +110,6 @@ final class FunctionCallInstancePolymorphismParityTests: XCTestCase {
         assertForwardingParity(instance, forwardsTo: model, coin: kuji, vault: vault, gas: 0)
     }
 
-    func testMergeParity() {
-        let rune = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [rune])
-        let model = FunctionCallCosmosMerge(coin: rune, vault: vault)
-        model.selectedToken = IdentifiableString(value: "THOR.KUJI")
-        model.destinationAddress = "thor1mergeaddress"
-        let instance = FunctionCallInstance.merge(model)
-
-        let tx = instance.toSendTransaction(coin: rune, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "merge:THOR.KUJI")
-        XCTAssertEqual(tx.transactionType, .thorMerge)
-        XCTAssertEqual(tx.toAddress, "thor1mergeaddress")
-        XCTAssertEqual(instance.toAddress, "thor1mergeaddress")
-
-        assertForwardingParity(instance, forwardsTo: model, coin: rune, vault: vault, gas: 0)
-    }
-
-    func testUnmergeParity() {
-        let ruji = FunctionCallFixture.makeRUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE(), ruji])
-        let model = FunctionCallCosmosUnmerge(coin: ruji, vault: vault)
-        model.selectedToken = IdentifiableString(value: "THOR.RUJI")
-        model.destinationAddress = "thor1mergecontract"
-        model.amount = 1
-        let instance = FunctionCallInstance.unmerge(model)
-
-        let tx = instance.toSendTransaction(coin: ruji, vault: vault, gas: 0)
-        XCTAssertEqual(tx.memo, "unmerge:thor.ruji:100000000")
-        XCTAssertEqual(tx.transactionType, .thorUnmerge)
-        XCTAssertEqual(tx.toAddress, "thor1mergecontract")
-        XCTAssertEqual(instance.toAddress, "thor1mergecontract")
-        // Preserved: the instance never surfaces unmerge's own error slot.
-        XCTAssertNil(instance.customErrorMessage)
-
-        assertForwardingParity(instance, forwardsTo: model, coin: ruji, vault: vault, gas: 0)
-    }
-
     func testTheSwitchParity() {
         let atom = FunctionCallFixture.makeATOM()
         let vault = FunctionCallFixture.makeVault(coins: [atom, FunctionCallFixture.makeRUNE()])
