@@ -85,7 +85,7 @@ final class ThorchainLPPoolCatalogTests: XCTestCase {
     /// resolve to a USDC the vault holds on another chain — a wrong-asset,
     /// wrong-chain transfer rather than a wrong screen.
     func testAPoolNeverResolvesTheSameTickerOnAnotherChain() {
-        let baseUSDC = FunctionCallFixture.makeCoin(
+        let baseUSDC = FunctionActionFixture.makeCoin(
             .base,
             ticker: "USDC",
             decimals: 6,
@@ -104,7 +104,7 @@ final class ThorchainLPPoolCatalogTests: XCTestCase {
     /// chain; picking it would transfer the wrong token against a memo naming
     /// the real pool, and THORChain would credit nothing.
     func testATokenPoolResolvesTheContractItNamesNotJustTheTicker() {
-        let impostor = FunctionCallFixture.makeCoin(
+        let impostor = FunctionActionFixture.makeCoin(
             .ethereum,
             ticker: "USDC",
             decimals: 6,
@@ -140,7 +140,7 @@ final class ThorchainLPPoolCatalogTests: XCTestCase {
     /// ⚠️ A pool with no contract suffix is the chain's own asset, so it must
     /// never resolve a token sharing the ticker.
     func testANativePoolNeverResolvesAToken() {
-        let fakeNative = FunctionCallFixture.makeCoin(
+        let fakeNative = FunctionActionFixture.makeCoin(
             .ethereum,
             ticker: "ETH",
             decimals: 18,
@@ -157,7 +157,7 @@ final class ThorchainLPPoolCatalogTests: XCTestCase {
 
     /// The offered list inherits the same rule.
     func testAPoolIsNotOfferedWhenOnlyAnImpostorTokenMatchesTheTicker() {
-        let impostor = FunctionCallFixture.makeCoin(
+        let impostor = FunctionActionFixture.makeCoin(
             .ethereum,
             ticker: "USDC",
             decimals: 6,

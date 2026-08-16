@@ -257,10 +257,14 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
-            case .customMemo(let coin):
+            case .rebond(let coin, let node):
                 resolvingCoin(coinMeta: coin) { coin in
-                    CustomMemoTransactionScreen(
-                        viewModel: CustomMemoTransactionViewModel(coin: coin, vault: vault),
+                    RebondTransactionScreen(
+                        viewModel: RebondTransactionViewModel(
+                            coin: coin,
+                            vault: vault,
+                            initialNodeAddress: node
+                        ),
                         onVerify: onVerify
                     )
                 }
@@ -292,14 +296,10 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
-            case .rebond(let coin, let node):
+            case .customMemo(let coin):
                 resolvingCoin(coinMeta: coin) { coin in
-                    RebondTransactionScreen(
-                        viewModel: RebondTransactionViewModel(
-                            coin: coin,
-                            vault: vault,
-                            initialNodeAddress: node
-                        ),
+                    CustomMemoTransactionScreen(
+                        viewModel: CustomMemoTransactionViewModel(coin: coin, vault: vault),
                         onVerify: onVerify
                     )
                 }
@@ -348,7 +348,7 @@ struct FunctionTransactionScreen: View {
                     )
                 }
                 isLoading = false
-                router.navigate(to: FunctionCallRoute.verify(tx: immutableTx, vault: vault))
+                router.navigate(to: FunctionTransactionRoute.verify(tx: immutableTx, vault: vault))
                 return
             }
 
@@ -358,7 +358,7 @@ struct FunctionTransactionScreen: View {
             // Priced before it is disclosed. Nothing downstream re-resolves the
             // fee for display, so this figure is the one the user approves.
             let sendTx = await transactionBuilder.buildPricedSendTransaction(vault: vault)
-            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
+            router.navigate(to: FunctionTransactionRoute.verify(tx: sendTx, vault: vault))
         }
     }
 

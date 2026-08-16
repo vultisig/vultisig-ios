@@ -107,7 +107,7 @@ struct KeysignMessageConfirmView: View {
     }
 
     /// What a limit-order CANCEL says before it is signed — the initiator's
-    /// "what cancelling does" explanation (`FunctionCallVerifyScreen`), verbatim
+    /// "what cancelling does" explanation (`FunctionTransactionVerifyScreen`), verbatim
     /// static copy a co-signer can show from the payload alone: the order closes,
     /// anything already filled stays paid out, the unfilled remainder is refunded,
     /// for one network fee.
@@ -137,7 +137,7 @@ struct KeysignMessageConfirmView: View {
     /// - CANCEL: the dust an L1 cancel donates to the pool with no refund path,
     ///   framed as the cost it is ("Kept by THORChain") rather than a red alert —
     ///   the same reframing the initiator made in
-    ///   `FunctionCallVerifyScreen.cancelLimitOrderRows`. Nothing on the THORChain
+    ///   `FunctionTransactionVerifyScreen.cancelLimitOrderRows`. Nothing on the THORChain
     ///   route, which attaches no dust.
     ///
     /// Empty for every other transaction, so no other path changes.
@@ -195,7 +195,7 @@ struct KeysignMessageConfirmView: View {
         }
     }
 
-    /// Mirrors `FunctionCallVerifyScreen.getAmount()` so the joiner shows the same
+    /// Mirrors `FunctionTransactionVerifyScreen.getAmount()` so the joiner shows the same
     /// `<amount> <ticker> → <pool> LP` title as the initiator for LP operations.
     private func lpAmountTitle(for payload: KeysignPayload?, lpDictionary: [String: String]?) -> String {
         let defaultAmount = payload?.toAmountString ?? .empty

@@ -103,45 +103,26 @@ final class SecuredMintRetirementParityTests: XCTestCase {
         for entry in Self.retiredChains {
             let coin = nativeCoin(chain: entry.chain, ticker: entry.ticker)
             XCTAssertEqual(
-                FunctionCallType.getCases(for: coin), [.addThorLP],
+                FunctionAction.offered(on: coin), [.addThorLP],
                 "\(entry.chain) should offer exactly one function"
             )
-            assertDefaultsAgree(for: coin)
         }
     }
 
     /// THORChain keeps the redemption side (SECURE−) and its other functions;
     /// only the mint arm went away.
     func testThorchainKeepsItsRemainingFunctions() {
-        let rune = FunctionCallFixture.makeRUNE()
+        let rune = FunctionActionFixture.makeRUNE()
         XCTAssertEqual(
-            FunctionCallType.getCases(for: rune),
+            FunctionAction.offered(on: rune),
             [.rebond, .leave, .custom, .withdrawSecuredAsset]
         )
-        assertDefaultsAgree(for: rune)
     }
 
     // MARK: - Helpers
 
-    /// Asserts the chain's default selection is one its own case list offers
-    /// — every operation is migrated now, so there is no longer a second,
-    /// legacy factory to keep in step with.
-    private func assertDefaultsAgree(
-        for coin: Coin,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let selected = FunctionCallType.getDefault(for: coin)
-        XCTAssertTrue(
-            FunctionCallType.getCases(for: coin).contains(selected),
-            "\(coin.chain) opens on \(selected), which the dropdown does not list",
-            file: file,
-            line: line
-        )
-    }
-
     private func nativeCoin(chain: Chain, ticker: String) -> Coin {
-        FunctionCallFixture.makeCoin(chain, ticker: ticker, decimals: 8, isNative: true)
+        FunctionActionFixture.makeCoin(chain, ticker: ticker, decimals: 8, isNative: true)
     }
 
     /// The secured destination exactly as the picker builds it — through the
@@ -150,7 +131,7 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     private func securedTwin(denom: String) -> Coin {
         Coin(
             asset: SecuredAssetMapper.coinMeta(forDenom: denom),
-            address: FunctionCallFixture.thorAddress,
+            address: FunctionActionFixture.thorAddress,
             hexPublicKey: ""
         )
     }

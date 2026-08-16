@@ -24,14 +24,14 @@ import XCTest
 final class DydxVoteTransactionViewModelTests: XCTestCase {
 
     private static func makeDydxCoin() -> Coin {
-        FunctionCallFixture.makeCoin(.dydx, ticker: "DYDX", decimals: 18, isNative: true)
+        FunctionActionFixture.makeCoin(.dydx, ticker: "DYDX", decimals: 18, isNative: true)
     }
 
     private func makeViewModel() -> DydxVoteTransactionViewModel {
         let coin = Self.makeDydxCoin()
         return DydxVoteTransactionViewModel(
             coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin])
+            vault: FunctionActionFixture.makeVault(coins: [coin])
         )
     }
 

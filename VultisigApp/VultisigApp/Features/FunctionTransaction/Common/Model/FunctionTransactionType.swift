@@ -59,12 +59,26 @@ enum FunctionTransactionType: Hashable {
     /// position card) can pre-fill the field, exactly as `.bond(coin:node:)`
     /// does, while a caller that does not leaves the user to type it.
     case leave(coin: CoinMeta, node: String?)
-    /// THORChain / MayaChain raw-memo `MsgDeposit` — the escape hatch for an
-    /// operation the app has no form for. `coin` is the asset the deposit rides
-    /// on, and the form lets the user swap it for another of the vault's coins
-    /// on the same chain; every one of those is already held, so the intent
-    /// names only the coin the caller opened on.
-    case customMemo(coin: CoinMeta)
+    /// THORChain node REBOND. `node` pre-fills the node currently holding the
+    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
+    /// the memo's second address and the optional partial amount are always
+    /// typed on the form, so neither belongs on the intent.
+    case rebond(coin: CoinMeta, node: String?)
+    /// THORChain secured-asset redemption (`SECURE-`). `coin` is THORChain's
+    /// own native asset, deliberately *not* the asset being redeemed: which
+    /// secured denoms a vault holds is a live bank-balance query, so no caller
+    /// can name one upfront, and the native coin is the account those balances
+    /// hang off. The form's picker resolves the redeemed coin from it.
+    case withdrawSecuredAsset(coin: CoinMeta)
+    /// dYdX governance vote. `coin` is dYdX's native asset: the ballot rides a
+    /// memo with nothing attached, so the only coin the vault has to resolve is
+    /// the one that pays the fee.
+    ///
+    /// Named for the chain rather than for the operation because the memo is:
+    /// `DYDX_VOTE:…` is not the `QBTC_VOTE:…` the DeFi tab's governance segment
+    /// builds, and a bare `.vote` intent would invite a caller to route one
+    /// through the other.
+    case dydxVote(coin: CoinMeta)
     /// Cosmos IBC transfer. `coin` is the asset leaving the source chain — the
     /// only coin the vault has to resolve, since the destination side of the
     /// hop is an address, not a holding. `destinationChain` optionally
@@ -76,26 +90,13 @@ enum FunctionTransactionType: Hashable {
     /// they are typed on the form, so they belong to the builder this intent
     /// eventually produces, not to the intent that opens the form.
     case ibcTransfer(coin: CoinMeta, destinationChain: Chain?)
-    /// dYdX governance vote. `coin` is dYdX's native asset: the ballot rides a
-    /// memo with nothing attached, so the only coin the vault has to resolve is
-    /// the one that pays the fee.
-    ///
-    /// Named for the chain rather than for the operation because the memo is:
-    /// `DYDX_VOTE:…` is not the `QBTC_VOTE:…` the DeFi tab's governance segment
-    /// builds, and a bare `.vote` intent would invite a caller to route one
-    /// through the other.
-    case dydxVote(coin: CoinMeta)
-    /// THORChain secured-asset redemption (`SECURE-`). `coin` is THORChain's
-    /// own native asset, deliberately *not* the asset being redeemed: which
-    /// secured denoms a vault holds is a live bank-balance query, so no caller
-    /// can name one upfront, and the native coin is the account those balances
-    /// hang off. The form's picker resolves the redeemed coin from it.
-    case withdrawSecuredAsset(coin: CoinMeta)
-    /// THORChain node REBOND. `node` pre-fills the node currently holding the
-    /// bond when the caller already knows it, mirroring `.leave(coin:node:)`;
-    /// the memo's second address and the optional partial amount are always
-    /// typed on the form, so neither belongs on the intent.
-    case rebond(coin: CoinMeta, node: String?)
+    /// THORChain / MayaChain raw-memo `MsgDeposit` — the escape hatch for an
+    /// operation the app has no form for. `coin` is the asset the deposit rides
+    /// on, and the form lets the user swap it for another of the vault's coins
+    /// on the same chain; every one of those is already held, so the intent
+    /// names only the coin the caller opened on.
+    case customMemo(coin: CoinMeta)
+
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):
@@ -144,18 +145,18 @@ enum FunctionTransactionType: Hashable {
             return [coin]
         case .leave(let coin, _):
             return [coin]
-        case .customMemo(let coin):
-            return [coin]
-        case .ibcTransfer(let coin, _):
-            return [coin]
-        case .dydxVote(let coin):
+        case .rebond(let coin, _):
             return [coin]
         case .withdrawSecuredAsset(let coin):
             // Only the native coin: the secured assets themselves are added to
             // the vault by the form as it discovers which ones the account
             // actually holds, so they cannot be pre-resolved here.
             return [coin]
-        case .rebond(let coin, _):
+        case .dydxVote(let coin):
+            return [coin]
+        case .ibcTransfer(let coin, _):
+            return [coin]
+        case .customMemo(let coin):
             return [coin]
         }
     }

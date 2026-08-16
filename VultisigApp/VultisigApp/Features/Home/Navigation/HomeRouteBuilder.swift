@@ -36,7 +36,7 @@ struct HomeRouteBuilder {
         case .swap(let fromCoin):
             SwapRouter().buildDetailsScreen(fromCoin: fromCoin, toCoin: nil, vault: vault)
         case .function(let coin):
-            FunctionCallRouteBuilder().buildActionsScreen(
+            FunctionTransactionRouteBuilder().buildActionsScreen(
                 defaultCoin: coin,
                 vault: vault
             )

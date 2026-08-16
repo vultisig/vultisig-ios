@@ -16,7 +16,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
 
     private func gaiaDestination() -> IBCDestination {
         guard let destination = IBCDestinationCatalog
-            .destinations(for: FunctionCallFixture.makeKUJI())
+            .destinations(for: FunctionActionFixture.makeKUJI())
             .first(where: { $0.chain == .gaiaChain }) else {
             fatalError("Kujira must route to Gaia")
         }
@@ -30,9 +30,9 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
         amount: String = "1.5"
     ) -> IBCTransferTransactionBuilder {
         IBCTransferTransactionBuilder(
-            coin: coin ?? FunctionCallFixture.makeKUJI(),
+            coin: coin ?? FunctionActionFixture.makeKUJI(),
             destination: destination ?? gaiaDestination(),
-            destinationAddress: FunctionCallFixture.cosmosAddress,
+            destinationAddress: FunctionActionFixture.cosmosAddress,
             userMemo: userMemo,
             amount: amount
         )
@@ -47,7 +47,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
         let builder = makeBuilder()
         XCTAssertEqual(
             builder.memo,
-            "\(Chain.gaiaChain.name):channel-0:\(FunctionCallFixture.cosmosAddress)"
+            "\(Chain.gaiaChain.name):channel-0:\(FunctionActionFixture.cosmosAddress)"
         )
         XCTAssertFalse(builder.memo.hasSuffix(":"))
     }
@@ -55,7 +55,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
     func testMemoAppendsTheUserMemoAsAFourthSegment() {
         XCTAssertEqual(
             makeBuilder(userMemo: "hello-ibc").memo,
-            "\(Chain.gaiaChain.name):channel-0:\(FunctionCallFixture.cosmosAddress):hello-ibc"
+            "\(Chain.gaiaChain.name):channel-0:\(FunctionActionFixture.cosmosAddress):hello-ibc"
         )
     }
 
@@ -75,7 +75,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
             }
             XCTAssertEqual(decoded.userMemo, userMemo)
             XCTAssertEqual(decoded.sourceChannel, "channel-0")
-            XCTAssertEqual(decoded.destinationAddress, FunctionCallFixture.cosmosAddress)
+            XCTAssertEqual(decoded.destinationAddress, FunctionActionFixture.cosmosAddress)
         }
     }
 
@@ -83,7 +83,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
     /// so the route the user picked is the route that gets signed.
     func testMemoCarriesTheChannelOfTheChosenRoute() {
         let kujiraToOsmosis = IBCDestinationCatalog
-            .destinations(for: FunctionCallFixture.makeKUJI())
+            .destinations(for: FunctionActionFixture.makeKUJI())
             .first { $0.chain == .osmosis }
         XCTAssertEqual(kujiraToOsmosis?.sourceChannel, "channel-3")
 
@@ -93,9 +93,9 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
 
     func testEveryOfferingChainProducesItsOwnChannel() {
         let expected: [(coin: Coin, destination: Chain, channel: String)] = [
-            (FunctionCallFixture.makeKUJI(), .gaiaChain, "channel-0"),
-            (FunctionCallFixture.makeATOM(), .osmosis, "channel-141"),
-            (FunctionCallFixture.makeATOM(), .kujira, "channel-343")
+            (FunctionActionFixture.makeKUJI(), .gaiaChain, "channel-0"),
+            (FunctionActionFixture.makeATOM(), .osmosis, "channel-141"),
+            (FunctionActionFixture.makeATOM(), .kujira, "channel-343")
         ]
 
         for row in expected {
@@ -107,7 +107,7 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
             XCTAssertEqual(destination.sourceChannel, row.channel)
             XCTAssertEqual(
                 makeBuilder(coin: row.coin, destination: destination).memo,
-                "\(row.destination.name):\(row.channel):\(FunctionCallFixture.cosmosAddress)"
+                "\(row.destination.name):\(row.channel):\(FunctionActionFixture.cosmosAddress)"
             )
         }
     }
@@ -119,19 +119,19 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(dict.count, 4)
         XCTAssertEqual(dict["destinationChain"], Chain.gaiaChain.name)
         XCTAssertEqual(dict["destinationChannel"], "channel-0")
-        XCTAssertEqual(dict["destinationAddress"], FunctionCallFixture.cosmosAddress)
+        XCTAssertEqual(dict["destinationAddress"], FunctionActionFixture.cosmosAddress)
         XCTAssertEqual(dict["memo"], makeBuilder(userMemo: "tag:1").memo)
     }
 
     func testBuildSendTransactionMatchesTheLegacyBoundary() {
-        let kuji = FunctionCallFixture.makeKUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [kuji])
+        let kuji = FunctionActionFixture.makeKUJI()
+        let vault = FunctionActionFixture.makeVault(coins: [kuji])
         let builder = makeBuilder(coin: kuji, amount: "1.5")
 
         let tx = builder.buildSendTransaction(vault: vault)
 
         XCTAssertEqual(tx.transactionType, .ibcTransfer)
-        XCTAssertEqual(tx.toAddress, FunctionCallFixture.cosmosAddress)
+        XCTAssertEqual(tx.toAddress, FunctionActionFixture.cosmosAddress)
         XCTAssertEqual(tx.amount, "1.5")
         XCTAssertEqual(tx.memo, builder.memo)
         XCTAssertEqual(tx.memoFunctionDictionary.count, 4)
@@ -144,8 +144,8 @@ final class IBCTransferTransactionBuilderTests: XCTestCase {
     /// operations that pin it to zero — an IBC transfer really does move the
     /// coin. Pinned so the base-unit conversion downstream stays honest.
     func testAttachedAmountScalesToBaseUnitsAtTheCoinsDecimals() {
-        let kuji = FunctionCallFixture.makeKUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [kuji])
+        let kuji = FunctionActionFixture.makeKUJI()
+        let vault = FunctionActionFixture.makeVault(coins: [kuji])
 
         let tx = makeBuilder(coin: kuji, amount: "1.5").buildSendTransaction(vault: vault)
         XCTAssertEqual(tx.amountInRaw.description, "1500000", "1.5 KUJI at 6 decimals")
