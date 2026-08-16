@@ -19,7 +19,7 @@ final class SwitchTransactionBuilderTests: XCTestCase {
     private static let inbound = "cosmos1inbound"
 
     private static func makeBuilder(
-        coin: Coin = FunctionCallFixture.makeATOM(),
+        coin: Coin = FunctionActionFixture.makeATOM(),
         thorchainAddress: String = thorTarget,
         inboundAddress: String = inbound,
         amount: Decimal = 1
@@ -44,7 +44,7 @@ final class SwitchTransactionBuilderTests: XCTestCase {
     /// — no casing change, no truncation. The protocol credits exactly what is
     /// written here.
     func testMemoCarriesTheAddressVerbatim() {
-        let address = FunctionCallFixture.thorAddress
+        let address = FunctionActionFixture.thorAddress
         XCTAssertEqual(
             Self.makeBuilder(thorchainAddress: address).memo,
             "SWITCH:\(address)"
@@ -64,7 +64,7 @@ final class SwitchTransactionBuilderTests: XCTestCase {
     /// `SendTransaction.amountInRaw` reads this string back and scales it by
     /// `10^decimals`, so it is the exact number of ATOM that leaves the wallet.
     func testAttachedAmountMatchesTheLegacyEncoding() {
-        let atom = FunctionCallFixture.makeATOM()
+        let atom = FunctionActionFixture.makeATOM()
         for value in ["1", "1.5", "0.000001", "12345.678901"] {
             guard let amount = Decimal(string: value) else {
                 return XCTFail("Bad fixture \(value)")
@@ -81,7 +81,7 @@ final class SwitchTransactionBuilderTests: XCTestCase {
     /// ATOM is six-decimal; reading it at eight would send a hundredth of what
     /// the user asked for.
     func testAttachedAmountUsesTheSourceCoinsScale() {
-        let atom = FunctionCallFixture.makeATOM()
+        let atom = FunctionActionFixture.makeATOM()
         XCTAssertEqual(atom.decimals, 6)
         let builder = Self.makeBuilder(coin: atom, amount: Decimal(string: "1.12345678") ?? .zero)
         XCTAssertEqual(builder.amount, Decimal(string: "1.123456")?.formatToDecimal(digits: 6))
@@ -121,8 +121,8 @@ final class SwitchTransactionBuilderTests: XCTestCase {
     /// and `testTheSwitchParity`) routed to the inbound address with
     /// `.unspecified`, the memo above and the formatted amount.
     func testSendTransactionMatchesTheLegacyBoundary() {
-        let atom = FunctionCallFixture.makeATOM()
-        let vault = FunctionCallFixture.makeVault(coins: [atom, FunctionCallFixture.makeRUNE()])
+        let atom = FunctionActionFixture.makeATOM()
+        let vault = FunctionActionFixture.makeVault(coins: [atom, FunctionActionFixture.makeRUNE()])
         let builder = Self.makeBuilder(coin: atom, amount: 1)
 
         let tx = builder.buildSendTransaction(vault: vault)

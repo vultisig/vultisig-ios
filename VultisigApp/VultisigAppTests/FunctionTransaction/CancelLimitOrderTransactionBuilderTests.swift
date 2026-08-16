@@ -139,7 +139,7 @@ final class CancelLimitOrderTransactionBuilderTests: XCTestCase {
     /// ⚠️ The crypto fee row and the fiat figure beside it must be priced off
     /// the SAME number.
     ///
-    /// `FunctionCallViewModel.feesInReadable` read `gas` unconditionally while
+    /// `FunctionTransactionPricingViewModel.feesInReadable` read `gas` unconditionally while
     /// the row above it read `fee` on EVM, so an EVM cancel printed a real
     /// crypto amount against `US$0.00` — a gwei gas PRICE valued as if it were
     /// the whole fee.

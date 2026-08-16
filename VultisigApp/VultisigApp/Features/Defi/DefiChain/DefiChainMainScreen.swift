@@ -378,14 +378,14 @@ struct DefiChainMainScreen: View {
 
     func onGovernanceVote(proposal: CosmosGovProposal, choice: CosmosGovVoteChoice) {
         guard let tx = screenModel.makeGovernanceVoteTransaction(proposal: proposal, choice: choice) else { return }
-        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+        router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: vault))
     }
 
     func onGovernanceWeightedVote(proposal: CosmosGovProposal, options: [CosmosGovVoteOption]) {
         guard let tx = screenModel.makeGovernanceWeightedVoteTransaction(proposal: proposal, options: options) else {
             return
         }
-        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+        router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: vault))
     }
 
     func onTransactionToPresent(_ type: FunctionTransactionType) {
@@ -402,7 +402,7 @@ struct DefiChainMainScreen: View {
                 isLoading = false
             }
 
-            router.navigate(to: FunctionCallRoute.functionTransaction(
+            router.navigate(to: FunctionTransactionRoute.functionTransaction(
                 vault: vault,
                 transactionType: type
             ))
@@ -419,7 +419,7 @@ struct DefiChainMainScreen: View {
             isLoading = true
             defer { isLoading = false }
             let sendTx = await screenModel.buildVerifyTransaction(for: builder)
-            router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
+            router.navigate(to: FunctionTransactionRoute.verify(tx: sendTx, vault: vault))
         }
     }
 }

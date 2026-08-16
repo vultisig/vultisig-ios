@@ -22,7 +22,7 @@ final class UnmergeTransactionBuilderTests: XCTestCase {
     private static func makeBuilder(
         denom: String = "THOR.RUJI",
         shares: BigInt,
-        coin: Coin = FunctionCallFixture.makeRUJI()
+        coin: Coin = FunctionActionFixture.makeRUJI()
     ) -> UnmergeTransactionBuilder {
         UnmergeTransactionBuilder(
             coin: coin,
@@ -138,8 +138,8 @@ final class UnmergeTransactionBuilderTests: XCTestCase {
     /// `.thorUnmerge` and the memo above. The amount is the deliberate
     /// deviation documented on `testAttachedAmountIsZeroRegardlessOfTheShareCount`.
     func testSendTransactionMatchesTheLegacyBoundary() {
-        let ruji = FunctionCallFixture.makeRUJI()
-        let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE(), ruji])
+        let ruji = FunctionActionFixture.makeRUJI()
+        let vault = FunctionActionFixture.makeVault(coins: [FunctionActionFixture.makeRUNE(), ruji])
         let builder = Self.makeBuilder(denom: "THOR.RUJI", shares: BigInt(100_000_000), coin: ruji)
 
         let tx = builder.buildSendTransaction(vault: vault)

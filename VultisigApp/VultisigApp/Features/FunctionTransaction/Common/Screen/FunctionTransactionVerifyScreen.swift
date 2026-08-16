@@ -1,5 +1,5 @@
 //
-//  FunctionCallVerifyView.swift
+//  FunctionTransactionVerifyScreen.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 14/05/24.
@@ -8,10 +8,10 @@
 import Foundation
 import SwiftUI
 
-struct FunctionCallVerifyScreen: View {
+struct FunctionTransactionVerifyScreen: View {
     @Environment(\.router) var router
-    @StateObject var depositViewModel = FunctionCallViewModel()
-    @StateObject var depositVerifyViewModel = FunctionCallVerifyViewModel()
+    @StateObject private var depositViewModel = FunctionTransactionPricingViewModel()
+    @StateObject private var depositVerifyViewModel = FunctionTransactionVerifyViewModel()
     let transaction: SendTransaction
     let vault: Vault
 
@@ -301,7 +301,7 @@ struct FunctionCallVerifyScreen: View {
 }
 
 #Preview {
-    FunctionCallVerifyScreen(
+    FunctionTransactionVerifyScreen(
         transaction: .empty(coin: .example, vault: .example),
         vault: Vault.example
     )

@@ -30,8 +30,9 @@ enum FunctionActionCatalog {
         case list([FunctionActionDescriptor])
     }
 
-    /// The coin the actions are resolved against, falling back to the vault's
-    /// native coin when none is passed in.
+    /// The coin the actions are resolved against. Mirrors
+    /// `FunctionCallDetailsScreen`'s own fallback chain so the entry point
+    /// picks the same coin the legacy screen would have.
     static func resolveCoin(defaultCoin: Coin?, vault: Vault) -> Coin {
         defaultCoin
             ?? vault.coins.first(where: { $0.isNativeToken })
@@ -40,7 +41,7 @@ enum FunctionActionCatalog {
 
     /// Every operation `coin.chain` offers, in the order the chain lists them.
     static func descriptors(for coin: Coin) -> [FunctionActionDescriptor] {
-        descriptors(for: coin, types: FunctionCallType.getCases(for: coin))
+        descriptors(for: coin, types: FunctionAction.offered(on: coin))
     }
 
     /// Descriptors for an explicit set of operations.
@@ -49,7 +50,7 @@ enum FunctionActionCatalog {
     /// that no chain has *yet* — the interesting one being a chain whose only
     /// operation has already been migrated, which the previous
     /// selection-change seam could not express at all.
-    static func descriptors(for coin: Coin, types: [FunctionCallType]) -> [FunctionActionDescriptor] {
+    static func descriptors(for coin: Coin, types: [FunctionAction]) -> [FunctionActionDescriptor] {
         types.map { $0.actionDescriptor(for: coin) }
     }
 
@@ -65,29 +66,20 @@ enum FunctionActionCatalog {
     }
 }
 
-extension FunctionCallType {
+extension FunctionAction {
     /// The row this operation renders as.
     ///
-    /// The destination asks `migratedTransactionType(coin:nodeAddress:)` for
-    /// the intent, so "what this operation builds" is stated once for the
-    /// whole app. No node address is carried: the list is entered cold, with
-    /// no previous form to inherit a pre-fill from.
-    ///
-    /// Every `FunctionCallType` case is migrated as of the last migration —
-    /// there is no legacy screen left to fall back to, so a nil mapping here
-    /// is a case that was added without also being wired into
-    /// `migratedTransactionType`.
+    /// The destination is `transactionType(coin:)` — the same mapping the whole
+    /// app reads — so a row cannot name a screen the router does not build. No
+    /// node address is carried: the list is entered cold, with no previous form
+    /// to inherit a pre-fill from.
     func actionDescriptor(for coin: Coin) -> FunctionActionDescriptor {
-        guard let transactionType = migratedTransactionType(coin: coin, nodeAddress: nil) else {
-            preconditionFailure("\(rawValue) has no migrated transaction type and no legacy screen to fall back to")
-        }
-
-        return FunctionActionDescriptor(
+        FunctionActionDescriptor(
             id: rawValue,
             title: display(),
             subtitle: actionSubtitle,
             icon: actionIcon,
-            destination: .transaction(transactionType)
+            destination: transactionType(coin: coin)
         )
     }
 

@@ -106,7 +106,7 @@ final class SecuredWithdrawTransactionViewModelTests: XCTestCase {
         }
         coins.append(Self.makeNativeCoin(.ethereum, ticker: "ETH", address: Self.ethAddress))
 
-        let vault = FunctionCallFixture.makeVault(coins: coins)
+        let vault = FunctionActionFixture.makeVault(coins: coins)
 
         let stub = StubSecuredWithdrawDataSource()
         stub.balances = [

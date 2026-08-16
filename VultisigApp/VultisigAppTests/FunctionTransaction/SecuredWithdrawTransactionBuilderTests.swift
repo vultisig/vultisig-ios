@@ -22,7 +22,7 @@ final class SecuredWithdrawTransactionBuilderTests: XCTestCase {
     /// signer reads is exercised rather than hand-written.
     static func makeSecuredCoin(denom: String, rawBalance: String = "100000000") -> Coin {
         let meta = SecuredAssetMapper.coinMeta(forDenom: denom)
-        let coin = Coin(asset: meta, address: FunctionCallFixture.thorAddress, hexPublicKey: "")
+        let coin = Coin(asset: meta, address: FunctionActionFixture.thorAddress, hexPublicKey: "")
         coin.rawBalance = rawBalance
         return coin
     }
@@ -130,7 +130,7 @@ final class SecuredWithdrawTransactionBuilderTests: XCTestCase {
     /// `MsgDeposit` is addressed by its memo. `FunctionCallInstance.toAddress`
     /// returned nil for this case for the same reason.
     func testSendTransactionMatchesTheLegacyBoundary() {
-        let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE()])
+        let vault = FunctionActionFixture.makeVault(coins: [FunctionActionFixture.makeRUNE()])
         let builder = Self.makeBuilder(destination: "0xL1DestAddr", amount: 2)
 
         let tx = builder.buildSendTransaction(vault: vault)
@@ -154,7 +154,7 @@ final class SecuredWithdrawTransactionBuilderTests: XCTestCase {
     /// The attached amount reaches the signer as base units of the secured
     /// asset — this is the number that actually leaves the position.
     func testSendTransactionConvertsTheAmountToBaseUnits() {
-        let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE()])
+        let vault = FunctionActionFixture.makeVault(coins: [FunctionActionFixture.makeRUNE()])
         let tx = Self.makeBuilder(amount: Decimal(string: "0.5")!).buildSendTransaction(vault: vault)
         XCTAssertEqual(tx.amountInRaw, 50_000_000)
     }

@@ -16,7 +16,7 @@ final class RebondTransactionBuilderTests: XCTestCase {
 
     private static func makeBuilder(amount: Decimal = 0) -> RebondTransactionBuilder {
         RebondTransactionBuilder(
-            coin: FunctionCallFixture.makeRUNE(),
+            coin: FunctionActionFixture.makeRUNE(),
             nodeAddress: "thor1node",
             newAddress: "thor1new",
             rebondAmount: amount
@@ -104,8 +104,8 @@ final class RebondTransactionBuilderTests: XCTestCase {
     /// Pin: the legacy boundary produced memo + zero amount + `.unspecified` +
     /// an empty `toAddress`.
     func testSendTransactionMatchesTheLegacyBoundary() {
-        let coin = FunctionCallFixture.makeRUNE()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let coin = FunctionActionFixture.makeRUNE()
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
         let builder = RebondTransactionBuilder(
             coin: coin,
             nodeAddress: "thor1node",

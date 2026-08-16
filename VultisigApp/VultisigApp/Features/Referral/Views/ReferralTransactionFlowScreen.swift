@@ -62,6 +62,6 @@ struct ReferralTransactionFlowScreen: View {
     }
 
     private func moveToNext(tx: SendTransaction, vault: Vault) {
-        router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
+        router.navigate(to: FunctionTransactionRoute.verify(tx: tx, vault: vault))
     }
 }

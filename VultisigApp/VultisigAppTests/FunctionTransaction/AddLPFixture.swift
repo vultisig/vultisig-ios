@@ -23,12 +23,12 @@ enum AddLPFixture {
     static let btcVault = "bc1qethinboundvaultbtc0000000000000"
     /// The address the RUNE fixture carries — the same one a paired-address
     /// memo is expected to name.
-    static let thorAddress = FunctionCallFixture.thorAddress
+    static let thorAddress = FunctionActionFixture.thorAddress
 
     // MARK: - Coins
 
     static func ether(rawBalance: String = "5000000000000000000") -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .ethereum,
             ticker: "ETH",
             decimals: 18,
@@ -39,7 +39,7 @@ enum AddLPFixture {
     }
 
     static func usdc(rawBalance: String = "5000000000") -> Coin {
-        let coin = FunctionCallFixture.makeCoin(
+        let coin = FunctionActionFixture.makeCoin(
             .ethereum,
             ticker: "USDC",
             decimals: 6,
@@ -52,11 +52,11 @@ enum AddLPFixture {
     }
 
     static func bitcoin(rawBalance: String = "100000000") -> Coin {
-        FunctionCallFixture.makeBTC(rawBalance: rawBalance)
+        FunctionActionFixture.makeBTC(rawBalance: rawBalance)
     }
 
     static func rune(rawBalance: String = "100000000000") -> Coin {
-        FunctionCallFixture.makeRUNE(rawBalance: rawBalance)
+        FunctionActionFixture.makeRUNE(rawBalance: rawBalance)
     }
 
     // MARK: - Pools

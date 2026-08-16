@@ -18,16 +18,16 @@ import XCTest
 final class CustomMemoTransactionBuilderTests: XCTestCase {
 
     private static func rune(rawBalance: String = "100000000000") -> Coin {
-        FunctionCallFixture.makeRUNE(rawBalance: rawBalance)
+        FunctionActionFixture.makeRUNE(rawBalance: rawBalance)
     }
 
     private static func cacao() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: "CACAO",
             decimals: 10,
             isNative: true,
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
     }
 
@@ -85,7 +85,7 @@ final class CustomMemoTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(composed, decomposed, "Fixture must be canonically equivalent to be worth testing")
         XCTAssertNotEqual(Array(composed.utf8), Array(decomposed.utf8))
 
-        let vault = FunctionCallFixture.makeVault(coins: [Self.rune()])
+        let vault = FunctionActionFixture.makeVault(coins: [Self.rune()])
         let composedTx = CustomMemoTransactionBuilder(
             coin: Self.rune(),
             customMemo: composed,
@@ -106,7 +106,7 @@ final class CustomMemoTransactionBuilderTests: XCTestCase {
     /// string, and both must be the input.
     func testTheSendTransactionCarriesTheMemoVerbatim() {
         let coin = Self.rune()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
         let memo = "  Tricky:Memo  With  Spaces  \n"
 
         let tx = CustomMemoTransactionBuilder(
@@ -137,7 +137,7 @@ final class CustomMemoTransactionBuilderTests: XCTestCase {
     /// class of bug that signs ten times the intended amount.
     func testTheAttachedAmountRoundTripsThroughTheSendTransaction() {
         let coin = Self.rune()
-        let vault = FunctionCallFixture.makeVault(coins: [coin])
+        let vault = FunctionActionFixture.makeVault(coins: [coin])
 
         for amount in [Decimal(0), Decimal(1), Decimal(string: "1.5")!, Decimal(string: "0.00000001")!] {
             let tx = CustomMemoTransactionBuilder(
@@ -167,7 +167,7 @@ final class CustomMemoTransactionBuilderTests: XCTestCase {
     /// Every field the legacy `toSendTransaction` produced, on both chains.
     func testTheSendTransactionBoundaryMatchesTheLegacySubModel() {
         for coin in [Self.rune(), Self.cacao()] {
-            let vault = FunctionCallFixture.makeVault(coins: [coin])
+            let vault = FunctionActionFixture.makeVault(coins: [coin])
             let builder = CustomMemoTransactionBuilder(
                 coin: coin,
                 customMemo: "arbitrary-memo-string",

@@ -30,7 +30,7 @@ final class SwitchTransactionViewModelTests: XCTestCase {
     // MARK: - Fixtures
 
     private static func makeRune() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: "RUNE",
             decimals: 8,
@@ -73,13 +73,13 @@ final class SwitchTransactionViewModelTests: XCTestCase {
         rawBalance: String = "10000000",
         locale: Locale = Locale(identifier: "en_US")
     ) -> (SwitchTransactionViewModel, StubInboundSource) {
-        let atom = FunctionCallFixture.makeATOM(rawBalance: rawBalance)
+        let atom = FunctionActionFixture.makeATOM(rawBalance: rawBalance)
         let source = StubInboundSource()
         source.inbounds = inbounds
         let coins = holdsRune ? [atom, Self.makeRune()] : [atom]
         let viewModel = SwitchTransactionViewModel(
             coin: atom,
-            vault: FunctionCallFixture.makeVault(coins: coins),
+            vault: FunctionActionFixture.makeVault(coins: coins),
             inboundSource: source,
             locale: locale
         )

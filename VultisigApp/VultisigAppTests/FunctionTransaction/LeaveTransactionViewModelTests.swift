@@ -20,25 +20,25 @@ final class LeaveTransactionViewModelTests: XCTestCase {
     private static let mayaNode = "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c"
 
     private func makeThorViewModel(initialNodeAddress: String? = nil) -> LeaveTransactionViewModel {
-        let coin = FunctionCallFixture.makeRUNE()
+        let coin = FunctionActionFixture.makeRUNE()
         return LeaveTransactionViewModel(
             coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin]),
+            vault: FunctionActionFixture.makeVault(coins: [coin]),
             initialNodeAddress: initialNodeAddress
         )
     }
 
     private func makeMayaViewModel(initialNodeAddress: String? = nil) -> LeaveTransactionViewModel {
-        let coin = FunctionCallFixture.makeCoin(
+        let coin = FunctionActionFixture.makeCoin(
             .mayaChain,
             ticker: "CACAO",
             decimals: 10,
             isNative: true,
-            address: FunctionCallFixture.mayaAddress
+            address: FunctionActionFixture.mayaAddress
         )
         return LeaveTransactionViewModel(
             coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin]),
+            vault: FunctionActionFixture.makeVault(coins: [coin]),
             initialNodeAddress: initialNodeAddress
         )
     }

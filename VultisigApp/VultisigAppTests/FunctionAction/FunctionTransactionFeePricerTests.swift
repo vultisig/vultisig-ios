@@ -1,5 +1,5 @@
 //
-//  FunctionCallFeePricerTests.swift
+//  FunctionTransactionFeePricerTests.swift
 //  VultisigAppTests
 //
 //  What the Verify screen says a function call costs, on the chains where it
@@ -20,10 +20,10 @@ import XCTest
 /// fetched the chain-specific data and copied `chainSpecific.gas` alone.
 /// `displayFee` reads `fee` on EVM, UTXO and Cardano, so those three disclosed
 /// `0` — and signing re-fetched a real fee and charged it. Nothing downstream of
-/// `FunctionCallRoute.verify` re-resolves the figures for display, so the
+/// `FunctionTransactionRoute.verify` re-resolves the figures for display, so the
 /// hand-off is the only chance to get them right.
 @MainActor
-final class FunctionCallFeePricerTests: XCTestCase {
+final class FunctionTransactionFeePricerTests: XCTestCase {
 
     // MARK: - Fixtures
 
@@ -118,7 +118,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
     func testAnEvmFunctionCallDisclosesTheTotalFee() async {
         let gasPrice = BigInt(1_320_000_000)
         let totalFee = BigInt(158_400_000_000_000)
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: MockSendInteractor(),
             fetchSigningChainSpecific: { _ in Self.signedEvmChainSpecific }
         )
@@ -155,7 +155,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
             // Verify instead of the signed figure.
             SendInteractorFeeResult(fee: BigInt(30_360_000_000_000), gas: BigInt(1_320_000_000))
         }
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: mock,
             fetchSigningChainSpecific: { _ in Self.signedEvmChainSpecific }
         )
@@ -176,7 +176,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
     /// probe fetch carried no memo at all.
     func testAnEvmFunctionCallIsPricedAgainstItsOwnMemoAndRecipient() async {
         var fetched: [SendTransaction] = []
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: MockSendInteractor(),
             fetchSigningChainSpecific: { tx in
                 fetched.append(tx)
@@ -205,7 +205,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
         mock.fetchChainSpecificStub = { _ in .UTXO(byteFee: byteRate, sendMaxAmount: false) }
         mock.calculatePlanFeeStub = { _, _ in plannedFee }
 
-        let priced = await FunctionCallFeePricer(interactor: mock).priced(
+        let priced = await FunctionTransactionFeePricer(interactor: mock).priced(
             makeFunctionCallTransaction(coin: Self.bitcoin, toAddress: "bc1inbound", amount: "0.01")
         )
 
@@ -224,7 +224,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
         mock.fetchChainSpecificStub = { _ in .UTXO(byteFee: BigInt(12), sendMaxAmount: false) }
         mock.calculatePlanFeeStub = { _, _ in BigInt(3_000) }
 
-        _ = await FunctionCallFeePricer(interactor: mock).priced(
+        _ = await FunctionTransactionFeePricer(interactor: mock).priced(
             makeFunctionCallTransaction(coin: Self.bitcoin, toAddress: "bc1inbound", amount: "0.01")
         )
 
@@ -245,7 +245,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
         }
         mock.calculatePlanFeeStub = { _, _ in plannedFee }
 
-        let priced = await FunctionCallFeePricer(interactor: mock).priced(
+        let priced = await FunctionTransactionFeePricer(interactor: mock).priced(
             makeFunctionCallTransaction(coin: Self.cardano, toAddress: "addr1inbound", amount: "5")
         )
 
@@ -269,7 +269,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
             .THORChain(accountNumber: 0, sequence: 0, fee: 2_000_000, isDeposit: true)
         }
 
-        let priced = await FunctionCallFeePricer(interactor: mock).priced(
+        let priced = await FunctionTransactionFeePricer(interactor: mock).priced(
             makeFunctionCallTransaction(coin: Self.rune, toAddress: "", amount: "1")
         )
 
@@ -289,7 +289,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
     func testAFailedPricingLeavesTheHandOffUntouched() async {
         struct Boom: Error {}
         let probeGas = BigInt(7)
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: MockSendInteractor(),
             fetchSigningChainSpecific: { _ in throw Boom() }
         )
@@ -314,7 +314,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
     /// hand Verify a priced transaction without doing anything per-builder.
     func testAnEvmBuilderHandsVerifyAPricedTransaction() async {
         let totalFee = BigInt(158_400_000_000_000)
-        let pricer = FunctionCallFeePricer(
+        let pricer = FunctionTransactionFeePricer(
             interactor: MockSendInteractor(),
             fetchSigningChainSpecific: { _ in Self.signedEvmChainSpecific }
         )
@@ -341,7 +341,7 @@ final class FunctionCallFeePricerTests: XCTestCase {
         )
 
         let tx = await builder.buildPricedSendTransaction(
-            vault: .example, pricer: FunctionCallFeePricer(interactor: mock)
+            vault: .example, pricer: FunctionTransactionFeePricer(interactor: mock)
         )
 
         XCTAssertEqual(

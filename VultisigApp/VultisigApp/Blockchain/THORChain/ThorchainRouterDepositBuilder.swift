@@ -4,7 +4,7 @@
 //
 //  Shared builder for THORChain router deposits (LP adds and SECURE+ mints).
 //  The router-deposit shim synthesis is extracted from
-//  `FunctionCallVerifyViewModel` so the inline swap same-underlying path
+//  `FunctionTransactionVerifyViewModel` so the inline swap same-underlying path
 //  (native/ERC20 L1 asset → its own secured form) reuses the exact same
 //  deposit-payload construction instead of re-implementing it — the coupling
 //  mitigation the #4788 plan calls out.
@@ -23,7 +23,7 @@ enum ThorchainRouterDepositBuilder {
     /// router routes by memo, so the same shim works for both LP adds and mints.
     /// Native sources and non-approve deposits need no shim → returns `(nil, nil)`.
     ///
-    /// Extracted verbatim from `FunctionCallVerifyViewModel.createKeysignPayload`
+    /// Extracted verbatim from `FunctionTransactionVerifyViewModel.createKeysignPayload`
     /// so both the Function-Call verify path and the inline swap SECURE+ path
     /// build the identical shim.
     @MainActor

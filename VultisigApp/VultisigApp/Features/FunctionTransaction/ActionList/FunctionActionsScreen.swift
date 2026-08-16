@@ -5,7 +5,7 @@
 //  The operations a chain offers, one row each, every row a destination.
 //
 //  There is no selected row and no default. The screen it replaces opened on
-//  `FunctionCallType.getDefault(for:)` and then rendered that operation's form
+//  a per-chain default and then rendered that operation's form
 //  inline, which is why a chain could open on a form its own dropdown never
 //  offered. A list cannot express that state: the user arrives having chosen
 //  nothing, and every row leads somewhere it can actually go.
@@ -17,7 +17,6 @@ struct FunctionActionsScreen: View {
     @Environment(\.router) var router
 
     let vault: Vault
-    let coin: Coin
     let descriptors: [FunctionActionDescriptor]
 
     var body: some View {
@@ -56,7 +55,7 @@ struct FunctionActionsScreen: View {
 
     func select(_ descriptor: FunctionActionDescriptor) {
         router.navigate(
-            to: FunctionCallRoute.route(for: descriptor.destination, vault: vault)
+            to: FunctionTransactionRoute.route(for: descriptor.destination, vault: vault)
         )
     }
 }

@@ -22,12 +22,12 @@ final class RebondTransactionViewModelTests: XCTestCase {
     private static let mayaNode = "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c"
 
     private func makeViewModel(
-        coin: Coin = FunctionCallFixture.makeRUNE(),
+        coin: Coin = FunctionActionFixture.makeRUNE(),
         initialNodeAddress: String? = nil
     ) -> RebondTransactionViewModel {
         RebondTransactionViewModel(
             coin: coin,
-            vault: FunctionCallFixture.makeVault(coins: [coin]),
+            vault: FunctionActionFixture.makeVault(coins: [coin]),
             initialNodeAddress: initialNodeAddress
         )
     }
@@ -254,7 +254,7 @@ final class RebondTransactionViewModelTests: XCTestCase {
     /// showed the warning and submitted anyway. The rule is a form validator
     /// now: no address the user can type opens the gate.
     func testNonRuneAssetBlocksTheBuilderEvenWithValidAddresses() async {
-        let viewModel = makeViewModel(coin: FunctionCallFixture.makeTCY())
+        let viewModel = makeViewModel(coin: FunctionActionFixture.makeTCY())
         viewModel.onLoad()
         fillValidAddresses(viewModel)
         await settle()

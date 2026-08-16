@@ -35,7 +35,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
     // MARK: - Fixtures
 
     private func makeKuji(rawBalance: String = "10000000") -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .kujira,
             ticker: "KUJI",
             decimals: 6,
@@ -46,7 +46,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
     }
 
     private func makeAtom() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .gaiaChain,
             ticker: "ATOM",
             decimals: 6,
@@ -56,7 +56,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
     }
 
     private func makeOsmo() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .osmosis,
             ticker: "OSMO",
             decimals: 6,
@@ -71,7 +71,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
         destinationChain: Chain? = nil
     ) -> IBCTransferTransactionViewModel {
         let source = coin ?? makeKuji()
-        let vault = FunctionCallFixture.makeVault(coins: [source] + extraCoins)
+        let vault = FunctionActionFixture.makeVault(coins: [source] + extraCoins)
         let viewModel = IBCTransferTransactionViewModel(
             coin: source,
             vault: vault,
@@ -118,7 +118,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
     /// variable — so it skipped every destination. LVN has never been
     /// IBC-transferable; now the form says so instead of silently refusing.
     func testKujiraLvnHasNoRoutesAndHardDisablesContinue() {
-        let lvn = FunctionCallFixture.makeCoin(
+        let lvn = FunctionActionFixture.makeCoin(
             .kujira,
             ticker: TokensStore.Token.kujiraLVN.ticker,
             decimals: 6,
@@ -169,7 +169,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
     }
 
     private func makeUsk() -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .kujira,
             ticker: "USK",
             decimals: 6,
@@ -339,7 +339,7 @@ final class IBCTransferTransactionViewModelTests: XCTestCase {
     func testAPercentagePresetLeavesAnAmountTheParserAccepts() async throws {
         // Non-native so no fee reserve skews the arithmetic: 25% of 4000 is
         // exactly 1000, the ambiguous shape.
-        let usk = FunctionCallFixture.makeCoin(
+        let usk = FunctionActionFixture.makeCoin(
             .kujira,
             ticker: "USK",
             decimals: 6,

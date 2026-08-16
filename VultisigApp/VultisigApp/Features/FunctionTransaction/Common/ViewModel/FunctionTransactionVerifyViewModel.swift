@@ -11,7 +11,7 @@ import BigInt
 import WalletCore
 
 @MainActor
-class FunctionCallVerifyViewModel: ObservableObject {
+class FunctionTransactionVerifyViewModel: ObservableObject {
     let securityScanViewModel = SecurityScannerViewModel()
     @Published var isLoading = false
 
