@@ -10,8 +10,8 @@ import SwiftUI
 
 struct FunctionTransactionVerifyScreen: View {
     @Environment(\.router) var router
-    @StateObject var depositViewModel = FunctionTransactionPricingViewModel()
-    @StateObject var depositVerifyViewModel = FunctionTransactionVerifyViewModel()
+    @StateObject private var depositViewModel = FunctionTransactionPricingViewModel()
+    @StateObject private var depositVerifyViewModel = FunctionTransactionVerifyViewModel()
     let transaction: SendTransaction
     let vault: Vault
 

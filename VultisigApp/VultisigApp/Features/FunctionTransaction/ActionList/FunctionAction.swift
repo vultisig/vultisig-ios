@@ -36,25 +36,25 @@ enum FunctionAction: String, CaseIterable, Identifiable {
     func display() -> String {
         switch self {
         case .rebond:
-            return NSLocalizedString("Rebond", comment: "")
+            return "Rebond".localized
         case .leave:
-            return NSLocalizedString("Leave", comment: "")
+            return "Leave".localized
         case .custom:
-            return NSLocalizedString("Custom", comment: "")
+            return "Custom".localized
         case .vote:
-            return NSLocalizedString("Vote", comment: "")
+            return "Vote".localized
         case .cosmosIBC:
-            return NSLocalizedString("IBC Transfer", comment: "")
+            return "IBC Transfer".localized
         case .merge:
-            return NSLocalizedString("Merge", comment: "")
+            return "Merge".localized
         case .unmerge:
-            return NSLocalizedString("Withdraw RUJI", comment: "")
+            return "Withdraw RUJI".localized
         case .theSwitch:
-            return NSLocalizedString("Switch", comment: "")
+            return "Switch".localized
         case .addThorLP:
-            return NSLocalizedString("Add THORChain LP", comment: "")
+            return "Add THORChain LP".localized
         case .withdrawSecuredAsset:
-            return NSLocalizedString("Withdraw Secured Asset", comment: "")
+            return "withdrawSecuredAsset".localized
         }
     }
 

@@ -10,9 +10,9 @@ import Foundation
 extension CoinAction {
 
     /// Chains that surface the Function (memo) action. Every entry must have a
-    /// non-empty `FunctionAction.getCases(for:)`, and no chain outside this
-    /// list may offer cases — otherwise the button either opens an empty
-    /// selector or the cases are unreachable. Pinned by tests.
+    /// non-empty `FunctionAction.offered(on:)`, and no chain outside this
+    /// list may offer operations — otherwise the button either opens an empty
+    /// action list or the operations are unreachable. Pinned by tests.
     ///
     /// The THORChain chainnet/stagenet forks are listed. They were the
     /// motivating case for dropping a chain from this list — they had no case
