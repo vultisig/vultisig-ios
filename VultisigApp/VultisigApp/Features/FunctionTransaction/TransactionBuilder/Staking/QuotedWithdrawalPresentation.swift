@@ -1,15 +1,24 @@
 //
-//  TCYUnstakePresentation.swift
+//  QuotedWithdrawalPresentation.swift
 //  VultisigApp
 //
-//  How a staked-TCY withdrawal is presented on the screen where it is approved.
+//  How a withdrawal that quotes its own payout is presented on the screen where it
+//  is approved.
 //
 //  Without it the withdrawal renders through the generic send vocabulary and the
 //  verify screen reads **"You're sending 0 TCY"** over a withdrawal of a thousand
 //  of them. Both halves of that sentence are wrong: nothing is being *sent* — the
 //  position is being drawn down — and the zero is the transaction's own `amount`,
-//  which really is zero, because a THORChain staking withdrawal is a memo-only
-//  `MsgDeposit` whose entire instruction is the memo `tcy-:<bps>`.
+//  which really is zero, because the instruction lives somewhere the amount field
+//  is not: the memo `tcy-:<bps>` on a THORChain staking withdrawal, or the receipt
+//  shares attached to a `liquid.unbond`.
+//
+//  ⚠️ **Named for the figure it needs, not the asset it came from.** The guard is
+//  `withdrawDisplayAmount` — a payout the builder computed — so this describes
+//  every arm that quotes one: staked TCY and CACAO by their memo's fraction, the
+//  RUJI auto-compound redemption by its share ratio. It began as a TCY-only
+//  presentation, but the generalisation was in the guard from the start; the name
+//  caught up.
 //
 //  Same shape, and the same escape hatch, as `LimitOrderCancelPresentation`, which
 //  fixed the identical "You're sending 0 RUNE" on limit-order cancels.
@@ -17,10 +26,10 @@
 
 import Foundation
 
-enum TCYUnstakePresentation {
+enum QuotedWithdrawalPresentation {
 
-    /// Hero for the initiator's Verify screen, or `nil` for anything that is not a
-    /// staked-TCY withdrawal (every other function call keeps its existing
+    /// Hero for the initiator's Verify screen, or `nil` for anything whose builder
+    /// quoted no payout (every other function call keeps its existing
     /// presentation).
     ///
     /// The figure comes from `withdrawDisplayAmount`, carried down from the
@@ -35,7 +44,7 @@ enum TCYUnstakePresentation {
     static func hero(for transaction: SendTransaction) -> HeroContent? {
         guard let amount = transaction.withdrawDisplayAmount else { return nil }
         return .send(
-            title: "tcyUnstakeVerifyTitle".localized,
+            title: "quotedWithdrawalVerifyTitle".localized,
             coin: HeroCoinAmount(
                 // Rendered at the ASSET'S OWN precision, and that number is
                 // derived rather than picked for looking generous.

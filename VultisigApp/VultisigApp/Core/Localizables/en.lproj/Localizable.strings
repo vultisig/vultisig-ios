@@ -1161,6 +1161,7 @@
 "quantumSecurityIntroCta" = "Get started";
 "quantumSecurityIntroDescription" = "Classical keys can be broken by quantum computers. Enabling QBTC requires generating a new key pair.";
 "quantumSecurityIntroTitle" = "New quantum security";
+"quotedWithdrawalVerifyTitle" = "You are withdrawing";
 "rawPayload" = "Raw Payload";
 "ready" = "Ready";
 "Rebond" = "Rebond";
@@ -1552,7 +1553,6 @@
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
 "targetAsset" = "Target Asset: %@";
-"tcyUnstakeVerifyTitle" = "You are withdrawing";
 "termsOfService" = "Terms of Service";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "This Device";

@@ -1,5 +1,5 @@
 //
-//  TCYUnstakeVerifyHeroTests.swift
+//  QuotedWithdrawalHeroTests.swift
 //  VultisigAppTests
 //
 //  The verify screen used to announce "You're sending 0 TCY" over a withdrawal of
@@ -12,7 +12,7 @@
 import XCTest
 
 @MainActor
-final class TCYUnstakeVerifyHeroTests: XCTestCase {
+final class QuotedWithdrawalHeroTests: XCTestCase {
 
     private let staked = Decimal(string: "2002.74")!
 
@@ -67,7 +67,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
             accuracy: 0.00001
         )
 
-        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        let hero = try XCTUnwrap(QuotedWithdrawalPresentation.hero(for: tx))
         guard case .send(let title, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
@@ -80,8 +80,8 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         XCTAssertTrue(coin.amount.contains("002.571644"), "rendered \(coin.amount)")
         XCTAssertFalse(coin.amount.contains("002.73"), "the typed figure is not the delivered one")
         // A missing localization would leave the raw key here.
-        XCTAssertNotEqual(title, "tcyUnstakeVerifyTitle")
-        XCTAssertEqual(title, "tcyUnstakeVerifyTitle".localized)
+        XCTAssertNotEqual(title, "quotedWithdrawalVerifyTitle")
+        XCTAssertEqual(title, "quotedWithdrawalVerifyTitle".localized)
     }
 
     /// The function-call flow calls `copy(gas:)` after fetching chain-specific gas
@@ -96,7 +96,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         let copied = tx.copy(gas: 2_000_000)
 
         XCTAssertEqual(copied.withdrawDisplayAmount, tx.withdrawDisplayAmount)
-        XCTAssertNotNil(TCYUnstakePresentation.hero(for: copied))
+        XCTAssertNotNil(QuotedWithdrawalPresentation.hero(for: copied))
     }
 
     /// ⚠️ The screen has to render at the ASSET'S precision, not the amount
@@ -136,7 +136,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         XCTAssertEqual(builder.memo, "tcy-:5002")
 
         let tx = builder.buildSendTransaction(vault: vault)
-        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        let hero = try XCTUnwrap(QuotedWithdrawalPresentation.hero(for: tx))
         guard case .send(_, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
@@ -200,7 +200,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         let tx = builder.buildSendTransaction(vault: vault)
         XCTAssertEqual(tx.withdrawDisplayAmount, dust)
 
-        let hero = try XCTUnwrap(TCYUnstakePresentation.hero(for: tx))
+        let hero = try XCTUnwrap(QuotedWithdrawalPresentation.hero(for: tx))
         guard case .send(_, let coin) = hero else {
             return XCTFail("a withdrawal should render as a resolved single-sided amount")
         }
@@ -236,7 +236,7 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         let builder = try XCTUnwrap(viewModel.transactionBuilder)
         XCTAssertNotNil(builder.wasmContractPayload, "the compounding position still redeems its shares")
         XCTAssertNil(builder.withdrawDisplayAmount)
-        XCTAssertNil(TCYUnstakePresentation.hero(for: builder.buildSendTransaction(vault: vault)))
+        XCTAssertNil(QuotedWithdrawalPresentation.hero(for: builder.buildSendTransaction(vault: vault)))
     }
 
     /// Every other function call keeps the presentation it has.
@@ -270,6 +270,6 @@ final class TCYUnstakeVerifyHeroTests: XCTestCase {
         )
 
         XCTAssertNil(tx.withdrawDisplayAmount)
-        XCTAssertNil(TCYUnstakePresentation.hero(for: tx))
+        XCTAssertNil(QuotedWithdrawalPresentation.hero(for: tx))
     }
 }

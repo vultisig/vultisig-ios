@@ -73,7 +73,7 @@ struct TransactionHeroProvider {
     /// guard changed.
     enum ID: String, CaseIterable {
         case rippleTrustSet
-        case tcyUnstake
+        case quotedWithdrawal
         case limitOrderCancel
         case limitOrderPlacement
     }
@@ -98,8 +98,8 @@ enum TransactionHeroResolver {
     /// 1. `rippleTrustSet` — the wire-level `VSTransactionType`, which is on the
     ///    signed payload precisely because an XRPL issued-currency coin is
     ///    otherwise ambiguous about whether it opens a trust line or pays one.
-    /// 2. `tcyUnstake` — a field the builder put on the transaction. Exact, but it
-    ///    exists only on the initiator's side.
+    /// 2. `quotedWithdrawal` — a figure the builder put on the transaction. Exact,
+    ///    but it exists only on the initiator's side.
     /// 3. `limitOrderCancel` — the `m=<` memo prefix, which is what THORChain
     ///    itself keys on.
     /// 4. `limitOrderPlacement` — the `=<` prefix, the same family one level less
@@ -119,7 +119,7 @@ enum TransactionHeroResolver {
     /// that the question does not currently arise.
     static let providers: [TransactionHeroProvider] = [
         .rippleTrustSet,
-        .tcyUnstake,
+        .quotedWithdrawal,
         .limitOrderCancel,
         .limitOrderPlacement
     ]
@@ -174,15 +174,23 @@ private extension TransactionHeroProvider {
         }
     )
 
-    /// A staked-TCY withdrawal, whose transaction amount is the literal `"0"`
-    /// because the whole instruction is the `tcy-:<bps>` memo.
-    static let tcyUnstake = TransactionHeroProvider(
-        id: .tcyUnstake,
+    /// A withdrawal whose transaction amount is the literal `"0"`, because the
+    /// instruction is carried somewhere the amount field is not — the `tcy-:<bps>`
+    /// memo, or the receipt shares attached to a `liquid.unbond`.
+    ///
+    /// ⚠️ **Keyed on the figure, not on the asset.** The guard is "the builder
+    /// quoted a payout", so every arm that computes one is described here: staked
+    /// TCY and CACAO by their memo's fraction, the RUJI auto-compound redemption by
+    /// its share ratio. Narrowing it per asset would mean several providers running
+    /// identical code, and an arm that quietly gets no hero the day it gains a
+    /// figure.
+    static let quotedWithdrawal = TransactionHeroProvider(
+        id: .quotedWithdrawal,
         surfaces: [.functionCallVerify],
         hero: { subject in
             switch subject {
             case .initiating(let transaction):
-                return TCYUnstakePresentation.hero(for: transaction)
+                return QuotedWithdrawalPresentation.hero(for: transaction)
             case .cosigning:
                 // ⚠️ A co-signer's screens are the known follow-up, and they are
                 // deliberately still `nil` here.

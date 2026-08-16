@@ -1161,6 +1161,7 @@
 "quantumSecurityIntroCta" = "Inizia";
 "quantumSecurityIntroDescription" = "Le chiavi classiche possono essere violate dai computer quantistici. Per abilitare QBTC è necessario generare una nuova coppia di chiavi.";
 "quantumSecurityIntroTitle" = "Nuova sicurezza quantistica";
+"quotedWithdrawalVerifyTitle" = "Stai prelevando";
 "rawPayload" = "Dati grezzi";
 "ready" = "Pronto";
 "Rebond" = "Rebond";
@@ -1552,7 +1553,6 @@
 "switchToLocalMode" = "Passa alla modalità locale";
 "systemErrorMessage" = "Errore di sistema. Riprova.";
 "targetAsset" = "Asset Target: %@";
-"tcyUnstakeVerifyTitle" = "Stai prelevando";
 "termsOfService" = "Termini di servizio";
 "theUnmerge" = "La Separazione";
 "thisDevice" = "Questo Dispositivo";

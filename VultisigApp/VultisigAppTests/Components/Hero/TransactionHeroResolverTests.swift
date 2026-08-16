@@ -32,7 +32,7 @@ final class TransactionHeroResolverTests: XCTestCase {
     func testProvidersAreAskedInTheDeclaredOrder() {
         XCTAssertEqual(
             TransactionHeroResolver.providers.map(\.id),
-            [.rippleTrustSet, .tcyUnstake, .limitOrderCancel, .limitOrderPlacement]
+            [.rippleTrustSet, .quotedWithdrawal, .limitOrderCancel, .limitOrderPlacement]
         )
     }
 
@@ -47,7 +47,7 @@ final class TransactionHeroResolverTests: XCTestCase {
     /// ⚠️ The surface grid, as it was before the resolver existed.
     ///
     /// The differences between rows are real and were preserved deliberately, not
-    /// tidied away. `tcyUnstake` speaks only on the initiator's function-call
+    /// tidied away. `quotedWithdrawal` speaks only on the initiator's function-call
     /// Verify even though the same transaction reaches `SendDoneScreen` with its
     /// `withdrawDisplayAmount` intact; `rippleTrustSet` is absent from the
     /// co-signer's Verify, which renders the trust line's terms as its own rows;
@@ -56,7 +56,7 @@ final class TransactionHeroResolverTests: XCTestCase {
     /// change, and this test is what makes it look like one.
     func testEachSurfaceAsksExactlyTheProvidersItAskedBefore() {
         let expected: [TransactionHeroSurface: [TransactionHeroProvider.ID]] = [
-            .functionCallVerify: [.tcyUnstake, .limitOrderCancel],
+            .functionCallVerify: [.quotedWithdrawal, .limitOrderCancel],
             .sendDone: [.rippleTrustSet, .limitOrderCancel],
             .keysignConfirm: [.limitOrderCancel, .limitOrderPlacement],
             .keysignDone: [.rippleTrustSet, .limitOrderCancel]
@@ -111,12 +111,12 @@ final class TransactionHeroResolverTests: XCTestCase {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
 
-        // `TCYUnstakePresentation.hero ?? LimitOrderCancelPresentation.hero` —
+        // `QuotedWithdrawalPresentation.hero ?? LimitOrderCancelPresentation.hero` —
         // the withdrawal won on the initiator's Verify.
         let withdrawalAndCancel = try makeTCYWithdrawalAlsoCarryingACancel()
         XCTAssertEqual(
             TransactionHeroResolver.hero(on: .functionCallVerify, for: withdrawalAndCancel),
-            TCYUnstakePresentation.hero(for: withdrawalAndCancel)
+            QuotedWithdrawalPresentation.hero(for: withdrawalAndCancel)
         )
         XCTAssertNotNil(TransactionHeroResolver.hero(on: .functionCallVerify, for: withdrawalAndCancel))
 
@@ -154,7 +154,7 @@ final class TransactionHeroResolverTests: XCTestCase {
 
         let transaction = try makeTCYWithdrawal()
         let hero = try XCTUnwrap(TransactionHeroResolver.hero(on: .functionCallVerify, for: transaction))
-        XCTAssertEqual(hero, TCYUnstakePresentation.hero(for: transaction))
+        XCTAssertEqual(hero, QuotedWithdrawalPresentation.hero(for: transaction))
     }
 
     func testTheFunctionCallVerifyResolvesTheCancelHero() {

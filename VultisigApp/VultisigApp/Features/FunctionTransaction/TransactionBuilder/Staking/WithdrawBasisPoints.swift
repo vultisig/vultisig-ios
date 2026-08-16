@@ -28,8 +28,8 @@ import Foundation
 /// for why down) leaves at most one basis point behind — 0.01% of the position,
 /// about 0.20 TCY on that same position — and never takes more than was asked for.
 /// Because the result can no longer land on the user's exact figure, the screens
-/// around signing quote the quantised amount rather than the typed one; the TCY
-/// instance of that is `TCYUnstakePresentation`.
+/// around signing quote the quantised amount rather than the typed one, through
+/// `QuotedWithdrawalPresentation`.
 enum WithdrawBasisPoints {
 
     /// A full exit. Also the clamp ceiling — a memo can never ask for more of the

@@ -1161,6 +1161,7 @@
 "quantumSecurityIntroCta" = "Loslegen";
 "quantumSecurityIntroDescription" = "Klassische Schlüssel können von Quantencomputern geknackt werden. Um QBTC zu aktivieren, muss ein neues Schlüsselpaar erzeugt werden.";
 "quantumSecurityIntroTitle" = "Neue Quantensicherheit";
+"quotedWithdrawalVerifyTitle" = "Du hebst ab";
 "rawPayload" = "Rohdaten";
 "ready" = "Bereit";
 "Rebond" = "Rebond";
@@ -1552,7 +1553,6 @@
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "targetAsset" = "Target Asset: %@";
-"tcyUnstakeVerifyTitle" = "Du hebst ab";
 "termsOfService" = "Nutzungsbedingungen";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Dieses Gerät";

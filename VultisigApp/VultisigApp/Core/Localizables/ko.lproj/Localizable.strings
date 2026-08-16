@@ -1161,6 +1161,7 @@
 "quantumSecurityIntroCta" = "시작하기";
 "quantumSecurityIntroDescription" = "기존 키는 양자 컴퓨터에 의해 해독될 수 있습니다. QBTC를 활성화하려면 새 키 쌍을 생성해야 합니다.";
 "quantumSecurityIntroTitle" = "새로운 양자 보안";
+"quotedWithdrawalVerifyTitle" = "출금 중입니다";
 "rawPayload" = "원시 페이로드";
 "ready" = "준비 완료";
 "Rebond" = "재본드";
@@ -1552,7 +1553,6 @@
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";
 "targetAsset" = "대상 자산: %@";
-"tcyUnstakeVerifyTitle" = "출금 중입니다";
 "termsOfService" = "서비스 약관";
 "theUnmerge" = "병합 해제";
 "thisDevice" = "이 기기";

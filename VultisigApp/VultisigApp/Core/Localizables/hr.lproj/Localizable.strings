@@ -1161,6 +1161,7 @@
 "quantumSecurityIntroCta" = "Započni";
 "quantumSecurityIntroDescription" = "Klasične ključeve mogu probiti kvantna računala. Omogućavanje QBTC-a zahtijeva generiranje novog para ključeva.";
 "quantumSecurityIntroTitle" = "Nova kvantna sigurnost";
+"quotedWithdrawalVerifyTitle" = "Podižete";
 "rawPayload" = "Sirovi podaci";
 "ready" = "Spreman";
 "Rebond" = "Rebond";
@@ -1552,7 +1553,6 @@
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "targetAsset" = "Ciljna imovina: %@";
-"tcyUnstakeVerifyTitle" = "Podižete";
 "termsOfService" = "Uvjeti korištenja";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";

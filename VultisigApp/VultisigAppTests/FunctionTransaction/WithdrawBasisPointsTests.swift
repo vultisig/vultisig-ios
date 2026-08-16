@@ -175,7 +175,7 @@ final class WithdrawBasisPointsTests: XCTestCase {
     ///
     /// Scope: this covers the guard and the validator. The screen-facing half of
     /// the same boundary — that a dust full exit is *named* rather than rendered
-    /// as zero — is `TCYUnstakeVerifyHeroTests`. What still bounds a dust
+    /// as zero — is `QuotedWithdrawalHeroTests`. What still bounds a dust
     /// withdrawal end to end is the shared amount field, which renders 4
     /// decimals, so a position under 0.0001 TCY reaches `AmountBalanceValidator`
     /// as "0". That is pre-existing and shared by every flow using the field.
