@@ -70,9 +70,8 @@ final class SecuredMintRetirementParityTests: XCTestCase {
     /// The mint is only reachable where the Swap action is offered at all.
     ///
     /// `isSwapAvailable` is the chain-level half of that. It is not the whole
-    /// answer: `Chain.defaultActions` also drops `.swap` for the regions
-    /// `SwapFeatureGate` excludes, and the remote action config can disable it
-    /// per chain — neither of which is expressible here.
+    /// answer: the remote action config can also disable `.swap` per chain,
+    /// which is not expressible here.
     func testSwapIsAvailableOnEveryRetiredChain() {
         for entry in Self.retiredChains {
             XCTAssertTrue(

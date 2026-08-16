@@ -60,16 +60,6 @@ extension Chain {
 
         actions.append(.receive)
 
-        return actions.filtered
-    }
-}
-
-extension Array where Element == CoinAction {
-    var filtered: [CoinAction] {
-        if !SwapFeatureGate.canSwap() {
-            return filter { $0 != .swap }
-        } else {
-            return self
-        }
+        return actions
     }
 }

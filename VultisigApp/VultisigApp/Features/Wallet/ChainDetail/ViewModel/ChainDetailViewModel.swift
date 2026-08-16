@@ -86,7 +86,7 @@ final class ChainDetailViewModel: ObservableObject {
 
     func refresh() {
         Task { @MainActor in
-            availableActions = await actionResolver.resolveActions(for: nativeCoin.chain).filtered
+            availableActions = await actionResolver.resolveActions(for: nativeCoin.chain)
         }
         recomputeTokens()
         refreshTrustLineState()
