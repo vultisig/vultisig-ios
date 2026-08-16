@@ -62,7 +62,7 @@ final class CoinDetailViewModel: ObservableObject {
 
     func setup() {
         Task {
-            availableActions = await actionResolver.resolveActions(for: coin.chain).filtered
+            availableActions = await actionResolver.resolveActions(for: coin.chain)
         }
 
         loadMarketDataIfNeeded()
