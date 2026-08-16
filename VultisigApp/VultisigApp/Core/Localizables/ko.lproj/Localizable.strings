@@ -1841,7 +1841,7 @@
 "youreSending" = "전송 중입니다";
 "youreStaking" = "스테이킹 중";
 "youreSwapping" = "스왑 중입니다";
-"youreUnbonding" = "언본딩 중";
+"youreUnbonding" = "본드 해제 중";
 "youreUndelegating" = "위임 해제 중";
 "youreUnstaking" = "언스테이킹 중";
 "yourFriendsReferralCode" = "친구 추천 코드";

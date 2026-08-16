@@ -1797,7 +1797,7 @@
 "Withdraw RUJI" = "Povuci RUJI";
 "withdrawAmount" = "Podignite %@";
 "withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
-"withdrawingShareOfStakedPosition" = "%1$@ tvojeg stakeanog %2$@";
+"withdrawingShareOfStakedPosition" = "%1$@ vašeg stakeanog %2$@";
 "withdrawPercentage" = "Postotak povlačenja";
 "withdrawRewards" = "Povuci nagrade za %@";
 "withdrawSecuredAsset" = "Povuci osiguranu imovinu";
