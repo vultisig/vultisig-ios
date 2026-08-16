@@ -77,6 +77,13 @@ struct ToolbarButton<IconContent: View>: View {
                     }
             }
         }
+        // AppKit draws the focus ring outside the button's own clip shape, so
+        // neither `.buttonStyle(.plain)` nor the `Circle()` clip contains it:
+        // a circular toolbar button ends up inside a blue rounded square. This
+        // suppresses only the ring — the button stays focusable, so keyboard
+        // navigation and VoiceOver still reach it — and it is applied to the
+        // group so it covers the glass and the pre-26 branches alike.
+        .focusEffectDisabled()
 #else
         if #available(iOS 26.0, *) {
             // If it's native iOS toolbar, we use the default button with tint as it looks better, toolbar already styles it

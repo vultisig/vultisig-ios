@@ -12,6 +12,12 @@ struct SwapCoinCell: View {
     let balance: String?
     let balanceFiat: String?
     let isSelected: Bool
+    /// The cell draws its own bottom divider so a plain stack of cells reads as
+    /// a list. A caller that groups its rows with `commonListItemContainer`
+    /// already gets a divider from the container — and that one is correctly
+    /// dropped after the last row — so it turns this off, otherwise every pair
+    /// of rows is separated by two lines and a stray line hangs under the last.
+    let showsSeparator: Bool
 
     var onSelect: () -> Void
 
@@ -20,12 +26,14 @@ struct SwapCoinCell: View {
         balance: String?,
         balanceFiat: String?,
         isSelected: Bool,
+        showsSeparator: Bool = true,
         onSelect: @escaping () -> Void
     ) {
         self.coin = coin
         self.balance = balance
         self.balanceFiat = balanceFiat
         self.isSelected = isSelected
+        self.showsSeparator = showsSeparator
         self.onSelect = onSelect
     }
 
@@ -42,6 +50,7 @@ struct SwapCoinCell: View {
         VStack(spacing: 0) {
             content
             Separator(color: Theme.colors.borderLight, opacity: 1)
+                .showIf(showsSeparator)
         }
         .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }

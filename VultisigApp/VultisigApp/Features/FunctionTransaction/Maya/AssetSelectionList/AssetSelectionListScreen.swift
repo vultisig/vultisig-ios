@@ -40,7 +40,6 @@ struct AssetSelectionListScreen: View {
                         emptyMessage
                     }
                 }
-                .cornerRadius(Theme.radius.xl)
             }
         }
         .screenTitle("selectAsset".localized)
@@ -62,15 +61,30 @@ struct AssetSelectionListScreen: View {
         }
     }
 
+    /// The rounded surface belongs to the rows, not to the scroll viewport. A
+    /// `ScrollView` takes the full height it is offered, so rounding the
+    /// scroll view put the bottom corners at the bottom of the sheet while the
+    /// rows ended higher up with square ones — a list that reads as cut off.
     var list: some View {
-        LazyVStack(spacing: 0) {
-            ForEach(viewModel.filteredAssets, id: \.asset) { asset in
-                SwapCoinCell(coin: asset.asset, balance: nil, balanceFiat: nil, isSelected: selectedAsset == asset) {
+        // Read the filtered set once: it is a computed property that filters on
+        // every access, and each row needs the count.
+        let assets = viewModel.filteredAssets
+        return LazyVStack(spacing: 0) {
+            ForEach(Array(assets.enumerated()), id: \.element.asset) { index, asset in
+                SwapCoinCell(
+                    coin: asset.asset,
+                    balance: nil,
+                    balanceFiat: nil,
+                    isSelected: selectedAsset == asset,
+                    showsSeparator: false
+                ) {
                     selectedAsset = asset
                     onSelect()
                 }
+                .commonListItemContainer(index: index, itemsCount: assets.count)
             }
         }
+        .commonListContainer()
     }
 
     var loadingView: some View {
