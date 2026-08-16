@@ -1,5 +1,5 @@
 //
-//  FunctionCallFeePricer.swift
+//  FunctionTransactionFeePricer.swift
 //  VultisigApp
 //
 //  The one place a function-call transaction gets its network fee, between the
@@ -32,7 +32,7 @@ private let logger = Log.send.service
 ///
 /// ⚠️ **EVM is priced off the chain-specific fetch the SIGNING path makes**, not
 /// off that resolver, and the difference is not cosmetic. A function call is
-/// signed from `FunctionCallVerifyViewModel.createKeysignPayload` →
+/// signed from `FunctionTransactionVerifyViewModel.createKeysignPayload` →
 /// `BlockChainService.fetchSpecific(tx:)`, whose EVM branch floors every
 /// transaction at the 120,000 ERC-20 gas limit. The Send resolver instead
 /// floors a native transfer at `Coin.feeDefault` (23,000 on Ethereum). Pricing
@@ -47,7 +47,7 @@ private let logger = Log.send.service
 /// bare probe. On EVM that is the difference between the gas limit of the
 /// contract call and the 21,000 of a plain transfer.
 @MainActor
-struct FunctionCallFeePricer {
+struct FunctionTransactionFeePricer {
     /// The chain-specific fetch the function-call signing path performs.
     /// Injectable so the disclosure can be tested without a network.
     typealias SigningChainSpecificFetch = (SendTransaction) async throws -> BlockChainSpecific

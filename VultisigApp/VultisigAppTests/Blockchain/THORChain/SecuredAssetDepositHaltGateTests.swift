@@ -114,7 +114,7 @@ final class SecuredAssetDepositHaltGateTests: XCTestCase {
     /// so no inbound state can block it.
     func testThorchainSourceResolvesToOwnAddressWithoutFetchingInbound() async throws {
         let service = makeService("[]")
-        let rune = FunctionCallFixture.makeRUNE()
+        let rune = FunctionActionFixture.makeRUNE()
         let destination = try await ThorchainRouterDepositBuilder.resolveInboundDestination(
             coin: rune,
             thorchainService: service
@@ -206,7 +206,7 @@ final class SecuredAssetDepositHaltGateTests: XCTestCase {
 
         await assertBlocked(
             json: snapshot,
-            coin: FunctionCallFixture.makeCoin(.bscChain, ticker: "BNB", decimals: 18, isNative: true),
+            coin: FunctionActionFixture.makeCoin(.bscChain, ticker: "BNB", decimals: 18, isNative: true),
             expected: String(format: "inboundPaused".localized, "BSC")
         )
     }
@@ -238,11 +238,11 @@ final class SecuredAssetDepositHaltGateTests: XCTestCase {
     }
 
     private func nativeETH() -> Coin {
-        FunctionCallFixture.makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
+        FunctionActionFixture.makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
     }
 
     private func erc20USDC() -> Coin {
-        FunctionCallFixture.makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
+        FunctionActionFixture.makeCoin(.ethereum, ticker: "USDC", decimals: 6, isNative: false)
     }
 
     private func entry(

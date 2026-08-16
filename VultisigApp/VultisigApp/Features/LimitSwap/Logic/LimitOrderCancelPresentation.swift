@@ -42,7 +42,7 @@ enum LimitOrderCancelPresentation {
     ///
     /// The dust does not stop being disclosed — it is a cost row in the summary
     /// card, beside the network fee, where it reads as what it is. See
-    /// `FunctionCallVerifyScreen.cancelLimitOrderRows`.
+    /// `FunctionTransactionVerifyScreen.cancelLimitOrderRows`.
     static func hero(for transaction: SendTransaction) -> HeroContent? {
         guard let cancel = transaction.limitCancelContext else { return nil }
         return .title(text: title, caption: "\(cancel.sourceAsset) → \(cancel.targetAsset)")

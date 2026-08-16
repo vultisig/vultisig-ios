@@ -1,5 +1,5 @@
 //
-//  FunctionCallFixture.swift
+//  FunctionActionFixture.swift
 //  VultisigAppTests
 //
 //  Shared test fixture helpers for the rewritten FunctionCall sub-models.
@@ -13,7 +13,7 @@ import BigInt
 import Foundation
 @testable import VultisigApp
 
-enum FunctionCallFixture {
+enum FunctionActionFixture {
 
     // MARK: - Vault
 

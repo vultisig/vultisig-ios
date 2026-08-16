@@ -21,13 +21,13 @@ final class MergeTransactionBuilderTests: XCTestCase {
     private static let kujiContract = "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
 
     private static func makeKuji(rawBalance: String = "1000000000") -> Coin {
-        FunctionCallFixture.makeCoin(
+        FunctionActionFixture.makeCoin(
             .thorChain,
             ticker: "KUJI",
             decimals: 8,
             isNative: false,
             rawBalance: rawBalance,
-            address: FunctionCallFixture.thorAddress
+            address: FunctionActionFixture.thorAddress
         )
     }
 
@@ -94,7 +94,7 @@ final class MergeTransactionBuilderTests: XCTestCase {
     /// `destinationAddress` / `memo`.
     func testSendTransactionMatchesTheLegacyBoundary() {
         let coin = Self.makeKuji()
-        let vault = FunctionCallFixture.makeVault(coins: [FunctionCallFixture.makeRUNE(), coin])
+        let vault = FunctionActionFixture.makeVault(coins: [FunctionActionFixture.makeRUNE(), coin])
         let builder = MergeTransactionBuilder(
             coin: coin,
             denom: "THOR.KUJI",

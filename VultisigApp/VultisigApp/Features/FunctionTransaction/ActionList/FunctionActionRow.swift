@@ -62,7 +62,7 @@ struct FunctionActionRow: View {
                 title: "Leave",
                 subtitle: "Ask a node to leave and release your bond",
                 icon: .arrowToCornerTopRight,
-                destination: .transaction(.leave(coin: Coin.example.toCoinMeta(), node: nil))
+                destination: .leave(coin: .example, node: nil)
             ),
             onSelect: {}
         )
@@ -73,7 +73,7 @@ struct FunctionActionRow: View {
                 subtitle: "Send a transaction with a custom memo",
                 icon: .filePen,
                 availability: .unavailable(reason: "Not available on this chain"),
-                destination: .transaction(.customMemo(coin: Coin.example.toCoinMeta()))
+                destination: .customMemo(coin: .example)
             ),
             onSelect: {}
         )

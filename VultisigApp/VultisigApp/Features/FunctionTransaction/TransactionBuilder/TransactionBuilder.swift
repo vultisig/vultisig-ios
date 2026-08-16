@@ -48,8 +48,8 @@ extension TransactionBuilder {
     /// Builds the immutable `SendTransaction` struct directly, with `gas` /
     /// `fee` and runtime-only fields left at the construction-time zero state.
     ///
-    /// ⚠️ **Unpriced.** Nothing downstream of `FunctionCallRoute.verify`
-    /// re-resolves the two fee figures for display — `FunctionCallVerifyScreen`
+    /// ⚠️ **Unpriced.** Nothing downstream of `FunctionTransactionRoute.verify`
+    /// re-resolves the two fee figures for display — `FunctionTransactionVerifyScreen`
     /// renders whatever the hand-off carried — so a transaction navigated
     /// straight from here discloses a zero fee. Use
     /// `buildPricedSendTransaction(vault:)` at any seam that hands the result to
@@ -88,12 +88,12 @@ extension TransactionBuilder {
     /// One step for every builder, present and future, so a DeFi operation
     /// migrated onto this pipeline discloses a real fee the day it lands rather
     /// than inheriting a `chainSpecific.gas` copy that reads zero on EVM, UTXO
-    /// and Cardano. See `FunctionCallFeePricer` for why the two figures must
+    /// and Cardano. See `FunctionTransactionFeePricer` for why the two figures must
     /// travel together.
     @MainActor
     func buildPricedSendTransaction(
         vault: Vault,
-        pricer: FunctionCallFeePricer
+        pricer: FunctionTransactionFeePricer
     ) async -> SendTransaction {
         await pricer.priced(buildSendTransaction(vault: vault))
     }
@@ -101,6 +101,6 @@ extension TransactionBuilder {
     /// `buildPricedSendTransaction(vault:pricer:)` against the live interactor.
     @MainActor
     func buildPricedSendTransaction(vault: Vault) async -> SendTransaction {
-        await buildPricedSendTransaction(vault: vault, pricer: FunctionCallFeePricer())
+        await buildPricedSendTransaction(vault: vault, pricer: FunctionTransactionFeePricer())
     }
 }

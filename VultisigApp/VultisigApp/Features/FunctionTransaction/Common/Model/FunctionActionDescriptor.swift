@@ -15,18 +15,14 @@
 //  binding, no navigation of its own) is what lets a DeFi-tab card render the
 //  same value later without either producer being rewritten.
 //
+//  `destination` was an enum while the migration was mid-flight, so a row could
+//  name either a `FunctionTransactionType` or a form on the legacy screen. Every
+//  operation has its own screen now, so it is just the intent.
+//
 
 import SwiftUI
 
 struct FunctionActionDescriptor: Identifiable, Hashable {
-
-    /// Where the row goes. Every operation now has its own screen under
-    /// `Features/FunctionTransaction/` — the legacy details screen and its
-    /// pre-selected arm were removed with the last migration.
-    enum Destination: Hashable {
-        /// The intent is enough. A DeFi-tab producer only ever builds this arm.
-        case transaction(FunctionTransactionType)
-    }
 
     /// Whether the operation can be started right now.
     ///
@@ -51,7 +47,8 @@ struct FunctionActionDescriptor: Identifiable, Hashable {
     let subtitle: String?
     let icon: ImageResource
     let availability: Availability
-    let destination: Destination
+    /// The transaction tapping the row opens.
+    let destination: FunctionTransactionType
 
     init(
         id: String,
@@ -59,7 +56,7 @@ struct FunctionActionDescriptor: Identifiable, Hashable {
         subtitle: String? = nil,
         icon: ImageResource,
         availability: Availability = .available,
-        destination: Destination
+        destination: FunctionTransactionType
     ) {
         self.id = id
         self.title = title

@@ -60,7 +60,7 @@ struct ContentView: View {
             .navigationDestination(for: VaultRoute.self) { router.vaultRouter.build($0) }
             .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
             .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
-            .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
+            .navigationDestination(for: FunctionTransactionRoute.self) { router.functionTransactionRouter.build($0) }
             .navigationDestination(for: SigningRoute.self) { router.signingRouter.build($0) }
             .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
             .navigationDestination(for: YieldRoute.self) { router.yieldRouter.build($0) }
