@@ -76,6 +76,7 @@ struct TransactionHeroProvider {
         case quotedWithdrawal
         case limitOrderCancel
         case limitOrderPlacement
+        case decoded
     }
 
     let id: ID
@@ -106,6 +107,12 @@ enum TransactionHeroResolver {
     ///    specific. Listed after the cancel because a cancel is the narrower
     ///    reading of the two (`m=<` does not start with `=<`, so this is a
     ///    statement of intent rather than a live tie).
+    /// 5. `decoded` — whatever `SignedTransactionDecoder` can read off the content
+    ///    that will actually be signed. Last on purpose: it is the general
+    ///    reading, and every entry above it knows something this one cannot. A
+    ///    quoted withdrawal has the position the memo's fraction refers to; the
+    ///    decoder can only ever say "50.06% of your staked TCY", which is true but
+    ///    worse than the figure the form already resolved.
     ///
     /// ⚠️ **This is real precedence, not a formality.** Nothing in the types
     /// stops two guards firing at once: `SendTransaction` will happily carry a
@@ -114,14 +121,20 @@ enum TransactionHeroResolver {
     /// such a transaction is a property of the builders, not an invariant — so the
     /// order has to be the answer, and the answer has to be the one the four `??`
     /// chains gave before this existed. `testTheOrderDecidesWhenTwoProvidersBothClaim`
-    /// pins the winner for each overlap the type system permits;
-    /// `testNothingTheBuildersEmitIsClaimedTwice` pins the weaker, live property
-    /// that the question does not currently arise.
+    /// pins the winner for each overlap the type system permits.
+    ///
+    /// One overlap is no longer hypothetical: a staked withdrawal is claimed by
+    /// `quotedWithdrawal` and `decoded` alike, since the builder quoted a payout
+    /// for the same memo the decoder reads. The order is what prefers the exact
+    /// figure over the fraction, and
+    /// `testTheOnlyOverlapBetweenProvidersIsTheDeliberateOne` pins that it stays
+    /// the only pair that overlaps.
     static let providers: [TransactionHeroProvider] = [
         .rippleTrustSet,
         .quotedWithdrawal,
         .limitOrderCancel,
-        .limitOrderPlacement
+        .limitOrderPlacement,
+        .decoded
     ]
 
     /// The hero for `subject` on `surface`, or `nil` when no provider entitled to
@@ -246,6 +259,43 @@ private extension TransactionHeroProvider {
                     memo: payload.memo,
                     display: LimitOrderPlacementPresentation.display(for: payload)
                 )
+            }
+        }
+    )
+
+    /// Whatever the transaction says about itself, read the way a co-signer reads
+    /// its payload.
+    ///
+    /// A staked deposit carries no `withdrawDisplayAmount` — there is no payout to
+    /// quote — so nothing above this claims it, and the screen fell back to
+    /// "You're sending" over an operation that is not a transfer. The memo already
+    /// says what it is (`tcy+` is a stake, `BOND:` a bond), and
+    /// `SignedTransactionDecoder` already reads exactly that for the device on the
+    /// other end. This asks it the same question on this side.
+    ///
+    /// ⚠️ **Derived, not declared.** The alternative was a `functionKind` on every
+    /// builder, which was built and then dropped: a declaration is not part of the
+    /// signed bytes, so it can contradict them at no cost, and eighteen of them is
+    /// eighteen chances to say something the transaction does not. This reads the
+    /// same content the chain will, so the two cannot disagree.
+    ///
+    /// Initiator-only. A co-signer's screens consult the decoder directly through
+    /// `JoinKeysignViewModel`, where the reading is composed with a Blockaid
+    /// simulation rather than replacing it.
+    static let decoded = TransactionHeroProvider(
+        id: .decoded,
+        surfaces: [.functionCallVerify],
+        hero: { subject in
+            switch subject {
+            case .initiating(let transaction):
+                return DecodedTransactionPresentation.hero(
+                    for: SignedTransactionDecoder.decode(
+                        InitiatingTransactionContent(transaction)
+                    ),
+                    coin: transaction.coin
+                )
+            case .cosigning:
+                return nil
             }
         }
     )

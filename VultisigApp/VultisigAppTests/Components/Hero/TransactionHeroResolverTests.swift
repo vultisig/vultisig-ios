@@ -32,7 +32,7 @@ final class TransactionHeroResolverTests: XCTestCase {
     func testProvidersAreAskedInTheDeclaredOrder() {
         XCTAssertEqual(
             TransactionHeroResolver.providers.map(\.id),
-            [.rippleTrustSet, .quotedWithdrawal, .limitOrderCancel, .limitOrderPlacement]
+            [.rippleTrustSet, .quotedWithdrawal, .limitOrderCancel, .limitOrderPlacement, .decoded]
         )
     }
 
@@ -54,9 +54,17 @@ final class TransactionHeroResolverTests: XCTestCase {
     /// `limitOrderPlacement` is co-signer-only because the initiator's placement is
     /// verified on a different screen entirely. Widening any row is a product
     /// change, and this test is what makes it look like one.
+    ///
+    /// ⚠️ **One row was widened on purpose:** `.functionCallVerify` also asks
+    /// `decoded`. A staked deposit quotes no payout, so nothing else claimed it and
+    /// the screen announced "You're sending" over an operation that is not a
+    /// transfer. It is last in the row, so every reading that knows more than the
+    /// memo still wins. The other three rows are untouched — a co-signer already
+    /// consults the decoder through `JoinKeysignViewModel`, where it composes with
+    /// a Blockaid simulation instead of replacing one.
     func testEachSurfaceAsksExactlyTheProvidersItAskedBefore() {
         let expected: [TransactionHeroSurface: [TransactionHeroProvider.ID]] = [
-            .functionCallVerify: [.quotedWithdrawal, .limitOrderCancel],
+            .functionCallVerify: [.quotedWithdrawal, .limitOrderCancel, .decoded],
             .sendDone: [.rippleTrustSet, .limitOrderCancel],
             .keysignConfirm: [.limitOrderCancel, .limitOrderPlacement],
             .keysignDone: [.rippleTrustSet, .limitOrderCancel]
@@ -70,18 +78,28 @@ final class TransactionHeroResolverTests: XCTestCase {
         }
     }
 
-    /// The weaker, live property: nothing any builder actually emits is claimed by
-    /// two providers, so today the order never decides anything. Worth pinning
-    /// because it is the reason four screens could be merged onto one list at all
-    /// — but it is a fact about the builders, not an invariant, which is what the
-    /// next test is for.
-    func testNothingTheBuildersEmitIsClaimedTwice() throws {
+    /// The live property, now that exactly one overlap is deliberate.
+    ///
+    /// ⚠️ **This used to assert that nothing was ever claimed twice, and that is no
+    /// longer true.** `decoded` reads the memo of a transaction whose builder also
+    /// quoted a payout, so a staked withdrawal is claimed by `quotedWithdrawal` and
+    /// `decoded` both. That is the point: they say different things about the same
+    /// transaction — an exact figure against the fraction the memo commits to — and
+    /// the order exists to prefer the better one.
+    /// `testAQuotedWithdrawalStillOutranksTheDecodedReading` pins which wins.
+    ///
+    /// What still holds, and is what let four screens share one list, is that no
+    /// OTHER pair overlaps. A second unintended pair appearing here means two
+    /// presentations have started describing the same transaction by accident.
+    func testTheOnlyOverlapBetweenProvidersIsTheDeliberateOne() throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }
 
         let subjects: [TransactionHeroSubject] = [
             .initiating(try makeTCYWithdrawal()),
+            .initiating(makeTCYStake()),
             .initiating(makeCancelTransaction()),
+            .initiating(makeUnreadableTransaction()),
             .initiating(SendTransaction.empty(coin: makeRune(), vault: .example)),
             .cosigning(makePayload(memo: cancelMemo)),
             .cosigning(makePayload(memo: placementMemo)),
@@ -90,8 +108,15 @@ final class TransactionHeroResolverTests: XCTestCase {
         ]
 
         for subject in subjects {
-            let claims = TransactionHeroResolver.providers.compactMap { $0.hero(subject) }
-            XCTAssertLessThanOrEqual(claims.count, 1, "more than one provider claimed the same subject")
+            let claimants = Set(
+                TransactionHeroResolver.providers
+                    .filter { $0.hero(subject) != nil }
+                    .map(\.id)
+            )
+            XCTAssertTrue(
+                claimants.count <= 1 || claimants == [.quotedWithdrawal, .decoded],
+                "unexpected overlap: \(claimants.map(\.rawValue).sorted())"
+            )
         }
     }
 
@@ -162,6 +187,44 @@ final class TransactionHeroResolverTests: XCTestCase {
         let hero = TransactionHeroResolver.hero(on: .functionCallVerify, for: transaction)
         XCTAssertEqual(hero, LimitOrderCancelPresentation.hero(for: transaction))
         XCTAssertNotNil(hero)
+    }
+
+    /// ⚠️ The operation no provider could claim, and the reason `decoded` exists.
+    ///
+    /// A staked deposit has no payout to quote, so `withdrawDisplayAmount` is
+    /// `nil` and `quotedWithdrawal` cannot speak for it. Nothing else did either,
+    /// so Verify announced **"You're sending"** over a deposit — the same sentence,
+    /// on the initiator, that the decoder was built to stop a co-signer saying.
+    /// The memo `tcy+` said "stake" the whole time; this reads it.
+    func testTheFunctionCallVerifyNamesAStakeItCanQuoteNoFigureFor() throws {
+        let transaction = makeTCYStake()
+        XCTAssertNil(transaction.withdrawDisplayAmount, "a deposit quotes no payout")
+
+        let hero = try XCTUnwrap(TransactionHeroResolver.hero(on: .functionCallVerify, for: transaction))
+        guard case .send(let title, _) = hero else {
+            return XCTFail("a stake should resolve to a named single-sided amount")
+        }
+        XCTAssertEqual(title, "youreStaking".localized)
+        XCTAssertNotEqual(title, "youreSending".localized)
+    }
+
+    /// The general reading stays last: where the builder resolved a real figure,
+    /// that still wins over the fraction the memo commits to.
+    func testAQuotedWithdrawalStillOutranksTheDecodedReading() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let transaction = try makeTCYWithdrawal()
+        let hero = try XCTUnwrap(TransactionHeroResolver.hero(on: .functionCallVerify, for: transaction))
+        XCTAssertEqual(hero, QuotedWithdrawalPresentation.hero(for: transaction))
+    }
+
+    /// Anything the decoder cannot read stays `.unknown`, which renders as `nil` —
+    /// so this can never relabel an ordinary transfer.
+    func testAnUnreadableTransactionIsStillClaimedByNobody() {
+        XCTAssertNil(
+            TransactionHeroResolver.hero(on: .functionCallVerify, for: makeUnreadableTransaction())
+        )
     }
 
     /// ⚠️ The initiator's Done screen still names no withdrawal.
@@ -248,6 +311,46 @@ final class TransactionHeroResolverTests: XCTestCase {
             isNativeToken: true
         )
         return Coin(asset: asset, address: "thor1sender", hexPublicKey: "HexPublicKeyExample")
+    }
+
+    /// A staked-TCY deposit. `tcy+` carries a real amount — the deposit IS the
+    /// transfer of it — so unlike a withdrawal there is nothing for the builder to
+    /// quote, and the memo is the only thing that says what the transfer is for.
+    private func makeTCYStake() -> SendTransaction {
+        makeMemoTransaction(coin: makeTCYCoin(), amount: "100", memo: "tcy+")
+    }
+
+    /// A memo no grammar claims, on a chain with no decoder. Nothing should
+    /// describe it, on any surface.
+    private func makeUnreadableTransaction() -> SendTransaction {
+        makeMemoTransaction(coin: makeRune(), amount: "1", memo: "not-a-memo-anyone-parses")
+    }
+
+    private func makeMemoTransaction(coin: Coin, amount: String, memo: String) -> SendTransaction {
+        SendTransaction(
+            coin: coin,
+            vault: .example,
+            fromAddress: coin.address,
+            toAddress: "",
+            toAddressLabel: nil,
+            amount: amount,
+            amountInFiat: "",
+            memo: memo,
+            gas: .zero,
+            fee: .zero,
+            feeMode: .default,
+            estimatedGasLimit: nil,
+            customGasLimit: nil,
+            customByteFee: nil,
+            sendMaxAmount: false,
+            isStakingOperation: true,
+            transactionType: .unspecified,
+            memoFunctionDictionary: [:],
+            wasmContractPayload: nil,
+            feeCoin: coin,
+            limitCancelContext: nil,
+            withdrawDisplayAmount: nil
+        )
     }
 
     private func makeTCYWithdrawal() throws -> SendTransaction {
