@@ -16,9 +16,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          custom,
          vote,
          cosmosIBC,
-         merge,
-         unmerge,
-         theSwitch,
          addThorLP,
          withdrawSecuredAsset
 
@@ -36,12 +33,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Vote", comment: "")
         case .cosmosIBC:
             return NSLocalizedString("IBC Transfer", comment: "")
-        case .merge:
-            return NSLocalizedString("Merge", comment: "")
-        case .unmerge:
-            return NSLocalizedString("Withdraw RUJI", comment: "")
-        case .theSwitch:
-            return NSLocalizedString("Switch", comment: "")
         case .addThorLP:
             return NSLocalizedString("Add THORChain LP", comment: "")
         case .withdrawSecuredAsset:
@@ -55,8 +46,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return [
                 .rebond,
                 .leave,
-                .merge,
-                .unmerge,
                 .custom,
                 .withdrawSecuredAsset
             ]
@@ -68,12 +57,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                     .custom]
         case .dydx:
             return [.vote]
-        case .gaiaChain:
-            return [
-                .cosmosIBC,
-                .theSwitch
-            ]
-        case .kujira, .osmosis:
+        case .gaiaChain, .kujira, .osmosis:
             return [.cosmosIBC]
 
         case .thorChainChainnet, .thorChainStagenet:
@@ -91,11 +75,10 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     }
 
     /// The operation a single-action chain's entry point opens on directly.
-    /// Should be a member of `getCases(for:)` for a chain the action list can
-    /// still be entered on — a default that chain does not list strands the
-    /// user on a selection with nothing behind it — except a chain whose
-    /// every operation has been migrated, where the list is unreachable and
-    /// the default is vestigial (Gaia).
+    /// Must be a member of `getCases(for:)`: a default the chain does not list
+    /// strands the user on a selection with nothing behind it. No chain is
+    /// exempt — Gaia was, while it offered a migrated operation the default
+    /// could not name, and now names the one operation it has left.
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
@@ -110,24 +93,17 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .custom
         case .dydx:
             return .vote
-        // Kujira and Osmosis offer exactly one operation, `.cosmosIBC`, and
-        // it is migrated to `Features/FunctionTransaction/`. That is the
-        // same shape as dYdX's `.vote` above: a single-operation chain's
-        // entry point passes straight through the action list to the
-        // migrated screen without ever consulting this default, so naming
-        // the migrated type here is honest rather than a defect —
+        // Gaia, Kujira and Osmosis each offer exactly one operation,
+        // `.cosmosIBC`, and it is migrated to
+        // `Features/FunctionTransaction/`. That is the same shape as dYdX's
+        // `.vote` above: a single-operation chain's entry point passes
+        // straight through the action list to the migrated screen without
+        // ever consulting this default, so naming the migrated type here is
+        // honest rather than a defect —
         // `testASingleActionChainMayDefaultToItsOnlyMigratedOperation` is
         // what pins that exemption.
-        case .kujira, .osmosis:
+        case .gaiaChain, .kujira, .osmosis:
             return .cosmosIBC
-        // Gaia offers two operations, `.cosmosIBC` and `.theSwitch`, and both
-        // are migrated — unlike Kujira/Osmosis there is no unmigrated
-        // operation left to point the legacy dropdown default at. It falls
-        // through to `.custom` instead: unreachable in practice, since every
-        // row Gaia offers routes through the action list to a migrated
-        // screen, but a default that names a migrated type is what
-        // `testNoMultiActionChainDefaultsToAMigratedFunction` exists to
-        // catch for chains the dropdown can still be entered on.
         // These L1 chains offer exactly one operation, `.addThorLP`, and it is
         // migrated to `Features/FunctionTransaction/` — the same single-
         // operation exemption as Kujira/Osmosis above: the entry point passes

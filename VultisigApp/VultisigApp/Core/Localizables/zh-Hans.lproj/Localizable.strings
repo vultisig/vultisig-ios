@@ -47,10 +47,8 @@
 "alreadyTaken" = "已被占用";
 "aminoSign" = "Amino 签名";
 "amount" = "金额";
-"amountBalance" = "金额 ( 余额: %@ %@ )";
 "amountCannotBeZero" = "金额不能为零";
 "amountExceeded" = "金额不能超过余额";
-"amountSelectToken" = "金额 ( 选择代币 )";
 "amountToWithdraw" = "提取金额";
 "apply" = "应用";
 "applyReferral" = "应用推荐";
@@ -417,7 +415,6 @@
 "enterAddress" = "输入地址";
 "enterAddressHere" = "在此输入地址";
 "enterAmount" = "输入金额";
-"enterAmountToUnmerge" = "输入解绑金额";
 "enterDestinationTag" = "输入目标标签";
 "enterHint" = "输入提示";
 "enterMemo" = "输入备忘录";
@@ -438,7 +435,6 @@
 "erc20ApprovalRequired" = "需要 ERC20 批准";
 "error" = "错误";
 "errorCopy" = "复制";
-"errorLoadingBalance" = "加载余额出错";
 "errorMessageTitle" = "错误信息";
 "errorNetworkUnstableDescription" = "无法及时连接到服务器。请检查您的连接并重试。";
 "errorNetworkUnstableTitle" = "连接问题";
@@ -519,12 +515,9 @@
 "functionActionCustomSubtitle" = "发送带自定义备注的交易";
 "functionActionIbcSubtitle" = "将资产转账到其他 IBC 链";
 "functionActionLeaveSubtitle" = "请求节点退出并释放您的绑定";
-"functionActionMergeSubtitle" = "将代币合并为 RUJI";
 "functionActionRebondSubtitle" = "将您的绑定转移到其他节点";
 "functionActionsEmptyDescription" = "该链暂无可用操作。";
 "functionActionsTitle" = "操作";
-"functionActionSwitchSubtitle" = "将您的代币兑换为原生 RUNE";
-"functionActionUnmergeSubtitle" = "提取已合并的代币";
 "functionActionVoteSubtitle" = "对治理提案进行投票";
 "functionActionWithdrawSecuredAssetSubtitle" = "赎回 THORChain 安全资产";
 "functionArguments" = "函数参数";
@@ -619,7 +612,6 @@
 "inputPure" = "纯值";
 "inputs" = "输入";
 "insufficientBalance" = "余额不足";
-"insufficientBalanceForFunctions" = "余额不足。请输入小于或等于可用资金的金额";
 "insufficientGasTokenError" = "没有足够的 %@ 来支付发送 %@ 的燃料费";
 "invalidAddress" = "无效地址";
 "invalidAddressChain" = "此地址对于此链无效";
@@ -895,7 +887,6 @@
 "maxTotalFee" = "最大总费用";
 "memo" = "备忘录";
 "memoLabel" = "备注";
-"Merge" = "合并";
 "mergeCoins" = "合并代币";
 "message" = "消息";
 "messageSigned" = "消息已签名";
@@ -975,7 +966,6 @@
 "noSecuredAssetsAvailable" = "没有可用的担保资产";
 "notEnoughBalanceError" = "您没有足够的余额来发送此交易";
 "notEnoughUTXOError" = "可用的 UTXO 不足。您的钱包有足够的余额，但 UTXO（交易输出）太小或不足以支付交易金额加费用。尝试发送较小的金额或等待待处理的交易确认";
-"noThorAddressFound" = "未找到 THORChain 地址";
 "notifications" = "通知";
 "notificationsAreHere" = "安全通知功能已上线";
 "notificationsDescription" = "当其他设备请求加入您的保险库或需要您的签名时，接收提醒通知。";
@@ -1341,7 +1331,6 @@
 "selectToken" = "选择代币";
 "selectTokensSubtitle" = "启用至少一个代币以查看余额并管理仓位";
 "selectTokensTitle" = "选择代币";
-"selectTokenToMerge" = "选择要合并的代币";
 "selectVaults" = "选择保险库";
 "selectVaultsToBackUpSubtitle" = "选择是仅备份此保险库还是备份应用中的所有保险库";
 "selectVaultsToBackUpTitle" = "选择要备份的保险库";
@@ -1378,7 +1367,6 @@
 "shareQRType" = "类型";
 "shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "份额 ( 余额: %@ )";
-"sharesLabel" = "份额";
 "shareTheApp" = "分享应用";
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
@@ -1546,18 +1534,14 @@
 "swapVerifyCheckbox1Description" = "交换金额正确";
 "swapVerifyCheckbox2Description" = "我同意我将收到的最小金额";
 "swapVerifyCheckbox3Description" = "我同意为确切的交换金额提供 ERC20 授权";
-"Switch" = "切换";
 "switchBackToInternetMode" = "不想使用本地模式？切换回去。";
-"switchRouteUnavailable" = "无法连接到 THORChain 以确认存款地址。请检查您的连接并重试。";
 "switchToLocalMode" = "切换到本地模式";
 "systemErrorMessage" = "系统错误。请重试";
 "termsOfService" = "服务条款";
-"theUnmerge" = "解绑";
 "thisDevice" = "此设备";
 "ThisDeviceIs" = "此设备是";
 "thisVaultOnly" = "仅此保险库";
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
-"thorchainAddress" = "THORChain 地址";
 "thorchainCustomTokenInvalidFormat" = "THORChain 代币格式无效。请使用 THOR.{SYMBOL}，例如 THOR.LQDY。";
 "thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
@@ -1794,7 +1778,6 @@
 "whereDoYouMigrateFrom" = "您从哪里迁移？";
 "whitespaceNotAllowed" = "不允许空格字符";
 "withdraw" = "提取";
-"Withdraw RUJI" = "提取 RUJI";
 "withdrawAmount" = "提取 %@";
 "withdrawBelowOutboundFee" = "金额低于出站费用 — 请至少提取 %@ %@ 以支付网络费用";
 "withdrawPercentage" = "提取百分比";

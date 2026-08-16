@@ -47,10 +47,8 @@
 "alreadyTaken" = "Bereits vergeben";
 "aminoSign" = "Amino Signatur";
 "amount" = "Menge";
-"amountBalance" = "Amount ( Balance: %@ %@ )";
 "amountCannotBeZero" = "Betrag darf nicht null sein";
 "amountExceeded" = "Betrag darf das Guthaben nicht überschreiten";
-"amountSelectToken" = "Amount ( Select a token )";
 "amountToWithdraw" = "Amount to Withdraw";
 "apply" = "Anwenden";
 "applyReferral" = "Empfehlung anwenden";
@@ -417,7 +415,6 @@
 "enterAddress" = "Adresse eingeben";
 "enterAddressHere" = "Adresse hier eingeben";
 "enterAmount" = "Menge eingeben";
-"enterAmountToUnmerge" = "Enter amount to unmerge";
 "enterDestinationTag" = "Destination Tag eingeben";
 "enterHint" = "Hinweis eingeben";
 "enterMemo" = "Memo eingeben";
@@ -438,7 +435,6 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "error" = "Fehler";
 "errorCopy" = "Kopieren";
-"errorLoadingBalance" = "Error loading balance";
 "errorMessageTitle" = "Fehlermeldung";
 "errorNetworkUnstableDescription" = "Der Server konnte nicht rechtzeitig erreicht werden. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "errorNetworkUnstableTitle" = "Verbindungsproblem";
@@ -519,12 +515,9 @@
 "functionActionCustomSubtitle" = "Sende eine Transaktion mit eigenem Memo";
 "functionActionIbcSubtitle" = "Übertrage Assets auf eine andere IBC-Chain";
 "functionActionLeaveSubtitle" = "Fordere einen Node auf, auszutreten und deinen Bond freizugeben";
-"functionActionMergeSubtitle" = "Führe ein Token in RUJI zusammen";
 "functionActionRebondSubtitle" = "Verschiebe deinen Bond zu einem anderen Node";
 "functionActionsEmptyDescription" = "Für diese Chain sind keine Aktionen verfügbar.";
 "functionActionsTitle" = "Aktionen";
-"functionActionSwitchSubtitle" = "Wechsle deine Token zu nativem RUNE";
-"functionActionUnmergeSubtitle" = "Ziehe deine zusammengeführten Token ab";
 "functionActionVoteSubtitle" = "Stimme über einen Governance-Vorschlag ab";
 "functionActionWithdrawSecuredAssetSubtitle" = "Löse ein THORChain Secured Asset ein";
 "functionArguments" = "Funktionsargumente";
@@ -619,7 +612,6 @@
 "inputPure" = "Pur";
 "inputs" = "Eingaben";
 "insufficientBalance" = "Unzureichendes Guthaben";
-"insufficientBalanceForFunctions" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";
 "insufficientGasTokenError" = "Nicht genug %@ um die Gasgebühren für das Senden von %@ zu decken";
 "invalidAddress" = "Ungültige Adresse";
 "invalidAddressChain" = "Diese Adresse ist für diese Kette ungültig.";
@@ -895,7 +887,6 @@
 "maxTotalFee" = "Max. Gesamtgebühr";
 "memo" = "Memo";
 "memoLabel" = "Memo";
-"Merge" = "Zusammenführen";
 "mergeCoins" = "Coins zusammenführen";
 "message" = "Nachricht";
 "messageSigned" = "Nachricht signiert";
@@ -975,7 +966,6 @@
 "noSecuredAssetsAvailable" = "No secured assets available";
 "notEnoughBalanceError" = "Du hast nicht genug Guthaben, um diese Transaktion zu senden";
 "notEnoughUTXOError" = "Unzureichende UTXOs verfügbar. Deine Brieftasche hat genug Guthaben, aber die UTXOs (Transaktionsausgaben) sind zu klein oder nicht ausreichend, um den Transaktionsbetrag plus Gebühren zu decken. Versuche einen kleineren Betrag zu senden oder warte bis ausstehende Transaktionen bestätigt werden.";
-"noThorAddressFound" = "No THORChain address found";
 "notifications" = "Benachrichtigungen";
 "notificationsAreHere" = "Sichere Benachrichtigungen sind da";
 "notificationsDescription" = "Erhalten Sie Benachrichtigungen, wenn ein anderes Gerät Ihrem Tresor beitreten möchte oder wenn Ihre Signatur erforderlich ist.";
@@ -1341,7 +1331,6 @@
 "selectToken" = "Select Token";
 "selectTokensSubtitle" = "Wählen Sie die Token aus, die Sie in Ihrem Tresor sehen möchten.";
 "selectTokensTitle" = "Token auswählen";
-"selectTokenToMerge" = "Select the token to be merged";
 "selectVaults" = "Gewölbe auswählen";
 "selectVaultsToBackUpSubtitle" = "Wählen Sie, ob Sie nur diesen Gewölbe oder alle Gewölbe in Ihrer App sichern möchten.";
 "selectVaultsToBackUpTitle" = "Wählen Sie Gewölbe, um sich zu sichern";
@@ -1378,7 +1367,6 @@
 "shareQRType" = "Typ";
 "shareQRTypeFormat" = "%d-von-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
-"sharesLabel" = "Shares";
 "shareTheApp" = "Die App teilen";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Sekunde dauern";
 "showBalance" = "Guthaben anzeigen";
@@ -1546,18 +1534,14 @@
 "swapVerifyCheckbox1Description" = "Der Tauschbetrag ist korrekt";
 "swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalten werde";
 "swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Genehmigung für den genauen Tauschbetrag zu erteilen";
-"Switch" = "Wechseln";
 "switchBackToInternetMode" = "Kein lokaler Modus gewünscht? Zurückwechseln.";
-"switchRouteUnavailable" = "THORChain konnte nicht erreicht werden, um die Einzahlungsadresse zu bestätigen. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.";
 "switchToLocalMode" = "Zum lokalen Modus wechseln";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "termsOfService" = "Nutzungsbedingungen";
-"theUnmerge" = "The Unmerge";
 "thisDevice" = "Dieses Gerät";
 "ThisDeviceIs" = "Dieses Gerät ist das";
 "thisVaultOnly" = "Nur dieses Gewölbe";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
-"thorchainAddress" = "THORChain-Adresse";
 "thorchainCustomTokenInvalidFormat" = "Ungültiges THORChain-Token-Format. Verwende THOR.{SYMBOL}, z. B. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain ist in diesem Tresor nicht aktiviert. Bitte aktiviere THORChain, um diese Funktion zu nutzen.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
@@ -1794,7 +1778,6 @@
 "whereDoYouMigrateFrom" = "Von wo migrierst du?";
 "whitespaceNotAllowed" = "Leerzeichen sind nicht erlaubt.";
 "withdraw" = "Abheben";
-"Withdraw RUJI" = "RUJI abheben";
 "withdrawAmount" = "%@ abheben";
 "withdrawBelowOutboundFee" = "Betrag unter Ausgangsgebühr — mindestens %@ %@ abheben, um Netzwerkkosten zu decken";
 "withdrawPercentage" = "Abhebungsprozentsatz";

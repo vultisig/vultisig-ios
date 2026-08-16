@@ -100,7 +100,7 @@ final class ProposalIDTests: XCTestCase {
     /// value, so `4٢` names 42 and nothing else. Accepted rather than refused —
     /// refusing would need the parser to track which system it is in, which buys
     /// no safety on a value that has one reading, and would diverge from
-    /// `SwitchAmount`, whose digit handling this shares.
+    /// `HumanDecimalAmount`, whose digit handling this shares.
     func testDigitsFromDifferentNumberingSystemsStillNameOneNumber() {
         XCTAssertEqual(ProposalID.parse("4٢"), 42)
         XCTAssertEqual(ProposalID.parse("४2"), 42)

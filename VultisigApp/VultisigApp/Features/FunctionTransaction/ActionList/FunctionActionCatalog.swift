@@ -92,7 +92,7 @@ extension FunctionCallType {
     }
 
     /// One line on what the operation does. The dropdown could only ever show
-    /// a name, which is why "Custom" and "Switch" needed asking about.
+    /// a name, which is why "Custom" needed asking about.
     var actionSubtitle: String {
         switch self {
         case .rebond:
@@ -105,12 +105,6 @@ extension FunctionCallType {
             return "functionActionVoteSubtitle".localized
         case .cosmosIBC:
             return "functionActionIbcSubtitle".localized
-        case .merge:
-            return "functionActionMergeSubtitle".localized
-        case .unmerge:
-            return "functionActionUnmergeSubtitle".localized
-        case .theSwitch:
-            return "functionActionSwitchSubtitle".localized
         case .addThorLP:
             return "functionActionAddThorLpSubtitle".localized
         case .withdrawSecuredAsset:
@@ -130,12 +124,6 @@ extension FunctionCallType {
             return .megaphone
         case .cosmosIBC:
             return .connectedDots3
-        case .merge:
-            return .circlePlus
-        case .unmerge:
-            return .circleMinus
-        case .theSwitch:
-            return .arrowsRotateCenter
         case .addThorLP:
             return .gridPlus
         case .withdrawSecuredAsset:

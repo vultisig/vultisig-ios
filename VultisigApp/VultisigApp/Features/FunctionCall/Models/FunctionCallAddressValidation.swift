@@ -24,7 +24,7 @@ enum FunctionCallAddressValidation {
         AddressService.validateAddress(address: address, chain: .ton)
     }
 
-    /// Cosmos-chain validity check used by the IBC / Switch flows.
+    /// Cosmos-chain validity check used by the IBC flow.
     /// Falls back to the multi-chain THOR/Maya/TON shape when the
     /// caller has no `Chain` context (e.g., before the destination
     /// chain is picked).

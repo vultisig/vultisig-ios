@@ -14,10 +14,9 @@
 //  This parser reads the locale's own separators and nothing else, and returns
 //  nil for anything ambiguous so the form can say the amount is invalid.
 //
-//  The algorithm is the Cosmos SWITCH form's, ported verbatim rather than
-//  re-derived — four locale defects were found writing it the first time. It is
-//  named for what it does rather than for one caller so the two forms share a
-//  single copy once both are on this architecture.
+//  The algorithm was derived once, on the first Cosmos form to need it — four
+//  locale defects were found writing it — and is named for what it does rather
+//  than for one caller so every amount field shares a single copy.
 //
 //  **The residual, stated plainly.** Grouping that is well formed *in the locale
 //  in force* is accepted, so an `en_US` field reads `1,000` as one thousand —

@@ -5,11 +5,11 @@
 //  Strict parsing for the governance proposal ID the vote memo names.
 //
 //  A proposal ID is an *identifier*, not an amount, and that is what makes the
-//  right answer here different from `SwitchAmount` / `UnmergeShares`. Those
-//  have to accept a locale's grouping and decimal separators, because the
-//  app's own formatter writes them into the field — and every separator bug
-//  found on this migration came from interpreting one (`1,5` read as fifteen,
-//  `0,500` read as five hundred, Indian `123,456` off by a thousand).
+//  right answer here different from `HumanDecimalAmount`. An amount parser has
+//  to accept a locale's grouping and decimal separators, because the app's own
+//  formatter writes them into the field — and every separator bug found on this
+//  migration came from interpreting one (`1,5` read as fifteen, `0,500` read as
+//  five hundred, Indian `123,456` off by a thousand).
 //
 //  An identifier is never grouped and has no fractional part, so this parser
 //  reads no separator at all: a run of decimal digits, and nothing else. That

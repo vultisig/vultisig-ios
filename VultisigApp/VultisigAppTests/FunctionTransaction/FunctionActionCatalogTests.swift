@@ -198,33 +198,32 @@ final class FunctionActionCatalogTests: XCTestCase {
         }
     }
 
-    /// Gaia offers two operations and both are migrated, so the list renders
-    /// two rows that each route straight to their own screen — no row falls
-    /// back to the legacy form any more. The mixed case this used to pin
-    /// (IBC migrated, Switch still legacy) no longer exists once both land.
-    func testGaiaRendersAListWithBothRowsMigrated() {
+    /// Gaia used to offer two operations — IBC and the one-way SWITCH
+    /// migration to THORChain — and so rendered a list. With SWITCH retired it
+    /// has exactly one operation left and must take the passthrough above
+    /// rather than show a list with a single row, which is a tap the user
+    /// should never have to make. Its `getDefault` names that same operation,
+    /// so the vestigial-default exemption Gaia used to need is gone too.
+    func testGaiaPassesThroughToTheIbcScreen() {
         let coin = Self.makeCoin(.gaiaChain)
+        XCTAssertEqual(
+            FunctionCallType.getCases(for: coin),
+            [.cosmosIBC],
+            "Gaia must offer IBC and nothing else once SWITCH is retired"
+        )
+        XCTAssertEqual(FunctionCallType.getDefault(for: coin), .cosmosIBC)
 
-        guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
-            return XCTFail("Gaia offers two operations and must show the list")
+        guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("Gaia's single remaining operation must open directly, not via a one-row list")
         }
-        XCTAssertEqual(descriptors.map { $0.id }, [FunctionCallType.cosmosIBC.rawValue, FunctionCallType.theSwitch.rawValue])
-
-        guard case .transaction(let ibcType) = descriptors[0].destination else {
+        guard case .transaction(let transactionType) = descriptor.destination else {
             return XCTFail("Gaia's IBC row must route to the migrated screen")
         }
-        guard case .ibcTransfer(let ibcCoin, _) = ibcType else {
+        guard case .ibcTransfer(let ibcCoin, let destination) = transactionType else {
             return XCTFail("Expected the IBC transfer intent")
         }
         XCTAssertEqual(ibcCoin.chain, .gaiaChain)
-
-        guard case .transaction(let switchType) = descriptors[1].destination else {
-            return XCTFail("Gaia's Switch row must route to the migrated screen")
-        }
-        guard case .theSwitch(let switchCoin) = switchType else {
-            return XCTFail("Expected the switch intent")
-        }
-        XCTAssertEqual(switchCoin.chain, .gaiaChain)
+        XCTAssertNil(destination, "The entry point is entered cold — there is no route to inherit")
     }
 
     func testMoreThanOneActionRendersTheList() {
