@@ -191,31 +191,27 @@ final class FunctionActionCatalogTests: XCTestCase {
         }
     }
 
-    /// Gaia offers two operations, so it renders the list, and each row names
-    /// the intent its own screen is built from. Gaia is the chain the epic's
-    /// two Cosmos migrations met on — SWITCH re-pointed its default, IBC then
-    /// took the operation that default named — so it is the one worth pinning
-    /// row-by-row.
-    func testGaiaRendersAListOfBothItsOperations() {
+    /// Gaia used to offer two operations — IBC and the one-way SWITCH
+    /// migration to THORChain — and so rendered the list. With SWITCH retired
+    /// it has exactly one operation left and must take the passthrough above
+    /// instead of showing a list with a single row, which is a tap the user
+    /// should never have to make.
+    func testGaiaPassesThroughToTheIbcScreen() {
         let coin = Self.makeCoin(.gaiaChain)
+        XCTAssertEqual(
+            FunctionAction.offered(on: coin),
+            [.cosmosIBC],
+            "Gaia must offer IBC and nothing else once SWITCH is retired"
+        )
 
-        guard case .list(let descriptors) = FunctionActionCatalog.entry(for: coin) else {
-            return XCTFail("Gaia offers two operations and must show the list")
+        guard case .action(let descriptor) = FunctionActionCatalog.entry(for: coin) else {
+            return XCTFail("Gaia's single remaining operation must open directly, not via a one-row list")
         }
-        XCTAssertEqual(descriptors.map { $0.id }, [FunctionAction.cosmosIBC.rawValue, FunctionAction.theSwitch.rawValue])
-
-        guard case .ibcTransfer(let intentCoin, _) = descriptors[0].destination else {
+        guard case .ibcTransfer(let intentCoin, let destination) = descriptor.destination else {
             return XCTFail("Expected the IBC transfer intent")
         }
         XCTAssertEqual(intentCoin.chain, .gaiaChain)
-
-        guard case .theSwitch(let switchCoin) = descriptors[1].destination else {
-            return XCTFail("Gaia's Switch row must route to the migrated screen")
-        }
-        // The chain's own asset as the token store knows it, not the fixture
-        // coin: SWITCH credits only the native asset on the inbound vault.
-        XCTAssertEqual(switchCoin.chain, .gaiaChain)
-        XCTAssertTrue(switchCoin.isNativeToken)
+        XCTAssertNil(destination, "The entry point is entered cold — there is no route to inherit")
     }
 
     func testMoreThanOneActionRendersTheList() {

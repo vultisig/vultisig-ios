@@ -47,10 +47,8 @@
 "alreadyTaken" = "이미 사용 중";
 "aminoSign" = "아미노 서명";
 "amount" = "금액";
-"amountBalance" = "금액 ( 잔액: %@ %@ )";
 "amountCannotBeZero" = "금액은 0이 될 수 없습니다";
 "amountExceeded" = "금액이 잔액을 초과할 수 없습니다";
-"amountSelectToken" = "금액 ( 토큰 선택 )";
 "amountToWithdraw" = "출금 금액";
 "apply" = "적용";
 "applyReferral" = "추천 코드 적용";
@@ -417,7 +415,6 @@
 "enterAddress" = "주소 입력";
 "enterAddressHere" = "여기에 주소를 입력하세요";
 "enterAmount" = "금액 입력";
-"enterAmountToUnmerge" = "병합 해제할 금액 입력";
 "enterDestinationTag" = "목적지 태그 입력";
 "enterHint" = "힌트 입력";
 "enterMemo" = "메모 입력";
@@ -438,7 +435,6 @@
 "erc20ApprovalRequired" = "ERC20 승인 필요";
 "error" = "오류";
 "errorCopy" = "복사";
-"errorLoadingBalance" = "잔액 로딩 오류";
 "errorMessageTitle" = "오류 메시지";
 "errorNetworkUnstableDescription" = "서버에 제때 연결할 수 없습니다. 연결을 확인하고 다시 시도해 주세요.";
 "errorNetworkUnstableTitle" = "연결 문제";
@@ -519,12 +515,9 @@
 "functionActionCustomSubtitle" = "직접 작성한 메모로 트랜잭션을 보냅니다";
 "functionActionIbcSubtitle" = "다른 IBC 체인으로 자산을 전송합니다";
 "functionActionLeaveSubtitle" = "노드에 탈퇴를 요청해 본드를 돌려받습니다";
-"functionActionMergeSubtitle" = "토큰을 RUJI로 병합합니다";
 "functionActionRebondSubtitle" = "본드를 다른 노드로 옮깁니다";
 "functionActionsEmptyDescription" = "이 체인에서 사용할 수 있는 작업이 없습니다.";
 "functionActionsTitle" = "작업";
-"functionActionSwitchSubtitle" = "토큰을 네이티브 RUNE으로 전환합니다";
-"functionActionUnmergeSubtitle" = "병합한 토큰을 출금합니다";
 "functionActionVoteSubtitle" = "거버넌스 제안에 투표합니다";
 "functionActionWithdrawSecuredAssetSubtitle" = "THORChain 시큐어드 자산을 상환합니다";
 "functionArguments" = "함수 인수";
@@ -619,7 +612,6 @@
 "inputPure" = "순수값";
 "inputs" = "입력";
 "insufficientBalance" = "잔액 부족";
-"insufficientBalanceForFunctions" = "잔액이 부족합니다. 사용 가능한 자금 이하의 금액을 입력하세요.";
 "insufficientGasTokenError" = "%@ 전송을 위한 가스 수수료를 충당할 %@이(가) 부족합니다";
 "invalidAddress" = "유효하지 않은 주소";
 "invalidAddressChain" = "이 주소는 이 체인에 유효하지 않습니다.";
@@ -895,7 +887,6 @@
 "maxTotalFee" = "최대 총 수수료";
 "memo" = "메모";
 "memoLabel" = "메모";
-"Merge" = "병합";
 "mergeCoins" = "코인 병합";
 "message" = "메시지";
 "messageSigned" = "메시지 서명됨";
@@ -975,7 +966,6 @@
 "noSecuredAssetsAvailable" = "사용 가능한 보안 자산 없음";
 "notEnoughBalanceError" = "이 트랜잭션을 전송할 잔액이 충분하지 않습니다";
 "notEnoughUTXOError" = "사용 가능한 UTXO가 부족합니다. 지갑에 충분한 잔액이 있지만 UTXO(트랜잭션 출력)가 너무 작거나 트랜잭션 금액과 수수료를 충당하기에 충분하지 않습니다. 더 작은 금액을 전송하거나 보류 중인 트랜잭션이 확인될 때까지 기다리세요.";
-"noThorAddressFound" = "THORChain 주소를 찾을 수 없습니다";
 "notifications" = "알림";
 "notificationsAreHere" = "보안 알림이 도착했습니다";
 "notificationsDescription" = "다른 기기가 볼트에 참여를 요청하거나 서명이 필요할 때 알림을 받으세요.";
@@ -1341,7 +1331,6 @@
 "selectToken" = "토큰 선택";
 "selectTokensSubtitle" = "잔액을 보고 포지션을 관리하려면 하나 이상의 토큰을 활성화하세요.";
 "selectTokensTitle" = "토큰 선택";
-"selectTokenToMerge" = "병합할 토큰 선택";
 "selectVaults" = "볼트 선택";
 "selectVaultsToBackUpSubtitle" = "이 볼트만 백업할지 앱의 모든 볼트를 백업할지 선택하세요.";
 "selectVaultsToBackUpTitle" = "백업할 볼트 선택";
@@ -1378,7 +1367,6 @@
 "shareQRType" = "유형";
 "shareQRTypeFormat" = "%d/%d";
 "sharesBalance" = "공유 ( 잔액: %@ )";
-"sharesLabel" = "공유";
 "shareTheApp" = "앱 공유";
 "shouldOnlyTakeAMinute..." = "잠깐만 걸립니다";
 "showBalance" = "잔액 표시";
@@ -1546,18 +1534,14 @@
 "swapVerifyCheckbox1Description" = "스왑 금액이 올바릅니다";
 "swapVerifyCheckbox2Description" = "받을 최소 금액에 동의합니다";
 "swapVerifyCheckbox3Description" = "정확한 스왑 금액에 대한 ERC20 허용량 제공에 동의합니다";
-"Switch" = "전환";
 "switchBackToInternetMode" = "로컬을 사용하지 않으시겠습니까? 다시 전환하세요.";
-"switchRouteUnavailable" = "THORChain에 연결하여 입금 주소를 확인할 수 없습니다. 연결을 확인하고 다시 시도해 주세요.";
 "switchToLocalMode" = "로컬 모드로 전환";
 "systemErrorMessage" = "시스템 오류입니다. 다시 시도하세요.";
 "termsOfService" = "서비스 약관";
-"theUnmerge" = "병합 해제";
 "thisDevice" = "이 기기";
 "ThisDeviceIs" = "이 기기는";
 "thisVaultOnly" = "이 볼트만";
 "thorAddressNotFound" = "볼트에서 THORChain 주소를 찾을 수 없습니다. RUNE이 볼트에 있는지 확인하세요.";
-"thorchainAddress" = "THORChain 주소";
 "thorchainCustomTokenInvalidFormat" = "잘못된 THORChain 토큰 형식입니다. THOR.{SYMBOL} 형식을 사용하세요. 예: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "이 볼트에서 THORChain이 활성화되어 있지 않습니다. 이 기능을 사용하려면 THORChain을 활성화하세요.";
 "thresholdNotReachedMessage" = "임계값에 도달하지 않았습니다.\n초기 기기가 충분하지 않습니다.";
@@ -1794,7 +1778,6 @@
 "whereDoYouMigrateFrom" = "어디서 마이그레이션하시나요";
 "whitespaceNotAllowed" = "공백 문자는 허용되지 않습니다";
 "withdraw" = "출금";
-"Withdraw RUJI" = "RUJI 출금";
 "withdrawAmount" = "%@ 출금";
 "withdrawBelowOutboundFee" = "출금 금액이 출금 수수료보다 낮음 — 네트워크 비용을 충당하려면 최소 %@ %@을(를) 출금하세요";
 "withdrawPercentage" = "출금 비율";

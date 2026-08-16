@@ -47,10 +47,8 @@
 "alreadyTaken" = "Već zauzeto";
 "aminoSign" = "Amino Potpis";
 "amount" = "Iznos";
-"amountBalance" = "Iznos ( Stanje: %@ %@ )";
 "amountCannotBeZero" = "Iznos ne može biti nula";
 "amountExceeded" = "Iznos ne može premašiti saldo";
-"amountSelectToken" = "Iznos ( Odaberite token )";
 "amountToWithdraw" = "Iznos za povlačenje";
 "apply" = "Primijeni";
 "applyReferral" = "Primijeni preporuku";
@@ -417,7 +415,6 @@
 "enterAddress" = "Unesite adresu";
 "enterAddressHere" = "Unesite adresu ovdje";
 "enterAmount" = "Unesite iznos";
-"enterAmountToUnmerge" = "Enter amount to unmerge";
 "enterDestinationTag" = "Unesite oznaku odredišta";
 "enterHint" = "Unesite savjet";
 "enterMemo" = "Unesite bilješku";
@@ -438,7 +435,6 @@
 "erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
 "error" = "Greška";
 "errorCopy" = "Kopiraj";
-"errorLoadingBalance" = "Error loading balance";
 "errorMessageTitle" = "Poruka o pogrešci";
 "errorNetworkUnstableDescription" = "Poslužitelj nije dosegnut na vrijeme. Provjerite svoju vezu i pokušajte ponovno.";
 "errorNetworkUnstableTitle" = "Problem s vezom";
@@ -519,12 +515,9 @@
 "functionActionCustomSubtitle" = "Pošalji transakciju s prilagođenim memom";
 "functionActionIbcSubtitle" = "Prenesi imovinu na drugi IBC lanac";
 "functionActionLeaveSubtitle" = "Zatraži da čvor izađe i oslobodi tvoj bond";
-"functionActionMergeSubtitle" = "Spoji token u RUJI";
 "functionActionRebondSubtitle" = "Premjesti svoj bond na drugi čvor";
 "functionActionsEmptyDescription" = "Za ovaj lanac nema dostupnih radnji.";
 "functionActionsTitle" = "Radnje";
-"functionActionSwitchSubtitle" = "Zamijeni svoje tokene za izvorni RUNE";
-"functionActionUnmergeSubtitle" = "Povuci svoje spojene tokene";
 "functionActionVoteSubtitle" = "Glasaj o prijedlogu upravljanja";
 "functionActionWithdrawSecuredAssetSubtitle" = "Otkupi THORChain osiguranu imovinu";
 "functionArguments" = "Argumenti funkcije";
@@ -619,7 +612,6 @@
 "inputPure" = "Čisto";
 "inputs" = "Ulazi";
 "insufficientBalance" = "Nedovoljno sredstava";
-"insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
 "insufficientGasTokenError" = "Nedovoljno %@ za pokrivanje naknada za plin za slanje %@";
 "invalidAddress" = "Nevažeća adresa";
 "invalidAddressChain" = "Ova adresa je nevažeća za ovu lance.";
@@ -895,7 +887,6 @@
 "maxTotalFee" = "Maks. ukupna naknada";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
-"Merge" = "Spoji";
 "mergeCoins" = "Spoji novčiće";
 "message" = "Poruka";
 "messageSigned" = "Poruka potpisana";
@@ -975,7 +966,6 @@
 "noSecuredAssetsAvailable" = "No secured assets available";
 "notEnoughBalanceError" = "Nemate dovoljno sredstava za slanje ove transakcije";
 "notEnoughUTXOError" = "Nedovoljno UTXO-a dostupno. Vaš novčanik ima dovoljno sredstava, ali su UTXO-i (izlazi transakcije) premali ili nedovoljni za pokrivanje iznosa transakcije plus naknade. Pokušajte poslati manji iznos ili pričekajte da se transakcije u tijeku potvrde.";
-"noThorAddressFound" = "No THORChain address found";
 "notifications" = "Obavijesti";
 "notificationsAreHere" = "Sigurne obavijesti su stigle";
 "notificationsDescription" = "Primajte obavijesti kada drugi uređaj zatraži pridruživanje vašem trezoru ili kada je potreban vaš potpis.";
@@ -1341,7 +1331,6 @@
 "selectToken" = "Select Token";
 "selectTokensSubtitle" = "Odaberite tokene koje želite vidjeti u svom portfelju";
 "selectTokensTitle" = "Odaberite tokene";
-"selectTokenToMerge" = "Select the token to be merged";
 "selectVaults" = "Odaberite trezore";
 "selectVaultsToBackUpSubtitle" = "Odaberite hoćete li sigurnosno kopirati samo ovaj trezor ili sve trezore u vašoj aplikaciji.";
 "selectVaultsToBackUpTitle" = "Odaberite trezori za sigurnosnu kopiju";
@@ -1378,7 +1367,6 @@
 "shareQRType" = "Vrsta";
 "shareQRTypeFormat" = "%d-od-%d";
 "sharesBalance" = "Udjeli ( Stanje: %@ )";
-"sharesLabel" = "Shares";
 "shareTheApp" = "Podijelite aplikaciju";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
@@ -1546,18 +1534,14 @@
 "swapVerifyCheckbox1Description" = "Iznos zamjene je točan";
 "swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
 "swapVerifyCheckbox3Description" = "Slažem se dati ERC20 dopuštenje za točan iznos zamjene";
-"Switch" = "Prebaci";
 "switchBackToInternetMode" = "Ne želite koristiti lokalni način? Vratite se.";
-"switchRouteUnavailable" = "THORChain nije dosegnut radi potvrde adrese za uplatu. Provjerite svoju vezu i pokušajte ponovno.";
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "termsOfService" = "Uvjeti korištenja";
-"theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";
 "ThisDeviceIs" = "Ovaj uređaj je";
 "thisVaultOnly" = "Samo ovaj trezor";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
-"thorchainAddress" = "THORChain adresa";
 "thorchainCustomTokenInvalidFormat" = "Neispravan format THORChain tokena. Koristite THOR.{SYMBOL}, npr. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
@@ -1794,7 +1778,6 @@
 "whereDoYouMigrateFrom" = "Odakle migrirate?";
 "whitespaceNotAllowed" = "Karakter bijelog prostora nije dopušten";
 "withdraw" = "Povuci";
-"Withdraw RUJI" = "Povuci RUJI";
 "withdrawAmount" = "Podignite %@";
 "withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
 "withdrawPercentage" = "Postotak povlačenja";

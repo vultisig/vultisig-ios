@@ -5,15 +5,17 @@
 //  Four locale defects that a `NumberFormatter`-based parse ships, each of
 //  which multiplies an amount rather than refusing it.
 //
-//  This is the union of two suites. The parser was written twice under two
-//  names — `HumanDecimalAmount` for the LP and raw-memo forms, `SwitchAmount`
+//  This is the union of two suites. The parser was once written twice under two
+//  names — `HumanDecimalAmount` for the LP and raw-memo forms, and a second copy
 //  for the Cosmos SWITCH form — deliberately kept apart so the two migrations
 //  would not conflict. They were the same algorithm, so the copies were
 //  collapsed onto this one and both suites kept: each had found cases the other
 //  had not. Three assertions from the SWITCH suite that restated a case already
 //  here (the keypad states, a lone comma-decimal, and its junk set's overlap
 //  with this one) were not carried over twice; its numeric-lookalike inputs
-//  were, since they spell the rule differently.
+//  were, since they spell the rule differently. SWITCH has since been retired
+//  altogether, but the cases its suite contributed are the reason several of
+//  the assertions below exist, so they stay.
 //
 
 import XCTest

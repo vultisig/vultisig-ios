@@ -244,7 +244,7 @@ final class DydxVoteTransactionViewModelTests: XCTestCase {
     /// `Form.setupForm()` republishes `validForm` on the main run loop, so a
     /// form completed and submitted within one turn still reads `false` there.
     /// `transactionBuilder` judges the fields directly for exactly this reason —
-    /// this is the same guard REBOND, MERGE and UNMERGE carry.
+    /// this is the same guard REBOND carries.
     func testABuilderIsProducedInTheSameTurnTheFormIsCompleted() {
         let viewModel = makeLoadedViewModel()
         viewModel.select(.yes)

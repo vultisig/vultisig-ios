@@ -25,9 +25,6 @@ enum FunctionAction: String, CaseIterable, Identifiable {
          custom,
          vote,
          cosmosIBC,
-         merge,
-         unmerge,
-         theSwitch,
          addThorLP,
          withdrawSecuredAsset
 
@@ -45,12 +42,6 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             return "Vote".localized
         case .cosmosIBC:
             return "IBC Transfer".localized
-        case .merge:
-            return "Merge".localized
-        case .unmerge:
-            return "Withdraw RUJI".localized
-        case .theSwitch:
-            return "Switch".localized
         case .addThorLP:
             return "Add THORChain LP".localized
         case .withdrawSecuredAsset:
@@ -70,8 +61,6 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             return [
                 .rebond,
                 .leave,
-                .merge,
-                .unmerge,
                 .custom,
                 .withdrawSecuredAsset
             ]
@@ -83,12 +72,7 @@ enum FunctionAction: String, CaseIterable, Identifiable {
                     .custom]
         case .dydx:
             return [.vote]
-        case .gaiaChain:
-            return [
-                .cosmosIBC,
-                .theSwitch
-            ]
-        case .kujira, .osmosis:
+        case .gaiaChain, .kujira, .osmosis:
             return [.cosmosIBC]
 
         case .thorChainChainnet, .thorChainStagenet:
@@ -143,41 +127,6 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             // chain's native asset: an LP add from a token screen is a deposit
             // of that token, and pinning would silently retarget it.
             return .addThorchainLP(coin: coin.toCoinMeta())
-        case .merge:
-            // MERGE deposits a catalog token into that token's own Rujira
-            // contract, so the coin it spends is chosen inside the form from
-            // the vault's holdings. What the intent names is the chain anchor
-            // — THORChain's native asset, which is also the fee asset — for
-            // the same reason `.leave` does: the legacy screen pinned RUNE
-            // here (`ensureRuneCoin()`), and a vault that cannot resolve it
-            // belongs on the shared "not in vault" error rather than in a form
-            // whose deposit it could not pay for.
-            //
-            // The denom pre-selects the token the user was already looking at.
-            // The legacy sub-model tried the same thing in `preSelectToken()`,
-            // but the RUNE pin above it meant the match never fired.
-            return .merge(
-                coin: nativeAsset(for: coin),
-                denom: ThorchainMergeAsset.catalogDenom(forTicker: coin.ticker)
-            )
-        case .unmerge:
-            // The merged tokens sit inside the merge contract, not the wallet,
-            // and the wasm execute is addressed by contract — so the only coin
-            // the form needs the vault to resolve is the one that pays the
-            // THORChain fee. Naming RUNE here means a vault that cannot pay
-            // lands on the shared "not in vault" error instead of opening a
-            // form whose Continue could never produce a signable transaction.
-            //
-            // THORChain by name for the same reason the vote names dYdX: the
-            // merge contracts live there regardless of where the user came in.
-            //
-            // The denom pre-selects the merge token matching the coin the user
-            // opened Functions from; nil when that coin is RUNE or is not a
-            // merge token at all.
-            return .unmerge(
-                coin: nativeAsset(on: .thorChain, fallback: coin),
-                denom: MergeTokenCatalog.denom(matching: coin)
-            )
         case .withdrawSecuredAsset:
             // A `SECURE-` redemption is signed against the secured asset the
             // user picks inside the form, but the picker itself reads the
@@ -187,17 +136,6 @@ enum FunctionAction: String, CaseIterable, Identifiable {
             // RUNE-less vault with "No Secured Assets found", which reads as
             // "you hold nothing" rather than "this vault cannot ask".
             return .withdrawSecuredAsset(coin: nativeAsset(for: coin))
-        case .theSwitch:
-            // SWITCH is a plain transfer to THORChain's inbound vault for the
-            // source chain, and that vault credits the chain's native asset
-            // only. The legacy screen used whatever coin happened to be
-            // selected, so opening Functions from one of Gaia's IBC tokens
-            // (FUZN, KUJI, LVN, …) and picking Switch would have sent that
-            // token to the vault, where nothing credits it back. Naming the
-            // native asset means a vault that cannot resolve it lands on
-            // `FunctionTransactionScreen`'s shared "not in vault" error
-            // instead.
-            return .theSwitch(coin: nativeAsset(for: coin))
         case .vote:
             // The ballot rides the memo and the deposit is empty, so the only
             // coin the vault has to resolve is the one that pays the dYdX fee —

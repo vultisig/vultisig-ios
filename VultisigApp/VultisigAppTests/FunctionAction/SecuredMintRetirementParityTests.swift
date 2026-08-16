@@ -114,7 +114,7 @@ final class SecuredMintRetirementParityTests: XCTestCase {
         let rune = FunctionActionFixture.makeRUNE()
         XCTAssertEqual(
             FunctionAction.offered(on: rune),
-            [.rebond, .leave, .merge, .unmerge, .custom, .withdrawSecuredAsset]
+            [.rebond, .leave, .custom, .withdrawSecuredAsset]
         )
     }
 

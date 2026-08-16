@@ -47,10 +47,8 @@
 "alreadyTaken" = "Já utilizado";
 "aminoSign" = "Assinatura Amino";
 "amount" = "Quantidade";
-"amountBalance" = "Amount ( Balance: %@ %@ )";
 "amountCannotBeZero" = "A quantidade não pode ser zero";
 "amountExceeded" = "A quantidade não pode exceder o saldo";
-"amountSelectToken" = "Amount ( Select a token )";
 "amountToWithdraw" = "Amount to Withdraw";
 "apply" = "Aplicar";
 "applyReferral" = "Aplicar indicação";
@@ -417,7 +415,6 @@
 "enterAddress" = "Inserir Endereço";
 "enterAddressHere" = "Digite o endereço aqui";
 "enterAmount" = "Inserir Quantidade";
-"enterAmountToUnmerge" = "Enter amount to unmerge";
 "enterDestinationTag" = "Insira a tag de destino";
 "enterHint" = "Insira uma dica";
 "enterMemo" = "Insira o memo";
@@ -438,7 +435,6 @@
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "error" = "Erro";
 "errorCopy" = "Copiar";
-"errorLoadingBalance" = "Error loading balance";
 "errorMessageTitle" = "Mensagem de erro";
 "errorNetworkUnstableDescription" = "Não foi possível conectar ao servidor a tempo. Verifique a sua conexão e tente novamente.";
 "errorNetworkUnstableTitle" = "Problema de conexão";
@@ -519,12 +515,9 @@
 "functionActionCustomSubtitle" = "Envie uma transação com um memo personalizado";
 "functionActionIbcSubtitle" = "Transfira ativos para outra cadeia IBC";
 "functionActionLeaveSubtitle" = "Peça a um nó que saia e libere o seu bond";
-"functionActionMergeSubtitle" = "Faça o merge de um token em RUJI";
 "functionActionRebondSubtitle" = "Mova o seu bond para outro nó";
 "functionActionsEmptyDescription" = "Nenhuma ação disponível nesta cadeia.";
 "functionActionsTitle" = "Ações";
-"functionActionSwitchSubtitle" = "Troque os seus tokens por RUNE nativo";
-"functionActionUnmergeSubtitle" = "Saque os seus tokens mesclados";
 "functionActionVoteSubtitle" = "Vote em uma proposta de governança";
 "functionActionWithdrawSecuredAssetSubtitle" = "Resgate um ativo protegido da THORChain";
 "functionArguments" = "Argumentos da função";
@@ -619,7 +612,6 @@
 "inputPure" = "Puro";
 "inputs" = "Entradas";
 "insufficientBalance" = "Saldo insuficiente";
-"insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, digite um valor menor ou igual aos seus fundos disponíveis.";
 "insufficientGasTokenError" = "Não há %@ suficiente para cobrir as taxas de gas para enviar %@";
 "invalidAddress" = "Endereço inválido";
 "invalidAddressChain" = "Este endereço é inválido para essa cadeia.";
@@ -895,7 +887,6 @@
 "maxTotalFee" = "Taxa total máx.";
 "memo" = "Memorando";
 "memoLabel" = "Memo";
-"Merge" = "Fundir";
 "mergeCoins" = "Mesclar moedas";
 "message" = "Mensagem";
 "messageSigned" = "Mensagem assinada";
@@ -975,7 +966,6 @@
 "noSecuredAssetsAvailable" = "No secured assets available";
 "notEnoughBalanceError" = "Você não tem saldo suficiente para enviar esta transação";
 "notEnoughUTXOError" = "UTXOs insuficientes disponíveis. Sua carteira tem saldo suficiente, mas os UTXOs (saídas de transação) são muito pequenos ou não suficientes para cobrir o valor da transação mais as taxas. Tente enviar um valor menor ou aguarde as transações pendentes serem confirmadas.";
-"noThorAddressFound" = "No THORChain address found";
 "notifications" = "Notificações";
 "notificationsAreHere" = "As notificações seguras chegaram";
 "notificationsDescription" = "Receba alertas quando outro dispositivo solicitar ingresso no seu cofre ou quando sua assinatura for necessária.";
@@ -1341,7 +1331,6 @@
 "selectToken" = "Select Token";
 "selectTokensSubtitle" = "Selecione os tokens que você deseja ver no seu portfólio";
 "selectTokensTitle" = "Selecionar tokens";
-"selectTokenToMerge" = "Select the token to be merged";
 "selectVaults" = "Selecionar cofres";
 "selectVaultsToBackUpSubtitle" = "Escolha se deve fazer backup apenas deste cofre ou de todos os cofres em seu aplicativo.";
 "selectVaultsToBackUpTitle" = "Selecione cofres para fazer backup";
@@ -1378,7 +1367,6 @@
 "shareQRType" = "Tipo";
 "shareQRTypeFormat" = "%d-de-%d";
 "sharesBalance" = "Shares ( Balance: %@ )";
-"sharesLabel" = "Shares";
 "shareTheApp" = "Compartilhar o App";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um segundo";
 "showBalance" = "Mostrar saldo";
@@ -1546,18 +1534,14 @@
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";
 "swapVerifyCheckbox2Description" = "Concordo com o valor mínimo que receberei";
 "swapVerifyCheckbox3Description" = "Concordo em fornecer permissão ERC20 para o valor exato da troca";
-"Switch" = "Trocar";
 "switchBackToInternetMode" = "Não quer usar o modo local? Voltar.";
-"switchRouteUnavailable" = "Não foi possível conectar à THORChain para confirmar o endereço de depósito. Verifique a sua conexão e tente novamente.";
 "switchToLocalMode" = "Mudar para modo local";
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";
 "termsOfService" = "Termos de Serviço";
-"theUnmerge" = "The Unmerge";
 "thisDevice" = "Este Dispositivo";
 "ThisDeviceIs" = "Este dispositivo é o";
 "thisVaultOnly" = "Apenas este cofre";
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
-"thorchainAddress" = "Endereço THORChain";
 "thorchainCustomTokenInvalidFormat" = "Formato de token THORChain inválido. Use THOR.{SYMBOL}, ex.: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain não está habilitado neste cofre. Por favor, habilite THORChain para usar este recurso.";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
@@ -1794,7 +1778,6 @@
 "whereDoYouMigrateFrom" = "De onde você está migrando?";
 "whitespaceNotAllowed" = "Caracteres de espaço não são permitidos.";
 "withdraw" = "Sacar";
-"Withdraw RUJI" = "Sacar RUJI";
 "withdrawAmount" = "Retirar %@";
 "withdrawBelowOutboundFee" = "Valor abaixo da taxa de saída — retire pelo menos %@ %@ para cobrir os custos da rede";
 "withdrawPercentage" = "Porcentagem de saque";
