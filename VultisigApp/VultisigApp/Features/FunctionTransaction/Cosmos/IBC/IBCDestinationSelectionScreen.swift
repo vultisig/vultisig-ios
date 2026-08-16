@@ -22,20 +22,8 @@ struct IBCDestinationSelectionScreen: View {
     var body: some View {
         Screen {
             ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(destinations) { destination in
-                        SwapCoinCell(
-                            coin: destination.asset,
-                            balance: nil,
-                            balanceFiat: nil,
-                            isSelected: destination == selected
-                        ) {
-                            onSelect(destination)
-                        }
-                    }
-                }
+                list
             }
-            .cornerRadius(Theme.radius.xl)
         }
         .screenTitle("selectDestinationChain".localized)
         .screenBackButtonHidden()
@@ -48,5 +36,26 @@ struct IBCDestinationSelectionScreen: View {
         }
         .applySheetSize()
         .sheetStyle()
+    }
+
+    /// The rounded surface belongs to the rows, not to the scroll viewport: a
+    /// `ScrollView` fills the height it is offered, so rounding it left the
+    /// bottom corners at the bottom of the sheet and the last row square.
+    private var list: some View {
+        LazyVStack(spacing: 0) {
+            ForEach(Array(destinations.enumerated()), id: \.element.id) { index, destination in
+                SwapCoinCell(
+                    coin: destination.asset,
+                    balance: nil,
+                    balanceFiat: nil,
+                    isSelected: destination == selected,
+                    showsSeparator: false
+                ) {
+                    onSelect(destination)
+                }
+                .commonListItemContainer(index: index, itemsCount: destinations.count)
+            }
+        }
+        .commonListContainer()
     }
 }
