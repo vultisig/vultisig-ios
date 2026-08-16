@@ -12,27 +12,11 @@
 //  These explicit asserts guard against a silent regression of that flip,
 //  plus one already-consistent chain on each side as a sanity axis.
 //
-//  `defaultActions` runs through `Array<CoinAction>.filtered`, which strips
-//  `.swap` when `SwapFeatureGate.canSwap()` returns false (locale-gated:
-//  GB / JP / MY). To keep the test deterministic across CI / dev machines
-//  we `XCTSkipUnless(SwapFeatureGate.canSwap())` — the truth-table coverage
-//  in `ChainSwapAvailabilityTests` still pins `isSwapAvailable` itself in
-//  every locale.
-//
 
 @testable import VultisigApp
 import XCTest
 
 final class ChainDefaultActionsTests: XCTestCase {
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        try XCTSkipUnless(
-            SwapFeatureGate.canSwap(),
-            "SwapFeatureGate gates .swap out of defaultActions in restricted locales (GB / JP / MY); " +
-            "skipping the swap-presence assertions for this run."
-        )
-    }
 
     // MARK: - Behavior changes pinned by the swapChains -> isSwapAvailable refactor
 

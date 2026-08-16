@@ -119,7 +119,7 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     var availableActions: [CoinAction] {
-        [.swap, .send, .buy, .receive].filtered
+        [.swap, .send, .buy, .receive]
     }
 
     func updateBalance(vault: Vault) {
