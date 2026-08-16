@@ -34,9 +34,18 @@ struct JoinKeysignView: View {
     }
 
     var isInAnimationState: Bool {
-        viewModel.status == .WaitingForKeysignToStart
-            || viewModel.status == .KeysignStarted
-            || viewModel.status == .QBTCClaim
+        switch viewModel.status {
+        case .WaitingForKeysignToStart, .QBTCClaim:
+            return true
+        case .KeysignStarted:
+            // The nested `KeysignView` can drop into an error/retry surface
+            // without changing this outer status — keep the nav bar (and its
+            // back button) hidden only while that inner ceremony is actually
+            // animating, so an error surface isn't left with no way out.
+            return keysignVM.status.isAnimating
+        default:
+            return false
+        }
     }
 
     var states: some View {
@@ -120,6 +129,13 @@ struct JoinKeysignView: View {
             customMessagePayload: viewModel.customMessagePayload,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             isInitiateDevice: false,
+            onRetry: { _ in
+                // The cosigner has no verify screen to pop back to and retry
+                // against — that surface only exists on the initiator. Restart
+                // is the same recovery this view already uses for its other
+                // keysign error states.
+                appViewModelLegacy.restart()
+            },
             decodedFunctionName: viewModel.decodedFunctionName,
             decodedTokenAmount: viewModel.decodedTokenAmount,
             decodedTokenTicker: viewModel.decodedTokenTicker,
