@@ -26,8 +26,8 @@ extension MayaChainAPIService {
 
         return MayaCacaoPoolPosition(
             address: address,
-            stakedAmount: currentValue,  // Use value for display (includes earnings)
-            availableUnits: userUnits,   // Units available for unstaking
+            stakedAmount: currentValue,  // Member's CACAO value (includes earnings)
+            availableUnits: userUnits,   // Pool units held — NOT a CACAO amount
             userUnits: userUnits,
             netDeposit: netDeposit,
             lastWithdrawHeight: member.lastWithdrawHeight,
@@ -93,11 +93,17 @@ extension MayaChainAPIService {
 
 // MARK: - Staking Models
 
+/// A member's position in the CACAO pool, in the API's own scales.
+///
+/// The two scales are not interchangeable: `stakedAmount` is CACAO, the pool-unit
+/// fields are pool units, and a unit is worth `stakedAmount / userUnits` CACAO —
+/// a rate at or above 1 that only rises as the pool earns. Every figure the app
+/// shows a user, and every ceiling it lets a user type against, is CACAO.
 struct MayaCacaoPoolPosition {
     let address: String
-    let stakedAmount: Decimal      // Current value in CACAO (for display)
-    let availableUnits: Decimal    // Units available for unstaking
-    let userUnits: Decimal         // User's pool units
+    let stakedAmount: Decimal      // Current value in CACAO, base units (for display and withdrawal)
+    let availableUnits: Decimal    // Pool units held — NOT a CACAO amount
+    let userUnits: Decimal         // Pool units held (duplicate of `availableUnits`)
     let netDeposit: Decimal        // Deposit - Withdrawn
     let lastWithdrawHeight: Int64
     let lastDepositHeight: Int64
