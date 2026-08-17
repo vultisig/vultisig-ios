@@ -153,11 +153,10 @@ enum BlockaidSimulationParser {
         // Mirror the extension's positional destructuring: first diff is the
         // out side, second is the in side. Fall back to .transfer when only
         // one side carries a value (matches the extension's `else if` branch).
-        let outCandidate = diffs[0]
-        let inCandidate = diffs[1]
-
-        let inSource = inCandidate.`in` != nil ? inCandidate : outCandidate
-        let outSource = outCandidate.out != nil ? outCandidate : inCandidate
+        let outIndex = diffs[0].out != nil ? 0 : 1
+        let inIndex = diffs[1].`in` != nil ? 1 : 0
+        let outSource = diffs[outIndex]
+        let inSource = diffs[inIndex]
 
         if let outRaw = outSource.out?.rawValue,
            let inRaw = inSource.`in`?.rawValue,
@@ -168,6 +167,16 @@ enum BlockaidSimulationParser {
             if let outMint = fromCoin.address,
                let inMint = toCoin.address,
                outMint == inMint {
+                // Both sides can collapse onto one diff when the other carries
+                // neither leg. Netting a diff against itself is still the net
+                // movement of that asset — but only while the diff that was
+                // skipped holds nothing of its own. Otherwise the hero would
+                // state an authoritative net having never looked at a balance
+                // change the transaction makes, so decline and let the caller
+                // fall back to the generic title.
+                if outIndex == inIndex, carriesBalance(diffs[outIndex == 0 ? 1 : 0]) {
+                    return nil
+                }
                 return netSameMint(
                     outCoin: fromCoin,
                     outAmount: outAmount,
@@ -212,12 +221,19 @@ enum BlockaidSimulationParser {
     ///
     /// Mints are compared exactly. Solana addresses are base58 and
     /// case-sensitive, unlike the EVM path's checksummed hex.
+    ///
+    /// Both legs must be non-negative. Blockaid states each side's magnitude
+    /// and puts the direction in the field name, but `raw_value` decodes a
+    /// signed integer, and a negative reaching the subtraction would flip the
+    /// direction of an approval headline. Fail closed instead.
     private static func netSameMint(
         outCoin: BlockaidSimulationCoin,
         outAmount: BigInt,
         inCoin: BlockaidSimulationCoin,
         inAmount: BigInt
     ) -> BlockaidSimulationInfo? {
+        guard outAmount >= 0, inAmount >= 0 else { return nil }
+
         if outAmount > inAmount {
             return .transfer(fromCoin: outCoin, fromAmount: outAmount - inAmount)
         }
@@ -225,6 +241,13 @@ enum BlockaidSimulationParser {
             return .receive(coin: inCoin, amount: inAmount - outAmount)
         }
         return nil
+    }
+
+    /// Whether a diff states a balance change at all, in either direction.
+    private static func carriesBalance(
+        _ diff: BlockaidSolanaSimulationJson.AccountAssetDiff
+    ) -> Bool {
+        diff.out?.rawValue != nil || diff.`in`?.rawValue != nil
     }
 
     /// Builds a `BlockaidSimulationCoin` from a Solana asset, substituting the

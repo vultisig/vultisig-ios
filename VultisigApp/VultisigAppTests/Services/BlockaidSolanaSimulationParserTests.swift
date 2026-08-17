@@ -377,6 +377,56 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertEqual(amount, BigInt("4000000"), "5000000 out - 1000000 in")
     }
 
+    /// `raw_value` decodes a signed integer even though Blockaid states each
+    /// side's magnitude and puts the direction in the field name. A negative
+    /// reaching the subtraction would flip the direction of an approval
+    /// headline — here it would turn a net outflow into a "Receive" — so the
+    /// netting fails closed instead.
+    func test_parseSolana_sameMint_negativeRawValue_returnsNil() {
+        let diffs = [
+            diff(asset: native(symbol: "SOL", decimals: 9), out: balance("-10")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                in: balance("-5")
+            )
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
+    /// Both sides collapse onto the first diff when the second carries no in
+    /// leg. Netting a diff against itself is still that asset's net movement,
+    /// so it is allowed while the skipped diff holds nothing.
+    func test_parseSolana_sameMint_collapsedSources_netsWhenOtherDiffIsEmpty() {
+        let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
+        let diffs = [
+            diff(asset: wsol, in: balance("2000000"), out: balance("5000000")),
+            diff(asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6), in: nil, out: nil)
+        ]
+
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .transfer(coin, amount) = info else {
+            return XCTFail("expected netted .transfer, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.ticker, "WSOL")
+        XCTAssertEqual(amount, BigInt("3000000"), "5000000 out - 2000000 in")
+    }
+
+    /// The same collapse, but the skipped diff spends a second asset. Netting
+    /// here would headline an authoritative inflow while never looking at the
+    /// USDC leaving, so the parser declines and the caller falls back to the
+    /// generic title.
+    func test_parseSolana_sameMint_collapsedSources_returnsNil_whenOtherDiffCarriesBalance() {
+        let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
+        let diffs = [
+            diff(asset: wsol, in: balance("61474280"), out: balance("2039280")),
+            diff(asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6), out: balance("100000000"))
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
     /// If only one side of a two-diff swap has a value, fall back to .transfer
     /// — matches the extension's `else if (outAsset && outValue)` branch.
     func test_parseSolana_swap_fallsBackToTransfer_whenInMissing() {
