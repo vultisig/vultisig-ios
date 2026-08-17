@@ -23,11 +23,11 @@ struct DefiMainScreen: View {
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
     @State var showChainSelection: Bool = false
-    @State private var searchScrollTask: Task<Void, Never>?
     @State private var clearSearchTask: Task<Void, Never>?
     @State private var refreshTask: Task<Void, Never>?
 
-    private let scrollReferenceId = "DefiMainScreenBottomContentId"
+    private let searchAnchorId = "defiMainSearchHeaderAnchor"
+    private let sectionHeaderHeight: CGFloat = 42
     private let contentInset: CGFloat = 78
     private let horizontalPadding: CGFloat = 16
 
@@ -58,16 +58,10 @@ struct DefiMainScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(MainBackgroundWithNotification())
             .onChange(of: showSearchHeader) { _, showSearchHeader in
-                if showSearchHeader {
-                    focusSearch = true
-                    searchScrollTask?.cancel()
-                    searchScrollTask = delayedTask(after: .milliseconds(700)) {
-                        withAnimation {
-                            scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
-                        }
-                    }
-                } else {
-                    searchScrollTask?.cancel()
+                guard showSearchHeader else { return }
+                focusSearch = true
+                withAnimation {
+                    scrollProxy?.scrollTo(searchAnchorId, anchor: .top)
                 }
             }
             .crossPlatformSheet(isPresented: $showChainSelection) {
@@ -86,7 +80,6 @@ struct DefiMainScreen: View {
             refresh()
         }
         .onDisappear {
-            searchScrollTask?.cancel()
             clearSearchTask?.cancel()
             refreshTask?.cancel()
         }
@@ -102,7 +95,8 @@ struct DefiMainScreen: View {
                 }
             }
             .transition(.opacity)
-            .frame(height: 42)
+            .frame(height: sectionHeaderHeight)
+            .background(searchScrollAnchor)
             .padding(.bottom, 16)
 
             DefiChainListView(
@@ -110,15 +104,24 @@ struct DefiMainScreen: View {
                 viewModel: viewModel,
                 onCustomizeChains: onCustomizeChains
             )
-            VStack {}
-                .background(
-                    // Reference to scroll when search gets presented
-                    VStack {}
-                        .frame(height: 300)
-                        .id(scrollReferenceId)
-                )
         }
         .id(vault.id)
+    }
+
+    /// Where the section header is parked when search opens.
+    ///
+    /// A background is centred on its host and does not affect layout, so a box
+    /// `2 * contentInset` taller than the header has its top edge exactly
+    /// `contentInset` above the header's. Scrolling *that* edge to the top of
+    /// the viewport leaves the header one floating-home-header height down —
+    /// the same clearance `VaultMainScreenScrollView`'s `topInset` gives the
+    /// rest of the content — so the field lands below that header rather than
+    /// behind it, with the results underneath it and above the keyboard.
+    var searchScrollAnchor: some View {
+        Color.clear
+            .frame(height: sectionHeaderHeight + 2 * contentInset)
+            .id(searchAnchorId)
+            .allowsHitTesting(false)
     }
 
     var defaultBottomSectionHeader: some View {
@@ -136,6 +139,7 @@ struct DefiMainScreen: View {
             CircularAccessoryIconButton(icon: .magnifier) {
                 toggleSearch()
             }
+            .accessibilityIdentifier(AccessibilityID.DefiMain.searchButton)
             CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
                 showChainSelection.toggle()
             }
@@ -144,7 +148,11 @@ struct DefiMainScreen: View {
 
     var searchBottomSectionHeader: some View {
         HStack(spacing: 12) {
-            SearchTextField(value: $viewModel.searchText, isFocused: $focusSearch)
+            SearchTextField(
+                value: $viewModel.searchText,
+                isFocused: $focusSearch,
+                accessibilityIdentifier: AccessibilityID.DefiMain.searchField
+            )
             Button(action: clearSearch) {
                 Text("cancel".localized)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -152,6 +160,7 @@ struct DefiMainScreen: View {
             }
             .buttonStyle(.plain)
             .transition(.opacity)
+            .accessibilityIdentifier(AccessibilityID.DefiMain.searchCancelButton)
         }
     }
 

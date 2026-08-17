@@ -17,6 +17,18 @@ enum AccessibilityID {
         static let balanceLabel = "home.balanceLabel"
     }
 
+    enum VaultMain {
+        static let searchButton = "vaultMain.searchButton"
+        static let searchField = "vaultMain.searchField"
+        static let searchCancelButton = "vaultMain.searchCancelButton"
+    }
+
+    enum DefiMain {
+        static let searchButton = "defiMain.searchButton"
+        static let searchField = "defiMain.searchField"
+        static let searchCancelButton = "defiMain.searchCancelButton"
+    }
+
     enum Settings {
         static let container = "settings.container"
         static let languageCell = "settings.languageCell"
