@@ -259,6 +259,65 @@ final class KaminoWithdrawFromAvailableTests: XCTestCase {
         )
     }
 
+    // MARK: - Through the initiating device's validator
+
+    /// The check the initiating device makes before it signs, run over the bytes
+    /// as captured.
+    ///
+    /// It is the strongest statement available about the account map, and it is
+    /// a different statement from the decode: the validator resolves the address
+    /// lookup table and compares the authority, the vault, both mints, the payout
+    /// account and the share source against the request it is answering — so it
+    /// fails if any of those slots holds something other than what the app says
+    /// it holds. Both instructions, so the claim covers both.
+    func testEveryCapturedShapeValidatesAgainstTheRequestItAnswers() throws {
+        for shape in Self.shapes {
+            try KaminoTransactionValidator.validate(
+                transaction: try SolanaV0Transaction(base64Transaction: shape.source),
+                intent: Self.intent(for: shape),
+                lookupTables: KaminoTransactionFixtures.lookupTables
+            )
+        }
+    }
+
+    /// And it refuses one whose share source has been repointed at the payout
+    /// account — so the acceptance above is the map being checked, not the map
+    /// being ignored.
+    ///
+    /// The expected error is asserted WHOLE, role and address, rather than
+    /// "something threw". A refusal for an unrelated reason would keep a test
+    /// that only asked for a throw green while proving nothing about slot 7, and
+    /// slot 7 is the account the shares come out of. The mutation swaps two
+    /// account indices the message already carries, so nothing about its length
+    /// or structure changes and there is no parse failure to hide behind.
+    func testAWithdrawWhoseShareSourceWasRepointedIsRefusedOnThatSlot() throws {
+        let shape = KaminoTransactionFixtures.steakhouseWithdrawFromAvailable
+        var mutated = try MutableTransaction(base64: shape.source)
+        let layout = KaminoInstructionAccounts.KvaultWithdraw.self
+        let instruction = mutated.instructions[shape.kvaultPosition]
+        let payoutIndex = instruction.accounts[layout.userTokenAccount]
+        XCTAssertNotEqual(payoutIndex, instruction.accounts[layout.userShareAccount])
+        mutated.instructions[shape.kvaultPosition].accounts[layout.userShareAccount] = payoutIndex
+
+        let transaction = try SolanaV0Transaction(base64Transaction: try mutated.base64())
+        let payout = try transaction.resolvedAccountAddresses(
+            lookupTables: KaminoTransactionFixtures.lookupTables
+        )[Int(payoutIndex)]
+
+        XCTAssertThrowsError(
+            try KaminoTransactionValidator.validate(
+                transaction: transaction,
+                intent: Self.intent(for: shape),
+                lookupTables: KaminoTransactionFixtures.lookupTables
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? KaminoValidationError,
+                .accountNotOwnedByUser(role: "withdraw share source", actual: payout)
+            )
+        }
+    }
+
     // MARK: - Still fail-closed
 
     /// Widening the set of accepted discriminators is not the same as accepting
@@ -310,6 +369,50 @@ final class KaminoWithdrawFromAvailableTests: XCTestCase {
 
     private static func anchorDiscriminator(_ name: String) -> [UInt8] {
         [UInt8](SHA256.hash(data: Data("global:\(name)".utf8)).prefix(8))
+    }
+
+    /// The request each capture answers. Every one is a whole-position holder
+    /// withdrawing from a farm-staked balance, so the unstaked half is zero and
+    /// the farms pair is required — which is what the API built.
+    ///
+    /// Only the live fields are supplied; the mints, their decimals and the farm
+    /// come from the registry, which is the point of pinning them there.
+    private static func intent(
+        for shape: KaminoTransactionFixtures.WithdrawShape
+    ) -> KaminoTransactionIntent {
+        let descriptor = shape.vault
+        return KaminoTransactionIntent(
+            operation: .withdraw(
+                KaminoWithdrawRequest(
+                    shares: KaminoShareAmount(
+                        baseUnits: BigInt(shape.shareBaseUnits),
+                        decimals: descriptor.sharesDecimals
+                    ),
+                    unstakedShares: KaminoShareAmount(
+                        baseUnits: BigInt(0),
+                        decimals: descriptor.sharesDecimals
+                    )
+                )
+            ),
+            vault: KaminoVaultInfo(
+                descriptor: descriptor,
+                name: descriptor.fallbackName,
+                minDeposit: KaminoTokenAmount(
+                    baseUnits: BigInt(100_000),
+                    decimals: descriptor.tokenDecimals
+                ),
+                minWithdraw: KaminoShareAmount(
+                    baseUnits: BigInt(1_000),
+                    decimals: descriptor.sharesDecimals
+                ),
+                lookupTable: shape.lookupTable,
+                apy30d: Decimal(string: "0.0391") ?? .zero,
+                tokensPerShare: KaminoRate(apiString: "1.0536041812651029025")
+                    ?? KaminoRate(apiString: "1")!,
+                tokenPriceUsd: 1
+            ),
+            owner: shape.owner
+        )
     }
 
     private static func kvaultInstruction(
