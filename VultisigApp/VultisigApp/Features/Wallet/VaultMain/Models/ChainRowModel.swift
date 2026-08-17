@@ -19,6 +19,15 @@ struct ChainRowModel: Identifiable, Equatable {
     /// matches the asset ticker so "ETH" surfaces every ETH-based chain, the
     /// same as the pre-projection search did via the native coin's ticker.
     let nativeTicker: String
+    /// Artwork for the row's leading mark. `chain.logo` for almost every chain;
+    /// the native coin's own logo where the asset brand superseded the chain's
+    /// — `gram` on TON after the Toncoin → Gram rebrand, so the mark matches the
+    /// GRAM balance printed beside it. Resolved once in `VaultDetailLogic`
+    /// (see `assetBrandedChains`) so the cell stays a pure renderer, and never
+    /// taken from a non-native coin: a chain holding only USDT keeps the chain
+    /// mark. Chain-identity surfaces (selectors, QR/address, jetton badges)
+    /// read `chain.logo` directly and are unaffected.
+    let assetLogo: String
     /// Precomputed address for the copy affordance (native coin's, falling back
     /// to the first coin on the chain).
     let address: String

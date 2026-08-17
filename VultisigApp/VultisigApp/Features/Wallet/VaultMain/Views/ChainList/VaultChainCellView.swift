@@ -35,6 +35,7 @@ struct VaultChainCellView: View, Equatable {
                 fiatBalance: row.fiatBalance,
                 cryptoBalance: row.cryptoBalance,
                 assetCount: row.assetCount,
+                assetLogo: row.assetLogo,
                 onCopy: onCopy
             )
             .contentShape(Rectangle())
@@ -48,6 +49,7 @@ struct VaultChainCellView: View, Equatable {
         row: ChainRowModel(
             chain: .bitcoin,
             nativeTicker: "BTC",
+            assetLogo: "btc",
             address: "bc1qexampleaddress",
             fiatBalance: "$0.00",
             cryptoBalance: "0 BTC",

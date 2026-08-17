@@ -244,12 +244,39 @@ struct VaultDetailLogic {
             return ChainRowModel(
                 chain: chain,
                 nativeTicker: native?.ticker ?? "",
+                assetLogo: assetLogo(for: chain, native: native),
                 address: native?.address ?? coins.first?.address ?? "",
                 fiatBalance: coins.totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true),
                 cryptoBalance: native?.balanceStringWithTicker ?? "",
                 assetCount: coins.count
             )
         }
+    }
+
+    /// Chains whose wallet row is drawn with the native *asset's* mark instead
+    /// of the chain's. TON is here because the Toncoin → Gram rebrand renamed
+    /// the asset while deliberately keeping the chain's TON identity for chain
+    /// selectors, addresses, jetton badges and protocol identifiers — so the
+    /// chain mark is the retired Toncoin diamond and the balance under it reads
+    /// GRAM.
+    ///
+    /// An allow-list rather than "always prefer the native coin's logo", because
+    /// eleven chains ship a native asset whose art differs from the chain's and
+    /// only TON's difference is a rebrand. Base, Arbitrum, Optimism, Blast and
+    /// Robinhood all hold plain ETH, so preferring the asset everywhere would
+    /// replace five distinct network marks with five identical ETH circles;
+    /// Maya, Polygon, Noble and the two Terras would shift too. Add a chain here
+    /// when its asset brand supersedes its chain brand, not merely when the two
+    /// differ.
+    private static let assetBrandedChains: Set<Chain> = [.ton]
+
+    /// Leading artwork for a chain's wallet row: the native coin's own logo for
+    /// the rebranded chains above, the chain mark otherwise. Falls back to the
+    /// chain mark when the chain has no native coin, or that coin was persisted
+    /// without artwork, so the row can never resolve to a missing image.
+    private func assetLogo(for chain: Chain, native: Coin?) -> String {
+        guard Self.assetBrandedChains.contains(chain) else { return chain.logo }
+        return native?.logo.nilIfEmpty ?? chain.logo
     }
 
     func updateBalance(vault: Vault) async -> [Chain] {

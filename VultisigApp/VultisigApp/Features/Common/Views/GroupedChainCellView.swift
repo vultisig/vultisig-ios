@@ -13,6 +13,12 @@ struct GroupedChainCellView: View {
     let fiatBalance: String
     let cryptoBalance: String
     let assetCount: Int
+    /// Leading artwork override. `nil` — the default, and what every
+    /// chain-identity surface wants — renders `chain.logo`. The wallet's
+    /// balance rows pass the artwork already resolved on `ChainRowModel`, so a
+    /// rebranded native asset (GRAM on TON) shows its own mark beside the
+    /// balance it belongs to while the chain keeps its identity elsewhere.
+    var assetLogo: String?
     /// When provided, replaces the default `N assets` / `cryptoBalance` subtitle.
     /// Used by DeFi rows to render `"%d positions"` / "No positions found" instead
     /// of wallet asset counts. The override is rendered with the small caption font
@@ -25,6 +31,13 @@ struct GroupedChainCellView: View {
     private var truncatedAddress: String {
         guard address.count > 8 else { return address }
         return address.prefix(4) + "..." + address.suffix(4)
+    }
+
+    /// Passed as both the image and the chain-badge name so the two always
+    /// match, which is what keeps `AsyncImageView` from overlaying a `chain-*`
+    /// badge on a row that never had one.
+    private var leadingLogo: String {
+        assetLogo ?? chain.logo
     }
 
     private var showAssetCount: Bool {
@@ -53,10 +66,10 @@ struct GroupedChainCellView: View {
         HStack {
             HStack(spacing: 12) {
                 AsyncImageView(
-                    logo: chain.logo,
+                    logo: leadingLogo,
                     size: CGSize(width: 36, height: 36),
                     ticker: chain.ticker,
-                    tokenChainLogo: chain.logo
+                    tokenChainLogo: leadingLogo
                 )
 
                 VStack(alignment: .leading, spacing: 4) {

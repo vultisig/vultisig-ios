@@ -25,6 +25,9 @@
 //       subsequent same-vault, same-membership `updateBalance` still skips.
 //    6. The `chainRows` builder projects the expected rows, and two builds from
 //       equal inputs are `==` (Equatable rows).
+//    7. A row's leading artwork follows the native *asset* only where the asset
+//       brand superseded the chain's — TON shows GRAM after the rebrand — and
+//       every other chain, including the ETH L2s, keeps its chain mark.
 //
 
 import Combine
@@ -399,6 +402,124 @@ final class VaultDetailViewModelTests: XCTestCase {
         XCTAssertEqual(first, second, "Two builds from the same vault must be ==")
     }
 
+    // MARK: - Row artwork follows the native asset
+
+    /// A vault that has been through `TonGramRebrandMigration` holds a native
+    /// TON coin whose stored `logo` is "gram". The wallet row renders a balance
+    /// denominated in that asset, so it must take the asset's artwork — the row
+    /// used to render `chain.logo` and kept showing the old blue TON mark next
+    /// to a GRAM balance.
+    func testChainRows_migratedTonVault_projectsGramAssetLogo() {
+        let vault = makeVault(pubKey: "vault-ton", chains: [])
+        // Exactly what the rebrand migration writes onto an existing coin.
+        vault.coins = [makeCoin(pubKey: "vault-ton", chain: .ton, ticker: "GRAM", logo: "gram")]
+
+        let row = VaultDetailLogic().chainRows(vault: vault).first { $0.chain == .ton }
+
+        XCTAssertEqual(row?.assetLogo, "gram")
+        XCTAssertNotEqual(row?.assetLogo, Chain.ton.logo,
+                          "The row must not fall back to the TON chain mark for a GRAM balance")
+    }
+
+    /// The fresh-vault path: a newly added TON native coin is built from the
+    /// bundled catalog, so this asserts against the real `TokensStore` entry
+    /// rather than a hand-made fixture. Both paths have to land on "gram" or
+    /// migrated and fresh vaults would disagree.
+    func testChainRows_freshTonVaultFromCatalog_projectsGramAssetLogo() throws {
+        let meta = try XCTUnwrap(
+            TokensStore.TokenSelectionAssets.first { $0.chain == .ton && $0.isNativeToken },
+            "The bundled catalog must carry a native TON asset"
+        )
+        XCTAssertEqual(meta.logo, "gram", "Catalog native TON metadata must already be rebranded")
+
+        let vault = makeVault(pubKey: "vault-ton-fresh", chains: [])
+        vault.coins = [Coin(asset: meta, address: "addr-ton", hexPublicKey: "")]
+
+        let row = VaultDetailLogic().chainRows(vault: vault).first { $0.chain == .ton }
+
+        XCTAssertEqual(row?.assetLogo, "gram")
+    }
+
+    /// A chain the vault only holds a token on has no native coin to take
+    /// artwork from, so the row keeps the chain mark. It must NOT borrow the
+    /// token's logo — a TON-chain row holding only USDT is still a TON row.
+    func testChainRows_chainWithoutNativeCoin_keepsChainLogo() {
+        let vault = makeVault(pubKey: "vault-jetton", chains: [])
+        vault.coins = [
+            makeCoin(pubKey: "vault-jetton", chain: .ton, ticker: "USDT", logo: "usdt", isNativeToken: false)
+        ]
+
+        let row = VaultDetailLogic().chainRows(vault: vault).first { $0.chain == .ton }
+
+        XCTAssertEqual(row?.assetLogo, Chain.ton.logo)
+        XCTAssertNotEqual(row?.assetLogo, "usdt", "A jetton must not become the chain row's mark")
+    }
+
+    /// A native coin persisted without artwork must not blank the row — an
+    /// empty stored logo resolves to the chain mark, not to a missing image.
+    func testChainRows_nativeCoinWithoutLogo_fallsBackToChainLogo() {
+        let vault = makeVault(pubKey: "vault-nologo", chains: [])
+        vault.coins = [makeCoin(pubKey: "vault-nologo", chain: .ton, ticker: "GRAM", logo: "")]
+
+        let row = VaultDetailLogic().chainRows(vault: vault).first { $0.chain == .ton }
+
+        XCTAssertEqual(row?.assetLogo, Chain.ton.logo)
+    }
+
+    /// Every row except TON keeps the chain mark it already had. Eleven chains
+    /// ship a native asset whose art differs from the chain's, so a blanket
+    /// "prefer the native coin's logo" would silently repaint ten unrelated
+    /// rows; only TON's difference is a rebrand. Built against the real catalog
+    /// so widening the allow-list can never be an accident.
+    func testChainRows_onlyTonDivergesFromTheChainMark() {
+        let natives = TokensStore.TokenSelectionAssets.filter(\.isNativeToken)
+        let vault = makeVault(pubKey: "vault-catalog", chains: [])
+        vault.coins = natives.map { Coin(asset: $0, address: "addr-\($0.chain.name)", hexPublicKey: "") }
+
+        let rows = VaultDetailLogic().chainRows(vault: vault)
+        let diverging = rows.filter { $0.assetLogo != $0.chain.logo }.map(\.chain)
+
+        XCTAssertEqual(Set(diverging), [.ton],
+                       "TON is the only chain whose native asset was rebranded away from the chain mark")
+    }
+
+    /// The concrete regression the allow-list exists to prevent: Base, Arbitrum,
+    /// Optimism, Blast and Robinhood all hold plain ETH, so following the native
+    /// asset there would collapse five distinct network marks into five
+    /// identical ETH circles in a list whose rows are otherwise told apart by
+    /// their icon.
+    func testChainRows_ethL2s_keepTheirNetworkMarksRatherThanTheEthAsset() {
+        let l2s: [Chain] = [.base, .arbitrum, .optimism, .blast]
+        let vault = makeVault(pubKey: "vault-l2-art", chains: [])
+        vault.coins = l2s.map { makeCoin(pubKey: "vault-l2-art", chain: $0, ticker: "ETH", logo: "eth") }
+
+        let rows = VaultDetailLogic().chainRows(vault: vault)
+
+        for chain in l2s {
+            XCTAssertEqual(rows.first { $0.chain == chain }?.assetLogo, chain.logo,
+                           "\(chain.name) must keep its own network mark")
+            XCTAssertNotEqual(rows.first { $0.chain == chain }?.assetLogo, "eth")
+        }
+    }
+
+    /// Artwork is part of row equality, so the migration's logo rewrite reaches
+    /// the screen: rows are `Equatable` precisely so SwiftUI can skip unchanged
+    /// ones, and a row whose only change is its icon must still count as changed.
+    func testChainRows_assetLogoParticipatesInRowEquality() {
+        let logic = VaultDetailLogic()
+
+        let legacy = makeVault(pubKey: "vault-eq", chains: [])
+        legacy.coins = [makeCoin(pubKey: "vault-eq", chain: .ton, ticker: "GRAM", logo: "ton")]
+
+        let migrated = makeVault(pubKey: "vault-eq", chains: [])
+        migrated.coins = [makeCoin(pubKey: "vault-eq", chain: .ton, ticker: "GRAM", logo: "gram")]
+
+        XCTAssertNotEqual(logic.chainRows(vault: legacy), logic.chainRows(vault: migrated),
+                          "A logo-only change must make the row unequal so the list repaints")
+        XCTAssertEqual(logic.chainRows(vault: migrated), logic.chainRows(vault: migrated),
+                       "Equal inputs must still produce equal rows")
+    }
+
     // MARK: - filteredRows search parity
 
     /// Searching the native asset ticker must surface chains whose `chain.ticker`
@@ -707,6 +828,28 @@ final class VaultDetailViewModelTests: XCTestCase {
             priceProviderId: "",
             contractAddress: "",
             isNativeToken: true
+        )
+        return Coin(asset: meta, address: "addr-\(pubKey)-\(chain.name)", hexPublicKey: "")
+    }
+
+    /// Coin with explicit artwork, for the row-artwork tests. `logo` is a stored
+    /// value on `Coin` (never refreshed from the catalog), which is why the
+    /// rebrand needed a migration and why these tests set it directly.
+    private func makeCoin(
+        pubKey: String,
+        chain: Chain,
+        ticker: String,
+        logo: String,
+        isNativeToken: Bool = true
+    ) -> Coin {
+        let meta = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: logo,
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: isNativeToken ? "" : "contract-\(ticker)",
+            isNativeToken: isNativeToken
         )
         return Coin(asset: meta, address: "addr-\(pubKey)-\(chain.name)", hexPublicKey: "")
     }
