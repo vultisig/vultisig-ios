@@ -35,22 +35,56 @@ struct MayaChainStakeInteractor: StakeInteractor {
             return []
         }
 
-        let stakedAmount = position.stakedAmount / pow(10, cacao.decimals)
-        let availableToUnstake = position.availableUnits / pow(10, cacao.decimals)
         let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
-
         let unstakeMetadata = await unstakeMetadata(for: position)
 
         return [
-            StakePositionData(
+            Self.stakePositionData(
+                position: position,
                 coin: cacao.meta,
-                type: .stake,
-                amount: stakedAmount,
-                availableToUnstake: availableToUnstake,
+                decimals: cacao.decimals,
                 apr: aprData?.apr ?? 0,
                 unstakeMetadata: unstakeMetadata
             )
         ]
+    }
+
+    /// Projects a fetched CACAO pool position onto the row the DeFi tab renders
+    /// and the withdraw sheet is opened from.
+    ///
+    /// Both figures are the member's CACAO **value**, and deliberately the same
+    /// figure. The position also carries the member's pool *units*, which are a
+    /// different scale entirely — value = units × the pool's CACAO-per-unit, a
+    /// rate that only rises as the pool earns — so feeding one to the card and
+    /// the other to the sheet showed the user a quantity they never held.
+    ///
+    /// `availableToUnstake` is not merely a label. It is the ceiling the sheet
+    /// renders, validates against, and derives the signed fraction from: a CACAO
+    /// withdrawal carries no coin amount at all, only a basis-point share of the
+    /// position (`POOL-:<bps>`). A share picked off the slider is unaffected by
+    /// what the ceiling is denominated in, but a *typed* amount is read as a
+    /// fraction of it — so the ceiling has to be denominated in what the user is
+    /// typing, or the fraction asks for the wrong money.
+    ///
+    /// Pure, and separated from the fetch above, so the projection is exercised
+    /// without a network hop.
+    static func stakePositionData(
+        position: MayaCacaoPoolPosition,
+        coin: CoinMeta,
+        decimals: Int,
+        apr: Double,
+        unstakeMetadata: UnstakeMetadata
+    ) -> StakePositionData {
+        let cacaoValue = position.stakedAmount / pow(10, decimals)
+
+        return StakePositionData(
+            coin: coin,
+            type: .stake,
+            amount: cacaoValue,
+            availableToUnstake: cacaoValue,
+            apr: apr,
+            unstakeMetadata: unstakeMetadata
+        )
     }
 }
 
