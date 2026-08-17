@@ -33,19 +33,18 @@ struct JoinKeysignView: View {
             }
     }
 
+    // Deliberately keyed on the outer `viewModel.status` only, not the nested
+    // `keysignVM.status`: this flag drives `main`'s VStack-wrap branch and
+    // `content`'s toolbar branch below, and switching either mid-ceremony
+    // (e.g. on a broadcast retry) rebuilds `states`' branch of the view tree,
+    // resetting the nested `KeysignView`'s `@State` and re-firing its
+    // `.onLoad`, which restarts signing — an infinite retry loop if the
+    // retryable condition reproduces. The nested error surfaces have their
+    // own working "Try Again" instead of a back button (see `onRetry` below).
     var isInAnimationState: Bool {
-        switch viewModel.status {
-        case .WaitingForKeysignToStart, .QBTCClaim:
-            return true
-        case .KeysignStarted:
-            // The nested `KeysignView` can drop into an error/retry surface
-            // without changing this outer status — keep the nav bar (and its
-            // back button) hidden only while that inner ceremony is actually
-            // animating, so an error surface isn't left with no way out.
-            return keysignVM.status.isAnimating
-        default:
-            return false
-        }
+        viewModel.status == .WaitingForKeysignToStart
+            || viewModel.status == .KeysignStarted
+            || viewModel.status == .QBTCClaim
     }
 
     var states: some View {

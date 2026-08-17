@@ -37,19 +37,6 @@ enum KeysignStatus {
     /// avoid pushing the user toward a one-tap re-broadcast (double-spend
     /// risk). Distinct from `.KeysignFailed`, which is a confirmed failure.
     case KeysignBroadcastUnconfirmed
-
-    /// True while the shared connecting/signing animation is on screen; false
-    /// for every error/retry surface. Hosts that hide their own nav bar while
-    /// this is true (so the animation has no chrome) must show it again once
-    /// this flips false, or an error surface renders with no way back.
-    var isAnimating: Bool {
-        switch self {
-        case .connectingToFastServer, .CreatingInstance, .KeysignECDSA, .KeysignEdDSA, .KeysignMLDSA, .KeysignFinished:
-            return true
-        case .connectingToFastServerFailed, .KeysignFailed, .KeysignRetryRequested, .KeysignVaultMismatch, .KeysignBroadcastUnconfirmed:
-            return false
-        }
-    }
 }
 enum TssKeysignError: Error {
     case keysignFail
