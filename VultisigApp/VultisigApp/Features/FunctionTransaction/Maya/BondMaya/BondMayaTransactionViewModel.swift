@@ -171,32 +171,29 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
                 let positions = try await fetchUserLPPositions()
                 let assets = try await assetsDataSource.fetchAssets()
 
-                await MainActor.run {
-                    guard !Task.isCancelled else { return }
-                    isLoading = false
-                    userLPPositions = positions
+                guard !Task.isCancelled else { return }
+                isLoading = false
+                userLPPositions = positions
 
-                    if let firstAsset = assets.first {
-                        selectedAsset = firstAsset
-                    } else {
-                        assetsUnavailableReason = Self.noPositionsKey
-                    }
+                if let firstAsset = assets.first {
+                    selectedAsset = firstAsset
+                } else {
+                    assetsUnavailableReason = Self.noPositionsKey
                 }
             } catch {
                 Log.send.viewModel.error("Error loading bondable Maya assets: \(error.localizedDescription, privacy: .public)")
-                await MainActor.run {
-                    guard !Task.isCancelled else { return }
-                    isLoading = false
-                    assetsUnavailableReason = Self.loadFailedKey
-                }
+                guard !Task.isCancelled else { return }
+                isLoading = false
+                assetsUnavailableReason = Self.loadFailedKey
             }
         }
     }
 
     /// The user's unbonded LP units per pool, keyed by pool name.
     private func fetchUserLPPositions() async throws -> [String: String] {
-        async let memberDetailsTask = mayaAPIService.getMemberDetails(address: coin.address)
-        async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: coin.address)
+        let address = coin.address
+        async let memberDetailsTask = mayaAPIService.getMemberDetails(address: address)
+        async let allBondedUnitsTask = mayaAPIService.getAllBondedLPUnitsByPool(address: address)
 
         let memberDetails = try await memberDetailsTask
         let allBondedUnits = try await allBondedUnitsTask
