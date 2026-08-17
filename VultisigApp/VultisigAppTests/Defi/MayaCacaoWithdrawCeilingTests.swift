@@ -91,6 +91,16 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
         return viewModel
     }
 
+    /// The whole seam in one call: fetched position → interactor projection →
+    /// `DefiChainScreenModel` handing `availableToUnstake` to the sheet. Tests
+    /// built this way fail against the pre-fix mapping rather than merely
+    /// characterising the sheet against a hand-picked ceiling.
+    private func makeSheet(cacao: Decimal, units: Decimal, pubKey: String) throws -> UnstakeTransactionViewModel {
+        let data = project(makePosition(cacao: cacao, units: units))
+        let ceiling = try XCTUnwrap(data.availableToUnstake)
+        return makeViewModel(availableToUnstake: ceiling, pubKey: pubKey)
+    }
+
     /// What `UnstakeTransactionScreen` + `AmountTextField` do when the slider
     /// moves: the percentage takes ownership and the field is re-derived from the
     /// ceiling in force.
@@ -146,12 +156,23 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
     }
 
     /// The projection still divides by the coin's scale — the fix changed which
-    /// field is read, not whether it is converted out of base units.
+    /// field is read, not whether it is converted out of base units. Written with
+    /// a literal base-unit figure rather than the fixture's own multiplication, so
+    /// the assertion cannot agree with itself.
     func testProjectionConvertsOutOfBaseUnits() {
-        let position = makePosition(cacao: 42, units: 40)
+        let position = MayaCacaoPoolPosition(
+            address: "maya1fixturecacaopoolmemberaddress00000000",
+            stakedAmount: 420_000_000_000,  // 42 CACAO at 10 decimals
+            availableUnits: 400_000_000_000,
+            userUnits: 400_000_000_000,
+            netDeposit: 420_000_000_000,
+            lastWithdrawHeight: 0,
+            lastDepositHeight: 1_000
+        )
 
-        XCTAssertEqual(project(position).amount, 42)
-        XCTAssertEqual(position.stakedAmount, 42 * oneCacao, "fixture must be in base units for the test to mean anything")
+        let data = project(position)
+        XCTAssertEqual(data.amount, 42)
+        XCTAssertEqual(data.availableToUnstake, 42)
     }
 
     /// Everything else on the row is carried through untouched, so the ceiling fix
@@ -178,7 +199,16 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
     /// `amount = "0"`, so the memo is the entire instruction — and on the slider
     /// path the memo is derived from the percentage alone. Changing the ceiling
     /// from pool units to CACAO must therefore move nothing that gets signed.
-    func testSliderDrivenWithdrawalSignsTheSameMemoUnderEitherCeiling() {
+    /// Deliberately an invariant rather than a before/after regression: the
+    /// property under test — that the ceiling does not reach the signed bytes on
+    /// this path — must hold on both sides of the fix, so a test that only failed
+    /// beforehand would be testing the wrong thing. Both ceilings are supplied
+    /// explicitly for the same reason.
+    ///
+    /// Every field the builder contributes to the signed `SendTransaction` is
+    /// compared, not just the memo, so a future builder that starts carrying a
+    /// coin amount cannot slip past this.
+    func testSliderDrivenWithdrawalSignsTheSameTransactionUnderEitherCeiling() {
         let unitsCeiling: Decimal = 1_000   // what the sheet used to open on
         let cacaoCeiling: Decimal = 1_200   // what it opens on now
 
@@ -189,22 +219,34 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
             selectPercentage(percentage, on: before)
             selectPercentage(percentage, on: after)
 
-            let beforeMemo = before.transactionBuilder?.memo
-            let afterMemo = after.transactionBuilder?.memo
+            guard
+                let beforeBuilder = before.transactionBuilder,
+                let afterBuilder = after.transactionBuilder
+            else {
+                return XCTFail("both ceilings must build a transaction at \(percentage)%")
+            }
 
-            XCTAssertEqual(beforeMemo, "POOL-:\(Int(percentage) * 100)")
+            XCTAssertEqual(beforeBuilder.memo, "POOL-:\(Int(percentage) * 100)")
             XCTAssertEqual(
-                afterMemo,
-                beforeMemo,
+                afterBuilder.memo,
+                beforeBuilder.memo,
                 "the ceiling fix moved the signed memo at \(percentage)% — it must not"
+            )
+            XCTAssertEqual(afterBuilder.amount, beforeBuilder.amount)
+            XCTAssertEqual(afterBuilder.amount, "0", "a CACAO withdrawal signs a share, never a coin amount")
+            XCTAssertEqual(afterBuilder.sendMaxAmount, beforeBuilder.sendMaxAmount)
+            XCTAssertEqual(afterBuilder.toAddress, beforeBuilder.toAddress)
+            XCTAssertEqual(
+                afterBuilder.memoFunctionDictionary.allItems(),
+                beforeBuilder.memoFunctionDictionary.allItems()
             )
         }
     }
 
-    /// A full exit is still a full exit: 100% signs the whole position, and the
-    /// builder attaches no coin amount to it.
+    /// A full exit is still a full exit, driven end-to-end from the projection:
+    /// 100% signs the whole position and the builder attaches no coin amount.
     func testFullExitStillSignsTheWholePositionAndCarriesNoAmount() throws {
-        let viewModel = makeViewModel(availableToUnstake: 1_200, pubKey: "cacao-full-exit")
+        let viewModel = try makeSheet(cacao: 1_200, units: 1_000, pubKey: "cacao-full-exit")
         selectPercentage(100, on: viewModel)
 
         let builder = try XCTUnwrap(viewModel.transactionBuilder)
@@ -219,37 +261,39 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
     /// read against CACAO. Under the old units ceiling the same figure was over
     /// the maximum and could not be submitted at all.
     func testATypedCacaoAmountResolvesAgainstTheCacaoPosition() throws {
-        let underUnitsCeiling = makeViewModel(availableToUnstake: 1_000, pubKey: "cacao-typed-units")
-        let underCacaoCeiling = makeViewModel(availableToUnstake: 1_200, pubKey: "cacao-typed-cacao")
+        let sheet = try makeSheet(cacao: 1_200, units: 1_000, pubKey: "cacao-typed-cacao")
+        // The ceiling the pre-fix mapping produced for the same position, kept
+        // explicit so the contrast is stated rather than implied.
+        let preFixSheet = makeViewModel(availableToUnstake: 1_000, pubKey: "cacao-typed-units")
 
-        typeAmount("1100", into: underUnitsCeiling)
-        typeAmount("1100", into: underCacaoCeiling)
+        typeAmount("1100", into: sheet)
+        typeAmount("1100", into: preFixSheet)
 
         XCTAssertNil(
-            underUnitsCeiling.transactionBuilder,
+            preFixSheet.transactionBuilder,
             "1100 of a 1200-CACAO position was unreachable while the ceiling was 1000 pool units"
         )
 
-        let builder = try XCTUnwrap(underCacaoCeiling.transactionBuilder)
+        let builder = try XCTUnwrap(sheet.transactionBuilder)
         XCTAssertEqual(builder.memo, "POOL-:9100", "1100 of 1200 CACAO is 91% of the position")
     }
 
     /// The ceiling is also what the field is validated against, so the sheet now
     /// accepts everything the card said the user holds.
     func testTheWholeCardAmountIsEnterable() throws {
-        let viewModel = makeViewModel(availableToUnstake: 1_200, pubKey: "cacao-typed-max")
-        typeAmount("1200", into: viewModel)
+        let sheet = try makeSheet(cacao: 1_200, units: 1_000, pubKey: "cacao-typed-max")
+        typeAmount("1200", into: sheet)
 
-        let builder = try XCTUnwrap(viewModel.transactionBuilder)
+        let builder = try XCTUnwrap(sheet.transactionBuilder)
         XCTAssertEqual(builder.memo, "POOL-:10000")
     }
 
     /// And nothing beyond it is: the ceiling still bounds the form.
-    func testAnAmountAboveTheCardAmountIsStillRefused() {
-        let viewModel = makeViewModel(availableToUnstake: 1_200, pubKey: "cacao-typed-over")
-        typeAmount("1200.0001", into: viewModel)
+    func testAnAmountAboveTheCardAmountIsStillRefused() throws {
+        let sheet = try makeSheet(cacao: 1_200, units: 1_000, pubKey: "cacao-typed-over")
+        typeAmount("1200.0001", into: sheet)
 
-        XCTAssertNil(viewModel.transactionBuilder)
+        XCTAssertNil(sheet.transactionBuilder)
     }
 
     // MARK: - The sheet opens on the ceiling it was handed
@@ -258,10 +302,9 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
     /// what the sheet renders, validates and derives from.
     func testTheSheetOpensOnTheProjectedCeiling() throws {
         let data = project(makePosition(cacao: 1_200, units: 1_000))
-        let ceiling = try XCTUnwrap(data.availableToUnstake)
-        let viewModel = makeViewModel(availableToUnstake: ceiling, pubKey: "cacao-seam")
+        let sheet = try makeSheet(cacao: 1_200, units: 1_000, pubKey: "cacao-seam")
 
-        XCTAssertEqual(viewModel.availableAmount, 1_200)
-        XCTAssertEqual(viewModel.availableAmount, data.amount, "the sheet must open on the card's figure")
+        XCTAssertEqual(sheet.availableAmount, 1_200)
+        XCTAssertEqual(sheet.availableAmount, data.amount, "the sheet must open on the card's figure")
     }
 }
