@@ -151,6 +151,32 @@ final class InitiatorAmountFiatTests: XCTestCase {
         XCTAssertTrue(coin.fiat?.contains("6") == true, "2 SOL at $3 should render as 6, got \(coin.fiat ?? "nil")")
     }
 
+    /// An inflow must reach its own hero shape. A `receive` rendered through
+    /// `.send` would be indistinguishable from money leaving — the amount row
+    /// is identical and only the label separates them.
+    func testInitiatorHeroReceiveMapsToReceiveHero() {
+        let sol = makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true)
+        setPrice(3.0, for: sol)
+        let vm = makeKeysignViewModel(vaultCoins: [sol])
+        // A wrapped-SOL withdraw nets to an inflow of 2 SOL. At $3 = $6.
+        vm.blockaidSimulation = .receive(
+            coin: simCoin(
+                chain: .solana,
+                address: BlockaidSimulationParser.wrappedSolMint,
+                ticker: "SOL",
+                decimals: 9
+            ),
+            amount: BigInt("2000000000")
+        )
+
+        guard case .receive(_, let coin) = vm.heroContent else {
+            return XCTFail("A receive simulation must produce a receive hero, never a send")
+        }
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertEqual(coin.amount, Decimal(2).formatForDisplay())
+        XCTAssertTrue(coin.fiat?.contains("6") == true, "2 SOL at $3 should render as 6, got \(coin.fiat ?? "nil")")
+    }
+
     func testInitiatorHeroFiatNilForZeroAmount() {
         let eth = makeCoin(.ethereum, ticker: "ETH", decimals: 18, isNative: true)
         setPrice(2.0, for: eth)

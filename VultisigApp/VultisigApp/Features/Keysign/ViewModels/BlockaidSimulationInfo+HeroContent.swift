@@ -11,9 +11,13 @@ import Foundation
 /// hero and can't drift.
 extension BlockaidSimulationInfo {
 
-    /// Hero for this simulation: a single coin row for transfers, from/to
-    /// rows for swaps. Fiat sub-lines are resolved best-effort against
+    /// Hero for this simulation: a single coin row for transfers and receives,
+    /// from/to rows for swaps. Fiat sub-lines are resolved best-effort against
     /// `vaultCoins` (see `heroFiat(for:amount:vaultCoins:)`).
+    ///
+    /// A `receive` maps to its own hero shape rather than reusing `.send`: the
+    /// two render the same row, and only the label separates money arriving
+    /// from money leaving.
     func heroContent(title: String?, vaultCoins: [Coin]) -> HeroContent {
         switch self {
         case .transfer(let coin, _):
@@ -23,7 +27,17 @@ extension BlockaidSimulationInfo {
                     amount: heroAmountText,
                     ticker: coin.ticker,
                     logo: coin.logo,
-                    fiat: Self.heroFiat(for: coin, amount: fromAmountDecimal, vaultCoins: vaultCoins)
+                    fiat: Self.heroFiat(for: coin, amount: primaryAmountDecimal, vaultCoins: vaultCoins)
+                )
+            )
+        case .receive(let coin, _):
+            return .receive(
+                title: title,
+                coin: HeroCoinAmount(
+                    amount: heroAmountText,
+                    ticker: coin.ticker,
+                    logo: coin.logo,
+                    fiat: Self.heroFiat(for: coin, amount: primaryAmountDecimal, vaultCoins: vaultCoins)
                 )
             )
         case .swap(let from, let to, _, _):
@@ -33,7 +47,7 @@ extension BlockaidSimulationInfo {
                     amount: heroAmountText,
                     ticker: from.ticker,
                     logo: from.logo,
-                    fiat: Self.heroFiat(for: from, amount: fromAmountDecimal, vaultCoins: vaultCoins)
+                    fiat: Self.heroFiat(for: from, amount: primaryAmountDecimal, vaultCoins: vaultCoins)
                 ),
                 to: HeroCoinAmount(
                     amount: heroToAmountText ?? "",

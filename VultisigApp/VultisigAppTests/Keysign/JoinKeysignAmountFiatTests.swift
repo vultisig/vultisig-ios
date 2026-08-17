@@ -75,7 +75,44 @@ final class JoinKeysignAmountFiatTests: XCTestCase {
         XCTAssertEqual(vm.getAmountFiat(), "", "Swaps show fiat on the hero from/to rows, not the amount field")
     }
 
+    // MARK: - Co-signer keysign hero (JoinKeysignViewModel.heroContent)
+
+    /// The co-signer builds its hero through the same
+    /// `BlockaidSimulationInfo.heroContent(title:vaultCoins:)` the initiator
+    /// uses, but reaches it past an extra TON fallback branch. Pinned on both
+    /// devices because a hero that named the wrong direction on one of them
+    /// would still be the screen the approval decision rests on.
+    func testCoSignerHeroReceiveMapsToReceiveHero() {
+        let sol = makeCoin(.solana, ticker: "SOL", decimals: 9, isNative: true)
+        setPrice(3.0, for: sol)
+        let vm = makeViewModel(payload: makePayload(coin: sol, toAmount: .zero))
+        vm.vault = makeVault(coins: [sol])
+        // A wrapped-SOL withdraw nets to an inflow of 2 SOL. At $3 = $6.
+        vm.blockaidSimulation = .receive(
+            coin: BlockaidSimulationCoin(
+                chain: .solana,
+                address: BlockaidSimulationParser.wrappedSolMint,
+                ticker: "SOL",
+                logo: "logo",
+                decimals: 9
+            ),
+            amount: BigInt("2000000000")
+        )
+
+        guard case .receive(_, let coin) = vm.heroContent else {
+            return XCTFail("A receive simulation must produce a receive hero, never a send")
+        }
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertTrue(coin.fiat?.contains("6") == true, "2 SOL at $3 should render as 6, got \(coin.fiat ?? "nil")")
+    }
+
     // MARK: - Helpers
+
+    private func makeVault(coins: [Coin]) -> Vault {
+        let vault = Vault(name: "cosign-hero-test-vault")
+        vault.coins = coins
+        return vault
+    }
 
     private func makeViewModel(payload: KeysignPayload) -> JoinKeysignViewModel {
         let vm = JoinKeysignViewModel()

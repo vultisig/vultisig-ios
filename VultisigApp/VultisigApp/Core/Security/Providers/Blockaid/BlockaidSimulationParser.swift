@@ -107,6 +107,10 @@ enum BlockaidSimulationParser {
     /// filtered out as "likely the transaction fee". One remaining diff maps to
     /// `.transfer`, two remaining diffs map to `.swap` (or `.transfer` if only
     /// the out side has a value).
+    ///
+    /// Diverges from the extension in one place: a two-diff pair that resolves
+    /// to the same mint is netted rather than reported as a swap — see
+    /// `netSameMint(outCoin:outAmount:inCoin:inAmount:)`.
     static func parseSolana(
         response: BlockaidSolanaSimulationResponseJson
     ) -> BlockaidSimulationInfo? {
@@ -161,6 +165,16 @@ enum BlockaidSimulationParser {
            let inAmount = parseRawAmount(inRaw),
            let fromCoin = buildSolanaCoin(from: outSource.asset),
            let toCoin = buildSolanaCoin(from: inSource.asset) {
+            if let outMint = fromCoin.address,
+               let inMint = toCoin.address,
+               outMint == inMint {
+                return netSameMint(
+                    outCoin: fromCoin,
+                    outAmount: outAmount,
+                    inCoin: toCoin,
+                    inAmount: inAmount
+                )
+            }
             return .swap(fromCoin: fromCoin, toCoin: toCoin, fromAmount: outAmount, toAmount: inAmount)
         }
 
@@ -170,6 +184,46 @@ enum BlockaidSimulationParser {
             return .transfer(fromCoin: fromCoin, fromAmount: outAmount)
         }
 
+        return nil
+    }
+
+    /// Collapses an out/in pair that resolves to a single mint into the net
+    /// movement of that mint.
+    ///
+    /// Nothing was exchanged, so a swap hero would name a destination asset the
+    /// user is not receiving. Wrapping SOL and spending it in the same
+    /// transaction is the common source: the wrap-in and the spend-out cancel
+    /// and never surface as diffs of their own, leaving only the wSOL account's
+    /// rent-exempt residual as a small incoming diff beside the real native-SOL
+    /// out leg. `buildSolanaCoin` maps native SOL onto the wrapped-SOL mint, so
+    /// both legs arrive here carrying the same mint and are directly netted.
+    ///
+    /// The direction is decided by the net, not by which leg is which: the same
+    /// pair arrives reversed when a transaction unwraps wSOL back into native
+    /// SOL (a Kamino wrapped-SOL withdraw closes its payout account, which is
+    /// what unwraps it), where the out leg is only the residual being returned
+    /// and the in leg is the amount the user actually receives. The coin comes
+    /// from whichever leg the net follows, so the ticker stays truthful —
+    /// native SOL reads "SOL" even though it shares WSOL's mint here.
+    ///
+    /// An exact cancellation nets to zero. There is no honest hero for "your
+    /// balance does not change", so it returns nil and the caller falls back to
+    /// the generic title.
+    ///
+    /// Mints are compared exactly. Solana addresses are base58 and
+    /// case-sensitive, unlike the EVM path's checksummed hex.
+    private static func netSameMint(
+        outCoin: BlockaidSimulationCoin,
+        outAmount: BigInt,
+        inCoin: BlockaidSimulationCoin,
+        inAmount: BigInt
+    ) -> BlockaidSimulationInfo? {
+        if outAmount > inAmount {
+            return .transfer(fromCoin: outCoin, fromAmount: outAmount - inAmount)
+        }
+        if inAmount > outAmount {
+            return .receive(coin: inCoin, amount: inAmount - outAmount)
+        }
         return nil
     }
 

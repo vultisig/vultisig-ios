@@ -498,7 +498,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         switch input.hero {
         case nil, .title:
             return true
-        case .send, .swap:
+        case .send, .receive, .swap:
             return false
         }
     }
