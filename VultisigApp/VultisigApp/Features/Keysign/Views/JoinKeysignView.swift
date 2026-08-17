@@ -33,6 +33,14 @@ struct JoinKeysignView: View {
             }
     }
 
+    // Deliberately keyed on the outer `viewModel.status` only, not the nested
+    // `keysignVM.status`: this flag drives `main`'s VStack-wrap branch and
+    // `content`'s toolbar branch below, and switching either mid-ceremony
+    // (e.g. on a broadcast retry) rebuilds `states`' branch of the view tree,
+    // resetting the nested `KeysignView`'s `@State` and re-firing its
+    // `.onLoad`, which restarts signing — an infinite retry loop if the
+    // retryable condition reproduces. The nested error surfaces have their
+    // own working "Try Again" instead of a back button (see `onRetry` below).
     var isInAnimationState: Bool {
         viewModel.status == .WaitingForKeysignToStart
             || viewModel.status == .KeysignStarted
@@ -120,6 +128,13 @@ struct JoinKeysignView: View {
             customMessagePayload: viewModel.customMessagePayload,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             isInitiateDevice: false,
+            onRetry: { _ in
+                // The cosigner has no verify screen to pop back to and retry
+                // against — that surface only exists on the initiator. Restart
+                // is the same recovery this view already uses for its other
+                // keysign error states.
+                appViewModelLegacy.restart()
+            },
             decodedFunctionName: viewModel.decodedFunctionName,
             decodedTokenAmount: viewModel.decodedTokenAmount,
             decodedTokenTicker: viewModel.decodedTokenTicker,
