@@ -94,21 +94,28 @@ final class PortfolioSearchTests: VultisigUITestCase {
             "\(screen) search field is not present after tapping search — it never appeared, or it left the viewport first"
         )
 
-        // Typing proves the field actually took focus, which is the whole
-        // precondition here — a field nothing is typing into cannot be scrolled
-        // away from the typist. It also works with a hardware keyboard attached,
-        // where asserting on `app.keyboards` would not.
+        // Assert on the *untouched* focused state first. Order matters: typing
+        // narrows the list, which shrinks the scroll content and clamps the
+        // offset back, and on a short list that is enough to drag a runaway
+        // field back into view — masking the very bug this covers.
+        Thread.sleep(forTimeInterval: settleDelay)
+
+        let cancel = app.buttons[cancelButtonID]
+        assertUsable(field, named: "\(screen) search field")
+        assertUsable(cancel, named: "\(screen) Cancel action")
+
+        takeScreenshot(name: "\(screen) search focused")
+
+        // Then prove the field genuinely holds focus, and that typing into it
+        // does not push it out of reach either. Typing is used rather than
+        // `app.keyboards` so an attached hardware keyboard cannot break this.
         field.typeText("v")
         XCTAssertEqual(field.value as? String, "v", "\(screen) search field never took focus")
 
         Thread.sleep(forTimeInterval: settleDelay)
 
-        assertUsable(field, named: "\(screen) search field")
-
-        let cancel = app.buttons[cancelButtonID]
-        assertUsable(cancel, named: "\(screen) Cancel action")
-
-        takeScreenshot(name: "\(screen) search focused")
+        assertUsable(field, named: "\(screen) search field after typing")
+        assertUsable(cancel, named: "\(screen) Cancel action after typing")
 
         cancel.tap()
         XCTAssertTrue(
