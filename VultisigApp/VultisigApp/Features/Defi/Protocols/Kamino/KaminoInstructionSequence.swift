@@ -274,7 +274,22 @@ enum KaminoInstructionSequence {
             return nil
         case .kvault:
             if Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultDeposit { return .kvaultDeposit }
-            if Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultWithdraw { return .kvaultWithdraw }
+            // TWO discriminators, one kind. `withdraw` and
+            // `withdraw_from_available` are the same withdraw — same `u64` share
+            // argument, same authority, same share account burned, same payout
+            // account credited — and which one the builder emits says only
+            // whether the vault's liquid buffer covered the request. That is a
+            // fact about the vault's balance sheet, not about what the user is
+            // being asked to approve, so drawing the distinction here would put
+            // a difference on the verify screen that means nothing to the person
+            // reading it.
+            //
+            // They may share the map because they share the accounts: see
+            // `KaminoInstructionAccounts.KvaultWithdraw`.
+            if Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultWithdraw
+                || Array(data.prefix(8)) == KaminoInstructionDiscriminator.kvaultWithdrawFromAvailable {
+                return .kvaultWithdraw
+            }
             return nil
         case .memo:
             // The tag is matched WHOLE, not as a prefix. A memo is free-form
