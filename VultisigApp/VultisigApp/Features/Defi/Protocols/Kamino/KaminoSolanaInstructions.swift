@@ -72,7 +72,7 @@ enum KaminoAttribution {
 
 /// Instruction discriminators for the programs a Kamino Earn transaction uses.
 ///
-/// The six Anchor ones are `sha256("global:<name>")[0..<8]`, and each was also
+/// The seven Anchor ones are `sha256("global:<name>")[0..<8]`, and each was also
 /// read back out of a mainnet-simulated transaction built by the Kamino API, so
 /// the constant and the observation agree.
 ///
@@ -86,7 +86,29 @@ enum KaminoInstructionDiscriminator {
     static let kvaultDeposit: [UInt8] = [0xf2, 0x23, 0xc6, 0x89, 0x52, 0xe1, 0xf2, 0xb6]
     /// `kvault::withdraw(u64 shareAmount)` — the argument is in SHARES, the
     /// inverse of deposit's unit.
+    ///
+    /// One of TWO instructions a withdraw arrives as; see
+    /// `kvaultWithdrawFromAvailable`. This is the one the builder emits when the
+    /// request does not fit the vault's liquid buffer, because only this one
+    /// carries the accounts needed to pull the shortfall out of a lending
+    /// reserve.
     static let kvaultWithdraw: [UInt8] = [0xb7, 0x12, 0x46, 0x9c, 0x94, 0x6d, 0xa1, 0x22]
+    /// `kvault::withdraw_from_available(u64 shareAmount)` — the same withdraw,
+    /// served entirely out of the vault's liquid buffer.
+    ///
+    /// Which of the two arrives is a fact about the VAULT's liquidity at build
+    /// time, not about the user's request: Kamino's builder emits this one when
+    /// the reserves need not be touched and `withdraw` when they must, and both
+    /// are in live use. So both are accepted, and both mean the same thing to
+    /// the person signing — burn this many shares from this account, pay out to
+    /// that one.
+    ///
+    /// Reading one under the other's account map is safe, and that is checked
+    /// rather than assumed: the program's IDL declares `withdraw`'s accounts as
+    /// `withdraw_from_available`'s fourteen followed by the reserve group, so the
+    /// two share a prefix by construction. Every index in
+    /// `KaminoInstructionAccounts.KvaultWithdraw` lies inside it.
+    static let kvaultWithdrawFromAvailable: [UInt8] = [0x13, 0x83, 0x70, 0x9b, 0xaa, 0xdc, 0x22, 0x39]
     /// `farms::initialize_user` — creates the user's farm state. Absent when it
     /// already exists.
     static let farmsInitializeUser: [UInt8] = [0x6f, 0x11, 0xb9, 0xfa, 0x3c, 0x7a, 0x26, 0xfe]
@@ -241,6 +263,20 @@ enum KaminoInstructionAccounts {
         static let minimumCount = 8
     }
 
+    /// `kvault::withdraw` AND `kvault::withdraw_from_available`, which share
+    /// these positions rather than merely happening to agree on them.
+    ///
+    /// The program's IDL declares `withdraw`'s account list as the
+    /// `withdraw_from_available` group — all fourteen of its accounts, in order —
+    /// followed by the reserve-exit group and the event pair. So the first
+    /// fourteen slots of the longer instruction ARE the shorter one's, and every
+    /// index below is inside that shared prefix. Confirmed on the wire too: the
+    /// same wallet's withdraw from one vault, built both ways minutes apart,
+    /// resolves to identical pubkeys through slot 13 and first differs at 14.
+    ///
+    /// This is why one index map serves both. If it did not, the verify screen
+    /// would name a vault, a mint or a payout account that the instruction being
+    /// signed does not actually put there.
     enum KvaultWithdraw {
         static let user = 0
         static let vault = 1
@@ -249,6 +285,9 @@ enum KaminoInstructionAccounts {
         static let userShareAccount = 7
         static let sharesMint = 8
         static let minimumCount = 9
+        /// The number of accounts the two withdraw instructions share, and the
+        /// bound every index above must stay under.
+        static let sharedPrefixCount = 14
     }
 
     enum FarmsInitializeUser {

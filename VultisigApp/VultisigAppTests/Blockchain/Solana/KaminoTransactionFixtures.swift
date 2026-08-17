@@ -329,6 +329,120 @@ enum KaminoTransactionFixtures {
         lookupTable: "7EzosNioQ6FDNvMKLfg6om5wTVHiJo9vVx7DZNGYBKU3"
     )
 
+    // MARK: - The two shapes a kVault withdraw arrives as
+
+    /// A withdraw captured as the API builds it TODAY, with the metadata needed
+    /// to check what its kVault instruction names.
+    ///
+    /// Separate from `Vector` because these have no `injected` counterpart: they
+    /// exist to pin WHICH instruction a withdraw is and which accounts it hands
+    /// it, not to pin the compute-budget edit, and inventing an injected form
+    /// here would assert this repository's own injector against itself.
+    struct WithdrawShape {
+        let name: String
+        /// The transaction exactly as `POST /ktx/kvault/withdraw` returned it.
+        let source: String
+        let owner: String
+        let vault: KaminoVaultDescriptor
+        let lookupTable: String
+        /// The `u64` the kVault instruction carries, in share base units.
+        let shareBaseUnits: UInt64
+        /// The Anchor discriminator its kVault instruction actually carries.
+        let discriminator: [UInt8]
+        /// Where in the instruction list the kVault instruction sits.
+        let kvaultPosition: Int
+    }
+
+    /// Captured 2026-08-17 from `api.kamino.finance` by building unsigned
+    /// transactions for third-party wallets — a POST and a decode. Nothing was
+    /// signed, nothing was broadcast, no funds moved.
+    ///
+    /// The point of the three together is the pair at the bottom. `withdraw` and
+    /// `withdraw_from_available` are two different instructions, and the app
+    /// reads both through ONE index map, so what has to be shown is that they
+    /// put the same accounts in the same slots. The RWA pair is the same wallet
+    /// and the same vault built minutes apart at two amounts, which isolates the
+    /// instruction choice from every other thing that could have moved.
+
+    /// The same wallet, vault and amount as `stakedWithdraw` — which the API
+    /// built as `withdraw` on 2026-08-05 — re-requested twelve days later and
+    /// built as `withdraw_from_available` instead. Nothing about the request
+    /// changed; the builder did.
+    static let steakhouseWithdrawFromAvailable = WithdrawShape(
+        name: "Steakhouse USDC farm-staked withdraw, served from available",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCkz4SpXM\
+            eg7DW2ZzLbkMAlm0lEy/B1TiRwZqby23/jKmEZHG3rE/6w+tbzGqcJEiaHqq1pOV6hBzDAKRU/oz2gBP0vandYbwNC1pR0Jk5hEc\
+            RCdjUbAG+77T/irHPNQhwVKV1ablytlLnalT6Uu+r5A74BZTGAutrI1EFMK1BOlSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+            AAAAAAAP2mzp9mGY3YcNiphvMGdcRvg+L1KDSHlS9dUFY+PveoyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZmXEpeigA\
+            Qkk+QnGQx3tkfob30ZlyH9FWKZZcnWtllPjYsBAXY9PlHxJuYVbehd6MYTBZuERo0No/6KKiJRzHAQTZCvHbiTnsNf+U2WQNV9zD\
+            J5S7Phu2b9OuhJqE3NuUvfB1QgHnOYKe1dm5mlLjmGmkZq7fv9CfHPFdjPzILwMFBgYAAgAKBBsBAQgEAAEMCBhaX2sqzXwy4QAA\
+            AKHtzM4bwtMAAAAAAAAIBwABDAIPFBsIJGa7MdwkhEMGBgADABEEGwEBCRYAEwcOFwMRAgobGxoFCRIQCw0YFhkVEBODcJuq3CI5\
+            QEIPAAAAAAABgunUZsNGfS6ysNnMvrR72/SV7hwbtHfQ2q+tA1+n6+QKBTUxJS8yEwIJAQgzJxUECzcHAw==
+            """,
+        owner: "6BTaMq25LcNDTVhheUe9UyvwWgayqFv77njymVnG8SNy",
+        vault: KaminoVaultRegistry.steakhouseUSDC,
+        lookupTable: "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu",
+        shareBaseUnits: 1_000_000,
+        discriminator: KaminoInstructionDiscriminator.kvaultWithdrawFromAvailable,
+        kvaultPosition: 4
+    )
+
+    /// RWA USDC, 0.1 shares — small enough to come out of the vault's liquid
+    /// buffer.
+    static let rwaWithdrawFromAvailable = WithdrawShape(
+        name: "RWA USDC withdraw within the liquid buffer",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHDNoCv8wM\
+            ibw6Lr4BmZ1YTpOeVn/4S36DtYOGzRgDXOKyYzgVo8SCHv6vMZzmhFsM/xwo9ba+8DhruJa5obQssdqLHq0uF+eOhpzTo0NOxNMw\
+            qn/FcaYEsDHWG42IIXsccJMMviJpos8IjAJXhdQDhhXDZKlLvFULPKq22Z9VXpLV7o9xyh+eqw7KWuFQ+JBjQjBsqd8l556Z6qrD\
+            KvbXgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/abOn2YZjdhw2KmG8wZ1xG+D4vUoNIeVL11QVj4+96KB9owf4c\
+            9rZFjmv6T/xyniO69oNYjHK6VyfK9vZER9SMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G\
+            99GZch/RVimWXJ1rZZT42LAQF2PT5R8SbmFW3oXejGEwWbhEaNDaP+iioiUcxwEE2Qrx24k57DX/lNlkDVfcwyeUuz4btm/TroSa\
+            hNzblP+aTZHtgWqxCflIhg+zfXpPx8nqhtR4aUXtv/qOMPSRBQgGAAIAFQUfAQEKBAAEEwoYWl9rKs18MuEAAID2SuHHAi0VAAAA\
+            AAAACgcABBMCDB0fCCRmuzHcJIRDCAYAAQAXBR8BAQscABYJDhwBFwIVHx8eBgsQDRQSEQ8DGhkYGxgYBxATg3CbqtwiOaCGAQAA\
+            AAAAAe2fwxn34IL78QI/+BXzVcvhipsyGbV9meEtiYwh+T/eDAwSDzYQPBYLFAUBAggiHRgtBA0HAw==
+            """,
+        owner: "Fg2JxF1M8HLXqZ1ZBb1SrEXHsYjfrLMovxguep3YdR6Z",
+        vault: KaminoVaultRegistry.rwaUSDC,
+        lookupTable: "GzavHphVhGp9PERAfT3NcQwFesevQD386puHtVtsbq6m",
+        shareBaseUnits: 100_000,
+        discriminator: KaminoInstructionDiscriminator.kvaultWithdrawFromAvailable,
+        kvaultPosition: 4
+    )
+
+    /// The SAME wallet and vault, for its whole 22,319-share position — far more
+    /// than the buffer holds, so the builder has to exit a lending reserve and
+    /// emits `withdraw` rather than `withdraw_from_available`.
+    ///
+    /// This is what makes keeping the older discriminator a finding rather than
+    /// a precaution: it is not legacy, it is the large-withdraw path, and it is
+    /// live.
+    static let rwaReserveExitWithdraw = WithdrawShape(
+        name: "RWA USDC withdraw that must exit a reserve",
+        source: """
+            AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAHDNoCv8wM\
+            ibw6Lr4BmZ1YTpOeVn/4S36DtYOGzRgDXOKyYzgVo8SCHv6vMZzmhFsM/xwo9ba+8DhruJa5obQssdqLHq0uF+eOhpzTo0NOxNMw\
+            qn/FcaYEsDHWG42IIXsccJMMviJpos8IjAJXhdQDhhXDZKlLvFULPKq22Z9VXpLV7o9xyh+eqw7KWuFQ+JBjQjBsqd8l556Z6qrD\
+            KvbXgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/abOn2YZjdhw2KmG8wZ1xG+D4vUoNIeVL11QVj4+96KB9owf4c\
+            9rZFjmv6T/xyniO69oNYjHK6VyfK9vZER9SMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WZlxKXooAEJJPkJxkMd7ZH6G\
+            99GZch/RVimWXJ1rZZT42LAQF2PT5R8SbmFW3oXejGEwWbhEaNDaP+iioiUcxwEE2Qrx24k57DX/lNlkDVfcwyeUuz4btm/TroSa\
+            hNzblCOoFarHtwhoITtdC1PA4aJ57878mgrAsZc5ZYYKGAozBQgGAAIAGAUkAQEKBAAEFQoYWl9rKs18MuEAAACPV2GcYhbYHUgA\
+            AAAACgcABBUCDCEkCCRmuzHcJIRDCAYAAQAaBSQBAQsnABkJDx8BGgIYJCQiBgsZFg0bIBIXJCMGCxEOFhQTEAMdHBseGxsHELcS\
+            RpyUbaEiwOlQMgUAAAAB7Z/DGffggvvxAj/4FfNVy+GKmzIZtX2Z4S2JjCH5P94PDBUSDzYQJTwWCxQnBQECCiIdGC0EKQ0HCAM=
+            """,
+        owner: "Fg2JxF1M8HLXqZ1ZBb1SrEXHsYjfrLMovxguep3YdR6Z",
+        vault: KaminoVaultRegistry.rwaUSDC,
+        lookupTable: "GzavHphVhGp9PERAfT3NcQwFesevQD386puHtVtsbq6m",
+        shareBaseUnits: 22_319_000_000,
+        discriminator: KaminoInstructionDiscriminator.kvaultWithdraw,
+        kvaultPosition: 4
+    )
+
+    /// The two shapes of the SAME withdraw, in the order they must agree in.
+    static let withdrawShapePair: (available: WithdrawShape, reserveExit: WithdrawShape) =
+        (rwaWithdrawFromAvailable, rwaReserveExitWithdraw)
+
     static let all: [Vector] = [
         usdcDeposit,
         solDeposit,
@@ -357,6 +471,74 @@ enum KaminoTransactionFixtures {
     /// nothing; resolving both sides through the real table shows the edit
     /// preserved the account *pubkeys* every instruction receives.
     static let lookupTables: [String: [String]] = [
+        "GzavHphVhGp9PERAfT3NcQwFesevQD386puHtVtsbq6m": [
+            "CPpw5U5iwkWYoAVPJ9NfBkDtWFehADZfmbXTFP3idtLD",
+            "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP",
+            "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "D6hDbSjooxfjXrfKo7xBKVFeoaJrtnXY75uAbxeFbPgU",
+            "DgHN3q3dSYAchNX7V3D4aYiTWMx8RHTgHbfPiwiqBkE9",
+            "SysvarRent111111111111111111111111111111111",
+            "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+            "Sysvar1nstructions1111111111111111111111111",
+            "9F4DocmnddboTZjcdnScq5346KDpgGa3hzx1S9a3L1YK",
+            "6UodrBjL2ZreDy7QdR4YV1oxqMBjVYSEyrFpctqqwGwL",
+            "ArwyAHmnFmbKbUxC2fnK5VUEpspHrnoFtJ22bvEyriKk",
+            "232RETZLCkPninSdSDcVPmzpX5vD541xnnC2nbNuqDsw",
+            "HJs6CeLJfy3jj7BgzieK2kqaQAuuMbkcHaAGksdQ9NDn",
+            "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv",
+            "6ea6GorjfT2SmUH8HSwg4LLae5RCqVVEYzcznBJEge9e",
+            "6XdN3zXeoYKgfSeZb8h1LpiEkUXRJ3CbimE5FJ35XFBP",
+            "5BDugAB1RXHkxFhL1oye4o2zbu8j8uHb3xDrzm4Evvuv",
+            "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj",
+            "4Q9daJeraPU7JCzWv6tcb9XiJpAJrTX9rTStckCdM6HA",
+            "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z",
+            "4cjKhMGtDhQgtZqjojkwE1899h1q4X1Arx8fT6gEQGDg",
+            "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu",
+            "vza1i5NBUTFKgCPGbETeBZWLRZmnKWBEGUPDkitLPBa",
+            "9Y7uwXgQ68mGqRtZfuFaP4hc4fxeJ7cE9zTtqTxVhfGU",
+            "EetQRys9azm1GsK476sr3R3W2hw79eUbBCmvGt83LoNc",
+            "4mZ3qoCZa35TYd6qc73CfDZkP6U7WnvGVeKeCaNQ5wZG",
+            "GresxT3Ditj5N9sHi6qTBoy96tctJ4HknUX2tCMiri3M",
+            "3RKnGEmHto1N6keVvLkXkSrG4KytUjuLvvhAYpbLQUh9",
+            "52FSGeeokLpgvgAMdqxyt5Hoc2TbUYj5b8yxrEdZ37Vf",
+            "2yuyM9BiAZfYaQqxiknRyzRrcLMVkW7ztVc2Fzbuqq7n",
+            "GJhiSVVBERAizvJkVcQXY35utyi4homJ8JxrnwHJGxeC",
+            "UBSsE59MB1TKtADobD8spRgMGhMFoYaLDmkN3MFQmkp",
+            "6TYhz24fBMDEmD1bDqHb9EYTCWQtYZdeekXojPiV4K3A",
+            "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+            "GNcywqL6AZajsyyitxGQUvbihPgAzGZUqKfjYcvTj2pi",
+            "7vNfe1qX8iDxP5p3A4fosrjLqdn1YjmmGcZZkG2b4APF",
+            "8BkQTZsT8ssKMU643De4iiV5Wf3pENdUFTsdtHPueKjB",
+            "5iLRav31Y7DJwM6bZ7s92jqvV3zd1wZMcp4mYeKXh8cj",
+            "DBieuGmP1xh36oZRwTtw722yJ8pzZ8wycYD9nY2BSxwn",
+            "6aTxdy7Hg7MHtE8NDBZWxxw9tnpj56XmdoCpkf8g2hxZ",
+            "FsvTiXTUFDc4aLbrov4PrvDTjXCWCniL1dxTUkZ1T2ss",
+            "9Q31s4yVMXXsSWJyzNNReLH76nZqzHpFmWJUTEFZxAoJ",
+            "3LehT54KD2qUiCvTS3EW49HrWzUw4YcPbkHfg1sXp6TV",
+            "B5WhxpGmV5BfJnRBpB93dMSePHtttFySJ4dcAZ9YzYYc",
+            "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+            "HqEqwkTmqCAVEQQaEBuSSGD2EAvcorFogqhZz46TYJyz",
+            "H6JUwz8c61eQnYUx8avGXydKztKPyGvgWAUjmZUPS3BC",
+            "BzSw9sWTxUumr2wHhDiezkaLy3QZQS1KT4a9Fz8GvAQ6",
+            "DKaVQFXD6Qz4USTkRWyPun3oU6r1RfYsWJ8YqLpnSnN5",
+            "CtgiQTkAQp8h1ayqdE21Cr56qekdqeQ19da3j1KLgSUn",
+            "9SLBVnPz8dRGvafST6zNBZYSSt3HtdU68XQLGR13t3uM",
+            "2vxWpj2yE6JGQdcvyVEiDRBtLXfovnqxsnjtS6AjdKWX",
+            "CzEcTo66owDYLH1ieFR64u4gV5YT3FSLEg8G61nAvuP1",
+            "6kmkjcVrp7RfyRBrfCoKbe6Wss3urVaaB1Lez5kSNHd1",
+            "4USKstZaYG9Jj5HZxib6Ttzxw1mBMs1XnvHq1Teh9zZe",
+            "DJAA9btNhDbU8bAUfxWzZ3L8Ap9FLqhxaCPRerC9WRee",
+            "C58hPXv85vAMfFrbjBwrpUV8rKfNxVdAS91W25sNdjbm",
+            "GLCsvVJu2FrjNMYH3VxwfwzuegTzmrSs4JfirKv2YGpb",
+            "9wH3XVuXzqEpgaaJBmCwZAxDKJJAFTdBriwYpGA189f2",
+            "8Lvi1DFPoAGPQ25qpRKzzRaSAnWdeVZqt9XmEapm8uLt",
+            "BQxSShgirmS8J3BTRJyNoG7tjeihqjjJziHSNbe6cm3b",
+            "CtczsMw1sw4xRkLJVvNUB5NAN5z8GFnyx5Vcwv2mYipH",
+            "Gr8af5L8JrCgaPubCQjAmG8X1ScNkmjnoZxtFBFsDqaJ",
+            "Gc5VL3SJb18t4QwssFkpXHpUvtKTsgYqgoovgyR5Qh9o",
+            "cTZhwaK4J39vYLuZZXYv74KJGLGUiBmnyyQyWkVpYq5"
+        ],
         "9p2oT9J6BojHigd3V5qXzrwsQf4dtgMgLxtrzLVR3rwu": [
             "sadmBTQm5HJsyzWHEjV4YwG9CiahZKVDVqAyS4Wx1zH",
             "HDsayqAsDWy3QvANGqh2yNraqcD8Fnjgh73Mhb3WRS5E",

@@ -791,14 +791,22 @@ final class KaminoTransactionValidatorTests: XCTestCase {
 
     // MARK: - Discriminator provenance
 
-    /// The four Anchor discriminators are `sha256("global:<name>")[0..<8]`. Pinning
+    /// The five Anchor discriminators are `sha256("global:<name>")[0..<8]`. Pinning
     /// them against the hash rather than against the bytes that were observed
     /// means a typo in a constant that sizes or targets a transaction cannot
     /// survive to runtime.
+    ///
+    /// It does not, on its own, mean the app names the RIGHT instructions —
+    /// `kvaultWithdraw` was a correct hash of a name the API had stopped using.
+    /// That half is `KaminoWithdrawFromAvailableTests`, against captured bytes.
     func testAnchorDiscriminatorsMatchTheirInstructionNames() throws {
         let expectations: [(String, [UInt8])] = [
             ("global:deposit", KaminoInstructionDiscriminator.kvaultDeposit),
             ("global:withdraw", KaminoInstructionDiscriminator.kvaultWithdraw),
+            (
+                "global:withdraw_from_available",
+                KaminoInstructionDiscriminator.kvaultWithdrawFromAvailable
+            ),
             ("global:initialize_user", KaminoInstructionDiscriminator.farmsInitializeUser),
             ("global:stake", KaminoInstructionDiscriminator.farmsStake)
         ]
