@@ -189,36 +189,32 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
             do {
                 let assets = try await assetsDataSource.fetchAssets()
 
-                await MainActor.run {
-                    guard isCurrentRequest(for: nodeAddress) else { return }
-                    isLoading = false
-                    availableBondedAssets = assets
+                guard isCurrentRequest(for: nodeAddress) else { return }
+                isLoading = false
+                availableBondedAssets = assets
 
-                    if assets.isEmpty {
-                        addressViewModel.field.error = "noBondedAssetsOnNode".localized
-                        selectedAsset = nil
-                    } else if let selectedAsset, assets.contains(selectedAsset) {
-                        // Same asset, different node: `$selectedAsset` will not
-                        // fire, so nothing else would re-read the bonded units
-                        // for the node now in the address field.
-                        fetchBondedLPUnits(for: selectedAsset)
-                    } else {
-                        // An asset only bonded on the PREVIOUS node must not
-                        // survive the switch — unbonding it here would build a
-                        // memo for a pool the user has no position in on this
-                        // node.
-                        selectedAsset = assets.first
-                    }
+                if assets.isEmpty {
+                    addressViewModel.field.error = "noBondedAssetsOnNode".localized
+                    selectedAsset = nil
+                } else if let selectedAsset, assets.contains(selectedAsset) {
+                    // Same asset, different node: `$selectedAsset` will not
+                    // fire, so nothing else would re-read the bonded units
+                    // for the node now in the address field.
+                    fetchBondedLPUnits(for: selectedAsset)
+                } else {
+                    // An asset only bonded on the PREVIOUS node must not
+                    // survive the switch — unbonding it here would build a
+                    // memo for a pool the user has no position in on this
+                    // node.
+                    selectedAsset = assets.first
                 }
             } catch {
                 Log.send.viewModel.error("Error fetching bonded LP positions: \(error.localizedDescription, privacy: .public)")
-                await MainActor.run {
-                    guard isCurrentRequest(for: nodeAddress) else { return }
-                    isLoading = false
-                    availableBondedAssets = []
-                    selectedAsset = nil
-                    assetsUnavailableReason = "bondedAssetsLoadFailed"
-                }
+                guard isCurrentRequest(for: nodeAddress) else { return }
+                isLoading = false
+                availableBondedAssets = []
+                selectedAsset = nil
+                assetsUnavailableReason = "bondedAssetsLoadFailed"
             }
         }
     }
@@ -311,35 +307,29 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
                 )
 
                 guard let units = bondedUnits, units > 0 else {
-                    await MainActor.run {
-                        guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
-                        clearBondedUnitsCeiling()
-                    }
+                    guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
+                    clearBondedUnitsCeiling()
                     return
                 }
 
-                await MainActor.run {
-                    // This figure is the unbond ceiling; publishing it for a
-                    // node or asset the user has since left would raise the
-                    // limit on a position that does not have it.
-                    guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
-                    bondedUnitsCeiling = BondedUnitsCeiling(
-                        nodeAddress: nodeAddress,
-                        asset: asset,
-                        units: String(units)
-                    )
+                // This figure is the unbond ceiling; publishing it for a
+                // node or asset the user has since left would raise the
+                // limit on a position that does not have it.
+                guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
+                bondedUnitsCeiling = BondedUnitsCeiling(
+                    nodeAddress: nodeAddress,
+                    asset: asset,
+                    units: String(units)
+                )
 
-                    // Update validator with bonded units
-                    lpUnitsField.validators = Self.baseLPUnitsValidators + [
-                        LPUnitsValidator(availableUnits: String(units))
-                    ]
-                }
+                // Update validator with bonded units
+                lpUnitsField.validators = Self.baseLPUnitsValidators + [
+                    LPUnitsValidator(availableUnits: String(units))
+                ]
             } catch {
                 Log.send.viewModel.error("Error fetching bonded LP units: \(error.localizedDescription, privacy: .public)")
-                await MainActor.run {
-                    guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
-                    clearBondedUnitsCeiling()
-                }
+                guard isCurrentRequest(for: nodeAddress, asset: asset) else { return }
+                clearBondedUnitsCeiling()
             }
         }
     }
