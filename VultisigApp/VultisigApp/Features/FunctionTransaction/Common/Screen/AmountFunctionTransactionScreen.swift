@@ -44,7 +44,10 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
         availableAmount: Decimal,
         percentageSelected: Binding<Double?>,
         percentageFieldType: PercentageFieldType,
-        amountDecimals: Int = 4,
+        // Defaults to the precision the amount/percentage binding rounds to, so
+        // a screen that does not override it cannot drift from the figure that
+        // binding derives its percentage from.
+        amountDecimals: Int = AmountPercentageBinding.displayedDecimals,
         amountField: FormField,
         isContinueDisabled: Bool = false,
         customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,

@@ -28,6 +28,18 @@ struct AmountTextField<CustomView: View>: View {
     let customViewPosition: CustomViewPosition
     @State var amountInternal: String = ""
     @State var size: CGSize?
+    /// Which of the amount and the percentage the user currently owns.
+    ///
+    /// Typing used to blank the percentage outright. That left the slider reading
+    /// its `percentage ?? 100` fallback — a confident 100% sitting under an amount
+    /// the user had just typed as something else — and hid the percentage caption
+    /// entirely. Deriving the percentage instead re-opens the feedback loop the
+    /// blanking existed to prevent: a `percentage` change calls `setupAmount()`,
+    /// which would overwrite the half-typed amount with a rounded one on every
+    /// keystroke. `AmountPercentageSync` is what tells this field's own derived
+    /// write apart from a real slider interaction; the reasoning lives there, with
+    /// the tests.
+    @State private var sync = AmountPercentageSync()
 
     init(
         amount: Binding<String>,
@@ -127,17 +139,21 @@ struct AmountTextField<CustomView: View>: View {
         .onChange(of: amountInternal) { _, newValue in
             guard amount != newValue else { return }
             amount = newValue
-            percentage = nil
+            syncPercentage(toTypedAmount: newValue)
         }
         .onChange(of: amount) { _, newValue in
             amountInternal = newValue
         }
-        .onChange(of: percentage) { _, _ in
-            setupAmount()
+        .onChange(of: percentage) { _, newValue in
+            apply(sync.percentageChanged(to: newValue))
         }
         .onLoad { setupAmount() }
         .onChange(of: availableAmount) { _, _ in
-            setupAmount()
+            // A balance landing late must not overwrite a figure the user typed
+            // while waiting for it — re-derive the percentage against the new
+            // balance instead. Blanking the percentage used to give this for
+            // free, by making `setupAmount()` return early.
+            apply(sync.balanceChanged())
         }
         .readSize(onChange: { size = $0 })
     }
@@ -165,9 +181,28 @@ struct AmountTextField<CustomView: View>: View {
 
     func setupAmount() {
         guard let percentage else { return }
-        let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = availableAmount * multiplier
+        let amountDecimal = AmountPercentageBinding.amount(forPercentage: percentage, available: availableAmount)
         amount = amountDecimal.formatToDecimal(digits: decimals)
+    }
+
+    /// Points the percentage control at the amount that was just typed, so the
+    /// slider and the caption report the share of the balance actually being
+    /// acted on.
+    func syncPercentage(toTypedAmount typed: String) {
+        let derived = AmountPercentageBinding.percentage(ofAmount: typed.toDecimal(), available: availableAmount)
+        sync.amountWasTyped(derivingPercentage: derived)
+        percentage = derived
+    }
+
+    func apply(_ action: AmountPercentageSyncAction) {
+        switch action {
+        case .setAmountFromPercentage:
+            setupAmount()
+        case .derivePercentageFromAmount:
+            syncPercentage(toTypedAmount: amountInternal)
+        case .ignore:
+            break
+        }
     }
 
     @ViewBuilder
