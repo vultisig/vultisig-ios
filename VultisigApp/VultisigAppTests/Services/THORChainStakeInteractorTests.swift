@@ -458,4 +458,32 @@ final class THORChainStakeInteractorTests: XCTestCase {
     func testAccountPayloadWithoutStakingEntriesFailsClosed() {
         XCTAssertThrowsError(try makeDetails(from: #"{"data":{"node":{"stakingV2":null}}}"#))
     }
+
+    // MARK: - "no longer a staker" is an answer, not a failure
+
+    /// ⚠️ **The exact body THORNode returns after a full TCY unstake.** It is a
+    /// 500, so absence and a server fault share a status code, and swallowing
+    /// the wrong one either strands a stale balance on the card or zeroes a
+    /// funded position on an outage.
+    func test_isTcyStakerAbsent_recognisesTheNonStakerBody() {
+        let body = Data(#"{"code":2, "message":"fail to tcy staker: TCYStaker doesn't exist: thor1pe0pspu4ep85gxr5h9l6k49g024vemtr80hg4c", "details":[]}"#.utf8)
+        XCTAssertTrue(THORChainStakingService.isTcyStakerAbsent(HTTPError.statusCode(500, body)))
+    }
+
+    /// A 500 that is not this answer must keep throwing, so the persisted row
+    /// keeps its last good value rather than being zeroed by an outage.
+    func test_isTcyStakerAbsent_refusesEveryOtherFailure() {
+        let genuine = Data(#"{"code":13,"message":"internal server error","details":[]}"#.utf8)
+        XCTAssertFalse(THORChainStakingService.isTcyStakerAbsent(HTTPError.statusCode(500, genuine)))
+        XCTAssertFalse(THORChainStakingService.isTcyStakerAbsent(HTTPError.statusCode(500, nil)))
+        XCTAssertFalse(THORChainStakingService.isTcyStakerAbsent(HTTPError.timeout))
+        XCTAssertFalse(THORChainStakingService.isTcyStakerAbsent(HTTPError.invalidResponse))
+    }
+
+    /// Not keyed on the status code: THORNode uses 500 today, and the reading
+    /// should survive it being corrected to a 404 without a code change.
+    func test_isTcyStakerAbsent_isNotKeyedOnTheStatusCode() {
+        let body = Data(#"{"code":2, "message":"fail to tcy staker: TCYStaker doesn't exist: thor1abc", "details":[]}"#.utf8)
+        XCTAssertTrue(THORChainStakingService.isTcyStakerAbsent(HTTPError.statusCode(404, body)))
+    }
 }
