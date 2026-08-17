@@ -335,19 +335,26 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     /// full exit can never leave a rounding remainder staked.
     var withdrawBasisPoints: Int {
         guard availableAmount > 0 else { return 0 }
+        let typed = amountField.value.toDecimal()
+
         // Pinned rather than derived: the amount field renders 4 decimals, so on
         // a small position MAX can round to 9999 and leave a sliver staked.
         //
-        // Only while the percentage still owns the value. Typing clears
-        // `percentageSelected` without ever reaching `onPercentage`, so the flag
-        // raised when the form opened at 100% outlives the selection it
-        // describes — and pinning on it alone would withdraw the whole position
-        // for an amount the user typed to be smaller.
-        guard !isMaxAmount || percentageSelected == nil else { return WithdrawBasisPoints.max }
-        return WithdrawBasisPoints.value(
-            forAmount: amountField.value.toDecimal(),
-            available: availableAmount
-        )
+        // ⚠️ **Corroborated against the amount, never against the flag alone.**
+        // Typing normally clears `percentageSelected` — but the percentage it
+        // derives is a `Double`, so an amount a hair under the balance
+        // (99999999999.999999 of 100000000000) derives *exactly* 100, which is
+        // the value the sheet already holds. No change is emitted, nothing
+        // clears, and the flag raised when the form opened at 100% survives to
+        // close a position the user typed to keep open. The receipt-share arms
+        // already refuse to trust the flag for this reason; the memo arms now
+        // ask the same question, of the same amount.
+        if isMaxAmount, percentageSelected != nil,
+           ReceiptShareRedemption.isWholePosition(amount: typed, positionValue: availableAmount) {
+            return WithdrawBasisPoints.max
+        }
+
+        return WithdrawBasisPoints.value(forAmount: typed, available: availableAmount)
     }
 
     func onPercentage(_ percentage: Double) {

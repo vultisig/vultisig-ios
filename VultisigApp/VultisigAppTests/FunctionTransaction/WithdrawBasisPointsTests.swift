@@ -143,6 +143,44 @@ final class WithdrawBasisPointsTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(viewModel.transactionBuilder).memo, "tcy-:10000")
     }
 
+    /// ⚠️ **The MAX flag alone may never decide a full exit** — the invariant
+    /// `AmountPercentageBinding` states outright, because the percentage it
+    /// derives is a `Double` and a fraction within ~1e-15 of the whole position
+    /// comes back as exactly `100`. When the field already held 100 that is not a
+    /// change, so nothing clears the flag raised when the sheet opened at MAX.
+    ///
+    /// The receipt-share arms already corroborate against the amount. This pins
+    /// that the memo arms do too: with the flag and the selection both stale from
+    /// the opening MAX, an amount that says half must withdraw half.
+    ///
+    /// Reaching this state through the field needs a position the parse cannot
+    /// round-trip — `toDecimal()` goes through `NumberFormatter`, so the amount
+    /// and the percentage are derived from the same lossy value and normally
+    /// agree. The guard does not depend on that holding.
+    func testAStaleMaxFlagCannotCloseAPositionTheAmountSaysIsPartial() throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let viewModel = UnstakeTransactionViewModel(
+            coin: makeTCYCoin(),
+            vault: TestStore.makeVault(),
+            isAutocompound: false,
+            availableToUnstake: staked
+        )
+        viewModel.availableAmount = staked
+        viewModel.setupAmountField()
+
+        // Both survive from the sheet opening at MAX; only the amount moved.
+        viewModel.onPercentage(100)
+        viewModel.percentageSelected = 100
+        viewModel.amountField.value = "1001.37"
+        viewModel.validForm = true
+
+        XCTAssertTrue(viewModel.isMaxAmount, "the flag the guard must not trust on its own")
+        XCTAssertEqual(viewModel.withdrawBasisPoints, 5000)
+        XCTAssertEqual(try XCTUnwrap(viewModel.transactionBuilder).memo, "tcy-:5000")
+    }
+
     // MARK: - Validation
 
     func testAnAmountBelowOneBasisPointIsRejected() {
