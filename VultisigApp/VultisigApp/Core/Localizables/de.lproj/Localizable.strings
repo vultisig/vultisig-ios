@@ -1779,6 +1779,7 @@
 "whitespaceNotAllowed" = "Leerzeichen sind nicht erlaubt.";
 "withdraw" = "Abheben";
 "withdrawAmount" = "%@ abheben";
+"withdrawBelowMinimum" = "Betrag zu klein — mindestens %@ %@ abheben";
 "withdrawBelowOutboundFee" = "Betrag unter Ausgangsgebühr — mindestens %@ %@ abheben, um Netzwerkkosten zu decken";
 "withdrawPercentage" = "Abhebungsprozentsatz";
 "withdrawRewards" = "%@-Belohnungen abheben";

@@ -1779,6 +1779,7 @@
 "whitespaceNotAllowed" = "Whitespace character is not allowed";
 "withdraw" = "Withdraw";
 "withdrawAmount" = "Withdraw %@";
+"withdrawBelowMinimum" = "Amount too small — withdraw at least %@ %@";
 "withdrawBelowOutboundFee" = "Amount below outbound fee — withdraw at least %@ %@ to cover network costs";
 "withdrawPercentage" = "Withdraw Percentage";
 "withdrawRewards" = "Withdraw %@ Rewards";
