@@ -12,18 +12,21 @@ struct SearchTextField: View {
     @Binding var isFocused: Bool
     let showPasteButton: Bool
     let placeholder: String
+    let accessibilityIdentifier: String?
     @FocusState var focusedState: Bool
 
     init(
         value: Binding<String>,
         isFocused: Binding<Bool> = .constant(false),
         showPasteButton: Bool = false,
-        placeholder: String = "search".localized
+        placeholder: String = "search".localized,
+        accessibilityIdentifier: String? = nil
     ) {
         self._value = value
         self._isFocused = isFocused
         self.showPasteButton = showPasteButton
         self.placeholder = placeholder
+        self.accessibilityIdentifier = accessibilityIdentifier
     }
 
     var showClearButton: Bool {
@@ -45,6 +48,9 @@ struct SearchTextField: View {
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
                 .focused($focusedState)
+                .unwrap(accessibilityIdentifier) { view, id in
+                    view.accessibilityIdentifier(id)
+                }
 
             HStack(spacing: 8) {
                 clearButton

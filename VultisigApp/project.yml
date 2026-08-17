@@ -337,6 +337,11 @@ targets:
       - path: VultisigAppUITests
         excludes:
           - "**/.DS_Store"
+      # A UI-test bundle links nothing from the app, so the shared identifier
+      # constants have to be compiled into it as well. Without this the whole
+      # target fails to build ("cannot find 'AccessibilityID' in scope") and
+      # every UI test is unrunnable, not merely skipped.
+      - path: VultisigApp/Core/Utils/AccessibilityID.swift
 
     settings:
       base:

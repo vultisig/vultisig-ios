@@ -34,7 +34,6 @@ struct VaultMainScreen: View {
     @State var showReceiveList: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
-    @State var frameHeight: CGFloat = 0
     /// Chain asset the user tried to enable that requires an MLDSA key the
     /// vault doesn't have yet (today: QBTC). Persisted across the keygen
     /// hop so we can auto-add it on `qbtcQuantumKeygenCompleted`.
@@ -43,7 +42,8 @@ struct VaultMainScreen: View {
     // Capture geometry width to avoid circular layout dependency during sheet presentation
     @State private var capturedGeometryWidth: CGFloat = 400
 
-    private let scrollReferenceId = "vaultMainScreenBottomContentId"
+    private let searchAnchorId = "vaultMainSearchHeaderAnchor"
+    private let sectionHeaderHeight: CGFloat = 42
     private let contentInset: CGFloat = 78
     private let horizontalPadding: CGFloat = 16
 
@@ -84,13 +84,10 @@ struct VaultMainScreen: View {
                     }
                 }
                 .onChange(of: showSearchHeader) { _, showSearchHeader in
-                    if showSearchHeader {
-                        focusSearch = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                            withAnimation {
-                                scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
-                            }
-                        }
+                    guard showSearchHeader else { return }
+                    focusSearch = true
+                    withAnimation {
+                        scrollProxy?.scrollTo(searchAnchorId, anchor: .top)
                     }
                 }
                 .crossPlatformSheet(isPresented: $showChainSelection) {
@@ -196,7 +193,8 @@ struct VaultMainScreen: View {
                 }
             }
             .transition(.opacity)
-            .frame(height: 42)
+            .frame(height: sectionHeaderHeight)
+            .background(searchScrollAnchor)
             .padding(.bottom, 16)
 
             VaultMainChainListView(
@@ -204,14 +202,24 @@ struct VaultMainScreen: View {
                 onCopy: onCopy,
                 onCustomizeChains: onCustomizeChains
             )
-            .background(
-                // Reference to scroll when search gets presented
-                VStack {}
-                    .frame(height: 300)
-                    .id(scrollReferenceId)
-            )
         }
         .id(vault.id)
+    }
+
+    /// Where the section header is parked when search opens.
+    ///
+    /// A background is centred on its host and does not affect layout, so a box
+    /// `2 * contentInset` taller than the header has its top edge exactly
+    /// `contentInset` above the header's. Scrolling *that* edge to the top of
+    /// the viewport leaves the header one floating-home-header height down —
+    /// the same clearance `VaultMainScreenScrollView`'s `topInset` gives the
+    /// rest of the content — so the field lands below that header rather than
+    /// behind it, with the results underneath it and above the keyboard.
+    var searchScrollAnchor: some View {
+        Color.clear
+            .frame(height: sectionHeaderHeight + 2 * contentInset)
+            .id(searchAnchorId)
+            .allowsHitTesting(false)
     }
 
     var defaultBottomSectionHeader: some View {
@@ -229,6 +237,7 @@ struct VaultMainScreen: View {
             CircularAccessoryIconButton(icon: .magnifier) {
                 toggleSearch()
             }
+            .accessibilityIdentifier(AccessibilityID.VaultMain.searchButton)
             CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
                 showChainSelection.toggle()
             }
@@ -238,7 +247,11 @@ struct VaultMainScreen: View {
 
     var searchBottomSectionHeader: some View {
         HStack(spacing: 12) {
-            SearchTextField(value: $viewModel.searchText, isFocused: $focusSearch)
+            SearchTextField(
+                value: $viewModel.searchText,
+                isFocused: $focusSearch,
+                accessibilityIdentifier: AccessibilityID.VaultMain.searchField
+            )
             Button(action: clearSearch) {
                 Text("cancel".localized)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -246,6 +259,7 @@ struct VaultMainScreen: View {
             }
             .buttonStyle(.plain)
             .transition(.opacity)
+            .accessibilityIdentifier(AccessibilityID.VaultMain.searchCancelButton)
         }
     }
 
