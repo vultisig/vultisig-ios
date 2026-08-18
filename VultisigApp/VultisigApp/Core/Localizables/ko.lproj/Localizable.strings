@@ -519,7 +519,7 @@
 "functionActionsEmptyDescription" = "이 체인에서 사용할 수 있는 작업이 없습니다.";
 "functionActionsTitle" = "작업";
 "functionActionVoteSubtitle" = "거버넌스 제안에 투표합니다";
-"functionActionWithdrawSecuredAssetSubtitle" = "THORChain 시큐어드 자산을 상환합니다";
+"functionActionWithdrawSecuredAssetSubtitle" = "THORChain 보안 자산을 상환합니다";
 "functionArguments" = "함수 인수";
 "functionSignature" = "함수 서명";
 "functionTransactionScreenErrorSubtitle" = "함수로 리디렉션하는 중 오류가 발생했습니다";

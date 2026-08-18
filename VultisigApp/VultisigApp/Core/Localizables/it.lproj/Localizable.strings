@@ -519,7 +519,7 @@
 "functionActionsEmptyDescription" = "Nessuna azione disponibile su questa chain.";
 "functionActionsTitle" = "Azioni";
 "functionActionVoteSubtitle" = "Vota una proposta di governance";
-"functionActionWithdrawSecuredAssetSubtitle" = "Riscatta un secured asset THORChain";
+"functionActionWithdrawSecuredAssetSubtitle" = "Riscatta un asset garantito THORChain";
 "functionArguments" = "Argomenti della funzione";
 "functionSignature" = "Firma della funzione";
 "functionTransactionScreenErrorSubtitle" = "Si è verificato un errore durante il reindirizzamento alla funzione";

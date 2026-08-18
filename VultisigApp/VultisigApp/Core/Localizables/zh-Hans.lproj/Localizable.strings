@@ -519,7 +519,7 @@
 "functionActionsEmptyDescription" = "该链暂无可用操作。";
 "functionActionsTitle" = "操作";
 "functionActionVoteSubtitle" = "对治理提案进行投票";
-"functionActionWithdrawSecuredAssetSubtitle" = "赎回 THORChain 安全资产";
+"functionActionWithdrawSecuredAssetSubtitle" = "赎回 THORChain 担保资产";
 "functionArguments" = "函数参数";
 "functionSignature" = "函数签名";
 "functionTransactionScreenErrorSubtitle" = "重定向到功能时出错";
