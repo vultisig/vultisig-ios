@@ -26,10 +26,36 @@ public extension View {
         to focus: FocusState<Value>.Binding,
         delay: TimeInterval = 0.5
     ) -> some View {
-        onChange(of: intent) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                focus.wrappedValue = newValue
+        modifier(DelayedFocus(intent: intent, focus: focus, delay: delay))
+    }
+}
+
+/// Applies `intent` to `focus` after `delay`, cancelling any application still
+/// pending from an earlier change.
+///
+/// The cancellation is the point. An uncancelled `asyncAfter` lands whatever the
+/// intent was when it was scheduled, so a screen that clears focus on its way to
+/// another one can have the field handed back to it by a timer armed half a
+/// second earlier — focus restored on a screen that has already left, and a
+/// keyboard over the screen that replaced it. Same cancellable shape the staking
+/// screen already uses for its own copy of this.
+private struct DelayedFocus<Value: Hashable>: ViewModifier {
+    let intent: Value
+    let focus: FocusState<Value>.Binding
+    let delay: TimeInterval
+
+    @State private var task: Task<Void, Never>?
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: intent) { _, newValue in
+                task?.cancel()
+                task = Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(delay))
+                    guard !Task.isCancelled else { return }
+                    focus.wrappedValue = newValue
+                }
             }
-        }
+            .onDisappear { task?.cancel() }
     }
 }

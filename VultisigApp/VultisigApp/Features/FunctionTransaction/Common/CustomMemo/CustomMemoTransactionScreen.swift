@@ -116,6 +116,8 @@ struct CustomMemoTransactionScreen: View {
             focusedFieldBinding = .memo
         case .memo, nil:
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            focusedFieldBinding = nil
+            focusedField = nil
             onVerify(transactionBuilder)
         }
     }

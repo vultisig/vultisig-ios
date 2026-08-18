@@ -168,6 +168,8 @@ struct StakingTransactionScreen<VM: StakingFormViewModel, Sheet: View>: View {
             return
         }
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
+        focusedFieldBinding = nil
+        focusedField = nil
         onVerify(transactionBuilder)
     }
 

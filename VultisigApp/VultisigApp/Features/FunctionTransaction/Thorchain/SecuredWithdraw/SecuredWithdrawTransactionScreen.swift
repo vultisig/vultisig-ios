@@ -209,6 +209,8 @@ struct SecuredWithdrawTransactionScreen: View {
             revealRefusal()
             return
         }
+        focusedFieldBinding = nil
+        focusedField = nil
         onVerify(transactionBuilder)
     }
 

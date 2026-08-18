@@ -268,6 +268,11 @@ struct SwapDetailsScreen: View {
         } else {
             PrimaryButton(title: continueButtonTitle) {
                 guard let transaction = detailsViewModel.makeTransaction() else { return }
+                // The amount here is a plain `TextField` with no `@FocusState`
+                // to release, so the responder is resigned directly — otherwise
+                // Verify is pushed over a live keyboard and the screen comes
+                // back laid out for one that is gone.
+                hideKeyboard()
                 let retrySignal = SwapRetrySignal()
                 router.navigate(to: SwapRoute.verify(
                     transaction: transaction,

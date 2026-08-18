@@ -52,6 +52,8 @@ struct RemoveLPTransactionScreen: View {
 
     func onContinue() {
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
+        focusedFieldBinding = nil
+        focusedField = nil
         onVerify(transactionBuilder)
     }
 }
