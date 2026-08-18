@@ -337,12 +337,20 @@ struct TokenSelectionLogic {
     /// shared state seeded by chain detail's periodic refresh, not by opening
     /// this sheet, so a receipt the vault acquired since that seed is missing
     /// from it. Without this, saving a change about entirely different tokens
-    /// would delete the user's staking position and hide it thereafter — and
-    /// because the row can't render, there would be nothing to notice or undo.
+    /// deletes the local receipt coin and hides it thereafter — and because the
+    /// row can't render, there would be nothing to notice or undo. The on-chain
+    /// position survives, but the wallet stops tracking it and the DeFi card
+    /// that unwinds it reads the held coin.
     ///
     /// A position is carried through only while its chain keeps its native
-    /// token. When the user is removing the whole chain, the position goes with
-    /// it, rather than being resurrected as a token stranded without a native.
+    /// token, so removing a chain still removes its positions rather than
+    /// stranding a token with no native. That guard is deliberately not load
+    /// bearing for the case above: `findAllCoinsToRemove` already removes EVERY
+    /// coin on a chain whose native is absent from the selection, so a receipt
+    /// unioned in there would be removed regardless. The residual hazard — a
+    /// selection stale enough to be missing the native itself — is the general
+    /// stale-selection behaviour of this shared model, predates this rule, and
+    /// applies to every token rather than to DeFi receipts.
     static func selectionPreservingDefiPositions(
         selection: Set<CoinMeta>,
         vaultCoins: [Coin]

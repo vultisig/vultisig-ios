@@ -165,7 +165,14 @@ final class CustomTokenViewModel: ObservableObject {
         guard case .found(let customToken) = searchState else { return false }
         isAddingToken = true
         coinSelectionViewModel.handleSelection(isSelected: true, asset: customToken)
-        await CoinService.saveAssets(for: vault, selection: coinSelectionViewModel.selection)
+        // The other exit from the same sheet, and it saves the same shared
+        // selection — so it needs the same carry-through, or adding a custom
+        // token silently drops a held DeFi position the sheet never rendered.
+        let selection = TokenSelectionLogic.selectionPreservingDefiPositions(
+            selection: coinSelectionViewModel.selection,
+            vaultCoins: vault.coins
+        )
+        await CoinService.saveAssets(for: vault, selection: selection)
         isAddingToken = false
         return true
     }
