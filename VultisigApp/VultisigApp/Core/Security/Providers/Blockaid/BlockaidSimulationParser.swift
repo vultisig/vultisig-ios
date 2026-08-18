@@ -264,10 +264,19 @@ enum BlockaidSimulationParser {
     }
 
     /// Whether a single leg states a balance change.
+    ///
+    /// A leg that decodes to zero moves nothing, so it is not a change the
+    /// netting has to account for — declining over one would drop a net the
+    /// hero could state honestly. A leg that is present but whose magnitude
+    /// does not decode is not provably zero (`BalanceChange` keeps a
+    /// `raw_value` it cannot read as nil), so it counts as a change and the
+    /// netting fails closed.
     private static func carriesBalance(
         _ leg: BlockaidSolanaSimulationJson.BalanceChange?
     ) -> Bool {
-        leg?.rawValue != nil
+        guard let leg else { return false }
+        guard let raw = leg.rawValue, let amount = parseRawAmount(raw) else { return true }
+        return amount != 0
     }
 
     /// Builds a `BlockaidSimulationCoin` from a Solana asset, substituting the

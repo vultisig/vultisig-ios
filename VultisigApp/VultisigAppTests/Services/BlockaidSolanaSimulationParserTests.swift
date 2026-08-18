@@ -427,6 +427,78 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
     }
 
+    /// An explicit zero leg moves nothing, so it is not a balance change the
+    /// netting has to account for: the wSOL net is still the whole story and
+    /// declining over the untouched USDC account would drop a net the hero can
+    /// state honestly.
+    func testParseSolanaSameMintNetsWhenTheUnreadLegIsExplicitlyZero() {
+        let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
+        let diffs = [
+            diff(asset: wsol, in: balance("2000000"), out: balance("5000000")),
+            diff(asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6), out: balance("0"))
+        ]
+
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .transfer(coin, amount) = info else {
+            return XCTFail("expected netted .transfer, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.ticker, "WSOL")
+        XCTAssertEqual(amount, BigInt("3000000"), "5000000 out - 2000000 in")
+    }
+
+    /// The same for a zero leg on the diff supplying the opposite side: the
+    /// SOL/WSOL net stands, since nothing was left unaccounted for.
+    func testParseSolanaSameMintDistinctSourcesNetsWhenTheHiddenLegIsZero() {
+        let diffs = [
+            diff(asset: native(symbol: "SOL", decimals: 9), out: balance("59435000")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                in: balance("2039280"),
+                out: balance("0")
+            )
+        ]
+
+        let info = BlockaidSimulationParser.parseSolana(response: response(with: diffs))
+
+        guard case let .transfer(coin, amount) = info else {
+            return XCTFail("expected netted .transfer, got \(String(describing: info))")
+        }
+        XCTAssertEqual(coin.ticker, "SOL")
+        XCTAssertEqual(amount, BigInt("57395720"), "59435000 out - 2039280 in")
+    }
+
+    /// A leg whose magnitude does not decode is not provably zero —
+    /// `BalanceChange` keeps a `raw_value` it cannot read as nil — so it is
+    /// still an unaccounted balance change and the netting fails closed.
+    func testParseSolanaSameMintReturnsNilWhenAnUnreadLegHasNoReadableMagnitude() {
+        let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
+        let diffs = [
+            diff(asset: wsol, in: balance("2000000"), out: balance("5000000")),
+            diff(
+                asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6),
+                out: BlockaidSolanaSimulationJson.BalanceChange(rawValue: nil)
+            )
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
+    /// The same fail-closed posture for a magnitude that is stated but is not
+    /// a number: unreadable is not zero.
+    func testParseSolanaSameMintReturnsNilWhenAnUnreadLegHasAnUndecodableMagnitude() {
+        let wsol = token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9)
+        let diffs = [
+            diff(asset: wsol, in: balance("2000000"), out: balance("5000000")),
+            diff(
+                asset: token(symbol: "USDC", address: "Usdc1111", decimals: 6),
+                out: balance("not-a-number")
+            )
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
     /// The legs need not collapse onto one diff for a leg to go unread. Here
     /// the netting takes its out side from the SOL diff and its in side from
     /// the WSOL diff, so the WSOL diff's own out leg is never looked at: the
