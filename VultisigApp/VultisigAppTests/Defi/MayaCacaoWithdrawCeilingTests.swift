@@ -275,7 +275,12 @@ final class MayaCacaoWithdrawCeilingTests: XCTestCase {
         )
 
         let builder = try XCTUnwrap(sheet.transactionBuilder)
-        XCTAssertEqual(builder.memo, "POOL-:9100", "1100 of 1200 CACAO is 91% of the position")
+        XCTAssertEqual(
+            builder.memo,
+            "POOL-:9166",
+            "1100 of 1200 CACAO is 91.67% of the position, which is 9166 basis points once "
+                + "`WithdrawBasisPoints` rounds down — not the 9100 a whole-percent truncation produced"
+        )
     }
 
     /// The ceiling is also what the field is validated against, so the sheet now
