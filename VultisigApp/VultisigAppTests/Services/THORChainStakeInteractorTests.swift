@@ -172,6 +172,42 @@ final class THORChainStakeInteractorTests: XCTestCase {
         XCTAssertEqual(compounded.type, .compound)
     }
 
+    /// Every position states what can be withdrawn from it.
+    ///
+    /// The unstake sheet renders this figure, validates against it and derives
+    /// the signed fraction from it, so an interactor that leaves it unsaid sends
+    /// the sheet looking for a number somewhere else — which is how a card
+    /// showing a real stake opened a sheet offering nothing. The DTO makes
+    /// omitting it a compile error; this pins that THORChain states the right
+    /// one rather than merely some value.
+    func testEveryPositionStatesWhatCanBeWithdrawn() async throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+        let vault = makeRujiVault(
+            staking: [TokensStore.ruji, TokensStore.sruji],
+            holding: [TokensStore.ruji, TokensStore.sruji]
+        )
+        let details = makeRujiDetails(
+            bonded: Decimal(string: "16382.3899")!,
+            liquidSize: Decimal(string: "14064.86651509")!
+        )
+
+        let dtos = await THORChainStakeInteractor(stakingService: MockTHORChainStakingService(details: details))
+            .fetchStakePositions(vault: vault)
+
+        XCTAssertFalse(dtos.isEmpty)
+        // `account.withdraw` moves an absolute amount out of the bonded position
+        // and `liquid.unbond` redeems the whole receipt, so on THORChain the
+        // withdrawable quantity is the position itself — asserted, not assumed.
+        for dto in dtos {
+            XCTAssertEqual(
+                dto.availableToUnstake,
+                dto.amount,
+                "\(dto.coin.ticker) must state a withdrawable amount matching the position it shows"
+            )
+        }
+    }
+
     /// The regression this fix exists for: a bonded-only holder used to see a
     /// zero card because the on-chain sRUJI receipt read (a genuine zero) won,
     /// and `canUnstake` keys off the displayed amount.

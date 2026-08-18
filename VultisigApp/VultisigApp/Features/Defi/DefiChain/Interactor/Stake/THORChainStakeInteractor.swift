@@ -82,6 +82,10 @@ private extension THORChainStakeInteractor {
                     coin: snapshot.meta,
                     type: type,
                     amount: details.stakedAmount,
+                    // `tcy-:<bps>` withdraws a share of the staked amount, and the
+                    // auto-compounded receipt is a separate position, so the whole
+                    // staked amount is withdrawable.
+                    availableToUnstake: details.stakedAmount,
                     apr: details.apr,
                     estimatedReward: details.estimatedReward,
                     nextPayout: details.nextPayoutDate,
@@ -111,6 +115,10 @@ private extension THORChainStakeInteractor {
                     coin: snapshot.meta,
                     type: type,
                     amount: details.stakedAmount,
+                    // `account.withdraw` takes an absolute RUJI amount out of the
+                    // bonded position; the auto-compounding side is its own
+                    // position, so none of it is netted off here.
+                    availableToUnstake: details.stakedAmount,
                     apr: details.apr,
                     estimatedReward: details.estimatedReward,
                     nextPayout: details.nextPayoutDate,
@@ -135,7 +143,14 @@ private extension THORChainStakeInteractor {
                     runeCoinMeta: runeMeta,
                     address: snapshot.address
                 )
-                return [StakePositionData(coin: snapshot.meta, type: type, amount: details.autoCompoundAmount)]
+                return [StakePositionData(
+                    coin: snapshot.meta,
+                    type: type,
+                    amount: details.autoCompoundAmount,
+                    // `liquid.unbond` redeems the whole receipt, whose RUJI value
+                    // is what the card shows and the sheet types against.
+                    availableToUnstake: details.autoCompoundAmount
+                )]
             } catch {
                 logger.error("Error fetching sRUJI staking details: \(error.localizedDescription, privacy: .private)")
                 return []
@@ -145,7 +160,7 @@ private extension THORChainStakeInteractor {
             do {
                 let rawAmount = try await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: snapshot.address)
                 let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: snapshot.meta.decimals)
-                return [StakePositionData(coin: snapshot.meta, type: type, amount: amount)]
+                return [StakePositionData(coin: snapshot.meta, type: type, amount: amount, availableToUnstake: amount)]
             } catch {
                 logger.error("Error fetching STCY auto-compound amount: \(error.localizedDescription, privacy: .private)")
                 return []
@@ -155,7 +170,7 @@ private extension THORChainStakeInteractor {
             do {
                 let rawAmount = try await ThorchainService.shared.fetchBRuneAutoCompoundAmount(address: snapshot.address)
                 let amount = THORChainStakeInteractor.scaledAmount(rawAmount: rawAmount, decimals: snapshot.meta.decimals)
-                return [StakePositionData(coin: snapshot.meta, type: type, amount: amount)]
+                return [StakePositionData(coin: snapshot.meta, type: type, amount: amount, availableToUnstake: amount)]
             } catch {
                 logger.error("Error fetching ybRUNE auto-compound amount: \(error.localizedDescription, privacy: .private)")
                 return []
@@ -166,13 +181,13 @@ private extension THORChainStakeInteractor {
             // persisted row when balance is non-zero — `BalanceService` may briefly observe zero
             // mid-refresh, which would otherwise clobber a previously good amount.
             guard snapshot.balance > 0 else { return [] }
-            return [StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.balance)]
+            return [StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.balance, availableToUnstake: snapshot.balance)]
 
         default:
             // Same rationale as YRUNE/YTCY — `coin.stakedBalanceDecimal` mirrors a chain read
             // that can transiently report zero.
             guard snapshot.stakedBalance > 0 else { return [] }
-            return [StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.stakedBalance)]
+            return [StakePositionData(coin: snapshot.meta, type: type, amount: snapshot.stakedBalance, availableToUnstake: snapshot.stakedBalance)]
         }
     }
 }

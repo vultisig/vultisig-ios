@@ -2,14 +2,13 @@
 //  UnstakeRoutingTests.swift
 //  VultisigAppTests
 //
-//  The DeFi card and the unstake sheet it opens must agree about how much there
-//  is to unstake. They read the number from different places — the card from the
-//  position the DeFi interactor produced, the sheet from whatever the route
-//  hands it — and when the route handed over nothing the sheet fell through to
-//  `coin.stakedBalanceDecimal`, a field on `BalanceService`'s refresh cycle
-//  rather than the DeFi read. THORChain's interactor sets no explicit ceiling,
-//  so its bonded positions opened an empty sheet from a card showing a real
-//  stake.
+//  The unstake sheet's ceiling comes from the position, and the position states
+//  it. It is not the route's job to infer one: a route that guessed from the
+//  position's size would be right only where the two happen to coincide, and
+//  where it guessed nothing the sheet fell through to `coin.stakedBalanceDecimal`
+//  — a figure `BalanceService` maintains on its own refresh cycle, independent of
+//  the DeFi read the card was drawn from. That is how a card showing a real stake
+//  opened a sheet offering nothing.
 //
 
 @testable import VultisigApp
@@ -30,7 +29,8 @@ final class UnstakeRoutingTests: XCTestCase {
         super.tearDown()
     }
 
-    /// The ceiling the route hands the sheet, or `nil` if this isn't an unstake.
+    /// The ceiling the route hands the sheet. Double-optional so "not an unstake
+    /// route" stays distinguishable from "unstake with no ceiling".
     private func routedCeiling(_ type: FunctionTransactionType?) -> Decimal?? {
         guard case .unstake(_, _, let available) = type else { return nil }
         return .some(available)
@@ -45,7 +45,7 @@ final class UnstakeRoutingTests: XCTestCase {
         coin: CoinMeta = TokensStore.tcy,
         type: StakePositionType = .stake,
         amount: Decimal,
-        availableToUnstake: Decimal? = nil
+        availableToUnstake: Decimal?
     ) -> StakePosition {
         StakePosition(
             coin: coin,
@@ -56,65 +56,26 @@ final class UnstakeRoutingTests: XCTestCase {
         )
     }
 
-    // MARK: - The reported bug
+    // MARK: - The route passes the stated ceiling through
 
-    /// THORChain's interactor reports `amount` and never `availableToUnstake`,
-    /// so the route has to fall back to it rather than passing nil on.
-    func testBondedPositionRoutesThePositionAmount() throws {
+    func testBondedPositionRoutesTheStatedCeiling() throws {
         let vault = TestStore.makeVault(pubKey: "unstake-bonded")
-        let position = makePosition(vault: vault, amount: 12.5)
+        let position = makePosition(vault: vault, amount: 12.5, availableToUnstake: 12.5)
 
         let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
 
-        XCTAssertEqual(ceiling, 12.5, "the sheet must open against the amount the card displayed")
+        XCTAssertEqual(ceiling, 12.5)
     }
 
-    /// The invariant behind the bug, stated as itself: the card's Unstake button
-    /// is gated on `canUnstake`, which reads `availableToUnstake ?? amount`. If
-    /// the route resolved that differently, the button would be live and the
-    /// sheet empty — which is exactly what users saw.
-    func testACardThatOffersUnstakeAlwaysOpensANonZeroSheet() throws {
-        let vault = TestStore.makeVault(pubKey: "unstake-invariant")
-
-        for (amount, available) in [(Decimal(9), nil as Decimal?), (Decimal(9), Decimal(4)), (Decimal(0.00000001), nil)] {
-            let position = makePosition(vault: vault, amount: amount, availableToUnstake: available)
-            XCTAssertTrue(position.canUnstake, "precondition: the card offers Unstake here")
-
-            let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
-            let resolved = try XCTUnwrap(ceiling, "the route must not hand the sheet a nil ceiling")
-
-            XCTAssertGreaterThan(resolved, 0, "amount \(amount), available \(String(describing: available))")
-        }
-    }
-
-    /// An interactor that does distinguish the two still wins — Maya sets
-    /// `availableToUnstake` deliberately, and the fallback must not overwrite it.
-    func testAnExplicitCeilingStillWins() throws {
-        let vault = TestStore.makeVault(pubKey: "unstake-explicit")
-        let position = makePosition(vault: vault, amount: 10, availableToUnstake: 3)
-
-        let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
-
-        XCTAssertEqual(ceiling, 3, "an explicit ceiling is not the position's size and must survive")
-    }
-
-    /// A genuinely empty position still routes zero rather than being papered
-    /// over — the sheet's own guard is what should refuse, not a made-up figure.
-    func testAnEmptyPositionStillRoutesZero() throws {
-        let vault = TestStore.makeVault(pubKey: "unstake-empty")
-        let position = makePosition(vault: vault, amount: 0)
-
-        XCTAssertFalse(position.canUnstake, "an empty position does not offer Unstake")
-
-        let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
-        XCTAssertEqual(ceiling, 0)
-    }
-
-    // MARK: - The branch that already worked
-
-    func testCompoundPositionIsUnchanged() throws {
+    func testCompoundPositionRoutesTheStatedCeiling() throws {
         let vault = TestStore.makeVault(pubKey: "unstake-compound")
-        let position = makePosition(vault: vault, coin: TokensStore.stcy, type: .compound, amount: 7)
+        let position = makePosition(
+            vault: vault,
+            coin: TokensStore.stcy,
+            type: .compound,
+            amount: 7,
+            availableToUnstake: 7
+        )
 
         guard case .unstake(_, let isAutocompound, let available) =
                 makeModel(vault: vault).unstakeTransactionType(for: position) else {
@@ -122,6 +83,42 @@ final class UnstakeRoutingTests: XCTestCase {
         }
 
         XCTAssertTrue(isAutocompound)
-        XCTAssertEqual(available, 7, "the compound branch already passed the position's amount")
+        XCTAssertEqual(available, 7)
+    }
+
+    /// A ceiling that differs from the position's size survives — the whole
+    /// reason it is stated separately. Maya is the standing case: the card shows
+    /// the member's CACAO value and the sheet has to type against that same
+    /// value rather than the pool units underneath it.
+    func testACeilingThatDiffersFromTheAmountIsNotOverwritten() throws {
+        let vault = TestStore.makeVault(pubKey: "unstake-distinct")
+        let position = makePosition(vault: vault, amount: 10, availableToUnstake: 3)
+
+        let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
+
+        XCTAssertEqual(ceiling, 3, "the route must not substitute the position's size for the stated ceiling")
+    }
+
+    func testAnEmptyPositionRoutesZero() throws {
+        let vault = TestStore.makeVault(pubKey: "unstake-empty")
+        let position = makePosition(vault: vault, amount: 0, availableToUnstake: 0)
+
+        XCTAssertFalse(position.canUnstake, "an empty position does not offer Unstake")
+
+        let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
+        XCTAssertEqual(ceiling, 0)
+    }
+
+    /// Rows persisted before the ceiling was required still carry `nil`, and the
+    /// route passes that on rather than inventing a figure. They are corrected by
+    /// the first refresh, which writes a ceiling the producer stated. Pinned so
+    /// the behaviour is a decision on record rather than an accident.
+    func testAPersistedRowWithNoStatedCeilingRoutesNil() throws {
+        let vault = TestStore.makeVault(pubKey: "unstake-legacy")
+        let position = makePosition(vault: vault, amount: 9, availableToUnstake: nil)
+
+        let ceiling = try XCTUnwrap(routedCeiling(makeModel(vault: vault).unstakeTransactionType(for: position)))
+
+        XCTAssertNil(ceiling)
     }
 }

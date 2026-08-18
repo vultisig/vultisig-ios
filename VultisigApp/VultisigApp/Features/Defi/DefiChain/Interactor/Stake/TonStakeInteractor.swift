@@ -46,7 +46,7 @@ struct TonStakeInteractor: StakeInteractor {
         // position. Pick the pool with the largest total stake (active +
         // pending) and keep its address for add-more / unstake.
         guard let primary = pools.max(by: { totalStake($0) < totalStake($1) }) else {
-            return [StakePositionData(coin: snapshot.meta, type: .stake, amount: 0)]
+            return [StakePositionData(coin: snapshot.meta, type: .stake, amount: 0, availableToUnstake: 0)]
         }
 
         // Include `pending_deposit`: a fresh nominator deposit sits there until
@@ -81,6 +81,9 @@ struct TonStakeInteractor: StakeInteractor {
                 coin: snapshot.meta,
                 type: .stake,
                 amount: stakedAmount,
+                // A nominator withdrawal unwinds the whole stake; whether it is
+                // currently permitted is `withdrawalUnlockTime`, not a ceiling.
+                availableToUnstake: stakedAmount,
                 apr: apr,
                 poolAddress: normalizedAddress,
                 poolImplementation: poolInfo?.implementation,

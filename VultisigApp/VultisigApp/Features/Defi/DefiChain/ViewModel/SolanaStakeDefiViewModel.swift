@@ -174,6 +174,9 @@ final class SolanaStakeDefiViewModel: ObservableObject {
                 coin: coinMeta,
                 type: .stake,
                 amount: row.delegatedAmount,
+                // Deactivating a stake account unwinds the whole delegation —
+                // there is no partial withdrawal to bound here.
+                availableToUnstake: row.delegatedAmount,
                 apr: row.apyPercent.map { NSDecimalNumber(decimal: $0).doubleValue },
                 poolName: row.validatorName,
                 stakeAccountPubkey: row.stakeAccountPubkey,
