@@ -35,6 +35,7 @@ final class TonStakeWithdrawalPendingTests: XCTestCase {
             coin: meta,
             type: .stake,
             amount: 5,
+            availableToUnstake: 5,
             canStake: withdrawalUnlockTime == nil,
             withdrawalUnlockTime: withdrawalUnlockTime
         )

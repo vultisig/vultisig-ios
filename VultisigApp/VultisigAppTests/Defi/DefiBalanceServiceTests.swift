@@ -51,7 +51,7 @@ final class DefiBalanceServiceTests: XCTestCase {
         let storage = DefiPositionsStorageService()
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         try storage.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 5)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 5, availableToUnstake: 5)
         ], for: vault)
 
         let total = service.totalBalanceInFiat(for: .thorChain, vault: vault)
@@ -68,8 +68,8 @@ final class DefiBalanceServiceTests: XCTestCase {
         ]
 
         try storage.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 5),
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 3)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 5, availableToUnstake: 5),
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 3, availableToUnstake: 3)
         ], for: vault)
 
         XCTAssertEqual(vault.stakePositions.count, 2)
@@ -221,7 +221,7 @@ final class DefiBalanceServiceTests: XCTestCase {
 
         let storage = DefiPositionsStorageService()
         try storage.upsert(stake: [
-            StakePositionData(coin: tonMeta, type: .stake, amount: 10)
+            StakePositionData(coin: tonMeta, type: .stake, amount: 10, availableToUnstake: 10)
         ], for: vault)
 
         let total = service.totalBalanceInFiat(for: .ton, vault: vault)
@@ -235,7 +235,7 @@ final class DefiBalanceServiceTests: XCTestCase {
 
         let storage = DefiPositionsStorageService()
         try storage.upsert(stake: [
-            StakePositionData(coin: tonMeta, type: .stake, amount: 10)
+            StakePositionData(coin: tonMeta, type: .stake, amount: 10, availableToUnstake: 10)
         ], for: vault)
 
         XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 1, "A staked TON position counts without opt-in.")
@@ -250,7 +250,7 @@ final class DefiBalanceServiceTests: XCTestCase {
         let tonMeta = TokensStore.ton
         let storage = DefiPositionsStorageService()
         try storage.upsert(stake: [
-            StakePositionData(coin: tonMeta, type: .stake, amount: 0)
+            StakePositionData(coin: tonMeta, type: .stake, amount: 0, availableToUnstake: 0)
         ], for: vault)
 
         XCTAssertEqual(service.defiPositionCount(for: .ton, vault: vault), 0, "A zero-amount placeholder is not a position.")
@@ -366,8 +366,8 @@ final class DefiBalanceServiceTests: XCTestCase {
         ]
         let storage = DefiPositionsStorageService()
         try storage.upsert(stake: [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 3),
-            StakePositionData(coin: runeMeta, type: .stake, amount: 7)
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 3, availableToUnstake: 3),
+            StakePositionData(coin: runeMeta, type: .stake, amount: 7, availableToUnstake: 7)
         ], for: vault)
 
         let count = service.defiPositionCount(for: .thorChain, vault: vault)
@@ -399,7 +399,7 @@ final class DefiBalanceServiceTests: XCTestCase {
         ]
         let storage = DefiPositionsStorageService()
         try storage.upsert(stake: [
-            StakePositionData(coin: lunaMeta, type: .stake, amount: 1)
+            StakePositionData(coin: lunaMeta, type: .stake, amount: 1, availableToUnstake: 1)
         ], for: vault)
 
         XCTAssertEqual(service.defiPositionCount(for: .terra, vault: vault), 1)
@@ -414,7 +414,7 @@ final class DefiBalanceServiceTests: XCTestCase {
         ]
         let storage = DefiPositionsStorageService()
         try storage.upsert(stake: [
-            StakePositionData(coin: lunaMeta, type: .stake, amount: 1)
+            StakePositionData(coin: lunaMeta, type: .stake, amount: 1, availableToUnstake: 1)
         ], for: vault)
 
         XCTAssertEqual(service.defiPositionCount(for: .terra, vault: vault), 0)

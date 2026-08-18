@@ -266,6 +266,7 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
                 coin: solMeta,
                 type: .stake,
                 amount: 4,
+                availableToUnstake: 4,
                 apr: 0.06,
                 poolName: "Seeded Validator",
                 stakeAccountPubkey: "A",
@@ -295,6 +296,7 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
             coin: solMeta,
             type: .stake,
             amount: 1,
+            availableToUnstake: 1,
             stakeAccountPubkey: "A",
             vault: vault
         )
@@ -345,6 +347,7 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
                 coin: solMeta,
                 type: .stake,
                 amount: 9,
+                availableToUnstake: 9,
                 poolName: "Persisted",
                 stakeAccountPubkey: "A",
                 validatorVotePubkey: "V1",
@@ -369,12 +372,12 @@ final class SolanaStakeDefiViewModelTests: XCTestCase {
     func testDeleteStaleRemovesAbsentAccountAndKeepsSiblingChain() async throws {
         // Two Solana accounts persisted...
         try storage.upsert(solanaStake: [
-            StakePositionData(coin: solMeta, type: .stake, amount: 1, stakeAccountPubkey: "A", activationState: "active"),
-            StakePositionData(coin: solMeta, type: .stake, amount: 2, stakeAccountPubkey: "B", activationState: "active")
+            StakePositionData(coin: solMeta, type: .stake, amount: 1, availableToUnstake: 1, stakeAccountPubkey: "A", activationState: "active"),
+            StakePositionData(coin: solMeta, type: .stake, amount: 2, availableToUnstake: 2, stakeAccountPubkey: "B", activationState: "active")
         ], for: vault)
         // ...plus a sibling THOR stake row sharing `vault.stakePositions`.
         _ = try storage.upsert(stake: [
-            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 100)
+            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 100, availableToUnstake: 100)
         ], for: vault)
         XCTAssertEqual(vault.stakePositions.count, 3)
 

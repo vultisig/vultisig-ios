@@ -130,7 +130,7 @@ final class DefiChainScreenModel: ObservableObject {
             return .unstake(
                 coin: stakeCoin(for: position.coin),
                 isAutocompound: true,
-                availableToUnstake: position.amount
+                availableToUnstake: position.availableToUnstake
             )
         case .index:
             return .redeem(coin: coin(for: position.coin), yCoin: position.coin)

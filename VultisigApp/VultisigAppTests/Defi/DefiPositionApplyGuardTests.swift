@@ -89,7 +89,7 @@ private func stakeDto(
     coin: CoinMeta = Fixture.stakeCoin,
     type: StakePositionType = .stake,
     amount: Decimal = 10,
-    availableToUnstake: Decimal? = 4,
+    availableToUnstake: Decimal = 4,
     apr: Double? = 0.1,
     estimatedReward: Decimal? = 1,
     nextPayout: TimeInterval? = 100,
@@ -419,8 +419,10 @@ final class DefiPositionApplyGuardTests: XCTestCase {
              { XCTAssertEqual($0.amount, 99) }),
             ("availableToUnstake", { stakeDto(coin: $0, availableToUnstake: 42) },
              { XCTAssertEqual($0.availableToUnstake, 42) }),
-            ("availableToUnstake→nil", { stakeDto(coin: $0, availableToUnstake: nil) },
-             { XCTAssertNil($0.availableToUnstake) }),
+            // No `availableToUnstake→nil` case: a producer can no longer say a
+            // position has no withdrawable amount, which is the point of the
+            // field being required. The persisted property stays optional only
+            // for rows written before that, and those are backfilled on launch.
             ("apr", { stakeDto(coin: $0, apr: 0.9) },
              { XCTAssertEqual($0.apr, 0.9) }),
             ("estimatedReward", { stakeDto(coin: $0, estimatedReward: 7) },

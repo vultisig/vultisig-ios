@@ -43,7 +43,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         try storage.upsert(stake: [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 100, apr: 0.1)
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 100, availableToUnstake: 100, apr: 0.1)
         ], for: vault)
 
         let vm = makeViewModel()
@@ -57,7 +57,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         let vm = makeViewModel()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         interactor.stub = [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 42, apr: 0.05)
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 42, availableToUnstake: 42, apr: 0.05)
         ]
 
         await vm.refresh()
@@ -74,7 +74,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         let storage = DefiPositionsStorageService()
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
         try storage.upsert(stake: [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 100, apr: 0.1)
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 100, availableToUnstake: 100, apr: 0.1)
         ], for: vault)
 
         let vm = makeViewModel()
@@ -96,12 +96,12 @@ final class DefiChainStakeViewModelTests: XCTestCase {
 
         vault.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [tcyMeta, rujiMeta], lps: [])]
         try storage.upsert(stake: [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 100, apr: 0.1),
-            StakePositionData(coin: rujiMeta, type: .stake, amount: 200, apr: 0.2)
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 100, availableToUnstake: 100, apr: 0.1),
+            StakePositionData(coin: rujiMeta, type: .stake, amount: 200, availableToUnstake: 200, apr: 0.2)
         ], for: vault)
 
         interactor.stub = [
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 150, apr: 0.15)
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 150, availableToUnstake: 150, apr: 0.15)
         ]
 
         let vm = makeViewModel()
@@ -123,7 +123,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         let tonMeta = TokensStore.ton
         // No `defiPositions[.ton]` entry at all — the opt-in is never set.
         try storage.upsert(stake: [
-            StakePositionData(coin: tonMeta, type: .stake, amount: 25)
+            StakePositionData(coin: tonMeta, type: .stake, amount: 25, availableToUnstake: 25)
         ], for: vault)
 
         let vm = DefiChainStakeViewModel(vault: vault, chain: .ton, interactor: interactor)
@@ -136,7 +136,7 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         // The shared mock stands in for the production interactor's behaviour: with
         // the opt-in guard removed, the TON path no longer reads `defiPositions`.
         let tonMeta = TokensStore.ton
-        interactor.stub = [StakePositionData(coin: tonMeta, type: .stake, amount: 25)]
+        interactor.stub = [StakePositionData(coin: tonMeta, type: .stake, amount: 25, availableToUnstake: 25)]
         let vm = DefiChainStakeViewModel(vault: vault, chain: .ton, interactor: interactor)
 
         await vm.refresh()
