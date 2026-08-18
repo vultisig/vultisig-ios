@@ -492,18 +492,86 @@ final class TokenSelectionPoolTests: XCTestCase {
         }
     }
 
-    /// The one way this change could harm a user: hiding the row must not drop
-    /// the coin. The pending selection is seeded from `vault.coins` and saved
-    /// wholesale, so a held position survives a save it was never rendered for.
-    func testHidingTheReceiptRowDoesNotDropItFromThePendingSelection() {
-        let vault = Vault(name: "keeps-ybrune")
-        vault.coins = [Coin(asset: TokensStore.ybrune, address: "thoraddr", hexPublicKey: "pub")]
+    // MARK: - a hidden row must never become a deleted coin
 
-        let coinViewModel = CoinSelectionViewModel()
-        coinViewModel.setData(for: vault)
+    /// The one way this change could harm a user, driven through the real save.
+    ///
+    /// The selection is shared state seeded by chain detail's periodic refresh,
+    /// not by opening the sheet, so it can predate a receipt the vault has since
+    /// acquired — and `saveAssets` removes every held coin the selection omits.
+    /// Since the row can no longer render, nothing would put it back.
+    func testSavingWithoutTheReceiptStillKeepsTheHeldPosition() async throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
 
-        XCTAssertTrue(coinViewModel.selection.contains { $0.uniqueId == TokensStore.ybrune.uniqueId },
-                      "A held DeFi position stays in the selection that gets saved, unrendered or not")
+        let vault = TestStore.makeVault(pubKey: "defi-preserved")
+        let rune = Coin(asset: TokensStore.rune, address: "thoraddr", hexPublicKey: "pub")
+        let receipt = Coin(asset: TokensStore.ybrune, address: "thoraddr", hexPublicKey: "pub")
+        vault.coins = [rune, receipt]
+        Storage.shared.insert([rune, receipt])
+
+        // What the sheet can express: RUNE only — the receipt is unrenderable.
+        let expressed: Set<CoinMeta> = [TokensStore.rune]
+
+        await CoinService.saveAssets(
+            for: vault,
+            selection: TokenSelectionLogic.selectionPreservingDefiPositions(
+                selection: expressed,
+                vaultCoins: vault.coins
+            )
+        )
+
+        XCTAssertTrue(vault.coins.contains { $0.uniqueId == receipt.uniqueId },
+                      "A held DeFi position must survive a save it was never rendered for")
+        XCTAssertFalse(vault.hiddenTokens.contains { $0.ticker.uppercased() == "YBRUNE" },
+                       "…and must not be suppressed from every later list either")
+    }
+
+    /// The control that makes the test above mean something: hand `saveAssets`
+    /// the raw selection and the position is deleted and hidden. This is the
+    /// behaviour `selectionPreservingDefiPositions` exists to prevent.
+    func testSavingTheRawSelectionWouldHaveDeletedTheHeldPosition() async throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let vault = TestStore.makeVault(pubKey: "defi-unprotected")
+        let rune = Coin(asset: TokensStore.rune, address: "thoraddr", hexPublicKey: "pub")
+        let receipt = Coin(asset: TokensStore.ybrune, address: "thoraddr", hexPublicKey: "pub")
+        vault.coins = [rune, receipt]
+        Storage.shared.insert([rune, receipt])
+
+        await CoinService.saveAssets(for: vault, selection: [TokensStore.rune])
+
+        XCTAssertFalse(vault.coins.contains { $0.uniqueId == receipt.uniqueId },
+                       "Control: an omitted coin is removed — which is why the carry-through is needed")
+        XCTAssertTrue(vault.hiddenTokens.contains { $0.ticker.uppercased() == "YBRUNE" },
+                      "Control: and hidden thereafter")
+    }
+
+    /// Carrying positions through must not resurrect one on a chain the user is
+    /// removing outright — that would leave a token with no native coin.
+    func testAPositionIsNotCarriedThroughWhenItsChainIsBeingRemoved() {
+        let receipt = Coin(asset: TokensStore.ybrune, address: "thoraddr", hexPublicKey: "pub")
+
+        let preserved = TokenSelectionLogic.selectionPreservingDefiPositions(
+            selection: [],   // no THORChain native => the whole chain is going
+            vaultCoins: [receipt]
+        )
+
+        XCTAssertTrue(preserved.isEmpty,
+                      "Removing the chain removes its positions with it")
+    }
+
+    func testCarryThroughLeavesOrdinaryTokensAlone() {
+        let bRune = Coin(asset: TokensStore.brune, address: "thoraddr", hexPublicKey: "pub")
+
+        let preserved = TokenSelectionLogic.selectionPreservingDefiPositions(
+            selection: [TokensStore.rune],
+            vaultCoins: [bRune]
+        )
+
+        XCTAssertEqual(preserved, [TokensStore.rune],
+                       "Only DeFi positions are carried through; a deselected wallet token is still a removal")
     }
 
     /// Reachability, pinned next to the exclusion it depends on: the receipt is

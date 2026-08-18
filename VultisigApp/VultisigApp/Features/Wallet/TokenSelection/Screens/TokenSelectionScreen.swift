@@ -102,8 +102,15 @@ struct TokenSelectionScreen: View {
     }
 
     private func persistSelection() {
+        // Held DeFi positions are carried through explicitly: this sheet never
+        // renders them, so the selection cannot speak for them, and a save is
+        // otherwise a removal for anything the selection omits.
+        let selection = TokenSelectionLogic.selectionPreservingDefiPositions(
+            selection: coinViewModel.selection,
+            vaultCoins: vault.coins
+        )
         Task {
-            await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
+            await CoinService.saveAssets(for: vault, selection: selection)
             await MainActor.run { isPresented = false }
         }
     }

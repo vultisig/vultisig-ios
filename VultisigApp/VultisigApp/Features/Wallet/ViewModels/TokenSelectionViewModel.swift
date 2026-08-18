@@ -328,6 +328,35 @@ struct TokenSelectionLogic {
         return tokens.filter { $0.ticker.lowercased().contains(query) }
     }
 
+    /// The selection to actually persist: whatever the user expressed, plus the
+    /// DeFi positions the vault already holds.
+    ///
+    /// This sheet deliberately never renders a DeFi receipt, so it can never
+    /// express an intent to KEEP one — and `CoinService.saveAssets` removes
+    /// every held coin absent from the selection it is handed. The selection is
+    /// shared state seeded by chain detail's periodic refresh, not by opening
+    /// this sheet, so a receipt the vault acquired since that seed is missing
+    /// from it. Without this, saving a change about entirely different tokens
+    /// would delete the user's staking position and hide it thereafter — and
+    /// because the row can't render, there would be nothing to notice or undo.
+    ///
+    /// A position is carried through only while its chain keeps its native
+    /// token. When the user is removing the whole chain, the position goes with
+    /// it, rather than being resurrected as a token stranded without a native.
+    static func selectionPreservingDefiPositions(
+        selection: Set<CoinMeta>,
+        vaultCoins: [Coin]
+    ) -> Set<CoinMeta> {
+        let chainsKeepingTheirNative = Set(
+            selection.filter { $0.isNativeToken }.map { $0.chain }
+        )
+        let heldPositions = vaultCoins
+            .filter { $0.isDefiOnly && chainsKeepingTheirNative.contains($0.chain) }
+            .map { $0.toCoinMeta() }
+
+        return selection.union(heldPositions)
+    }
+
     /// Local-first dedup merge: earlier lists win a `uniqueId` collision (so the
     /// curated/local meta is kept), novel tokens are appended in order. Pure +
     /// `static` so the pool ordering/dedup is unit-tested directly.
