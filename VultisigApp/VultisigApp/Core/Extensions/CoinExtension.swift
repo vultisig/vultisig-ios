@@ -15,10 +15,14 @@ extension Coin {
         return chain.coinType
     }
 
-    static let defiOnlyTickers: Set<String> = ["STCY", "YBRUNE"]
+    /// Forwards to `CoinMeta.defiOnlyTickers`, which is the single definition.
+    /// A `Coin` and the `CoinMeta` it came from must never disagree about
+    /// whether a ticker names a DeFi position — the selection surfaces reason in
+    /// `CoinMeta`, everything downstream of a save reasons in `Coin`.
+    static var defiOnlyTickers: Set<String> { CoinMeta.defiOnlyTickers }
 
     var isDefiOnly: Bool {
-        Coin.defiOnlyTickers.contains(ticker.uppercased())
+        CoinMeta.defiOnlyTickers.contains(ticker.uppercased())
     }
 
     /// The balance in base units, read exactly.

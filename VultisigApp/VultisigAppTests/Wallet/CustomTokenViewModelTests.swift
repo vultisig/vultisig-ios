@@ -164,6 +164,54 @@ final class CustomTokenViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.searchState, .idle)
     }
 
+    // MARK: - saving a custom token must not drop a held DeFi position
+
+    /// The custom-token screen is the other exit from the token-selection sheet
+    /// and saves the same shared selection. That selection is seeded by chain
+    /// detail's periodic refresh, so it can predate a DeFi receipt discovery has
+    /// since added — and the sheet never renders receipts, so nothing puts it
+    /// back. Adding an unrelated custom token must not delete the position.
+    func testAddingACustomTokenKeepsAHeldDefiPosition() async throws {
+        let token = try TestStore.installInMemoryContainer()
+        defer { TestStore.restore(token) }
+
+        let vault = TestStore.makeVault(pubKey: "custom-token-defi")
+        let rune = Coin(asset: TokensStore.rune, address: "thoraddr", hexPublicKey: "pub")
+        let receipt = Coin(asset: TokensStore.ybrune, address: "thoraddr", hexPublicKey: "pub")
+        vault.coins = [rune, receipt]
+        Storage.shared.insert([rune, receipt])
+
+        let custom = CoinMeta(
+            chain: .thorChain,
+            ticker: "LQDY",
+            logo: "lqdy",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "thor.lqdy",
+            isNativeToken: false
+        )
+        let resolver = MockCustomTokenResolver(
+            validateHandler: { _ in true },
+            fetchInfoHandler: { _ in custom }
+        )
+        let viewModel = CustomTokenViewModel(vault: vault, chain: .thorChain, resolver: resolver)
+        viewModel.contractAddress = "thor.lqdy"
+        viewModel.validateAddress("thor.lqdy")
+        await viewModel.search().value
+
+        // The stale selection: RUNE only — the receipt is missing from it, and
+        // the sheet has no row that could put it back.
+        let coinSelectionViewModel = CoinSelectionViewModel()
+        coinSelectionViewModel.selection = [TokensStore.rune]
+
+        _ = await viewModel.saveAssets(coinSelectionViewModel: coinSelectionViewModel)
+
+        XCTAssertTrue(vault.coins.contains { $0.uniqueId == receipt.uniqueId },
+                      "Adding a custom token must not delete an unrelated held DeFi position")
+        XCTAssertFalse(vault.hiddenTokens.contains { $0.ticker.uppercased() == "YBRUNE" },
+                       "…nor suppress it from every later list")
+    }
+
     /// Drives a search that suspends inside the resolver, runs `interrupt` while it is
     /// in flight, then releases the lookup and asserts the stale result was discarded.
     @discardableResult

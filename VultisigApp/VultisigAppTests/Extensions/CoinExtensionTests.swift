@@ -35,6 +35,43 @@ final class CoinExtensionTests: XCTestCase {
         XCTAssertTrue(Coin.defiOnlyTickers.contains("STCY"))
     }
 
+    // MARK: - CoinMeta parity
+
+    /// The selection surfaces reason in `CoinMeta`; everything downstream of a
+    /// save reasons in `Coin`. If the two ever disagreed, a token could be
+    /// hidden from one surface and offered by the next.
+    func testCoinMetaAndCoinAgreeOnDefiOnly() {
+        for ticker in ["STCY", "ybRUNE", "bRUNE", "BTC", "RUNE", "TCY", "yRUNE"] {
+            let meta = makeMeta(ticker: ticker)
+            let coin = makeCoin(ticker: ticker, chain: .thorChain, isNative: false)
+            XCTAssertEqual(
+                meta.isDefiOnly,
+                coin.isDefiOnly,
+                "CoinMeta and Coin disagree about whether \(ticker) is DeFi-only"
+            )
+        }
+    }
+
+    func testCoinMetaIsDefiOnlyIsCaseInsensitive() {
+        for ticker in ["ybrune", "ybRUNE", "YBRUNE", "YbRuNe"] {
+            XCTAssertTrue(makeMeta(ticker: ticker).isDefiOnly, "Expected \(ticker) to be DeFi-only")
+        }
+    }
+
+    /// bRUNE is a plain wallet token — only the receipt it mints is DeFi-only,
+    /// and the two tickers differ by a single leading character. The THORChain
+    /// discovery filter next door matches these same tickers by *anchored
+    /// prefix*, so pin that this set matches a whole ticker and never a prefix:
+    /// a prefix rule here would delist bRUNE from the wallet entirely.
+    func testBRuneIsNotDefiOnlyDespiteBeingAPrefixOfYbRune() {
+        XCTAssertFalse(makeMeta(ticker: "bRUNE").isDefiOnly)
+        XCTAssertTrue(makeMeta(ticker: "ybRUNE").isDefiOnly)
+    }
+
+    func testCoinDefiOnlyTickersForwardsToCoinMeta() {
+        XCTAssertEqual(Coin.defiOnlyTickers, CoinMeta.defiOnlyTickers)
+    }
+
     func test_totalBalanceInFiatDecimal_emptyArrayReturnsZero() {
         let coins: [Coin] = []
         XCTAssertEqual(coins.totalBalanceInFiatDecimal, 0)
@@ -103,6 +140,18 @@ final class CoinExtensionTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    private func makeMeta(ticker: String, chain: Chain = .thorChain) -> CoinMeta {
+        CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: "",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "",
+            isNativeToken: false
+        )
+    }
 
     private func makeCoin(
         ticker: String,

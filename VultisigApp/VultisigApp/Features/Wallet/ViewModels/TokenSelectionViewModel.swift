@@ -242,6 +242,12 @@ struct TokenSelectionLogic {
     /// ticker (e.g. a fake `USDC` on a different contract) ride into the held set
     /// and auto-surface in browse. Each held coin yields exactly one row — the
     /// catalog meta when present, else the coin's own meta.
+    ///
+    /// Held DeFi receipts are dropped: THORChain discovery adds whatever denoms
+    /// the address carries, so a staker's vault genuinely holds a ybRUNE /
+    /// sTCY `Coin`, and without this the sheet offers the position back as a
+    /// spendable token. Dropping the ROW does not drop the COIN — the pending
+    /// selection is seeded from `vault.coins`, not from what this renders.
     func selectedTokens(chainCoins: [Coin], tokens: [CoinMeta]) -> [CoinMeta] {
         let catalogByUniqueId = Dictionary(
             tokens.map { ($0.uniqueId, $0) },
@@ -249,7 +255,7 @@ struct TokenSelectionLogic {
         )
 
         return chainCoins
-            .filter { !$0.isNativeToken }
+            .filter { !$0.isNativeToken && !$0.isDefiOnly }
             .map { coin in
                 let coinMeta = coin.toCoinMeta()
                 return catalogByUniqueId[coinMeta.uniqueId] ?? coinMeta
@@ -275,6 +281,7 @@ struct TokenSelectionLogic {
         return BundledTokensProvider.curatedTokens(for: chain, defaults: .standard)
             .filter { token in
                 !token.isNativeToken &&
+                !token.isDefiOnly &&
                 !heldIds.contains(token.uniqueId) &&
                 !hiddenTokens.contains { $0.matches(token) }
             }
@@ -284,8 +291,16 @@ struct TokenSelectionLogic {
     /// and not user-hidden. Preserves input order — used to fold the dynamic
     /// breadth in *after* the curated/local tokens without duplicating or
     /// re-surfacing a token the user removed.
+    ///
+    /// DeFi-only is filtered here too, and that is not belt-and-braces: the
+    /// curated `TokensStore` presets reach this screen twice — directly through
+    /// `preExistingTokens`, and again through the catalog, because
+    /// `BundledTokensProvider` is registered into `TokenCatalogRepository` and
+    /// its tokens are `.curated`, so they auto-surface. Excluding a receipt from
+    /// the presets alone just re-admits it here as provider breadth.
     func providerTokens(_ tokens: [CoinMeta], excludingLocal localIds: Set<String>, hiddenTokens: [HiddenToken]) -> [CoinMeta] {
         tokens.filter { token in
+            !token.isDefiOnly &&
             !localIds.contains(token.uniqueId) &&
             !hiddenTokens.contains { $0.matches(token) }
         }
@@ -311,6 +326,43 @@ struct TokenSelectionLogic {
 
         let query = searchText.lowercased()
         return tokens.filter { $0.ticker.lowercased().contains(query) }
+    }
+
+    /// The selection to actually persist: whatever the user expressed, plus the
+    /// DeFi positions the vault already holds.
+    ///
+    /// This sheet deliberately never renders a DeFi receipt, so it can never
+    /// express an intent to KEEP one — and `CoinService.saveAssets` removes
+    /// every held coin absent from the selection it is handed. The selection is
+    /// shared state seeded by chain detail's periodic refresh, not by opening
+    /// this sheet, so a receipt the vault acquired since that seed is missing
+    /// from it. Without this, saving a change about entirely different tokens
+    /// deletes the local receipt coin and hides it thereafter — and because the
+    /// row can't render, there would be nothing to notice or undo. The on-chain
+    /// position survives, but the wallet stops tracking it and the DeFi card
+    /// that unwinds it reads the held coin.
+    ///
+    /// A position is carried through only while its chain keeps its native
+    /// token, so removing a chain still removes its positions rather than
+    /// stranding a token with no native. That guard is deliberately not load
+    /// bearing for the case above: `findAllCoinsToRemove` already removes EVERY
+    /// coin on a chain whose native is absent from the selection, so a receipt
+    /// unioned in there would be removed regardless. The residual hazard — a
+    /// selection stale enough to be missing the native itself — is the general
+    /// stale-selection behaviour of this shared model, predates this rule, and
+    /// applies to every token rather than to DeFi receipts.
+    static func selectionPreservingDefiPositions(
+        selection: Set<CoinMeta>,
+        vaultCoins: [Coin]
+    ) -> Set<CoinMeta> {
+        let chainsKeepingTheirNative = Set(
+            selection.filter { $0.isNativeToken }.map { $0.chain }
+        )
+        let heldPositions = vaultCoins
+            .filter { $0.isDefiOnly && chainsKeepingTheirNative.contains($0.chain) }
+            .map { $0.toCoinMeta() }
+
+        return selection.union(heldPositions)
     }
 
     /// Local-first dedup merge: earlier lists win a `uniqueId` collision (so the

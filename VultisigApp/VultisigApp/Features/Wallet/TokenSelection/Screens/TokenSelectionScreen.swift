@@ -103,7 +103,21 @@ struct TokenSelectionScreen: View {
 
     private func persistSelection() {
         Task {
-            await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
+            // Held DeFi positions are carried through explicitly: this sheet
+            // never renders them, so the selection cannot speak for them, and a
+            // save is otherwise a removal for anything the selection omits.
+            //
+            // Read immediately before the save rather than before this task:
+            // token discovery is the concurrent producer at the heart of this
+            // bug, and a union formed earlier would not carry a coin that
+            // landed in between.
+            let selection = await MainActor.run {
+                TokenSelectionLogic.selectionPreservingDefiPositions(
+                    selection: coinViewModel.selection,
+                    vaultCoins: vault.coins
+                )
+            }
+            await CoinService.saveAssets(for: vault, selection: selection)
             await MainActor.run { isPresented = false }
         }
     }
