@@ -181,7 +181,9 @@ final class HeaderCollapseProgressTests: XCTestCase {
         XCTAssertEqual(collapse.progress(for: .wallet).value, 1)
         XCTAssertEqual(collapse.progress(for: .defi), .expanded)
 
-        collapse.update(tab: .defi, offset: resting - distance * 0.25, restingOffset: resting)
+        // Scrolled against the DeFi tab's own (longer) ramp, not the wallet's.
+        let defiDistance = HeaderCollapseProgress.distance(for: .defi)
+        collapse.update(tab: .defi, offset: resting - defiDistance * 0.25, restingOffset: resting)
         XCTAssertEqual(collapse.progress(for: .defi).value, 0.25, accuracy: 0.0001)
         XCTAssertEqual(collapse.progress(for: .wallet).value, 1, "the wallet tab must not move")
     }
@@ -211,5 +213,80 @@ final class HeaderCollapseProgressTests: XCTestCase {
         let collapse = HomeHeaderCollapse()
         collapse.update(tab: .camera, offset: resting - distance, restingOffset: resting)
         XCTAssertEqual(collapse.progress(for: .camera), .expanded)
+    }
+
+    // MARK: - Per-tab ramp length
+
+    /// The reported bug: the DeFi banner went fully transparent about halfway
+    /// down its own height, and `.opacity` does not reclaim layout — so stopping
+    /// mid-scroll left a blank gap where the card still was.
+    ///
+    /// The expanded ramp finishes at half the collapse distance, so the distance
+    /// has to be twice the height of whatever it fades.
+    func testDefiRampIsTwiceTheBannerHeight() {
+        XCTAssertEqual(
+            HeaderCollapseProgress.distance(for: .defi),
+            DefiMainBalanceView.bannerHeight * 2,
+            "the ramp and the banner it fades must not drift apart"
+        )
+    }
+
+    func testWalletRampIsUnchanged() {
+        XCTAssertEqual(HeaderCollapseProgress.distance(for: .wallet), HeaderCollapseProgress.defaultDistance)
+        XCTAssertEqual(HeaderCollapseProgress.distance(for: .camera), HeaderCollapseProgress.defaultDistance)
+    }
+
+    /// The acceptance criterion in the issue, stated directly: the banner is
+    /// still drawn everywhere it is still on screen, and reaches zero exactly
+    /// where it has finished scrolling past.
+    func testDefiBannerIsStillDrawnWhileAnyOfItIsOnScreen() {
+        let banner = DefiMainBalanceView.bannerHeight
+        let defiDistance = HeaderCollapseProgress.distance(for: .defi)
+
+        func progress(scrolled: CGFloat) -> HeaderCollapseProgress {
+            HeaderCollapseProgress(offset: resting - scrolled, restingOffset: resting, distance: defiDistance)
+        }
+
+        // Every point at which part of the card is still on screen.
+        for step in stride(from: CGFloat(0), to: banner, by: 0.5) {
+            XCTAssertGreaterThan(
+                progress(scrolled: step).expandedOpacity, 0,
+                "\(banner - step)pt of banner is still on screen at \(step)pt, but it is already invisible"
+            )
+        }
+
+        XCTAssertEqual(progress(scrolled: banner).expandedOpacity, 0, accuracy: 0.0001,
+                       "and it is gone exactly when the banner has scrolled past")
+    }
+
+    /// The old ramp's zero point. Before the fix the banner was fully
+    /// transparent here with ~80pt of it still on screen — the blank gap.
+    func testDefiBannerIsMostlyVisibleAtTheOldRampsZeroPoint() {
+        let oldZero = HeaderCollapseProgress.defaultDistance / 2
+        let progress = HeaderCollapseProgress(
+            offset: resting - oldZero,
+            restingOffset: resting,
+            distance: HeaderCollapseProgress.distance(for: .defi)
+        )
+        XCTAssertGreaterThan(progress.expandedOpacity, 0.5,
+                             "most of the banner is still on screen here, so most of it must still be drawn")
+    }
+
+    /// The invariant the rest of this file pins for the default ramp has to hold
+    /// for the DeFi ramp too — a longer ramp must not let the banner and the top
+    /// bar's balance be legible at the same time.
+    func testTheTwoBalancesAreNeverBothVisibleOnTheDefiRamp() {
+        let defiDistance = HeaderCollapseProgress.distance(for: .defi)
+        for step in stride(from: CGFloat(-40), through: defiDistance + 40, by: 0.25) {
+            let progress = HeaderCollapseProgress(
+                offset: resting - step,
+                restingOffset: resting,
+                distance: defiDistance
+            )
+            XCTAssertTrue(
+                progress.expandedOpacity == 0 || progress.collapsedOpacity == 0,
+                "both legible at \(step)pt: expanded \(progress.expandedOpacity), collapsed \(progress.collapsedOpacity)"
+            )
+        }
     }
 }

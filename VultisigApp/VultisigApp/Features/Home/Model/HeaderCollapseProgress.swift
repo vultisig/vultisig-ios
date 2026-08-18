@@ -29,6 +29,33 @@ struct HeaderCollapseProgress: Equatable {
     /// header edge; the second half brings the header balance in.
     static let defaultDistance: CGFloat = 110
 
+    /// The DeFi tab's collapse distance.
+    ///
+    /// Twice the height of `DefiMainBalanceView`'s banner, because the expanded
+    /// half of the ramp is what fades that banner out and it must not finish
+    /// early: `.opacity` does not reclaim layout, so a banner emptied while it is
+    /// still on screen reads as a blank gap between the top bar and the list —
+    /// most visibly when the user stops mid-scroll.
+    ///
+    /// The wallet tab keeps `defaultDistance`: the balance it fades is text, not
+    /// a fixed-height card, and is short enough that the default ramp already
+    /// finishes as it leaves the viewport.
+    ///
+    /// Stated here rather than read off the view — this is the home model and
+    /// must not reach into a feature's view layer — so a test pins it to
+    /// `DefiMainBalanceView.bannerHeight` instead, and the gate catches a drift
+    /// that would otherwise only show up as the original bug.
+    static let defiBannerDistance: CGFloat = 270
+
+    /// The collapse distance for `tab`, since what each tab fades is a different
+    /// height and the ramp has to match it.
+    static func distance(for tab: HomeTab) -> CGFloat {
+        switch tab {
+        case .defi: defiBannerDistance
+        case .wallet, .camera: defaultDistance
+        }
+    }
+
     static let expanded = HeaderCollapseProgress(value: 0)
 
     /// `0` = fully expanded (large balance in the content), `1` = fully

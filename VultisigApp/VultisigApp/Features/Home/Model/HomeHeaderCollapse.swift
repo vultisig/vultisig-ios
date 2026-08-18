@@ -46,7 +46,13 @@ final class HomeHeaderCollapse: ObservableObject {
     ///   - offset: the scroll content's `minY` in the scroll view's space.
     ///   - restingOffset: that value at scroll position zero (the top inset).
     func update(tab: HomeTab, offset: CGFloat, restingOffset: CGFloat) {
-        let progress = HeaderCollapseProgress(offset: offset, restingOffset: restingOffset)
+        // Per-tab distance: the ramp has to match the height of whatever that
+        // tab fades, or the content empties before it has left the screen.
+        let progress = HeaderCollapseProgress(
+            offset: offset,
+            restingOffset: restingOffset,
+            distance: HeaderCollapseProgress.distance(for: tab)
+        )
         guard progress != self.progress(for: tab) else { return }
 
         switch tab {

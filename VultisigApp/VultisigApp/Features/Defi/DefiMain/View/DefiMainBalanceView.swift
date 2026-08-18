@@ -8,6 +8,15 @@
 import SwiftUI
 
 struct DefiMainBalanceView: View {
+    /// Height of the banner card.
+    ///
+    /// Named because the home header's collapse ramp is derived from it: the
+    /// banner is faded out by scroll, and `.opacity` does not reclaim layout, so
+    /// a ramp shorter than this height empties the card while it is still on
+    /// screen and leaves a blank gap. `HeaderCollapseProgress` carries the
+    /// matching distance, and a test pins the two together.
+    static let bannerHeight: CGFloat = 135
+
     @ObservedObject var vault: Vault
     @EnvironmentObject var homeViewModel: HomeViewModel
 
@@ -30,7 +39,7 @@ struct DefiMainBalanceView: View {
                 )
             }
         }
-        .frame(height: 135)
+        .frame(height: Self.bannerHeight)
         .background(
             Theme.colors.bgSurface1
                 .overlay(gradientBackground.clipped())
