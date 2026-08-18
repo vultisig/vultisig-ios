@@ -11,38 +11,64 @@ import Foundation
 /// hero and can't drift.
 extension BlockaidSimulationInfo {
 
-    /// Hero for this simulation: a single coin row for transfers, from/to
-    /// rows for swaps. Fiat sub-lines are resolved best-effort against
+    /// Hero for this simulation: a single coin row for transfers and receives,
+    /// from/to rows for swaps. Fiat sub-lines are resolved best-effort against
     /// `vaultCoins` (see `heroFiat(for:amount:vaultCoins:)`).
+    ///
+    /// A `receive` maps to its own hero shape rather than reusing `.send`: the
+    /// two render the same row, and only the label separates money arriving
+    /// from money leaving.
     func heroContent(title: String?, vaultCoins: [Coin]) -> HeroContent {
         switch self {
         case .transfer(let coin, _):
-            return .send(
-                title: title,
-                coin: HeroCoinAmount(
-                    amount: heroAmountText,
-                    ticker: coin.ticker,
-                    logo: coin.logo,
-                    fiat: Self.heroFiat(for: coin, amount: fromAmountDecimal, vaultCoins: vaultCoins)
-                )
-            )
+            return .send(title: title, coin: primaryRow(for: coin, vaultCoins: vaultCoins))
+        case .receive(let coin, _):
+            return .receive(title: title, coin: primaryRow(for: coin, vaultCoins: vaultCoins))
         case .swap(let from, let to, _, _):
             return .swap(
                 title: title,
-                from: HeroCoinAmount(
-                    amount: heroAmountText,
-                    ticker: from.ticker,
-                    logo: from.logo,
-                    fiat: Self.heroFiat(for: from, amount: fromAmountDecimal, vaultCoins: vaultCoins)
-                ),
-                to: HeroCoinAmount(
-                    amount: heroToAmountText ?? "",
-                    ticker: to.ticker,
-                    logo: to.logo,
-                    fiat: Self.heroFiat(for: to, amount: toAmountDecimal ?? .zero, vaultCoins: vaultCoins)
+                from: primaryRow(for: from, vaultCoins: vaultCoins),
+                to: Self.coinAmount(
+                    for: to,
+                    text: heroToAmountText ?? "",
+                    amount: toAmountDecimal ?? .zero,
+                    vaultCoins: vaultCoins
                 )
             )
         }
+    }
+
+    /// The row for the amount this simulation leads with — the transferred,
+    /// received, or swapped-from coin. Only the swap's destination row reads a
+    /// different amount.
+    private func primaryRow(
+        for coin: BlockaidSimulationCoin,
+        vaultCoins: [Coin]
+    ) -> HeroCoinAmount {
+        Self.coinAmount(
+            for: coin,
+            text: heroAmountText,
+            amount: primaryAmountDecimal,
+            vaultCoins: vaultCoins
+        )
+    }
+
+    /// One coin row of the hero. Every row resolves its ticker, logo and fiat
+    /// the same way, so they are built here rather than at each call site —
+    /// `text` is the pre-formatted amount shown, `amount` the same value as a
+    /// Decimal for pricing.
+    private static func coinAmount(
+        for coin: BlockaidSimulationCoin,
+        text: String,
+        amount: Decimal,
+        vaultCoins: [Coin]
+    ) -> HeroCoinAmount {
+        HeroCoinAmount(
+            amount: text,
+            ticker: coin.ticker,
+            logo: coin.logo,
+            fiat: heroFiat(for: coin, amount: amount, vaultCoins: vaultCoins)
+        )
     }
 
     /// Best-effort fiat for a hero coin row, resolved against the active

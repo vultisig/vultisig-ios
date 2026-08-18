@@ -137,18 +137,18 @@ final class BlockaidSimulationParserTests: XCTestCase {
 
     // MARK: - Decimal + formatting
 
-    func test_fromAmountDecimal_usesCoinDecimals() {
+    func test_primaryAmountDecimal_usesCoinDecimals() {
         let usdc = BlockaidSimulationInfo.transfer(
             fromCoin: BlockaidSimulationCoin(chain: .ethereum, address: nil, ticker: "USDC", logo: "", decimals: 6),
             fromAmount: BigInt("1500000")
         )
-        XCTAssertEqual(usdc.fromAmountDecimal, Decimal(string: "1.5"))
+        XCTAssertEqual(usdc.primaryAmountDecimal, Decimal(string: "1.5"))
 
         let weth = BlockaidSimulationInfo.transfer(
             fromCoin: BlockaidSimulationCoin(chain: .ethereum, address: nil, ticker: "WETH", logo: "", decimals: 18),
             fromAmount: BigInt("2500000000000000000")
         )
-        XCTAssertEqual(weth.fromAmountDecimal, Decimal(string: "2.5"))
+        XCTAssertEqual(weth.primaryAmountDecimal, Decimal(string: "2.5"))
     }
 
     func test_heroAmountText_matchesFormatForDisplay() {

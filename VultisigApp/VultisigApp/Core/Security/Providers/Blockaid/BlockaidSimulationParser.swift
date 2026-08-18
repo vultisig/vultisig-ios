@@ -107,6 +107,10 @@ enum BlockaidSimulationParser {
     /// filtered out as "likely the transaction fee". One remaining diff maps to
     /// `.transfer`, two remaining diffs map to `.swap` (or `.transfer` if only
     /// the out side has a value).
+    ///
+    /// Diverges from the extension in one place: a two-diff pair that resolves
+    /// to the same mint is netted rather than reported as a swap — see
+    /// `netSameMint(outCoin:outAmount:inCoin:inAmount:)`.
     static func parseSolana(
         response: BlockaidSolanaSimulationResponseJson
     ) -> BlockaidSimulationInfo? {
@@ -149,11 +153,10 @@ enum BlockaidSimulationParser {
         // Mirror the extension's positional destructuring: first diff is the
         // out side, second is the in side. Fall back to .transfer when only
         // one side carries a value (matches the extension's `else if` branch).
-        let outCandidate = diffs[0]
-        let inCandidate = diffs[1]
-
-        let inSource = inCandidate.`in` != nil ? inCandidate : outCandidate
-        let outSource = outCandidate.out != nil ? outCandidate : inCandidate
+        let outIndex = diffs[0].out != nil ? 0 : 1
+        let inIndex = diffs[1].`in` != nil ? 1 : 0
+        let outSource = diffs[outIndex]
+        let inSource = diffs[inIndex]
 
         if let outRaw = outSource.out?.rawValue,
            let inRaw = inSource.`in`?.rawValue,
@@ -161,6 +164,26 @@ enum BlockaidSimulationParser {
            let inAmount = parseRawAmount(inRaw),
            let fromCoin = buildSolanaCoin(from: outSource.asset),
            let toCoin = buildSolanaCoin(from: inSource.asset) {
+            if let outMint = fromCoin.address,
+               let inMint = toCoin.address,
+               outMint == inMint {
+                // The netting reads exactly two legs: one diff's out side and
+                // one diff's in side, which can collapse onto the same diff.
+                // Every other leg the response states goes unread, so netting
+                // past one would have the hero state an authoritative net
+                // having never looked at a balance change the transaction
+                // makes. Decline and let the caller fall back to the generic
+                // title.
+                guard readsEveryLeg(diffs, outIndex: outIndex, inIndex: inIndex) else {
+                    return nil
+                }
+                return netSameMint(
+                    outCoin: fromCoin,
+                    outAmount: outAmount,
+                    inCoin: toCoin,
+                    inAmount: inAmount
+                )
+            }
             return .swap(fromCoin: fromCoin, toCoin: toCoin, fromAmount: outAmount, toAmount: inAmount)
         }
 
@@ -171,6 +194,89 @@ enum BlockaidSimulationParser {
         }
 
         return nil
+    }
+
+    /// Collapses an out/in pair that resolves to a single mint into the net
+    /// movement of that mint.
+    ///
+    /// Nothing was exchanged, so a swap hero would name a destination asset the
+    /// user is not receiving. Wrapping SOL and spending it in the same
+    /// transaction is the common source: the wrap-in and the spend-out cancel
+    /// and never surface as diffs of their own, leaving only the wSOL account's
+    /// rent-exempt residual as a small incoming diff beside the real native-SOL
+    /// out leg. `buildSolanaCoin` maps native SOL onto the wrapped-SOL mint, so
+    /// both legs arrive here carrying the same mint and are directly netted.
+    ///
+    /// The direction is decided by the net, not by which leg is which: the same
+    /// pair arrives reversed when a transaction unwraps wSOL back into native
+    /// SOL (a Kamino wrapped-SOL withdraw closes its payout account, which is
+    /// what unwraps it), where the out leg is only the residual being returned
+    /// and the in leg is the amount the user actually receives. The coin comes
+    /// from whichever leg the net follows, so the ticker stays truthful —
+    /// native SOL reads "SOL" even though it shares WSOL's mint here.
+    ///
+    /// An exact cancellation nets to zero. There is no honest hero for "your
+    /// balance does not change", so it returns nil and the caller falls back to
+    /// the generic title.
+    ///
+    /// Mints are compared exactly. Solana addresses are base58 and
+    /// case-sensitive, unlike the EVM path's checksummed hex.
+    ///
+    /// Both legs must be non-negative. Blockaid states each side's magnitude
+    /// and puts the direction in the field name, but `raw_value` decodes a
+    /// signed integer, and a negative reaching the subtraction would flip the
+    /// direction of an approval headline. Fail closed instead.
+    private static func netSameMint(
+        outCoin: BlockaidSimulationCoin,
+        outAmount: BigInt,
+        inCoin: BlockaidSimulationCoin,
+        inAmount: BigInt
+    ) -> BlockaidSimulationInfo? {
+        guard outAmount >= 0, inAmount >= 0 else { return nil }
+
+        if outAmount > inAmount {
+            return .transfer(fromCoin: outCoin, fromAmount: outAmount - inAmount)
+        }
+        if inAmount > outAmount {
+            return .receive(coin: inCoin, amount: inAmount - outAmount)
+        }
+        return nil
+    }
+
+    /// Whether the netting's two legs are the only balance changes the
+    /// response states.
+    ///
+    /// The netting subtracts `diffs[inIndex].in` from `diffs[outIndex].out`
+    /// and reads nothing else — not the out leg of any other diff, nor the in
+    /// leg of any other diff, and not the opposite leg of either source when
+    /// the two indices differ. Any of those carrying a balance means the net
+    /// on screen would be missing an amount the transaction moves, which is
+    /// worse than no net at all.
+    private static func readsEveryLeg(
+        _ diffs: [BlockaidSolanaSimulationJson.AccountAssetDiff],
+        outIndex: Int,
+        inIndex: Int
+    ) -> Bool {
+        diffs.indices.allSatisfy { index in
+            (index == outIndex || !carriesBalance(diffs[index].out))
+                && (index == inIndex || !carriesBalance(diffs[index].`in`))
+        }
+    }
+
+    /// Whether a single leg states a balance change.
+    ///
+    /// A leg that decodes to zero moves nothing, so it is not a change the
+    /// netting has to account for — declining over one would drop a net the
+    /// hero could state honestly. A leg that is present but whose magnitude
+    /// does not decode is not provably zero (`BalanceChange` keeps a
+    /// `raw_value` it cannot read as nil), so it counts as a change and the
+    /// netting fails closed.
+    private static func carriesBalance(
+        _ leg: BlockaidSolanaSimulationJson.BalanceChange?
+    ) -> Bool {
+        guard let leg else { return false }
+        guard let raw = leg.rawValue, let amount = parseRawAmount(raw) else { return true }
+        return amount != 0
     }
 
     /// Builds a `BlockaidSimulationCoin` from a Solana asset, substituting the

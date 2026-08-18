@@ -17,7 +17,9 @@ struct HeroContentView: View {
             case .title(let text, let caption):
                 titleOnly(text: text, caption: caption)
             case .send(let title, let coin):
-                send(title: title, coin: coin)
+                amountRow(title: title, coin: coin, label: nil)
+            case .receive(let title, let coin):
+                amountRow(title: title, coin: coin, label: "receive".localized)
             case .swap(let title, let from, let to):
                 swap(title: title, from: from, to: to)
             }
@@ -41,15 +43,29 @@ struct HeroContentView: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
+    /// The single-row heroes: send and receive render the same row and differ
+    /// only by `label`. Every hero shape but the receive states money leaving,
+    /// so the inflow carries an explicit label — without it the row is
+    /// indistinguishable from a send.
     @ViewBuilder
-    private func send(title: String?, coin: HeroCoinAmount) -> some View {
+    private func amountRow(title: String?, coin: HeroCoinAmount, label: String?) -> some View {
         if let title {
             Text(title)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
-        coinRow(coin, iconSize: 36)
+        if let label {
+            VStack(spacing: 8) {
+                Text(label)
+                    .font(Theme.fonts.caption10)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                coinRow(coin, iconSize: 36)
+            }
+        } else {
+            coinRow(coin, iconSize: 36)
+        }
     }
 
     @ViewBuilder

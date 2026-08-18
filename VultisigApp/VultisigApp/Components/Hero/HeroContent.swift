@@ -14,6 +14,9 @@ import Foundation
 /// - `.title` — function name only (4byte decoded), no resolved balance change.
 ///   Used when Blockaid simulation failed or returned no diff.
 /// - `.send` — resolved single-sided balance change (Blockaid `.transfer`).
+/// - `.receive` — resolved single-sided balance change in the other direction
+///   (Blockaid `.receive`). Carries an explicit label, because an unlabelled
+///   amount on a signing screen reads as money leaving.
 /// - `.swap` — resolved from → to balance change (Blockaid `.swap`).
 ///
 /// Mirrors `BlockaidTransferDisplay` / `BlockaidSwapDisplay` / `EvmCalldataFallback`
@@ -21,12 +24,14 @@ import Foundation
 enum HeroContent: Hashable {
     case title(text: String, caption: String?)
     case send(title: String?, coin: HeroCoinAmount)
+    case receive(title: String?, coin: HeroCoinAmount)
     case swap(title: String?, from: HeroCoinAmount, to: HeroCoinAmount)
 
     var title: String? {
         switch self {
         case .title(let text, _): return text
         case .send(let title, _): return title
+        case .receive(let title, _): return title
         case .swap(let title, _, _): return title
         }
     }

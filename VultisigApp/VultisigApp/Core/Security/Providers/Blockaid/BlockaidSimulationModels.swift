@@ -41,8 +41,15 @@ struct EthereumSimulateTransactionRequestJson: Codable {
 /// The parsed form intentionally mirrors the vultisig-windows model so the dApp
 /// hero can promote a `send` / `swap.fromCoin` / `transfer.fromCoin` branch to
 /// the primary display instead of the front-runnable 4byte title.
+///
+/// `receive` is the one shape the extension has no counterpart for. It exists
+/// because a Solana transaction can unwrap wrapped SOL back into native SOL,
+/// which Blockaid reports as an out leg and an in leg of the *same* mint: the
+/// pair nets to an inflow, and rendering that as `transfer` would state the
+/// opposite of what the transaction does.
 enum BlockaidSimulationInfo: Equatable {
     case transfer(fromCoin: BlockaidSimulationCoin, fromAmount: BigInt)
+    case receive(coin: BlockaidSimulationCoin, amount: BigInt)
     case swap(
         fromCoin: BlockaidSimulationCoin,
         toCoin: BlockaidSimulationCoin,
@@ -50,35 +57,43 @@ enum BlockaidSimulationInfo: Equatable {
         toAmount: BigInt
     )
 
-    var fromCoin: BlockaidSimulationCoin {
+    /// The coin the hero leads with: the asset leaving for `transfer` and
+    /// `swap`, the asset arriving for `receive`. Deliberately not named
+    /// `fromCoin` — a `receive` has no from side, and a name implying one is
+    /// how an inflow ends up displayed as an outflow.
+    var primaryCoin: BlockaidSimulationCoin {
         switch self {
         case .transfer(let coin, _):
+            return coin
+        case .receive(let coin, _):
             return coin
         case .swap(let coin, _, _, _):
             return coin
         }
     }
 
-    var fromAmount: BigInt {
+    var primaryAmount: BigInt {
         switch self {
         case .transfer(_, let amount):
+            return amount
+        case .receive(_, let amount):
             return amount
         case .swap(_, _, let amount, _):
             return amount
         }
     }
 
-    var fromAmountDecimal: Decimal {
-        fromAmount.description.toDecimal() / pow(Decimal(10), fromCoin.decimals)
+    var primaryAmountDecimal: Decimal {
+        primaryAmount.description.toDecimal() / pow(Decimal(10), primaryCoin.decimals)
     }
 
-    /// Human-readable from-side amount (e.g. "1.25"). For both transfer and
-    /// swap simulations.
+    /// Human-readable leading amount (e.g. "1.25"). For all three shapes.
     var heroAmountText: String {
-        fromAmountDecimal.formatForDisplay()
+        primaryAmountDecimal.formatForDisplay()
     }
 
-    /// The "to" side of a swap simulation. Nil for transfer.
+    /// The "to" side of a swap simulation. Nil for transfer and receive —
+    /// a receive's single coin is its `primaryCoin`.
     var toCoin: BlockaidSimulationCoin? {
         if case .swap(_, let coin, _, _) = self { return coin }
         return nil
