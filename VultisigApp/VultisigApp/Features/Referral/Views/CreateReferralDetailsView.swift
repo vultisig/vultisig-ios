@@ -113,6 +113,10 @@ struct CreateReferralDetailsView: View {
                     return
                 }
 
+                // The referral field owns no focus state, so the responder is
+                // resigned directly — Verify is a push, and it would otherwise
+                // arrive over a live keyboard.
+                hideKeyboard()
                 onNext(tx)
             }
         }
