@@ -168,6 +168,14 @@ struct StakingTransactionScreen<VM: StakingFormViewModel, Sheet: View>: View {
             return
         }
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
+        // Cancel synchronously rather than relying on the binding's `onChange`
+        // to do it: if navigation is delivered first, a task armed up to half a
+        // second ago is still pending and refocuses the field after the screen
+        // has gone.
+        focusTask?.cancel()
+        focusTask = nil
+        focusedFieldBinding = nil
+        focusedField = nil
         onVerify(transactionBuilder)
     }
 

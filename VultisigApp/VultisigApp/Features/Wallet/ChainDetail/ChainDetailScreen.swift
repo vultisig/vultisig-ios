@@ -454,6 +454,10 @@ private extension ChainDetailScreen {
     func confirmTrustLineActivation(for coin: Coin) {
         guard let tx = trustLineActivation.makeActivationTransaction(coin: coin, vault: vault) else { return }
         coinToActivate = nil
+        // The search field underneath this sheet keeps its focus across the
+        // sheet's life, so releasing it here is what stops its keyboard
+        // outliving the dismissal and landing on top of Verify.
+        focusSearch = false
         router.navigate(to: SendRoute.verify(tx: tx, retrySignal: SendRetrySignal(), vault: vault))
     }
 

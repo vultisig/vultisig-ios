@@ -108,6 +108,20 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     func onContinue() {
         switch focusedFieldBinding {
         case .amount, nil:
+            // Release both halves of the focus before handing off: the
+            // `@FocusState` puts the keyboard away, and the intent stops
+            // `delayedFocus` handing it straight back. Clearing only the former
+            // is why the field comes back highlighted on a layout that was
+            // measured without a keyboard.
+            //
+            // `onVerify` is a `Void` callback and a wrapper may decline to
+            // route — an unbuildable transaction, or AddLP's destination
+            // refresh landing empty — so this releases focus on those paths
+            // too. That is the wrong-way error to make: the form is not
+            // advancing, and a keyboard that closes is recoverable with a tap,
+            // where a keyboard left over a pushed screen is not.
+            focusedFieldBinding = nil
+            focusedField = nil
             onVerify()
         }
     }

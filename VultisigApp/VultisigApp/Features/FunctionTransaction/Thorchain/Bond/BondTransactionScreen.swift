@@ -103,6 +103,8 @@ struct BondTransactionScreen: View {
             }
 
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            focusedFieldBinding = nil
+            focusedField = nil
             onVerify(transactionBuilder)
         }
     }
