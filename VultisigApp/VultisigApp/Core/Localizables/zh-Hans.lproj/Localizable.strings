@@ -1779,6 +1779,7 @@
 "whitespaceNotAllowed" = "不允许空格字符";
 "withdraw" = "提取";
 "withdrawAmount" = "提取 %@";
+"withdrawBelowMinimum" = "金额过小 — 请至少提取 %@ %@";
 "withdrawBelowOutboundFee" = "金额低于出站费用 — 请至少提取 %@ %@ 以支付网络费用";
 "withdrawPercentage" = "提取百分比";
 "withdrawRewards" = "提取 %@ 奖励";

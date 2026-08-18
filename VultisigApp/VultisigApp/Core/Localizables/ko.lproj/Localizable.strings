@@ -1779,6 +1779,7 @@
 "whitespaceNotAllowed" = "공백 문자는 허용되지 않습니다";
 "withdraw" = "출금";
 "withdrawAmount" = "%@ 출금";
+"withdrawBelowMinimum" = "금액이 너무 적음 — 최소 %@ %@을(를) 출금하세요";
 "withdrawBelowOutboundFee" = "출금 금액이 출금 수수료보다 낮음 — 네트워크 비용을 충당하려면 최소 %@ %@을(를) 출금하세요";
 "withdrawPercentage" = "출금 비율";
 "withdrawRewards" = "%@ 보상 출금";

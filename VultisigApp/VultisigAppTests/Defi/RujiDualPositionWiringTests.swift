@@ -88,7 +88,13 @@ final class RujiDualPositionWiringTests: XCTestCase {
             isAutocompound: true,
             availableToUnstake: Decimal(string: "140.64866515")!
         )
+        viewModel.availableAmount = Decimal(string: "140.64866515")!
         viewModel.autocompoundBalance = Decimal(string: "138.55943656")!
+        // What the sheet opens on: MAX, with the field prefilled from the
+        // balance. The redemption is driven by the amount now, so leaving the
+        // field empty would build nothing.
+        viewModel.setupAmountField()
+        viewModel.amountField.value = "140.64866515"
         viewModel.validForm = true
 
         let builder = try XCTUnwrap(viewModel.transactionBuilder)

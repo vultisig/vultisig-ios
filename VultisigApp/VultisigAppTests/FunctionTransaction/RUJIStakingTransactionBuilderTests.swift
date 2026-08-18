@@ -104,7 +104,8 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
     func testLiquidUnbondEmitsLiquidUnbondMessage() throws {
         let builder = RUJILiquidUnbondTransactionBuilder(
             coin: Self.makeRujiCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "140.64866515")!,
+            stakedAmount: Decimal(string: "140.64866515")!,
             receiptShares: Decimal(string: "138.55943656")!,
             sendMaxAmount: true
         )
@@ -114,14 +115,15 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(builder.transactionType, .genericContract)
     }
 
-    /// At 100% the EXACT held share balance is redeemed — no rounding dust, and
+    /// A full exit redeems the EXACT held share balance — no rounding dust, and
     /// it can never exceed what is held even if the share price moved since the
-    /// sheet opened. This is what makes the percentage-driven redemption safe
-    /// without a share-price conversion.
-    func testLiquidUnbondRedeemsTheExactShareBalanceAtFullPercentage() throws {
+    /// sheet opened. Pinned rather than derived from the typed figure, which is
+    /// what keeps that true once the redemption is driven by an amount.
+    func testLiquidUnbondRedeemsTheExactShareBalanceAtAFullExit() throws {
         let builder = RUJILiquidUnbondTransactionBuilder(
             coin: Self.makeRujiCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "140.64866515")!,
+            stakedAmount: Decimal(string: "140.64866515")!,
             receiptShares: Decimal(string: "138.55943656")!,
             sendMaxAmount: true
         )
@@ -132,16 +134,20 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
         XCTAssertEqual(funds.amount, "13855943656")
     }
 
-    func testLiquidUnbondScalesSharesByPercentage() throws {
+    /// ⚠️ FAILS on the parent commit, which funded this with 6927971828 —
+    /// `Int(49.99997) = 49`, i.e. 49% of the share balance rather than the shares
+    /// 70.3243 RUJI is worth. The gap is ~1.4 RUJI on a 140 RUJI position.
+    func testLiquidUnbondRedeemsTheSharesTheTypedAmountIsWorth() throws {
         let builder = RUJILiquidUnbondTransactionBuilder(
             coin: Self.makeRujiCoin(),
-            percentage: 50,
+            withdrawAmount: Decimal(string: "70.3243")!,
+            stakedAmount: Decimal(string: "140.64866515")!,
             receiptShares: Decimal(string: "138.55943656")!,
             sendMaxAmount: false
         )
         let payload = try XCTUnwrap(builder.wasmContractPayload)
         let funds = try XCTUnwrap(payload.coins.first)
-        XCTAssertEqual(funds.amount, "6927971828")
+        XCTAssertEqual(funds.amount, "6927968618")
     }
 
     /// Redeeming zero shares is a no-op the contract would reject, so the
@@ -149,7 +155,8 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
     func testLiquidUnbondProducesNoPayloadBelowOneBaseUnit() {
         let builder = RUJILiquidUnbondTransactionBuilder(
             coin: Self.makeRujiCoin(),
-            percentage: 1,
+            withdrawAmount: Decimal(string: "0.0000000001")!,
+            stakedAmount: 1,
             receiptShares: Decimal(string: "0.00000001")!,
             sendMaxAmount: false
         )
@@ -159,7 +166,8 @@ final class RUJIStakingTransactionBuilderTests: XCTestCase {
     func testLiquidUnbondProducesNoPayloadWithoutAShareBalance() {
         let builder = RUJILiquidUnbondTransactionBuilder(
             coin: Self.makeRujiCoin(),
-            percentage: 100,
+            withdrawAmount: Decimal(string: "140.64866515")!,
+            stakedAmount: Decimal(string: "140.64866515")!,
             receiptShares: 0,
             sendMaxAmount: true
         )

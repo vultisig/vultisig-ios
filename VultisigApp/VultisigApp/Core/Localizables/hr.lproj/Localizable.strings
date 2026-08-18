@@ -1779,6 +1779,7 @@
 "whitespaceNotAllowed" = "Karakter bijelog prostora nije dopušten";
 "withdraw" = "Povuci";
 "withdrawAmount" = "Podignite %@";
+"withdrawBelowMinimum" = "Iznos je premalen — podignite barem %@ %@";
 "withdrawBelowOutboundFee" = "Iznos ispod izlazne naknade — podignite barem %@ %@ za pokriće mrežnih troškova";
 "withdrawPercentage" = "Postotak povlačenja";
 "withdrawRewards" = "Povuci nagrade za %@";

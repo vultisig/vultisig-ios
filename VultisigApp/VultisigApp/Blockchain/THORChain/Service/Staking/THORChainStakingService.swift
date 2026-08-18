@@ -194,12 +194,6 @@ private extension THORChainStakingService {
         )
     }
 
-    func fetchTcyStakedAmount(address: String) async throws -> TcyStakerResponse {
-        let target = THORChainStakingAPI.getTcyStakedAmount(address: address)
-        let response = try await httpClient.request(target, responseType: TcyStakerResponse.self)
-        return response.data
-    }
-
     func fetchTcyUserDistributions(address: String) async throws -> TcyUserDistributionsResponse {
         let target = THORChainStakingAPI.getTcyUserDistributions(address: address)
         let response = try await httpClient.request(target, responseType: TcyUserDistributionsResponse.self)
@@ -448,5 +442,57 @@ enum StakingError: Error, LocalizedError {
         case .missingData:
             return "Missing required staking data"
         }
+    }
+}
+
+// MARK: - Reading THORNode's "no such staker"
+
+extension THORChainStakingService {
+
+    /// ⚠️ **An address that holds no TCY stake is an ANSWER, not a failure.**
+    ///
+    /// THORNode answers `/thorchain/tcy_staker/<addr>` for a non-staker with a
+    /// **500** — `fail to tcy staker: TCYStaker doesn't exist: thor1…` — so
+    /// "you have no position" and "the node broke" arrive with the same status
+    /// code, and the body is the only thing separating them. Left to throw, the
+    /// interactor returns no positions, storage upserts nothing, and the card
+    /// keeps the balance the user just withdrew — the position reads as still
+    /// staked until something else happens to refresh it.
+    ///
+    /// Only the absence is swallowed. Every other failure still throws, because
+    /// the persisted row keeping its last good value is the right answer to a
+    /// read that did not happen, and zeroing a funded position on a transient
+    /// fault is the more expensive mistake — the same reasoning
+    /// `makeRujiStakingDetails` records for its own empty-versus-partial split.
+    func fetchTcyStakedAmount(address: String) async throws -> TcyStakerResponse {
+        let target = THORChainStakingAPI.getTcyStakedAmount(address: address)
+        do {
+            let response = try await httpClient.request(target, responseType: TcyStakerResponse.self)
+            return response.data
+        } catch {
+            guard Self.isTcyStakerAbsent(error) else { throw error }
+            return TcyStakerResponse(amount: "0")
+        }
+    }
+
+    /// Whether an error is THORNode saying the address holds no TCY stake.
+    ///
+    /// ⚠️ **Matched on the body's marker rather than on the status code**, and
+    /// deliberately not on the code alone: every server fault on this route is
+    /// also a 500, so keying on the status would turn an outage into a zeroed
+    /// position. The status is left out of the match entirely — the marker is
+    /// the signal, and requiring 500 beside it only adds a second thing that
+    /// can drift if THORNode ever answers this with a 404.
+    ///
+    /// It is a server-authored English string, so this is a narrow contract with
+    /// an upstream that has not promised to keep it. A spelling change costs the
+    /// stale card back, not a wrong balance.
+    static func isTcyStakerAbsent(_ error: Error) -> Bool {
+        guard case HTTPError.statusCode(_, let body) = error,
+              let body,
+              let text = String(data: body, encoding: .utf8) else {
+            return false
+        }
+        return text.contains("TCYStaker doesn't exist")
     }
 }

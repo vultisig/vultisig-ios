@@ -1779,6 +1779,7 @@
 "whitespaceNotAllowed" = "No se permiten espacios en blanco.";
 "withdraw" = "Retirar";
 "withdrawAmount" = "Retirar %@";
+"withdrawBelowMinimum" = "Monto demasiado pequeño — retira al menos %@ %@";
 "withdrawBelowOutboundFee" = "Monto por debajo de la tarifa de salida — retira al menos %@ %@ para cubrir los costos de red";
 "withdrawPercentage" = "Porcentaje de retiro";
 "withdrawRewards" = "Retirar recompensas de %@";
