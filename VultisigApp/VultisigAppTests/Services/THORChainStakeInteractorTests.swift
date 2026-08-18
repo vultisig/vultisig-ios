@@ -177,9 +177,12 @@ final class THORChainStakeInteractorTests: XCTestCase {
     /// The unstake sheet renders this figure, validates against it and derives
     /// the signed fraction from it, so an interactor that leaves it unsaid sends
     /// the sheet looking for a number somewhere else — which is how a card
-    /// showing a real stake opened a sheet offering nothing. The DTO makes
-    /// omitting it a compile error; this pins that THORChain states the right
-    /// one rather than merely some value.
+    /// showing a real stake opened a sheet offering nothing.
+    ///
+    /// Omitting the field anywhere is already a compile error, so what is left
+    /// to check is that the value is the right one. This fixture reaches the
+    /// bonded and auto-compounding RUJI branches only — the other branches are
+    /// covered by the compiler, not by this.
     func testEveryPositionStatesWhatCanBeWithdrawn() async throws {
         let token = try TestStore.installInMemoryContainer()
         defer { TestStore.restore(token) }

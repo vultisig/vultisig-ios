@@ -15,8 +15,8 @@ struct StakePositionData: Sendable, Equatable {
     let coin: CoinMeta
     let type: StakePositionType
     let amount: Decimal
-    /// How much of the position can actually be withdrawn, in the units the
-    /// unstake sheet renders and the user types.
+    /// How much of the position can actually be withdrawn, in the units that
+    /// position's withdrawal is denominated in.
     ///
     /// Non-optional on purpose: it is the ceiling the sheet validates against
     /// and derives the signed fraction from, so every producer has to state it
@@ -25,6 +25,12 @@ struct StakePositionData: Sendable, Equatable {
     /// default anything downstream may assume. Maya is the standing
     /// counter-example where the two are the same figure only because the
     /// interactor deliberately converts pool units to CACAO value first.
+    ///
+    /// Not always the ticker the sheet labels it with: the sTCY and ybRUNE
+    /// positions are receipt-share counts shown against TCY and bRUNE. That is
+    /// harmless while the withdrawal signs a percentage — the same count is
+    /// numerator and denominator — and predates this field, but it is why this
+    /// says "denominated in" rather than "the units the user types".
     let availableToUnstake: Decimal
     let apr: Double?
     let estimatedReward: Decimal?

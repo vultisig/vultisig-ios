@@ -32,7 +32,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
 
         let materialized = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 10)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 10, availableToUnstake: 10)
         ], for: vault)
 
         XCTAssertEqual(materialized.count, 1)
@@ -44,11 +44,11 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
 
         _ = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 10)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 10, availableToUnstake: 10)
         ], for: vault)
 
         let materialized = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 25, apr: 0.12)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 25, availableToUnstake: 25, apr: 0.12)
         ], for: vault)
 
         XCTAssertEqual(materialized.count, 1)
@@ -62,14 +62,14 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         let tcyMeta = CoinMeta.make(chain: .thorChain, ticker: "TCY")
 
         _ = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 10),
-            StakePositionData(coin: tcyMeta, type: .stake, amount: 20)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 10, availableToUnstake: 10),
+            StakePositionData(coin: tcyMeta, type: .stake, amount: 20, availableToUnstake: 20)
         ], for: vault)
 
         // Refresh succeeds for RUNE only — TCY's per-coin fetch failed and was omitted.
         // The persisted TCY row must stay untouched.
         _ = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 15)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 15, availableToUnstake: 15)
         ], for: vault)
 
         XCTAssertEqual(vault.stakePositions.count, 2)
@@ -85,17 +85,17 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         // Two Solana stake accounts plus a sibling THOR stake row, all sharing
         // `vault.stakePositions`.
         try service.upsert(solanaStake: [
-            StakePositionData(coin: solMeta, type: .stake, amount: 1, stakeAccountPubkey: "A", activationState: "active"),
-            StakePositionData(coin: solMeta, type: .stake, amount: 2, stakeAccountPubkey: "B", activationState: "active")
+            StakePositionData(coin: solMeta, type: .stake, amount: 1, availableToUnstake: 1, stakeAccountPubkey: "A", activationState: "active"),
+            StakePositionData(coin: solMeta, type: .stake, amount: 2, availableToUnstake: 2, stakeAccountPubkey: "B", activationState: "active")
         ], for: vault)
         _ = try service.upsert(stake: [
-            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 100)
+            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 100, availableToUnstake: 100)
         ], for: vault)
         XCTAssertEqual(vault.stakePositions.count, 3)
 
         // The fresh read returns only account A (with updated fields) — B is gone.
         try service.upsert(solanaStake: [
-            StakePositionData(coin: solMeta, type: .stake, amount: 5, stakeAccountPubkey: "A", activationState: "deactivating")
+            StakePositionData(coin: solMeta, type: .stake, amount: 5, availableToUnstake: 5, stakeAccountPubkey: "A", activationState: "deactivating")
         ], for: vault)
 
         let solana = vault.stakePositions.filter { $0.coin.chain == .solana }
@@ -120,6 +120,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
             coin: solMeta,
             type: .stake,
             amount: 1,
+            availableToUnstake: 1,
             stakeAccountPubkey: "LEGACY",
             vault: vault
         )
@@ -130,7 +131,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         // The id-keyed upsert matches the legacy row, so apply() runs — it must
         // backfill the missing field so the next seed paints the row.
         try service.upsert(solanaStake: [
-            StakePositionData(coin: solMeta, type: .stake, amount: 2, stakeAccountPubkey: "LEGACY", activationState: "active")
+            StakePositionData(coin: solMeta, type: .stake, amount: 2, availableToUnstake: 2, stakeAccountPubkey: "LEGACY", activationState: "active")
         ], for: vault)
 
         let solana = vault.stakePositions.filter { $0.coin.chain == .solana }
@@ -144,7 +145,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         // can never drift a non-Solana id (which would orphan persisted rows).
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         _ = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 1)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 1, availableToUnstake: 1)
         ], for: vault)
 
         let id = vault.stakePositions.first?.id
@@ -155,7 +156,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
     func testSolanaStakePositionIDAppendsStakeAccountSegment() throws {
         let solMeta = CoinMeta.make(chain: .solana, ticker: "SOL", decimals: 9)
         try service.upsert(solanaStake: [
-            StakePositionData(coin: solMeta, type: .stake, amount: 1, stakeAccountPubkey: "STAKE123")
+            StakePositionData(coin: solMeta, type: .stake, amount: 1, availableToUnstake: 1, stakeAccountPubkey: "STAKE123")
         ], for: vault)
 
         XCTAssertEqual(
@@ -229,7 +230,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
     func testAddZeroStakeIsIdempotent() throws {
         let runeMeta = CoinMeta.make(chain: .thorChain, ticker: "RUNE")
         _ = try service.upsert(stake: [
-            StakePositionData(coin: runeMeta, type: .stake, amount: 42)
+            StakePositionData(coin: runeMeta, type: .stake, amount: 42, availableToUnstake: 42)
         ], for: vault)
 
         try service.addZero(stakeCoin: runeMeta, to: vault)
@@ -301,7 +302,7 @@ final class DefiPositionsStorageServiceTests: XCTestCase {
         let expectation = expectation(forNotification: .defiPositionsDidChange, object: nil)
 
         try service.upsert(stake: [
-            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 1)
+            StakePositionData(coin: .make(chain: .thorChain, ticker: "RUNE"), type: .stake, amount: 1, availableToUnstake: 1)
         ], for: vault)
 
         await fulfillment(of: [expectation], timeout: 1.0)
