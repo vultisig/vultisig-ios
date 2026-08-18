@@ -221,14 +221,58 @@ final class HeaderCollapseProgressTests: XCTestCase {
     /// down its own height, and `.opacity` does not reclaim layout — so stopping
     /// mid-scroll left a blank gap where the card still was.
     ///
-    /// The expanded ramp finishes at half the collapse distance, so the distance
-    /// has to be twice the height of whatever it fades.
-    func testDefiRampIsTwiceTheBannerHeight() {
+    /// The expanded ramp has to span the banner, and the bar's entrance is added
+    /// after it rather than scaled with it.
+    func testDefiRampIsTheBannerPlusTheBarFade() {
         XCTAssertEqual(
             HeaderCollapseProgress.distance(for: .defi),
-            DefiMainBalanceView.bannerHeight * 2,
+            DefiMainBalanceView.bannerHeight + HeaderCollapseProgress.barFadeDistance,
             "the ramp and the banner it fades must not drift apart"
         )
+    }
+
+    /// Why it is added and not scaled: the top bar's opaque background rides the
+    /// collapsed ramp, and that background is what stops the list showing
+    /// through the bar. Scaling the whole distance with the banner would stretch
+    /// the window in which content scrolls under a half-transparent header to
+    /// the banner's full height — trading the blank gap for a see-through
+    /// header. The window has to be the same length on every tab.
+    func testTheBarComesInOverTheSameDistanceOnEveryTab() {
+        for tab in [HomeTab.wallet, .defi] {
+            let total = HeaderCollapseProgress.distance(for: tab)
+
+            func progress(scrolled: CGFloat) -> HeaderCollapseProgress {
+                HeaderCollapseProgress(offset: resting - scrolled, restingOffset: resting, distance: total)
+            }
+
+            // The bar starts coming in exactly where the content has gone...
+            let contentGone = total - HeaderCollapseProgress.barFadeDistance
+            XCTAssertEqual(progress(scrolled: contentGone).expandedOpacity, 0, accuracy: 0.0001,
+                           "\(tab): content must be gone here")
+            XCTAssertEqual(progress(scrolled: contentGone).collapsedOpacity, 0, accuracy: 0.0001,
+                           "\(tab): and the bar must not have started")
+
+            // ...and is fully in exactly `barFadeDistance` later, on every tab.
+            XCTAssertEqual(progress(scrolled: total).collapsedOpacity, 1, accuracy: 0.0001,
+                           "\(tab): the bar must be fully opaque after the same distance everywhere")
+            XCTAssertEqual(
+                progress(scrolled: contentGone + HeaderCollapseProgress.barFadeDistance / 2).collapsedOpacity,
+                0.5,
+                accuracy: 0.0001,
+                "\(tab): and get there on the same schedule"
+            )
+        }
+    }
+
+    /// The wallet tab's content is exactly `barFadeDistance` tall, so splitting
+    /// the ramp in two must leave it bit-for-bit where it was: a midpoint of one
+    /// half over the same 110pt.
+    func testWalletRampIsUnchangedByTheSplit() {
+        let progress = makeProgress(scrolled: HeaderCollapseProgress.defaultDistance / 2)
+        XCTAssertEqual(progress.midpoint, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(progress.expandedOpacity, 0, accuracy: 0.0001)
+        XCTAssertEqual(progress.collapsedOpacity, 0, accuracy: 0.0001)
+        XCTAssertTrue(progress.isCollapsed)
     }
 
     func testWalletRampIsUnchanged() {
@@ -236,9 +280,15 @@ final class HeaderCollapseProgressTests: XCTestCase {
         XCTAssertEqual(HeaderCollapseProgress.distance(for: .camera), HeaderCollapseProgress.defaultDistance)
     }
 
-    /// The acceptance criterion in the issue, stated directly: the banner is
-    /// still drawn everywhere it is still on screen, and reaches zero exactly
-    /// where it has finished scrolling past.
+    /// The acceptance criterion, as far as a value type can carry it: the banner
+    /// is still drawn at every offset below its own height, and reaches zero
+    /// exactly at it.
+    ///
+    /// This pins the ramp against the banner's height, and nothing else. That
+    /// the height is also where the banner clears the header is a fact about
+    /// `DefiMainScreen`'s composition — its top inset and the banner being the
+    /// first item — which this test does not observe and would not notice
+    /// changing.
     func testDefiBannerIsStillDrawnWhileAnyOfItIsOnScreen() {
         let banner = DefiMainBalanceView.bannerHeight
         let defiDistance = HeaderCollapseProgress.distance(for: .defi)

@@ -21,9 +21,10 @@ import Foundation
 ///
 /// Two properties keep the per-frame write cheap:
 /// - `update` compares before it publishes, and
-/// - the progress saturates at `0`/`1` outside a
-///   `HeaderCollapseProgress.defaultDistance`-point window, so all but that
-///   window of a scroll publishes nothing at all.
+/// - the progress saturates at `0`/`1` outside the collapse window, so all but
+///   that window of a scroll publishes nothing at all. The window is per-tab
+///   (`HeaderCollapseProgress.distance(for:)`) and the DeFi tab's is the longer
+///   of the two, since it spans the banner it fades.
 ///
 /// Both tabs are stored separately because both screens stay alive inside the
 /// tab view — each one keeps its own scroll position, and the top bar reads
