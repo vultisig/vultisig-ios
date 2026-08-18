@@ -49,3 +49,23 @@ extension View {
         }
     }
 }
+
+extension View {
+    /// Resigns first responder, dismissing the software keyboard.
+    ///
+    /// Clearing the owning `@FocusState` is the better tool where the caller has
+    /// one — it is native, and it also stops SwiftUI restoring focus when the
+    /// screen comes back. This exists for the shared chrome that fires a
+    /// navigation without knowing which field, if any, is focused. No-ops on
+    /// macOS, which has no software keyboard to dismiss.
+    func resignKeyboard() {
+        #if os(iOS)
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+        #endif
+    }
+}

@@ -73,6 +73,13 @@ struct FormScreen<Content: View>: View {
                     }
                 }
                 PrimaryButton(title: "continue".localized) {
+                    // Continue leads to Verify on every form built from this
+                    // screen, and a screen pushed with the keyboard still up
+                    // comes back to a layout that was measured against it.
+                    // Screens that own a `@FocusState` clear it as well — that
+                    // is what stops SwiftUI restoring focus on the way back —
+                    // but this covers the ones that don't.
+                    resignKeyboard()
                     onContinue()
                 }
                 .disabled(isContinueDisabled)

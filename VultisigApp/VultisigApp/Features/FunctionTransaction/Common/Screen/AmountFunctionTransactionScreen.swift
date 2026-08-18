@@ -103,6 +103,15 @@ struct AmountFunctionTransactionScreen<CustomView: View, TopView: View>: View {
     }
 
     func onContinue() {
+        // Release focus before navigating. `resignKeyboard` alone puts the
+        // keyboard away but leaves this state set, so coming back from Verify
+        // re-focuses the field against a layout that no longer expects it — the
+        // highlighted-but-misplaced field users see. Both are cleared: the
+        // `@FocusState` for now, the intent so the delayed sync doesn't hand it
+        // straight back.
+        focusedFieldBinding = nil
+        focusedField = nil
+
         switch focusedFieldBinding {
         case .amount, nil:
             onVerify()

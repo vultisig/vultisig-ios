@@ -332,6 +332,11 @@ struct SendDetailsScreen: View {
                 await MainActor.run {
                     do {
                         let immutableTx = try viewModel.makeTransaction()
+                        // Release focus before the push: left set, SwiftUI
+                        // restores it when Verify pops and the field comes back
+                        // focused against a layout measured without the
+                        // keyboard.
+                        focusedField = nil
                         router.navigate(to: SendRoute.verify(
                             tx: immutableTx,
                             retrySignal: SendRetrySignal(),
