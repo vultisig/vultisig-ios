@@ -124,7 +124,16 @@ final class DefiChainScreenModel: ObservableObject {
             return .unstake(
                 coin: position.coin,
                 isAutocompound: false,
-                availableToUnstake: position.availableToUnstake
+                // The same quantity `StakePosition.canUnstake` gated on, and the
+                // one the card rendered. `availableToUnstake` is set only by the
+                // interactors that distinguish it from the position's size (Maya
+                // does); the rest — THORChain's included — leave it nil, and
+                // passing that on sent the sheet to its own fallback,
+                // `coin.stakedBalanceDecimal`. That field belongs to
+                // `BalanceService`'s refresh cycle rather than to the DeFi read
+                // that produced this position, so the card showed a real stake
+                // and the sheet it opened offered nothing.
+                availableToUnstake: position.availableToUnstake ?? position.amount
             )
         case .compound:
             return .unstake(
