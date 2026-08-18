@@ -487,3 +487,164 @@ final class THORChainStakeInteractorTests: XCTestCase {
         XCTAssertTrue(THORChainStakingService.isTcyStakerAbsent(HTTPError.statusCode(404, body)))
     }
 }
+
+// MARK: - The conversion the predicate guards
+
+/// `isTcyStakerAbsent` is only the predicate. The substitution it authorises —
+/// a recognised absence becoming `TcyStakerResponse(amount: "0")` instead of a
+/// throw — lives in `fetchTcyStakedAmount`, which is what the DeFi tab actually
+/// calls. These drive that method over a stubbed transport so both halves are
+/// pinned end to end: the absence reads as a zero, and everything else still
+/// throws rather than being quietly zeroed.
+///
+/// `THORChainStakingService` builds its `HTTPClient` on `URLSession.shared`, so
+/// the seam is a globally registered `URLProtocol` scoped to the `tcy_staker`
+/// route — the same interception the join-keysign and Sui service tests use.
+@MainActor
+final class THORChainStakingServiceTcyStakerTests: XCTestCase {
+
+    private let address = "thor1pe0pspu4ep85gxr5h9l6k49g024vemtr80hg4c"
+
+    /// ⚠️ **The exact body THORNode returns after a full TCY unstake.**
+    private var nonStakerBody: Data {
+        Data(#"{"code":2, "message":"fail to tcy staker: TCYStaker doesn't exist: \#(address)", "details":[]}"#.utf8)
+    }
+
+    override func setUp() {
+        super.setUp()
+        TcyStakerStubProtocol.reset()
+        URLProtocol.registerClass(TcyStakerStubProtocol.self)
+    }
+
+    override func tearDown() {
+        URLProtocol.unregisterClass(TcyStakerStubProtocol.self)
+        TcyStakerStubProtocol.reset()
+        super.tearDown()
+    }
+
+    /// The live shape: absence arrives as a 500, and must come back as a zero
+    /// position rather than a throw that leaves the withdrawn balance on screen.
+    func testFetchTcyStakedAmountReadsA500NonStakerAsZero() async throws {
+        TcyStakerStubProtocol.configure(statusCode: 500, body: nonStakerBody)
+
+        let response = try await THORChainStakingService.shared.fetchTcyStakedAmount(address: address)
+
+        XCTAssertEqual(response.amount, "0")
+        XCTAssertEqual(TcyStakerStubProtocol.requestCount, 1)
+        XCTAssertTrue(
+            TcyStakerStubProtocol.lastPath?.hasSuffix("/thorchain/tcy_staker/\(address)") == true,
+            "The stub must have answered the tcy_staker route, got \(TcyStakerStubProtocol.lastPath ?? "nil")"
+        )
+    }
+
+    /// Not keyed on the status code: the same body behind a 404 must read the
+    /// same way, so THORNode correcting the status doesn't need a code change.
+    func testFetchTcyStakedAmountReadsA404NonStakerAsZero() async throws {
+        TcyStakerStubProtocol.configure(statusCode: 404, body: nonStakerBody)
+
+        let response = try await THORChainStakingService.shared.fetchTcyStakedAmount(address: address)
+
+        XCTAssertEqual(response.amount, "0")
+    }
+
+    /// A genuine server fault shares the 500 with the absence, and must still
+    /// throw — the persisted row keeping its last good value is the right answer
+    /// to a read that did not happen.
+    func testFetchTcyStakedAmountPropagatesAnUnrelatedFailure() async {
+        let fault = Data(#"{"code":13,"message":"internal server error","details":[]}"#.utf8)
+        TcyStakerStubProtocol.configure(statusCode: 500, body: fault)
+
+        do {
+            let response = try await THORChainStakingService.shared.fetchTcyStakedAmount(address: address)
+            XCTFail("An outage must not be converted to a zero position, got amount \(response.amount)")
+        } catch HTTPError.statusCode(let code, _) {
+            XCTAssertEqual(code, 500)
+        } catch {
+            XCTFail("Expected the status-code error to propagate, got \(error)")
+        }
+    }
+
+    /// The zero substitution must not swallow a real balance on the way past.
+    func testFetchTcyStakedAmountReturnsTheStakedAmountOnSuccess() async throws {
+        TcyStakerStubProtocol.configure(statusCode: 200, body: Data(#"{"amount":"1638238990000"}"#.utf8))
+
+        let response = try await THORChainStakingService.shared.fetchTcyStakedAmount(address: address)
+
+        XCTAssertEqual(response.amount, "1638238990000")
+    }
+}
+
+/// Answers only the `tcy_staker` route, so registering it globally leaves every
+/// other request in the suite untouched.
+private final class TcyStakerStubProtocol: URLProtocol {
+
+    private static let lock = NSLock()
+    private static var statusCode = 200
+    private static var body = Data("{}".utf8)
+    private static var count = 0
+    private static var path: String?
+
+    static var requestCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return count
+    }
+
+    /// The path that actually went on the wire, so a passing test cannot be one
+    /// where the stub answered some other request.
+    static var lastPath: String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return path
+    }
+
+    static func configure(statusCode: Int, body: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        self.statusCode = statusCode
+        self.body = body
+    }
+
+    static func reset() {
+        lock.lock()
+        defer { lock.unlock() }
+        statusCode = 200
+        body = Data("{}".utf8)
+        count = 0
+        path = nil
+    }
+
+    // These are required `URLProtocol` class-method overrides; they cannot be `static`.
+    // swiftlint:disable static_over_final_class
+    override class func canInit(with request: URLRequest) -> Bool {
+        request.url?.path.contains("/thorchain/tcy_staker/") == true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    // swiftlint:enable static_over_final_class
+
+    override func startLoading() {
+        // Counted here rather than in `canInit`, which URLSession may consult
+        // more than once for a single load.
+        Self.lock.lock()
+        let code = Self.statusCode
+        let payload = Self.body
+        Self.count += 1
+        Self.path = request.url?.path
+        Self.lock.unlock()
+
+        // Force-unwrap is safe: the URL came from the intercepted request and
+        // every status code used here initializes a response.
+        let response = HTTPURLResponse(
+            url: request.url!,
+            statusCode: code,
+            httpVersion: "HTTP/1.1",
+            headerFields: ["Content-Type": "application/json"]
+        )!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: payload)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+}
