@@ -427,6 +427,41 @@ final class BlockaidSolanaSimulationParserTests: XCTestCase {
         XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
     }
 
+    /// The legs need not collapse onto one diff for a leg to go unread. Here
+    /// the netting takes its out side from the SOL diff and its in side from
+    /// the WSOL diff, so the WSOL diff's own out leg is never looked at: the
+    /// hero would headline 57395720 (59435000 - 2039280) when the true net is
+    /// 57895720, understating what leaves the vault by the ignored 500000.
+    /// Decline instead.
+    func testParseSolanaSameMintDistinctSourcesReturnsNilWhenInSourceAlsoSpends() {
+        let diffs = [
+            diff(asset: native(symbol: "SOL", decimals: 9), out: balance("59435000")),
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                in: balance("2039280"),
+                out: balance("500000")
+            )
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
+    /// The mirror: the out-side diff carries an in leg of its own, which the
+    /// netting drops because the in side is taken from the other diff. The
+    /// same understatement, in the receive direction.
+    func testParseSolanaSameMintDistinctSourcesReturnsNilWhenOutSourceAlsoReceives() {
+        let diffs = [
+            diff(
+                asset: token(symbol: "WSOL", address: BlockaidSimulationParser.wrappedSolMint, decimals: 9),
+                in: balance("500000"),
+                out: balance("2039280")
+            ),
+            diff(asset: native(symbol: "SOL", decimals: 9), in: balance("61474280"))
+        ]
+
+        XCTAssertNil(BlockaidSimulationParser.parseSolana(response: response(with: diffs)))
+    }
+
     /// If only one side of a two-diff swap has a value, fall back to .transfer
     /// — matches the extension's `else if (outAsset && outValue)` branch.
     func test_parseSolana_swap_fallsBackToTransfer_whenInMissing() {

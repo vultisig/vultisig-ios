@@ -167,14 +167,14 @@ enum BlockaidSimulationParser {
             if let outMint = fromCoin.address,
                let inMint = toCoin.address,
                outMint == inMint {
-                // Both sides can collapse onto one diff when the other carries
-                // neither leg. Netting a diff against itself is still the net
-                // movement of that asset — but only while the diff that was
-                // skipped holds nothing of its own. Otherwise the hero would
-                // state an authoritative net having never looked at a balance
-                // change the transaction makes, so decline and let the caller
-                // fall back to the generic title.
-                if outIndex == inIndex, carriesBalance(diffs[outIndex == 0 ? 1 : 0]) {
+                // The netting reads exactly two legs: one diff's out side and
+                // one diff's in side, which can collapse onto the same diff.
+                // Every other leg the response states goes unread, so netting
+                // past one would have the hero state an authoritative net
+                // having never looked at a balance change the transaction
+                // makes. Decline and let the caller fall back to the generic
+                // title.
+                guard readsEveryLeg(diffs, outIndex: outIndex, inIndex: inIndex) else {
                     return nil
                 }
                 return netSameMint(
@@ -243,11 +243,31 @@ enum BlockaidSimulationParser {
         return nil
     }
 
-    /// Whether a diff states a balance change at all, in either direction.
-    private static func carriesBalance(
-        _ diff: BlockaidSolanaSimulationJson.AccountAssetDiff
+    /// Whether the netting's two legs are the only balance changes the
+    /// response states.
+    ///
+    /// The netting subtracts `diffs[inIndex].in` from `diffs[outIndex].out`
+    /// and reads nothing else — not the out leg of any other diff, nor the in
+    /// leg of any other diff, and not the opposite leg of either source when
+    /// the two indices differ. Any of those carrying a balance means the net
+    /// on screen would be missing an amount the transaction moves, which is
+    /// worse than no net at all.
+    private static func readsEveryLeg(
+        _ diffs: [BlockaidSolanaSimulationJson.AccountAssetDiff],
+        outIndex: Int,
+        inIndex: Int
     ) -> Bool {
-        diff.out?.rawValue != nil || diff.`in`?.rawValue != nil
+        diffs.indices.allSatisfy { index in
+            (index == outIndex || !carriesBalance(diffs[index].out))
+                && (index == inIndex || !carriesBalance(diffs[index].`in`))
+        }
+    }
+
+    /// Whether a single leg states a balance change.
+    private static func carriesBalance(
+        _ leg: BlockaidSolanaSimulationJson.BalanceChange?
+    ) -> Bool {
+        leg?.rawValue != nil
     }
 
     /// Builds a `BlockaidSimulationCoin` from a Solana asset, substituting the
