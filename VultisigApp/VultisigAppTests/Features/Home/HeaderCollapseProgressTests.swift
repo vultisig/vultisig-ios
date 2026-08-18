@@ -264,9 +264,12 @@ final class HeaderCollapseProgressTests: XCTestCase {
         }
     }
 
-    /// The wallet tab's content is exactly `barFadeDistance` tall, so splitting
-    /// the ramp in two must leave it bit-for-bit where it was: a midpoint of one
-    /// half over the same 110pt.
+    /// Splitting the ramp in two must leave the wallet tab bit-for-bit where it
+    /// was. It does because of the arithmetic, not because anything about the
+    /// rendered balance is pinned: `(defaultDistance - barFadeDistance) /
+    /// defaultDistance` is exactly one half in binary floating point, which is
+    /// the midpoint the old fixed constant used. The exactness matters — the
+    /// opacity guards compare against zero with `==`.
     func testWalletRampIsUnchangedByTheSplit() {
         let progress = makeProgress(scrolled: HeaderCollapseProgress.defaultDistance / 2)
         XCTAssertEqual(progress.midpoint, 0.5, accuracy: 0.0001)

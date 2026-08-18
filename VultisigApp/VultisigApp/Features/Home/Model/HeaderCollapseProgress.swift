@@ -11,13 +11,19 @@ import Foundation
 /// the scroll offset, plus the two fade ramps that value drives.
 ///
 /// The large balance in the scroll content and the balance in the top bar are
-/// faded over **non-overlapping** halves of the progress: everything belonging
-/// to the expanded state fades out over `0…0.5`, everything belonging to the
-/// collapsed state fades in over `0.5…1`. `expandedOpacity` and
-/// `collapsedOpacity` are therefore never both greater than zero, so the two
-/// balances can never be legible at the same time — and because the whole
-/// transition is a function of the scroll offset it scrubs with the drag and
-/// reverses with it, instead of running on its own wall-clock timeline.
+/// faded over **non-overlapping** stretches of the progress, meeting at
+/// `midpoint`: everything belonging to the expanded state fades out over
+/// `0…midpoint`, everything belonging to the collapsed state fades in over
+/// `midpoint…1`. `expandedOpacity` and `collapsedOpacity` are therefore never
+/// both greater than zero, so the two balances can never be legible at the same
+/// time — and because the whole transition is a function of the scroll offset it
+/// scrubs with the drag and reverses with it, instead of running on its own
+/// wall-clock timeline.
+///
+/// The two stretches are not halves in general. They measure different things —
+/// the first is the height of the content being faded, the second is the fixed
+/// `barFadeDistance` — so `midpoint` sits wherever the tab's content ends. It is
+/// one half only where those two coincide, as they do on the wallet tab.
 struct HeaderCollapseProgress: Equatable {
     /// Scroll distance over which the top bar's own chrome — its balance and its
     /// opaque background — comes in, once the content's balance has gone.
@@ -120,14 +126,15 @@ struct HeaderCollapseProgress: Equatable {
 
     /// Opacity of everything that belongs to the expanded state — the large
     /// balance in the content, and the top bar's toolbar buttons. `1 → 0` over
-    /// the first half of the collapse.
+    /// `0…midpoint`, i.e. the height of the content being faded.
     var expandedOpacity: Double {
         max(1 - value / midpoint, 0)
     }
 
     /// Opacity of everything that belongs to the collapsed state — the balance
-    /// in the top bar and the bar's own opaque background. `0 → 1` over the
-    /// second half of the collapse.
+    /// in the top bar and the bar's own opaque background. `0 → 1` over
+    /// `midpoint…1`, i.e. the fixed `barFadeDistance`, so the bar's entrance is
+    /// the same length however tall the content that just left was.
     var collapsedOpacity: Double {
         max((value - midpoint) / (1 - midpoint), 0)
     }
