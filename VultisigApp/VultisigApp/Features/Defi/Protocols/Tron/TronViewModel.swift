@@ -116,6 +116,29 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
         !pendingWithdrawals.isEmpty
     }
 
+    /// TRX whose unlock period has elapsed; one claim sweeps all of it.
+    var claimableBalance: Decimal {
+        TronViewLogic.claimableBalance(of: pendingWithdrawals)
+    }
+
+    var hasClaimableWithdrawals: Bool {
+        claimableBalance > 0
+    }
+
+    /// Builds the claim transaction for the expired withdrawals, or nil when
+    /// nothing is claimable. Drops the cached account/resource for the address
+    /// so balances refresh when the user lands back on the DeFi screens after
+    /// the claim is broadcast — the same step freeze/unfreeze take.
+    @MainActor
+    func makeClaimTransaction(vault: Vault) -> SendTransaction? {
+        guard let tx = TronViewLogic.makeClaimTransaction(vault: vault, pendingWithdrawals: pendingWithdrawals) else {
+            return nil
+        }
+        let address = tx.coin.address
+        Task { await TronService.shared.invalidateAccountCache(for: address) }
+        return tx
+    }
+
     @MainActor
     func apply(account: TronAccountResponse) {
         let balanceSun = account.balance ?? 0
