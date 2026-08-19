@@ -2,7 +2,7 @@
 //  DecoderInertnessTests.swift
 //  VultisigAppTests
 //
-//  Holds the decoder foundation to its behaviorally inert contract.
+//  Pins the exact registry and verifies that unsupported chains stay inert.
 //
 
 @testable import VultisigApp
@@ -11,16 +11,12 @@ import XCTest
 
 final class DecoderInertnessTests: XCTestCase {
 
-    /// No chain reader is registered.
-    func testNoChainDecoderIsRegistered() {
-        XCTAssertTrue(
-            SignedTransactionDecoder.decoders.isEmpty,
-            """
-            A chain reader has been registered. That is the intended next step — \
-            but it makes this change no longer a no-op, so it also needs golden \
-            rows and its locale keys, and this assertion should move rather than \
-            simply be deleted.
-            """
+    /// Pins reader types because some establish provenance without fixed chains.
+    func testTheRegistryContainsExactlyTheExpectedReaders() {
+        XCTAssertEqual(
+            SignedTransactionDecoder.decoders.map { String(describing: type(of: $0)) },
+             ["TronTransactionDecoder"],
+             "a chain reader was registered or removed without saying so here"
         )
     }
 
