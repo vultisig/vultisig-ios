@@ -164,6 +164,13 @@
     "rawTransaction": "{\"raw_data\":{\"contract\":[{\"parameter\":{\"type_url\":\"type.googleapis.com/protocol.TransferContract\",\"value\":{\"amount\":1000000,\"owner_address\":\"413193a0ea5520385e257bba8b30b162d26d4bdd5e\",\"to_address\":\"4117c5185167401ed00cf5f5b2fc97d9bbfdb7d025\"}},\"type\":\"TransferContract\"}],\"expiration\":1700000060000,\"ref_block_bytes\":\"f080\",\"ref_block_hash\":\"d4b37a782d816437\",\"timestamp\":1700000000000},\"raw_data_hex\":\"0a02f0802208d4b37a782d81643740e0a499ffbc315a67080112630a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412320a15413193a0ea5520385e257bba8b30b162d26d4bdd5e12154117c5185167401ed00cf5f5b2fc97d9bbfdb7d02518c0843d7080d095ffbc31\",\"signature\":[\"0d30a2adf61eb327ca4c265a55b0143e41d31380f695edc61f920eaf6bf6d1b57fdebda5bbbee1a7cc3f4981fc787e99c225a1933aab24b6dafb0ca43e222b4d01\"],\"txID\":\"1e5f7f58cd34ee133b9767eabaee7e3518d39b5fd95efc7ea8713d9d460c5361\"}",
     "transactionHash": "1e5f7f58cd34ee133b9767eabaee7e3518d39b5fd95efc7ea8713d9d460c5361"
   },
+  "tron_withdraw_expire_unfreeze": {
+    "imageHashes": [
+      "110730b35ade7a944d4c2a4d524f6fd5aa508edef5fc39948807bb2409d88301"
+    ],
+    "rawTransaction": "{\"raw_data\":{\"contract\":[{\"parameter\":{\"type_url\":\"type.googleapis.com/protocol.WithdrawExpireUnfreezeContract\",\"value\":{\"owner_address\":\"413193a0ea5520385e257bba8b30b162d26d4bdd5e\"}},\"type\":\"WithdrawExpireUnfreezeContract\"}],\"expiration\":1700000060000,\"fee_limit\":1000000,\"ref_block_bytes\":\"f080\",\"ref_block_hash\":\"d4b37a782d816437\",\"timestamp\":1700000000000},\"raw_data_hex\":\"0a02f0802208d4b37a782d81643740e0a499ffbc315a5a083812560a3b747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5769746864726177457870697265556e667265657a65436f6e747261637412170a15413193a0ea5520385e257bba8b30b162d26d4bdd5e7080d095ffbc319001c0843d\",\"signature\":[\"5299bc1a2d497457c2037126a130fc8f447b58ac9349241c5606a6ef118657bd687d25e87d30a3a6516f402dd8e1e8bf69b3f554b65ded5edef0b9e2f458a41b01\"],\"txID\":\"110730b35ade7a944d4c2a4d524f6fd5aa508edef5fc39948807bb2409d88301\"}",
+    "transactionHash": "110730b35ade7a944d4c2a4d524f6fd5aa508edef5fc39948807bb2409d88301"
+  },
   "utxo_bitcoin_send": {
     "imageHashes": [
       "b72960dd51d5a0404a3c1fb2eaa2634eb979f207e99d6e59e6f1ebfa13b8c3bb"
