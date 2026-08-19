@@ -21,11 +21,7 @@ enum DecodedTransactionPresentation {
         // Nothing useful to add.
         .unknown: "nothing readable identified the transaction",
         .contractCall: "a contract call with no known shape behind it",
-        .vote: "a vote moves no value; the verb alone would be the whole hero",
-        // Naming this would hide its signed carrier charge.
-        .removeLiquidity: "naming it would hide the carrier charge it signs"
-
-        // New named operations require copy in every shipping locale.
+        .vote: "a vote moves no value; the verb alone would be the whole hero"
     ]
 
     /// The localized verb, or `nil` for a deliberately silent operation.
@@ -52,6 +48,7 @@ enum DecodedTransactionPresentation {
         case .undelegate: return "youreUndelegating"
         case .redelegate: return "youreRedelegating"
         case .addLiquidity: return "youreAddingLiquidity"
+        case .removeLiquidity: return "youreRemovingLiquidity"
         case .redeem: return "youreRedeeming"
         case .withdrawStake: return "youreWithdrawing"
         case .mint: return "youreMinting"
@@ -60,7 +57,7 @@ enum DecodedTransactionPresentation {
         case .ibcTransfer: return "youreBridging"
 
         // Exhaustive so new operations require an explicit vocabulary decision.
-        case .transfer, .swap, .approve, .vote, .contractCall, .removeLiquidity, .unknown:
+        case .transfer, .swap, .approve, .vote, .contractCall, .unknown:
             return nil
         }
     }
@@ -155,8 +152,12 @@ enum DecodedTransactionPresentation {
     static func operationTitle(for payload: KeysignPayload) -> String? {
         title(for: SignedTransactionDecoder.decode(payload).operation)
     }
-
-    /// Basis points as a localized percentage without trailing precision noise.
+    /// Basis points as a percentage, without trailing noise: 10000 reads "100%",
+    /// 5006 reads "50.06%".
+    ///
+    /// ⚠️ Formatted with `.percent` rather than by appending an ASCII `%`. Where
+    /// the symbol sits, whether a space precedes it, and which symbol is used at
+    /// all are locale rules.
     static func percentage(fromBasisPoints basisPoints: Int) -> String {
         let fraction = Decimal(basisPoints) / 10_000
         return fraction.formatted(.percent.precision(.fractionLength(0...2)))

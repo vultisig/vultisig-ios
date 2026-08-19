@@ -186,7 +186,10 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 basisPoints: basisPoints,
                 autoCompoundAmount: autocompoundBalance,
                 sendMaxAmount: isMaxAmount,
-                isAutoCompound: isAutocompound
+                isAutoCompound: isAutocompound,
+                // The staked position the form resolved, so Verify can quote the
+                // payout instead of the memo's literal "0".
+                stakedAmount: availableAmount
             )
         case "BRUNE":
             // Carries the typed amount rather than a whole percentage of the

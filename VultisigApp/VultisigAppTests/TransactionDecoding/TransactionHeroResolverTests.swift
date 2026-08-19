@@ -10,16 +10,39 @@ import XCTest
 
 final class TransactionHeroResolverTests: XCTestCase {
 
+    func testFractionalWithdrawalUsesProjectedSemantics() {
+        let coin = Coin(asset: TokensStore.tcy, address: "thor1local", hexPublicKey: "00")
+        let transaction = TCYUnstakeTransactionBuilder(
+            coin: coin,
+            basisPoints: 5_006,
+            autoCompoundAmount: 0,
+            sendMaxAmount: false,
+            isAutoCompound: false,
+            stakedAmount: Decimal(string: "2002.74")!
+        ).buildSendTransaction(vault: .example)
+
+        let hero = TransactionHeroResolver.hero(
+            on: .functionCallVerify,
+            for: .initiating(transaction)
+        )
+        guard case .projected(_, let estimate, let scope) = hero else {
+            return XCTFail("fractional withdrawal must not look like a committed send amount")
+        }
+        XCTAssertTrue(estimate?.amount.hasPrefix("1,002.571644") ?? false)
+        XCTAssertTrue(scope.contains("50.06"), "the committed fraction should remain visible: \(scope)")
+    }
+
     // MARK: - The order
 
     func testProvidersAreAskedInTheDeclaredOrder() {
         XCTAssertEqual(
             TransactionHeroResolver.providers.map(\.id),
-            [.rippleTrustSet, .limitOrderCancel, .limitOrderPlacement, .simulated, .decoded],
+            [.rippleTrustSet, .quotedWithdrawal, .limitOrderCancel, .limitOrderPlacement, .simulated, .decoded],
             """
             The order is the answer to two providers claiming one transaction, \
-            and it has to stay the one the four `??` chains gave. Changing it \
-            changes what a signing screen says.
+            and it has to stay the one the four `??` chains gave, plus \
+            quotedWithdrawal reinstating the fractional-withdrawal hero ahead of \
+            the decoded reading. Changing it changes what a signing screen says.
             """
         )
     }
@@ -91,7 +114,8 @@ final class TransactionHeroResolverTests: XCTestCase {
     /// Surface entitlements preserve the previous, intentionally asymmetric chains.
     func testEachSurfaceAsksExactlyTheProvidersItsOldChainAsked() {
         let expected: [TransactionHeroSurface: [TransactionHeroProvider.ID]] = [
-            .functionCallVerify: [.limitOrderCancel, .decoded],
+            // Exact initiator payout precedes the decoded fraction.
+            .functionCallVerify: [.quotedWithdrawal, .limitOrderCancel, .decoded],
             .sendVerify: [.decoded],
             .sendDone: [.rippleTrustSet, .limitOrderCancel],
             .keysignConfirm: [.limitOrderCancel, .limitOrderPlacement, .simulated, .decoded],

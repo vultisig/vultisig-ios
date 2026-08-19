@@ -36,6 +36,7 @@ struct TransactionHeroProvider {
 
     enum ID: Hashable {
         case rippleTrustSet
+        case quotedWithdrawal
         case limitOrderCancel
         case limitOrderPlacement
         case simulated
@@ -54,6 +55,7 @@ enum TransactionHeroResolver {
     /// evidence and can be retitled with the decoded verb.
     static let providers: [TransactionHeroProvider] = [
         .rippleTrustSet,
+        .quotedWithdrawal,
         .limitOrderCancel,
         .limitOrderPlacement,
         .simulated,
@@ -136,7 +138,20 @@ extension TransactionHeroProvider {
         }
     )
 
-    /// Inert until a chain reader is registered.
+    /// Initiator-only exact payout, ahead of the decoded fraction.
+    static let quotedWithdrawal = TransactionHeroProvider(
+        id: .quotedWithdrawal,
+        surfaces: [.functionCallVerify],
+        hero: { subject in
+            switch subject {
+            case .initiating(let transaction):
+                return QuotedWithdrawalPresentation.hero(for: transaction)
+            case .cosigning:
+                return nil
+            }
+        }
+    )
+
     static let decoded = TransactionHeroProvider(
         id: .decoded,
         // Done keeps its existing amount presentation.

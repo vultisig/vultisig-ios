@@ -66,6 +66,7 @@ final class OperationVocabularyTests: XCTestCase {
             .undelegate: "youreUndelegating",
             .redelegate: "youreRedelegating",
             .addLiquidity: "youreAddingLiquidity",
+            .removeLiquidity: "youreRemovingLiquidity",
             .redeem: "youreRedeeming",
             .withdrawStake: "youreWithdrawing",
             .mint: "youreMinting",

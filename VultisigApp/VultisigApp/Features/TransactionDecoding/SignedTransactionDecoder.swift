@@ -21,11 +21,13 @@ protocol TransactionContentDecoder {
 
 enum SignedTransactionDecoder {
 
-    /// Registered readers in precedence order.
+    /// Registered readers in precedence order. Signed-artifact readers precede
+    /// chain grammars so sidecars cannot outrank the signed object.
     static let decoders: [TransactionContentDecoder] = [
         SolanaTransactionDecoder(),
         CosmosSignDocDecoder(),
         TronTransactionDecoder(),
+        THORChainTransactionDecoder(),
         TonTransactionDecoder(),
         CosmosTransactionDecoder(),
         MayaChainTransactionDecoder()

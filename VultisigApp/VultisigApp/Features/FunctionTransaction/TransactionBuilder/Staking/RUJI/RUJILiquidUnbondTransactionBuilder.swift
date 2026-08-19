@@ -40,6 +40,23 @@ struct RUJILiquidUnbondTransactionBuilder: TransactionBuilder {
 
     var amount: String { "0" }
 
+    /// The RUJI this redemption pays out, quantised to the shares it actually
+    /// spends — so the Verify screen states a figure instead of falling through to
+    /// the generic header with none. `amount` is the literal `"0"`; the funds are
+    /// the instruction. See `QuotedWithdrawalPresentation`.
+    ///
+    /// ⚠️ **A projection from two reads, not a commitment.** `stakedAmount` comes
+    /// from the persisted DeFi card; `receiptShares` (behind `heldUnits`) is a
+    /// separate live read. If they disagree the figure moves with them — the
+    /// accepted shape of a fractional withdrawal, and it never claims more than was
+    /// asked because the share count is truncated (`ReceiptShareRedemptionTests`).
+    var withdrawDisplayAmount: Decimal? {
+        let held = heldUnits
+        let redeemed = redeemedUnits
+        guard stakedAmount > 0, held >= 1, redeemed >= 1 else { return nil }
+        return (stakedAmount * redeemed) / held
+    }
+
     var memo: String { "" }
 
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

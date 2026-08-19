@@ -78,6 +78,12 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
+    /// The hero for a transaction that only resolves after an on-chain read — a
+    /// fractional unstake read against the signer's own position, today, but
+    /// general over any operation whose figure is settled against a balance the
+    /// signed content does not carry. Once resolution finishes, a failed read
+    /// still yields the projection's signed scope without an estimate. Only the
+    /// Verify screen consumes this; the Done screen matches main and never does.
     @Published var resolvedHero: HeroContent?
 
     var encryptionKeyHex: String = ""
@@ -685,7 +691,10 @@ class JoinKeysignViewModel: ObservableObject {
         didLoadSimulation = true
     }
 
-    /// Resolves optional chain state without making it a signing dependency.
+    /// Resolves the hero for a transaction whose figure needs an on-chain read, so
+    /// the co-signer's Verify matches the initiator's. The read lives in the decoder
+    /// layer; this view model asks for a hero and knows nothing of which operation
+    /// or chain needed one. `nil` leaves the verb-only hero in place.
     func loadResolvedHero() async {
         guard let payload = keysignPayload else { return }
         resolvedHero = await ResolvedTransactionHero.resolve(for: payload, trustedCoins: vault.coins)
