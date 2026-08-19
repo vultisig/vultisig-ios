@@ -3,11 +3,9 @@
 //  VultisigApp
 //
 //  Staking-aware verify summary for the four LUNA / LUNC operations.
-//  Mirrors the desktop client's `StakeOverview.tsx` — the headline
-//  changes per op ("You're staking / unstaking / moving / claiming"),
-//  the destination is labeled as a validator (with resolved moniker +
-//  commission), and redelegate renders two stacked rows (source then
-//  destination).
+//  The hero uses the shared decoded-operation vocabulary, while the destination
+//  remains labeled as a validator (with resolved moniker + commission) and
+//  redelegate renders two stacked rows (source then destination).
 //
 //  Falls back to truncated valopers while the validators fetch is in
 //  flight. The validators query is cached at `CosmosStakingService` for
@@ -82,40 +80,15 @@ struct CosmosStakingVerifySummaryView: View {
         .padding(1)
     }
 
-    private var headlineKey: String {
-        switch transaction.cosmosStakingPayload?.opType {
-        case .delegate: return "youreStaking"
-        case .undelegate: return "youreUnstaking"
-        case .redelegate: return "youreMoving"
-        case .withdrawRewards: return "youreClaiming"
-        case .none: return "verify"
-        }
-    }
-
+    @ViewBuilder
     private var heroHeader: some View {
-        VStack(spacing: 8) {
-            Text(headlineKey.localized)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .font(Theme.fonts.bodyMMedium)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 8) {
-                Image(transaction.coin.logo)
-                    .resizable()
-                    .frame(width: 24, height: 24)
-                    .cornerRadius(Theme.radius.pill)
-
-                Text(transaction.amountDecimal.formatForDisplay())
-                    .foregroundStyle(Theme.colors.textPrimary)
-
-                Text(transaction.coin.ticker)
-                    .foregroundStyle(Theme.colors.textTertiary)
-
-                Spacer()
-            }
-            .font(Theme.fonts.bodyLMedium)
+        if let hero = TransactionHeroResolver.hero(
+            on: .functionCallVerify,
+            for: .initiating(transaction)
+        ) {
+            VerifyHeroContentView(content: hero)
+                .padding(.bottom, 8)
         }
-        .padding(.bottom, 8)
     }
 
     @ViewBuilder
