@@ -9,18 +9,9 @@
 
 import Foundation
 
-/// The deposit/withdraw text comments a TON nominator-pool contract expects.
-/// Nominator deposits are plain text comments, but each pool *implementation*
-/// uses a DIFFERENT word — sending the wrong one is rejected on-chain
-/// (exit 72). This is the single source of truth mapping a pool's tonapi
-/// `implementation` string to its protocol tokens.
-///
-/// These are TON contract protocol tokens, NOT user-facing UI — never localize.
+/// TON contract protocol tokens by pool implementation. These are not localized.
 enum TonStakingComment {
-    /// Standard nominator pool (`ton-blockchain/nominator-pool`): deposit "d".
-    /// Whales pool (`tonwhales/ton-nominators`): deposit "Deposit" (capitalized) —
-    /// verified against successful on-chain deposits; the repo README's "Stake"
-    /// is stale and is rejected by the live pools (exit 72).
+    /// Whales pools require `Deposit`; their documented `Stake` is rejected.
     static func deposit(for implementation: String?) -> String? {
         switch implementation {
         case "tf": return "d"
@@ -36,6 +27,14 @@ enum TonStakingComment {
         case "whales": return "Withdraw"
         default: return nil
         }
+    }
+    /// Derived from the writer table so reader and builder tokens cannot drift.
+    static var depositComments: Set<String> {
+        Set(TonStakingPool.nominatorImplementations.compactMap { deposit(for: $0) })
+    }
+
+    static var withdrawComments: Set<String> {
+        Set(TonStakingPool.nominatorImplementations.compactMap { withdraw(for: $0) })
     }
 }
 
@@ -53,10 +52,7 @@ struct TonStakingPool: Equatable, Hashable {
     let maxNominators: Int?
     let implementation: String?
 
-    /// tonapi `implementation` values that are genuine **nominator pools** — the
-    /// only ones our `"d"`/`"w"` text-comment deposit mechanism can stake into.
-    /// `liquidTF` (Tonstakers and similar) mints a jetton instead and must be
-    /// excluded; unknown implementations are treated as non-nominator (excluded).
+    /// Supported nominator implementations; liquid pools use a different flow.
     static let nominatorImplementations: Set<String> = ["whales", "tf"]
 
     /// Whether this is a nominator pool our deposit mechanism supports.

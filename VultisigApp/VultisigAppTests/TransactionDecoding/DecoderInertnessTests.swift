@@ -17,7 +17,8 @@ final class DecoderInertnessTests: XCTestCase {
             SignedTransactionDecoder.decoders.map { String(describing: type(of: $0)) },
             [
                 "SolanaTransactionDecoder",
-                "TronTransactionDecoder"
+                "TronTransactionDecoder",
+                "TonTransactionDecoder"
             ],
             "a chain reader was registered or removed without saying so here"
         )
