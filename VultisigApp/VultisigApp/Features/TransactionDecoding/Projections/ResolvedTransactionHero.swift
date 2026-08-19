@@ -13,7 +13,10 @@ protocol PositionReading {
 
 enum ResolvedTransactionHero {
     /// Chain PRs add readers here as their signed decoders become available.
-    static let readers: [PositionReading] = []
+    static let readers: [PositionReading] = [
+        SolanaDelegatedAmountReader(),
+        SolanaStakeAccountAmountReader()
+    ]
 
     static func resolve(
         for content: SignedTransactionContent,

@@ -23,6 +23,7 @@ enum SignedTransactionDecoder {
 
     /// Registered readers in precedence order.
     static let decoders: [TransactionContentDecoder] = [
+        SolanaTransactionDecoder(),
         TronTransactionDecoder()
     ]
 

@@ -1835,6 +1835,7 @@
 "youreUnmerging" = "Razdvajate";
 "youreBridging" = "Premošćujete";
 "scopeYourWholeStake" = "cijeli vaš ulog";
+"scopeDelegatedAmountAfterRent" = "delegirani iznos nakon rezerve za najam";
 "scopeRewardsAccruedSoFar" = "do sada stečene nagrade";
 "withdrawingShareOfStakedPosition" = "%@ vaše uložene pozicije";
 "youreStaking" = "Stakate";

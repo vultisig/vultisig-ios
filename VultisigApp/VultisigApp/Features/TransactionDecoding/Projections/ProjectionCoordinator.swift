@@ -20,7 +20,9 @@ enum ProjectionCoordinator {
             return "scopeYourWholeStake".localized
         case .unstated where decoded.operation == .claimRewards:
             return "scopeRewardsAccruedSoFar".localized
-        case .unstated, .units:
+        case .accountFunding where decoded.operation == .delegate:
+            return "scopeDelegatedAmountAfterRent".localized
+        case .accountFunding, .unstated, .units:
             return nil
         }
     }

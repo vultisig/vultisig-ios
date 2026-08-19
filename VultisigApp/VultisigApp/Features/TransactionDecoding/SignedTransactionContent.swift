@@ -113,7 +113,6 @@ protocol SignedTransactionContent {
     /// The Cosmos staking structure that the initiator's signing path will turn
     /// into a SignDoc. A co-signer answers `nil` and reads that SignDoc instead.
     var cosmosStakingIntent: CosmosStakingPayload? { get }
-
     /// Whether an earlier signing route makes the memo inert.
     var memoIsOutranked: Bool { get }
 }
@@ -213,7 +212,6 @@ extension KeysignPayload: SignedTransactionContent {
     var stakingIntent: SolanaStakingPayload? { nil }
 
     var cosmosStakingIntent: CosmosStakingPayload? { nil }
-
     /// Mirrors TRON signing precedence: typed contracts outrank staking memos.
     var memoIsOutranked: Bool {
         rawWasmPayload != nil
@@ -264,7 +262,6 @@ struct InitiatingTransactionContent: SignedTransactionContent {
     var stakingIntent: SolanaStakingPayload? { transaction.solanaStakingPayload }
 
     var cosmosStakingIntent: CosmosStakingPayload? { transaction.cosmosStakingPayload }
-
     /// Staking intents become opaque signed content when the payload is built.
     var hasOpaqueSignedContent: Bool {
         transaction.cosmosStakingPayload != nil || transaction.solanaStakingPayload != nil

@@ -15,8 +15,11 @@ final class DecoderInertnessTests: XCTestCase {
     func testTheRegistryContainsExactlyTheExpectedReaders() {
         XCTAssertEqual(
             SignedTransactionDecoder.decoders.map { String(describing: type(of: $0)) },
-             ["TronTransactionDecoder"],
-             "a chain reader was registered or removed without saying so here"
+            [
+                "SolanaTransactionDecoder",
+                "TronTransactionDecoder"
+            ],
+            "a chain reader was registered or removed without saying so here"
         )
     }
 

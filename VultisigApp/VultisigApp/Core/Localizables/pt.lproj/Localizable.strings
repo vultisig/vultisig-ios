@@ -1835,6 +1835,7 @@
 "youreUnmerging" = "Você está separando";
 "youreBridging" = "Você está transferindo entre cadeias";
 "scopeYourWholeStake" = "todo o seu stake";
+"scopeDelegatedAmountAfterRent" = "o valor delegado após a reserva de aluguel";
 "scopeRewardsAccruedSoFar" = "recompensas acumuladas até agora";
 "withdrawingShareOfStakedPosition" = "%@ da sua posição em stake";
 "youreStaking" = "Você está fazendo stake";
