@@ -27,7 +27,8 @@ enum SignedTransactionDecoder {
         CosmosSignDocDecoder(),
         TronTransactionDecoder(),
         TonTransactionDecoder(),
-        CosmosTransactionDecoder()
+        CosmosTransactionDecoder(),
+        MayaChainTransactionDecoder()
     ]
 
     /// Returns `.unknown` when no reader can prove an operation.

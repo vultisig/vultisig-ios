@@ -20,7 +20,8 @@ final class DecoderInertnessTests: XCTestCase {
                 "CosmosSignDocDecoder",
                 "TronTransactionDecoder",
                 "TonTransactionDecoder",
-                "CosmosTransactionDecoder"
+                "CosmosTransactionDecoder",
+                "MayaChainTransactionDecoder"
             ],
             "a chain reader was registered or removed without saying so here"
         )
