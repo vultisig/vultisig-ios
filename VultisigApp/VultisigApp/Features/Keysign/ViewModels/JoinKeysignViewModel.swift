@@ -78,6 +78,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blockaidSimulation: BlockaidSimulationInfo?
     @Published var securityScannerState: SecurityScannerState = .idle
     @Published var didLoadSimulation: Bool = false
+    @Published var resolvedHero: HeroContent?
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -684,6 +685,12 @@ class JoinKeysignViewModel: ObservableObject {
         didLoadSimulation = true
     }
 
+    /// Resolves optional chain state without making it a signing dependency.
+    func loadResolvedHero() async {
+        guard let payload = keysignPayload else { return }
+        resolvedHero = await ResolvedTransactionHero.resolve(for: payload, trustedCoins: vault.coins)
+    }
+
     /// The hero displayed above the transaction summary. Promotes a resolved
     /// Blockaid balance change when available, falls back to a title-only
     /// display with an "unverified function" caption for 4byte-only decodes.
@@ -710,6 +717,12 @@ class JoinKeysignViewModel: ObservableObject {
             return .title(text: name, caption: "unverifiedFunction".localized)
         }
         return nil
+    }
+
+    /// Verify may promote a chain-state projection; Done deliberately keeps
+    /// consuming `heroContent`, whose pre-decoder provider behavior is unchanged.
+    var verifyHeroContent: HeroContent? {
+        resolvedHero ?? heroContent
     }
 
     var providerName: String {

@@ -133,6 +133,8 @@ struct SendVerifyScreen: View {
                 amountFiat: sendCryptoVerifyViewModel.amountFiat,
                 coinTicker: tx.coin.ticker,
                 keysignPayload: sendCryptoVerifyViewModel.verifyKeysignPayload,
+                // Send-routed DeFi operations can supply a hero; plain sends remain nil.
+                hero: TransactionHeroResolver.hero(on: .sendVerify, for: .initiating(tx)),
                 rippleTrustSet: RippleTrustSetPresentation.state(for: tx)
             ),
             securityScannerState: $sendCryptoVerifyViewModel.securityScannerState

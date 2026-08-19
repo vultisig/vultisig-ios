@@ -22,6 +22,8 @@ struct HeroContentView: View {
                 amountRow(title: title, coin: coin, label: "receive".localized)
             case .swap(let title, let from, let to):
                 swap(title: title, from: from, to: to)
+            case .projected(let title, let estimate, let scope):
+                projected(title: title, estimate: estimate, scope: scope)
             }
         }
         .frame(maxWidth: .infinity)
@@ -41,6 +43,29 @@ struct HeroContentView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    /// Scope is always visible; an optional estimate is explicitly approximate.
+    @ViewBuilder
+    private func projected(title: String, estimate: HeroCoinAmount?, scope: String) -> some View {
+        Text(title)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+        if let estimate {
+            HStack(spacing: 4) {
+                Text(verbatim: "≈")
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                coinRow(estimate, iconSize: 36)
+            }
+        }
+
+        Text(scope)
+            .font(Theme.fonts.caption10)
+            .foregroundStyle(Theme.colors.textTertiary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// The single-row heroes: send and receive render the same row and differ
@@ -114,5 +139,22 @@ struct HeroContentView: View {
                 .fill(Theme.colors.border)
                 .frame(height: 1)
         }
+    }
+}
+
+/// Verify-only wrapper that redraws cached hero figures when rates arrive.
+/// Done continues to render `HeroContentView` directly and keeps its existing
+/// presentation and timing.
+struct VerifyHeroContentView: View {
+    let content: HeroContent
+
+    @State private var rateRevision = 0
+
+    var body: some View {
+        _ = rateRevision
+        return HeroContentView(content: content.refreshedFiat())
+            .onReceive(RateProvider.shared.ratesDidChange) { _ in
+                rateRevision &+= 1
+            }
     }
 }

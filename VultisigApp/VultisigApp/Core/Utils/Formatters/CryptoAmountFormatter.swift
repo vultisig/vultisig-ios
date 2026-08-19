@@ -26,8 +26,12 @@ enum CryptoAmountFormatter {
     /// source for the amount-fiat semantics on the initiator send verify
     /// header, the co-sign summary, and the keysign hero rows.
     static func amountInFiat(coin: Coin, amount: Decimal) -> String {
+        amountInFiat(coin: coin.toCoinMeta(), amount: amount)
+    }
+
+    static func amountInFiat(coin: CoinMeta, amount: Decimal) -> String {
         guard amount > 0, RateProvider.shared.hasRate(for: coin) else { return .empty }
-        let fiat = coin.fiat(decimal: amount)
+        let fiat = RateProvider.shared.fiatBalance(value: amount, coin: coin)
         let oneCent = Decimal(sign: .plus, exponent: -2, significand: 1)
         guard fiat >= oneCent else { return .empty }
         return fiat.formatToFiat(includeCurrencySymbol: true)
