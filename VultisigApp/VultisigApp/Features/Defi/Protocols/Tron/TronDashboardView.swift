@@ -13,6 +13,7 @@ struct TronDashboardView: View {
     let onRefresh: () async -> Void  // Callback for refresh
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
+    @EnvironmentObject var homeViewModel: HomeViewModel
 
     var walletTrxBalance: Decimal {
         return TronViewLogic.getWalletTrxBalance(vault: vault)
@@ -24,6 +25,15 @@ struct TronDashboardView: View {
             return "$0.00"
         }
         return TronViewLogic.formatFiat(balance: model.totalFrozenBalance, trxPrice: trxCoin.price)
+    }
+
+    /// "Claim X TRX" — the sum every expired entry returns in one transaction.
+    /// Honors the hide-balance toggle like the amounts in the rows above it.
+    var claimButtonTitle: String {
+        let amount = homeViewModel.hideVaultBalance
+            ? String.hideBalanceText
+            : "\(model.claimableBalance.formatted()) TRX"
+        return String(format: NSLocalizedString("tronClaimButton", comment: "Claim %@"), amount)
     }
 
     var body: some View {
@@ -208,7 +218,7 @@ struct TronDashboardView: View {
                         ))
                     }
                 )
-                .disabled(model.totalFrozenBalance <= 0)
+                .disabled(!model.canUnfreeze)
 
                 DefiButton(
                     title: NSLocalizedString("tronFreezeButton", comment: "Freeze"),
@@ -293,6 +303,17 @@ struct TronDashboardView: View {
                     }
                     .padding(.vertical, 4)
                 }
+
+                // One action for every expired entry: WithdrawExpireUnfreeze
+                // sweeps all of them at once, so per-row claims would mislead.
+                if model.hasClaimableWithdrawals {
+                    DefiButton(
+                        title: claimButtonTitle,
+                        icon: .arrowDownFromLine,
+                        action: onClaim
+                    )
+                    .padding(.top, 4)
+                }
             }
             .padding(TronConstants.Design.cardPadding)
             .background(
@@ -300,5 +321,10 @@ struct TronDashboardView: View {
                     .fill(Theme.colors.bgSurface1)
             )
         }
+    }
+
+    private func onClaim() {
+        guard let tx = model.makeClaimTransaction(vault: vault) else { return }
+        router.navigate(to: SendRoute.verify(tx: tx, retrySignal: SendRetrySignal(), vault: vault))
     }
 }
