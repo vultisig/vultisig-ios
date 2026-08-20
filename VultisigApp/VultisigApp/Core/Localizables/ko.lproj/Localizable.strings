@@ -1836,6 +1836,7 @@
 "youreUnmerging" = "병합 해제 중";
 "youreBridging" = "브리지 중";
 "scopeYourWholeStake" = "스테이킹 전액";
+"scopeDelegatedAmountAfterRent" = "임대 예치금을 제외한 위임 금액";
 "scopeRewardsAccruedSoFar" = "현재까지 누적된 보상";
 "withdrawingShareOfStakedPosition" = "스테이킹 포지션의 %@";
 "youreStaking" = "스테이킹 중";

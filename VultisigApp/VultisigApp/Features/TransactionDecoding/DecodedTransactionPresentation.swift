@@ -53,6 +53,7 @@ enum DecodedTransactionPresentation {
         case .redelegate: return "youreRedelegating"
         case .addLiquidity: return "youreAddingLiquidity"
         case .redeem: return "youreRedeeming"
+        case .withdrawStake: return "youreWithdrawing"
         case .mint: return "youreMinting"
         case .merge: return "youreMerging"
         case .unmerge: return "youreUnmerging"
@@ -95,11 +96,7 @@ enum DecodedTransactionPresentation {
             }
             return .send(
                 title: title,
-                coin: HeroCoinAmount(
-                    amount: amount.formatToDecimal(digits: meta.decimals),
-                    ticker: meta.ticker,
-                    logo: meta.logo
-                )
+                coin: HeroCoinAmount(amount: amount, coin: meta)
             )
 
         case .units(let raw, .denom(let denom)):
@@ -119,6 +116,10 @@ enum DecodedTransactionPresentation {
                     logo: meta.logo
                 )
             )
+
+        case .accountFunding:
+            // The reserve must be read live before this can be shown as stake.
+            return .title(text: title, caption: nil)
 
         case .fraction:
             // Projection and localized scope arrive with fractional readers.

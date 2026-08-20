@@ -23,7 +23,9 @@ enum SignedTransactionDecoder {
 
     /// Registered readers in precedence order.
     static let decoders: [TransactionContentDecoder] = [
-        TronTransactionDecoder()
+        SolanaTransactionDecoder(),
+        TronTransactionDecoder(),
+        TonTransactionDecoder()
     ]
 
     /// Returns `.unknown` when no reader can prove an operation.

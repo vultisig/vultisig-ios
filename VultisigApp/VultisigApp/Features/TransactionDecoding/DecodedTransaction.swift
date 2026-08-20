@@ -28,6 +28,10 @@ enum DecodedAmount: Hashable {
     /// Base units exactly as the signed content carries them.
     case units(BigInt, of: DecodedAsset)
 
+    /// Exact funding of a newly created account. The displayed stake may be
+    /// lower because chain state determines the account's reserve.
+    case accountFunding(BigInt, of: DecodedAsset)
+
     /// A signed share in basis points; resolving the position is enrichment.
     case fraction(basisPoints: Int, of: DecodedAsset)
 
@@ -53,6 +57,7 @@ enum DecodedOperation: Hashable, CaseIterable {
     case claimRewards
     case mint
     case redeem
+    case withdrawStake
     case addLiquidity
     case removeLiquidity
     case merge
@@ -77,6 +82,7 @@ enum DecodedOperation: Hashable, CaseIterable {
 enum DecodedCounterparty: Hashable {
     case node(String)
     case validator(String)
+    case stakeAccount(String)
     case pool(String)
     case contract(String)
 }

@@ -1836,6 +1836,7 @@
 "youreUnmerging" = "您正在取消合并";
 "youreBridging" = "您正在跨链转账";
 "scopeYourWholeStake" = "您的全部质押";
+"scopeDelegatedAmountAfterRent" = "扣除租金储备后的委托金额";
 "scopeRewardsAccruedSoFar" = "至今累积的奖励";
 "withdrawingShareOfStakedPosition" = "您质押仓位的 %@";
 "youreStaking" = "您正在质押";

@@ -1836,6 +1836,7 @@
 "youreUnmerging" = "You’re unmerging";
 "youreBridging" = "You’re bridging";
 "scopeYourWholeStake" = "your whole stake";
+"scopeDelegatedAmountAfterRent" = "the delegated amount after the rent reserve";
 "scopeRewardsAccruedSoFar" = "rewards accrued so far";
 "withdrawingShareOfStakedPosition" = "%@ of your staked position";
 "youreStaking" = "You’re staking";

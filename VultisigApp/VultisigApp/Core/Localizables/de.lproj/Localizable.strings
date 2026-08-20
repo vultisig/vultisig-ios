@@ -1836,6 +1836,7 @@
 "youreUnmerging" = "Du trennst";
 "youreBridging" = "Du überträgst kettenübergreifend";
 "scopeYourWholeStake" = "dein gesamter Stake";
+"scopeDelegatedAmountAfterRent" = "der delegierte Betrag nach Abzug der Mietreserve";
 "scopeRewardsAccruedSoFar" = "bisher angefallene Belohnungen";
 "withdrawingShareOfStakedPosition" = "%@ deiner Stake-Position";
 "youreStaking" = "Du stakst";
