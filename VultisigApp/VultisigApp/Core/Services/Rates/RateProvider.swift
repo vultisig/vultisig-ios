@@ -12,6 +12,11 @@ import OSLog
 
 final class RateProvider {
 
+    enum CacheChange {
+        case persistedHydration
+        case ratesUpdated
+    }
+
     enum CryptoId {
         case priceProvider(String)
         case contract(String)
@@ -28,14 +33,15 @@ final class RateProvider {
 
     static let shared = RateProvider()
 
-    /// Fires on the main actor whenever the cached rate set changes — the initial
-    /// load of persisted rates and every `save(rates:)`.
+    /// Fires on the main actor whenever the cached rate set changes, identifying
+    /// whether the change is the coherent persisted snapshot loaded at startup
+    /// or an incremental update from `save(rates:)`.
     ///
     /// Rates are an otherwise silent cache: callers that render a *precomputed*
     /// fiat value (rather than reading `rate(for:)` inside `body`) have no way to
     /// learn that a rate arrived, so their fiat stays frozen at whatever was
     /// cached when they last recomputed. This signal is that missing link.
-    let ratesDidChange = PassthroughSubject<Void, Never>()
+    let ratesDidChange = PassthroughSubject<CacheChange, Never>()
 
     static func cryptoId(for coin: CoinMeta) -> CryptoId {
         switch coin.chain.chainType {
@@ -122,7 +128,7 @@ final class RateProvider {
             // Persisted rates make fiat renderable immediately on a warm
             // start; announce them so views that cached a pre-load fiat
             // value recompute instead of waiting on a network refresh.
-            ratesDidChange.send()
+            ratesDidChange.send(.persistedHydration)
         } catch {
             Log.chain.service.error("Failed to load rates: \(error.localizedDescription, privacy: .public)")
         }
@@ -195,7 +201,7 @@ final class RateProvider {
         // changed — announce it even if the persistence below throws, or a
         // failed write would leave the UI showing fiat that contradicts the
         // cache until the next refresh.
-        defer { ratesDidChange.send() }
+        defer { ratesDidChange.send(.ratesUpdated) }
 
         // Update existing or insert new rates
         for rate in rates {

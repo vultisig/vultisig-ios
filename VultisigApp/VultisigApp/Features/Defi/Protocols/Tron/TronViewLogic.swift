@@ -81,6 +81,30 @@ struct TronViewLogic {
         return vault.nativeCoin(for: .tron)
     }
 
+    // MARK: - Claim (WithdrawExpireUnfreeze)
+
+    /// Sum of the pending withdrawals whose unlock period has elapsed — what a
+    /// single `WithdrawExpireUnfreezeContract` returns to the spendable balance.
+    static func claimableBalance(of withdrawals: [TronPendingWithdrawal]) -> Decimal {
+        withdrawals.filter(\.isClaimable).reduce(.zero) { $0 + $1.amount }
+    }
+
+    /// Builds the self-addressed claim transaction `TronHelper` routes to
+    /// `WithdrawExpireUnfreezeContract`. The contract takes no amount and
+    /// sweeps every expired entry at once, so the amount here is only what
+    /// Verify / co-sign / Done display. Returns nil when nothing is claimable.
+    static func makeClaimTransaction(vault: Vault, pendingWithdrawals: [TronPendingWithdrawal]) -> SendTransaction? {
+        let claimable = claimableBalance(of: pendingWithdrawals)
+        guard claimable > 0, let coin = getTrxCoin(vault: vault) else { return nil }
+
+        return SendTransaction.empty(coin: coin, vault: vault).with(
+            toAddress: coin.address,
+            amount: claimable.description,
+            memo: TronHelper.withdrawExpireUnfreezeMemo,
+            isStakingOperation: true
+        )
+    }
+
     /// Gets the wallet TRX balance
     static func getWalletTrxBalance(vault: Vault) -> Decimal {
         if let trxCoin = vault.nativeCoin(for: .tron) {
