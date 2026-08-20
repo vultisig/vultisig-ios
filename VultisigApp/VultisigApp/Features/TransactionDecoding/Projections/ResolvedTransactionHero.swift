@@ -30,10 +30,11 @@ enum ResolvedTransactionHero {
     static func resolve(
         for content: SignedTransactionContent,
         trustedCoins: [Coin],
+        title: String? = nil,
         readers: [PositionReading] = ResolvedTransactionHero.readers
     ) async -> HeroContent? {
         let decoded = SignedTransactionDecoder.decode(content)
-        guard let title = DecodedTransactionPresentation.title(for: decoded.operation) else { return nil }
+        guard let title = title ?? DecodedTransactionPresentation.title(for: decoded.operation) else { return nil }
 
         for reader in readers {
             guard let coin = trustedCoins.first(where: { reader.handles(decoded, coin: $0) }) else {

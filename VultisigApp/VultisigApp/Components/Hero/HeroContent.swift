@@ -100,7 +100,7 @@ struct HeroCoinAmount: Hashable {
         self.fiatSource = FiatSource(amount: amount, coin: coin)
     }
 
-    fileprivate func refreshedFiat() -> HeroCoinAmount {
+    func refreshedFiat() -> HeroCoinAmount {
         guard let source = fiatSource else { return self }
         let fiat = CryptoAmountFormatter.amountInFiat(coin: source.coin, amount: source.amount)
         return HeroCoinAmount(

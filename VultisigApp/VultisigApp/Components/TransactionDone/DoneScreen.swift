@@ -259,8 +259,11 @@ extension DoneScreen where TokenContent == DoneTokenContent,
 struct DoneTokenContent: View {
     let input: TransactionDonePayload
 
+    @State private var rateRevision = 0
+
     var body: some View {
-        VStack(spacing: 8) {
+        _ = rateRevision
+        return VStack(spacing: 8) {
             if let metadata = input.dappMetadata, !metadata.isEmpty {
                 DAppRequestBanner(metadata: metadata)
             }
@@ -278,24 +281,36 @@ struct DoneTokenContent: View {
             Theme.radius.xl.shape
                 .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
+        .onReceive(RateProvider.shared.ratesDidChange) { _ in
+            guard input.operationHero != nil else { return }
+            rateRevision &+= 1
+        }
     }
 
     @ViewBuilder
     private var defaultCoinDisplay: some View {
+        let display = DoneHeroDisplay(input: input)
+
+        Text(display.verb)
+            .font(Theme.fonts.caption10)
+            .foregroundStyle(Theme.colors.textTertiary)
+
         AsyncImageView(
-            logo: input.coin.logo,
+            logo: display.logo,
             size: CGSize(width: 32, height: 32),
-            ticker: input.coin.ticker,
-            tokenChainLogo: input.coin.tokenChainLogo
+            ticker: display.ticker,
+            tokenChainLogo: display.tokenChainLogo
         )
 
         VStack(spacing: 4) {
-            Text(input.amountCrypto)
+            Text(display.crypto)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
-            Text(input.amountFiat.formatToFiat(includeCurrencySymbol: true))
-                .font(Theme.fonts.caption10)
-                .foregroundStyle(Theme.colors.textTertiary)
+            if let fiat = display.fiat, !fiat.isEmpty {
+                Text(fiat)
+                    .font(Theme.fonts.caption10)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
         }
     }
 }

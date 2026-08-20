@@ -30,6 +30,19 @@ enum TransactionHeroSubject {
     /// Simulation stays view-model owned and lazy so earlier providers can win
     /// without triggering async-derived presentation work.
     case cosigning(payload: KeysignPayload?, simulated: () -> HeroContent?)
+
+    /// Final signed content for either Done device. Trusted coins stay local;
+    /// the simulation closure is empty on initiator flows.
+    case completed(
+        payload: KeysignPayload,
+        trustedCoins: [Coin],
+        simulated: () -> HeroContent?
+    )
+}
+
+struct TransactionHeroResolution {
+    let provider: TransactionHeroProvider.ID
+    let hero: HeroContent
 }
 
 struct TransactionHeroProvider {
@@ -69,9 +82,17 @@ enum TransactionHeroResolver {
         for subject: TransactionHeroSubject,
         providers: [TransactionHeroProvider] = TransactionHeroResolver.providers
     ) -> HeroContent? {
+        resolution(on: surface, for: subject, providers: providers)?.hero
+    }
+
+    static func resolution(
+        on surface: TransactionHeroSurface,
+        for subject: TransactionHeroSubject,
+        providers: [TransactionHeroProvider] = TransactionHeroResolver.providers
+    ) -> TransactionHeroResolution? {
         for provider in providers where provider.surfaces.contains(surface) {
             if let hero = provider.hero(subject) {
-                return hero
+                return TransactionHeroResolution(provider: provider.id, hero: hero)
             }
         }
         return nil
@@ -92,6 +113,8 @@ extension TransactionHeroProvider {
                 return RippleTrustSetPresentation.hero(for: tx)
             case .cosigning(let payload, _):
                 return RippleTrustSetPresentation.hero(for: payload)
+            case .completed(let payload, _, _):
+                return RippleTrustSetPresentation.hero(for: payload)
             }
         }
     )
@@ -107,6 +130,10 @@ extension TransactionHeroProvider {
             case .cosigning(let payload, _):
                 // Co-signers identify cancels from the signed `m=<` memo.
                 return LimitOrderCancelPresentation.hero(forSignedMemo: payload?.memo)
+            case .completed(let payload, _, _):
+                return LimitOrderCancelPresentation.hero(forSignedMemo: payload.memo)?.retitled(
+                    DecodedTransactionPresentation.doneTitle(for: .limitOrderCancel)
+                )
             }
         }
     )
@@ -129,12 +156,17 @@ extension TransactionHeroProvider {
         id: .simulated,
         surfaces: [.keysignConfirm, .keysignDone],
         hero: { subject in
-            guard case .cosigning(let payload, let simulated) = subject,
-                  let hero = simulated() else { return nil }
-
-            // Preserve simulated figures and add only the decoder's verb.
-            let verb = payload.flatMap(DecodedTransactionPresentation.operationTitle(for:))
-            return hero.retitled(verb)
+            switch subject {
+            case .initiating:
+                return nil
+            case .cosigning(let payload, let simulated):
+                guard let hero = simulated() else { return nil }
+                let verb = payload.flatMap(DecodedTransactionPresentation.operationTitle(for:))
+                return hero.retitled(verb)
+            case .completed(let payload, _, let simulated):
+                guard let hero = simulated() else { return nil }
+                return hero.retitled(DoneTransactionPresentation.specificTitle(for: payload))
+            }
         }
     )
 
@@ -146,7 +178,7 @@ extension TransactionHeroProvider {
             switch subject {
             case .initiating(let transaction):
                 return QuotedWithdrawalPresentation.hero(for: transaction)
-            case .cosigning:
+            case .cosigning, .completed:
                 return nil
             }
         }
@@ -154,8 +186,7 @@ extension TransactionHeroProvider {
 
     static let decoded = TransactionHeroProvider(
         id: .decoded,
-        // Done keeps its existing amount presentation.
-        surfaces: [.functionCallVerify, .sendVerify, .keysignConfirm],
+        surfaces: [.functionCallVerify, .sendVerify, .sendDone, .keysignConfirm, .keysignDone],
         hero: { subject in
             switch subject {
             case .initiating(let tx):
@@ -169,6 +200,11 @@ extension TransactionHeroProvider {
                 return DecodedTransactionPresentation.hero(
                     for: SignedTransactionDecoder.decode(payload),
                     coin: payload.coin
+                )
+            case .completed(let payload, let trustedCoins, _):
+                return DoneTransactionPresentation.hero(
+                    for: payload,
+                    trustedCoins: trustedCoins
                 )
             }
         }
