@@ -67,30 +67,43 @@ class VaultDetailViewModel: ObservableObject {
         // is pure and network-free.
         rateProvider.ratesDidChange
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.rebuildRowsForRateChange() }
+            .sink { [weak self] change in self?.rebuildRowsForRateChange(change) }
             .store(in: &cancellables)
     }
 
-    /// Recomputes the projection's fiat against the currently cached rates,
-    /// **keeping the current row order**.
+    /// Recomputes the projection's fiat against the currently cached rates.
     ///
-    /// `chainRows(vault:)` orders by fiat descending, and rates land once per
-    /// chain group, so re-sorting here would reshuffle the list under the user
-    /// several times per refresh. A rate arriving should refresh the values, not
-    /// reorder — the authoritative fiat-desc re-sort stays on `updateBalance`'s
-    /// tail, which keeps the deliberate "no stale-then-fresh double reorder"
-    /// behaviour intact. No-ops when nothing changed.
-    private func rebuildRowsForRateChange() {
+    /// The one persisted-cache hydration is a coherent snapshot and may correct
+    /// the zero-rate order produced by the synchronous startup seed. Incremental
+    /// network rates land once per chain group, so those refresh values in place
+    /// and leave the authoritative re-sort on `updateBalance`'s tail. This keeps
+    /// the deliberate "no stale-then-fresh double reorder" behaviour intact.
+    private func rebuildRowsForRateChange(_ change: RateProvider.CacheChange) {
         guard let vault = rowsVault else { return }
         refreshTotalFiatBalance(vault: vault)
         guard !rows.isEmpty else { return }
-        let byChain = Dictionary(
-            logic.chainRows(vault: vault).map { ($0.chain, $0) },
-            uniquingKeysWith: { _, latest in latest }
-        )
-        let rebuilt = rows.compactMap { byChain[$0.chain] }
-        guard rebuilt.count == rows.count, rebuilt != rows else { return }
-        rows = rebuilt
+
+        let sortedRows = logic.chainRows(vault: vault)
+        switch change {
+        case .persistedHydration:
+            let sortedChains = sortedRows.map(\.chain)
+            if sortedChains != chains {
+                chains = sortedChains
+            }
+            if sortedRows != rows {
+                rows = sortedRows
+            }
+            chainsVaultPubKeyECDSA = vault.pubKeyECDSA
+
+        case .ratesUpdated:
+            let byChain = Dictionary(
+                sortedRows.map { ($0.chain, $0) },
+                uniquingKeysWith: { _, latest in latest }
+            )
+            let rebuilt = rows.compactMap { byChain[$0.chain] }
+            guard rebuilt.count == rows.count, rebuilt != rows else { return }
+            rows = rebuilt
+        }
     }
 
     /// Recomputes the preformatted vault total. Cheap relative to the row
