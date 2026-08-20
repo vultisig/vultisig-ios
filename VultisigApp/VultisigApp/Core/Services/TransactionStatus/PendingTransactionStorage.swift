@@ -96,10 +96,12 @@ final class StoredPendingTransactionStorage {
         return try modelContext.fetch(descriptor).first
     }
 
-    /// Get all non-terminal pending transactions (for background polling)
+    /// Get all resumable transactions for background polling. `timeout` is a
+    /// legacy client-deadline value, not a chain outcome, so released rows with
+    /// that value get one fresh status check after upgrading.
     func getAllPending() throws -> [StoredPendingTransaction] {
         let predicate = #Predicate<StoredPendingTransaction> { tx in
-            tx.status == "broadcasted" || tx.status == "pending"
+            tx.status == "broadcasted" || tx.status == "pending" || tx.status == "timeout"
         }
         let descriptor = FetchDescriptor(
             predicate: predicate,
@@ -118,14 +120,13 @@ final class StoredPendingTransactionStorage {
     /// signed, so no one else can replace or double-spend it.
     ///
     /// Deliberately *not* `getAllPending()`. That set answers "should the
-    /// status poller still be working on this", which is a question about the
-    /// poller's patience, not about the chain: it drops a transaction once the
-    /// poller gives up (`timeout`) even though a low-fee transaction can sit in
-    /// a mempool for far longer than any poll window. Losing ownership there
-    /// would take a wallet whose confirmed inputs the send already consumed
-    /// straight back to reading zero — the exact failure this lookup exists to
-    /// prevent, just deferred. Only `confirmed` ends the exemption, and it ends
-    /// it harmlessly: a confirmed output carries a block and needs no vouching.
+    /// status poller resume this", which may evolve independently of chain
+    /// truth. A low-fee transaction can sit in a mempool for far longer than
+    /// any client polling window. Losing ownership there would take a wallet
+    /// whose confirmed inputs the send already consumed straight back to
+    /// reading zero — the exact failure this lookup exists to prevent, just
+    /// deferred. Only `confirmed` ends the exemption, and it ends it harmlessly:
+    /// a confirmed output carries a block and needs no vouching.
     ///
     /// The set is deliberately allowed to outlive the transactions in it — a
     /// row stays non-terminal while the poller reports `notFound`, a row can be

@@ -108,11 +108,11 @@ class TransactionStatusViewModel: ObservableObject {
                         break
                     }
 
-                    // Check max wait timeout
+                    // The deadline limits this continuous polling session; it
+                    // does not prove the transaction failed. Keep the status
+                    // resumable so a later app launch performs a fresh check.
                     if let start = startTime,
                        Date().timeIntervalSince(start) > config.maxWaitTime {
-                        status = .timeout
-                        saveStatus()
                         break
                     }
 
@@ -123,6 +123,10 @@ class TransactionStatusViewModel: ObservableObject {
                     break
                 } catch {
                     logger.error("Polling error: \(error)")
+                    if let start = startTime,
+                       Date().timeIntervalSince(start) > config.maxWaitTime {
+                        break
+                    }
                     // On error, retry after poll interval
                     try? await Task.sleep(for: .seconds(config.pollInterval))
                 }
@@ -220,7 +224,10 @@ class TransactionStatusViewModel: ObservableObject {
         case "failed":
             return .failed(reason: failureReason ?? "Unknown error")
         case "timeout":
-            return .timeout
+            // Released versions persisted the client polling deadline as a
+            // terminal result. It was never a chain outcome, so reopen it for
+            // one chain-first check on resume.
+            return .pending
         default:
             return .broadcasted(estimatedTime: estimatedTime)
         }

@@ -11,6 +11,12 @@ import OSLog
 final class TransactionStatusPoller: ObservableObject {
     static let shared = TransactionStatusPoller()
 
+    enum PollAction: Equatable {
+        case complete(TransactionHistoryStatus, String?)
+        case retry
+        case stop
+    }
+
     @Published private(set) var completedTransactionCount: Int = 0
 
     private let service = TransactionStatusService.shared
@@ -84,35 +90,26 @@ final class TransactionStatusPoller: ObservableObject {
         let config = ChainStatusConfig.config(for: chain)
 
         let task = Task { [weak self] in
-            while !Task.isCancelled {
+            pollingLoop: while !Task.isCancelled {
+                guard let self else { break }
+
                 do {
                     // Ownership is re-checked before every write, not just at
                     // start. A poll that legitimately began under
                     // `trackerOutage` must not still be holding the pen when the
                     // tracker recovers — the gate has to hold for the write, and
                     // the write is what the user sees.
-                    guard self?.isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) != true else {
-                        self?.logger.debug("Tracker regained authority mid-poll for \(txHash) — standing down")
+                    guard !self.isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) else {
+                        self.logger.debug("Tracker regained authority mid-poll for \(txHash) — standing down")
                         break
                     }
 
                     let elapsed = Date().timeIntervalSince(createdAt)
-                    if elapsed >= config.maxWaitTime {
-                        let timeoutMessage = "timeout".localized
-                        self?.recorder.updateStatus(
-                            txHash: txHash,
-                            pubKeyECDSA: pubKeyECDSA,
-                            status: .error,
-                            errorMessage: timeoutMessage
-                        )
-                        onUpdate(.error, timeoutMessage)
-                        self?.completedTransactionCount += 1
-                        break
-                    }
-
-                    let result = try await self?.service.checkTransactionStatus(
+                    let action = await Self.nextAction(
+                        checker: self.service,
                         txHash: txHash,
-                        chain: chain
+                        chain: chain,
+                        deadlineReached: elapsed >= config.maxWaitTime
                     )
 
                     // `stopAll()` (e.g. the global reset) cancels this task while
@@ -122,34 +119,39 @@ final class TransactionStatusPoller: ObservableObject {
                     // of the loop.
                     if Task.isCancelled { break }
 
-                    if let result, let historyStatus = self?.mapToHistoryStatus(result) {
-                        var errorMessage: String? = nil
-                        if case let .failed(reason) = result.status {
-                            errorMessage = reason
-                        }
+                    switch action {
+                    case let .complete(historyStatus, errorMessage):
                         // Re-checked after the await: the status fetch is a
                         // network round-trip, and the tracker can take ownership
                         // while it is in flight.
-                        guard self?.isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) != true else {
-                            self?.logger.debug("Tracker took authority during status fetch for \(txHash) — discarding result")
-                            break
+                        guard !self.isOwnedByTracker(txHash: txHash, pubKeyECDSA: pubKeyECDSA) else {
+                            self.logger.debug("Tracker took authority during status fetch for \(txHash) — discarding result")
+                            break pollingLoop
                         }
-                        self?.recorder.updateStatus(
+                        self.recorder.updateStatus(
                             txHash: txHash,
                             pubKeyECDSA: pubKeyECDSA,
                             status: historyStatus,
                             errorMessage: errorMessage
                         )
                         onUpdate(historyStatus, errorMessage)
-                        self?.completedTransactionCount += 1
-                        break
-                    }
+                        self.completedTransactionCount += 1
+                        break pollingLoop
 
-                    try await Task.sleep(for: .seconds(config.pollInterval))
+                    case .retry:
+                        try await Task.sleep(for: .seconds(config.pollInterval))
+
+                    case .stop:
+                        // The client deadline limits continuous polling; it is
+                        // not evidence that the chain rejected the transaction.
+                        // Leave the row in progress so the next app/history open
+                        // performs another chain-first check.
+                        break pollingLoop
+                    }
                 } catch is CancellationError {
                     break
                 } catch {
-                    try? await Task.sleep(for: .seconds(config.pollInterval))
+                    break
                 }
             }
 
@@ -225,15 +227,29 @@ final class TransactionStatusPoller: ObservableObject {
             && tx.swapTracking?.trackerOutage != true
     }
 
-    /// Returns a terminal TransactionHistoryStatus if the result is terminal, nil if still pending.
-    private func mapToHistoryStatus(_ result: TransactionStatusResult) -> TransactionHistoryStatus? {
-        switch result.status {
-        case .confirmed:
-            return .successful
-        case .failed:
-            return .error
-        case .notFound, .pending:
-            return nil
+    /// Resolve one polling iteration. The chain lookup always happens before
+    /// the client deadline is interpreted, including when a row is already old
+    /// when the app opens.
+    static func nextAction(
+        checker: TransactionStatusChecking,
+        txHash: String,
+        chain: Chain,
+        deadlineReached: Bool
+    ) async -> PollAction {
+        do {
+            let result = try await checker.checkTransactionStatus(txHash: txHash, chain: chain)
+            switch result.status {
+            case .confirmed:
+                return .complete(.successful, nil)
+            case let .failed(reason):
+                return .complete(.error, reason)
+            case .notFound, .pending:
+                return deadlineReached ? .stop : .retry
+            }
+        } catch is CancellationError {
+            return .stop
+        } catch {
+            return deadlineReached ? .stop : .retry
         }
     }
 }
