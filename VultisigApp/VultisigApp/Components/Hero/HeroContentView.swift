@@ -10,6 +10,12 @@ import SwiftUI
 /// card, the verify-screen summary block).
 struct HeroContentView: View {
     let content: HeroContent
+    private let verbAlignment: Alignment
+
+    init(content: HeroContent, verbAlignment: Alignment = .center) {
+        self.content = content
+        self.verbAlignment = verbAlignment
+    }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -42,7 +48,7 @@ struct HeroContentView: View {
                     .foregroundStyle(Theme.colors.textTertiary)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .center)
+        .frame(maxWidth: .infinity, alignment: verbAlignment)
     }
 
     /// Scope is always visible; an optional estimate is explicitly approximate.
@@ -78,7 +84,7 @@ struct HeroContentView: View {
             Text(title)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: verbAlignment)
         }
         if let label {
             VStack(spacing: 8) {
@@ -152,7 +158,10 @@ struct VerifyHeroContentView: View {
 
     var body: some View {
         _ = rateRevision
-        return HeroContentView(content: content.refreshedFiat())
+        return HeroContentView(
+            content: content.refreshedFiat(),
+            verbAlignment: .leading
+        )
             .onReceive(RateProvider.shared.ratesDidChange) { _ in
                 rateRevision &+= 1
             }
