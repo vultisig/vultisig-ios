@@ -187,6 +187,15 @@ final class TransactionHeroResolverTests: XCTestCase {
         }
     }
 
+    func testCosmosStakingSummaryUsesTheSharedHeroVocabulary() throws {
+        let source = try appSource(
+            "Features/FunctionTransaction/Common/View/CosmosStakingVerifySummaryView.swift"
+        )
+        XCTAssertTrue(source.contains("TransactionHeroResolver.hero("))
+        XCTAssertTrue(source.contains("HeroContentView(content: hero)"))
+        XCTAssertFalse(source.contains("private var headlineKey"))
+    }
+
     /// The presentations the registry owns are reached through it, not around it.
     func testNoScreenCallsAProviderPresentationDirectly() throws {
         let screens = [

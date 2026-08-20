@@ -99,6 +99,23 @@ enum DecodedTransactionPresentation {
                 coin: HeroCoinAmount(amount: amount, coin: meta)
             )
 
+        case .units(let raw, .denom(let denom)) where denom == coin.chain.feeUnit:
+            // ⚠️ **The chain's own denom, resolved from the chain rather than
+            // from the payload.** A Cosmos SignDoc names `uatom`, and the
+            // curated table keys ATOM at an empty contract address — so the
+            // lookup below finds nothing and a delegate that states its amount
+            // perfectly well rendered as a bare verb on the co-signer. Matching
+            // the chain's fee unit is what closes that, and it is exact: denoms
+            // are case-sensitive.
+            guard let meta = TokensStore.nativeAsset(for: coin.chain),
+                  let amount = scaled(raw, decimals: meta.decimals), amount > 0 else {
+                return .title(text: title, caption: nil)
+            }
+            return .send(
+                title: title,
+                coin: HeroCoinAmount(amount: amount, coin: meta)
+            )
+
         case .units(let raw, .denom(let denom)):
             // Cosmos denoms are case-sensitive; reject the helper's insensitive match.
             guard let meta = TokensStore.findTokenMeta(chain: coin.chain, contractAddress: denom),
@@ -110,11 +127,7 @@ enum DecodedTransactionPresentation {
             }
             return .send(
                 title: title,
-                coin: HeroCoinAmount(
-                    amount: amount.formatToDecimal(digits: meta.decimals),
-                    ticker: meta.ticker,
-                    logo: meta.logo
-                )
+                coin: HeroCoinAmount(amount: amount, coin: meta)
             )
 
         case .accountFunding:
