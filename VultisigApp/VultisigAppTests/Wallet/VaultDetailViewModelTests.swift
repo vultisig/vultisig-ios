@@ -127,8 +127,9 @@ final class VaultDetailViewModelTests: XCTestCase {
         let vm = VaultDetailViewModel()
         vm.groupChains(vault: vault)
         let orderBefore = vm.rows.map(\.chain)
+        XCTAssertEqual(orderBefore, [.ethereum, .bitcoin], "precondition: zero-rate rows use the chain-index tie-break")
 
-        // Price ETH far above BTC. A re-sorting rebuild would flip the order.
+        // Price BTC far above ETH. A re-sorting rebuild would flip the order.
         let rebuilt = expectation(description: "fiat refreshed")
         rateCancellable = vm.$rows.dropFirst().sink { rows in
             if rows.contains(where: { $0.fiatBalance != Decimal.zero.formatToFiat(includeCurrencySymbol: true) }) {
@@ -136,11 +137,54 @@ final class VaultDetailViewModelTests: XCTestCase {
             }
         }
         try RateProvider.shared.save(rates: [
-            Rate(fiat: SettingsCurrency.current.rawValue, crypto: ethId, value: 900_000)
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: btcId, value: 900_000)
         ])
         await fulfillment(of: [rebuilt], timeout: 2)
 
         XCTAssertEqual(vm.rows.map(\.chain), orderBefore, "a rate arrival must not reorder the list")
+    }
+
+    /// Persisted rates arrive as one coherent startup snapshot. Unlike
+    /// incremental network saves, hydration must repair the zero-rate seed order
+    /// immediately and keep the selector's `chains` projection aligned with the
+    /// rendered rows.
+    func testPersistedRateHydrationReordersRowsAndChainsImmediately() async throws {
+        let btcId = "hydration-btc-\(UUID().uuidString)"
+        let ethId = "hydration-eth-\(UUID().uuidString)"
+        let vault = makeVault(pubKey: "vault-hydration", chains: [])
+        vault.coins = [
+            makePricedCoin(chain: .bitcoin, ticker: "BTC", providerId: btcId, rawBalance: "100000000"),
+            makePricedCoin(chain: .ethereum, ticker: "ETH", providerId: ethId, rawBalance: "1000000000000000000")
+        ]
+
+        let vm = VaultDetailViewModel()
+        vm.groupChains(vault: vault)
+        XCTAssertEqual(vm.rows.map(\.chain), [.ethereum, .bitcoin], "precondition: startup seed has no rates")
+
+        let incrementalRefresh = expectation(description: "incremental rate refreshed in place")
+        rateCancellable = vm.$rows.dropFirst().sink { rows in
+            let bitcoin = rows.first(where: { $0.chain == .bitcoin })
+            if bitcoin?.fiatBalance != Decimal.zero.formatToFiat(includeCurrencySymbol: true) {
+                incrementalRefresh.fulfill()
+            }
+        }
+        try RateProvider.shared.save(rates: [
+            Rate(fiat: SettingsCurrency.current.rawValue, crypto: btcId, value: 900_000)
+        ])
+        await fulfillment(of: [incrementalRefresh], timeout: 2)
+        XCTAssertEqual(vm.rows.map(\.chain), [.ethereum, .bitcoin])
+
+        let hydrated = expectation(description: "persisted hydration sorted projection")
+        rateCancellable = vm.$rows.dropFirst().sink { rows in
+            if rows.map(\.chain) == [.bitcoin, .ethereum] {
+                hydrated.fulfill()
+            }
+        }
+        RateProvider.shared.ratesDidChange.send(.persistedHydration)
+        await fulfillment(of: [hydrated], timeout: 2)
+
+        XCTAssertEqual(vm.rows.map(\.chain), [.bitcoin, .ethereum])
+        XCTAssertEqual(vm.chains, vm.rows.map(\.chain), "chain selectors and rendered rows must stay in lockstep")
     }
 
     /// A rate for a coin this vault does not hold must not republish `rows` —

@@ -13,6 +13,13 @@ import OSLog
 
 enum TronHelper {
 
+    /// Memo that routes a self-addressed native TRX payload to
+    /// `WithdrawExpireUnfreezeContract` — the Stake 2.0 claim that moves every
+    /// expired `UnfreezeBalanceV2` entry back into the spendable balance.
+    /// Matched exactly (no argument: the contract takes none) and named after
+    /// the TRON contract so co-signing platforms can mirror the convention.
+    static let withdrawExpireUnfreezeMemo = "WITHDRAW_EXPIRE_UNFREEZE"
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         // For TRX swaps, we use the same logic as regular transactions but with swap memo
         return try getPreSignedInputData(keysignPayload: keysignPayload)
@@ -98,6 +105,23 @@ enum TronHelper {
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
             )
         }
+        // WithdrawExpireUnfreeze (Stake 2.0) - detect from memo. The contract
+        // sweeps every expired unfreeze entry for the owner and carries no
+        // amount, so `toAmount` is deliberately not read here.
+        if keysignPayload.memo == withdrawExpireUnfreezeMemo {
+            guard keysignPayload.coin.isNativeToken,
+                  keysignPayload.toAddress == keysignPayload.coin.address else {
+                throw HelperError.runtimeError("TRON withdraw expire unfreeze requires a native TRX payload addressed to the sender")
+            }
+            return try buildTronWithdrawExpireUnfreezeInput(
+                ownerAddress: keysignPayload.coin.address,
+                timestamp: timestamp, expiration: expiration,
+                blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
+                blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
+                blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
+            )
+        }
+
         // Fallback: validate toAddress for regular transfers
         guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
@@ -375,6 +399,41 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
+
+    // MARK: - WithdrawExpireUnfreeze (Stake 2.0)
+
+    private static func buildTronWithdrawExpireUnfreezeInput(
+        ownerAddress: String,
+        timestamp: UInt64, expiration: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Data {
+        let contract = TronWithdrawExpireUnfreezeContract.with {
+            $0.ownerAddress = ownerAddress
+        }
+
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .withdrawExpireUnfreeze(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                // Stake 2.0 withdraw is a system contract, not a TVM smart-
+                // contract call. `fee_limit` caps Energy for TVM execution and
+                // therefore has no meaning here. Keeping it at protobuf zero
+                // also matches the node-built transaction and gives every
+                // co-signer one canonical byte representation.
+                $0.feeLimit = 0
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+            }
+        }
+        return try input.serializedData()
+    }
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload

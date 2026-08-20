@@ -54,7 +54,8 @@ extension SigningGoldenFactory {
             tonSend,
             polkadotSend,
             bittensorSend,
-            tronSend
+            tronSend,
+            tronWithdrawExpireUnfreeze
         ]
     }
 
@@ -448,6 +449,39 @@ extension SigningGoldenFactory {
                         blockHeaderWitnessAddress: Const.tronWitness,
                         gasFeeEstimation: 1_000_000
                     )
+                )
+            },
+            imageHashes: { try TronHelper.getPreSignedImageHash(keysignPayload: $0) },
+            signedTransaction: { .regular(try TronHelper.getSignedTransaction(keysignPayload: $0, signatures: $1)) }
+        )
+    }
+
+    /// Stake 2.0 claim: a self-addressed TRX payload whose memo routes to
+    /// `WithdrawExpireUnfreezeContract`. The contract has no amount, so the
+    /// `toAmount` here is display-only and must not reach the signed bytes.
+    private static var tronWithdrawExpireUnfreeze: SigningGoldenVector {
+        SigningGoldenVector(
+            name: "tron_withdraw_expire_unfreeze",
+            curve: .secp256k1,
+            expectedLeaf: "TronHelper",
+            makePayload: {
+                let coin = coin(chain: .tron, ticker: "TRX", decimals: 6, curve: .secp256k1, uncompressedSecp: true)
+                return payload(
+                    coin: coin,
+                    toAddress: coin.address,
+                    toAmount: BigInt(12_500_000),
+                    chainSpecific: .Tron(
+                        timestamp: 1_700_000_000_000,
+                        expiration: 1_700_000_060_000,
+                        blockHeaderTimestamp: 1_700_000_000_000,
+                        blockHeaderNumber: 50_000_000,
+                        blockHeaderVersion: 30,
+                        blockHeaderTxTrieRoot: Const.hash32,
+                        blockHeaderParentHash: Const.hash32,
+                        blockHeaderWitnessAddress: Const.tronWitness,
+                        gasFeeEstimation: 1_000_000
+                    ),
+                    memo: TronHelper.withdrawExpireUnfreezeMemo
                 )
             },
             imageHashes: { try TronHelper.getPreSignedImageHash(keysignPayload: $0) },
