@@ -64,9 +64,9 @@ struct MayaChainAPIService {
         return data
     }
 
-    func getMimir() async throws -> MayaMimir {
+    func getMimir(shouldCache: Bool = true) async throws -> MayaMimir {
         // Check cache first
-        if let cached = await cache.getCachedMimir() {
+        if shouldCache, let cached = await cache.getCachedMimir() {
             return cached
         }
 
@@ -79,6 +79,42 @@ struct MayaChainAPIService {
 
         return data
     }
+
+    func getLastBlock() async throws -> Int64 {
+        let response = try await httpClient.request(
+            MayaChainBondsAPI.getLastBlock,
+            responseType: [MayaLastBlockResponse].self
+        )
+        guard let height = response.data.first?.mayachain else {
+            throw MayaChainAPIError.invalidResponse
+        }
+        return height
+    }
+
+    /// Whether MAYANode will currently admit a native MAYAChain `MsgDeposit`.
+    /// MAYANode's last-block endpoint supplies a height coherent with its Mimir
+    /// values. Callers at a signing boundary pass `shouldCache: false` so a halt
+    /// that began after the DeFi card loaded cannot slip through on a stale Mimir.
+    func getNativeDepositAvailability(
+        shouldCache: Bool = true
+    ) async throws -> MayaNativeDepositAvailability {
+        async let currentHeight = getLastBlock()
+        async let mimir = getMimir(shouldCache: shouldCache)
+        let (resolvedHeight, resolvedMimir) = try await (currentHeight, mimir)
+
+        return resolvedMimir.isNativeDepositHalted(at: resolvedHeight)
+            ? .halted
+            : .available
+    }
+}
+
+private struct MayaLastBlockResponse: Decodable {
+    let mayachain: Int64
+}
+
+enum MayaNativeDepositAvailability: Equatable, Sendable {
+    case available
+    case halted
 }
 
 // MARK: - Cache
