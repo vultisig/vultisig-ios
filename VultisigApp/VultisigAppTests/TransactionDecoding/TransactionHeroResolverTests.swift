@@ -117,9 +117,9 @@ final class TransactionHeroResolverTests: XCTestCase {
             // Exact initiator payout precedes the decoded fraction.
             .functionCallVerify: [.quotedWithdrawal, .limitOrderCancel, .decoded],
             .sendVerify: [.decoded],
-            .sendDone: [.rippleTrustSet, .limitOrderCancel],
+            .sendDone: [.rippleTrustSet, .limitOrderCancel, .decoded],
             .keysignConfirm: [.limitOrderCancel, .limitOrderPlacement, .simulated, .decoded],
-            .keysignDone: [.rippleTrustSet, .limitOrderCancel, .simulated]
+            .keysignDone: [.rippleTrustSet, .limitOrderCancel, .simulated, .decoded]
         ]
 
         for surface in TransactionHeroSurface.allCases {
@@ -131,7 +131,7 @@ final class TransactionHeroResolverTests: XCTestCase {
     }
 
     @MainActor
-    func testResolvedProjectionIsVerifyOnlyAndCannotChangeDoneHeroContent() {
+    func testResolvedProjectionStaysSeparateFromLegacySimulationContent() {
         let viewModel = JoinKeysignViewModel()
         let projection = HeroContent.projected(
             title: "You’re delegating",
@@ -141,7 +141,7 @@ final class TransactionHeroResolverTests: XCTestCase {
 
         viewModel.resolvedHero = projection
 
-        XCTAssertNil(viewModel.heroContent, "Done must keep its pre-decoder provider path")
+        XCTAssertNil(viewModel.heroContent)
         XCTAssertEqual(viewModel.verifyHeroContent, projection)
     }
 
@@ -211,6 +211,20 @@ final class TransactionHeroResolverTests: XCTestCase {
         }
     }
 
+    func testBothDoneSurfacesUseTheFinalPayloadResolver() throws {
+        let hookups: [(path: String, surface: String)] = [
+            ("Features/Send/Views/Screens/SendDoneScreen.swift", ".sendDone"),
+            ("Features/Keysign/Views/JoinKeysignDoneView.swift", ".keysignDone")
+        ]
+
+        for hookup in hookups {
+            let source = try appSource(hookup.path)
+            XCTAssertTrue(source.contains("TransactionHeroResolver.resolution("))
+            XCTAssertTrue(source.contains("on: \(hookup.surface)"))
+            XCTAssertTrue(source.contains("for: .completed("))
+        }
+    }
+
     func testCosmosStakingSummaryUsesTheSharedHeroVocabulary() throws {
         let source = try appSource(
             "Features/FunctionTransaction/Common/View/CosmosStakingVerifySummaryView.swift"
@@ -225,7 +239,9 @@ final class TransactionHeroResolverTests: XCTestCase {
         let screens = [
             "Features/FunctionTransaction/Common/Screen/FunctionTransactionVerifyScreen.swift",
             "Features/Send/Views/Screens/SendVerifyScreen.swift",
-            "Features/Keysign/Views/KeysignMessageConfirmView.swift"
+            "Features/Keysign/Views/KeysignMessageConfirmView.swift",
+            "Features/Send/Views/Screens/SendDoneScreen.swift",
+            "Features/Keysign/Views/JoinKeysignDoneView.swift"
         ]
 
         for screen in screens {

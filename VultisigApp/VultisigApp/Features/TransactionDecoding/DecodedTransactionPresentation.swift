@@ -29,6 +29,44 @@ enum DecodedTransactionPresentation {
         localizationKey(for: operation)?.localized
     }
 
+    /// Done uses completed-action copy while Verify keeps the wording above.
+    /// Every operation has an explicit decision; swaps remain owned by their
+    /// dedicated two-sided Done screen.
+    static func doneTitle(for operation: DecodedOperation) -> String? {
+        doneLocalizationKey(for: operation)?.localized
+    }
+
+    static func doneLocalizationKey(for operation: DecodedOperation) -> String? {
+        switch operation {
+        case .transfer, .contractCall, .unknown: return "doneVerbSent"
+        case .swap: return nil
+        case .approve: return "doneVerbApproved"
+        case .stake: return "doneVerbStaked"
+        case .unstake: return "doneVerbUnstaked"
+        case .bond: return "doneVerbBonded"
+        case .unbond: return "doneVerbUnbonded"
+        case .rebond: return "doneVerbRebonded"
+        case .leave: return "doneVerbLeft"
+        case .delegate: return "doneVerbDelegated"
+        case .undelegate: return "doneVerbUndelegated"
+        case .redelegate: return "doneVerbRedelegated"
+        case .claimRewards: return "doneVerbClaimedRewards"
+        case .mint: return "doneVerbMinted"
+        case .redeem: return "doneVerbRedeemed"
+        case .withdrawStake, .securedAssetWithdraw: return "doneVerbWithdrew"
+        case .addLiquidity: return "doneVerbAddedLiquidity"
+        case .removeLiquidity: return "doneVerbRemovedLiquidity"
+        case .merge: return "doneVerbMerged"
+        case .unmerge: return "doneVerbUnmerged"
+        case .ibcTransfer: return "doneVerbBridged"
+        case .vote: return "doneVerbVoted"
+        case .securedAssetDeposit: return "doneVerbDeposited"
+        case .switchChain: return "doneVerbSwitched"
+        case .limitOrderPlacement: return "doneVerbPlacedLimitOrder"
+        case .limitOrderCancel: return "limitSwap.cancel.done.sent"
+        }
+    }
+
     /// Exposed so tests can validate keys against every shipping locale.
     static func localizationKey(for operation: DecodedOperation) -> String? {
         switch operation {
@@ -65,6 +103,16 @@ enum DecodedTransactionPresentation {
     /// Builds a hero, using `coin` only for presentation metadata.
     static func hero(for decoded: DecodedTransaction, coin: Coin) -> HeroContent? {
         guard let title = title(for: decoded.operation) else { return nil }
+        return hero(for: decoded, coin: coin, title: title)
+    }
+
+    /// Shares amount, asset, and projection semantics between Verify and Done;
+    /// only the surface-owned title differs.
+    static func hero(
+        for decoded: DecodedTransaction,
+        coin: Coin,
+        title: String
+    ) -> HeroContent? {
 
         // Execution-set quantities state their signed scope immediately. A
         // later chain read may add an estimate, but never owns the verb/scope.

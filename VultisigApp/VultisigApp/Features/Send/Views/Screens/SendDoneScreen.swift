@@ -26,6 +26,7 @@ struct SendDoneScreen: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
+    @State private var resolvedOperationHero: HeroContent?
 
     var body: some View {
         if let tx {
@@ -39,6 +40,17 @@ struct SendDoneScreen: View {
                 ),
                 navigationTitle: "overview".localized
             )
+            .task(id: keysignPayload) {
+                guard let keysignPayload,
+                      doneResolution(for: keysignPayload)?.provider == .decoded else {
+                    resolvedOperationHero = nil
+                    return
+                }
+                resolvedOperationHero = await DoneTransactionPresentation.resolve(
+                    for: keysignPayload,
+                    trustedCoins: vault.coins
+                )
+            }
         }
     }
 
@@ -50,14 +62,17 @@ struct SendDoneScreen: View {
         // read as "your order is cancelled", which is precisely the claim
         // THORChain has not made yet.
         let isCancel = tx.limitCancelContext != nil
+        let resolution = keysignPayload.flatMap(doneResolution(for:))
         return TransactionDonePayload(
             coin: tx.coin,
             amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
             amountFiat: tx.amountInFiat,
             // A TrustSet's amount IS the trust-line limit, so it has to claim the
             // hero before the amount slot renders it as a transfer.
-            hero: RippleTrustSetPresentation.hero(for: tx)
-                ?? LimitOrderCancelPresentation.hero(for: tx),
+            hero: resolution?.provider == .decoded ? nil : resolution?.hero,
+            operationHero: resolution?.provider == .decoded
+                ? resolvedOperationHero ?? resolution?.hero
+                : nil,
             hash: hash,
             explorerLink: ExplorerLinkBuilder.getExplorerURL(chain: chain, txid: hash),
             memo: tx.memo,
@@ -75,6 +90,17 @@ struct SendDoneScreen: View {
             keysignPayload: keysignPayload,
             pubKeyECDSA: vault.pubKeyECDSA,
             verb: isCancel ? .cancelLimitOrder : .send
+        )
+    }
+
+    private func doneResolution(for payload: KeysignPayload) -> TransactionHeroResolution? {
+        TransactionHeroResolver.resolution(
+            on: .sendDone,
+            for: .completed(
+                payload: payload,
+                trustedCoins: vault.coins,
+                simulated: { nil }
+            )
         )
     }
 }

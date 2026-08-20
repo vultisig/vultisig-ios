@@ -108,6 +108,7 @@ final class TransactionDonePayloadTests: XCTestCase {
         )
         XCTAssertEqual(payload.verb, .send)
         XCTAssertNil(payload.hero)
+        XCTAssertNil(payload.operationHero)
         XCTAssertNil(payload.toAlias)
         XCTAssertNil(payload.dappMetadata)
     }

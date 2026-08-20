@@ -28,11 +28,11 @@ final class DecoderInertnessTests: XCTestCase {
         )
     }
 
-    /// The decoded provider is available only on approval surfaces.
-    func testTheDecodedProviderSpeaksOnVerifyNotDone() {
+    /// Swap owns custom Done content; the normal-send surfaces use the decoder.
+    func testTheDecodedProviderSpeaksOnVerifyAndNormalSendDone() {
         XCTAssertEqual(
             TransactionHeroProvider.decoded.surfaces,
-            [.functionCallVerify, .sendVerify, .keysignConfirm]
+            [.functionCallVerify, .sendVerify, .sendDone, .keysignConfirm, .keysignDone]
         )
     }
 

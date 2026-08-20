@@ -27,6 +27,7 @@ struct JoinKeysignDoneView: View {
     @Query private var addressBookItems: [AddressBookItem]
 
     private let summaryViewModel = JoinKeysignSummaryViewModel()
+    @State private var resolvedOperationHero: HeroContent?
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
@@ -73,6 +74,7 @@ struct JoinKeysignDoneView: View {
     @ViewBuilder
     private func sendBranch(keysignPayload: KeysignPayload) -> some View {
         let fees = viewModel.getCalculatedNetworkFee()
+        let resolution = doneResolution(for: keysignPayload)
         DoneScreen(
             input: TransactionDonePayload(
                 coin: keysignPayload.coin,
@@ -81,10 +83,10 @@ struct JoinKeysignDoneView: View {
                 // An XRPL TrustSet carries the trust-line LIMIT in `toAmount`, so
                 // it has to claim the hero before the amount slot describes it as
                 // a transfer of that many tokens.
-                hero: RippleTrustSetPresentation.hero(for: keysignPayload)
-                    ?? LimitOrderCancelPresentation.hero(
-                        forSignedMemo: keysignPayload.memo
-                    ) ?? viewModel.heroContent,
+                hero: resolution?.provider == .decoded ? nil : resolution?.hero,
+                operationHero: resolution?.provider == .decoded
+                    ? resolvedOperationHero ?? resolution?.hero
+                    : nil,
                 hash: viewModel.txid,
                 explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                 memo: viewModel.memo ?? "",
@@ -114,6 +116,27 @@ struct JoinKeysignDoneView: View {
                 keysignPayload: keysignPayload,
                 txHash: viewModel.txid,
                 vault: vault
+            )
+        )
+        .task(id: keysignPayload) {
+            guard doneResolution(for: keysignPayload)?.provider == .decoded else {
+                resolvedOperationHero = nil
+                return
+            }
+            resolvedOperationHero = await DoneTransactionPresentation.resolve(
+                for: keysignPayload,
+                trustedCoins: vault.coins
+            )
+        }
+    }
+
+    private func doneResolution(for payload: KeysignPayload) -> TransactionHeroResolution? {
+        TransactionHeroResolver.resolution(
+            on: .keysignDone,
+            for: .completed(
+                payload: payload,
+                trustedCoins: vault.coins,
+                simulated: { viewModel.heroContent }
             )
         )
     }

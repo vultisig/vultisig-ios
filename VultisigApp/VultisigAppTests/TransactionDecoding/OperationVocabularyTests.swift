@@ -176,6 +176,71 @@ final class OperationVocabularyTests: XCTestCase {
         }
     }
 
+    func testEveryOperationHasAnExplicitDoneVocabularyDecision() {
+        let expected: [DecodedOperation: String?] = [
+            .transfer: "doneVerbSent",
+            .swap: nil,
+            .approve: "doneVerbApproved",
+            .stake: "doneVerbStaked",
+            .unstake: "doneVerbUnstaked",
+            .bond: "doneVerbBonded",
+            .unbond: "doneVerbUnbonded",
+            .rebond: "doneVerbRebonded",
+            .leave: "doneVerbLeft",
+            .delegate: "doneVerbDelegated",
+            .undelegate: "doneVerbUndelegated",
+            .redelegate: "doneVerbRedelegated",
+            .claimRewards: "doneVerbClaimedRewards",
+            .mint: "doneVerbMinted",
+            .redeem: "doneVerbRedeemed",
+            .withdrawStake: "doneVerbWithdrew",
+            .addLiquidity: "doneVerbAddedLiquidity",
+            .removeLiquidity: "doneVerbRemovedLiquidity",
+            .merge: "doneVerbMerged",
+            .unmerge: "doneVerbUnmerged",
+            .ibcTransfer: "doneVerbBridged",
+            .vote: "doneVerbVoted",
+            .securedAssetDeposit: "doneVerbDeposited",
+            .securedAssetWithdraw: "doneVerbWithdrew",
+            .switchChain: "doneVerbSwitched",
+            .limitOrderPlacement: "doneVerbPlacedLimitOrder",
+            .limitOrderCancel: "limitSwap.cancel.done.sent",
+            .contractCall: "doneVerbSent",
+            .unknown: "doneVerbSent"
+        ]
+
+        XCTAssertEqual(Set(expected.keys), Set(DecodedOperation.allCases))
+        for operation in DecodedOperation.allCases {
+            XCTAssertEqual(
+                DecodedTransactionPresentation.doneLocalizationKey(for: operation),
+                expected[operation] ?? nil,
+                "\(operation) has the wrong Done vocabulary decision"
+            )
+        }
+    }
+
+    func testEveryDoneVerbResolvesInEveryShippingLocale() throws {
+        let locales = ["en", "de", "es", "hr", "it", "ko", "pt", "zh-Hans"]
+        let keys = Set(DecodedOperation.allCases.compactMap {
+            DecodedTransactionPresentation.doneLocalizationKey(for: $0)
+        })
+
+        for key in keys {
+            for locale in locales {
+                let bundle = try XCTUnwrap(
+                    Bundle(for: Self.self).path(forResource: locale, ofType: "lproj").flatMap(Bundle.init(path:))
+                        ?? Bundle.main.path(forResource: locale, ofType: "lproj").flatMap(Bundle.init(path:)),
+                    "no \(locale).lproj in the bundle"
+                )
+                XCTAssertNotEqual(
+                    bundle.localizedString(forKey: key, value: nil, table: nil),
+                    key,
+                    "Done verb `\(key)` is missing in \(locale)"
+                )
+            }
+        }
+    }
+
     // MARK: - Exhaustive decoder fixtures
 
     private static var decoderFixtures: [DecoderFixture] {
