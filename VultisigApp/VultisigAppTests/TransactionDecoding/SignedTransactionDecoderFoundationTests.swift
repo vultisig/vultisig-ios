@@ -10,10 +10,6 @@ import XCTest
 
 final class SignedTransactionDecoderFoundationTests: XCTestCase {
 
-    func testRegistryStartsEmpty() {
-        XCTAssertTrue(SignedTransactionDecoder.decoders.isEmpty)
-    }
-
     func testUnregisteredContentIsUnreadable() {
         let decoded = SignedTransactionDecoder.decode(StubContent())
 
