@@ -23,13 +23,18 @@ struct MayaChainStakeInteractor: StakeInteractor {
         self.mayaChainAPIService = mayaChainAPIService
     }
 
-    func fetchActionAvailability() async -> StakeActionAvailability {
+    func fetchActionAvailabilities(for coins: [CoinMeta]) async -> StakeActionAvailabilities {
+        let availability: StakeActionAvailability
         do {
-            let availability = try await mayaChainAPIService.getNativeDepositAvailability(shouldCache: false)
-            return availability == .available ? .available : .halted
+            let nativeDepositAvailability = try await mayaChainAPIService.getNativeDepositAvailability(shouldCache: false)
+            availability = nativeDepositAvailability == .available ? .available : .halted
         } catch {
             logger.error("Could not verify Maya CACAO staking availability: \(error.localizedDescription, privacy: .private)")
-            return .unavailable
+            availability = .unavailable
+        }
+
+        return coins.reduce(into: [:]) { result, coin in
+            result[coin] = availability
         }
     }
 

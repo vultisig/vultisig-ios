@@ -14,7 +14,7 @@ private let logger = Log.defi.viewModel
 final class DefiChainStakeViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var initialLoadingDone: Bool
-    @Published private(set) var actionAvailability: StakeActionAvailability
+    @Published private(set) var actionAvailabilities: StakeActionAvailabilities
 
     private let chain: Chain
     private let interactor: StakeInteractor?
@@ -35,6 +35,10 @@ final class DefiChainStakeViewModel: ObservableObject {
 
     var vaultStakePositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.staking ?? []
+    }
+
+    func actionAvailability(for position: StakePosition) -> StakeActionAvailability {
+        actionAvailabilities[position.coin] ?? .available
     }
 
     /// Whether a persisted position should be shown for this chain. TON nominator
@@ -58,7 +62,10 @@ final class DefiChainStakeViewModel: ObservableObject {
         self.chain = chain
         self.interactor = interactor ?? DefiInteractorResolver.stakeInteractor(for: chain)
         self.storage = storage
-        self.actionAvailability = chain == .mayaChain ? .checking : .available
+        self.actionAvailabilities = Self.initialActionAvailabilities(
+            for: vault.defiPositions.first { $0.chain == chain }?.staking ?? [],
+            chain: chain
+        )
         // Mirror the per-chain visibility rule: TON shows any persisted stake
         // ungated; other chains require the per-coin opt-in.
         if chain == .ton {
@@ -75,20 +82,42 @@ final class DefiChainStakeViewModel: ObservableObject {
 
     func refresh() async {
         guard let interactor else {
-            actionAvailability = chain == .mayaChain ? .unavailable : .available
+            actionAvailabilities = Self.resolvedActionAvailabilities(
+                for: vaultStakePositions,
+                availability: chain == .mayaChain ? .unavailable : .available
+            )
             initialLoadingDone = true
             return
         }
 
+        let enabledCoins = vaultStakePositions
         async let positions = interactor.fetchStakePositions(vault: vault)
-        async let availability = interactor.fetchActionAvailability()
-        let (dtos, resolvedAvailability) = await (positions, availability)
-        actionAvailability = resolvedAvailability
+        async let availabilities = interactor.fetchActionAvailabilities(for: enabledCoins)
+        let (dtos, resolvedAvailabilities) = await (positions, availabilities)
+        actionAvailabilities = resolvedAvailabilities
         do {
             try storage.upsert(stake: dtos, for: vault)
         } catch {
             logger.error("Failed to persist stake positions for chain \(self.chain.rawValue, privacy: .public): \(error.localizedDescription, privacy: .private)")
         }
         initialLoadingDone = true
+    }
+}
+
+private extension DefiChainStakeViewModel {
+    static func initialActionAvailabilities(for coins: [CoinMeta], chain: Chain) -> StakeActionAvailabilities {
+        resolvedActionAvailabilities(
+            for: coins,
+            availability: chain == .mayaChain ? .checking : .available
+        )
+    }
+
+    static func resolvedActionAvailabilities(
+        for coins: [CoinMeta],
+        availability: StakeActionAvailability
+    ) -> StakeActionAvailabilities {
+        coins.reduce(into: [:]) { result, coin in
+            result[coin] = availability
+        }
     }
 }
