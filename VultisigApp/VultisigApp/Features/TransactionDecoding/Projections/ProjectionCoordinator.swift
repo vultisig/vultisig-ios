@@ -2,16 +2,22 @@
 //  ProjectionCoordinator.swift
 //  VultisigApp
 //
+//  Turning a decoded reading into a hero that says what is certain immediately,
+//  and what is estimated when it arrives.
+//
 
 import Foundation
 
 enum ProjectionCoordinator {
+
+    /// Short enough that optional chain state cannot stall signing UI.
     static let timeout: Duration = .seconds(5)
 
-    /// Returns wording that remains true even when optional chain state is unavailable.
+    /// Returns a committed scope only for quantities settled at execution.
     static func scope(for decoded: DecodedTransaction) -> String? {
         switch decoded.amount {
         case .fraction(let basisPoints, _):
+            // The signed share remains exact even when the projected amount is not.
             return String(
                 format: "withdrawingShareOfStakedPosition".localized,
                 DecodedTransactionPresentation.percentage(fromBasisPoints: basisPoints)
@@ -27,6 +33,7 @@ enum ProjectionCoordinator {
         }
     }
 
+    /// Builds the immediate verb-and-scope hero; an estimate is optional.
     static func hero(
         for decoded: DecodedTransaction,
         title: String,
@@ -36,7 +43,7 @@ enum ProjectionCoordinator {
         return .projected(title: title, estimate: estimate, scope: scope)
     }
 
-    /// Every read failure, including a timeout, degrades to the signed scope.
+    /// Reads an optional estimate; every failure degrades to the existing scope.
     static func estimate(
         for decoded: DecodedTransaction,
         using resolvers: [ProjectionResolving]
@@ -54,12 +61,16 @@ enum ProjectionCoordinator {
     static func estimate(
         using read: @escaping () async -> HeroCoinAmount?
     ) async -> HeroCoinAmount? {
+        // A task group would await a cancellation-ignoring loser on scope exit.
+        // The continuation returns on the first result without joining the loser.
         return await withCheckedContinuation { continuation in
             let gate = ResumeOnce(continuation)
+
             Task {
                 let value = await read()
                 await gate.resume(with: value)
             }
+
             Task {
                 try? await Task.sleep(for: timeout)
                 await gate.resume(with: nil)
@@ -67,6 +78,7 @@ enum ProjectionCoordinator {
         }
     }
 
+    /// Serializes the read/timeout race and resumes the continuation once.
     private actor ResumeOnce {
         private var continuation: CheckedContinuation<HeroCoinAmount?, Never>?
 

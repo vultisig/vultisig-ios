@@ -19,6 +19,7 @@ final class DecoderInertnessTests: XCTestCase {
                 "SolanaTransactionDecoder",
                 "CosmosSignDocDecoder",
                 "TronTransactionDecoder",
+                "THORChainTransactionDecoder",
                 "TonTransactionDecoder",
                 "CosmosTransactionDecoder",
                 "MayaChainTransactionDecoder"
