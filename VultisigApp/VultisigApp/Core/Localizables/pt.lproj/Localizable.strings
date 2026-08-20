@@ -1546,6 +1546,8 @@
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainCustomTokenInvalidFormat" = "Formato de token THORChain inválido. Use THOR.{SYMBOL}, ex.: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain não está habilitado neste cofre. Por favor, habilite THORChain para usar este recurso.";
+"thorchainWasmStakingHaltedWarning" = "O staking da App Layer da THORChain está temporariamente indisponível porque a execução de contratos está pausada. Tente novamente quando ela for retomada.";
+"thorchainWasmStakingUnavailableWarning" = "Não foi possível verificar a disponibilidade do staking da App Layer da THORChain. Tente novamente mais tarde.";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "timeout" = "Tempo esgotado";
 "title" = "Título";

@@ -1546,6 +1546,8 @@
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
 "thorchainCustomTokenInvalidFormat" = "THORChain 代币格式无效。请使用 THOR.{SYMBOL}，例如 THOR.LQDY。";
 "thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
+"thorchainWasmStakingHaltedWarning" = "由于合约执行已暂停，THORChain App Layer 质押暂时不可用。请在恢复后重试。";
+"thorchainWasmStakingUnavailableWarning" = "无法验证 THORChain App Layer 质押是否可用。请稍后重试。";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "timeout" = "超时";
 "title" = "标题";

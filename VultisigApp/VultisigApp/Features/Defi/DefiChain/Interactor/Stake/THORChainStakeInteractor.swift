@@ -11,9 +11,14 @@ private let logger = Log.defi.interactor
 
 struct THORChainStakeInteractor: StakeInteractor {
     private let stakingService: THORChainStakingProviding
+    private let wasmAvailabilityProvider: THORChainWasmExecutionAvailabilityProviding
 
-    init(stakingService: THORChainStakingProviding = THORChainStakingService.shared) {
+    init(
+        stakingService: THORChainStakingProviding = THORChainStakingService.shared,
+        wasmAvailabilityProvider: THORChainWasmExecutionAvailabilityProviding = ThorchainService.shared
+    ) {
         self.stakingService = stakingService
+        self.wasmAvailabilityProvider = wasmAvailabilityProvider
     }
 
     static func scaledAmount(rawAmount: Decimal, decimals: Int) -> Decimal {
@@ -31,6 +36,42 @@ struct THORChainStakeInteractor: StakeInteractor {
             dtos.append(contentsOf: await positions(for: snapshot, runeMeta: runeMeta))
         }
         return dtos
+    }
+
+    func fetchActionAvailabilities(for coins: [CoinMeta]) async -> StakeActionAvailabilities {
+        let contractAddresses = Set(coins.flatMap { Self.wasmContractAddresses(for: $0) })
+        let contractAvailabilities = await wasmAvailabilityProvider.fetchWasmExecutionAvailabilities(
+            for: contractAddresses
+        )
+
+        return coins.reduce(into: [:]) { result, coin in
+            let addresses = Self.wasmContractAddresses(for: coin)
+            let availabilities = addresses.map { contractAvailabilities[$0] ?? .unavailable }
+            if availabilities.contains(.halted) {
+                result[coin] = .halted
+            } else if availabilities.contains(.unavailable) {
+                result[coin] = .unavailable
+            } else {
+                result[coin] = .available
+            }
+        }
+    }
+
+    static func wasmContractAddresses(for coin: CoinMeta) -> [String] {
+        switch coin.ticker.uppercased() {
+        case "RUJI", "SRUJI":
+            return [RUJIStakingConstants.contract]
+        case "STCY":
+            return [TCYAutoCompoundConstants.contract]
+        case "YBRUNE":
+            return [BRUNEStakingConstants.contract]
+        case "YRUNE":
+            return [YVaultConstants.affiliateContractAddress, YVaultConstants.contracts["rune"]].compactMap { $0 }
+        case "YTCY":
+            return [YVaultConstants.affiliateContractAddress, YVaultConstants.contracts["tcy"]].compactMap { $0 }
+        default:
+            return []
+        }
     }
 }
 

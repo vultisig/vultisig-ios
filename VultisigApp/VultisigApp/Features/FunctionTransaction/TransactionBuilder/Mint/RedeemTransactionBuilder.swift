@@ -49,6 +49,14 @@ struct RedeemTransactionBuilder: TransactionBuilder {
         )
     }
 
+    var wasmContractAddressesForPreflight: Set<String> {
+        var addresses = Set([YVaultConstants.affiliateContractAddress])
+        if let targetContract = YVaultConstants.contracts[coin.ticker.lowercased()] {
+            addresses.insert(targetContract)
+        }
+        return addresses
+    }
+
     private func buildExecuteMsg() -> String {
         let denom = coin.ticker.lowercased()
         let targetContract = YVaultConstants.contracts[denom] ?? ""
