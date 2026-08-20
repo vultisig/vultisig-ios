@@ -909,6 +909,8 @@
 "maxSendPlanChangedError" = "在您确认期间可用余额发生了变化，此交易将不再发送所显示的金额。请返回并查看更新后的金额";
 "maxSupply" = "最大供应量";
 "maxTotalFee" = "最大总费用";
+"mayaCacaoStakingHaltedWarning" = "由于 MAYAChain 已暂停，CACAO 质押暂时不可用。请在网络恢复后重试。";
+"mayaCacaoStakingUnavailableWarning" = "无法验证 MAYAChain 质押是否可用。请稍后重试。";
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "mergeCoins" = "合并代币";
@@ -1572,6 +1574,8 @@
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
 "thorchainCustomTokenInvalidFormat" = "THORChain 代币格式无效。请使用 THOR.{SYMBOL}，例如 THOR.LQDY。";
 "thorChainNotEnabledForLP" = "此保险库未启用 THORChain。请启用 THORChain 以使用此功能。";
+"thorchainWasmStakingHaltedWarning" = "由于合约执行已暂停，THORChain App Layer 质押暂时不可用。请在恢复后重试。";
+"thorchainWasmStakingUnavailableWarning" = "无法验证 THORChain App Layer 质押是否可用。请稍后重试。";
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "timeout" = "超时";
 "title" = "标题";

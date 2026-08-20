@@ -39,10 +39,13 @@ struct ThorchainMainnetAPI: TargetType {
         case accountNumber(address: String)
         case denomMetadata(denom: String)
         case allDenomMetadata
+        case wasmContractInfo(address: String)
+        case wasmCodeInfo(codeID: String)
 
         // MARK: THORChain-specific endpoints (thornode)
         case networkInfo
         case inboundAddresses
+        case lastBlock
         /// `/thorchain/mimir/key/<KEY>` — a single network mimir value as a bare
         /// integer body (e.g. the `EnableAdvSwapQueue` limit-swap availability
         /// gate). Parsed from raw bytes by the caller, not JSON-decoded.
@@ -101,7 +104,8 @@ struct ThorchainMainnetAPI: TargetType {
     var baseURL: URL {
         switch endpoint {
         case .balances, .accountNumber, .denomMetadata, .allDenomMetadata,
-             .networkInfo, .inboundAddresses, .mimir, .poolInfo, .pools,
+             .wasmContractInfo, .wasmCodeInfo,
+             .networkInfo, .inboundAddresses, .lastBlock, .mimir, .poolInfo, .pools,
              .securedAssets, .poolLiquidityProvider, .swapQuote, .tcyStaker,
              .limitSwapQueue, .transaction,
              .tcyAutoCompoundStatus:
@@ -136,10 +140,16 @@ struct ThorchainMainnetAPI: TargetType {
             return "/cosmos/bank/v1beta1/denoms_metadata/\(encodedDenom)"
         case .allDenomMetadata:
             return "/cosmos/bank/v1beta1/denoms_metadata"
+        case .wasmContractInfo(let address):
+            return "/cosmwasm/wasm/v1/contract/\(address)"
+        case .wasmCodeInfo(let codeID):
+            return "/cosmwasm/wasm/v1/code/\(codeID)"
         case .networkInfo:
             return "/thorchain/network"
         case .inboundAddresses:
             return "/thorchain/inbound_addresses"
+        case .lastBlock:
+            return "/thorchain/lastblock"
         case .mimir(let key):
             // Mimir keys are stored uppercase on THORNode (matching the
             // CHURNINTERVAL convention). Uppercase defensively.
@@ -183,8 +193,9 @@ struct ThorchainMainnetAPI: TargetType {
 
     var task: HTTPTask {
         switch endpoint {
-        case .balances, .accountNumber, .denomMetadata, .networkInfo,
-             .inboundAddresses, .mimir, .poolInfo, .pools, .securedAssets,
+        case .balances, .accountNumber, .denomMetadata, .wasmContractInfo,
+             .wasmCodeInfo, .networkInfo, .inboundAddresses, .lastBlock, .mimir,
+             .poolInfo, .pools, .securedAssets,
              .poolLiquidityProvider, .tcyStaker, .networkStatus,
              .tcyAutoCompoundStatus, .resolveTNS, .transaction:
             return .requestPlain
@@ -220,8 +231,9 @@ struct ThorchainMainnetAPI: TargetType {
     var headers: [String: String]? {
         var base: [String: String] = ["Content-Type": "application/json"]
         switch endpoint {
-        case .balances, .accountNumber, .swapQuote, .poolInfo, .pools,
-             .securedAssets, .poolLiquidityProvider, .inboundAddresses, .mimir:
+        case .balances, .accountNumber, .wasmContractInfo, .wasmCodeInfo,
+             .swapQuote, .poolInfo, .pools, .securedAssets, .poolLiquidityProvider,
+             .inboundAddresses, .lastBlock, .mimir:
             // Endpoints that the legacy code marked with X-Client-ID via
             // get9RRequest(). Kept for 9Realms partner attribution.
             base["X-Client-ID"] = "vultisig"

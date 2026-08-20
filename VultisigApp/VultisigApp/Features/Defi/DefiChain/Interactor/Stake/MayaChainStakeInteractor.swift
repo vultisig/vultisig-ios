@@ -17,7 +17,26 @@ private struct CacaoSnapshot {
 }
 
 struct MayaChainStakeInteractor: StakeInteractor {
-    private let mayaChainAPIService = MayaChainAPIService()
+    private let mayaChainAPIService: MayaChainAPIService
+
+    init(mayaChainAPIService: MayaChainAPIService = MayaChainAPIService()) {
+        self.mayaChainAPIService = mayaChainAPIService
+    }
+
+    func fetchActionAvailabilities(for coins: [CoinMeta]) async -> StakeActionAvailabilities {
+        let availability: StakeActionAvailability
+        do {
+            let nativeDepositAvailability = try await mayaChainAPIService.getNativeDepositAvailability(shouldCache: false)
+            availability = nativeDepositAvailability == .available ? .available : .halted
+        } catch {
+            logger.error("Could not verify Maya CACAO staking availability: \(error.localizedDescription, privacy: .private)")
+            availability = .unavailable
+        }
+
+        return coins.reduce(into: [:]) { result, coin in
+            result[coin] = availability
+        }
+    }
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
         guard let cacao = await cacaoSnapshot(in: vault) else { return [] }

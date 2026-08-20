@@ -14,8 +14,11 @@ struct FunctionTransactionScreen: View {
     @Environment(\.router) var router
     let vault: Vault
     let transactionType: FunctionTransactionType
+    private let mayaCacaoStakingPreflight = MayaCacaoStakingPreflight()
+    private let thorchainWasmExecutionPreflight = THORChainWasmExecutionPreflight()
 
     @State private var isLoading: Bool = false
+    @State private var preflightErrorToast: String?
 
     @Environment(\.dismiss) var dismiss
 
@@ -306,17 +309,36 @@ struct FunctionTransactionScreen: View {
             }
         }
         .withLoading(isLoading: $isLoading)
+        .withBanner(text: $preflightErrorToast, style: .error)
     }
 
     func onVerify(_ transactionBuilder: TransactionBuilder) {
         Task { @MainActor in
+            isLoading = true
+            defer { isLoading = false }
+
+            do {
+                try await mayaCacaoStakingPreflight.validate(transactionBuilder)
+                try await thorchainWasmExecutionPreflight.validate(transactionBuilder)
+            } catch let error as MayaCacaoStakingPreflightError {
+                preflightErrorToast = error.localizationKey.localized
+                return
+            } catch let error as THORChainWasmExecutionPreflightError {
+                preflightErrorToast = error.localizationKey.localized
+                return
+            } catch {
+                preflightErrorToast = transactionBuilder.coin.chain == .thorChain
+                    ? "thorchainWasmStakingUnavailableWarning".localized
+                    : "mayaCacaoStakingUnavailableWarning".localized
+                return
+            }
+
             // Cosmos staking flows bypass the legacy `FunctionCallForm`
             // round-trip — the SignDoc payload travels via
             // `SendTransaction.cosmosStakingPayload`, which `fromForm(_:)`
             // would drop. Skip directly to the immutable struct so the
             // Verify → KeysignPayload resolver sees the staking intent.
             if let stakingPayload = transactionBuilder.cosmosStakingPayload {
-                isLoading = true
                 var immutableTx = transactionBuilder.buildSendTransaction(vault: vault)
                 // `buildSendTransaction` defaults gas to .zero and the staking
                 // flow never fetches chain-specific gas (the SignDoc resolver
@@ -347,13 +369,9 @@ struct FunctionTransactionScreen: View {
                         "Failed to derive staking display fee: \(error.localizedDescription, privacy: .public)"
                     )
                 }
-                isLoading = false
                 router.navigate(to: FunctionTransactionRoute.verify(tx: immutableTx, vault: vault))
                 return
             }
-
-            isLoading = true
-            defer { isLoading = false }
 
             // Priced before it is disclosed. Nothing downstream re-resolves the
             // fee for display, so this figure is the one the user approves.

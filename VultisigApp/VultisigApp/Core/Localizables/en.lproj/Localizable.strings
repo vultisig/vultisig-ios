@@ -909,6 +909,8 @@
 "maxSendPlanChangedError" = "Your available funds changed while you were reviewing, so this transaction would no longer send the amount shown. Go back and review the updated amount.";
 "maxSupply" = "Max Supply";
 "maxTotalFee" = "Max. Total Fee";
+"mayaCacaoStakingHaltedWarning" = "CACAO staking is temporarily unavailable because MAYAChain is halted. Please try again when the network resumes.";
+"mayaCacaoStakingUnavailableWarning" = "Unable to verify MAYAChain staking availability. Please try again later.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Merge Coins";
@@ -1572,6 +1574,8 @@
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainCustomTokenInvalidFormat" = "Invalid THORChain token format. Use THOR.{SYMBOL}, e.g. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain is not enabled on this vault. Please enable THORChain to use this feature.";
+"thorchainWasmStakingHaltedWarning" = "THORChain App Layer staking is temporarily unavailable because contract execution is paused. Please try again when it resumes.";
+"thorchainWasmStakingUnavailableWarning" = "Unable to verify THORChain App Layer staking availability. Please try again later.";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "timeout" = "Timeout";
 "title" = "Title";

@@ -68,6 +68,36 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         XCTAssertTrue(vm.initialLoadingDone)
     }
 
+    func testMayaRefreshPublishesHaltedActionAvailability() async {
+        let cacao = TokensStore.cacao
+        vault.defiPositions = [DefiPositions(chain: .mayaChain, bonds: [], staking: [cacao], lps: [])]
+        interactor.actionAvailabilitiesStub = [cacao: .halted]
+        let viewModel = DefiChainStakeViewModel(vault: vault, chain: .mayaChain, interactor: interactor)
+
+        let position = StakePosition(coin: cacao, type: .stake, amount: 10, vault: vault)
+        XCTAssertEqual(viewModel.actionAvailability(for: position), .checking)
+
+        await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.actionAvailability(for: position), .halted)
+        XCTAssertEqual(interactor.actionAvailabilityCallCount, 1)
+    }
+
+    func testRefreshPublishesAvailabilityPerPosition() async {
+        let tcy = CoinMeta.make(chain: .thorChain, ticker: "TCY")
+        let ruji = CoinMeta.make(chain: .thorChain, ticker: "RUJI")
+        vault.defiPositions = [DefiPositions(chain: .thorChain, bonds: [], staking: [tcy, ruji], lps: [])]
+        interactor.actionAvailabilitiesStub = [tcy: .available, ruji: .halted]
+        let viewModel = makeViewModel()
+
+        await viewModel.refresh()
+
+        let tcyPosition = StakePosition(coin: tcy, type: .stake, amount: 10, vault: vault)
+        let rujiPosition = StakePosition(coin: ruji, type: .stake, amount: 10, vault: vault)
+        XCTAssertEqual(viewModel.actionAvailability(for: tcyPosition), .available)
+        XCTAssertEqual(viewModel.actionAvailability(for: rujiPosition), .halted)
+    }
+
     /// Refresh that returns no DTOs (e.g. all per-coin fetches failed) must not flicker the list
     /// to empty — persisted rows stay visible.
     func testRefreshEmptyPreservesPersistedState() async throws {

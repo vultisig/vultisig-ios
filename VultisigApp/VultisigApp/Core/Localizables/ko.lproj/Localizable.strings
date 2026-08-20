@@ -909,6 +909,8 @@
 "maxSendPlanChangedError" = "확인하는 동안 사용 가능한 잔액이 변경되어 이 트랜잭션은 표시된 금액을 전송하지 않습니다. 돌아가서 업데이트된 금액을 확인하세요.";
 "maxSupply" = "최대 공급량";
 "maxTotalFee" = "최대 총 수수료";
+"mayaCacaoStakingHaltedWarning" = "MAYAChain이 중단되어 CACAO 스테이킹을 일시적으로 사용할 수 없습니다. 네트워크가 재개되면 다시 시도해 주세요.";
+"mayaCacaoStakingUnavailableWarning" = "MAYAChain 스테이킹 가능 여부를 확인할 수 없습니다. 나중에 다시 시도해 주세요.";
 "memo" = "메모";
 "memoLabel" = "메모";
 "mergeCoins" = "코인 병합";
@@ -1572,6 +1574,8 @@
 "thorAddressNotFound" = "볼트에서 THORChain 주소를 찾을 수 없습니다. RUNE이 볼트에 있는지 확인하세요.";
 "thorchainCustomTokenInvalidFormat" = "잘못된 THORChain 토큰 형식입니다. THOR.{SYMBOL} 형식을 사용하세요. 예: THOR.LQDY.";
 "thorChainNotEnabledForLP" = "이 볼트에서 THORChain이 활성화되어 있지 않습니다. 이 기능을 사용하려면 THORChain을 활성화하세요.";
+"thorchainWasmStakingHaltedWarning" = "컨트랙트 실행이 일시 중지되어 THORChain App Layer 스테이킹을 일시적으로 사용할 수 없습니다. 실행이 재개되면 다시 시도해 주세요.";
+"thorchainWasmStakingUnavailableWarning" = "THORChain App Layer 스테이킹 가능 여부를 확인할 수 없습니다. 나중에 다시 시도해 주세요.";
 "thresholdNotReachedMessage" = "임계값에 도달하지 않았습니다.\n초기 기기가 충분하지 않습니다.";
 "timeout" = "시간 초과";
 "title" = "제목";
