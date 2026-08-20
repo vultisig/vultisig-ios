@@ -115,7 +115,7 @@ enum TronHelper {
             }
             return try buildTronWithdrawExpireUnfreezeInput(
                 ownerAddress: keysignPayload.coin.address,
-                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                timestamp: timestamp, expiration: expiration,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
@@ -404,7 +404,7 @@ enum TronHelper {
 
     private static func buildTronWithdrawExpireUnfreezeInput(
         ownerAddress: String,
-        timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
+        timestamp: UInt64, expiration: UInt64,
         blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
         blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String
@@ -418,7 +418,12 @@ enum TronHelper {
                 $0.contractOneof = .withdrawExpireUnfreeze(contract)
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
-                $0.feeLimit = Int64(gasEstimation)
+                // Stake 2.0 withdraw is a system contract, not a TVM smart-
+                // contract call. `fee_limit` caps Energy for TVM execution and
+                // therefore has no meaning here. Keeping it at protobuf zero
+                // also matches the node-built transaction and gives every
+                // co-signer one canonical byte representation.
+                $0.feeLimit = 0
                 $0.blockHeader = try buildBlockHeader(
                     timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                     version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,

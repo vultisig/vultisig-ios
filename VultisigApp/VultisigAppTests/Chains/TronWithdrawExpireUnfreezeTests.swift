@@ -32,7 +32,7 @@ final class TronWithdrawExpireUnfreezeTests: XCTestCase {
         XCTAssertTrue(input.transaction.memo.isEmpty, "the routing memo must not be written into the signed transaction")
         XCTAssertEqual(input.transaction.timestamp, 1_700_000_000_000)
         XCTAssertEqual(input.transaction.expiration, 1_700_000_060_000)
-        XCTAssertEqual(input.transaction.feeLimit, 1_000_000)
+        XCTAssertEqual(input.transaction.feeLimit, 0)
         XCTAssertEqual(input.transaction.blockHeader.number, 50_000_000)
     }
 

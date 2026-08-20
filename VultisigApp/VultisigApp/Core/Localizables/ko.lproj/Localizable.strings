@@ -1584,6 +1584,7 @@
 "tronBandwidth" = "대역폭";
 "tronBandwidthDescription" = "대역폭 포인트는 표준 토큰 전송 및 스마트 계약 상호작용을 포함한 TRON의 모든 트랜잭션에 필요합니다. 모든 TRON 사용자는 하루 600개의 무료 대역폭 포인트를 받습니다. 또한 TRX를 스테이킹하여 추가 대역폭 포인트를 얻어 더 많은 트랜잭션을 지원할 수 있습니다.";
 "tronClaimButton" = "%@ 수령";
+"tronClaimFastVaultOnly" = "잠금 해제된 TRX 수령은 현재 Fast Vault에서만 사용할 수 있습니다. Secure Vault 지원은 곧 제공될 예정입니다.";
 "tronEnergy" = "에너지";
 "tronEnergyDescription" = "에너지는 TRON에서 스마트 계약 실행에만 사용되는 리소스입니다. 대역폭과 달리 에너지는 무료로 제공되지 않으며 TRX를 스테이킹(동결)하여 얻어야 합니다. 에너지가 충분하지 않으면 TRON 네트워크가 잔액에서 TRX를 소각하여 비용을 충당합니다.";
 "tronErrorFreezeFailed" = "동결 실패: %@";

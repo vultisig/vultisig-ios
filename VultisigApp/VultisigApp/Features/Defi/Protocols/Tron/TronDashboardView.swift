@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TronDashboardView: View {
-    let vault: Vault
+    @ObservedObject var vault: Vault
     @ObservedObject var model: TronViewModel
     let onRefresh: () async -> Void  // Callback for refresh
     @Environment(\.dismiss) var dismiss
@@ -34,6 +34,10 @@ struct TronDashboardView: View {
             ? String.hideBalanceText
             : "\(model.claimableBalance.formatted()) TRX"
         return String(format: NSLocalizedString("tronClaimButton", comment: "Claim %@"), amount)
+    }
+
+    var canClaimExpiredUnfreezes: Bool {
+        TronViewLogic.canClaimExpiredUnfreezes(vault: vault)
     }
 
     var body: some View {
@@ -307,11 +311,20 @@ struct TronDashboardView: View {
                 // One action for every expired entry: WithdrawExpireUnfreeze
                 // sweeps all of them at once, so per-row claims would mislead.
                 if model.hasClaimableWithdrawals {
+                    if !canClaimExpiredUnfreezes {
+                        InfoBannerView(
+                            description: "tronClaimFastVaultOnly".localized,
+                            type: .warning,
+                            leadingIcon: .triangleWarning
+                        )
+                    }
+
                     DefiButton(
                         title: claimButtonTitle,
                         icon: .arrowDownFromLine,
                         action: onClaim
                     )
+                    .disabled(!canClaimExpiredUnfreezes)
                     .padding(.top, 4)
                 }
             }

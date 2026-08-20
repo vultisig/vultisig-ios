@@ -137,6 +137,8 @@ final class TronViewModelTests: XCTestCase {
     func testMakeClaimTransactionSweepsExpiredEntriesIntoSelfAddressedStakingSend() throws {
         let trx = SendFormFixture.makeTRX()
         let vault = SendFormFixture.makeVault(coins: [trx])
+        vault.fastVaultEligibility = true
+        vault.fastVaultEligibilityCheckedAt = Date()
         let sut = TronViewModel()
         sut.pendingWithdrawals = [
             TronPendingWithdrawal(amount: try decimal("0.75"), expirationDate: Date(timeIntervalSince1970: 1_704_067_200)),
@@ -153,6 +155,30 @@ final class TronViewModelTests: XCTestCase {
         XCTAssertEqual(tx.memo, TronHelper.withdrawExpireUnfreezeMemo)
         XCTAssertTrue(tx.isStakingOperation)
         XCTAssertFalse(tx.sendMaxAmount)
+    }
+
+    func testMakeClaimTransactionIsNilForSecureVault() throws {
+        let vault = SendFormFixture.makeVault(coins: [SendFormFixture.makeTRX()])
+        vault.fastVaultEligibility = false
+        vault.fastVaultEligibilityCheckedAt = Date()
+        let sut = TronViewModel()
+        sut.pendingWithdrawals = [
+            TronPendingWithdrawal(
+                amount: try decimal("0.75"),
+                expirationDate: Date(timeIntervalSince1970: 1_704_067_200)
+            )
+        ]
+
+        XCTAssertFalse(TronViewLogic.canClaimExpiredUnfreezes(vault: vault))
+        XCTAssertNil(sut.makeClaimTransaction(vault: vault))
+    }
+
+    func testMakeClaimTransactionIsEnabledForFastVault() {
+        let vault = SendFormFixture.makeVault(coins: [SendFormFixture.makeTRX()])
+        vault.fastVaultEligibility = true
+        vault.fastVaultEligibilityCheckedAt = Date()
+
+        XCTAssertTrue(TronViewLogic.canClaimExpiredUnfreezes(vault: vault))
     }
 
     func testMakeClaimTransactionIsNilWhenNothingIsClaimable() {
