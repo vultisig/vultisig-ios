@@ -9,6 +9,7 @@ import Combine
 import Foundation
 import SwiftUI
 
+@MainActor
 class VaultDetailViewModel: ObservableObject {
     /// Preformatted vault total tagged with the vault it was computed for. The
     /// tag is load-bearing: on a vault switch the previous vault's total stays
