@@ -161,6 +161,43 @@ final class TronServiceFeeLimitTests: XCTestCase {
         XCTAssertEqual(gasFee, 0)
     }
 
+    /// `WITHDRAW_EXPIRE_UNFREEZE` is an app-local routing marker, not TRON
+    /// transaction data. The claim builder omits it from the signed bytes, so
+    /// the fee estimate must not charge getMemoFee for it either.
+    func testWithdrawExpireUnfreezeDoesNotChargeRoutingMemoFee() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":600,"NetUsed":0,"NetLimit":10000,"EnergyUsed":0,"EnergyLimit":0}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(
+            coin: coin,
+            to: coin.address,
+            memo: TronHelper.withdrawExpireUnfreezeMemo
+        )
+
+        XCTAssertEqual(extractGasFee(result), 0)
+    }
+
+    /// A real memo still pays the chain's getMemoFee parameter; the routing-
+    /// marker exception above must not weaken ordinary TRON fee estimation.
+    func testNativeTransferRealMemoStillChargesMemoFee() async throws {
+        let stub = TronStubHTTPClient()
+        stub.stubDefaults(energyUsed: 0)
+        stub.setResponse(path: "/wallet/getaccountresource", json: """
+        {"freeNetUsed":0,"freeNetLimit":600,"NetUsed":0,"NetLimit":10000,"EnergyUsed":0,"EnergyLimit":0}
+        """)
+        let service = TronService(httpClient: stub)
+
+        let coin = makeNativeCoin()
+        let result = try await service.getBlockInfo(coin: coin, to: coin.address, memo: "hello")
+
+        XCTAssertEqual(extractGasFee(result), 1_000_000)
+    }
+
     /// Native TRX transfer *without* sufficient bandwidth — the account has no
     /// free-net quota, so the node consumes the 300-byte bandwidth fee. The
     /// displayed fee must be the REAL bandwidth cost, not `coin.feeDefault`:
