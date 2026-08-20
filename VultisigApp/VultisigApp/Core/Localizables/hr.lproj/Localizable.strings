@@ -887,8 +887,6 @@
 "maxTotalFee" = "Maks. ukupna naknada";
 "mayaCacaoStakingHaltedWarning" = "CACAO staking privremeno nije dostupan jer je MAYAChain zaustavljen. Pokušajte ponovno kada se mreža nastavi.";
 "mayaCacaoStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost MAYAChain stakinga. Pokušajte ponovno kasnije.";
-"thorchainWasmStakingHaltedWarning" = "THORChain App Layer staking privremeno nije dostupan jer je izvršavanje ugovora pauzirano. Pokušajte ponovno kada se nastavi.";
-"thorchainWasmStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost THORChain App Layer stakinga. Pokušajte ponovno kasnije.";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "mergeCoins" = "Spoji novčiće";
@@ -1548,6 +1546,8 @@
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainCustomTokenInvalidFormat" = "Neispravan format THORChain tokena. Koristite THOR.{SYMBOL}, npr. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain nije omogućen na ovom vaultu. Molimo omogućite THORChain da biste koristili ovu značajku.";
+"thorchainWasmStakingHaltedWarning" = "THORChain App Layer staking privremeno nije dostupan jer je izvršavanje ugovora pauzirano. Pokušajte ponovno kada se nastavi.";
+"thorchainWasmStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost THORChain App Layer stakinga. Pokušajte ponovno kasnije.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "timeout" = "Isteklo vrijeme";
 "title" = "Naslov";

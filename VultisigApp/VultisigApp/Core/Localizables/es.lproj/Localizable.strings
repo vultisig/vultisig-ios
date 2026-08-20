@@ -887,8 +887,6 @@
 "maxTotalFee" = "Tarifa total máx.";
 "mayaCacaoStakingHaltedWarning" = "El staking de CACAO no está disponible temporalmente porque MAYAChain está detenida. Inténtalo de nuevo cuando la red se reanude.";
 "mayaCacaoStakingUnavailableWarning" = "No se pudo verificar la disponibilidad del staking de MAYAChain. Inténtalo de nuevo más tarde.";
-"thorchainWasmStakingHaltedWarning" = "El staking de la App Layer de THORChain no está disponible temporalmente porque la ejecución de contratos está pausada. Inténtalo de nuevo cuando se reanude.";
-"thorchainWasmStakingUnavailableWarning" = "No se pudo verificar la disponibilidad del staking de la App Layer de THORChain. Inténtalo de nuevo más tarde.";
 "memo" = "Memorándum";
 "memoLabel" = "Memo";
 "mergeCoins" = "Fusionar monedas";
@@ -1548,6 +1546,8 @@
 "thorAddressNotFound" = "THORChain address not found in vault. Please ensure you have RUNE in your vault.";
 "thorchainCustomTokenInvalidFormat" = "Formato de token de THORChain no válido. Usa THOR.{SYMBOL}, p. ej. THOR.LQDY.";
 "thorChainNotEnabledForLP" = "THORChain no está habilitado en esta bóveda. Por favor, habilita THORChain para usar esta función.";
+"thorchainWasmStakingHaltedWarning" = "El staking de la App Layer de THORChain no está disponible temporalmente porque la ejecución de contratos está pausada. Inténtalo de nuevo cuando se reanude.";
+"thorchainWasmStakingUnavailableWarning" = "No se pudo verificar la disponibilidad del staking de la App Layer de THORChain. Inténtalo de nuevo más tarde.";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "timeout" = "Tiempo de espera agotado";
 "title" = "Título";
