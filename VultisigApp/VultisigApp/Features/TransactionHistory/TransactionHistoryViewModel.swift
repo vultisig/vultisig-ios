@@ -76,10 +76,26 @@ class TransactionHistoryViewModel: ObservableObject {
     // MARK: - Loading
 
     func load() {
+        reopenLegacyClientTimeouts()
         fetchRows()
         pollInProgressTransactions()
         resumeSwapTracking()
         loadLimitOrders()
+    }
+
+    private func reopenLegacyClientTimeouts() {
+        do {
+            let reopened = try storage.reopenLegacyClientTimeouts(
+                pubKeyECDSA: pubKeyECDSA,
+                chainRawValue: chainFilter?.rawValue,
+                timeoutMessages: TransactionHistoryLegacyTimeout.localizedMessages()
+            )
+            if reopened > 0 {
+                logger.info("Reopened \(reopened) legacy client-timeout transaction(s)")
+            }
+        } catch {
+            logger.error("Failed to reopen legacy client-timeout transactions: \(error)")
+        }
     }
 
     /// Re-read both tables after the limit tracker observes something.

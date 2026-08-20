@@ -28,6 +28,37 @@ final class TransactionHistoryStorage {
         try modelContext.save()
     }
 
+    /// Reopen rows that released clients marked as failed solely because their
+    /// local polling window elapsed. The persisted message was localized, so
+    /// callers provide every bundled translation rather than matching only the
+    /// device's current language.
+    @discardableResult
+    func reopenLegacyClientTimeouts(
+        pubKeyECDSA: String,
+        chainRawValue: String?,
+        timeoutMessages: Set<String>
+    ) throws -> Int {
+        let predicate = #Predicate<TransactionHistoryItem> { item in
+            item.pubKeyECDSA == pubKeyECDSA
+        }
+        let items = try modelContext.fetch(FetchDescriptor(predicate: predicate))
+        let timedOut = items.filter { item in
+            item.statusRawValue == TransactionHistoryStatus.error.rawValue
+                && timeoutMessages.contains(item.errorMessage ?? "")
+                && (chainRawValue == nil || item.chainRawValue == chainRawValue)
+        }
+
+        for item in timedOut {
+            item.statusRawValue = TransactionHistoryStatus.inProgress.rawValue
+            item.errorMessage = nil
+            item.completedAt = nil
+        }
+        if !timedOut.isEmpty {
+            try modelContext.save()
+        }
+        return timedOut.count
+    }
+
     // MARK: - Delete All
 
     /// Remove every stored transaction-history row across ALL vaults. Used by
@@ -253,5 +284,21 @@ final class TransactionHistoryStorage {
         return try modelContext.fetch(descriptor)
             .map { TransactionHistoryData(item: $0) }
             .filter { !$0.swapTrackingUiStatus.isTerminal }
+    }
+}
+
+enum TransactionHistoryLegacyTimeout {
+    static func localizedMessages(in bundle: Bundle = .main) -> Set<String> {
+        var messages: Set<String> = ["timeout".localized, "Timeout"]
+        for localization in bundle.localizations {
+            guard let path = bundle.path(forResource: localization, ofType: "lproj"),
+                  let localizedBundle = Bundle(path: path) else {
+                continue
+            }
+            messages.insert(
+                localizedBundle.localizedString(forKey: "timeout", value: nil, table: nil)
+            )
+        }
+        return messages
     }
 }
