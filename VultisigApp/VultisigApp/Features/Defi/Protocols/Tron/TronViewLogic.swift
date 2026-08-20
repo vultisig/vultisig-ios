@@ -89,25 +89,13 @@ struct TronViewLogic {
         withdrawals.filter(\.isClaimable).reduce(.zero) { $0 + $1.amount }
     }
 
-    /// Fast Vault's server signer receives the transaction hash produced on
-    /// this device. Secure Vault peers rebuild the transaction independently,
-    /// so claims must remain unavailable until every supported peer platform
-    /// routes this operation to the same TRON system contract.
-    static func canClaimExpiredUnfreezes(vault: Vault) -> Bool {
-        vault.isFastVault
-    }
-
     /// Builds the self-addressed claim transaction `TronHelper` routes to
     /// `WithdrawExpireUnfreezeContract`. The contract takes no amount and
     /// sweeps every expired entry at once, so the amount here is only what
     /// Verify / co-sign / Done display. Returns nil when nothing is claimable.
     static func makeClaimTransaction(vault: Vault, pendingWithdrawals: [TronPendingWithdrawal]) -> SendTransaction? {
         let claimable = claimableBalance(of: pendingWithdrawals)
-        guard canClaimExpiredUnfreezes(vault: vault),
-              claimable > 0,
-              let coin = getTrxCoin(vault: vault) else {
-            return nil
-        }
+        guard claimable > 0, let coin = getTrxCoin(vault: vault) else { return nil }
 
         return SendTransaction.empty(coin: coin, vault: vault).with(
             toAddress: coin.address,
