@@ -885,6 +885,8 @@
 "maxSendPlanChangedError" = "Seus fundos disponíveis mudaram enquanto você revisava, então esta transação não enviaria mais o valor exibido. Volte e revise o valor atualizado.";
 "maxSupply" = "Fornecimento máximo";
 "maxTotalFee" = "Taxa total máx.";
+"mayaCacaoStakingHaltedWarning" = "O staking de CACAO está temporariamente indisponível porque a MAYAChain está pausada. Tente novamente quando a rede for retomada.";
+"mayaCacaoStakingUnavailableWarning" = "Não foi possível verificar a disponibilidade do staking na MAYAChain. Tente novamente mais tarde.";
 "memo" = "Memorando";
 "memoLabel" = "Memo";
 "mergeCoins" = "Mesclar moedas";

@@ -68,6 +68,20 @@ final class DefiChainStakeViewModelTests: XCTestCase {
         XCTAssertTrue(vm.initialLoadingDone)
     }
 
+    func testMayaRefreshPublishesHaltedActionAvailability() async {
+        let cacao = TokensStore.cacao
+        vault.defiPositions = [DefiPositions(chain: .mayaChain, bonds: [], staking: [cacao], lps: [])]
+        interactor.actionAvailabilityStub = .halted
+        let viewModel = DefiChainStakeViewModel(vault: vault, chain: .mayaChain, interactor: interactor)
+
+        XCTAssertEqual(viewModel.actionAvailability, .checking)
+
+        await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.actionAvailability, .halted)
+        XCTAssertEqual(interactor.actionAvailabilityCallCount, 1)
+    }
+
     /// Refresh that returns no DTOs (e.g. all per-coin fetches failed) must not flicker the list
     /// to empty — persisted rows stay visible.
     func testRefreshEmptyPreservesPersistedState() async throws {

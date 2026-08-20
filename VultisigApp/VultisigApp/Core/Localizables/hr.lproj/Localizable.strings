@@ -885,6 +885,8 @@
 "maxSendPlanChangedError" = "Vaša raspoloživa sredstva promijenila su se dok ste pregledavali, pa ova transakcija više ne bi poslala prikazani iznos. Vratite se i pregledajte ažurirani iznos.";
 "maxSupply" = "Maksimalna ponuda";
 "maxTotalFee" = "Maks. ukupna naknada";
+"mayaCacaoStakingHaltedWarning" = "CACAO staking privremeno nije dostupan jer je MAYAChain zaustavljen. Pokušajte ponovno kada se mreža nastavi.";
+"mayaCacaoStakingUnavailableWarning" = "Nije moguće provjeriti dostupnost MAYAChain stakinga. Pokušajte ponovno kasnije.";
 "memo" = "Bilješka";
 "memoLabel" = "Memo";
 "mergeCoins" = "Spoji novčiće";

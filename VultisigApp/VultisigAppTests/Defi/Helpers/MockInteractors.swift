@@ -15,11 +15,18 @@ import Foundation
 
 final class MockStakeInteractor: StakeInteractor, @unchecked Sendable {
     var stub: [StakePositionData] = []
+    var actionAvailabilityStub: StakeActionAvailability = .available
     private(set) var callCount = 0
+    private(set) var actionAvailabilityCallCount = 0
 
     func fetchStakePositions(vault: Vault) async -> [StakePositionData] {
         callCount += 1
         return stub
+    }
+
+    func fetchActionAvailability() async -> StakeActionAvailability {
+        actionAvailabilityCallCount += 1
+        return actionAvailabilityStub
     }
 }
 

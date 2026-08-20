@@ -14,6 +14,7 @@ private let logger = Log.defi.viewModel
 final class DefiChainStakeViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var initialLoadingDone: Bool
+    @Published private(set) var actionAvailability: StakeActionAvailability
 
     private let chain: Chain
     private let interactor: StakeInteractor?
@@ -57,6 +58,7 @@ final class DefiChainStakeViewModel: ObservableObject {
         self.chain = chain
         self.interactor = interactor ?? DefiInteractorResolver.stakeInteractor(for: chain)
         self.storage = storage
+        self.actionAvailability = chain == .mayaChain ? .checking : .available
         // Mirror the per-chain visibility rule: TON shows any persisted stake
         // ungated; other chains require the per-coin opt-in.
         if chain == .ton {
@@ -73,11 +75,15 @@ final class DefiChainStakeViewModel: ObservableObject {
 
     func refresh() async {
         guard let interactor else {
+            actionAvailability = chain == .mayaChain ? .unavailable : .available
             initialLoadingDone = true
             return
         }
 
-        let dtos = await interactor.fetchStakePositions(vault: vault)
+        async let positions = interactor.fetchStakePositions(vault: vault)
+        async let availability = interactor.fetchActionAvailability()
+        let (dtos, resolvedAvailability) = await (positions, availability)
+        actionAvailability = resolvedAvailability
         do {
             try storage.upsert(stake: dtos, for: vault)
         } catch {

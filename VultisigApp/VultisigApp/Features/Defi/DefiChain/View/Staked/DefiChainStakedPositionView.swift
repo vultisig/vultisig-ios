@@ -12,6 +12,7 @@ struct DefiChainStakedPositionView: View {
 
     let position: StakePosition
     let fiatAmount: String
+    var actionAvailability: StakeActionAvailability = .available
     var onStake: () -> Void
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
@@ -51,8 +52,15 @@ struct DefiChainStakedPositionView: View {
         return CustomDateFormatter.formatMonthDayYear(nextPayout)
     }
 
-    var unstakeDisabled: Bool { !position.canUnstake }
-    var stakeDisabled: Bool { !position.canStake }
+    var unstakeDisabled: Bool { actionAvailability.disablesActions || !position.canUnstake }
+    var stakeDisabled: Bool { actionAvailability.disablesActions || !position.canStake }
+    var actionWarningMessage: String? {
+        guard position.coin.chain == .mayaChain,
+              let key = actionAvailability.warningLocalizationKey else {
+            return nil
+        }
+        return key.localized
+    }
     var canWithdraw: Bool {
         guard let rewards = position.rewards else { return false }
         return rewards > 0
@@ -193,6 +201,13 @@ struct DefiChainStakedPositionView: View {
             VStack(alignment: .leading, spacing: 16) {
                 PrimaryButton(title: withdrawTitle, action: onWithdraw)
                     .showIf(canWithdraw)
+                if let actionWarningMessage {
+                    InfoBannerView(
+                        description: actionWarningMessage,
+                        type: .warning,
+                        leadingIcon: .triangleWarning
+                    )
+                }
                 defaultButtonsView
 
                 if let unstakeMessage = position.unstakeMessage {

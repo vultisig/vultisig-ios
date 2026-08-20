@@ -45,6 +45,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                     DefiChainStakedPositionView(
                         position: position,
                         fiatAmount: fiatAmount,
+                        actionAvailability: viewModel.actionAvailability,
                         onStake: { onStake(position) },
                         onUnstake: { onUnstake(position) },
                         onWithdraw: { onWithdraw(position) },
