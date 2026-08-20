@@ -15,6 +15,10 @@ protocol TransactionBuilder {
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> { get }
     var transactionType: VSTransactionType { get }
     var wasmContractPayload: WasmExecuteContractPayload? { get }
+    /// Every THORChain WASM contract whose execution must remain available for
+    /// this transaction. Most builders execute only the payload contract; proxy
+    /// builders can add the downstream contract they invoke.
+    var wasmContractAddressesForPreflight: Set<String> { get }
     var toAddress: String { get }
     /// Cosmos-SDK staking / distribution operation intent. Populated only by
     /// the per-flow Cosmos staking builders (delegate, undelegate, redelegate,
@@ -34,6 +38,11 @@ protocol TransactionBuilder {
 }
 
 extension TransactionBuilder {
+    var wasmContractAddressesForPreflight: Set<String> {
+        guard let address = wasmContractPayload?.contractAddress else { return [] }
+        return [address]
+    }
+
     /// Default — only Cosmos staking builders override this. Keeping the
     /// requirement defaulted means every existing `TransactionBuilder`
     /// conformer compiles unchanged.

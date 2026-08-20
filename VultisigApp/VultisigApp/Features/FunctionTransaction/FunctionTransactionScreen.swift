@@ -15,6 +15,7 @@ struct FunctionTransactionScreen: View {
     let vault: Vault
     let transactionType: FunctionTransactionType
     private let mayaCacaoStakingPreflight = MayaCacaoStakingPreflight()
+    private let thorchainWasmExecutionPreflight = THORChainWasmExecutionPreflight()
 
     @State private var isLoading: Bool = false
     @State private var preflightErrorToast: String?
@@ -318,11 +319,17 @@ struct FunctionTransactionScreen: View {
 
             do {
                 try await mayaCacaoStakingPreflight.validate(transactionBuilder)
+                try await thorchainWasmExecutionPreflight.validate(transactionBuilder)
             } catch let error as MayaCacaoStakingPreflightError {
                 preflightErrorToast = error.localizationKey.localized
                 return
+            } catch let error as THORChainWasmExecutionPreflightError {
+                preflightErrorToast = error.localizationKey.localized
+                return
             } catch {
-                preflightErrorToast = "mayaCacaoStakingUnavailableWarning".localized
+                preflightErrorToast = transactionBuilder.coin.chain == .thorChain
+                    ? "thorchainWasmStakingUnavailableWarning".localized
+                    : "mayaCacaoStakingUnavailableWarning".localized
                 return
             }
 
