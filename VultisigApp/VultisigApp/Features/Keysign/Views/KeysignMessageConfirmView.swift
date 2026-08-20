@@ -29,11 +29,7 @@ struct KeysignMessageConfirmView: View {
                 // tag row) while a genuine text memo (combo / memo-only) shows.
                 // XRP SWAPS keep the raw memo (their on-chain routing memo).
                 let isRipplePlainPayment = ripplePayload?.coin.chain == .ripple && ripplePayload?.swapPayload == nil
-                // A limit-order PLACEMENT, reconstructed from the `=<:` memo the
-                // way the cancel path reads its `m=<:` one. When present it takes
-                // precedence over the generic simulation hero, which would show a
-                // co-signer a plain deposit/swap rather than the resting order it
-                // is actually signing. `nil` for every non-placement memo.
+                // Placement details feed the rows below; the resolver owns hero precedence.
                 let placement = LimitOrderPlacementPresentation.display(for: viewModel.keysignPayload)
                 SendCryptoVerifySummaryView(
                     input: SendCryptoVerifySummary(
@@ -56,18 +52,13 @@ struct KeysignMessageConfirmView: View {
                         amountFiat: lpDictionary == nil ? viewModel.getAmountFiat() : "",
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty,
                         keysignPayload: viewModel.keysignPayload,
-                        // A co-signer sees only the payload, so the `m=<` memo is
-                        // what identifies a limit-order cancel — the same thing
-                        // THORChain reads. It takes precedence over the
-                        // simulation-derived hero: a cancel's dust transfer
-                        // simulates as an ordinary send, which is exactly the
-                        // reading this replaces.
-                        hero: LimitOrderCancelPresentation.hero(
-                            forSignedMemo: viewModel.keysignPayload?.memo
-                        ) ?? LimitOrderPlacementPresentation.hero(
-                            memo: viewModel.keysignPayload?.memo,
-                            display: placement
-                        ) ?? viewModel.heroContent,
+                        hero: TransactionHeroResolver.hero(
+                            on: .keysignConfirm,
+                            for: .cosigning(
+                                payload: viewModel.keysignPayload,
+                                simulated: { viewModel.verifyHeroContent }
+                            )
+                        ),
                         tokenDisplay: viewModel.decodedTokenDisplay,
                         tokenDisplayIsUnlimited: viewModel.decodedTokenIsUnlimited,
                         vault: viewModel.vault,
@@ -94,7 +85,8 @@ struct KeysignMessageConfirmView: View {
                 async let thor: Void = viewModel.loadThorchainID()
                 async let fn: Void = viewModel.loadFunctionName()
                 async let sim: Void = viewModel.loadSimulation()
-                _ = await (thor, fn, sim)
+                async let resolved: Void = viewModel.loadResolvedHero()
+                _ = await (thor, fn, sim, resolved)
             }
         }
         .navigationTitle("sendOverview")

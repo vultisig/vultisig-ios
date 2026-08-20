@@ -3096,6 +3096,11 @@ class TokensStore {
         arbWSTETH
     ]
 
+    /// The chain's own coin from the curated table.
+    static func nativeAsset(for chain: Chain) -> CoinMeta? {
+        TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
+    }
+
     /// Look up a built-in token by chain and contract address (case-insensitive).
     static func findTokenMeta(chain: Chain, contractAddress: String) -> CoinMeta? {
         let addressLower = contractAddress.lowercased()

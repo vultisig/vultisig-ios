@@ -27,6 +27,24 @@ class ThorchainService: ThorchainSwapProvider {
 
     private var cacheFeePrice = ThreadSafeDictionary<String, (data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
+
+    /// The inbound vaults already known, without asking the network.
+    ///
+    /// ⚠️ **Exists so a signing screen can corroborate a destination without a
+    /// fetch.** An LP deposit leaves Bitcoin, so nothing about the chain it is on
+    /// says THORChain — the only corroboration is that its destination IS a
+    /// THORChain inbound vault, and that answer comes from THORChain rather than
+    /// from whoever composed the payload.
+    ///
+    /// Returns `nil` on a cold or stale cache rather than blocking, and a `nil`
+    /// means the reading is refused: exactly what happened before any of this
+    /// existed, which makes a cold cache a missed improvement rather than a wrong
+    /// answer.
+    func cachedInboundAddresses(maxAge: TimeInterval = 300) -> [InboundAddress]? {
+        cacheInboundAddresses.allItems().values
+            .first { Date().timeIntervalSince($0.timestamp) <= maxAge }?
+            .data
+    }
     private var cacheAssetPrices = ThreadSafeDictionary<String, (data: Double, timestamp: Date)>()
     private var cacheLPPools = ThreadSafeDictionary<String, (data: [ThorchainPool], timestamp: Date)>()
     private var cacheSecuredAssets = ThreadSafeDictionary<String, (data: [ThorchainSecuredAsset], timestamp: Date)>()

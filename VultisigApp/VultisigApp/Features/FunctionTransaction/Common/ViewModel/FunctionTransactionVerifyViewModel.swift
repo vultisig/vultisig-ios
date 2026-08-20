@@ -22,12 +22,21 @@ class FunctionTransactionVerifyViewModel: ObservableObject {
 
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
+    @Published var resolvedHero: HeroContent?
 
     let blockChainService = BlockChainService.shared
 
     func onLoad() {
         securityScanViewModel.$state
             .assign(to: &$securityScannerState)
+    }
+
+    /// Resolves optional execution-set figures from the initiator's local coin.
+    func loadResolvedHero(transaction: SendTransaction) async {
+        resolvedHero = await ResolvedTransactionHero.resolve(
+            for: InitiatingTransactionContent(transaction),
+            trustedCoins: [transaction.coin]
+        )
     }
 
     func createKeysignPayload(tx: SendTransaction) async throws -> KeysignPayload {

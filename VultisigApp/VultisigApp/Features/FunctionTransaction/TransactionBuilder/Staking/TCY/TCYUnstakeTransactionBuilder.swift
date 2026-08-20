@@ -19,8 +19,28 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     let autoCompoundAmount: Decimal
     let sendMaxAmount: Bool
     let isAutoCompound: Bool
+    /// The staked TCY the sheet was showing — `availableAmount` from the unstake
+    /// form. Local display context only, never signed; it exists so the Verify
+    /// screen can quote the payout `basisPoints` implies rather than the memo's
+    /// literal `"0"`.
+    let stakedAmount: Decimal
 
     var amount: String { "0" }
+
+    /// The TCY this withdrawal pays out — the memo's fraction applied to the staked
+    /// position — so the Verify screen states a figure instead of "You're sending
+    /// 0 TCY". See `QuotedWithdrawalPresentation`.
+    ///
+    /// ⚠️ **A projection, not a commitment.** `tcy-:<bps>` commits to a FRACTION
+    /// applied to whatever is staked when THORChain executes it; this applies that
+    /// fraction to the balance the form was showing, which is the closest an
+    /// absolute figure can get. `nil` for the auto-compound (sTCY) position, whose
+    /// `stakedAmount` is a receipt-share count worth more than 1 TCY each — quoting
+    /// a fraction of it as "X TCY" would understate the payout.
+    var withdrawDisplayAmount: Decimal? {
+        guard !isAutoCompound, stakedAmount > 0, basisPoints > 0 else { return nil }
+        return (stakedAmount * Decimal(basisPoints)) / Decimal(WithdrawBasisPoints.max)
+    }
 
     var memo: String {
         if !isAutoCompound {

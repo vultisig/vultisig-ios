@@ -57,7 +57,9 @@ struct FunctionTransactionVerifyScreen: View {
         .onLoad {
             depositVerifyViewModel.onLoad()
             Task {
-                await depositVerifyViewModel.scan(transaction: transaction)
+                async let scan: Void = depositVerifyViewModel.scan(transaction: transaction)
+                async let hero: Void = depositVerifyViewModel.loadResolvedHero(transaction: transaction)
+                _ = await (scan, hero)
             }
         }
         .bottomSheet(isPresented: $depositVerifyViewModel.showSecurityScannerSheet) {
@@ -95,12 +97,9 @@ struct FunctionTransactionVerifyScreen: View {
                 coinImage: transaction.coin.logo,
                 amount: getAmount(),
                 coinTicker: transaction.coin.ticker,
-                // A limit-order cancel is not a send, and the generic header
-                // would call it one — "You're sending 0 RUNE" on the THORChain
-                // route, or "You're sending 2 DOGE" on the L1 one, where the two
-                // DOGE are dust donated to the pool. `nil` for everything else,
-                // which keeps the existing presentation.
-                hero: LimitOrderCancelPresentation.hero(for: transaction),
+                // The resolver owns provider precedence; nil preserves the fallback.
+                hero: depositVerifyViewModel.resolvedHero
+                    ?? TransactionHeroResolver.hero(on: .functionCallVerify, for: .initiating(transaction)),
                 additionalRows: cancelLimitOrderRows
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState

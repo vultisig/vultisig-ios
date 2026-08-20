@@ -322,7 +322,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 8)
         } else if let hero = input.hero {
-            HeroContentView(content: hero)
+            VerifyHeroContentView(content: hero)
                 .padding(.bottom, 8)
         } else if input.keysignPayload?.signSui != nil {
             // signSui payloads carry no to_address / to_amount — the amount is
@@ -496,7 +496,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             return false
         }
         switch input.hero {
-        case nil, .title:
+        // Projected settlement does not replace disclosure of the signed amount.
+        case nil, .title, .projected:
             return true
         case .send, .receive, .swap:
             return false

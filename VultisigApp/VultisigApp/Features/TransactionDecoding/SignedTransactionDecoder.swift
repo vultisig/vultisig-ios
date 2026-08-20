@@ -2,8 +2,8 @@
 //  SignedTransactionDecoder.swift
 //  VultisigApp
 //
-//  Reads operations from content that will actually be signed. The foundation
-//  registers no chain readers, so every transaction remains unreadable.
+//  Reads operations from content that will actually be signed. Unclaimed
+//  transactions remain `.unknown` and preserve existing presentation.
 //
 
 import Foundation
@@ -21,8 +21,17 @@ protocol TransactionContentDecoder {
 
 enum SignedTransactionDecoder {
 
-    /// Registered readers in precedence order. Empty in the foundation.
-    static let decoders: [TransactionContentDecoder] = []
+    /// Registered readers in precedence order. Signed-artifact readers precede
+    /// chain grammars so sidecars cannot outrank the signed object.
+    static let decoders: [TransactionContentDecoder] = [
+        SolanaTransactionDecoder(),
+        CosmosSignDocDecoder(),
+        TronTransactionDecoder(),
+        THORChainTransactionDecoder(),
+        TonTransactionDecoder(),
+        CosmosTransactionDecoder(),
+        MayaChainTransactionDecoder()
+    ]
 
     /// Returns `.unknown` when no reader can prove an operation.
     static func decode(_ tx: SignedTransactionContent) -> DecodedTransaction {
