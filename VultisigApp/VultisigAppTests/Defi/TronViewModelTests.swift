@@ -134,6 +134,32 @@ final class TronViewModelTests: XCTestCase {
         XCTAssertFalse(sut.hasClaimableWithdrawals)
     }
 
+    func testCanUnfreezeRequiresActivelyFrozenBalance() {
+        let sut = TronViewModel()
+        sut.unfreezingBalance = 5
+
+        XCTAssertFalse(sut.canUnfreeze, "already-unfreezing TRX is not active frozen balance")
+
+        sut.frozenEnergyBalance = 1
+
+        XCTAssertTrue(sut.canUnfreeze)
+    }
+
+    func testCanUnfreezeIsFalseWhileAnyWithdrawalEntryRemains() {
+        let sut = TronViewModel()
+        sut.frozenBandwidthBalance = 1
+
+        sut.pendingWithdrawals = [
+            TronPendingWithdrawal(amount: 1, expirationDate: Date(timeIntervalSince1970: 4_102_444_800))
+        ]
+        XCTAssertFalse(sut.canUnfreeze, "locked withdrawal")
+
+        sut.pendingWithdrawals = [
+            TronPendingWithdrawal(amount: 1, expirationDate: Date(timeIntervalSince1970: 1_704_067_200))
+        ]
+        XCTAssertFalse(sut.canUnfreeze, "claimable withdrawal still needs to be claimed")
+    }
+
     func testMakeClaimTransactionSweepsExpiredEntriesIntoSelfAddressedStakingSend() throws {
         let trx = SendFormFixture.makeTRX()
         let vault = SendFormFixture.makeVault(coins: [trx])

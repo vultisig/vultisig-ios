@@ -222,7 +222,7 @@ struct TronDashboardView: View {
                         ))
                     }
                 )
-                .disabled(model.totalFrozenBalance <= 0)
+                .disabled(!model.canUnfreeze)
 
                 DefiButton(
                     title: NSLocalizedString("tronFreezeButton", comment: "Freeze"),

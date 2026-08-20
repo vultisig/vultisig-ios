@@ -116,6 +116,13 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
         !pendingWithdrawals.isEmpty
     }
 
+    /// TRON cannot start another unfreeze while an existing withdrawal entry
+    /// is still pending. Only actively frozen bandwidth/energy counts here;
+    /// `totalFrozenBalance` also includes TRX that is already unfreezing.
+    var canUnfreeze: Bool {
+        !hasPendingWithdrawals && (frozenBandwidthBalance + frozenEnergyBalance) > 0
+    }
+
     /// TRX whose unlock period has elapsed; one claim sweeps all of it.
     var claimableBalance: Decimal {
         TronViewLogic.claimableBalance(of: pendingWithdrawals)
