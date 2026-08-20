@@ -887,6 +887,8 @@
 "maxTotalFee" = "Max. Total Fee";
 "mayaCacaoStakingHaltedWarning" = "CACAO staking is temporarily unavailable because MAYAChain is halted. Please try again when the network resumes.";
 "mayaCacaoStakingUnavailableWarning" = "Unable to verify MAYAChain staking availability. Please try again later.";
+"thorchainWasmStakingHaltedWarning" = "THORChain App Layer staking is temporarily unavailable because contract execution is paused. Please try again when it resumes.";
+"thorchainWasmStakingUnavailableWarning" = "Unable to verify THORChain App Layer staking availability. Please try again later.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Merge Coins";

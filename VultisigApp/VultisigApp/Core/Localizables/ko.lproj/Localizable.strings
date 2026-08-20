@@ -887,6 +887,8 @@
 "maxTotalFee" = "최대 총 수수료";
 "mayaCacaoStakingHaltedWarning" = "MAYAChain이 중단되어 CACAO 스테이킹을 일시적으로 사용할 수 없습니다. 네트워크가 재개되면 다시 시도해 주세요.";
 "mayaCacaoStakingUnavailableWarning" = "MAYAChain 스테이킹 가능 여부를 확인할 수 없습니다. 나중에 다시 시도해 주세요.";
+"thorchainWasmStakingHaltedWarning" = "컨트랙트 실행이 일시 중지되어 THORChain App Layer 스테이킹을 일시적으로 사용할 수 없습니다. 실행이 재개되면 다시 시도해 주세요.";
+"thorchainWasmStakingUnavailableWarning" = "THORChain App Layer 스테이킹 가능 여부를 확인할 수 없습니다. 나중에 다시 시도해 주세요.";
 "memo" = "메모";
 "memoLabel" = "메모";
 "mergeCoins" = "코인 병합";

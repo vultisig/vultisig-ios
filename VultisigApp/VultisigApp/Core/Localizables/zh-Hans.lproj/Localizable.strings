@@ -887,6 +887,8 @@
 "maxTotalFee" = "最大总费用";
 "mayaCacaoStakingHaltedWarning" = "由于 MAYAChain 已暂停，CACAO 质押暂时不可用。请在网络恢复后重试。";
 "mayaCacaoStakingUnavailableWarning" = "无法验证 MAYAChain 质押是否可用。请稍后重试。";
+"thorchainWasmStakingHaltedWarning" = "由于合约执行已暂停，THORChain App Layer 质押暂时不可用。请在恢复后重试。";
+"thorchainWasmStakingUnavailableWarning" = "无法验证 THORChain App Layer 质押是否可用。请稍后重试。";
 "memo" = "备忘录";
 "memoLabel" = "备注";
 "mergeCoins" = "合并代币";

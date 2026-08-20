@@ -55,16 +55,27 @@ struct DefiChainStakedPositionView: View {
     var unstakeDisabled: Bool { actionAvailability.disablesActions || !position.canUnstake }
     var stakeDisabled: Bool { actionAvailability.disablesActions || !position.canStake }
     var actionWarningMessage: String? {
-        guard position.coin.chain == .mayaChain else {
+        switch position.coin.chain {
+        case .mayaChain:
+            switch actionAvailability {
+            case .checking, .available:
+                return nil
+            case .halted:
+                return "mayaCacaoStakingHaltedWarning".localized
+            case .unavailable:
+                return "mayaCacaoStakingUnavailableWarning".localized
+            }
+        case .thorChain:
+            switch actionAvailability {
+            case .checking, .available:
+                return nil
+            case .halted:
+                return "thorchainWasmStakingHaltedWarning".localized
+            case .unavailable:
+                return "thorchainWasmStakingUnavailableWarning".localized
+            }
+        default:
             return nil
-        }
-        switch actionAvailability {
-        case .checking, .available:
-            return nil
-        case .halted:
-            return "mayaCacaoStakingHaltedWarning".localized
-        case .unavailable:
-            return "mayaCacaoStakingUnavailableWarning".localized
         }
     }
     var canWithdraw: Bool {

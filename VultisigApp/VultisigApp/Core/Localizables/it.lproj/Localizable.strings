@@ -887,6 +887,8 @@
 "maxTotalFee" = "Commissione totale max.";
 "mayaCacaoStakingHaltedWarning" = "Lo staking di CACAO non è temporaneamente disponibile perché MAYAChain è sospesa. Riprova quando la rete riprenderà.";
 "mayaCacaoStakingUnavailableWarning" = "Impossibile verificare la disponibilità dello staking su MAYAChain. Riprova più tardi.";
+"thorchainWasmStakingHaltedWarning" = "Lo staking dell'App Layer di THORChain non è temporaneamente disponibile perché l'esecuzione dei contratti è sospesa. Riprova quando riprenderà.";
+"thorchainWasmStakingUnavailableWarning" = "Impossibile verificare la disponibilità dello staking dell'App Layer di THORChain. Riprova più tardi.";
 "memo" = "Memo";
 "memoLabel" = "Memo";
 "mergeCoins" = "Unisci monete";
