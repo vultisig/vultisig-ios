@@ -11,11 +11,14 @@ import CommonCrypto
 enum HelperError: Error, LocalizedError, Identifiable {
     var id: String { errorDescription ?? "" }
     case runtimeError(String)
+    case maliciousParty(partyID: String)
 
     var errorDescription: String? {
         switch self {
         case .runtimeError(let string):
             return string
+        case .maliciousParty(let partyID):
+            return String(format: "keysignMaliciousPartyDetected".localized, partyID)
         }
     }
 }

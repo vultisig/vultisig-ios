@@ -28,6 +28,9 @@ final class DKLSKeysign {
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
+    // LIB_ABORT_PROTOCOL_AND_BAN_PARTY_1...10 (godkls.h): the library aborted
+    // the session and banned a co-signer for protocol-level misbehavior.
+    private let banPartyRange: ClosedRange<UInt32> = 100...109
     private let httpClient: HTTPClientProtocol
 
     init(keysignCommittee: [String],
@@ -51,6 +54,15 @@ final class DKLSKeysign {
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = publicKeyECDSA
         self.httpClient = httpClient
+    }
+
+    func checkForBannedParty(_ error: godkls.lib_error) throws {
+        guard banPartyRange.contains(error.rawValue) else { return }
+        // Party N (1-based) is keysignCommittee[N-1]: the setup message embeds
+        // party ids in exactly this array order (see getDKLSKeysignSetupMessage).
+        let partyIndex = Int(error.rawValue - banPartyRange.lowerBound)
+        let partyID = keysignCommittee.indices.contains(partyIndex) ? keysignCommittee[partyIndex] : "#\(partyIndex + 1)"
+        throw HelperError.maliciousParty(partyID: partyID)
     }
 
     func getSignatures() -> [String: TssKeysignResponse] {
@@ -286,6 +298,7 @@ final class DKLSKeysign {
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished: UInt32 = 0
             let result = dkls_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
+            try checkForBannedParty(result)
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
@@ -362,6 +375,7 @@ final class DKLSKeysign {
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)
+            try checkForBannedParty(sessionResult)
             if sessionResult != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to create sign session from setup message,error:\(sessionResult)")
             }
@@ -394,6 +408,10 @@ final class DKLSKeysign {
             // A cancellation is not a signing failure — never retry it,
             // propagate so the abandoned ceremony unwinds immediately.
             if error is CancellationError { throw error }
+            // A banned party is a protocol-level verdict from the library, not a
+            // transient failure — retrying would just re-sign against a peer
+            // DKLS has already identified and banned as malicious.
+            if case HelperError.maliciousParty = error { throw error }
             logger.error("Failed to sign message (\(messageToSign, privacy: .public)) on attempt \(attempt, privacy: .public): \(error.localizedDescription, privacy: .public)")
             if attempt < 3 {
                 try await DKLSKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
@@ -415,6 +433,7 @@ final class DKLSKeysign {
             godkls.tss_buffer_free(&buf)
         }
         let result = dkls_sign_session_finish(handle, &buf)
+        try checkForBannedParty(result)
         if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get keysign signature \(result)")
         }

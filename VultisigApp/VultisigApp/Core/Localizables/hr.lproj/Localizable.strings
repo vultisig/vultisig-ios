@@ -751,6 +751,7 @@
 "keysign" = "Potpis ključa";
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
+"keysignMaliciousPartyDetected" = "Otkriveno je da se uređaj \"%@\" u ovoj keysign sesiji zlonamjerno ponaša. Nemoj ga ponovno koristiti za potpisivanje.";
 "keysignStartResponseError" = "Došlo je do problema pri obradi odgovora za pokretanje keysigna. Pokušaj ponovno.";
 "keysignStartVerifyFailed" = "Provjera pokretanja keysigna nije uspjela. Pogreška: %@";
 "Korean" = "Korejski";

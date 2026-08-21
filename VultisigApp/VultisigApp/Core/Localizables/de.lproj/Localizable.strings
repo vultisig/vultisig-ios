@@ -751,6 +751,7 @@
 "keysign" = "Schlüsselsignatur";
 "keysignDiscoveryDisclaimer" = "Scanne den QR-Code, um die Transaktion zu signieren.";
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
+"keysignMaliciousPartyDetected" = "Das Gerät „%@“ in dieser Keysign-Sitzung wurde bei böswilligem Verhalten erkannt. Verwende es nicht erneut zum Signieren.";
 "keysignStartResponseError" = "Bei der Verarbeitung der Keysign-Startantwort ist ein Problem aufgetreten. Bitte versuche es erneut.";
 "keysignStartVerifyFailed" = "Verifizierung des Keysign-Starts fehlgeschlagen. Fehler: %@";
 "Korean" = "Koreanisch";
