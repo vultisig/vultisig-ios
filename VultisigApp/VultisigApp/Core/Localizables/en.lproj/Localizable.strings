@@ -751,6 +751,7 @@
 "keysign" = "Keysign";
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";
+"keysignMaliciousPartyDetected" = "A device in this keysign session (party %d) was detected acting maliciously. Do not use it for signing again.";
 "keysignStartResponseError" = "There was an issue processing the keysign start response. Please try again.";
 "keysignStartVerifyFailed" = "Failed to verify keysign start. Error: %@";
 "Korean" = "Korean";

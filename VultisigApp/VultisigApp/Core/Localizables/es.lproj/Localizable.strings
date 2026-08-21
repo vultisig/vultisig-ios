@@ -751,6 +751,7 @@
 "keysign" = "Firma de Clave";
 "keysignDiscoveryDisclaimer" = "Escanea el código QR para firmar la transacción.";
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";
+"keysignMaliciousPartyDetected" = "Se detectó que un dispositivo en esta sesión de keysign (parte %d) actuó de forma maliciosa. No lo uses de nuevo para firmar.";
 "keysignStartResponseError" = "Hubo un problema al procesar la respuesta de inicio de keysign. Inténtalo de nuevo.";
 "keysignStartVerifyFailed" = "No se pudo verificar el inicio de keysign. Error: %@";
 "Korean" = "Coreano";

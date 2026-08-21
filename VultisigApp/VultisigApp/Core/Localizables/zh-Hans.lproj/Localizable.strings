@@ -751,6 +751,7 @@
 "keysign" = "密钥签名";
 "keysignDiscoveryDisclaimer" = "扫描二维码以签署交易";
 "keysignDiscoveryDisclaimerDevice" = "-需要设备扫描";
+"keysignMaliciousPartyDetected" = "检测到此 keysign 会话中的一个设备(第 %d 方)存在恶意行为。请勿再使用它进行签名。";
 "keysignStartResponseError" = "处理 keysign 启动响应时出现问题。请重试。";
 "keysignStartVerifyFailed" = "验证 keysign 启动失败。错误：%@";
 "Korean" = "韩语";
