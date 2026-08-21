@@ -32,15 +32,35 @@ final class DKLSBannedPartyDetectionTests: XCTestCase {
     }
 
     @MainActor
-    func testBanRangeThrowsMaliciousPartyWithOneBasedIndex() throws {
+    func testBanRangeThrowsMaliciousPartyWithCommitteeID() throws {
+        // Party 1 -> keysignCommittee[0], party 2 -> keysignCommittee[1]: the
+        // setup message embeds ids in exactly this array order.
         let keysign = makeKeysign()
-        for rawValue: UInt32 in 100...109 {
-            XCTAssertThrowsError(try keysign.checkForBannedParty(godkls.lib_error(rawValue))) { error in
-                guard case HelperError.maliciousParty(let partyIndex) = error else {
-                    return XCTFail("expected HelperError.maliciousParty, got \(error)")
-                }
-                XCTAssertEqual(partyIndex, Int(rawValue) - 100 + 1)
+        XCTAssertThrowsError(try keysign.checkForBannedParty(godkls.lib_error(100))) { error in
+            guard case HelperError.maliciousParty(let partyID) = error else {
+                return XCTFail("expected HelperError.maliciousParty, got \(error)")
             }
+            XCTAssertEqual(partyID, "partyA")
+        }
+        XCTAssertThrowsError(try keysign.checkForBannedParty(godkls.lib_error(101))) { error in
+            guard case HelperError.maliciousParty(let partyID) = error else {
+                return XCTFail("expected HelperError.maliciousParty, got \(error)")
+            }
+            XCTAssertEqual(partyID, "partyB")
+        }
+    }
+
+    @MainActor
+    func testBanRangeBeyondCommitteeSizeFallsBackToIndex() throws {
+        // The committee here only has 2 members, but the library reports a ban
+        // range covering up to 10 parties — an index with no committee entry
+        // must still produce a readable identifier, not crash.
+        let keysign = makeKeysign()
+        XCTAssertThrowsError(try keysign.checkForBannedParty(godkls.lib_error(102))) { error in
+            guard case HelperError.maliciousParty(let partyID) = error else {
+                return XCTFail("expected HelperError.maliciousParty, got \(error)")
+            }
+            XCTAssertEqual(partyID, "#3")
         }
     }
 

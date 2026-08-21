@@ -58,7 +58,11 @@ final class DKLSKeysign {
 
     func checkForBannedParty(_ error: godkls.lib_error) throws {
         guard banPartyRange.contains(error.rawValue) else { return }
-        throw HelperError.maliciousParty(partyIndex: Int(error.rawValue - banPartyRange.lowerBound) + 1)
+        // Party N (1-based) is keysignCommittee[N-1]: the setup message embeds
+        // party ids in exactly this array order (see getDKLSKeysignSetupMessage).
+        let partyIndex = Int(error.rawValue - banPartyRange.lowerBound)
+        let partyID = keysignCommittee.indices.contains(partyIndex) ? keysignCommittee[partyIndex] : "#\(partyIndex + 1)"
+        throw HelperError.maliciousParty(partyID: partyID)
     }
 
     func getSignatures() -> [String: TssKeysignResponse] {
