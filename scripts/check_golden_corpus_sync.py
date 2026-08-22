@@ -36,13 +36,13 @@ def load_corpus(corpus_dir: Path) -> Corpus:
     for path in sorted(corpus_dir.glob("*.json")):
         try:
             cases = json.loads(path.read_text())
-        except json.JSONDecodeError as err:
-            print(f"{path}: unparseable fixture file — {err}", file=sys.stderr)
+            corpus[path.name] = {
+                case["name"]: [h.lower() for h in (case.get("expected_image_hash") or [])]
+                for case in cases
+            }
+        except (json.JSONDecodeError, TypeError, KeyError, AttributeError) as err:
+            print(f"{path}: not a list of golden cases — {err!r}", file=sys.stderr)
             raise SystemExit(2) from None
-        corpus[path.name] = {
-            case["name"]: [h.lower() for h in (case.get("expected_image_hash") or [])]
-            for case in cases
-        }
         if len(corpus[path.name]) != len(cases):
             print(f"{path}: duplicate case names — a duplicate would go uncompared", file=sys.stderr)
             raise SystemExit(2)
@@ -112,8 +112,8 @@ def main() -> int:
 
     if drift:
         print(f"\n{len(drift)} CROSS-REPO HASH DISAGREEMENT(S) — two platforms would sign different bytes:")
-        for entry in drift:
-            print(f"  DRIFT {entry}")
+        for finding in drift:
+            print(f"  DRIFT {finding}")
         print("\nAn intentional vector change must land the same hashes in all three repos.")
         return 1
 
