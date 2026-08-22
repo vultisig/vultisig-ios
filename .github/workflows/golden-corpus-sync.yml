@@ -1,0 +1,36 @@
+name: Golden Corpus Sync
+
+on:
+  pull_request:
+    paths:
+      - "VultisigApp/VultisigAppTests/TestData/**"
+      - "scripts/check_golden_corpus_sync.py"
+      - ".github/workflows/golden-corpus-sync.yml"
+  push:
+    branches: [main]
+    paths:
+      - "VultisigApp/VultisigAppTests/TestData/**"
+  schedule:
+    - cron: "27 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  corpus-sync:
+    name: Cross-repo golden corpus sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Fetch sibling corpora
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/vultisig/vultisig-android.git "$RUNNER_TEMP/vultisig-android"
+          git -C "$RUNNER_TEMP/vultisig-android" sparse-checkout set app/src/androidTest/assets
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/vultisig/vultisig-sdk.git "$RUNNER_TEMP/vultisig-sdk"
+          git -C "$RUNNER_TEMP/vultisig-sdk" sparse-checkout set packages/core/mpc/keysign/tests/fixtures/mobile
+
+      - name: Check corpus sync
+        run: |
+          python3 scripts/check_golden_corpus_sync.py \
+            --android "$RUNNER_TEMP/vultisig-android/app/src/androidTest/assets" \
+            --ios VultisigApp/VultisigAppTests/TestData \
+            --sdk "$RUNNER_TEMP/vultisig-sdk/packages/core/mpc/keysign/tests/fixtures/mobile"
