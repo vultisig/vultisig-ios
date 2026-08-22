@@ -50,9 +50,9 @@ def diff_case(label: str, hashes_by_repo: dict[str, list[str]]) -> tuple[list[st
     warnings = [f"{label}: no pinned hash on {', '.join(unpinned)}"] if unpinned and pinned else []
     if len(pinned) < 2 or len({tuple(h) for h in pinned.values()}) == 1:
         return [], warnings
-    if len({tuple(sorted(h)) for h in pinned.values()}) == 1:
-        return [], warnings + [f"{label}: same hashes, different order"]
     detail = "; ".join(f"{repo}={hashes}" for repo, hashes in sorted(pinned.items()))
+    if len({tuple(sorted(h)) for h in pinned.values()}) == 1:
+        label += " (same hashes, different order — runners assert ordered equality)"
     return [f"{label}\n    {detail}"], warnings
 
 
