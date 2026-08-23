@@ -122,6 +122,7 @@ enum ChainHelperFixture: String, CaseIterable {
     case mayaswap
     case pol
     case qbtc
+    case sei
     case solana
     case solanaSignData = "solana-sign-data"
     case sui
@@ -162,6 +163,7 @@ enum ChainHelperFixture: String, CaseIterable {
         case .mayaswap: return 2
         case .pol: return 1
         case .qbtc: return 1
+        case .sei: return 2
         case .solana: return 4
         case .solanaSignData: return 1
         case .sui: return 1
@@ -219,6 +221,7 @@ final class ChainHelperTests: XCTestCase {
     func testMayaswapFixture() throws { try runFixture(.mayaswap) }
     func testPolFixture() throws { try runFixture(.pol) }
     func testQbtcFixture() throws { try runFixture(.qbtc) }
+    func testSeiFixture() throws { try runFixture(.sei) }
     func testSolanaFixture() throws { try runFixture(.solana) }
     func testSolanaSignDataFixture() throws { try runFixture(.solanaSignData) }
     func testSuiFixture() throws { try runFixture(.sui) }
@@ -483,7 +486,7 @@ final class ChainHelperTests: XCTestCase {
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
         case .ethereum, .arbitrum, .optimism, .polygon, .base, .bscChain, .avalanche, .mantle,
-             .blast, .cronosChain, .zksync, .hyperliquid:
+             .blast, .cronosChain, .zksync, .hyperliquid, .sei:
             let chain = keysignPayload.coin.chain
             if keysignPayload.coin.contractAddress.isEmpty {
                 let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)

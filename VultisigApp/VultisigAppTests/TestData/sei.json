@@ -1,0 +1,68 @@
+[
+    {
+        "name": "Send SEI",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Sei",
+                "ticker": "SEI",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "sei-network",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "",
+                "logo": "sei"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "09d6110cf12c44513622e239605f2ef6d62abd33f66ed07a22b176f84cd5bb90"
+        ]
+    },
+    {
+        "name": "Send SEI ERC20 USDC",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Sei",
+                "ticker": "USDC",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 6,
+                "price_provider_id": "usd-coin",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address": "0x3894085Ef7Ff0f0AeDf52E2A2704928d1eC074F1",
+                "logo": "usdc"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "3b8f59a295989ea8df77181996d4d07c2e05bdb8687fcfdc59750a033d7a8a45"
+        ]
+    }
+]
