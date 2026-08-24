@@ -10,7 +10,7 @@ struct AddressValidator: FormFieldValidator {
 
     func validate(value: String) throws {
         guard value.isNotEmpty else { return }
-        guard AddressService.validateAddress(address: value, chain: chain) else {
+        guard AddressService.validateRecipientAddress(address: value, chain: chain) else {
             throw HelperError.runtimeError("validAddressError".localized)
         }
     }

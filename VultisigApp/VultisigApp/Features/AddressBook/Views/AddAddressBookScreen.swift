@@ -115,7 +115,7 @@ struct AddAddressBookScreen: View {
             return
         }
 
-        guard AddressService.validateAddress(address: address, chain: selectedChain.chain) else {
+        guard AddressService.validateRecipientAddress(address: address, chain: selectedChain.chain) else {
             toggleAlertInvalidAddress()
             return
         }

@@ -37,7 +37,7 @@ struct RippleDestinationReserveValidator: SendAmountValidator {
         input.chain == .ripple
             && input.isNativeToken
             && !input.toAddress.isEmpty
-            && AddressService.validateAddress(address: input.toAddress, chain: input.chain)
+            && AddressService.validateRecipientAddress(address: input.toAddress, chain: input.chain)
             && !input.amount.isEmpty
             && !input.amountDecimal.isZero
     }

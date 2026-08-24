@@ -191,13 +191,19 @@ final class AddressServiceTests: XCTestCase {
 
     func testSolanaWalletAddressValidates() {
         XCTAssertTrue(AddressService.validateAddress(address: solanaWalletAddress, chain: .solana))
+        XCTAssertTrue(AddressService.validateRecipientAddress(address: solanaWalletAddress, chain: .solana))
     }
 
     func testSolanaAssociatedTokenAccountIsRejectedEvenThoughWalletCoreAcceptsIt() throws {
         let tokenAccount = try makeSolanaAssociatedTokenAccount()
 
         XCTAssertTrue(Chain.solana.coinType.validate(address: tokenAccount))
-        XCTAssertFalse(AddressService.validateAddress(address: tokenAccount, chain: .solana))
+        XCTAssertTrue(AddressService.validateAddress(address: tokenAccount, chain: .solana))
+        XCTAssertFalse(AddressService.validateRecipientAddress(address: tokenAccount, chain: .solana))
+    }
+
+    func testSolanaMintStillPassesGenericAddressValidation() {
+        XCTAssertTrue(AddressService.validateAddress(address: solanaMintAddress, chain: .solana))
     }
 
     func testSolanaAssociatedTokenAccountIsRejectedByResolution() async throws {
