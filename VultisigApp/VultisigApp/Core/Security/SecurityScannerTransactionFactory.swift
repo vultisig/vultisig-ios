@@ -37,6 +37,8 @@ struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProto
         switch chain.chainType {
         case .EVM:
             return try createEVMSecurityScanner(transaction: transaction)
+        case .Solana:
+            return try createSOLSecurityScanner(transaction: transaction)
         default:
             throw SecurityScannerTransactionFactoryError.notSupported(chain: chain)
         }
@@ -217,6 +219,47 @@ private extension SecurityScannerTransactionFactory {
 // MARK: - Swap Transactions
 
 private extension SecurityScannerTransactionFactory {
+    func createSOLSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
+        guard Base58.decodeNoCheck(string: transaction.fromCoin.address) != nil else {
+            throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromCoin.address)
+        }
+        guard let quote = transaction.quote else {
+            throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
+        }
+
+        let base64Transaction: String
+        switch quote {
+        case .lifi(let quote, _, _), .jupiter(let quote, _, _, _):
+            base64Transaction = quote.tx.data
+        case .swapkit(let response, _, _):
+            guard case let .solana(base64) = response.tx else {
+                throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
+            }
+            base64Transaction = base64
+        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet,
+                .oneinch, .kyberswap:
+            throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
+        }
+
+        guard let transactionData = Data(base64Encoded: base64Transaction),
+              !transactionData.isEmpty else {
+            throw SecurityScannerTransactionFactoryError.invalidBlockchainSpecific(
+                "Expected a base64 Solana swap transaction"
+            )
+        }
+
+        // Aggregators and the signer use base64 for the same wire transaction;
+        // Blockaid's Solana request contract requires those bytes as base58.
+        return SecurityScannerTransaction(
+            chain: transaction.fromCoin.chain,
+            type: .swap,
+            from: transaction.fromCoin.address,
+            to: transaction.recipientAddress,
+            amount: .zero,
+            data: Base58.encodeNoCheck(data: transactionData)
+        )
+    }
+
     func createEVMSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
         // Limit-swap orders are deposits with a memo; the EVM scanner
         // path only handles the routed-swap providers below.
