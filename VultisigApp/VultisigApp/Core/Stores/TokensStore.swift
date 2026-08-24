@@ -3004,7 +3004,7 @@ class TokensStore {
         CoinMeta(
             chain: .ton,
             ticker: "GRAM",
-            logo: "gram",
+            logo: "ton",
             decimals: 9,
             priceProviderId: "the-open-network",
             contractAddress: "",
@@ -3164,7 +3164,7 @@ class TokensStore {
     static let ton: CoinMeta = CoinMeta(
         chain: .ton,
         ticker: "GRAM",
-        logo: "gram",
+        logo: "ton",
         decimals: 9,
         priceProviderId: "the-open-network",
         contractAddress: "",

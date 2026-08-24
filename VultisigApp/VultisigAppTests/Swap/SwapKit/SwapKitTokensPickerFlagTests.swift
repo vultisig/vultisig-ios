@@ -51,7 +51,7 @@ final class SwapKitTokensPickerFlagTests: XCTestCase {
         // SwapKit's token list (and any legacy persisted coin) still surfaces
         // the native as "TON". Both are native + empty-contract, so the
         // uniqueId dedup keeps them separate. The picker must show one native.
-        let gram = CoinMeta(chain: .ton, ticker: "GRAM", logo: "gram", decimals: 9, priceProviderId: "the-open-network", contractAddress: "", isNativeToken: true)
+        let gram = CoinMeta(chain: .ton, ticker: "GRAM", logo: "ton", decimals: 9, priceProviderId: "the-open-network", contractAddress: "", isNativeToken: true)
         let usdt = CoinMeta(chain: .ton, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "tether", contractAddress: "EQjetton", isNativeToken: false)
         let staleTon = CoinMeta(chain: .ton, ticker: "TON", logo: "https://example/ton.png", decimals: 9, priceProviderId: "the-open-network", contractAddress: "", isNativeToken: true)
 

@@ -42,7 +42,7 @@ final class TonGramRebrandMigrationTests: XCTestCase {
         try TonGramRebrandMigration().migrate()
 
         XCTAssertEqual(ton.ticker, "GRAM")
-        XCTAssertEqual(ton.logo, "gram")
+        XCTAssertEqual(ton.logo, "ton")
     }
 
     func test_isIdempotent() throws {
@@ -55,7 +55,7 @@ final class TonGramRebrandMigrationTests: XCTestCase {
         try TonGramRebrandMigration().migrate()
 
         XCTAssertEqual(ton.ticker, "GRAM")
-        XCTAssertEqual(ton.logo, "gram")
+        XCTAssertEqual(ton.logo, "ton")
     }
 
     func test_leavesJettonsAndOtherChainsUntouched() throws {

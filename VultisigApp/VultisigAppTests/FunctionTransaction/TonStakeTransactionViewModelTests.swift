@@ -20,7 +20,7 @@ final class TonStakeTransactionViewModelTests: XCTestCase {
         let meta = CoinMeta(
             chain: .ton,
             ticker: "GRAM",
-            logo: "gram",
+            logo: "ton",
             decimals: 9,
             priceProviderId: "the-open-network",
             contractAddress: "",
