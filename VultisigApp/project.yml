@@ -268,7 +268,7 @@ targets:
       - path: VultisigWidgets
         excludes:
           - "**/.DS_Store"
-      - path: VultisigApp/Shared/WidgetShared/WidgetSharedStorage.swift
+      - path: VultisigApp/Shared/WidgetShared
         group: VultisigApp/Shared/WidgetShared
 
     settings:
