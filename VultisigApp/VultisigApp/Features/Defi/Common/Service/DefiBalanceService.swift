@@ -53,16 +53,28 @@ struct DefiBalanceService {
     /// inflate the total.
     @MainActor
     func yieldTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard let usdc = vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) else {
-            return .zero
-        }
-        let storage = YieldPositionStorageService()
-        var total = Decimal.zero
-        for providerID in DefiYieldProviderID.allCases where vault.isDefiProviderEnabled(providerID) {
-            guard let position = storage.position(for: vault, providerID: providerID) else { continue }
-            total += usdc.fiat(decimal: position.depositedBalance)
-        }
-        return total
+        DefiYieldProviderID.allCases
+            .map { yieldBalanceFiatDecimal(for: $0, vault: vault) }
+            .reduce(.zero, +)
+    }
+
+    /// Fiat value painted by one yield-provider row. Kept provider-specific so
+    /// every yield row can participate in the same portfolio ordering as chain
+    /// rows instead of being pinned ahead of them.
+    @MainActor
+    func yieldBalanceFiatDecimal(for providerID: DefiYieldProviderID, vault: Vault) -> Decimal {
+        guard vault.isDefiProviderEnabled(providerID) else { return .zero }
+
+        let provider = DefiYieldProviderFactory.make(providerID)
+        guard let assetCoin = vault.coins.first(where: {
+            $0.chain == provider.chain
+                && ($0.contractAddress.caseInsensitiveCompare(provider.assetContract) == .orderedSame
+                    || $0.ticker == "USDC")
+        }),
+        let position = YieldPositionStorageService().position(for: vault, providerID: providerID)
+        else { return .zero }
+
+        return assetCoin.fiat(decimal: position.depositedBalance)
     }
 
     /// Number of DeFi positions with a non-zero balance for `chain`. Mirrors

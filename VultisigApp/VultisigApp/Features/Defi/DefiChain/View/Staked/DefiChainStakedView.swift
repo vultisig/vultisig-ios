@@ -20,7 +20,7 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
     }
 
     var formattedStakePositions: [(position: StakePosition, fiatAmount: String)] {
-        viewModel.stakePositions
+        let valued = viewModel.stakePositions
             .map { position -> (position: StakePosition, fiatAmount: Decimal) in
                 // Use the position's `CoinMeta` for the rate lookup so zero-amount placeholders
                 // (and any position whose `Coin` row isn't yet in `vault.coins` — e.g. when the
@@ -30,7 +30,11 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                 let fiatAmount = RateProvider.shared.fiatBalance(value: position.amount, coin: position.coin)
                 return (position, fiatAmount)
             }
-            .sorted { $0.fiatAmount > $1.fiatAmount }
+        return DefiPositionOrdering.descending(
+            valued,
+            value: \.fiatAmount,
+            tieBreak: { $0.position.id }
+        )
             .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
 

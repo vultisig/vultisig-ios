@@ -70,7 +70,9 @@ final class DefiChainBondViewModel: ObservableObject {
         }
 
         if hasBondPositions {
-            activeBondedNodes = vault.bondPositions.filter { $0.node.coin.chain == chain }
+            activeBondedNodes = sortedActiveBonds(
+                vault.bondPositions.filter { $0.node.coin.chain == chain }
+            )
         }
 
         async let canUnbondTask = interactor.canUnbond()
@@ -82,12 +84,20 @@ final class DefiChainBondViewModel: ObservableObject {
 
         do {
             let (active, available) = try await fetchTask
-            self.activeBondedNodes = active
+            self.activeBondedNodes = sortedActiveBonds(active)
             self.availableNodes = available
         } catch {
             // Preserve last-known UI state on transient failures so cached positions stay visible
             logger.error("Failed to refresh bond positions for chain \(self.chain.rawValue, privacy: .public): \(error)")
             self.refreshError = "defiRefreshFailed".localized
         }
+    }
+
+    private func sortedActiveBonds(_ positions: [BondPosition]) -> [BondPosition] {
+        DefiPositionOrdering.descending(
+            positions,
+            value: \.amount,
+            tieBreak: \.id
+        )
     }
 }

@@ -22,6 +22,7 @@ struct DefiYieldProviderRow: View {
 
     private var provider: DefiYieldProvider { DefiYieldProviderFactory.make(providerID) }
     private var presentation: YieldPresentation { provider.presentation }
+    private let balanceService = DefiBalanceService()
 
     var body: some View {
         HStack {
@@ -70,7 +71,11 @@ struct DefiYieldProviderRow: View {
                     .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
             } else {
-                HiddenBalanceText((balance ?? 0).formatToFiat())
+                HiddenBalanceText(
+                    balanceService
+                        .yieldBalanceFiatDecimal(for: providerID, vault: vault)
+                        .formatToFiat(includeCurrencySymbol: true)
+                )
                     .font(Theme.fonts.priceBodyS)
                     .foregroundStyle(Theme.colors.textPrimary)
                 HiddenBalanceText("\((balance ?? 0).formatted()) USDC")
