@@ -1027,18 +1027,31 @@ private extension BlockChainService {
 
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
+            let isSwap = action == .swap
 
-            // Determine if address is bounceable
-            var isBounceable = false
-            if let toAddress = toAddress, !toAddress.isEmpty {
-                // Check if destination wallet is uninitialized
+            let isBounceable: Bool
+            let isActiveDestination: Bool
+            if isSwap {
+                // iOS passes no toAddress for swaps; the deposit lands on a
+                // contract, so force bounceable — a rejection then refunds
+                // instead of the contract absorbing funds it can't process.
+                isBounceable = true
+                isActiveDestination = true
+            } else if let toAddress = toAddress, !toAddress.isEmpty {
                 let walletState = try await ton.getWalletState(toAddress)
-                let isUninitialized = walletState == TON_WALLET_STATE_UNINITIALIZED
-
-                // If wallet is initialized and address starts with "E", it's bounceable
-                if !isUninitialized && toAddress.starts(with: "E") {
-                    isBounceable = true
+                let isInitialized = walletState != TON_WALLET_STATE_UNINITIALIZED
+                if isInitialized {
+                    // Raw/unparseable addresses carry no bounce flag; default
+                    // to bounceable since an initialized account can safely reject.
+                    isBounceable = TonAddressBounceability.isBounceable(toAddress) ?? true
+                } else {
+                    // Not-yet-deployed accounts are only reachable non-bounceable.
+                    isBounceable = false
                 }
+                isActiveDestination = isInitialized
+            } else {
+                isBounceable = false
+                isActiveDestination = false
             }
 
             // For jettons we must send to the SENDER's jetton wallet, never the
@@ -1051,7 +1064,7 @@ private extension BlockChainService {
                 }
                 senderJettonWallet = resolved
             }
-            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount, jettonAddress: senderJettonWallet, isActiveDestination: !isBounceable)
+            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount, jettonAddress: senderJettonWallet, isActiveDestination: isActiveDestination)
         case .ripple:
 
             async let accountTask = ripple.fetchAccountsInfo(for: coin.address)
