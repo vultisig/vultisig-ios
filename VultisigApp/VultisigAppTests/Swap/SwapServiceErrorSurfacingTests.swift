@@ -16,6 +16,16 @@ import XCTest
 
 final class SwapServiceErrorSurfacingTests: XCTestCase {
 
+    override func setUp() {
+        super.setUp()
+        UserDefaults.standard.removeObject(forKey: "forcedSwapProvider")
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.removeObject(forKey: "forcedSwapProvider")
+        super.tearDown()
+    }
+
     func testPrefersCoreProviderErrorOverSwapKitScreeningError() {
         // The reported case: SwapKit's screening error wins the task-completion
         // race, but a core provider also failed with a real routing error. The
@@ -122,5 +132,121 @@ final class SwapServiceErrorSurfacingTests: XCTestCase {
         // No relay involved at all: completion order is untouched.
         let errors: [Error] = [URLError(.timedOut), SwapError.tradingHalted]
         XCTAssertTrue(SwapService.surfacedQuoteError(from: errors) is URLError)
+    }
+
+    // MARK: - Native halt fallback
+
+    func testNativeHaltDoesNotMaskEligibleAggregatorTimeout() {
+        let results = [
+            SwapProviderQuoteResult(provider: .thorchain, result: .failure(SwapError.tradingHalted)),
+            SwapProviderQuoteResult(provider: .lifi, result: .failure(URLError(.timedOut)))
+        ]
+
+        let surfaced = SwapService.surfacedProviderQuoteError(from: results)
+
+        XCTAssertTrue(surfaced is URLError)
+        XCTAssertNotEqual(surfaced as? SwapError, .tradingHalted)
+        XCTAssertEqual(SwapService.transientAggregatorRetryProviders(from: results), [.lifi])
+    }
+
+    func testNativeOnlyHaltStillSurfacesHalt() {
+        let results = [
+            SwapProviderQuoteResult(provider: .thorchain, result: .failure(SwapError.tradingHalted))
+        ]
+
+        XCTAssertEqual(SwapService.surfacedProviderQuoteError(from: results) as? SwapError, .tradingHalted)
+        XCTAssertTrue(SwapService.transientAggregatorRetryProviders(from: results).isEmpty)
+    }
+
+    func testNativeHaltSurfacesWhenEveryAlternativeIsStructurallyUnroutable() {
+        let results = [
+            SwapProviderQuoteResult(provider: .thorchain, result: .failure(SwapError.tradingHalted)),
+            SwapProviderQuoteResult(provider: .lifi, result: .failure(SwapError.routeUnavailable)),
+            SwapProviderQuoteResult(provider: .swapkit, result: .failure(SwapKitError.noRoutesFound))
+        ]
+
+        XCTAssertEqual(SwapService.surfacedProviderQuoteError(from: results) as? SwapError, .tradingHalted)
+        XCTAssertTrue(SwapService.transientAggregatorRetryProviders(from: results).isEmpty)
+    }
+
+    @MainActor
+    func testTransientAggregatorIsRetriedOnceAndSecondAttemptQuoteWins() async throws {
+        let recorder = SwapQuoteAttemptRecorder()
+        let service = SwapService(quoteFetcherOverride: { provider in
+            try await recorder.fetch(provider)
+        })
+        let ethereum = makeCoin(.ethereum, ticker: "ETH", decimals: 18)
+        let solana = makeCoin(.solana, ticker: "SOL", decimals: 9)
+
+        let quotes = try await service.fetchQuotes(
+            amount: 1,
+            fromCoin: ethereum,
+            toCoin: solana,
+            isAffiliate: false,
+            referredCode: "",
+            vultTierDiscount: 0,
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+
+        let thorAttempts = await recorder.attemptCount(for: .thorchain)
+        let liFiAttempts = await recorder.attemptCount(for: .lifi)
+        let swapKitAttempts = await recorder.attemptCount(for: .swapkit)
+        XCTAssertEqual(quotes.best.kind, .lifi)
+        XCTAssertEqual(thorAttempts, 1)
+        XCTAssertEqual(liFiAttempts, 2)
+        XCTAssertEqual(swapKitAttempts, 1)
+    }
+
+    private func makeCoin(_ chain: Chain, ticker: String, decimals: Int) -> Coin {
+        let meta = CoinMeta(
+            chain: chain,
+            ticker: ticker,
+            logo: "logo",
+            decimals: decimals,
+            priceProviderId: ticker.lowercased(),
+            contractAddress: "",
+            isNativeToken: true
+        )
+        return Coin(asset: meta, address: "test-address-\(ticker)", hexPublicKey: "")
+    }
+}
+
+private actor SwapQuoteAttemptRecorder {
+    private var attempts: [SwapProvider: Int] = [:]
+
+    func fetch(_ provider: SwapProvider) throws -> SwapQuote {
+        attempts[provider, default: 0] += 1
+
+        switch provider {
+        case .thorchain:
+            throw SwapError.tradingHalted
+        case .lifi where attempts[provider] == 1:
+            throw URLError(.timedOut)
+        case .lifi:
+            return .lifi(
+                EVMQuote(
+                    dstAmount: "1000000000",
+                    tx: EVMQuote.Transaction(
+                        from: "0xfrom",
+                        to: "0xto",
+                        data: "0x",
+                        value: "0",
+                        gasPrice: "0",
+                        gas: 0
+                    )
+                ),
+                fee: nil,
+                integratorFee: nil
+            )
+        case .swapkit:
+            throw SwapKitError.noRoutesFound
+        default:
+            throw SwapError.routeUnavailable
+        }
+    }
+
+    func attemptCount(for provider: SwapProvider) -> Int {
+        attempts[provider, default: 0]
     }
 }

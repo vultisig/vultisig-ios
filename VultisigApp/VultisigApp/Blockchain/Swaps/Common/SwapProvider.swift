@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SwapProvider: Equatable {
+enum SwapProvider: Equatable, Hashable {
     case thorchain
     case thorchainChainnet
     case thorchainStagenet
@@ -64,4 +64,15 @@ enum SwapProvider: Equatable {
             return false
         }
     }
+
+    var isNativeProtocol: Bool {
+        switch self {
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
+            return true
+        case .oneinch, .kyberswap, .lifi, .swapkit, .jupiter:
+            return false
+        }
+    }
+
+    var isAggregator: Bool { !isNativeProtocol }
 }

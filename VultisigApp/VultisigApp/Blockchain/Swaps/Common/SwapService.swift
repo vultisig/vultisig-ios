@@ -10,8 +10,28 @@ import OSLog
 
 private let logger = Log.swap.service
 
+struct SwapProviderQuoteResult {
+    let provider: SwapProvider
+    let result: Result<SwapQuote, Error>
+
+    var quote: SwapQuote? { try? result.get() }
+
+    var error: Error? {
+        guard case .failure(let error) = result else { return nil }
+        return error
+    }
+}
+
 struct SwapService {
     static let shared = SwapService()
+
+    typealias QuoteFetcherOverride = @Sendable (SwapProvider) async throws -> SwapQuote
+
+    private let quoteFetcherOverride: QuoteFetcherOverride?
+
+    init(quoteFetcherOverride: QuoteFetcherOverride? = nil) {
+        self.quoteFetcherOverride = quoteFetcherOverride
+    }
 
     /// Fall back from rapid to streaming THORChain swap when rapid slippage
     /// (`fees.total` share of output) exceeds this threshold. 100 bps = 1%.
@@ -86,36 +106,48 @@ struct SwapService {
             throw SwapError.recipientRouteUnavailable
         }
 
-        let results = await withTaskGroup(of: Result<SwapQuote, Error>.self) { group in
-            for provider in providers {
-                group.addTask {
-                    do {
-                        let quote = try await self.fetchQuoteForProvider(
-                            provider: provider,
-                            amount: amount,
-                            fromCoin: fromCoin,
-                            toCoin: toCoin,
-                            isAffiliate: isAffiliate,
-                            referredCode: referredCode,
-                            vultTierDiscount: vultTierDiscount,
-                            slippageBps: slippageBps,
-                            recipientAddress: recipientAddress
-                        )
-                        return Result<SwapQuote, Error>.success(quote)
-                    } catch {
-                        return Result<SwapQuote, Error>.failure(error)
+        func fetchResults(for attemptedProviders: [SwapProvider]) async -> [SwapProviderQuoteResult] {
+            await withTaskGroup(of: SwapProviderQuoteResult.self) { group in
+                for provider in attemptedProviders {
+                    group.addTask {
+                        do {
+                            let quote = try await self.fetchQuoteForProvider(
+                                provider: provider,
+                                amount: amount,
+                                fromCoin: fromCoin,
+                                toCoin: toCoin,
+                                isAffiliate: isAffiliate,
+                                referredCode: referredCode,
+                                vultTierDiscount: vultTierDiscount,
+                                slippageBps: slippageBps,
+                                recipientAddress: recipientAddress
+                            )
+                            return SwapProviderQuoteResult(provider: provider, result: .success(quote))
+                        } catch {
+                            return SwapProviderQuoteResult(provider: provider, result: .failure(error))
+                        }
                     }
                 }
-            }
 
-            var collected: [Result<SwapQuote, Error>] = []
-            for await result in group {
-                collected.append(result)
+                var collected: [SwapProviderQuoteResult] = []
+                for await result in group {
+                    collected.append(result)
+                }
+                return collected
             }
-            return collected
         }
 
-        let quotes = results.compactMap { try? $0.get() }
+        var results = await fetchResults(for: providers)
+        if results.allSatisfy({ $0.quote == nil }) {
+            let retryProviders = Self.transientAggregatorRetryProviders(from: results)
+            if !retryProviders.isEmpty {
+                let retried = await fetchResults(for: retryProviders)
+                results.removeAll { retryProviders.contains($0.provider) }
+                results.append(contentsOf: retried)
+            }
+        }
+
+        let quotes = results.compactMap(\.quote)
         if let best = Self.selectBestQuote(quotes: quotes, toCoin: toCoin) {
             let ranked = Self.rankedQuotes(quotes: quotes, toCoin: toCoin)
             // Preserve the `best ∈ ranked` contract: if nothing is rankable (no
@@ -123,12 +155,128 @@ struct SwapService {
             return SwapQuotes(best: best, ranked: ranked.isEmpty ? [best] : ranked)
         }
 
-        let errors = results.compactMap { result -> Error? in
-            if case .failure(let error) = result { return error }
-            return nil
+        throw Self.surfacedProviderQuoteError(from: results) ?? SwapError.routeUnavailable
+    }
+
+    static func transientAggregatorRetryProviders(
+        from results: [SwapProviderQuoteResult]
+    ) -> [SwapProvider] {
+        let nativeProviderHalted = results.contains { result in
+            result.provider.isNativeProtocol && isTradingHalted(result.error)
+        }
+        guard nativeProviderHalted else { return [] }
+
+        return results.compactMap { result in
+            guard result.provider.isAggregator,
+                  let error = result.error,
+                  isTransientAggregatorError(error)
+            else { return nil }
+            return result.provider
+        }
+    }
+
+    static func surfacedProviderQuoteError(from results: [SwapProviderQuoteResult]) -> Error? {
+        let failures = results.compactMap { result -> (provider: SwapProvider, error: Error)? in
+            guard let error = result.error else { return nil }
+            return (result.provider, error)
         }
 
-        throw Self.surfacedQuoteError(from: errors) ?? SwapError.routeUnavailable
+        let hasNativeHalt = failures.contains {
+            $0.provider.isNativeProtocol && isTradingHalted($0.error)
+        }
+        guard hasNativeHalt else {
+            return surfacedQuoteError(from: failures.map(\.error))
+        }
+
+        let alternatives = failures.filter {
+            !($0.provider.isNativeProtocol && isTradingHalted($0.error))
+        }
+        guard !alternatives.isEmpty else { return SwapError.tradingHalted }
+        guard !alternatives.allSatisfy({ isStructuralRouteError($0.error) }) else {
+            return SwapError.tradingHalted
+        }
+
+        return surfacedQuoteError(from: alternatives.map(\.error))
+    }
+
+    private static func isTradingHalted(_ error: Error?) -> Bool {
+        guard let swapError = error as? SwapError else { return false }
+        return swapError == .tradingHalted
+    }
+
+    private static func isStructuralRouteError(_ error: Error) -> Bool {
+        if let swapError = error as? SwapError {
+            return swapError == .routeUnavailable || swapError == .noLiquidityPool
+        }
+
+        if let swapKitError = error as? SwapKitError {
+            switch swapKitError {
+            case .swapRouteNotFound, .noRoutesFound, .providerNotEnabled, .routeFiltered, .unsupportedTxType:
+                return true
+            default:
+                return false
+            }
+        }
+
+        if let liFiError = error as? LiFiSwapError {
+            let message = liFiError.message.lowercased()
+            return ["no route", "not found", "not supported", "unsupported"].contains {
+                message.contains($0)
+            }
+        }
+
+        return false
+    }
+
+    private static func isTransientAggregatorError(_ error: Error) -> Bool {
+        if error is URLError { return true }
+
+        if let httpError = error as? HTTPError {
+            switch httpError {
+            case .timeout, .networkError, .noData, .invalidResponse, .decodingFailed:
+                return true
+            case .statusCode(let code, _):
+                return code >= 500
+            case .invalidURL, .encodingFailed, .invalidSSLCertificate:
+                return false
+            }
+        }
+
+        if let swapError = error as? SwapError {
+            if case .serverError = swapError { return true }
+            return false
+        }
+
+        if let swapKitError = error as? SwapKitError {
+            switch swapKitError {
+            case .addressScreeningFailed, .unableToBuildTransaction, .generic:
+                return true
+            default:
+                return false
+            }
+        }
+
+        if error is LiFiSwapError { return !isStructuralRouteError(error) }
+
+        if let kyberError = error as? KyberSwapError,
+           case .apiError(let code, _, _) = kyberError {
+            return code >= 500
+        }
+
+        if let jupiterError = error as? JupiterError {
+            switch jupiterError {
+            case .quoteFailed(let code), .swapFailed(let code):
+                return code >= 500
+            case .invalidQuote:
+                return true
+            case .feeAccountUnavailable, .feeAccountNotProvisioned:
+                return false
+            }
+        }
+
+        // LI.FI's undecodable 5xx path and 1inch's relay are private error
+        // types, so their provider identity is the only retry-safe signal left.
+        return true
     }
 
     /// Pick which provider error to surface once every eligible provider failed
@@ -311,6 +459,10 @@ struct SwapService {
         slippageBps: Int?,
         recipientAddress: String?
     ) async throws -> SwapQuote {
+        if let quoteFetcherOverride {
+            return try await quoteFetcherOverride(provider)
+        }
+
         switch provider {
         case .thorchain:
             return try await fetchCrossChainQuote(
