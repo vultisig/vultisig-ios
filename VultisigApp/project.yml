@@ -268,7 +268,20 @@ targets:
       - path: VultisigWidgets
         excludes:
           - "**/.DS_Store"
-      - path: VultisigApp/Shared/WidgetShared
+      # These files already belong to the app's recursive source tree. List
+      # them explicitly here instead of adding an overlapping directory tree,
+      # which makes XcodeGen spend minutes reconciling duplicate groups.
+      - path: VultisigApp/Shared/WidgetShared/WidgetSharedStorage.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketAsset.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketCache.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketClient.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetMarketService.swift
+        group: VultisigApp/Shared/WidgetShared
+      - path: VultisigApp/Shared/WidgetShared/WidgetSparklineSampler.swift
         group: VultisigApp/Shared/WidgetShared
 
     settings:

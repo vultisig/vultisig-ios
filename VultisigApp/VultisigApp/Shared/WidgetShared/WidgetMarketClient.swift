@@ -47,12 +47,22 @@ enum WidgetMarketEndpoint {
     }
 }
 
+struct WidgetAssetIdentity: Equatable, Sendable, Identifiable {
+    let id: String
+    let symbol: String
+    let name: String
+}
+
+protocol WidgetAssetSearching: Sendable {
+    func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity]
+}
+
 protocol WidgetMarketRemote: Sendable {
     func markets(query: WidgetMarketQuery, currency: String) async throws -> [WidgetMarketAsset]
     func iconData(from url: URL) async throws -> Data
 }
 
-final class WidgetMarketClient: WidgetMarketRemote, @unchecked Sendable {
+final class WidgetMarketClient: WidgetMarketRemote, WidgetAssetSearching, @unchecked Sendable {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let maximumIconByteCount: Int
@@ -86,6 +96,26 @@ final class WidgetMarketClient: WidgetMarketRemote, @unchecked Sendable {
         return data
     }
 
+    func searchAssets(matching query: String) async throws -> [WidgetAssetIdentity] {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else { return [] }
+        guard let baseURL = URL(string: "https://api.vultisig.com/coingeicko/api/v3/search"),
+              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+            throw WidgetMarketError.invalidURL
+        }
+        components.queryItems = [URLQueryItem(name: "query", value: trimmedQuery)]
+        guard let url = components.url else { throw WidgetMarketError.invalidURL }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 8
+        let (data, response) = try await session.data(for: request)
+        try Self.validate(response)
+        let responseBody = try decoder.decode(RemoteSearchResponse.self, from: data)
+        return responseBody.coins.prefix(20).map {
+            WidgetAssetIdentity(id: $0.id.lowercased(), symbol: $0.symbol.uppercased(), name: $0.name)
+        }
+    }
+
     static func decode(
         data: Data,
         query: WidgetMarketQuery,
@@ -115,6 +145,16 @@ final class WidgetMarketClient: WidgetMarketRemote, @unchecked Sendable {
         guard (200..<300).contains(response.statusCode) else {
             throw WidgetMarketError.httpStatus(response.statusCode)
         }
+    }
+}
+
+private struct RemoteSearchResponse: Decodable {
+    let coins: [Coin]
+
+    struct Coin: Decodable {
+        let id: String
+        let name: String
+        let symbol: String
     }
 }
 

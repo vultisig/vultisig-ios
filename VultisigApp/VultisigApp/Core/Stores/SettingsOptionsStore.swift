@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WidgetKit
 
 enum SettingsLanguage: String, CaseIterable {
     case English
@@ -96,13 +97,17 @@ enum SettingsCurrency: String, CaseIterable {
         get {
             if let currencyString = UserDefaults.standard.string(forKey: "currency"),
                let currency = SettingsCurrency(rawValue: currencyString) {
+                WidgetSharedStorage.setCurrencyCode(currency.rawValue)
                 return currency
             } else {
+                WidgetSharedStorage.setCurrencyCode(SettingsCurrency.USD.rawValue)
                 return .USD
             }
         }
         set {
             UserDefaults.standard.set(newValue.rawValue, forKey: "currency")
+            WidgetSharedStorage.setCurrencyCode(newValue.rawValue)
+            WidgetCenter.shared.reloadAllTimelines()
         }
     }
 

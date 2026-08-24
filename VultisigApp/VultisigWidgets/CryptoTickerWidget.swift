@@ -6,42 +6,75 @@
 import SwiftUI
 import WidgetKit
 
-struct FoundationTickerEntry: TimelineEntry {
+struct CryptoTickerEntry: TimelineEntry {
     let date: Date
-    let symbol: String
-    let name: String
-    let price: String
-    let change: String
-    let isPositive: Bool
-    let sparkline: [Double]
+    let asset: WidgetMarketAsset?
+    let currency: String
+    let isStale: Bool
 
-    static let preview = FoundationTickerEntry(
+    static let preview = CryptoTickerEntry(
         date: Date(),
-        symbol: "BTC",
-        name: "Bitcoin",
-        price: "$79,910.00",
-        change: "+3.54% 24H",
-        isPositive: true,
-        sparkline: [
-            74_800, 75_300, 75_050, 75_900, 76_150, 75_700,
-            76_600, 76_350, 77_200, 77_750, 77_100, 77_900,
-            78_250, 78_050, 78_800, 79_050, 79_910
-        ]
+        asset: WidgetMarketAsset(
+            id: "bitcoin",
+            symbol: "BTC",
+            name: "Bitcoin",
+            imageURL: nil,
+            iconData: nil,
+            currentPrice: 79_910,
+            priceChangePercentage24h: 3.54,
+            marketCapRank: 1,
+            sparkline: [
+                74_800, 75_300, 75_050, 75_900, 76_150, 75_700,
+                76_600, 76_350, 77_200, 77_750, 77_100, 77_900,
+                78_250, 78_050, 78_800, 79_050, 79_910
+            ]
+        ),
+        currency: "USD",
+        isStale: false
     )
 }
 
-struct FoundationTickerProvider: TimelineProvider {
-    func placeholder(in _: Context) -> FoundationTickerEntry {
+struct CryptoTickerProvider: AppIntentTimelineProvider {
+    private let service = WidgetMarketService()
+
+    func placeholder(in _: Context) -> CryptoTickerEntry {
         .preview
     }
 
-    func getSnapshot(in _: Context, completion: @escaping (FoundationTickerEntry) -> Void) {
-        completion(.preview)
+    func snapshot(
+        for configuration: CryptoTickerConfigurationIntent,
+        in context: Context
+    ) async -> CryptoTickerEntry {
+        if context.isPreview {
+            return .preview
+        }
+        return await loadEntry(configuration: configuration)
     }
 
-    func getTimeline(in _: Context, completion: @escaping (Timeline<FoundationTickerEntry>) -> Void) {
+    func timeline(
+        for configuration: CryptoTickerConfigurationIntent,
+        in _: Context
+    ) async -> Timeline<CryptoTickerEntry> {
+        let entry = await loadEntry(configuration: configuration)
         let refresh = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date()
-        completion(Timeline(entries: [.preview], policy: .after(refresh)))
+        return Timeline(entries: [entry], policy: .after(refresh))
+    }
+
+    private func loadEntry(configuration: CryptoTickerConfigurationIntent) async -> CryptoTickerEntry {
+        let id = configuration.asset?.id ?? WidgetCryptoAssetEntity.bitcoin.id
+        let currency = WidgetSharedStorage.currencyCode
+
+        do {
+            let result = try await service.load(query: .ids([id]), currency: currency)
+            return CryptoTickerEntry(
+                date: result.updatedAt,
+                asset: result.assets.first,
+                currency: currency,
+                isStale: result.isStale
+            )
+        } catch {
+            return CryptoTickerEntry(date: Date(), asset: nil, currency: currency, isStale: false)
+        }
     }
 }
 
@@ -49,7 +82,11 @@ struct CryptoTickerWidget: Widget {
     static let kind = "com.vultisig.widget.crypto-ticker"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: Self.kind, provider: FoundationTickerProvider()) { entry in
+        AppIntentConfiguration(
+            kind: Self.kind,
+            intent: CryptoTickerConfigurationIntent.self,
+            provider: CryptoTickerProvider()
+        ) { entry in
             CryptoTickerEntryView(entry: entry)
                 .containerBackground(for: .widget) {
                     WidgetTheme.background
@@ -63,17 +100,21 @@ struct CryptoTickerWidget: Widget {
 }
 
 struct CryptoTickerEntryView: View {
-    let entry: FoundationTickerEntry
+    let entry: CryptoTickerEntry
 
     @Environment(\.widgetFamily) private var family
     @Environment(\.widgetContentMargins) private var contentMargins
 
     var body: some View {
         Group {
-            if family == .systemMedium {
-                mediumContent
+            if let asset = entry.asset {
+                if family == .systemMedium {
+                    mediumContent(asset)
+                } else {
+                    smallContent(asset)
+                }
             } else {
-                smallContent
+                unavailableContent
             }
         }
         .padding(contentMargins)
@@ -82,34 +123,34 @@ struct CryptoTickerEntryView: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
-    private var smallContent: some View {
+    private func smallContent(_ asset: WidgetMarketAsset) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                tokenIcon(size: 28)
-                identity
+                WidgetTokenIcon(asset: asset, size: 28)
+                identity(asset)
                 Spacer(minLength: 4)
                 WidgetBrandMark(size: 18)
             }
 
             Spacer(minLength: 0)
 
-            Text(entry.price)
+            Text(price(asset))
                 .font(WidgetTheme.priceFont(size: 21))
-                .minimumScaleFactor(0.78)
+                .minimumScaleFactor(0.72)
                 .lineLimit(1)
 
-            Text(entry.change)
+            Text(change(asset))
                 .font(WidgetTheme.labelFont(size: 12))
-                .foregroundStyle(changeColor)
+                .foregroundStyle(changeColor(asset))
                 .lineLimit(1)
         }
     }
 
-    private var mediumContent: some View {
+    private func mediumContent(_ asset: WidgetMarketAsset) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                tokenIcon(size: 30)
-                identity
+                WidgetTokenIcon(asset: asset, size: 30)
+                identity(asset)
                 Spacer(minLength: 8)
                 Text("7D")
                     .font(WidgetTheme.labelFont(size: 11))
@@ -118,52 +159,73 @@ struct CryptoTickerEntryView: View {
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(entry.price)
+                Text(price(asset))
                     .font(WidgetTheme.priceFont(size: 22))
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.7)
                     .lineLimit(1)
 
-                Text(entry.change)
+                Text(change(asset))
                     .font(WidgetTheme.labelFont(size: 12))
-                    .foregroundStyle(changeColor)
+                    .foregroundStyle(changeColor(asset))
                     .lineLimit(1)
 
                 Spacer(minLength: 0)
             }
 
-            WidgetSparkline(values: entry.sparkline, isPositive: entry.isPositive)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            WidgetSparkline(
+                values: asset.sparkline,
+                isPositive: (asset.priceChangePercentage24h ?? 0) >= 0
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
-    private var identity: some View {
+    private func identity(_ asset: WidgetMarketAsset) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(entry.symbol)
+            Text(asset.symbol)
                 .font(WidgetTheme.labelFont(size: 14))
                 .lineLimit(1)
-            Text(entry.name)
+            Text(asset.name)
                 .font(WidgetTheme.labelFont(size: 11))
                 .foregroundStyle(WidgetTheme.secondaryText)
                 .lineLimit(1)
         }
     }
 
-    private var changeColor: Color {
-        entry.isPositive ? WidgetTheme.positive : WidgetTheme.negative
+    private var unavailableContent: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Market data")
+                    .font(WidgetTheme.labelFont(size: 14))
+                Spacer()
+                WidgetBrandMark(size: 18)
+            }
+            Spacer()
+            Text("Temporarily unavailable")
+                .font(WidgetTheme.labelFont(size: 12))
+                .foregroundStyle(WidgetTheme.secondaryText)
+        }
     }
 
-    private func tokenIcon(size: CGFloat) -> some View {
-        Image("BitcoinLogo")
-            .resizable()
-            .scaledToFit()
-            .frame(width: size, height: size)
-            .clipShape(Circle())
-            .accessibilityHidden(true)
+    private func price(_ asset: WidgetMarketAsset) -> String {
+        WidgetMarketFormatting.price(asset.currentPrice, currency: entry.currency)
+    }
+
+    private func change(_ asset: WidgetMarketAsset) -> String {
+        WidgetMarketFormatting.change(asset.priceChangePercentage24h)
+    }
+
+    private func changeColor(_ asset: WidgetMarketAsset) -> Color {
+        guard let change = asset.priceChangePercentage24h else { return WidgetTheme.secondaryText }
+        return change >= 0 ? WidgetTheme.positive : WidgetTheme.negative
     }
 
     private var accessibilityLabel: String {
-        let direction = entry.isPositive ? "up" : "down"
-        return "\(entry.name), \(entry.symbol), \(entry.price), \(direction) \(entry.change), seven day trend, updated now"
+        guard let asset = entry.asset else { return "Crypto market data is temporarily unavailable" }
+        let direction = (asset.priceChangePercentage24h ?? 0) >= 0 ? "up" : "down"
+        let freshness = entry.isStale ? "cached data" : "updated data"
+        return "\(asset.name), \(asset.symbol), \(price(asset)), \(direction) \(change(asset)), " +
+            "seven day trend, \(freshness)"
     }
 }
 

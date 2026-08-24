@@ -46,7 +46,7 @@ enum WidgetMarketQuery: Hashable, Sendable {
         let normalized = ids
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
             .filter { !$0.isEmpty }
-        let unique = normalized.reduce(into: []) { result, id in
+        let unique = normalized.reduce(into: [String]()) { result, id in
             if !result.contains(id) {
                 result.append(id)
             }

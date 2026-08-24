@@ -16,4 +16,12 @@ enum WidgetSharedStorage {
     static var defaults: UserDefaults? {
         UserDefaults(suiteName: appGroupIdentifier)
     }
+
+    static var currencyCode: String {
+        defaults?.string(forKey: currencyKey) ?? "USD"
+    }
+
+    static func setCurrencyCode(_ value: String) {
+        defaults?.set(value.uppercased(), forKey: currencyKey)
+    }
 }
