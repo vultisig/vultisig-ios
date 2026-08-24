@@ -106,13 +106,14 @@ struct KaminoEarnView<EmptyState: View>: View {
             if row.offersWithdraw {
                 DefiButton(
                     title: "kaminoEarnWithdraw".localized,
-                    icon: .circleMinus,
+                    icon: .circleMinusFilled,
+                    iconSize: 12.8,
                     type: .secondary
                 ) {
                     onWithdraw(row.descriptor)
                 }
             }
-            DefiButton(title: "kaminoEarnDeposit".localized, icon: .circlePlus) {
+            DefiButton(title: "kaminoEarnDeposit".localized, icon: .circlePlusFilled) {
                 onDeposit(row.descriptor)
             }
         }
@@ -146,30 +147,31 @@ struct KaminoEarnView<EmptyState: View>: View {
             }
             .frame(width: 60, height: 36, alignment: .leading)
 
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 4) {
-                    Text(row.name)
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(row.name)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 3) {
+                    HStack(spacing: 3) {
+                        Image(.kaminoProtocol)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 16, height: 16)
+                            .clipShape(Circle())
+                            .accessibilityHidden(true)
+                        Text("kaminoEarnProvider".localized)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 4)
                     Text(row.riskTier.title)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(riskColor(for: row.riskTier))
                         .fixedSize(horizontal: true, vertical: false)
-                }
-                HStack(spacing: 3) {
-                    Image(.kaminoProtocol)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 16, height: 16)
-                        .clipShape(Circle())
-                        .accessibilityHidden(true)
-                    Text("kaminoEarnProvider".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .lineLimit(1)
                 }
             }
         }
