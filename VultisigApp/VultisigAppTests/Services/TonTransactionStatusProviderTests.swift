@@ -79,23 +79,37 @@ final class TonTransactionStatusProviderTests: XCTestCase {
     // MARK: - Success paths
 
     func test_checkStatus_exitCodeZero_returnsConfirmed() async throws {
-        http.queueDecoded(Self.response(exitCode: 0))
+        http.queueDecoded(Self.response(exitCode: 0, actionSuccess: true))
         let result = try await provider.checkStatus(query: Self.query)
         XCTAssertEqual(result.status, .confirmed)
     }
 
     func test_checkStatus_exitCodeOne_returnsConfirmed() async throws {
         // TVM convention: 1 is the "alternative success" code used by some checks.
-        http.queueDecoded(Self.response(exitCode: 1))
+        http.queueDecoded(Self.response(exitCode: 1, actionSuccess: true))
         let result = try await provider.checkStatus(query: Self.query)
         XCTAssertEqual(result.status, .confirmed)
     }
 
     func test_checkStatus_noComputePhase_returnsConfirmed() async throws {
         // Plain TON transfers have no compute phase — treat as confirmed.
-        http.queueDecoded(Self.response(aborted: false, exitCode: nil))
+        http.queueDecoded(Self.response(aborted: false, exitCode: nil, actionSuccess: true))
         let result = try await provider.checkStatus(query: Self.query)
         XCTAssertEqual(result.status, .confirmed)
+    }
+
+    func test_checkStatus_actionPhaseFailed_returnsFailed() async throws {
+        // Compute succeeds but the action phase — where funds move — fails.
+        http.queueDecoded(Self.response(exitCode: 0, actionSuccess: false))
+        let result = try await provider.checkStatus(query: Self.query)
+        XCTAssertEqual(result.status, .failed(reason: "Action phase failed with code 34"))
+    }
+
+    func test_checkStatus_actionNonZeroResultCode_returnsFailed() async throws {
+        // A non-zero result code fails even when `success` is (inconsistently) true.
+        http.queueDecoded(Self.response(exitCode: 0, actionSuccess: true, actionResultCode: 34))
+        let result = try await provider.checkStatus(query: Self.query)
+        XCTAssertEqual(result.status, .failed(reason: "Action phase failed with code 34"))
     }
 
     // MARK: - Network errors
@@ -122,18 +136,31 @@ final class TonTransactionStatusProviderTests: XCTestCase {
 
     private static func response(
         aborted: Bool? = nil,
-        exitCode: Int? = nil
+        exitCode: Int? = nil,
+        actionSuccess: Bool? = nil,
+        actionResultCode: Int? = nil
     ) -> TonTransactionStatusResponse {
-        let computePhase: TonTransactionStatusResponse.TonTransaction.TonDescription.ComputePhase?
+        typealias Description = TonTransactionStatusResponse.TonTransaction.TonDescription
+        let computePhase: Description.ComputePhase?
         if let exitCode {
             computePhase = .init(exitCode: exitCode)
         } else {
             computePhase = nil
         }
-        let description = TonTransactionStatusResponse.TonTransaction.TonDescription(
+        let action: Description.ActionPhase?
+        if actionSuccess == nil, actionResultCode == nil {
+            action = nil
+        } else {
+            action = Description.ActionPhase(
+                success: actionSuccess,
+                resultCode: actionResultCode ?? (actionSuccess == false ? 34 : 0)
+            )
+        }
+        let description = Description(
             aborted: aborted,
             destroyed: nil,
-            computePhase: computePhase
+            computePhase: computePhase,
+            action: action
         )
         return response(description: description)
     }

@@ -69,6 +69,16 @@ struct TonTransactionStatusProvider: TransactionStatusProvider {
             )
         }
 
+        // A non-zero action result code is a failed action phase even when the
+        // `success` flag is absent or (inconsistently) true.
+        if let action = description.action, action.success == false || (action.resultCode ?? 0) != 0 {
+            return TransactionStatusResult(
+                status: .failed(reason: "Action phase failed with code \(action.resultCode ?? 0)"),
+                blockNumber: nil,
+                confirmations: nil
+            )
+        }
+
         return TransactionStatusResult(status: .confirmed, blockNumber: nil, confirmations: nil)
     }
 }
