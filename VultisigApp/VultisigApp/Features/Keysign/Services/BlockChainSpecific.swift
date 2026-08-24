@@ -105,8 +105,8 @@ enum BlockChainSpecific: Codable, Hashable {
                 return 0 // We should throw
             }
             return dynamicGas
-        case .Ton:
-            return TonHelper.defaultFee
+        case .Ton(_, _, _, _, let jettonAddress, _):
+            return jettonAddress.isEmpty ? TonHelper.defaultFee : TonHelper.defaultJettonFee
         case .Ripple(_, let gas, _, _, _):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
