@@ -20,6 +20,7 @@ struct CoinDetailScreen: View {
     /// Where the sheet is resting. Purely presentation state — it never leaves
     /// the view, so it stays here rather than in the view model.
     @State private var detent: PresentationDetent = CoinDetailScreen.initialDetent
+    @State private var hasExpanded = false
 
     @StateObject var viewModel: CoinDetailViewModel
 
@@ -72,10 +73,11 @@ struct CoinDetailScreen: View {
         !isIPadOS && !isMacOS
     }
 
-    /// `.large` stays in the set alongside the partial height so one drag still
-    /// reveals the chart and the market sections.
-    private static var detents: Set<PresentationDetent> {
-        supportsPartialDetent ? [.fraction(partialFraction), .large] : [.large]
+    /// Both detents are available for the first expansion. Once expanded, the
+    /// partial detent is removed so the next pull-down dismisses the sheet
+    /// instead of collapsing it back to its initial resting height.
+    private var detents: Set<PresentationDetent> {
+        Self.supportsPartialDetent && !hasExpanded ? [.fraction(Self.partialFraction), .large] : [.large]
     }
 
     private static var initialDetent: PresentationDetent {
@@ -121,6 +123,10 @@ struct CoinDetailScreen: View {
                 .onChange(of: isPartial) { _, isNowPartial in
                     guard isNowPartial else { return }
                     proxy.scrollTo(Self.topAnchor, anchor: .top)
+                }
+                .onChange(of: detent) { _, newDetent in
+                    guard newDetent == .large else { return }
+                    hasExpanded = true
                 }
         }
     }
@@ -170,10 +176,7 @@ struct CoinDetailScreen: View {
             .showIf(showContractCopiedBanner)
             .zIndex(2)
         )
-        .refreshable {
-            await refresh()
-        }
-        .presentationDetents(Self.detents, selection: $detent)
+        .presentationDetents(detents, selection: $detent)
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)
