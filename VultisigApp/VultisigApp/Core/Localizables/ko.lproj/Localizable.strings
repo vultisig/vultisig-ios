@@ -668,15 +668,14 @@
 "kaminoDepositMissingCoin" = "예치하기 전에 Solana의 %@을(를) 볼트에 추가하세요.";
 "kaminoDepositTitle" = "예치";
 "kaminoDepositWrappedSolRent" = "SOL을 예치하면 wrapped SOL 계정이 생성됩니다. 해당 계정의 렌트는 출금할 때까지 묶여 있습니다.";
-"kaminoEarnApy30d" = "APY (30일)";
-"kaminoEarnCuratedBy" = "%@ 운영";
+"kaminoEarnApy" = "APY";
 "kaminoEarnDeposit" = "예치";
 "kaminoEarnDeposited" = "예치됨: %@";
 "kaminoEarnEarned" = "수익: %@";
 "kaminoEarnLost" = "손실: %@";
+"kaminoEarnProvider" = "Kamino";
 "kaminoEarnRiskConservative" = "보수적";
 "kaminoEarnRiskPrivateCredit" = "사모 대출";
-"kaminoEarnTitle" = "Kamino Earn";
 "kaminoEarnWithdraw" = "출금";
 "kaminoErrorVaultMetadataMismatch" = "Kamino가 %1$@을(를) %2$@(으)로 보고했습니다. 이 볼트의 값은 %3$@입니다";
 "kaminoErrorVaultNotInRegistry" = "볼트 %@은(는) 이 앱이 지원하는 볼트가 아닙니다";
