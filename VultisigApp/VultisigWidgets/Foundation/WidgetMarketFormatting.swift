@@ -30,13 +30,17 @@ enum WidgetMarketFormatting {
 
     static func change(_ value: Double?, locale: Locale = .current) -> String {
         guard let value, value.isFinite else { return "— 24H" }
+        return "\(compactChange(value, locale: locale)) 24H"
+    }
+
+    static func compactChange(_ value: Double?, locale: Locale = .current) -> String {
+        guard let value, value.isFinite else { return "—" }
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
         formatter.locale = locale
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
-        formatter.positivePrefix = "+"
-        let formatted = formatter.string(from: NSNumber(value: value / 100)) ?? "—"
-        return "\(formatted) 24H"
+        formatter.positivePrefix = ""
+        return formatter.string(from: NSNumber(value: abs(value) / 100)) ?? "—"
     }
 }

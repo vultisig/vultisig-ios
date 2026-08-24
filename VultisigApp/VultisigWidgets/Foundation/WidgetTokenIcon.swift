@@ -21,8 +21,8 @@ struct WidgetTokenIcon: View {
                 image
                     .resizable()
                     .scaledToFit()
-            } else if asset.id == "bitcoin" {
-                Image("BitcoinLogo")
+            } else if let previewAssetName {
+                Image(previewAssetName)
                     .resizable()
                     .scaledToFit()
             } else {
@@ -51,5 +51,22 @@ struct WidgetTokenIcon: View {
         #else
         return nil
         #endif
+    }
+
+    private var previewAssetName: String? {
+        switch asset.id {
+        case "bitcoin":
+            return "BitcoinLogo"
+        case "ethereum":
+            return "WidgetEthereum"
+        case "tether":
+            return "WidgetTether"
+        case "binancecoin":
+            return "WidgetBNB"
+        case "solana":
+            return "WidgetSolana"
+        default:
+            return nil
+        }
     }
 }

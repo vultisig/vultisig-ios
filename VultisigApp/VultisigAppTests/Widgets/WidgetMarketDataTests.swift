@@ -47,7 +47,7 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertFalse(items.keys.contains("ids"))
     }
 
-    func testWatchlistRequestNormalizesIDsAndPreservesSelectionOrder() throws {
+    func testSelectedAssetRequestNormalizesIDsAndPreservesSelectionOrder() throws {
         let query = WidgetMarketQuery.ids([" Ethereum ", "BITCOIN"])
         let url = try WidgetMarketEndpoint.url(query: query, currency: "eur")
         let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
@@ -59,7 +59,7 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(assets.map(\.symbol), ["ETH", "BTC"])
     }
 
-    func testEmptyWatchlistDoesNotFallThroughToTopMarkets() {
+    func testEmptyAssetSelectionDoesNotFallThroughToTopMarkets() {
         XCTAssertThrowsError(
             try WidgetMarketEndpoint.url(query: .ids([" "]), currency: "usd")
         ) { error in
@@ -67,7 +67,7 @@ final class WidgetMarketDataTests: XCTestCase {
         }
     }
 
-    func testWatchlistSelectionDeduplicatesAndCapsAtFiveIDs() {
+    func testAssetSelectionDeduplicatesAndCapsAtFiveIDs() {
         let query = WidgetMarketQuery.ids([
             "bitcoin", "ethereum", "bitcoin", "solana", "tether", "usd-coin", "dogecoin"
         ])
@@ -142,6 +142,22 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertTrue(stale.isStale)
         XCTAssertEqual(stale.assets, fresh.assets)
         XCTAssertEqual(stale.updatedAt, now)
+    }
+
+    func testServiceAttachesDownloadedIconsToFreshAssets() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cache = WidgetMarketCache(fileURL: directory.appendingPathComponent("cache.json"))
+        let remote = WidgetMarketRemoteStub()
+        let service = WidgetMarketService(remote: remote, cache: cache)
+
+        let result = try await service.load(query: .top(limit: 2), currency: "usd")
+
+        XCTAssertEqual(result.assets.count, 2)
+        XCTAssertTrue(result.assets.allSatisfy { asset in
+            guard let imageURL = asset.imageURL else { return false }
+            return asset.iconData == Data(imageURL.absoluteString.utf8)
+        })
     }
 }
 

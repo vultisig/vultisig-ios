@@ -132,7 +132,9 @@ struct TopCryptosEntryView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
+            if family == .systemLarge {
+                header
+            }
 
             if entry.assets.isEmpty {
                 unavailableContent
@@ -145,18 +147,27 @@ struct TopCryptosEntryView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("widget.topCryptos")
-                .font(WidgetTheme.labelFont(size: family == .systemMedium ? 13 : 15))
-            Text("\(String(localized: "widget.marketCap")) • \(entry.currency.uppercased())")
-                .font(WidgetTheme.labelFont(size: 9))
-                .foregroundStyle(WidgetTheme.tertiaryText)
-                .lineLimit(1)
-            Spacer(minLength: 4)
-            staleIndicator
-            WidgetBrandMark(size: 18)
+        VStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("widget.topCryptos")
+                    .font(WidgetTheme.labelFont(size: 15))
+                Spacer(minLength: 4)
+                staleIndicator
+                WidgetBrandMark(size: 18)
+            }
+
+            HStack(spacing: 10) {
+                Text("widget.asset")
+                    .frame(width: 104, alignment: .leading)
+                Text("7D")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Text("widget.price")
+                    .frame(width: 104, alignment: .trailing)
+            }
+            .font(WidgetTheme.labelFont(size: 10))
+            .foregroundStyle(WidgetTheme.tertiaryText)
         }
-        .padding(.bottom, family == .systemMedium ? 5 : 9)
+        .padding(.bottom, 7)
         .accessibilityElement(children: .combine)
     }
 
@@ -175,7 +186,6 @@ struct TopCryptosEntryView: View {
                 WidgetMarketRow(
                     asset: asset,
                     currency: entry.currency,
-                    showsChange: !isCompact,
                     isCompact: isCompact
                 )
                 .frame(maxHeight: .infinity)
