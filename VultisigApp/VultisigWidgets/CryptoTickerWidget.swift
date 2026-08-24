@@ -92,8 +92,8 @@ struct CryptoTickerWidget: Widget {
                     WidgetTheme.background
                 }
         }
-        .configurationDisplayName("Crypto Ticker")
-        .description("Track the price and seven-day trend of a cryptocurrency.")
+        .configurationDisplayName(LocalizedStringResource("widget.cryptoTicker"))
+        .description(LocalizedStringResource("widget.cryptoTicker.description"))
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
     }
@@ -129,6 +129,7 @@ struct CryptoTickerEntryView: View {
                 WidgetTokenIcon(asset: asset, size: 28)
                 identity(asset)
                 Spacer(minLength: 4)
+                staleIndicator
                 WidgetBrandMark(size: 18)
             }
 
@@ -155,6 +156,7 @@ struct CryptoTickerEntryView: View {
                 Text("7D")
                     .font(WidgetTheme.labelFont(size: 11))
                     .foregroundStyle(WidgetTheme.secondaryText)
+                staleIndicator
                 WidgetBrandMark(size: 18)
             }
 
@@ -195,13 +197,13 @@ struct CryptoTickerEntryView: View {
     private var unavailableContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Market data")
+                Text("widget.marketData")
                     .font(WidgetTheme.labelFont(size: 14))
                 Spacer()
                 WidgetBrandMark(size: 18)
             }
             Spacer()
-            Text("Temporarily unavailable")
+            Text("widget.temporarilyUnavailable")
                 .font(WidgetTheme.labelFont(size: 12))
                 .foregroundStyle(WidgetTheme.secondaryText)
         }
@@ -220,12 +222,34 @@ struct CryptoTickerEntryView: View {
         return change >= 0 ? WidgetTheme.positive : WidgetTheme.negative
     }
 
+    @ViewBuilder
+    private var staleIndicator: some View {
+        if entry.isStale {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(WidgetTheme.tertiaryText)
+                .accessibilityLabel(Text("widget.cached"))
+        }
+    }
+
     private var accessibilityLabel: String {
-        guard let asset = entry.asset else { return "Crypto market data is temporarily unavailable" }
-        let direction = (asset.priceChangePercentage24h ?? 0) >= 0 ? "up" : "down"
-        let freshness = entry.isStale ? "cached data" : "updated data"
-        return "\(asset.name), \(asset.symbol), \(price(asset)), \(direction) \(change(asset)), " +
-            "seven day trend, \(freshness)"
+        guard let asset = entry.asset else { return String(localized: "widget.cryptoMarketDataUnavailable") }
+        let direction = (asset.priceChangePercentage24h ?? 0) >= 0
+            ? String(localized: "widget.up")
+            : String(localized: "widget.down")
+        let freshness = entry.isStale
+            ? String(localized: "widget.cachedData")
+            : String(localized: "widget.updatedData")
+        return String(
+            format: String(localized: "widget.accessibility.ticker"),
+            locale: .current,
+            asset.name,
+            asset.symbol,
+            price(asset),
+            direction,
+            change(asset),
+            freshness
+        )
     }
 }
 

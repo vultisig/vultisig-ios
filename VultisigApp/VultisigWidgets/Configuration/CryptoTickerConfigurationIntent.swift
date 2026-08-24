@@ -7,7 +7,7 @@ import AppIntents
 import Foundation
 
 struct WidgetCryptoAssetEntity: AppEntity, Hashable {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Cryptocurrency")
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "widget.cryptocurrency")
     static let defaultQuery = WidgetCryptoAssetEntityQuery()
 
     let id: String
@@ -70,10 +70,10 @@ struct WidgetCryptoAssetEntityQuery: EntityStringQuery {
 }
 
 struct CryptoTickerConfigurationIntent: WidgetConfigurationIntent {
-    static let title: LocalizedStringResource = "Crypto Ticker"
-    static let description = IntentDescription("Choose the cryptocurrency shown in this widget.")
+    static let title: LocalizedStringResource = "widget.cryptoTicker"
+    static let description = IntentDescription("widget.cryptoTicker.choose")
 
-    @Parameter(title: "Cryptocurrency")
+    @Parameter(title: "widget.cryptocurrency")
     var asset: WidgetCryptoAssetEntity?
 
     init() {}

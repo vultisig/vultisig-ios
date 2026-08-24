@@ -7,22 +7,22 @@ import AppIntents
 import Foundation
 
 struct WatchlistConfigurationIntent: WidgetConfigurationIntent {
-    static let title: LocalizedStringResource = "Crypto Watchlist"
-    static let description = IntentDescription("Choose up to five cryptocurrencies to follow.")
+    static let title: LocalizedStringResource = "widget.cryptoWatchlist"
+    static let description = IntentDescription("widget.cryptoWatchlist.choose")
 
-    @Parameter(title: "Crypto 1")
+    @Parameter(title: "widget.crypto1")
     var firstAsset: WidgetCryptoAssetEntity?
 
-    @Parameter(title: "Crypto 2")
+    @Parameter(title: "widget.crypto2")
     var secondAsset: WidgetCryptoAssetEntity?
 
-    @Parameter(title: "Crypto 3")
+    @Parameter(title: "widget.crypto3")
     var thirdAsset: WidgetCryptoAssetEntity?
 
-    @Parameter(title: "Crypto 4")
+    @Parameter(title: "widget.crypto4")
     var fourthAsset: WidgetCryptoAssetEntity?
 
-    @Parameter(title: "Crypto 5")
+    @Parameter(title: "widget.crypto5")
     var fifthAsset: WidgetCryptoAssetEntity?
 
     init() {}

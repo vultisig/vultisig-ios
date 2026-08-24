@@ -44,7 +44,7 @@ final class WidgetMarketDataTests: XCTestCase {
         XCTAssertEqual(items["per_page"], "5")
         XCTAssertEqual(items["sparkline"], "true")
         XCTAssertEqual(items["price_change_percentage"], "24h")
-        XCTAssertNil(items["ids"])
+        XCTAssertFalse(items.keys.contains("ids"))
     }
 
     func testWatchlistRequestNormalizesIDsAndPreservesSelectionOrder() throws {
@@ -65,6 +65,18 @@ final class WidgetMarketDataTests: XCTestCase {
         ) { error in
             XCTAssertEqual(error as? WidgetMarketError, .emptySelection)
         }
+    }
+
+    func testWatchlistSelectionDeduplicatesAndCapsAtFiveIDs() {
+        let query = WidgetMarketQuery.ids([
+            "bitcoin", "ethereum", "bitcoin", "solana", "tether", "usd-coin", "dogecoin"
+        ])
+
+        XCTAssertEqual(
+            query.normalizedIDs,
+            ["bitcoin", "ethereum", "solana", "tether", "usd-coin"]
+        )
+        XCTAssertEqual(query.limit, 5)
     }
 
     func testSparklineSamplerKeepsEndpointsAndRequestedCount() {
@@ -90,6 +102,28 @@ final class WidgetMarketDataTests: XCTestCase {
 
         XCTAssertEqual(cached?.assets.first?.iconData, Data([1, 2, 3]))
         XCTAssertEqual(cached?.updatedAt, date)
+    }
+
+    func testCacheEvictsOldestConfigurationBeyondBound() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let cache = WidgetMarketCache(fileURL: directory.appendingPathComponent("cache.json"))
+        let asset = try XCTUnwrap(
+            WidgetMarketClient.decode(data: Self.responseData, query: .top(limit: 1)).first
+        )
+
+        for index in 0..<11 {
+            try await cache.store(
+                [asset],
+                updatedAt: Date(timeIntervalSince1970: TimeInterval(index)),
+                for: "configuration-\(index)"
+            )
+        }
+
+        let oldest = await cache.entry(for: "configuration-0")
+        let newest = await cache.entry(for: "configuration-10")
+        XCTAssertNil(oldest)
+        XCTAssertNotNil(newest)
     }
 
     func testServiceFallsBackToLastGoodCache() async throws {

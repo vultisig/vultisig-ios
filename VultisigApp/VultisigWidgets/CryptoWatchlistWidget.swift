@@ -79,8 +79,8 @@ struct CryptoWatchlistWidget: Widget {
                     WidgetTheme.background
                 }
         }
-        .configurationDisplayName("Crypto Watchlist")
-        .description("Follow up to five cryptocurrencies in your preferred order.")
+        .configurationDisplayName(LocalizedStringResource("widget.cryptoWatchlist"))
+        .description(LocalizedStringResource("widget.cryptoWatchlist.description"))
         .supportedFamilies([.systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
@@ -108,13 +108,14 @@ struct CryptoWatchlistEntryView: View {
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("Watchlist")
+            Text("widget.watchlist")
                 .font(WidgetTheme.labelFont(size: family == .systemMedium ? 13 : 15))
             Text("7D • \(entry.currency.uppercased())")
                 .font(WidgetTheme.labelFont(size: 9))
                 .foregroundStyle(WidgetTheme.tertiaryText)
                 .lineLimit(1)
             Spacer(minLength: 4)
+            staleIndicator
             WidgetBrandMark(size: 18)
         }
         .padding(.bottom, family == .systemMedium ? 5 : 9)
@@ -147,13 +148,23 @@ struct CryptoWatchlistEntryView: View {
     private var unavailableContent: some View {
         VStack(alignment: .leading) {
             Spacer()
-            Text("Watchlist data is temporarily unavailable")
+            Text("widget.watchlistDataUnavailable")
                 .font(WidgetTheme.labelFont(size: 12))
                 .foregroundStyle(WidgetTheme.secondaryText)
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityLabel("Crypto watchlist data is temporarily unavailable")
+        .accessibilityLabel(Text("widget.watchlistDataUnavailable"))
+    }
+
+    @ViewBuilder
+    private var staleIndicator: some View {
+        if entry.isStale {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(WidgetTheme.tertiaryText)
+                .accessibilityLabel(Text("widget.cached"))
+        }
     }
 }
 

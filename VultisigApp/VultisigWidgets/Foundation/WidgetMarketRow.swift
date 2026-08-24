@@ -62,6 +62,13 @@ struct WidgetMarketRow: View {
     private var accessibilityLabel: String {
         let price = WidgetMarketFormatting.price(asset.currentPrice, currency: currency)
         let change = WidgetMarketFormatting.change(asset.priceChangePercentage24h)
-        return "\(asset.name), \(asset.symbol), price \(price), change \(change), seven day trend"
+        return String(
+            format: String(localized: "widget.accessibility.asset"),
+            locale: .current,
+            asset.name,
+            asset.symbol,
+            price,
+            change
+        )
     }
 }

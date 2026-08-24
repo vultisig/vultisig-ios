@@ -117,8 +117,8 @@ struct TopCryptosWidget: Widget {
                     WidgetTheme.background
                 }
         }
-        .configurationDisplayName("Top Cryptos")
-        .description("Follow the leading cryptocurrencies by market capitalization.")
+        .configurationDisplayName(LocalizedStringResource("widget.topCryptos"))
+        .description(LocalizedStringResource("widget.topCryptos.description"))
         .supportedFamilies([.systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
@@ -146,13 +146,14 @@ struct TopCryptosEntryView: View {
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("Top Cryptos")
+            Text("widget.topCryptos")
                 .font(WidgetTheme.labelFont(size: family == .systemMedium ? 13 : 15))
-            Text("Market Cap • \(entry.currency.uppercased())")
+            Text("\(String(localized: "widget.marketCap")) • \(entry.currency.uppercased())")
                 .font(WidgetTheme.labelFont(size: 9))
                 .foregroundStyle(WidgetTheme.tertiaryText)
                 .lineLimit(1)
             Spacer(minLength: 4)
+            staleIndicator
             WidgetBrandMark(size: 18)
         }
         .padding(.bottom, family == .systemMedium ? 5 : 9)
@@ -185,13 +186,23 @@ struct TopCryptosEntryView: View {
     private var unavailableContent: some View {
         VStack(alignment: .leading) {
             Spacer()
-            Text("Market data is temporarily unavailable")
+            Text("widget.marketDataUnavailable")
                 .font(WidgetTheme.labelFont(size: 12))
                 .foregroundStyle(WidgetTheme.secondaryText)
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityLabel("Top cryptocurrency market data is temporarily unavailable")
+        .accessibilityLabel(Text("widget.topMarketDataUnavailable"))
+    }
+
+    @ViewBuilder
+    private var staleIndicator: some View {
+        if entry.isStale {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(WidgetTheme.tertiaryText)
+                .accessibilityLabel(Text("widget.cached"))
+        }
     }
 }
 
