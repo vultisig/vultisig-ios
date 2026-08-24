@@ -12,13 +12,12 @@ import SwiftUI
 /// where the alternative is an empty segment that looks broken.
 ///
 /// The shape mirrors `KaminoEarnView`'s card row for row: identity, deposited,
-/// APY, profit and loss, then the action button. A placeholder that does not
+/// profit and loss, APY, then the action button. A placeholder that does not
 /// match what replaces it reads as a layout jump rather than as loading.
 struct KaminoEarnPositionSkeletonView: View {
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 16) {
             identityRow
-            Separator(color: Theme.colors.borderLight, opacity: 1)
             labelledValueRow(labelWidth: 70, valueWidth: 90)
             labelledValueRow(labelWidth: 84, valueWidth: 54)
             labelledValueRow(labelWidth: 96, valueWidth: 72)
@@ -39,17 +38,29 @@ struct KaminoEarnPositionSkeletonView: View {
     }
 
     private var identityRow: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(placeholderFill)
-                .frame(width: 36, height: 36)
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 8) {
+            ZStack(alignment: .leading) {
+                Circle()
+                    .fill(placeholderFill)
+                    .frame(width: 36, height: 36)
+                Circle()
+                    .fill(placeholderFill)
+                    .frame(width: 36, height: 36)
+                    .offset(x: 24)
+            }
+            .frame(width: 60, height: 36, alignment: .leading)
+            VStack(alignment: .leading, spacing: 0) {
                 Theme.radius.xs.shape
                     .fill(placeholderFill)
                     .frame(width: 128, height: 16)
-                Theme.radius.xs.shape
-                    .fill(placeholderFill)
-                    .frame(width: 168, height: 12)
+                HStack(spacing: 3) {
+                    Circle()
+                        .fill(placeholderFill)
+                        .frame(width: 16, height: 16)
+                    Theme.radius.xs.shape
+                        .fill(placeholderFill)
+                        .frame(width: 52, height: 12)
+                }
             }
             Spacer()
         }

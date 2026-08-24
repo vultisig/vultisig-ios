@@ -3,9 +3,9 @@
 //  VultisigApp
 //
 //  Earn segment of the Solana DeFi chain tab: one card per curated Kamino vault
-//  the user enabled, plus a total across them.
+//  the user enabled.
 //
-//  Each card shows the vault's name, its curator and risk tier, the deposited
+//  Each card shows the vault's live name, protocol and risk tier, the deposited
 //  amount in the underlying token with its fiat value, the 30-day APY and the
 //  lifetime profit and loss, and opens the deposit and withdraw forms.
 //
@@ -52,8 +52,7 @@ struct KaminoEarnView<EmptyState: View>: View {
 
     @ViewBuilder
     private var populatedState: some View {
-        VStack(spacing: 16) {
-            totalCard
+        VStack(spacing: 12) {
             ForEach(sortedRows) { row in
                 vaultCard(for: row)
             }
@@ -70,22 +69,6 @@ struct KaminoEarnView<EmptyState: View>: View {
         )
     }
 
-    @ViewBuilder
-    private var totalCard: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("kaminoEarnTitle".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
-            HiddenBalanceText(totalFiat)
-                .font(Theme.fonts.priceTitle1)
-                .foregroundStyle(Theme.colors.textPrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(cardBackground)
-        .overlay(cardBorder)
-    }
-
     /// Two states, as the design draws them: a vault the user holds nothing in
     /// is its identity, its rate and one full-width Deposit — there is no
     /// position to describe, and rows of zeros describe nothing. A vault they
@@ -93,7 +76,7 @@ struct KaminoEarnView<EmptyState: View>: View {
     /// separator that sets its two actions apart.
     @ViewBuilder
     private func vaultCard(for row: KaminoEarnRow) -> some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 16) {
             vaultIdentityRow(for: row)
             if row.hasPosition {
                 depositedRow(for: row)
@@ -129,16 +112,18 @@ struct KaminoEarnView<EmptyState: View>: View {
     /// which this row does not know and must not guess.
     @ViewBuilder
     private func actionRow(for row: KaminoEarnRow) -> some View {
-        // `.smallFixed` has no horizontal padding of its own, so each button
-        // takes an equal share of the row: two side by side when there is a
-        // position, one across the full width when there is not.
         HStack(spacing: 16) {
             if row.offersWithdraw {
-                PrimaryButton(title: "kaminoEarnWithdraw".localized, type: .secondary, size: .smallFixed) {
+                DefiButton(
+                    title: "kaminoEarnWithdraw".localized,
+                    icon: .circleMinusFilled,
+                    iconSize: 12.8,
+                    type: .secondary
+                ) {
                     onWithdraw(row.descriptor)
                 }
             }
-            PrimaryButton(title: "kaminoEarnDeposit".localized, size: .smallFixed) {
+            DefiButton(title: "kaminoEarnDeposit".localized, icon: .circlePlusFilled) {
                 onDeposit(row.descriptor)
             }
         }
@@ -146,39 +131,58 @@ struct KaminoEarnView<EmptyState: View>: View {
 
     @ViewBuilder
     private func vaultIdentityRow(for row: KaminoEarnRow) -> some View {
-        HStack(spacing: 12) {
-            if let coin = row.coin {
-                AsyncImageView(
-                    logo: coin.logo,
-                    size: CGSize(width: 36, height: 36),
-                    ticker: coin.ticker,
-                    tokenChainLogo: nil
-                )
+        HStack(spacing: 8) {
+            ZStack(alignment: .leading) {
+                Image(row.descriptor.curatorLogo)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(Circle())
+                    .accessibilityLabel(row.curator)
+                if let coin = row.coin {
+                    ZStack {
+                        Circle()
+                            .fill(Theme.colors.bgSurface2.opacity(0.9))
+                        AsyncImageView(
+                            logo: coin.logo,
+                            size: CGSize(width: 36, height: 36),
+                            ticker: coin.ticker,
+                            tokenChainLogo: nil
+                        )
+                    }
+                    .frame(width: 36, height: 36)
+                    .offset(x: 24)
+                    .accessibilityHidden(true)
+                }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                // The risk tier rides on the name line, not the curator line.
-                // Sharing a line with the curator left roughly 180pt for a string
-                // that needs ~190 ("Curated by Steakhouse Finance"), so the
-                // curator truncated while the name line beside it sat half empty.
-                // The tier is two short fixed strings and is pinned at its
-                // intrinsic width, so the name yields first and the curator gets
-                // the whole line below.
-                HStack(spacing: 8) {
-                    Text(row.name)
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .lineLimit(1)
+            .frame(width: 60, height: 36, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(row.name)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 3) {
+                    HStack(spacing: 3) {
+                        Image(.kaminoProtocol)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 16, height: 16)
+                            .clipShape(Circle())
+                            .accessibilityHidden(true)
+                        Text("kaminoEarnProvider".localized)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .lineLimit(1)
+                    }
                     Spacer(minLength: 4)
                     Text(row.riskTier.title)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(riskColor(for: row.riskTier))
                         .fixedSize(horizontal: true, vertical: false)
                 }
-                Text(String(format: "kaminoEarnCuratedBy".localized, row.curator))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
@@ -199,7 +203,7 @@ struct KaminoEarnView<EmptyState: View>: View {
     private func apyRow(for row: KaminoEarnRow) -> some View {
         HStack(spacing: 4) {
             Icon(.circlePercentage, color: Theme.colors.textTertiary, size: 16)
-            Text("kaminoEarnApy30d".localized)
+            Text("kaminoEarnApy".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
@@ -272,16 +276,6 @@ struct KaminoEarnView<EmptyState: View>: View {
 
     // MARK: - Helpers
 
-    /// Fiat across every enabled vault. Summed per row because the vaults do not
-    /// share an underlying token — dollars and SOL cannot be added before the
-    /// rate is applied.
-    private var totalFiat: String {
-        viewModel.rows
-            .map { fiatValue(for: $0) }
-            .reduce(Decimal.zero, +)
-            .formatToFiat(includeCurrencySymbol: true)
-    }
-
     private func fiatValue(for row: KaminoEarnRow) -> Decimal {
         fiatValue(row.tokenAmount, in: row)
     }
@@ -342,5 +336,20 @@ struct KaminoEarnView<EmptyState: View>: View {
         formatter.maximumFractionDigits = KaminoEarnFormatters.amountFractionDigits
         formatter.numberStyle = .decimal
         return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0"
+    }
+}
+
+private extension KaminoVaultDescriptor {
+    var curatorLogo: ImageResource {
+        switch address {
+        case KaminoVaultRegistry.steakhouseUSDC.address:
+            .kaminoSteakhouse
+        case KaminoVaultRegistry.rwaUSDC.address:
+            .kaminoRockaway
+        case KaminoVaultRegistry.allezSOL.address:
+            .kaminoAllez
+        default:
+            .kaminoProtocol
+        }
     }
 }
