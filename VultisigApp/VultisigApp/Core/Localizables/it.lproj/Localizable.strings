@@ -668,15 +668,14 @@
 "kaminoDepositMissingCoin" = "Aggiungi %@ su Solana al tuo vault prima di depositare.";
 "kaminoDepositTitle" = "Deposita";
 "kaminoDepositWrappedSolRent" = "Depositare SOL apre un account wrapped SOL. Il suo rent resta bloccato in quell'account finché non prelevi.";
-"kaminoEarnApy30d" = "APY (30 gg)";
-"kaminoEarnCuratedBy" = "Gestito da %@";
+"kaminoEarnApy" = "APY";
 "kaminoEarnDeposit" = "Deposita";
 "kaminoEarnDeposited" = "Depositato: %@";
 "kaminoEarnEarned" = "Guadagnato: %@";
 "kaminoEarnLost" = "Perso: %@";
+"kaminoEarnProvider" = "Kamino";
 "kaminoEarnRiskConservative" = "Conservativo";
 "kaminoEarnRiskPrivateCredit" = "Credito privato";
-"kaminoEarnTitle" = "Kamino Earn";
 "kaminoEarnWithdraw" = "Preleva";
 "kaminoErrorVaultMetadataMismatch" = "Kamino ha riportato %1$@ come %2$@; questo vault si aspetta %3$@";
 "kaminoErrorVaultNotInRegistry" = "Il vault %@ non è uno di quelli con cui questa app opera";

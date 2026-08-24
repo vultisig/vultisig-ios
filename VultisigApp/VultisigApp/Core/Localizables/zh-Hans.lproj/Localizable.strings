@@ -668,15 +668,14 @@
 "kaminoDepositMissingCoin" = "存入前请先将 Solana 上的 %@ 添加到你的保险库。";
 "kaminoDepositTitle" = "存入";
 "kaminoDepositWrappedSolRent" = "存入 SOL 会创建一个 wrapped SOL 账户。该账户的租金将被锁定，直到你提取为止。";
-"kaminoEarnApy30d" = "年化收益率（30天）";
-"kaminoEarnCuratedBy" = "由 %@ 管理";
+"kaminoEarnApy" = "APY";
 "kaminoEarnDeposit" = "存入";
 "kaminoEarnDeposited" = "已存入：%@";
 "kaminoEarnEarned" = "已赚取：%@";
 "kaminoEarnLost" = "已亏损：%@";
+"kaminoEarnProvider" = "Kamino";
 "kaminoEarnRiskConservative" = "保守型";
 "kaminoEarnRiskPrivateCredit" = "私募信贷";
-"kaminoEarnTitle" = "Kamino Earn";
 "kaminoEarnWithdraw" = "提取";
 "kaminoErrorVaultMetadataMismatch" = "Kamino 报告 %1$@ 为 %2$@；此金库的值为 %3$@";
 "kaminoErrorVaultNotInRegistry" = "金库 %@ 不是此应用会进行交易的金库";

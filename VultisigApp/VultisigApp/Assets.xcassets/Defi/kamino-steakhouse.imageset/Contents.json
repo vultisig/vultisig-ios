@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "kamino-steakhouse.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -204,6 +204,10 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
 
 /// Per-banner rule governing how long a dismissal suppresses a promo banner.
 enum BannerDismissalRule: Equatable {
+    /// Suppressed forever on this device. Backed by the same persistent,
+    /// app-wide record as TTL dismissals, but the stored timestamp is treated
+    /// only as evidence that the banner was dismissed and never expires.
+    case permanent
     /// Suppressed until `dismissedAt + interval`; reappears once the interval
     /// elapses. Backed by persistent (per-device) storage.
     case ttl(TimeInterval)
