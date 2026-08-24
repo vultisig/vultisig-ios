@@ -548,6 +548,29 @@ final class VaultDetailViewModelTests: XCTestCase {
         XCTAssertEqual(banners.first, .kaminoEarn)
     }
 
+    func testRujiraBanner_needsAThorchainVault() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+
+        let noThorchain = makeVault(pubKey: "no-thorchain", chains: [.bitcoin])
+        XCTAssertFalse(logic.setupBanners(for: noThorchain, store: store, now: fixedNow).contains(.rujiraStaking))
+
+        let thorchain = makeVault(pubKey: "thorchain", chains: [.thorChain])
+        XCTAssertTrue(logic.setupBanners(for: thorchain, store: store, now: fixedNow).contains(.rujiraStaking))
+    }
+
+    func testReferralRewardsBanner_onlyShowsWithoutAReferredCode() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "referral", chains: [.bitcoin])
+
+        XCTAssertTrue(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.referralRewards))
+
+        vault.referredCode = ReferredCode(code: "FRIEND", vault: vault)
+
+        XCTAssertFalse(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.referralRewards))
+    }
+
     /// AC: different intents are independent — dismissing one banner does not
     /// suppress another.
     func testDismiss_isPerIntent_doesNotSuppressOtherBanners() {
@@ -584,6 +607,74 @@ final class VaultDetailViewModelTests: XCTestCase {
                            "At exactly dismissedAt + TTL the banner re-shows")
             XCTAssertFalse(store.isDismissed(banner, now: fixedNow.addingTimeInterval(.days(16))))
         }
+    }
+
+    func testPromoBannerArtworkLayoutsMatchFigma() {
+        XCTAssertEqual(
+            VaultBannerType.upgradeVault.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 1.156,
+                offset: CGSize(width: -9.25, height: -16)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.rujiraStaking.artworkLayout,
+            CarouselBannerArtworkLayout()
+        )
+        XCTAssertEqual(
+            VaultBannerType.followVultisig.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 0.896,
+                offset: CGSize(width: 6.5, height: 9)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.backupVault.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 0.844,
+                offset: CGSize(width: 2.75, height: 5.5)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.referralRewards.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 1.104,
+                offset: CGSize(width: -6, height: -5.5)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.buyVult.artworkLayout,
+            CarouselBannerArtworkLayout(
+                frameOrigin: CGPoint(x: 241.5, y: -9),
+                frameSize: 112
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.kaminoEarn.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 0.856,
+                offset: CGSize(width: 11.5, height: 0)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.rujiraStaking.artworkLayout.frameOrigin(in: 370),
+            CGPoint(x: 244, y: -9),
+            "The exact Figma position should stay trailing-aligned on wider phones"
+        )
+    }
+
+    func testPromoBannerLeadingIconsMatchFigma() {
+        XCTAssertEqual(VaultBannerType.upgradeVault.icon, .bannerIconUpgrade)
+        XCTAssertEqual(VaultBannerType.rujiraStaking.icon, .bannerIconRujira)
+        XCTAssertEqual(VaultBannerType.followVultisig.icon, .bannerIconFollowX)
+        XCTAssertEqual(VaultBannerType.backupVault.icon, .bannerIconBackup)
+        XCTAssertEqual(VaultBannerType.referralRewards.icon, .bannerIconReferral)
+        XCTAssertEqual(VaultBannerType.buyVult.icon, .bannerIconBuyVult)
+        XCTAssertEqual(VaultBannerType.kaminoEarn.icon, .bannerIconKamino)
+
+        XCTAssertEqual(VaultBannerType.buyVult.iconSize, 19)
+        XCTAssertEqual(VaultBannerType.kaminoEarn.iconSize, 19)
+        XCTAssertEqual(VaultBannerType.upgradeVault.iconSize, 20)
     }
 
     /// A permanent dismissal shares the app-wide persistent store with TTL

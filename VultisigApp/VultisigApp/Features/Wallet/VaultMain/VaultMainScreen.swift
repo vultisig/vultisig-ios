@@ -352,6 +352,10 @@ struct VaultMainScreen: View {
             // the first segment there, so the banner lands on the vaults it
             // advertises rather than one tab away from them.
             router.navigate(to: VaultRoute.defiChain(chain: .solana, vault: vault))
+        case .rujiraStaking:
+            router.navigate(to: VaultRoute.defiChain(chain: .thorChain, vault: vault))
+        case .referralRewards:
+            router.navigate(to: ReferralRoute.referredCodeForm)
         }
     }
 

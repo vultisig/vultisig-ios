@@ -55,14 +55,34 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Reserve room for the close button overlaid at the top-trailing
-            // corner (40pt control, 10pt inset → ~50pt from the edge) so long
-            // localized copy wraps before it instead of running underneath.
+            // Reserve room for the close button overlaid at the
+            // top-trailing corner so localized copy wraps before it.
             .padding(.trailing, 32)
         }
-        .padding(20)
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(Theme.colors.bgSurface1)
+        // Decorative layers belong in the proposed card bounds. Keeping the
+        // 125pt artwork out of the foreground layout prevents it from changing
+        // the geometry of the 81pt carousel card.
+        .background {
+            GeometryReader { proxy in
+                ZStack(alignment: .topLeading) {
+                    Theme.colors.bgSurface1
+
+                    LinearGradient(
+                        stops: [
+                            .init(color: Theme.colors.bgSurface1.opacity(0.69), location: 0.5),
+                            .init(color: banner.gradientEndColor.opacity(0.69), location: 1)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+
+                    artwork(in: proxy.size.width)
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
+            }
+        }
         .overlay(
             Theme.radius.xl.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
@@ -71,8 +91,64 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         .contentShape(Theme.radius.xl.shape)
     }
 
+    func artwork(in bannerWidth: CGFloat) -> some View {
+        let layout = banner.artworkLayout
+        let frameOrigin = layout.frameOrigin(in: bannerWidth)
+        let renderedSize = layout.frameSize * layout.scale
+
+        return ZStack {
+            artworkCrop(
+                layout: layout,
+                renderedSize: renderedSize
+            )
+
+            // A masked duplicate keeps the upper artwork crisp and blends
+            // Figma's 2pt blur into only the bottom of the visible crop.
+            artworkCrop(
+                layout: layout,
+                renderedSize: renderedSize,
+                blurRadius: 2
+            )
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.48),
+                        .init(color: .black, location: 0.78)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
+        .frame(width: layout.frameSize, height: layout.frameSize)
+        .position(
+            x: frameOrigin.x + layout.frameSize / 2,
+            y: frameOrigin.y + layout.frameSize / 2
+        )
+    }
+
+    func artworkCrop(
+        layout: CarouselBannerArtworkLayout,
+        renderedSize: CGFloat,
+        blurRadius: CGFloat = 0
+    ) -> some View {
+        ZStack(alignment: .topLeading) {
+            Image(banner.artwork)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: renderedSize, height: renderedSize)
+                .offset(layout.offset)
+                .blur(radius: blurRadius)
+        }
+        .frame(width: layout.frameSize, height: layout.frameSize, alignment: .topLeading)
+        .clipped()
+    }
+
     var iconTile: some View {
-        Icon(banner.icon, color: banner.iconColor, size: 20)
+        Image(banner.icon)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: banner.iconSize, height: banner.iconSize)
             .frame(width: 41, height: 41)
             .background(Theme.colors.bgSurface2)
             .clipShape(Theme.radius.lg.shape)
@@ -92,15 +168,15 @@ private struct CarouselBannerCloseButton: View {
                 icon
                     .padding(12)
             }
-            .glassEffect(.regular.interactive(), in: .circle)
+            .glassEffect(.regular, in: .circle)
         } else {
             Button(action: action) {
                 icon
-                    .padding(12)
+                    .frame(width: 40, height: 40)
                     .background(.ultraThinMaterial, in: Circle())
                     .overlay {
                         Circle()
-                            .stroke(.white.opacity(0.3), lineWidth: 0.5)
+                            .fill(Theme.colors.borderExtraLight.opacity(1.0 / 3.0))
                     }
             }
             .buttonStyle(.plain)
@@ -120,7 +196,7 @@ private struct CarouselBannerCloseButton: View {
     VStack(spacing: 16) {
         ForEach(VaultBannerType.allCases) { banner in
             CarouselBannerView(banner: banner) {} onClose: {}
-                .frame(height: 128)
+                .frame(height: 81)
         }
     }
     .padding()

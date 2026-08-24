@@ -98,7 +98,7 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
                 legacySources = legacyVaultBanners
             case .backupVault:
                 continue
-            case .kaminoEarn:
+            case .kaminoEarn, .rujiraStaking, .referralRewards:
                 // Newer than the legacy stores, so it has nothing to carry
                 // over: a user who never saw it has never dismissed it.
                 continue
