@@ -86,7 +86,7 @@
 "availableLPUnits" = "사용 가능한 LP 단위";
 "availableNodes" = "사용 가능한 노드";
 "backup" = "백업";
-"backupBannerSubtitle" = "액세스를 안전하게 유지하고 온라인에 저장";
+"backupBannerSubtitle" = "볼트의 완전한 소유권을 요청하세요";
 "backupBannerTitle" = "볼트를 백업하세요";
 "backupDeviceDriver" = "귀하의 기기가 드라이버입니다";
 "backupDeviceDriverDescription" = "기기 백업과 비밀번호가 핵심입니다. 서버는 공동 서명만 하며 백업을 요청할 수 있습니다.";
@@ -1219,6 +1219,8 @@
 "referralOnboardingTitle4" = "추천 코드 사용 - 5bps 절약";
 "referralProgram" = "추천 프로그램";
 "referralProgramTooltipDescription" = "추천 프로그램은 THORChain 스왑에 적용되며 최선 노력 방식으로 운영됩니다. Vultisig 추천을 사용하려면 THORName을 등록해야 합니다. 등록 수수료는 THORChain 네트워크에 지불되는 10 RUNE과 연간 1 RUNE입니다.";
+"referralRewardsBannerSubtitle" = "추천 코드를 추가하세요";
+"referralRewardsBannerTitle" = "보상을 놓치지 마세요";
 "referredSaveOnSwaps" = "스왑에서 %@ 절약 - 추천 코드 추가";
 "registrationFee" = "등록 수수료";
 "remove" = "제거";
@@ -1283,6 +1285,8 @@
 "rippleWarningCustomPaths" = "이 결제의 경로 후보를 사이트가 직접 제시했습니다. 그중에서 원장이 선택합니다.";
 "rippleWarningPartialPayment" = "부분 결제입니다. 표시된 금액은 수령인이 받을 수 있는 최대치이며 전달이 보장된 금액이 아닙니다. 수령인은 더 적게 받을 수 있고 보내는 사람에게는 Send Max까지 청구됩니다.";
 "routerNotAvailable" = "%@에서 승인을 위한 라우터를 사용할 수 없습니다. 나중에 다시 시도하세요.";
+"rujiraBannerSubtitle" = "Rujira 스테이킹 출시";
+"rujiraBannerTitle" = "스테이킹하고 보상 받기";
 "rune" = "RUNE";
 "sameAddressError" = "받는 주소는 보내는 주소와 달라야 합니다";
 "sameDeviceShareError" = "동일한 볼트 공유";

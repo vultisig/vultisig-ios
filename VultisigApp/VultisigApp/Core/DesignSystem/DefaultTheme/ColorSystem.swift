@@ -63,6 +63,14 @@ struct ColorSystem: ColorSystemProtocol {
     // Devices-selection blue glow (onboarding + reshare)
     var devicesSelectionGlow: Color { .init(hex: "084BFF") }
 
+    // Promotional banner gradient endpoints from the 2026 banner system.
+    var promoBannerBlue: Color { .init(hex: "0348BB") }
+    var promoBannerPurple: Color { .init(hex: "A623EB") }
+    var promoBannerIndigo: Color { .init(hex: "1D0F88") }
+    var promoBannerMutedPurple: Color { .init(hex: "5C5277") }
+    var promoBannerDeepBlue: Color { .init(hex: "07156F") }
+    var promoBannerBrightBlue: Color { .init(hex: "0343CD") }
+
     // Chain-specific colors
     var tronRed: Color { .init(hex: "FF0013") }
 }

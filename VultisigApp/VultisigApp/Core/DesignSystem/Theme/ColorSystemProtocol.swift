@@ -61,6 +61,14 @@ public protocol ColorSystemProtocol {
     // Devices-selection blue glow (onboarding + reshare)
     var devicesSelectionGlow: Color { get }
 
+    // Promotional banner gradient endpoints from the 2026 banner system.
+    var promoBannerBlue: Color { get }
+    var promoBannerPurple: Color { get }
+    var promoBannerIndigo: Color { get }
+    var promoBannerMutedPurple: Color { get }
+    var promoBannerDeepBlue: Color { get }
+    var promoBannerBrightBlue: Color { get }
+
     // Chain-specific colors
     var tronRed: Color { get }
 }

@@ -40,29 +40,48 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
     }
 
     var card: some View {
-        HStack(spacing: 12) {
-            iconTile
+        ZStack(alignment: .topTrailing) {
+            Theme.colors.bgSurface1
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(banner.title)
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .multilineTextAlignment(.leading)
-                Text(banner.subtitle)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+            LinearGradient(
+                stops: [
+                    .init(color: Theme.colors.bgSurface1.opacity(0.69), location: 0.5),
+                    .init(color: banner.gradientEndColor.opacity(0.69), location: 1)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+
+            Image(banner.artwork)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: banner.artworkSize, height: banner.artworkSize)
+                .offset(y: -9)
+                .blur(radius: 2)
+
+            HStack(spacing: 12) {
+                iconTile
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(banner.title)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .multilineTextAlignment(.leading)
+                    Text(banner.subtitle)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                // Reserve room for the close button overlaid at the
+                // top-trailing corner so localized copy wraps before it.
+                .padding(.trailing, 32)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            // Reserve room for the close button overlaid at the top-trailing
-            // corner (40pt control, 10pt inset → ~50pt from the edge) so long
-            // localized copy wraps before it instead of running underneath.
-            .padding(.trailing, 32)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
         }
-        .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(Theme.colors.bgSurface1)
         .overlay(
             Theme.radius.xl.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)

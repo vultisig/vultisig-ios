@@ -312,6 +312,10 @@ struct VaultDetailLogic {
                     // segment rather than a one-time announcement. Dismissal is
                     // what makes it go away, for the usual fifteen days.
                     return vault.nativeCoin(for: .solana) != nil
+                case .rujiraStaking:
+                    return vault.nativeCoin(for: .thorChain) != nil
+                case .referralRewards:
+                    return vault.referredCode?.code.isEmpty ?? true
                 case .buyVult, .followVultisig:
                     return true
                 }

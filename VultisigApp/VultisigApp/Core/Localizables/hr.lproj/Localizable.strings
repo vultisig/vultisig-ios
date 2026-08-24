@@ -86,7 +86,7 @@
 "availableLPUnits" = "Dostupne LP Jedinice";
 "availableNodes" = "Dostupni Čvorovi";
 "backup" = "Sigurnosna kopija";
-"backupBannerSubtitle" = "Zadrži siguran pristup, pohrani online";
+"backupBannerSubtitle" = "Zatraži potpuno skrbništvo nad trezorom";
 "backupBannerTitle" = "Napravi sigurnosnu kopiju svog trezora";
 "backupDeviceDriver" = "Vaš uređaj je pokretač";
 "backupDeviceDriverDescription" = "Sigurnosna kopija Uređaja i lozinka su ključ. Poslužitelj samo supotpisuje i sigurnosna kopija se može zatražiti.";
@@ -1219,6 +1219,8 @@
 "referralOnboardingTitle4" = "Upotrijebi referral kod – Uštedi 5 bps";
 "referralProgram" = "Referalni program";
 "referralProgramTooltipDescription" = "Program preporuka odnosi se na THORChain zamjene i djeluje na principu najboljeg truda. Za korištenje Vultisig preporuke, morate registrirati THORName. Naknada za registraciju iznosi 10 RUNE plus 1 RUNE godišnje, plaća se THORChain mreži.";
+"referralRewardsBannerSubtitle" = "Dodaj svoj kod preporuke";
+"referralRewardsBannerTitle" = "Ne propusti nagrade";
 "referredSaveOnSwaps" = "Spremi %@ na zamjene - Dodajte preporuku";
 "registrationFee" = "Naknada za registraciju";
 "remove" = "Ukloni";
@@ -1283,6 +1285,8 @@
 "rippleWarningCustomPaths" = "Stranica je predložila vlastite moguće rute za ovo plaćanje. Ledger bira među njima.";
 "rippleWarningPartialPayment" = "Ovo je djelomično plaćanje: iznos je najviše što primatelj može primiti, a ne zajamčena isporuka. Može primiti manje, dok se vama i dalje naplaćuje do iznosa Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
+"rujiraBannerSubtitle" = "Rujira staking je sada dostupan";
+"rujiraBannerTitle" = "Uloži i zaradi";
 "rune" = "RUNE";
 "sameAddressError" = "Adresa primatelja mora se razlikovati od adrese pošiljatelja";
 "sameDeviceShareError" = "Isti udio trezora";

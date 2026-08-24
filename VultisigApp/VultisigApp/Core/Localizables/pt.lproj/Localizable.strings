@@ -86,7 +86,7 @@
 "availableLPUnits" = "Unidades LP Disponíveis";
 "availableNodes" = "Nós Disponíveis";
 "backup" = "Backup";
-"backupBannerSubtitle" = "Mantenha o acesso seguro, armazene online";
+"backupBannerSubtitle" = "Solicite a custódia total do cofre";
 "backupBannerTitle" = "Faça Backup do Seu Cofre";
 "backupDeviceDriver" = "Seu dispositivo é o condutor";
 "backupDeviceDriverDescription" = "O backup do Dispositivo e a senha são a chave. O servidor apenas co-assina e o backup pode ser solicitado.";
@@ -1219,6 +1219,8 @@
 "referralOnboardingTitle4" = "Use o código de indicação - Economize 5 bps";
 "referralProgram" = "Programa de Indicação";
 "referralProgramTooltipDescription" = "O programa de indicação se aplica às trocas da THORChain e opera com base no melhor esforço. Para usar a indicação Vultisig, você deve registrar um THORName. A taxa de registro é de 10 RUNE mais 1 RUNE por ano, paga à rede THORChain.";
+"referralRewardsBannerSubtitle" = "Adicione seu código de indicação";
+"referralRewardsBannerTitle" = "Não perca recompensas";
 "referredSaveOnSwaps" = "Economize %@ em swaps - Adicione uma indicação";
 "registrationFee" = "Taxa de registro";
 "remove" = "Remover";
@@ -1283,6 +1285,8 @@
 "rippleWarningCustomPaths" = "O site propôs as suas próprias rotas para este pagamento. O ledger escolhe entre elas.";
 "rippleWarningPartialPayment" = "Este é um pagamento parcial: o valor é o máximo que o destinatário pode receber, não uma entrega garantida. Ele pode receber menos enquanto você é cobrado até o Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
+"rujiraBannerSubtitle" = "Staking da Rujira disponível agora";
+"rujiraBannerTitle" = "Faça staking e ganhe";
 "rune" = "RUNE";
 "sameAddressError" = "O endereço de destino deve ser diferente do endereço de origem";
 "sameDeviceShareError" = "Mesmo compartilhamento de cofre";

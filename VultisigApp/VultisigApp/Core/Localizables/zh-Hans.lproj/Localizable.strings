@@ -86,7 +86,7 @@
 "availableLPUnits" = "可用 LP 单位";
 "availableNodes" = "可用节点";
 "backup" = "备份";
-"backupBannerSubtitle" = "保持访问安全，在线存储";
+"backupBannerSubtitle" = "申请完整保管您的保险库";
 "backupBannerTitle" = "备份您的保险库";
 "backupDeviceDriver" = "您的设备是主导者";
 "backupDeviceDriverDescription" = "设备备份和密码是关键。服务器仅进行联合签名，备份可以被请求。";
@@ -1219,6 +1219,8 @@
 "referralOnboardingTitle4" = "使用推荐码 - 节省 5 个基点";
 "referralProgram" = "推荐计划";
 "referralProgramTooltipDescription" = "推荐计划适用于 THORChain 交换，并尽力而为。要使用 Vultisig 推荐，您必须注册 THORName。注册费为 10 RUNE 加上每年 1 RUNE，支付给 THORChain 网络";
+"referralRewardsBannerSubtitle" = "添加您的推荐码";
+"referralRewardsBannerTitle" = "不要错过奖励";
 "referredSaveOnSwaps" = "在交换中节省 %@ - 添加推荐";
 "registrationFee" = "注册费";
 "remove" = "移除";
@@ -1283,6 +1285,8 @@
 "rippleWarningCustomPaths" = "该网站为这笔付款提供了自己的候选路径，由账本从中选择。";
 "rippleWarningPartialPayment" = "这是一笔部分付款：金额是收款方最多可能收到的数额，而非保证到账的数额。收款方可能收到更少，而你仍会被扣除至多「最大发送额」。";
 "routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
+"rujiraBannerSubtitle" = "Rujira 质押现已上线";
+"rujiraBannerTitle" = "质押并赚取收益";
 "rune" = "RUNE";
 "sameAddressError" = "收件人地址必须与发件人地址不同";
 "sameDeviceShareError" = "相同的保险库份额";

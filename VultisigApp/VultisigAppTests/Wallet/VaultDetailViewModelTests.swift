@@ -548,6 +548,29 @@ final class VaultDetailViewModelTests: XCTestCase {
         XCTAssertEqual(banners.first, .kaminoEarn)
     }
 
+    func testRujiraBanner_needsAThorchainVault() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+
+        let noThorchain = makeVault(pubKey: "no-thorchain", chains: [.bitcoin])
+        XCTAssertFalse(logic.setupBanners(for: noThorchain, store: store, now: fixedNow).contains(.rujiraStaking))
+
+        let thorchain = makeVault(pubKey: "thorchain", chains: [.thorChain])
+        XCTAssertTrue(logic.setupBanners(for: thorchain, store: store, now: fixedNow).contains(.rujiraStaking))
+    }
+
+    func testReferralRewardsBanner_onlyShowsWithoutAReferredCode() {
+        let store = makeStore()
+        let logic = VaultDetailLogic()
+        let vault = makeVault(pubKey: "referral", chains: [.bitcoin])
+
+        XCTAssertTrue(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.referralRewards))
+
+        vault.referredCode = ReferredCode(code: "FRIEND", vault: vault)
+
+        XCTAssertFalse(logic.setupBanners(for: vault, store: store, now: fixedNow).contains(.referralRewards))
+    }
+
     /// AC: different intents are independent — dismissing one banner does not
     /// suppress another.
     func testDismiss_isPerIntent_doesNotSuppressOtherBanners() {

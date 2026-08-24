@@ -86,7 +86,7 @@
 "availableLPUnits" = "Verfügbare LP-Einheiten";
 "availableNodes" = "Verfügbare Knoten";
 "backup" = "Sicherung";
-"backupBannerSubtitle" = "Halte den Zugang sicher, speichere online";
+"backupBannerSubtitle" = "Vollständige Kontrolle über den Vault anfordern";
 "backupBannerTitle" = "Sichere deinen Tresor";
 "backupDeviceDriver" = "Ihr Gerät ist der Schlüssel";
 "backupDeviceDriverDescription" = "Das Geräte-Backup und das Passwort sind der Schlüssel. Der Server signiert nur mit und ein Backup kann angefordert werden.";
@@ -1219,6 +1219,8 @@
 "referralOnboardingTitle4" = "Verwende Empfehlungscode – Spare 5 Bps";
 "referralProgram" = "Empfehlungsprogramm";
 "referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps und wird nach dem Best-Effort-Prinzip betrieben. Um die Vultisig-Empfehlung zu nutzen, musst du einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
+"referralRewardsBannerSubtitle" = "Empfehlungscode hinzufügen";
+"referralRewardsBannerTitle" = "Keine Prämien verpassen";
 "referredSaveOnSwaps" = "Speichern Sie %@ bei Swaps - Fügen Sie eine Empfehlung hinzu";
 "registrationFee" = "Registrierungsgebühr";
 "remove" = "Entfernen";
@@ -1283,6 +1285,8 @@
 "rippleWarningCustomPaths" = "Die Website hat eigene mögliche Routen für diese Zahlung angegeben. Das Ledger wählt daraus aus.";
 "rippleWarningPartialPayment" = "Dies ist eine Teilzahlung: Der Betrag ist das Maximum, das der Empfänger erhalten kann, keine garantierte Zustellung. Er kann weniger erhalten, während dir weiterhin bis zu Send Max berechnet wird.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
+"rujiraBannerSubtitle" = "Rujira-Staking jetzt verfügbar";
+"rujiraBannerTitle" = "Staken & verdienen";
 "rune" = "RUNE";
 "sameAddressError" = "Die Empfängeradresse muss sich von der Absenderadresse unterscheiden.";
 "sameDeviceShareError" = "Gleicher Tresor Teil";

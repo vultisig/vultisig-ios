@@ -14,7 +14,13 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
     /// it on the first page. Nothing else depends on it — `rawValue` is the case
     /// name and `dismissalID` is spelled out separately, so moving a case can
     /// neither rename a banner nor invalidate a stored dismissal.
-    case kaminoEarn, upgradeVault, backupVault, buyVult, followVultisig
+    case kaminoEarn
+    case upgradeVault
+    case rujiraStaking
+    case followVultisig
+    case backupVault
+    case referralRewards
+    case buyVult
 
     var id: String {
         rawValue
@@ -35,6 +41,10 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             return "follow_x_vultisig"
         case .kaminoEarn:
             return "kamino_earn_solana"
+        case .rujiraStaking:
+            return "rujira_staking_thorchain"
+        case .referralRewards:
+            return "referral_rewards_code"
         }
     }
 
@@ -48,7 +58,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             return .ttl(.days(7))
         case .backupVault:
             return .session
-        case .upgradeVault, .followVultisig, .kaminoEarn:
+        case .upgradeVault, .followVultisig, .kaminoEarn, .rujiraStaking, .referralRewards:
             return .ttl(.days(15))
         }
     }
@@ -65,6 +75,10 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "followVultisigBannerTitle".localized
         case .kaminoEarn:
             "kaminoBannerTitle".localized
+        case .rujiraStaking:
+            "rujiraBannerTitle".localized
+        case .referralRewards:
+            "referralRewardsBannerTitle".localized
         }
     }
     var subtitle: String {
@@ -79,6 +93,10 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "followVultisigBannerSubtitle".localized
         case .kaminoEarn:
             "kaminoBannerSubtitle".localized
+        case .rujiraStaking:
+            "rujiraBannerSubtitle".localized
+        case .referralRewards:
+            "referralRewardsBannerSubtitle".localized
         }
     }
 
@@ -94,15 +112,61 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             .iconX
         case .kaminoEarn:
             .circleDollar
+        case .rujiraStaking:
+            .ruji
+        case .referralRewards:
+            .stars
         }
     }
 
-    var iconColor: Color {
+    var iconColor: Color? {
         switch self {
         case .upgradeVault, .kaminoEarn:
             Theme.colors.alertInfo
         case .backupVault, .buyVult, .followVultisig:
             Theme.colors.textPrimary
+        case .rujiraStaking, .referralRewards:
+            nil
+        }
+    }
+
+    var artwork: ImageResource {
+        switch self {
+        case .upgradeVault:
+            .bannerUpgrade
+        case .rujiraStaking:
+            .bannerRujira
+        case .followVultisig:
+            .bannerFollowX
+        case .backupVault:
+            .bannerBackup
+        case .referralRewards:
+            .bannerReferral
+        case .buyVult:
+            .bannerBuyVult
+        case .kaminoEarn:
+            .bannerKamino
+        }
+    }
+
+    var artworkSize: CGFloat {
+        self == .buyVult ? 112 : 125
+    }
+
+    var gradientEndColor: Color {
+        switch self {
+        case .upgradeVault:
+            Theme.colors.promoBannerBlue
+        case .rujiraStaking:
+            Theme.colors.promoBannerPurple
+        case .followVultisig:
+            Theme.colors.promoBannerIndigo
+        case .backupVault:
+            Theme.colors.promoBannerMutedPurple
+        case .referralRewards, .kaminoEarn:
+            Theme.colors.promoBannerDeepBlue
+        case .buyVult:
+            Theme.colors.promoBannerBrightBlue
         }
     }
 }

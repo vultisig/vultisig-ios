@@ -86,7 +86,7 @@
 "availableLPUnits" = "Available LP Units";
 "availableNodes" = "Available Nodes";
 "backup" = "Backup";
-"backupBannerSubtitle" = "Keep access safe, store online";
+"backupBannerSubtitle" = "Request full vault custody";
 "backupBannerTitle" = "Back Up Your Vault";
 "backupDeviceDriver" = "Your device is the driver";
 "backupDeviceDriverDescription" = "The Device backup and password are the key. The server only co-signs and backup can be requested.";
@@ -1219,6 +1219,8 @@
 "referralOnboardingTitle4" = "Use Referral code - Save 5bps";
 "referralProgram" = "Referral Program";
 "referralProgramTooltipDescription" = "The referral program applies to THORChain swaps and operates on a best-effort basis. To use the Vultisig referral, you must register a THORName. The registration fee is 10 RUNE plus 1 RUNE per year, paid to the THORChain network.";
+"referralRewardsBannerSubtitle" = "Add your referral code";
+"referralRewardsBannerTitle" = "Don't miss rewards";
 "referredSaveOnSwaps" = "Save %@ on swaps - Add a Referral";
 "registrationFee" = "Registration Fee";
 "remove" = "Remove";
@@ -1283,6 +1285,8 @@
 "rippleWarningCustomPaths" = "The site supplied its own candidate routes for this payment. The ledger picks among them.";
 "rippleWarningPartialPayment" = "This is a partial payment: the Amount is the most the recipient can receive, not a guaranteed delivery. They can receive less while you are still charged up to the Send Max.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
+"rujiraBannerSubtitle" = "Rujira staking live now";
+"rujiraBannerTitle" = "Stake & earn";
 "rune" = "RUNE";
 "sameAddressError" = "The to address must be different from the from address";
 "sameDeviceShareError" = "Same vault share";
