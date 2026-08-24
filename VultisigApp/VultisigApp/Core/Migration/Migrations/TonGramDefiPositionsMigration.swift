@@ -79,7 +79,7 @@ struct TonGramDefiPositionsMigration: @MainActor AppMigration {
         return CoinMeta(
             chain: meta.chain,
             ticker: "GRAM",
-            logo: "gram",
+            logo: "ton",
             decimals: meta.decimals,
             priceProviderId: meta.priceProviderId,
             contractAddress: meta.contractAddress,

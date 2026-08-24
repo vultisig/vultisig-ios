@@ -62,8 +62,6 @@ struct DefiChainBalanceView: View {
             "thorchain-defi-banner"
         case .mayaChain:
             "maya-defi-banner"
-        case .ton:
-            "ton-defi-banner"
         case .terra, .terraClassic:
             "terra-defi-banner"
         default:

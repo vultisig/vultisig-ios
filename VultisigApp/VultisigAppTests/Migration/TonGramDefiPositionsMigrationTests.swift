@@ -103,7 +103,7 @@ final class TonGramDefiPositionsMigrationTests: XCTestCase {
 
         for array in [positions.bonds, positions.staking, positions.lps] {
             XCTAssertEqual(array.first?.ticker, "GRAM")
-            XCTAssertEqual(array.first?.logo, "gram")
+            XCTAssertEqual(array.first?.logo, "ton")
         }
     }
 
@@ -136,9 +136,9 @@ final class TonGramDefiPositionsMigrationTests: XCTestCase {
         try TonGramDefiPositionsMigration().migrate()
 
         XCTAssertEqual(position.coin.ticker, "GRAM")
-        XCTAssertEqual(position.coin.logo, "gram")
+        XCTAssertEqual(position.coin.logo, "ton")
         XCTAssertEqual(position.rewardCoin?.ticker, "GRAM")
-        XCTAssertEqual(position.rewardCoin?.logo, "gram")
+        XCTAssertEqual(position.rewardCoin?.logo, "ton")
     }
 
     /// `StakePosition.id` is `@Attribute(.unique)` and is built from
@@ -242,7 +242,7 @@ final class TonGramDefiPositionsMigrationTests: XCTestCase {
 
         XCTAssertEqual(positions.staking.count, 1)
         XCTAssertEqual(positions.staking.first?.ticker, "GRAM")
-        XCTAssertEqual(positions.staking.first?.logo, "gram")
+        XCTAssertEqual(positions.staking.first?.logo, "ton")
         XCTAssertEqual(stake.coin.ticker, "GRAM")
         XCTAssertEqual(stake.rewardCoin?.ticker, "GRAM")
         XCTAssertEqual(stake.id, idAfterFirstPass)

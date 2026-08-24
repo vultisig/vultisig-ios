@@ -32,7 +32,7 @@ struct TonGramRebrandMigration: @MainActor AppMigration {
         for vault in vaults {
             for coin in vault.coins where coin.chain == .ton && coin.isNativeToken && coin.ticker == "TON" {
                 coin.ticker = "GRAM"
-                coin.logo = "gram"
+                coin.logo = "ton"
             }
         }
 
