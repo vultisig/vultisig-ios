@@ -176,7 +176,7 @@ private struct CarouselBannerCloseButton: View {
                     .background(.ultraThinMaterial, in: Circle())
                     .overlay {
                         Circle()
-                            .fill(.white.opacity(0.01))
+                            .fill(Theme.colors.borderExtraLight.opacity(1.0 / 3.0))
                     }
             }
             .buttonStyle(.plain)
