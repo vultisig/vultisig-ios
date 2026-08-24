@@ -586,6 +586,30 @@ final class VaultDetailViewModelTests: XCTestCase {
         }
     }
 
+    /// A permanent dismissal shares the app-wide persistent store with TTL
+    /// rules, but never consults the timestamp for expiry. A new store instance
+    /// models a cold launch, and a second vault proves the record is not scoped
+    /// to the vault that originated it.
+    func testPermanentRule_staysHiddenAcrossVaultsAndColdLaunches() {
+        let defaults = makeDefaults()
+        let permanentRule: (VaultBannerType) -> BannerDismissalRule = { banner in
+            banner == .buyVult ? .permanent : banner.dismissalRule
+        }
+        let session1 = makeStore(defaults: defaults, ruleProvider: permanentRule)
+        let logic = VaultDetailLogic()
+        let vaultA = makeVault(pubKey: "vault-a", chains: [.bitcoin])
+        let vaultB = makeVault(pubKey: "vault-b", chains: [.solana])
+
+        session1.dismiss(.buyVult, now: fixedNow)
+
+        XCTAssertTrue(session1.isDismissed(.buyVult, now: fixedNow.addingTimeInterval(.days(10_000))))
+        XCTAssertFalse(logic.setupBanners(for: vaultB, store: session1, now: fixedNow).contains(.buyVult))
+
+        let session2 = makeStore(defaults: defaults, ruleProvider: permanentRule)
+        XCTAssertTrue(session2.isDismissed(.buyVult, now: fixedNow.addingTimeInterval(.days(10_000))))
+        XCTAssertFalse(logic.setupBanners(for: vaultA, store: session2, now: fixedNow).contains(.buyVult))
+    }
+
     /// AC: an expired dismissal is ignored and the banner shows again
     /// (eligibility permitting).
     func testExpiredDismissal_showsBannerAgain() {
@@ -710,8 +734,15 @@ final class VaultDetailViewModelTests: XCTestCase {
         return defaults
     }
 
-    private func makeStore(defaults: UserDefaults? = nil) -> PromoBannerDismissalStore {
-        PromoBannerDismissalStore(defaults: defaults ?? makeDefaults(), storageKey: "promoBannerDismissals")
+    private func makeStore(
+        defaults: UserDefaults? = nil,
+        ruleProvider: @escaping (VaultBannerType) -> BannerDismissalRule = { $0.dismissalRule }
+    ) -> PromoBannerDismissalStore {
+        PromoBannerDismissalStore(
+            defaults: defaults ?? makeDefaults(),
+            storageKey: "promoBannerDismissals",
+            ruleProvider: ruleProvider
+        )
     }
 
     /// Build a Vault populated with native coins for the requested chains.
