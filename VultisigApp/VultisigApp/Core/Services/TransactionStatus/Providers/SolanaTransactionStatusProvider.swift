@@ -20,8 +20,8 @@ struct SolanaTransactionStatusProvider: TransactionStatusProvider {
             responseType: SolanaTransactionStatusResponse.self
         )
 
-        guard let result = response.data.result,
-              let statusValue = result.value.first as? SolanaTransactionStatusResponse.SolanaStatusValue else {
+        guard let firstValue = response.data.result?.value.first,
+              let statusValue = firstValue else {
             // Transaction not found
             return TransactionStatusResult(
                 status: .notFound,
@@ -30,47 +30,27 @@ struct SolanaTransactionStatusProvider: TransactionStatusProvider {
             )
         }
 
-        // Check confirmationStatus
-        if let confirmationStatus = statusValue.confirmationStatus {
-            switch confirmationStatus {
-            case "finalized":
-                // Check for errors
-                if let _ = statusValue.err {
-                    return TransactionStatusResult(
-                        status: .failed(reason: "Transaction error"),
-                        blockNumber: nil,
-                        confirmations: nil
-                    )
-                }
-
-                return TransactionStatusResult(
-                    status: .confirmed,
-                    blockNumber: statusValue.slot,
-                    confirmations: nil
-                )
-
-            case "confirmed", "processed":
-                // Still pending finalization
-                return TransactionStatusResult(
-                    status: .pending,
-                    blockNumber: nil,
-                    confirmations: nil
-                )
-
-            default:
-                return TransactionStatusResult(
-                    status: .pending,
-                    blockNumber: nil,
-                    confirmations: nil
-                )
-            }
+        if statusValue.err != nil {
+            return TransactionStatusResult(
+                status: .failed(reason: "Transaction error"),
+                blockNumber: nil,
+                confirmations: nil
+            )
         }
 
-        // No status = not found
-        return TransactionStatusResult(
-            status: .notFound,
-            blockNumber: nil,
-            confirmations: nil
-        )
+        switch statusValue.confirmationStatus {
+        case "confirmed", "finalized":
+            return TransactionStatusResult(
+                status: .confirmed,
+                blockNumber: statusValue.slot,
+                confirmations: nil
+            )
+        default:
+            return TransactionStatusResult(
+                status: .pending,
+                blockNumber: nil,
+                confirmations: nil
+            )
+        }
     }
 }
