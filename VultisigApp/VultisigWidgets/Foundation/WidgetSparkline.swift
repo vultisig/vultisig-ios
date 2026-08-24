@@ -3,7 +3,6 @@
 //  VultisigWidgets
 //
 
-import Charts
 import SwiftUI
 import WidgetKit
 
@@ -15,45 +14,32 @@ struct WidgetSparkline: View {
     @Environment(\.widgetRenderingMode) private var renderingMode
 
     var body: some View {
-        if let domain {
-            Chart {
-                ForEach(Array(values.enumerated()), id: \.offset) { index, value in
-                    AreaMark(
-                        x: .value("Position", index),
-                        yStart: .value("Floor", domain.lowerBound),
-                        yEnd: .value("Price", value)
-                    )
-                    .interpolationMethod(.monotone)
-                    .foregroundStyle(areaGradient)
+        if let domain, values.count > 1 {
+            GeometryReader { proxy in
+                let points = points(in: proxy.size, domain: domain)
 
-                    LineMark(
-                        x: .value("Position", index),
-                        y: .value("Price", value)
-                    )
-                    .interpolationMethod(.monotone)
-                    .foregroundStyle(tint)
-                    .lineStyle(
-                        StrokeStyle(
-                            lineWidth: lineWidth,
-                            lineCap: .round,
-                            lineJoin: .round
+                ZStack {
+                    areaPath(points: points, size: proxy.size)
+                        .fill(areaGradient)
+
+                    linePath(points: points)
+                        .stroke(
+                            tint,
+                            style: StrokeStyle(
+                                lineWidth: lineWidth,
+                                lineCap: .round,
+                                lineJoin: .round
+                            )
                         )
-                    )
-                }
 
-                if let last = values.last {
-                    PointMark(
-                        x: .value("Position", max(0, values.count - 1)),
-                        y: .value("Price", last)
-                    )
-                    .symbolSize(30)
-                    .foregroundStyle(tint)
+                    if let lastPoint = points.last {
+                        Circle()
+                            .fill(tint)
+                            .frame(width: lineWidth * 2.4, height: lineWidth * 2.4)
+                            .position(lastPoint)
+                    }
                 }
             }
-            .chartYScale(domain: domain)
-            .chartXAxis(.hidden)
-            .chartYAxis(.hidden)
-            .chartLegend(.hidden)
             .accessibilityHidden(true)
         }
     }
@@ -63,7 +49,7 @@ struct WidgetSparkline: View {
     }
 
     private var areaGradient: LinearGradient {
-        let opacity = renderingMode == .fullColor ? 0.28 : 0
+        let opacity = renderingMode == .fullColor ? 0.25 : 0
         return LinearGradient(
             colors: [tint.opacity(opacity), tint.opacity(0)],
             startPoint: .top,
@@ -80,5 +66,36 @@ struct WidgetSparkline: View {
         }
         let padding = span * 0.08
         return (minimum - padding)...(maximum + padding)
+    }
+
+    private func points(in size: CGSize, domain: ClosedRange<Double>) -> [CGPoint] {
+        let priceSpan = domain.upperBound - domain.lowerBound
+        let xInterval = size.width / CGFloat(values.count - 1)
+        return values.enumerated().map { index, value in
+            let normalized = (value - domain.lowerBound) / priceSpan
+            return CGPoint(
+                x: CGFloat(index) * xInterval,
+                y: size.height * (1 - CGFloat(normalized))
+            )
+        }
+    }
+
+    private func linePath(points: [CGPoint]) -> Path {
+        Path { path in
+            guard let first = points.first else { return }
+            path.move(to: first)
+            points.dropFirst().forEach { path.addLine(to: $0) }
+        }
+    }
+
+    private func areaPath(points: [CGPoint], size: CGSize) -> Path {
+        Path { path in
+            guard let first = points.first, let last = points.last else { return }
+            path.move(to: CGPoint(x: first.x, y: size.height))
+            path.addLine(to: first)
+            points.dropFirst().forEach { path.addLine(to: $0) }
+            path.addLine(to: CGPoint(x: last.x, y: size.height))
+            path.closeSubpath()
+        }
     }
 }

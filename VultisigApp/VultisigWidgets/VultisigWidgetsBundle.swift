@@ -10,5 +10,6 @@ import WidgetKit
 struct VultisigWidgetsBundle: WidgetBundle {
     var body: some Widget {
         CryptoTickerWidget()
+        TopCryptosWidget()
     }
 }
