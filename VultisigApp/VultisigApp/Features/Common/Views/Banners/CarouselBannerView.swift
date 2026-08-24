@@ -65,19 +65,22 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         // 125pt artwork out of the foreground layout prevents it from changing
         // the geometry of the 81pt carousel card.
         .background {
-            ZStack(alignment: .topTrailing) {
-                Theme.colors.bgSurface1
+            GeometryReader { proxy in
+                ZStack(alignment: .topLeading) {
+                    Theme.colors.bgSurface1
 
-                LinearGradient(
-                    stops: [
-                        .init(color: Theme.colors.bgSurface1.opacity(0.69), location: 0.5),
-                        .init(color: banner.gradientEndColor.opacity(0.69), location: 1)
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
+                    LinearGradient(
+                        stops: [
+                            .init(color: Theme.colors.bgSurface1.opacity(0.69), location: 0.5),
+                            .init(color: banner.gradientEndColor.opacity(0.69), location: 1)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
 
-                artwork
+                    artwork(in: proxy.size.width)
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
         }
         .overlay(
@@ -88,8 +91,9 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         .contentShape(Theme.radius.xl.shape)
     }
 
-    var artwork: some View {
+    func artwork(in bannerWidth: CGFloat) -> some View {
         let layout = banner.artworkLayout
+        let frameOrigin = layout.frameOrigin(in: bannerWidth)
         let renderedSize = layout.frameSize * layout.scale
 
         return ZStack(alignment: .topLeading) {
@@ -101,12 +105,17 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         }
         .frame(width: layout.frameSize, height: layout.frameSize, alignment: .topLeading)
         .clipped()
-        .offset(x: -layout.trailingInset, y: -9)
-        .blur(radius: 2)
+        .position(
+            x: frameOrigin.x + layout.frameSize / 2,
+            y: frameOrigin.y + layout.frameSize / 2
+        )
     }
 
     var iconTile: some View {
-        Icon(banner.icon, color: banner.iconColor, size: 20)
+        Image(banner.icon)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: banner.iconSize, height: banner.iconSize)
             .frame(width: 41, height: 41)
             .background(Theme.colors.bgSurface2)
             .clipShape(Theme.radius.lg.shape)

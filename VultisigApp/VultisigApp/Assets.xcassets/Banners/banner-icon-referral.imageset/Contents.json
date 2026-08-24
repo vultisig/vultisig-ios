@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "banner-icon-referral.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

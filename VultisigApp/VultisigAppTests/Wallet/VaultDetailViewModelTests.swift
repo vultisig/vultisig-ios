@@ -644,7 +644,10 @@ final class VaultDetailViewModelTests: XCTestCase {
         )
         XCTAssertEqual(
             VaultBannerType.buyVult.artworkLayout,
-            CarouselBannerArtworkLayout(frameSize: 112, trailingInset: 7.5)
+            CarouselBannerArtworkLayout(
+                frameOrigin: CGPoint(x: 241.5, y: -9),
+                frameSize: 112
+            )
         )
         XCTAssertEqual(
             VaultBannerType.kaminoEarn.artworkLayout,
@@ -653,6 +656,25 @@ final class VaultDetailViewModelTests: XCTestCase {
                 offset: CGSize(width: 11.5, height: 0)
             )
         )
+        XCTAssertEqual(
+            VaultBannerType.rujiraStaking.artworkLayout.frameOrigin(in: 370),
+            CGPoint(x: 244, y: -9),
+            "The exact Figma position should stay trailing-aligned on wider phones"
+        )
+    }
+
+    func testPromoBannerLeadingIconsMatchFigma() {
+        XCTAssertEqual(VaultBannerType.upgradeVault.icon, .bannerIconUpgrade)
+        XCTAssertEqual(VaultBannerType.rujiraStaking.icon, .bannerIconRujira)
+        XCTAssertEqual(VaultBannerType.followVultisig.icon, .bannerIconFollowX)
+        XCTAssertEqual(VaultBannerType.backupVault.icon, .bannerIconBackup)
+        XCTAssertEqual(VaultBannerType.referralRewards.icon, .bannerIconReferral)
+        XCTAssertEqual(VaultBannerType.buyVult.icon, .bannerIconBuyVult)
+        XCTAssertEqual(VaultBannerType.kaminoEarn.icon, .bannerIconKamino)
+
+        XCTAssertEqual(VaultBannerType.buyVult.iconSize, 19)
+        XCTAssertEqual(VaultBannerType.kaminoEarn.iconSize, 19)
+        XCTAssertEqual(VaultBannerType.upgradeVault.iconSize, 20)
     }
 
     /// AC: an expired dismissal is ignored and the banner shows again

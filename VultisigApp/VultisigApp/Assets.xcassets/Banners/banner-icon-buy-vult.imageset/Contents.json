@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "banner-icon-buy-vult.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

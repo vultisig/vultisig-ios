@@ -103,30 +103,28 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
     var icon: ImageResource {
         switch self {
         case .upgradeVault:
-            .circleArrowUp
+            .bannerIconUpgrade
         case .backupVault:
-            .cloudUpload
+            .bannerIconBackup
         case .buyVult:
-            .logoOutline
+            .bannerIconBuyVult
         case .followVultisig:
-            .iconX
+            .bannerIconFollowX
         case .kaminoEarn:
-            .circleDollar
+            .bannerIconKamino
         case .rujiraStaking:
-            .ruji
+            .bannerIconRujira
         case .referralRewards:
-            .stars
+            .bannerIconReferral
         }
     }
 
-    var iconColor: Color? {
+    var iconSize: CGFloat {
         switch self {
-        case .upgradeVault, .kaminoEarn:
-            Theme.colors.alertInfo
-        case .backupVault, .buyVult, .followVultisig:
-            Theme.colors.textPrimary
-        case .rujiraStaking, .referralRewards:
-            nil
+        case .buyVult, .kaminoEarn:
+            19
+        case .upgradeVault, .backupVault, .followVultisig, .rujiraStaking, .referralRewards:
+            20
         }
     }
 
@@ -174,7 +172,10 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
                 offset: CGSize(width: -6, height: -5.5)
             )
         case .buyVult:
-            CarouselBannerArtworkLayout(frameSize: 112, trailingInset: 7.5)
+            CarouselBannerArtworkLayout(
+                frameOrigin: CGPoint(x: 241.5, y: -9),
+                frameSize: 112
+            )
         case .kaminoEarn:
             CarouselBannerArtworkLayout(
                 scale: 0.856,
