@@ -58,7 +58,7 @@ enum TonHelper {
     }
 
     private static func buildTransfers(keysignPayload: KeysignPayload) throws -> [TheOpenNetworkTransfer] {
-        guard case .Ton(_, _, let bounceable, let sendMaxAmount, let jettonAddress, _) = keysignPayload.chainSpecific else {
+        guard case .Ton(_, _, let bounceable, _, let jettonAddress, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
 
@@ -83,16 +83,11 @@ enum TonHelper {
             throw HelperError.runtimeError("fail to get to address")
         }
 
-        let baseMode = TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
-        var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | baseMode)
-        if sendMaxAmount {
-            sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue | baseMode)
-        }
+        // Sign the explicit amount, never a mode-128 sweep: the displayed MAX
+        // (balance − fee) must equal what is signed, and that fee is the reserve.
+        let sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue)
 
-        var hexAmount = keysignPayload.toAmount.toEvenLengthHexString()
-        if sendMaxAmount {
-            hexAmount = "0x00"
-        }
+        let hexAmount = keysignPayload.toAmount.toEvenLengthHexString()
         guard let amountData = Data(hexString: hexAmount) else {
             throw HelperError.runtimeError("invalid amount data")
         }
@@ -123,10 +118,7 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid TonConnect amount bytes")
         }
 
-        let mode = UInt32(
-            TheOpenNetworkSendMode.payFeesSeparately.rawValue |
-            TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
-        )
+        let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue)
 
         return TheOpenNetworkTransfer.with {
             $0.dest = toAddress.description
@@ -190,7 +182,7 @@ enum TonHelper {
             $0.forwardAmount = forwardAmountMsgData
         }
 
-        let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+        let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue)
 
         // Attach 0.08 TON for fees (matches Android/tests)
         let recommendedJettonsAmount = TonHelper.defaultJettonFee.toEvenLengthHexString()

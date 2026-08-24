@@ -105,9 +105,9 @@ final class TonSendTransactionTests: XCTestCase {
         }
     }
 
-    // MARK: - Regression: native single transfer
+    // MARK: - Native single transfer
 
-    func testSingleNativeTransferStillProducesExpectedHash() throws {
+    func testNativeSingleTransferUsesPayFeesSeparately() throws {
         let payload = makePayload(
             toAddress: destA,
             toAmount: 50_000_000,
@@ -115,10 +115,34 @@ final class TonSendTransactionTests: XCTestCase {
             signData: nil
         )
 
-        let hashes = try TonHelper.getPreSignedImageHash(keysignPayload: payload)
+        let inputData = try TonHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try TheOpenNetworkSigningInput(serializedBytes: inputData)
 
-        XCTAssertEqual(hashes.count, 1)
-        XCTAssertEqual(hashes[0], "aefa16a3825645bcfcf305be112bc2da400d213cb8c20d87e0e43d4eb214a5f8")
+        XCTAssertEqual(input.messages.count, 1)
+        XCTAssertEqual(input.messages[0].amount, Data(hexString: BigInt(50_000_000).toEvenLengthHexString()))
+        XCTAssertEqual(input.messages[0].mode, UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue))
+    }
+
+    func testNativeMaxSignsExplicitAmountNotSweep() throws {
+        let specific = BlockChainSpecific.Ton(
+            sequenceNumber: 0,
+            expireAt: 1_753_579_977,
+            bounceable: false,
+            sendMaxAmount: true
+        )
+        let payload = makePayload(
+            toAddress: destA,
+            toAmount: 950_000_000,
+            chainSpecific: specific,
+            signData: nil
+        )
+
+        let inputData = try TonHelper.getPreSignedInputData(keysignPayload: payload)
+        let input = try TheOpenNetworkSigningInput(serializedBytes: inputData)
+
+        XCTAssertEqual(input.messages.count, 1)
+        XCTAssertEqual(input.messages[0].amount, Data(hexString: BigInt(950_000_000).toEvenLengthHexString()))
+        XCTAssertEqual(input.messages[0].mode, UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue))
     }
 
     // MARK: - TonConnect: multi-message assembly
@@ -144,10 +168,7 @@ final class TonSendTransactionTests: XCTestCase {
         XCTAssertEqual(input.messages[1].amount, Data(hexString: BigInt(20_000_000).toEvenLengthHexString()))
         XCTAssertEqual(input.messages[2].amount, Data(hexString: BigInt(30_000_000).toEvenLengthHexString()))
 
-        let expectedMode = UInt32(
-            TheOpenNetworkSendMode.payFeesSeparately.rawValue |
-            TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
-        )
+        let expectedMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue)
         for transfer in input.messages {
             XCTAssertEqual(transfer.mode, expectedMode)
         }
