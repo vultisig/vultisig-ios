@@ -96,19 +96,52 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         let frameOrigin = layout.frameOrigin(in: bannerWidth)
         let renderedSize = layout.frameSize * layout.scale
 
-        return ZStack(alignment: .topLeading) {
+        return ZStack {
+            artworkCrop(
+                layout: layout,
+                renderedSize: renderedSize
+            )
+
+            // A masked duplicate keeps the upper artwork crisp and blends
+            // Figma's 2pt blur into only the bottom of the visible crop.
+            artworkCrop(
+                layout: layout,
+                renderedSize: renderedSize,
+                blurRadius: 2
+            )
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.48),
+                        .init(color: .black, location: 0.78)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
+        .frame(width: layout.frameSize, height: layout.frameSize)
+        .position(
+            x: frameOrigin.x + layout.frameSize / 2,
+            y: frameOrigin.y + layout.frameSize / 2
+        )
+    }
+
+    func artworkCrop(
+        layout: CarouselBannerArtworkLayout,
+        renderedSize: CGFloat,
+        blurRadius: CGFloat = 0
+    ) -> some View {
+        ZStack(alignment: .topLeading) {
             Image(banner.artwork)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: renderedSize, height: renderedSize)
                 .offset(layout.offset)
+                .blur(radius: blurRadius)
         }
         .frame(width: layout.frameSize, height: layout.frameSize, alignment: .topLeading)
         .clipped()
-        .position(
-            x: frameOrigin.x + layout.frameSize / 2,
-            y: frameOrigin.y + layout.frameSize / 2
-        )
     }
 
     var iconTile: some View {
