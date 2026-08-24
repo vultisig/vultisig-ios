@@ -13,8 +13,9 @@ import Foundation
 ///
 /// Two backends, chosen per banner by `BannerDismissalRule`:
 ///
-/// - **TTL banners** persist `dismissalID -> dismissedAt` as JSON in
-///   `UserDefaults`. `isDismissed` is true while `now < dismissedAt + interval`.
+/// - **Permanent and TTL banners** persist `dismissalID -> dismissedAt` as JSON
+///   in `UserDefaults`. Permanent rules treat the record as never-expiring;
+///   TTL rules honor it while `now < dismissedAt + interval`.
 /// - **Session banners** (the backup reminder) route into an in-memory set that
 ///   is never persisted. It starts empty every cold launch, so the banner
 ///   reappears on the next launch while it is still eligible. Hidden for the
@@ -35,18 +36,29 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
 
     private let defaults: UserDefaults
     private let storageKey: String
+    /// Policy resolution is injected so a future campaign-policy source can
+    /// override the centralized `VaultBannerType.dismissalRule` fallback
+    /// without moving assignments into the carousel or changing persistence.
+    private let ruleProvider: (VaultBannerType) -> BannerDismissalRule
     private let lock = NSLock()
     /// In-memory, process-scoped dismissals for `.session`-ruled banners. Never
     /// written to `defaults`, so it resets on every cold launch.
     private var sessionDismissed: Set<String> = []
 
-    init(defaults: UserDefaults = .standard, storageKey: String = "promoBannerDismissals") {
+    init(
+        defaults: UserDefaults = .standard,
+        storageKey: String = "promoBannerDismissals",
+        ruleProvider: @escaping (VaultBannerType) -> BannerDismissalRule = { $0.dismissalRule }
+    ) {
         self.defaults = defaults
         self.storageKey = storageKey
+        self.ruleProvider = ruleProvider
     }
 
     func isDismissed(_ banner: VaultBannerType, now: Date) -> Bool {
-        switch banner.dismissalRule {
+        switch ruleProvider(banner) {
+        case .permanent:
+            return persistentDismissals()[banner.dismissalID] != nil
         case .session:
             lock.lock()
             defer { lock.unlock() }
@@ -60,12 +72,12 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
     }
 
     func dismiss(_ banner: VaultBannerType, now: Date) {
-        switch banner.dismissalRule {
+        switch ruleProvider(banner) {
         case .session:
             lock.lock()
             sessionDismissed.insert(banner.dismissalID)
             lock.unlock()
-        case .ttl:
+        case .permanent, .ttl:
             mutatePersistentDismissals { dict in
                 dict[banner.dismissalID] = now
             }
@@ -73,9 +85,10 @@ final class PromoBannerDismissalStore: PromoBannerDismissalStoring, @unchecked S
     }
 
     func migrateLegacyDismissals(legacyAppBanners: [String], legacyVaultBanners: [String], now: Date) {
-        // Only TTL banners carry over. The backup reminder is session-scoped:
-        // per product it should resurface each session while backup is missing,
-        // so its legacy permanent dismissal is intentionally dropped.
+        // Only persistently dismissed banners carry over. The backup reminder
+        // is session-scoped: per product it should resurface each session while
+        // backup is missing, so its legacy permanent dismissal is intentionally
+        // dropped.
         for banner in VaultBannerType.allCases {
             let legacySources: [String]
             switch banner {
