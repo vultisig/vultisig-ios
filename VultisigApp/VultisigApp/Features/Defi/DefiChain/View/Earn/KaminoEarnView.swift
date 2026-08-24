@@ -129,12 +129,17 @@ struct KaminoEarnView<EmptyState: View>: View {
                     .clipShape(Circle())
                     .accessibilityLabel(row.curator)
                 if let coin = row.coin {
-                    AsyncImageView(
-                        logo: coin.logo,
-                        size: CGSize(width: 36, height: 36),
-                        ticker: coin.ticker,
-                        tokenChainLogo: nil
-                    )
+                    ZStack {
+                        Circle()
+                            .fill(Theme.colors.bgSurface2.opacity(0.9))
+                        AsyncImageView(
+                            logo: coin.logo,
+                            size: CGSize(width: 36, height: 36),
+                            ticker: coin.ticker,
+                            tokenChainLogo: nil
+                        )
+                    }
+                    .frame(width: 36, height: 36)
                     .offset(x: 24)
                     .accessibilityHidden(true)
                 }
