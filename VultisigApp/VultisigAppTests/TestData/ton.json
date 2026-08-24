@@ -29,7 +29,7 @@
         "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
         "lib_type": "DKLS"
       },
-      "expected_image_hash": ["aefa16a3825645bcfcf305be112bc2da400d213cb8c20d87e0e43d4eb214a5f8"]
+      "expected_image_hash": ["db6bfdb5473ece22c91a7a497c83e8a5d9009a03ad820f46839472c89f9f9235"]
     },
     {
       "name": "Send USDT TON",
@@ -63,7 +63,7 @@
         "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
         "lib_type": "DKLS"
       },
-      "expected_image_hash": ["44cbfbae7924a26eec5e6338370ff5d1dbde3fe63f67b1e8937cff1fc28aa2f3"]
+      "expected_image_hash": ["145673a02a4f1b091d6f9a34bf84490309ce6ef70ae9a2c2de0e5d9c1299cca9"]
     },
     {
       "name": "TON Stake with memo",
@@ -95,6 +95,6 @@
         "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
         "lib_type": "DKLS"
       },
-      "expected_image_hash": ["299ecf1da0682c338130b7f3f890484100e41c8f0d2b024b1fd0214df6e310dd"]
+      "expected_image_hash": ["f132a896ec6ea24c25309f2c220da4efcbd99c210323e266a8dafa8c5e290b78"]
     }
   ]
