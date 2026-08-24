@@ -31,8 +31,7 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
             valued,
             value: \.fiatAmount,
             tieBreak: { $0.position.id }
-        )
-            .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
+        ).map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
 
     var body: some View {
