@@ -609,6 +609,52 @@ final class VaultDetailViewModelTests: XCTestCase {
         }
     }
 
+    func testPromoBannerArtworkLayoutsMatchFigma() {
+        XCTAssertEqual(
+            VaultBannerType.upgradeVault.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 1.156,
+                offset: CGSize(width: -9.25, height: -16)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.rujiraStaking.artworkLayout,
+            CarouselBannerArtworkLayout()
+        )
+        XCTAssertEqual(
+            VaultBannerType.followVultisig.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 0.896,
+                offset: CGSize(width: 6.5, height: 9)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.backupVault.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 0.844,
+                offset: CGSize(width: 2.75, height: 5.5)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.referralRewards.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 1.104,
+                offset: CGSize(width: -6, height: -5.5)
+            )
+        )
+        XCTAssertEqual(
+            VaultBannerType.buyVult.artworkLayout,
+            CarouselBannerArtworkLayout(frameSize: 112, trailingInset: 7.5)
+        )
+        XCTAssertEqual(
+            VaultBannerType.kaminoEarn.artworkLayout,
+            CarouselBannerArtworkLayout(
+                scale: 0.856,
+                offset: CGSize(width: 11.5, height: 0)
+            )
+        )
+    }
+
     /// AC: an expired dismissal is ignored and the banner shows again
     /// (eligibility permitting).
     func testExpiredDismissal_showsBannerAgain() {

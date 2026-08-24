@@ -149,8 +149,38 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         }
     }
 
-    var artworkSize: CGFloat {
-        self == .buyVult ? 112 : 125
+    var artworkLayout: CarouselBannerArtworkLayout {
+        switch self {
+        case .upgradeVault:
+            CarouselBannerArtworkLayout(
+                scale: 1.156,
+                offset: CGSize(width: -9.25, height: -16)
+            )
+        case .rujiraStaking:
+            CarouselBannerArtworkLayout()
+        case .followVultisig:
+            CarouselBannerArtworkLayout(
+                scale: 0.896,
+                offset: CGSize(width: 6.5, height: 9)
+            )
+        case .backupVault:
+            CarouselBannerArtworkLayout(
+                scale: 0.844,
+                offset: CGSize(width: 2.75, height: 5.5)
+            )
+        case .referralRewards:
+            CarouselBannerArtworkLayout(
+                scale: 1.104,
+                offset: CGSize(width: -6, height: -5.5)
+            )
+        case .buyVult:
+            CarouselBannerArtworkLayout(frameSize: 112, trailingInset: 7.5)
+        case .kaminoEarn:
+            CarouselBannerArtworkLayout(
+                scale: 0.856,
+                offset: CGSize(width: 11.5, height: 0)
+            )
+        }
     }
 
     var gradientEndColor: Color {

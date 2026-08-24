@@ -40,54 +40,69 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
     }
 
     var card: some View {
-        ZStack(alignment: .topTrailing) {
-            Theme.colors.bgSurface1
+        HStack(spacing: 12) {
+            iconTile
 
-            LinearGradient(
-                stops: [
-                    .init(color: Theme.colors.bgSurface1.opacity(0.69), location: 0.5),
-                    .init(color: banner.gradientEndColor.opacity(0.69), location: 1)
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-
-            Image(banner.artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: banner.artworkSize, height: banner.artworkSize)
-                .offset(y: -9)
-                .blur(radius: 2)
-
-            HStack(spacing: 12) {
-                iconTile
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(banner.title)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .multilineTextAlignment(.leading)
-                    Text(banner.subtitle)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                // Reserve room for the close button overlaid at the
-                // top-trailing corner so localized copy wraps before it.
-                .padding(.trailing, 32)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(banner.title)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .multilineTextAlignment(.leading)
+                Text(banner.subtitle)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Reserve room for the close button overlaid at the
+            // top-trailing corner so localized copy wraps before it.
+            .padding(.trailing, 32)
         }
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        // Decorative layers belong in the proposed card bounds. Keeping the
+        // 125pt artwork out of the foreground layout prevents it from changing
+        // the geometry of the 81pt carousel card.
+        .background {
+            ZStack(alignment: .topTrailing) {
+                Theme.colors.bgSurface1
+
+                LinearGradient(
+                    stops: [
+                        .init(color: Theme.colors.bgSurface1.opacity(0.69), location: 0.5),
+                        .init(color: banner.gradientEndColor.opacity(0.69), location: 1)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+
+                artwork
+            }
+        }
         .overlay(
             Theme.radius.xl.shape
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .clipShape(Theme.radius.xl.shape)
         .contentShape(Theme.radius.xl.shape)
+    }
+
+    var artwork: some View {
+        let layout = banner.artworkLayout
+        let renderedSize = layout.frameSize * layout.scale
+
+        return ZStack(alignment: .topLeading) {
+            Image(banner.artwork)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: renderedSize, height: renderedSize)
+                .offset(layout.offset)
+        }
+        .frame(width: layout.frameSize, height: layout.frameSize, alignment: .topLeading)
+        .clipped()
+        .offset(x: -layout.trailingInset, y: -9)
+        .blur(radius: 2)
     }
 
     var iconTile: some View {
@@ -111,15 +126,15 @@ private struct CarouselBannerCloseButton: View {
                 icon
                     .padding(12)
             }
-            .glassEffect(.regular.interactive(), in: .circle)
+            .glassEffect(.regular, in: .circle)
         } else {
             Button(action: action) {
                 icon
-                    .padding(12)
+                    .frame(width: 40, height: 40)
                     .background(.ultraThinMaterial, in: Circle())
                     .overlay {
                         Circle()
-                            .stroke(.white.opacity(0.3), lineWidth: 0.5)
+                            .fill(.white.opacity(0.01))
                     }
             }
             .buttonStyle(.plain)
@@ -139,7 +154,7 @@ private struct CarouselBannerCloseButton: View {
     VStack(spacing: 16) {
         ForEach(VaultBannerType.allCases) { banner in
             CarouselBannerView(banner: banner) {} onClose: {}
-                .frame(height: 128)
+                .frame(height: 81)
         }
     }
     .padding()
