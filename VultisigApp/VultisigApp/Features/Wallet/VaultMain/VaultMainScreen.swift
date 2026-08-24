@@ -234,11 +234,11 @@ struct VaultMainScreen: View {
             }
             .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: .magnifier) {
+            AccessoryButton(icon: .magnifier) {
                 toggleSearch()
             }
             .accessibilityIdentifier(AccessibilityID.VaultMain.searchButton)
-            CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
+            AccessoryButton(icon: .accessoryPen, label: "chains".localized) {
                 showChainSelection.toggle()
             }
             .showIf(viewModel.canShowChainSelection(vault: vault))

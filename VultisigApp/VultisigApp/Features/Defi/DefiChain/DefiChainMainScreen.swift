@@ -152,7 +152,7 @@ struct DefiChainMainScreen: View {
             SegmentedControl(selection: $viewModel.selectedPosition, items: viewModel.positions)
                 .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
+            AccessoryButton(icon: .accessoryPen, label: "tokens".localized) {
                 showPositionSelection.toggle()
             }
         }
