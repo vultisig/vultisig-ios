@@ -119,7 +119,7 @@ struct TransactionHistoryScreen: View {
 
             Spacer()
 
-            CircularAccessoryIconButton(icon: .magnifier) {
+            AccessoryButton(icon: .magnifier) {
                 viewModel.showAssetFilter = true
             }
         }

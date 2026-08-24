@@ -43,7 +43,7 @@ struct CustomTokenScreen: View {
                             showPasteButton: true,
                             placeholder: viewModel.searchPlaceholder
                         )
-                        CircularAccessoryIconButton(icon: .searchArea) {
+                        AccessoryButton(icon: .searchArea) {
                             viewModel.search()
                         }
                     }

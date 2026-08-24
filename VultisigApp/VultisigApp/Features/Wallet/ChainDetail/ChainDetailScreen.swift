@@ -303,10 +303,10 @@ struct ChainDetailScreen: View {
             }
             .fixedSize()
             Spacer()
-            CircularAccessoryIconButton(icon: .magnifier) {
+            AccessoryButton(icon: .magnifier) {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: .housePen, type: .secondary) {
+            AccessoryButton(icon: .accessoryPen, label: "tokens".localized) {
                 showManageTokens = true
             }
         }
