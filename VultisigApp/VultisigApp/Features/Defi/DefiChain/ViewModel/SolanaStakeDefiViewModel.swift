@@ -62,7 +62,7 @@ final class SolanaStakeDefiViewModel: ObservableObject {
     /// live `SolanaStakeAccount`, so their actions stay disabled until the live
     /// refresh — they are a display projection, never a signing source.
     private func seedFromPersistedSnapshot() {
-        let seeded = vault.stakePositions
+        let seededRows = vault.stakePositions
             .filter { $0.coin.chain == .solana }
             .compactMap { position -> SolanaStakeAccountRow? in
                 guard let pubkey = position.stakeAccountPubkey, !pubkey.isEmpty else { return nil }
@@ -82,7 +82,11 @@ final class SolanaStakeDefiViewModel: ObservableObject {
                     apyPercent: position.apr.map { Decimal($0) }
                 )
             }
-            .sorted { $0.delegatedAmount > $1.delegatedAmount }
+        let seeded = DefiPositionOrdering.descending(
+            seededRows,
+            value: \.delegatedAmount,
+            tieBreak: \.stakeAccountPubkey
+        )
 
         guard !seeded.isEmpty else { return }
         rows = seeded
@@ -140,7 +144,7 @@ final class SolanaStakeDefiViewModel: ObservableObject {
         let metadata = await metadataProvider.metadata(forVotePubkeys: votePubkeys)
 
         let currentEpoch = epoch?.epoch
-        let liveRows = stakeAccounts.map { account in
+        let mappedRows = stakeAccounts.map { account in
             row(
                 for: account,
                 divisor: divisor,
@@ -151,7 +155,11 @@ final class SolanaStakeDefiViewModel: ObservableObject {
                 totalActivatedStake: totalActivatedStake
             )
         }
-        .sorted { $0.delegatedAmount > $1.delegatedAmount }
+        let liveRows = DefiPositionOrdering.descending(
+            mappedRows,
+            value: \.delegatedAmount,
+            tieBreak: \.stakeAccountPubkey
+        )
 
         rows = liveRows
         totalStaked = liveRows.map(\.delegatedAmount).reduce(0, +)

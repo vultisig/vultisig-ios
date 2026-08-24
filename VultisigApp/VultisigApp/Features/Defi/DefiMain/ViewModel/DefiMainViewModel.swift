@@ -20,29 +20,40 @@ enum DefiMainItem: Identifiable, Hashable {
         case .yield(let provider): return provider.rawValue
         }
     }
+
+    /// Equal-value rows keep the wallet's canonical chain order. Yield
+    /// providers follow chains and retain their declaration order.
+    var sortIndex: Int {
+        switch self {
+        case .chain(let chain):
+            return chain.index
+        case .yield(let provider):
+            return 10_000 + (DefiYieldProviderID.allCases.firstIndex(of: provider) ?? 0)
+        }
+    }
 }
 
 @MainActor
 final class DefiMainViewModel: ObservableObject {
-    @Published private var chains = [Chain]()
-    @Published private var visibleProviders: [DefiYieldProviderID] = []
+    @Published private var items = [DefiMainItem]()
     @Published var searchText: String = ""
 
-    private let logic = VaultDetailLogic()
+    private let balanceService = DefiBalanceService()
 
     init() {}
 
     func filteredItems(in vault: Vault) -> [DefiMainItem] {
-        let providerItems = visibleProviders
-            .filter { matchesSearch(providerName($0)) }
-            .map { DefiMainItem.yield($0) }
-        let filtered = chains.filter { chain in
-            let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
-            let tickerMatches = vault.nativeCoin(for: chain)?.ticker
-                .localizedCaseInsensitiveContains(searchText) ?? false
-            return searchText.isEmpty || nameMatches || tickerMatches
+        items.filter { item in
+            switch item {
+            case .yield(let providerID):
+                return matchesSearch(providerName(providerID))
+            case .chain(let chain):
+                let nameMatches = chain.name.localizedCaseInsensitiveContains(searchText)
+                let tickerMatches = vault.nativeCoin(for: chain)?.ticker
+                    .localizedCaseInsensitiveContains(searchText) ?? false
+                return searchText.isEmpty || nameMatches || tickerMatches
+            }
         }
-        return providerItems + filtered.map { .chain($0) }
     }
 
     /// Refreshes persisted balances (including `Coin.stakedBalance`, which backs
@@ -81,15 +92,26 @@ final class DefiMainViewModel: ObservableObject {
             vault.defiChains.contains(chain) && CoinAction.defiChains.contains(chain)
         }
 
-        chains = logic.sortedChains(
-            chains: defiChains,
-            value: { vault.coins(for: $0).totalDefiBalanceInFiatDecimal }
-        )
-
         // A provider shows when it is enabled, the vault holds the provider's
         // chain, and its account (e.g. Circle MSCA) is provisioned. Account-less
         // providers are always provisioned, so the gate is uniform across providers.
-        visibleProviders = DefiYieldProviderID.allCases.filter { isProviderVisible($0, in: vault) }
+        let visibleProviders = DefiYieldProviderID.allCases.filter { isProviderVisible($0, in: vault) }
+        let unsortedItems = defiChains.map(DefiMainItem.chain) + visibleProviders.map(DefiMainItem.yield)
+
+        items = DefiPositionOrdering.descending(
+            unsortedItems,
+            value: { displayedBalance(for: $0, in: vault) },
+            tieBreak: \.sortIndex
+        )
+    }
+
+    private func displayedBalance(for item: DefiMainItem, in vault: Vault) -> Decimal {
+        switch item {
+        case .chain(let chain):
+            return balanceService.totalBalanceInFiat(for: chain, vault: vault)
+        case .yield(let providerID):
+            return balanceService.yieldBalanceFiatDecimal(for: providerID, vault: vault)
+        }
     }
 
     private func isProviderVisible(_ id: DefiYieldProviderID, in vault: Vault) -> Bool {

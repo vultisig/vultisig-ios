@@ -79,6 +79,12 @@ struct DefiMainScreen: View {
         .onChange(of: vault) { _, _ in
             refresh()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .defiPositionsDidChange)) { _ in
+            // Position-only balances (Kamino, LPs, bonds and persisted stake
+            // rows) do not necessarily mutate a wallet coin. Rebuild the order
+            // from the displayed totals whenever their shared store changes.
+            viewModel.groupChains(vault: vault)
+        }
         .onDisappear {
             clearSearchTask?.cancel()
             refreshTask?.cancel()

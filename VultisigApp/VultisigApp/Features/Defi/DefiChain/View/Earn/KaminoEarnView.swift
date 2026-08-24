@@ -53,10 +53,20 @@ struct KaminoEarnView<EmptyState: View>: View {
     @ViewBuilder
     private var populatedState: some View {
         VStack(spacing: 12) {
-            ForEach(viewModel.rows) { row in
+            ForEach(sortedRows) { row in
                 vaultCard(for: row)
             }
         }
+    }
+
+    /// Match each vault card's painted fiat figure. Registry order is only a
+    /// deterministic tie-breaker; it never outranks a funded position.
+    private var sortedRows: [KaminoEarnRow] {
+        DefiPositionOrdering.descending(
+            viewModel.rows,
+            value: { fiatValue(for: $0) },
+            tieBreak: \.id
+        )
     }
 
     /// Two states, as the design draws them: a vault the user holds nothing in

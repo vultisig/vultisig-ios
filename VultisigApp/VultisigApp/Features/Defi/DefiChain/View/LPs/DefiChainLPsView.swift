@@ -19,7 +19,7 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
     }
 
     var formattedLPs: [(position: LPPosition, fiatAmount: String)] {
-        viewModel.lpPositions
+        let valued = viewModel.lpPositions
             .map { position -> (position: LPPosition, fiatAmount: Decimal) in
                 // Use `position.coin1` (CoinMeta) for the rate lookup rather than requiring a
                 // matching `Coin` row in `vault.coins`. Otherwise zero-amount placeholders for
@@ -27,8 +27,11 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
                 let fiatAmount = RateProvider.shared.fiatBalance(value: position.coin1Amount, coin: position.coin1)
                 return (position, fiatAmount)
             }
-            .sorted { $0.fiatAmount > $1.fiatAmount }
-            .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
+        return DefiPositionOrdering.descending(
+            valued,
+            value: \.fiatAmount,
+            tieBreak: { $0.position.id }
+        ).map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
 
     var body: some View {

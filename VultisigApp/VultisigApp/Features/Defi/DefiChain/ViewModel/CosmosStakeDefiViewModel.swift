@@ -100,7 +100,7 @@ final class CosmosStakeDefiViewModel: ObservableObject {
         let divisor = pow(Decimal(10), decimals)
         let now = Date()
 
-        positions = delegations.map { delegation in
+        let mappedPositions = delegations.map { delegation in
             let raw = Decimal(string: delegation.balance.amount) ?? 0
             let pendingRaw = rewardsByValidator[delegation.validatorAddress] ?? 0
             let validator = validatorsByAddress[delegation.validatorAddress]
@@ -144,6 +144,12 @@ final class CosmosStakeDefiViewModel: ObservableObject {
                 pendingUnbondingUnlockDate: pendingUnlock
             )
         }
+
+        positions = DefiPositionOrdering.descending(
+            mappedPositions,
+            value: \.stakedAmount,
+            tieBreak: \.validatorAddress
+        )
 
         totalStaked = positions.map(\.stakedAmount).reduce(0, +)
         pendingUnbondings = unbondings
