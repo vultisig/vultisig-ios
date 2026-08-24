@@ -67,9 +67,9 @@ struct AddressService {
 
         // Iterate through all WalletCore CoinTypes to find matching address
         for coinType in CoinType.allCases {
-            guard coinType.validate(address: address) else { continue }
             // Map CoinType to Vultisig Chain
             guard let chain = Chain.allCases.first(where: { $0.coinType == coinType }) else { continue }
+            guard validateAddress(address: address, chain: chain) else { continue }
             // Only return if chain exists in vault with native token
             if vault.coins.contains(where: { $0.chain == chain && $0.isNativeToken }) {
                 return chain
@@ -137,7 +137,7 @@ struct AddressService {
             }
         }
 
-        if chain.coinType.validate(address: input) {
+        if validateAddress(address: input, chain: chain) {
             return input
         }
 
@@ -172,6 +172,11 @@ struct AddressService {
 
         if chain == .bittensor {
             return BittensorHelper.isValidAddress(address)
+        }
+
+        if chain == .solana {
+            return chain.coinType.validate(address: address)
+                && SolanaProgramDerivedAddress.isOnEd25519Curve(address)
         }
 
         return chain.coinType.validate(address: address)
