@@ -141,14 +141,14 @@ struct AsyncImageView: View {
         Text(String(ticker.prefix(1)).uppercased())
             .font(WidgetTheme.labelFont(size: size.width * 0.42))
             .frame(width: size.width, height: size.height)
-            .background(Color.white)
+            .background(WidgetTheme.iconFallbackBackground)
             .foregroundStyle(WidgetTheme.background)
             .clipShape(Circle())
         #else
         Text(String(ticker.prefix(1)).uppercased())
             .font(Theme.fonts.bodyMMedium)
             .frame(width: size.width, height: size.height)
-            .background(Color.white)
+            .background(Theme.colors.textPrimary)
             .foregroundStyle(Theme.colors.bgSurface1)
             .cornerRadius(Theme.radius.pill)
         #endif

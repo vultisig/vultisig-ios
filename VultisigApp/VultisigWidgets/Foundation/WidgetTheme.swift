@@ -13,6 +13,7 @@ enum WidgetTheme {
     static let separator = Color(red: 17 / 255, green: 40 / 255, blue: 74 / 255)
     static let positive = Color(red: 19 / 255, green: 200 / 255, blue: 157 / 255)
     static let negative = Color(red: 255 / 255, green: 92 / 255, blue: 92 / 255)
+    static let iconFallbackBackground = primaryText
 
     static func labelFont(size: CGFloat) -> Font {
         .custom("Brockmann-Medium", size: size)
