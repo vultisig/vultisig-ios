@@ -781,6 +781,10 @@ private extension SwapService {
             sourceAddress: fromCoin.address,
             destinationAddress: destination
         )
+        try SwapKitService.validateSigningCapability(
+            response: response,
+            fromChain: fromCoin.chain
+        )
         return .swapkit(
             response,
             fee: service.inboundFee(from: response, fromCoin: fromCoin),

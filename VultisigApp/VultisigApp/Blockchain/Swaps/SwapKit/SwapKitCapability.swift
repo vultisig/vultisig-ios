@@ -41,4 +41,30 @@ enum SwapKitCapability {
         }
         return true
     }
+
+    /// The `/swap` payload must match the source chain's implemented signer.
+    /// A typed payload for the wrong chain is as unsafe as an unknown payload:
+    /// both are rejected before the quote can enter ranking.
+    static func canSign(_ tx: SwapKitTx, from chain: Chain) -> Bool {
+        switch (chain, tx) {
+        case (_, .evm) where chain.chainType == .EVM:
+            return true
+        case (.solana, .solana),
+             (.bitcoin, .psbt),
+             (.litecoin, .psbt),
+             (.dogecoin, .dogecoinPsbt),
+             (.bitcoinCash, .bitcoinCashPsbt),
+             (.dash, .dashPsbt),
+             (.zcash, .zcashPsbt),
+             (.ton, .ton),
+             (.cardano, .cardano),
+             (.cardano, .cardanoPrebuilt),
+             (.sui, .sui),
+             (.tron, .tron),
+             (.ripple, .rippleDepositOnly):
+            return true
+        default:
+            return false
+        }
+    }
 }

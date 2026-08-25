@@ -198,6 +198,50 @@ final class SwapServiceErrorSurfacingTests: XCTestCase {
         XCTAssertEqual(swapKitAttempts, 1)
     }
 
+    @MainActor
+    func testUnsupportedSwapKitTxDoesNotHideLiFiQuote() async throws {
+        let service = SwapService(quoteFetcherOverride: { provider in
+            switch provider {
+            case .swapkit:
+                throw SwapKitError.unsupportedTxType("FUTURE_CHAIN")
+            case .lifi:
+                return .lifi(
+                    EVMQuote(
+                        dstAmount: "1000000000000000000",
+                        tx: EVMQuote.Transaction(
+                            from: "0xfrom",
+                            to: "0xto",
+                            data: "0x",
+                            value: "0",
+                            gasPrice: "0",
+                            gas: 0
+                        )
+                    ),
+                    fee: nil,
+                    integratorFee: nil
+                )
+            default:
+                throw SwapError.routeUnavailable
+            }
+        })
+        let ethereum = makeCoin(.ethereum, ticker: "ETH", decimals: 18)
+        let robinhood = makeCoin(.robinhood, ticker: "ETH", decimals: 18)
+
+        let quotes = try await service.fetchQuotes(
+            amount: 1,
+            fromCoin: ethereum,
+            toCoin: robinhood,
+            isAffiliate: false,
+            referredCode: "",
+            vultTierDiscount: 0,
+            slippageBps: nil,
+            recipientAddress: nil
+        )
+
+        XCTAssertEqual(quotes.best.kind, .lifi)
+        XCTAssertEqual(quotes.ranked.map(\.kind), [.lifi])
+    }
+
     private func makeCoin(_ chain: Chain, ticker: String, decimals: Int) -> Coin {
         let meta = CoinMeta(
             chain: chain,

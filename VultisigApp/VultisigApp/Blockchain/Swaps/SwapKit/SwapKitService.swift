@@ -192,6 +192,20 @@ struct SwapKitService {
         return ranked.max(by: { $0.1 < $1.1 })?.0
     }
 
+    static func validateSigningCapability(
+        response: SwapKitSwapResponse,
+        fromChain: Chain
+    ) throws {
+        if case let .unsupported(txType, _) = response.tx {
+            throw SwapKitError.unsupportedTxType(txType)
+        }
+        guard SwapKitCapability.canSign(response.tx, from: fromChain) else {
+            throw SwapKitError.unsupportedTxType(
+                "\(response.meta.txType)/\(fromChain.ticker)"
+            )
+        }
+    }
+
     /// Format an amount as a dot-separated decimal string suitable for
     /// `SwapKitQuoteRequest.sellAmount`. SwapKit interprets the value as the
     /// human-readable amount of the source asset (e.g. "0.0086" BNB), NOT
